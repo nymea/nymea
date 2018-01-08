@@ -46,15 +46,10 @@ public:
     explicit QtAvahiServiceBrowserImplementation(QObject *parent = nullptr);
     ~QtAvahiServiceBrowserImplementation();
 
-    QList<AvahiServiceEntry> serviceEntries() const;
+    QList<AvahiServiceEntry> serviceEntries() const override;
 
     bool available() const override;
     bool enabled() const override;
-
-
-signals:
-    void serviceEntryAdded(const AvahiServiceEntry &entry);
-    void serviceEntryRemoved(const AvahiServiceEntry &entry);
 
 private slots:
     void onClientStateChanged(const QtAvahiClient::QtAvahiClientState &state);

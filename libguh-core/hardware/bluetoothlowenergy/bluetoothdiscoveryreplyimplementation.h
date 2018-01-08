@@ -39,9 +39,9 @@ class BluetoothDiscoveryReplyImplementation : public BluetoothDiscoveryReply
 public:
     explicit BluetoothDiscoveryReplyImplementation(QObject *parent = nullptr);
 
-    bool isFinished() const;
-    BluetoothDiscoveryReplyError error() const;
-    QList<QBluetoothDeviceInfo> discoveredDevices() const;
+    bool isFinished() const override;
+    BluetoothDiscoveryReplyError error() const override;
+    QList<QBluetoothDeviceInfo> discoveredDevices() const override;
 
 private:
     bool m_finished = false;

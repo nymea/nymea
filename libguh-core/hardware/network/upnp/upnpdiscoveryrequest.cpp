@@ -31,25 +31,27 @@ UpnpDiscoveryRequest::UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointe
     m_reply(reply)
 {
     m_timer = new QTimer(this);
-    m_timer->setSingleShot(true);
-    connect(m_timer, &QTimer::timeout, this, &UpnpDiscoveryRequest::discoveryTimeout);
+    m_timer->setSingleShot(false);
+    connect(m_timer, &QTimer::timeout, this, &UpnpDiscoveryRequest::onTimeout);
 }
 
 void UpnpDiscoveryRequest::discover(const int &timeout)
 {
-    QByteArray ssdpSearchMessage = QByteArray("M-SEARCH * HTTP/1.1\r\n"
+    m_ssdpSearchMessage = QByteArray("M-SEARCH * HTTP/1.1\r\n"
                                               "HOST:239.255.255.250:1900\r\n"
                                               "MAN:\"ssdp:discover\"\r\n"
                                               "MX:4\r\n"
                                               "ST: " + reply()->searchTarget().toUtf8() + "\r\n"
                                               "USR-AGENT: " + reply()->userAgent().toUtf8() + "\r\n\r\n");
 
-    m_upnpDiscovery->sendToMulticast(ssdpSearchMessage);
+    m_upnpDiscovery->sendToMulticast(m_ssdpSearchMessage);
 
-    // TODO: call in 500ms steps
+    // All 500 ms the message will be broadcasterd. So the message will be sent timeout[s] * 2
+    m_totalTriggers = timeout / 500;
+    m_triggerCounter = 0;
 
-    qCDebug(dcHardware) << "--> UPnP discovery called.";
-    m_timer->start(timeout);
+    qCDebug(dcUpnp()) << "--> Discovery called.";
+    m_timer->start(500);
 }
 
 void UpnpDiscoveryRequest::addDeviceDescriptor(const UpnpDeviceDescriptor &deviceDescriptor)
@@ -61,6 +63,7 @@ void UpnpDiscoveryRequest::addDeviceDescriptor(const UpnpDeviceDescriptor &devic
             isAlreadyInList = true;
         }
     }
+
     if (!isAlreadyInList) {
         m_deviceList.append(deviceDescriptor);
     }
@@ -84,6 +87,19 @@ QList<UpnpDeviceDescriptor> UpnpDiscoveryRequest::deviceList() const
 QPointer<UpnpDiscoveryReplyImplementation> UpnpDiscoveryRequest::reply()
 {
     return m_reply;
+}
+
+void UpnpDiscoveryRequest::onTimeout()
+{
+    qCDebug(dcUpnp()) << "Send SSDP search message" << m_triggerCounter << "/" << m_totalTriggers;
+    m_upnpDiscovery->sendToMulticast(m_ssdpSearchMessage);
+
+    if (m_triggerCounter >= m_totalTriggers) {
+        m_timer->stop();
+        emit discoveryTimeout();
+    } else {
+        m_triggerCounter++;
+    }
 }
 
 }

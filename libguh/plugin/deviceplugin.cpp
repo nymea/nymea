@@ -28,59 +28,8 @@
   \ingroup devices
   \inmodule libguh
 
-  When implementing a new plugin, start by subclassing this and implementing the following
-  pure virtual method \l{DevicePlugin::requiredHardware()}
+
 */
-
-/*!
- \fn HardwareResource::Types DevicePlugin::requiredHardware() const
- Return flags describing the common hardware resources required by this plugin. If you want to
- use more than one resource, you can combine them ith the OR operator.
-
- \sa HardwareResource::Type
- */
-
-/*!
- \fn void DevicePlugin::radioData(const QList<int> &rawData)
- If the plugin has requested any radio device using \l{DevicePlugin::requiredHardware()}, this slot will
- be called when there is \a rawData available from that device.
- */
-
-/*!
- \fn void DevicePlugin::guhTimer()
- If the plugin has requested the timer using \l{DevicePlugin::requiredHardware()}, this slot will be called
- on timer events.
- */
-
-/*!
- \fn void DevicePlugin::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList)
- If the plugin has requested the UPnP device list using \l{DevicePlugin::upnpDiscover()}, this slot will be called after 3
- seconds (search timeout). The \a upnpDeviceDescriptorList will contain the description of all UPnP devices available
- in the network.
-
- \sa upnpDiscover(), UpnpDeviceDescriptor, UpnpDiscovery::discoveryFinished()
- */
-
-/*!
- \fn void DevicePlugin::upnpNotifyReceived(const QByteArray &notifyData)
- If a UPnP device will notify a NOTIFY message in the network, the \l{UpnpDiscovery} will catch the
- notification data and call this method with the \a notifyData.
-
- \note Only if if the plugin has requested the \l{HardwareResource::TypeUpnpDisovery} resource
- using \l{DevicePlugin::requiredHardware()}, this slot will be called.
-
- \sa UpnpDiscovery
- */
-
-/*!
- \fn DevicePlugin::networkManagerReplyReady(QNetworkReply *reply)
- This method will be called whenever a pending network \a reply for this plugin is finished.
-
- \note Only if if the plugin has requested the \l{HardwareResource::TypeNetworkManager}
- resource using \l{DevicePlugin::requiredHardware()}, this slot will be called.
-
- \sa NetworkAccessManager::replyReady()
- */
 
 /*!
   \fn void DevicePlugin::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);

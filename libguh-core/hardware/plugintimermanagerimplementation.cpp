@@ -22,6 +22,7 @@
 
 #include "plugintimermanagerimplementation.h"
 #include "loggingcategories.h"
+#include "guhcore.h"
 
 namespace guhserver {
 
@@ -29,7 +30,7 @@ PluginTimerImplementation::PluginTimerImplementation(int intervall, QObject *par
     PluginTimer(parent),
     m_interval(intervall)
 {
-
+    connect(GuhCore::instance()->timeManager(), &TimeManager::tick, this, &PluginTimerImplementation::tick);
 }
 
 int PluginTimerImplementation::interval() const
@@ -201,10 +202,12 @@ void PluginTimerManagerImplementation::setEnabled(bool enabled)
         return;
     }
 
-    // TODO: should start/stop all timers here
-
     m_enabled = enabled;
     emit enabledChanged(enabled);
+
+    foreach (QPointer<PluginTimerImplementation> timer, m_timers) {
+        timer->setPaused(enabled);
+    }
 }
 
 bool PluginTimerManagerImplementation::enable()

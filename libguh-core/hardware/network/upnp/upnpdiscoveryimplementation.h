@@ -50,8 +50,8 @@ public:
     explicit UpnpDiscoveryImplementation(QNetworkAccessManager *networkAccessManager, QObject *parent = nullptr);
     ~UpnpDiscoveryImplementation();
 
-    UpnpDiscoveryReply *discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = QString(), const int &timeout = 5000);
-    void sendToMulticast(const QByteArray &data);
+    UpnpDiscoveryReply *discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = QString(), const int &timeout = 5000) override;
+    void sendToMulticast(const QByteArray &data) override;
 
     bool available() const override;
     bool enabled() const override;

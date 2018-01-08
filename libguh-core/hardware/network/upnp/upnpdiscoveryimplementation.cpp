@@ -86,14 +86,14 @@ UpnpDiscoveryReply *UpnpDiscoveryImplementation::discoverDevices(const QString &
     QPointer<UpnpDiscoveryReplyImplementation> reply = new UpnpDiscoveryReplyImplementation(searchTarget, userAgent, this);
 
     if (!available()) {
-        qCWarning(dcHardware()) << name() << "is not avilable.";
+        qCWarning(dcUpnp()) << name() << "is not avilable.";
         reply->setError(UpnpDiscoveryReplyImplementation::UpnpDiscoveryReplyErrorNotAvailable);
         reply->setFinished();
         return reply.data();
     }
 
     if (!enabled()) {
-        qCWarning(dcHardware()) << name() << "is not enabled.";
+        qCWarning(dcUpnp()) << name() << "is not enabled.";
         reply->setError(UpnpDiscoveryReplyImplementation::UpnpDiscoveryReplyErrorNotEnabled);
         reply->setFinished();
         return reply.data();
@@ -202,6 +202,13 @@ void UpnpDiscoveryImplementation::setEnabled(bool enabled)
 
     m_enabled = enabled;
     emit enabledChanged(m_enabled);
+
+    if (enabled) {
+        enable();
+    } else {
+        disable();
+    }
+
 }
 
 void UpnpDiscoveryImplementation::error(QAbstractSocket::SocketError error)
@@ -437,7 +444,7 @@ void UpnpDiscoveryImplementation::discoverTimeout()
     QPointer<UpnpDiscoveryReplyImplementation> reply = discoveryRequest->reply();
 
     if (reply.isNull()) {
-        qCWarning(dcHardware()) << name() << "Reply does not exist any more. Please don't delete the reply before it has finished.";
+        qCWarning(dcUpnp()) << name() << "Reply does not exist any more. Please don't delete the reply before it has finished.";
     }  else {
         reply->setDeviceDescriptors(discoveryRequest->deviceList());
         reply->setError(UpnpDiscoveryReplyImplementation::UpnpDiscoveryReplyErrorNoError);
@@ -465,7 +472,7 @@ bool UpnpDiscoveryImplementation::enable()
     m_socket->setSocketOption(QAbstractSocket::MulticastLoopbackOption,QVariant(1));
 
     if(!m_socket->bind(QHostAddress::AnyIPv4, m_port, QUdpSocket::ShareAddress)){
-        qCWarning(dcHardware()) << name() << "could not bind to port" << m_port;
+        qCWarning(dcUpnp()) << name() << "could not bind to port" << m_port;
         m_available = false;
         emit availableChanged(false);
         delete m_socket;
@@ -474,7 +481,7 @@ bool UpnpDiscoveryImplementation::enable()
     }
 
     if(!m_socket->joinMulticastGroup(m_host)){
-        qCWarning(dcHardware()) << name() << "could not join multicast group" << m_host;
+        qCWarning(dcUpnp()) << name() << "could not join multicast group" << m_host;
         m_available = false;
         emit availableChanged(false);
         delete m_socket;
@@ -489,6 +496,11 @@ bool UpnpDiscoveryImplementation::enable()
 
     sendAliveMessage();
     sendAliveMessage();
+
+    setEnabled(true);
+
+    qCDebug(dcHardware()) << "";
+
     return true;
 }
 

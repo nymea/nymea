@@ -53,13 +53,19 @@ public:
 
 private:
     UpnpDiscovery *m_upnpDiscovery;
+    QByteArray m_ssdpSearchMessage;
     QPointer<UpnpDiscoveryReplyImplementation> m_reply;
+    int m_totalTriggers = 0;
+    int m_triggerCounter = 0;
 
     QTimer *m_timer = nullptr;
     QList<UpnpDeviceDescriptor> m_deviceList;
 
 signals:
     void discoveryTimeout();
+
+private slots:
+    void onTimeout();
 
 };
 

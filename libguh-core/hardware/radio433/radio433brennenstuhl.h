@@ -30,7 +30,9 @@
 #include "hardware/radio433/radio433.h"
 #include "radio433brennenstuhlgateway.h"
 
-class LIBGUH_EXPORT Radio433Brennenstuhl : public Radio433
+namespace guhserver {
+
+class Radio433Brennenstuhl : public Radio433
 {
     Q_OBJECT
 
@@ -55,6 +57,8 @@ private:
     bool m_available = false;
     bool m_enabled = false;
 };
+
+}
 
 #endif // RADIO433BRENENSTUHL_H
 

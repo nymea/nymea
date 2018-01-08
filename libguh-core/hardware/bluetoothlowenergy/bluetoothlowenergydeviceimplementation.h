@@ -42,20 +42,20 @@ class BluetoothLowEnergyDeviceImplementation : public BluetoothLowEnergyDevice
 public:
     explicit BluetoothLowEnergyDeviceImplementation(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::PublicAddress, QObject *parent = 0);
 
-    QString name() const;
-    QBluetoothAddress address() const;
+    QString name() const override;
+    QBluetoothAddress address() const override;
 
-    void connectDevice();
-    void disconnectDevice();
+    void connectDevice() override;
+    void disconnectDevice() override;
 
-    bool autoConnecting() const;
-    void setAutoConnecting(const bool &autoConnecting);
+    bool autoConnecting() const override;
+    void setAutoConnecting(const bool &autoConnecting) override;
 
-    bool connected() const;
-    bool discovered() const;
+    bool connected() const override;
+    bool discovered() const override;
 
-    QList<QBluetoothUuid> serviceUuids() const;
-    QLowEnergyController *controller() const;
+    QList<QBluetoothUuid> serviceUuids() const override;
+    QLowEnergyController *controller() const override;
 
 private:
     QBluetoothDeviceInfo m_deviceInfo;

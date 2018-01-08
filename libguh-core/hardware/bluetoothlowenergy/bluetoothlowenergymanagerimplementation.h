@@ -47,11 +47,11 @@ class BluetoothLowEnergyManagerImplementation : public BluetoothLowEnergyManager
 public:
     explicit BluetoothLowEnergyManagerImplementation(PluginTimer *reconnectTimer, QObject *parent = nullptr);
 
-    BluetoothDiscoveryReply *discoverDevices(const int &interval = 5000);
+    BluetoothDiscoveryReply *discoverDevices(int interval = 5000) override;
 
     // Bluetooth device registration methods
-    BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress);
-    void unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice);
+    BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress) override;
+    void unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice) override;
 
     bool available() const override;
     bool enabled() const override;

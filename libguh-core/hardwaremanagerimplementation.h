@@ -29,11 +29,9 @@
 
 #include "hardwaremanager.h"
 
-// FIXME: use forward declaration for timeTick
-#include "hardware/plugintimermanagerimplementation.h"
-
 class Radio433;
 class UpnpDiscovery;
+class PluginTimerManager;
 class NetworkAccessManager;
 class UpnpDeviceDescriptor;
 class QtAvahiServiceBrowser;
@@ -51,12 +49,12 @@ public:
     explicit HardwareManagerImplementation(QObject *parent = nullptr);
     ~HardwareManagerImplementation();
 
-    Radio433 *radio433();
-    PluginTimerManager *pluginTimerManager();
-    NetworkAccessManager *networkManager();
-    UpnpDiscovery *upnpDiscovery();
-    QtAvahiServiceBrowser *avahiBrowser();
-    BluetoothLowEnergyManager *bluetoothLowEnergyManager();
+    Radio433 *radio433() override;
+    PluginTimerManager *pluginTimerManager() override;
+    NetworkAccessManager *networkManager() override;
+    UpnpDiscovery *upnpDiscovery() override;
+    QtAvahiServiceBrowser *avahiBrowser() override;
+    BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
 
     // D-Bus method for enable/disable bluetooth support
     Q_SCRIPTABLE void EnableBluetooth(const bool &enabled);
@@ -65,15 +63,12 @@ private:
     QNetworkAccessManager *m_networkAccessManager;
 
     // Hardware Resources
-    PluginTimerManagerImplementation *m_pluginTimerManager = nullptr;
+    PluginTimerManager *m_pluginTimerManager = nullptr;
     Radio433 *m_radio433 = nullptr;
     NetworkAccessManager *m_networkManager = nullptr;
     UpnpDiscovery *m_upnpDiscovery = nullptr;
     QtAvahiServiceBrowser *m_avahiBrowser = nullptr;
     BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
-
-public slots:
-    void timeTick();
 
 };
 

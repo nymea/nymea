@@ -30,7 +30,9 @@
 
 #include "libguh.h"
 
-class LIBGUH_EXPORT Radio433BrennenstuhlGateway : public QObject
+namespace guhserver {
+
+class Radio433BrennenstuhlGateway : public QObject
 {
     Q_OBJECT
 public:
@@ -60,5 +62,7 @@ private slots:
     void gatewayError(QAbstractSocket::SocketError error);
     void timeout();
 };
+
+}
 
 #endif // RADIO433BRENNENSTUHLGATEWAY_H

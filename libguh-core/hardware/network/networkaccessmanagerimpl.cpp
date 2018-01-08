@@ -35,6 +35,8 @@
 #include "networkaccessmanagerimpl.h"
 #include "loggingcategories.h"
 
+namespace guhserver {
+
 /*! Construct the hardware resource NetworkAccessManagerImpl with the given \a parent. */
 NetworkAccessManagerImpl::NetworkAccessManagerImpl(QNetworkAccessManager *networkManager, QObject *parent) :
     NetworkAccessManager(parent),
@@ -125,4 +127,6 @@ bool NetworkAccessManagerImpl::available() const
 bool NetworkAccessManagerImpl::enabled() const
 {
     return m_enabled;
+}
+
 }

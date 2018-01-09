@@ -82,7 +82,7 @@
                 }
             } else {
                 var startY = container.getY()
-                var distance = Math.max(0, targetY) - startY
+                var distance = Math.max(0, targetY) - startY - 100
                 var startTime = new Date().getTime()
                 duration = duration || Math.min(Math.abs(distance), defaultDuration);
                 (function loopScroll() {

@@ -61,3 +61,4 @@ debian/libguh1/
 debian/tmp/
 server/guhd
 
+.idea/

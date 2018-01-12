@@ -72,13 +72,6 @@ private:
     // Methods called from BluetoothLowEnergyManager
     void setEnabled(const bool &enabled);
 
-signals:
-    void connectedChanged(const bool &connected);
-    void autoConnectingChanged(const bool &autoConnecting);
-    void stateChanged(const QLowEnergyController::ControllerState &state);
-    void errorOccured(const QLowEnergyController::Error &error);
-    void servicesDiscoveryFinished();
-
 private slots:
     void onConnected();
     void onDisconnected();

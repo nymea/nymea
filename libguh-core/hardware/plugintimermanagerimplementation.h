@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2017 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2017-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -51,9 +51,9 @@ private:
     bool m_paused = false;
     bool m_running = true;
 
-    void setRunning(const bool &running);
-    void setPaused(const bool &paused);
-    void setCurrentTick(const int &tick);
+    void setRunning(bool running);
+    void setPaused(bool paused);
+    void setCurrentTick(int tick);
 
     void tick();
 

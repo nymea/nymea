@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2017 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2017-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -48,7 +48,7 @@ bool PluginTimerImplementation::running() const
     return m_running;
 }
 
-void PluginTimerImplementation::setRunning(const bool &running)
+void PluginTimerImplementation::setRunning(bool running)
 {
     if (m_running != running) {
         m_running = running;
@@ -56,7 +56,7 @@ void PluginTimerImplementation::setRunning(const bool &running)
     }
 }
 
-void PluginTimerImplementation::setPaused(const bool &paused)
+void PluginTimerImplementation::setPaused(bool paused)
 {
     if (m_paused != paused) {
         m_paused = paused;
@@ -64,7 +64,7 @@ void PluginTimerImplementation::setPaused(const bool &paused)
     }
 }
 
-void PluginTimerImplementation::setCurrentTick(const int &tick)
+void PluginTimerImplementation::setCurrentTick(int tick)
 {
     if (m_currentTick != tick) {
         m_currentTick = tick;

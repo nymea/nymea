@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2016-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -34,6 +34,7 @@ class LIBGUH_EXPORT Radio433 : public HardwareResource
 
 public:
     explicit Radio433(QObject *parent = nullptr);
+    virtual ~Radio433() = default;
 
 public slots:
     virtual bool sendData(int delay, QList<int> rawData, int repetitions) = 0;

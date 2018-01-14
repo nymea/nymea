@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2017 Michael Zanetti <michael.zanetti@guh.io>            *
+ *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -24,11 +25,11 @@ namespace guhserver {
 
 QDBusConnection GuhDBusService::s_connection = QDBusConnection::systemBus();
 
-GuhDBusService::GuhDBusService(const QString &objectPath, UserManager *parent) : QObject(parent)
+GuhDBusService::GuhDBusService(const QString &objectPath, QObject *parent) : QObject(parent)
 {
     bool status = s_connection.registerService("io.guh.nymead");
     if (!status) {
-        qCWarning(dcApplication) << "Failed to register D-Bus service.";
+        qCWarning(dcApplication()) << "Failed to register D-Bus service.";
         return;
     }
     status = s_connection.registerObject(objectPath, this, QDBusConnection::ExportScriptableContents);

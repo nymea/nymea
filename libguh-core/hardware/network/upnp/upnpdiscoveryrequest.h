@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2015-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -44,7 +44,7 @@ class UpnpDiscoveryRequest : public QObject
 public:
     explicit UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointer<UpnpDiscoveryReplyImplementation> reply);
 
-    void discover(const int &timeout);
+    void discover(int timeout);
     void addDeviceDescriptor(const UpnpDeviceDescriptor &deviceDescriptor);
     QNetworkRequest createNetworkRequest(UpnpDeviceDescriptor deviveDescriptor);
     QList<UpnpDeviceDescriptor> deviceList() const;

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2017 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2017-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -43,7 +43,6 @@ namespace guhserver {
 class HardwareManagerImplementation : public HardwareManager
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "io.guh.nymead")
 
 public:
     explicit HardwareManagerImplementation(QObject *parent = nullptr);
@@ -56,11 +55,8 @@ public:
     QtAvahiServiceBrowser *avahiBrowser() override;
     BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
 
-    // D-Bus method for enable/disable bluetooth support
-    Q_SCRIPTABLE void EnableBluetooth(const bool &enabled);
-
 private:
-    QNetworkAccessManager *m_networkAccessManager;
+    QNetworkAccessManager *m_networkAccessManager = nullptr;
 
     // Hardware Resources
     PluginTimerManager *m_pluginTimerManager = nullptr;
@@ -69,6 +65,10 @@ private:
     UpnpDiscovery *m_upnpDiscovery = nullptr;
     QtAvahiServiceBrowser *m_avahiBrowser = nullptr;
     BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
+
+private slots:
+    void EnableBluetooth(const bool &enabled);
+
 
 };
 

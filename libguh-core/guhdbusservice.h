@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2017 Michael Zanetti <michael.zanetti@guh.io>            *
+ *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -33,7 +34,7 @@ class GuhDBusService : public QObject, public QDBusContext
     Q_CLASSINFO("D-Bus Interface", "io.guh.nymead")
 
 public:
-    explicit GuhDBusService(const QString &objectPath, UserManager *parent = nullptr);
+    explicit GuhDBusService(const QString &objectPath, QObject *parent = nullptr);
 
     static void setBusType(QDBusConnection::BusType busType);
 

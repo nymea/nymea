@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016-2018 Simon Stürz <simon.stuerz@guh.io>              *
+ *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -20,29 +20,15 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*!
-    \class QtAvahiServiceBrowser
-    \brief Allows to browse avahi services in the local network.
 
-    \ingroup hardware
-    \inmodule libguh
-*/
+#include "hardwaremanagerdbusservice.h"
 
-/*! \fn void QtAvahiServiceBrowser::serviceEntryAdded(const AvahiServiceEntry &entry);
-    This signal will be emitted when a new \a entry was added to the current entry list.
-*/
+namespace guhserver {
 
-/*! \fn void QtAvahiServiceBrowser::serviceEntryRemoved(const AvahiServiceEntry &entry);
-    This signal will be emitted when a new \a entry was removed from the current entry list.
-*/
-
-#include "qtavahiservicebrowser.h"
-
-/*! Constructs a new \l{QtAvahiServiceBrowser} with the given \a parent. */
-QtAvahiServiceBrowser::QtAvahiServiceBrowser(QObject *parent) :
-    HardwareResource("Avahi service browser", parent)
+HardwareManagerDBusService::HardwareManagerDBusService(const QString &objectPath, QObject *parent) :
+    GuhDBusService(objectPath, parent)
 {
 
 }
 
-
+}

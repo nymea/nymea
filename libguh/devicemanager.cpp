@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015-2017 Simon Stürz <simon.stuerz@guh.io>              *
+ *  Copyright (C) 2015-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
@@ -288,7 +288,7 @@ void DeviceManager::setLocale(const QLocale &locale)
     emit languageUpdated();
 }
 
-HardwareManager *DeviceManager::hardwareManager()
+HardwareManager *DeviceManager::hardwareManager() const
 {
     return m_hardwareManager;
 }

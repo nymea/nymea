@@ -40,6 +40,7 @@ class LIBGUH_EXPORT NetworkAccessManager : public HardwareResource
 
 public:
     NetworkAccessManager(QObject *parent = nullptr);
+    virtual ~NetworkAccessManager() = default;
 
     virtual QNetworkReply *get(const QNetworkRequest &request) = 0;
     virtual QNetworkReply *deleteResource(const QNetworkRequest &request) = 0;

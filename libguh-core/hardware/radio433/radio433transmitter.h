@@ -2,7 +2,7 @@
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
- *  Copyright (C) 2015 -2016 Simon Stürz <simon.stuerz@guh.io>             *
+ *  Copyright (C) 2016-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This library is free software; you can redistribute it and/or          *
  *  modify it under the terms of the GNU Lesser General Public             *

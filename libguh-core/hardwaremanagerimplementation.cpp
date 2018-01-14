@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2017 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2017-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -76,6 +76,8 @@ HardwareManagerImplementation::HardwareManagerImplementation(QObject *parent) :
         setResourceEnabled(m_bluetoothLowEnergyManager, true);
 
     // Register D-Bus interface for enable/disable hardware resources
+
+    // FIXME: use HardwareManagerDBusService in the source tree instead of direct implementation
     bool status = QDBusConnection::systemBus().registerService("io.guh.nymead");
     if (!status) {
         qCWarning(dcHardware()) << "Failed to register HardwareManager D-Bus service. HardwareManager D-Bus control will not work.";

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2017 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2017-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -41,6 +41,7 @@ public:
     Q_ENUM(UpnpDiscoveryReplyError)
 
     explicit UpnpDiscoveryReply(QObject *parent = nullptr);
+    virtual ~UpnpDiscoveryReply() = default;
 
     virtual QString searchTarget() const = 0;
     virtual QString userAgent() const = 0;

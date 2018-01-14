@@ -43,6 +43,7 @@ namespace guhserver {
 class HardwareManagerImplementation : public HardwareManager
 {
     Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "io.guh.nymead")
 
 public:
     explicit HardwareManagerImplementation(QObject *parent = nullptr);
@@ -55,6 +56,8 @@ public:
     QtAvahiServiceBrowser *avahiBrowser() override;
     BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
 
+    Q_SCRIPTABLE void EnableBluetooth(const bool &enabled);
+
 private:
     QNetworkAccessManager *m_networkAccessManager = nullptr;
 
@@ -65,11 +68,6 @@ private:
     UpnpDiscovery *m_upnpDiscovery = nullptr;
     QtAvahiServiceBrowser *m_avahiBrowser = nullptr;
     BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
-
-private slots:
-    void EnableBluetooth(const bool &enabled);
-
-
 };
 
 }

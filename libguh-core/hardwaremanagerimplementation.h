@@ -56,6 +56,7 @@ public:
     QtAvahiServiceBrowser *avahiBrowser() override;
     BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
 
+     // D-Bus method for enable/disable bluetooth support
     Q_SCRIPTABLE void EnableBluetooth(const bool &enabled);
 
 private:

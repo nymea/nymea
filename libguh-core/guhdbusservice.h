@@ -34,7 +34,7 @@ class GuhDBusService : public QObject, public QDBusContext
     Q_CLASSINFO("D-Bus Interface", "io.guh.nymead")
 
 public:
-    explicit GuhDBusService(const QString &objectPath, QObject *parent = nullptr);
+    explicit GuhDBusService(const QString &objectPath, UserManager *parent = nullptr);
 
     static void setBusType(QDBusConnection::BusType busType);
 

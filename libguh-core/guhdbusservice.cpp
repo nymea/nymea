@@ -25,7 +25,7 @@ namespace guhserver {
 
 QDBusConnection GuhDBusService::s_connection = QDBusConnection::systemBus();
 
-GuhDBusService::GuhDBusService(const QString &objectPath, QObject *parent) : QObject(parent)
+GuhDBusService::GuhDBusService(const QString &objectPath, UserManager *parent) : QObject(parent)
 {
     bool status = s_connection.registerService("io.guh.nymead");
     if (!status) {

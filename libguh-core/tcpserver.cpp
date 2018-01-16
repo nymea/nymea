@@ -57,7 +57,7 @@ TcpServer::TcpServer(const ServerConfiguration &configuration, const QSslConfigu
 /*! Destructor of this \l{TcpServer}. */
 TcpServer::~TcpServer()
 {
-    qCDebug(dcApplication) << "Shutting down \"TCP Server\"" << serverUrl().toString();
+    qCDebug(dcTcpServer()) << "Shutting down \"TCP Server\"" << serverUrl().toString();
     stopServer();
 }
 

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2015-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
@@ -36,6 +36,7 @@
 #include "cloudmanager.h"
 
 #include "time/timemanager.h"
+#include "hardwaremanagerimplementation.h"
 
 #include <QObject>
 
@@ -115,6 +116,7 @@ private:
     LogEngine *m_logger;
     TimeManager *m_timeManager;
     CloudManager *m_cloudManager;
+    HardwareManagerImplementation *m_hardwareManager;
 
     NetworkManager *m_networkManager;
     UserManager *m_userManager;

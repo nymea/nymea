@@ -35,6 +35,7 @@
 #include <QtTest>
 #include <QDebug>
 #include <QMetaType>
+#include <QNetworkRequest>
 #include <QNetworkReply>
 
 using namespace guhserver;

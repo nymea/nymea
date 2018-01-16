@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2016-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -25,35 +25,19 @@
 
 #include <QObject>
 
-#ifdef GPIO433
-#include "radio433transmitter.h"
-#endif
-
 #include "libguh.h"
-#include "radio433brennenstuhlgateway.h"
+#include "hardwareresource.h"
 
-class LIBGUH_EXPORT Radio433 : public QObject
+class LIBGUH_EXPORT Radio433 : public HardwareResource
 {
     Q_OBJECT
+
 public:
-    explicit Radio433(QObject *parent = 0);
-    ~Radio433();
-
-    bool enable();
-    bool disabel();
-
-private:
-    #ifdef GPIO433
-    Radio433Trasmitter *m_transmitter;
-    #endif
-
-    Radio433BrennenstuhlGateway *m_brennenstuhlTransmitter;
-
-private slots:
-    void brennenstuhlAvailableChanged(const bool &available);
+    explicit Radio433(QObject *parent = nullptr);
+    virtual ~Radio433() = default;
 
 public slots:
-    bool sendData(int delay, QList<int> rawData, int repetitions);
+    virtual bool sendData(int delay, QList<int> rawData, int repetitions) = 0;
 
 };
 

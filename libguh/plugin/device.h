@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2015-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
@@ -75,8 +75,8 @@ signals:
     void stateValueChanged(const QUuid &stateTypeId, const QVariant &value);
 
 private:
-    Device(const PluginId &pluginId, const DeviceId &id, const DeviceClassId &deviceClassId, QObject *parent = 0);
-    Device(const PluginId &pluginId, const DeviceClassId &deviceClassId, QObject *parent = 0);
+    Device(const PluginId &pluginId, const DeviceId &id, const DeviceClassId &deviceClassId, QObject *parent = nullptr);
+    Device(const PluginId &pluginId, const DeviceClassId &deviceClassId, QObject *parent = nullptr);
 
     void setupCompleted();
     void setSetupComplete(const bool &complete);

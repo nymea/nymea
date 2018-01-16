@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2015-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
@@ -28,59 +28,8 @@
   \ingroup devices
   \inmodule libguh
 
-  When implementing a new plugin, start by subclassing this and implementing the following
-  pure virtual method \l{DevicePlugin::requiredHardware()}
+
 */
-
-/*!
- \fn DeviceManager::HardwareResources DevicePlugin::requiredHardware() const
- Return flags describing the common hardware resources required by this plugin. If you want to
- use more than one resource, you can combine them ith the OR operator.
-
- \sa DeviceManager::HardwareResource
- */
-
-/*!
- \fn void DevicePlugin::radioData(const QList<int> &rawData)
- If the plugin has requested any radio device using \l{DevicePlugin::requiredHardware()}, this slot will
- be called when there is \a rawData available from that device.
- */
-
-/*!
- \fn void DevicePlugin::guhTimer()
- If the plugin has requested the timer using \l{DevicePlugin::requiredHardware()}, this slot will be called
- on timer events.
- */
-
-/*!
- \fn void DevicePlugin::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList)
- If the plugin has requested the UPnP device list using \l{DevicePlugin::upnpDiscover()}, this slot will be called after 3
- seconds (search timeout). The \a upnpDeviceDescriptorList will contain the description of all UPnP devices available
- in the network.
-
- \sa upnpDiscover(), UpnpDeviceDescriptor, UpnpDiscovery::discoveryFinished()
- */
-
-/*!
- \fn void DevicePlugin::upnpNotifyReceived(const QByteArray &notifyData)
- If a UPnP device will notify a NOTIFY message in the network, the \l{UpnpDiscovery} will catch the
- notification data and call this method with the \a notifyData.
-
- \note Only if if the plugin has requested the \l{DeviceManager::HardwareResourceUpnpDisovery} resource
- using \l{DevicePlugin::requiredHardware()}, this slot will be called.
-
- \sa UpnpDiscovery
- */
-
-/*!
- \fn DevicePlugin::networkManagerReplyReady(QNetworkReply *reply)
- This method will be called whenever a pending network \a reply for this plugin is finished.
-
- \note Only if if the plugin has requested the \l{DeviceManager::HardwareResourceNetworkManager}
- resource using \l{DevicePlugin::requiredHardware()}, this slot will be called.
-
- \sa NetworkAccessManager::replyReady()
- */
 
 /*!
   \fn void DevicePlugin::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
@@ -148,6 +97,7 @@
 
 #include "devicemanager.h"
 #include "guhsettings.h"
+
 #include "hardware/radio433/radio433.h"
 #include "network/upnp/upnpdiscovery.h"
 
@@ -505,6 +455,11 @@ QList<Device *> DevicePlugin::myDevices() const
     return ret;
 }
 
+HardwareManager *DevicePlugin::hardwareManager() const
+{
+    return m_deviceManager->hardwareManager();
+}
+
 /*!
  Find a certain device from myDevices() by its \a params. All parameters must
  match or the device will not be found. Be prepared for nullptrs.
@@ -521,73 +476,6 @@ Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
         if (matching) {
             return device;
         }
-    }
-    return nullptr;
-}
-
-/*!
- Transmits data contained in \a rawData on the \l{Radio433} devices, depending on the hardware requested by this plugin.
- Returns true if, the \a rawData with a certain \a delay (pulse length) can be sent \a repetitions times.
-
- \sa Radio433, requiredHardware()
- */
-bool DevicePlugin::transmitData(int delay, QList<int> rawData, int repetitions)
-{
-    switch (requiredHardware()) {
-    case DeviceManager::HardwareResourceRadio433:
-        return deviceManager()->m_radio433->sendData(delay, rawData, repetitions);
-    default:
-        qCWarning(dcDeviceManager) << "Unknown harware type. Cannot send.";
-    }
-    return false;
-}
-/*! Posts a request to obtain the contents of the target \a request and returns a new QNetworkReply object
- * opened for reading which emits the replyReady() signal whenever new data arrives.
- * The contents as well as associated headers will be downloaded.
- *
- * \note The plugin has to delete the QNetworkReply with the function deleteLater().
- *
- * \sa NetworkAccessManager::get()
- */
-QNetworkReply *DevicePlugin::networkManagerGet(const QNetworkRequest &request)
-{
-    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
-        return deviceManager()->m_networkManager->get(pluginId(), request);
-    } else {
-        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
-    }
-    return nullptr;
-}
-/*! Sends an HTTP POST request to the destination specified by \a request and returns a new QNetworkReply object
- * opened for reading that will contain the reply sent by the server. The contents of the \a data will be
- * uploaded to the server.
- *
- * \note The plugin has to delete the QNetworkReply with the function deleteLater().
- *
- * \sa NetworkAccessManager::post()
- */
-QNetworkReply *DevicePlugin::networkManagerPost(const QNetworkRequest &request, const QByteArray &data)
-{
-    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
-        return deviceManager()->m_networkManager->post(pluginId(), request, data);
-    } else {
-        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
-    }
-    return nullptr;
-}
-
-/*! Uploads the contents of \a data to the destination \a request and returnes a new QNetworkReply object that will be open for reply.
- *
- * \note The plugin has to delete the QNetworkReply with the function deleteLater().
- *
- * \sa NetworkAccessManager::put()
- */
-QNetworkReply *DevicePlugin::networkManagerPut(const QNetworkRequest &request, const QByteArray &data)
-{
-    if (requiredHardware().testFlag(DeviceManager::HardwareResourceNetworkManager)) {
-        return deviceManager()->m_networkManager->put(pluginId(), request, data);
-    } else {
-        qCWarning(dcDeviceManager) << "Network manager hardware resource not set for plugin" << pluginName();
     }
     return nullptr;
 }
@@ -1005,40 +893,6 @@ void DevicePlugin::loadMetaData()
         }
     }
 }
-
-/*!
- Starts a SSDP search for a certain \a searchTarget (ST). Certain UPnP devices need a special ST (i.e. "udap:rootservice"
- for LG Smart Tv's), otherwise they will not respond on the SSDP search. Each HTTP request to this device needs sometimes
- also a special \a userAgent, which will be written into the HTTP header.
-
- \sa DevicePlugin::requiredHardware(), DevicePlugin::upnpDiscoveryFinished()
- */
-void DevicePlugin::upnpDiscover(QString searchTarget, QString userAgent)
-{
-    if(requiredHardware().testFlag(DeviceManager::HardwareResourceUpnpDisovery)){
-        deviceManager()->m_upnpDiscovery->discoverDevices(searchTarget, userAgent, pluginId());
-    } else {
-        qCWarning(dcDeviceManager) << "UPnP discovery resource not set for plugin" << pluginName();
-    }
-}
-
-/*! Returns the pointer to the central \l{QtAvahiService}{service} browser. */
-QtAvahiServiceBrowser *DevicePlugin::avahiServiceBrowser() const
-{
-    return deviceManager()->m_avahiBrowser;
-}
-
-#ifdef BLUETOOTH_LE
-bool DevicePlugin::discoverBluetooth()
-{
-    if(requiredHardware().testFlag(DeviceManager::HardwareResourceBluetoothLE)){
-        return deviceManager()->m_bluetoothScanner->discover(pluginId());
-    } else {
-        qCWarning(dcDeviceManager) << "Bluetooth LE resource not set for plugin" << pluginName();
-    }
-    return false;
-}
-#endif
 
 QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObject &value) const
 {

@@ -34,6 +34,8 @@
 #include <QVariantMap>
 #include <QSignalSpy>
 #include <QtTest>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 
 extern DeviceClassId mockDeviceClassId;
 extern DeviceClassId mockDeviceAutoClassId;

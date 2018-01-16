@@ -1,3 +1,10 @@
+guh (0.8.2) xenial; urgency=medium
+
+  * New hardware manager api
+  * Introduce push button authentication
+
+ -- Simon Stürz <simon.stuerz@guh.io>  Fri, 01 Dec 2017 07:56:26 +0100
+
 guh (0.8.1) xenial; urgency=medium
 
   * Avahi interfaces and collision handling

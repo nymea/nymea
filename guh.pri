@@ -34,11 +34,6 @@ debian {
     QMAKE_LFLAGS   *= $(shell dpkg-buildflags --get LDFLAGS)
 }
 
-# Check for Bluetoot LE support (Qt >= 5.4)
-equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 3) {
-    DEFINES += BLUETOOTH_LE
-}
-
 # Enable coverage option    
 coverage {
     # Note: this works only if you build in the source dir
@@ -87,11 +82,6 @@ coverage {
         "rm -rf $${top_srcdir}/coverage.xml"
 
     QMAKE_CLEAN += *.gcda *.gcno coverage.info coverage.xml
-}
-
-# Enable Radio 433 MHz for GPIO's
-enable433gpio {
-    DEFINES += GPIO433
 }
 
 

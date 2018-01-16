@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2015-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
@@ -121,13 +121,33 @@ GuhCore *GuhCore::instance()
 GuhCore::~GuhCore()
 {
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), false);
+
+    // Make sure DeviceManager is teared down at first so plugins don't access any ressources any more.
+    qCDebug(dcApplication) << "Shutting down \"Device Manager\"";
+    delete m_deviceManager;
+
+    qCDebug(dcApplication) << "Shutting down \"Log Engine\"";
+    delete m_logger;
+
+    qCDebug(dcApplication()) << "Shutting down \"Hardware Manager\"";
+    delete m_hardwareManager;
+
+    qCDebug(dcApplication) << "Shutting down \"Rule Engine\"";
+    delete m_ruleEngine;
+
+    qCDebug(dcApplication) << "Shutting down \"Server Manager\"";
+    delete m_serverManager;
+
+    qCDebug(dcApplication) << "Shutting down \"CloudManager\"";
+    delete m_cloudManager;
 }
 
 /*! Destroyes the \l{GuhCore} instance. */
 void GuhCore::destroy()
 {
-    if (s_instance)
+    if (s_instance) {
         delete s_instance;
+    }
 
     s_instance = 0;
 }
@@ -432,8 +452,11 @@ void GuhCore::init() {
     qCDebug(dcApplication) << "Creating Log Engine";
     m_logger = new LogEngine(GuhSettings::logPath(), this);
 
+    qCDebug(dcApplication) << "Creating Hardware Manager";
+    m_hardwareManager = new HardwareManagerImplementation(this);
+
     qCDebug(dcApplication) << "Creating Device Manager (locale:" << m_configuration->locale() << ")";
-    m_deviceManager = new DeviceManager(m_configuration->locale(), this);
+    m_deviceManager = new DeviceManager(m_hardwareManager, m_configuration->locale(), this);
 
     qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);

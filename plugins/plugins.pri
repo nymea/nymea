@@ -3,12 +3,7 @@ include(../guh.pri)
 TEMPLATE = lib
 CONFIG += plugin
 
-QT += network
-
-# Check Bluetooth LE support
-contains(DEFINES, BLUETOOTH_LE) {
-    QT += bluetooth
-}
+QT += network bluetooth
 
 INCLUDEPATH += $$top_srcdir/libguh
 LIBS += -L../../libguh -lguh

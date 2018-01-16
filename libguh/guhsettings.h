@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015-2017 Simon Stürz <simon.stuerz@guh.io>              *
+ *  Copyright (C) 2015-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -43,7 +43,7 @@ public:
         SettingsRoleDeviceStates
     };
 
-    explicit GuhSettings(const SettingsRole &role = SettingsRoleNone, QObject *parent = 0);
+    explicit GuhSettings(const SettingsRole &role = SettingsRoleNone, QObject *parent = nullptr);
     ~GuhSettings();
 
     SettingsRole settingsRole() const;

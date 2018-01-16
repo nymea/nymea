@@ -4,8 +4,8 @@ TARGET = guh-core
 include(../guh.pri)
 
 QT += sql
-INCLUDEPATH += $$top_srcdir/libguh jsonrpc
-LIBS += -L$$top_builddir/libguh/ -lguh -lssl -lcrypto
+INCLUDEPATH += $$top_srcdir/libguh $$top_srcdir jsonrpc
+LIBS += -L$$top_builddir/libguh/ -lguh -lssl -lcrypto -lavahi-common -lavahi-client
 
 target.path = /usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')
 INSTALLS += target
@@ -76,7 +76,25 @@ HEADERS += guhcore.h \
     MbedTLS/MbedTLSConnection.hpp \
     janusconnector.h \
     pushbuttondbusservice.h \
-    guhdbusservice.h
+    guhdbusservice.h \
+    hardwaremanagerimplementation.h \
+    hardware/plugintimermanagerimplementation.h \
+    hardware/radio433/radio433brennenstuhl.h \
+    hardware/radio433/radio433transmitter.h \
+    hardware/radio433/radio433brennenstuhlgateway.h \
+    hardware/bluetoothlowenergy/bluetoothlowenergymanagerimplementation.h \
+    hardware/bluetoothlowenergy/bluetoothlowenergydeviceimplementation.h \
+    hardware/bluetoothlowenergy/bluetoothdiscoveryreplyimplementation.h \
+    hardware/network/networkaccessmanagerimpl.h \
+    hardware/network/upnp/upnpdiscoveryimplementation.h \
+    hardware/network/upnp/upnpdiscoveryrequest.h \
+    hardware/network/upnp/upnpdiscoveryreplyimplementation.h \
+    hardware/network/avahi/qt-watch.h \
+    hardware/network/avahi/qtavahiclient.h \
+    hardware/network/avahi/qtavahiservice.h \
+    hardware/network/avahi/qtavahiservice_p.h \
+    hardware/network/avahi/qtavahiservicebrowserimplementation.h \
+    hardware/network/avahi/qtavahiservicebrowserimplementation_p.h \
 
 
 SOURCES += guhcore.cpp \
@@ -136,4 +154,22 @@ SOURCES += guhcore.cpp \
     MbedTLS/MbedTLSConnection.cpp \
     janusconnector.cpp \
     pushbuttondbusservice.cpp \
-    guhdbusservice.cpp
+    guhdbusservice.cpp \
+    hardwaremanagerimplementation.cpp \
+    hardware/plugintimermanagerimplementation.cpp \
+    hardware/radio433/radio433brennenstuhl.cpp \
+    hardware/radio433/radio433transmitter.cpp \
+    hardware/radio433/radio433brennenstuhlgateway.cpp \
+    hardware/bluetoothlowenergy/bluetoothlowenergymanagerimplementation.cpp \
+    hardware/bluetoothlowenergy/bluetoothlowenergydeviceimplementation.cpp \
+    hardware/bluetoothlowenergy/bluetoothdiscoveryreplyimplementation.cpp \
+    hardware/network/networkaccessmanagerimpl.cpp \
+    hardware/network/upnp/upnpdiscoveryimplementation.cpp \
+    hardware/network/upnp/upnpdiscoveryrequest.cpp \
+    hardware/network/upnp/upnpdiscoveryreplyimplementation.cpp \
+    hardware/network/avahi/qt-watch.cpp \
+    hardware/network/avahi/qtavahiclient.cpp \
+    hardware/network/avahi/qtavahiservice.cpp \
+    hardware/network/avahi/qtavahiservice_p.cpp \
+    hardware/network/avahi/qtavahiservicebrowserimplementation.cpp \
+    hardware/network/avahi/qtavahiservicebrowserimplementation_p.cpp \

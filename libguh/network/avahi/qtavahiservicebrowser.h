@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2016-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -27,38 +27,23 @@
 #include <avahi-client/lookup.h>
 
 #include "libguh.h"
-#include "qtavahiclient.h"
+#include "hardwareresource.h"
 #include "avahiserviceentry.h"
 
-class QtAvahiServiceBrowserPrivate;
-
-class LIBGUH_EXPORT QtAvahiServiceBrowser : public QObject
+class LIBGUH_EXPORT QtAvahiServiceBrowser : public HardwareResource
 {
     Q_OBJECT
+
 public:
-    explicit QtAvahiServiceBrowser(QObject *parent = 0);
-    ~QtAvahiServiceBrowser();
+    explicit QtAvahiServiceBrowser(QObject *parent = nullptr);
+    virtual ~QtAvahiServiceBrowser() = default;
 
-    void enable();
-
-    QList<AvahiServiceEntry> serviceEntries() const;
+    virtual QList<AvahiServiceEntry> serviceEntries() const = 0;
 
 signals:
     void serviceEntryAdded(const AvahiServiceEntry &entry);
     void serviceEntryRemoved(const AvahiServiceEntry &entry);
 
-private slots:
-    void onClientStateChanged(const QtAvahiClient::QtAvahiClientState &state);
-
-private:
-    QtAvahiServiceBrowserPrivate *d_ptr;
-
-    QList<AvahiServiceEntry> m_serviceEntries;
-    QStringList m_serviceTypes;
-
-    void createServiceBrowser(const char* serviceType);
-
-    Q_DECLARE_PRIVATE(QtAvahiServiceBrowser)
 };
 
 #endif // QTAVAHISERVICEBROWSER_H

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015-2017 Simon Stürz <simon.stuerz@guh.io>              *
+ *  Copyright (C) 2015-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -48,6 +48,8 @@ Q_DECLARE_LOGGING_CATEGORY(dcJsonRpcTraffic)
 Q_DECLARE_LOGGING_CATEGORY(dcRest)
 Q_DECLARE_LOGGING_CATEGORY(dcOAuth2)
 Q_DECLARE_LOGGING_CATEGORY(dcAvahi)
+Q_DECLARE_LOGGING_CATEGORY(dcUpnp)
+Q_DECLARE_LOGGING_CATEGORY(dcBluetooth)
 Q_DECLARE_LOGGING_CATEGORY(dcCloud)
 Q_DECLARE_LOGGING_CATEGORY(dcNetworkManager)
 Q_DECLARE_LOGGING_CATEGORY(dcUserManager)

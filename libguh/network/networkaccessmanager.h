@@ -25,6 +25,7 @@
 
 #include "libguh.h"
 #include "typeutils.h"
+#include "hardwareresource.h"
 
 #include <QObject>
 #include <QNetworkAccessManager>
@@ -33,25 +34,27 @@
 #include <QDebug>
 #include <QUrl>
 
-class LIBGUH_EXPORT NetworkAccessManager : public QObject
+class LIBGUH_EXPORT NetworkAccessManager : public HardwareResource
 {
     Q_OBJECT
+
 public:
-    explicit NetworkAccessManager(QObject *parent = 0);
+    NetworkAccessManager(QObject *parent = nullptr);
+    virtual ~NetworkAccessManager() = default;
 
-    QNetworkReply *get(const PluginId &pluginId, const QNetworkRequest &request);
-    QNetworkReply *post(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data);
-    QNetworkReply *put(const PluginId &pluginId, const QNetworkRequest &request, const QByteArray &data);
+    virtual QNetworkReply *get(const QNetworkRequest &request) = 0;
+    virtual QNetworkReply *deleteResource(const QNetworkRequest &request) = 0;
+    virtual QNetworkReply *head(const QNetworkRequest &request) = 0;
 
-private:
-    QNetworkAccessManager *m_manager;
-    QHash<QNetworkReply *, PluginId> m_replies;
+    virtual QNetworkReply *post(const QNetworkRequest &request, QIODevice *data) = 0;
+    virtual QNetworkReply *post(const QNetworkRequest &request, const QByteArray &data) = 0;
+    virtual QNetworkReply *post(const QNetworkRequest &request, QHttpMultiPart *multiPart) = 0;
 
-signals:
-    void replyReady(const PluginId &pluginId, QNetworkReply *reply);
+    virtual QNetworkReply *put(const QNetworkRequest &request, QIODevice *data) = 0;
+    virtual QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data) = 0;
+    virtual QNetworkReply *put(const QNetworkRequest &request, QHttpMultiPart *multiPart) = 0;
 
-private slots:
-    void replyFinished(QNetworkReply *reply);
+    virtual QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = nullptr) = 0;
 
 };
 

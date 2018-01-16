@@ -32,7 +32,7 @@ class LIBGUH_EXPORT UpnpDevice : public QObject
 {
     Q_OBJECT
 public:
-    explicit UpnpDevice(QObject *parent = 0, UpnpDeviceDescriptor upnpDeviceDescriptor = UpnpDeviceDescriptor());
+    explicit UpnpDevice(QObject *parent = nullptr, UpnpDeviceDescriptor upnpDeviceDescriptor = UpnpDeviceDescriptor());
 
     QUrl location();
     void setLocation(const QUrl &location);

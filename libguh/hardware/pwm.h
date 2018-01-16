@@ -67,7 +67,7 @@ public:
         PolarityInvalid
     };
 
-    explicit Pwm(int chipNumber, QObject *parent = 0);
+    explicit Pwm(int chipNumber, QObject *parent = nullptr);
     ~Pwm();
 
     static bool isAvailable();

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2015-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
@@ -35,25 +35,25 @@
 #include "types/vendor.h"
 #include "types/param.h"
 
-#ifdef BLUETOOTH_LE
-#include <QBluetoothDeviceInfo>
-#endif
-
 #include <QObject>
 #include <QMetaEnum>
 #include <QJsonObject>
 #include <QMetaObject>
 #include <QTranslator>
 #include <QPair>
+#include <QBluetoothDeviceInfo>
 
-class DeviceManager;
 class Device;
+class DeviceManager;
 
 class LIBGUH_EXPORT DevicePlugin: public QObject
 {
     Q_OBJECT
+
+    friend class DeviceManager;
+
 public:
-    DevicePlugin(QObject *parent = 0);
+    DevicePlugin(QObject *parent = nullptr);
     virtual ~DevicePlugin();
 
     virtual void init() {}
@@ -66,8 +66,6 @@ public:
     QTranslator *translator();
     bool setLocale(const QLocale &locale);
 
-    virtual DeviceManager::HardwareResources requiredHardware() const = 0;
-
     virtual void startMonitoringAutoDevices();
     virtual DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
 
@@ -79,19 +77,6 @@ public:
     virtual DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret);
 
     virtual DeviceManager::DeviceError executeAction(Device *device, const Action &action);
-
-    // Hardware input
-    virtual void radioData(const QList<int> &rawData) {Q_UNUSED(rawData)}
-    virtual void guhTimer() {}
-    virtual void upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &upnpDeviceDescriptorList) { Q_UNUSED(upnpDeviceDescriptorList) }
-    virtual void upnpNotifyReceived(const QByteArray &notifyData) {Q_UNUSED(notifyData)}
-
-    virtual void networkManagerReplyReady(QNetworkReply *reply) {Q_UNUSED(reply)}
-
-    #ifdef BLUETOOTH_LE
-    virtual void bluetoothDiscoveryFinished(const QList<QBluetoothDeviceInfo> &deviceInfos) { Q_UNUSED(deviceInfos) }
-    #endif
-
 
     // Configuration
     QList<ParamType> configurationDescription() const;
@@ -113,26 +98,8 @@ signals:
 protected:
     DeviceManager *deviceManager() const;
     QList<Device*> myDevices() const;
+    HardwareManager *hardwareManager() const;
     Device* findDeviceByParams(const ParamList &params) const;
-
-    // Radio 433
-    bool transmitData(int delay, QList<int> rawData, int repetitions = 10);
-
-    // UPnP dicovery
-    void upnpDiscover(QString searchTarget = "ssdp:all", QString userAgent = QString());
-
-    // Avahi browse services
-    QtAvahiServiceBrowser *avahiServiceBrowser() const;
-
-    // Bluetooth LE discovery
-    #ifdef BLUETOOTH_LE
-    bool discoverBluetooth();
-    #endif
-
-    // Network manager
-    QNetworkReply *networkManagerGet(const QNetworkRequest &request);
-    QNetworkReply *networkManagerPost(const QNetworkRequest &request, const QByteArray &data);
-    QNetworkReply *networkManagerPut(const QNetworkRequest &request, const QByteArray &data);
 
 private:
     void setMetaData(const QJsonObject &metaData);
@@ -154,8 +121,8 @@ private:
     static QVariantMap loadInterface(const QString &name);
     static QStringList generateInterfaceParentList(const QString &interface);
 
-    QTranslator *m_translator;
-    DeviceManager *m_deviceManager;
+    QTranslator *m_translator = nullptr;
+    DeviceManager *m_deviceManager = nullptr;
 
     QList<ParamType> m_configurationDescription;
     ParamList m_config;
@@ -164,7 +131,6 @@ private:
 
     mutable QList<DeviceClass> m_supportedDevices;
 
-    friend class DeviceManager;
 };
 
 Q_DECLARE_INTERFACE(DevicePlugin, "guru.guh.DevicePlugin")

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015-2017 Simon Stürz <simon.stuerz@guh.io>              *
+ *  Copyright (C) 2015-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -40,6 +40,8 @@ Q_LOGGING_CATEGORY(dcJsonRpcTraffic, "JsonRpcTraffic")
 Q_LOGGING_CATEGORY(dcRest, "Rest")
 Q_LOGGING_CATEGORY(dcOAuth2, "OAuth2")
 Q_LOGGING_CATEGORY(dcAvahi, "Avahi")
+Q_LOGGING_CATEGORY(dcUpnp, "UPnP")
+Q_LOGGING_CATEGORY(dcBluetooth, "Bluetooth")
 Q_LOGGING_CATEGORY(dcCloud, "Cloud")
 Q_LOGGING_CATEGORY(dcNetworkManager, "NetworkManager")
 Q_LOGGING_CATEGORY(dcUserManager, "UserManager")

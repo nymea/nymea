@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015-2017 Simon Stürz <simon.stuerz@guh.io>              *
+ *  Copyright (C) 2015-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
  *                                                                         *
  *  This file is part of guh.                                              *
@@ -32,25 +32,6 @@
 
     It is also responsible for loading Plugins and managing common hardware resources between
     \l{DevicePlugin}{device plugins}.
-*/
-
-/*! \enum DeviceManager::HardwareResource
-
-    This enum type specifies hardware resources which can be requested by \l{DevicePlugin}{DevicePlugins}.
-
-    \value HardwareResourceNone
-        No Resource required.
-    \value HardwareResourceRadio433
-        Refers to the 433 MHz radio.
-    \value HardwareResourceTimer
-        Refers to the global timer managed by the \l{DeviceManager}. Plugins should not create their own timers,
-        but rather request the global timer using the hardware resources.
-    \value HardwareResourceNetworkManager
-        Allows to send network requests and receive replies.
-    \value HardwareResourceUpnpDisovery
-        Allows to search a UPnP devices in the network.
-    \value HardwareResourceBluetoothLE
-        Allows to interact with bluetooth low energy devices.
 */
 
 /*! \enum DeviceManager::DeviceError
@@ -179,13 +160,13 @@
 #include "devicemanager.h"
 #include "loggingcategories.h"
 
-#include "hardware/radio433/radio433.h"
-
 #include "plugin/devicepairinginfo.h"
 #include "plugin/deviceplugin.h"
 #include "typeutils.h"
 #include "guhsettings.h"
 #include "unistd.h"
+
+#include "plugintimer.h"
 
 #include <QPluginLoader>
 #include <QStaticPlugin>
@@ -198,48 +179,19 @@
 
 /*! Constructs the DeviceManager with the given \a locale and \a parent. There should only be one DeviceManager in the system created by \l{guhserver::GuhCore}.
  *  Use \c guhserver::GuhCore::instance()->deviceManager() instead to access the DeviceManager. */
-DeviceManager::DeviceManager(const QLocale &locale, QObject *parent) :
+DeviceManager::DeviceManager(HardwareManager *hardwareManager, const QLocale &locale, QObject *parent) :
     QObject(parent),
-    m_locale(locale),
-    m_radio433(0)
+    m_hardwareManager(hardwareManager),
+    m_locale(locale)
 {
     qRegisterMetaType<DeviceClassId>();
     qRegisterMetaType<DeviceDescriptor>();
-
-    m_pluginTimer.setInterval(10000);
-    connect(&m_pluginTimer, &QTimer::timeout, this, &DeviceManager::timerEvent);
-
-    m_radio433 = new Radio433(this);
-    m_radio433->enable();
-
-    // Network manager
-    m_networkManager = new NetworkAccessManager(this);
-    connect(m_networkManager, &NetworkAccessManager::replyReady, this, &DeviceManager::replyReady);
-
-    // UPnP discovery
-    m_upnpDiscovery = new UpnpDiscovery(this);
-    connect(m_upnpDiscovery, &UpnpDiscovery::discoveryFinished, this, &DeviceManager::upnpDiscoveryFinished);
-    connect(m_upnpDiscovery, &UpnpDiscovery::upnpNotify, this, &DeviceManager::upnpNotifyReceived);
-
-    // Avahi Browser
-    m_avahiBrowser = new QtAvahiServiceBrowser(this);
-    m_avahiBrowser->enable();
-
-    // Bluetooth LE
-#ifdef BLUETOOTH_LE
-    m_bluetoothScanner = new BluetoothScanner(this);
-    if (!m_bluetoothScanner->isAvailable()) {
-        delete m_bluetoothScanner;
-        m_bluetoothScanner = 0;
-    } else {
-        connect(m_bluetoothScanner, &BluetoothScanner::bluetoothDiscoveryFinished, this, &DeviceManager::bluetoothDiscoveryFinished);
-    }
-#endif
 
     // Give hardware a chance to start up before loading plugins etc.
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "startMonitoringAutoDevices", Qt::QueuedConnection);
+
     // Make sure this is always emitted after plugins and devices are loaded
     QMetaObject::invokeMethod(this, "onLoaded", Qt::QueuedConnection);
 }
@@ -247,7 +199,6 @@ DeviceManager::DeviceManager(const QLocale &locale, QObject *parent) :
 /*! Destructor of the DeviceManager. Each loaded \l{DevicePlugin} will be deleted. */
 DeviceManager::~DeviceManager()
 {
-    qCDebug(dcApplication) << "Shutting down \"Device Manager\"";
     foreach (Device *device, m_configuredDevices) {
         storeDeviceStates(device);
     }
@@ -335,6 +286,11 @@ void DeviceManager::setLocale(const QLocale &locale)
     }
 
     emit languageUpdated();
+}
+
+HardwareManager *DeviceManager::hardwareManager() const
+{
+    return m_hardwareManager;
 }
 
 /*! Returns all the \l{DevicePlugin}{DevicePlugins} loaded in the system. */
@@ -768,22 +724,6 @@ DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const DeviceId 
     }
     m_devicePlugins.value(device->pluginId())->deviceRemoved(device);
 
-    // check if this plugin still needs the guhTimer call
-    bool pluginNeedsTimer = false;
-    foreach (Device* d, m_configuredDevices) {
-        if (d->pluginId() == device->pluginId()) {
-            pluginNeedsTimer = true;
-            break;
-        }
-    }
-
-    // if this plugin doesn't need any longer the guhTimer call
-    if (!pluginNeedsTimer) {
-        m_pluginTimerUsers.removeAll(plugin(device->pluginId()));
-        if (m_pluginTimerUsers.isEmpty()) {
-            m_pluginTimer.stop();
-        }
-    }
     device->deleteLater();
 
     GuhSettings settings(GuhSettings::SettingsRoleDevices);
@@ -1243,18 +1183,6 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
         storeConfiguredDevices();
     }
 
-    DevicePlugin *plugin = m_devicePlugins.value(device->pluginId());
-    if (plugin->requiredHardware().testFlag(HardwareResourceTimer)) {
-        if (!m_pluginTimer.isActive()) {
-            m_pluginTimer.start();
-            // Additionally fire off one event to initialize stuff
-            QTimer::singleShot(0, this, SLOT(timerEvent()));
-        }
-        if (!m_pluginTimerUsers.contains(plugin)) {
-            m_pluginTimerUsers.append(plugin);
-        }
-    }
-
     // if this is a async device edit result
     if (m_asyncDeviceReconfiguration.contains(device)) {
         m_asyncDeviceReconfiguration.removeAll(device);
@@ -1450,75 +1378,6 @@ void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const 
     emit eventTriggered(event);
 }
 
-void DeviceManager::radio433SignalReceived(QList<int> rawData)
-{
-    QList<DevicePlugin*> targetPlugins;
-
-    foreach (Device *device, m_configuredDevices) {
-        DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
-        DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
-        if (plugin->requiredHardware().testFlag(HardwareResourceRadio433) && !targetPlugins.contains(plugin)) {
-            targetPlugins.append(plugin);
-        }
-    }
-    foreach (DevicePlugin *plugin, m_discoveringPlugins) {
-        if (plugin->requiredHardware().testFlag(HardwareResourceRadio433) && !targetPlugins.contains(plugin)) {
-            targetPlugins.append(plugin);
-        }
-    }
-
-    foreach (DevicePlugin *plugin, targetPlugins) {
-        plugin->radioData(rawData);
-    }
-}
-
-void DeviceManager::replyReady(const PluginId &pluginId, QNetworkReply *reply)
-{
-    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
-        if (devicePlugin->requiredHardware().testFlag(HardwareResourceNetworkManager) && devicePlugin->pluginId() == pluginId) {
-            devicePlugin->networkManagerReplyReady(reply);
-        }
-    }
-}
-
-void DeviceManager::upnpDiscoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId &pluginId)
-{
-    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
-        if (devicePlugin->requiredHardware().testFlag(HardwareResourceUpnpDisovery) && devicePlugin->pluginId() == pluginId) {
-            devicePlugin->upnpDiscoveryFinished(deviceDescriptorList);
-        }
-    }
-}
-
-void DeviceManager::upnpNotifyReceived(const QByteArray &notifyData)
-{
-    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
-        if (devicePlugin->requiredHardware().testFlag(HardwareResourceUpnpDisovery)) {
-            devicePlugin->upnpNotifyReceived(notifyData);
-        }
-    }
-}
-
-#ifdef BLUETOOTH_LE
-void DeviceManager::bluetoothDiscoveryFinished(const PluginId &pluginId, const QList<QBluetoothDeviceInfo> &deviceInfos)
-{
-    foreach (DevicePlugin *devicePlugin, m_devicePlugins) {
-        if (devicePlugin->requiredHardware().testFlag(HardwareResourceBluetoothLE) && devicePlugin->pluginId() == pluginId) {
-            devicePlugin->bluetoothDiscoveryFinished(deviceInfos);
-        }
-    }
-}
-#endif
-
-void DeviceManager::timerEvent()
-{
-    foreach (DevicePlugin *plugin, m_pluginTimerUsers) {
-        if (plugin->requiredHardware().testFlag(HardwareResourceTimer)) {
-            plugin->guhTimer();
-        }
-    }
-}
-
 bool DeviceManager::verifyPluginMetadata(const QJsonObject &data)
 {
     QStringList requiredFields;
@@ -1555,19 +1414,6 @@ DeviceManager::DeviceSetupStatus DeviceManager::setupDevice(Device *device)
     DeviceSetupStatus status = plugin->setupDevice(device);
     if (status != DeviceSetupStatusSuccess) {
         return status;
-    }
-
-    if (plugin->requiredHardware().testFlag(HardwareResourceTimer)) {
-
-        if (!m_pluginTimer.isActive()) {
-            m_pluginTimer.start();
-            // Additionally fire off one event to initialize stuff
-            QTimer::singleShot(0, this, SLOT(timerEvent()));
-        }
-
-        if (!m_pluginTimerUsers.contains(plugin)) {
-            m_pluginTimerUsers.append(plugin);
-        }
     }
 
     connect(device, SIGNAL(stateValueChanged(QUuid,QVariant)), this, SLOT(slotDeviceStateValueChanged(QUuid,QVariant)));

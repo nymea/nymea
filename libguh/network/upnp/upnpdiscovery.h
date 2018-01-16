@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2015-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -31,52 +31,29 @@
 #include <QNetworkRequest>
 #include <QUrl>
 
-#include "upnpdiscoveryrequest.h"
-#include "upnpdevicedescriptor.h"
-#include "devicemanager.h"
 #include "libguh.h"
+#include "devicemanager.h"
+#include "hardwareresource.h"
+#include "upnpdiscoveryreply.h"
+#include "upnpdevicedescriptor.h"
 
 // Discovering UPnP devices reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
 // guh basic device reference: http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
 
-class UpnpDiscoveryRequest;
-
-class LIBGUH_EXPORT UpnpDiscovery : public QUdpSocket
+class LIBGUH_EXPORT UpnpDiscovery : public HardwareResource
 {
     Q_OBJECT
+
 public:
-    explicit UpnpDiscovery(QObject *parent = 0);
-    ~UpnpDiscovery();
+    explicit UpnpDiscovery(QObject *parent = nullptr);
+    virtual ~UpnpDiscovery() = default;
 
-    bool discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = "", const PluginId &pluginId = PluginId());
-    void sendToMulticast(const QByteArray &data);
-
-private:
-    QHostAddress m_host;
-    qint16 m_port;
-
-    QTimer *m_notificationTimer;
-
-    QNetworkAccessManager *m_networkAccessManager;
-
-    QList<UpnpDiscoveryRequest *> m_discoverRequests;
-    QHash<QNetworkReply*,UpnpDeviceDescriptor> m_informationRequestList;
-
-    void requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor);
-    void respondToSearchRequest(QHostAddress host, int port);
+    virtual UpnpDiscoveryReply *discoverDevices(const QString &searchTarget = "ssdp:all", const QString &userAgent = QString(), const int &timeout = 5000) = 0;
+    virtual void sendToMulticast(const QByteArray &data) = 0;
 
 signals:
-    void discoveryFinished(const QList<UpnpDeviceDescriptor> &deviceDescriptorList, const PluginId & pluginId);
     void upnpNotify(const QByteArray &notifyMessage);
 
-private slots:
-    void error(QAbstractSocket::SocketError error);
-    void readData();
-    void replyFinished(QNetworkReply *reply);
-    void notificationTimeout();
-    void sendByeByeMessage();
-    void sendAliveMessage();
-    void discoverTimeout();
 };
 
 #endif // UPNPDISCOVERY_H

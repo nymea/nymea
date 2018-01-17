@@ -24,8 +24,9 @@
 #define HARDWARERESOURCE_H
 
 #include <QObject>
+#include "nymeadbusservice.h"
 
-class HardwareResource : public QObject
+class HardwareResource : public NymeaDBusService
 {
     Q_OBJECT
 

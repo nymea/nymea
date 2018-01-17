@@ -27,3 +27,8 @@ BluetoothLowEnergyManager::BluetoothLowEnergyManager(QObject *parent) :
     HardwareResource("Bluetooth LE manager", parent)
 {
 }
+
+void BluetoothLowEnergyManager::EnableBluetooth(bool enabled)
+{
+    setEnabled(enabled);
+}

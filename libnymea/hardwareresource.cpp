@@ -25,7 +25,7 @@
 #include "loggingcategories.h"
 
 HardwareResource::HardwareResource(const QString &name, QObject *parent) :
-    QObject(parent),
+    NymeaDBusService("/io/guh/nymead/HardwareManager/" + name, parent),
     m_name(name)
 {
 

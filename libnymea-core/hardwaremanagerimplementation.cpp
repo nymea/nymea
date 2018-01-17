@@ -74,23 +74,6 @@ HardwareManagerImplementation::HardwareManagerImplementation(QObject *parent) :
 
     if (m_bluetoothLowEnergyManager->available())
         setResourceEnabled(m_bluetoothLowEnergyManager, true);
-
-    // Register D-Bus interface for enable/disable hardware resources
-
-    // FIXME: use HardwareManagerDBusService in the source tree instead of direct implementation
-    bool status = QDBusConnection::systemBus().registerService("io.guh.nymead");
-    if (!status) {
-        qCWarning(dcHardware()) << "Failed to register HardwareManager D-Bus service. HardwareManager D-Bus control will not work.";
-        return;
-    }
-
-    status = QDBusConnection::systemBus().registerObject("/io/guh/nymead/HardwareManager", this, QDBusConnection::ExportScriptableContents);
-    if (!status) {
-        qCWarning(dcHardware()) << "Failed to register HardwareManager D-Bus object. HardwareManager D-Bus control will not work.";
-        return;
-    }
-
-    qCDebug(dcHardware()) << "HardwareManager D-Bus service set up.";
 }
 
 HardwareManagerImplementation::~HardwareManagerImplementation()
@@ -125,17 +108,6 @@ QtAvahiServiceBrowser *HardwareManagerImplementation::avahiBrowser()
 BluetoothLowEnergyManager *HardwareManagerImplementation::bluetoothLowEnergyManager()
 {
     return m_bluetoothLowEnergyManager;
-}
-
-void HardwareManagerImplementation::EnableBluetooth(const bool &enabled)
-{
-    qCDebug(dcHardware()) << "Bluetooth hardware resource" << (enabled ? "enabled" : "disabled");
-
-    if (enabled) {
-        setResourceEnabled(m_bluetoothLowEnergyManager, true);
-    } else {
-        setResourceEnabled(m_bluetoothLowEnergyManager, false);
-    }
 }
 
 }

@@ -43,7 +43,6 @@ namespace nymeaserver {
 class HardwareManagerImplementation : public HardwareManager
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "io.guh.nymead")
 
 public:
     explicit HardwareManagerImplementation(QObject *parent = nullptr);
@@ -55,9 +54,6 @@ public:
     UpnpDiscovery *upnpDiscovery() override;
     QtAvahiServiceBrowser *avahiBrowser() override;
     BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
-
-     // D-Bus method for enable/disable bluetooth support
-    Q_SCRIPTABLE void EnableBluetooth(const bool &enabled);
 
 private:
     QNetworkAccessManager *m_networkAccessManager = nullptr;

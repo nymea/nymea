@@ -214,7 +214,7 @@ QStringList DeviceManager::pluginSearchDirs()
     QStringList searchDirs;
     QByteArray envPath = qgetenv("GUH_PLUGINS_PATH");
     if (!envPath.isEmpty()) {
-        searchDirs << envPath;
+        searchDirs << QString(envPath).split(':');
     }
     searchDirs << QCoreApplication::applicationDirPath() + "/../lib/guh/plugins";
     searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";

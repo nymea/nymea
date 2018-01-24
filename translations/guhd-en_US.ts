@@ -44,12 +44,12 @@ Categories are:</translation>
     <message>
         <location filename="../server/main.cpp" line="198"/>
         <source>Specify a log file to write to, If this option is not specified, logs will be printed to the standard output.</source>
-        <translation type="unfinished"></translation>
+        <translation>Specify a log file to write to, If this option is not specified, logs will be printed to the standard output.</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="201"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished"></translation>
+        <translation>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="238"/>

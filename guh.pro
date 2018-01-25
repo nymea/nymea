@@ -20,7 +20,25 @@ licensecheck.commands = $$top_srcdir/tests/auto/checklicenseheaders.sh $$top_src
 test.depends = licensecheck
 test.commands = LD_LIBRARY_PATH=$$top_builddir/libguh-core:$$top_builddir/libguh make check
 
-QMAKE_EXTRA_TARGETS += licensecheck doc test
+# Translations:
+# make lupdate to update .ts files
+TRANSLATIONS += $$files(translations/*.ts, true)
+TRANSLATIONS += $$files(plugins/mock/translations/*.ts, true)
+lupdate.depends = FORCE
+lupdate.commands = $$[QT_INSTALL_BINS]/lupdate -recursive -no-obsolete $$_FILE_;
+
+# make lrelease to compile .ts to .qm
+lrelease.depends = FORCE
+lrelease.commands = $$[QT_INSTALL_BINS]/lrelease $$_FILE_; \
+                    rsync -a $$top_srcdir/translations/*.qm $$top_builddir/translations/;
+
+# Install translation files
+translations.path = /usr/share/guh/translations
+translations.files = $$[QT_SOURCE_TREE]/translations/*.qm
+translations.depends = lrelease
+INSTALLS += translations
+
+QMAKE_EXTRA_TARGETS += licensecheck doc test lupdate lrelease
 
 # Inform about guh build
 message(============================================)

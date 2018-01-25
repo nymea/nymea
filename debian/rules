@@ -11,7 +11,7 @@ else
 endif
 
 $(info Building with DEB_BUILD_OPTIONS: [${DEB_BUILD_OPTIONS}])
-MAKE_TARGETS=all
+MAKE_TARGETS=all lrelease
 ifeq (,$(filter nodoc,$(DEB_BUILD_OPTIONS)))
 	MAKE_TARGETS += doc
 endif 

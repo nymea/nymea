@@ -267,9 +267,6 @@ def addTranslationString(string, comment):
 
 #-----------------------------------------------------------------------------------------------------------------
 def writeTranslationStrings():
-    if len(args.translations) is 0:
-        return
-
     if len(translationStrings) is not 0:
         writeToFile('// Translation strings')
         writeToFile('const QString translations[] {')
@@ -336,10 +333,6 @@ def writePluginInfoFile():
     writeToFile('#endif // PLUGININFO_H')
     outputFile.close()
     print(' --> Generated successfully \"%s\"' % (args.output))
-
-    # Translate
-    if len(translationStrings) is not 0:
-        createTranslationFiles()
 
 
 #-----------------------------------------------------------------------------------------------------------------

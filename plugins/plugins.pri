@@ -7,6 +7,7 @@ QT += network bluetooth
 
 INCLUDEPATH += $$top_srcdir/libguh
 LIBS += -L../../libguh -lguh
+HEADERS += plugininfo.h
 
 # Create plugininfo file
 JSONFILES = deviceplugin"$$TARGET".json
@@ -18,11 +19,7 @@ plugininfo.commands = touch ${QMAKE_FILE_OUT}; $$top_srcdir/plugins/guh-generate
                             --filetype i \
                             --jsonfile ${QMAKE_FILE_NAME} \
                             --output ${QMAKE_FILE_OUT} \
-                            --builddir $$OUT_PWD \
-                            --translations $$TRANSLATIONS; \
-                      rsync -a "$$OUT_PWD"/translations/*.qm $$top_builddir/translations/;
-PRE_TARGETDEPS +=
-QMAKE_EXTRA_COMPILERS +=
+                            --builddir $$OUT_PWD;
 
 externplugininfo.target = extern-plugininfo.h
 externplugininfo.output = extern-plugininfo.h
@@ -32,17 +29,10 @@ externplugininfo.commands = touch ${QMAKE_FILE_OUT}; $$top_srcdir/plugins/guh-ge
                             --filetype e \
                             --jsonfile ${QMAKE_FILE_NAME} \
                             --output ${QMAKE_FILE_OUT} \
-                            --builddir $$OUT_PWD \
-                            --translations $$TRANSLATIONS;
+                            --builddir $$OUT_PWD;
 PRE_TARGETDEPS += compiler_plugininfo_make_all compiler_externplugininfo_make_all
 QMAKE_EXTRA_COMPILERS += plugininfo externplugininfo
 
-
-# Install translation files
-translations.path = /usr/share/guh/translations
-translations.files = $$[QT_SOURCE_TREE]/translations/*.qm
-
 # Install plugin
 target.path = $$GUH_PLUGINS_PATH
-INSTALLS += target translations
-
+INSTALLS += target

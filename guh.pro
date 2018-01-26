@@ -25,11 +25,11 @@ test.commands = LD_LIBRARY_PATH=$$top_builddir/libguh-core:$$top_builddir/libguh
 TRANSLATIONS += $$files(translations/*.ts, true)
 TRANSLATIONS += $$files(plugins/mock/translations/*.ts, true)
 lupdate.depends = FORCE
-lupdate.commands = $$[QT_INSTALL_BINS]/lupdate -recursive -no-obsolete $$_FILE_;
+lupdate.commands = lupdate -recursive -no-obsolete $$_FILE_;
 
 # make lrelease to compile .ts to .qm
 lrelease.depends = FORCE
-lrelease.commands = $$[QT_INSTALL_BINS]/lrelease $$_FILE_; \
+lrelease.commands = lrelease $$_FILE_; \
                     rsync -a $$top_srcdir/translations/*.qm $$top_builddir/translations/;
 
 # Install translation files

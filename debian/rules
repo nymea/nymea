@@ -50,6 +50,7 @@ override_dh_strip:
 
 override_dh_auto_clean:
 	dh_auto_clean
+	find . -name *.qm -exec rm {} \;
 	rm -rf $(PREPROCESS_FILES:.in=)
 
 %:

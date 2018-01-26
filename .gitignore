@@ -3,7 +3,6 @@
 builddir
 doc/html
 *api.json.new
-*.qm
 *.snap
 snap/parts/
 snap/prime/

@@ -375,7 +375,7 @@ def writeExternPluginInfoFile():
 
 if __name__ == '__main__':
     # Argument parser
-    parser = argparse.ArgumentParser(description='The guh-generateplugininfo is a precompiler for building plugins. This precompiler will create a plugininfo.h containing the uuid definitions from the plugin json file and creates the translations for the plugin.')
+    parser = argparse.ArgumentParser(description='The nymea-generateplugininfo is a precompiler for building plugins. This precompiler will create a plugininfo.h containing the uuid definitions from the plugin json file and creates the translations for the plugin.')
     parser.add_argument('-j', '--jsonfile', help='The JSON input file name with the plugin description', metavar='jsonfile', required=True)
     parser.add_argument('-b', '--builddir', help='The path to the build directory of the plugin where the plugininfo.h file can be found.', metavar='buildpath', required=True)
     parser.add_argument('-f', '--filetype', help='The file type to generate: e = extern infofile, i = infofile', action='store', choices=['e', 'i'], default='i')

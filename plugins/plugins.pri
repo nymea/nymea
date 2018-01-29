@@ -15,7 +15,7 @@ plugininfo.target = plugininfo.h
 plugininfo.output = plugininfo.h
 plugininfo.CONFIG = no_link
 plugininfo.input = JSONFILES
-plugininfo.commands = touch ${QMAKE_FILE_OUT}; $$top_srcdir/plugins/guh-generateplugininfo \
+plugininfo.commands = touch ${QMAKE_FILE_OUT}; $$top_srcdir/plugins/nymea-generateplugininfo \
                             --filetype i \
                             --jsonfile ${QMAKE_FILE_NAME} \
                             --output ${QMAKE_FILE_OUT} \
@@ -25,7 +25,7 @@ externplugininfo.target = extern-plugininfo.h
 externplugininfo.output = extern-plugininfo.h
 externplugininfo.CONFIG = no_link
 externplugininfo.input = JSONFILES
-externplugininfo.commands = touch ${QMAKE_FILE_OUT}; $$top_srcdir/plugins/guh-generateplugininfo \
+externplugininfo.commands = touch ${QMAKE_FILE_OUT}; $$top_srcdir/plugins/nymea-generateplugininfo \
                             --filetype e \
                             --jsonfile ${QMAKE_FILE_NAME} \
                             --output ${QMAKE_FILE_OUT} \

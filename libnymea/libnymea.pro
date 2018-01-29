@@ -129,7 +129,7 @@ SOURCES += devicemanager.cpp \
         hardwaremanager.cpp \
 
 # install plugininfo python script for libnymea-dev
-generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo
+generateplugininfo.files = $$top_srcdir/plugins/nymea-generateplugininfo
 generateplugininfo.path = /usr/bin
 
 INSTALLS +=  generateplugininfo

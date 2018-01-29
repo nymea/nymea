@@ -96,7 +96,7 @@
 #include "loggingcategories.h"
 
 #include "devicemanager.h"
-#include "guhsettings.h"
+#include "nymeasettings.h"
 
 #include "hardware/radio433/radio433.h"
 #include "network/upnp/upnpdiscovery.h"
@@ -178,8 +178,8 @@ bool DevicePlugin::setLocale(const QLocale &locale)
     }
 
     // otherwise use the system translations
-    if (m_translator->load(locale, m_metaData.value("id").toString(), "-", GuhSettings::translationsPath(), ".qm")) {
-        qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" <<  GuhSettings::translationsPath();
+    if (m_translator->load(locale, m_metaData.value("id").toString(), "-", NymeaSettings::translationsPath(), ".qm")) {
+        qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" <<  NymeaSettings::translationsPath();
         return true;
     }
 

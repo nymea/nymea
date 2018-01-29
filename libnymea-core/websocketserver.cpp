@@ -39,15 +39,15 @@
     The URL for the secure websocket (TLS 1.2):
     \code wss://localhost:4444\endcode
 
-    You can turn on the \tt wss server in the \tt WebServerServer section of the \tt /etc/guh/guhd.conf file.
+    You can turn on the \tt wss server in the \tt WebServerServer section of the \tt /etc/guh/nymead.conf file.
 
     \note For \tt wss you need to have a certificate and configure it in the \tt SSL-configuration
-    section of the \tt /etc/guh/guhd.conf file.
+    section of the \tt /etc/guh/nymead.conf file.
 
     \sa WebServer, TcpServer, TransportInterface
 */
 
-#include "guhsettings.h"
+#include "nymeasettings.h"
 #include "guhcore.h"
 #include "websocketserver.h"
 #include "loggingcategories.h"

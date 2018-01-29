@@ -22,7 +22,7 @@
 #include "guhtestbase.h"
 #include "guhcore.h"
 #include "devicemanager.h"
-#include "guhsettings.h"
+#include "nymeasettings.h"
 #include "plugin/deviceplugin.h"
 
 #include <QDebug>
@@ -1196,7 +1196,7 @@ void TestDevices::removeDevice()
     QFETCH(DeviceId, deviceId);
     QFETCH(DeviceManager::DeviceError, deviceError);
 
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
+    NymeaSettings settings(NymeaSettings::SettingsRoleDevices);
     settings.beginGroup("DeviceConfig");
     if (deviceError == DeviceManager::DeviceErrorNoError) {
         settings.beginGroup(m_mockDeviceId.toString());

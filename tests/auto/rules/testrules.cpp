@@ -2270,7 +2270,7 @@ void TestRules::testHousekeeping()
     }
 
     // Manually delete this device from config
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
+    NymeaSettings settings(NymeaSettings::SettingsRoleDevices);
     settings.beginGroup("DeviceConfig");
     settings.remove(deviceId.toString());
     settings.endGroup();

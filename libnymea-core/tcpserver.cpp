@@ -34,7 +34,6 @@
 */
 
 #include "tcpserver.h"
-#include "guhsettings.h"
 #include "guhcore.h"
 
 #include <QDebug>

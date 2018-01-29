@@ -59,8 +59,8 @@ ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
         QString configCertificateFileName = configuration->sslCertificate();
         QString configKeyFileName = configuration->sslCertificateKey();
 
-        QString fallbackCertificateFileName = GuhSettings::storagePath() + "/certs/nymead-certificate.crt";
-        QString fallbackKeyFileName = GuhSettings::storagePath() + "/certs/nymead-certificate.key";
+        QString fallbackCertificateFileName = NymeaSettings::storagePath() + "/certs/nymead-certificate.crt";
+        QString fallbackKeyFileName = NymeaSettings::storagePath() + "/certs/nymead-certificate.key";
 
         bool certsLoaded = false;
         if (loadCertificate(configKeyFileName, configCertificateFileName)) {

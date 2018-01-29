@@ -163,7 +163,7 @@
 #include "plugin/devicepairinginfo.h"
 #include "plugin/deviceplugin.h"
 #include "typeutils.h"
-#include "guhsettings.h"
+#include "nymeasettings.h"
 #include "unistd.h"
 
 #include "plugintimer.h"
@@ -346,7 +346,7 @@ DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &plugin
     if (result != DeviceErrorNoError)
         return result;
 
-    GuhSettings settings(GuhSettings::SettingsRolePlugins);
+    NymeaSettings settings(NymeaSettings::SettingsRolePlugins);
     settings.beginGroup("PluginConfig");
     settings.beginGroup(plugin->pluginId().toString());
     foreach (const Param &param, params) {
@@ -760,13 +760,13 @@ DeviceManager::DeviceError DeviceManager::removeConfiguredDevice(const DeviceId 
 
     device->deleteLater();
 
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
+    NymeaSettings settings(NymeaSettings::SettingsRoleDevices);
     settings.beginGroup("DeviceConfig");
     settings.beginGroup(deviceId.toString());
     settings.remove("");
     settings.endGroup();
 
-    GuhSettings stateCache(GuhSettings::SettingsRoleDeviceStates);
+    NymeaSettings stateCache(NymeaSettings::SettingsRoleDeviceStates);
     stateCache.remove(deviceId.toString());
 
     emit deviceRemoved(deviceId);
@@ -1070,7 +1070,7 @@ void DeviceManager::loadPlugin(DevicePlugin *pluginIface)
         qCDebug(dcDeviceManager) << "* Loaded device class:" << deviceClass.name();
     }
 
-    GuhSettings settings(GuhSettings::SettingsRolePlugins);
+    NymeaSettings settings(NymeaSettings::SettingsRolePlugins);
     settings.beginGroup("PluginConfig");
     ParamList params;
     if (settings.childGroups().contains(pluginIface->pluginId().toString())) {
@@ -1109,7 +1109,7 @@ void DeviceManager::loadPlugin(DevicePlugin *pluginIface)
 
 void DeviceManager::loadConfiguredDevices()
 {
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
+    NymeaSettings settings(NymeaSettings::SettingsRoleDevices);
     settings.beginGroup("DeviceConfig");
     qCDebug(dcDeviceManager) << "Loading devices from" << settings.fileName();
     foreach (const QString &idString, settings.childGroups()) {
@@ -1142,7 +1142,7 @@ void DeviceManager::loadConfiguredDevices()
 
 void DeviceManager::storeConfiguredDevices()
 {
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
+    NymeaSettings settings(NymeaSettings::SettingsRoleDevices);
     settings.beginGroup("DeviceConfig");
     foreach (Device *device, m_configuredDevices) {
         settings.beginGroup(device->id().toString());
@@ -1407,7 +1407,7 @@ void DeviceManager::onLoaded()
 
 void DeviceManager::cleanupDeviceStateCache()
 {
-    GuhSettings settings(GuhSettings::SettingsRoleDeviceStates);
+    NymeaSettings settings(NymeaSettings::SettingsRoleDeviceStates);
     foreach (const QString &entry, settings.childGroups()) {
         DeviceId deviceId(entry);
         if (!m_configuredDevices.contains(deviceId)) {
@@ -1484,7 +1484,7 @@ void DeviceManager::postSetupDevice(Device *device)
 
 void DeviceManager::loadDeviceStates(Device *device)
 {
-    GuhSettings settings(GuhSettings::SettingsRoleDeviceStates);
+    NymeaSettings settings(NymeaSettings::SettingsRoleDeviceStates);
     settings.beginGroup(device->id().toString());
     DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
     foreach (const StateType &stateType, deviceClass.stateTypes()) {
@@ -1499,7 +1499,7 @@ void DeviceManager::loadDeviceStates(Device *device)
 
 void DeviceManager::storeDeviceStates(Device *device)
 {
-    GuhSettings settings(GuhSettings::SettingsRoleDeviceStates);
+    NymeaSettings settings(NymeaSettings::SettingsRoleDeviceStates);
     settings.beginGroup(device->id().toString());
     DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
     foreach (const StateType &stateType, deviceClass.stateTypes()) {

@@ -37,7 +37,7 @@
 #include "unistd.h"
 #include "guhcore.h"
 #include "guhservice.h"
-#include "guhsettings.h"
+#include "nymeasettings.h"
 #include "guhdbusservice.h"
 #include "guhapplication.h"
 #include "loggingcategories.h"
@@ -149,8 +149,8 @@ int main(int argc, char *argv[])
     QTranslator translator;
     // check if there are local translations
     if (!translator.load(QLocale::system(), application.applicationName(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm"))
-        if (!translator.load(QLocale::system(), application.applicationName(), "-", GuhSettings::translationsPath(), ".qm"))
-            qWarning(dcApplication()) << "Could not find nymead translations for" << QLocale::system().name() << endl << (QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath()) << endl << GuhSettings::translationsPath();
+        if (!translator.load(QLocale::system(), application.applicationName(), "-", NymeaSettings::translationsPath(), ".qm"))
+            qWarning(dcApplication()) << "Could not find nymead translations for" << QLocale::system().name() << endl << (QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath()) << endl << NymeaSettings::translationsPath();
 
 
 
@@ -252,8 +252,8 @@ int main(int argc, char *argv[])
         int userId = getuid();
         if (userId != 0) {
             // check if config directory for logfile exists
-            if (!QDir().mkpath(GuhSettings::settingsPath())) {
-                fprintf(stdout, "Could not create guh settings directory %s", qPrintable(GuhSettings::settingsPath()));
+            if (!QDir().mkpath(NymeaSettings::settingsPath())) {
+                fprintf(stdout, "Could not create nymea settings directory %s", qPrintable(NymeaSettings::settingsPath()));
                 exit(EXIT_FAILURE);
             }
             qCDebug(dcApplication) << "=====================================";

@@ -20,8 +20,8 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GUHSETTINGS_H
-#define GUHSETTINGS_H
+#ifndef NYMEASETTINGS_H
+#define NYMEASETTINGS_H
 
 #include <QObject>
 #include <QVariant>
@@ -30,7 +30,7 @@
 
 class QSettings;
 
-class LIBNYMEA_EXPORT GuhSettings : public QObject
+class LIBNYMEA_EXPORT NymeaSettings : public QObject
 {
     Q_OBJECT
 public:
@@ -43,8 +43,8 @@ public:
         SettingsRoleDeviceStates
     };
 
-    explicit GuhSettings(const SettingsRole &role = SettingsRoleNone, QObject *parent = nullptr);
-    ~GuhSettings();
+    explicit NymeaSettings(const SettingsRole &role = SettingsRoleNone, QObject *parent = nullptr);
+    ~NymeaSettings();
 
     SettingsRole settingsRole() const;
 
@@ -80,4 +80,4 @@ private:
 
 };
 
-#endif // GUHSETTINGS_H
+#endif // NYMEASETTINGS_H

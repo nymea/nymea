@@ -18,7 +18,7 @@ HEADERS += devicemanager.h \
         libnymea.h \
         typeutils.h \
         loggingcategories.h \
-        guhsettings.h \
+        nymeasettings.h \
         plugin/device.h \
         plugin/deviceplugin.h \
         plugin/devicedescriptor.h \
@@ -74,7 +74,7 @@ HEADERS += devicemanager.h \
 
 SOURCES += devicemanager.cpp \
         loggingcategories.cpp \
-        guhsettings.cpp \
+        nymeasettings.cpp \
         plugin/device.cpp \
         plugin/deviceplugin.cpp \
         plugin/devicedescriptor.cpp \

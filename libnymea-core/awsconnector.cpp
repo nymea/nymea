@@ -20,7 +20,7 @@
 
 #include "awsconnector.h"
 #include "loggingcategories.h"
-#include "guhsettings.h"
+#include "nymeasettings.h"
 
 #include <QDebug>
 #include <QDateTime>
@@ -505,24 +505,24 @@ ResponseCode AWSConnector::onDisconnectedCallback(util::String mqtt_client_id, s
 
 void AWSConnector::storeRegisteredFlag(bool registered)
 {
-    QSettings settings(GuhSettings::storagePath() + "/cloudstatus.conf", QSettings::IniFormat);
+    QSettings settings(NymeaSettings::storagePath() + "/cloudstatus.conf", QSettings::IniFormat);
     settings.setValue("registered", registered);
 }
 
 bool AWSConnector::readRegisteredFlag() const
 {
-    QSettings settings(GuhSettings::storagePath() + "/cloudstatus.conf", QSettings::IniFormat);
+    QSettings settings(NymeaSettings::storagePath() + "/cloudstatus.conf", QSettings::IniFormat);
     return settings.value("registered", false).toBool();
 }
 
 void AWSConnector::storeSyncedNameCache(const QString &syncedName)
 {
-    QSettings settings(GuhSettings::storagePath() + "/cloudstatus.conf", QSettings::IniFormat);
+    QSettings settings(NymeaSettings::storagePath() + "/cloudstatus.conf", QSettings::IniFormat);
     settings.setValue("syncedName", syncedName);
 }
 
 QString AWSConnector::readSyncedNameCache()
 {
-    QSettings settings(GuhSettings::storagePath() + "/cloudstatus.conf", QSettings::IniFormat);
+    QSettings settings(NymeaSettings::storagePath() + "/cloudstatus.conf", QSettings::IniFormat);
     return settings.value("syncedName", QString()).toString();
 }

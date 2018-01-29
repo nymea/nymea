@@ -21,7 +21,6 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "hardwareresource.h"
-#include "guhsettings.h"
 #include "hardwaremanager.h"
 #include "loggingcategories.h"
 

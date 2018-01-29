@@ -23,7 +23,6 @@
 
 #include "timeeventitem.h"
 #include "calendaritem.h"
-#include "guhsettings.h"
 
 namespace guhserver {
 
@@ -43,8 +42,8 @@ public:
 
     bool evaluate(const QDateTime &lastEvaluationTime, const QDateTime &dateTime) const;
 
-//    void dumpToSettings(GuhSettings &settings, const QString &groupName) const;
-//    static TimeDescriptor loadFromSettings(GuhSettings &settings, const QString &groupPrefix);
+//    void dumpToSettings(NymeaSettings &settings, const QString &groupName) const;
+//    static TimeDescriptor loadFromSettings(NymeaSettings &settings, const QString &groupPrefix);
 
 
 private:

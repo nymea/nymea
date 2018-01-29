@@ -20,7 +20,7 @@
 
 #include "loggingcategories.h"
 #include "guhconfiguration.h"
-#include "guhsettings.h"
+#include "nymeasettings.h"
 
 #include <QTimeZone>
 #include <QCoreApplication>
@@ -58,7 +58,7 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     setSslCertificate(sslCertificate(), sslCertificateKey());
     setDebugServerEnabled(debugServerEnabled());
 
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
 
     // TcpServer
     bool createDefaults = !settings.childGroups().contains("TcpServer");
@@ -160,15 +160,15 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
 
 QUuid GuhConfiguration::serverUuid() const
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("guhd");
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
     return settings.value("uuid", QUuid()).toUuid();
 }
 
 QString GuhConfiguration::serverName() const
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("guhd");
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
     return settings.value("name", "guhIO").toString();
 }
 
@@ -176,8 +176,8 @@ void GuhConfiguration::setServerName(const QString &serverName)
 {
     qCDebug(dcApplication()) << "Configuration: Server name:" << serverName;
 
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("guhd");
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
     if (settings.value("name").toString() == serverName) {
         qCDebug(dcApplication()) << "Configuration: Server name unchanged.";
         settings.endGroup();
@@ -190,8 +190,8 @@ void GuhConfiguration::setServerName(const QString &serverName)
 
 QByteArray GuhConfiguration::timeZone() const
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("guhd");
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
     return settings.value("timeZone", QTimeZone::systemTimeZoneId()).toByteArray();
 }
 
@@ -199,8 +199,8 @@ void GuhConfiguration::setTimeZone(const QByteArray &timeZone)
 {
     qCDebug(dcApplication()) << "Configuration: Time zone:" << QString::fromUtf8(timeZone);
 
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("guhd");
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
     if (settings.value("timeZone").toByteArray() == timeZone) {
         qCDebug(dcApplication()) << "Configuration: Time zone unchanged.";
         settings.endGroup();
@@ -213,8 +213,8 @@ void GuhConfiguration::setTimeZone(const QByteArray &timeZone)
 
 QLocale GuhConfiguration::locale() const
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("guhd");
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
     return settings.value("language", "en_US").toString();
 }
 
@@ -222,8 +222,8 @@ void GuhConfiguration::setLocale(const QLocale &locale)
 {
     qCDebug(dcApplication()) << "Configuration: set locale:" << locale.name() << locale.nativeCountryName() << locale.nativeLanguageName();
 
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("guhd");
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
     if (settings.value("language").toString() == locale.name()) {
         qCDebug(dcApplication()) << "Configuration: Language unchanged.";
         settings.endGroup();
@@ -265,7 +265,7 @@ void GuhConfiguration::setWebServerConfiguration(const WebServerConfiguration &c
     storeServerConfig("WebServer", config);
 
     // This is a bit odd that we need to open the config once more just for the publicFolder...
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("WebServer");
     settings.beginGroup(config.id);
     settings.setValue("publicFolder", config.publicFolder);
@@ -303,7 +303,7 @@ void GuhConfiguration::removeWebSocketServerConfiguration(const QString &id)
 
 bool GuhConfiguration::bluetoothServerEnabled() const
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("BluetoothServer");
     return settings.value("enabled", false).toBool();
 }
@@ -312,7 +312,7 @@ void GuhConfiguration::setBluetoothServerEnabled(const bool &enabled)
 {
     qCDebug(dcApplication()) << "Configuration: Bluetooth server" << (enabled ? "enabled" : "disabled");
 
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("BluetoothServer");
     settings.setValue("enabled", enabled);
     settings.endGroup();
@@ -321,7 +321,7 @@ void GuhConfiguration::setBluetoothServerEnabled(const bool &enabled)
 
 bool GuhConfiguration::cloudEnabled() const
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("Cloud");
     return settings.value("enabled", false).toBool();
 }
@@ -329,7 +329,7 @@ bool GuhConfiguration::cloudEnabled() const
 void GuhConfiguration::setCloudEnabled(bool enabled)
 {
     if (cloudEnabled() != enabled) {
-        GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+        NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
         settings.beginGroup("Cloud");
         settings.setValue("enabled", enabled);
         settings.endGroup();
@@ -339,49 +339,49 @@ void GuhConfiguration::setCloudEnabled(bool enabled)
 
 QString GuhConfiguration::cloudServerUrl() const
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("Cloud");
     return settings.value("cloudServerUrl").toString();
 }
 
 QString GuhConfiguration::cloudCertificateCA() const
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("Cloud");
     return settings.value("cloudCertificateCA").toString();
 }
 
 QString GuhConfiguration::cloudCertificate() const
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("Cloud");
     return settings.value("cloudCertificate").toString();
 }
 
 QString GuhConfiguration::cloudCertificateKey() const
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("Cloud");
     return settings.value("cloudCertificateKey").toString();
 }
 
 QString GuhConfiguration::sslCertificate() const
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("SSL");
     return settings.value("certificate").toString();
 }
 
 QString GuhConfiguration::sslCertificateKey() const
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("SSL");
     return settings.value("certificate-key").toString();
 }
 
 void GuhConfiguration::setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey)
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("SSL");
     settings.setValue("certificate", sslCertificate);
     settings.setValue("certificate-key", sslCertificateKey);
@@ -390,8 +390,8 @@ void GuhConfiguration::setSslCertificate(const QString &sslCertificate, const QS
 
 bool GuhConfiguration::debugServerEnabled() const
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("guhd");
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
     return settings.value("debugServerEnabled", false).toBool();
 }
 
@@ -399,8 +399,8 @@ void GuhConfiguration::setDebugServerEnabled(bool enabled)
 {
     qCDebug(dcApplication()) << "Configuration: Set debug server" << (enabled ? "enabled" : "disabled");
     bool currentValue = debugServerEnabled();
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("guhd");
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
     settings.setValue("debugServerEnabled", enabled);
     settings.endGroup();
 
@@ -413,8 +413,8 @@ void GuhConfiguration::setServerUuid(const QUuid &uuid)
 {
     qCDebug(dcApplication()) << "Configuration: Server uuid:" << uuid.toString();
 
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-    settings.beginGroup("guhd");
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
     settings.setValue("uuid", uuid);
     settings.endGroup();
 }
@@ -433,7 +433,7 @@ QString GuhConfiguration::defaultWebserverPublicFolderPath() const
 
 void GuhConfiguration::storeServerConfig(const QString &group, const ServerConfiguration &config)
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup(group);
     settings.remove("disabled");
     settings.beginGroup(config.id);
@@ -448,7 +448,7 @@ void GuhConfiguration::storeServerConfig(const QString &group, const ServerConfi
 ServerConfiguration GuhConfiguration::readServerConfig(const QString &group, const QString &id)
 {
     ServerConfiguration config;
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup(group);
     settings.beginGroup(id);
     config.id = id;
@@ -463,7 +463,7 @@ ServerConfiguration GuhConfiguration::readServerConfig(const QString &group, con
 
 void GuhConfiguration::deleteServerConfig(const QString &group, const QString &id)
 {
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup(group);
     settings.remove(id);
     if (settings.childGroups().isEmpty()) {
@@ -475,7 +475,7 @@ void GuhConfiguration::deleteServerConfig(const QString &group, const QString &i
 void GuhConfiguration::storeWebServerConfig(const WebServerConfiguration &config)
 {
     storeServerConfig("WebServer", config);
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("WebServer");
     settings.beginGroup(config.id);
     settings.setValue("publicFolder", config.publicFolder);
@@ -486,7 +486,7 @@ void GuhConfiguration::storeWebServerConfig(const WebServerConfiguration &config
 WebServerConfiguration GuhConfiguration::readWebServerConfig(const QString &id)
 {
     WebServerConfiguration config;
-    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("WebServer");
     settings.beginGroup(id);
     config.id = id;

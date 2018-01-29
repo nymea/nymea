@@ -1,5 +1,5 @@
 TEMPLATE = lib
-TARGET = guh-core
+TARGET = nymea-core
 
 include(../nymea.pri)
 

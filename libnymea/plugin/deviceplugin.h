@@ -120,7 +120,7 @@ private:
     QPair<bool, DeviceClass::DeviceIcon> loadAndVerifyDeviceIcon(const QString &deviceIcon) const;
 
     // FIXME: This is expensive because it will open all the files.
-    // Once DeviceManager is in libguh-core this should probably be there too.
+    // Once DeviceManager is in libnymea-core this should probably be there too.
     // I didn't want to add even more dependencies on the devicemanager into here, so reading the list here for now.
     static Interfaces allInterfaces();
     static Interface loadInterface(const QString &name);

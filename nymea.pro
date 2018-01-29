@@ -2,12 +2,12 @@ include(nymea.pri)
 
 TEMPLATE=subdirs
 
-SUBDIRS += libnymea libguh-core server plugins
+SUBDIRS += libnymea libnymea-core server plugins
 
-libguh-core.depends = libnymea
-server.depends = libnymea libguh-core plugins
+libnymea-core.depends = libnymea
+server.depends = libnymea libnymea-core plugins
 plugins.depends = libnymea
-tests.depends = libnymea libguh-core
+tests.depends = libnymea libnymea-core
 
 doc.depends = FORCE
 # Note: some how extraimages in qdocconf did not the trick
@@ -18,7 +18,7 @@ doc.commands += cd $$top_srcdir/doc; qdoc config.qdocconf; cp -r images/* html/i
 licensecheck.commands = $$top_srcdir/tests/auto/checklicenseheaders.sh $$top_srcdir
 
 test.depends = licensecheck
-test.commands = LD_LIBRARY_PATH=$$top_builddir/libguh-core:$$top_builddir/libnymea make check
+test.commands = LD_LIBRARY_PATH=$$top_builddir/libnymea-core:$$top_builddir/libnymea make check
 
 # Translations:
 # make lupdate to update .ts files

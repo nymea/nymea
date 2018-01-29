@@ -26,7 +26,7 @@
 
 #include "httpreply.h"
 #include "httprequest.h"
-#include "jsontypes.h"
+#include "jsonrpc/jsontypes.h"
 
 class QVariant;
 

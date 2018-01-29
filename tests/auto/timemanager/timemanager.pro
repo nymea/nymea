@@ -1,6 +1,6 @@
 TARGET = testtimemanager
 
-include(../../../guh.pri)
+include(../../../nymea.pri)
 include(../autotests.pri)
 
 SOURCES += testtimemanager.cpp

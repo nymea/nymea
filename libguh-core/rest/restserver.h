@@ -24,7 +24,7 @@
 #include <QObject>
 
 #include "webserver.h"
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
 #include "devicesresource.h"
 #include "deviceclassesresource.h"
 #include "vendorsresource.h"

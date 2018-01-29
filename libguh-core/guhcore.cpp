@@ -97,7 +97,7 @@
 
 #include "guhcore.h"
 #include "loggingcategories.h"
-#include "jsonrpcserver.h"
+#include "jsonrpc/jsonrpcserver.h"
 #include "ruleengine.h"
 #include "networkmanager/networkmanager.h"
 

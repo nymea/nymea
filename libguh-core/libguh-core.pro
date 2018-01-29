@@ -1,11 +1,11 @@
 TEMPLATE = lib
 TARGET = guh-core
 
-include(../guh.pri)
+include(../nymea.pri)
 
 QT += sql
-INCLUDEPATH += $$top_srcdir/libguh $$top_srcdir jsonrpc
-LIBS += -L$$top_builddir/libguh/ -lguh -lssl -lcrypto -lavahi-common -lavahi-client
+INCLUDEPATH += $$top_srcdir/libnymea
+LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto -lavahi-common -lavahi-client
 
 target.path = /usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')
 INSTALLS += target

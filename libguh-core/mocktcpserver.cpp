@@ -20,7 +20,6 @@
 
 #include "mocktcpserver.h"
 #include "loggingcategories.h"
-#include "jsonrpcserver.h"
 #include "guhcore.h"
 
 #include <QUuid>

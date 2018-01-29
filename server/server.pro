@@ -1,16 +1,16 @@
-include(../guh.pri)
+include(../nymea.pri)
 
 TARGET = guhd
 TEMPLATE = app
 
-INCLUDEPATH += ../libguh-core ../libguh-core/jsonrpc ../libguh
+INCLUDEPATH += ../libnymea ../libguh-core
 
 target.path = /usr/bin
 INSTALLS += target
 
 QT *= sql xml websockets bluetooth dbus network
 
-LIBS += -L$$top_builddir/libguh/ -lguh -L$$top_builddir/libguh-core -lguh-core -lssl -lcrypto -laws-iot-sdk-cpp
+LIBS += -L$$top_builddir/libnymea/ -lnymea -L$$top_builddir/libguh-core -lguh-core -lssl -lcrypto -laws-iot-sdk-cpp
 
 # Server files
 include(qtservice/qtservice.pri)

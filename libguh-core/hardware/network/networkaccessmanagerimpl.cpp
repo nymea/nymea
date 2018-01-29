@@ -25,7 +25,7 @@
   \brief Allows to send network requests and receive replies.
 
   \ingroup hardware
-  \inmodule libguh
+  \inmodule libnymea
 
   The network manager class is a reimplementation of the \l{http://doc-snapshot.qt-project.org/qt5-5.4/qnetworkaccessmanager.html}{QNetworkAccessManager}
   and allows plugins to send network requests and receive replies.

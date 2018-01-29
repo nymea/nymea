@@ -26,7 +26,7 @@
 #include "devicemanager.h"
 #include "loggingcategories.h"
 #include "logging/logengine.h"
-#include "jsontypes.h"
+#include "jsonrpc/jsontypes.h"
 
 #include <QVariantMap>
 #include <QJsonDocument>
@@ -144,7 +144,7 @@ void GuhTestBase::initTestCase()
     guhdSettings.clear();
 
     // debug categories
-    // logging filers for core and libguh
+    // logging filers for core and libnymea
     s_loggingFilters.insert("Application", true);
     s_loggingFilters.insert("Warnings", true);
     s_loggingFilters.insert("DeviceManager", true);

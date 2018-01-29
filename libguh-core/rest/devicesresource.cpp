@@ -39,7 +39,7 @@
 #include "devicesresource.h"
 #include "httpreply.h"
 #include "httprequest.h"
-#include "jsontypes.h"
+#include "jsonrpc/jsontypes.h"
 #include "guhcore.h"
 
 #include <QJsonDocument>

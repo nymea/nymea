@@ -21,7 +21,7 @@
 
 /*!
     \class guhserver::TcpServer
-    \brief This class represents the tcp server for guhd.
+    \brief This class represents the tcp server for nymead.
 
     \ingroup server
     \inmodule core

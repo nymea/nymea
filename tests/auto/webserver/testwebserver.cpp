@@ -557,19 +557,19 @@ void TestWebserver::getDebugServer_data()
     QTest::newRow("POST /debug/syslog | server enabled | 404") << "post" << "/debug/syslog" << false << 404;
     QTest::newRow("DELETE /debug/syslog | server enabled | 404") << "delete" << "/debug/syslog" << false << 404;
 
-    // settings/guhd enabled
-    QTest::newRow("GET /debug/settings/guhd | server enabled | 200") << "get" << "/debug/settings/guhd" << true << 200;
-    QTest::newRow("OPTIONS /debug/settings/guhd | server enabled | 200") << "options" << "/debug/settings/guhd" << true << 200;
-    QTest::newRow("PUT /debug/settings/guhd | server enabled | 405") << "put" << "/debug/settings/guhd" << true << 405;
-    QTest::newRow("POST /debug/settings/guhd | server enabled | 405") << "post" << "/debug/settings/guhd" << true << 405;
-    QTest::newRow("DELETE /debug/settings/guhd | server enabled | 405") << "delete" << "/debug/settings/guhd" << true << 405;
+    // settings/nymead enabled
+    QTest::newRow("GET /debug/settings/nymead | server enabled | 200") << "get" << "/debug/settings/nymead" << true << 200;
+    QTest::newRow("OPTIONS /debug/settings/nymead | server enabled | 200") << "options" << "/debug/settings/nymead" << true << 200;
+    QTest::newRow("PUT /debug/settings/nymead | server enabled | 405") << "put" << "/debug/settings/nymead" << true << 405;
+    QTest::newRow("POST /debug/settings/nymead | server enabled | 405") << "post" << "/debug/settings/nymead" << true << 405;
+    QTest::newRow("DELETE /debug/settings/nymead | server enabled | 405") << "delete" << "/debug/settings/nymead" << true << 405;
 
-    // settings/guhd disabled
-    QTest::newRow("GET /debug/settings/guhd | server disabled | 404") << "get" << "/debug/settings/guhd" << false << 404;
-    QTest::newRow("OPTIONS /debug/settings/guhd | server disabled | 404") << "options" << "/debug/settings/guhd" << false << 404;
-    QTest::newRow("PUT /debug/settings/guhd | server disabled | 404") << "put" << "/debug/settings/guhd" << false << 404;
-    QTest::newRow("POST /debug/settings/guhd | server disabled | 404") << "post" << "/debug/settings/guhd" << false << 404;
-    QTest::newRow("DELETE /debug/settings/guhd | server disabled | 404") << "delete" << "/debug/settings/guhd" << false << 404;
+    // settings/nymead disabled
+    QTest::newRow("GET /debug/settings/nymead | server disabled | 404") << "get" << "/debug/settings/nymead" << false << 404;
+    QTest::newRow("OPTIONS /debug/settings/nymead | server disabled | 404") << "options" << "/debug/settings/nymead" << false << 404;
+    QTest::newRow("PUT /debug/settings/nymead | server disabled | 404") << "put" << "/debug/settings/nymead" << false << 404;
+    QTest::newRow("POST /debug/settings/nymead | server disabled | 404") << "post" << "/debug/settings/nymead" << false << 404;
+    QTest::newRow("DELETE /debug/settings/nymead | server disabled | 404") << "delete" << "/debug/settings/nymead" << false << 404;
 
     // settings/devices enabled
     QTest::newRow("GET /debug/settings/devices | server enabled | 200") << "get" << "/debug/settings/devices" << true << 200;

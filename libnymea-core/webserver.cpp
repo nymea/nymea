@@ -20,7 +20,7 @@
 
 /*!
     \class guhserver::WebServer
-    \brief This class represents the web server for guhd.
+    \brief This class represents the web server for nymead.
 
     \ingroup server
     \inmodule core
@@ -385,7 +385,7 @@ void WebServer::readClient()
             reply->deleteLater();
             return;
         } else {
-            qCWarning(dcWebServer()) << "The debug server handler is disabled. You can enable it by adding \'debugServerEnabled=true\' in the \'guhd\' section of the guhd.conf file.";
+            qCWarning(dcWebServer()) << "The debug server handler is disabled. You can enable it by adding \'debugServerEnabled=true\' in the \'nymead\' section of the guhd.conf file.";
             HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
             reply->setClientId(clientId);
             sendHttpReply(reply);
@@ -667,7 +667,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("manufacturer", "guh GmbH");
     writer.writeTextElement("manufacturerURL", "http://guh.io");
     writer.writeTextElement("modelDescription", "IoT server");
-    writer.writeTextElement("modelName", "guhd");
+    writer.writeTextElement("modelName", "nymead");
     writer.writeTextElement("modelNumber", GUH_VERSION_STRING);
     writer.writeTextElement("modelURL", "http://guh.io"); // (optional)
     writer.writeTextElement("UDN", "uuid:" + uuid);
@@ -764,7 +764,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 
 /*!
     \class guhserver::WebServerClient
-    \brief This class represents a client the web server for guhd.
+    \brief This class represents a client the web server for nymead.
 
     \ingroup server
     \inmodule core

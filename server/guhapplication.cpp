@@ -186,7 +186,7 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
         }
 
         qCDebug(dcApplication) << "=====================================";
-        qCDebug(dcApplication) << "Shutting down guh daemon";
+        qCDebug(dcApplication) << "Shutting down nymea daemon";
         qCDebug(dcApplication) << "=====================================";
 
         s_aboutToShutdown = true;

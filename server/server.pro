@@ -1,6 +1,6 @@
 include(../nymea.pri)
 
-TARGET = guhd
+TARGET = nymead
 TEMPLATE = app
 
 INCLUDEPATH += ../libnymea ../libnymea-core

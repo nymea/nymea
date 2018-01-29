@@ -26,7 +26,7 @@
     \ingroup core
     \inmodule server
 
-    The \l{GuhService} represents the forked guhd.
+    The \l{GuhService} represents the forked nymead.
 
     \sa QtService
 */
@@ -43,26 +43,26 @@
 
 namespace guhserver {
 
-/*! Constructs the forked guhd application with the given argument count \a argc and argument vector \a argv. */
+/*! Constructs the forked nymead application with the given argument count \a argc and argument vector \a argv. */
 GuhService::GuhService(int argc, char **argv):
-    QtService<QCoreApplication>(argc, argv, "guh - IoT server")
+    QtService<QCoreApplication>(argc, argv, "nymea - IoT server")
 {
     application()->setOrganizationName("guh");
-    application()->setApplicationName("guhd");
+    application()->setApplicationName("nymead");
     application()->setApplicationVersion(GUH_VERSION_STRING);
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
-    setServiceDescription("guh - IoT server");
+    setServiceDescription("nymea - IoT server");
     setServiceFlags(QtServiceBase::CanBeSuspended);
 }
 
-/*! Destroyes the forked guhd application. */
+/*! Destroyes the forked nymead application. */
 GuhService::~GuhService()
 {
 }
 
-/*! Starts the forked guhd application. */
+/*! Starts the forked nymead application. */
 void GuhService::start()
 {
     // check if config directory for logfile exists
@@ -71,7 +71,7 @@ void GuhService::start()
         exit(EXIT_FAILURE);
     }
     qCDebug(dcApplication) << "=====================================";
-    qCDebug(dcApplication) << "guhd" << GUH_VERSION_STRING << "started as daemon.";
+    qCDebug(dcApplication) << "nymead" << GUH_VERSION_STRING << "started as daemon.";
     qCDebug(dcApplication) << "=====================================";
     GuhCore::instance();
 }

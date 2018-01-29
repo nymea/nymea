@@ -338,8 +338,8 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-name-column");
-    //: The guhd settings download description of the debug interface
-    writer.writeTextElement("p", QCoreApplication::translate("main", "Guhd settings"));
+    //: The nymead settings download description of the debug interface
+    writer.writeTextElement("p", QCoreApplication::translate("main", "nymead settings"));
     writer.writeEndElement(); // div download-name-column
 
     writer.writeStartElement("div");
@@ -352,7 +352,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("form");
     writer.writeAttribute("class", "download-button");
     writer.writeAttribute("method", "get");
-    writer.writeAttribute("action", "/debug/settings/guhd");
+    writer.writeAttribute("action", "/debug/settings/nymead");
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
@@ -763,7 +763,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
             return reply;
         }
 
-        if (requestPath.startsWith("/debug/settings/guhd")) {
+        if (requestPath.startsWith("/debug/settings/nymead")) {
             QString settingsFileName = GuhSettings(GuhSettings::SettingsRoleGlobal).fileName();
             qCDebug(dcWebServer()) << "Loading" << settingsFileName;
             QFile settingsFile(settingsFileName);

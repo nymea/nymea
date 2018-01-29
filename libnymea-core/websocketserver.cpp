@@ -20,7 +20,7 @@
 
 /*!
     \class guhserver::WebSocketServer
-    \brief This class represents the websocket server for guhd.
+    \brief This class represents the websocket server for nymead.
 
     \ingroup server
     \inmodule core

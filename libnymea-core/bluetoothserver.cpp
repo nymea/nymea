@@ -20,7 +20,7 @@
 
 /*!
     \class guhserver::BluetoothServer
-    \brief This class represents the bluetooth server for guhd.
+    \brief This class represents the bluetooth server for nymead.
 
     \ingroup server
     \inmodule core

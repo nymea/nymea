@@ -98,7 +98,7 @@ void TestWebSocketServer::testHandshake()
     QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().first().toByteArray());
     QVariantMap handShake = jsonDoc.toVariant().toMap();
 
-    QString guhVersionString(GUH_VERSION_STRING);
+    QString guhVersionString(NYMEA_VERSION_STRING);
     QString jsonProtocolVersionString(JSON_PROTOCOL_VERSION);
     QCOMPARE(handShake.value("version").toString(), guhVersionString);
     QCOMPARE(handShake.value("protocol version").toString(), jsonProtocolVersionString);

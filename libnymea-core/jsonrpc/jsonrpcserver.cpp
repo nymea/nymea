@@ -243,7 +243,7 @@ JsonReply* JsonRPCServer::Version(const QVariantMap &params) const
     Q_UNUSED(params)
 
     QVariantMap data;
-    data.insert("version", GUH_VERSION_STRING);
+    data.insert("version", NYMEA_VERSION_STRING);
     data.insert("protocol version", JSON_PROTOCOL_VERSION);
     return createReply(data);
 }
@@ -432,7 +432,7 @@ QVariantMap JsonRPCServer::createWelcomeMessage(TransportInterface *interface) c
     handshake.insert("id", 0);
     handshake.insert("server", "guhIO");
     handshake.insert("name", GuhCore::instance()->configuration()->serverName());
-    handshake.insert("version", GUH_VERSION_STRING);
+    handshake.insert("version", NYMEA_VERSION_STRING);
     handshake.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     handshake.insert("language", GuhCore::instance()->configuration()->locale().name());
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);

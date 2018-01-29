@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     GuhApplication application(argc, argv);
     application.setOrganizationName("guh");
     application.setApplicationName("nymead");
-    application.setApplicationVersion(GUH_VERSION_STRING);
+    application.setApplicationVersion(NYMEA_VERSION_STRING);
 
     // logging filers for core and libnymea
     s_loggingFilters.insert("Application", true);
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
 
     applicationDescription.append(QString("nymead %1 %2 2014-2018 guh GmbH\n"
                                           "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
-                                          "API version: %3\n").arg(GUH_VERSION_STRING).arg(QChar(0xA9)).arg(JSON_PROTOCOL_VERSION));
+                                          "API version: %3\n").arg(NYMEA_VERSION_STRING).arg(QChar(0xA9)).arg(JSON_PROTOCOL_VERSION));
 
     parser.setApplicationDescription(applicationDescription);
 
@@ -257,11 +257,11 @@ int main(int argc, char *argv[])
                 exit(EXIT_FAILURE);
             }
             qCDebug(dcApplication) << "=====================================";
-            qCDebug(dcApplication) << "nymead" << GUH_VERSION_STRING << "started with user ID" << userId;
+            qCDebug(dcApplication) << "nymead" << NYMEA_VERSION_STRING << "started with user ID" << userId;
             qCDebug(dcApplication) << "=====================================";
         } else {
             qCDebug(dcApplication) << "=====================================";
-            qCDebug(dcApplication) << "nymead" << GUH_VERSION_STRING << "started as root.";
+            qCDebug(dcApplication) << "nymead" << NYMEA_VERSION_STRING << "started as root.";
             qCDebug(dcApplication) << "=====================================";
         }
 

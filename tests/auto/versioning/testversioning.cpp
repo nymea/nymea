@@ -48,10 +48,10 @@ void TestVersioning::version()
 
     QString version = response.toMap().value("params").toMap().value("version").toString();
     QVariant protocolVersion = response.toMap().value("params").toMap().value("protocol version");
-    qDebug() << "Got version:" << version << "( Expected:" << GUH_VERSION_STRING << ")";
+    qDebug() << "Got version:" << version << "( Expected:" << NYMEA_VERSION_STRING << ")";
 
     QVERIFY2(!version.isEmpty(), "Version is empty.");
-    QCOMPARE(version, QString(GUH_VERSION_STRING));
+    QCOMPARE(version, QString(NYMEA_VERSION_STRING));
 
     QVERIFY2(!protocolVersion.toString().isEmpty(), "Protocol version is empty.");
     QVERIFY2(protocolVersion.canConvert(QVariant::Int), "Protocol version is not an integer.");

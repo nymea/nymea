@@ -140,7 +140,7 @@ void TestJSONRPC::testHandshake()
 
     QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
     QVariantMap handShake = jsonDoc.toVariant().toMap();
-    QString guhVersionString(GUH_VERSION_STRING);
+    QString guhVersionString(NYMEA_VERSION_STRING);
     QVERIFY2(handShake.value("version").toString() == guhVersionString, "Handshake version doesn't match Guh version.");
 
     // Check whether pushButtonAuth is disabled

@@ -1,18 +1,18 @@
-# Parse and export GUH_VERSION_STRING
-GUH_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"')
+# Parse and export NYMEA_VERSION_STRING
+NYMEA_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"')
 
 # Install path for plugins
-GUH_PLUGINS_PATH=/usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')/guh/plugins/
+NYMEA_PLUGINS_PATH=/usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')/nymea/plugins/
 
 # define protocol versions
 JSON_PROTOCOL_VERSION_MAJOR=1
 JSON_PROTOCOL_VERSION_MINOR=2
 REST_API_VERSION=1
 
-DEFINES += GUH_VERSION_STRING=\\\"$${GUH_VERSION_STRING}\\\" \
+DEFINES += NYMEA_VERSION_STRING=\\\"$${NYMEA_VERSION_STRING}\\\" \
            JSON_PROTOCOL_VERSION=\\\"$${JSON_PROTOCOL_VERSION_MAJOR}.$${JSON_PROTOCOL_VERSION_MINOR}\\\" \
            REST_API_VERSION=\\\"$${REST_API_VERSION}\\\" \
-           GUH_PLUGINS_PATH=\\\"$${GUH_PLUGINS_PATH}\\\"
+           NYMEA_PLUGINS_PATH=\\\"$${NYMEA_PLUGINS_PATH}\\\"
 
 QT *= network websockets bluetooth dbus
 
@@ -62,9 +62,9 @@ coverage {
     generate-coverage-html.commands = \
         "@echo Collecting coverage data"; \
         "lcov --directory $${top_srcdir} --capture --output-file coverage.info --no-checksum --compat-libtool"; \
-        "lcov --extract coverage.info \"*/server/*.cpp\" --extract coverage.info \"*/libguh-core/*.cpp\" --extract coverage.info \"*/libguh/*.cpp\" -o coverage.info"; \
+        "lcov --extract coverage.info \"*/server/*.cpp\" --extract coverage.info \"*/libnymea-core/*.cpp\" --extract coverage.info \"*/libnymea/*.cpp\" -o coverage.info"; \
         "lcov --remove coverage.info \"moc_*.cpp\" --remove coverage.info \"*/test/*\" -o coverage.info"; \
-        "LANG=C genhtml --prefix $${top_srcdir} --output-directory coverage-html --title \"guh coverage\" --legend --show-details coverage.info"
+        "LANG=C genhtml --prefix $${top_srcdir} --output-directory coverage-html --title \"nymea coverage\" --legend --show-details coverage.info"
 
     clean-coverage-html.depends = clean-gcda
     clean-coverage-html.commands = \

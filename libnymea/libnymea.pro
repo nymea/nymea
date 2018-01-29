@@ -4,7 +4,7 @@ TARGET = nymea
 TEMPLATE = lib
 
 QT += network bluetooth
-DEFINES += LIBGUH_LIBRARY
+DEFINES += LIBNYMEA_LIBRARY
 
 QMAKE_LFLAGS += -fPIC
 
@@ -128,7 +128,7 @@ SOURCES += devicemanager.cpp \
         plugintimer.cpp \
         hardwaremanager.cpp \
 
-# install plugininfo python script for libguh-dev
+# install plugininfo python script for libnymea-dev
 generateplugininfo.files = $$top_srcdir/plugins/guh-generateplugininfo
 generateplugininfo.path = /usr/bin
 
@@ -136,7 +136,7 @@ INSTALLS +=  generateplugininfo
 
 # install header file with relative subdirectory
 for(header, HEADERS) {
-    path = /usr/include/guh/$${dirname(header)}
+    path = /usr/include/nymea/$${dirname(header)}
     eval(headers_$${path}.files += $${header})
     eval(headers_$${path}.path = $${path})
     eval(INSTALLS *= headers_$${path})

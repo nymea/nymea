@@ -221,17 +221,17 @@ DeviceManager::~DeviceManager()
 QStringList DeviceManager::pluginSearchDirs()
 {
     QStringList searchDirs;
-    QByteArray envPath = qgetenv("GUH_PLUGINS_PATH");
+    QByteArray envPath = qgetenv("NYMEA_PLUGINS_PATH");
     if (!envPath.isEmpty()) {
         searchDirs << QString(envPath).split(':');
     }
     searchDirs << QCoreApplication::applicationDirPath() + "/../lib/guh/plugins";
     searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";
     searchDirs << QCoreApplication::applicationDirPath() + "/../../../plugins/";
-    searchDirs << QString("%1").arg(GUH_PLUGINS_PATH);
+    searchDirs << QString("%1").arg(NYMEA_PLUGINS_PATH);
     QString snapDir = QString::fromUtf8(qgetenv("SNAP"));
     if (!snapDir.isEmpty()) {
-        searchDirs << QString("%1%2").arg(snapDir).arg(GUH_PLUGINS_PATH);
+        searchDirs << QString("%1%2").arg(snapDir).arg(NYMEA_PLUGINS_PATH);
     }
     return searchDirs;
 }

@@ -33,20 +33,20 @@ lrelease.commands = lrelease $$_FILE_; \
                     rsync -a $$top_srcdir/translations/*.qm $$top_builddir/translations/;
 
 # Install translation files
-translations.path = /usr/share/guh/translations
+translations.path = /usr/share/nymea/translations
 translations.files = $$[QT_SOURCE_TREE]/translations/*.qm
 translations.depends = lrelease
 INSTALLS += translations
 
 QMAKE_EXTRA_TARGETS += licensecheck doc test lupdate lrelease
 
-# Inform about guh build
+# Inform about nymea build
 message(============================================)
 message("Qt version:" $$[QT_VERSION])
-message("Building guh version $${GUH_VERSION_STRING}")
+message("Building nymea version $${NYMEA_VERSION_STRING}")
 message("JSON-RPC API version $${JSON_PROTOCOL_VERSION_MAJOR}.$${JSON_PROTOCOL_VERSION_MINOR}")
 message("REST API version $${REST_API_VERSION}")
-message("Plugin path $${GUH_PLUGINS_PATH}")
+message("Plugin path $${NYMEA_PLUGINS_PATH}")
 message("Source directory: $${top_srcdir}")
 message("Build directory: $${top_builddir}")
 
@@ -69,8 +69,8 @@ ccache {
 
 # Build tests
 disabletesting {
-    message("Building guh without tests")
+    message("Building nymea without tests")
 } else {
-    message("Building guh with tests")
+    message("Building nymea with tests")
     SUBDIRS += tests
 }

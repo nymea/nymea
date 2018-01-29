@@ -58,14 +58,14 @@ void TestLoggingLoading::initTestCase()
 void TestLoggingLoading::testLogMigration()
 {
     // Create LogEngine with log db from resource file
-    QString temporaryDbName = GuhSettings::settingsPath() + "/guhd-v2.sqlite";
+    QString temporaryDbName = NymeaSettings::settingsPath() + "/nymead-v2.sqlite";
 
     if (QFile::exists(temporaryDbName))
         QVERIFY(QFile(temporaryDbName).remove());
 
     // Copy v2 log db from resources to default settings path and set permissions
     qDebug() << "Copy logdb v2 to" << temporaryDbName;
-    QVERIFY(QFile::copy(":/guhd-v2.sqlite", temporaryDbName));
+    QVERIFY(QFile::copy(":/nymead-v2.sqlite", temporaryDbName));
     QVERIFY(QFile::setPermissions(temporaryDbName, QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup | QFile::ReadOther));
 
     LogEngine *logEngine = new LogEngine(temporaryDbName, this);
@@ -80,8 +80,8 @@ void TestLoggingLoading::testLogMigration()
 void TestLoggingLoading::testLogfileRotation()
 {
     // Create LogEngine with log db from resource file
-    QString temporaryDbName = GuhSettings::settingsPath() + "/guhd-broken.sqlite";
-    QString rotatedDbName = GuhSettings::settingsPath() + "/guhd-broken.sqlite.1";
+    QString temporaryDbName = NymeaSettings::settingsPath() + "/nymead-broken.sqlite";
+    QString rotatedDbName = NymeaSettings::settingsPath() + "/nymead-broken.sqlite.1";
 
     // Remove the files if there are some left
     if (QFile::exists(temporaryDbName))
@@ -92,7 +92,7 @@ void TestLoggingLoading::testLogfileRotation()
 
     // Copy broken log db from resources to default settings path and set permissions
     qDebug() << "Copy broken log db to" << temporaryDbName;
-    QVERIFY(QFile::copy(":/guhd-broken.sqlite", temporaryDbName));
+    QVERIFY(QFile::copy(":/nymead-broken.sqlite", temporaryDbName));
     QVERIFY(QFile::setPermissions(temporaryDbName, QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup | QFile::ReadOther));
 
     QVERIFY(!QFile::exists(rotatedDbName));

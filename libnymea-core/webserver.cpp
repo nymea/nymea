@@ -27,7 +27,7 @@
 
     The \l{WebServer} class provides a HTTP/1.1 web server. The web server
     provides access to the guh-webinterface and the path can be specified
-    in the \tt /etc/guh/guhd.conf file and to the guh \l{https://github.com/guh/guh/wiki/REST-Api-documentation}{REST API}.
+    in the \tt /etc/guh/nymead.conf file and to the guh \l{https://github.com/guh/guh/wiki/REST-Api-documentation}{REST API}.
     The default port for the web server is 3333, which is according to this
     \l{https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers}{list}
     officially free.
@@ -44,10 +44,10 @@
     The URL for the secure HTTPS (TLS 1.2) REST API access to a \l{RestResource}:
     \code https://localhost:3333/api/v1/{RestResource}\endcode
 
-    You can turn on the HTTPS server in the \tt WebServer section of the \tt /etc/guh/guhd.conf file.
+    You can turn on the HTTPS server in the \tt WebServer section of the \tt /etc/guh/nymead.conf file.
 
     \note For \tt HTTPS you need to have a certificate and configure it in the \tt SSL-configuration
-    section of the \tt /etc/guh/guhd.conf file.
+    section of the \tt /etc/guh/nymead.conf file.
 
     \sa WebServerClient, WebSocketServer, TcpServer
 */
@@ -72,7 +72,7 @@
 
 #include "webserver.h"
 #include "loggingcategories.h"
-#include "guhsettings.h"
+#include "nymeasettings.h"
 #include "guhcore.h"
 #include "httpreply.h"
 #include "httprequest.h"
@@ -385,7 +385,7 @@ void WebServer::readClient()
             reply->deleteLater();
             return;
         } else {
-            qCWarning(dcWebServer()) << "The debug server handler is disabled. You can enable it by adding \'debugServerEnabled=true\' in the \'nymead\' section of the guhd.conf file.";
+            qCWarning(dcWebServer()) << "The debug server handler is disabled. You can enable it by adding \'debugServerEnabled=true\' in the \'nymead\' section of the nymead.conf file.";
             HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
             reply->setClientId(clientId);
             sendHttpReply(reply);

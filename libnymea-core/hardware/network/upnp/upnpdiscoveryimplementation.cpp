@@ -42,7 +42,7 @@
 
 */
 
-#include "guhsettings.h"
+#include "nymeasettings.h"
 #include "loggingcategories.h"
 
 #include "upnpdiscoveryimplementation.h"
@@ -119,8 +119,8 @@ void UpnpDiscoveryImplementation::requestDeviceInformation(const QNetworkRequest
 void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int port)
 {
     // TODO: Once DeviceManager (and with that this can be moved into the server, use GuhCore's configuration manager instead of parsing the config here...
-    GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
-    globalSettings.beginGroup("guhd");
+    NymeaSettings globalSettings(NymeaSettings::SettingsRoleGlobal);
+    globalSettings.beginGroup("nymead");
     QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
     globalSettings.endGroup();
 
@@ -349,8 +349,8 @@ void UpnpDiscoveryImplementation::notificationTimeout()
 void UpnpDiscoveryImplementation::sendByeByeMessage()
 {
     // TODO: Once DeviceManager (and with that this can be moved into the server, use GuhCore's configuration manager instead of parsing the config here...
-    GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
-    globalSettings.beginGroup("guhd");
+    NymeaSettings globalSettings(NymeaSettings::SettingsRoleGlobal);
+    globalSettings.beginGroup("nymead");
     QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
     globalSettings.endGroup();
 
@@ -394,9 +394,9 @@ void UpnpDiscoveryImplementation::sendByeByeMessage()
 
 void UpnpDiscoveryImplementation::sendAliveMessage()
 {
-    // TODO: Once DeviceManager (and with that this can be moved into the server, use GuhCore's configuration manager instead of parsing the config here...
-    GuhSettings globalSettings(GuhSettings::SettingsRoleGlobal);
-    globalSettings.beginGroup("guhd");
+    // TODO: Once DeviceManager (and with that this) can be moved into the server, use GuhCore's configuration manager instead of parsing the config here...
+    NymeaSettings globalSettings(NymeaSettings::SettingsRoleGlobal);
+    globalSettings.beginGroup("nymead");
     QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
     globalSettings.endGroup();
 

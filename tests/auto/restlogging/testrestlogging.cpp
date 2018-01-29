@@ -22,7 +22,6 @@
 #include "guhtestbase.h"
 #include "guhcore.h"
 #include "devicemanager.h"
-#include "guhsettings.h"
 #include "plugin/deviceplugin.h"
 
 #include <QDebug>

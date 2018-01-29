@@ -110,7 +110,7 @@
         This \l{LogEntry} represents the enable/disable event from an \l{Rule}.
 */
 
-#include "guhsettings.h"
+#include "nymeasettings.h"
 #include "logengine.h"
 #include "loggingcategories.h"
 #include "logging.h"

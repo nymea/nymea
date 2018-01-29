@@ -100,6 +100,7 @@
 #include "jsonrpc/jsonrpcserver.h"
 #include "ruleengine.h"
 #include "networkmanager/networkmanager.h"
+#include "nymeasettings.h"
 
 #include "devicemanager.h"
 #include "plugin/device.h"
@@ -476,14 +477,14 @@ GuhCore::GuhCore(QObject *parent) :
 }
 
 void GuhCore::init() {
-    qCDebug(dcApplication()) << "Loading guh configurations" << GuhSettings(GuhSettings::SettingsRoleGlobal).fileName();
+    qCDebug(dcApplication()) << "Loading guh configurations" << NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName();
     m_configuration = new GuhConfiguration(this);
 
     qCDebug(dcApplication()) << "Creating Time Manager";
     m_timeManager = new TimeManager(m_configuration->timeZone(), this);
 
     qCDebug(dcApplication) << "Creating Log Engine";
-    m_logger = new LogEngine(GuhSettings::logPath(), this);
+    m_logger = new LogEngine(NymeaSettings::logPath(), this);
 
     qCDebug(dcApplication) << "Creating Hardware Manager";
     m_hardwareManager = new HardwareManagerImplementation(this);

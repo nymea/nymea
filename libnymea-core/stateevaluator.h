@@ -27,7 +27,7 @@
 
 #include <QDebug>
 
-class GuhSettings;
+class NymeaSettings;
 
 namespace guhserver {
 
@@ -52,8 +52,8 @@ public:
     void removeDevice(const DeviceId &deviceId);
     QList<DeviceId> containedDevices() const;
 
-    void dumpToSettings(GuhSettings &settings, const QString &groupName) const;
-    static StateEvaluator loadFromSettings(GuhSettings &settings, const QString &groupPrefix);
+    void dumpToSettings(NymeaSettings &settings, const QString &groupName) const;
+    static StateEvaluator loadFromSettings(NymeaSettings &settings, const QString &groupPrefix);
 
     bool isValid() const;
 

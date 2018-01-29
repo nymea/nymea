@@ -27,6 +27,7 @@
 #include "types/event.h"
 #include "types/action.h"
 #include "rule.h"
+#include "nymeasettings.h"
 
 #include <QObject>
 #include <QSqlDatabase>
@@ -38,7 +39,7 @@ class LogEngine: public QObject
 {
     Q_OBJECT
 public:
-    LogEngine(const QString &logPath = GuhSettings::logPath(), QObject *parent = 0);
+    LogEngine(const QString &logPath = NymeaSettings::logPath(), QObject *parent = 0);
     ~LogEngine();
 
     QList<LogEntry> logEntries(const LogFilter &filter = LogFilter()) const;

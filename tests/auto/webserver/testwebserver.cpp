@@ -381,7 +381,7 @@ void TestWebserver::getFiles_data()
     QTest::newRow("get /../../etc/passwd") << "/../../etc/passwd" << 404;
     QTest::newRow("get /../../") << "/../../" << 403;
     QTest::newRow("get /../") << "/../" << 403;
-    QTest::newRow("get /etc/guh/guhd.conf") << "/etc/guh/guhd.conf" << 404;
+    QTest::newRow("get /etc/guh/nymead.conf") << "/etc/guh/nymead.conf" << 404;
     QTest::newRow("get /etc/sudoers") <<  "/etc/sudoers" << 404;
     QTest::newRow("get /root/.ssh/id_rsa.pub") <<  "/root/.ssh/id_rsa.pub" << 404;
 }

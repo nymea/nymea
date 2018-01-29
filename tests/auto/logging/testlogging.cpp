@@ -22,7 +22,7 @@
 #include "guhtestbase.h"
 #include "guhcore.h"
 #include "devicemanager.h"
-#include "guhsettings.h"
+#include "nymeasettings.h"
 #include "logging/logentry.h"
 #include "logging/logvaluetool.h"
 #include "plugin/deviceplugin.h"
@@ -582,7 +582,7 @@ void TestLogging::testHouseKeeping()
     QVERIFY2(response.toMap().value("params").toMap().value("logEntries").toList().count() > 0, "Couldn't find state change event in log...");
 
     // Manually delete this device from config
-    GuhSettings settings(GuhSettings::SettingsRoleDevices);
+    NymeaSettings settings(NymeaSettings::SettingsRoleDevices);
     settings.beginGroup("DeviceConfig");
     settings.remove(deviceId.toString());
     settings.endGroup();

@@ -20,7 +20,7 @@
 
 #include "guhcore.h"
 #include "httpreply.h"
-#include "guhsettings.h"
+#include "nymeasettings.h"
 #include "httprequest.h"
 #include "loggingcategories.h"
 #include "debugserverhandler.h"
@@ -219,19 +219,19 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("tr");
     //: The settings path description in the server infromation section of the debug interface
     writer.writeTextElement("th", QCoreApplication::translate("main", "Settings path"));
-    writer.writeTextElement("td", GuhSettings::settingsPath());
+    writer.writeTextElement("td", NymeaSettings::settingsPath());
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The translation path description in the server infromation section of the debug interface
     writer.writeTextElement("th", QCoreApplication::translate("main", "Translations path"));
-    writer.writeTextElement("td", GuhSettings(GuhSettings::SettingsRoleGlobal).translationsPath());
+    writer.writeTextElement("td", NymeaSettings(NymeaSettings::SettingsRoleGlobal).translationsPath());
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The log database path description in the server infromation section of the debug interface
     writer.writeTextElement("th", QCoreApplication::translate("main", "Log database"));
-    writer.writeTextElement("td", GuhSettings(GuhSettings::SettingsRoleGlobal).logPath());
+    writer.writeTextElement("td", NymeaSettings(NymeaSettings::SettingsRoleGlobal).logPath());
     writer.writeEndElement(); // tr
 
     for (int i = 0; i < GuhCore::instance()->deviceManager()->pluginSearchDirs().count(); i++) {
@@ -273,7 +273,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-path-column");
-    writer.writeTextElement("p", GuhSettings::logPath());
+    writer.writeTextElement("p", NymeaSettings::logPath());
     writer.writeEndElement(); // div download-path-column
 
     writer.writeStartElement("div");
@@ -344,7 +344,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-path-column");
-    writer.writeTextElement("p", GuhSettings(GuhSettings::SettingsRoleGlobal).fileName());
+    writer.writeTextElement("p", NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName());
     writer.writeEndElement(); // div download-path-column
 
     writer.writeStartElement("div");
@@ -376,7 +376,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-path-column");
-    writer.writeTextElement("p", GuhSettings(GuhSettings::SettingsRoleDevices).fileName());
+    writer.writeTextElement("p", NymeaSettings(NymeaSettings::SettingsRoleDevices).fileName());
     writer.writeEndElement(); // div download-path-column
 
     writer.writeStartElement("div");
@@ -408,7 +408,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-path-column");
-    writer.writeTextElement("p", GuhSettings(GuhSettings::SettingsRoleDeviceStates).fileName());
+    writer.writeTextElement("p", NymeaSettings(NymeaSettings::SettingsRoleDeviceStates).fileName());
     writer.writeEndElement(); // div download-path-column
 
     writer.writeStartElement("div");
@@ -440,7 +440,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-path-column");
-    writer.writeTextElement("p", GuhSettings(GuhSettings::SettingsRoleRules).fileName());
+    writer.writeTextElement("p", NymeaSettings(NymeaSettings::SettingsRoleRules).fileName());
     writer.writeEndElement(); // div download-path-column
 
     writer.writeStartElement("div");
@@ -472,7 +472,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-path-column");
-    writer.writeTextElement("p", GuhSettings(GuhSettings::SettingsRolePlugins).fileName());
+    writer.writeTextElement("p", NymeaSettings(NymeaSettings::SettingsRolePlugins).fileName());
     writer.writeEndElement(); // div download-path-column
 
     writer.writeStartElement("div");
@@ -643,10 +643,10 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
 
     // Check if this is a logdb requested
     if (requestPath.startsWith("/debug/logdb.sql")) {
-        qCDebug(dcWebServer()) << "Loading" << GuhSettings::logPath();
-        QFile logDatabaseFile(GuhSettings::logPath());
+        qCDebug(dcWebServer()) << "Loading" << NymeaSettings::logPath();
+        QFile logDatabaseFile(NymeaSettings::logPath());
         if (!logDatabaseFile.exists()) {
-            qCWarning(dcWebServer()) << "Could not read log database file for debug download" << GuhSettings::logPath() << "file does not exist.";
+            qCWarning(dcWebServer()) << "Could not read log database file for debug download" << NymeaSettings::logPath() << "file does not exist.";
             HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             //: The HTTP error message of the debug interface. The %1 represents the file name.
@@ -655,7 +655,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
         }
 
         if (!logDatabaseFile.open(QFile::ReadOnly)) {
-            qCWarning(dcWebServer()) << "Could not read log database file for debug download" << GuhSettings::logPath();
+            qCWarning(dcWebServer()) << "Could not read log database file for debug download" << NymeaSettings::logPath();
             HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             //: The HTTP error message of the debug interface. The %1 represents the file name.
@@ -706,7 +706,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
     // Check if this is a settings request
     if (requestPath.startsWith("/debug/settings")) {
         if (requestPath.startsWith("/debug/settings/devices")) {
-            QString settingsFileName = GuhSettings(GuhSettings::SettingsRoleDevices).fileName();
+            QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleDevices).fileName();
             qCDebug(dcWebServer()) << "Loading" << settingsFileName;
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
@@ -735,7 +735,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
         }
 
         if (requestPath.startsWith("/debug/settings/rules")) {
-            QString settingsFileName = GuhSettings(GuhSettings::SettingsRoleRules).fileName();
+            QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleRules).fileName();
             qCDebug(dcWebServer()) << "Loading" << settingsFileName;
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
@@ -764,7 +764,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
         }
 
         if (requestPath.startsWith("/debug/settings/nymead")) {
-            QString settingsFileName = GuhSettings(GuhSettings::SettingsRoleGlobal).fileName();
+            QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName();
             qCDebug(dcWebServer()) << "Loading" << settingsFileName;
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
@@ -793,7 +793,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
         }
 
         if (requestPath.startsWith("/debug/settings/devicestates")) {
-            QString settingsFileName = GuhSettings(GuhSettings::SettingsRoleDeviceStates).fileName();
+            QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleDeviceStates).fileName();
             qCDebug(dcWebServer()) << "Loading" << settingsFileName;
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
@@ -822,7 +822,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
         }
 
         if (requestPath.startsWith("/debug/settings/plugins")) {
-            QString settingsFileName = GuhSettings(GuhSettings::SettingsRolePlugins).fileName();
+            QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRolePlugins).fileName();
             qCDebug(dcWebServer()) << "Loading" << settingsFileName;
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {

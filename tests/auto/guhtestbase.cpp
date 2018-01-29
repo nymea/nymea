@@ -22,7 +22,7 @@
 #include "guhtestbase.h"
 #include "mocktcpserver.h"
 #include "guhcore.h"
-#include "guhsettings.h"
+#include "nymeasettings.h"
 #include "devicemanager.h"
 #include "loggingcategories.h"
 #include "logging/logengine.h"
@@ -130,18 +130,18 @@ void GuhTestBase::initTestCase()
 
     // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
     qDebug() << "Reset test settings";
-    GuhSettings rulesSettings(GuhSettings::SettingsRoleRules);
+    NymeaSettings rulesSettings(NymeaSettings::SettingsRoleRules);
     rulesSettings.clear();
-    GuhSettings deviceSettings(GuhSettings::SettingsRoleDevices);
+    NymeaSettings deviceSettings(NymeaSettings::SettingsRoleDevices);
     deviceSettings.clear();
-    GuhSettings pluginSettings(GuhSettings::SettingsRolePlugins);
+    NymeaSettings pluginSettings(NymeaSettings::SettingsRolePlugins);
     pluginSettings.clear();
-    GuhSettings statesSettings(GuhSettings::SettingsRoleDeviceStates);
+    NymeaSettings statesSettings(NymeaSettings::SettingsRoleDeviceStates);
     statesSettings.clear();
 
     // Reset to default settings
-    GuhSettings guhdSettings(GuhSettings::SettingsRoleGlobal);
-    guhdSettings.clear();
+    NymeaSettings nymeadSettings(NymeaSettings::SettingsRoleGlobal);
+    nymeadSettings.clear();
 
     // debug categories
     // logging filers for core and libnymea

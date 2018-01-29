@@ -37,7 +37,7 @@
 #include <QDir>
 
 #include "guhservice.h"
-#include "guhsettings.h"
+#include "nymeasettings.h"
 #include "loggingcategories.h"
 
 
@@ -66,8 +66,8 @@ GuhService::~GuhService()
 void GuhService::start()
 {
     // check if config directory for logfile exists
-    if (!QDir().mkpath(GuhSettings::settingsPath())) {
-        fprintf(stdout, "Could not create guh settings directory %s", qPrintable(GuhSettings::settingsPath()));
+    if (!QDir().mkpath(NymeaSettings::settingsPath())) {
+        fprintf(stdout, "Could not create nymea settings directory %s", qPrintable(NymeaSettings::settingsPath()));
         exit(EXIT_FAILURE);
     }
     qCDebug(dcApplication) << "=====================================";

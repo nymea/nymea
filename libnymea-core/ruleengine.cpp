@@ -107,7 +107,7 @@
 
 #include "types/eventdescriptor.h"
 #include "types/paramdescriptor.h"
-#include "guhsettings.h"
+#include "nymeasettings.h"
 #include "devicemanager.h"
 #include "plugin/device.h"
 
@@ -124,7 +124,7 @@ namespace guhserver {
 RuleEngine::RuleEngine(QObject *parent) :
     QObject(parent)
 {
-    GuhSettings settings(GuhSettings::SettingsRoleRules);
+    NymeaSettings settings(NymeaSettings::SettingsRoleRules);
     qCDebug(dcRuleEngine) << "Loading rules from" << settings.fileName();
     foreach (const QString &idString, settings.childGroups()) {
         settings.beginGroup(idString);
@@ -797,7 +797,7 @@ RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId, bool fromEdit
     m_rules.remove(ruleId);
     m_activeRules.removeAll(ruleId);
 
-    GuhSettings settings(GuhSettings::SettingsRoleRules);
+    NymeaSettings settings(NymeaSettings::SettingsRoleRules);
     settings.beginGroup(ruleId.toString());
     settings.remove("");
     settings.endGroup();
@@ -1056,7 +1056,7 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     }
 
     // remove the rule from settings
-    GuhSettings settings(GuhSettings::SettingsRoleRules);
+    NymeaSettings settings(NymeaSettings::SettingsRoleRules);
     settings.beginGroup(id.toString());
     settings.remove("");
     settings.endGroup();
@@ -1215,7 +1215,7 @@ void RuleEngine::appendRule(const Rule &rule)
 
 void RuleEngine::saveRule(const Rule &rule)
 {
-    GuhSettings settings(GuhSettings::SettingsRoleRules);
+    NymeaSettings settings(NymeaSettings::SettingsRoleRules);
     settings.beginGroup(rule.id().toString());
     settings.setValue("name", rule.name());
     settings.setValue("enabled", rule.enabled());

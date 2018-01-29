@@ -38,7 +38,7 @@
 #include "guhcore.h"
 #include "devicemanager.h"
 #include "loggingcategories.h"
-#include "guhsettings.h"
+#include "nymeasettings.h"
 
 namespace guhserver {
 
@@ -169,7 +169,7 @@ QList<DeviceId> StateEvaluator::containedDevices() const
 
 /*! This method will be used to save this \l StateEvaluator to the given \a settings.
     The \a groupName will normally be the corresponding \l Rule. */
-void StateEvaluator::dumpToSettings(GuhSettings &settings, const QString &groupName) const
+void StateEvaluator::dumpToSettings(NymeaSettings &settings, const QString &groupName) const
 {
     settings.beginGroup(groupName);
 
@@ -193,7 +193,7 @@ void StateEvaluator::dumpToSettings(GuhSettings &settings, const QString &groupN
 
 /*! This method will be used to load a \l StateEvaluator from the given \a settings.
     The \a groupName will be the corresponding \l RuleId. Returns the loaded \l StateEvaluator. */
-StateEvaluator StateEvaluator::loadFromSettings(GuhSettings &settings, const QString &groupName)
+StateEvaluator StateEvaluator::loadFromSettings(NymeaSettings &settings, const QString &groupName)
 {
     settings.beginGroup(groupName);
     settings.beginGroup("stateDescriptor");

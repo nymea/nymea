@@ -49,7 +49,6 @@
 
 #include "radio433.h"
 #include "loggingcategories.h"
-#include "guhsettings.h"
 #include "hardware/gpio.h"
 
 #include <QFileInfo>

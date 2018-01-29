@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "usermanager.h"
-#include "guhsettings.h"
+#include "nymeasettings.h"
 #include "loggingcategories.h"
 #include "guhcore.h"
 #include "pushbuttondbusservice.h"
@@ -38,7 +38,7 @@ namespace guhserver {
 UserManager::UserManager(QObject *parent) : QObject(parent)
 {
     m_db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), "users");
-    m_db.setDatabaseName(GuhSettings::settingsPath() + "/user-db.sqlite");
+    m_db.setDatabaseName(NymeaSettings::settingsPath() + "/user-db.sqlite");
 
     if (!m_db.open()) {
         qCWarning(dcUserManager) << "Error opening users database:" << m_db.lastError().driverText();

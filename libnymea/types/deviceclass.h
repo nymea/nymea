@@ -24,7 +24,7 @@
 #ifndef DEVICECLASS_H
 #define DEVICECLASS_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 #include "types/vendor.h"
 #include "types/eventtype.h"
@@ -35,7 +35,7 @@
 #include <QList>
 #include <QUuid>
 
-class LIBGUH_EXPORT DeviceClass
+class LIBNYMEA_EXPORT DeviceClass
 {
     Q_GADGET
     Q_ENUMS(CreateMethod)

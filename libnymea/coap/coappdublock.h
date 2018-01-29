@@ -23,9 +23,9 @@
 
 #include <QByteArray>
 
-#include "libguh.h"
+#include "libnymea.h"
 
-class LIBGUH_EXPORT CoapPduBlock
+class LIBNYMEA_EXPORT CoapPduBlock
 {
 public:
     CoapPduBlock();

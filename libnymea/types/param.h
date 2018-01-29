@@ -24,13 +24,13 @@
 #ifndef PARAM_H
 #define PARAM_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 
 #include <QString>
 #include <QVariant>
 
-class LIBGUH_EXPORT Param
+class LIBNYMEA_EXPORT Param
 {
 public:
     Param(const ParamTypeId &paramTypeId = ParamTypeId(), const QVariant &value = QVariant());
@@ -50,7 +50,7 @@ private:
 Q_DECLARE_METATYPE(Param)
 QDebug operator<<(QDebug dbg, const Param &param);
 
-class LIBGUH_EXPORT ParamList: public QList<Param>
+class LIBNYMEA_EXPORT ParamList: public QList<Param>
 {
 public:
     bool hasParam(const ParamTypeId &paramTypeId) const;

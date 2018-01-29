@@ -29,7 +29,7 @@
 #include <QPointer>
 #include <QQueue>
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "coaprequest.h"
 #include "coapreply.h"
 #include "coapobserveresource.h"
@@ -45,7 +45,7 @@
 
 Q_DECLARE_LOGGING_CATEGORY(dcCoap)
 
-class LIBGUH_EXPORT Coap : public QObject
+class LIBNYMEA_EXPORT Coap : public QObject
 {
     Q_OBJECT
 

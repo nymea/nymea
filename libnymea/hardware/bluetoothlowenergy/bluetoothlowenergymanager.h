@@ -35,9 +35,9 @@
 #include "bluetoothdiscoveryreply.h"
 #include "bluetoothlowenergydevice.h"
 
-#include "libguh.h"
+#include "libnymea.h"
 
-class LIBGUH_EXPORT BluetoothLowEnergyManager : public HardwareResource
+class LIBNYMEA_EXPORT BluetoothLowEnergyManager : public HardwareResource
 {
     Q_OBJECT
 

@@ -23,7 +23,7 @@
 #ifndef NETWORKACCESSMANAGERIMPL_H
 #define NETWORKACCESSMANAGERIMPL_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 #include "network/networkaccessmanager.h"
 

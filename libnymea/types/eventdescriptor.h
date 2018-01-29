@@ -24,7 +24,7 @@
 #ifndef EVENTDESCRIPTOR_H
 #define EVENTDESCRIPTOR_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 #include "paramdescriptor.h"
 #include "event.h"
@@ -33,7 +33,7 @@
 #include <QVariantList>
 #include <QDebug>
 
-class LIBGUH_EXPORT EventDescriptor
+class LIBNYMEA_EXPORT EventDescriptor
 {
 public:
     enum Type {

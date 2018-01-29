@@ -26,7 +26,7 @@
 
 #include "devicemanager.h"
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 
 #include "types/deviceclass.h"
@@ -46,7 +46,7 @@
 class Device;
 class DeviceManager;
 
-class LIBGUH_EXPORT DevicePlugin: public QObject
+class LIBNYMEA_EXPORT DevicePlugin: public QObject
 {
     Q_OBJECT
 

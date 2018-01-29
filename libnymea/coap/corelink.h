@@ -24,10 +24,10 @@
 #include <QObject>
 #include <QDebug>
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "coappdu.h"
 
-class LIBGUH_EXPORT CoreLink
+class LIBNYMEA_EXPORT CoreLink
 {
 public:
     CoreLink();

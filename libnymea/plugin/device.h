@@ -25,7 +25,7 @@
 #define DEVICE_H
 
 #include "typeutils.h"
-#include "libguh.h"
+#include "libnymea.h"
 
 #include "types/deviceclass.h"
 #include "types/state.h"
@@ -35,7 +35,7 @@
 #include <QUuid>
 #include <QVariant>
 
-class LIBGUH_EXPORT Device: public QObject
+class LIBNYMEA_EXPORT Device: public QObject
 {
     Q_OBJECT
 

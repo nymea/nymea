@@ -24,13 +24,13 @@
 #ifndef ACTIONTYPE_H
 #define ACTIONTYPE_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 #include "paramtype.h"
 
 #include <QVariantList>
 
-class LIBGUH_EXPORT ActionType
+class LIBNYMEA_EXPORT ActionType
 {
 public:
     ActionType(const ActionTypeId &id);

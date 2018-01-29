@@ -25,7 +25,7 @@
 
 #include <QObject>
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "hardwareresource.h"
 #include "hardware/radio433/radio433.h"
 #include "radio433brennenstuhlgateway.h"

@@ -29,10 +29,10 @@
 #include <QVariant>
 
 #include "param.h"
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 
-class LIBGUH_EXPORT RuleActionParam
+class LIBNYMEA_EXPORT RuleActionParam
 {
 public:
     RuleActionParam(const Param &param = Param());
@@ -64,7 +64,7 @@ private:
 Q_DECLARE_METATYPE(RuleActionParam)
 QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam);
 
-class LIBGUH_EXPORT RuleActionParamList: public QList<RuleActionParam>
+class LIBNYMEA_EXPORT RuleActionParamList: public QList<RuleActionParam>
 {
 public:
     bool hasParam(const ParamTypeId &ruleActionParamTypeId) const;

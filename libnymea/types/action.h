@@ -24,13 +24,13 @@
 #ifndef ACTION_H
 #define ACTION_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 #include "param.h"
 
 #include <QVariantList>
 
-class LIBGUH_EXPORT Action
+class LIBNYMEA_EXPORT Action
 {
 public:
     explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId());

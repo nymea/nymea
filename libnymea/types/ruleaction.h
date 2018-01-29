@@ -24,11 +24,11 @@
 #ifndef RULEACTION_H
 #define RULEACTION_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "action.h"
 #include "ruleactionparam.h"
 
-class LIBGUH_EXPORT RuleAction
+class LIBNYMEA_EXPORT RuleAction
 {
 public:
     enum Type {

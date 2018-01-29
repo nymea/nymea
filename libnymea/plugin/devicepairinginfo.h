@@ -23,11 +23,11 @@
 #ifndef DEVICEPAIRINGINFO_H
 #define DEVICEPAIRINGINFO_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 #include "types/param.h"
 
-class LIBGUH_EXPORT DevicePairingInfo
+class LIBNYMEA_EXPORT DevicePairingInfo
 {
 public:
     DevicePairingInfo();

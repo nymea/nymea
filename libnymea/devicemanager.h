@@ -24,7 +24,7 @@
 #ifndef DEVICEMANAGER_H
 #define DEVICEMANAGER_H
 
-#include "libguh.h"
+#include "libnymea.h"
 
 #include "plugin/device.h"
 #include "plugin/devicedescriptor.h"
@@ -47,7 +47,7 @@ class DevicePlugin;
 class DevicePairingInfo;
 class HardwareManager;
 
-class LIBGUH_EXPORT DeviceManager : public QObject
+class LIBNYMEA_EXPORT DeviceManager : public QObject
 {
     Q_OBJECT
     Q_ENUMS(DeviceError)

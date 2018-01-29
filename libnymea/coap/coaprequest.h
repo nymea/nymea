@@ -24,11 +24,11 @@
 #include <QUrl>
 #include <QHostAddress>
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "coappdu.h"
 #include "coapoption.h"
 
-class LIBGUH_EXPORT CoapRequest
+class LIBNYMEA_EXPORT CoapRequest
 {
 //    friend class Coap;
 public:

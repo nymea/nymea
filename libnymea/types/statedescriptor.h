@@ -24,7 +24,7 @@
 #ifndef STATEDESCRIPTOR_H
 #define STATEDESCRIPTOR_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 #include "paramdescriptor.h"
 #include "state.h"
@@ -34,7 +34,7 @@
 #include <QVariantList>
 #include <QDebug>
 
-class LIBGUH_EXPORT StateDescriptor
+class LIBNYMEA_EXPORT StateDescriptor
 {
 public:
     StateDescriptor();

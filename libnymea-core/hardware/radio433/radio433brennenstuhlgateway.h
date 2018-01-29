@@ -28,7 +28,7 @@
 #include <QHostAddress>
 #include <QTimer>
 
-#include "libguh.h"
+#include "libnymea.h"
 
 namespace guhserver {
 

@@ -24,12 +24,12 @@
 #ifndef VENDOR_H
 #define VENDOR_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 
 #include <QString>
 
-class LIBGUH_EXPORT Vendor
+class LIBNYMEA_EXPORT Vendor
 {
 public:
     Vendor(const VendorId &id, const QString &name = QString());

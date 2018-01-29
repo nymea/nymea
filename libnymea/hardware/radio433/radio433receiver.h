@@ -23,7 +23,7 @@
 
 #include <QThread>
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "../gpio.h"
 
 class LIBGUH_EXPORT Radio433Receiver : public QThread

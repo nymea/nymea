@@ -28,7 +28,7 @@
 #include <QFile>
 #include <QDir>
 
-#include "libguh.h"
+#include "libnymea.h"
 
 /* i.MX6 PWMs
  *
@@ -57,7 +57,7 @@
  *
  */
 
-class LIBGUH_EXPORT Pwm : public QObject
+class LIBNYMEA_EXPORT Pwm : public QObject
 {
     Q_OBJECT
 public:

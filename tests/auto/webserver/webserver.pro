@@ -1,4 +1,4 @@
-include(../../../guh.pri)
+include(../../../nymea.pri)
 include(../autotests.pri)
 
 QT += xml

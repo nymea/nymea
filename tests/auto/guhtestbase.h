@@ -27,7 +27,7 @@
 #include "mocktcpserver.h"
 #include "devicemanager.h"
 #include "ruleengine.h"
-#include "jsontypes.h"
+#include "jsonrpc/jsontypes.h"
 
 #include <QObject>
 #include <QUuid>

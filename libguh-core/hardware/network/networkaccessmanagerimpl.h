@@ -25,7 +25,7 @@
 
 #include "libguh.h"
 #include "typeutils.h"
-#include "libguh/network/networkaccessmanager.h"
+#include "network/networkaccessmanager.h"
 
 #include <QObject>
 #include <QNetworkAccessManager>

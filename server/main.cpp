@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     application.setApplicationName("guhd");
     application.setApplicationVersion(GUH_VERSION_STRING);
 
-    // logging filers for core and libguh
+    // logging filers for core and libnymea
     s_loggingFilters.insert("Application", true);
     s_loggingFilters.insert("Warnings", true);
     s_loggingFilters.insert("DeviceManager", true);

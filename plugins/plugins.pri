@@ -1,12 +1,12 @@
-include(../guh.pri)
+include(../nymea.pri)
 
 TEMPLATE = lib
 CONFIG += plugin
 
 QT += network bluetooth
 
-INCLUDEPATH += $$top_srcdir/libguh
-LIBS += -L../../libguh -lguh
+INCLUDEPATH += $$top_srcdir/libnymea
+LIBS += -L../../libnymea -lnymea
 HEADERS += plugininfo.h
 
 # Create plugininfo file

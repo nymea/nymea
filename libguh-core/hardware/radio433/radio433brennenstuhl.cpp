@@ -25,7 +25,7 @@
   \brief The Radio433 class helps to interact with the 433 MHz receiver and transmitter.
 
   \ingroup hardware
-  \inmodule libguh
+  \inmodule libnymea
 
   This class handles all supported radio 433 MHz transmitter. Receiving data on the 433.92 MHz frequency
   is only supported, if there are \l{Gpio}{GPIO's} available and a suitable receiver is connected to GPIO 27. Examples for receiver

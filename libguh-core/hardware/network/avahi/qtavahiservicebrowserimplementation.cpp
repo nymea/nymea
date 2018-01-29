@@ -25,7 +25,7 @@
     \brief Allows to browse avahi services in the local network.
 
     \ingroup hardware
-    \inmodule libguh
+    \inmodule libnymea
 */
 
 /*! \fn void QtAvahiServiceBrowserImplementation::serviceEntryAdded(const AvahiServiceEntry &entry);

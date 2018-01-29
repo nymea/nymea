@@ -25,7 +25,7 @@
   \brief Allows to detect UPnP devices in the network.
 
   \ingroup hardware
-  \inmodule libguh
+  \inmodule libnymea
 
   This resource allows plugins to discover UPnP devices in the network and receive notification messages. The resource
   will bind a UDP socket to the multicast 239.255.255.250 on port 1900.

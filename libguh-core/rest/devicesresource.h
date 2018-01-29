@@ -24,7 +24,7 @@
 #include <QObject>
 #include <QHash>
 
-#include "jsontypes.h"
+#include "jsonrpc/jsontypes.h"
 #include "restresource.h"
 #include "httpreply.h"
 

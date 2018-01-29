@@ -49,7 +49,7 @@ GuhService::GuhService(int argc, char **argv):
 {
     application()->setOrganizationName("guh");
     application()->setApplicationName("nymead");
-    application()->setApplicationVersion(GUH_VERSION_STRING);
+    application()->setApplicationVersion(NYMEA_VERSION_STRING);
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
@@ -71,7 +71,8 @@ void GuhService::start()
         exit(EXIT_FAILURE);
     }
     qCDebug(dcApplication) << "=====================================";
-    qCDebug(dcApplication) << "nymead" << GUH_VERSION_STRING << "started as daemon.";
+
+    qCDebug(dcApplication) << "nymead" << NYMEA_VERSION_STRING << "started as daemon.";
     qCDebug(dcApplication) << "=====================================";
     GuhCore::instance();
 }

@@ -156,7 +156,7 @@ HttpReply::HttpReply(QObject *parent) :
 
     // set known headers
     setHeader(HttpReply::ContentTypeHeader, "text/plain; charset=\"utf-8\";");
-    setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
+    setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(NYMEA_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, GuhCore::instance()->timeManager()->currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
@@ -179,7 +179,7 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
 
     // set known / default headers
     setHeader(HttpReply::ContentTypeHeader, "text/plain; charset=\"utf-8\";");
-    setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(GUH_VERSION_STRING));
+    setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(NYMEA_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, GuhCore::instance()->timeManager()->currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");

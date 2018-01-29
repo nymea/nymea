@@ -25,7 +25,7 @@
 
 #include <QtCore/QtGlobal>
 
-#if defined(LIBGUH_LIBRARY)
+#if defined(LIBNYMEA_LIBRARY)
 #    define LIBGUH_EXPORT Q_DECL_EXPORT
 #else
 #    define LIBGUH_EXPORT Q_DECL_IMPORT

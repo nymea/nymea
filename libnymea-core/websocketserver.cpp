@@ -114,7 +114,7 @@ QHash<QString, QString> WebSocketServer::createTxtRecord()
     // Note: reversed order
     QHash<QString, QString> txt;
     txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
-    txt.insert("serverVersion", GUH_VERSION_STRING);
+    txt.insert("serverVersion", NYMEA_VERSION_STRING);
     txt.insert("manufacturer", "guh GmbH");
     txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", GuhCore::instance()->configuration()->serverName());

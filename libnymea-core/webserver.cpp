@@ -529,7 +529,7 @@ void WebServer::resetAvahiService()
     // Note: reversed order
     QHash<QString, QString> txt;
     txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
-    txt.insert("serverVersion", GUH_VERSION_STRING);
+    txt.insert("serverVersion", NYMEA_VERSION_STRING);
     txt.insert("manufacturer", "guh GmbH");
     txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", GuhCore::instance()->configuration()->serverName());
@@ -667,7 +667,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("manufacturerURL", "http://guh.io");
     writer.writeTextElement("modelDescription", "IoT server");
     writer.writeTextElement("modelName", "nymead");
-    writer.writeTextElement("modelNumber", GUH_VERSION_STRING);
+    writer.writeTextElement("modelNumber", NYMEA_VERSION_STRING);
     writer.writeTextElement("modelURL", "http://guh.io"); // (optional)
     writer.writeTextElement("UDN", "uuid:" + uuid);
 

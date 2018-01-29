@@ -189,7 +189,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("tr");
     //: The server version description in the server infromation section of the debug interface
     writer.writeTextElement("th", QCoreApplication::translate("main", "Server version"));
-    writer.writeTextElement("td", GUH_VERSION_STRING);
+    writer.writeTextElement("td", NYMEA_VERSION_STRING);
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");

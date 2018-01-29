@@ -24,12 +24,12 @@
 #ifndef PARAMDESCRIPTOR_H
 #define PARAMDESCRIPTOR_H
 
-#include "libguh.h"
+#include "libnymea.h"
 
 #include "param.h"
 #include "typeutils.h"
 
-class LIBGUH_EXPORT ParamDescriptor : public Param
+class LIBNYMEA_EXPORT ParamDescriptor : public Param
 {
 public:
     ParamDescriptor(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());

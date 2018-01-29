@@ -25,12 +25,12 @@
 #ifndef STATETYPE_H
 #define STATETYPE_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 
 #include <QVariant>
 
-class LIBGUH_EXPORT StateType
+class LIBNYMEA_EXPORT StateType
 {
 public:
     StateType(const StateTypeId &id);

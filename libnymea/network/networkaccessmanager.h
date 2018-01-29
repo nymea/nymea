@@ -23,7 +23,7 @@
 #ifndef NETWORKACCESSMANAGER_H
 #define NETWORKACCESSMANAGER_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 #include "hardwareresource.h"
 
@@ -34,7 +34,7 @@
 #include <QDebug>
 #include <QUrl>
 
-class LIBGUH_EXPORT NetworkAccessManager : public HardwareResource
+class LIBNYMEA_EXPORT NetworkAccessManager : public HardwareResource
 {
     Q_OBJECT
 

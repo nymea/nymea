@@ -29,7 +29,7 @@
 #include <QQueue>
 #include <QDebug>
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "hardware/gpio.h"
 
 namespace guhserver {

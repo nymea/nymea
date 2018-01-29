@@ -20,16 +20,16 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef LIBGUH
-#define LIBGUH
+#ifndef LIBNYMEA_H
+#define LIBNYMEA_H
 
 #include <QtCore/QtGlobal>
 
 #if defined(LIBNYMEA_LIBRARY)
-#    define LIBGUH_EXPORT Q_DECL_EXPORT
+#    define LIBNYMEA_EXPORT Q_DECL_EXPORT
 #else
-#    define LIBGUH_EXPORT Q_DECL_IMPORT
+#    define LIBNYMEA_EXPORT Q_DECL_IMPORT
 #endif
 
-#endif // LIBGUH
+#endif // LIBNYMEA_H
 

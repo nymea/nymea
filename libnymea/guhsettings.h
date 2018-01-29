@@ -26,11 +26,11 @@
 #include <QObject>
 #include <QVariant>
 
-#include "libguh.h"
+#include "libnymea.h"
 
 class QSettings;
 
-class LIBGUH_EXPORT GuhSettings : public QObject
+class LIBNYMEA_EXPORT GuhSettings : public QObject
 {
     Q_OBJECT
 public:

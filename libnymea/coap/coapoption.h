@@ -25,9 +25,9 @@
 #include <QObject>
 #include <QByteArray>
 
-#include "libguh.h"
+#include "libnymea.h"
 
-class LIBGUH_EXPORT CoapOption
+class LIBNYMEA_EXPORT CoapOption
 {
     Q_GADGET
     Q_ENUMS(Option)

@@ -29,9 +29,9 @@
 #include <QFile>
 #include <QTextStream>
 
-#include "libguh.h"
+#include "libnymea.h"
 
-class LIBGUH_EXPORT Gpio : public QObject
+class LIBNYMEA_EXPORT Gpio : public QObject
 {
     Q_OBJECT
 public:

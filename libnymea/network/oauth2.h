@@ -31,11 +31,11 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
-#include "libguh.h"
+#include "libnymea.h"
 
 // OAuth 2.0 - Resource Owner Password Credentials Grant: http://tools.ietf.org/html/rfc6749#section-4.3
 
-class LIBGUH_EXPORT OAuth2 : public QObject
+class LIBNYMEA_EXPORT OAuth2 : public QObject
 {
     Q_OBJECT
 public:

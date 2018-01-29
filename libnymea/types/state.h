@@ -24,13 +24,13 @@
 #ifndef STATE_H
 #define STATE_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 
 #include <QVariant>
 #include <QDebug>
 
-class LIBGUH_EXPORT State
+class LIBNYMEA_EXPORT State
 {
 public:
     State(const StateTypeId &stateTypeId, const DeviceId &deviceId);

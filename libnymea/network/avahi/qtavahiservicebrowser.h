@@ -26,11 +26,11 @@
 #include <QObject>
 #include <avahi-client/lookup.h>
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "hardwareresource.h"
 #include "avahiserviceentry.h"
 
-class LIBGUH_EXPORT QtAvahiServiceBrowser : public HardwareResource
+class LIBNYMEA_EXPORT QtAvahiServiceBrowser : public HardwareResource
 {
     Q_OBJECT
 

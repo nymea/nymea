@@ -25,10 +25,10 @@
 
 #include <QObject>
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "hardwareresource.h"
 
-class LIBGUH_EXPORT Radio433 : public HardwareResource
+class LIBNYMEA_EXPORT Radio433 : public HardwareResource
 {
     Q_OBJECT
 

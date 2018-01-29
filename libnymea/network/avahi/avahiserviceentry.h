@@ -30,9 +30,9 @@
 
 #include <avahi-client/publish.h>
 
-#include "libguh.h"
+#include "libnymea.h"
 
-class LIBGUH_EXPORT AvahiServiceEntry
+class LIBNYMEA_EXPORT AvahiServiceEntry
 {
 public:
     AvahiServiceEntry();

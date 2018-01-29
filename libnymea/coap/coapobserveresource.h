@@ -25,9 +25,9 @@
 #include <QHash>
 #include <QUrl>
 
-#include "libguh.h"
+#include "libnymea.h"
 
-class LIBGUH_EXPORT CoapObserveResource
+class LIBNYMEA_EXPORT CoapObserveResource
 {
 public:
     CoapObserveResource();

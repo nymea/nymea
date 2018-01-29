@@ -24,7 +24,7 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 #include "types/param.h"
 
@@ -32,7 +32,7 @@
 #include <QVariantList>
 #include <QDebug>
 
-class LIBGUH_EXPORT Event
+class LIBNYMEA_EXPORT Event
 {
 public:
     Event();

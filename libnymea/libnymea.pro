@@ -15,7 +15,7 @@ INSTALLS += target
 LIBS += -lavahi-common -lavahi-client
 
 HEADERS += devicemanager.h \
-        libguh.h \
+        libnymea.h \
         typeutils.h \
         loggingcategories.h \
         guhsettings.h \

@@ -26,9 +26,9 @@
 #include <QObject>
 #include <QBluetoothDeviceInfo>
 
-#include "libguh.h"
+#include "libnymea.h"
 
-class LIBGUH_EXPORT BluetoothDiscoveryReply : public QObject
+class LIBNYMEA_EXPORT BluetoothDiscoveryReply : public QObject
 {
     Q_OBJECT
 

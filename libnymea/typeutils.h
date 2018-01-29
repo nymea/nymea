@@ -27,7 +27,7 @@
 #include <QMetaType>
 #include <QUuid>
 
-#include "libguh.h"
+#include "libnymea.h"
 
 #define DECLARE_TYPE_ID(type) class type##Id: public QUuid \
 { \
@@ -60,7 +60,7 @@ DECLARE_TYPE_ID(Rule)
 
 DECLARE_TYPE_ID(PairingTransaction)
 
-class LIBGUH_EXPORT Types
+class LIBNYMEA_EXPORT Types
 {
     Q_GADGET
     Q_ENUMS(InputType)

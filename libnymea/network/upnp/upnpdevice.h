@@ -25,10 +25,10 @@
 
 #include <QObject>
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "upnpdevicedescriptor.h"
 
-class LIBGUH_EXPORT UpnpDevice : public QObject
+class LIBNYMEA_EXPORT UpnpDevice : public QObject
 {
     Q_OBJECT
 public:

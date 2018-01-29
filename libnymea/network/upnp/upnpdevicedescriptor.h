@@ -27,11 +27,11 @@
 #include <QHostAddress>
 #include <QUrl>
 
-#include "libguh.h"
+#include "libnymea.h"
 
 // reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
 
-class LIBGUH_EXPORT UpnpDeviceDescriptor
+class LIBNYMEA_EXPORT UpnpDeviceDescriptor
 {
 public:
     explicit UpnpDeviceDescriptor();

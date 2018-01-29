@@ -28,10 +28,10 @@
 #include <QSocketNotifier>
 #include <QFile>
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "gpio.h"
 
-class LIBGUH_EXPORT GpioMonitor : public QObject
+class LIBNYMEA_EXPORT GpioMonitor : public QObject
 {
     Q_OBJECT
 

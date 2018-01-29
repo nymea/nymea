@@ -24,7 +24,7 @@
 #include <QDebug>
 #include <QObject>
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "coapoption.h"
 #include "coappdublock.h"
 
@@ -43,7 +43,7 @@
  *      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  */
 
-class LIBGUH_EXPORT CoapPdu : public QObject
+class LIBNYMEA_EXPORT CoapPdu : public QObject
 {
     Q_OBJECT
     Q_ENUMS(MessageType)

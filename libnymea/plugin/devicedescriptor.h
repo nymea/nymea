@@ -24,13 +24,13 @@
 #ifndef DEVICEDESCRIPTION_H
 #define DEVICEDESCRIPTION_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 #include "types/param.h"
 
 #include <QVariantMap>
 
-class LIBGUH_EXPORT DeviceDescriptor
+class LIBNYMEA_EXPORT DeviceDescriptor
 {
 public:
     DeviceDescriptor();

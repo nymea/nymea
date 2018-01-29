@@ -27,10 +27,10 @@
 #include <QVariant>
 #include <QDebug>
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 
-class LIBGUH_EXPORT ParamType
+class LIBNYMEA_EXPORT ParamType
 {
 public:
     ParamType() = default;

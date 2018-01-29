@@ -24,13 +24,13 @@
 #ifndef TRIGGERTYPE_H
 #define TRIGGERTYPE_H
 
-#include "libguh.h"
+#include "libnymea.h"
 #include "typeutils.h"
 #include "paramtype.h"
 
 #include <QVariantMap>
 
-class LIBGUH_EXPORT EventType
+class LIBNYMEA_EXPORT EventType
 {
 public:
     EventType(const EventTypeId &id);

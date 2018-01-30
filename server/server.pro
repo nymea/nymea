@@ -18,10 +18,10 @@ LIBS += -L$$top_builddir/libnymea/ -lnymea \
 include(qtservice/qtservice.pri)
 
 SOURCES += main.cpp \
-    guhservice.cpp \
+    nymeaservice.cpp \
     guhapplication.cpp
 
 HEADERS += \
-    guhservice.h \
+    nymeaservice.h \
     guhapplication.h
 

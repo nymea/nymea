@@ -36,7 +36,7 @@
 #include "stdio.h"
 #include "unistd.h"
 #include "nymeacore.h"
-#include "guhservice.h"
+#include "nymeaservice.h"
 #include "nymeasettings.h"
 #include "nymeadbusservice.h"
 #include "guhapplication.h"
@@ -285,7 +285,7 @@ int main(int argc, char *argv[])
         return ret;
     }
 
-    GuhService service(argc, argv);
+    NymeaService service(argc, argv);
     int ret = service.exec();
     if (s_logFile.isOpen()) {
         s_logFile.close();

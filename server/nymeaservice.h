@@ -18,20 +18,20 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GUHSERVICE_H
-#define GUHSERVICE_H
+#ifndef NYMEASERVICE_H
+#define NYMEASERVICE_H
 
 #include <QCoreApplication>
 #include "qtservice/qtservice.h"
 
 namespace guhserver {
 
-class GuhService : public QtService<QCoreApplication>
+class NymeaService : public QtService<QCoreApplication>
 {
 
 public:
-    explicit GuhService(int argc, char **argv);
-    ~GuhService();
+    explicit NymeaService(int argc, char **argv);
+    ~NymeaService();
 
 protected:
     void start();
@@ -39,4 +39,4 @@ protected:
 
 }
 
-#endif // GUHSERVICE_H
+#endif // NYMEASERVICE_H

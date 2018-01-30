@@ -20,13 +20,13 @@
 
 
 /*!
-    \class guhserver::GuhService
+    \class guhserver::NymeaService
     \brief The daemon service reprenetation of the guh server.
 
     \ingroup core
     \inmodule server
 
-    The \l{GuhService} represents the forked nymead.
+    The \l{NymeaService} represents the forked nymead.
 
     \sa QtService
 */
@@ -36,7 +36,7 @@
 
 #include <QDir>
 
-#include "guhservice.h"
+#include "nymeaservice.h"
 #include "nymeacore.h"
 #include "nymeasettings.h"
 #include "loggingcategories.h"
@@ -45,7 +45,7 @@
 namespace guhserver {
 
 /*! Constructs the forked nymead application with the given argument count \a argc and argument vector \a argv. */
-GuhService::GuhService(int argc, char **argv):
+NymeaService::NymeaService(int argc, char **argv):
     QtService<QCoreApplication>(argc, argv, "nymea - IoT server")
 {
     application()->setOrganizationName("nymea");
@@ -59,12 +59,12 @@ GuhService::GuhService(int argc, char **argv):
 }
 
 /*! Destroyes the forked nymead application. */
-GuhService::~GuhService()
+NymeaService::~NymeaService()
 {
 }
 
 /*! Starts the forked nymead application. */
-void GuhService::start()
+void NymeaService::start()
 {
     // check if config directory for logfile exists
     if (!QDir().mkpath(NymeaSettings::settingsPath())) {

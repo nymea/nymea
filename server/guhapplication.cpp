@@ -30,7 +30,7 @@
     will provide a backtrace on a segmentation fault (SIGSEGV).
 
 
-    \sa GuhService
+    \sa NymeaService
 */
 
 #include "guhapplication.h"

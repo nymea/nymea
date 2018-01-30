@@ -61,7 +61,6 @@
 #include "httprequest.h"
 #include "loggingcategories.h"
 #include "devicemanager.h"
-#include "guhcore.h"
 
 #include <QJsonDocument>
 #include <QVariant>

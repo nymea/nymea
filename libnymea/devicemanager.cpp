@@ -152,7 +152,7 @@
 
 /*! \fn void DeviceManager::eventTriggered(const Event &event)
     The DeviceManager will emit a \l{Event} described in \a event whenever a Device
-    creates one. Normally only \l{guhserver::GuhCore} should connect to this and execute actions
+    creates one. Normally only \l{guhserver::NymeaCore} should connect to this and execute actions
     after checking back with the \{guhserver::RulesEngine}. Exceptions might be monitoring interfaces
     or similar, but you should never directly react to this in a \l{DevicePlugin}.
 */
@@ -177,8 +177,8 @@
 #include <QStandardPaths>
 #include <QDir>
 
-/*! Constructs the DeviceManager with the given \a locale and \a parent. There should only be one DeviceManager in the system created by \l{guhserver::GuhCore}.
- *  Use \c guhserver::GuhCore::instance()->deviceManager() instead to access the DeviceManager. */
+/*! Constructs the DeviceManager with the given \a locale and \a parent. There should only be one DeviceManager in the system created by \l{guhserver::NymeaCore}.
+ *  Use \c guhserver::NymeaCore::instance()->deviceManager() instead to access the DeviceManager. */
 DeviceManager::DeviceManager(HardwareManager *hardwareManager, const QLocale &locale, QObject *parent) :
     QObject(parent),
     m_hardwareManager(hardwareManager),

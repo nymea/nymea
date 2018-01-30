@@ -34,7 +34,7 @@
 */
 
 #include "servermanager.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "certificategenerator.h"
 
 #include <QSslCertificate>
@@ -155,7 +155,7 @@ MockTcpServer *ServerManager::mockTcpServer() const
 
 void ServerManager::tcpServerConfigurationChanged(const QString &id)
 {
-    ServerConfiguration config = GuhCore::instance()->configuration()->tcpServerConfigurations().value(id);
+    ServerConfiguration config = NymeaCore::instance()->configuration()->tcpServerConfigurations().value(id);
     TcpServer *server = m_tcpServers.value(id);
     if (server) {
         qDebug(dcConnection) << "Restarting TCP server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
@@ -185,7 +185,7 @@ void ServerManager::tcpServerConfigurationRemoved(const QString &id)
 void ServerManager::webSocketServerConfigurationChanged(const QString &id)
 {
     WebSocketServer *server = m_webSocketServers.value(id);
-    ServerConfiguration config = GuhCore::instance()->configuration()->webSocketServerConfigurations().value(id);
+    ServerConfiguration config = NymeaCore::instance()->configuration()->webSocketServerConfigurations().value(id);
     if (server) {
         qDebug(dcConnection) << "Restarting WebSocket server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
         server->stopServer();
@@ -213,7 +213,7 @@ void ServerManager::webSocketServerConfigurationRemoved(const QString &id)
 
 void ServerManager::webServerConfigurationChanged(const QString &id)
 {
-    WebServerConfiguration config = GuhCore::instance()->configuration()->webServerConfigurations().value(id);
+    WebServerConfiguration config = NymeaCore::instance()->configuration()->webServerConfigurations().value(id);
     WebServer *server = m_webServers.value(id);
     if (server) {
         qDebug(dcConnection) << "Restarting Web server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");

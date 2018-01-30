@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "guhtestbase.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
 #include "webserver.h"
@@ -82,7 +82,7 @@ void TestRestRules::initTestCase()
 {
     GuhTestBase::initTestCase();
 
-    foreach (const WebServerConfiguration &config, GuhCore::instance()->configuration()->webServerConfigurations()) {
+    foreach (const WebServerConfiguration &config, NymeaCore::instance()->configuration()->webServerConfigurations()) {
         if (config.port == 3333 && (config.address == QHostAddress("127.0.0.1") || config.address == QHostAddress("0.0.0.0"))) {
             qDebug() << "Already have a webserver listening on 127.0.0.1:3333";
             return;
@@ -94,7 +94,7 @@ void TestRestRules::initTestCase()
     config.address = QHostAddress("127.0.0.1");
     config.port = 3333;
     config.sslEnabled = true;
-    GuhCore::instance()->configuration()->setWebServerConfiguration(config);
+    NymeaCore::instance()->configuration()->setWebServerConfiguration(config);
     qApp->processEvents();
 }
 

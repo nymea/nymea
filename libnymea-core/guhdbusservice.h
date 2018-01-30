@@ -24,9 +24,12 @@
 
 #include <QObject>
 #include <QDBusConnection>
-#include "guhcore.h"
+#include <QDBusContext>
+
 
 namespace guhserver {
+
+class UserManager;
 
 class GuhDBusService : public QObject, public QDBusContext
 {

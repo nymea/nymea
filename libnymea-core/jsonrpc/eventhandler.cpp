@@ -38,7 +38,7 @@
 */
 
 #include "eventhandler.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "loggingcategories.h"
 
 namespace guhserver {
@@ -64,7 +64,7 @@ EventHandler::EventHandler(QObject *parent) :
     returns.insert("o:eventType", JsonTypes::eventTypeRef());
     setReturns("GetEventType", returns);
 
-    connect(GuhCore::instance(), &GuhCore::eventTriggered, this, &EventHandler::eventTriggered);
+    connect(NymeaCore::instance(), &NymeaCore::eventTriggered, this, &EventHandler::eventTriggered);
 }
 
 /*! Returns the name of the \l{EventHandler}. In this case \b Events.*/
@@ -84,7 +84,7 @@ JsonReply* EventHandler::GetEventType(const QVariantMap &params) const
 {
     qCDebug(dcJsonRpc) << "asked for event type" << params;
     EventTypeId eventTypeId(params.value("eventTypeId").toString());
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
+    foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
             if (eventType.id() == eventTypeId) {
                 QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);

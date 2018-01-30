@@ -20,71 +20,71 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::GuhCore
-    \brief The main entry point for the Guh Server and the place where all the messages are dispatched.
+    \class guhserver::NymeaCore
+    \brief The main entry point for the nymea Server and the place where all the messages are dispatched.
 
     \inmodule core
 
-    GuhCore is a singleton instance and the main entry point of the Guh daemon. It is responsible to
+    NymeaCore is a singleton instance and the main entry point of the nymea daemon. It is responsible to
     instantiate, set up and connect all the other components.
 */
 
-/*! \fn void guhserver::GuhCore::eventTriggered(const Event &event);
+/*! \fn void guhserver::NymeaCore::eventTriggered(const Event &event);
     This signal is emitted when an \a event happend.
 */
 
-/*! \fn void guhserver::GuhCore::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
+/*! \fn void guhserver::NymeaCore::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     This signal is emitted when the \l{State} of a \a device changed. The \a stateTypeId parameter describes the
     \l{StateType} and the \a value parameter holds the new value.
 */
 
-/*! \fn void guhserver::GuhCore::deviceRemoved(const DeviceId &deviceId);
+/*! \fn void guhserver::NymeaCore::deviceRemoved(const DeviceId &deviceId);
     This signal is emitted when a \l{Device} with the given \a deviceId was removed.
 */
 
-/*! \fn void guhserver::GuhCore::deviceAdded(Device *device);
+/*! \fn void guhserver::NymeaCore::deviceAdded(Device *device);
     This signal is emitted when a \a device was added to the system.
 */
 
-/*! \fn void guhserver::GuhCore::deviceChanged(Device *device);
+/*! \fn void guhserver::NymeaCore::deviceChanged(Device *device);
     This signal is emitted when the \l{ParamList}{Params} of a \a device have been changed.
 */
 
-/*! \fn void guhserver::GuhCore::actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
+/*! \fn void guhserver::NymeaCore::actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
     This signal is emitted when the \l{Action} with the given \a id is finished.
     The \a status of the \l{Action} execution will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
-/*! \fn void guhserver::GuhCore::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+/*! \fn void guhserver::NymeaCore::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
     This signal is emitted when the discovery of a \a deviceClassId is finished. The \a deviceDescriptors parameter describes the
     list of \l{DeviceDescriptor}{DeviceDescriptors} of all discovered \l{Device}{Devices}.
     \sa DeviceManager::discoverDevices()
 */
 
-/*! \fn void guhserver::GuhCore::deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
+/*! \fn void guhserver::NymeaCore::deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
     This signal is emitted when the setup of a \a device is finished. The \a status parameter describes the
     \l{DeviceManager::DeviceError}{DeviceError} that occurred.
 */
 
-/*! \fn void guhserver::GuhCore::deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status);
+/*! \fn void guhserver::NymeaCore::deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status);
     This signal is emitted when the edit request of a \a device is finished. The \a status of the edit request will be
     described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
-/*! \fn void guhserver::GuhCore::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
+/*! \fn void guhserver::NymeaCore::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
     The DeviceManager will emit a this Signal when the pairing of a \l{Device} with the \a deviceId and \a pairingTransactionId is finished.
     The \a status of the pairing will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
-/*! \fn void guhserver::GuhCore::ruleRemoved(const RuleId &ruleId);
+/*! \fn void guhserver::NymeaCore::ruleRemoved(const RuleId &ruleId);
     This signal is emitted when a \l{Rule} with the given \a ruleId was removed.
 */
 
-/*! \fn void guhserver::GuhCore::ruleAdded(const Rule &rule);
+/*! \fn void guhserver::NymeaCore::ruleAdded(const Rule &rule);
     This signal is emitted when a \a rule was added to the system.
 */
 
-/*! \fn void guhserver::GuhCore::ruleConfigurationChanged(const Rule &rule);
+/*! \fn void guhserver::NymeaCore::ruleConfigurationChanged(const Rule &rule);
     This signal is emitted when the configuration of \a rule changed.
 */
 
@@ -95,7 +95,7 @@
     \sa Rule::active()
 */
 
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "loggingcategories.h"
 #include "jsonrpc/jsonrpcserver.h"
 #include "ruleengine.h"
@@ -108,19 +108,19 @@
 
 namespace guhserver {
 
-GuhCore* GuhCore::s_instance = 0;
+NymeaCore* NymeaCore::s_instance = 0;
 
-/*! Returns a pointer to the single \l{GuhCore} instance. */
-GuhCore *GuhCore::instance()
+/*! Returns a pointer to the single \l{NymeaCore} instance. */
+NymeaCore *NymeaCore::instance()
 {
     if (!s_instance) {
-        s_instance = new GuhCore();
+        s_instance = new NymeaCore();
     }
     return s_instance;
 }
 
-/*! Destructor of the \l{GuhCore}. */
-GuhCore::~GuhCore()
+/*! Destructor of the \l{NymeaCore}. */
+NymeaCore::~NymeaCore()
 {
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), false);
 
@@ -144,8 +144,8 @@ GuhCore::~GuhCore()
     delete m_cloudManager;
 }
 
-/*! Destroyes the \l{GuhCore} instance. */
-void GuhCore::destroy()
+/*! Destroyes the \l{NymeaCore} instance. */
+void NymeaCore::destroy()
 {
     if (s_instance) {
         delete s_instance;
@@ -155,7 +155,7 @@ void GuhCore::destroy()
 }
 
 /*! Removes a configured \l{Device} with the given \a deviceId and \a removePolicyList. */
-QPair<DeviceManager::DeviceError, QList<RuleId> > GuhCore::removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList)
+QPair<DeviceManager::DeviceError, QList<RuleId> > NymeaCore::removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList)
 {
     // Check if this is a child device
     Device *device = m_deviceManager->findConfiguredDevice(deviceId);
@@ -251,7 +251,7 @@ QPair<DeviceManager::DeviceError, QList<RuleId> > GuhCore::removeConfiguredDevic
 
 
 /*! Removes a configured \l{Device} with the given \a deviceId and \a removePolicy. */
-DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy)
+DeviceManager::DeviceError NymeaCore::removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy)
 {
     // Check if this is a child device
     Device *device = m_deviceManager->findConfiguredDevice(deviceId);
@@ -324,7 +324,7 @@ DeviceManager::DeviceError GuhCore::removeConfiguredDevice(const DeviceId &devic
 
 /*! Calls the metheod DeviceManager::executeAction(\a action).
  *  \sa DeviceManager::executeAction(), */
-DeviceManager::DeviceError GuhCore::executeAction(const Action &action)
+DeviceManager::DeviceError NymeaCore::executeAction(const Action &action)
 {
     DeviceManager::DeviceError ret = m_deviceManager->executeAction(action);
     if (ret == DeviceManager::DeviceErrorNoError) {
@@ -338,7 +338,7 @@ DeviceManager::DeviceError GuhCore::executeAction(const Action &action)
 }
 
 /*! Execute the given \a ruleActions. */
-void GuhCore::executeRuleActions(const QList<RuleAction> ruleActions)
+void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
 {
     QList<Action> actions;
     foreach (const RuleAction &ruleAction, ruleActions) {
@@ -394,7 +394,7 @@ void GuhCore::executeRuleActions(const QList<RuleAction> ruleActions)
 
 /*! Calls the metheod RuleEngine::removeRule(\a id).
  *  \sa RuleEngine, */
-RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
+RuleEngine::RuleError NymeaCore::removeRule(const RuleId &id)
 {
     RuleEngine::RuleError removeError = m_ruleEngine->removeRule(id);
     if (removeError == RuleEngine::RuleErrorNoError)
@@ -403,80 +403,80 @@ RuleEngine::RuleError GuhCore::removeRule(const RuleId &id)
     return removeError;
 }
 
-/*! Returns a pointer to the \l{GuhConfiguration} instance owned by GuhCore.*/
-GuhConfiguration *GuhCore::configuration() const
+/*! Returns a pointer to the \l{GuhConfiguration} instance owned by NymeaCore.*/
+GuhConfiguration *NymeaCore::configuration() const
 {
     return m_configuration;
 }
 
-/*! Returns a pointer to the \l{DeviceManager} instance owned by GuhCore.*/
-DeviceManager *GuhCore::deviceManager() const
+/*! Returns a pointer to the \l{DeviceManager} instance owned by NymeaCore.*/
+DeviceManager *NymeaCore::deviceManager() const
 {
     return m_deviceManager;
 }
 
-/*! Returns a pointer to the \l{RuleEngine} instance owned by GuhCore.*/
-RuleEngine *GuhCore::ruleEngine() const
+/*! Returns a pointer to the \l{RuleEngine} instance owned by NymeaCore.*/
+RuleEngine *NymeaCore::ruleEngine() const
 {
     return m_ruleEngine;
 }
 
-/*! Returns a pointer to the \l{TimeManager} instance owned by GuhCore.*/
-TimeManager *GuhCore::timeManager() const
+/*! Returns a pointer to the \l{TimeManager} instance owned by NymeaCore.*/
+TimeManager *NymeaCore::timeManager() const
 {
     return m_timeManager;
 }
 
-/*! Returns a pointer to the \l{ServerManager} instance owned by GuhCore. */
-ServerManager *GuhCore::serverManager() const
+/*! Returns a pointer to the \l{ServerManager} instance owned by NymeaCore. */
+ServerManager *NymeaCore::serverManager() const
 {
     return m_serverManager;
 }
 
 /*! Returns the list of available system languages. */
-QStringList GuhCore::getAvailableLanguages()
+QStringList NymeaCore::getAvailableLanguages()
 {
     // TODO: parse available translation files
     return QStringList() << "en_US" << "de_DE";
 }
 
-/*! Returns a pointer to the \l{BluetoothServer} instance owned by GuhCore. */
-BluetoothServer *GuhCore::bluetoothServer() const
+/*! Returns a pointer to the \l{BluetoothServer} instance owned by NymeaCore. */
+BluetoothServer *NymeaCore::bluetoothServer() const
 {
     return m_serverManager->bluetoothServer();
 }
 
-/*! Returns a pointer to the \l{NetworkManager} instance owned by GuhCore. */
-NetworkManager *GuhCore::networkManager() const
+/*! Returns a pointer to the \l{NetworkManager} instance owned by NymeaCore. */
+NetworkManager *NymeaCore::networkManager() const
 {
     return m_networkManager;
 }
 
-UserManager *GuhCore::userManager() const
+UserManager *NymeaCore::userManager() const
 {
     return m_userManager;
 }
 
-CloudManager *GuhCore::cloudManager() const
+CloudManager *NymeaCore::cloudManager() const
 {
     return m_cloudManager;
 }
 
-DebugServerHandler *GuhCore::debugServerHandler() const
+DebugServerHandler *NymeaCore::debugServerHandler() const
 {
     return m_debugServerHandler;
 }
 
 
-/*! Constructs GuhCore with the given \a parent. This is private.
-    Use \l{GuhCore::instance()} to access the single instance.*/
-GuhCore::GuhCore(QObject *parent) :
+/*! Constructs NymeaCore with the given \a parent. This is private.
+    Use \l{NymeaCore::instance()} to access the single instance.*/
+NymeaCore::NymeaCore(QObject *parent) :
     QObject(parent)
 {
     staticMetaObject.invokeMethod(this, "init", Qt::QueuedConnection);
 }
 
-void GuhCore::init() {
+void NymeaCore::init() {
     qCDebug(dcApplication()) << "Loading guh configurations" << NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName();
     m_configuration = new GuhConfiguration(this);
 
@@ -518,30 +518,30 @@ void GuhCore::init() {
     CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
     m_deviceManager->registerStaticPlugin(cloudNotifications, cloudNotifications->metaData());
 
-    connect(m_configuration, &GuhConfiguration::localeChanged, this, &GuhCore::onLocaleChanged);
+    connect(m_configuration, &GuhConfiguration::localeChanged, this, &NymeaCore::onLocaleChanged);
     connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::setEnabled);
     connect(m_configuration, &GuhConfiguration::serverNameChanged, m_cloudManager, &CloudManager::setDeviceName);
     connect(m_configuration, &GuhConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
 
-    connect(m_deviceManager, &DeviceManager::pluginConfigChanged, this, &GuhCore::pluginConfigChanged);
-    connect(m_deviceManager, &DeviceManager::eventTriggered, this, &GuhCore::gotEvent);
-    connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &GuhCore::deviceStateChanged);
-    connect(m_deviceManager, &DeviceManager::deviceAdded, this, &GuhCore::deviceAdded);
-    connect(m_deviceManager, &DeviceManager::deviceChanged, this, &GuhCore::deviceChanged);
-    connect(m_deviceManager, &DeviceManager::deviceRemoved, this, &GuhCore::deviceRemoved);
-    connect(m_deviceManager, &DeviceManager::deviceDisappeared, this, &GuhCore::onDeviceDisappeared);
-    connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &GuhCore::actionExecutionFinished);
-    connect(m_deviceManager, &DeviceManager::devicesDiscovered, this, &GuhCore::devicesDiscovered);
-    connect(m_deviceManager, &DeviceManager::deviceSetupFinished, this, &GuhCore::deviceSetupFinished);
-    connect(m_deviceManager, &DeviceManager::deviceReconfigurationFinished, this, &GuhCore::deviceReconfigurationFinished);
-    connect(m_deviceManager, &DeviceManager::pairingFinished, this, &GuhCore::pairingFinished);
-    connect(m_deviceManager, &DeviceManager::loaded, this, &GuhCore::deviceManagerLoaded);
+    connect(m_deviceManager, &DeviceManager::pluginConfigChanged, this, &NymeaCore::pluginConfigChanged);
+    connect(m_deviceManager, &DeviceManager::eventTriggered, this, &NymeaCore::gotEvent);
+    connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &NymeaCore::deviceStateChanged);
+    connect(m_deviceManager, &DeviceManager::deviceAdded, this, &NymeaCore::deviceAdded);
+    connect(m_deviceManager, &DeviceManager::deviceChanged, this, &NymeaCore::deviceChanged);
+    connect(m_deviceManager, &DeviceManager::deviceRemoved, this, &NymeaCore::deviceRemoved);
+    connect(m_deviceManager, &DeviceManager::deviceDisappeared, this, &NymeaCore::onDeviceDisappeared);
+    connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &NymeaCore::actionExecutionFinished);
+    connect(m_deviceManager, &DeviceManager::devicesDiscovered, this, &NymeaCore::devicesDiscovered);
+    connect(m_deviceManager, &DeviceManager::deviceSetupFinished, this, &NymeaCore::deviceSetupFinished);
+    connect(m_deviceManager, &DeviceManager::deviceReconfigurationFinished, this, &NymeaCore::deviceReconfigurationFinished);
+    connect(m_deviceManager, &DeviceManager::pairingFinished, this, &NymeaCore::pairingFinished);
+    connect(m_deviceManager, &DeviceManager::loaded, this, &NymeaCore::deviceManagerLoaded);
 
-    connect(m_ruleEngine, &RuleEngine::ruleAdded, this, &GuhCore::ruleAdded);
-    connect(m_ruleEngine, &RuleEngine::ruleRemoved, this, &GuhCore::ruleRemoved);
-    connect(m_ruleEngine, &RuleEngine::ruleConfigurationChanged, this, &GuhCore::ruleConfigurationChanged);
+    connect(m_ruleEngine, &RuleEngine::ruleAdded, this, &NymeaCore::ruleAdded);
+    connect(m_ruleEngine, &RuleEngine::ruleRemoved, this, &NymeaCore::ruleRemoved);
+    connect(m_ruleEngine, &RuleEngine::ruleConfigurationChanged, this, &NymeaCore::ruleConfigurationChanged);
 
-    connect(m_timeManager, &TimeManager::dateTimeChanged, this, &GuhCore::onDateTimeChanged);
+    connect(m_timeManager, &TimeManager::dateTimeChanged, this, &NymeaCore::onDateTimeChanged);
     connect(m_timeManager, &TimeManager::tick, m_deviceManager, &DeviceManager::timeTick);
 
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), true);
@@ -554,7 +554,7 @@ void GuhCore::init() {
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in
     here will be evaluated by the \l{RuleEngine} and the according \l{RuleAction}{RuleActions} are executed.*/
-void GuhCore::gotEvent(const Event &event)
+void NymeaCore::gotEvent(const Event &event)
 {
     m_logger->logEvent(event);
     emit eventTriggered(event);
@@ -610,7 +610,7 @@ void GuhCore::gotEvent(const Event &event)
     executeRuleActions(actions);
 }
 
-void GuhCore::onDateTimeChanged(const QDateTime &dateTime)
+void NymeaCore::onDateTimeChanged(const QDateTime &dateTime)
 {
     QList<RuleAction> actions;
     foreach (const Rule &rule, m_ruleEngine->evaluateTime(dateTime)) {
@@ -634,37 +634,37 @@ void GuhCore::onDateTimeChanged(const QDateTime &dateTime)
     executeRuleActions(actions);
 }
 
-void GuhCore::onLocaleChanged()
+void NymeaCore::onLocaleChanged()
 {
     m_deviceManager->setLocale(m_configuration->locale());
 }
 
 /*! Return the instance of the log engine */
-LogEngine* GuhCore::logEngine() const
+LogEngine* NymeaCore::logEngine() const
 {
     return m_logger;
 }
 
 /*! Returns the pointer to the \l{JsonRPCServer} of this instance. */
-JsonRPCServer *GuhCore::jsonRPCServer() const
+JsonRPCServer *NymeaCore::jsonRPCServer() const
 {
     return m_serverManager->jsonServer();
 }
 
 /*! Returns the pointer to the \l{RestServer} of this instance. */
-RestServer *GuhCore::restServer() const
+RestServer *NymeaCore::restServer() const
 {
     return m_serverManager->restServer();
 }
 
-void GuhCore::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status)
+void NymeaCore::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status)
 {
     emit actionExecuted(id, status);
     Action action = m_pendingActions.take(id);
     m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
 }
 
-void GuhCore::onDeviceDisappeared(const DeviceId &deviceId)
+void NymeaCore::onDeviceDisappeared(const DeviceId &deviceId)
 {
     Device *device = m_deviceManager->findConfiguredDevice(deviceId);
     if (!device) {
@@ -718,7 +718,7 @@ void GuhCore::onDeviceDisappeared(const DeviceId &deviceId)
     }
 }
 
-void GuhCore::deviceManagerLoaded()
+void NymeaCore::deviceManagerLoaded()
 {
     // Do some houskeeping...
     qCDebug(dcApplication()) << "Starting housekeeping...";

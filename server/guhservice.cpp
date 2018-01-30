@@ -37,6 +37,7 @@
 #include <QDir>
 
 #include "guhservice.h"
+#include "nymeacore.h"
 #include "nymeasettings.h"
 #include "loggingcategories.h"
 
@@ -74,7 +75,7 @@ void GuhService::start()
 
     qCDebug(dcApplication) << "nymead" << NYMEA_VERSION_STRING << "started as daemon.";
     qCDebug(dcApplication) << "=====================================";
-    GuhCore::instance();
+    NymeaCore::instance();
 }
 
 }

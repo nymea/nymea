@@ -20,8 +20,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "guhtestbase.h"
-#include "guhcore.h"
 #include "devicemanager.h"
+#include "nymeasettings.h"
 #include "mocktcpserver.h"
 
 #include <QtTest/QtTest>

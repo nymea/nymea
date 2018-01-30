@@ -24,8 +24,6 @@
 #include <QCoreApplication>
 #include "qtservice/qtservice.h"
 
-#include "guhcore.h"
-
 namespace guhserver {
 
 class GuhService : public QtService<QCoreApplication>

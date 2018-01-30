@@ -73,7 +73,7 @@
 #include "webserver.h"
 #include "loggingcategories.h"
 #include "nymeasettings.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "httpreply.h"
 #include "httprequest.h"
 #include "rest/restresource.h"
@@ -368,7 +368,7 @@ void WebServer::readClient()
     if (request.url().path().startsWith("/debug")) {
 
         // Check if debug server is enabled
-        if (GuhCore::instance()->configuration()->debugServerEnabled()) {
+        if (NymeaCore::instance()->configuration()->debugServerEnabled()) {
             // Verify methods
             if (request.method() != HttpRequest::Get && request.method() != HttpRequest::Options) {
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::MethodNotAllowed);
@@ -379,7 +379,7 @@ void WebServer::readClient()
                 return;
             }
 
-            HttpReply *reply = GuhCore::instance()->debugServerHandler()->processDebugRequest(request.url().path());
+            HttpReply *reply = NymeaCore::instance()->debugServerHandler()->processDebugRequest(request.url().path());
             reply->setClientId(clientId);
             sendHttpReply(reply);
             reply->deleteLater();
@@ -532,8 +532,8 @@ void WebServer::resetAvahiService()
     txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
     txt.insert("serverVersion", NYMEA_VERSION_STRING);
     txt.insert("manufacturer", "guh GmbH");
-    txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
-    txt.insert("name", GuhCore::instance()->configuration()->serverName());
+    txt.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
+    txt.insert("name", NymeaCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", m_configuration.sslEnabled ? "true" : "false");
 
     if (!m_avahiService->registerService(QString("guhIO-http-%1").arg(m_configuration.id), m_configuration.port, "_http._tcp", txt)) {
@@ -597,7 +597,7 @@ bool WebServer::stopServer()
 
 QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 {
-    QByteArray uuid = GuhCore::instance()->configuration()->serverUuid().toByteArray();
+    QByteArray uuid = NymeaCore::instance()->configuration()->serverUuid().toByteArray();
 
     QByteArray data;
     QXmlStreamWriter writer(&data);
@@ -619,7 +619,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 
     ServerConfiguration websocketConfiguration;
     bool webSocketServerFound = false;
-    foreach (const ServerConfiguration &config, GuhCore::instance()->configuration()->webSocketServerConfigurations()) {
+    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {
         if (config.address == QHostAddress("0.0.0.0") || config.address == address) {
             if (!webSocketServerFound) {
                 websocketConfiguration = config;
@@ -640,7 +640,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 
     ServerConfiguration tcpServerConfiguration;
     bool tcpServerFound = false;
-    foreach (const ServerConfiguration &config, GuhCore::instance()->configuration()->tcpServerConfigurations()) {
+    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->tcpServerConfigurations()) {
         if (config.address == QHostAddress("0.0.0.0") || config.address == address) {
             if (!tcpServerFound) {
                 tcpServerConfiguration = config;
@@ -663,7 +663,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 
     writer.writeStartElement("device");
     writer.writeTextElement("deviceType", "urn:schemas-upnp-org:device:Basic:1");
-    writer.writeTextElement("friendlyName", GuhCore::instance()->configuration()->serverName());
+    writer.writeTextElement("friendlyName", NymeaCore::instance()->configuration()->serverName());
     writer.writeTextElement("manufacturer", "guh GmbH");
     writer.writeTextElement("manufacturerURL", "http://guh.io");
     writer.writeTextElement("modelDescription", "IoT server");

@@ -52,7 +52,7 @@
 
 #include "plugin/device.h"
 #include "devicemanager.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "ruleengine.h"
 #include "loggingcategories.h"
 #include "logging/logvaluetool.h"
@@ -1060,7 +1060,7 @@ QVariantMap JsonTypes::packWirelessNetworkDevice(WirelessNetworkDevice *networkD
 QVariantList JsonTypes::packSupportedVendors()
 {
     QVariantList supportedVendors;
-    foreach (const Vendor &vendor, GuhCore::instance()->deviceManager()->supportedVendors())
+    foreach (const Vendor &vendor, NymeaCore::instance()->deviceManager()->supportedVendors())
         supportedVendors.append(packVendor(vendor));
 
     return supportedVendors;
@@ -1070,7 +1070,7 @@ QVariantList JsonTypes::packSupportedVendors()
 QVariantList JsonTypes::packSupportedDevices(const VendorId &vendorId)
 {
     QVariantList supportedDeviceList;
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices(vendorId))
+    foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices(vendorId))
         supportedDeviceList.append(packDeviceClass(deviceClass));
 
     return supportedDeviceList;
@@ -1080,7 +1080,7 @@ QVariantList JsonTypes::packSupportedDevices(const VendorId &vendorId)
 QVariantList JsonTypes::packConfiguredDevices()
 {
     QVariantList configuredDeviceList;
-    foreach (Device *device, GuhCore::instance()->deviceManager()->configuredDevices())
+    foreach (Device *device, NymeaCore::instance()->deviceManager()->configuredDevices())
         configuredDeviceList.append(packDevice(device));
 
     return configuredDeviceList;
@@ -1089,7 +1089,7 @@ QVariantList JsonTypes::packConfiguredDevices()
 /*! Returns a variant list of States from the given \a device. */
 QVariantList JsonTypes::packDeviceStates(Device *device)
 {
-    DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+    DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
     QVariantList stateValues;
     foreach (const StateType &stateType, deviceClass.stateTypes()) {
         QVariantMap stateValue;
@@ -1114,12 +1114,12 @@ QVariantList JsonTypes::packDeviceDescriptors(const QList<DeviceDescriptor> devi
 QVariantMap JsonTypes::packBasicConfiguration()
 {
     QVariantMap basicConfiguration;
-    basicConfiguration.insert("serverName", GuhCore::instance()->configuration()->serverName());
-    basicConfiguration.insert("serverUuid", GuhCore::instance()->configuration()->serverUuid());
-    basicConfiguration.insert("serverTime", GuhCore::instance()->timeManager()->currentDateTime().toTime_t());
-    basicConfiguration.insert("timeZone", QString::fromUtf8(GuhCore::instance()->timeManager()->timeZone()));
-    basicConfiguration.insert("language", GuhCore::instance()->configuration()->locale().name());
-    basicConfiguration.insert("debugServerEnabled", GuhCore::instance()->configuration()->debugServerEnabled());
+    basicConfiguration.insert("serverName", NymeaCore::instance()->configuration()->serverName());
+    basicConfiguration.insert("serverUuid", NymeaCore::instance()->configuration()->serverUuid());
+    basicConfiguration.insert("serverTime", NymeaCore::instance()->timeManager()->currentDateTime().toTime_t());
+    basicConfiguration.insert("timeZone", QString::fromUtf8(NymeaCore::instance()->timeManager()->timeZone()));
+    basicConfiguration.insert("language", NymeaCore::instance()->configuration()->locale().name());
+    basicConfiguration.insert("debugServerEnabled", NymeaCore::instance()->configuration()->debugServerEnabled());
     return basicConfiguration;
 }
 
@@ -1146,7 +1146,7 @@ QVariantMap JsonTypes::packWebServerConfiguration(const WebServerConfiguration &
 QVariantList JsonTypes::packRuleDescriptions()
 {
     QVariantList rulesList;
-    foreach (const Rule &rule, GuhCore::instance()->ruleEngine()->rules())
+    foreach (const Rule &rule, NymeaCore::instance()->ruleEngine()->rules())
         rulesList.append(JsonTypes::packRuleDescription(rule));
 
     return rulesList;
@@ -1196,7 +1196,7 @@ QVariantList JsonTypes::packEventTypes(const DeviceClass &deviceClass)
 QVariantList JsonTypes::packPlugins()
 {
     QVariantList pluginsList;
-    foreach (DevicePlugin *plugin, GuhCore::instance()->deviceManager()->plugins()) {
+    foreach (DevicePlugin *plugin, NymeaCore::instance()->deviceManager()->plugins()) {
         QVariantMap pluginMap = packPlugin(plugin);
         pluginsList.append(pluginMap);
     }

@@ -22,6 +22,8 @@
 #define PUSHBUTTONDBUSSERVICE_H
 
 #include <QObject>
+#include <QDBusObjectPath>
+
 #include "usermanager.h"
 #include "guhdbusservice.h"
 

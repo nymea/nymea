@@ -39,7 +39,7 @@
 #include "jsonrpcserver.h"
 #include "jsontypes.h"
 #include "jsonhandler.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "devicemanager.h"
 #include "plugin/deviceplugin.h"
 #include "types/deviceclass.h"
@@ -201,7 +201,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
 
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 
-    connect(GuhCore::instance()->userManager(), &UserManager::pushButtonAuthFinished, this, &JsonRPCServer::onPushButtonAuthFinished);
+    connect(NymeaCore::instance()->userManager(), &UserManager::pushButtonAuthFinished, this, &JsonRPCServer::onPushButtonAuthFinished);
 }
 
 /*! Returns the \e namespace of \l{JsonHandler}. */
@@ -262,7 +262,7 @@ JsonReply *JsonRPCServer::CreateUser(const QVariantMap &params)
     QString username = params.value("username").toString();
     QString password = params.value("password").toString();
 
-    UserManager::UserError status = GuhCore::instance()->userManager()->createUser(username, password);
+    UserManager::UserError status = NymeaCore::instance()->userManager()->createUser(username, password);
 
     QVariantMap returns;
     returns.insert("error", JsonTypes::userErrorToString(status));
@@ -275,7 +275,7 @@ JsonReply *JsonRPCServer::Authenticate(const QVariantMap &params)
     QString password = params.value("password").toString();
     QString deviceName = params.value("deviceName").toString();
 
-    QByteArray token = GuhCore::instance()->userManager()->authenticate(username, password, deviceName);
+    QByteArray token = NymeaCore::instance()->userManager()->authenticate(username, password, deviceName);
     QVariantMap ret;
     ret.insert("success", !token.isEmpty());
     if (!token.isEmpty()) {
@@ -289,7 +289,7 @@ JsonReply *JsonRPCServer::RequestPushButtonAuth(const QVariantMap &params)
     QString deviceName = params.value("deviceName").toString();
     QUuid clientId = this->property("clientId").toUuid();
 
-    int transactionId = GuhCore::instance()->userManager()->requestPushButtonAuth(deviceName);
+    int transactionId = NymeaCore::instance()->userManager()->requestPushButtonAuth(deviceName);
     m_pushButtonTransactions.insert(transactionId, clientId);
 
     QVariantMap data;
@@ -304,12 +304,12 @@ JsonReply *JsonRPCServer::Tokens(const QVariantMap &params) const
     Q_UNUSED(params)
     QByteArray token = property("token").toByteArray();
 
-    QString username = GuhCore::instance()->userManager()->userForToken(token);
+    QString username = NymeaCore::instance()->userManager()->userForToken(token);
     if (username.isEmpty()) {
         // There *really* should be a user for the token in the DB
         Q_ASSERT(false);
     }
-    QList<TokenInfo> tokens = GuhCore::instance()->userManager()->tokens(username);
+    QList<TokenInfo> tokens = NymeaCore::instance()->userManager()->tokens(username);
     QVariantList retList;
     foreach (const TokenInfo &tokenInfo, tokens) {
         retList << JsonTypes::packTokenInfo(tokenInfo);
@@ -322,7 +322,7 @@ JsonReply *JsonRPCServer::Tokens(const QVariantMap &params) const
 JsonReply *JsonRPCServer::RemoveToken(const QVariantMap &params)
 {
     QUuid tokenId = params.value("tokenId").toUuid();
-    UserManager::UserError error = GuhCore::instance()->userManager()->removeToken(tokenId);
+    UserManager::UserError error = NymeaCore::instance()->userManager()->removeToken(tokenId);
     QVariantMap ret;
     ret.insert("error", JsonTypes::userErrorToString(error));
     return createReply(ret);
@@ -332,7 +332,7 @@ JsonReply *JsonRPCServer::SetupRemoteAccess(const QVariantMap &params)
 {
     QString idToken = params.value("idToken").toString();
     QString userId = params.value("userId").toString();
-    GuhCore::instance()->cloudManager()->pairDevice(idToken, userId);
+    NymeaCore::instance()->cloudManager()->pairDevice(idToken, userId);
     JsonReply *reply = createAsyncReply("SetupRemoteAccess");
     m_pairingRequests.insert(userId, reply);
     connect(reply, &JsonReply::finished, [this, userId](){
@@ -344,7 +344,7 @@ JsonReply *JsonRPCServer::SetupRemoteAccess(const QVariantMap &params)
 JsonReply *JsonRPCServer::IsCloudConnected(const QVariantMap &params)
 {
     Q_UNUSED(params)
-    bool connected = GuhCore::instance()->cloudManager()->connected();
+    bool connected = NymeaCore::instance()->cloudManager()->connected();
     QVariantMap data;
     data.insert("connected", connected);
     return createReply(data);
@@ -353,7 +353,7 @@ JsonReply *JsonRPCServer::IsCloudConnected(const QVariantMap &params)
 JsonReply *JsonRPCServer::KeepAlive(const QVariantMap &params)
 {
     QString sessionId = params.value("sessionId").toString();
-    bool result = GuhCore::instance()->cloudManager()->keepAlive(sessionId);
+    bool result = NymeaCore::instance()->cloudManager()->keepAlive(sessionId);
     QVariantMap resultMap;
     resultMap.insert("success", result);
     return createReply(resultMap);
@@ -431,14 +431,14 @@ QVariantMap JsonRPCServer::createWelcomeMessage(TransportInterface *interface) c
     QVariantMap handshake;
     handshake.insert("id", 0);
     handshake.insert("server", "guhIO");
-    handshake.insert("name", GuhCore::instance()->configuration()->serverName());
+    handshake.insert("name", NymeaCore::instance()->configuration()->serverName());
     handshake.insert("version", NYMEA_VERSION_STRING);
-    handshake.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
-    handshake.insert("language", GuhCore::instance()->configuration()->locale().name());
+    handshake.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
+    handshake.insert("language", NymeaCore::instance()->configuration()->locale().name());
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
-    handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? GuhCore::instance()->userManager()->users().isEmpty() : false));
+    handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? NymeaCore::instance()->userManager()->users().isEmpty() : false));
     handshake.insert("authenticationRequired", interface->configuration().authenticationEnabled);
-    handshake.insert("pushButtonAuthAvailable", GuhCore::instance()->userManager()->pushButtonAuthAvailable());
+    handshake.insert("pushButtonAuthAvailable", NymeaCore::instance()->userManager()->pushButtonAuthAvailable());
     return handshake;
 }
 
@@ -454,8 +454,8 @@ void JsonRPCServer::setup()
     registerHandler(new ConfigurationHandler(this));
     registerHandler(new NetworkManagerHandler(this));
 
-    connect(GuhCore::instance()->cloudManager(), &CloudManager::pairingReply, this, &JsonRPCServer::pairingFinished);
-    connect(GuhCore::instance()->cloudManager(), &CloudManager::connectedChanged, this, &JsonRPCServer::onCloudConnectedChanged);
+    connect(NymeaCore::instance()->cloudManager(), &CloudManager::pairingReply, this, &JsonRPCServer::pairingFinished);
+    connect(NymeaCore::instance()->cloudManager(), &CloudManager::connectedChanged, this, &JsonRPCServer::onCloudConnectedChanged);
 }
 
 void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
@@ -497,14 +497,14 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
         QStringList authExemptMethodsNoUser = {"Introspect", "Hello", "CreateUser", "RequestPushButtonAuth"};
         QStringList authExemptMethodsWithUser = {"Introspect", "Hello", "Authenticate", "RequestPushButtonAuth"};
         // if there is no user in the system yet, let's fail unless this is special method for authentication itself
-        if (GuhCore::instance()->userManager()->users().isEmpty()) {
-            if (!(targetNamespace == "JSONRPC" && authExemptMethodsNoUser.contains(method)) && (token.isEmpty() || !GuhCore::instance()->userManager()->verifyToken(token))) {
+        if (NymeaCore::instance()->userManager()->users().isEmpty()) {
+            if (!(targetNamespace == "JSONRPC" && authExemptMethodsNoUser.contains(method)) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
                 sendUnauthorizedResponse(interface, clientId, commandId, "Initial setup required. Call CreateUser first.");
                 return;
             }
         } else {
             // ok, we have a user. if there isn't a valid token, let's fail unless this is a Authenticate, Introspect  Hello call
-            if (!(targetNamespace == "JSONRPC" && authExemptMethodsWithUser.contains(method)) && (token.isEmpty() || !GuhCore::instance()->userManager()->verifyToken(token))) {
+            if (!(targetNamespace == "JSONRPC" && authExemptMethodsWithUser.contains(method)) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
                 sendUnauthorizedResponse(interface, clientId, commandId, "Forbidden: Invalid token.");
                 return;
             }
@@ -676,7 +676,7 @@ void JsonRPCServer::clientDisconnected(const QUuid &clientId)
     m_clientTransports.remove(clientId);
     m_clientNotifications.remove(clientId);
     if (m_pushButtonTransactions.values().contains(clientId)) {
-        GuhCore::instance()->userManager()->cancelPushButtonAuth(m_pushButtonTransactions.key(clientId));
+        NymeaCore::instance()->userManager()->cancelPushButtonAuth(m_pushButtonTransactions.key(clientId));
     }
 }
 

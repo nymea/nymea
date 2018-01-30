@@ -35,7 +35,7 @@
 
 #include "guhapplication.h"
 #include "loggingcategories.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 
 #include <execinfo.h>
 #include <signal.h>
@@ -190,7 +190,7 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
         qCDebug(dcApplication) << "=====================================";
 
         s_aboutToShutdown = true;
-        GuhCore::instance()->destroy();
+        NymeaCore::instance()->destroy();
 
         if (s_multipleShutdownDetected)
             qCDebug(dcApplication) << "Ok, ok, I'm done! :)";

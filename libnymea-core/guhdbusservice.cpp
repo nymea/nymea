@@ -20,6 +20,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "guhdbusservice.h"
+#include "usermanager.h"
+#include "loggingcategories.h"
 
 namespace guhserver {
 

@@ -39,7 +39,7 @@
 #include "httprequest.h"
 #include "typeutils.h"
 #include "loggingcategories.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 
 #include <QJsonDocument>
 
@@ -75,7 +75,7 @@ HttpReply *RulesResource::proccessRequest(const HttpRequest &request, const QStr
             return createRuleErrorReply(HttpReply::BadRequest, RuleEngine::RuleErrorRuleNotFound);
         }
 
-        if (!GuhCore::instance()->ruleEngine()->findRule(m_ruleId).isValid()) {
+        if (!NymeaCore::instance()->ruleEngine()->findRule(m_ruleId).isValid()) {
             qCWarning(dcRest) << "Could not find rule with id" << m_ruleId.toString();
             return createRuleErrorReply(HttpReply::NotFound, RuleEngine::RuleErrorRuleNotFound);
         }
@@ -199,10 +199,10 @@ HttpReply *RulesResource::getRules(const DeviceId &deviceId) const
         reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packRuleDescriptions()).toJson());
     } else {
         qCDebug(dcRest) << "Get rule descriptions which contain the device with id" << deviceId.toString();
-        QList<RuleId> ruleIdsList = GuhCore::instance()->ruleEngine()->findRules(deviceId);
+        QList<RuleId> ruleIdsList = NymeaCore::instance()->ruleEngine()->findRules(deviceId);
         QList<Rule> ruleList;
         foreach (const RuleId &ruleId, ruleIdsList) {
-            Rule rule = GuhCore::instance()->ruleEngine()->findRule(ruleId);
+            Rule rule = NymeaCore::instance()->ruleEngine()->findRule(ruleId);
             if (rule.isValid())
                 ruleList.append(rule);
         }
@@ -217,7 +217,7 @@ HttpReply *RulesResource::getRuleDetails(const RuleId &ruleId) const
     qCDebug(dcRest) << "Get rule details";
 
     // Note: rule existence already checked
-    Rule rule = GuhCore::instance()->ruleEngine()->findRule(ruleId);
+    Rule rule = NymeaCore::instance()->ruleEngine()->findRule(ruleId);
 
     HttpReply *reply = createSuccessReply();
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
@@ -229,7 +229,7 @@ HttpReply *RulesResource::removeRule(const RuleId &ruleId) const
 {
     qCDebug(dcRest) << "Remove rule with id" << ruleId.toString();
 
-    RuleEngine::RuleError status = GuhCore::instance()->removeRule(ruleId);
+    RuleEngine::RuleError status = NymeaCore::instance()->removeRule(ruleId);
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);
 
@@ -248,9 +248,9 @@ HttpReply *RulesResource::addRule(const QByteArray &payload) const
     Rule rule = JsonTypes::unpackRule(params);
     rule.setId(RuleId::createRuleId());
 
-    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->addRule(rule);
+    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->addRule(rule);
     if (status ==  RuleEngine::RuleErrorNoError) {
-        QVariant returns = JsonTypes::packRule(GuhCore::instance()->ruleEngine()->findRule(rule.id()));
+        QVariant returns = JsonTypes::packRule(NymeaCore::instance()->ruleEngine()->findRule(rule.id()));
         HttpReply *reply = createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
         reply->setPayload(QJsonDocument::fromVariant(returns).toJson());
@@ -264,7 +264,7 @@ HttpReply *RulesResource::enableRule(const RuleId &ruleId) const
 {
     qCDebug(dcRest) << "Enable rule with id" << ruleId.toString();
 
-    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->enableRule(ruleId);
+    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->enableRule(ruleId);
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);
 
@@ -275,7 +275,7 @@ HttpReply *RulesResource::disableRule(const RuleId &ruleId) const
 {
     qCDebug(dcRest) << "Disable rule with id" << ruleId.toString();
 
-    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->disableRule(ruleId);
+    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->disableRule(ruleId);
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);
 
@@ -286,7 +286,7 @@ HttpReply *RulesResource::executeActions(const RuleId &ruleId) const
 {
     qCDebug(dcRest) << "Execute actions of rule with id" << ruleId.toString();
 
-    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->executeActions(ruleId);
+    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->executeActions(ruleId);
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);
 
@@ -297,7 +297,7 @@ HttpReply *RulesResource::executeExitActions(const RuleId &ruleId) const
 {
     qCDebug(dcRest) << "Execute exit actions of rule with id" << ruleId.toString();
 
-    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->executeExitActions(ruleId);
+    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->executeExitActions(ruleId);
     if (status != RuleEngine::RuleErrorNoError)
         return createRuleErrorReply(HttpReply::InternalServerError, status);
 
@@ -315,7 +315,7 @@ HttpReply *RulesResource::editRule(const RuleId &ruleId, const QByteArray &paylo
     QVariantMap params = verification.second.toMap();
     Rule rule = JsonTypes::unpackRule(params);
 
-    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->editRule(rule);
+    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->editRule(rule);
     if (status ==  RuleEngine::RuleErrorNoError) {
         qCDebug(dcRest) << "Edit rule successfully finished";
         return createRuleErrorReply(HttpReply::Ok, status);

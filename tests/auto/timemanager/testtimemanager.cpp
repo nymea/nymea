@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "guhtestbase.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "time/timemanager.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
@@ -144,15 +144,15 @@ void TestTimeManager::changeTimeZone()
     QFETCH(QByteArray, timeZoneId);
     QFETCH(bool, valid);
 
-    QTimeZone currentTimeZone(GuhCore::instance()->timeManager()->timeZone());
+    QTimeZone currentTimeZone(NymeaCore::instance()->timeManager()->timeZone());
     QTimeZone newTimeZone(timeZoneId);
 
 
-    QDateTime currentDateTime = GuhCore::instance()->timeManager()->currentDateTime();
+    QDateTime currentDateTime = NymeaCore::instance()->timeManager()->currentDateTime();
 
-    GuhCore::instance()->timeManager()->setTimeZone(timeZoneId);
+    NymeaCore::instance()->timeManager()->setTimeZone(timeZoneId);
 
-    QDateTime newDateTime = GuhCore::instance()->timeManager()->currentDateTime();
+    QDateTime newDateTime = NymeaCore::instance()->timeManager()->currentDateTime();
 
     int offsetOriginal = currentTimeZone.offsetFromUtc(currentDateTime);
     int offsetNew = newTimeZone.offsetFromUtc(newDateTime);
@@ -430,21 +430,21 @@ void TestTimeManager::testCalendarDateTime()
 
     QDateTime oneMinuteBeforeEvent = dateTime.addSecs(-60);
 
-    GuhCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
+    NymeaCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
     verifyRuleNotExecuted();
     // active
-    GuhCore::instance()->timeManager()->setTime(dateTime);
+    NymeaCore::instance()->timeManager()->setTime(dateTime);
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
     // active unchanged
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 30));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 30));
     verifyRuleNotExecuted();
     // inactive
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
     verifyRuleExecuted(mockActionIdWithParams);
     cleanupMockHistory();
     // inactive unchanged
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
     verifyRuleNotExecuted();
 
     // REMOVE rule
@@ -498,34 +498,34 @@ void TestTimeManager::testCalendarItemHourly()
     params.insert("ruleId", ruleId);
     response = injectAndWait("Rules.GetRuleDetails", params);
 
-    QDateTime currentDateTime = GuhCore::instance()->timeManager()->currentDateTime();
+    QDateTime currentDateTime = NymeaCore::instance()->timeManager()->currentDateTime();
 
     QDateTime future = QDateTime(currentDateTime.date(), QTime(8, 4));
 
     // Check if should be enabled always
     if (duration == 60) {
-        GuhCore::instance()->timeManager()->setTime(future);
+        NymeaCore::instance()->timeManager()->setTime(future);
         // Should be active since adding
         verifyRuleExecuted(mockActionIdNoParams);
     } else {
         // check the next 24 hours in 8h steps
         for (int i = 0; i < 24; i+=8) {
             // inactive
-            GuhCore::instance()->timeManager()->setTime(future);
+            NymeaCore::instance()->timeManager()->setTime(future);
             verifyRuleNotExecuted();
             // active
-            GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 5)));
+            NymeaCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 5)));
             verifyRuleExecuted(mockActionIdNoParams);
             cleanupMockHistory();
             // active unchanged
-            GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 7)));
+            NymeaCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 7)));
             verifyRuleNotExecuted();
             // inactive
-            GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 10)));
+            NymeaCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 10)));
             verifyRuleExecuted(mockActionIdWithParams);
             cleanupMockHistory();
             // inactive unchanged
-            GuhCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 11)));
+            NymeaCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 11)));
             verifyRuleNotExecuted();
 
             // 'i' hours "Back to the future"
@@ -587,35 +587,35 @@ void TestTimeManager::testCalendarItemDaily()
     verifyRuleError(response);
     RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 
-    QDateTime currentDateTime = GuhCore::instance()->timeManager()->currentDateTime();
+    QDateTime currentDateTime = NymeaCore::instance()->timeManager()->currentDateTime();
 
     // start with one minute before starttime today
     QDateTime future = QDateTime(currentDateTime.date(), QTime::fromString(time, "hh:mm").addSecs(-60));
 
     // if always true
     if (time == "08:00") {
-        GuhCore::instance()->timeManager()->setTime(future);
+        NymeaCore::instance()->timeManager()->setTime(future);
         // Should be active since adding
         verifyRuleExecuted(mockActionIdNoParams);
     } else {
         // check the next 7 days
         for (int i = 0; i < 7; i++) {
             // inactive
-            GuhCore::instance()->timeManager()->setTime(future);
+            NymeaCore::instance()->timeManager()->setTime(future);
             verifyRuleNotExecuted();
             // active
-            GuhCore::instance()->timeManager()->setTime(future.addSecs(60));
+            NymeaCore::instance()->timeManager()->setTime(future.addSecs(60));
             verifyRuleExecuted(mockActionIdNoParams);
             cleanupMockHistory();
             // active unchanged
-            GuhCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
+            NymeaCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
             verifyRuleNotExecuted();
             // inactive
-            GuhCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
+            NymeaCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
             verifyRuleExecuted(mockActionIdWithParams);
             cleanupMockHistory();
             // inactive unchanged
-            GuhCore::instance()->timeManager()->setTime(future.addSecs(12 * 60));
+            NymeaCore::instance()->timeManager()->setTime(future.addSecs(12 * 60));
             verifyRuleNotExecuted();
             // One day "Back to the future"
             future = future.addDays(1);
@@ -691,7 +691,7 @@ void TestTimeManager::testCalendarItemWeekly()
     verifyRuleError(response);
     RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 
-    QDateTime currentDateTime = GuhCore::instance()->timeManager()->currentDateTime();
+    QDateTime currentDateTime = NymeaCore::instance()->timeManager()->currentDateTime();
 
     // start with one minute before starttime today
     QDateTime future = QDateTime(currentDateTime.date(), QTime::fromString(time, "hh:mm").addSecs(-60));
@@ -704,7 +704,7 @@ void TestTimeManager::testCalendarItemWeekly()
 
     // the whole week active (always)
     if (repeatingOption.isEmpty()) {
-        GuhCore::instance()->timeManager()->setTime(future);
+        NymeaCore::instance()->timeManager()->setTime(future);
         // Should be active since adding
         verifyRuleExecuted(mockActionIdNoParams);
     } else {
@@ -713,32 +713,32 @@ void TestTimeManager::testCalendarItemWeekly()
             for (int i = 0; i < 7; i++) {
 
                 // inactive
-                GuhCore::instance()->timeManager()->setTime(future);
+                NymeaCore::instance()->timeManager()->setTime(future);
                 verifyRuleNotExecuted();
 
                 // Check if today is a weekday
                 if (weekDays.contains(future.date().dayOfWeek())) {
                     // should trigger today
                     // active
-                    GuhCore::instance()->timeManager()->setTime(future.addSecs(60));
+                    NymeaCore::instance()->timeManager()->setTime(future.addSecs(60));
                     verifyRuleExecuted(mockActionIdNoParams);
                     cleanupMockHistory();
                     // active unchanged
-                    GuhCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
+                    NymeaCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
                     verifyRuleNotExecuted();
                     // inactive
-                    GuhCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
+                    NymeaCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
                     verifyRuleExecuted(mockActionIdWithParams);
                     cleanupMockHistory();
                     // inactive unchanged
-                    GuhCore::instance()->timeManager()->setTime(future.addSecs(12 * 60));
+                    NymeaCore::instance()->timeManager()->setTime(future.addSecs(12 * 60));
                     verifyRuleNotExecuted();
 
                     // One day "Back to the future"
                     future = future.addDays(1);
                 } else {
                     // should not trigger today
-                    GuhCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
+                    NymeaCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
                     verifyRuleNotExecuted();
 
                     // One day "Back to the future"
@@ -756,24 +756,24 @@ void TestTimeManager::testCalendarItemWeekly()
             }
 
             // inactive
-            GuhCore::instance()->timeManager()->setTime(startDate);
+            NymeaCore::instance()->timeManager()->setTime(startDate);
             verifyRuleNotExecuted();
 
             // active
-            GuhCore::instance()->timeManager()->setTime(startDate.addSecs(60));
+            NymeaCore::instance()->timeManager()->setTime(startDate.addSecs(60));
             verifyRuleExecuted(mockActionIdNoParams);
             cleanupMockHistory();
 
             // still active
-            GuhCore::instance()->timeManager()->setTime(startDate.addDays(1));
+            NymeaCore::instance()->timeManager()->setTime(startDate.addDays(1));
             verifyRuleNotExecuted();
 
             // still active
-            GuhCore::instance()->timeManager()->setTime(startDate.addDays(2));
+            NymeaCore::instance()->timeManager()->setTime(startDate.addDays(2));
             verifyRuleNotExecuted();
 
             // inactive
-            GuhCore::instance()->timeManager()->setTime(startDate.addDays(2).addSecs(60));
+            NymeaCore::instance()->timeManager()->setTime(startDate.addDays(2).addSecs(60));
             verifyRuleExecuted(mockActionIdWithParams);
         }
     }
@@ -846,7 +846,7 @@ void TestTimeManager::testCalendarItemMonthly()
     verifyRuleError(response);
     RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 
-    QDateTime currentDateTime = GuhCore::instance()->timeManager()->currentDateTime();
+    QDateTime currentDateTime = NymeaCore::instance()->timeManager()->currentDateTime();
 
     QVariantList monthDaysVariant = repeatingOption.value("monthDays").toList();
     QList<int> monthDays;
@@ -866,25 +866,25 @@ void TestTimeManager::testCalendarItemMonthly()
             if (monthDays.contains(dateTime.date().day())) {
                 // should trigger today
                 // not active yet
-                GuhCore::instance()->timeManager()->setTime(dateTime);
+                NymeaCore::instance()->timeManager()->setTime(dateTime);
                 verifyRuleNotExecuted();
                 // active
-                GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
+                NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
                 verifyRuleExecuted(mockActionIdNoParams);
                 cleanupMockHistory();
                 // active unchanged
-                GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(6* 60));
+                NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(6* 60));
                 verifyRuleNotExecuted();
                 // inactive
-                GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(11 * 60));
+                NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(11 * 60));
                 verifyRuleExecuted(mockActionIdWithParams);
                 cleanupMockHistory();
                 // inactive unchanged
-                GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(12 * 60));
+                NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(12 * 60));
                 verifyRuleNotExecuted();
             } else {
                 // should not trigger today
-                GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
+                NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
                 verifyRuleNotExecuted();
             }
         }
@@ -900,20 +900,20 @@ void TestTimeManager::testCalendarItemMonthly()
         }
 
         // inactive
-        GuhCore::instance()->timeManager()->setTime(startDate);
+        NymeaCore::instance()->timeManager()->setTime(startDate);
         verifyRuleNotExecuted();
 
         // active
-        GuhCore::instance()->timeManager()->setTime(startDate.addSecs(60));
+        NymeaCore::instance()->timeManager()->setTime(startDate.addSecs(60));
         verifyRuleExecuted(mockActionIdNoParams);
         cleanupMockHistory();
 
         // still active
-        GuhCore::instance()->timeManager()->setTime(startDate.addDays(3));
+        NymeaCore::instance()->timeManager()->setTime(startDate.addDays(3));
         verifyRuleNotExecuted();
 
         // inactive
-        GuhCore::instance()->timeManager()->setTime(startDate.addDays(3).addSecs(60));
+        NymeaCore::instance()->timeManager()->setTime(startDate.addDays(3).addSecs(60));
         verifyRuleExecuted(mockActionIdWithParams);
     }
 
@@ -986,23 +986,23 @@ void TestTimeManager::testCalendarYearlyDateTime()
 
     QDateTime oneMinuteBeforeEvent = dateTime.addSecs(-60);
 
-    GuhCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
+    NymeaCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
     verifyRuleNotExecuted();
     // active
-    GuhCore::instance()->timeManager()->setTime(dateTime);
+    NymeaCore::instance()->timeManager()->setTime(dateTime);
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
     cleanupMockHistory();
     // active unchanged
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 30));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 30));
     verifyRuleNotExecuted();
     // inactive
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
     verifyRuleExecuted(mockActionIdWithParams);
     cleanupMockHistory();
     cleanupMockHistory();
     // inactive unchanged
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
     verifyRuleNotExecuted();
 
 
@@ -1010,23 +1010,23 @@ void TestTimeManager::testCalendarYearlyDateTime()
     oneMinuteBeforeEvent = oneMinuteBeforeEvent.addYears(1);
     dateTime = dateTime.addYears(1);
 
-    GuhCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
+    NymeaCore::instance()->timeManager()->setTime(oneMinuteBeforeEvent);
     verifyRuleNotExecuted();
     // active
-    GuhCore::instance()->timeManager()->setTime(dateTime);
+    NymeaCore::instance()->timeManager()->setTime(dateTime);
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
     cleanupMockHistory();
     // active unchanged
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 30));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 30));
     verifyRuleNotExecuted();
     // inactive
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
     verifyRuleExecuted(mockActionIdWithParams);
     cleanupMockHistory();
 
     // inactive unchanged
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
     verifyRuleNotExecuted();
 
     cleanupMockHistory();
@@ -1100,7 +1100,7 @@ void TestTimeManager::testCalendarItemStates_data()
     ruleMap.insert("exitActions", QVariantList() << exitAction);
     ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(createCalendarItem("08:00", 10, repeatingOptionDaily)));
 
-    GuhCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(07,59)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(07,59)));
 
     QVariant response = injectAndWait("Rules.AddRule", ruleMap);
     verifyRuleError(response);
@@ -1134,7 +1134,7 @@ void TestTimeManager::testCalendarItemStates()
     QFETCH(bool, trigger);
     QFETCH(bool, active);
 
-    GuhCore::instance()->timeManager()->setTime(dateTime);
+    NymeaCore::instance()->timeManager()->setTime(dateTime);
     setBoolState(boolValue);
     setIntState(intValue);
 
@@ -1178,7 +1178,7 @@ void TestTimeManager::testCalendarItemEvent_data()
     ruleMap.insert("eventDescriptors", QVariantList() << eventDescriptor);
     ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(createCalendarItem("08:00", 10)));
 
-    GuhCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7,59)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7,59)));
 
     QVariant response = injectAndWait("Rules.AddRule", ruleMap);
     verifyRuleError(response);
@@ -1205,7 +1205,7 @@ void TestTimeManager::testCalendarItemEvent()
     QFETCH(QDateTime, dateTime);
     QFETCH(bool, trigger);
 
-    GuhCore::instance()->timeManager()->setTime(dateTime);
+    NymeaCore::instance()->timeManager()->setTime(dateTime);
 
     // Trigger event
     triggerMockEvent1();
@@ -1222,7 +1222,7 @@ void TestTimeManager::testCalendarItemStatesEvent_data()
 {
     initTimeManager();
 
-    GuhCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7,59)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7,59)));
 
     // Action (without params)
     QVariantMap action;
@@ -1278,7 +1278,7 @@ void TestTimeManager::testCalendarItemStatesEvent()
     QFETCH(bool, boolValue);
     QFETCH(bool, trigger);
 
-    GuhCore::instance()->timeManager()->setTime(dateTime);
+    NymeaCore::instance()->timeManager()->setTime(dateTime);
     setBoolState(boolValue);
 
     // Trigger event
@@ -1324,17 +1324,17 @@ void TestTimeManager::testEventItemDateTime()
     RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 
     // not triggering
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-120));
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-60));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(-120));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(-60));
     verifyRuleNotExecuted();
 
     // trigger
-    GuhCore::instance()->timeManager()->setTime(dateTime);
+    NymeaCore::instance()->timeManager()->setTime(dateTime);
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
 
     // not triggering
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
     verifyRuleNotExecuted();
 
     cleanupMockHistory();
@@ -1383,7 +1383,7 @@ void TestTimeManager::testEventItemHourly()
     params.insert("ruleId", ruleId);
     response = injectAndWait("Rules.GetRuleDetails", params);
 
-    QDateTime currentDateTime = GuhCore::instance()->timeManager()->currentDateTime();
+    QDateTime currentDateTime = NymeaCore::instance()->timeManager()->currentDateTime();
     QDateTime beforeEventDateTime = QDateTime(currentDateTime.date(), time.addSecs(-60));
 
     // check the next 24 hours in 8h steps
@@ -1392,14 +1392,14 @@ void TestTimeManager::testEventItemHourly()
         beforeEventDateTime = beforeEventDateTime.addSecs(i * 60 * 60);
 
         // not triggering
-        GuhCore::instance()->timeManager()->setTime(beforeEventDateTime);
+        NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime);
         verifyRuleNotExecuted();
         // trigger
-        GuhCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
+        NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
         verifyRuleExecuted(mockActionIdNoParams);
         cleanupMockHistory();
         // not triggering
-        GuhCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(120));
+        NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(120));
         verifyRuleNotExecuted();
         cleanupMockHistory();
     }
@@ -1456,20 +1456,20 @@ void TestTimeManager::testEventItemDaily()
     params.insert("ruleId", ruleId);
     response = injectAndWait("Rules.GetRuleDetails", params);
 
-    QDateTime currentDateTime = GuhCore::instance()->timeManager()->currentDateTime();
+    QDateTime currentDateTime = NymeaCore::instance()->timeManager()->currentDateTime();
     QDateTime beforeEventDateTime = QDateTime(currentDateTime.date(), time.addSecs(-60));
 
     // check the next 2 days
     for (int i = 0; i < 2; i++) {
         // not triggering
-        GuhCore::instance()->timeManager()->setTime(beforeEventDateTime);
+        NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime);
         verifyRuleNotExecuted();
         // trigger
-        GuhCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
+        NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
         verifyRuleExecuted(mockActionIdNoParams);
         cleanupMockHistory();
         // not triggering
-        GuhCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(120));
+        NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(120));
         verifyRuleNotExecuted();
 
         // Back to the future (1 day)
@@ -1525,7 +1525,7 @@ void TestTimeManager::testEventItemWeekly()
     params.insert("ruleId", ruleId);
     response = injectAndWait("Rules.GetRuleDetails", params);
 
-    QDateTime currentDateTime = GuhCore::instance()->timeManager()->currentDateTime();
+    QDateTime currentDateTime = NymeaCore::instance()->timeManager()->currentDateTime();
     QDateTime beforeEventDateTime = QDateTime(currentDateTime.date(), time.addSecs(-60));
 
     QList<int> allowedDays;
@@ -1538,19 +1538,19 @@ void TestTimeManager::testEventItemWeekly()
         // check if today is one of the weekdays
         if (allowedDays.contains(beforeEventDateTime.date().dayOfWeek())) {
             // not triggering
-            GuhCore::instance()->timeManager()->setTime(beforeEventDateTime);
+            NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime);
             verifyRuleNotExecuted();
             // trigger
-            GuhCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
+            NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
             verifyRuleExecuted(mockActionIdNoParams);
             cleanupMockHistory();
             // not triggering
-            GuhCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(120));
+            NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(120));
             verifyRuleNotExecuted();
 
         } else {
             // not triggering on this weekday
-            GuhCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
+            NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
             verifyRuleNotExecuted();
         }
 
@@ -1607,7 +1607,7 @@ void TestTimeManager::testEventItemMonthly()
     params.insert("ruleId", ruleId);
     response = injectAndWait("Rules.GetRuleDetails", params);
 
-    QDateTime currentDateTime = GuhCore::instance()->timeManager()->currentDateTime();
+    QDateTime currentDateTime = NymeaCore::instance()->timeManager()->currentDateTime();
     QDateTime beforeEventDateTime = QDateTime(currentDateTime.date(), time.addSecs(-60));
 
     QList<int> allowedDays;
@@ -1620,18 +1620,18 @@ void TestTimeManager::testEventItemMonthly()
         // check if today is one of the month days
         if (allowedDays.contains(beforeEventDateTime.date().day())) {
             // not triggering
-            GuhCore::instance()->timeManager()->setTime(beforeEventDateTime);
+            NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime);
             verifyRuleNotExecuted();
             // trigger
-            GuhCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
+            NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
             verifyRuleExecuted(mockActionIdNoParams);
             cleanupMockHistory();
             // not triggering
-            GuhCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(120));
+            NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(120));
             verifyRuleNotExecuted();
         } else {
             // not triggering on this weekday
-            GuhCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
+            NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
             verifyRuleNotExecuted();
         }
 
@@ -1686,28 +1686,28 @@ void TestTimeManager::testEventItemYearly()
     // Tick now, one minute before, on time, one minute after
 
     // not triggering
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-60));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(-60));
     verifyRuleNotExecuted();
     // trigger
-    GuhCore::instance()->timeManager()->setTime(dateTime);
+    NymeaCore::instance()->timeManager()->setTime(dateTime);
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
     // not triggering
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
     verifyRuleNotExecuted();
 
     // Tick next year, one minute bofore, on time, one minute after
     QDateTime nextYear = dateTime.addYears(1);
 
     // not triggering
-    GuhCore::instance()->timeManager()->setTime(nextYear.addSecs(-60));
+    NymeaCore::instance()->timeManager()->setTime(nextYear.addSecs(-60));
     verifyRuleNotExecuted();
     // trigger
-    GuhCore::instance()->timeManager()->setTime(nextYear);
+    NymeaCore::instance()->timeManager()->setTime(nextYear);
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
     // not triggering
-    GuhCore::instance()->timeManager()->setTime(nextYear.addSecs(60));
+    NymeaCore::instance()->timeManager()->setTime(nextYear.addSecs(60));
     verifyRuleNotExecuted();
 
     cleanupMockHistory();
@@ -1724,7 +1724,7 @@ void TestTimeManager::testEventItemStates_data()
 {
     initTimeManager();
 
-    GuhCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7,59)));
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(7,59)));
 
     // Action (without params)
     QVariantMap action;
@@ -1789,7 +1789,7 @@ void TestTimeManager::testEventItemStates()
     setBoolState(boolValue);
 
     // Set time
-    GuhCore::instance()->timeManager()->setTime(dateTime);
+    NymeaCore::instance()->timeManager()->setTime(dateTime);
 
     if (trigger) {
         verifyRuleExecuted(mockActionIdNoParams);
@@ -1826,16 +1826,16 @@ void TestTimeManager::testEnableDisableTimeRule()
     RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 
     // not triggering
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-2));
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-1));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(-2));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(-1));
     verifyRuleNotExecuted();
     // trigger
-    GuhCore::instance()->timeManager()->setTime(dateTime);
+    NymeaCore::instance()->timeManager()->setTime(dateTime);
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
     // not triggering
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(1));
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(2));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(1));
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(2));
     verifyRuleNotExecuted();
 
 
@@ -1846,8 +1846,8 @@ void TestTimeManager::testEnableDisableTimeRule()
     verifyRuleError(response);
 
     // trigger
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-1));
-    GuhCore::instance()->timeManager()->setTime(dateTime);
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(-1));
+    NymeaCore::instance()->timeManager()->setTime(dateTime);
     verifyRuleNotExecuted();
 
     // Now ENABLE the rule again
@@ -1856,8 +1856,8 @@ void TestTimeManager::testEnableDisableTimeRule()
     verifyRuleError(response);
 
     // trigger
-    GuhCore::instance()->timeManager()->setTime(dateTime.addSecs(-1));
-    GuhCore::instance()->timeManager()->setTime(dateTime);
+    NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(-1));
+    NymeaCore::instance()->timeManager()->setTime(dateTime);
     verifyRuleExecuted(mockActionIdNoParams);
     cleanupMockHistory();
 
@@ -1873,9 +1873,9 @@ void TestTimeManager::initTimeManager()
     cleanupMockHistory();
     removeAllRules();
     enableNotifications();
-    GuhCore::instance()->timeManager()->stopTimer();
-    qDebug() << GuhCore::instance()->timeManager()->currentTime().toString();
-    qDebug() << GuhCore::instance()->timeManager()->currentDate().toString();
+    NymeaCore::instance()->timeManager()->stopTimer();
+    qDebug() << NymeaCore::instance()->timeManager()->currentTime().toString();
+    qDebug() << NymeaCore::instance()->timeManager()->currentDate().toString();
 }
 
 void TestTimeManager::verifyRuleExecuted(const ActionTypeId &actionTypeId)

@@ -19,8 +19,8 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GUHCORE_H
-#define GUHCORE_H
+#ifndef NYMEACORE_H
+#define NYMEACORE_H
 
 #include "rule.h"
 #include "types/event.h"
@@ -50,14 +50,14 @@ class JsonRPCServer;
 class LogEngine;
 class NetworkManager;
 
-class GuhCore : public QObject
+class NymeaCore : public QObject
 {
     Q_OBJECT
     friend class GuhTestBase;
 
 public:
-    static GuhCore* instance();
-    ~GuhCore();
+    static NymeaCore* instance();
+    ~NymeaCore();
 
     void destroy();
 
@@ -109,8 +109,8 @@ signals:
     void ruleConfigurationChanged(const Rule &rule);
 
 private:
-    explicit GuhCore(QObject *parent = 0);
-    static GuhCore *s_instance;
+    explicit NymeaCore(QObject *parent = 0);
+    static NymeaCore *s_instance;
 
     GuhConfiguration *m_configuration;
     ServerManager *m_serverManager;
@@ -140,4 +140,4 @@ private slots:
 
 }
 
-#endif // GUHCORE_H
+#endif // NYMEACORE_H

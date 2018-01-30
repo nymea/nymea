@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "guhtestbase.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "devicemanager.h"
 #include "nymeasettings.h"
 #include "plugin/deviceplugin.h"
@@ -1225,7 +1225,7 @@ void TestDevices::removeAutoDevice()
 
     // First try to make a manually created device disappear. It must not go away
 
-    QList<Device*> devices = GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
+    QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 
@@ -1236,15 +1236,15 @@ void TestDevices::removeAutoDevice()
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
-    QVERIFY2(GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId).count() == 1, "Mock device has disappeared even though it shouldn't");
+    QVERIFY2(NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId).count() == 1, "Mock device has disappeared even though it shouldn't");
 
     // Ok, now do the same with an autocreated one. It should go away
 
-    devices = GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceAutoClassId);
+    devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceAutoClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one auto-created Mock Device for this test");
     device = devices.first();
 
-    DeviceClass dc = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+    DeviceClass dc = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
 
     // trigger disappear signal in mock device
     spy.clear();
@@ -1256,7 +1256,7 @@ void TestDevices::removeAutoDevice()
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    QVERIFY2(GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceAutoClassId).count() == 0, "Mock device has not disappeared even though it should have.");
+    QVERIFY2(NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceAutoClassId).count() == 0, "Mock device has not disappeared even though it should have.");
 }
 
 #include "testdevices.moc"

@@ -35,7 +35,6 @@
 */
 
 #include "timemanager.h"
-#include "guhcore.h"
 #include "loggingcategories.h"
 
 namespace guhserver {

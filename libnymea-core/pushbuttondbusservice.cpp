@@ -24,6 +24,7 @@
 #include <QDBusConnection>
 #include <QDebug>
 #include <QDBusServiceWatcher>
+#include <QDBusMessage>
 
 namespace guhserver {
 

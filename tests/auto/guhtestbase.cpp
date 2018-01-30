@@ -21,7 +21,7 @@
 
 #include "guhtestbase.h"
 #include "mocktcpserver.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "nymeasettings.h"
 #include "devicemanager.h"
 #include "loggingcategories.h"
@@ -178,21 +178,21 @@ void GuhTestBase::initTestCase()
     QLoggingCategory::installFilter(loggingCategoryFilter);
 
     // Start the server
-    GuhCore::instance();
+    NymeaCore::instance();
 
     // Wait unitl the server is initialized
-    QSignalSpy coreInitializedSpy(GuhCore::instance(), SIGNAL(initialized()));
+    QSignalSpy coreInitializedSpy(NymeaCore::instance(), SIGNAL(initialized()));
     coreInitializedSpy.wait();
 
     // Wait for the DeviceManager to signal that it has loaded plugins and everything
-    QSignalSpy deviceManagerSpy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
+    QSignalSpy deviceManagerSpy(NymeaCore::instance()->deviceManager(), SIGNAL(loaded()));
     QVERIFY(deviceManagerSpy.isValid());
     QVERIFY(deviceManagerSpy.wait());
 
     // Yes, we're intentionally mixing upper/lower case email here... username should not be case sensitive
-    GuhCore::instance()->userManager()->removeUser("dummy@guh.io");
-    GuhCore::instance()->userManager()->createUser("dummy@guh.io", "DummyPW1!");
-    m_apiToken = GuhCore::instance()->userManager()->authenticate("Dummy@guh.io", "DummyPW1!", "testcase");
+    NymeaCore::instance()->userManager()->removeUser("dummy@guh.io");
+    NymeaCore::instance()->userManager()->createUser("dummy@guh.io", "DummyPW1!");
+    m_apiToken = NymeaCore::instance()->userManager()->authenticate("Dummy@guh.io", "DummyPW1!", "testcase");
 
     if (MockTcpServer::servers().isEmpty()) {
         qWarning() << "no mock tcp server found";
@@ -216,13 +216,13 @@ void GuhTestBase::initTestCase()
 
 void GuhTestBase::cleanupTestCase()
 {
-    GuhCore::instance()->destroy();
+    NymeaCore::instance()->destroy();
 }
 
 void GuhTestBase::cleanup()
 {
     // In case a test deleted the mock device, lets recreate it.
-    if (GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId).count() == 0) {
+    if (NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId).count() == 0) {
         createMockDevice();
     }
 }
@@ -497,10 +497,10 @@ bool GuhTestBase::disableNotifications()
 void GuhTestBase::restartServer()
 {
     // Destroy and recreate the core instance...
-    GuhCore::instance()->destroy();
-    QSignalSpy coreSpy(GuhCore::instance(), SIGNAL(initialized()));
+    NymeaCore::instance()->destroy();
+    QSignalSpy coreSpy(NymeaCore::instance(), SIGNAL(initialized()));
     coreSpy.wait();
-    QSignalSpy spy(GuhCore::instance()->deviceManager(), SIGNAL(loaded()));
+    QSignalSpy spy(NymeaCore::instance()->deviceManager(), SIGNAL(loaded()));
     spy.wait();
     m_mockTcpServer = MockTcpServer::servers().first();
     m_mockTcpServer->clientConnected(m_clientId);
@@ -508,7 +508,7 @@ void GuhTestBase::restartServer()
 
 void GuhTestBase::clearLoggingDatabase()
 {
-    GuhCore::instance()->logEngine()->clearDatabase();
+    NymeaCore::instance()->logEngine()->clearDatabase();
 }
 
 void GuhTestBase::createMockDevice()

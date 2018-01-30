@@ -34,7 +34,7 @@
 
 #include "actionhandler.h"
 
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "devicemanager.h"
 #include "types/action.h"
 #include "loggingcategories.h"
@@ -62,7 +62,7 @@ ActionHandler::ActionHandler(QObject *parent) :
     returns.insert("o:actionType", JsonTypes::actionTypeDescription());
     setReturns("GetActionType", returns);
 
-    connect(GuhCore::instance(), &GuhCore::actionExecuted, this, &ActionHandler::actionExecuted);
+    connect(NymeaCore::instance(), &NymeaCore::actionExecuted, this, &ActionHandler::actionExecuted);
 }
 
 /*! Returns the name of the \l{ActionHandler}. In this case \b Actions.*/
@@ -80,7 +80,7 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
     Action action(actionTypeId, deviceId);
     action.setParams(actionParams);
 
-    DeviceManager::DeviceError status = GuhCore::instance()->executeAction(action);
+    DeviceManager::DeviceError status = NymeaCore::instance()->executeAction(action);
     if (status == DeviceManager::DeviceErrorAsync) {
         JsonReply *reply = createAsyncReply("ExecuteAction");
         ActionId id = action.id();
@@ -96,7 +96,7 @@ JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
 {
     qCDebug(dcJsonRpc) << "asked for action type" << params;
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
+    foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {
             if (actionType.id() == actionTypeId) {
                 QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);

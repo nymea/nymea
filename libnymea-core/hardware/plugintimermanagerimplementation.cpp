@@ -22,7 +22,7 @@
 
 #include "plugintimermanagerimplementation.h"
 #include "loggingcategories.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 
 namespace guhserver {
 
@@ -30,7 +30,7 @@ PluginTimerImplementation::PluginTimerImplementation(int intervall, QObject *par
     PluginTimer(parent),
     m_interval(intervall)
 {
-    connect(GuhCore::instance()->timeManager(), &TimeManager::tick, this, &PluginTimerImplementation::tick);
+    connect(NymeaCore::instance()->timeManager(), &TimeManager::tick, this, &PluginTimerImplementation::tick);
 }
 
 int PluginTimerImplementation::interval() const

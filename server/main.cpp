@@ -39,7 +39,7 @@
 #include "nymeaservice.h"
 #include "nymeasettings.h"
 #include "nymeadbusservice.h"
-#include "guhapplication.h"
+#include "nymeaapplication.h"
 #include "loggingcategories.h"
 
 static QHash<QString, bool> s_loggingFilters;
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 {
     qInstallMessageHandler(consoleLogHandler);
 
-    GuhApplication application(argc, argv);
+    NymeaApplication application(argc, argv);
     application.setOrganizationName("nymea");
     application.setApplicationName("nymead");
     application.setApplicationVersion(NYMEA_VERSION_STRING);

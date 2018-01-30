@@ -6,6 +6,10 @@
                 {
                     "name": "title",
                     "type": "QString"
+                },
+                {
+                    "name": "body",
+                    "type": "QString"
                 }
             ]
         }

@@ -22,7 +22,7 @@
 
 #include "logging/logengine.h"
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 class TestLoggingDirect: public QObject
 {

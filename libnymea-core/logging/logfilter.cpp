@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::LogFilter
+    \class nymeaserver::LogFilter
     \brief  Represents a filter to access the logging databse.
 
     \ingroup logs
@@ -34,7 +34,7 @@
 #include "logfilter.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l{LogFilter}.*/
 LogFilter::LogFilter()

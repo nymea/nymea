@@ -28,7 +28,7 @@
 #include <avahi-common/strlst.h>
 #include <avahi-common/error.h>
 
-namespace guhserver {
+namespace nymeaserver {
 
 QtAvahiServiceBrowserImplementationPrivate::QtAvahiServiceBrowserImplementationPrivate(QtAvahiClient *client) :
     client(client),

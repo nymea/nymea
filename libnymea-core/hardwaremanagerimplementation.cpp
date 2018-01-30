@@ -30,7 +30,7 @@
 #include "hardware/bluetoothlowenergy/bluetoothlowenergymanagerimplementation.h"
 #include "hardware/network/avahi/qtavahiservicebrowserimplementation.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 HardwareManagerImplementation::HardwareManagerImplementation(QObject *parent) :
     HardwareManager(parent)

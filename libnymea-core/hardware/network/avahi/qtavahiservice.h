@@ -28,7 +28,7 @@
 #include <QObject>
 
 
-namespace guhserver {
+namespace nymeaserver {
 
 class QtAvahiServicePrivate;
 

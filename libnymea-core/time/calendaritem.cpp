@@ -19,8 +19,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::CalendarItem
-    \brief Describes a clendar item for a time based \l{guhserver::Rule}{Rule}.
+    \class nymeaserver::CalendarItem
+    \brief Describes a clendar item for a time based \l{nymeaserver::Rule}{Rule}.
 
     \ingroup rules
     \inmodule core
@@ -31,7 +31,7 @@
 #include "calendaritem.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Construct a invalid \l{CalendarItem}. */
 CalendarItem::CalendarItem():

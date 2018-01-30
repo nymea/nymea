@@ -25,7 +25,7 @@
 #include "jsonhandler.h"
 #include "devicemanager.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class ActionHandler : public JsonHandler
 {

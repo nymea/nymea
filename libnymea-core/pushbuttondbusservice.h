@@ -27,7 +27,7 @@
 #include "usermanager.h"
 #include "nymeadbusservice.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class PushButtonDBusService : public NymeaDBusService
 {

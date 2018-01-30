@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::WirelessNetworkDevice
+    \class nymeaserver::WirelessNetworkDevice
     \brief Represents a wireless device (adapter) in the networkmanager.
 
     \ingroup networkmanager
@@ -46,7 +46,7 @@
 #include <QMetaEnum>
 #include <QUuid>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l{WirelessNetworkDevice} with the given dbus \a objectPath and \a parent. */
 WirelessNetworkDevice::WirelessNetworkDevice(const QDBusObjectPath &objectPath, QObject *parent) :

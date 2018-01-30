@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::TcpServer
+    \class nymeaserver::TcpServer
     \brief This class represents the tcp server for nymead.
 
     \ingroup server
@@ -38,7 +38,7 @@
 
 #include <QDebug>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a \l{TcpServer} with the given \a host, \a port and \a parent.
  *

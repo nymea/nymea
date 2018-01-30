@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::JsonHandler
+    \class nymeaserver::JsonHandler
     \brief This class represents an interface for developing a handler for the JSON-RPC API.
 
     \ingroup json
@@ -29,11 +29,11 @@
     \sa JsonRPCServer, JsonReply
 */
 
-/*! \fn QString guhserver::JsonHandler::name() const;
+/*! \fn QString nymeaserver::JsonHandler::name() const;
     Pure virtual method for a JSON RPC handler. Returns the namespace of the handler.
 */
 
-/*! \fn void guhserver::JsonHandler::asyncReply(int id, const QVariantMap &params);
+/*! \fn void nymeaserver::JsonHandler::asyncReply(int id, const QVariantMap &params);
     This signal will be emitted when a reply with the given \a id and \a params is finished.
 */
 
@@ -45,7 +45,7 @@
 #include <QDebug>
 #include <QRegExp>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l JsonHandler with the given \a parent. */
 JsonHandler::JsonHandler(QObject *parent) :
@@ -222,7 +222,7 @@ QVariantMap JsonHandler::statusToReply(NetworkManager::NetworkManagerError statu
 
 
 /*!
-    \class guhserver::JsonReply
+    \class nymeaserver::JsonReply
     \brief This class represents a reply for the JSON-RPC API request.
 
     \ingroup json
@@ -231,7 +231,7 @@ QVariantMap JsonHandler::statusToReply(NetworkManager::NetworkManagerError statu
     \sa JsonHandler, JsonRPCServer
 */
 
-/*! \enum guhserver::JsonReply::Type
+/*! \enum nymeaserver::JsonReply::Type
 
     This enum type specifies the type of a JsonReply.
 
@@ -241,7 +241,7 @@ QVariantMap JsonHandler::statusToReply(NetworkManager::NetworkManagerError statu
         The response is asynchronous.
 */
 
-/*! \fn void guhserver::JsonReply::finished();
+/*! \fn void nymeaserver::JsonReply::finished();
     This signal will be emitted when a JsonReply is finished. A JsonReply is finished when
     the response is ready or then the reply timed out.
 */

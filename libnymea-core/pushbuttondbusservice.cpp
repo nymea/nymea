@@ -26,7 +26,7 @@
 #include <QDBusServiceWatcher>
 #include <QDBusMessage>
 
-namespace guhserver {
+namespace nymeaserver {
 
 PushButtonDBusService::PushButtonDBusService(const QString &objectPath, UserManager *parent) : NymeaDBusService(objectPath, parent),
     m_userManager(parent)

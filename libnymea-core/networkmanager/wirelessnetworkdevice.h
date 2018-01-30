@@ -32,7 +32,7 @@
 #include "networkdevice.h"
 #include "wirelessaccesspoint.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class WirelessNetworkDevice : public NetworkDevice
 {

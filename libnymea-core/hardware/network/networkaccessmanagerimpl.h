@@ -34,7 +34,7 @@
 #include <QDebug>
 #include <QUrl>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class NetworkAccessManagerImpl : public NetworkAccessManager
 {

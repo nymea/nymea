@@ -23,7 +23,7 @@
 #include "upnpdiscoveryrequest.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 UpnpDiscoveryRequest::UpnpDiscoveryRequest(UpnpDiscovery *upnpDiscovery, QPointer<UpnpDiscoveryReplyImplementation> reply):
     QObject(upnpDiscovery),

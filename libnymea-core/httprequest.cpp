@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-  \class guhserver::HttpRequest
+  \class nymeaserver::HttpRequest
   \brief Represents a HTTP request from a client to the guh \l{WebServer}.
 
   \ingroup api
@@ -31,7 +31,7 @@
 
 */
 
-/*! \enum guhserver::HttpRequest::RequestMethod
+/*! \enum nymeaserver::HttpRequest::RequestMethod
 
     This enum type describes the method of a \l{HttpRequest}. Following methods are allowed/handled:
 
@@ -49,7 +49,7 @@
         Represents every other method which is not handled.
 */
 
-/*! \fn QDebug guhserver::operator<< (QDebug debug, const HttpRequest &httpRequest);
+/*! \fn QDebug nymeaserver::operator<< (QDebug debug, const HttpRequest &httpRequest);
     Writes the \l{HttpRequest} \a httpRequest to the given \a debug. This method gets used just for debugging.
 */
 
@@ -58,7 +58,7 @@
 
 #include <QUrlQuery>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Construct an empty \l{HttpRequest}. */
 HttpRequest::HttpRequest() :

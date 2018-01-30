@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::WebSocketServer
+    \class nymeaserver::WebSocketServer
     \brief This class represents the websocket server for nymead.
 
     \ingroup server
@@ -54,7 +54,7 @@
 
 #include <QSslConfiguration>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a \l{WebSocketServer} with the given \a address, \a port \a sslEnabled and \a parent.
  *

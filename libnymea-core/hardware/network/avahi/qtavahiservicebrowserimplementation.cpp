@@ -42,7 +42,7 @@
 
 #include <avahi-common/error.h>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l{QtAvahiServiceBrowserImplementation} with the given \a parent. */
 QtAvahiServiceBrowserImplementation::QtAvahiServiceBrowserImplementation(QObject *parent) :

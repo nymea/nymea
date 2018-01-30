@@ -30,7 +30,7 @@
 
 #include "libnymea.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class Radio433BrennenstuhlGateway : public QObject
 {

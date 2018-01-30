@@ -28,7 +28,7 @@
 #include <QUuid>
 #include <QDebug>
 
-namespace guhserver {
+namespace nymeaserver {
 
 void CertificateGenerator::generate(const QString &certificateFilename, const QString &keyFilename)
 {

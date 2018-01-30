@@ -41,7 +41,7 @@
 // Note: Hypertext Transfer Protocol (HTTP/1.1) from the Internet Engineering Task Force (IETF):
 //       https://tools.ietf.org/html/rfc7231
 
-namespace guhserver {
+namespace nymeaserver {
 
 class HttpReply;
 class HttpRequest;

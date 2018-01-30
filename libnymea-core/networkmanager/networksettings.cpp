@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::NetworkSettings
+    \class nymeaserver::NetworkSettings
     \brief Represents the network settings in the \l{NetworkManager}.
 
     \ingroup networkmanager
@@ -30,7 +30,7 @@
 #include "dbus-interfaces.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l{NetworkSettings} object with the given \a parent. */
 NetworkSettings::NetworkSettings(QObject *parent) : QObject(parent)

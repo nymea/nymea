@@ -24,7 +24,7 @@
 #include <QUuid>
 #include <QDateTime>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class TokenInfo
 {

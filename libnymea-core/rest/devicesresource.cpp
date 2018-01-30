@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::DevicesResource
+    \class nymeaserver::DevicesResource
     \brief This subclass of \l{RestResource} processes the REST requests for the \tt Devices namespace.
 
     \ingroup json
@@ -44,7 +44,7 @@
 
 #include <QJsonDocument>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a \l DevicesResource with the given \a parent. */
 DevicesResource::DevicesResource(QObject *parent) :

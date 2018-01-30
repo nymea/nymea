@@ -29,7 +29,7 @@
 #include "httpreply.h"
 
 
-namespace guhserver {
+namespace nymeaserver {
 
 class HttpRequest;
 

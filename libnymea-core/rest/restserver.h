@@ -34,7 +34,7 @@
 
 class QSslConfiguration;
 
-namespace guhserver {
+namespace nymeaserver {
 
 class HttpRequest;
 class HttpReply;

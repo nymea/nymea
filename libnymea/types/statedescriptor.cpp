@@ -29,9 +29,9 @@
     \ingroup rules
     \inmodule libnymea
 
-    An StateDescriptor describes a \l{State} in order to match it with a \l{guhserver::Rule}.
+    An StateDescriptor describes a \l{State} in order to match it with a \l{nymeaserver::Rule}.
 
-    \sa State, guhserver::Rule
+    \sa State, nymeaserver::Rule
 */
 
 

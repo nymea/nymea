@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::HttpReply
+    \class nymeaserver::HttpReply
     \brief Represents a reply of the guh webserver to a \l{HttpRequest}.
 
     \ingroup api
@@ -31,7 +31,7 @@
     \note RFC 7231 HTTP/1.1 Semantics and Content -> \l{http://tools.ietf.org/html/rfc7231}{http://tools.ietf.org/html/rfc7231}
 */
 
-/*! \enum guhserver::HttpReply::HttpStatusCode
+/*! \enum nymeaserver::HttpReply::HttpStatusCode
 
     This enum type specifies the status code of a HTTP webserver reply.
 
@@ -75,7 +75,7 @@
         The HTTP version is not supported. The only supported version is HTTP/1.1.
 */
 
-/*! \enum guhserver::HttpReply::HttpHeaderType
+/*! \enum nymeaserver::HttpReply::HttpHeaderType
     This enum type specifies the known type of a header in a HTTP webserver reply.
     You can find more information here: \l{http://tools.ietf.org/html/rfc7231#section-5}
 
@@ -99,7 +99,7 @@
         The name of the server i.e. "Server: guh/0.6.0"
 */
 
-/*! \enum guhserver::HttpReply::Type
+/*! \enum nymeaserver::HttpReply::Type
 
     This enum type describes the type of this \l{HttpReply}. There are two types:
 
@@ -109,23 +109,23 @@
         The \l{HttpReply} is asynchron and has to be responded later.
 */
 
-/*! \fn void guhserver::HttpReply::finished();
+/*! \fn void nymeaserver::HttpReply::finished();
     This signal is emitted when this async \l{HttpReply} is finished.
 */
 
-/*! \fn guhserver::HttpReply::HttpReply(QObject *parent);
+/*! \fn nymeaserver::HttpReply::HttpReply(QObject *parent);
     Construct an empty \l{HttpReply} with the given \a parent.
 */
 
-/*! \fn guhserver::HttpReply::HttpReply(const HttpStatusCode &statusCode, const Type &type, QObject *parent);
+/*! \fn nymeaserver::HttpReply::HttpReply(const HttpStatusCode &statusCode, const Type &type, QObject *parent);
     Construct a \l{HttpReply} with the given \a statusCode, \a type and \a parent.
 */
 
-/*! \fn void guhserver::HttpReply::setHttpStatusCode(const HttpStatusCode &statusCode);
+/*! \fn void nymeaserver::HttpReply::setHttpStatusCode(const HttpStatusCode &statusCode);
     Set the \l{HttpStatusCode} of this \l{HttpReply} to the given \a statusCode.
 */
 
-/*! \fn QDebug guhserver::operator<< (QDebug debug, const HttpReply &httpReply);
+/*! \fn QDebug nymeaserver::operator<< (QDebug debug, const HttpReply &httpReply);
     Writes the given \l{HttpReply} \a httpReply to the given \a debug. This method gets used just for debugging.
 */
 
@@ -139,7 +139,7 @@
 #include <QPair>
 #include <QDebug>
 
-namespace guhserver {
+namespace nymeaserver {
 
 HttpReply::HttpReply(QObject *parent) :
     QObject(parent),

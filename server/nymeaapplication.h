@@ -25,7 +25,7 @@
 #include <QSocketNotifier>
 #include <QCoreApplication>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class NymeaApplication : public QCoreApplication
 {

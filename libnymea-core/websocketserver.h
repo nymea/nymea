@@ -36,7 +36,7 @@
 
 class QSslConfiguration;
 
-namespace guhserver {
+namespace nymeaserver {
 
 class WebSocketServer : public TransportInterface
 {

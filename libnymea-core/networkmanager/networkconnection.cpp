@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::NetworkConnection
+    \class nymeaserver::NetworkConnection
     \brief Represents a saved network connection of the \l{NetworkManager}.
 
     \ingroup networkmanager
@@ -34,7 +34,7 @@
 
 #include <QJsonDocument>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l{NetworkConnection} with the given dbus \a objectPath and \a parent. */
 NetworkConnection::NetworkConnection(const QDBusObjectPath &objectPath, QObject *parent) :

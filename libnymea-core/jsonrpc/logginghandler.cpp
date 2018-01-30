@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::LoggingHandler
+    \class nymeaserver::LoggingHandler
     \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Logging namespace of the JSON-RPC API.
 
     \ingroup json
@@ -32,12 +32,12 @@
     \sa LogEngine, JsonHandler, JsonRPCServer
 */
 
-/*! \fn void guhserver::LoggingHandler::LogEntryAdded(const QVariantMap &params);
+/*! \fn void nymeaserver::LoggingHandler::LogEntryAdded(const QVariantMap &params);
     This signal is emitted to the API notifications when a \l{LogEntry} was added to the database.
     The \a params contain the map for the notification.
 */
 
-/*! \fn void guhserver::LoggingHandler::LogDatabaseUpdated(const QVariantMap &params);
+/*! \fn void nymeaserver::LoggingHandler::LogDatabaseUpdated(const QVariantMap &params);
     This signal is emitted to the API notifications when the logging aatabase has been updated (i.e. \l{Device} or \l{Rule} removed).
     The \a params contain the map for the notification.
 */
@@ -48,7 +48,7 @@
 #include "loggingcategories.h"
 #include "nymeacore.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l LoggingHandler with the given \a parent. */
 LoggingHandler::LoggingHandler(QObject *parent) :

@@ -27,7 +27,7 @@
 #include <QDBusContext>
 
 
-namespace guhserver {
+namespace nymeaserver {
 
 class UserManager;
 

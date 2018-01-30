@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::NymeaCore
+    \class nymeaserver::NymeaCore
     \brief The main entry point for the nymea Server and the place where all the messages are dispatched.
 
     \inmodule core
@@ -29,62 +29,62 @@
     instantiate, set up and connect all the other components.
 */
 
-/*! \fn void guhserver::NymeaCore::eventTriggered(const Event &event);
+/*! \fn void nymeaserver::NymeaCore::eventTriggered(const Event &event);
     This signal is emitted when an \a event happend.
 */
 
-/*! \fn void guhserver::NymeaCore::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
+/*! \fn void nymeaserver::NymeaCore::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     This signal is emitted when the \l{State} of a \a device changed. The \a stateTypeId parameter describes the
     \l{StateType} and the \a value parameter holds the new value.
 */
 
-/*! \fn void guhserver::NymeaCore::deviceRemoved(const DeviceId &deviceId);
+/*! \fn void nymeaserver::NymeaCore::deviceRemoved(const DeviceId &deviceId);
     This signal is emitted when a \l{Device} with the given \a deviceId was removed.
 */
 
-/*! \fn void guhserver::NymeaCore::deviceAdded(Device *device);
+/*! \fn void nymeaserver::NymeaCore::deviceAdded(Device *device);
     This signal is emitted when a \a device was added to the system.
 */
 
-/*! \fn void guhserver::NymeaCore::deviceChanged(Device *device);
+/*! \fn void nymeaserver::NymeaCore::deviceChanged(Device *device);
     This signal is emitted when the \l{ParamList}{Params} of a \a device have been changed.
 */
 
-/*! \fn void guhserver::NymeaCore::actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
+/*! \fn void nymeaserver::NymeaCore::actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
     This signal is emitted when the \l{Action} with the given \a id is finished.
     The \a status of the \l{Action} execution will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
-/*! \fn void guhserver::NymeaCore::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+/*! \fn void nymeaserver::NymeaCore::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
     This signal is emitted when the discovery of a \a deviceClassId is finished. The \a deviceDescriptors parameter describes the
     list of \l{DeviceDescriptor}{DeviceDescriptors} of all discovered \l{Device}{Devices}.
     \sa DeviceManager::discoverDevices()
 */
 
-/*! \fn void guhserver::NymeaCore::deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
+/*! \fn void nymeaserver::NymeaCore::deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
     This signal is emitted when the setup of a \a device is finished. The \a status parameter describes the
     \l{DeviceManager::DeviceError}{DeviceError} that occurred.
 */
 
-/*! \fn void guhserver::NymeaCore::deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status);
+/*! \fn void nymeaserver::NymeaCore::deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status);
     This signal is emitted when the edit request of a \a device is finished. The \a status of the edit request will be
     described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
-/*! \fn void guhserver::NymeaCore::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
+/*! \fn void nymeaserver::NymeaCore::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
     The DeviceManager will emit a this Signal when the pairing of a \l{Device} with the \a deviceId and \a pairingTransactionId is finished.
     The \a status of the pairing will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
-/*! \fn void guhserver::NymeaCore::ruleRemoved(const RuleId &ruleId);
+/*! \fn void nymeaserver::NymeaCore::ruleRemoved(const RuleId &ruleId);
     This signal is emitted when a \l{Rule} with the given \a ruleId was removed.
 */
 
-/*! \fn void guhserver::NymeaCore::ruleAdded(const Rule &rule);
+/*! \fn void nymeaserver::NymeaCore::ruleAdded(const Rule &rule);
     This signal is emitted when a \a rule was added to the system.
 */
 
-/*! \fn void guhserver::NymeaCore::ruleConfigurationChanged(const Rule &rule);
+/*! \fn void nymeaserver::NymeaCore::ruleConfigurationChanged(const Rule &rule);
     This signal is emitted when the configuration of \a rule changed.
 */
 
@@ -106,7 +106,7 @@
 #include "plugin/device.h"
 #include "cloudnotifications.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 NymeaCore* NymeaCore::s_instance = 0;
 

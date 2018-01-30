@@ -26,7 +26,7 @@
 #include <QObject>
 #include <QSqlDatabase>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class PushButtonDBusService;
 
@@ -59,7 +59,7 @@ public:
     void cancelPushButtonAuth(int transactionId);
     QString userForToken(const QByteArray &token) const;
     QList<TokenInfo> tokens(const QString &username) const;
-    guhserver::UserManager::UserError removeToken(const QUuid &tokenId);
+    nymeaserver::UserManager::UserError removeToken(const QUuid &tokenId);
 
     bool verifyToken(const QByteArray &token);
 

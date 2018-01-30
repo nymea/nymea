@@ -32,7 +32,7 @@
 #include "libnymea.h"
 #include "hardware/gpio.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class Radio433Trasmitter : public QThread
 {

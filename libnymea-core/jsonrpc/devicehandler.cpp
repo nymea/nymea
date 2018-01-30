@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::DeviceHandler
+    \class nymeaserver::DeviceHandler
     \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Devices namespace of the JSON-RPC API.
 
     \ingroup json
@@ -33,22 +33,22 @@
 */
 
 
-/*! \fn void guhserver::DeviceHandler::StateChanged(const QVariantMap &params);
+/*! \fn void nymeaserver::DeviceHandler::StateChanged(const QVariantMap &params);
     This signal is emitted to the API notifications when a \l{State} has changed.
     The \a params contain the map for the notification.
 */
 
-/*! \fn void guhserver::DeviceHandler::DeviceRemoved(const QVariantMap &params);
+/*! \fn void nymeaserver::DeviceHandler::DeviceRemoved(const QVariantMap &params);
     This signal is emitted to the API notifications when a \l{Device} has been removed.
     The \a params contain the map for the notification.
 */
 
-/*! \fn void guhserver::DeviceHandler::DeviceAdded(const QVariantMap &params);
+/*! \fn void nymeaserver::DeviceHandler::DeviceAdded(const QVariantMap &params);
     This signal is emitted to the API notifications when a \l{Device} has been added.
     The \a params contain the map for the notification.
 */
 
-/*! \fn void guhserver::DeviceHandler::DeviceChanged(const QVariantMap &params);
+/*! \fn void nymeaserver::DeviceHandler::DeviceChanged(const QVariantMap &params);
     This signal is emitted to the API notifications when a \l{Device} has been changed or reconfigured.
     The \a params contain the map for the notification.
 */
@@ -63,7 +63,7 @@
 
 #include <QDebug>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l DeviceHandler with the given \a parent. */
 DeviceHandler::DeviceHandler(QObject *parent) :

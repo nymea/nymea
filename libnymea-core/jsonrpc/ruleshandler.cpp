@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::RulesHandler
+    \class nymeaserver::RulesHandler
     \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Rules namespace of the JSON-RPC API.
 
     \ingroup json
@@ -32,22 +32,22 @@
     \sa RuleEngine, JsonHandler, JsonRPCServer
 */
 
-/*! \fn void guhserver::RulesHandler::RuleRemoved(const QVariantMap &params);
+/*! \fn void nymeaserver::RulesHandler::RuleRemoved(const QVariantMap &params);
     This signal is emitted to the API notifications when a \l{Rule} was removed.
     The \a params contain the map for the notification.
 */
 
-/*! \fn void guhserver::RulesHandler::RuleAdded(const QVariantMap &params);
+/*! \fn void nymeaserver::RulesHandler::RuleAdded(const QVariantMap &params);
     This signal is emitted to the API notifications when a \l{Rule} was added.
     The \a params contain the map for the notification.
 */
 
-/*! \fn void guhserver::RulesHandler::RuleActiveChanged(const QVariantMap &params);
+/*! \fn void nymeaserver::RulesHandler::RuleActiveChanged(const QVariantMap &params);
     This signal is emitted to the API notifications when a \l{Rule} has changed the active status.
     The \a params contain the map for the notification.
 */
 
-/*! \fn void guhserver::RulesHandler::RuleConfigurationChanged(const QVariantMap &params);
+/*! \fn void nymeaserver::RulesHandler::RuleConfigurationChanged(const QVariantMap &params);
     This signal is emitted to the API notifications when a \l{Rule} has changed the configuration.
     The \a params contain the map for the notification.
 */
@@ -59,7 +59,7 @@
 
 #include <QDebug>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l{RulesHandler} with the given \a parent. */
 RulesHandler::RulesHandler(QObject *parent) :

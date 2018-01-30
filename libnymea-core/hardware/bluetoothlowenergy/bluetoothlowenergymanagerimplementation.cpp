@@ -23,7 +23,7 @@
 #include "bluetoothlowenergymanagerimplementation.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 BluetoothLowEnergyManagerImplementation::BluetoothLowEnergyManagerImplementation(PluginTimer *reconnectTimer, QObject *parent) :
     BluetoothLowEnergyManager(parent),

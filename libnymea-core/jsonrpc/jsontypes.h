@@ -62,7 +62,7 @@
 class DevicePlugin;
 class Device;
 
-namespace guhserver {
+namespace nymeaserver {
 
 #define DECLARE_OBJECT(typeName, jsonName) \
     public: \

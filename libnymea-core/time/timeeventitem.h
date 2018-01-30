@@ -25,7 +25,7 @@
 
 #include "repeatingoption.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class TimeEventItem
 {

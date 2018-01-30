@@ -19,8 +19,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::TimeDescriptor
-    \brief Describes the time elements of a time based \l{guhserver::Rule}{Rule}.
+    \class nymeaserver::TimeDescriptor
+    \brief Describes the time elements of a time based \l{nymeaserver::Rule}{Rule}.
 
     \ingroup rules
     \inmodule core
@@ -34,7 +34,7 @@
 
 #include "timedescriptor.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs an invalid \l{TimeDescriptor}.*/
 TimeDescriptor::TimeDescriptor()

@@ -26,7 +26,7 @@
 #include <QObject>
 #include <avahi-client/client.h>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class QtAvahiClient : public QObject
 {

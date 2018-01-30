@@ -29,7 +29,7 @@
 
 #include <avahi-common/error.h>
 
-namespace guhserver {
+namespace nymeaserver {
 
 QtAvahiClient::QtAvahiClient(QObject *parent) :
     QObject(parent),

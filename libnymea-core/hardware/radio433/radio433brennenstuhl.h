@@ -30,7 +30,7 @@
 #include "hardware/radio433/radio433.h"
 #include "radio433brennenstuhlgateway.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class Radio433Brennenstuhl : public Radio433
 {

@@ -27,7 +27,7 @@
 
 #include "transportinterface.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class BluetoothServer : public TransportInterface
 {

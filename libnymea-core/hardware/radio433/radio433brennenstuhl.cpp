@@ -53,7 +53,7 @@
 
 #include <QFileInfo>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Construct the hardware resource Radio433 with the given \a parent. Each possible 433 MHz hardware will be initialized here. */
 Radio433Brennenstuhl::Radio433Brennenstuhl(QObject *parent) :

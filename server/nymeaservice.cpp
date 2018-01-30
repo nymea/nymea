@@ -20,7 +20,7 @@
 
 
 /*!
-    \class guhserver::NymeaService
+    \class nymeaserver::NymeaService
     \brief The daemon service reprenetation of the guh server.
 
     \ingroup core
@@ -42,7 +42,7 @@
 #include "loggingcategories.h"
 
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs the forked nymead application with the given argument count \a argc and argument vector \a argv. */
 NymeaService::NymeaService(int argc, char **argv):

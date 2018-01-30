@@ -43,7 +43,7 @@
 
 class Device;
 
-namespace guhserver {
+namespace nymeaserver {
 
 class JsonRPCServer;
 class LogEngine;

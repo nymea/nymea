@@ -28,7 +28,7 @@
 
 #include "hardware/bluetoothlowenergy/bluetoothdiscoveryreply.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class BluetoothDiscoveryReplyImplementation : public BluetoothDiscoveryReply
 {

@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::JsonRPCServer
+    \class nymeaserver::JsonRPCServer
     \brief This class provides a JSON-RPC API interface to the \l{TransportInterface}{TransportInterfaces}.
 
     \ingroup server
@@ -62,7 +62,7 @@
 #include <QStringList>
 #include <QSslConfiguration>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a \l{JsonRPCServer} with the given \a sslConfiguration and \a parent. */
 JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject *parent):

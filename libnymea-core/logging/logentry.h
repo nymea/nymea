@@ -29,7 +29,7 @@
 #include <QVariant>
 #include <QDateTime>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class LogEntry
 {

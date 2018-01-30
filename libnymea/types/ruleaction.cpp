@@ -23,16 +23,16 @@
 
 /*!
     \class RuleAction
-    \brief Describes an action for a \l{guhserver::Rule}.
+    \brief Describes an action for a \l{nymeaserver::Rule}.
 
     \ingroup guh-types
     \ingroup rules
     \inmodule libnymea
 
-    A RuleAction describes a special form of an \l{Action} for a \l{guhserver::Rule}. The main difference is
-    the \l{RuleActionParam}, which allows to use an EventTypeId within a \l{guhserver::Rule} to execute this \l{RuleAction}.
+    A RuleAction describes a special form of an \l{Action} for a \l{nymeaserver::Rule}. The main difference is
+    the \l{RuleActionParam}, which allows to use an EventTypeId within a \l{nymeaserver::Rule} to execute this \l{RuleAction}.
 
-    \sa guhserver::Rule, RuleActionParam,
+    \sa nymeaserver::Rule, RuleActionParam,
 */
 
 #include "ruleaction.h"

@@ -25,7 +25,7 @@
 #include "jsonhandler.h"
 #include "logging/logentry.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class LoggingHandler : public JsonHandler
 {

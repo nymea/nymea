@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::ServerManager
+    \class nymeaserver::ServerManager
     \brief This class represents the manager of all server interfaces of the guh server.
 
     \ingroup server
@@ -41,7 +41,7 @@
 #include <QSslConfiguration>
 #include <QSslKey>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a \l{ServerManager} with the given \a parent. */
 ServerManager::ServerManager(NymeaConfiguration *configuration, QObject *parent) :

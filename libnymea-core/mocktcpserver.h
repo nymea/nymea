@@ -27,7 +27,7 @@
 
 #include "transportinterface.h"
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 class JsonRPCServer;
 

@@ -30,7 +30,7 @@
 
 #include "dbus-interfaces.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class NetworkDevice : public QObject
 {
@@ -213,7 +213,7 @@ QDebug operator<<(QDebug debug, NetworkDevice *device);
 
 }
 
-using namespace guhserver;
+using namespace nymeaserver;
 Q_DECLARE_METATYPE(NetworkDevice::NetworkDeviceType)
 Q_DECLARE_METATYPE(NetworkDevice::NetworkDeviceState)
 Q_DECLARE_METATYPE(NetworkDevice::NetworkDeviceStateReason)

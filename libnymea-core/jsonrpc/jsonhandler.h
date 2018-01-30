@@ -29,7 +29,7 @@
 #include <QMetaMethod>
 #include <QTimer>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class JsonHandler;
 

@@ -22,7 +22,7 @@
 
 #include "radio433transmitter.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 Radio433Trasmitter::Radio433Trasmitter(QObject *parent, int gpio) :
     QThread(parent),m_gpioPin(gpio)

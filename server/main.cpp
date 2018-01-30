@@ -49,7 +49,7 @@ static const char *const normal = "\033[0m";
 static const char *const warning = "\e[33m";
 static const char *const error = "\e[31m";
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 static void loggingCategoryFilter(QLoggingCategory *category)
 {

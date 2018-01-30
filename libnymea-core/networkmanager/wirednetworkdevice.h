@@ -26,7 +26,7 @@
 
 #include "networkdevice.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class WiredNetworkDevice : public NetworkDevice
 {

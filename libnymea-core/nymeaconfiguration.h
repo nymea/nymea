@@ -27,7 +27,7 @@
 #include <QUuid>
 #include <QUrl>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class ServerConfiguration {
 public:

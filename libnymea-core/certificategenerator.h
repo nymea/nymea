@@ -23,7 +23,7 @@
 
 #include <QString>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class CertificateGenerator
 {

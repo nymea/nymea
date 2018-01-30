@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::PluginsResource
+    \class nymeaserver::PluginsResource
     \brief This subclass of \l{RestResource} processes the REST requests for the \tt Plugins namespace.
 
     \ingroup json
@@ -42,7 +42,7 @@
 
 #include <QJsonDocument>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a \l PluginsResource with the given \a parent. */
 PluginsResource::PluginsResource(QObject *parent) :

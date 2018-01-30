@@ -30,7 +30,7 @@
 
 class QVariant;
 
-namespace guhserver {
+namespace nymeaserver {
 
 class RestResource : public QObject
 {

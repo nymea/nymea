@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::StateHandler
+    \class nymeaserver::StateHandler
     \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt States namespace of the JSON-RPC API.
 
     \ingroup json
@@ -36,7 +36,7 @@
 #include "nymeacore.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l{StateHandler} with the given \a parent. */
 StateHandler::StateHandler(QObject *parent) :

@@ -24,7 +24,7 @@
 #include "loggingcategories.h"
 #include "nymeacore.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 PluginTimerImplementation::PluginTimerImplementation(int intervall, QObject *parent) :
     PluginTimer(parent),

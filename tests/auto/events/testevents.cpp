@@ -32,7 +32,7 @@
 #include <QNetworkReply>
 #include <QCoreApplication>
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 class TestEvents: public NymeaTestBase
 {

@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::VendorsResource
+    \class nymeaserver::VendorsResource
     \brief This subclass of \l{RestResource} processes the REST requests for the \tt Vendors namespace.
 
     \ingroup json
@@ -43,7 +43,7 @@
 
 #include <QJsonDocument>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a \l VendorsResource with the given \a parent. */
 VendorsResource::VendorsResource(QObject *parent) :

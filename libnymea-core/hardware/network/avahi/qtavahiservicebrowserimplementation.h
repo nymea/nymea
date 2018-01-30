@@ -32,7 +32,7 @@
 #include "network/avahi/qtavahiservicebrowser.h"
 
 
-namespace guhserver {
+namespace nymeaserver {
 
 class QtAvahiServiceBrowserImplementationPrivate;
 

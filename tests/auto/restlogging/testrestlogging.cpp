@@ -30,7 +30,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 class TestRestLogging : public NymeaTestBase
 {

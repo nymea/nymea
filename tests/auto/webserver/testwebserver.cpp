@@ -36,7 +36,7 @@
 #include <QByteArray>
 #include <QXmlReader>
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 class TestWebserver: public NymeaTestBase
 {

@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::LogEntry
+    \class nymeaserver::LogEntry
     \brief  Represents an entry of the log database.
 
     \ingroup logs
@@ -32,7 +32,7 @@
     \sa LogEngine, LogFilter, LogsResource, LoggingHandler
 */
 
-/*! \fn QDebug guhserver::operator<< (QDebug dbg, const LogEntry &entry);;
+/*! \fn QDebug nymeaserver::operator<< (QDebug dbg, const LogEntry &entry);;
     Writes the \l{LogEntry} \a entry to the given \a dbg. This method gets used just for debugging.
 */
 
@@ -42,7 +42,7 @@
 
 #include <QDebug>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a \l{LogEntry} with the given \a timestamp, \a level, \a source and \a errorCode.*/
 LogEntry::LogEntry(QDateTime timestamp, Logging::LoggingLevel level, Logging::LoggingSource source, int errorCode):

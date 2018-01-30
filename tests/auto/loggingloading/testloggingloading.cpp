@@ -23,7 +23,7 @@
 #include "logging/logengine.h"
 #include "logging/logvaluetool.h"
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 class TestLoggingLoading: public QObject
 {

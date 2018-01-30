@@ -19,8 +19,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::TimeEventItem
-    \brief Describes a time event of a time based \l{guhserver::Rule}{Rule}.
+    \class nymeaserver::TimeEventItem
+    \brief Describes a time event of a time based \l{nymeaserver::Rule}{Rule}.
 
     \ingroup rules
     \inmodule core
@@ -31,7 +31,7 @@
 
 #include "timeeventitem.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs an invalid \l{TimeEventItem}. */
 TimeEventItem::TimeEventItem()

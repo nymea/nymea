@@ -27,7 +27,7 @@
 #include <QHash>
 #include <QStringList>
 
-namespace guhserver {
+namespace nymeaserver {
 
 QtAvahiServicePrivate::QtAvahiServicePrivate() :
     client(0),

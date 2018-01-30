@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::BluetoothServer
+    \class nymeaserver::BluetoothServer
     \brief This class represents the bluetooth server for nymead.
 
     \ingroup server
@@ -40,7 +40,7 @@
 #include <QJsonDocument>
 #include <QBluetoothLocalDevice>
 
-namespace guhserver {
+namespace nymeaserver {
 
 static const QBluetoothUuid serviceUuid(QUuid("997936b5-d2cd-4c57-b41b-c6048320cd2b"));
 /*! Constructs a \l{BluetoothServer} with the given \a parent. */

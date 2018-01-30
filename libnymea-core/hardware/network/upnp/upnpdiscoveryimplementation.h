@@ -40,7 +40,7 @@
 // Discovering UPnP devices reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
 // guh basic device reference: http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
 
-namespace guhserver {
+namespace nymeaserver {
 
 class UpnpDiscoveryImplementation : public UpnpDiscovery
 {

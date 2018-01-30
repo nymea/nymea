@@ -19,46 +19,39 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "guhdbusservice.h"
-#include "usermanager.h"
-#include "loggingcategories.h"
+#ifndef NYMEADBUSSERVICE_H
+#define NYMEADBUSSERVICE_H
+
+#include <QObject>
+#include <QDBusConnection>
+#include <QDBusContext>
+
 
 namespace guhserver {
 
-QDBusConnection GuhDBusService::s_connection = QDBusConnection::systemBus();
+class UserManager;
 
-GuhDBusService::GuhDBusService(const QString &objectPath, UserManager *parent) : QObject(parent)
+class NymeaDBusService : public QObject, public QDBusContext
 {
-    bool status = s_connection.registerService("io.guh.nymead");
-    if (!status) {
-        qCWarning(dcApplication()) << "Failed to register D-Bus service.";
-        return;
-    }
-    status = s_connection.registerObject(objectPath, this, QDBusConnection::ExportScriptableContents);
-    if (!status) {
-        qCWarning(dcApplication()) << "Failed to register D-Bus object.";
-        return;
-    }
-    m_isValid = true;
-}
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "io.guh.nymead")
 
-bool GuhDBusService::isValid()
-{
-    return m_isValid;
-}
+public:
+    explicit NymeaDBusService(const QString &objectPath, UserManager *parent = nullptr);
 
-QDBusConnection GuhDBusService::connection() const
-{
-    return s_connection;
-}
+    static void setBusType(QDBusConnection::BusType busType);
 
-void GuhDBusService::setBusType(QDBusConnection::BusType busType)
-{
-    if (busType == QDBusConnection::SessionBus) {
-        s_connection = QDBusConnection::sessionBus();
-    } else {
-        s_connection = QDBusConnection::systemBus();
-    }
-}
+    bool isValid();
+
+protected:
+    QDBusConnection connection() const;
+
+private:
+    static QDBusConnection s_connection;
+    bool m_isValid = false;
+
+};
 
 }
+
+#endif // NYMEADBUSSERVICE_H

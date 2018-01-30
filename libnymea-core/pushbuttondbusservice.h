@@ -25,11 +25,11 @@
 #include <QDBusObjectPath>
 
 #include "usermanager.h"
-#include "guhdbusservice.h"
+#include "nymeadbusservice.h"
 
 namespace guhserver {
 
-class PushButtonDBusService : public GuhDBusService
+class PushButtonDBusService : public NymeaDBusService
 {
     Q_OBJECT
 public:

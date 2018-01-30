@@ -150,7 +150,7 @@ protected:
         verifyError(response, "loggingError", JsonTypes::loggingErrorToString(error));
     }
 
-    inline void verifyConfigurationError(const QVariant &response, GuhConfiguration::ConfigurationError error = GuhConfiguration::ConfigurationErrorNoError) {
+    inline void verifyConfigurationError(const QVariant &response, NymeaConfiguration::ConfigurationError error = NymeaConfiguration::ConfigurationErrorNoError) {
         verifyError(response, "configurationError", JsonTypes::configurationErrorToString(error));
     }
 

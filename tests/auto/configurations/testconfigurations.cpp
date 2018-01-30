@@ -129,7 +129,7 @@ void TestConfigurations::testTimeZones()
     params.clear(); response.clear(); configurations.clear();
     params.insert("timeZone", "Moon/Darkside");
     response = injectAndWait("Configuration.SetTimeZone", params);
-    verifyConfigurationError(response, GuhConfiguration::ConfigurationErrorInvalidTimeZone);
+    verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorInvalidTimeZone);
 
     // Set new timezone
     params.clear(); response.clear(); configurations.clear();

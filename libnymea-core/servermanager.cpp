@@ -44,7 +44,7 @@
 namespace guhserver {
 
 /*! Constructs a \l{ServerManager} with the given \a parent. */
-ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
+ServerManager::ServerManager(NymeaConfiguration *configuration, QObject *parent) :
     QObject(parent),
     m_sslConfiguration(QSslConfiguration())
 {
@@ -123,12 +123,12 @@ ServerManager::ServerManager(GuhConfiguration* configuration, QObject *parent) :
         m_webServers.insert(config.id, webServer);
     }
 
-    connect(configuration, &GuhConfiguration::tcpServerConfigurationChanged, this, &ServerManager::tcpServerConfigurationChanged);
-    connect(configuration, &GuhConfiguration::tcpServerConfigurationRemoved, this, &ServerManager::tcpServerConfigurationRemoved);
-    connect(configuration, &GuhConfiguration::webSocketServerConfigurationChanged, this, &ServerManager::webSocketServerConfigurationChanged);
-    connect(configuration, &GuhConfiguration::webSocketServerConfigurationRemoved, this, &ServerManager::webSocketServerConfigurationRemoved);
-    connect(configuration, &GuhConfiguration::webServerConfigurationChanged, this, &ServerManager::webServerConfigurationChanged);
-    connect(configuration, &GuhConfiguration::webServerConfigurationRemoved, this, &ServerManager::webServerConfigurationRemoved);
+    connect(configuration, &NymeaConfiguration::tcpServerConfigurationChanged, this, &ServerManager::tcpServerConfigurationChanged);
+    connect(configuration, &NymeaConfiguration::tcpServerConfigurationRemoved, this, &ServerManager::tcpServerConfigurationRemoved);
+    connect(configuration, &NymeaConfiguration::webSocketServerConfigurationChanged, this, &ServerManager::webSocketServerConfigurationChanged);
+    connect(configuration, &NymeaConfiguration::webSocketServerConfigurationRemoved, this, &ServerManager::webSocketServerConfigurationRemoved);
+    connect(configuration, &NymeaConfiguration::webServerConfigurationChanged, this, &ServerManager::webServerConfigurationChanged);
+    connect(configuration, &NymeaConfiguration::webServerConfigurationRemoved, this, &ServerManager::webServerConfigurationRemoved);
 }
 
 /*! Returns the pointer to the created \l{JsonRPCServer} in this \l{ServerManager}. */

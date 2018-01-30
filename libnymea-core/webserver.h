@@ -34,9 +34,9 @@
 #include <QSslConfiguration>
 #include <QSslKey>
 
-#include "hardware/network/avahi/qtavahiservice.h"
+#include "nymeaconfiguration.h"
 
-#include "guhconfiguration.h"
+#include "hardware/network/avahi/qtavahiservice.h"
 
 // Note: Hypertext Transfer Protocol (HTTP/1.1) from the Internet Engineering Task Force (IETF):
 //       https://tools.ietf.org/html/rfc7231

@@ -48,7 +48,7 @@ namespace guhserver {
 GuhService::GuhService(int argc, char **argv):
     QtService<QCoreApplication>(argc, argv, "nymea - IoT server")
 {
-    application()->setOrganizationName("guh");
+    application()->setOrganizationName("nymea");
     application()->setApplicationName("nymead");
     application()->setApplicationVersion(NYMEA_VERSION_STRING);
     close(STDIN_FILENO);

@@ -39,10 +39,10 @@
     The URL for the secure websocket (TLS 1.2):
     \code wss://localhost:4444\endcode
 
-    You can turn on the \tt wss server in the \tt WebServerServer section of the \tt /etc/guh/nymead.conf file.
+    You can turn on the \tt wss server in the \tt WebServerServer section of the \tt /etc/nymea/nymead.conf file.
 
     \note For \tt wss you need to have a certificate and configure it in the \tt SSL-configuration
-    section of the \tt /etc/guh/nymead.conf file.
+    section of the \tt /etc/nymea/nymead.conf file.
 
     \sa WebServer, TcpServer, TransportInterface
 */

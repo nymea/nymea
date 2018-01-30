@@ -27,7 +27,7 @@ HEADERS += nymeacore.h \
     httprequest.h \
     websocketserver.h \
     httpreply.h \
-    guhconfiguration.h \
+    nymeaconfiguration.h \
     bluetoothserver.h \
     jsonrpc/jsonrpcserver.h \
     jsonrpc/jsonhandler.h \
@@ -108,7 +108,7 @@ SOURCES += nymeacore.cpp \
     httprequest.cpp \
     websocketserver.cpp \
     httpreply.cpp \
-    guhconfiguration.cpp \
+    nymeaconfiguration.cpp \
     bluetoothserver.cpp \
     jsonrpc/jsonrpcserver.cpp \
     jsonrpc/jsonhandler.cpp \

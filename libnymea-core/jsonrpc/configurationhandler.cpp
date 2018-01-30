@@ -220,14 +220,14 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     params.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setParams("CloudConfigurationChanged", params);
 
-    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::serverNameChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::timeZoneChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::localeChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::debugServerEnabledChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::tcpServerConfigurationChanged, this, &ConfigurationHandler::onTcpServerConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::webServerConfigurationChanged, this, &ConfigurationHandler::onWebServerConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::webSocketServerConfigurationChanged, this, &ConfigurationHandler::onWebSocketServerConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::cloudEnabledChanged, this, &ConfigurationHandler::onCloudConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::serverNameChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::timeZoneChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::localeChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::debugServerEnabledChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::tcpServerConfigurationChanged, this, &ConfigurationHandler::onTcpServerConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webServerConfigurationChanged, this, &ConfigurationHandler::onWebServerConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webSocketServerConfigurationChanged, this, &ConfigurationHandler::onWebSocketServerConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::cloudEnabledChanged, this, &ConfigurationHandler::onCloudConfigurationChanged);
     connect(NymeaCore::instance()->deviceManager(), &DeviceManager::languageUpdated, this, &ConfigurationHandler::onLanguageChanged);
 }
 
@@ -297,7 +297,7 @@ JsonReply *ConfigurationHandler::SetServerName(const QVariantMap &params) const
 {
     QString serverName = params.value("serverName").toString();
     NymeaCore::instance()->configuration()->setServerName(serverName);
-    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::SetTimeZone(const QVariantMap &params) const
@@ -306,10 +306,10 @@ JsonReply *ConfigurationHandler::SetTimeZone(const QVariantMap &params) const
 
     QByteArray timeZone = params.value("timeZone").toString().toUtf8();
     if (!NymeaCore::instance()->timeManager()->setTimeZone(timeZone))
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidTimeZone));
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidTimeZone));
 
     NymeaCore::instance()->configuration()->setTimeZone(timeZone);
-    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::SetLanguage(const QVariantMap &params) const
@@ -319,37 +319,37 @@ JsonReply *ConfigurationHandler::SetLanguage(const QVariantMap &params) const
 
     NymeaCore::instance()->configuration()->setLocale(locale);
 
-    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::SetTcpServerConfiguration(const QVariantMap &params) const
 {
     ServerConfiguration config = JsonTypes::unpackServerConfiguration(params.value("configuration").toMap());
     if (config.id.isEmpty()) {
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
     if (config.address.isNull())
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidHostAddress));
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidHostAddress));
 
     if (config.port <= 0 || config.port > 65535) {
         qCWarning(dcJsonRpc()) << "Port out of range";
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidPort));
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
     }
 
     qCDebug(dcJsonRpc()) << QString("Configure TCP server %1:%2").arg(config.address.toString()).arg(config.port);
 
     NymeaCore::instance()->configuration()->setTcpServerConfiguration(config);
-    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::DeleteTcpServerConfiguration(const QVariantMap &params) const
 {
     QString id = params.value("id").toString();
     if (id.isEmpty() || !NymeaCore::instance()->configuration()->tcpServerConfigurations().contains(id)) {
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
     NymeaCore::instance()->configuration()->removeTcpServerConfiguration(id);
-    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::SetWebServerConfiguration(const QVariantMap &params) const
@@ -357,75 +357,75 @@ JsonReply *ConfigurationHandler::SetWebServerConfiguration(const QVariantMap &pa
     WebServerConfiguration config = JsonTypes::unpackWebServerConfiguration(params.value("configuration").toMap());
 
     if (config.id.isEmpty()) {
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
     if (config.address.isNull())
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidHostAddress));
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidHostAddress));
 
     if (config.port <= 0 || config.port > 65535) {
         qCWarning(dcJsonRpc()) << "Port out of range";
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidPort));
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
     }
 
     qCDebug(dcJsonRpc()) << QString("Configure web server %1:%2").arg(config.address.toString()).arg(config.port);
 
     NymeaCore::instance()->configuration()->setWebServerConfiguration(config);
-    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::DeleteWebServerConfiguration(const QVariantMap &params) const
 {
     QString id = params.value("id").toString();
     if (id.isEmpty() || !NymeaCore::instance()->configuration()->webServerConfigurations().contains(id)) {
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
     NymeaCore::instance()->configuration()->removeWebServerConfiguration(id);
-    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::SetWebSocketServerConfiguration(const QVariantMap &params) const
 {
     ServerConfiguration config = JsonTypes::unpackServerConfiguration(params.value("configuration").toMap());
     if (config.id.isEmpty()) {
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
     if (config.address.isNull())
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidHostAddress));
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidHostAddress));
 
     if (config.port <= 0 || config.port > 65535) {
         qCWarning(dcJsonRpc()) << "Port out of range";
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidPort));
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
     }
 
     qCDebug(dcJsonRpc()) << QString("Configure web socket server %1:%2").arg(config.address.toString()).arg(config.port);
 
     NymeaCore::instance()->configuration()->setWebSocketServerConfiguration(config);
 
-    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::DeleteWebSocketServerConfiguration(const QVariantMap &params) const
 {
     QString id = params.value("id").toString();
     if (id.isEmpty() || !NymeaCore::instance()->configuration()->webSocketServerConfigurations().contains(id)) {
-        return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
     NymeaCore::instance()->configuration()->removeWebSocketServerConfiguration(id);
-    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::SetCloudEnabled(const QVariantMap &params) const
 {
     bool enabled = params.value("enabled").toBool();
     NymeaCore::instance()->configuration()->setCloudEnabled(enabled);
-    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::SetDebugServerEnabled(const QVariantMap &params) const
 {
     bool enabled = params.value("enabled").toBool();
     NymeaCore::instance()->configuration()->setDebugServerEnabled(enabled);
-    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
 void ConfigurationHandler::onBasicConfigurationChanged()

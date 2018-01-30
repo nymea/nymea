@@ -27,7 +27,7 @@
 #include "rule.h"
 #include "devicemanager.h"
 #include "ruleengine.h"
-#include "guhconfiguration.h"
+#include "nymeaconfiguration.h"
 #include "usermanager.h"
 
 #include "types/deviceclass.h"
@@ -130,7 +130,7 @@ public:
     DECLARE_TYPE(loggingLevel, "LoggingLevel", Logging, LoggingLevel)
     DECLARE_TYPE(loggingEventType, "LoggingEventType", Logging, LoggingEventType)
     DECLARE_TYPE(repeatingMode, "RepeatingMode", RepeatingOption, RepeatingMode)
-    DECLARE_TYPE(configurationError, "ConfigurationError", GuhConfiguration, ConfigurationError)
+    DECLARE_TYPE(configurationError, "ConfigurationError", NymeaConfiguration, ConfigurationError)
     DECLARE_TYPE(networkManagerError, "NetworkManagerError", NetworkManager, NetworkManagerError)
     DECLARE_TYPE(networkManagerState, "NetworkManagerState", NetworkManager, NetworkManagerState)
     DECLARE_TYPE(networkDeviceState, "NetworkDeviceState", NetworkDevice, NetworkDeviceState)

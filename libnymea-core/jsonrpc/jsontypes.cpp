@@ -143,7 +143,7 @@ void JsonTypes::init()
     s_loggingLevel = enumToStrings(Logging::staticMetaObject, "LoggingLevel");
     s_loggingEventType = enumToStrings(Logging::staticMetaObject, "LoggingEventType");
     s_repeatingMode = enumToStrings(RepeatingOption::staticMetaObject, "RepeatingMode");
-    s_configurationError = enumToStrings(GuhConfiguration::staticMetaObject, "ConfigurationError");
+    s_configurationError = enumToStrings(NymeaConfiguration::staticMetaObject, "ConfigurationError");
     s_networkManagerError = enumToStrings(NetworkManager::staticMetaObject, "NetworkManagerError");
     s_networkManagerState = enumToStrings(NetworkManager::staticMetaObject, "NetworkManagerState");
     s_networkDeviceState = enumToStrings(NetworkDevice::staticMetaObject, "NetworkDeviceState");

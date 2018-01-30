@@ -403,8 +403,8 @@ RuleEngine::RuleError NymeaCore::removeRule(const RuleId &id)
     return removeError;
 }
 
-/*! Returns a pointer to the \l{GuhConfiguration} instance owned by NymeaCore.*/
-GuhConfiguration *NymeaCore::configuration() const
+/*! Returns a pointer to the \l{NymeaConfiguration} instance owned by NymeaCore.*/
+NymeaConfiguration *NymeaCore::configuration() const
 {
     return m_configuration;
 }
@@ -477,8 +477,8 @@ NymeaCore::NymeaCore(QObject *parent) :
 }
 
 void NymeaCore::init() {
-    qCDebug(dcApplication()) << "Loading guh configurations" << NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName();
-    m_configuration = new GuhConfiguration(this);
+    qCDebug(dcApplication()) << "Loading nymea configurations" << NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName();
+    m_configuration = new NymeaConfiguration(this);
 
     qCDebug(dcApplication()) << "Creating Time Manager";
     m_timeManager = new TimeManager(m_configuration->timeZone(), this);
@@ -518,10 +518,10 @@ void NymeaCore::init() {
     CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
     m_deviceManager->registerStaticPlugin(cloudNotifications, cloudNotifications->metaData());
 
-    connect(m_configuration, &GuhConfiguration::localeChanged, this, &NymeaCore::onLocaleChanged);
-    connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::setEnabled);
-    connect(m_configuration, &GuhConfiguration::serverNameChanged, m_cloudManager, &CloudManager::setDeviceName);
-    connect(m_configuration, &GuhConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
+    connect(m_configuration, &NymeaConfiguration::localeChanged, this, &NymeaCore::onLocaleChanged);
+    connect(m_configuration, &NymeaConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::setEnabled);
+    connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_cloudManager, &CloudManager::setDeviceName);
+    connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
 
     connect(m_deviceManager, &DeviceManager::pluginConfigChanged, this, &NymeaCore::pluginConfigChanged);
     connect(m_deviceManager, &DeviceManager::eventTriggered, this, &NymeaCore::gotEvent);

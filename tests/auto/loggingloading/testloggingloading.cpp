@@ -52,7 +52,7 @@ TestLoggingLoading::TestLoggingLoading(QObject *parent): QObject(parent)
 void TestLoggingLoading::initTestCase()
 {
     // Important for settings
-    QCoreApplication::instance()->setOrganizationName("guh-test");
+    QCoreApplication::instance()->setOrganizationName("nymea-test");
 }
 
 void TestLoggingLoading::testLogMigration()

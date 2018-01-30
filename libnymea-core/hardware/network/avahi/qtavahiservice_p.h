@@ -33,7 +33,7 @@
 #include <avahi-common/error.h>
 #include <avahi-common/alternative.h>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class QtAvahiServicePrivate
 {

@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::Rule
+    \class nymeaserver::Rule
     \brief This class represents a rule.
 
     \ingroup rules
@@ -38,7 +38,7 @@
 
 #include <QDebug>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs an empty, invalid \l{Rule}. */
 Rule::Rule():

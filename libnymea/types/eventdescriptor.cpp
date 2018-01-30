@@ -29,14 +29,14 @@
     \ingroup rules
     \inmodule libnymea
 
-    An EventDescriptor describes an \l{Event} in order to match it with a \l{guhserver::Rule}.
+    An EventDescriptor describes an \l{Event} in order to match it with a \l{nymeaserver::Rule}.
 
     An EventDescriptor can either be bound to a certain device/eventtype, or to an interface.
     If an event is bound to a device, it will only match when the given device fires the given event.
     If an event is bound to an interface, it will match the given event for all the devices implementing
     the given interface.
 
-    \sa Event, EventType, guhserver::Rule
+    \sa Event, EventType, nymeaserver::Rule
 */
 
 #include "eventdescriptor.h"

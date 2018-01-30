@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::NetworkDevice
+    \class nymeaserver::NetworkDevice
     \brief Represents a generic network device the \l{NetworkManager}.
 
     \ingroup networkmanager
@@ -28,7 +28,7 @@
     \sa WiredNetworkDevice, WirelessNetworkDevice
 */
 
-/*! \enum guhserver::NetworkDevice::NetworkDeviceState
+/*! \enum nymeaserver::NetworkDevice::NetworkDeviceState
     \value NetworkDeviceStateUnknown
     \value NetworkDeviceStateUnmanaged
     \value NetworkDeviceStateUnavailable
@@ -44,7 +44,7 @@
     \value NetworkDeviceStateFailed
 */
 
-/*! \enum guhserver::NetworkDevice::NetworkDeviceStateReason
+/*! \enum nymeaserver::NetworkDevice::NetworkDeviceStateReason
     \value NetworkDeviceStateReasonNone
     \value NetworkDeviceStateReasonUnknown
     \value NetworkDeviceStateReasonNowManaged
@@ -111,7 +111,7 @@
 */
 
 
-/*! \enum guhserver::NetworkDevice::NetworkDeviceType
+/*! \enum nymeaserver::NetworkDevice::NetworkDeviceType
     \value NetworkDeviceTypeUnknown
     \value NetworkDeviceTypeEthernet
     \value NetworkDeviceTypeWifi
@@ -144,7 +144,7 @@
 
 #include <QMetaEnum>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l{NetworkDevice} with the given dbus \a objectPath and \a parent. */
 NetworkDevice::NetworkDevice(const QDBusObjectPath &objectPath, QObject *parent) :

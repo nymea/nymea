@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::RulesResource
+    \class nymeaserver::RulesResource
     \brief This subclass of \l{RestResource} processes the REST requests for the \tt Rules namespace.
 
     \ingroup json
@@ -43,7 +43,7 @@
 
 #include <QJsonDocument>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a \l RulesResource with the given \a parent. */
 RulesResource::RulesResource(QObject *parent) :

@@ -52,7 +52,7 @@
 #include "qtavahiservice_p.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l{QtAvahiService} with the given \a parent. */
 QtAvahiService::QtAvahiService(QObject *parent) :

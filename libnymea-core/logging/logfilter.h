@@ -28,7 +28,7 @@
 #include "logging.h"
 #include "typeutils.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class LogFilter
 {

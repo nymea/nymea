@@ -28,7 +28,7 @@
     \ingroup devices
     \inmodule libnymea
 
-    An DeviceDescriptor describes an \l{Device} in order to match it with a \l{guhserver::Rule}.
+    An DeviceDescriptor describes an \l{Device} in order to match it with a \l{nymeaserver::Rule}.
 
     \sa Device
 */

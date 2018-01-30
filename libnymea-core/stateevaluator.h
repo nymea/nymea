@@ -29,7 +29,7 @@
 
 class NymeaSettings;
 
-namespace guhserver {
+namespace nymeaserver {
 
 class StateEvaluator
 {

@@ -28,7 +28,7 @@
 #include <QXmlStreamWriter>
 #include <QCoreApplication>
 
-namespace guhserver {
+namespace nymeaserver {
 
 DebugServerHandler::DebugServerHandler(QObject *parent) : QObject(parent)
 {

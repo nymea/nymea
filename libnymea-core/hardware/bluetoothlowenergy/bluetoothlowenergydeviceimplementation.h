@@ -31,7 +31,7 @@
 
 #include "hardware/bluetoothlowenergy/bluetoothlowenergydevice.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class BluetoothLowEnergyDeviceImplementation : public BluetoothLowEnergyDevice
 {

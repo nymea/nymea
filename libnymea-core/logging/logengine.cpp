@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::LogEngine
+    \class nymeaserver::LogEngine
     \brief  The engine which creates the log databse and provides access to it.
 
     \ingroup logs
@@ -34,20 +34,20 @@
     \sa LogEntry, LogFilter, LogsResource, LoggingHandler
 */
 
-/*! \fn void guhserver::LogEngine::logEntryAdded(const LogEntry &logEntry);
+/*! \fn void nymeaserver::LogEngine::logEntryAdded(const LogEntry &logEntry);
     This signal is emitted when an \a logEntry was added to the database.
 
     \sa LogEntry
 */
 
-/*! \fn void guhserver::LogEngine::logDatabaseUpdated();
+/*! \fn void nymeaserver::LogEngine::logDatabaseUpdated();
     This signal is emitted when the log database was updated. The log database
     will be updated when a \l{LogEntry} was added or when a device was removed
     and all corresponding \l{LogEntry}{LogEntries} were removed from the database.
 */
 
 /*!
-    \class guhserver::Logging
+    \class nymeaserver::Logging
     \brief  The logging class provides enums and flags for the LogEngine.
 
     \ingroup logs
@@ -56,11 +56,11 @@
     \sa LogEngine, LogEntry, LogFilter
 */
 
-/*! \fn guhserver::Logging::Logging(QObject *parent)
+/*! \fn nymeaserver::Logging::Logging(QObject *parent)
     Constructs the \l{Logging} object with the given \a parent.
 */
 
-/*! \enum guhserver::Logging::LoggingError
+/*! \enum nymeaserver::Logging::LoggingError
     Represents the possible errors from the \l{LogEngine}.
 
     \value LoggingErrorNoError
@@ -71,7 +71,7 @@
         The given \l{LogFilter} contains an invalid paramter.
 */
 
-/*! \enum guhserver::Logging::LoggingEventType
+/*! \enum nymeaserver::Logging::LoggingEventType
     Represents the event type of this \l{LogEntry}.
 
     \value LoggingEventTypeTrigger
@@ -86,7 +86,7 @@
 
 */
 
-/*! \enum guhserver::Logging::LoggingLevel
+/*! \enum nymeaserver::Logging::LoggingLevel
     Indicates if the corresponding \l{LogEntry} is an information or an alert.
 
     \value LoggingLevelInfo
@@ -95,7 +95,7 @@
         This \l{LogEntry} represents an alert. Something is not ok.
 */
 
-/*! \enum guhserver::Logging::LoggingSource
+/*! \enum nymeaserver::Logging::LoggingSource
     Indicates from where the \l{LogEntry} was created. Can be used as flag.
 
     \value LoggingSourceSystem
@@ -129,7 +129,7 @@
 
 #define DB_SCHEMA_VERSION 3
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs the log engine with the given \a parent. */
 LogEngine::LogEngine(const QString &logPath, QObject *parent):

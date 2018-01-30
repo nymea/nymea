@@ -36,7 +36,7 @@
 
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class SslServer: public QTcpServer
 {

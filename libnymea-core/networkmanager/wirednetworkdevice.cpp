@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::WiredNetworkDevice
+    \class nymeaserver::WiredNetworkDevice
     \brief Represents an ethernet device in the \l{NetworkManager}.
 
     \ingroup networkmanager
@@ -33,7 +33,7 @@
 #include "wirednetworkdevice.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l{WiredNetworkDevice} with the given dbus \a objectPath and \a parent. */
 WiredNetworkDevice::WiredNetworkDevice(const QDBusObjectPath &objectPath, QObject *parent) :

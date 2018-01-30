@@ -24,7 +24,7 @@
 
 #include <QTimer>
 
-namespace guhserver {
+namespace nymeaserver {
 
 BluetoothDiscoveryReplyImplementation::BluetoothDiscoveryReplyImplementation(QObject *parent) :
     BluetoothDiscoveryReply(parent)

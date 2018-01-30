@@ -26,7 +26,7 @@
 
 class QDateTime;
 
-namespace guhserver {
+namespace nymeaserver {
 
 class RepeatingOption
 {

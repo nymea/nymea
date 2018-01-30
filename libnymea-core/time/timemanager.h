@@ -26,7 +26,7 @@
 #include <QDateTime>
 #include <QTimeZone>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class TimeManager : public QObject
 {

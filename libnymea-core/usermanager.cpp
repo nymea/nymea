@@ -33,7 +33,7 @@
 #include <QDateTime>
 #include <QDebug>
 
-namespace guhserver {
+namespace nymeaserver {
 
 UserManager::UserManager(QObject *parent) : QObject(parent)
 {

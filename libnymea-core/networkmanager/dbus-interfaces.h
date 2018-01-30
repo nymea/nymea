@@ -23,7 +23,7 @@
 
 #include <QString>
 
-namespace guhserver {
+namespace nymeaserver {
 
 static const QString serviceString("org.freedesktop.NetworkManager");
 

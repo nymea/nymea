@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::ActionHandler
+    \class nymeaserver::ActionHandler
     \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Actions namespace.
 
     \ingroup json
@@ -39,7 +39,7 @@
 #include "types/action.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l ActionHandler with the given \a parent. */
 ActionHandler::ActionHandler(QObject *parent) :

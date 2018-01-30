@@ -28,7 +28,7 @@
 #include "network/upnp/upnpdiscoveryreply.h"
 #include "network/upnp/upnpdevicedescriptor.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class UpnpDiscoveryReplyImplementation : public UpnpDiscoveryReply
 {

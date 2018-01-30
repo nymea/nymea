@@ -29,7 +29,7 @@
 #include <QDBusInterface>
 #include <QDBusArgument>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class WirelessAccessPoint : public QObject
 {
@@ -93,7 +93,7 @@ QDebug operator<<(QDebug debug, WirelessAccessPoint *accessPoint);
 
 }
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(guhserver::WirelessAccessPoint::ApSecurityModes)
-Q_DECLARE_METATYPE(guhserver::WirelessAccessPoint::ApSecurityMode)
+Q_DECLARE_OPERATORS_FOR_FLAGS(nymeaserver::WirelessAccessPoint::ApSecurityModes)
+Q_DECLARE_METATYPE(nymeaserver::WirelessAccessPoint::ApSecurityMode)
 
 #endif // WIRELESSACCESSPOINT_H

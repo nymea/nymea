@@ -23,7 +23,7 @@
 #include "bluetoothlowenergydeviceimplementation.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 QString BluetoothLowEnergyDeviceImplementation::name() const
 {

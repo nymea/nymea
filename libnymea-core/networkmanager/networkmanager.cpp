@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::NetworkManager
+    \class nymeaserver::NetworkManager
     \brief Represents the dbus network-manager.
 
     \ingroup networkmanager
@@ -70,7 +70,7 @@
     This signal will be emitted when the given \a wiredDevice has changed. \sa WiredNetworkDevice
 */
 
-/*! \enum guhserver::NetworkManager::NetworkManagerState
+/*! \enum nymeaserver::NetworkManager::NetworkManagerState
     \value NetworkManagerStateUnknown
     \value NetworkManagerStateAsleep
     \value NetworkManagerStateDisconnected
@@ -81,7 +81,7 @@
     \value NetworkManagerStateConnectedGlobal
 */
 
-/*! \enum guhserver::NetworkManager::NetworkManagerConnectivityState
+/*! \enum nymeaserver::NetworkManager::NetworkManagerConnectivityState
     \value NetworkManagerConnectivityStateUnknown
     \value NetworkManagerConnectivityStateNone
     \value NetworkManagerConnectivityStatePortal
@@ -89,7 +89,7 @@
     \value NetworkManagerConnectivityStateFull
 */
 
-/*! \enum guhserver::NetworkManager::NetworkManagerError
+/*! \enum nymeaserver::NetworkManager::NetworkManagerError
     \value NetworkManagerErrorNoError
     \value NetworkManagerErrorUnknownError
     \value NetworkManagerErrorWirelessNotAvailable
@@ -111,7 +111,7 @@
 #include <QMetaEnum>
 #include <QUuid>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l{NetworkManager} object with the given \a parent. */
 NetworkManager::NetworkManager(QObject *parent) :

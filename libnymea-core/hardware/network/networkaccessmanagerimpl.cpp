@@ -35,7 +35,7 @@
 #include "networkaccessmanagerimpl.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Construct the hardware resource NetworkAccessManagerImpl with the given \a parent. */
 NetworkAccessManagerImpl::NetworkAccessManagerImpl(QNetworkAccessManager *networkManager, QObject *parent) :

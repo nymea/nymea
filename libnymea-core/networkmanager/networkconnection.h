@@ -31,7 +31,7 @@
 #include <QDBusInterface>
 #include <QDBusArgument>
 
-namespace guhserver {
+namespace nymeaserver {
 
 typedef QMap<QString, QVariantMap> ConnectionSettings;
 
@@ -66,7 +66,7 @@ QDebug operator<<(QDebug debug, NetworkConnection *networkConnection);
 
 }
 
-Q_DECLARE_METATYPE(guhserver::ConnectionSettings)
+Q_DECLARE_METATYPE(nymeaserver::ConnectionSettings)
 
 
 #endif // NETWORKCONNECTION_H

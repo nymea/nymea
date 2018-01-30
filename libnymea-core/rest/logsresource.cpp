@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::LogsResource
+    \class nymeaserver::LogsResource
     \brief This subclass of \l{RestResource} processes the REST requests for the \tt Logs namespace.
 
     \ingroup json
@@ -43,7 +43,7 @@
 
 #include <QJsonDocument>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a \l LogsResource with the given \a parent. */
 LogsResource::LogsResource(QObject *parent) :

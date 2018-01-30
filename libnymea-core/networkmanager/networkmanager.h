@@ -35,7 +35,7 @@
 
 // Docs: https://developer.gnome.org/NetworkManager/unstable/spec.html
 
-namespace guhserver {
+namespace nymeaserver {
 
 class NetworkManager : public QObject
 {
@@ -160,7 +160,7 @@ private slots:
 
 }
 
-using namespace guhserver;
+using namespace nymeaserver;
 Q_DECLARE_METATYPE(NetworkManager::NetworkManagerState)
 Q_DECLARE_METATYPE(NetworkManager::NetworkManagerError)
 

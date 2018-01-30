@@ -33,7 +33,7 @@
 #include <QSqlDatabase>
 #include <QTimer>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class LogEngine: public QObject
 {

@@ -23,7 +23,7 @@
 #include "radio433brennenstuhlgateway.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 Radio433BrennenstuhlGateway::Radio433BrennenstuhlGateway(QObject *parent) :
     QObject(parent)

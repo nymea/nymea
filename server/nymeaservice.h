@@ -24,7 +24,7 @@
 #include <QCoreApplication>
 #include "qtservice/qtservice.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class NymeaService : public QtService<QCoreApplication>
 {

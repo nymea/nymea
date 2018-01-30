@@ -35,7 +35,7 @@
 #include <QHttpPart>
 #include <QMetaType>
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 class TestRestVendors: public NymeaTestBase
 {

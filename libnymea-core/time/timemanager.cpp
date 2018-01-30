@@ -19,25 +19,25 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::TimeManager
+    \class nymeaserver::TimeManager
     \brief Describes the centralized time manager of guh.
 
     \ingroup rules
     \inmodule core
 */
 
-/*! \fn void guhserver::TimeManager::tick()
+/*! \fn void nymeaserver::TimeManager::tick()
     Represents the central time tick. Will be emitted every second.
 */
 
-/*! \fn void guhserver::TimeManager::dateTimeChanged(const QDateTime &dateTime);
+/*! \fn void nymeaserver::TimeManager::dateTimeChanged(const QDateTime &dateTime);
     Will be emitted when the \a dateTime has changed.
 */
 
 #include "timemanager.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l{TimeManager} with the given \a timeZone and \a parent. */
 TimeManager::TimeManager(const QByteArray &timeZone, QObject *parent) :

@@ -38,7 +38,7 @@ class QtAvahiServiceBrowser;
 class BluetoothLowEnergyManager;
 
 
-namespace guhserver {
+namespace nymeaserver {
 
 class HardwareManagerImplementation : public HardwareManager
 {

@@ -30,7 +30,7 @@
 #include <QNetworkReply>
 #include <QCoreApplication>
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 class TestVersioning: public NymeaTestBase
 {

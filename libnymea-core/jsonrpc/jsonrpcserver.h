@@ -37,7 +37,7 @@
 
 class Device;
 
-namespace guhserver {
+namespace nymeaserver {
 
 class JsonRPCServer: public JsonHandler
 {

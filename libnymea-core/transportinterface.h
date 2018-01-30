@@ -28,7 +28,7 @@
 
 #include "nymeaconfiguration.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class TransportInterface : public QObject
 {

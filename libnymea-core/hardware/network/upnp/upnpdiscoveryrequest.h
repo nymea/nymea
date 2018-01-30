@@ -36,7 +36,7 @@
 
 class UpnpDiscovery;
 
-namespace guhserver {
+namespace nymeaserver {
 
 class UpnpDiscoveryRequest : public QObject
 {

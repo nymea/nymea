@@ -21,7 +21,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::JsonTypes
+    \class nymeaserver::JsonTypes
     \brief This class represents the types for the JSON-RPC API.
 
     \ingroup json
@@ -32,7 +32,7 @@
 
 */
 
-/*! \enum guhserver::JsonTypes::BasicType
+/*! \enum nymeaserver::JsonTypes::BasicType
 
     This enum type specifies the basic types of a JSON RPC API.
 
@@ -62,7 +62,7 @@
 #include <QDebug>
 #include <QMetaEnum>
 
-namespace guhserver {
+namespace nymeaserver {
 
 bool JsonTypes::s_initialized = false;
 QString JsonTypes::s_lastError;

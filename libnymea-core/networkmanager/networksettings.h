@@ -29,7 +29,7 @@
 
 #include "networkconnection.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class NetworkConnection;
 

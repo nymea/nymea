@@ -29,7 +29,7 @@
 
 #include "plugintimer.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class PluginTimerImplementation : public PluginTimer
 {

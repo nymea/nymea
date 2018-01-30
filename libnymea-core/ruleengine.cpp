@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::RuleEngine
+    \class nymeaserver::RuleEngine
     \brief The Engine that evaluates \l{Rule}{Rules} and finds \l{Action}{Actions} to be executed.
 
     \ingroup rules
@@ -32,20 +32,20 @@
     \sa Event, EventDescriptor, Rule, RuleAction
 */
 
-/*! \fn void guhserver::RuleEngine::ruleAdded(const Rule &rule)
+/*! \fn void nymeaserver::RuleEngine::ruleAdded(const Rule &rule)
     Will be emitted whenever a new \l{Rule} is added to this Engine.
     The \a rule parameter holds the entire new rule.*/
 
-/*! \fn void guhserver::RuleEngine::ruleRemoved(const RuleId &ruleId)
+/*! \fn void nymeaserver::RuleEngine::ruleRemoved(const RuleId &ruleId)
     Will be emitted whenever a \l{Rule} is removed from this Engine.
     \a ruleId holds the id of the removed rule. You should remove any references
     or copies you hold for this rule.*/
 
-/*! \fn void guhserver::RuleEngine::ruleConfigurationChanged(const Rule &rule)
+/*! \fn void nymeaserver::RuleEngine::ruleConfigurationChanged(const Rule &rule)
     Will be emitted whenever a \l{Rule} changed his enable/disable status.
     The parameter \a rule holds the changed rule.*/
 
-/*! \enum guhserver::RuleEngine::RuleError
+/*! \enum nymeaserver::RuleEngine::RuleError
     \value RuleErrorNoError
         No error happened. Everything is fine.
     \value RuleErrorInvalidRuleId
@@ -89,7 +89,7 @@
         This rule does not have any ExitActions which means they cannot be executed.
 */
 
-/*! \enum guhserver::RuleEngine::RemovePolicy
+/*! \enum nymeaserver::RuleEngine::RemovePolicy
 
     \value RemovePolicyCascade
         Remove the whole \l{Rule}.
@@ -116,7 +116,7 @@
 #include <QStandardPaths>
 #include <QCoreApplication>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs the RuleEngine with the given \a parent. Although it wouldn't harm to have multiple RuleEngines, there is one
     instance available from \l{NymeaCore}. This one should be used instead of creating multiple ones.

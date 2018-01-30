@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::StateEvaluator
+    \class nymeaserver::StateEvaluator
     \brief This class helps to evaluate a \l{State} and .
 
     \ingroup rules
@@ -40,7 +40,7 @@
 #include "loggingcategories.h"
 #include "nymeasettings.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new StateEvaluator for the given \a stateDescriptor. */
 StateEvaluator::StateEvaluator(const StateDescriptor &stateDescriptor):

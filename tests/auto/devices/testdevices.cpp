@@ -31,7 +31,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 class TestDevices : public NymeaTestBase
 {

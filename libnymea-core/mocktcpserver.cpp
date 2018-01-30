@@ -25,7 +25,7 @@
 #include <QHash>
 #include <QJsonDocument>
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 QList<MockTcpServer*> MockTcpServer::s_allServers;
 

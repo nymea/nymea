@@ -29,7 +29,7 @@
     \ingroup rules
     \inmodule libnymea
 
-    An ParamDescriptor describes a \l{Param} in order to match it with a \l{guhserver::Rule}.
+    An ParamDescriptor describes a \l{Param} in order to match it with a \l{nymeaserver::Rule}.
 
     \sa Param, ParamType
 */

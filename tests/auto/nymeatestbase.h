@@ -92,7 +92,7 @@ extern EventTypeId mockParentChildEventId;
 extern ActionTypeId mockParentChildActionId;
 extern StateTypeId mockParentChildStateId;
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 class MockTcpServer;
 

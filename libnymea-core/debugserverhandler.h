@@ -25,7 +25,7 @@
 
 #include "httpreply.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class DebugServerHandler : public QObject
 {

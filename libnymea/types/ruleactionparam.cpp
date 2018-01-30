@@ -32,7 +32,7 @@
     A RuleActionParam allows rules to take over an \l{Event} parameter into a rule
     \l{RuleAction}.
 
-    \sa guhserver::Rule, RuleAction,
+    \sa nymeaserver::Rule, RuleAction,
 */
 
 #include "ruleactionparam.h"

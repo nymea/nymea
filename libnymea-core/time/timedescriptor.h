@@ -24,7 +24,7 @@
 #include "timeeventitem.h"
 #include "calendaritem.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class TimeDescriptor
 {

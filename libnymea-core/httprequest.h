@@ -26,7 +26,7 @@
 #include <QString>
 #include <QHash>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class HttpRequest
 {

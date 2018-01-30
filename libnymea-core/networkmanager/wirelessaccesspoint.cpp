@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::WirelessAccessPoint
+    \class nymeaserver::WirelessAccessPoint
     \brief Represents a wireless access point from a \l{WirelessNetworkDevice}.
 
     \ingroup networkmanager
@@ -28,7 +28,7 @@
     \sa WirelessNetworkDevice
 */
 
-/*! \enum guhserver::WirelessAccessPoint::ApSecurityMode
+/*! \enum nymeaserver::WirelessAccessPoint::ApSecurityMode
     \value ApSecurityModeNone
     \value ApSecurityModePairWep40
     \value ApSecurityModePairWep104
@@ -50,7 +50,7 @@
 #include "loggingcategories.h"
 #include "dbus-interfaces.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l{WirelessAccessPoint} with the given dbus \a objectPath and \a parent. */
 WirelessAccessPoint::WirelessAccessPoint(const QDBusObjectPath &objectPath, QObject *parent) :

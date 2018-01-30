@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::RestResource
+    \class nymeaserver::RestResource
     \brief This class provides an interface for REST API resources.
 
     \ingroup api
@@ -41,7 +41,7 @@
     \sa RestServer
 */
 
-/*! \fn QString guhserver::RestResource::name() const;
+/*! \fn QString nymeaserver::RestResource::name() const;
     This method must be implemented in a subclass of \l{RestResource}. It returns
     the endpoint name of this \l{RestResource} i.e. if this method returns \tt "example"
     the API resource will be accessable with the URL:
@@ -52,7 +52,7 @@
 
 */
 
-/*! \fn HttpReply *guhserver::RestResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
+/*! \fn HttpReply *nymeaserver::RestResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
     This method will be called from the \l{RestServer} once a \l{HttpRequest} \a request was identified to belong
     to this \l{RestResource}. The given \a urlTokens contain the full list of URL tokens from this request.
 */
@@ -65,7 +65,7 @@
 #include <QJsonDocument>
 #include <QVariant>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a \l{RestResource} with the given \a parent. */
 RestResource::RestResource(QObject *parent) :
@@ -118,7 +118,7 @@ HttpReply *RestResource::createDeviceErrorReply(const HttpReply::HttpStatusCode 
 }
 
 /*! Returns the pointer to a new created \l{HttpReply} with the given \a statusCode and \a ruleError. This method will
- *  be used to create an error response for the \l{guhserver::RulesResource}{RulesResource}. The \a ruleError will be written in the payload of this reply.*/
+ *  be used to create an error response for the \l{nymeaserver::RulesResource}{RulesResource}. The \a ruleError will be written in the payload of this reply.*/
 HttpReply *RestResource::createRuleErrorReply(const HttpReply::HttpStatusCode &statusCode, const RuleEngine::RuleError &ruleError)
 {
     HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);
@@ -130,7 +130,7 @@ HttpReply *RestResource::createRuleErrorReply(const HttpReply::HttpStatusCode &s
 }
 
 /*! Returns the pointer to a new created \l{HttpReply} with the given \a statusCode and \a loggingError. This method will
- *  be used to create an error response for the \l{guhserver::LogsResource}{LogsResource}. The \a loggingError will be written in the payload of this reply.*/
+ *  be used to create an error response for the \l{nymeaserver::LogsResource}{LogsResource}. The \a loggingError will be written in the payload of this reply.*/
 HttpReply *RestResource::createLoggingErrorReply(const HttpReply::HttpStatusCode &statusCode, const Logging::LoggingError &loggingError)
 {
     HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);

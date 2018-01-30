@@ -35,7 +35,7 @@ class QSslConfiguration;
 class QSslCertificate;
 class QSslKey;
 
-namespace guhserver {
+namespace nymeaserver {
 
 class ServerManager : public QObject
 {

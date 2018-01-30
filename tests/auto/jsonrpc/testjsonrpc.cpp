@@ -34,7 +34,7 @@
 #include <QCoreApplication>
 #include <QMetaType>
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 class TestJSONRPC: public NymeaTestBase
 {

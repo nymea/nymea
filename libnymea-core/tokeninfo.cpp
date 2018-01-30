@@ -20,7 +20,7 @@
 
 #include "tokeninfo.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 TokenInfo::TokenInfo(const QUuid &id, const QString &username, const QDateTime &creationTime, const QString &deviceName):
     m_id(id),

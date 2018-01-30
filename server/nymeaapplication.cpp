@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::NymeaApplication
+    \class nymeaserver::NymeaApplication
     \brief Application class of the guh server.
 
     \ingroup core
@@ -46,7 +46,7 @@
 #include <unistd.h>
 #include <cxxabi.h>
 
-namespace guhserver {
+namespace nymeaserver {
 
 static bool s_aboutToShutdown = false;
 static bool s_multipleShutdownDetected = false;

@@ -30,7 +30,7 @@
 
 #include <QUuid>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class Rule
 {

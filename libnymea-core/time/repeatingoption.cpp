@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::RepeatingOption
+    \class nymeaserver::RepeatingOption
     \brief Describes the repeating option of a time item.
 
     \ingroup rules
@@ -57,7 +57,7 @@
     \sa Rule, TimeDescriptor
 */
 
-/*! \enum guhserver::RepeatingOption::RepeatingMode
+/*! \enum nymeaserver::RepeatingOption::RepeatingMode
 
     This enum type specifies the mode of a \l{RepeatingOption}.
 
@@ -83,7 +83,7 @@
 
 #include <QDateTime>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs an empty \l{RepeatingOption}. */
 RepeatingOption::RepeatingOption() :

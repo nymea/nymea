@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::RestServer
+    \class nymeaserver::RestServer
     \brief This class provides the REST API interface to the \l{WebServer}{WebServers}.
 
     \ingroup server
@@ -42,7 +42,7 @@
 #include <QJsonDocument>
 #include <QSslConfiguration>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a \l{RestServer} with the given \a sslConfiguration and \a parent. */
 RestServer::RestServer(const QSslConfiguration &sslConfiguration, QObject *parent) :

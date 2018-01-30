@@ -23,7 +23,7 @@
 #include "usermanager.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 QDBusConnection NymeaDBusService::s_connection = QDBusConnection::systemBus();
 

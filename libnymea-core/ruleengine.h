@@ -31,7 +31,7 @@
 #include <QList>
 #include <QUuid>
 
-namespace guhserver {
+namespace nymeaserver {
 
 class RuleEngine : public QObject
 {
@@ -120,7 +120,7 @@ private:
 
 }
 
-using namespace guhserver;
+using namespace nymeaserver;
 Q_DECLARE_METATYPE(RuleEngine::RuleError)
 
 

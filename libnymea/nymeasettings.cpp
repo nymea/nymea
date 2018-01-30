@@ -42,7 +42,7 @@
     \value SettingsRoleDevices
         This role will create the \b{devices.conf} file and is used to store the configured \l{Device}{Devices}.
     \value SettingsRoleRules
-        This role will create the \b{rules.conf} file and is used to store the configured \l{guhserver::Rule}{Rules}.
+        This role will create the \b{rules.conf} file and is used to store the configured \l{nymeaserver::Rule}{Rules}.
     \value SettingsRolePlugins
         This role will create the \b{plugins.conf} file and is used to store the \l{DevicePlugin}{Plugin} configurations.
     \value SettingsRoleGlobal
@@ -124,7 +124,7 @@ bool NymeaSettings::isRoot()
 
 /*! Returns the path where the logging database will be stored.
 
-  \sa guhserver::LogEngine
+  \sa nymeaserver::LogEngine
 */
 QString NymeaSettings::logPath()
 {

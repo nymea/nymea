@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::EventHandler
+    \class nymeaserver::EventHandler
     \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Events namespace.
 
     \ingroup json
@@ -32,7 +32,7 @@
     \sa Event, JsonHandler, JsonRPCServer
 */
 
-/*! \fn void guhserver::EventHandler::EventTriggered(const QVariantMap &params);
+/*! \fn void nymeaserver::EventHandler::EventTriggered(const QVariantMap &params);
     This signal is emitted to the API notifications when an \l{Event} triggered.
     The \a params contain the map for the notification.
 */
@@ -41,7 +41,7 @@
 #include "nymeacore.h"
 #include "loggingcategories.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a new \l EventHandler with the given \a parent. */
 EventHandler::EventHandler(QObject *parent) :

@@ -25,7 +25,7 @@
 
 #include "jsonhandler.h"
 
-namespace guhserver {
+namespace nymeaserver {
 
 class ConfigurationHandler : public JsonHandler
 {

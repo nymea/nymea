@@ -26,7 +26,7 @@
 #include <QCoreApplication>
 #include <QFile>
 
-namespace guhserver {
+namespace nymeaserver {
 
 NymeaConfiguration::NymeaConfiguration(QObject *parent) :
     QObject(parent)

@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::WebServer
+    \class nymeaserver::WebServer
     \brief This class represents the web server for nymead.
 
     \ingroup server
@@ -52,21 +52,21 @@
     \sa WebServerClient, WebSocketServer, TcpServer
 */
 
-/*! \fn void guhserver::WebServer::httpRequestReady(const QUuid &clientId, const HttpRequest &httpRequest);
+/*! \fn void nymeaserver::WebServer::httpRequestReady(const QUuid &clientId, const HttpRequest &httpRequest);
     This signal is emitted when a \a httpRequest from a client with the given \a clientId is ready.
 
     \sa RestServer, HttpRequest
 */
 
-/*! \fn void guhserver::WebServer::clientConnected(const QUuid &clientId);
+/*! \fn void nymeaserver::WebServer::clientConnected(const QUuid &clientId);
     This signal is emitted when a new client with the given \a clientId has been connected.
 */
 
-/*! \fn void guhserver::WebServer::clientDisconnected(const QUuid &clientId);
+/*! \fn void nymeaserver::WebServer::clientDisconnected(const QUuid &clientId);
     This signal is emitted when a client with the given \a clientId has been disconnected.
 */
 
-/*! \fn void guhserver::WebServer::incomingConnection(qintptr socketDescriptor);
+/*! \fn void nymeaserver::WebServer::incomingConnection(qintptr socketDescriptor);
     Overwritten virtual method from \l{http://doc.qt.io/qt-5/qtcpserver.html#incomingConnection}{QTcpServer::incomingConnection( \a socketDescriptor)}.
 */
 
@@ -91,7 +91,7 @@
 #include <QUrl>
 #include <QFile>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Constructs a \l{WebServer} with the given \a host, \a port, \a publicFolder and \a parent.
  *
@@ -763,7 +763,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 }
 
 /*!
-    \class guhserver::WebServerClient
+    \class nymeaserver::WebServerClient
     \brief This class represents a client the web server for nymead.
 
     \ingroup server

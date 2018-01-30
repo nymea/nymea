@@ -24,7 +24,7 @@
 
 #include <QTimer>
 
-namespace guhserver {
+namespace nymeaserver {
 
 UpnpDiscoveryReplyImplementation::UpnpDiscoveryReplyImplementation(const QString &searchTarget, const QString &userAgent, QObject *parent) :
     UpnpDiscoveryReply(parent),

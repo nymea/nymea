@@ -53,7 +53,7 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
-namespace guhserver {
+namespace nymeaserver {
 
 /*! Construct the hardware resource UpnpDiscoveryImplementation with the given \a parent. */
 UpnpDiscoveryImplementation::UpnpDiscoveryImplementation(QNetworkAccessManager *networkAccessManager, QObject *parent) :

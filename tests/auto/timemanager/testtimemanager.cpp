@@ -34,7 +34,7 @@
 #include <QTimeZone>
 #include <QDateTime>
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 class TestTimeManager: public NymeaTestBase
 {

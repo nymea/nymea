@@ -33,7 +33,7 @@
 
 #include <QWebSocket>
 
-using namespace guhserver;
+using namespace nymeaserver;
 
 class TestWebSocketServer: public NymeaTestBase
 {

@@ -38,7 +38,7 @@
 #include "nymeacore.h"
 #include "guhservice.h"
 #include "nymeasettings.h"
-#include "guhdbusservice.h"
+#include "nymeadbusservice.h"
 #include "guhapplication.h"
 #include "loggingcategories.h"
 
@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
     QLoggingCategory::installFilter(loggingCategoryFilter);
 
     if (parser.isSet(dbusOption)) {
-        GuhDBusService::setBusType(QDBusConnection::SessionBus);
+        NymeaDBusService::setBusType(QDBusConnection::SessionBus);
     }
 
     bool startForeground = parser.isSet(foregroundOption);

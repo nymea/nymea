@@ -28,7 +28,7 @@
 
 namespace guhserver {
 
-PushButtonDBusService::PushButtonDBusService(const QString &objectPath, UserManager *parent) : GuhDBusService(objectPath, parent),
+PushButtonDBusService::PushButtonDBusService(const QString &objectPath, UserManager *parent) : NymeaDBusService(objectPath, parent),
     m_userManager(parent)
 {
     if (!isValid()) {

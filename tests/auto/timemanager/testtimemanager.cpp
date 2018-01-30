@@ -19,7 +19,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "guhtestbase.h"
+#include "nymeatestbase.h"
 #include "nymeacore.h"
 #include "time/timemanager.h"
 #include "devicemanager.h"
@@ -36,7 +36,7 @@
 
 using namespace guhserver;
 
-class TestTimeManager: public GuhTestBase
+class TestTimeManager: public NymeaTestBase
 {
     Q_OBJECT
 

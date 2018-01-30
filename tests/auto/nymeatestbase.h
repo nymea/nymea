@@ -19,8 +19,8 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GUHTESTBASE_H
-#define GUHTESTBASE_H
+#ifndef NYMEATESTBASE_H
+#define NYMEATESTBASE_H
 
 #include "typeutils.h"
 #include "logging/logging.h"
@@ -96,11 +96,11 @@ using namespace guhserver;
 
 class MockTcpServer;
 
-class GuhTestBase : public QObject
+class NymeaTestBase : public QObject
 {
     Q_OBJECT
 public:
-    explicit GuhTestBase(QObject *parent = 0);
+    explicit NymeaTestBase(QObject *parent = 0);
 
 protected slots:
     void initTestCase();
@@ -201,4 +201,4 @@ protected:
 
 };
 
-#endif // GUHTESTBASE_H
+#endif // NYMEATESTBASE_H

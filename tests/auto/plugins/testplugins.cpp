@@ -19,7 +19,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "guhtestbase.h"
+#include "nymeatestbase.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
 
@@ -33,7 +33,7 @@
 
 using namespace guhserver;
 
-class TestPlugins: public GuhTestBase
+class TestPlugins: public NymeaTestBase
 {
     Q_OBJECT
 

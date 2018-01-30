@@ -19,7 +19,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "guhtestbase.h"
+#include "nymeatestbase.h"
 #include "mocktcpserver.h"
 #include "nymeacore.h"
 #include "nymeasettings.h"
@@ -111,7 +111,7 @@ static void loggingCategoryFilter(QLoggingCategory *category)
     }
 }
 
-GuhTestBase::GuhTestBase(QObject *parent) :
+NymeaTestBase::NymeaTestBase(QObject *parent) :
     QObject(parent),
     m_commandId(0)
 {
@@ -124,9 +124,9 @@ GuhTestBase::GuhTestBase(QObject *parent) :
     QCoreApplication::instance()->setOrganizationName("nymea-test");
 }
 
-void GuhTestBase::initTestCase()
+void NymeaTestBase::initTestCase()
 {
-    qDebug() << "GuhTestBase starting.";
+    qDebug() << "NymeaTestBase starting.";
 
     // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
     qDebug() << "Reset test settings";
@@ -214,12 +214,12 @@ void GuhTestBase::initTestCase()
     }
 }
 
-void GuhTestBase::cleanupTestCase()
+void NymeaTestBase::cleanupTestCase()
 {
     NymeaCore::instance()->destroy();
 }
 
-void GuhTestBase::cleanup()
+void NymeaTestBase::cleanup()
 {
     // In case a test deleted the mock device, lets recreate it.
     if (NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId).count() == 0) {
@@ -227,7 +227,7 @@ void GuhTestBase::cleanup()
     }
 }
 
-QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &params, const QUuid &clientId)
+QVariant NymeaTestBase::injectAndWait(const QString &method, const QVariantMap &params, const QUuid &clientId)
 {
     QVariantMap call;
     call.insert("id", m_commandId);
@@ -267,7 +267,7 @@ QVariant GuhTestBase::injectAndWait(const QString &method, const QVariantMap &pa
     return QVariant();
 }
 
-QVariant GuhTestBase::checkNotification(const QSignalSpy &spy, const QString &notification)
+QVariant NymeaTestBase::checkNotification(const QSignalSpy &spy, const QString &notification)
 {
     //qDebug() << "Got" << spy.count() << "notifications while waiting for" << notification;
     for (int i = 0; i < spy.count(); i++) {
@@ -287,7 +287,7 @@ QVariant GuhTestBase::checkNotification(const QSignalSpy &spy, const QString &no
     return QVariant();
 }
 
-QVariantList GuhTestBase::checkNotifications(const QSignalSpy &spy, const QString &notification)
+QVariantList NymeaTestBase::checkNotifications(const QSignalSpy &spy, const QString &notification)
 {
     //qDebug() << "Got" << spy.count() << "notifications while waiting for" << notification;
     QVariantList notificationList;
@@ -308,7 +308,7 @@ QVariantList GuhTestBase::checkNotifications(const QSignalSpy &spy, const QStrin
     return notificationList;
 }
 
-QVariant GuhTestBase::getAndWait(const QNetworkRequest &request, const int &expectedStatus)
+QVariant NymeaTestBase::getAndWait(const QNetworkRequest &request, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
     connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
@@ -344,7 +344,7 @@ QVariant GuhTestBase::getAndWait(const QNetworkRequest &request, const int &expe
     return jsonDoc.toVariant();
 }
 
-QVariant GuhTestBase::deleteAndWait(const QNetworkRequest &request, const int &expectedStatus)
+QVariant NymeaTestBase::deleteAndWait(const QNetworkRequest &request, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
     connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
@@ -379,7 +379,7 @@ QVariant GuhTestBase::deleteAndWait(const QNetworkRequest &request, const int &e
     return jsonDoc.toVariant();
 }
 
-QVariant GuhTestBase::postAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus)
+QVariant NymeaTestBase::postAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
     connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
@@ -419,7 +419,7 @@ QVariant GuhTestBase::postAndWait(const QNetworkRequest &request, const QVariant
 }
 
 
-QVariant GuhTestBase::putAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus)
+QVariant NymeaTestBase::putAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
     connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
@@ -456,7 +456,7 @@ QVariant GuhTestBase::putAndWait(const QNetworkRequest &request, const QVariant 
     return jsonDoc.toVariant();
 }
 
-void GuhTestBase::verifyReply(QNetworkReply *reply, const QByteArray &data, const int &expectedStatus)
+void NymeaTestBase::verifyReply(QNetworkReply *reply, const QByteArray &data, const int &expectedStatus)
 {
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     QCOMPARE(statusCode, expectedStatus);
@@ -470,7 +470,7 @@ void GuhTestBase::verifyReply(QNetworkReply *reply, const QByteArray &data, cons
 //    }
 }
 
-bool GuhTestBase::enableNotifications()
+bool NymeaTestBase::enableNotifications()
 {
     QVariantMap notificationParams;
     notificationParams.insert("enabled", true);
@@ -482,7 +482,7 @@ bool GuhTestBase::enableNotifications()
     return true;
 }
 
-bool GuhTestBase::disableNotifications()
+bool NymeaTestBase::disableNotifications()
 {
     QVariantMap notificationParams;
     notificationParams.insert("enabled", false);
@@ -494,7 +494,7 @@ bool GuhTestBase::disableNotifications()
     return true;
 }
 
-void GuhTestBase::restartServer()
+void NymeaTestBase::restartServer()
 {
     // Destroy and recreate the core instance...
     NymeaCore::instance()->destroy();
@@ -506,12 +506,12 @@ void GuhTestBase::restartServer()
     m_mockTcpServer->clientConnected(m_clientId);
 }
 
-void GuhTestBase::clearLoggingDatabase()
+void NymeaTestBase::clearLoggingDatabase()
 {
     NymeaCore::instance()->logEngine()->clearDatabase();
 }
 
-void GuhTestBase::createMockDevice()
+void NymeaTestBase::createMockDevice()
 {
     QVariantMap params;
     params.insert("name", "Test Mock Device");

@@ -18,8 +18,8 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GUHCONFIGURATION_H
-#define GUHCONFIGURATION_H
+#ifndef NYMEACONFIGURATION_H
+#define NYMEACONFIGURATION_H
 
 #include <QHostAddress>
 #include <QObject>
@@ -55,7 +55,7 @@ public:
     QString publicFolder;
 };
 
-class GuhConfiguration : public QObject
+class NymeaConfiguration : public QObject
 {
     Q_OBJECT
     Q_ENUMS(ConfigurationError)
@@ -72,7 +72,7 @@ public:
         ConfigurationErrorInvalidCertificate
     };
 
-    explicit GuhConfiguration(QObject *parent = 0);
+    explicit NymeaConfiguration(QObject *parent = 0);
 
     // Global settings
     QUuid serverUuid() const;
@@ -157,4 +157,4 @@ signals:
 
 }
 
-#endif // GUHCONFIGURATION_H
+#endif // NYMEACONFIGURATION_H

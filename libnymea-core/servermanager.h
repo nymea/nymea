@@ -41,7 +41,7 @@ class ServerManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ServerManager(GuhConfiguration *configuration, QObject *parent = 0);
+    explicit ServerManager(NymeaConfiguration *configuration, QObject *parent = 0);
 
     // Interfaces
     JsonRPCServer *jsonServer() const;

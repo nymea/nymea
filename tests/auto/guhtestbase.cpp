@@ -121,7 +121,7 @@ GuhTestBase::GuhTestBase(QObject *parent) :
     m_mockDevice2Port = 7331 + (qrand() % 1000);
 
     // Important for settings
-    QCoreApplication::instance()->setOrganizationName("guh-test");
+    QCoreApplication::instance()->setOrganizationName("nymea-test");
 }
 
 void GuhTestBase::initTestCase()

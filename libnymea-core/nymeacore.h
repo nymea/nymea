@@ -29,7 +29,6 @@
 #include "plugin/devicedescriptor.h"
 
 #include "logging/logengine.h"
-#include "guhconfiguration.h"
 #include "devicemanager.h"
 #include "ruleengine.h"
 #include "servermanager.h"
@@ -49,6 +48,7 @@ namespace guhserver {
 class JsonRPCServer;
 class LogEngine;
 class NetworkManager;
+class NymeaConfiguration;
 
 class NymeaCore : public QObject
 {
@@ -71,6 +71,7 @@ public:
 
     RuleEngine::RuleError removeRule(const RuleId &id);
 
+    NymeaConfiguration *configuration() const;
     LogEngine* logEngine() const;
     JsonRPCServer *jsonRPCServer() const;
     RestServer *restServer() const;
@@ -111,6 +112,7 @@ private:
     explicit NymeaCore(QObject *parent = 0);
     static NymeaCore *s_instance;
 
+    NymeaConfiguration *m_configuration;
     ServerManager *m_serverManager;
     DeviceManager *m_deviceManager;
     RuleEngine *m_ruleEngine;

@@ -205,7 +205,7 @@ QVariantMap JsonHandler::statusToReply(Logging::LoggingError status) const
 }
 
 /*! Returns the formated error map for the given \a status. */
-QVariantMap JsonHandler::statusToReply(GuhConfiguration::ConfigurationError status) const
+QVariantMap JsonHandler::statusToReply(NymeaConfiguration::ConfigurationError status) const
 {
     QVariantMap returns;
     returns.insert("configurationError", JsonTypes::configurationErrorToString(status));

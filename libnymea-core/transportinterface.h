@@ -26,7 +26,7 @@
 #include <QList>
 #include <QUuid>
 
-#include "guhconfiguration.h"
+#include "nymeaconfiguration.h"
 
 namespace guhserver {
 

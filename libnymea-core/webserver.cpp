@@ -104,7 +104,7 @@ WebServer::WebServer(const WebServerConfiguration &configuration, const QSslConf
     m_sslConfiguration(sslConfiguration),
     m_enabled(false)
 {
-    if (QCoreApplication::instance()->organizationName() == "guh-test") {
+    if (QCoreApplication::instance()->organizationName() == "nymea-test") {
         m_configuration.publicFolder = QCoreApplication::applicationDirPath();
         qCWarning(dcWebServer) << "Using public folder" << QDir(m_configuration.publicFolder).canonicalPath();
     }

@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     qInstallMessageHandler(consoleLogHandler);
 
     GuhApplication application(argc, argv);
-    application.setOrganizationName("guh");
+    application.setOrganizationName("nymea");
     application.setApplicationName("nymead");
     application.setApplicationVersion(NYMEA_VERSION_STRING);
 

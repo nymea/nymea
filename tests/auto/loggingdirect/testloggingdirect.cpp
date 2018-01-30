@@ -42,6 +42,7 @@ TestLoggingDirect::TestLoggingDirect(QObject *parent): QObject(parent)
 {
     // Setting timeout to 20 mins
     qputenv("QTEST_FUNCTION_TIMEOUT", "1200000");
+    QCoreApplication::instance()->setOrganizationName("nymea-test");
 }
 
 void TestLoggingDirect::benchmarkDB_data() {

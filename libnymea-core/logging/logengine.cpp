@@ -140,7 +140,7 @@ LogEngine::LogEngine(const QString &logPath, QObject *parent):
     m_dbMaxSize = 50000;
     m_overflow = 100;
 
-    if (QCoreApplication::instance()->organizationName() == "guh-test") {
+    if (QCoreApplication::instance()->organizationName() == "nymea-test") {
         m_dbMaxSize = 20;
         qCDebug(dcLogEngine) << "Set logging dab max size to" << m_dbMaxSize << "for testing.";
     }

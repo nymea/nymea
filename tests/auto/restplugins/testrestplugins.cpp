@@ -18,7 +18,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "guhtestbase.h"
+#include "nymeatestbase.h"
 #include "nymeacore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
@@ -37,7 +37,7 @@
 
 using namespace guhserver;
 
-class TestRestPlugins: public GuhTestBase
+class TestRestPlugins: public NymeaTestBase
 {
     Q_OBJECT
 
@@ -59,7 +59,7 @@ private slots:
 
 void TestRestPlugins::initTestCase()
 {
-    GuhTestBase::initTestCase();
+    NymeaTestBase::initTestCase();
 
     foreach (const WebServerConfiguration &config, NymeaCore::instance()->configuration()->webServerConfigurations()) {
         if (config.port == 3333 && (config.address == QHostAddress("127.0.0.1") || config.address == QHostAddress("0.0.0.0"))) {

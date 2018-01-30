@@ -19,7 +19,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "guhtestbase.h"
+#include "nymeatestbase.h"
 #include "nymeacore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
@@ -36,7 +36,7 @@
 
 using namespace guhserver;
 
-class TestJSONRPC: public GuhTestBase
+class TestJSONRPC: public NymeaTestBase
 {
     Q_OBJECT
 

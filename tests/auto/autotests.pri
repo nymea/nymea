@@ -10,9 +10,9 @@ LIBS += -L$$top_builddir/libnymea/ -lnymea \
         -L$$top_builddir/plugins/mock/ \
         -lssl -lcrypto -laws-iot-sdk-cpp -lavahi-common -lavahi-client
 
-SOURCES += ../guhtestbase.cpp \
+SOURCES += ../nymeatestbase.cpp \
 
-HEADERS += ../guhtestbase.h \
+HEADERS += ../nymeatestbase.h \
 
 target.path = /usr/tests
 INSTALLS += target

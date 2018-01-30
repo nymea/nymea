@@ -53,7 +53,7 @@ class NymeaConfiguration;
 class NymeaCore : public QObject
 {
     Q_OBJECT
-    friend class GuhTestBase;
+    friend class NymeaTestBase;
 
 public:
     static NymeaCore* instance();

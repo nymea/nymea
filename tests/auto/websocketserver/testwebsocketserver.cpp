@@ -18,7 +18,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "guhtestbase.h"
+#include "nymeatestbase.h"
 #include "nymeacore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
@@ -35,7 +35,7 @@
 
 using namespace guhserver;
 
-class TestWebSocketServer: public GuhTestBase
+class TestWebSocketServer: public NymeaTestBase
 {
     Q_OBJECT
 
@@ -67,7 +67,7 @@ private:
 
 void TestWebSocketServer::initTestCase()
 {
-    GuhTestBase::initTestCase();
+    NymeaTestBase::initTestCase();
 
     ServerConfiguration config;
     foreach (const ServerConfiguration &c, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {

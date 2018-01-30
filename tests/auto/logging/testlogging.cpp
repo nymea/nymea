@@ -19,7 +19,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "guhtestbase.h"
+#include "nymeatestbase.h"
 #include "nymeacore.h"
 #include "devicemanager.h"
 #include "nymeasettings.h"
@@ -35,7 +35,7 @@
 
 using namespace guhserver;
 
-class TestLogging : public GuhTestBase
+class TestLogging : public NymeaTestBase
 {
     Q_OBJECT
 

@@ -99,7 +99,7 @@
 
 
 #include "ruleengine.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "loggingcategories.h"
 #include "time/calendaritem.h"
 #include "time/repeatingoption.h"
@@ -119,7 +119,7 @@
 namespace guhserver {
 
 /*! Constructs the RuleEngine with the given \a parent. Although it wouldn't harm to have multiple RuleEngines, there is one
-    instance available from \l{GuhCore}. This one should be used instead of creating multiple ones.
+    instance available from \l{NymeaCore}. This one should be used instead of creating multiple ones.
  */
 RuleEngine::RuleEngine(QObject *parent) :
     QObject(parent)
@@ -332,7 +332,7 @@ RuleEngine::~RuleEngine()
 */
 QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 {
-    Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
+    Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
 
     qCDebug(dcRuleEngineDebug) << "Evaluate event:" << event << device->name() << event.eventTypeId();
 
@@ -471,14 +471,14 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
         }
         if (eventDescriptor.type() == EventDescriptor::TypeDevice) {
             // check deviceId
-            Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(eventDescriptor.deviceId());
+            Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(eventDescriptor.deviceId());
             if (!device) {
                 qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for eventTypeId" << eventDescriptor.eventTypeId();
                 return RuleErrorDeviceNotFound;
             }
 
             // Check eventTypeId for this deivce
-            DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+            DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
             bool eventTypeFound = false;
             foreach (const EventType &eventType, deviceClass.eventTypes()) {
                 if (eventType.id() == eventDescriptor.eventTypeId()) {
@@ -491,7 +491,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
             }
         } else {
             // Interface based event
-            Interface iface = GuhCore::instance()->deviceManager()->supportedInterfaces().findByName(eventDescriptor.interface());
+            Interface iface = NymeaCore::instance()->deviceManager()->supportedInterfaces().findByName(eventDescriptor.interface());
             if (!iface.isValid()) {
                 qWarning(dcRuleEngine()) << "No such interface:" << eventDescriptor.interface();
                 return RuleErrorInterfaceNotFound;
@@ -558,13 +558,13 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
             return RuleErrorActionTypeNotFound;
         }
         if (action.type() == RuleAction::TypeDevice) {
-            Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(action.deviceId());
+            Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(action.deviceId());
             if (!device) {
                 qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for action with actionTypeId" << action.actionTypeId();
                 return RuleErrorDeviceNotFound;
             }
 
-            DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+            DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
             if (!deviceClass.hasActionType(action.actionTypeId())) {
                 qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
                 return RuleErrorActionTypeNotFound;
@@ -602,7 +602,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
                 foreach (const ActionType &actionType, deviceClass.actionTypes()) {
                     if (actionType.id() == action.actionTypeId()) {
                         ParamList finalParams = action.toAction().params();
-                        DeviceManager::DeviceError paramCheck = GuhCore::instance()->deviceManager()->verifyParams(actionType.paramTypes(), finalParams);
+                        DeviceManager::DeviceError paramCheck = NymeaCore::instance()->deviceManager()->verifyParams(actionType.paramTypes(), finalParams);
                         if (paramCheck != DeviceManager::DeviceErrorNoError) {
                             qCWarning(dcRuleEngine) << "Cannot create rule. Got an invalid actionParam.";
                             return RuleErrorInvalidRuleActionParameter;
@@ -619,7 +619,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
             }
 
         } else { // Is TypeInterface
-            Interface iface = GuhCore::instance()->deviceManager()->supportedInterfaces().findByName(action.interface());
+            Interface iface = NymeaCore::instance()->deviceManager()->supportedInterfaces().findByName(action.interface());
             if (!iface.isValid()) {
                 qCWarning(dcRuleEngine()) << "Cannot create rule. No such interface:" << action.interface();
                 return RuleError::RuleErrorInterfaceNotFound;
@@ -652,13 +652,13 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
         }
 
         if (ruleAction.type() == RuleAction::TypeDevice) {
-            Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(ruleAction.deviceId());
+            Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(ruleAction.deviceId());
             if (!device) {
                 qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for exit action with actionTypeId" << ruleAction.actionTypeId();
                 return RuleErrorDeviceNotFound;
             }
 
-            DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+            DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
             if (!deviceClass.hasActionType(ruleAction.actionTypeId())) {
                 qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << ruleAction.actionTypeId();
                 return RuleErrorActionTypeNotFound;
@@ -668,7 +668,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
             foreach (const ActionType &actionType, deviceClass.actionTypes()) {
                 if (actionType.id() == ruleAction.actionTypeId()) {
                     ParamList finalParams = ruleAction.toAction().params();
-                    DeviceManager::DeviceError paramCheck = GuhCore::instance()->deviceManager()->verifyParams(actionType.paramTypes(), finalParams);
+                    DeviceManager::DeviceError paramCheck = NymeaCore::instance()->deviceManager()->verifyParams(actionType.paramTypes(), finalParams);
                     if (paramCheck != DeviceManager::DeviceErrorNoError) {
                         qCWarning(dcRuleEngine) << "Cannot create rule. Got an invalid exit actionParam.";
                         return RuleErrorInvalidRuleActionParameter;
@@ -690,7 +690,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
             }
 
         } else { // Is TypeInterface
-            Interface iface = GuhCore::instance()->deviceManager()->supportedInterfaces().findByName(ruleAction.interface());
+            Interface iface = NymeaCore::instance()->deviceManager()->supportedInterfaces().findByName(ruleAction.interface());
             if (!iface.isValid()) {
                 qCWarning(dcRuleEngine()) << "Cannot create rule. No such interface:" << ruleAction.interface();
                 return RuleError::RuleErrorInterfaceNotFound;
@@ -831,7 +831,7 @@ RuleEngine::RuleError RuleEngine::enableRule(const RuleId &ruleId)
     saveRule(rule);
     emit ruleConfigurationChanged(rule);
 
-    GuhCore::instance()->logEngine()->logRuleEnabledChanged(rule, true);
+    NymeaCore::instance()->logEngine()->logRuleEnabledChanged(rule, true);
     qCDebug(dcRuleEngine()) << "Rule" << rule.name() << rule.id() << "enabled.";
 
     return RuleErrorNoError;
@@ -857,7 +857,7 @@ RuleEngine::RuleError RuleEngine::disableRule(const RuleId &ruleId)
     saveRule(rule);
     emit ruleConfigurationChanged(rule);
 
-    GuhCore::instance()->logEngine()->logRuleEnabledChanged(rule, false);
+    NymeaCore::instance()->logEngine()->logRuleEnabledChanged(rule, false);
     qCDebug(dcRuleEngine()) << "Rule" << rule.name() << rule.id() << "disabled.";
     return RuleErrorNoError;
 }
@@ -892,8 +892,8 @@ RuleEngine::RuleError RuleEngine::executeActions(const RuleId &ruleId)
     }
 
     qCDebug(dcRuleEngine) << "Executing rule actions of rule" << rule.name() << rule.id();
-    GuhCore::instance()->logEngine()->logRuleActionsExecuted(rule);
-    GuhCore::instance()->executeRuleActions(rule.actions());
+    NymeaCore::instance()->logEngine()->logRuleActionsExecuted(rule);
+    NymeaCore::instance()->executeRuleActions(rule.actions());
     return RuleErrorNoError;
 }
 
@@ -924,8 +924,8 @@ RuleEngine::RuleError RuleEngine::executeExitActions(const RuleId &ruleId)
     }
 
     qCDebug(dcRuleEngine) << "Executing rule exit actions of rule" << rule.name() << rule.id();
-    GuhCore::instance()->logEngine()->logRuleExitActionsExecuted(rule);
-    GuhCore::instance()->executeRuleActions(rule.exitActions());
+    NymeaCore::instance()->logEngine()->logRuleExitActionsExecuted(rule);
+    NymeaCore::instance()->executeRuleActions(rule.exitActions());
     return RuleErrorNoError;
 }
 
@@ -1087,7 +1087,7 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Devic
 
         // If this is a interface based rule, the device must implement the interface
         if (eventDescriptor.type() == EventDescriptor::TypeInterface) {
-            DeviceClass dc = GuhCore::instance()->deviceManager()->findDeviceClass(deviceClassId);
+            DeviceClass dc = NymeaCore::instance()->deviceManager()->findDeviceClass(deviceClassId);
             if (!dc.interfaces().contains(eventDescriptor.interface())) {
                 // DeviceClass for this event doesn't implement the interface for this eventDescriptor
                 continue;
@@ -1173,7 +1173,7 @@ bool RuleEngine::checkEventDescriptors(const QList<EventDescriptor> eventDescrip
 
 QVariant::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, const ParamTypeId &paramTypeId)
 {
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
+    foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {
             if (actionType.id() == actionTypeId) {
                 foreach (const ParamType &paramType, actionType.paramTypes()) {
@@ -1190,7 +1190,7 @@ QVariant::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, 
 
 QVariant::Type RuleEngine::getEventParamType(const EventTypeId &eventTypeId, const ParamTypeId &paramTypeId)
 {
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
+    foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
             if (eventType.id() == eventTypeId) {
                 foreach (const ParamType &paramType, eventType.paramTypes()) {

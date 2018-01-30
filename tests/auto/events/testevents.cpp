@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "guhtestbase.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
 
@@ -50,11 +50,11 @@ private slots:
 
 void TestEvents::triggerEvent()
 {
-    QList<Device*> devices = GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
+    QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 
-    QSignalSpy spy(GuhCore::instance(), SIGNAL(eventTriggered(const Event&)));
+    QSignalSpy spy(NymeaCore::instance(), SIGNAL(eventTriggered(const Event&)));
 
     // Setup connection to mock client
     QNetworkAccessManager nam;
@@ -79,11 +79,11 @@ void TestEvents::triggerEvent()
 
 void TestEvents::triggerStateChangeEvent()
 {
-    QList<Device*> devices = GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
+    QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 
-    QSignalSpy spy(GuhCore::instance(), SIGNAL(eventTriggered(const Event&)));
+    QSignalSpy spy(NymeaCore::instance(), SIGNAL(eventTriggered(const Event&)));
 
     // Setup connection to mock client
     QNetworkAccessManager nam;

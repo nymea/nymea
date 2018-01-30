@@ -53,7 +53,7 @@
 */
 
 #include "ruleshandler.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "ruleengine.h"
 #include "loggingcategories.h"
 
@@ -185,10 +185,10 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.insert("rule", JsonTypes::ruleRef());
     setParams("RuleConfigurationChanged", params);
 
-    connect(GuhCore::instance(), &GuhCore::ruleAdded, this, &RulesHandler::ruleAddedNotification);
-    connect(GuhCore::instance(), &GuhCore::ruleRemoved, this, &RulesHandler::ruleRemovedNotification);
-    connect(GuhCore::instance(), &GuhCore::ruleActiveChanged, this, &RulesHandler::ruleActiveChangedNotification);
-    connect(GuhCore::instance(), &GuhCore::ruleConfigurationChanged, this, &RulesHandler::ruleConfigurationChangedNotification);
+    connect(NymeaCore::instance(), &NymeaCore::ruleAdded, this, &RulesHandler::ruleAddedNotification);
+    connect(NymeaCore::instance(), &NymeaCore::ruleRemoved, this, &RulesHandler::ruleRemovedNotification);
+    connect(NymeaCore::instance(), &NymeaCore::ruleActiveChanged, this, &RulesHandler::ruleActiveChangedNotification);
+    connect(NymeaCore::instance(), &NymeaCore::ruleConfigurationChanged, this, &RulesHandler::ruleConfigurationChangedNotification);
 }
 
 /*! Returns the name of the \l{RulesHandler}. In this case \b Rules.*/
@@ -210,7 +210,7 @@ JsonReply* RulesHandler::GetRules(const QVariantMap &params)
 JsonReply *RulesHandler::GetRuleDetails(const QVariantMap &params)
 {
     RuleId ruleId = RuleId(params.value("ruleId").toString());
-    Rule rule = GuhCore::instance()->ruleEngine()->findRule(ruleId);
+    Rule rule = NymeaCore::instance()->ruleEngine()->findRule(ruleId);
     if (rule.id().isNull()) {
         return createReply(statusToReply(RuleEngine::RuleErrorRuleNotFound));
     }
@@ -224,7 +224,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
     Rule rule = JsonTypes::unpackRule(params);
     rule.setId(RuleId::createRuleId());
 
-    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->addRule(rule);
+    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->addRule(rule);
     QVariantMap returns;
     if (status ==  RuleEngine::RuleErrorNoError) {
         returns.insert("ruleId", rule.id().toString());
@@ -236,10 +236,10 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
 JsonReply *RulesHandler::EditRule(const QVariantMap &params)
 {
     Rule rule = JsonTypes::unpackRule(params);
-    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->editRule(rule);
+    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->editRule(rule);
     QVariantMap returns;
     if (status ==  RuleEngine::RuleErrorNoError) {
-        returns.insert("rule", JsonTypes::packRule(GuhCore::instance()->ruleEngine()->findRule(rule.id())));
+        returns.insert("rule", JsonTypes::packRule(NymeaCore::instance()->ruleEngine()->findRule(rule.id())));
     }
     returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
     return createReply(returns);
@@ -249,7 +249,7 @@ JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
 {
     QVariantMap returns;
     RuleId ruleId(params.value("ruleId").toString());
-    RuleEngine::RuleError status = GuhCore::instance()->removeRule(ruleId);
+    RuleEngine::RuleError status = NymeaCore::instance()->removeRule(ruleId);
     returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
     return createReply(returns);
 }
@@ -257,7 +257,7 @@ JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
 JsonReply *RulesHandler::FindRules(const QVariantMap &params)
 {
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
-    QList<RuleId> rules = GuhCore::instance()->ruleEngine()->findRules(deviceId);
+    QList<RuleId> rules = NymeaCore::instance()->ruleEngine()->findRules(deviceId);
 
     QVariantList rulesList;
     foreach (const RuleId &ruleId, rules) {
@@ -271,19 +271,19 @@ JsonReply *RulesHandler::FindRules(const QVariantMap &params)
 
 JsonReply *RulesHandler::EnableRule(const QVariantMap &params)
 {
-    return createReply(statusToReply(GuhCore::instance()->ruleEngine()->enableRule(RuleId(params.value("ruleId").toString()))));
+    return createReply(statusToReply(NymeaCore::instance()->ruleEngine()->enableRule(RuleId(params.value("ruleId").toString()))));
 }
 
 JsonReply *RulesHandler::DisableRule(const QVariantMap &params)
 {
-    return createReply(statusToReply(GuhCore::instance()->ruleEngine()->disableRule(RuleId(params.value("ruleId").toString()))));
+    return createReply(statusToReply(NymeaCore::instance()->ruleEngine()->disableRule(RuleId(params.value("ruleId").toString()))));
 }
 
 JsonReply *RulesHandler::ExecuteActions(const QVariantMap &params)
 {
     QVariantMap returns;
     RuleId ruleId(params.value("ruleId").toString());
-    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->executeActions(ruleId);
+    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->executeActions(ruleId);
     returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
     return createReply(returns);
 }
@@ -292,7 +292,7 @@ JsonReply *RulesHandler::ExecuteExitActions(const QVariantMap &params)
 {
     QVariantMap returns;
     RuleId ruleId(params.value("ruleId").toString());
-    RuleEngine::RuleError status = GuhCore::instance()->ruleEngine()->executeExitActions(ruleId);
+    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->executeExitActions(ruleId);
     returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
     return createReply(returns);
 }

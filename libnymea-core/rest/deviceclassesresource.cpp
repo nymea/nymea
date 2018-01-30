@@ -37,7 +37,7 @@
 
 #include "deviceclassesresource.h"
 #include "httprequest.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 
 #include <QJsonDocument>
 
@@ -47,7 +47,7 @@ namespace guhserver {
 DeviceClassesResource::DeviceClassesResource(QObject *parent) :
     RestResource(parent)
 {
-    connect(GuhCore::instance(), &GuhCore::devicesDiscovered, this, &DeviceClassesResource::devicesDiscovered, Qt::QueuedConnection);
+    connect(NymeaCore::instance(), &NymeaCore::devicesDiscovered, this, &DeviceClassesResource::devicesDiscovered, Qt::QueuedConnection);
 }
 
 /*! Returns the name of the \l{RestResource}. In this case \b deviceclasses.
@@ -76,7 +76,7 @@ HttpReply *DeviceClassesResource::proccessRequest(const HttpRequest &request, co
             qCWarning(dcRest) << "Could not parse DeviceClassId:" << urlTokens.at(3);
             return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorDeviceClassNotFound);
         }
-        m_deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(deviceClassId);
+        m_deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(deviceClassId);
         if (!m_deviceClass.isValid()) {
             qCWarning(dcRest) << "DeviceClassId" << deviceClassId.toString() << "not found";
             return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorDeviceClassNotFound);
@@ -265,7 +265,7 @@ HttpReply *DeviceClassesResource::getDiscoverdDevices(const ParamList &discovery
     qCDebug(dcRest) << "Discover devices for DeviceClass" << m_deviceClass.id();
     qCDebug(dcRest) << discoveryParams;
 
-    DeviceManager::DeviceError status = GuhCore::instance()->deviceManager()->discoverDevices(m_deviceClass.id(), discoveryParams);
+    DeviceManager::DeviceError status = NymeaCore::instance()->deviceManager()->discoverDevices(m_deviceClass.id(), discoveryParams);
 
     if (status == DeviceManager::DeviceErrorAsync) {
         HttpReply *reply = createAsyncReply();

@@ -38,7 +38,6 @@
 #include "loggingcategories.h"
 #include "httprequest.h"
 #include "httpreply.h"
-#include "guhcore.h"
 
 #include <QJsonDocument>
 #include <QSslConfiguration>

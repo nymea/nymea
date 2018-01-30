@@ -59,7 +59,7 @@
 
 
 #include "configurationhandler.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 
 namespace guhserver {
 
@@ -220,15 +220,15 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     params.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setParams("CloudConfigurationChanged", params);
 
-    connect(GuhCore::instance()->configuration(), &GuhConfiguration::serverNameChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(GuhCore::instance()->configuration(), &GuhConfiguration::timeZoneChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(GuhCore::instance()->configuration(), &GuhConfiguration::localeChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(GuhCore::instance()->configuration(), &GuhConfiguration::debugServerEnabledChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(GuhCore::instance()->configuration(), &GuhConfiguration::tcpServerConfigurationChanged, this, &ConfigurationHandler::onTcpServerConfigurationChanged);
-    connect(GuhCore::instance()->configuration(), &GuhConfiguration::webServerConfigurationChanged, this, &ConfigurationHandler::onWebServerConfigurationChanged);
-    connect(GuhCore::instance()->configuration(), &GuhConfiguration::webSocketServerConfigurationChanged, this, &ConfigurationHandler::onWebSocketServerConfigurationChanged);
-    connect(GuhCore::instance()->configuration(), &GuhConfiguration::cloudEnabledChanged, this, &ConfigurationHandler::onCloudConfigurationChanged);
-    connect(GuhCore::instance()->deviceManager(), &DeviceManager::languageUpdated, this, &ConfigurationHandler::onLanguageChanged);
+    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::serverNameChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::timeZoneChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::localeChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::debugServerEnabledChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::tcpServerConfigurationChanged, this, &ConfigurationHandler::onTcpServerConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::webServerConfigurationChanged, this, &ConfigurationHandler::onWebServerConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::webSocketServerConfigurationChanged, this, &ConfigurationHandler::onWebSocketServerConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &GuhConfiguration::cloudEnabledChanged, this, &ConfigurationHandler::onCloudConfigurationChanged);
+    connect(NymeaCore::instance()->deviceManager(), &DeviceManager::languageUpdated, this, &ConfigurationHandler::onLanguageChanged);
 }
 
 /*! Returns the name of the \l{ConfigurationHandler}. In this case \b Configuration.*/
@@ -243,26 +243,26 @@ JsonReply *ConfigurationHandler::GetConfigurations(const QVariantMap &params) co
     QVariantMap returns;
     returns.insert("basicConfiguration", JsonTypes::packBasicConfiguration());
     QVariantList tcpServerConfigs;
-    foreach (const ServerConfiguration &config, GuhCore::instance()->configuration()->tcpServerConfigurations()) {
+    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->tcpServerConfigurations()) {
         tcpServerConfigs.append(JsonTypes::packServerConfiguration(config));
     }
     returns.insert("tcpServerConfigurations", tcpServerConfigs);
 
     QVariantList webServerConfigs;
-    foreach (const WebServerConfiguration &config, GuhCore::instance()->configuration()->webServerConfigurations()) {
+    foreach (const WebServerConfiguration &config, NymeaCore::instance()->configuration()->webServerConfigurations()) {
         webServerConfigs.append(JsonTypes::packWebServerConfiguration(config));
 
     }
     returns.insert("webServerConfigurations", webServerConfigs);
 
     QVariantList webSocketServerConfigs;
-    foreach (const ServerConfiguration &config, GuhCore::instance()->configuration()->webSocketServerConfigurations()) {
+    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {
         webSocketServerConfigs.append(JsonTypes::packServerConfiguration(config));
     }
     returns.insert("webSocketServerConfigurations", webSocketServerConfigs);
 
     QVariantMap cloudConfig;
-    cloudConfig.insert("enabled", GuhCore::instance()->configuration()->cloudEnabled());
+    cloudConfig.insert("enabled", NymeaCore::instance()->configuration()->cloudEnabled());
     returns.insert("cloud", cloudConfig);
 
     return createReply(returns);
@@ -272,7 +272,7 @@ JsonReply *ConfigurationHandler::GetTimeZones(const QVariantMap &params) const
 {
     Q_UNUSED(params)
     QVariantList timeZones;
-    foreach (const QByteArray &timeZoneId, GuhCore::instance()->timeManager()->availableTimeZones()) {
+    foreach (const QByteArray &timeZoneId, NymeaCore::instance()->timeManager()->availableTimeZones()) {
         timeZones.append(QString::fromUtf8(timeZoneId));
     }
 
@@ -285,7 +285,7 @@ JsonReply *ConfigurationHandler::GetAvailableLanguages(const QVariantMap &params
 {
     Q_UNUSED(params)
     QVariantList languages;
-    foreach (const QString &language, GuhCore::getAvailableLanguages()) {
+    foreach (const QString &language, NymeaCore::getAvailableLanguages()) {
         languages.append(language);
     }
     QVariantMap returns;
@@ -296,7 +296,7 @@ JsonReply *ConfigurationHandler::GetAvailableLanguages(const QVariantMap &params
 JsonReply *ConfigurationHandler::SetServerName(const QVariantMap &params) const
 {
     QString serverName = params.value("serverName").toString();
-    GuhCore::instance()->configuration()->setServerName(serverName);
+    NymeaCore::instance()->configuration()->setServerName(serverName);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 
@@ -305,10 +305,10 @@ JsonReply *ConfigurationHandler::SetTimeZone(const QVariantMap &params) const
     qCDebug(dcJsonRpc()) << "Setting time zone to" << params.value("timeZone").toString();
 
     QByteArray timeZone = params.value("timeZone").toString().toUtf8();
-    if (!GuhCore::instance()->timeManager()->setTimeZone(timeZone))
+    if (!NymeaCore::instance()->timeManager()->setTimeZone(timeZone))
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidTimeZone));
 
-    GuhCore::instance()->configuration()->setTimeZone(timeZone);
+    NymeaCore::instance()->configuration()->setTimeZone(timeZone);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 
@@ -317,7 +317,7 @@ JsonReply *ConfigurationHandler::SetLanguage(const QVariantMap &params) const
     qCDebug(dcJsonRpc()) << "Setting language to" << params.value("language").toString();
     QLocale locale(params.value("language").toString());
 
-    GuhCore::instance()->configuration()->setLocale(locale);
+    NymeaCore::instance()->configuration()->setLocale(locale);
 
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
@@ -338,20 +338,17 @@ JsonReply *ConfigurationHandler::SetTcpServerConfiguration(const QVariantMap &pa
 
     qCDebug(dcJsonRpc()) << QString("Configure TCP server %1:%2").arg(config.address.toString()).arg(config.port);
 
-    GuhCore::instance()->configuration()->setTcpServerConfiguration(config);
-
-//    GuhCore::instance()->tcpServer()->reconfigureServer(config);
-
+    NymeaCore::instance()->configuration()->setTcpServerConfiguration(config);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::DeleteTcpServerConfiguration(const QVariantMap &params) const
 {
     QString id = params.value("id").toString();
-    if (id.isEmpty() || !GuhCore::instance()->configuration()->tcpServerConfigurations().contains(id)) {
+    if (id.isEmpty() || !NymeaCore::instance()->configuration()->tcpServerConfigurations().contains(id)) {
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
     }
-    GuhCore::instance()->configuration()->removeTcpServerConfiguration(id);
+    NymeaCore::instance()->configuration()->removeTcpServerConfiguration(id);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 
@@ -372,19 +369,17 @@ JsonReply *ConfigurationHandler::SetWebServerConfiguration(const QVariantMap &pa
 
     qCDebug(dcJsonRpc()) << QString("Configure web server %1:%2").arg(config.address.toString()).arg(config.port);
 
-    GuhCore::instance()->configuration()->setWebServerConfiguration(config);
-//    GuhCore::instance()->webServer()->reconfigureServer(config);
-
+    NymeaCore::instance()->configuration()->setWebServerConfiguration(config);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::DeleteWebServerConfiguration(const QVariantMap &params) const
 {
     QString id = params.value("id").toString();
-    if (id.isEmpty() || !GuhCore::instance()->configuration()->webServerConfigurations().contains(id)) {
+    if (id.isEmpty() || !NymeaCore::instance()->configuration()->webServerConfigurations().contains(id)) {
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
     }
-    GuhCore::instance()->configuration()->removeWebServerConfiguration(id);
+    NymeaCore::instance()->configuration()->removeWebServerConfiguration(id);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 
@@ -404,7 +399,7 @@ JsonReply *ConfigurationHandler::SetWebSocketServerConfiguration(const QVariantM
 
     qCDebug(dcJsonRpc()) << QString("Configure web socket server %1:%2").arg(config.address.toString()).arg(config.port);
 
-    GuhCore::instance()->configuration()->setWebSocketServerConfiguration(config);
+    NymeaCore::instance()->configuration()->setWebSocketServerConfiguration(config);
 
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
@@ -412,24 +407,24 @@ JsonReply *ConfigurationHandler::SetWebSocketServerConfiguration(const QVariantM
 JsonReply *ConfigurationHandler::DeleteWebSocketServerConfiguration(const QVariantMap &params) const
 {
     QString id = params.value("id").toString();
-    if (id.isEmpty() || !GuhCore::instance()->configuration()->webSocketServerConfigurations().contains(id)) {
+    if (id.isEmpty() || !NymeaCore::instance()->configuration()->webSocketServerConfigurations().contains(id)) {
         return createReply(statusToReply(GuhConfiguration::ConfigurationErrorInvalidId));
     }
-    GuhCore::instance()->configuration()->removeWebSocketServerConfiguration(id);
+    NymeaCore::instance()->configuration()->removeWebSocketServerConfiguration(id);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::SetCloudEnabled(const QVariantMap &params) const
 {
     bool enabled = params.value("enabled").toBool();
-    GuhCore::instance()->configuration()->setCloudEnabled(enabled);
+    NymeaCore::instance()->configuration()->setCloudEnabled(enabled);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 
 JsonReply *ConfigurationHandler::SetDebugServerEnabled(const QVariantMap &params) const
 {
     bool enabled = params.value("enabled").toBool();
-    GuhCore::instance()->configuration()->setDebugServerEnabled(enabled);
+    NymeaCore::instance()->configuration()->setDebugServerEnabled(enabled);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 
@@ -445,7 +440,7 @@ void ConfigurationHandler::onTcpServerConfigurationChanged(const QString &id)
 {
     QVariantMap params;
     qCDebug(dcJsonRpc()) << "Notification: TCP server configuration changed";
-    params.insert("tcpServerConfiguration", JsonTypes::packServerConfiguration(GuhCore::instance()->configuration()->tcpServerConfigurations().value(id)));
+    params.insert("tcpServerConfiguration", JsonTypes::packServerConfiguration(NymeaCore::instance()->configuration()->tcpServerConfigurations().value(id)));
     emit TcpServerConfigurationChanged(params);
 }
 
@@ -453,7 +448,7 @@ void ConfigurationHandler::onWebServerConfigurationChanged(const QString &id)
 {
     QVariantMap params;
     qCDebug(dcJsonRpc()) << "Notification: web server configuration changed";
-    params.insert("webServerConfiguration", JsonTypes::packWebServerConfiguration(GuhCore::instance()->configuration()->webServerConfigurations().value(id)));
+    params.insert("webServerConfiguration", JsonTypes::packWebServerConfiguration(NymeaCore::instance()->configuration()->webServerConfigurations().value(id)));
     emit WebServerConfigurationChanged(params);
 }
 
@@ -461,7 +456,7 @@ void ConfigurationHandler::onWebSocketServerConfigurationChanged(const QString &
 {
     QVariantMap params;
     qCDebug(dcJsonRpc()) << "Notification: web socket server configuration changed";
-    params.insert("webSocketServerConfiguration", JsonTypes::packServerConfiguration(GuhCore::instance()->configuration()->webSocketServerConfigurations().value(id)));
+    params.insert("webSocketServerConfiguration", JsonTypes::packServerConfiguration(NymeaCore::instance()->configuration()->webSocketServerConfigurations().value(id)));
     emit WebSocketServerConfigurationChanged(params);
 }
 
@@ -479,7 +474,7 @@ void ConfigurationHandler::onLanguageChanged()
 {
     QVariantMap params;
     qCDebug(dcJsonRpc()) << "Notification: language configuration changed";
-    params.insert("language", GuhCore::instance()->configuration()->locale().name());
+    params.insert("language", NymeaCore::instance()->configuration()->locale().name());
     emit LanguageChanged(params);
 }
 

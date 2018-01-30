@@ -34,7 +34,7 @@
 */
 
 #include "tcpserver.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 
 #include <QDebug>
 
@@ -135,8 +135,8 @@ void TcpServer::resetAvahiService()
     txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
     txt.insert("serverVersion", NYMEA_VERSION_STRING);
     txt.insert("manufacturer", "guh GmbH");
-    txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
-    txt.insert("name", GuhCore::instance()->configuration()->serverName());
+    txt.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
+    txt.insert("name", NymeaCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
     if (!m_avahiService->registerService(QString("guhIO-tcp-%1").arg(configuration().id), configuration().port, "_jsonrpc._tcp", txt)) {
         qCWarning(dcTcpServer()) << "Could not register avahi service for" << configuration();

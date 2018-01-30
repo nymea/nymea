@@ -21,8 +21,8 @@
 #include "usermanager.h"
 #include "nymeasettings.h"
 #include "loggingcategories.h"
-#include "guhcore.h"
 #include "pushbuttondbusservice.h"
+#include "nymeacore.h"
 
 #include <QUuid>
 #include <QCryptographicHash>
@@ -141,7 +141,7 @@ QByteArray UserManager::authenticate(const QString &username, const QString &pas
             .arg(QUuid::createUuid().toString())
             .arg(username)
             .arg(QString::fromUtf8(token))
-            .arg(GuhCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
+            .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
             .arg(deviceName);
 
     m_db.exec(storeTokenQuery);
@@ -297,7 +297,7 @@ void UserManager::onPushButtonPressed()
             .arg(QUuid::createUuid().toString())
             .arg("")
             .arg(QString::fromUtf8(token))
-            .arg(GuhCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
+            .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
             .arg(m_pushButtonTransaction.second);
 
     m_db.exec(storeTokenQuery);

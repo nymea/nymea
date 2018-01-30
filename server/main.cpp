@@ -35,7 +35,7 @@
 
 #include "stdio.h"
 #include "unistd.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "guhservice.h"
 #include "nymeasettings.h"
 #include "guhdbusservice.h"
@@ -277,7 +277,7 @@ int main(int argc, char *argv[])
         }
 
         // create core instance
-        GuhCore::instance();
+        NymeaCore::instance();
         int ret = application.exec();
         if (s_logFile.isOpen()) {
             s_logFile.close();

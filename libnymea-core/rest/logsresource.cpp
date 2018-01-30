@@ -38,7 +38,7 @@
 #include "logsresource.h"
 #include "httprequest.h"
 #include "loggingcategories.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "logging/logengine.h"
 
 #include <QJsonDocument>
@@ -108,7 +108,7 @@ HttpReply *LogsResource::getLogEntries(const QString &filterString)
     LogFilter filter = JsonTypes::unpackLogFilter(filterMap);
 
     QVariantList entries;
-    foreach (const LogEntry &entry, GuhCore::instance()->logEngine()->logEntries(filter)) {
+    foreach (const LogEntry &entry, NymeaCore::instance()->logEngine()->logEntries(filter)) {
         entries.append(JsonTypes::packLogEntry(entry));
     }
     HttpReply *reply = createSuccessReply();

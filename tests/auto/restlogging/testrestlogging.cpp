@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "guhtestbase.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "devicemanager.h"
 #include "plugin/deviceplugin.h"
 
@@ -60,7 +60,7 @@ void TestRestLogging::initTestCase()
 {
     GuhTestBase::initTestCase();
 
-    foreach (const WebServerConfiguration &config, GuhCore::instance()->configuration()->webServerConfigurations()) {
+    foreach (const WebServerConfiguration &config, NymeaCore::instance()->configuration()->webServerConfigurations()) {
         if (config.port == 3333 && (config.address == QHostAddress("127.0.0.1") || config.address == QHostAddress("0.0.0.0"))) {
             qDebug() << "Already have a webserver listening on 127.0.0.1:3333";
             return;
@@ -72,7 +72,7 @@ void TestRestLogging::initTestCase()
     config.address = QHostAddress("127.0.0.1");
     config.port = 3333;
     config.sslEnabled = true;
-    GuhCore::instance()->configuration()->setWebServerConfiguration(config);
+    NymeaCore::instance()->configuration()->setWebServerConfiguration(config);
     qApp->processEvents();
 }
 
@@ -144,7 +144,7 @@ void TestRestLogging::invalidFilterJson()
 
 void TestRestLogging::eventLogs()
 {
-    QList<Device*> devices = GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
+    QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 

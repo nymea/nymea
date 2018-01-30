@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "guhtestbase.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
 #include "../../utils/pushbuttonagent.h"
@@ -166,10 +166,10 @@ void TestJSONRPC::testHandshake()
 
 void TestJSONRPC::testInitialSetup()
 {
-    foreach (const QString &user, GuhCore::instance()->userManager()->users()) {
-        GuhCore::instance()->userManager()->removeUser(user);
+    foreach (const QString &user, NymeaCore::instance()->userManager()->users()) {
+        NymeaCore::instance()->userManager()->removeUser(user);
     }
-    QCOMPARE(GuhCore::instance()->userManager()->users().count(), 0);
+    QCOMPARE(NymeaCore::instance()->userManager()->users().count(), 0);
 
     QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
     QVERIFY(spy.isValid());
@@ -223,7 +223,7 @@ void TestJSONRPC::testInitialSetup()
     response = jsonDoc.toVariant().toMap();
     qWarning() << "Calling CreateUser on uninitialized instance with invalid user:" << response.value("status").toString() << response.value("params").toMap().value("error").toString();
     QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
-    QCOMPARE(GuhCore::instance()->userManager()->users().count(), 0);
+    QCOMPARE(NymeaCore::instance()->userManager()->users().count(), 0);
 
     // or when giving a bad password
     spy.clear();
@@ -236,7 +236,7 @@ void TestJSONRPC::testInitialSetup()
     response = jsonDoc.toVariant().toMap();
     qWarning() << "Calling CreateUser on uninitialized instance with weak password:" << response.value("status").toString() << response.value("params").toMap().value("error").toString();
     QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
-    QCOMPARE(GuhCore::instance()->userManager()->users().count(), 0);
+    QCOMPARE(NymeaCore::instance()->userManager()->users().count(), 0);
 
     // Now lets play by the rules (with an uppercase email)
     spy.clear();
@@ -249,7 +249,7 @@ void TestJSONRPC::testInitialSetup()
     response = jsonDoc.toVariant().toMap();
     qWarning() << "Calling CreateUser on uninitialized instance:" << response.value("status").toString() << response.value("error").toString();
     QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
-    QCOMPARE(GuhCore::instance()->userManager()->users().count(), 1);
+    QCOMPARE(NymeaCore::instance()->userManager()->users().count(), 1);
 
     // Calls should still fail, given we didn't get a new token yet
     spy.clear();

@@ -15,7 +15,7 @@ RESOURCES += $$top_srcdir/icons.qrc \
              $$top_srcdir/data/debug-interface/debug-interface.qrc
 
 
-HEADERS += guhcore.h \
+HEADERS += nymeacore.h \
     tcpserver.h \
     mocktcpserver.h \
     ruleengine.h \
@@ -96,7 +96,7 @@ HEADERS += guhcore.h \
     hardware/network/avahi/qtavahiservicebrowserimplementation_p.h \
     debugserverhandler.h
 
-SOURCES += guhcore.cpp \
+SOURCES += nymeacore.cpp \
     tcpserver.cpp \
     mocktcpserver.cpp \
     ruleengine.cpp \

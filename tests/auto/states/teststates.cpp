@@ -20,7 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "guhtestbase.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
 
@@ -58,7 +58,7 @@ void TestStates::getStateTypes()
 
 void TestStates::getStateValue_data()
 {
-    QList<Device*> devices = GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
+    QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 
@@ -88,12 +88,12 @@ void TestStates::getStateValue()
 
 void TestStates::save_load_states()
 {
-    DeviceClass mockDeviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(mockDeviceClassId);
+    DeviceClass mockDeviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(mockDeviceClassId);
 
     QVERIFY2(mockDeviceClass.getStateType(mockIntStateId).cached(), "Mock int state is not cached (required to be true for this test)");
     QVERIFY2(!mockDeviceClass.getStateType(mockBoolStateId).cached(), "Mock bool state is cached (required to be false for this test)");
 
-    Device* device = GuhCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId).first();
+    Device* device = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId).first();
     int port = device->paramValue(httpportParamTypeId).toInt();
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));

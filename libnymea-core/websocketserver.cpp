@@ -48,7 +48,7 @@
 */
 
 #include "nymeasettings.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "websocketserver.h"
 #include "loggingcategories.h"
 
@@ -116,8 +116,8 @@ QHash<QString, QString> WebSocketServer::createTxtRecord()
     txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
     txt.insert("serverVersion", NYMEA_VERSION_STRING);
     txt.insert("manufacturer", "guh GmbH");
-    txt.insert("uuid", GuhCore::instance()->configuration()->serverUuid().toString());
-    txt.insert("name", GuhCore::instance()->configuration()->serverName());
+    txt.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
+    txt.insert("name", NymeaCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
     return txt;
 }

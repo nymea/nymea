@@ -19,7 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "guhtestbase.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
 #include "webserver.h"
@@ -70,7 +70,7 @@ void TestWebSocketServer::initTestCase()
     GuhTestBase::initTestCase();
 
     ServerConfiguration config;
-    foreach (const ServerConfiguration &c, GuhCore::instance()->configuration()->webSocketServerConfigurations()) {
+    foreach (const ServerConfiguration &c, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {
         if (c.port == 4444 && (c.address == QHostAddress("127.0.0.1") || c.address == QHostAddress("0.0.0.0"))) {
             qDebug() << "Already have a websocketserver listening on 127.0.0.1:4444";
             config = c;
@@ -83,7 +83,7 @@ void TestWebSocketServer::initTestCase()
     config.port = 4444;
     config.sslEnabled = true;
     config.authenticationEnabled = true;
-    GuhCore::instance()->configuration()->setWebSocketServerConfiguration(config);
+    NymeaCore::instance()->configuration()->setWebSocketServerConfiguration(config);
 
 }
 

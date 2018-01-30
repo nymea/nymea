@@ -35,7 +35,7 @@
 
 
 #include "stateevaluator.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "devicemanager.h"
 #include "loggingcategories.h"
 #include "nymeasettings.h"
@@ -100,7 +100,7 @@ void StateEvaluator::setOperatorType(Types::StateOperator operatorType)
 bool StateEvaluator::evaluate() const
 {
     if (m_stateDescriptor.isValid()) {
-        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(m_stateDescriptor.deviceId());
+        Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(m_stateDescriptor.deviceId());
         if (!device) {
             qCWarning(dcRuleEngine) << "Device not existing!";
             return false;
@@ -220,7 +220,7 @@ StateEvaluator StateEvaluator::loadFromSettings(NymeaSettings &settings, const Q
 bool StateEvaluator::isValid() const
 {
     if (m_stateDescriptor.isValid()) {
-        Device *device = GuhCore::instance()->deviceManager()->findConfiguredDevice(m_stateDescriptor.deviceId());
+        Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(m_stateDescriptor.deviceId());
         if (!device) {
             qCWarning(dcRuleEngine) << "State evaluator device does not exist!";
             return false;
@@ -231,7 +231,7 @@ bool StateEvaluator::isValid() const
             return false;
         }
 
-        DeviceClass deviceClass = GuhCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+        DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
         foreach (const StateType &stateType, deviceClass.stateTypes()) {
             if (stateType.id() == m_stateDescriptor.stateTypeId()) {
 

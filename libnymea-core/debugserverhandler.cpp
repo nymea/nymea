@@ -18,7 +18,7 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "httpreply.h"
 #include "nymeasettings.h"
 #include "httprequest.h"
@@ -44,7 +44,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeProcessingInstruction("DOCUMENT", "html");
     writer.writeComment("Auto generated html page from nymea server");
     writer.writeStartElement("html");
-    writer.writeAttribute("lang", GuhCore::instance()->configuration()->locale().name());
+    writer.writeAttribute("lang", NymeaCore::instance()->configuration()->locale().name());
 
     // Head
     writer.writeStartElement("head");
@@ -183,7 +183,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("tr");
     //: The server name description in the server infromation section of the debug interface
     writer.writeTextElement("th", QCoreApplication::translate("main", "Server name"));
-    writer.writeTextElement("td", GuhCore::instance()->configuration()->serverName());
+    writer.writeTextElement("td", NymeaCore::instance()->configuration()->serverName());
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
@@ -201,19 +201,19 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("tr");
     //: The language description in the server infromation section of the debug interface
     writer.writeTextElement("th", QCoreApplication::translate("main", "Language"));
-    writer.writeTextElement("td", GuhCore::instance()->configuration()->locale().name() + " (" + GuhCore::instance()->configuration()->locale().nativeCountryName() + " - " + GuhCore::instance()->configuration()->locale().nativeLanguageName() + ")");
+    writer.writeTextElement("td", NymeaCore::instance()->configuration()->locale().name() + " (" + NymeaCore::instance()->configuration()->locale().nativeCountryName() + " - " + NymeaCore::instance()->configuration()->locale().nativeLanguageName() + ")");
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The timezone description in the server infromation section of the debug interface
     writer.writeTextElement("th", QCoreApplication::translate("main", "Timezone"));
-    writer.writeTextElement("td", QString::fromUtf8(GuhCore::instance()->configuration()->timeZone()));
+    writer.writeTextElement("td", QString::fromUtf8(NymeaCore::instance()->configuration()->timeZone()));
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The server id description in the server infromation section of the debug interface
     writer.writeTextElement("th", QCoreApplication::translate("main", "Server UUID"));
-    writer.writeTextElement("td", GuhCore::instance()->configuration()->serverUuid().toString());
+    writer.writeTextElement("td", NymeaCore::instance()->configuration()->serverUuid().toString());
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
@@ -234,7 +234,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("td", NymeaSettings(NymeaSettings::SettingsRoleGlobal).logPath());
     writer.writeEndElement(); // tr
 
-    for (int i = 0; i < GuhCore::instance()->deviceManager()->pluginSearchDirs().count(); i++) {
+    for (int i = 0; i < NymeaCore::instance()->deviceManager()->pluginSearchDirs().count(); i++) {
         writer.writeStartElement("tr");
         writer.writeEndElement(); // tr
 
@@ -244,7 +244,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
         } else {
             writer.writeTextElement("th", "");
         }
-        writer.writeTextElement("td", QFileInfo(GuhCore::instance()->deviceManager()->pluginSearchDirs().at(i)).absoluteFilePath());
+        writer.writeTextElement("td", QFileInfo(NymeaCore::instance()->deviceManager()->pluginSearchDirs().at(i)).absoluteFilePath());
     }
 
     writer.writeEndElement(); // table
@@ -517,7 +517,7 @@ QByteArray DebugServerHandler::createErrorXmlDocument(HttpReply::HttpStatusCode 
     writer.writeStartDocument("1.0");
     writer.writeComment("Live generated html page from nymea");
     writer.writeStartElement("html");
-    writer.writeAttribute("lang", GuhCore::instance()->configuration()->locale().name());
+    writer.writeAttribute("lang", NymeaCore::instance()->configuration()->locale().name());
 
     // Head
     writer.writeStartElement("head");

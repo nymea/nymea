@@ -33,7 +33,7 @@
 */
 
 #include "statehandler.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 #include "loggingcategories.h"
 
 namespace guhserver {
@@ -64,7 +64,7 @@ JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
 {
     qCDebug(dcJsonRpc) << "asked for state type" << params;
     StateTypeId stateTypeId(params.value("stateTypeId").toString());
-    foreach (const DeviceClass &deviceClass, GuhCore::instance()->deviceManager()->supportedDevices()) {
+    foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const StateType &stateType, deviceClass.stateTypes()) {
             if (stateType.id() == stateTypeId) {
                 QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);

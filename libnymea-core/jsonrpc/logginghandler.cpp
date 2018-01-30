@@ -46,7 +46,7 @@
 #include "logging/logengine.h"
 #include "logging/logfilter.h"
 #include "loggingcategories.h"
-#include "guhcore.h"
+#include "nymeacore.h"
 
 namespace guhserver {
 
@@ -91,8 +91,8 @@ LoggingHandler::LoggingHandler(QObject *parent) :
                    "keep to database in the size limits.");
     setParams("LogDatabaseUpdated", params);
 
-    connect(GuhCore::instance()->logEngine(), &LogEngine::logEntryAdded, this, &LoggingHandler::logEntryAdded);
-    connect(GuhCore::instance()->logEngine(), &LogEngine::logDatabaseUpdated, this, &LoggingHandler::logDatabaseUpdated);
+    connect(NymeaCore::instance()->logEngine(), &LogEngine::logEntryAdded, this, &LoggingHandler::logEntryAdded);
+    connect(NymeaCore::instance()->logEngine(), &LogEngine::logDatabaseUpdated, this, &LoggingHandler::logDatabaseUpdated);
 }
 
 /*! Returns the name of the \l{LoggingHandler}. In this case \b Logging.*/
@@ -122,7 +122,7 @@ JsonReply* LoggingHandler::GetLogEntries(const QVariantMap &params) const
     LogFilter filter = JsonTypes::unpackLogFilter(params);
 
     QVariantList entries;
-    foreach (const LogEntry &entry, GuhCore::instance()->logEngine()->logEntries(filter)) {
+    foreach (const LogEntry &entry, NymeaCore::instance()->logEngine()->logEntries(filter)) {
         entries.append(JsonTypes::packLogEntry(entry));
     }
     QVariantMap returns = statusToReply(Logging::LoggingErrorNoError);

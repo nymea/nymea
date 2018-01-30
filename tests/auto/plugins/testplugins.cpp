@@ -20,7 +20,6 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "guhtestbase.h"
-#include "guhcore.h"
 #include "devicemanager.h"
 #include "mocktcpserver.h"
 

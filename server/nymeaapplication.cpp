@@ -19,13 +19,13 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class guhserver::GuhApplication
+    \class guhserver::NymeaApplication
     \brief Application class of the guh server.
 
     \ingroup core
     \inmodule server
 
-    The \l{GuhApplication} is a subclass of the \{http://doc.qt.io/qt-5/qcoreapplication.html}{QCoreApplication}
+    The \l{NymeaApplication} is a subclass of the \{http://doc.qt.io/qt-5/qcoreapplication.html}{QCoreApplication}
     and is responsable to catch system signals like SIGQUIT, SIGINT, SIGTERM, SIGHUP, SIGSEGV. This class
     will provide a backtrace on a segmentation fault (SIGSEGV).
 
@@ -33,7 +33,7 @@
     \sa NymeaService
 */
 
-#include "guhapplication.h"
+#include "nymeaapplication.h"
 #include "loggingcategories.h"
 #include "nymeacore.h"
 
@@ -178,7 +178,7 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
                 break;
             default:
                 qCCritical(dcApplication()) << "Fuck this shit. I'm out...";
-                GuhApplication::quit();
+                NymeaApplication::quit();
                 break;
             }
             s_shutdownCounter++;
@@ -195,7 +195,7 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
         if (s_multipleShutdownDetected)
             qCDebug(dcApplication) << "Ok, ok, I'm done! :)";
 
-        GuhApplication::quit();
+        NymeaApplication::quit();
     };
 
     // all these signals will be ignored.
@@ -207,8 +207,8 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
 }
 
 
-/*! Constructs a GuhApplication with the given argument count \a argc and argument vector \a argv. */
-GuhApplication::GuhApplication(int &argc, char **argv) :
+/*! Constructs a NymeaApplication with the given argument count \a argc and argument vector \a argv. */
+NymeaApplication::NymeaApplication(int &argc, char **argv) :
     QCoreApplication(argc, argv)
 {
     catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP, SIGSEGV});

@@ -19,9 +19,9 @@ include(qtservice/qtservice.pri)
 
 SOURCES += main.cpp \
     nymeaservice.cpp \
-    guhapplication.cpp
+    nymeaapplication.cpp
 
 HEADERS += \
     nymeaservice.h \
-    guhapplication.h
+    nymeaapplication.h
 

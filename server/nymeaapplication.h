@@ -18,8 +18,8 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GUHAPPLICATION_H
-#define GUHAPPLICATION_H
+#ifndef NYMEAAPPLICATION_H
+#define NYMEAAPPLICATION_H
 
 #include <QObject>
 #include <QSocketNotifier>
@@ -27,11 +27,11 @@
 
 namespace guhserver {
 
-class GuhApplication : public QCoreApplication
+class NymeaApplication : public QCoreApplication
 {
 public:
-    GuhApplication(int &argc, char **argv);
+    NymeaApplication(int &argc, char **argv);
 };
 
 }
-#endif // GUHAPPLICATION_H
+#endif // NYMEAAPPLICATION_H

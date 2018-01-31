@@ -2,6 +2,14 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="it">
 <context>
+    <name>DevicePluginMock</name>
+    <message>
+        <location filename="../plugins/mock/devicepluginmock.cpp" line="214"/>
+        <source>Display pin!! The pin is 243681</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>main</name>
     <message>
         <location filename="../server/main.cpp" line="161"/>
@@ -39,6 +47,7 @@ Categories are:</source>
     </message>
     <message>
         <location filename="../server/main.cpp" line="201"/>
+        <location filename="../tests/tools/simplepushbuttonhandler/main.cpp" line="33"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
         <translation></translation>
     </message>

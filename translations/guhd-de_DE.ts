@@ -6,7 +6,7 @@
     <message>
         <location filename="../plugins/mock/devicepluginmock.cpp" line="214"/>
         <source>Display pin!! The pin is 243681</source>
-        <translation type="unfinished"></translation>
+        <translation>PIN anzeigen!! Die PIN ist 243681</translation>
     </message>
 </context>
 <context>

@@ -47,6 +47,7 @@ AWSConnector::AWSConnector(QObject *parent) : QObject(parent)
     m_disconnectContextData = std::shared_ptr<awsiotsdk::DisconnectCallbackContextData>(new DisconnectContext(this));
     m_subscriptionContextData = std::shared_ptr<awsiotsdk::mqtt::SubscriptionHandlerContextData>(new SubscriptionContext(this));
 
+    qRegisterMetaType<AWSConnector::PushNotificationsEndpoint>();
     m_clientName = readSyncedNameCache();
 }
 
@@ -160,6 +161,7 @@ void AWSConnector::setupSubscriptions()
     subscriptions.append(QString("%1/device/users/response").arg(m_clientId));
     subscriptions.append(QString("%1/pair/response").arg(m_clientId));
     subscriptions.append(QString("%1/notify/response").arg(m_clientId));
+    subscriptions.append(QString("%1/notify/info/endpoint").arg(m_clientId));
     subscribe(subscriptions);
 
     // fetch previous pairings
@@ -475,6 +477,15 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         int status = jsonDoc.toVariant().toMap().value("status").toInt();
         qCDebug(dcAWS()) << "Push notification reply for transaction" << transactionId << " Status:" << status << jsonDoc.toVariant().toMap().value("message").toString();
         emit connector->pushNotificationSent(transactionId, status);
+    } else if (topic == QString("%1/notify/info/endpoint").arg(connector->m_clientId)) {
+        QVariantMap endpoint = jsonDoc.toVariant().toMap().value("newPushNotificationsEndpoint").toMap();
+        Q_ASSERT(endpoint.keys().count() == 1);
+        QString cognitoId = endpoint.keys().first();
+        PushNotificationsEndpoint ep;
+        ep.userId = cognitoId;
+        ep.endpointId = endpoint.value(cognitoId).toMap().value("endpointId").toString();
+        ep.displayName = endpoint.value(cognitoId).toMap().value("displayName").toString();
+        emit connector->pushNotificationEndpointAdded(ep);
     } else {
         qCWarning(dcAWS) << "Unhandled subscription received!" << topic << QString::fromStdString(payload);
     }

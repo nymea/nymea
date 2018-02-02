@@ -42,6 +42,7 @@ public:
 
 private slots:
     void pushNotificationEndpointsUpdated(const QList<AWSConnector::PushNotificationsEndpoint> &endpoints);
+    void pushNotificationEndpointAdded(const AWSConnector::PushNotificationsEndpoint &endpoint);
     void pushNotificationSent(int id, int status);
 
 private:

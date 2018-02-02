@@ -38,6 +38,7 @@ CloudNotifications::CloudNotifications(AWSConnector* awsConnector, QObject *pare
     m_awsConnector(awsConnector)
 {
     connect(m_awsConnector, &AWSConnector::pushNotificationEndpointsUpdated, this, &CloudNotifications::pushNotificationEndpointsUpdated);
+    connect(m_awsConnector, &AWSConnector::pushNotificationEndpointAdded, this, &CloudNotifications::pushNotificationEndpointAdded);
     connect(m_awsConnector, &AWSConnector::pushNotificationSent, this, &CloudNotifications::pushNotificationSent);
 }
 
@@ -135,7 +136,6 @@ QJsonObject CloudNotifications::metaData() const
 
 DeviceManager::DeviceSetupStatus CloudNotifications::setupDevice(Device *device)
 {
-    qWarning() << "--------------------------------------------------------------------- setupDevice" << device->id() << device->name();
     Q_UNUSED(device)
     return DeviceManager::DeviceSetupStatusSuccess;
 }
@@ -199,6 +199,18 @@ void CloudNotifications::pushNotificationEndpointsUpdated(const QList<AWSConnect
     }
     emit autoDevicesAppeared(cloudNotificationsDeviceClassId, devicesToAdd);
 
+}
+
+void CloudNotifications::pushNotificationEndpointAdded(const AWSConnector::PushNotificationsEndpoint &endpoint)
+{
+    DeviceDescriptor descriptor(cloudNotificationsDeviceClassId, endpoint.displayName, QString("Send notifications to %1").arg(endpoint.displayName));
+    ParamList params;
+    Param userIdParam(cloudNotificationsDeviceClassUserParamId, endpoint.userId);
+    params.append(userIdParam);
+    Param endpointIdParam(cloudNotificationsDeviceClassEndpointParamId, endpoint.endpointId);
+    params.append(endpointIdParam);
+    descriptor.setParams(params);
+    emit autoDevicesAppeared(cloudNotificationsDeviceClassId, {descriptor});
 }
 
 void CloudNotifications::pushNotificationSent(int id, int status)

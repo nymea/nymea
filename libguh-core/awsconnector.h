@@ -63,7 +63,8 @@ signals:
     void disconnected();
     void devicePaired(const QString &cognritoUserId, int errorCode, const QString &message);
     void webRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
-    void pushNotificationEndpointsUpdated(const QList<PushNotificationsEndpoint> pushNotificationEndpoints);
+    void pushNotificationEndpointsUpdated(const QList<AWSConnector::PushNotificationsEndpoint> pushNotificationEndpoints);
+    void pushNotificationEndpointAdded(const AWSConnector::PushNotificationsEndpoint &pushNotificationEndpoint);
     void pushNotificationSent(int id, int status);
 
 private slots:
@@ -134,5 +135,6 @@ private:
     static AWSConnector* s_instance;
     static QHash<quint16, AWSConnector*> s_requestMap;
 };
+Q_DECLARE_METATYPE(AWSConnector::PushNotificationsEndpoint)
 
 #endif // AWSCONNECTOR_H

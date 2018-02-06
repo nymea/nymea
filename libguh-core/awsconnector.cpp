@@ -267,7 +267,9 @@ int AWSConnector::sendPushNotification(const QString &userId, const QString &end
     params.insert("title", title);
     params.insert("body", text);
     params.insert("timestamp", QDateTime::currentMSecsSinceEpoch());
-    publish(QString("%1/notify/user/%2/%3").arg(m_clientId, userId, endpointId), params);
+//    publish(QString("%1/notify/user/%2/%3").arg(m_clientId, userId, endpointId), params);
+    Q_UNUSED(userId)
+    publish(QString("%1/notify/user/%2").arg(m_clientId, endpointId), params);
     return m_transactionId;
 }
 

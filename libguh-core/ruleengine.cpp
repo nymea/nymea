@@ -1101,42 +1101,45 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Devic
         }
 
         // Ok, either device/eventTypeId or interface/interfaceEvent are matching. Compare the paramdescriptor
+        bool allOK = true;
         foreach (const ParamDescriptor &paramDescriptor, eventDescriptor.paramDescriptors()) {
             switch (paramDescriptor.operatorType()) {
             case Types::ValueOperatorEquals:
                 if (event.param(paramDescriptor.paramTypeId()).value() != paramDescriptor.value()) {
-                    continue;
+                    allOK = false;
                 }
                 break;
             case Types::ValueOperatorNotEquals:
                 if (event.param(paramDescriptor.paramTypeId()).value() == paramDescriptor.value()) {
-                    continue;
+                    allOK = false;
                 }
                 break;
             case Types::ValueOperatorGreater:
                 if (event.param(paramDescriptor.paramTypeId()).value() <= paramDescriptor.value()) {
-                    continue;
+                    allOK = false;
                 }
                 break;
             case Types::ValueOperatorGreaterOrEqual:
                 if (event.param(paramDescriptor.paramTypeId()).value() < paramDescriptor.value()) {
-                    continue;
+                    allOK = false;
                 }
                 break;
             case Types::ValueOperatorLess:
                 if (event.param(paramDescriptor.paramTypeId()).value() >= paramDescriptor.value()) {
-                    continue;
+                    allOK = false;
                 }
                 break;
             case Types::ValueOperatorLessOrEqual:
                 if (event.param(paramDescriptor.paramTypeId()).value() < paramDescriptor.value()) {
-                    continue;
+                    allOK = false;
                 }
                 break;
             }
         }
         // All matching!
-        return true;
+        if (allOK) {
+            return true;
+        }
     }
 
     return false;

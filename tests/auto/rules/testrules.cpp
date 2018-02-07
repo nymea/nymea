@@ -78,6 +78,8 @@ private slots:
 
     void evaluateEvent();
 
+    void evaluateEventParams();
+
     void testStateEvaluator_data();
     void testStateEvaluator();
 
@@ -1402,6 +1404,78 @@ void TestRules::evaluateEvent()
 
     verifyRuleExecuted(mockActionIdNoParams);
 }
+
+void TestRules::evaluateEventParams()
+{
+    // Init bool state to  true
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg("true")));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+
+    // Add a rule
+    QVariantMap addRuleParams;
+    addRuleParams.insert("name", "TestRule");
+
+    QVariantList params;
+    QVariantMap boolParam;
+    boolParam.insert("paramTypeId", mockBoolStateId);
+    boolParam.insert("operator", "ValueOperatorEquals");
+    boolParam.insert("value", true);
+    params.append(boolParam);
+
+    QVariantMap event1;
+    event1.insert("eventTypeId", mockBoolStateId);
+    event1.insert("deviceId", m_mockDeviceId);
+    event1.insert("paramDescriptors", params);
+
+    QVariantList events;
+    events.append(event1);
+    addRuleParams.insert("eventDescriptors", events);
+
+    QVariantList actions;
+    QVariantMap action;
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    actions.append(action);
+    addRuleParams.insert("actions", actions);
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    verifyRuleError(response);
+
+
+    // Trigger a non matching param
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg("false")));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    verifyRuleNotExecuted();
+
+    // Trigger a matching param
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg("true")));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    verifyRuleExecuted(mockActionIdNoParams);
+
+    // Reset back to false to not mess with other tests
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg("false")));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+}
+
 
 void TestRules::testStateChange() {
     // Add a rule

@@ -521,9 +521,9 @@ void TestWebserver::getDebugServer_data()
         QTest::newRow("POST /debug/syslog | server enabled | 405") << "post" << "/debug/logdb" << true << 405;
         QTest::newRow("DELETE /debug/syslog | server enabled | 405") << "delete" << "/debug/logdb" << true << 405;
     } else {
-        // syslog enabled
+        // syslog enabled, but not readable
         QTest::newRow("GET /debug/syslog | server enabled | 200") << "get" << "/debug/syslog" << true << 403;
-        QTest::newRow("OPTIONS /debug/syslog | server enabled | 200") << "options" << "/debug/logdb" << true << 403;
+        QTest::newRow("OPTIONS /debug/syslog | server enabled | 200") << "options" << "/debug/logdb" << true << 200;
         QTest::newRow("PUT /debug/syslog | server enabled | 405") << "put" << "/debug/logdb" << true << 405;
         QTest::newRow("POST /debug/syslog | server enabled | 405") << "post" << "/debug/logdb" << true << 405;
         QTest::newRow("DELETE /debug/syslog | server enabled | 405") << "delete" << "/debug/logdb" << true << 405;

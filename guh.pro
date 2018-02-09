@@ -9,7 +9,7 @@ server.depends = libguh libguh-core plugins
 plugins.depends = libguh
 tests.depends = libguh libguh-core
 
-doc.depends = libguh server
+doc.depends = FORCE
 # Note: some how extraimages in qdocconf did not the trick
 doc.commands += cd $$top_srcdir/libguh/interfaces; ./generatedoc.sh;
 doc.commands += cd $$top_srcdir/doc; qdoc config.qdocconf; cp -r images/* html/images/; \

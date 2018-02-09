@@ -1119,6 +1119,7 @@ QVariantMap JsonTypes::packBasicConfiguration()
     basicConfiguration.insert("serverTime", GuhCore::instance()->timeManager()->currentDateTime().toTime_t());
     basicConfiguration.insert("timeZone", QString::fromUtf8(GuhCore::instance()->timeManager()->timeZone()));
     basicConfiguration.insert("language", GuhCore::instance()->configuration()->locale().name());
+    basicConfiguration.insert("debugServerEnabled", GuhCore::instance()->configuration()->debugServerEnabled());
     return basicConfiguration;
 }
 

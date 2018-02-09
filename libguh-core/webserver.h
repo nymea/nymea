@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2015-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of guh.                                              *
  *                                                                         *
@@ -43,8 +43,8 @@
 
 namespace guhserver {
 
-class HttpRequest;
 class HttpReply;
+class HttpRequest;
 
 class WebServerClient : public QObject
 {
@@ -98,6 +98,7 @@ private:
 
     QByteArray createServerXmlDocument(QHostAddress address);
     HttpReply *processIconRequest(const QString &fileName);
+    HttpReply *processDebugRequest(const QString &requestPath);
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override;

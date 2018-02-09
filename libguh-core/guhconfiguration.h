@@ -90,6 +90,10 @@ public:
     QString sslCertificateKey() const;
     void setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey);
 
+    // Debug server
+    bool debugServerEnabled() const;
+    void setDebugServerEnabled(bool enabled);
+
     // TCP server
     QHash<QString, ServerConfiguration> tcpServerConfigurations() const;
     void setTcpServerConfiguration(const ServerConfiguration &config);
@@ -148,6 +152,7 @@ signals:
 
     void bluetoothServerEnabledChanged();
     void cloudEnabledChanged(bool enabled);
+    void debugServerEnabledChanged(bool enabled);
 };
 
 }

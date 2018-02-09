@@ -56,6 +56,7 @@ GuhConfiguration::GuhConfiguration(QObject *parent) :
     setLocale(locale());
     setBluetoothServerEnabled(bluetoothServerEnabled());
     setSslCertificate(sslCertificate(), sslCertificateKey());
+    setDebugServerEnabled(debugServerEnabled());
 
     GuhSettings settings(GuhSettings::SettingsRoleGlobal);
 
@@ -385,6 +386,25 @@ void GuhConfiguration::setSslCertificate(const QString &sslCertificate, const QS
     settings.setValue("certificate", sslCertificate);
     settings.setValue("certificate-key", sslCertificateKey);
     settings.endGroup();
+}
+
+bool GuhConfiguration::debugServerEnabled() const
+{
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("guhd");
+    return settings.value("debugServerEnabled", false).toBool();
+}
+
+void GuhConfiguration::setDebugServerEnabled(bool enabled)
+{
+    qCDebug(dcApplication()) << "Configuration: Set debug server" << (enabled ? "enabled" : "disabled");
+    if (debugServerEnabled() != enabled) {
+        GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+        settings.beginGroup("guhd");
+        settings.setValue("debugServerEnabled", enabled);
+        settings.endGroup();
+        emit debugServerEnabledChanged(enabled);
+    }
 }
 
 void GuhConfiguration::setServerUuid(const QUuid &uuid)

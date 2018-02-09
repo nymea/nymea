@@ -1,4 +1,4 @@
-1.1
+1.2
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -75,6 +75,7 @@
             },
             "returns": {
                 "basicConfiguration": {
+                    "debugServerEnabled": "Bool",
                     "language": "String",
                     "serverName": "String",
                     "serverTime": "Uint",
@@ -109,6 +110,15 @@
             "description": "Sets whether the cloud connection is enabled or disabled in the settings.",
             "params": {
                 "enabled": "Bool"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.SetDebugServerEnabled": {
+            "description": "Enable or disable the debug server.",
+            "params": {
+                "enabled": "String"
             },
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
@@ -785,6 +795,7 @@
         "Configuration.BasicConfigurationChanged": {
             "description": "Emitted whenever the basic configuration of this server changes.",
             "params": {
+                "debugServerEnabled": "Bool",
                 "serverName": "String",
                 "serverTime": "Uint",
                 "serverUuid": "Uuid",

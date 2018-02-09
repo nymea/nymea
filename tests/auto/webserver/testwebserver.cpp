@@ -510,12 +510,24 @@ void TestWebserver::getDebugServer_data()
     QTest::newRow("POST /debug/logdb | server enabled | 404") << "post" << "/debug/logdb" << false << 404;
     QTest::newRow("DELETE /debug/logdb | server enabled | 404") << "delete" << "/debug/logdb" << false << 404;
 
-    // syslog enabled
-    QTest::newRow("GET /debug/syslog | server enabled | 200") << "get" << "/debug/syslog" << true << 200;
-    QTest::newRow("OPTIONS /debug/syslog | server enabled | 200") << "options" << "/debug/logdb" << true << 200;
-    QTest::newRow("PUT /debug/syslog | server enabled | 405") << "put" << "/debug/logdb" << true << 405;
-    QTest::newRow("POST /debug/syslog | server enabled | 405") << "post" << "/debug/logdb" << true << 405;
-    QTest::newRow("DELETE /debug/syslog | server enabled | 405") << "delete" << "/debug/logdb" << true << 405;
+    // Check if syslog is accessable
+    QFileInfo syslogFileInfo("/var/log/syslog");
+
+    if (syslogFileInfo.exists() && syslogFileInfo.isReadable()) {
+        // syslog enabled
+        QTest::newRow("GET /debug/syslog | server enabled | 200") << "get" << "/debug/syslog" << true << 200;
+        QTest::newRow("OPTIONS /debug/syslog | server enabled | 200") << "options" << "/debug/logdb" << true << 200;
+        QTest::newRow("PUT /debug/syslog | server enabled | 405") << "put" << "/debug/logdb" << true << 405;
+        QTest::newRow("POST /debug/syslog | server enabled | 405") << "post" << "/debug/logdb" << true << 405;
+        QTest::newRow("DELETE /debug/syslog | server enabled | 405") << "delete" << "/debug/logdb" << true << 405;
+    } else {
+        // syslog enabled
+        QTest::newRow("GET /debug/syslog | server enabled | 200") << "get" << "/debug/syslog" << true << 403;
+        QTest::newRow("OPTIONS /debug/syslog | server enabled | 200") << "options" << "/debug/logdb" << true << 403;
+        QTest::newRow("PUT /debug/syslog | server enabled | 405") << "put" << "/debug/logdb" << true << 405;
+        QTest::newRow("POST /debug/syslog | server enabled | 405") << "post" << "/debug/logdb" << true << 405;
+        QTest::newRow("DELETE /debug/syslog | server enabled | 405") << "delete" << "/debug/logdb" << true << 405;
+    }
 
     // syslog disabled
     QTest::newRow("GET /debug/syslog | server enabled | 404") << "get" << "/debug/syslog" << false << 404;

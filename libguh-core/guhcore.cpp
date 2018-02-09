@@ -461,6 +461,11 @@ CloudManager *GuhCore::cloudManager() const
     return m_cloudManager;
 }
 
+DebugServerHandler *GuhCore::debugServerHandler() const
+{
+    return m_debugServerHandler;
+}
+
 
 /*! Constructs GuhCore with the given \a parent. This is private.
     Use \l{GuhCore::instance()} to access the single instance.*/
@@ -495,9 +500,11 @@ void GuhCore::init() {
     qCDebug(dcApplication) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_configuration, this);
 
-    // Create the NetworkManager
     qCDebug(dcApplication) << "Creating Network Manager";
     m_networkManager = new NetworkManager(this);
+
+    qCDebug(dcApplication) << "Creating Debug Server Handler";
+    m_debugServerHandler = new DebugServerHandler(this);
 
     qCDebug(dcApplication) << "Creating Cloud Manager";
     m_cloudManager = new CloudManager(m_networkManager, this);

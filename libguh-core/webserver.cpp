@@ -76,6 +76,7 @@
 #include "httpreply.h"
 #include "httprequest.h"
 #include "rest/restresource.h"
+#include "debugserverhandler.h"
 
 #include <QJsonDocument>
 #include <QNetworkInterface>
@@ -281,14 +282,14 @@ void WebServer::readClient()
     QSslSocket *socket = qobject_cast<QSslSocket *>(sender());
     QUuid clientId = m_clientList.key(socket);
 
-    // check client
+    // Check client
     if (clientId.isNull()) {
         qCWarning(dcWebServer) << "Client not recognized";
         socket->close();
         return;
     }
 
-    // read HTTP request
+    // Read HTTP request
     QByteArray data = socket->readAll();
 
     HttpRequest request;
@@ -300,13 +301,13 @@ void WebServer::readClient()
         request = HttpRequest(data);
     }
 
-    // check if the request is complete
+    // Check if the request is complete
     if (!request.isComplete()) {
         m_incompleteRequests.insert(socket, request);
         return;
     }
 
-    // check if the request is valid
+    // Check if the request is valid
     if (!request.isValid()) {
         qCWarning(dcWebServer) << "Got invalid request:" << request.url().path();
         HttpReply *reply = RestResource::createErrorReply(HttpReply::BadRequest);
@@ -316,7 +317,7 @@ void WebServer::readClient()
         return;
     }
 
-    // check HTTP version
+    // Check HTTP version
     if (request.httpVersion() != "HTTP/1.1" && request.httpVersion() != "HTTP/1.0") {
         qCWarning(dcWebServer) << "HTTP version is not supported." << request.httpVersion();
         HttpReply *reply = RestResource::createErrorReply(HttpReply::HttpVersionNotSupported);
@@ -329,7 +330,7 @@ void WebServer::readClient()
     qCDebug(dcWebServer) << QString("Got valid request from %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
     qCDebug(dcWebServer) << request.methodString() << request.url().path();
 
-    // reset timout
+    // Reset timout
     foreach (WebServerClient *webserverClient, m_webServerClients) {
         if (webserverClient->address() == socket->peerAddress()) {
             webserverClient->resetTimout(socket);
@@ -337,7 +338,7 @@ void WebServer::readClient()
         }
     }
 
-    // verify method
+    // Verify method
     if (request.method() == HttpRequest::Unhandled) {
         HttpReply *reply = RestResource::createErrorReply(HttpReply::MethodNotAllowed);
         reply->setClientId(clientId);
@@ -347,13 +348,13 @@ void WebServer::readClient()
         return;
     }
 
-    // verify API query
+    // Verify API query
     if (request.url().path().startsWith("/api/v1")) {
         emit httpRequestReady(clientId, request);
         return;
     }
 
-    // check icon call
+    // Check icon call
     if (request.url().path().startsWith("/icons/") && request.method() == HttpRequest::Get) {
         HttpReply *reply = processIconRequest(request.url().path());
         reply->setClientId(clientId);
@@ -362,7 +363,37 @@ void WebServer::readClient()
         return;
     }
 
-    // check server.xml call
+    // Check if this is a debug call
+    if (request.url().path().startsWith("/debug")) {
+
+        // Check if debug server is enabled
+        if (GuhCore::instance()->configuration()->debugServerEnabled()) {
+            // Verify methods
+            if (request.method() != HttpRequest::Get && request.method() != HttpRequest::Options) {
+                HttpReply *reply = RestResource::createErrorReply(HttpReply::MethodNotAllowed);
+                reply->setClientId(clientId);
+                reply->setHeader(HttpReply::AllowHeader, "GET, OPTIONS");
+                sendHttpReply(reply);
+                reply->deleteLater();
+                return;
+            }
+
+            HttpReply *reply = GuhCore::instance()->debugServerHandler()->processDebugRequest(request.url().path());
+            reply->setClientId(clientId);
+            sendHttpReply(reply);
+            reply->deleteLater();
+            return;
+        } else {
+            qCWarning(dcWebServer()) << "The debug server handler is disabled. You can enable it by adding \'debugServerEnabled=true\' in the \'guhd\' section of the guhd.conf file.";
+            HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+            reply->setClientId(clientId);
+            sendHttpReply(reply);
+            reply->deleteLater();
+            return;
+        }
+    }
+
+    // Check server.xml call
     if (request.url().path() == "/server.xml" && request.method() == HttpRequest::Get) {
         qCDebug(dcWebServer) << "server XML request call";
         HttpReply *reply = RestResource::createSuccessReply();
@@ -375,9 +406,9 @@ void WebServer::readClient()
     }
 
 
-    // request for a file...
+    // Request for a file...
     if (request.method() == HttpRequest::Get) {
-        // check if the webinterface dir does exist, otherwise a filerequest is not relevant
+        // Check if the webinterface dir does exist, otherwise a filerequest is not relevant
         if (!QDir(m_configuration.publicFolder).exists()) {
             qCWarning(dcWebServer) << "webinterface folder" << m_configuration.publicFolder << "does not exist.";
             HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
@@ -396,7 +427,7 @@ void WebServer::readClient()
             qCDebug(dcWebServer) << "load file" << file.fileName();
             HttpReply *reply = RestResource::createSuccessReply();
 
-            // check content type
+            // Check content type
             if (file.fileName().endsWith(".html")) {
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html; charset=\"utf-8\";");
             } else if (file.fileName().endsWith(".css")) {
@@ -429,7 +460,7 @@ void WebServer::readClient()
         }
     }
 
-    // reject everything else...
+    // Reject everything else...
     qCWarning(dcWebServer) << "Unknown message received.";
     HttpReply *reply = RestResource::createErrorReply(HttpReply::NotImplemented);
     reply->setClientId(clientId);
@@ -441,7 +472,7 @@ void WebServer::onDisconnected()
 {    
     QSslSocket* socket = static_cast<QSslSocket *>(sender());
 
-    // remove connection from server client
+    // Remove connection from server client
     foreach (WebServerClient *client, m_webServerClients) {
         if (client->address() == socket->peerAddress()) {
             client->removeConnection(socket);
@@ -729,7 +760,6 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeEndDocument();
     return data;
 }
-
 
 /*!
     \class guhserver::WebServerClient

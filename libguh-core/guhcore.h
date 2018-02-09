@@ -38,6 +38,8 @@
 #include "time/timemanager.h"
 #include "hardwaremanagerimplementation.h"
 
+#include "debugserverhandler.h"
+
 #include <QObject>
 
 class Device;
@@ -80,6 +82,7 @@ public:
     NetworkManager *networkManager() const;
     UserManager *userManager() const;
     CloudManager *cloudManager() const;
+    DebugServerHandler *debugServerHandler() const;
 
     static QStringList getAvailableLanguages();
 
@@ -115,6 +118,7 @@ private:
     TimeManager *m_timeManager;
     CloudManager *m_cloudManager;
     HardwareManagerImplementation *m_hardwareManager;
+    DebugServerHandler *m_debugServerHandler;
 
     NetworkManager *m_networkManager;
     UserManager *m_userManager;

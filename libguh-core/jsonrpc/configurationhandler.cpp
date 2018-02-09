@@ -89,6 +89,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     basicConfiguration.insert("serverTime", JsonTypes::basicTypeToString(JsonTypes::Uint));
     basicConfiguration.insert("timeZone", JsonTypes::basicTypeToString(JsonTypes::String));
     basicConfiguration.insert("language", JsonTypes::basicTypeToString(JsonTypes::String));
+    basicConfiguration.insert("debugServerEnabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     returns.insert("basicConfiguration", basicConfiguration);
     QVariantList tcpServerConfigurations;
     tcpServerConfigurations.append(JsonTypes::serverConfigurationRef());
@@ -124,6 +125,13 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     setParams("SetLanguage", params);
     returns.insert("configurationError", JsonTypes::configurationErrorRef());
     setReturns("SetLanguage", returns);
+
+    params.clear(); returns.clear();
+    setDescription("SetDebugServerEnabled", "Enable or disable the debug server.");
+    params.insert("enabled",  JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("SetDebugServerEnabled", params);
+    returns.insert("configurationError", JsonTypes::configurationErrorRef());
+    setReturns("SetDebugServerEnabled", returns);
 
     params.clear(); returns.clear();
     setDescription("SetTcpServerConfiguration", "Configure a TCP interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Note: if you are changing the configuration for the interface you are currently connected to, the connection will be dropped.");
@@ -181,6 +189,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     params.insert("serverUuid", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     params.insert("serverTime", JsonTypes::basicTypeToString(JsonTypes::Uint));
     params.insert("timeZone", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("debugServerEnabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setParams("BasicConfigurationChanged", params);
 
     params.clear(); returns.clear();
@@ -214,6 +223,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::serverNameChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::timeZoneChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::localeChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(GuhCore::instance()->configuration(), &GuhConfiguration::debugServerEnabledChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::tcpServerConfigurationChanged, this, &ConfigurationHandler::onTcpServerConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::webServerConfigurationChanged, this, &ConfigurationHandler::onWebServerConfigurationChanged);
     connect(GuhCore::instance()->configuration(), &GuhConfiguration::webSocketServerConfigurationChanged, this, &ConfigurationHandler::onWebSocketServerConfigurationChanged);
@@ -413,6 +423,13 @@ JsonReply *ConfigurationHandler::SetCloudEnabled(const QVariantMap &params) cons
 {
     bool enabled = params.value("enabled").toBool();
     GuhCore::instance()->configuration()->setCloudEnabled(enabled);
+    return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
+}
+
+JsonReply *ConfigurationHandler::SetDebugServerEnabled(const QVariantMap &params) const
+{
+    bool enabled = params.value("enabled").toBool();
+    GuhCore::instance()->configuration()->setDebugServerEnabled(enabled);
     return createReply(statusToReply(GuhConfiguration::ConfigurationErrorNoError));
 }
 

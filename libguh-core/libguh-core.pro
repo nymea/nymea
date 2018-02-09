@@ -96,6 +96,7 @@ HEADERS += guhcore.h \
     hardware/network/avahi/qtavahiservice_p.h \
     hardware/network/avahi/qtavahiservicebrowserimplementation.h \
     hardware/network/avahi/qtavahiservicebrowserimplementation_p.h \
+    debugserverhandler.h
 
 SOURCES += guhcore.cpp \
     tcpserver.cpp \
@@ -174,3 +175,4 @@ SOURCES += guhcore.cpp \
     hardware/network/avahi/qtavahiservice_p.cpp \
     hardware/network/avahi/qtavahiservicebrowserimplementation.cpp \
     hardware/network/avahi/qtavahiservicebrowserimplementation_p.cpp \
+    debugserverhandler.cpp

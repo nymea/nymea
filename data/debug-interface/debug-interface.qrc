@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="">
         <file>logo.svg</file>
+        <file>warning.svg</file>
         <file>styles.css</file>
     </qresource>
 </RCC>

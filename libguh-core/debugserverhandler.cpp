@@ -46,6 +46,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("html");
     writer.writeAttribute("lang", GuhCore::instance()->configuration()->locale().name());
 
+    // Head
     writer.writeStartElement("head");
 
     writer.writeEmptyElement("meta");
@@ -60,18 +61,46 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeEndElement(); // head
 
-    writer.writeStartElement("body");
+    // Container
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "container");
 
-    // Welcome section
-    writer.writeTextElement("h1", QCoreApplication::translate("main", "nymea debug interface"));
-    writer.writeEmptyElement("hr");
+    // Header
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "header");
+    writer.writeStartElement("h1");
+    writer.writeEmptyElement("img");
+    writer.writeAttribute("src", "/debug/logo.svg");
+    writer.writeAttribute("class", "guh-main-logo");
+    writer.writeCharacters(QCoreApplication::translate("main", "nymea debug interface"));
+    writer.writeEndElement(); // h1
+    writer.writeEndElement(); // div header
+
+    // Body
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "body");
+
     writer.writeTextElement("p", QCoreApplication::translate("main", "Welcome to the debug interface."));
     writer.writeTextElement("p", QCoreApplication::translate("main", "This debug interface was designed to provide an easy possibility to get helpful information about the running nymea server."));
 
-    writer.writeEmptyElement("hr");
-    writer.writeTextElement("h3", QCoreApplication::translate("main", "Warning"));
-    writer.writeTextElement("p", QCoreApplication::translate("main", "Be aware that this debug interface is a security breach and offers access to the system log and therefore to possibly sensible data."));
-    writer.writeTextElement("p", QCoreApplication::translate("main", "If you are not using this debug tools, than you should disable it."));
+    // Warning
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "warning");
+    // Warning image
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "warning-image-area");
+    writer.writeEmptyElement("img");
+    writer.writeAttribute("class", "warning-image");
+    writer.writeAttribute("src", "/debug/warning.svg");
+    writer.writeEndElement(); // div warning image
+    // Warning message
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "warning-message");
+    writer.writeCharacters(QCoreApplication::translate("main", "Be aware that this debug interface is a security breach and could offer access to sensible data."));
+    writer.writeEndElement(); // div warning message
+    writer.writeEndElement(); // div warning
+
+
     writer.writeEmptyElement("hr");
 
     // System information section
@@ -79,24 +108,10 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEmptyElement("hr");
 
     writer.writeStartElement("table");
-    //writer.writeAttribute("width", "100%");
-    writer.writeAttribute("border", "1");
-
-    writer.writeStartElement("col");
-    writer.writeAttribute("align", "left");
-    writer.writeEndElement(); // col
-
-    writer.writeStartElement("col");
-    writer.writeAttribute("align", "left");
-    writer.writeEndElement(); // col
-
-    QString userName = qgetenv("USER");
-    if (userName.isEmpty())
-        userName = qgetenv("USERNAME");
 
     writer.writeStartElement("tr");
     writer.writeTextElement("th", QCoreApplication::translate("main", "User"));
-    writer.writeTextElement("td", userName);
+    writer.writeTextElement("td", qgetenv("USER"));
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
@@ -212,142 +227,244 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     // Downloads section
     writer.writeEmptyElement("hr");
     writer.writeTextElement("h2", QCoreApplication::translate("main", "Downloads"));
-    writer.writeEmptyElement("hr");
 
     // Logs download section
+    writer.writeEmptyElement("hr");
     writer.writeTextElement("h3", QCoreApplication::translate("main", "Logs"));
+    writer.writeEmptyElement("hr");
 
-    writer.writeStartElement("table");
-    writer.writeAttribute("border", "1");
+    // Download row
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-row");
 
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-name-column");
+    writer.writeTextElement("p", QCoreApplication::translate("main", "Log database"));
+    writer.writeEndElement(); // div download-name-column
 
-    writer.writeStartElement("tr");
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Log database"));
-    writer.writeTextElement("td", GuhSettings::logPath());
-    writer.writeStartElement("td");
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-path-column");
+    writer.writeTextElement("p", GuhSettings::logPath());
+    writer.writeEndElement(); // div download-path-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-button-column");
     writer.writeStartElement("form");
+    writer.writeAttribute("class", "download-button");
     writer.writeAttribute("method", "get");
     writer.writeAttribute("action", "/debug/logdb.sql");
     writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
     writer.writeCharacters(QCoreApplication::translate("main", "Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
-    writer.writeEndElement(); // td
-    writer.writeEndElement(); // tr
+    writer.writeEndElement(); // div download-button-column
 
-    writer.writeStartElement("tr");
-    writer.writeTextElement("th", QCoreApplication::translate("main", "System logs"));
-    writer.writeTextElement("td", "/var/log/syslog");
-    writer.writeStartElement("td");
+    writer.writeEndElement(); // div download-row
+
+
+    // Download row
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-row");
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-name-column");
+    writer.writeTextElement("p", QCoreApplication::translate("main", "System logs"));
+    writer.writeEndElement(); // div download-name-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-path-column");
+    writer.writeTextElement("p", "/var/log/syslog");
+    writer.writeEndElement(); // div download-path-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-button-column");
     writer.writeStartElement("form");
+    writer.writeAttribute("class", "download-button");
     writer.writeAttribute("method", "get");
     writer.writeAttribute("action", "/debug/syslog");
     writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
     writer.writeCharacters(QCoreApplication::translate("main", "Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
-    writer.writeEndElement(); // td
-    writer.writeEndElement(); // tr
+    writer.writeEndElement(); // div download-button-column
 
-    // TODO: offer logfile download if specified in the command line options
-
-    writer.writeEndElement(); // table
+    writer.writeEndElement(); // div download-row
 
 
     // Settings download section
+    writer.writeEmptyElement("hr");
     writer.writeTextElement("h3", QCoreApplication::translate("main", "Settings"));
+    writer.writeEmptyElement("hr");
 
-    writer.writeStartElement("table");
-    writer.writeAttribute("border", "1");
+    // Download row
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-row");
 
-    writer.writeStartElement("tr");
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Guhd settings"));
-    writer.writeTextElement("td", GuhSettings(GuhSettings::SettingsRoleGlobal).fileName());
-    writer.writeStartElement("td");
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-name-column");
+    writer.writeTextElement("p", QCoreApplication::translate("main", "Guhd settings"));
+    writer.writeEndElement(); // div download-name-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-path-column");
+    writer.writeTextElement("p", GuhSettings(GuhSettings::SettingsRoleGlobal).fileName());
+    writer.writeEndElement(); // div download-path-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-button-column");
     writer.writeStartElement("form");
+    writer.writeAttribute("class", "download-button");
     writer.writeAttribute("method", "get");
     writer.writeAttribute("action", "/debug/settings/guhd");
     writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
     writer.writeCharacters(QCoreApplication::translate("main", "Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
-    writer.writeEndElement(); // td
-    writer.writeEndElement(); // tr
+    writer.writeEndElement(); // div download-button-column
 
-    writer.writeStartElement("tr");
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Device settings"));
-    writer.writeTextElement("td", GuhSettings(GuhSettings::SettingsRoleDevices).fileName());
-    writer.writeStartElement("td");
+    writer.writeEndElement(); // div download-row
+
+
+    // Download row
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-row");
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-name-column");
+    writer.writeTextElement("p", QCoreApplication::translate("main", "Device settings"));
+    writer.writeEndElement(); // div download-name-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-path-column");
+    writer.writeTextElement("p", GuhSettings(GuhSettings::SettingsRoleDevices).fileName());
+    writer.writeEndElement(); // div download-path-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-button-column");
     writer.writeStartElement("form");
+    writer.writeAttribute("class", "download-button");
     writer.writeAttribute("method", "get");
     writer.writeAttribute("action", "/debug/settings/devices");
     writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
     writer.writeCharacters(QCoreApplication::translate("main", "Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
-    writer.writeEndElement(); // td
-    writer.writeEndElement(); // tr
+    writer.writeEndElement(); // div download-button-column
 
-    writer.writeStartElement("tr");
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Device state settings"));
-    writer.writeTextElement("td", GuhSettings(GuhSettings::SettingsRoleDeviceStates).fileName());
-    writer.writeStartElement("td");
+    writer.writeEndElement(); // div download-row
+
+
+    // Download row
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-row");
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-name-column");
+    writer.writeTextElement("p", QCoreApplication::translate("main", "Device states settings"));
+    writer.writeEndElement(); // div download-name-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-path-column");
+    writer.writeTextElement("p", GuhSettings(GuhSettings::SettingsRoleDeviceStates).fileName());
+    writer.writeEndElement(); // div download-path-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-button-column");
     writer.writeStartElement("form");
+    writer.writeAttribute("class", "download-button");
     writer.writeAttribute("method", "get");
     writer.writeAttribute("action", "/debug/settings/devicestates");
     writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
     writer.writeCharacters(QCoreApplication::translate("main", "Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
-    writer.writeEndElement(); // td
-    writer.writeEndElement(); // tr
+    writer.writeEndElement(); // div download-button-column
+
+    writer.writeEndElement(); // div download-row
 
 
-    writer.writeStartElement("tr");
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Rules settings"));
-    writer.writeTextElement("td", GuhSettings(GuhSettings::SettingsRoleRules).fileName());
-    writer.writeStartElement("td");
+    // Download row
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-row");
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-name-column");
+    writer.writeTextElement("p", QCoreApplication::translate("main", "Rules settings"));
+    writer.writeEndElement(); // div download-name-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-path-column");
+    writer.writeTextElement("p", GuhSettings(GuhSettings::SettingsRoleRules).fileName());
+    writer.writeEndElement(); // div download-path-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-button-column");
     writer.writeStartElement("form");
+    writer.writeAttribute("class", "download-button");
     writer.writeAttribute("method", "get");
     writer.writeAttribute("action", "/debug/settings/rules");
     writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
     writer.writeCharacters(QCoreApplication::translate("main", "Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
-    writer.writeEndElement(); // td
-    writer.writeEndElement(); // tr
+    writer.writeEndElement(); // div download-button-column
 
-    writer.writeStartElement("tr");
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Plugins settings"));
-    writer.writeTextElement("td", GuhSettings(GuhSettings::SettingsRolePlugins).fileName());
-    writer.writeStartElement("td");
+    writer.writeEndElement(); // div download-row
+
+
+    // Download row
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-row");
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-name-column");
+    writer.writeTextElement("p", QCoreApplication::translate("main", "Plugins settings"));
+    writer.writeEndElement(); // div download-name-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-path-column");
+    writer.writeTextElement("p", GuhSettings(GuhSettings::SettingsRolePlugins).fileName());
+    writer.writeEndElement(); // div download-path-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-button-column");
     writer.writeStartElement("form");
+    writer.writeAttribute("class", "download-button");
     writer.writeAttribute("method", "get");
     writer.writeAttribute("action", "/debug/settings/plugins");
     writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
     writer.writeCharacters(QCoreApplication::translate("main", "Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
-    writer.writeEndElement(); // td
-    writer.writeEndElement(); // tr
+    writer.writeEndElement(); // div download-button-column
 
-    writer.writeEndElement(); // table
+    writer.writeEndElement(); // div download-row
 
-    writer.writeEmptyElement("hr");
+    writer.writeEndElement(); // div body
 
-    writer.writeStartElement("footer");
+
+    // Footer
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "footer");
     writer.writeTextElement("p", QString("Copyright %1 2018 guh GmbH.").arg(QChar(0xA9)));
     writer.writeTextElement("p", QCoreApplication::translate("main", "Released under the GNU GENERAL PUBLIC LICENSE Version 2."));
-    writer.writeEndElement(); // footer
+    writer.writeEndElement(); // div footer
 
-    writer.writeEndElement(); // body
+    writer.writeEndElement(); // div container
 
     writer.writeEndElement(); // html
 
@@ -364,30 +481,63 @@ QByteArray DebugServerHandler::createErrorXmlDocument(HttpReply::HttpStatusCode 
     writer.writeStartElement("html");
     writer.writeAttribute("lang", GuhCore::instance()->configuration()->locale().name());
 
+    // Head
     writer.writeStartElement("head");
 
     writer.writeEmptyElement("meta");
     writer.writeAttribute("http-equiv", "Content-Type");
     writer.writeAttribute("content", "text/html; charset=utf-8");
+
+    writer.writeEmptyElement("link");
+    writer.writeAttribute("rel", "stylesheet");
+    writer.writeAttribute("href", "/debug/styles.css");
+
     writer.writeTextElement("title", QCoreApplication::translate("main", "Debug nymea"));
 
     writer.writeEndElement(); // head
 
-    writer.writeStartElement("body");
+    // Container
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "container");
 
+    // Header
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "header");
+    writer.writeTextElement("p", " ");
     writer.writeTextElement("h1", QCoreApplication::translate("main", "Error") + QString(" %1").arg(static_cast<int>(statusCode)));
-    writer.writeEmptyElement("hr");
+    writer.writeEndElement(); // div header
 
-    writer.writeTextElement("p", errorMessage);
+    // Body
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "body");
 
-    writer.writeEmptyElement("hr");
+    // Warning
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "warning");
+    // Warning image
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "warning-image-area");
+    writer.writeEmptyElement("img");
+    writer.writeAttribute("class", "warning-image");
+    writer.writeAttribute("src", "/debug/warning.svg");
+    writer.writeEndElement(); // div warning image
+    // Warning message
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "warning-message");
+    writer.writeCharacters(errorMessage);
+    writer.writeEndElement(); // div warning message
+    writer.writeEndElement(); // div warning
 
-    writer.writeStartElement("footer");
+    writer.writeEndElement(); // div body
+
+    // Footer
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "footer");
     writer.writeTextElement("p", QString("Copyright %1 2018 guh GmbH.").arg(QChar(0xA9)));
     writer.writeTextElement("p", QCoreApplication::translate("main", "Released under the GNU GENERAL PUBLIC LICENSE Version 2."));
-    writer.writeEndElement(); // footer
+    writer.writeEndElement(); // div footer
 
-    writer.writeEndElement(); // body
+    writer.writeEndElement(); // div container
 
     writer.writeEndElement(); // html
 

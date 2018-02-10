@@ -14,7 +14,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="guh-logo.svg"
+   sodipodi:docname="logo.svg"
    inkscape:export-filename="/home/timon/guh/guh/guh/icons/guh-logo-512x512.png"
    inkscape:export-xdpi="92.160004"
    inkscape:export-ydpi="92.160004">
@@ -252,15 +252,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.979899"
-     inkscape:cx="30.679884"
+     inkscape:cx="-124.12599"
      inkscape:cy="202.52602"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="2880"
-     inkscape:window-height="1749"
+     inkscape:window-height="1752"
      inkscape:window-x="0"
-     inkscape:window-y="51"
+     inkscape:window-y="48"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata7">
@@ -279,13 +279,6 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-552.36215)">
-    <rect
-       style="fill:#ffffff;fill-opacity:1;stroke:none"
-       id="rect4243"
-       width="500"
-       height="500"
-       x="0"
-       y="552.36218" />
     <g
        transform="matrix(2.2038606,0,0,2.2038606,-672.50331,283.61944)"
        id="g41">

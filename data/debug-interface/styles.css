@@ -45,3 +45,13 @@ html {
   font-family: "Ubuntu", Arial, Helvetica, sans-serif;
   background: white;
 }
+
+footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background-color: white;
+  color: #676767;
+  text-align: center;
+}

@@ -18,30 +18,30 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEBUGSERVERHANDLER_H
-#define DEBUGSERVERHANDLER_H
 
-#include <QObject>
-
-#include "httpreply.h"
-
-namespace guhserver {
-
-class DebugServerHandler : public QObject
-{
-    Q_OBJECT
-public:
-    explicit DebugServerHandler(QObject *parent = nullptr);
-
-    HttpReply *processDebugRequest(const QString &requestPath);
-
-private:
-    QByteArray createDebugXmlDocument();
-    QByteArray createErrorXmlDocument(HttpReply::HttpStatusCode statusCode, const QString &errorMessage);
-    QByteArray loadResourceFile(const QString &resourceFileName);
-    bool resourceFileExits(const QString &resourceFileName);
-};
-
+table {
+  display: table;
+  border-collapse: colapse;
+  border-spacing: 2px;
+  border-color: gray;
 }
 
-#endif // DEBUGSERVERHANDLER_H
+p {
+  color: #676767;
+  font-family: "Ubuntu", Helvetica, "Helvetica Neue", Arial, sans-serif;
+  font-size: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 20px 0;
+  font-family: "Ubuntu", Helvetica, "Helvetica Neue", Arial, sans-serif;
+  font-weight: normal;
+  color: #676767;
+  text-transform: none;
+}
+
+html {
+  color: #676767;
+  font-family: "Ubuntu", Arial, Helvetica, sans-serif;
+  background: white;
+}

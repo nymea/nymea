@@ -15,7 +15,9 @@ exists("/usr/include/mbedtls/net_sockets.h") {
 }
 
 # icons for the webserver
-RESOURCES += $$top_srcdir/icons.qrc
+RESOURCES += $$top_srcdir/icons.qrc \
+             $$top_srcdir/data/debug-interface/debug-interface.qrc
+
 
 HEADERS += guhcore.h \
     tcpserver.h \

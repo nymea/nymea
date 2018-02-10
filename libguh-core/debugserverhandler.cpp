@@ -51,6 +51,11 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEmptyElement("meta");
     writer.writeAttribute("http-equiv", "Content-Type");
     writer.writeAttribute("content", "text/html; charset=utf-8");
+
+    writer.writeEmptyElement("link");
+    writer.writeAttribute("rel", "stylesheet");
+    writer.writeAttribute("href", "/debug/styles.css");
+
     writer.writeTextElement("title", QCoreApplication::translate("main", "Debug nymea"));
 
     writer.writeEndElement(); // head
@@ -368,6 +373,24 @@ QByteArray DebugServerHandler::createErrorXmlDocument(HttpReply::HttpStatusCode 
     return data;
 }
 
+QByteArray DebugServerHandler::loadResourceFile(const QString &resourceFileName)
+{
+    QFile resourceFile(QString(":%1").arg(resourceFileName));
+    if (!resourceFile.open(QFile::ReadOnly | QFile::Text)) {
+        qCWarning(dcWebServer()) << "Could not open resource file" << resourceFile.fileName();
+        return QByteArray();
+    }
+
+    QTextStream inputStream(&resourceFile);
+    return inputStream.readAll().toUtf8();
+}
+
+bool DebugServerHandler::resourceFileExits(const QString &resourceFileName)
+{
+    QFile resourceFile(QString(":%1").arg(resourceFileName));
+    return resourceFile.exists();
+}
+
 
 HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
 {
@@ -551,6 +574,58 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
             return reply;
         }
     }
+
+    // Check if a resource file was requested
+
+    if (requestPath.startsWith("/debug/styles.css")) {
+        QString resourceFileName = "/styles.css";
+        // Check if exists
+        if (!resourceFileExits(resourceFileName)) {
+            qCWarning(dcWebServer()) << "The requested resource file" << resourceFileName << "does not exist";
+            HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+            reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
+            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not find find") + " " + resourceFileName));
+            return reply;
+        }
+
+        QByteArray data = loadResourceFile(resourceFileName);
+
+        // Check if content loaded
+        if (data.isEmpty()) {
+            qCWarning(dcWebServer()) << "Empty resource file" << resourceFileName;
+            HttpReply *reply = RestResource::createErrorReply(HttpReply::NoContent);
+            reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
+            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not find find") + " " + resourceFileName));
+            return reply;
+        }
+
+        HttpReply *reply = RestResource::createSuccessReply();
+        reply->setHeader(HttpReply::ContentTypeHeader, "text/css; charset=\"utf-8\";");
+        reply->setPayload(data);
+        return reply;
+    }
+
+
+
+//    if (!fileName.endsWith(".png"))
+//        return RestResource::createErrorReply(HttpReply::NotFound);
+
+//    QByteArray imageData;
+
+//    QImage image(":" + fileName);
+//    QBuffer buffer(&imageData);
+//    buffer.open(QIODevice::WriteOnly);
+//    image.save(&buffer, "png");
+
+//    if (!imageData.isEmpty()) {
+//        HttpReply *reply = RestResource::createSuccessReply();
+//        reply->setHeader(HttpReply::ContentTypeHeader, "image/png");
+//        reply->setPayload(imageData);
+//        return reply;
+//    }
+
+//    return RestResource::createErrorReply(HttpReply::NotFound);
+
 
     qCDebug(dcWebServer()) << "Create debug interface page";
 

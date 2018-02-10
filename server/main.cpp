@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
         debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
 
 
-    QCommandLineOption allOption(QStringList() << "p" << "print-all", QCoreApplication::translate("main", "Enables all debug categories. This parameter overrides all debug category parameters."));
+    QCommandLineOption allOption(QStringList() << "p" << "print-all", QCoreApplication::translate("main", "Enables all debug categories. Single debug categories can be disabled again with -d parameter."));
     parser.addOption(allOption);
 
     QCommandLineOption logOption({"l", "log"}, QCoreApplication::translate("main", "Specify a log file to write to, if this option is not specified, logs will be printed to the standard output."), "logfile", "/var/log/guhd.log");

@@ -223,6 +223,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeStartElement("tr");
     writer.writeTextElement("th", QCoreApplication::translate("main", "Log database"));
+    writer.writeTextElement("td", GuhSettings::logPath());
     writer.writeStartElement("td");
     writer.writeStartElement("form");
     writer.writeAttribute("method", "get");
@@ -236,7 +237,8 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Syslog"));
+    writer.writeTextElement("th", QCoreApplication::translate("main", "System logs"));
+    writer.writeTextElement("td", "/var/log/syslog");
     writer.writeStartElement("td");
     writer.writeStartElement("form");
     writer.writeAttribute("method", "get");
@@ -262,6 +264,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeStartElement("tr");
     writer.writeTextElement("th", QCoreApplication::translate("main", "Guhd settings"));
+    writer.writeTextElement("td", GuhSettings(GuhSettings::SettingsRoleGlobal).fileName());
     writer.writeStartElement("td");
     writer.writeStartElement("form");
     writer.writeAttribute("method", "get");
@@ -276,6 +279,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeStartElement("tr");
     writer.writeTextElement("th", QCoreApplication::translate("main", "Device settings"));
+    writer.writeTextElement("td", GuhSettings(GuhSettings::SettingsRoleDevices).fileName());
     writer.writeStartElement("td");
     writer.writeStartElement("form");
     writer.writeAttribute("method", "get");
@@ -290,6 +294,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeStartElement("tr");
     writer.writeTextElement("th", QCoreApplication::translate("main", "Device state settings"));
+    writer.writeTextElement("td", GuhSettings(GuhSettings::SettingsRoleDeviceStates).fileName());
     writer.writeStartElement("td");
     writer.writeStartElement("form");
     writer.writeAttribute("method", "get");
@@ -305,10 +310,26 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeStartElement("tr");
     writer.writeTextElement("th", QCoreApplication::translate("main", "Rules settings"));
+    writer.writeTextElement("td", GuhSettings(GuhSettings::SettingsRoleRules).fileName());
     writer.writeStartElement("td");
     writer.writeStartElement("form");
     writer.writeAttribute("method", "get");
     writer.writeAttribute("action", "/debug/settings/rules");
+    writer.writeStartElement("button");
+    writer.writeAttribute("type", "submit");
+    writer.writeCharacters(QCoreApplication::translate("main", "Download"));
+    writer.writeEndElement(); // button
+    writer.writeEndElement(); // form
+    writer.writeEndElement(); // td
+    writer.writeEndElement(); // tr
+
+    writer.writeStartElement("tr");
+    writer.writeTextElement("th", QCoreApplication::translate("main", "Plugins settings"));
+    writer.writeTextElement("td", GuhSettings(GuhSettings::SettingsRolePlugins).fileName());
+    writer.writeStartElement("td");
+    writer.writeStartElement("form");
+    writer.writeAttribute("method", "get");
+    writer.writeAttribute("action", "/debug/settings/plugins");
     writer.writeStartElement("button");
     writer.writeAttribute("type", "submit");
     writer.writeCharacters(QCoreApplication::translate("main", "Download"));
@@ -385,16 +406,51 @@ QByteArray DebugServerHandler::loadResourceFile(const QString &resourceFileName)
     return inputStream.readAll().toUtf8();
 }
 
-bool DebugServerHandler::resourceFileExits(const QString &resourceFileName)
+QString DebugServerHandler::getResourceFileName(const QString &requestPath)
 {
-    QFile resourceFile(QString(":%1").arg(resourceFileName));
+    return QString(requestPath).remove("/debug");
+}
+
+bool DebugServerHandler::resourceFileExits(const QString &requestPath)
+{
+    QFile resourceFile(QString(":%1").arg(getResourceFileName(requestPath)));
     return resourceFile.exists();
+}
+
+HttpReply *DebugServerHandler::processDebugFileRequest(const QString &requestPath)
+{
+    // Here we already know that the resource file exists
+    QString resourceFileName = getResourceFileName(requestPath);
+    QByteArray data = loadResourceFile(resourceFileName);
+
+    // Create reply for resource file
+    HttpReply *reply = RestResource::createSuccessReply();
+    reply->setPayload(data);
+
+    // Check content type
+    if (resourceFileName.endsWith(".css")) {
+        reply->setHeader(HttpReply::ContentTypeHeader, "text/css; charset=\"utf-8\";");
+    } else if (resourceFileName.endsWith(".svg")) {
+        reply->setHeader(HttpReply::ContentTypeHeader, "image/svg+xml; charset=\"utf-8\";");
+    }
+
+    return reply;
 }
 
 
 HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
 {
     qCDebug(dcWebServer()) << "Debug request for" << requestPath;
+
+    // Check if debug page request
+    if (requestPath == "/debug" || requestPath == "/debug/") {
+        qCDebug(dcWebServer()) << "Create debug interface page";
+        // Fallback default debug page
+        HttpReply *reply = RestResource::createSuccessReply();
+        reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
+        reply->setPayload(createDebugXmlDocument());
+        return reply;
+    }
 
     // Check if this is a logdb requested
     if (requestPath.startsWith("/debug/logdb.sql")) {
@@ -573,66 +629,46 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
             reply->setPayload(settingsFileData);
             return reply;
         }
-    }
 
-    // Check if a resource file was requested
+        if (requestPath.startsWith("/debug/settings/plugins")) {
+            QString settingsFileName = GuhSettings(GuhSettings::SettingsRolePlugins).fileName();
+            qCDebug(dcWebServer()) << "Loading" << settingsFileName;
+            QFile settingsFile(settingsFileName);
+            if (!settingsFile.exists()) {
+                qCWarning(dcWebServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
+                HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+                reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
+                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not find file") + " " + settingsFileName));
+                return reply;
+            }
 
-    if (requestPath.startsWith("/debug/styles.css")) {
-        QString resourceFileName = "/styles.css";
-        // Check if exists
-        if (!resourceFileExits(resourceFileName)) {
-            qCWarning(dcWebServer()) << "The requested resource file" << resourceFileName << "does not exist";
-            HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+            if (!settingsFile.open(QFile::ReadOnly)) {
+                qCWarning(dcWebServer()) << "Could not read file for debug download" << settingsFileName;
+                HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+                reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
+                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not open file") + " " + settingsFileName));
+                return reply;
+            }
+
+            QByteArray settingsFileData = settingsFile.readAll();
+            settingsFile.close();
+
+            HttpReply *reply = RestResource::createSuccessReply();
             reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
-            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not find find") + " " + resourceFileName));
+            reply->setPayload(settingsFileData);
             return reply;
         }
-
-        QByteArray data = loadResourceFile(resourceFileName);
-
-        // Check if content loaded
-        if (data.isEmpty()) {
-            qCWarning(dcWebServer()) << "Empty resource file" << resourceFileName;
-            HttpReply *reply = RestResource::createErrorReply(HttpReply::NoContent);
-            reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
-            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not find find") + " " + resourceFileName));
-            return reply;
-        }
-
-        HttpReply *reply = RestResource::createSuccessReply();
-        reply->setHeader(HttpReply::ContentTypeHeader, "text/css; charset=\"utf-8\";");
-        reply->setPayload(data);
-        return reply;
     }
 
+    // Check if this is a resource file request
+    if (resourceFileExits(requestPath)) {
+        return processDebugFileRequest(requestPath);
+    }
 
-
-//    if (!fileName.endsWith(".png"))
-//        return RestResource::createErrorReply(HttpReply::NotFound);
-
-//    QByteArray imageData;
-
-//    QImage image(":" + fileName);
-//    QBuffer buffer(&imageData);
-//    buffer.open(QIODevice::WriteOnly);
-//    image.save(&buffer, "png");
-
-//    if (!imageData.isEmpty()) {
-//        HttpReply *reply = RestResource::createSuccessReply();
-//        reply->setHeader(HttpReply::ContentTypeHeader, "image/png");
-//        reply->setPayload(imageData);
-//        return reply;
-//    }
-
-//    return RestResource::createErrorReply(HttpReply::NotFound);
-
-
-    qCDebug(dcWebServer()) << "Create debug interface page";
-
-    // Fallback default debug page
-    HttpReply *reply = RestResource::createSuccessReply();
-    reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-    reply->setPayload(createDebugXmlDocument());
+    // If nothing matches, redirect to /debug page
+    qCWarning(dcWebServer()) << "Resource for debug interface not found. Redirecting to /debug";
+    HttpReply *reply = RestResource::createErrorReply(HttpReply::PermanentRedirect);
+    reply->setHeader(HttpReply::LocationHeader, "/debug");
     return reply;
 }
 

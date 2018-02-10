@@ -47,6 +47,8 @@
         The request has no content but it was expected.
     \value Found
         The resource was found.
+    \value PermanentRedirect
+        The resource redirects permanent to given url.
     \value BadRequest
         The request was bad formatted. Also if a \l{Param} was not understood or the header is not correct.
     \value Forbidden
@@ -352,6 +354,8 @@ QByteArray HttpReply::getHttpReasonPhrase(const HttpReply::HttpStatusCode &statu
         return "No Content";
     case Found:
         return "Found";
+    case PermanentRedirect:
+        return "Permanent Redirect";
     case BadRequest:
         return "Bad Request";
     case Forbidden:

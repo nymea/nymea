@@ -39,7 +39,11 @@ private:
     QByteArray createDebugXmlDocument();
     QByteArray createErrorXmlDocument(HttpReply::HttpStatusCode statusCode, const QString &errorMessage);
     QByteArray loadResourceFile(const QString &resourceFileName);
-    bool resourceFileExits(const QString &resourceFileName);
+    QString getResourceFileName(const QString &requestPath);
+    bool resourceFileExits(const QString &requestPath);
+
+    HttpReply *processDebugFileRequest(const QString &requestPath);
+
 };
 
 }

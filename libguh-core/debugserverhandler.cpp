@@ -60,12 +60,13 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     // Welcome section
     writer.writeTextElement("h1", QCoreApplication::translate("main", "nymea debug interface"));
     writer.writeEmptyElement("hr");
-    writer.writeTextElement("p", QCoreApplication::translate("main", "Welcome to the debug interface. This debug interface was designed to provide an easy possibility to get helpful information about the running nymea server. This interfaces provides read only options and is disabled by default."));
+    writer.writeTextElement("p", QCoreApplication::translate("main", "Welcome to the debug interface."));
+    writer.writeTextElement("p", QCoreApplication::translate("main", "This debug interface was designed to provide an easy possibility to get helpful information about the running nymea server."));
 
     writer.writeEmptyElement("hr");
     writer.writeTextElement("h3", QCoreApplication::translate("main", "Warning"));
-    writer.writeTextElement("p", QCoreApplication::translate("main", "Be aware that this debug interface is a security breach and offers access to the system log and therefore to possibly sensible data. If you are not using the debug tools, than you should disable this debug server."));
-    writer.writeTextElement("p", QCoreApplication::translate("main", "The debug server can be disabled by changing the the value \"debugServerEnabled=false\" in the \"guhd\" section of %1 or using the API method \"Configuration.SetDebugServerEnabled\".").arg(GuhSettings(GuhSettings::SettingsRoleGlobal).fileName()));
+    writer.writeTextElement("p", QCoreApplication::translate("main", "Be aware that this debug interface is a security breach and offers access to the system log and therefore to possibly sensible data."));
+    writer.writeTextElement("p", QCoreApplication::translate("main", "If you are not using this debug tools, than you should disable it."));
     writer.writeEmptyElement("hr");
 
     // System information section
@@ -73,7 +74,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEmptyElement("hr");
 
     writer.writeStartElement("table");
-    writer.writeAttribute("width", "100%");
+    //writer.writeAttribute("width", "100%");
     writer.writeAttribute("border", "1");
 
     writer.writeStartElement("col");
@@ -81,7 +82,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // col
 
     writer.writeStartElement("col");
-    writer.writeAttribute("align", "right");
+    writer.writeAttribute("align", "left");
     writer.writeEndElement(); // col
 
     QString userName = qgetenv("USER");
@@ -175,7 +176,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeStartElement("tr");
     writer.writeTextElement("th", QCoreApplication::translate("main", "Settings path"));
-    writer.writeTextElement("td", GuhSettings(GuhSettings::SettingsRoleGlobal).settingsPath());
+    writer.writeTextElement("td", GuhSettings::settingsPath());
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
@@ -197,7 +198,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
         } else {
             writer.writeTextElement("th", "");
         }
-        writer.writeTextElement("td", GuhCore::instance()->deviceManager()->pluginSearchDirs().at(i));
+        writer.writeTextElement("td", QFileInfo(GuhCore::instance()->deviceManager()->pluginSearchDirs().at(i)).absoluteFilePath());
     }
 
     writer.writeEndElement(); // table
@@ -212,6 +213,8 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("h3", QCoreApplication::translate("main", "Logs"));
 
     writer.writeStartElement("table");
+    writer.writeAttribute("border", "1");
+
 
     writer.writeStartElement("tr");
     writer.writeTextElement("th", QCoreApplication::translate("main", "Log database"));
@@ -250,6 +253,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("h3", QCoreApplication::translate("main", "Settings"));
 
     writer.writeStartElement("table");
+    writer.writeAttribute("border", "1");
 
     writer.writeStartElement("tr");
     writer.writeTextElement("th", QCoreApplication::translate("main", "Guhd settings"));

@@ -398,11 +398,13 @@ bool GuhConfiguration::debugServerEnabled() const
 void GuhConfiguration::setDebugServerEnabled(bool enabled)
 {
     qCDebug(dcApplication()) << "Configuration: Set debug server" << (enabled ? "enabled" : "disabled");
-    if (debugServerEnabled() != enabled) {
-        GuhSettings settings(GuhSettings::SettingsRoleGlobal);
-        settings.beginGroup("guhd");
-        settings.setValue("debugServerEnabled", enabled);
-        settings.endGroup();
+    bool currentValue = debugServerEnabled();
+    GuhSettings settings(GuhSettings::SettingsRoleGlobal);
+    settings.beginGroup("guhd");
+    settings.setValue("debugServerEnabled", enabled);
+    settings.endGroup();
+
+    if (currentValue != enabled) {
         emit debugServerEnabledChanged(enabled);
     }
 }

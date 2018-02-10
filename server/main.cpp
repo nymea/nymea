@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
                                              "device available in the system and create individual scenes and behaviors \n"
                                              "for your environment.\n\n");
 
-    applicationDescription.append(QString("guhd %1 %2 2014-2017 guh GmbH\n"
+    applicationDescription.append(QString("guhd %1 %2 2014-2018 guh GmbH\n"
                                           "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
                                           "API version: %3\n").arg(GUH_VERSION_STRING).arg(QChar(0xA9)).arg(JSON_PROTOCOL_VERSION));
 
@@ -193,14 +193,15 @@ int main(int argc, char *argv[])
 
     QCommandLineOption allOption(QStringList() << "p" << "print-all", QCoreApplication::translate("main", "Enables all debug categories. This parameter overrides all debug category parameters."));
     parser.addOption(allOption);
-    QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory");
-    parser.addOption(debugOption);
 
-    QCommandLineOption logOption({"l", "log"}, QCoreApplication::translate("main", "Specify a log file to write to, If this option is not specified, logs will be printed to the standard output."), "logfile", "/var/log/guhd.log");
+    QCommandLineOption logOption({"l", "log"}, QCoreApplication::translate("main", "Specify a log file to write to, if this option is not specified, logs will be printed to the standard output."), "logfile", "/var/log/guhd.log");
     parser.addOption(logOption);
 
     QCommandLineOption dbusOption(QStringList() << "session", QCoreApplication::translate("main", "If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus."));
     parser.addOption(dbusOption);
+
+    QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory");
+    parser.addOption(debugOption);
 
     parser.process(application);
 

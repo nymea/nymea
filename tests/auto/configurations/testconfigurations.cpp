@@ -326,7 +326,7 @@ void TestConfigurations::testDebugServerConfiguration()
     verifyConfigurationError(response);
 
     // Check notification not emitted
-    notificationSpy.wait(500);
+    notificationSpy.wait();
     configurationChangedNotifications = checkNotifications(notificationSpy, "Configuration.BasicConfigurationChanged");
     QVariantMap notificationContent = configurationChangedNotifications.first().toMap().value("params").toMap();
     QVERIFY2(notificationContent.contains("basicConfiguration"), "Notification does not contain basicConfiguration");
@@ -371,8 +371,6 @@ void TestConfigurations::testDebugServerConfiguration()
 
     namSpy.wait();
     QVERIFY2(namSpy.count() > 0, "expected response from webserver");
-
-    qDebug() << reply->readAll();
 
     bool ok = false;
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);

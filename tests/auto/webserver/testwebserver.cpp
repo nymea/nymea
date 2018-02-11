@@ -613,6 +613,21 @@ void TestWebserver::getDebugServer_data()
     QTest::newRow("POST /debug/settings/devicestates | server disabled | 404") << "post" << "/debug/settings/devicestates" << false << 404;
     QTest::newRow("DELETE /debug/settings/devicestates | server disabled | 404") << "delete" << "/debug/settings/devicestates" << false << 404;
 
+    // settings/plugins enabled
+    QTest::newRow("GET /debug/settings/plugins | server enabled | 200") << "get" << "/debug/settings/plugins" << true << 404;
+    QTest::newRow("OPTIONS /debug/settings/plugins | server enabled | 200") << "options" << "/debug/settings/plugins" << true << 404;
+    QTest::newRow("PUT /debug/settings/plugins | server enabled | 405") << "put" << "/debug/settings/plugins" << true << 405;
+    QTest::newRow("POST /debug/settings/plugins | server enabled | 405") << "post" << "/debug/settings/plugins" << true << 405;
+    QTest::newRow("DELETE /debug/settings/plugins | server enabled | 405") << "delete" << "/debug/settings/plugins" << true << 405;
+
+    // settings/devicestates disabled
+    QTest::newRow("GET /debug/settings/plugins | server disabled | 404") << "get" << "/debug/settings/plugins" << false << 404;
+    QTest::newRow("OPTIONS /debug/settings/plugins | server disabled | 404") << "options" << "/debug/settings/plugins" << false << 404;
+    QTest::newRow("PUT /debug/settings/plugins | server disabled | 404") << "put" << "/debug/settings/plugins" << false << 404;
+    QTest::newRow("POST /debug/settings/plugins | server disabled | 404") << "post" << "/debug/settings/plugins" << false << 404;
+    QTest::newRow("DELETE /debug/settings/plugins | server disabled | 404") << "delete" << "/debug/settings/plugins" << false << 404;
+
+
 }
 
 void TestWebserver::getDebugServer()

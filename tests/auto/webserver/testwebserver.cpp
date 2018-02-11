@@ -615,7 +615,7 @@ void TestWebserver::getDebugServer_data()
 
     // settings/plugins enabled
     QTest::newRow("GET /debug/settings/plugins | server enabled | 200") << "get" << "/debug/settings/plugins" << true << 200;
-    QTest::newRow("OPTIONS /debug/settings/plugins | server enabled | 200") << "options" << "/debug/settings/plugins" << true << 404;
+    QTest::newRow("OPTIONS /debug/settings/plugins | server enabled | 200") << "options" << "/debug/settings/plugins" << true << 200;
     QTest::newRow("PUT /debug/settings/plugins | server enabled | 405") << "put" << "/debug/settings/plugins" << true << 405;
     QTest::newRow("POST /debug/settings/plugins | server enabled | 405") << "post" << "/debug/settings/plugins" << true << 405;
     QTest::newRow("DELETE /debug/settings/plugins | server enabled | 405") << "delete" << "/debug/settings/plugins" << true << 405;

@@ -6,7 +6,7 @@
     <message>
         <location filename="../plugins/mock/devicepluginmock.cpp" line="214"/>
         <source>Display pin!! The pin is 243681</source>
-        <translation>PIN anzeigen!! Die PIN ist 243681</translation>
+        <translation>PIN anzeigen!! Der PIN ist 243681</translation>
     </message>
 </context>
 <context>
@@ -26,7 +26,7 @@ guh ( /[guːh]/ ) ist ein Opensource IoT (Internet der Dinge) Server,
 der es ermöglicht viele verschiedene Geräte von unterschiedlichen 
 Herstellern anzusteuern. Durch das eingebaute Regelwerk wird es ermöglicht, 
 die im System verfügbaren Geräte miteinander zu verbinden und individuelle 
-Szenen undVerhaltensweisen des Systems festzulegen.
+Szenen und Verhaltensweisen des Systems festzulegen.
 
 </translation>
     </message>

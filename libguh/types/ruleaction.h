@@ -31,11 +31,18 @@
 class LIBGUH_EXPORT RuleAction
 {
 public:
-    explicit RuleAction(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId());
+    enum Type {
+        TypeDevice,
+        TypeInterface
+    };
+    explicit RuleAction(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId(), const RuleActionParamList &params = RuleActionParamList());
+    explicit RuleAction(const QString &interface, const QString &interfaceAction, const RuleActionParamList &params = RuleActionParamList());
     RuleAction(const RuleAction &other);
 
     ActionId id() const;
     bool isValid() const;
+
+    Type type() const;
 
     bool isEventBased() const;
 
@@ -44,9 +51,13 @@ public:
     ActionTypeId actionTypeId() const;
     DeviceId deviceId() const;
 
+    QString interface() const;
+    QString interfaceAction() const;
+
     RuleActionParamList ruleActionParams() const;
     void setRuleActionParams(const RuleActionParamList &ruleActionParams);
     RuleActionParam ruleActionParam(const ParamTypeId &ruleActionParamTypeId) const;
+    RuleActionParam ruleActionParam(const QString &ruleActionParamName) const;
 
     void operator=(const RuleAction &other);
 
@@ -54,6 +65,8 @@ private:
     ActionId m_id;
     ActionTypeId m_actionTypeId;
     DeviceId m_deviceId;
+    QString m_interface;
+    QString m_interfaceAction;
     RuleActionParamList m_ruleActionParams;
 };
 

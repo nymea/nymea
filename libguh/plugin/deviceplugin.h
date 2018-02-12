@@ -25,11 +25,11 @@
 #define DEVICEPLUGIN_H
 
 #include "devicemanager.h"
-#include "deviceclass.h"
 
 #include "libguh.h"
 #include "typeutils.h"
 
+#include "types/deviceclass.h"
 #include "types/event.h"
 #include "types/action.h"
 #include "types/vendor.h"
@@ -58,8 +58,9 @@ public:
 
     virtual void init() {}
 
-    QString pluginName() const;
     PluginId pluginId() const;
+    QString pluginName() const;
+    QString pluginDisplayName() const;
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices() const;
 
@@ -118,7 +119,11 @@ private:
     QPair<bool, DeviceClass::BasicTag> loadAndVerifyBasicTag(const QString &basicTag) const;
     QPair<bool, DeviceClass::DeviceIcon> loadAndVerifyDeviceIcon(const QString &deviceIcon) const;
 
-    static QVariantMap loadInterface(const QString &name);
+    // FIXME: This is expensive because it will open all the files.
+    // Once DeviceManager is in libguh-core this should probably be there too.
+    // I didn't want to add even more dependencies on the devicemanager into here, so reading the list here for now.
+    static Interfaces allInterfaces();
+    static Interface loadInterface(const QString &name);
     static QStringList generateInterfaceParentList(const QString &interface);
 
     QTranslator *m_translator = nullptr;

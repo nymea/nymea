@@ -45,6 +45,8 @@ private slots:
     void testServerName();
     void testLanguages();
 
+    void testDebugServerConfiguration();
+
 private:
     QVariantMap loadBasicConfiguration();
 
@@ -103,12 +105,16 @@ void TestConfigurations::testTimeZones()
     configurationChangedNotifications = checkNotifications(notificationSpy, "Configuration.BasicConfigurationChanged");
     QVERIFY2(configurationChangedNotifications.count() == 1, "Should get only one Configuration.BasicConfigurationChanged notification");
     QVariantMap notificationContent = configurationChangedNotifications.first().toMap().value("params").toMap();
+
+    qDebug() << notificationContent;
+
     QVERIFY2(notificationContent.contains("basicConfiguration"), "Notification does not contain basicConfiguration");
     QVariantMap basicConfigurationNotificationMap = notificationContent.value("basicConfiguration").toMap();
     QVERIFY2(basicConfigurationNotificationMap.contains("language"), "Notification does not contain key language");
     QVERIFY2(basicConfigurationNotificationMap.contains("serverName"), "Notification does not contain key serverName");
     QVERIFY2(basicConfigurationNotificationMap.contains("serverTime"), "Notification does not contain key serverTime");
     QVERIFY2(basicConfigurationNotificationMap.contains("serverUuid"), "Notification does not contain key serverUuid");
+    QVERIFY2(basicConfigurationNotificationMap.contains("debugServerEnabled"), "Notification does not contain key debugServerEnabled");
     QVERIFY2(basicConfigurationNotificationMap.contains("timeZone"), "Notification does not contain key timeZone");
     QVERIFY2(basicConfigurationNotificationMap.value("timeZone").toString() == newTimeZone, "Notification does not contain the new timeZone");
 
@@ -199,6 +205,7 @@ void TestConfigurations::testServerName()
     QVERIFY2(basicConfigurationNotificationMap.contains("serverTime"), "Notification does not contain key serverTime");
     QVERIFY2(basicConfigurationNotificationMap.contains("serverUuid"), "Notification does not contain key serverUuid");
     QVERIFY2(basicConfigurationNotificationMap.contains("timeZone"), "Notification does not contain key timeZone");
+    QVERIFY2(basicConfigurationNotificationMap.contains("debugServerEnabled"), "Notification does not contain key debugServerEnabled");
     QVERIFY2(basicConfigurationNotificationMap.contains("serverName"), "Notification does not contain key serverName");
     QVERIFY2(basicConfigurationNotificationMap.value("serverName").toString() == newServerName, "Notification does not contain the new serverName");
 
@@ -282,6 +289,115 @@ void TestConfigurations::testLanguages()
     // Set language
     response = injectAndWait("Configuration.SetLanguage", params);
     verifyConfigurationError(response);
+
+    disableNotifications();
+}
+
+void TestConfigurations::testDebugServerConfiguration()
+{
+    enableNotifications();
+
+    // Get current configurations
+    QVariantMap basicConfigurationMap = loadBasicConfiguration();
+
+    bool debugServerEnabled = basicConfigurationMap.value("debugServerEnabled").toBool();
+    qDebug() << "Debug server enabled" << debugServerEnabled;
+
+    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // Unchanged debug server
+    QVariantMap params; QVariant response; QVariantList configurationChangedNotifications;
+    params.insert("enabled", debugServerEnabled);
+    response = injectAndWait("Configuration.SetDebugServerEnabled", params);
+    verifyConfigurationError(response);
+
+    // Check notification not emitted
+    notificationSpy.wait(500);
+    configurationChangedNotifications = checkNotifications(notificationSpy, "Configuration.BasicConfigurationChanged");
+    QVERIFY2(configurationChangedNotifications.count() == 0, "Got Configuration.BasicConfigurationChanged notification but should have not.");
+
+    // Enable debug server
+    bool newValue = true;
+    params.clear(); response.clear(); configurationChangedNotifications.clear();
+    params.insert("enabled", newValue);
+
+    notificationSpy.clear();
+    response = injectAndWait("Configuration.SetDebugServerEnabled", params);
+    verifyConfigurationError(response);
+
+    // Check notification not emitted
+    notificationSpy.wait();
+    configurationChangedNotifications = checkNotifications(notificationSpy, "Configuration.BasicConfigurationChanged");
+    QVariantMap notificationContent = configurationChangedNotifications.first().toMap().value("params").toMap();
+    QVERIFY2(notificationContent.contains("basicConfiguration"), "Notification does not contain basicConfiguration");
+    QVERIFY2(configurationChangedNotifications.count() == 1, "Should get only one Configuration.BasicConfigurationChanged notification");
+    QVariantMap basicConfigurationNotificationMap = notificationContent.value("basicConfiguration").toMap();
+
+    QVERIFY2(basicConfigurationNotificationMap.contains("language"), "Notification does not contain key language");
+    QVERIFY2(basicConfigurationNotificationMap.contains("serverTime"), "Notification does not contain key serverTime");
+    QVERIFY2(basicConfigurationNotificationMap.contains("serverUuid"), "Notification does not contain key serverUuid");
+    QVERIFY2(basicConfigurationNotificationMap.contains("timeZone"), "Notification does not contain key timeZone");
+    QVERIFY2(basicConfigurationNotificationMap.contains("serverName"), "Notification does not contain key serverName");
+    QVERIFY2(basicConfigurationNotificationMap.contains("debugServerEnabled"), "Notification does not contain key debugServerEnabled");
+    QVERIFY2(basicConfigurationNotificationMap.value("debugServerEnabled").toBool() == newValue, "Notification does not contain the new debugServerEnabled");
+
+    qDebug() << "TestWebserver starting";
+    foreach (const WebServerConfiguration &config, GuhCore::instance()->configuration()->webServerConfigurations()) {
+        if (config.port == 3333 && (config.address == QHostAddress("127.0.0.1") || config.address == QHostAddress("0.0.0.0"))) {
+            qDebug() << "Already have a webserver listening on 127.0.0.1:3333";
+            return;
+        }
+    }
+
+    qDebug() << "Creating new webserver instance on 127.0.0.1:3333";
+    WebServerConfiguration config;
+    config.id = "Testwebserver for debug server interface";
+    config.address = QHostAddress("127.0.0.1");
+    config.port = 3333;
+    config.sslEnabled = true;
+    GuhCore::instance()->configuration()->setWebServerConfiguration(config);
+
+    // Webserver request
+    QNetworkAccessManager nam;
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply* reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
+    QSignalSpy namSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // Check if debug interface is reachable
+    QNetworkRequest request;
+    request.setUrl(QUrl("https://localhost:3333/debug/"));
+    QNetworkReply *reply = nam.get(request);
+
+    namSpy.wait();
+    QVERIFY2(namSpy.count() > 0, "expected response from webserver");
+
+    bool ok = false;
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, 200);
+    reply->deleteLater();
+
+    // Disable debug server
+    params.clear(); response.clear();
+    params.insert("enabled", false);
+    response = injectAndWait("Configuration.SetDebugServerEnabled", params);
+    verifyConfigurationError(response);
+
+    // Check if debug interface is not reachable any more
+    namSpy.clear();
+    reply = nam.get(request);
+
+    namSpy.wait();
+    QVERIFY2(namSpy.count() > 0, "expected response from webserver");
+
+    ok = false;
+    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, 404);
+    reply->deleteLater();
+
+    GuhCore::instance()->configuration()->removeWebServerConfiguration(config.id);
 
     disableNotifications();
 }

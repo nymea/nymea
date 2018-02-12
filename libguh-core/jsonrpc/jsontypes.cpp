@@ -152,6 +152,7 @@ void JsonTypes::init()
     // ParamType
     s_paramType.insert("id", basicTypeToString(Uuid));
     s_paramType.insert("name", basicTypeToString(String));
+    s_paramType.insert("displayName", basicTypeToString(String));
     s_paramType.insert("type", basicTypeRef());
     s_paramType.insert("index", basicTypeToString(Int));
     s_paramType.insert("o:defaultValue", basicTypeToString(Variant));
@@ -167,12 +168,15 @@ void JsonTypes::init()
     s_param.insert("value", basicTypeRef());
 
     // RuleAction
-    s_ruleAction.insert("actionTypeId", basicTypeToString(Uuid));
-    s_ruleAction.insert("deviceId", basicTypeToString(Uuid));
+    s_ruleAction.insert("o:deviceId", basicTypeToString(Uuid));
+    s_ruleAction.insert("o:actionTypeId", basicTypeToString(Uuid));
+    s_ruleAction.insert("o:interface", basicTypeToString(String));
+    s_ruleAction.insert("o:interfaceAction", basicTypeToString(String));
     s_ruleAction.insert("o:ruleActionParams", QVariantList() << ruleActionParamRef());
 
     // RuleActionParam
-    s_ruleActionParam.insert("paramTypeId", basicTypeToString(Uuid));
+    s_ruleActionParam.insert("o:paramTypeId", basicTypeToString(Uuid));
+    s_ruleActionParam.insert("o:paramName", basicTypeToString(String));
     s_ruleActionParam.insert("o:value", basicTypeRef());
     s_ruleActionParam.insert("o:eventTypeId", basicTypeToString(Uuid));
     s_ruleActionParam.insert("o:eventParamTypeId", basicTypeToString(Uuid));
@@ -185,6 +189,7 @@ void JsonTypes::init()
     // StateType
     s_stateType.insert("id", basicTypeToString(Uuid));
     s_stateType.insert("name", basicTypeToString(String));
+    s_stateType.insert("displayName", basicTypeToString(String));
     s_stateType.insert("type", basicTypeRef());
     s_stateType.insert("index", basicTypeToString(Int));
     s_stateType.insert("defaultValue", basicTypeToString(Variant));
@@ -214,6 +219,7 @@ void JsonTypes::init()
     // EventType
     s_eventType.insert("id", basicTypeToString(Uuid));
     s_eventType.insert("name", basicTypeToString(String));
+    s_eventType.insert("displayName", basicTypeToString(String));
     s_eventType.insert("index", basicTypeToString(Int));
     s_eventType.insert("paramTypes", QVariantList() << paramTypeRef());
     s_eventType.insert("o:ruleRelevant", basicTypeToString(Bool));
@@ -225,13 +231,16 @@ void JsonTypes::init()
     s_event.insert("o:params", QVariantList() << paramRef());
 
     // EventDescriptor
-    s_eventDescriptor.insert("eventTypeId", basicTypeToString(Uuid));
-    s_eventDescriptor.insert("deviceId", basicTypeToString(Uuid));
+    s_eventDescriptor.insert("o:eventTypeId", basicTypeToString(Uuid));
+    s_eventDescriptor.insert("o:deviceId", basicTypeToString(Uuid));
+    s_eventDescriptor.insert("o:interface", basicTypeToString(String));
+    s_eventDescriptor.insert("o:interfaceEvent", basicTypeToString(String));
     s_eventDescriptor.insert("o:paramDescriptors", QVariantList() << paramDescriptorRef());
 
     // ActionType
     s_actionType.insert("id", basicTypeToString(Uuid));
-    s_actionType.insert("name", basicTypeToString(Uuid));
+    s_actionType.insert("name", basicTypeToString(String));
+    s_actionType.insert("displayName", basicTypeToString(String));
     s_actionType.insert("index", basicTypeToString(Int));
     s_actionType.insert("paramTypes", QVariantList() << paramTypeRef());
 
@@ -243,17 +252,20 @@ void JsonTypes::init()
     // Pugin
     s_plugin.insert("id", basicTypeToString(Uuid));
     s_plugin.insert("name", basicTypeToString(String));
+    s_plugin.insert("displayName", basicTypeToString(String));
     s_plugin.insert("paramTypes", QVariantList() << paramTypeRef());
 
     // Vendor
     s_vendor.insert("id", basicTypeToString(Uuid));
     s_vendor.insert("name", basicTypeToString(String));
+    s_vendor.insert("displayName", basicTypeToString(String));
 
     // DeviceClass
     s_deviceClass.insert("id", basicTypeToString(Uuid));
     s_deviceClass.insert("vendorId", basicTypeToString(Uuid));
     s_deviceClass.insert("pluginId", basicTypeToString(Uuid));
     s_deviceClass.insert("name", basicTypeToString(String));
+    s_deviceClass.insert("displayName", basicTypeToString(String));
     s_deviceClass.insert("deviceIcon", deviceIconRef());
     s_deviceClass.insert("interfaces", QVariantList() << basicTypeToString(String));
     s_deviceClass.insert("basicTags", QVariantList() << basicTagRef());
@@ -462,6 +474,7 @@ QVariantMap JsonTypes::packEventType(const EventType &eventType)
     QVariantMap variant;
     variant.insert("id", eventType.id());
     variant.insert("name", eventType.name());
+    variant.insert("displayName", eventType.displayName());
     variant.insert("index", eventType.index());
     if (!eventType.ruleRelevant())
         variant.insert("ruleRelevant", false);
@@ -511,6 +524,7 @@ QVariantMap JsonTypes::packActionType(const ActionType &actionType)
     QVariantMap variantMap;
     variantMap.insert("id", actionType.id());
     variantMap.insert("name", actionType.name());
+    variantMap.insert("displayName", actionType.displayName());
     variantMap.insert("index", actionType.index());
     QVariantList paramTypes;
     foreach (const ParamType &paramType, actionType.paramTypes())
@@ -578,6 +592,7 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
     QVariantMap variantMap;
     variantMap.insert("id", stateType.id());
     variantMap.insert("name", stateType.name());
+    variantMap.insert("displayName", stateType.displayName());
     variantMap.insert("index", stateType.index());
     variantMap.insert("type", basicTypeToString(stateType.type()));
     variantMap.insert("defaultValue", stateType.defaultValue());
@@ -659,6 +674,7 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
     QVariantMap variantMap;
     variantMap.insert("id", paramType.id().toString());
     variantMap.insert("name", paramType.name());
+    variantMap.insert("displayName", paramType.displayName());
     variantMap.insert("type", basicTypeToString(paramType.type()));
     variantMap.insert("index", paramType.index());
 
@@ -693,6 +709,7 @@ QVariantMap JsonTypes::packVendor(const Vendor &vendor)
     QVariantMap variantMap;
     variantMap.insert("id", vendor.id());
     variantMap.insert("name", vendor.name());
+    variantMap.insert("displayName", vendor.displayName());
     return variantMap;
 }
 
@@ -700,8 +717,9 @@ QVariantMap JsonTypes::packVendor(const Vendor &vendor)
 QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
 {
     QVariantMap variant;
-    variant.insert("name", deviceClass.name());
     variant.insert("id", deviceClass.id().toString());
+    variant.insert("name", deviceClass.name());
+    variant.insert("displayName", deviceClass.displayName());
     variant.insert("vendorId", deviceClass.vendorId().toString());
     variant.insert("pluginId", deviceClass.pluginId().toString());
     variant.insert("deviceIcon", s_deviceIcon.at(deviceClass.deviceIcon()));
@@ -757,6 +775,7 @@ QVariantMap JsonTypes::packPlugin(DevicePlugin *plugin)
     QVariantMap pluginMap;
     pluginMap.insert("id", plugin->pluginId());
     pluginMap.insert("name", plugin->pluginName());
+    pluginMap.insert("displayName", plugin->pluginDisplayName());
 
     QVariantList params;
     foreach (const ParamType &param, plugin->configurationDescription())
@@ -1100,6 +1119,7 @@ QVariantMap JsonTypes::packBasicConfiguration()
     basicConfiguration.insert("serverTime", GuhCore::instance()->timeManager()->currentDateTime().toTime_t());
     basicConfiguration.insert("timeZone", QString::fromUtf8(GuhCore::instance()->timeManager()->timeZone()));
     basicConfiguration.insert("language", GuhCore::instance()->configuration()->locale().name());
+    basicConfiguration.insert("debugServerEnabled", GuhCore::instance()->configuration()->debugServerEnabled());
     return basicConfiguration;
 }
 
@@ -1306,10 +1326,16 @@ Rule JsonTypes::unpackRule(const QVariantMap &ruleMap)
 /*! Returns a \l{RuleAction} created from the given \a ruleActionMap. */
 RuleAction JsonTypes::unpackRuleAction(const QVariantMap &ruleActionMap)
 {
-    RuleAction action(ActionTypeId(ruleActionMap.value("actionTypeId").toString()), DeviceId(ruleActionMap.value("deviceId").toString()));
+    ActionTypeId actionTypeId(ruleActionMap.value("actionTypeId").toString());
+    DeviceId actionDeviceId(ruleActionMap.value("deviceId").toString());
+    QString interface = ruleActionMap.value("interface").toString();
+    QString interfaceAction = ruleActionMap.value("interfaceAction").toString();
     RuleActionParamList actionParamList = JsonTypes::unpackRuleActionParams(ruleActionMap.value("ruleActionParams").toList());
-    action.setRuleActionParams(actionParamList);
-    return action;
+
+    if (!actionTypeId.isNull() && !actionDeviceId.isNull()) {
+        return RuleAction(actionTypeId, actionDeviceId, actionParamList);
+    }
+    return RuleAction(interface, interfaceAction, actionParamList);
 }
 
 /*! Returns a \l{RuleActionParam} created from the given \a ruleActionParamMap. */
@@ -1319,9 +1345,13 @@ RuleActionParam JsonTypes::unpackRuleActionParam(const QVariantMap &ruleActionPa
         return RuleActionParam();
 
     ParamTypeId paramTypeId = ParamTypeId(ruleActionParamMap.value("paramTypeId").toString());
+    QString paramName = ruleActionParamMap.value("paramName").toString();
     QVariant value = ruleActionParamMap.value("value");
     EventTypeId eventTypeId = EventTypeId(ruleActionParamMap.value("eventTypeId").toString());
     ParamTypeId eventParamTypeId = ParamTypeId(ruleActionParamMap.value("eventParamTypeId").toString());
+    if (paramTypeId.isNull()) {
+        return RuleActionParam(paramName, value, eventTypeId, eventParamTypeId);
+    }
     return RuleActionParam(paramTypeId, value, eventTypeId, eventParamTypeId);
 }
 
@@ -1363,9 +1393,13 @@ EventDescriptor JsonTypes::unpackEventDescriptor(const QVariantMap &eventDescrip
 {
     EventTypeId eventTypeId(eventDescriptorMap.value("eventTypeId").toString());
     DeviceId eventDeviceId(eventDescriptorMap.value("deviceId").toString());
+    QString interface = eventDescriptorMap.value("interface").toString();
+    QString interfaceEvent = eventDescriptorMap.value("interfaceEvent").toString();
     QList<ParamDescriptor> eventParams = JsonTypes::unpackParamDescriptors(eventDescriptorMap.value("paramDescriptors").toList());
-    EventDescriptor eventDescriptor(eventTypeId, eventDeviceId, eventParams);
-    return eventDescriptor;
+    if (!eventDeviceId.isNull() && !eventTypeId.isNull()) {
+        return EventDescriptor(eventTypeId, eventDeviceId, eventParams);
+    }
+    return EventDescriptor(interface, interfaceEvent, eventParams);
 }
 
 /*! Returns a \l{StateEvaluator} created from the given \a stateEvaluatorMap. */
@@ -1581,7 +1615,9 @@ QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, cons
         if (map.contains(strippedKey)) {
             QPair<bool, QString> result = validateVariant(templateMap.value(key), map.value(strippedKey));
             if (!result.first) {
-                qCWarning(dcJsonRpc) << "Object not matching template" << templateMap.value(key) << map.value(strippedKey);
+                QJsonDocument templateDoc = QJsonDocument::fromVariant(templateMap.value(key));
+                QJsonDocument mapDoc = QJsonDocument::fromVariant(map.value(strippedKey));
+                qCWarning(dcJsonRpc).nospace() << "Object\n" << qUtf8Printable(mapDoc.toJson(QJsonDocument::Indented)) << "not matching template\n" << qUtf8Printable(templateDoc.toJson(QJsonDocument::Indented));
                 return result;
             }
         }

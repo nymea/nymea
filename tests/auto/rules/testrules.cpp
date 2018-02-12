@@ -78,6 +78,8 @@ private slots:
 
     void evaluateEvent();
 
+    void evaluateEventParams();
+
     void testStateEvaluator_data();
     void testStateEvaluator();
 
@@ -98,6 +100,8 @@ private slots:
 
     void testRuleActionParams_data();
     void testRuleActionParams();
+
+    void testInterfaceBasedRule();
 
     void testHousekeeping_data();
     void testHousekeeping();
@@ -488,7 +492,7 @@ void TestRules::addRemoveRules_data()
     QTest::newRow("valid rule. diabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << false    << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << true << "TestRule";
     QTest::newRow("valid rule. 2 EventDescriptors, 1 Action, name")                                     << true     << validActionNoParams      << QVariantMap()            << QVariantMap()            << eventDescriptorList  << validStateEvaluator      << RuleEngine::RuleErrorNoError << true << "TestRule";
     QTest::newRow("invalid action")                                                                     << true     << invalidAction            << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorActionTypeNotFound << false << "TestRule";
-    QTest::newRow("invalid event descriptor")                                                           << true     << validActionNoParams      << QVariantMap()            << invalidEventDescriptor   << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorDeviceNotFound << false << "TestRule";
+    QTest::newRow("invalid event descriptor")                                                           << true     << validActionNoParams      << QVariantMap()            << invalidEventDescriptor   << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorEventTypeNotFound << false << "TestRule";
     QTest::newRow("invalid StateDescriptor")                                                            << true     << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << invalidStateEvaluator    << RuleEngine::RuleErrorInvalidParameter << true << "TestRule";
 }
 
@@ -1401,6 +1405,78 @@ void TestRules::evaluateEvent()
     verifyRuleExecuted(mockActionIdNoParams);
 }
 
+void TestRules::evaluateEventParams()
+{
+    // Init bool state to  true
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg("true")));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+
+    // Add a rule
+    QVariantMap addRuleParams;
+    addRuleParams.insert("name", "TestRule");
+
+    QVariantList params;
+    QVariantMap boolParam;
+    boolParam.insert("paramTypeId", mockBoolStateId);
+    boolParam.insert("operator", "ValueOperatorEquals");
+    boolParam.insert("value", true);
+    params.append(boolParam);
+
+    QVariantMap event1;
+    event1.insert("eventTypeId", mockBoolStateId);
+    event1.insert("deviceId", m_mockDeviceId);
+    event1.insert("paramDescriptors", params);
+
+    QVariantList events;
+    events.append(event1);
+    addRuleParams.insert("eventDescriptors", events);
+
+    QVariantList actions;
+    QVariantMap action;
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    actions.append(action);
+    addRuleParams.insert("actions", actions);
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    verifyRuleError(response);
+
+
+    // Trigger a non matching param
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg("false")));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    verifyRuleNotExecuted();
+
+    // Trigger a matching param
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg("true")));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    verifyRuleExecuted(mockActionIdNoParams);
+
+    // Reset back to false to not mess with other tests
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg("false")));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+}
+
+
 void TestRules::testStateChange() {
     // Add a rule
     QVariantMap addRuleParams;
@@ -2063,6 +2139,44 @@ void TestRules::testRuleActionParams()
 
     QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
     verifyRuleError(response, error);
+}
+
+void TestRules::testInterfaceBasedRule()
+{
+    QVariantMap powerAction;
+    powerAction.insert("interface", "light");
+    powerAction.insert("interfaceAction", "power");
+    QVariantMap powerActionParam;
+    powerActionParam.insert("paramName", "power");
+    powerActionParam.insert("value", true);
+    powerAction.insert("ruleActionParams", QVariantList() << powerActionParam);
+
+    QVariantMap lowBatteryEvent;
+    lowBatteryEvent.insert("interface", "battery");
+    lowBatteryEvent.insert("interfaceEvent", "batteryCritical");
+
+    QVariantMap addRuleParams;
+    addRuleParams.insert("name", "TestInterfaceBasedRule");
+    addRuleParams.insert("enabled", true);
+    addRuleParams.insert("actions", QVariantList() << powerAction);
+    addRuleParams.insert("eventDescriptors", QVariantList() << lowBatteryEvent);
+
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+
+
+    // Change the state
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // state battery critical state to true
+    qDebug() << "setting battery critical state to true";
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(true)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    qDebug() << "response" << response;
 }
 
 void TestRules::testHousekeeping_data()

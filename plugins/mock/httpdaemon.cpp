@@ -24,8 +24,8 @@
 #include "httpdaemon.h"
 
 #include "plugin/device.h"
-#include "plugin/deviceclass.h"
 #include "plugin/deviceplugin.h"
+#include "types/deviceclass.h"
 #include "types/statetype.h"
 #include "extern-plugininfo.h"
 
@@ -39,7 +39,7 @@
 HttpDaemon::HttpDaemon(Device *device, DevicePlugin *parent):
     QTcpServer(parent), disabled(false), m_plugin(parent), m_device(device)
 {
-    listen(QHostAddress::Any, device->paramValue(httpportParamTypeId).toInt());
+    listen(QHostAddress::Any, device->paramValue(mockHttpportParamTypeId).toInt());
 }
 
 HttpDaemon::~HttpDaemon()
@@ -137,7 +137,13 @@ QString HttpDaemon::generateHeader()
 
 QString HttpDaemon::generateWebPage()
 {
-    DeviceClass deviceClass = m_plugin->supportedDevices().first();
+    DeviceClass deviceClass;
+    foreach (const DeviceClass &dc, m_plugin->supportedDevices()) {
+        if (dc.id() == m_device->deviceClassId()) {
+            deviceClass = dc;
+        }
+    }
+    Q_ASSERT(deviceClass.isValid());
 
     QString body = QString(
     "<html>"
@@ -156,7 +162,7 @@ QString HttpDaemon::generateWebPage()
     for (int i = 0; i < deviceClass.stateTypes().count(); ++i) {
         body.append("<tr>");
         body.append("<form action=\"/setstate\" method=\"get\">");
-        const StateType &stateType = deviceClass.stateTypes().at(i);
+        StateType stateType = deviceClass.stateTypes().at(i);
         body.append("<td>" + stateType.name() + "</td>");
         body.append(QString("<td><input type='input'' name='%1' value='%2'></td>").arg(stateType.id().toString()).arg(m_device->states().at(i).value().toString()));
         body.append("<td><input type=submit value='Set State'/></td>");
@@ -170,14 +176,14 @@ QString HttpDaemon::generateWebPage()
 
     body.append("<table>");
     for (int i = 0; i < deviceClass.eventTypes().count(); ++i) {
-        const EventType &eventType = deviceClass.eventTypes().at(i);
+        EventType eventType = deviceClass.eventTypes().at(i);
         body.append(QString(
         "<tr>"
         "<form action=\"/generateevent\" method=\"get\">"
         "<td>%1<input type='hidden' name='eventtypeid' value='%2'/></td>"
         "<td>").arg(eventType.name()).arg(eventType.id().toString()));
-        if (!eventType.name().endsWith(" changed")) {
-            body.append("<input type='submit' value='Generate'/>");
+        if (!eventType.displayName().endsWith(" changed")) {
+            body.append(QStringLiteral("<input type='submit' value='Generate'/>"));
         }
         body.append("</td>"
         "</form>"
@@ -210,7 +216,6 @@ QString HttpDaemon::generateWebPage()
         ).arg(actionName).arg(actionTypeId.toString()).arg(timestamp.toString()));
     }
     body.append("</table>");
-
 
     body.append("</body></html>\n");
 

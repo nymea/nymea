@@ -36,9 +36,11 @@ class LIBGUH_EXPORT RuleActionParam
 {
 public:
     RuleActionParam(const Param &param = Param());
-    RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant(), const EventTypeId &eventTypeId = EventTypeId(), const ParamTypeId &eventParamName = ParamTypeId());
+    RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant(), const EventTypeId &eventTypeId = EventTypeId(), const ParamTypeId &eventParamTypeId = ParamTypeId());
+    RuleActionParam(const QString &paramName, const QVariant &value = QVariant(), const EventTypeId &eventTypeId = EventTypeId(), const ParamTypeId &eventParamTypeId = ParamTypeId());
 
     ParamTypeId paramTypeId() const;
+    QString paramName() const;
 
     ParamTypeId eventParamTypeId() const;
     void setEventParamTypeId(const ParamTypeId &eventParamTypeId);
@@ -53,6 +55,7 @@ public:
 
 private:
     ParamTypeId m_paramTypeId;
+    QString m_paramName;
     QVariant m_value;
     EventTypeId m_eventTypeId;
     ParamTypeId m_eventParamTypeId;
@@ -65,6 +68,7 @@ class LIBGUH_EXPORT RuleActionParamList: public QList<RuleActionParam>
 {
 public:
     bool hasParam(const ParamTypeId &ruleActionParamTypeId) const;
+    bool hasParam(const QString &ruleActionParamName) const;
     QVariant paramValue(const ParamTypeId &ruleActionParamName) const;
     bool setParamValue(const ParamTypeId &ruleActionParamTypeId, const QVariant &value);
     RuleActionParamList operator<<(const RuleActionParam &ruleActionParam);

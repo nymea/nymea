@@ -47,6 +47,7 @@ AWSConnector::AWSConnector(QObject *parent) : QObject(parent)
     m_disconnectContextData = std::shared_ptr<awsiotsdk::DisconnectCallbackContextData>(new DisconnectContext(this));
     m_subscriptionContextData = std::shared_ptr<awsiotsdk::mqtt::SubscriptionHandlerContextData>(new SubscriptionContext(this));
 
+    qRegisterMetaType<AWSConnector::PushNotificationsEndpoint>();
     m_clientName = readSyncedNameCache();
 }
 
@@ -159,6 +160,8 @@ void AWSConnector::setupSubscriptions()
     subscriptions.append(QString("%1/device/name/response").arg(m_clientId));
     subscriptions.append(QString("%1/device/users/response").arg(m_clientId));
     subscriptions.append(QString("%1/pair/response").arg(m_clientId));
+    subscriptions.append(QString("%1/notify/response").arg(m_clientId));
+    subscriptions.append(QString("%1/notify/info/endpoint").arg(m_clientId));
     subscribe(subscriptions);
 
     // fetch previous pairings
@@ -174,16 +177,35 @@ void AWSConnector::fetchPairings()
     publish(QString("%1/device/users").arg(m_clientId), params);
 }
 
-void AWSConnector::onPairingsRetrieved(const QVariantList &pairings)
+void AWSConnector::onPairingsRetrieved(const QVariantMap &pairings)
 {
-    qCDebug(dcAWS) << pairings.count() << "devices paired in cloud.";
-    if (pairings.count() > 0) {
+    qCDebug(dcAWS) << pairings.value("users").toList().count() << "devices paired in cloud.";
+    if (pairings.value("users").toList().count() > 0) {
         QStringList topics;
-        foreach (const QVariant &pairing, pairings) {
+        foreach (const QVariant &pairing, pairings.value("users").toList()) {
             topics << QString("%1/%2/#").arg(m_clientId).arg(pairing.toString());
         }
         subscribe(topics);
     }
+
+    qCDebug(dcAWS) << pairings.value("pushNotificationsEndpoints").toList().count() << "push notification enabled users paired in cloud.";
+    QList<PushNotificationsEndpoint> pushNotificationEndpoints;
+    if (pairings.value("pushNotificationsEndpoints").toList().count() > 0) {
+        foreach (const QVariant &pairing, pairings.value("pushNotificationsEndpoints").toList()) {
+            foreach (const QString &cognitoUserId, pairing.toMap().keys()) {
+                qCDebug(dcAWS()) << "User:" << cognitoUserId << "has" << pairing.toMap().value(cognitoUserId).toList().count() << "push notifications enabled devices.";
+                foreach (const QVariant &endpoint, pairing.toMap().value(cognitoUserId).toList()) {
+                    PushNotificationsEndpoint ep;
+                    ep.userId = cognitoUserId;
+                    ep.endpointId = endpoint.toMap().value("endpointId").toString();
+                    ep.displayName = endpoint.toMap().value("displayName").toString();
+                    pushNotificationEndpoints.append(ep);
+                    qCDebug(dcAWS) << "Device:" << ep.displayName << "endpoint:" << ep.endpointId << "user:" << ep.userId;
+                }
+            }
+        }
+    }
+    emit pushNotificationEndpointsUpdated(pushNotificationEndpoints);
 
     if (readSyncedNameCache() != m_clientName) {
         setName();
@@ -235,6 +257,20 @@ void AWSConnector::pairDevice(const QString &idToken, const QString &userId)
 void AWSConnector::sendWebRtcHandshakeMessage(const QString &sessionId, const QVariantMap &map)
 {
     publish(sessionId + "/reply", map);
+}
+
+int AWSConnector::sendPushNotification(const QString &userId, const QString &endpointId, const QString &title, const QString &text)
+{
+    QVariantMap params;
+    params.insert("id", ++m_transactionId);
+    params.insert("command", "sendPushNotification");
+    params.insert("title", title);
+    params.insert("body", text);
+    params.insert("timestamp", QDateTime::currentMSecsSinceEpoch());
+//    publish(QString("%1/notify/user/%2/%3").arg(m_clientId, userId, endpointId), params);
+    Q_UNUSED(userId)
+    publish(QString("%1/notify/user/%2").arg(m_clientId, endpointId), params);
+    return m_transactionId;
 }
 
 quint16 AWSConnector::publish(const QString &topic, const QVariantMap &message)
@@ -418,7 +454,7 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
             qCWarning(dcAWS()) << "Received a pairing response for a transaction we didn't start";
         }
     } else if (topic == QString("%1/device/users/response").arg(connector->m_clientId)) {
-        connector->staticMetaObject.invokeMethod(connector, "onPairingsRetrieved", Qt::QueuedConnection, Q_ARG(QVariantList, jsonDoc.toVariant().toMap().value("users").toList()));
+        connector->staticMetaObject.invokeMethod(connector, "onPairingsRetrieved", Qt::QueuedConnection, Q_ARG(QVariantMap, jsonDoc.toVariant().toMap()));
     } else if (topic == QString("%1/device/name/response").arg(connector->m_clientId)) {
         qCDebug(dcAWS) << "Set device name in cloud with status:" << jsonDoc.toVariant().toMap().value("status").toInt();
         if (jsonDoc.toVariant().toMap().value("status").toInt() == 200) {
@@ -438,6 +474,20 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         connector->webRtcHandshakeMessageReceived(topic, jsonDoc.toVariant().toMap());
     } else if (topic.startsWith(QString("%1/eu-west-1:").arg(connector->m_clientId)) && topic.contains("reply")) {
         // silently drop our own things (should not be subscribed to that in the first place)
+    } else if (topic == QString("%1/notify/response").arg(connector->m_clientId)) {
+        int transactionId = jsonDoc.toVariant().toMap().value("id").toInt();
+        int status = jsonDoc.toVariant().toMap().value("status").toInt();
+        qCDebug(dcAWS()) << "Push notification reply for transaction" << transactionId << " Status:" << status << jsonDoc.toVariant().toMap().value("message").toString();
+        emit connector->pushNotificationSent(transactionId, status);
+    } else if (topic == QString("%1/notify/info/endpoint").arg(connector->m_clientId)) {
+        QVariantMap endpoint = jsonDoc.toVariant().toMap().value("newPushNotificationsEndpoint").toMap();
+        Q_ASSERT(endpoint.keys().count() == 1);
+        QString cognitoId = endpoint.keys().first();
+        PushNotificationsEndpoint ep;
+        ep.userId = cognitoId;
+        ep.endpointId = endpoint.value(cognitoId).toMap().value("endpointId").toString();
+        ep.displayName = endpoint.value(cognitoId).toMap().value("displayName").toString();
+        emit connector->pushNotificationEndpointAdded(ep);
     } else {
         qCWarning(dcAWS) << "Unhandled subscription received!" << topic << QString::fromStdString(payload);
     }

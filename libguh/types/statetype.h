@@ -40,6 +40,9 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    QString displayName() const;
+    void setDisplayName(const QString &displayName);
+
     int index() const;
     void setIndex(const int &index);
 
@@ -73,6 +76,7 @@ public:
 private:
     StateTypeId m_id;
     QString m_name;
+    QString m_displayName;
     int m_index = 0;
     QVariant::Type m_type;
     QVariant m_defaultValue;
@@ -88,6 +92,7 @@ private:
 class StateTypes: public QList<StateType>
 {
 public:
+    StateTypes() = default;
     StateTypes(const QList<StateType> &other);
     StateType findByName(const QString &name);
     StateType findById(const StateTypeId &id);

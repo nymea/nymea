@@ -187,6 +187,10 @@ DeviceManager::DeviceManager(HardwareManager *hardwareManager, const QLocale &lo
     qRegisterMetaType<DeviceClassId>();
     qRegisterMetaType<DeviceDescriptor>();
 
+    foreach (const Interface &interface, DevicePlugin::allInterfaces()) {
+        m_supportedInterfaces.insert(interface.name(), interface);
+    }
+
     // Give hardware a chance to start up before loading plugins etc.
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "loadConfiguredDevices", Qt::QueuedConnection);
@@ -204,7 +208,12 @@ DeviceManager::~DeviceManager()
     }
 
     foreach (DevicePlugin *plugin, m_devicePlugins) {
-        delete plugin;
+        if (plugin->parent() == this) {
+            qCDebug(dcDeviceManager()) << "Deleting plugin" << plugin->pluginName();
+            delete plugin;
+        } else {
+            qCDebug(dcDeviceManager()) << "Not deleting plugin" << plugin->pluginName();
+        }
     }
 }
 
@@ -248,6 +257,19 @@ QList<QJsonObject> DeviceManager::pluginsMetadata()
         }
     }
     return pluginList;
+}
+
+/*! Register a DevicePlugin class. This can be used to create devices internally from the guh system without having to create a full plugin.
+    The DeviceManager takes ownership of the object and will clean it up when exiting. Do not delete the object yourself. */
+void DeviceManager::registerStaticPlugin(DevicePlugin *plugin, const QJsonObject &metaData)
+{
+    if (!verifyPluginMetadata(metaData)) {
+        qCWarning(dcDeviceManager()) << "Failed to verify plugin metadata. Not loading static plugin:" << plugin->pluginName();
+        return;
+    }
+    plugin->setParent(this);
+    plugin->setMetaData(metaData);
+    loadPlugin(plugin);
 }
 
 /*! Set the \a locale of all plugins and reload the translated strings. */
@@ -340,6 +362,18 @@ DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &plugin
 QList<Vendor> DeviceManager::supportedVendors() const
 {
     return m_supportedVendors.values();
+}
+
+/*! Returns the list of all supported interfaces */
+Interfaces DeviceManager::supportedInterfaces() const
+{
+    return m_supportedInterfaces.values();
+}
+
+/*! Returns the interface with the given name. If the interface can't be found it will return an invalid interface. */
+Interface DeviceManager::findInterface(const QString &name)
+{
+    return m_supportedInterfaces.value(name);
 }
 
 /*! Returns all the supported \l{DeviceClass}{DeviceClasses} by all \l{DevicePlugin}{DevicePlugins} loaded in the system.
@@ -769,6 +803,18 @@ QList<Device *> DeviceManager::findConfiguredDevices(const DeviceClassId &device
     return ret;
 }
 
+QList<Device *> DeviceManager::findConfiguredDevices(const QString &interface) const
+{
+    QList<Device*> ret;
+    foreach (Device *device, m_configuredDevices) {
+        DeviceClass dc = m_supportedDevices.value(device->deviceClassId());
+        if (dc.interfaces().contains(interface)) {
+            ret.append(device);
+        }
+    }
+    return ret;
+}
+
 /*! Returns all child \l{Device}{Devices} of the given \a device. */
 QList<Device *> DeviceManager::findChildDevices(const DeviceId &id) const
 {
@@ -793,7 +839,7 @@ DeviceClass DeviceManager::findDeviceClass(const DeviceClassId &deviceClassId) c
     return DeviceClass();
 }
 
-/*! Verify if the given \a params matche the given \a paramTypes. Ith \a requireAll
+/*! Verify if the given \a params matches the given \a paramTypes. Ith \a requireAll
  *  is true, all \l{ParamList}{Params} has to be valid. Returns \l{DeviceError} to inform about the result.*/
 DeviceManager::DeviceError DeviceManager::verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll)
 {
@@ -986,73 +1032,79 @@ void DeviceManager::loadPlugins()
                 qCWarning(dcDeviceManager) << "Could not get plugin instance of" << entry;
                 continue;
             }
+            pluginIface->setParent(this);
 
             if (!verifyPluginMetadata(loader.metaData().value("MetaData").toObject()))
                 continue;
 
             pluginIface->setMetaData(loader.metaData().value("MetaData").toObject());
 
-            pluginIface->setLocale(m_locale);
-            qApp->installTranslator(pluginIface->translator());
-
-            pluginIface->initPlugin(this);
-
-            qCDebug(dcDeviceManager) << "**** Loaded plugin" << pluginIface->pluginName();
-            foreach (const Vendor &vendor, pluginIface->supportedVendors()) {
-                qCDebug(dcDeviceManager) << "* Loaded vendor:" << vendor.name();
-                if (m_supportedVendors.contains(vendor.id()))
-                    continue;
-
-                m_supportedVendors.insert(vendor.id(), vendor);
-            }
-
-            foreach (const DeviceClass &deviceClass, pluginIface->supportedDevices()) {
-                if (!m_supportedVendors.contains(deviceClass.vendorId())) {
-                    qCWarning(dcDeviceManager) << "Vendor not found. Ignoring device. VendorId:" << deviceClass.vendorId() << "DeviceClass:" << deviceClass.name() << deviceClass.id();
-                    continue;
-                }
-                m_vendorDeviceMap[deviceClass.vendorId()].append(deviceClass.id());
-                m_supportedDevices.insert(deviceClass.id(), deviceClass);
-                qCDebug(dcDeviceManager) << "* Loaded device class:" << deviceClass.name();
-            }
-
-            GuhSettings settings(GuhSettings::SettingsRolePlugins);
-            settings.beginGroup("PluginConfig");
-            ParamList params;
-            if (settings.childGroups().contains(pluginIface->pluginId().toString())) {
-                settings.beginGroup(pluginIface->pluginId().toString());
-                foreach (const QString &paramTypeIdString, settings.allKeys()) {
-                    Param param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString));
-                    params.append(param);
-                }
-                settings.endGroup();
-            } else if (!pluginIface->configurationDescription().isEmpty()){
-                // plugin requires config but none stored. Init with defaults
-                foreach (const ParamType &paramType, pluginIface->configurationDescription()) {
-                    Param param(paramType.id(), paramType.defaultValue());
-                    params.append(param);
-                }
-            }
-            settings.endGroup();
-
-            if (params.count() > 0) {
-                DeviceError status = pluginIface->setConfiguration(params);
-                if (status != DeviceErrorNoError) {
-                    qCWarning(dcDeviceManager) << "Error setting params to plugin. Broken configuration?";
-                }
-            }
-
-            m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
-
-            connect(pluginIface, &DevicePlugin::emitEvent, this, &DeviceManager::eventTriggered);
-            connect(pluginIface, &DevicePlugin::devicesDiscovered, this, &DeviceManager::slotDevicesDiscovered, Qt::QueuedConnection);
-            connect(pluginIface, &DevicePlugin::deviceSetupFinished, this, &DeviceManager::slotDeviceSetupFinished);
-            connect(pluginIface, &DevicePlugin::actionExecutionFinished, this, &DeviceManager::actionExecutionFinished);
-            connect(pluginIface, &DevicePlugin::pairingFinished, this, &DeviceManager::slotPairingFinished);
-            connect(pluginIface, &DevicePlugin::autoDevicesAppeared, this, &DeviceManager::onAutoDevicesAppeared);
-            connect(pluginIface, &DevicePlugin::autoDeviceDisappeared, this, &DeviceManager::onAutoDeviceDisappeared);
+            loadPlugin(pluginIface);
         }
     }
+}
+
+void DeviceManager::loadPlugin(DevicePlugin *pluginIface)
+{
+    pluginIface->setLocale(m_locale);
+    qApp->installTranslator(pluginIface->translator());
+
+    pluginIface->initPlugin(this);
+
+    qCDebug(dcDeviceManager) << "**** Loaded plugin" << pluginIface->pluginName();
+    foreach (const Vendor &vendor, pluginIface->supportedVendors()) {
+        qCDebug(dcDeviceManager) << "* Loaded vendor:" << vendor.name();
+        if (m_supportedVendors.contains(vendor.id()))
+            continue;
+
+        m_supportedVendors.insert(vendor.id(), vendor);
+    }
+
+    foreach (const DeviceClass &deviceClass, pluginIface->supportedDevices()) {
+        if (!m_supportedVendors.contains(deviceClass.vendorId())) {
+            qCWarning(dcDeviceManager) << "Vendor not found. Ignoring device. VendorId:" << deviceClass.vendorId() << "DeviceClass:" << deviceClass.name() << deviceClass.id();
+            continue;
+        }
+        m_vendorDeviceMap[deviceClass.vendorId()].append(deviceClass.id());
+        m_supportedDevices.insert(deviceClass.id(), deviceClass);
+        qCDebug(dcDeviceManager) << "* Loaded device class:" << deviceClass.name();
+    }
+
+    GuhSettings settings(GuhSettings::SettingsRolePlugins);
+    settings.beginGroup("PluginConfig");
+    ParamList params;
+    if (settings.childGroups().contains(pluginIface->pluginId().toString())) {
+        settings.beginGroup(pluginIface->pluginId().toString());
+        foreach (const QString &paramTypeIdString, settings.allKeys()) {
+            Param param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString));
+            params.append(param);
+        }
+        settings.endGroup();
+    } else if (!pluginIface->configurationDescription().isEmpty()){
+        // plugin requires config but none stored. Init with defaults
+        foreach (const ParamType &paramType, pluginIface->configurationDescription()) {
+            Param param(paramType.id(), paramType.defaultValue());
+            params.append(param);
+        }
+    }
+    settings.endGroup();
+
+    if (params.count() > 0) {
+        DeviceError status = pluginIface->setConfiguration(params);
+        if (status != DeviceErrorNoError) {
+            qCWarning(dcDeviceManager) << "Error setting params to plugin. Broken configuration?";
+        }
+    }
+
+    m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
+
+    connect(pluginIface, &DevicePlugin::emitEvent, this, &DeviceManager::eventTriggered);
+    connect(pluginIface, &DevicePlugin::devicesDiscovered, this, &DeviceManager::slotDevicesDiscovered, Qt::QueuedConnection);
+    connect(pluginIface, &DevicePlugin::deviceSetupFinished, this, &DeviceManager::slotDeviceSetupFinished);
+    connect(pluginIface, &DevicePlugin::actionExecutionFinished, this, &DeviceManager::actionExecutionFinished);
+    connect(pluginIface, &DevicePlugin::pairingFinished, this, &DeviceManager::slotPairingFinished);
+    connect(pluginIface, &DevicePlugin::autoDevicesAppeared, this, &DeviceManager::onAutoDevicesAppeared);
+    connect(pluginIface, &DevicePlugin::autoDeviceDisappeared, this, &DeviceManager::onAutoDeviceDisappeared);
 }
 
 void DeviceManager::loadConfiguredDevices()
@@ -1296,7 +1348,7 @@ void DeviceManager::onAutoDevicesAppeared(const DeviceClassId &deviceClassId, co
     foreach (const DeviceDescriptor &deviceDescriptor, deviceDescriptors) {
         Device *device = new Device(plugin->pluginId(), deviceClassId, this);
         device->m_autoCreated = true;
-        device->setName(deviceClass.name());
+        device->setName(deviceDescriptor.title());
         device->setParams(deviceDescriptor.params());
 
         DeviceSetupStatus setupStatus = setupDevice(device);

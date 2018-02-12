@@ -1,0 +1,14 @@
+{
+    "extends": "longpressbutton",
+    "events": [
+        {
+            "name": "longPressed",
+            "params": [
+                {
+                    "name": "buttonName",
+                    "type": "QString"
+                }
+            ]
+        }
+    ]
+}

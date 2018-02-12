@@ -129,6 +129,9 @@ public:
     QString name() const;
     void setName(const QString &name);
 
+    QString displayName() const;
+    void setDisplayName(const QString &displayName);
+
     StateTypeId criticalStateTypeId() const;
     void setCriticalStateTypeId(const StateTypeId &criticalStateTypeId);
 
@@ -149,11 +152,11 @@ public:
     void setStateTypes(const QList<StateType> &stateTypes);
     bool hasStateType(const StateTypeId &stateTypeId);
 
-    QList<EventType> eventTypes() const;
+    EventTypes eventTypes() const;
     void setEventTypes(const QList<EventType> &eventTypes);
     bool hasEventType(const EventTypeId &eventTypeId);
 
-    QList<ActionType> actionTypes() const;
+    ActionTypes actionTypes() const;
     void setActionTypes(const QList<ActionType> &actionTypes);
     bool hasActionType(const ActionTypeId &actionTypeId);
 
@@ -182,6 +185,7 @@ private:
     VendorId m_vendorId;
     PluginId m_pluginId;
     QString m_name;
+    QString m_displayName;
     StateTypeId m_criticalStateTypeId;
     StateTypeId m_primaryStateTypeId;
     ActionTypeId m_primaryActionTypeId;

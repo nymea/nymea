@@ -13,5 +13,18 @@
         <file>extendedvolumecontroller.json</file>
         <file>mediametadataprovider.json</file>
         <file>mediaplayer.json</file>
+        <file>battery.json</file>
+        <file>button.json</file>
+        <file>simplebutton.json</file>
+        <file>longpressbutton.json</file>
+        <file>simplemultibutton.json</file>
+        <file>longpressmultibutton.json</file>
+        <file>sensor.json</file>
+        <file>temperaturesensor.json</file>
+        <file>humiditysensor.json</file>
+        <file>connectable.json</file>
+        <file>inputtrigger.json</file>
+        <file>outputtrigger.json</file>
     </qresource>
+    <qresource prefix="/"/>
 </RCC>

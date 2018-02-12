@@ -49,16 +49,28 @@ StateTypeId StateType::id() const
     return m_id;
 }
 
-/*! Returns the name of the StateType. This is visible to the user (e.g. "Temperature"). */
+/*! Returns the name of the StateType. This is used internally, e.g. to match interfaces. */
 QString StateType::name() const
 {
     return m_name;
 }
 
-/*! Set the name of the StateType to \a name. This is visible to the user (e.g. "Temperature"). */
+/*! Set the name of the StateType to \a name. This is used internally, e.g. to match interfaces. */
 void StateType::setName(const QString &name)
 {
     m_name = name;
+}
+
+/*! Returns the displayName of the StateType. This is visible to the user (e.g. "Color temperature"). */
+QString StateType::displayName() const
+{
+    return m_displayName;
+}
+
+/*! Set the displayName of the StateType to \a name. This is visible to the user (e.g. "Color temperature"). */
+void StateType::setDisplayName(const QString &displayName)
+{
+    m_displayName = displayName;
 }
 
 /*! Returns the index of this \l{StateType}. The index of an \l{StateType} indicates the order in the \l{DeviceClass}.

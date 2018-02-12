@@ -1,6 +1,6 @@
 .\" Manpage for guhd.
 .\" Contact simon.stuerz@guh.io to correct errors or typos.
-.TH man 1 "March 2017" "1.8" "guhd man page"
+.TH man 1 "February 2018" "1.9" "guhd man page"
 .SH NAME
 guhd \- An open source IoT (Internet of Things) server
 .SH SYNOPSIS
@@ -23,8 +23,16 @@ Displays version information.
 Run guhd in the foreground, not as daemon.
 .TP
 \fB\-p\fR, \fB\-\-print\-all\fR
-Enables all debug categories. This parameter overrides all debug 
-category parameters.
+Enables all debug categories. Single debug categories can be disabled again 
+with -d parameter.
+.TP
+\fB\-l\fR, \fB\-\-log\fR
+Specify a log file to write to, if this option is not specified, 
+logs will be printed to the standard output.
+.TP
+\fB\-\-session\fR
+If specified, all D-Bus interfaces will be bound to the session bus 
+instead of the system bus.
 .TP
 \fB\-d\fR, \fB\-\-debug\fR, \fB\<[No\]DebugCategory>\fR
 Debug categories to enable. In order to disable a category which is enabled by 
@@ -33,36 +41,64 @@ categories will be printed unless they are explicitly muted with "NoWarnings".
 .RS
 .TP
 \fBMain\ debug\ categories:\fR
+.IP \fIAWS\fR\ (default\ disabled)
+Print the debug messages from the AWS connection.
+.IP \fIAWSTraffic\fR\ (default\ disabled)
+Print the debug messages from the AWS connection traffic.
 .IP \fIApplication\fR\ (default\ enabled)
 Print the debug messages from the core application.
 .IP \fIAvahi\fR\ (default\ disabled)
 Print the debug messages from the avahi resource.
+.IP \fIBluetooth\fR\ (default\ disabled)
+Print the debug messages from the bluetooth resource.
 .IP \fICloud\fR\ (default\ enabled)
 Print the debug messages from the Cloud connections in guh.
+.IP \fICoap\fR\ (default\ disabled)
+Print the debug messages from the COaP resource.
 .IP \fIConnection\fR\ (default\ enabled)
 Print the debug messages from the TCP connections in guh.
 .IP \fIDeviceManager\fR\ (default\ enabled)
 Print the debug messages from the device manager.
 .IP \fIHardware\fR\ (default\ disabled)
 Print the debug messages from hardware resources in guh.
+.IP \fIJanus\fR\ (default\ disabled)
+Print the debug messages from the janus connection.
+.IP \fIJanusTraffic\fR\ (default\ disabled)
+Print the debug messages from the janus connection traffic.
 .IP \fIJsonRpc\fR\ (default\ disabled)
 Print the debug messages from JSON-RPC API.
+.IP \fIJsonRpcTraffic\fR\ (default\ disabled)
+Print the debug messages from JSON-RPC API traffic.
 .IP \fILogEngine\fR\ (default\ disabled)
 Print the debug messages from logging engine.
+.IP \fINetworkManager\fR\ (default\ disabled)
+Print the debug messages from network manager.
 .IP \fIOAuth2\fR\ (default\ disabled)
 Print the debug messages of the OAuth2 resource.
 .IP \fIRest\fR\ (default\ disabled)
 Print the debug messages from REST API.
 .IP \fIRuleEngine\fR\ (default\ enabled)
 Print the debug messages from the rule engine.
+.IP \fIRuleEngineDebug\fR\ (default\ disabled)
+Print the debug messages from the rule engine with more details.
 .IP \fITcpServer\fR\ (default\ disabled)
 Print the debug messages from the TCP server.
+.IP \fITcpServerTraffic\fR\ (default\ disabled)
+Print the debug messages from the TCP server traffic.
+.IP \fITimeManager\fR\ (default\ disabled)
+Print the debug messages from the time manager.
+.IP \fIUPnP\fR\ (default\ disabled)
+Print the debug messages from the UPnP resource.
+.IP \fIUserManager\fR\ (default\ enabled)
+Print the debug messages from the user manager.
 .IP \fIWarning\fR\ (default\ enabled)
 Print warnings.
 .IP \fIWebServer\fR\ (default\ disabled)
 Print the debug messages from the web server.
 .IP \fIWebSocketServer\fR\ (default\ disabled)
 Print the debug messages from the websocket server.
+.IP \fIWebSocketServerTraffic\fR\ (default\ disabled)
+Print the debug messages from the websocket server traffic.
 .TP
 \fBDebug\ categories\ for\ plugins:\fR
 Since guh loads the plugins dynamically, the list of supported
@@ -77,6 +113,10 @@ $ guhd -n -d Hardware
 To start guhd in the foreground, disable debug messages from the DeviceManager and enable debug messages for JsonRpc and LogEngine:
 .IP
 $ guhd -n -d NoDeviceManager -d JsonRpc -d LogEngine
+.TP
+To start guhd in the foreground, enable all debug messages except WebSocketServerTraffic and TcpServerTraffic:
+.IP
+$ guhd -n -p -d NoWebSocketServerTraffic -d NoTcpServerTraffic
 .SH FILES
 The server config file: \fI/etc/guh/guhd.conf\fR
 .br
@@ -87,8 +127,6 @@ The rules config file: \fI/etc/guh/rules.conf\fR
 The plugins config file: \fI/etc/guh/plugins.conf\fR
 .br
 The log file: \fI/var/log/guhd.log\fR
-.br
-The logrotate config file: \fI/etc/logrotate.d/guhd\fR
 .br
 The logging database: \fI/var/log/guhd.sqlite\fR
 .br
@@ -106,7 +144,7 @@ How to report bugs: <https://github.com/guh/guh/wiki/Reporting-bugs>
 .SH AUTHOR
 Written by Simon Stürz and Michael Zanetti
 .SH COPYRIGHT
-Copyright \(co 2014-2017 guh GmbH.
+Copyright \(co 2014-2018 guh GmbH.
 .br
 
 License GPLv2: GNU GPL version 2 <http://gnu.org/licenses/gpl.html>.

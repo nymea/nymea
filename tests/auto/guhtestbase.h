@@ -47,6 +47,7 @@ extern DeviceClassId mockDeviceDiscoveryClassId;
 extern DeviceClassId mockDeviceAsyncSetupClassId;
 extern DeviceClassId mockDeviceBrokenClassId;
 extern DeviceClassId mockDeviceBrokenAsyncSetupClassId;
+extern ActionTypeId mockActionIdPower;
 extern ActionTypeId mockActionIdWithParams;
 extern ActionTypeId mockActionIdNoParams;
 extern ActionTypeId mockActionIdAsync;
@@ -55,6 +56,7 @@ extern ActionTypeId mockActionIdAsyncFailing;
 extern EventTypeId mockEvent1Id;
 extern EventTypeId mockEvent2Id;
 extern StateTypeId mockIntStateId;
+extern StateTypeId mockBatteryCriticalStateId;
 extern StateTypeId mockBoolStateId;
 
 // ParamTypes from mock devices

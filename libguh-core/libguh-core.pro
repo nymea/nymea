@@ -15,7 +15,9 @@ exists("/usr/include/mbedtls/net_sockets.h") {
 }
 
 # icons for the webserver
-RESOURCES += $$top_srcdir/icons.qrc
+RESOURCES += $$top_srcdir/icons.qrc \
+             $$top_srcdir/data/debug-interface/debug-interface.qrc
+
 
 HEADERS += guhcore.h \
     tcpserver.h \
@@ -73,6 +75,7 @@ HEADERS += guhcore.h \
     certificategenerator.h \
     awsconnector.h \
     cloudmanager.h \
+    cloudnotifications.h \
     MbedTLS/MbedTLSConnection.hpp \
     janusconnector.h \
     pushbuttondbusservice.h \
@@ -95,7 +98,7 @@ HEADERS += guhcore.h \
     hardware/network/avahi/qtavahiservice_p.h \
     hardware/network/avahi/qtavahiservicebrowserimplementation.h \
     hardware/network/avahi/qtavahiservicebrowserimplementation_p.h \
-
+    debugserverhandler.h
 
 SOURCES += guhcore.cpp \
     tcpserver.cpp \
@@ -151,6 +154,7 @@ SOURCES += guhcore.cpp \
     certificategenerator.cpp \
     awsconnector.cpp \
     cloudmanager.cpp \
+    cloudnotifications.cpp \
     MbedTLS/MbedTLSConnection.cpp \
     janusconnector.cpp \
     pushbuttondbusservice.cpp \
@@ -173,3 +177,4 @@ SOURCES += guhcore.cpp \
     hardware/network/avahi/qtavahiservice_p.cpp \
     hardware/network/avahi/qtavahiservicebrowserimplementation.cpp \
     hardware/network/avahi/qtavahiservicebrowserimplementation_p.cpp \
+    debugserverhandler.cpp

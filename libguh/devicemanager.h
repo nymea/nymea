@@ -26,10 +26,11 @@
 
 #include "libguh.h"
 
-#include "plugin/deviceclass.h"
 #include "plugin/device.h"
 #include "plugin/devicedescriptor.h"
 
+#include "types/deviceclass.h"
+#include "types/interface.h"
 #include "types/event.h"
 #include "types/action.h"
 #include "types/vendor.h"
@@ -94,6 +95,7 @@ public:
 
     static QStringList pluginSearchDirs();
     static QList<QJsonObject> pluginsMetadata();
+    void registerStaticPlugin(DevicePlugin* plugin, const QJsonObject &metaData);
 
     void setLocale(const QLocale &locale);
 
@@ -104,7 +106,10 @@ public:
     DeviceError setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig);
 
     QList<Vendor> supportedVendors() const;
+    Interfaces supportedInterfaces() const;
+    Interface findInterface(const QString &name);
     QList<DeviceClass> supportedDevices(const VendorId &vendorId = VendorId()) const;
+
     DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
 
     QList<Device*> configuredDevices() const;
@@ -124,6 +129,7 @@ public:
 
     Device* findConfiguredDevice(const DeviceId &id) const;
     QList<Device *> findConfiguredDevices(const DeviceClassId &deviceClassId) const;
+    QList<Device *> findConfiguredDevices(const QString &interface) const;
     QList<Device *> findChildDevices(const DeviceId &id) const;
     DeviceClass findDeviceClass(const DeviceClassId &deviceClassId) const;
 
@@ -153,6 +159,7 @@ public slots:
 
 private slots:
     void loadPlugins();
+    void loadPlugin(DevicePlugin *pluginIface);
     void loadConfiguredDevices();
     void storeConfiguredDevices();
     void startMonitoringAutoDevices();
@@ -181,6 +188,7 @@ private:
 
     QLocale m_locale;
     QHash<VendorId, Vendor> m_supportedVendors;
+    QHash<QString, Interface> m_supportedInterfaces;
     QHash<VendorId, QList<DeviceClassId> > m_vendorDeviceMap;
     QHash<DeviceClassId, DeviceClass> m_supportedDevices;
     QHash<DeviceId, Device*> m_configuredDevices;

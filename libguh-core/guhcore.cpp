@@ -103,6 +103,7 @@
 
 #include "devicemanager.h"
 #include "plugin/device.h"
+#include "cloudnotifications.h"
 
 namespace guhserver {
 
@@ -338,9 +339,36 @@ DeviceManager::DeviceError GuhCore::executeAction(const Action &action)
 /*! Execute the given \a ruleActions. */
 void GuhCore::executeRuleActions(const QList<RuleAction> ruleActions)
 {
+    QList<Action> actions;
     foreach (const RuleAction &ruleAction, ruleActions) {
-        Action action = ruleAction.toAction();
-        qCDebug(dcRuleEngine) << "Executing action" << ruleAction.actionTypeId() << action.params();
+        if (ruleAction.type() == RuleAction::TypeDevice) {
+            actions.append(ruleAction.toAction());
+        } else {
+            QList<Device*> devices = m_deviceManager->findConfiguredDevices(ruleAction.interface());
+            foreach (Device* device, devices) {
+                DeviceClass dc = m_deviceManager->findDeviceClass(device->deviceClassId());
+                ActionType at = dc.actionTypes().findByName(ruleAction.interfaceAction());
+                if (at.id().isNull()) {
+                    qCWarning(dcRuleEngine()) << "Error creating Action. The given DeviceClass does not implement action:" << ruleAction.interfaceAction();
+                    continue;
+                }
+                Action action = Action(at.id(), device->id());
+                ParamList params;
+                foreach (const RuleActionParam &rap, ruleAction.ruleActionParams()) {
+                    ParamType pt = at.paramTypes().findByName(rap.paramName());
+                    if (pt.id().isNull()) {
+                        qCWarning(dcRuleEngine()) << "Error creating Action. Failed to match interface param type to DeviceClass paramtype.";
+                        continue;
+                    }
+                    params.append(Param(pt.id(), rap.value()));
+                }
+                action.setParams(params);
+                actions.append(action);
+            }
+        }
+    }
+    foreach (const Action &action, actions) {
+        qCDebug(dcRuleEngine) << "Executing action" << action.actionTypeId() << action.params();
         DeviceManager::DeviceError status = executeAction(action);
         switch(status) {
         case DeviceManager::DeviceErrorNoError:
@@ -433,6 +461,11 @@ CloudManager *GuhCore::cloudManager() const
     return m_cloudManager;
 }
 
+DebugServerHandler *GuhCore::debugServerHandler() const
+{
+    return m_debugServerHandler;
+}
+
 
 /*! Constructs GuhCore with the given \a parent. This is private.
     Use \l{GuhCore::instance()} to access the single instance.*/
@@ -467,9 +500,11 @@ void GuhCore::init() {
     qCDebug(dcApplication) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_configuration, this);
 
-    // Create the NetworkManager
     qCDebug(dcApplication) << "Creating Network Manager";
     m_networkManager = new NetworkManager(this);
+
+    qCDebug(dcApplication) << "Creating Debug Server Handler";
+    m_debugServerHandler = new DebugServerHandler(this);
 
     qCDebug(dcApplication) << "Creating Cloud Manager";
     m_cloudManager = new CloudManager(m_networkManager, this);
@@ -478,6 +513,9 @@ void GuhCore::init() {
     m_cloudManager->setServerUrl(m_configuration->cloudServerUrl());
     m_cloudManager->setClientCertificates(m_configuration->cloudCertificateCA(), m_configuration->cloudCertificate(), m_configuration->cloudCertificateKey());
     m_cloudManager->setEnabled(m_configuration->cloudEnabled());
+
+    CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
+    m_deviceManager->registerStaticPlugin(cloudNotifications, cloudNotifications->metaData());
 
     connect(m_configuration, &GuhConfiguration::localeChanged, this, &GuhCore::onLocaleChanged);
     connect(m_configuration, &GuhConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::setEnabled);

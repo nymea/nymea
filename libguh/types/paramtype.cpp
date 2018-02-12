@@ -66,6 +66,18 @@ void ParamType::setName(const QString &name)
     m_name = name;
 }
 
+/*! Returns the displayName of this ParamType, to be shown to the user, translated. */
+QString ParamType::displayName() const
+{
+    return m_displayName;
+}
+
+/*! Sets the displayName of this ParamType, to be shown to the user, translated. */
+void ParamType::setDisplayName(const QString &displayName)
+{
+    m_displayName = displayName;
+}
+
 /*! Returns the index of this \l{ParamType}. The index of an \l{ParamType} indicates the order in the corresponding Type. */
 int ParamType::index() const
 {

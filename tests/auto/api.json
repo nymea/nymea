@@ -1,4 +1,4 @@
-0.54
+1.2
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -22,9 +22,10 @@
             "returns": {
                 "deviceError": "$ref:DeviceError",
                 "o:actionType": {
+                    "displayName": "String",
                     "id": "Uuid",
                     "index": "Int",
-                    "name": "Uuid",
+                    "name": "String",
                     "paramTypes": [
                         "$ref:ParamType"
                     ]
@@ -74,6 +75,7 @@
             },
             "returns": {
                 "basicConfiguration": {
+                    "debugServerEnabled": "Bool",
                     "language": "String",
                     "serverName": "String",
                     "serverTime": "Uint",
@@ -108,6 +110,15 @@
             "description": "Sets whether the cloud connection is enabled or disabled in the settings.",
             "params": {
                 "enabled": "Bool"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.SetDebugServerEnabled": {
+            "description": "Enable or disable the debug server.",
+            "params": {
+                "enabled": "String"
             },
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
@@ -784,6 +795,7 @@
         "Configuration.BasicConfigurationChanged": {
             "description": "Emitted whenever the basic configuration of this server changes.",
             "params": {
+                "debugServerEnabled": "Bool",
                 "serverName": "String",
                 "serverTime": "Uint",
                 "serverUuid": "Uuid",
@@ -961,9 +973,10 @@
             ]
         },
         "ActionType": {
+            "displayName": "String",
             "id": "Uuid",
             "index": "Int",
-            "name": "Uuid",
+            "name": "String",
             "paramTypes": [
                 "$ref:ParamType"
             ]
@@ -1051,6 +1064,7 @@
             "discoveryParamTypes": [
                 "$ref:ParamType"
             ],
+            "displayName": "String",
             "eventTypes": [
                 "$ref:EventType"
             ],
@@ -1149,13 +1163,16 @@
             ]
         },
         "EventDescriptor": {
-            "deviceId": "Uuid",
-            "eventTypeId": "Uuid",
+            "o:deviceId": "Uuid",
+            "o:eventTypeId": "Uuid",
+            "o:interface": "String",
+            "o:interfaceEvent": "String",
             "o:paramDescriptors": [
                 "$ref:ParamDescriptor"
             ]
         },
         "EventType": {
+            "displayName": "String",
             "id": "Uuid",
             "index": "Int",
             "name": "String",
@@ -1258,6 +1275,7 @@
             "value": "$ref:BasicType"
         },
         "ParamType": {
+            "displayName": "String",
             "id": "Uuid",
             "index": "Int",
             "name": "String",
@@ -1273,6 +1291,7 @@
             "type": "$ref:BasicType"
         },
         "Plugin": {
+            "displayName": "String",
             "id": "Uuid",
             "name": "String",
             "paramTypes": [
@@ -1319,8 +1338,10 @@
             "timeDescriptor": "$ref:TimeDescriptor"
         },
         "RuleAction": {
-            "actionTypeId": "Uuid",
-            "deviceId": "Uuid",
+            "o:actionTypeId": "Uuid",
+            "o:deviceId": "Uuid",
+            "o:interface": "String",
+            "o:interfaceAction": "String",
             "o:ruleActionParams": [
                 "$ref:RuleActionParam"
             ]
@@ -1328,8 +1349,9 @@
         "RuleActionParam": {
             "o:eventParamTypeId": "Uuid",
             "o:eventTypeId": "Uuid",
-            "o:value": "$ref:BasicType",
-            "paramTypeId": "Uuid"
+            "o:paramName": "String",
+            "o:paramTypeId": "Uuid",
+            "o:value": "$ref:BasicType"
         },
         "RuleDescription": {
             "active": "Bool",
@@ -1358,7 +1380,8 @@
             "RuleErrorInvalidCalendarItem",
             "RuleErrorInvalidTimeEventItem",
             "RuleErrorContainsEventBasesAction",
-            "RuleErrorNoExitActions"
+            "RuleErrorNoExitActions",
+            "RuleErrorInterfaceNotFound"
         ],
         "ServerConfiguration": {
             "address": "String",
@@ -1397,6 +1420,7 @@
         ],
         "StateType": {
             "defaultValue": "Variant",
+            "displayName": "String",
             "id": "Uuid",
             "index": "Int",
             "name": "String",
@@ -1499,6 +1523,7 @@
             "ValueOperatorGreaterOrEqual"
         ],
         "Vendor": {
+            "displayName": "String",
             "id": "Uuid",
             "name": "String"
         },

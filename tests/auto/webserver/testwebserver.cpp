@@ -68,6 +68,9 @@ private slots:
     void getIcons_data();
     void getIcons();
 
+    void getDebugServer_data();
+    void getDebugServer();
+
 public slots:
     void onSslErrors(const QList<QSslError> &) {
         qWarning() << "SSL error";
@@ -470,6 +473,210 @@ void TestWebserver::getIcons()
     QCOMPARE(iconData.size(), iconSize);
 
     reply->deleteLater();
+}
+
+void TestWebserver::getDebugServer_data()
+{
+    QTest::addColumn<QString>("method");
+    QTest::addColumn<QString>("query");
+    QTest::addColumn<bool>("serverEnabled");
+    QTest::addColumn<int>("expectedStatusCode");
+
+    // Resource files
+    QTest::newRow("GET /debug/styles.css | server enabled | 200") << "get" << "/debug/styles.css" << true << 200;
+    QTest::newRow("GET /debug/logo.svg | server enabled | 200") << "get" << "/debug/logo.svg" << true << 200;
+
+    // Check redirection
+    QTest::newRow("GET /debug/thisresourcedoesnotexist | server enabled | 308-200") << "get" << "/debug/thisresourcedoesnotexist" << true << 308;
+
+    // debug enabled
+    QTest::newRow("GET /debug | server enabled | 200") << "get" << "/debug" << true << 200;
+    QTest::newRow("OPTIONS /debug | server enabled | 200") << "options" << "/debug" << true << 200;
+    QTest::newRow("PUT /debug | server enabled | 405") << "put" << "/debug" << true << 405;
+    QTest::newRow("POST /debug | server enabled | 405") << "post" << "/debug" << true << 405;
+    QTest::newRow("DELETE /debug | server enabled | 405") << "delete" << "/debug" << true << 405;
+
+    // debug disabled
+    QTest::newRow("GET /debug | server disabled | 404") << "get" << "/debug" << false << 404;
+    QTest::newRow("OPTIONS /debug | server disabled | 404") << "options" << "/debug" << false << 404;
+    QTest::newRow("PUT /debug | server disabled | 404") << "put" << "/debug" << false << 404;
+    QTest::newRow("POST /debug | server disabled | 404") << "post" << "/debug" << false << 404;
+    QTest::newRow("DELETE /debug | server disabled | 404") << "delete" << "/debug" << false << 404;
+
+    // styles.css enabled
+    QTest::newRow("GET /debug/styles.css | server enabled | 200") << "get" << "/debug/styles.css" << true << 200;
+    QTest::newRow("OPTIONS /debug/styles.css | server enabled | 200") << "options" << "/debug/styles.css" << true << 200;
+    QTest::newRow("PUT /debug/styles.css | server enabled | 405") << "put" << "/debug/styles.css" << true << 405;
+    QTest::newRow("POST /debug/styles.css | server enabled | 405") << "post" << "/debug/styles.css" << true << 405;
+    QTest::newRow("DELETE /debug/styles.css | server enabled | 405") << "delete" << "/debug/styles.css" << true << 405;
+
+    // styles.css disabled
+    QTest::newRow("GET /debug/styles.css | server disabled | 404") << "get" << "/debug/styles.css" << false << 404;
+    QTest::newRow("OPTIONS /debug/styles.css | server disabled | 404") << "options" << "/debug/styles.css" << false << 404;
+    QTest::newRow("PUT /debug/styles.css | server disabled | 404") << "put" << "/debug/styles.css" << false << 404;
+    QTest::newRow("POST /debug/styles.css | server disabled | 404") << "post" << "/debug/styles.css" << false << 404;
+    QTest::newRow("DELETE /debug/styles.css | server disabled | 404") << "delete" << "/debug/styles.css" << false << 404;
+
+    // logdb enabled
+    QTest::newRow("GET /debug/logdb.sql | server enabled | 200") << "get" << "/debug/logdb.sql" << true << 200;
+    QTest::newRow("OPTIONS /debug/logdb.sql | server enabled | 200") << "options" << "/debug/logdb.sql" << true << 200;
+    QTest::newRow("PUT /debug/logdb.sql | server enabled | 405") << "put" << "/debug/logdb.sql" << true << 405;
+    QTest::newRow("POST /debug/logdb.sql | server enabled | 405") << "post" << "/debug/logdb.sql" << true << 405;
+    QTest::newRow("DELETE /debug/logdb.sql | server enabled | 405") << "delete" << "/debug/logdb.sql" << true << 405;
+
+    // logdb disabled
+    QTest::newRow("GET /debug/logdb.sql | server disabled | 404") << "get" << "/debug/logdb.sql" << false << 404;
+    QTest::newRow("OPTIONS /debug/logdb.sql | server disabled | 404") << "options" << "/debug/logdb.sql" << false << 404;
+    QTest::newRow("PUT /debug/logdb.sql | server disabled | 404") << "put" << "/debug/logdb.sql" << false << 404;
+    QTest::newRow("POST /debug/logdb.sql | server disabled | 404") << "post" << "/debug/logdb.sql" << false << 404;
+    QTest::newRow("DELETE /debug/logdb.sql | server disabled | 404") << "delete" << "/debug/logdb.sql" << false << 404;
+
+    // Check if syslog is accessable
+    QFileInfo syslogFileInfo("/var/log/syslog");
+
+    if (syslogFileInfo.exists() && syslogFileInfo.isReadable()) {
+        // syslog enabled
+        QTest::newRow("GET /debug/syslog | server enabled | 200") << "get" << "/debug/syslog" << true << 200;
+        QTest::newRow("OPTIONS /debug/syslog | server enabled | 200") << "options" << "/debug/syslog" << true << 200;
+        QTest::newRow("PUT /debug/syslog | server enabled | 405") << "put" << "/debug/syslog" << true << 405;
+        QTest::newRow("POST /debug/syslog | server enabled | 405") << "post" << "/debug/syslog" << true << 405;
+        QTest::newRow("DELETE /debug/syslog | server enabled | 405") << "delete" << "/debug/syslog" << true << 405;
+    } else {
+        // syslog enabled, but not readable
+        QTest::newRow("GET /debug/syslog | server enabled | 200") << "get" << "/debug/syslog" << true << 403;
+        QTest::newRow("OPTIONS /debug/syslog | server enabled | 200") << "options" << "/debug/syslog" << true << 403;
+        QTest::newRow("PUT /debug/syslog | server enabled | 405") << "put" << "/debug/syslog" << true << 405;
+        QTest::newRow("POST /debug/syslog | server enabled | 405") << "post" << "/debug/syslog" << true << 405;
+        QTest::newRow("DELETE /debug/syslog | server enabled | 405") << "delete" << "/debug/syslog" << true << 405;
+    }
+
+    // syslog disabled
+    QTest::newRow("GET /debug/syslog | server enabled | 404") << "get" << "/debug/syslog" << false << 404;
+    QTest::newRow("OPTIONS /debug/syslog | server enabled | 404") << "options" << "/debug/syslog" << false << 404;
+    QTest::newRow("PUT /debug/syslog | server enabled | 404") << "put" << "/debug/syslog" << false << 404;
+    QTest::newRow("POST /debug/syslog | server enabled | 404") << "post" << "/debug/syslog" << false << 404;
+    QTest::newRow("DELETE /debug/syslog | server enabled | 404") << "delete" << "/debug/syslog" << false << 404;
+
+    // settings/guhd enabled
+    QTest::newRow("GET /debug/settings/guhd | server enabled | 200") << "get" << "/debug/settings/guhd" << true << 200;
+    QTest::newRow("OPTIONS /debug/settings/guhd | server enabled | 200") << "options" << "/debug/settings/guhd" << true << 200;
+    QTest::newRow("PUT /debug/settings/guhd | server enabled | 405") << "put" << "/debug/settings/guhd" << true << 405;
+    QTest::newRow("POST /debug/settings/guhd | server enabled | 405") << "post" << "/debug/settings/guhd" << true << 405;
+    QTest::newRow("DELETE /debug/settings/guhd | server enabled | 405") << "delete" << "/debug/settings/guhd" << true << 405;
+
+    // settings/guhd disabled
+    QTest::newRow("GET /debug/settings/guhd | server disabled | 404") << "get" << "/debug/settings/guhd" << false << 404;
+    QTest::newRow("OPTIONS /debug/settings/guhd | server disabled | 404") << "options" << "/debug/settings/guhd" << false << 404;
+    QTest::newRow("PUT /debug/settings/guhd | server disabled | 404") << "put" << "/debug/settings/guhd" << false << 404;
+    QTest::newRow("POST /debug/settings/guhd | server disabled | 404") << "post" << "/debug/settings/guhd" << false << 404;
+    QTest::newRow("DELETE /debug/settings/guhd | server disabled | 404") << "delete" << "/debug/settings/guhd" << false << 404;
+
+    // settings/devices enabled
+    QTest::newRow("GET /debug/settings/devices | server enabled | 200") << "get" << "/debug/settings/devices" << true << 200;
+    QTest::newRow("OPTIONS /debug/settings/devices | server enabled | 200") << "options" << "/debug/settings/devices" << true << 200;
+    QTest::newRow("PUT /debug/settings/devices | server enabled | 405") << "put" << "/debug/settings/devices" << true << 405;
+    QTest::newRow("POST /debug/settings/devices | server enabled | 405") << "post" << "/debug/settings/devices" << true << 405;
+    QTest::newRow("DELETE /debug/settings/devices | server enabled | 405") << "delete" << "/debug/settings/devices" << true << 405;
+
+    // settings/devices disabled
+    QTest::newRow("GET /debug/settings/devices | server disabled | 404") << "get" << "/debug/settings/devices" << false << 404;
+    QTest::newRow("OPTIONS /debug/settings/devices | server disabled | 404") << "options" << "/debug/settings/devices" << false << 404;
+    QTest::newRow("PUT /debug/settings/devices | server disabled | 404") << "put" << "/debug/settings/devices" << false << 404;
+    QTest::newRow("POST /debug/settings/devices | server disabled | 404") << "post" << "/debug/settings/devices" << false << 404;
+    QTest::newRow("DELETE /debug/settings/devices | server disabled | 404") << "delete" << "/debug/settings/devices" << false << 404;
+
+    // settings/rules enabled
+    QTest::newRow("GET /debug/settings/rules | server enabled | 200") << "get" << "/debug/settings/rules" << true << 200;
+    QTest::newRow("OPTIONS /debug/settings/rules | server enabled | 200") << "options" << "/debug/settings/rules" << true << 200;
+    QTest::newRow("PUT /debug/settings/rules | server enabled | 405") << "put" << "/debug/settings/rules" << true << 405;
+    QTest::newRow("POST /debug/settings/rules | server enabled | 405") << "post" << "/debug/settings/rules" << true << 405;
+    QTest::newRow("DELETE /debug/settings/rules | server enabled | 405") << "delete" << "/debug/settings/rules" << true << 405;
+
+    // settings/rules disabled
+    QTest::newRow("GET /debug/settings/rules | server disabled | 404") << "get" << "/debug/settings/rules" << false << 404;
+    QTest::newRow("OPTIONS /debug/settings/rules | server disabled | 404") << "options" << "/debug/settings/rules" << false << 404;
+    QTest::newRow("PUT /debug/settings/rules | server disabled | 404") << "put" << "/debug/settings/rules" << false << 404;
+    QTest::newRow("POST /debug/settings/rules | server disabled | 404") << "post" << "/debug/settings/rules" << false << 404;
+    QTest::newRow("DELETE /debug/settings/rules | server disabled | 404") << "delete" << "/debug/settings/rules" << false << 404;
+
+    // settings/devicestates enabled
+    QTest::newRow("GET /debug/settings/devicestates | server enabled | 200") << "get" << "/debug/settings/devicestates" << true << 200;
+    QTest::newRow("OPTIONS /debug/settings/devicestates | server enabled | 200") << "options" << "/debug/settings/devicestates" << true << 200;
+    QTest::newRow("PUT /debug/settings/devicestates | server enabled | 405") << "put" << "/debug/settings/devicestates" << true << 405;
+    QTest::newRow("POST /debug/settings/devicestates | server enabled | 405") << "post" << "/debug/settings/devicestates" << true << 405;
+    QTest::newRow("DELETE /debug/settings/devicestates | server enabled | 405") << "delete" << "/debug/settings/devicestates" << true << 405;
+
+    // settings/devicestates disabled
+    QTest::newRow("GET /debug/settings/devicestates | server disabled | 404") << "get" << "/debug/settings/devicestates" << false << 404;
+    QTest::newRow("OPTIONS /debug/settings/devicestates | server disabled | 404") << "options" << "/debug/settings/devicestates" << false << 404;
+    QTest::newRow("PUT /debug/settings/devicestates | server disabled | 404") << "put" << "/debug/settings/devicestates" << false << 404;
+    QTest::newRow("POST /debug/settings/devicestates | server disabled | 404") << "post" << "/debug/settings/devicestates" << false << 404;
+    QTest::newRow("DELETE /debug/settings/devicestates | server disabled | 404") << "delete" << "/debug/settings/devicestates" << false << 404;
+
+    // settings/plugins enabled
+    QTest::newRow("GET /debug/settings/plugins | server enabled | 200") << "get" << "/debug/settings/plugins" << true << 200;
+    QTest::newRow("OPTIONS /debug/settings/plugins | server enabled | 200") << "options" << "/debug/settings/plugins" << true << 200;
+    QTest::newRow("PUT /debug/settings/plugins | server enabled | 405") << "put" << "/debug/settings/plugins" << true << 405;
+    QTest::newRow("POST /debug/settings/plugins | server enabled | 405") << "post" << "/debug/settings/plugins" << true << 405;
+    QTest::newRow("DELETE /debug/settings/plugins | server enabled | 405") << "delete" << "/debug/settings/plugins" << true << 405;
+
+    // settings/devicestates disabled
+    QTest::newRow("GET /debug/settings/plugins | server disabled | 404") << "get" << "/debug/settings/plugins" << false << 404;
+    QTest::newRow("OPTIONS /debug/settings/plugins | server disabled | 404") << "options" << "/debug/settings/plugins" << false << 404;
+    QTest::newRow("PUT /debug/settings/plugins | server disabled | 404") << "put" << "/debug/settings/plugins" << false << 404;
+    QTest::newRow("POST /debug/settings/plugins | server disabled | 404") << "post" << "/debug/settings/plugins" << false << 404;
+    QTest::newRow("DELETE /debug/settings/plugins | server disabled | 404") << "delete" << "/debug/settings/plugins" << false << 404;
+
+
+}
+
+void TestWebserver::getDebugServer()
+{
+    QFETCH(QString, method);
+    QFETCH(QString, query);
+    QFETCH(bool, serverEnabled);
+    QFETCH(int, expectedStatusCode);
+
+    // Enable/disable debug server
+    QVariantMap params; QVariant response;
+    params.insert("enabled", serverEnabled);
+    response = injectAndWait("Configuration.SetDebugServerEnabled", params);
+    verifyConfigurationError(response);
+
+    QNetworkAccessManager nam;
+    bool ok = false;
+    int statusCode = 0;
+
+    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
+    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply* reply, const QList<QSslError> &) {
+        reply->ignoreSslErrors();
+    });
+
+    QNetworkReply *reply = nullptr;
+    QNetworkRequest request;
+    request.setUrl(QUrl("https://localhost:3333" + query));
+
+    clientSpy.clear();
+
+    if (method == "get") {
+        reply = nam.get(request);
+    } else if (method == "options") {
+        reply = nam.sendCustomRequest(request, "OPTIONS");
+    } else if (method == "post") {
+        reply = nam.post(request, "");
+    } else if (method == "delete") {
+        reply = nam.deleteResource(request);
+    } else if (method == "put") {
+        reply = nam.put(request, "");
+    }
+
+    clientSpy.wait();
+    QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
+
+    ok = false;
+    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
+    QVERIFY2(ok, "Could not convert statuscode from response to int");
+    QCOMPARE(statusCode, expectedStatusCode);
 }
 
 #include "testwebserver.moc"

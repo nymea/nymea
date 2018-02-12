@@ -1,0 +1,11 @@
+{
+    "extends": "sensor",
+    "states": [
+        {
+            "name": "humidity",
+            "type": "double",
+            "minValue": 0,
+            "maxValue": 100
+        }
+    ]
+}

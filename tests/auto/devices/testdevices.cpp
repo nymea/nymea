@@ -241,11 +241,12 @@ void TestDevices::verifyInterfaces()
     QVERIFY(!mockDevice.isEmpty());
 
     QVariantList interfaces = mockDevice.value("interfaces").toList();
-    // Must contain gateway, light and battery, but must not contain mediacontroller as the device manager should filter
+    // Must contain gateway, power, light and battery, but must not contain mediacontroller as the device manager should filter
     // that away because it doesn't implement all the required states.
-    QCOMPARE(interfaces.count(), 3);
+    QCOMPARE(interfaces.count(), 4);
     QVERIFY(interfaces.contains("gateway"));
     QVERIFY(interfaces.contains("battery"));
+    QVERIFY(interfaces.contains("power"));
     QVERIFY(interfaces.contains("light"));
     QVERIFY(!interfaces.contains("mediacontroller"));
 }

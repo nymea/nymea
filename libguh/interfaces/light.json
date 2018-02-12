@@ -1,9 +1,3 @@
 {
-    "states": [
-        {
-            "name": "power",
-            "type": "bool",
-            "writable": true
-        }
-    ]
+    "extends": "power"
 }

@@ -142,7 +142,13 @@ QJsonObject CloudNotifications::metaData() const
 
 DeviceManager::DeviceSetupStatus CloudNotifications::setupDevice(Device *device)
 {
-    Q_UNUSED(device)
+    device->setStateValue(connectedStateTypeId, m_awsConnector->isConnected());
+    connect(m_awsConnector, &AWSConnector::connected, device, [this, device]() {
+        device->setStateValue(connectedStateTypeId, true);
+    });
+    connect(m_awsConnector, &AWSConnector::disconnected, device, [this, device]() {
+        device->setStateValue(connectedStateTypeId, false);
+    });
     return DeviceManager::DeviceSetupStatusSuccess;
 }
 

@@ -1,11 +1,11 @@
 [Unit]
-Description=guhd - IoT server
+Description=nymead - IoT server
 Documentation=https://github.com/guh/guh/wiki
 After=network.target
 Wants=network-online.target
 
 [Service]
-ExecStart=/usr/bin/guhd -n --print-all
+ExecStart=/usr/bin/nymead -n --print-all
 StandardOutput=journal
 StandardError=journal
 Restart=on-failure

@@ -2,19 +2,19 @@
  *                                                                         *
  *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
- *  This file is part of guh.                                              *
+ *  This file is part of nymea.                                            *
  *                                                                         *
- *  Guh is free software: you can redistribute it and/or modify            *
+ *  nymea is free software: you can redistribute it and/or modify          *
  *  it under the terms of the GNU General Public License as published by   *
  *  the Free Software Foundation, version 2 of the License.                *
  *                                                                         *
- *  Guh is distributed in the hope that it will be useful,                 *
+ *  nymea is distributed in the hope that it will be useful,               *
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
  *  GNU General Public License for more details.                           *
  *                                                                         *
  *  You should have received a copy of the GNU General Public License      *
- *  along with guh. If not, see <http://www.gnu.org/licenses/>.            *
+ *  along with nymea. If not, see <http://www.gnu.org/licenses/>.          *
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -63,7 +63,7 @@ button {
   width: 100%;
 }
 
-.guh-main-logo {
+.nymea-main-logo {
   left: 0;
   height: 85px;
   min-height: 85px;

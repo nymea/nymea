@@ -72,7 +72,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("h1");
     writer.writeEmptyElement("img");
     writer.writeAttribute("src", "/debug/logo.svg");
-    writer.writeAttribute("class", "guh-main-logo");
+    writer.writeAttribute("class", "nymea-main-logo");
 
     //: The main title of the debug server interface
     writer.writeCharacters(QCoreApplication::translate("main", "nymea debug interface"));

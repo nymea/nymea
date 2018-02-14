@@ -1,4 +1,4 @@
-/var/log/guhd.log {
+/var/log/nymead.log {
         rotate 7
         daily
         dateext

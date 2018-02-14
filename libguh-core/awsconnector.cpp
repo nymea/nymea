@@ -79,7 +79,7 @@ void AWSConnector::doConnect()
 {
     m_setupInProgress = true;
     m_subscriptionCache.clear();
-    m_networkConnection = std::shared_ptr<MbedTLSConnection>(new MbedTLSConnection(
+    m_networkConnection = std::shared_ptr<OpenSSLConnection>(new OpenSSLConnection(
                                                                  m_currentEndpoint.toStdString(),
                                                                  8883,
                                                                  m_caFile.toStdString(),
@@ -90,6 +90,7 @@ void AWSConnector::doConnect()
                                                                  std::chrono::milliseconds(3000),
                                                                  true
                                                                  ));
+    m_networkConnection->Initialize();
     m_client = MqttClient::Create(m_networkConnection, std::chrono::milliseconds(2800), &onDisconnectedCallback, m_disconnectContextData);
 
     m_client->SetAutoReconnectEnabled(false);

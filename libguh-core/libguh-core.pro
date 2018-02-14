@@ -10,10 +10,6 @@ LIBS += -L$$top_builddir/libguh/ -lguh -lssl -lcrypto -lavahi-common -lavahi-cli
 target.path = /usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')
 INSTALLS += target
 
-exists("/usr/include/mbedtls/net_sockets.h") {
-    DEFINES += MBEDTLS_NEW_HEADERS
-}
-
 # icons for the webserver
 RESOURCES += $$top_srcdir/icons.qrc \
              $$top_srcdir/data/debug-interface/debug-interface.qrc
@@ -76,7 +72,7 @@ HEADERS += guhcore.h \
     awsconnector.h \
     cloudmanager.h \
     cloudnotifications.h \
-    MbedTLS/MbedTLSConnection.hpp \
+    OpenSSL/OpenSSLConnection.hpp \
     janusconnector.h \
     pushbuttondbusservice.h \
     guhdbusservice.h \
@@ -155,7 +151,7 @@ SOURCES += guhcore.cpp \
     awsconnector.cpp \
     cloudmanager.cpp \
     cloudnotifications.cpp \
-    MbedTLS/MbedTLSConnection.cpp \
+    OpenSSL/OpenSSLConnection.cpp \
     janusconnector.cpp \
     pushbuttondbusservice.cpp \
     guhdbusservice.cpp \

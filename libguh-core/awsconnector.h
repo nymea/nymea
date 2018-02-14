@@ -25,7 +25,7 @@
 #include <QFuture>
 #include <QDateTime>
 
-#include "MbedTLS/MbedTLSConnection.hpp"
+#include "OpenSSL/OpenSSLConnection.hpp"
 #include <mqtt/Client.hpp>
 #include <mqtt/Common.hpp>
 #include "util/logging/Logging.hpp"
@@ -107,7 +107,7 @@ private:
     QString readSyncedNameCache();
 
 private:
-    std::shared_ptr<awsiotsdk::network::MbedTLSConnection> m_networkConnection;
+    std::shared_ptr<awsiotsdk::network::OpenSSLConnection> m_networkConnection;
     std::shared_ptr<awsiotsdk::MqttClient> m_client;
     QString m_currentEndpoint;
     QString m_caFile;

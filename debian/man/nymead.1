@@ -1,13 +1,13 @@
-.\" Manpage for guhd.
+.\" Manpage for nymead.
 .\" Contact simon.stuerz@guh.io to correct errors or typos.
-.TH man 1 "February 2018" "1.9" "guhd man page"
+.TH man 1 "February 2018" "1.9" "nymead man page"
 .SH NAME
-guhd \- An open source IoT (Internet of Things) server
+nymead \- An open source IoT (Internet of Things) server
 .SH SYNOPSIS
-.B guhd
+.B nymead
 [\fIOPTION\fR]
 .SH DESCRIPTION
-The guh (/[guːh]/) daemon is a plugin based IoT (Internet of Things) server. The
+The nymea (/[guːh]/) daemon is a plugin based IoT (Internet of Things) server. The
 server works like a translator for devices, things and services and
 allows them to interact. With the powerful rule engine you are able to connect any device available
 in the system and create individual scenes and behaviors for your environment.
@@ -20,7 +20,7 @@ Displays this help.
 Displays version information.
 .TP
 \fB\-n\fR, \fB\-\-no\-daemon\fR
-Run guhd in the foreground, not as daemon.
+Run nymead in the foreground, not as daemon.
 .TP
 \fB\-p\fR, \fB\-\-print\-all\fR
 Enables all debug categories. Single debug categories can be disabled again 
@@ -52,15 +52,15 @@ Print the debug messages from the avahi resource.
 .IP \fIBluetooth\fR\ (default\ disabled)
 Print the debug messages from the bluetooth resource.
 .IP \fICloud\fR\ (default\ enabled)
-Print the debug messages from the Cloud connections in guh.
+Print the debug messages from the Cloud connections in nymea.
 .IP \fICoap\fR\ (default\ disabled)
 Print the debug messages from the COaP resource.
 .IP \fIConnection\fR\ (default\ enabled)
-Print the debug messages from the TCP connections in guh.
+Print the debug messages from the TCP connections in nymea.
 .IP \fIDeviceManager\fR\ (default\ enabled)
 Print the debug messages from the device manager.
 .IP \fIHardware\fR\ (default\ disabled)
-Print the debug messages from hardware resources in guh.
+Print the debug messages from hardware resources in nymea.
 .IP \fIJanus\fR\ (default\ disabled)
 Print the debug messages from the janus connection.
 .IP \fIJanusTraffic\fR\ (default\ disabled)
@@ -101,38 +101,38 @@ Print the debug messages from the websocket server.
 Print the debug messages from the websocket server traffic.
 .TP
 \fBDebug\ categories\ for\ plugins:\fR
-Since guh loads the plugins dynamically, the list of supported
+Since nymea loads the plugins dynamically, the list of supported
 plugin debug categories depends on your plugin installation. Please use
 the \fB-h\fR command to see which categories are available for your system.
 .SH EXAMPLES
 .TP
-To start guhd in the foreground and read the debug messages from the Hardware:
+To start nymead in the foreground and read the debug messages from the Hardware:
 .IP
-$ guhd -n -d Hardware
+$ nymead -n -d Hardware
 .TP
-To start guhd in the foreground, disable debug messages from the DeviceManager and enable debug messages for JsonRpc and LogEngine:
+To start nymead in the foreground, disable debug messages from the DeviceManager and enable debug messages for JsonRpc and LogEngine:
 .IP
-$ guhd -n -d NoDeviceManager -d JsonRpc -d LogEngine
+$ nymead -n -d NoDeviceManager -d JsonRpc -d LogEngine
 .TP
-To start guhd in the foreground, enable all debug messages except WebSocketServerTraffic and TcpServerTraffic:
+To start nymead in the foreground, enable all debug messages except WebSocketServerTraffic and TcpServerTraffic:
 .IP
-$ guhd -n -p -d NoWebSocketServerTraffic -d NoTcpServerTraffic
+$ nymead -n -p -d NoWebSocketServerTraffic -d NoTcpServerTraffic
 .SH FILES
-The server config file: \fI/etc/guh/guhd.conf\fR
+The server config file: \fI/etc/nymea/nymead.conf\fR
 .br
-The devices config file: \fI/etc/guh/devices.conf\fR
+The devices config file: \fI/etc/nymea/devices.conf\fR
 .br
-The rules config file: \fI/etc/guh/rules.conf\fR
+The rules config file: \fI/etc/nymea/rules.conf\fR
 .br
-The plugins config file: \fI/etc/guh/plugins.conf\fR
+The plugins config file: \fI/etc/nymea/plugins.conf\fR
 .br
-The log file: \fI/var/log/guhd.log\fR
+The log file: \fI/var/log/nymead.log\fR
 .br
-The logging database: \fI/var/log/guhd.sqlite\fR
+The logging database: \fI/var/log/nymead.sqlite\fR
 .br
-The systemd unit file: \fI/lib/systemd/system/guhd.service\fR
+The systemd unit file: \fI/lib/systemd/system/nymead.service\fR
 .br
-The plugins directory: \fI/usr/lib/<arch-triplet>/guh/plugins/\fR
+The plugins directory: \fI/usr/lib/<arch-triplet>/nymea/plugins/\fR
 .SH SEE ALSO
 Full developer documentation at: <https://developers.guh.io>
 .br

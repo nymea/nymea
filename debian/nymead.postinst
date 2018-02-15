@@ -4,31 +4,31 @@
 #                                                                         #
 #  Copyright (C) 2015-2016 Simon Stuerz <simon.stuerz@guh.guru>           #
 #                                                                         #
-#  This file is part of guh.                                              #
+#  This file is part of nymea.                                            #
 #                                                                         #
-#  guh is free software: you can redistribute it and/or modify            #
+#  nymea is free software: you can redistribute it and/or modify          #
 #  it under the terms of the GNU General Public License as published by   #
 #  the Free Software Foundation, version 2 of the License.                #
 #                                                                         #
-#  guh is distributed in the hope that it will be useful,                 #
+#  nymea is distributed in the hope that it will be useful,               #
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of         #
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the           #
 #  GNU General Public License for more details.                           #
 #                                                                         #
 #  You should have received a copy of the GNU General Public License      #
-#  along with guh. If not, see <http://www.gnu.org/licenses/>.            #
+#  along with nymea. If not, see <http://www.gnu.org/licenses/>.          #
 #                                                                         #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-# Restart the guh daemon after update if it's running
+# Restart the nymea daemon after update if it's running
 systemctl daemon-reload
-systemctl status guhd > /dev/null 2>&1
+systemctl status nymead > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-        systemctl restart guhd
+        systemctl restart nymead
         if [ $? -eq 0 ]; then
-                echo "Successfully restarted guh daemon."
+                echo "Successfully restarted nymea daemon."
         else
-                echo "FAILED to restart guh daemon."
+                echo "FAILED to restart nymea daemon."
         fi
 fi
 

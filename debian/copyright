@@ -1,5 +1,5 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: guhio
+Upstream-Name: nymea
 Upstream-Contact: Simon Stürz <simon.stuerz@guh.io>
 Copyright: 2014-2018, guh GmbH
 Download: http://www.github.com/guh/guh
@@ -45,12 +45,12 @@ Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
            2014-2017, Michael Zanetti <michael_zanetti@gmx.net>
            2014 Carsten Schoenert <c.schoenert@t-online.de>
 
-Files: libguh/*
+Files: libnymea/*
 License: LGPL-2.1
 Copyright: 2014-2017, Simon Stürz <simon.stuerz@guh.io>
            2014-2017, Michael Zanetti <michael_zanetti@gmx.net>
 
-Files: libguh/coap/*
+Files: libnymea/coap/*
 License: LGPL-3
 Copyright: 2016-2017, Simon Stürz <simon.stuerz@guh.io>
 

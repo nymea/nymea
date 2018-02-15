@@ -1,0 +1,3 @@
+translations/*.qm usr/share/nymea/translations
+plugins/mock/translations/*.qm usr/share/nymea/translations
+

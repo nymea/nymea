@@ -1,9 +1,9 @@
-Source: guh
+Source: nymea
 Section: utils
 Priority: optional
 Maintainer: Simon Stuerz <simon.stuerz@guh.io>
 Standards-Version: 3.9.7
-Homepage: https://guh.io
+Homepage: https://nymea.io
 Vcs-Git: https://github.com/guh/guh.git
 Build-Depends: debhelper (>= 9.0.0),
                dpkg-dev (>= 1.16.1~),
@@ -27,15 +27,16 @@ Build-Depends: debhelper (>= 9.0.0),
                libaws-iot-device-sdk-cpp,
                dbus-test-runner,
 
-Package: guh
+Package: nymea
 Architecture: any
 Section: metapackages
 Multi-Arch: same
-Depends: guhd (= ${binary:Version}),
+Depends: nymead (= ${binary:Version}),
          ${misc:Depends}
-Suggests: guh-doc
+Suggests: nymea-doc
+Replaces: guh
 Description: An open source IoT server - meta package
- The guh daemon is a plugin based IoT (Internet of Things) server. The
+ The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
  allows them to interact.
  With the powerful rule engine you are able to connect any device available 
@@ -44,7 +45,7 @@ Description: An open source IoT server - meta package
  This package will install the server and the default plugins.
 
 
-Package: guhd
+Package: nymead
 Architecture: any
 Section: net
 Multi-Arch: same
@@ -59,15 +60,16 @@ Depends: libqt5network5,
          logrotate,
          avahi-daemon,
          bluez,
-         guh-translations,
-         libguh1 (= ${binary:Version}),
+         nymea-translations,
+         libnymea1 (= ${binary:Version}),
          ${shlibs:Depends},
          ${misc:Depends}
-Recommends: guh-webinterface,
-            guh-cli, 
+Recommends: nymea-webinterface,
+            nymea-cli, 
             network-manager
+Replaces: guhd
 Description: An open source IoT server - daemon
- The guh daemon is a plugin based IoT (Internet of Things) server. The
+ The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
  allows them to interact.
  With the powerful rule engine you are able to connect any device available
@@ -75,63 +77,67 @@ Description: An open source IoT server - daemon
  .
  This package will install the daemon.
 
-Package: guh-dbg
+Package: nymea-dbg
 Priority: extra
 Architecture: any
 Section: debug
 Multi-Arch: same
-Depends: guh (= ${binary:Version}),
+Depends: nymea (= ${binary:Version}),
          ${misc:Depends}
+Replaces: guh-dbg
 Description: An open source IoT server - debug symbols
- The guh daemon is a plugin based IoT (Internet of Things) server. The
+ The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
  allows them to interact.
  With the powerful rule engine you are able to connect any device available
  in the system and create individual scenes and behaviors for your environment.
  .
- This package provides all debug symbols for guh.
+ This package provides all debug symbols for nymea.
 
 
-Package: guh-doc
+Package: nymea-doc
 Section: doc
 Architecture: all
 Depends: ${misc:Depends}
-Recommends: guh
+Recommends: nymea
+Replaces: guh-doc
 Build-Profiles: <!nodoc>
-Description: Documentation for the guh package (on-site) - documentation
- The guh daemon is a plugin based IoT (Internet of Things) server. The
+Description: Documentation for the nymea package (on-site) - documentation
+ The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
  allows them to interact.
  With the powerful rule engine you are able to connect any device available
  in the system and create individual scenes and behaviors for your environment.
  .
- This package contains documentation for developing guh.
+ This package contains documentation for developing nymea.
 
 
-Package: guh-translations
+Package: nymea-translations
 Section: misc
 Architecture: all
 Depends: ${misc:Depends}
-Recommends: guh
-Description: Translation files for guhd and plugins - translations
- The guh daemon is a plugin based IoT (Internet of Things) server. The
+Recommends: nymea
+Replaces: guh-translations
+Description: Translation files for nymead and plugins - translations
+ The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
  allows them to interact.
  With the powerful rule engine you are able to connect any device available
  in the system and create individual scenes and behaviors for your environment.
  .
- This package provides the translation files for guhd and for the plugins.
+ This package provides the translation files for nymead and for the plugins.
 
 
-Package: guh-tests
+Package: nymea-tests
 Section: misc
 Architecture: any
 Multi-Arch: same
-Depends: guh (= ${binary:Version}),
+Depends: nymea (= ${binary:Version}),
          ${shlibs:Depends},
          ${misc:Depends}
-Description: Tests and mock plugin for the guh daemon - tests
- The guh daemon is a plugin based IoT (Internet of Things) server. The
+Replaces: guh-tests
+Description: Tests and mock plugin for the nymea daemon - tests
+ The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
  allows them to interact.
  With the powerful rule engine you are able to connect any device available
@@ -140,7 +146,7 @@ Description: Tests and mock plugin for the guh daemon - tests
  This package will install the mock-plugin and the corresponding tests.
 
 
-Package: libguh1
+Package: libnymea1
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -149,21 +155,22 @@ Depends: ${shlibs:Depends},
          libqt5bluetooth5,
          libavahi-client3,
          libavahi-common3
+Replaces: libguh1
 Description: An open source IoT server - core library
- The guh daemon is a plugin based IoT (Internet of Things) server. The
+ The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
  allows them to interact.
  With the powerful rule engine you are able to connect any device available
  in the system and create individual scenes and behaviors for your environment.
  .
- This package will install shared libraries for guh.
+ This package will install shared libraries for nymea.
 
 
-Package: libguh1-dev
+Package: libnymea1-dev
 Section: libdevel
 Architecture: any
 Multi-Arch: same
-Depends: libguh1 (= ${binary:Version}),
+Depends: libnymea1 (= ${binary:Version}),
          ${shlibs:Depends},
          ${misc:Depends},
          python:any,
@@ -173,11 +180,12 @@ Depends: libguh1 (= ${binary:Version}),
          libqt5websockets5-dev,
          libavahi-client-dev,
          libavahi-common-dev
+Replaces: libguh1-dev
 Description: An open source IoT server - development files
- The guh daemon is a plugin based IoT (Internet of Things) server. The
+ The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
  allows them to interact.
  With the powerful rule engine you are able to connect any device available
  in the system and create individual scenes and behaviors for your environment.
  .
- This package will install the development files and compilers for guh.
+ This package will install the development files and compilers for nymea.

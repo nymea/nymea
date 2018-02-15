@@ -2,7 +2,7 @@ include(../plugins.pri)
 
 QT+= network
 
-TARGET = $$qtLibraryTarget(guh_devicepluginmock)
+TARGET = $$qtLibraryTarget(nymea_devicepluginmock)
 
 SOURCES += \
     devicepluginmock.cpp \

@@ -225,7 +225,7 @@ QStringList DeviceManager::pluginSearchDirs()
     if (!envPath.isEmpty()) {
         searchDirs << QString(envPath).split(':');
     }
-    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/guh/plugins";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/nymea/plugins";
     searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";
     searchDirs << QCoreApplication::applicationDirPath() + "/../../../plugins/";
     searchDirs << QString("%1").arg(NYMEA_PLUGINS_PATH);

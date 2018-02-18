@@ -876,6 +876,9 @@ void TestRules::editRules()
     verifyRuleError(response, error);
     if (error == RuleEngine::RuleErrorNoError){
         clientSpy.wait(500);
+        // We need to get exactly 2 replies. The actual reply and the Changed notification
+        // Make sure there are no other notifications (e.g. RuleAdded or similar)
+        QCOMPARE(clientSpy.count(), 2);
         QVariant notification = checkNotification(clientSpy, "Rules.RuleConfigurationChanged");
         QVERIFY2(notification != QVariant(), "not received \"Rules.RuleConfigurationChanged\" notification");
 

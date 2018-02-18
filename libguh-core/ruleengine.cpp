@@ -750,7 +750,7 @@ RuleEngine::RuleError RuleEngine::editRule(const Rule &rule)
     }
 
     // The rule is removed, now add the new one
-    RuleError addResult = addRule(rule);
+    RuleError addResult = addRule(rule, true);
     if (addResult != RuleErrorNoError) {
         qCWarning(dcRuleEngine) << "Cannot edit rule. Could not add the new rule. Restoring the old rule.";
         // restore old rule

@@ -2165,6 +2165,20 @@ void TestRules::testInterfaceBasedRule()
     addRuleParams.insert("eventDescriptors", QVariantList() << lowBatteryEvent);
 
     QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleError").toString(), QString("RuleErrorNoError"));
+
+    QVariantMap getRuleParams;
+    getRuleParams.insert("ruleId", response.toMap().value("params").toMap().value("ruleId"));
+    response = injectAndWait("Rules.GetRuleDetails", getRuleParams);
+
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleError").toString(), QString("RuleErrorNoError"));
+
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("eventDescriptors").toList().first().toMap().value("interface").toString(), QString("battery"));
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("eventDescriptors").toList().first().toMap().value("interfaceEvent").toString(), QString("batteryCritical"));
+
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("interface").toString(), QString("light"));
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("interfaceAction").toString(), QString("power"));
 
 
     // Change the state
@@ -2179,7 +2193,7 @@ void TestRules::testInterfaceBasedRule()
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    qDebug() << "response" << response;
+    verifyRuleExecuted(mockActionIdPower);
 }
 
 void TestRules::testHousekeeping_data()

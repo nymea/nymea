@@ -557,8 +557,13 @@ QVariantMap JsonTypes::packAction(const Action &action)
 QVariantMap JsonTypes::packRuleAction(const RuleAction &ruleAction)
 {
     QVariantMap variant;
-    variant.insert("actionTypeId", ruleAction.actionTypeId());
-    variant.insert("deviceId", ruleAction.deviceId());
+    if (ruleAction.type() == RuleAction::TypeDevice) {
+        variant.insert("actionTypeId", ruleAction.actionTypeId());
+        variant.insert("deviceId", ruleAction.deviceId());
+    } else {
+        variant.insert("interface", ruleAction.interface());
+        variant.insert("interfaceAction", ruleAction.interfaceAction());
+    }
     QVariantList params;
     foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams())
         params.append(packRuleActionParam(ruleActionParam));

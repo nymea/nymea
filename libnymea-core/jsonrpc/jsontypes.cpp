@@ -508,8 +508,13 @@ QVariantMap JsonTypes::packEvent(const Event &event)
 QVariantMap JsonTypes::packEventDescriptor(const EventDescriptor &eventDescriptor)
 {
     QVariantMap variant;
-    variant.insert("eventTypeId", eventDescriptor.eventTypeId());
-    variant.insert("deviceId", eventDescriptor.deviceId());
+    if (eventDescriptor.type() == EventDescriptor::TypeDevice) {
+        variant.insert("eventTypeId", eventDescriptor.eventTypeId());
+        variant.insert("deviceId", eventDescriptor.deviceId());
+    } else {
+        variant.insert("interface", eventDescriptor.interface());
+        variant.insert("interfaceEvent", eventDescriptor.interfaceEvent());
+    }
     QVariantList params;
     foreach (const ParamDescriptor &paramDescriptor, eventDescriptor.paramDescriptors())
         params.append(packParamDescriptor(paramDescriptor));

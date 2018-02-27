@@ -22,7 +22,7 @@
     \class CoreLink
     \brief Represents a link of a CoRE link format.
 
-    \ingroup coap
+    \ingroup coap-group
     \inmodule libnymea
 
     This class represents a Constrained RESTful Environments (CoRE) Link format according to the

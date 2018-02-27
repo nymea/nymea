@@ -69,7 +69,7 @@ QString Vendor::displayName() const
     return m_displayName;
 }
 
-/*! Sets the name of this Vendor, to be shown to the user, translated. */
+/*! Sets the \a displayName of this Vendor, to be shown to the user, translated. */
 void Vendor::setDisplayName(const QString &displayName)
 {
     m_displayName = displayName;

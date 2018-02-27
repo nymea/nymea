@@ -48,6 +48,9 @@
     \value SettingsRoleGlobal
         This role will create the \b{nymead.conf} file and is used to store the global settings of the nymea system. This settings
         file is read only.
+    \value SettingsRoleDeviceStates
+        This role will create the \b{device-states.conf} file and is used to store the configured \l{Device} \l{State}{States}.
+
 */
 
 #include "nymeasettings.h"

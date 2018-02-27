@@ -100,8 +100,17 @@
         The status of the \l{Device} setup will be emitted asynchronous.
 */
 
+// Signals
 /*! \fn void DeviceManager::loaded();
     The DeviceManager will emit this signal when all \l{Device}{Devices} are loaded.
+*/
+
+/*! \fn void DeviceManager::languageUpdated();
+    The DeviceManager will emit this signal when all system language has been updated.
+*/
+
+/*! \fn void DeviceManager::pluginConfigChanged(const PluginId &id, const ParamList &config);
+    The DeviceManager will emit this signal when the \a config \l{ParamList}{Params} of the \l{DevicePlugin}{plugin} with the given \a id has changed.
 */
 
 /*! \fn void DeviceManager::deviceSetupFinished(Device *device, DeviceError status);
@@ -112,6 +121,11 @@
 /*! \fn void DeviceManager::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
     This signal is emitted when the \l{State} of a \a device changed. The \a stateTypeId parameter describes the
     \l{StateType} and the \a value parameter holds the new value.
+*/
+
+/*! \fn void DeviceManager::deviceDisappeared(const DeviceId &deviceId);
+    This signal is emitted when the automatically created \l{Device} with the given \a deviceId dissapeard. This signal will
+    create the Devices.DeviceRemoved notification.
 */
 
 /*! \fn void DeviceManager::deviceRemoved(const DeviceId &deviceId);
@@ -259,8 +273,8 @@ QList<QJsonObject> DeviceManager::pluginsMetadata()
     return pluginList;
 }
 
-/*! Register a DevicePlugin class. This can be used to create devices internally from the nymea system without having to create a full plugin.
-    The DeviceManager takes ownership of the object and will clean it up when exiting. Do not delete the object yourself. */
+/*! Register a DevicePlugin class. This can be used to create devices internally from the guh system without having to create a full plugin.
+    The \a metaData contains the static plugin configurations. The DeviceManager takes ownership of the object \a plugin and will clean it up when exiting. Do not delete the object yourself. */
 void DeviceManager::registerStaticPlugin(DevicePlugin *plugin, const QJsonObject &metaData)
 {
     if (!verifyPluginMetadata(metaData)) {
@@ -310,6 +324,10 @@ void DeviceManager::setLocale(const QLocale &locale)
     emit languageUpdated();
 }
 
+/*! Returns the pointer to the \l{HardwareManager} of the system.
+
+  \sa HardwareManager
+*/
 HardwareManager *DeviceManager::hardwareManager() const
 {
     return m_hardwareManager;
@@ -364,13 +382,13 @@ QList<Vendor> DeviceManager::supportedVendors() const
     return m_supportedVendors.values();
 }
 
-/*! Returns the list of all supported interfaces */
+/*! Returns the list of all supported \l{Interfaces for DeviceClasses}{interfaces}. */
 Interfaces DeviceManager::supportedInterfaces() const
 {
     return m_supportedInterfaces.values();
 }
 
-/*! Returns the interface with the given name. If the interface can't be found it will return an invalid interface. */
+/*! Returns the interface with the given \a name. If the interface can't be found it will return an invalid interface. */
 Interface DeviceManager::findInterface(const QString &name)
 {
     return m_supportedInterfaces.value(name);
@@ -803,6 +821,7 @@ QList<Device *> DeviceManager::findConfiguredDevices(const DeviceClassId &device
     return ret;
 }
 
+/*! Returns all \l{Device}{Devices} with the given \a interface. See also \l{Interfaces for DeviceClasses}{interfaces}. */
 QList<Device *> DeviceManager::findConfiguredDevices(const QString &interface) const
 {
     QList<Device*> ret;
@@ -815,7 +834,7 @@ QList<Device *> DeviceManager::findConfiguredDevices(const QString &interface) c
     return ret;
 }
 
-/*! Returns all child \l{Device}{Devices} of the given \a device. */
+/*! Returns all child \l{Device}{Devices} of the \l{Device} with the given \a id. */
 QList<Device *> DeviceManager::findChildDevices(const DeviceId &id) const
 {
     QList<Device *> ret;

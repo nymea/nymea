@@ -3,15 +3,15 @@
     \title JSON-RPC API
     \ingroup jsonrpc
 
-    \brief The JSON RPC interface represents a TCP socket connection using plaintext string communication.
+    \brief The JSON RPC interface represents a socket connection using plaintext string communication.
 
-    \section1 Description
+    \chapter Description
 
-    The JSON RPC interface represents a TCP socket connection using plaintext string communication.
+    The JSON RPC interface represents a socket connection using plaintext string communication.
     Messages are exchanged using the JSON format. Please note that this is not a REST API as the
     transport channel is not based on HTTP. It is an internal RPC mechanism to allow communication
-    between the nymea Server and the main controller interface. This communication socket is not meant
-    to be exported to the outside of the of the systen as it allows arbitrary commands to manipulate
+    between the guh Server and the main controller interface. This communication socket is not meant
+    to be exported to the outside of the of the system as it allows arbitrary commands to manipulate
     the system.
 
     The JSON message protocol communicates by exchanging JSON Objects with the following properties:
@@ -29,141 +29,68 @@
             the requested method.
     \endlist
 
-    The JSONRPC API is self documenting and can be introspected by calling \c"JSONRPC.Introspect".
+    \chapter Handshake
 
-    Parameters are optional if the type is the type is prefixed with "o:" for optional.
-
-    \section1 Communicating with the server
-    The server listens by default on TCP port 2222 for incoming TCP connections. It will respond to incoming connections with a some information about the server. Telnet can be used to issue commands for testing.
-
-    An example how to communicate with the API using telnet on the same host where the nymea server
-    is running:
-    \code
-        $  telnet localhost 2222
-    \endcode
-    \code    
-        Trying 127.0.0.1...
-	Connected to localhost.
-	Escape character is '^]'.
-	{
-	    "id": 0,
-	    "protocol version": 28,
-	    "server": "nymea JSONRPC interface",
-	    "version": "0.6.0"
-	}
-    \endcode
-    Now the connection is established and waits for commands.
-
-    \section1 Classes
-
-    \annotatedlist json
-
-
-    \section1 Examples
-
-    \section2 Introspect API
-    \section3 Request
+    Once connected to the socket, the server will send immediatly a handshake message. The handshake message 
+    is a JSON object and contains all relevant information about the server and the API in order to start 
+    communicationg with the server.
+    
+    Here is an example of the handshare:
+    
     \code
     {
-        "id": 1,
-        "method":"JSONRPC.Introspect"
-    }
-    \endcode
-    \section3 Response
-    \code
-    {
-        "id": 1,
-        "params": {
-            "methods": {
-                ...
-                "Devices.GetSupportedDevices": {
-                    "description": "Returns a list of supported Device classes.",
-                    "params": {
-                    },
-                    "returns": {
-                        "deviceClasses": [
-                            "$ref:DeviceClass"
-                        ]
-                    }
-                },
-                ...
-            },
-            "types": {
-                ...
-                "DeviceClass": {
-                    "actions": [
-                        "$ref:ActionType"
-                    ],
-                    "id": "uuid",
-                    "name": "string",
-                    "params": [
-                        "$ref:ParamType"
-                    ],
-                    "states": [
-                        "$ref:StateType"
-                    ],
-                    "events": [
-                        "$ref:EventType"
-                    ]
-                },
-                ...
-            }
-        },
-        "status": "success"
+        "id": 0,
+        "name": "guh",
+        "protocol version": "1.2",
+        "authenticationRequired": false,
+        "initialSetupRequired": false,
+        "pushButtonAuthAvailable": false,
+        "server": "guhIO",
+        "language": "de_DE",
+        "uuid": "{42842b0f-a7bb-4a94-b624-a55f31c5603e}",
+        "version": "0.8.3"
     }
     \endcode
 
-    \section2 Getting a list of supported devices
-    \section3 Request
-    \code
-    {
-        "id":1,
-        "method":"Devices.GetSupportedDevices"
-    }
-    \endcode
 
-    \section3 Response:
-    \code {
-        "id": 1,
-        "params": {
-            "deviceClasses": [
-                {
-                    "actions": [
-                    ],
-                    "id": "{bd216356-f1ec-4324-9785-6982d2174e17}",
-                    "name": "WiFi Device",
-                    "params": [
-                        {
-                            "name": "mac",
-                            "type": "string"
-                        }
-                    ],
-                    "states": [
-                        {
-                            "id": "{cb43e1b5-4f61-4538-bfa2-c33055c542cf}",
-                            "name": "inRange",
-                            "type": "bool"
-                        }
-                    ],
-                    "events": [
-                        {
-                            "id": "{7cae711a-a0af-41b4-b3bf-38d3e23b41ba}",
-                            "name": "inRange",
-                            "params": [
-                                {
-                                    "name": "inRange",
-                                    "type": "bool"
-                                }
-                            ]
-                        }
-                    ]
-                }
-                ...
-            ]
-        }
-        "status": "success"
-    }
-    \endcode
+    \list
+        \li \code "id": int \endcode
+            The id in the handshake has always the value 0. This is the first message during connection.
+        \li \code "name": string \endcode
+            This field represents the name of the server you are connected to. This name is user defined an can be changed.
+            (Example: \c"JSONRPC.Introspect")
+        \li \code "protocol version": string \endcode
+            The field represents the API version of the server you are connected to. This should be used for API compatibility checks
+        \li \code "authenticationRequired": bool \endcode
+            If this property is true, a client must perform the authentication process before beeing able to interact with the API. See section \l{Authentication} for more information. 
+        \li \code "initialSetupRequired": bool \endcode
+            This property indicates if the server was set up already. A server is set up if a user has been created. If the \tt authenticationRequired property is \tt{false}, this field can be ignored.
+        \li \code "pushButtonAuthAvailable": bool \endcode
+            This property indicates if the server has a running push-button agent and therefore the push-button authentication available. If the \tt authenticationRequired property is \tt{false}, this field can be ignored.
+            \li \code "server": string \endcode
+            This property holds the name of the server. This name can not be changed.   
+        \li \code "language": string \endcode
+            This property holds the language of the server. The language can be changed in the settings.
+        \li \code "uuid": string \endcode
+            This property holds the UUID of the server and can be used as a unique identifier.
+        \li \code "version": string \endcode
+            This property holds the build version of the server.
+    \endlist
+
+
+    \chapter Authentication
+    
+    The API has an authentication mechanism, which makes sure that no unauthorized network participent can perform actions or get information from the server. For using the authentication the \tt authenticationRequired property in the \l{Handshake}{handshake} must be \tt{true}.
+    
+    \section2 Create a user
+    
+    
+    
+    \section2 Authenticate 
+    
+    
+    \chapter API
+    \include jsonrpc-api.qdoc
     
     \section1 Newest JSON-RPC API
     

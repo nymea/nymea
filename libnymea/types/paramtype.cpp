@@ -31,6 +31,12 @@
     \sa Device, Param, ParamDescriptor
 */
 
+/*! \fn ParamType::ParamType();
+    Constructs a new ParamType which is initially not valid.
+
+    \sa isValid()
+*/
+
 
 #include "paramtype.h"
 
@@ -72,7 +78,7 @@ QString ParamType::displayName() const
     return m_displayName;
 }
 
-/*! Sets the displayName of this ParamType, to be shown to the user, translated. */
+/*! Sets the \a displayName of this ParamType, to be shown to the user, translated. */
 void ParamType::setDisplayName(const QString &displayName)
 {
     m_displayName = displayName;
@@ -199,6 +205,7 @@ void ParamType::setReadOnly(const bool &readOnly)
     m_readOnly = readOnly;
 }
 
+/*! Returns true if this ParamType is valid. A ParamType is valid, if the the id, the name and the data type is set. */
 bool ParamType::isValid() const
 {
     return !m_id.isNull() && !m_name.isEmpty() && m_type != QVariant::Invalid;

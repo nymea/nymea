@@ -20,14 +20,53 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class HardwareManager
+    \brief The main entry point when interacting with \l{HardwareResource}{hardware resources}
+
+    \inmodule libguh
+
+    \sa HardwareResource
+*/
+
+/*! \fn HardwareManager::~HardwareManager();
+    The virtual destructor of the HardwareManager.
+*/
+
+/*! \fn Radio433 * HardwareManager::radio433();
+    Returns the Radio433 \l{HardwareResource}.
+*/
+
+/*! \fn PluginTimerManager * HardwareManager::pluginTimerManager();
+    Returns the PluginTimerManager \l{HardwareResource}.
+*/
+
+/*! \fn NetworkAccessManager * HardwareManager::networkManager();
+    Returns the NetworkAccessManager \l{HardwareResource}.
+*/
+
+/*! \fn UpnpDiscovery * HardwareManager::upnpDiscovery();
+    Returns the UpnpDiscovery \l{HardwareResource}.
+*/
+
+/*! \fn QtAvahiServiceBrowser * HardwareManager::avahiBrowser();
+    Returns the QtAvahiServiceBrowser \l{HardwareResource}.
+*/
+
+/*! \fn BluetoothLowEnergyManager * HardwareManager::bluetoothLowEnergyManager();
+    Returns the BluetoothLowEnergyManager \l{HardwareResource}.
+*/
+
 #include "hardwaremanager.h"
 
+/*! Constructs a new HardwareManager with the given \a parent.*/
 HardwareManager::HardwareManager(QObject *parent) :
     QObject(parent)
 {
 
 }
 
+/*! Sets the given \a resource to \a enabled. This allowes to enable/disable individual \l{HardwareResource}{HardwareResources}. */
 void HardwareManager::setResourceEnabled(HardwareResource *resource, bool enabled)
 {
     resource->setEnabled(enabled);

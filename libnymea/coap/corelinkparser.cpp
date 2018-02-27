@@ -22,7 +22,7 @@
     \class CoreLinkParser
     \brief Provides an easy way to parse a CoRE link list.
 
-    \ingroup coap
+    \ingroup coap-group
     \inmodule libnymea
 
     \section2 Example

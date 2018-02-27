@@ -46,6 +46,14 @@
 
 */
 
+/*! \fn Radio433::~Radio433();
+    The virtual destructor of the Radio433.
+*/
+
+/*! \fn bool Radio433::sendData(int delay, QList<int> rawData, int repetitions);
+    Returns true if the given \a rawData can be sent to a RF 433MHz device with the given \a delay. The amount of packages to send can be configured with the paramter \a repetitions.
+*/
+
 
 #include "radio433.h"
 #include "loggingcategories.h"

@@ -28,8 +28,8 @@
   \ingroup devices
   \inmodule libnymea
 
-
 */
+
 
 /*!
   \fn void DevicePlugin::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
@@ -71,7 +71,7 @@
 
 /*!
   \fn void DevicePlugin::autoDeviceDisappeared(const DeviceId &id)
-  Emit this signal when a device which was created by \l{DevicePlugin::autoDevicesAppeared} has been removed from the system.
+  Emit this signal when a device with the given \a id and which was created by \l{DevicePlugin::autoDevicesAppeared} has been removed from the system.
   Be careful with this, as this will completely remove the device from the system and with it all the associated rules. Only
   emit this if you are sure that a device will never come back. This signal should not be emitted for child auto devices
   when the parent who created them is removed. The system will automatically remove all child devices in such a case.
@@ -462,6 +462,7 @@ QList<Device *> DevicePlugin::myDevices() const
     return ret;
 }
 
+/*! Returns the pointer to the main \l{HardwareManager} of this server. */
 HardwareManager *DevicePlugin::hardwareManager() const
 {
     return m_deviceManager->hardwareManager();

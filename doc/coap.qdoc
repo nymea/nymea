@@ -4,7 +4,7 @@
 
     In order to interact with a CoAP (Constrained Application Protocol) server nymea provides following classes:    
 
-    \annotatedlist coap
+    \annotatedlist coap-group
 
 */
 

@@ -22,7 +22,7 @@
     \class Coap
     \brief The client connection class to a CoAP server.
 
-    \ingroup coap
+    \ingroup coap-group
     \inmodule libnymea
 
     The Coap class provides a signal solt based communication with a \l{https://tools.ietf.org/html/rfc7252}{CoAP (Constrained Application Protocol)}
@@ -67,7 +67,7 @@
 
 /*! \fn void Coap::notificationReceived(const CoapObserveResource &resource, const int &notificationNumber, const QByteArray &payload);
     This signal is emitted when a value of an observed \a resource changed. The \a notificationNumber specifies the the count of the notification
-    to keep the correct order. The value can be parsed from the \a payload.
+    to keep the correct order. The value can be parsed from the \a payload parameter.
 */
 
 #include "coap.h"
@@ -76,7 +76,7 @@
 
 Q_LOGGING_CATEGORY(dcCoap, "Coap")
 
-/*! Constructs a coap access manager with the given \a parent and \a port. */
+/*! Constructs a Coap access manager with the given \a parent and \a port. */
 Coap::Coap(QObject *parent, const quint16 &port) :
     QObject(parent),
     m_reply(0)

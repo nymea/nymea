@@ -51,6 +51,7 @@ class LIBNYMEA_EXPORT DeviceManager : public QObject
 {
     Q_OBJECT
     Q_ENUMS(DeviceError)
+    Q_ENUMS(DeviceSetupStatus)
 
     friend class DevicePlugin;
 
@@ -204,5 +205,6 @@ private:
 };
 
 Q_DECLARE_METATYPE(DeviceManager::DeviceError)
+Q_DECLARE_METATYPE(DeviceManager::DeviceSetupStatus)
 
 #endif // DEVICEMANAGER_H

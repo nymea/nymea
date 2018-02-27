@@ -449,11 +449,17 @@ void DeviceClass::setPairingInfo(const QString &pairingInfo)
     m_pairingInfo = pairingInfo;
 }
 
+
+/*! Returns the \l{Interfaces for DeviceClasses}{interfaces} of this \l{DeviceClass}.*/
 QStringList DeviceClass::interfaces() const
 {
     return m_interfaces;
 }
 
+/*! Set the \a interfaces of this \l{DeviceClass}.
+
+    \note You can find information about interfaces \l{Interfaces for DeviceClasses}{here}.
+*/
 void DeviceClass::setInterfaces(const QStringList &interfaces)
 {
     m_interfaces = interfaces;

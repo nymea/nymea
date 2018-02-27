@@ -27,8 +27,14 @@
     \ingroup types
     \inmodule libnymea
 
+    The upnp device descriptor holds the discovered information of a UPnP device. These information are
+    the result of a \l{UpnpDiscovery::discoverDevices()}{discoverDevices()} request and can accessed in from the
+    \l{UpnpDiscoveryReply::deviceDescriptors()}{deviceDescriptors()} once the UpnpDiscoveryReply
+    is \l{UpnpDiscoveryReply::finished()}{finished}.
 
-    \sa UpnpDevice
+    You can find an example \l{UpnpDiscovery}{here}.
+
+    \sa UpnpDevice, UpnpDiscovery, UpnpDiscoveryReply
 */
 
 #include "upnpdevicedescriptor.h"

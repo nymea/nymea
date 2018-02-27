@@ -20,10 +20,52 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class HardwareResource
+    \brief The base class for hardware resources.
+
+    \inmodule libguh
+
+    \sa HardwareResource
+*/
+
+/*! \fn HardwareResource::~HardwareResource();
+    The virtual destructor of the HardwareResource.
+*/
+
+/*! \fn bool HardwareResource::available() const;
+    Returns true if the hardware resource is available.
+
+    \sa availableChanged()
+*/
+
+/*! \fn bool HardwareResource::enabled() const;
+    Returns true if the hardware resource is enabled.
+
+    \sa enabledChanged()
+*/
+
+
+/*! \fn bool HardwareResource::setEnabled(bool enabled);
+    Sets the hardware resource to \a enabled.
+
+    \sa enabledChanged()
+*/
+
+// Signals
+/*! \fn bool HardwareResource::enabledChanged(bool enabled);
+    This signal will be emited if the hardware resource was \a enabled or disabled.
+*/
+
+/*! \fn bool HardwareResource::availableChanged(bool available);
+    This signal will be emited if the hardware resource \a available changed.
+*/
+
 #include "hardwareresource.h"
 #include "hardwaremanager.h"
 #include "loggingcategories.h"
 
+/*! Constructs a new HardwareResource with the given \a name and \a parent. */
 HardwareResource::HardwareResource(const QString &name, QObject *parent) :
     NymeaDBusService("/io/guh/nymead/HardwareManager/" + name, parent),
     m_name(name)
@@ -31,6 +73,7 @@ HardwareResource::HardwareResource(const QString &name, QObject *parent) :
 
 }
 
+/*! Returns the name of this resource. */
 QString HardwareResource::name() const
 {
     return m_name;

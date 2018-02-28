@@ -22,7 +22,7 @@
     \class CoapObserveResource
     \brief Holds information about an observed resource.
 
-    \ingroup coap
+    \ingroup coap-group
     \inmodule libnymea
 
     The CoapObserveResource class holds information about an observed resource.

@@ -5,7 +5,7 @@
 
     \brief The JSON RPC interface represents a socket connection using plaintext string communication.
 
-    \chapter Description
+    \chapter Communicating with the server
 
     The JSON RPC interface represents a socket connection using plaintext string communication.
     Messages are exchanged using the JSON format. Please note that this is not a REST API as the
@@ -14,7 +14,12 @@
     to be exported to the outside of the of the system as it allows arbitrary commands to manipulate
     the system.
 
-    The JSON message protocol communicates by exchanging JSON Objects with the following properties:
+    \section1 Message format
+
+    \section2 Request message
+
+    The request message is a JSON objects and contains following properties:
+
     \list
         \li \code "id": integer \endcode
             The id should be a unique identifier for the message. Any server response will contain the
@@ -22,20 +27,45 @@
         \li \code "method": string \endcode
             The method field holds the method to be executed. Methods are grouped into namespaces. The
             method string consists of two parts, the namespace and the method name, separated by a dot.
-            This parameter is mandatory.
-            (Example: \c"JSONRPC.Introspect")
+            This parameter is mandatory. (i.e: \l{JSONRPC.Introspect})
+        \li \code "token": string \endcode
+            The token property contains the authentication token received from the \l{Authentication}{authentication} process.
+            This parameter is optional and only required if the authentication is enabled.
         \li \code "params": object \endcode
             The params contains any JSON object. This parameter is optional and differs according to
             the requested method.
     \endlist
 
-    \chapter Handshake
+    \section2 Response message
+
+    The response message is a JSON objects and contains following properties:
+
+    \list
+        \li \code "id": integer \endcode
+            The id matching to the requested id.
+        \li \code "status": string \endcode
+            The status property contains either \tt {"success"}, \tt {"error"} or \tt {"unauthorized"} and is mandatory.
+        \li \code "params": object \endcode
+            The params contains the response JSON object. This parameter is optional and differs according to
+            the requested method (see \c Returns section of each method).
+        \li \code "error": string \endcode
+            The error property will only be added if a protocol related error happen and the \tt {"status"} property is \tt {"error"} or \tt {"unauthorized"}.
+            The value contains a description of the error.
+    \endlist
+
+    If there is an error on the JSON RPC transport layer, the server will respond with an error message. This error is related
+    to the protocol layer of the communication.
+
+    If the server needs a very long time to process a request or there happens any error, the JSON RPC server will timeout a request.
+    The timeout interval is 30 seconds.
+
+    \section1 Handshake
 
     Once connected to the socket, the server will send immediatly a handshake message. The handshake message 
     is a JSON object and contains all relevant information about the server and the API in order to start 
     communicationg with the server.
     
-    Here is an example of the handshare:
+    Here is an example of a handshake:
     
     \code
     {
@@ -52,15 +82,15 @@
     }
     \endcode
 
-
     \list
         \li \code "id": int \endcode
             The id in the handshake has always the value 0. This is the first message during connection.
         \li \code "name": string \endcode
-            This field represents the name of the server you are connected to. This name is user defined an can be changed.
-            (Example: \c"JSONRPC.Introspect")
+            This field represents the name of the server you are connected to. This name is user defined an can be changed
+            using \l{Configuration.SetServerName}.
         \li \code "protocol version": string \endcode
-            The field represents the API version of the server you are connected to. This should be used for API compatibility checks
+            The field represents the API version of the server you are connected to. This should be used for API
+            compatibility checks.
         \li \code "authenticationRequired": bool \endcode
             If this property is true, a client must perform the authentication process before beeing able to interact with the API. See section \l{Authentication} for more information. 
         \li \code "initialSetupRequired": bool \endcode
@@ -70,7 +100,7 @@
             \li \code "server": string \endcode
             This property holds the name of the server. This name can not be changed.   
         \li \code "language": string \endcode
-            This property holds the language of the server. The language can be changed in the settings.
+            This property holds the language of the server. The language can be changed in the settings using \l{Configuration.SetLanguage}.
         \li \code "uuid": string \endcode
             This property holds the UUID of the server and can be used as a unique identifier.
         \li \code "version": string \endcode
@@ -78,21 +108,145 @@
     \endlist
 
 
+    \section1 Sending a request
+
+    Once connected to the socket and received the \l{Handshake}{handshake}, the normal communication with the server can begin.
+    In order to send a request to the server, the client has to send an API message according to the format descibed \l{Message format}{here}.
+
+    The JSON content should always be sent as a compack JSON Object (without spaces, tabs and new line characters within the object \tt{{...}}).
+    At the end of this compact JSON string the payload must be terminated with the \tt{\n} character. This makes sure, that the parsing of the
+    message is easier and a single message can be splitted in multiple cunckes during the transport. The client parsing should work the same way.
+
+    In order to demonstrate this with an example, the \l{JSONRPC.Hello} request could look like this:
+
+    \note Send following content as compact JSON ending with \tt{\n}:
+
+    \code
+    {"id":122,"method":"JSONRPC.Hello"}
+
+    \endcode
+
+    The \tt id can be a random integer, just make sure there are no other commands with the same id around. The easiest way to do that
+    is incrementing the id with each new request. The \l{JSONRPC.Hello} method has no parameters, so we don't need to add that property
+    to our request.
+
+    The server will return a response for this request. The response will have the same \tt id as your request. The json content of the response will
+    also be a compact JSON string ending with the \tt{\n} character.
+
+    \code
+    {"id":122,"params":{"authenticationRequired":false,"id":0,"initialSetupRequired":false,"language":"de_DE","name":"guh gehirn","protocol version":"1.2","pushButtonAuthAvailable":false,"server":"guhIO","uuid":"{42842b0f-a7bb-4a94-b624-a55f31c5603e}","version":"0.8.3"},"status":"success"}
+
+    \endcode
+
+    \section1 Getting notifications
+
+    In order to enable/disable notifications on your socket, the methods \l{JSONRPC.SetNotificationStatus} can be used. By default,
+    the notifications on a new created connection are disabled. If you get disconnected, the notification have to
+    be enabled again on the next connection.
+
+    Once the notifications are enabled, the server will start notifying you with all different notifications described in section \l{Notifications}.
+
+    A notification message has following properties:
+
+    \list
+        \li \code "id": integer \endcode
+            The id should be a unique identifier for the message. The notification id will be increased for each notification sent to your connection.
+        \li \code "notification": string \endcode
+            The notification field holds the name of this notification. Notifications are grouped into namespaces like the methods.
+            The notification string consists of two parts, the namespace and the notification name, separated by a dot.
+            This property can be used to check if a recived message is a response to a request or a notification.
+        \li \code "params": object \endcode
+            The params contains any JSON object. This parameter is optional and differs according to each \l{Notifications}{notification}.
+    \endlist
+
     \chapter Authentication
     
-    The API has an authentication mechanism, which makes sure that no unauthorized network participent can perform actions or get information from the server. For using the authentication the \tt authenticationRequired property in the \l{Handshake}{handshake} must be \tt{true}.
+    The API has an authentication mechanism, which makes sure that no unauthorized network participent can perform actions or get information from the server.
+    For using the authentication the \tt authenticationRequired property in the \l{Handshake}{handshake} must be \tt{true}.
     
+    There are some methods, which can be called even without authentication:
+    \list
+        \li \l{JSONRPC.Hello}
+        \li \l{JSONRPC.Introspect}
+        \li \l{JSONRPC.CreateUser} (only if there is no user yet)
+        \li \l{JSONRPC.RequestPushButtonAuth}
+        \li \l{JSONRPC.Authenticate}
+    \endlist
+
+
+    \note If you are using an authenticated connection, please make sure you are using an encrypted transport layer, otherwise you have
+    a serious security problem.
+
+    In order to verify each request sent to the server, the client has to send a token in each JSON RPC message (see \l{Request message}{Request message - token}).
+    There are two different types of authentication in order to get a token:
+    \list
+        \li \l{Username and password}
+        \li \l{Push-button authentication}
+    \endlist
+
+    If both authentication methods are available, the \l{Push-button authentication} should be prefered.
+
+    \section1 Username and password
+
+    If the \l{Handshake}{handshake} property \tt initialSetupRequired is \tt{true}, there is no user configured yet. This means the
+    you have to create a user before you are abele to authenticate.
+
     \section2 Create a user
     
+    Currently the guhd server is a single user only system and allows only one user. Creating a new user is only allowed if
+    the \l{Handshake}{handshake} property \tt initialSetupRequired is \tt{true}.
+
+    Call the \l{JSONRPC.CreateUser} method with the username (should be an email address) and password. The returned \l{UserError}
+    informs you about the result. If the user was created successfully, you can use those credentials for authenticate your connection.
     
+    \section2 Authenticate
     
-    \section2 Authenticate 
-    
+    If you have already created the system user using \l{JSONRPC.CreateUser}, you can now call the method \l{JSONRPC.Authenticate}
+    using the same user name, password and the client device name. This name should give information about the device using this token
+    i.e. "Phone xy" or "Cool client application xy". This information helps you later to associate the token with this client device.
+
+    If the user name and password are ok, the server will return the token which can be used for further communication. This token can
+    be stored together with the server uuid ont he client side. The client does not need to reauthenticate until:
+
+    \list
+        \li The token gets rejected from the server
+        \li The token gets deleted from on the client
+        \li The token gets removed from the server
+    \endlist
+
+    \section1 Push-button authentication
+
+    If the push button authentication is enabled, a client can only get a token if he has physical access to the device where the
+    server is running. For this authentication method the \l{Handshake}{handshake} property \tt initialSetupRequired can be ignored.
+
+    The Push-button authentication method works like this:
+
+    \list
+        \li The client initialtes the push authentication using \l{JSONRPC.RequestPushButtonAuth} containing the device name for token association.
+        \li The server returns the status and a \tt{transactionId}. Now is the time to instruct the user how the button should be pressed.
+        \li Once the user has pressed the button, the \l{JSONRPC.PushButtonAuthFinished} notification will be emitted. If there was no error
+    and the authentication went fine, this notification contains the same transactionId for request matching and the token which can
+    be used from now on.
+    \endlist
+
+    A possible case where the Push-button authentication could fail is a situation where 2 different clients request for a Push-button
+    authentication. In that case the authentication will faile since it you cannot steal the button event from an other request.
+
+    \section1 Removing a token
+
+    If a device gets lost or you want to force a reauthentication to a client, a token can be removed from the system. This can be done
+    using the \l{JSONRPC.RemoveToken} method. Once a token is removed, it can never be used again and the client owning that token
+    can not perform any actions any more on this server until he re-authenticates again.
     
     \chapter API
+
+    This section contains the complete API description of the current server. The JSON-RPC API is self documenting and
+    can be introspected by calling \l{JSONRPC.Introspect}.
+
+    Parameters are optional if the type is prefixed with \tt{"o:"} for optional.
+
+    Specific API Types are prefixed with \tt{$ref:} and are documented in the \l{Types} section.
+
     \include jsonrpc-api.qdoc
-    
-    \section1 Newest JSON-RPC API
-    
-    \quotefile tests/auto/api.json
+
 */

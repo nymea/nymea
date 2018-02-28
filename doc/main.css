@@ -290,7 +290,7 @@ strong {
 :not(pre) > code,
 :not(pre) > kbd,
 :not(pre) > samp {
-    font-size: 1.1rem;
+    font-size: 1.0rem;
     font-family: Consolas, monaco, monospace;
     color: #3d8077;
     white-space: nowrap;

@@ -22,7 +22,7 @@
     \class CoapOption
     \brief Represents the option of a \l{CoapPdu}.
 
-    \ingroup coap
+    \ingroup coap-group
     \inmodule libnymea
 
     The CoapOption class provides an easy way to create / parse CoAP options of a \l{CoapPdu} (Protocol Data Unit). An options

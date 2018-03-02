@@ -3,7 +3,7 @@
         {
             "name": "gateState",
             "type": "String",
-            "allowedValues": ["open", "closed", "opening", "closing"]
+            "allowedValues": ["open", "closed", "intermediate", "opening", "closing"]
         }
     ],
     "actions": [
@@ -15,6 +15,9 @@
         },
         {
             "name": "stop"
+        },
+        {
+            "name": "positionIntermediate"
         }
     ]
 }

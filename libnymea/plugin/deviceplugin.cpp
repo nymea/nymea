@@ -889,6 +889,7 @@ void DevicePlugin::loadMetaData()
                     interfaces.append(generateInterfaceParentList(value.toString()));
                 }
             }
+            interfaces.removeDuplicates();
             deviceClass.setInterfaces(interfaces);
 
             if (!broken) {

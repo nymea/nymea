@@ -86,6 +86,8 @@ private slots:
     void sendAliveMessage();
     void discoverTimeout();
 
+    void networkConfigurationChanged(const QNetworkConfiguration &config);
+
 public slots:
     bool enable();
     bool disable();

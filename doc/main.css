@@ -764,7 +764,8 @@ div.header + li {
     max-width: 1400px;
     margin-left: auto;
     margin-right: auto;
-    padding: 10rem 3.3rem 10rem;
+    padding: 3rem 3.3rem 10rem;
+    top: 101px;
     width: 100%;
     position: relative;
 }
@@ -976,7 +977,7 @@ h2:after, h3.fn:after {
 div.footer {
     position: absolute;
     border-top: 1px solid #dbdbdb;
-    bottom: 0;
+    bottom: -101px;
     left: 0;
     width: 100%;
     z-index: 5;

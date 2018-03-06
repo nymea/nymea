@@ -138,6 +138,6 @@ private:
 
 };
 
-Q_DECLARE_INTERFACE(DevicePlugin, "guru.guh.DevicePlugin")
+Q_DECLARE_INTERFACE(DevicePlugin, "io.nymea.DevicePlugin")
 
 #endif // DEVICEPLUGIN_H

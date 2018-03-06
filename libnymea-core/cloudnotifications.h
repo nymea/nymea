@@ -28,7 +28,7 @@ class CloudNotifications : public DevicePlugin
 {
     Q_OBJECT
 
-//    Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "deviceplugincloudnotifications.json")
+//    Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "deviceplugincloudnotifications.json")
     Q_INTERFACES(DevicePlugin)
 
 public:

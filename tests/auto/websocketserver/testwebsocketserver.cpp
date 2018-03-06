@@ -89,7 +89,7 @@ void TestWebSocketServer::initTestCase()
 
 void TestWebSocketServer::testHandshake()
 {
-    QWebSocket *socket = new QWebSocket("guh tests", QWebSocketProtocol::Version13);
+    QWebSocket *socket = new QWebSocket("nymea tests", QWebSocketProtocol::Version13);
     connect(socket, &QWebSocket::sslErrors, this, &TestWebSocketServer::sslErrors);
     QSignalSpy spy(socket, SIGNAL(textMessageReceived(QString)));
     socket->open(QUrl(QStringLiteral("wss://localhost:4444")));
@@ -98,9 +98,9 @@ void TestWebSocketServer::testHandshake()
     QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().first().toByteArray());
     QVariantMap handShake = jsonDoc.toVariant().toMap();
 
-    QString guhVersionString(NYMEA_VERSION_STRING);
+    QString nymeaVersionString(NYMEA_VERSION_STRING);
     QString jsonProtocolVersionString(JSON_PROTOCOL_VERSION);
-    QCOMPARE(handShake.value("version").toString(), guhVersionString);
+    QCOMPARE(handShake.value("version").toString(), nymeaVersionString);
     QCOMPARE(handShake.value("protocol version").toString(), jsonProtocolVersionString);
 
     socket->close();
@@ -109,7 +109,7 @@ void TestWebSocketServer::testHandshake()
 
 void TestWebSocketServer::pingTest()
 {
-    QWebSocket *socket = new QWebSocket("guh tests", QWebSocketProtocol::Version13);
+    QWebSocket *socket = new QWebSocket("nymea tests", QWebSocketProtocol::Version13);
     connect(socket, &QWebSocket::sslErrors, this, &TestWebSocketServer::sslErrors);
     QSignalSpy spyConnection(socket, SIGNAL(connected()));
     socket->open(QUrl(QStringLiteral("wss://localhost:4444")));
@@ -147,7 +147,7 @@ void TestWebSocketServer::testBasicCall()
 
     QVariant response = injectSocketData(data);
     if (valid)
-        QVERIFY2(response.toMap().value("status").toString() == "success", "Call wasn't parsed correctly by guh.");
+        QVERIFY2(response.toMap().value("status").toString() == "success", "Call wasn't parsed correctly by nymea.");
 }
 
 
@@ -173,7 +173,7 @@ QVariant TestWebSocketServer::injectSocketAndWait(const QString &method, const Q
     call.insert("params", params);
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(call);
 
-    QWebSocket *socket = new QWebSocket("guh tests", QWebSocketProtocol::Version13);
+    QWebSocket *socket = new QWebSocket("nymea tests", QWebSocketProtocol::Version13);
     connect(socket, &QWebSocket::sslErrors, this, &TestWebSocketServer::sslErrors);
     QSignalSpy spyConnection(socket, SIGNAL(connected()));
     socket->open(QUrl(QStringLiteral("wss://localhost:4444")));
@@ -214,7 +214,7 @@ QVariant TestWebSocketServer::injectSocketAndWait(const QString &method, const Q
 
 QVariant TestWebSocketServer::injectSocketData(const QByteArray &data)
 {
-    QWebSocket *socket = new QWebSocket("guh tests", QWebSocketProtocol::Version13);
+    QWebSocket *socket = new QWebSocket("nymea tests", QWebSocketProtocol::Version13);
     connect(socket, &QWebSocket::sslErrors, this, &TestWebSocketServer::sslErrors);
     QSignalSpy spyConnection(socket, SIGNAL(connected()));
     socket->open(QUrl(QStringLiteral("wss://localhost:4444")));

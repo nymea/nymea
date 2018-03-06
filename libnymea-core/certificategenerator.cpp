@@ -64,10 +64,10 @@ void CertificateGenerator::generate(const QString &certificateFilename, const QS
     X509_set_pubkey(x509, pkey);
     name = X509_get_subject_name(x509);
     q_check_ptr(name);
-    X509_NAME_add_entry_by_txt(name, "E", MBSTRING_ASC, (unsigned char *)"guh.io", -1, -1, 0);
-    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char *)"guh.io", -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "E", MBSTRING_ASC, (unsigned char *)"nymea", -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char *)"nymea.io", -1, -1, 0);
     X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char *)"home", -1, -1, 0);
-    X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char *)"guh.io", -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char *)"guh GmbH", -1, -1, 0);
     X509_NAME_add_entry_by_txt(name, "L", MBSTRING_ASC, (unsigned char *)"Vienna", -1, -1, 0);
     X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, (unsigned char *)"AT", -1, -1, 0);
     X509_set_issuer_name(x509, name);

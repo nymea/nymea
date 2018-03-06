@@ -26,7 +26,7 @@
     \inmodule core
 
     The \l{WebServer} class provides a HTTP/1.1 web server. The web server
-    provides access to the guh-webinterface and the path can be specified
+    provides access to the nymea-webinterface and the path can be specified
     in the \tt /etc/guh/nymead.conf file and to the guh \l{https://github.com/guh/guh/wiki/REST-Api-documentation}{REST API}.
     The default port for the web server is 3333, which is according to this
     \l{https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers}{list}
@@ -536,7 +536,7 @@ void WebServer::resetAvahiService()
     txt.insert("name", NymeaCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", m_configuration.sslEnabled ? "true" : "false");
 
-    if (!m_avahiService->registerService(QString("guhIO-http-%1").arg(m_configuration.id), m_configuration.port, "_http._tcp", txt)) {
+    if (!m_avahiService->registerService(QString("nymea-http-%1").arg(m_configuration.id), m_configuration.port, "_http._tcp", txt)) {
         qCWarning(dcTcpServer()) << "Could not register avahi service for" << m_configuration;
     }
 }
@@ -653,9 +653,9 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     }
     if (tcpServerFound) {
         if (tcpServerConfiguration.sslEnabled) {
-            writer.writeTextElement("guhRpcURL", "guhs://" + address.toString() + ":" + QString::number(tcpServerConfiguration.port));
+            writer.writeTextElement("nymeaRpcURL", "nymeas://" + address.toString() + ":" + QString::number(tcpServerConfiguration.port));
         } else {
-            writer.writeTextElement("guhRpcURL", "guh://" + address.toString() + ":" + QString::number(tcpServerConfiguration.port));
+            writer.writeTextElement("nymeaRpcURL", "nymea://" + address.toString() + ":" + QString::number(tcpServerConfiguration.port));
         }
     }
 
@@ -669,7 +669,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("modelDescription", "IoT server");
     writer.writeTextElement("modelName", "nymead");
     writer.writeTextElement("modelNumber", NYMEA_VERSION_STRING);
-    writer.writeTextElement("modelURL", "http://guh.io"); // (optional)
+    writer.writeTextElement("modelURL", "http://nymea.io"); // (optional)
     writer.writeTextElement("UDN", "uuid:" + uuid);
 
     writer.writeStartElement("iconList");
@@ -769,7 +769,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     \ingroup server
     \inmodule core
 
-    The \l{WebServerClient} represents a client for the guh \l{WebServer}. Each client can
+    The \l{WebServerClient} represents a client for the nymea \l{WebServer}. Each client can
     have up to 50 connections and each connection will timeout after 12 seconds if the
     connection will not be used.
 

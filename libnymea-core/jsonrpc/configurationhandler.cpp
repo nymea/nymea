@@ -106,7 +106,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     setReturns("GetConfigurations", returns);
 
     params.clear(); returns.clear();
-    setDescription("SetServerName", "Set the name of the server. Default is guhIO.");
+    setDescription("SetServerName", "Set the name of the server. Default is nymea.");
     params.insert("serverName",  JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("SetServerName", params);
     returns.insert("configurationError", JsonTypes::configurationErrorRef());

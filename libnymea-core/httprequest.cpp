@@ -20,7 +20,7 @@
 
 /*!
   \class nymeaserver::HttpRequest
-  \brief Represents a HTTP request from a client to the guh \l{WebServer}.
+  \brief Represents a HTTP request from a client to the nymea \l{WebServer}.
 
   \ingroup api
   \inmodule core

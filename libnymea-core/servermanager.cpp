@@ -21,7 +21,7 @@
 
 /*!
     \class nymeaserver::ServerManager
-    \brief This class represents the manager of all server interfaces of the guh server.
+    \brief This class represents the manager of all server interfaces of the nymea server.
 
     \ingroup server
     \inmodule core

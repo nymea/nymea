@@ -380,7 +380,7 @@ void JanusConnector::createChannel(WebRtcSession *session)
     m_pendingRequests.insert(transactionId, session);
     attachPluginMessage.insert("transaction", transactionId);
     attachPluginMessage.insert("plugin", "janus.plugin.guhio");
-    attachPluginMessage.insert("opaque_id", "guhio-" + QUuid::createUuid().toString());
+    attachPluginMessage.insert("opaque_id", "nymea-" + QUuid::createUuid().toString());
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(attachPluginMessage);
     qCDebug(dcJanus()) << "Establishing channel for session" << session->sessionId;
     writeToJanus(jsonDoc.toJson());

@@ -169,7 +169,7 @@ QString NymeaConfiguration::serverName() const
 {
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("nymead");
-    return settings.value("name", "guhIO").toString();
+    return settings.value("name", "nymea").toString();
 }
 
 void NymeaConfiguration::setServerName(const QString &serverName)

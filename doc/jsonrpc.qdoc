@@ -10,7 +10,7 @@
     The JSON RPC interface represents a TCP socket connection using plaintext string communication.
     Messages are exchanged using the JSON format. Please note that this is not a REST API as the
     transport channel is not based on HTTP. It is an internal RPC mechanism to allow communication
-    between the guh Server and the main controller interface. This communication socket is not meant
+    between the nymea Server and the main controller interface. This communication socket is not meant
     to be exported to the outside of the of the systen as it allows arbitrary commands to manipulate
     the system.
 
@@ -36,7 +36,7 @@
     \section1 Communicating with the server
     The server listens by default on TCP port 2222 for incoming TCP connections. It will respond to incoming connections with a some information about the server. Telnet can be used to issue commands for testing.
 
-    An example how to communicate with the API using telnet on the same host where the guh server
+    An example how to communicate with the API using telnet on the same host where the nymea server
     is running:
     \code
         $  telnet localhost 2222
@@ -48,7 +48,7 @@
 	{
 	    "id": 0,
 	    "protocol version": 28,
-	    "server": "guh JSONRPC interface",
+	    "server": "nymea JSONRPC interface",
 	    "version": "0.6.0"
 	}
     \endcode

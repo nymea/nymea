@@ -1,11 +1,11 @@
 /*!
     \page allmodules.html
-    \title All guh Modules
+    \title All nymea Modules
 
     \table 80%
-    \row \li \l{guhserver} \li The guh server daemon implementation    
-    \row \li \l{libguh} \li Common data types and plugin interfaces
-    \row \li \l{Plugins} \li The device plugins of the guh server
+    \row \li \l{nymeaserver} \li The nymea server daemon implementation    
+    \row \li \l{libnymea} \li Common data types and plugin interfaces
+    \row \li \l{Plugins} \li The device plugins of the nymea server
     \endtable
 
     \generatelist legalese-command

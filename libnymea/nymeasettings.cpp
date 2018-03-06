@@ -46,7 +46,7 @@
     \value SettingsRolePlugins
         This role will create the \b{plugins.conf} file and is used to store the \l{DevicePlugin}{Plugin} configurations.
     \value SettingsRoleGlobal
-        This role will create the \b{nymead.conf} file and is used to store the global settings of the guh system. This settings
+        This role will create the \b{nymead.conf} file and is used to store the global settings of the nymea system. This settings
         file is read only.
 */
 

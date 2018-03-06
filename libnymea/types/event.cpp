@@ -25,7 +25,7 @@
     \class Event
     \brief Holds information required to emit a event described by a \l{EventType}.
 
-    \ingroup guh-types
+    \ingroup nymea-types
     \inmodule libnymea
 
     It is bound to a \l{Device} and a \l{EventType} and holds the parameters

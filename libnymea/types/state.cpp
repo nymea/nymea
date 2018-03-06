@@ -25,7 +25,7 @@
   \class State
   \brief Holds the parameters of a State of a \l{Device}.
 
-  \ingroup guh-types
+  \ingroup nymea-types
   \inmodule libnymea
 
   States hold the state values for devices. A State is associated to a \l{Device} by

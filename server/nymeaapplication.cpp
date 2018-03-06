@@ -20,7 +20,7 @@
 
 /*!
     \class nymeaserver::NymeaApplication
-    \brief Application class of the guh server.
+    \brief Application class of the nymea server.
 
     \ingroup core
     \inmodule server

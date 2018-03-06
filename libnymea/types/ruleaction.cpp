@@ -25,7 +25,7 @@
     \class RuleAction
     \brief Describes an action for a \l{nymeaserver::Rule}.
 
-    \ingroup guh-types
+    \ingroup nymea-types
     \ingroup rules
     \inmodule libnymea
 

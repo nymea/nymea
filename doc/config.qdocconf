@@ -1,6 +1,6 @@
 include(html-template.qdocconf)
 
-project = guh - developer
+project = nymea - developer
 description = Developer documentation!
 
 dita.metadata.default.author      = Simon Stürz
@@ -22,7 +22,7 @@ outputencoding          = UTF-8
 sourceencoding          = UTF-8
 
 syntaxhighlighting = true
-versionsym = GUH_VERSION_STRING
+versionsym = NYMEA_VERSION_STRING
 
 headerdirs = ..
 headers.fileextensions = "*.h"

@@ -25,7 +25,7 @@
     \class Vendor
     \brief Holds information about a the vendor of a \l{Device}.
 
-    \ingroup guh-types
+    \ingroup nymea-types
     \inmodule libnymea
 
     \sa DevicePlugin

@@ -20,7 +20,7 @@
 
 /*!
     \class nymeaserver::TimeManager
-    \brief Describes the centralized time manager of guh.
+    \brief Describes the centralized time manager of nymea.
 
     \ingroup rules
     \inmodule core

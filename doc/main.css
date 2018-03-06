@@ -614,7 +614,7 @@ div.table {
     text-align: right;
 }
 
-.guh-navbar {
+.nymea-navbar {
     display: -ms-flexbox;
     display: -webkit-flex;
     display: flex;
@@ -626,11 +626,11 @@ div.table {
     border-bottom: 1px solid #dbdbdb;
 }
 
-.guh-margin {
+.nymea-margin {
     margin-bottom: 20px;
 }
 
-.guh-logo {
+.nymea-logo {
     display: -ms-flexbox;
     display: -webkit-flex;
     display: flex;
@@ -648,13 +648,13 @@ div.table {
     margin: 0 45px;
 }
 
-.guh-main-logo {
+.nymea-main-logo {
     height: 85px;
     min-height: 85px;
     max-height: 85px;
 }
 
-.guh-navbar-center {
+.nymea-navbar-center {
     display: -ms-flexbox;
     display: -webkit-flex;
     display: flex;
@@ -663,7 +663,7 @@ div.table {
     align-items: center;
 }
 
-.guh-navbar-center:only-child {
+.nymea-navbar-center:only-child {
     -ms-flex-wrap: wrap;
     -webkit-flex-wrap: wrap;
     flex-wrap: wrap;
@@ -672,7 +672,7 @@ div.table {
     position: relative;
 }
 
-.guh-navbar-nav {
+.nymea-navbar-nav {
     display: -ms-flexbox;
     display: -webkit-flex;
     display: flex;
@@ -681,20 +681,20 @@ div.table {
     list-style: none;
 }
 
-.guh-navbar-nav li {
+.nymea-navbar-nav li {
     text-overflow: ellipsis;
     /* Required for text-overflow to do anything */
     white-space: nowrap;
     overflow: hidden;
 }
 
-.guh-navbar-nav li:after {
+.nymea-navbar-nav li:after {
     content: "";
     display: inline-block;
     width: 100%;
 }
 
-.guh-navbar-nav > li > a {
+.nymea-navbar-nav > li > a {
     color: #676767;
     font-size: 1.3rem;
     display: -ms-flexbox;
@@ -736,12 +736,12 @@ div.header + li {
     text-align: center;
 }
 
-.guh-navbar-center-left, .guh-navbar-center-right {
+.nymea-navbar-center-left, .nymea-navbar-center-right {
     position: absolute;
     top: 0;
 }
 
-.guh-navbar-center-left > *, .guh-navbar-center-right > * {
+.nymea-navbar-center-left > *, .nymea-navbar-center-right > * {
     display: -ms-flexbox;
     display: -webkit-flex;
     display: flex;
@@ -750,11 +750,11 @@ div.header + li {
     align-items: center;
 }
 
-.guh-navbar-center-left {
+.nymea-navbar-center-left {
     right: 100%;
 }
 
-.guh-navbar-center-right {
+.nymea-navbar-center-right {
     left: 100%;
 }
 

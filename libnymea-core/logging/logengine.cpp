@@ -99,7 +99,7 @@
     Indicates from where the \l{LogEntry} was created. Can be used as flag.
 
     \value LoggingSourceSystem
-        This \l{LogEntry} was created from the guh system (server).
+        This \l{LogEntry} was created from the nymea system (server).
     \value LoggingSourceEvents
         This \l{LogEntry} was created from an \l{Event} which trigged.
     \value LoggingSourceActions

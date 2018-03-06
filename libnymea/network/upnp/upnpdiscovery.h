@@ -38,7 +38,7 @@
 #include "upnpdevicedescriptor.h"
 
 // Discovering UPnP devices reference: http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
-// guh basic device reference: http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
+// nymea basic device reference: http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
 
 class LIBNYMEA_EXPORT UpnpDiscovery : public HardwareResource
 {

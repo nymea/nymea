@@ -21,7 +21,7 @@
 
 /*!
     \class nymeaserver::NymeaService
-    \brief The daemon service reprenetation of the guh server.
+    \brief The daemon service reprenetation of the nymea server.
 
     \ingroup core
     \inmodule server

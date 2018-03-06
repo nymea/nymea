@@ -48,7 +48,7 @@
     \code
         include(plugins.pri)
 
-        TARGET = $$qtLibraryTarget(guh_devicepluginminimal)
+        TARGET = $$qtLibraryTarget(nymea_devicepluginminimal)
 
         message("Building $$deviceplugin$${TARGET}.so")
 
@@ -61,7 +61,7 @@
     \endcode
     
     \list 1
-        \li Change the \tt TARGET name form \tt guh_devicepluginminimal \unicode{0x2192} \tt guh_devicepluginbuttons
+        \li Change the \tt TARGET name form \tt nymea_devicepluginminimal \unicode{0x2192} \tt nymea_devicepluginbuttons
         \li Change the SOURCES file from \tt devicepluginminimal.cpp \unicode{0x2192} \tt devicepluginbuttons.cpp
         \li Change the HEADERS file from \tt devicepluginminimal.h \unicode{0x2192} \tt devicepluginbuttons.h
     \endlist
@@ -70,7 +70,7 @@
     \code
         include(plugins.pri)
 
-        TARGET = $$qtLibraryTarget(guh_devicepluginbuttons)
+        TARGET = $$qtLibraryTarget(nymea_devicepluginbuttons)
 
         message("Building $$deviceplugin$${TARGET}.so")
 
@@ -97,7 +97,7 @@
         {
             Q_OBJECT
 
-            Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginminimal.json")
+            Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginminimal.json")
             Q_INTERFACES(DevicePlugin)
 
         public:
@@ -129,7 +129,7 @@
         {
             Q_OBJECT
 
-            Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginbuttons.json")
+            Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginbuttons.json")
             Q_INTERFACES(DevicePlugin)
 
         public:
@@ -372,7 +372,7 @@
 
     You will see in the build output following section:    
     \code
-        /usr/bin/guh-generateplugininfo ../buttons-diy/devicepluginbuttons.json plugininfo.h
+        /usr/bin/nymea-generateplugininfo ../buttons-diy/devicepluginbuttons.json plugininfo.h
         ../buttons-diy/devicepluginbuttons.json -> plugininfo.h
          --> generate plugininfo.h
         PluginId for plugin "Buttons" = 7bfd3af5-7983-4540-9398-d14085d069f4
@@ -411,7 +411,7 @@
     
   \section1 Writing the plugin
     
-    Now we have our basic for starting to implement the new plugin. If you install the current plugin, you would already see the plugin implementation in \tt guh-cli, but it would do nothing because we have not implemented yet the code.
+    Now we have our basic for starting to implement the new plugin. If you install the current plugin, you would already see the plugin implementation in \tt nymea-cli, but it would do nothing because we have not implemented yet the code.
 
     \section2 The \tt executeAction method
      
@@ -441,22 +441,22 @@
         }
     \endcode
     
-    When a user or the \l {guhserver::RuleEngine}{RuleEngine} calls the executeAction method, our plugin will first check if the \l DeviceClassId matches, then the \l ActionTypeId. If both are correct, we can emit our \l Event to show that the simple button \l Device was pressed.   
+    When a user or the \l {nymeaserver::RuleEngine}{RuleEngine} calls the executeAction method, our plugin will first check if the \l DeviceClassId matches, then the \l ActionTypeId. If both are correct, we can emit our \l Event to show that the simple button \l Device was pressed.   
 
-    You can see in the implementation that a new \l{Event} will be generated in guh. This is the way how you emit an Event for a device.
+    You can see in the implementation that a new \l{Event} will be generated in nymea. This is the way how you emit an Event for a device.
 
     \section1 Test the plugin
     Rebuild the whole project to make shore all changes are registered and install the plugin (see \l{Install the plugin}{Tutorial 1 - Install the plugin}).
 
     \list 1    
-        \li Start guh with following command:
+        \li Start nymea with following command:
 
             \code
-                $ guhd -n -d Buttons
+                $ nymead -n -d Buttons
             \endcode
 
-        \li Start guh-cli and add the a new \b {"Simple Button"} devcice. Give an appropriate name like \b {Test button}.
-        \li Use guh-cli to execute the \b {press the button} action: 
+        \li Start nymea-cli and add the a new \b {"Simple Button"} devcice. Give an appropriate name like \b {Test button}.
+        \li Use nymea-cli to execute the \b {press the button} action: 
 
             \tt "Devices" \unicode{0x2192} \tt {"Execute an action"} \unicode{0x2192} \tt {"Your device name (Simple Button)"} \unicode{0x2192} \tt {press the button}
 
@@ -473,7 +473,7 @@
 
     \endcode
 
-    Now you have successfully implemented you first DeviceClass, which has an \l Action and an \l Event and can be used together with the \l {guhserver::RuleEngine}{RuleEngine}.
+    Now you have successfully implemented you first DeviceClass, which has an \l Action and an \l Event and can be used together with the \l {nymeaserver::RuleEngine}{RuleEngine}.
 
     Now you can take a look at \l{Tutorial 3 - The "Power Button" device}.
 

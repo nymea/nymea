@@ -100,7 +100,7 @@
         ...
     \endcode
 
-    When a \l State value of a \l Device will be set, that will generate an \l Event in guh, which contains a \l Param holding the new \l State value. 
+    When a \l State value of a \l Device will be set, that will generate an \l Event in nymea, which contains a \l Param holding the new \l State value. 
 
     \note You \underline don't have to take care about that \l Event, it will be generated automatically and will have the same uuid as \l EventTypeId like the \l StateTypeId. This makes it possible for client applications to link the \l Event to the corresponding \l State which generated the \l Event.
 
@@ -110,20 +110,20 @@
     Rebuild the whole project to make shore all changes are registered and install the plugin (see \l{Install the plugin}{Tutorial 1 - Install the plugin}).
 
     \list 1    
-        \li Start guh with following command:
+        \li Start nymea with following command:
 
             \code
-                $ guhd -n -d Buttons
+                $ nymead -n -d Buttons
             \endcode
 
-        \li Start guh-cli and add the a new \b {"Power Button"} \l Device. Give an appropriate name like \b {Light}.
-        \li Use guh-cli to check the current power \l State, it should be \tt false (default value).
-        \li Use guh-cli to execute the \b {set power} \l Action: 
+        \li Start nymea-cli and add the a new \b {"Power Button"} \l Device. Give an appropriate name like \b {Light}.
+        \li Use nymea-cli to check the current power \l State, it should be \tt false (default value).
+        \li Use nymea-cli to execute the \b {set power} \l Action: 
 
             \tt "Devices" \unicode{0x2192} \tt "Execute an action" \unicode{0x2192} \tt {"Your device name (Power Button)"} \unicode{0x2192} \tt {set power} \unicode{0x2192} \tt {true}
     \endlist
     
-    In the guhd stdout you should see the debug output from you plugin.
+    In the nymead stdout you should see the debug output from you plugin.
     \code
         ...        
 
@@ -134,7 +134,7 @@
                     QUuid("{9328693e-9054-47bc-b95f-ae3e42d50b8b}")
     \endcode
 
-    Now you have successfully implemented you first DeviceClass, which has an parametrized \l Action and a \l State which generates an \l Event containig the new \l State value. This new DeviceClass can be used in the \l {guhserver::RuleEngine}{RuleEngine}. Feel free to play with the Device and the Rule engine to get a feeling how the system works.
+    Now you have successfully implemented you first DeviceClass, which has an parametrized \l Action and a \l State which generates an \l Event containig the new \l State value. This new DeviceClass can be used in the \l {nymeaserver::RuleEngine}{RuleEngine}. Feel free to play with the Device and the Rule engine to get a feeling how the system works.
 
     Now you can take a look at \l{Tutorial 4 - The alternative "Power Button"}.
 

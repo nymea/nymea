@@ -24,10 +24,10 @@
 /*!
     \page mockdevices.html
     \title Mock devices
-    \brief Devices for the guh test base.
+    \brief Devices for the nymea test base.
 
     \ingroup plugins
-    \ingroup guh-tests
+    \ingroup nymea-tests
 
     The mock devices are used for testing.
 

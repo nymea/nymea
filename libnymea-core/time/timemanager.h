@@ -49,14 +49,14 @@ public:
 private:
     QTimeZone m_timeZone;
     QDateTime m_dateTime;
-    QTimer *m_guhTimer;
+    QTimer *m_nymeaTimer;
 
 signals:
     void tick();
     void dateTimeChanged(const QDateTime &dateTime);
 
 private slots:
-    void guhTimeout();
+    void nymeaTimeout();
 
 };
 

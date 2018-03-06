@@ -48,13 +48,13 @@ TimeManager::TimeManager(const QByteArray &timeZone, QObject *parent) :
 
     setTimeZone(timeZone);
 
-    m_guhTimer = new QTimer(this);
-    m_guhTimer->setInterval(1000);
-    m_guhTimer->setSingleShot(false);
+    m_nymeaTimer = new QTimer(this);
+    m_nymeaTimer->setInterval(1000);
+    m_nymeaTimer->setSingleShot(false);
 
-    connect(m_guhTimer, &QTimer::timeout, this, &TimeManager::guhTimeout);
+    connect(m_nymeaTimer, &QTimer::timeout, this, &TimeManager::nymeaTimeout);
 
-    m_guhTimer->start();
+    m_nymeaTimer->start();
 }
 
 /*! Returns the time zone of this \l{TimeManager}. */
@@ -111,23 +111,23 @@ void TimeManager::stopTimer()
 {
     qCWarning(dcTimeManager()) << "TimeManager timer stopped. You should only see this in tests.";
     // Stop clock (used for testing)
-    m_guhTimer->stop();
+    m_nymeaTimer->stop();
 }
 
 void TimeManager::setTime(const QDateTime &dateTime)
 {
     qCWarning(dcTimeManager()) << "TimeManager time changed" << dateTime.toString("dd.MM.yyyy hh:mm:ss") << "You should only see this in tests.";
-    // This method will only be called for testing to set the guhIO intern time
+    // This method will only be called for testing to set the internal time
     emit tick();
     emit dateTimeChanged(dateTime);
 }
 
-void TimeManager::guhTimeout()
+void TimeManager::nymeaTimeout()
 {
     // tick for deviceManager
     emit tick();
 
-    // Minute based guh time
+    // Minute based nymea time
     QDateTime utcDateTime = QDateTime::currentDateTimeUtc();
     if (m_dateTime.time().minute() != utcDateTime.toTimeZone(m_timeZone).time().minute()) {
         m_dateTime = utcDateTime;

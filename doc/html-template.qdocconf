@@ -2,21 +2,21 @@ include(html-styles.qdocconf)
 
 HTML.postheader = \
     "<div class=\"header\">\n" \
-    "  <nav class=\"guh-navbar-container guh-margin guh-navbar\">\n" \
-    "    <div class=\"guh-navbar-center\">\n" \
-    "       <div class=\"guh-navbar-center-left\">\n" \
+    "  <nav class=\"nymea-navbar-container nymea-margin nymea-navbar\">\n" \
+    "    <div class=\"nymea-navbar-center\">\n" \
+    "       <div class=\"nymea-navbar-center-left\">\n" \
     "          <div>\n" \
-    "             <ul class=\"guh-navbar-nav\">\n" \
+    "             <ul class=\"nymea-navbar-nav\">\n" \
     "               <li><a href=\"index.html\">Home</a></li>\n" \
-    "               <li><a href=\"guhserver.html\">Server</a></li>\n" \
-    "               <li><a href=\"libguh-module.html\">Lib</a></li>\n" \
+    "               <li><a href=\"nymeaserver.html\">Server</a></li>\n" \
+    "               <li><a href=\"libnymea-module.html\">Lib</a></li>\n" \
     "             </ul>\n" \
     "           </div>\n" \
     "        </div>\n" \
-    "        <a href=\"index.html\" class=\"indexref guh-logo\"><img src=\"images/main-logo.svg\" class=\"guh-main-logo\"/></a>\n" \
-    "        <div class=\"guh-navbar-center-right\">\n" \
+    "        <a href=\"index.html\" class=\"indexref nymea-logo\"><img src=\"images/main-logo.svg\" class=\"nymea-main-logo\"/></a>\n" \
+    "        <div class=\"nymea-navbar-center-right\">\n" \
     "           <div>\n" \
-    "              <ul class=\"guh-navbar-nav\">\n" \
+    "              <ul class=\"nymea-navbar-nav\">\n" \
     "                  <li><a href=\"plugins.html\">Plugins</a></li>\n" \
     "                  <li><a href=\"api.html\">API</a></li>\n" \
     "                  <li><a href=\"write-plugins.html\">Write Plugins</a></li>\n" \

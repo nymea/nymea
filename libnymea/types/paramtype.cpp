@@ -25,7 +25,7 @@
     \class ParamType
     \brief Describes a certain ParamType.
 
-    \ingroup guh-types
+    \ingroup nymea-types
     \inmodule libnymea
 
     \sa Device, Param, ParamDescriptor

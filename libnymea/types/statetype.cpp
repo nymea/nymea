@@ -26,7 +26,7 @@
     \class StateType
     \brief Describes the Type of a \l{State} from \l{Device}.
 
-    \ingroup guh-types
+    \ingroup nymea-types
     \inmodule libnymea
 
     \sa State, StateDescriptor

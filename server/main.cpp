@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
-    QString applicationDescription = QCoreApplication::translate("main", "\nguh ( /[guːh]/ ) is an open source IoT (Internet of Things) server, \n"
+    QString applicationDescription = QCoreApplication::translate("main", "\nnymea is an open source IoT (Internet of Things) server, \n"
                                              "which allows to control a lot of different devices from many different \n"
                                              "manufacturers. With the powerful rule engine you are able to connect any \n"
                                              "device available in the system and create individual scenes and behaviors \n"

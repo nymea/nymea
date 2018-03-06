@@ -25,7 +25,7 @@
     \class ActionType
     \brief Describes an \l{Action} for a \l{Device}.
 
-    \ingroup guh-types
+    \ingroup nymea-types
     \inmodule libnymea
 
     ActionTypes are contained in \l{DeviceClass} templates returned

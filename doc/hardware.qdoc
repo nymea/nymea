@@ -2,5 +2,7 @@
     \page hardware.html
     \title Hardware Resources
 
+    \brief This is the list of nymea hardware resources.
+
     \annotatedlist hardware
 */

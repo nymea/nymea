@@ -21,7 +21,7 @@
     \code
         include(plugins.pri)
 
-        TARGET = guh_deviceplugincoapclient
+        TARGET = nymea_deviceplugincoapclient
 
         message(============================================)
         message("Qt version: $$[QT_VERSION]")
@@ -53,8 +53,8 @@
             "vendors": [
                 {
                     "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
-                    "name": "guh",
-                    "idName": "guh",
+                    "name": "nymea",
+                    "idName": "nymea",
                     "deviceClasses": [
                         {
                             "deviceClassId": "69dcccbd-a66a-4c5b-8921-2fb86c4c4299",
@@ -127,7 +127,7 @@
         {
             Q_OBJECT
 
-            Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "deviceplugincoapclient.json")
+            Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "deviceplugincoapclient.json")
             Q_INTERFACES(DevicePlugin)
 
         public:
@@ -170,7 +170,7 @@
 
         #include "coap/corelinkparser.h"
 
-        // Note: You can find the documentation for this code here -> http://dev.guh.guru/write-plugins.html
+        // Note: You can find the documentation for this code here -> http://doc.nymea.io/write-plugins.html
 
         // The constructor of this device plugin.
         DevicePluginCoapClient::DevicePluginCoapClient()

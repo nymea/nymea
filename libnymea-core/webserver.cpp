@@ -27,15 +27,15 @@
 
     The \l{WebServer} class provides a HTTP/1.1 web server. The web server
     provides access to the nymea-webinterface and the path can be specified
-    in the \tt /etc/guh/nymead.conf file and to the guh \l{https://github.com/guh/guh/wiki/REST-Api-documentation}{REST API}.
+    in the \tt /etc/nymea/nymead.conf file and to the nymea \l{https://github.com/guh/guh/wiki/REST-Api-documentation}{REST API}.
     The default port for the web server is 3333, which is according to this
     \l{https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers}{list}
     officially free.
 
-    The URL for the insecure guh-webinterface access:
+    The URL for the insecure nymea-webinterface access:
     \code http://localhost:3333\endcode
 
-    The URL for the secure HTTPS (TLS 1.2) guh-webinterface access:
+    The URL for the secure HTTPS (TLS 1.2) nymea-webinterface access:
     \code https://localhost:3333\endcode
 
     The URL for the insecure REST API access to a \l{RestResource}:
@@ -44,10 +44,10 @@
     The URL for the secure HTTPS (TLS 1.2) REST API access to a \l{RestResource}:
     \code https://localhost:3333/api/v1/{RestResource}\endcode
 
-    You can turn on the HTTPS server in the \tt WebServer section of the \tt /etc/guh/nymead.conf file.
+    You can turn on the HTTPS server in the \tt WebServer section of the \tt /etc/nymea/nymead.conf file.
 
     \note For \tt HTTPS you need to have a certificate and configure it in the \tt SSL-configuration
-    section of the \tt /etc/guh/nymead.conf file.
+    section of the \tt /etc/nymea/nymead.conf file.
 
     \sa WebServerClient, WebSocketServer, TcpServer
 */

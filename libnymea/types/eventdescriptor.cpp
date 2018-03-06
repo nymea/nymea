@@ -25,7 +25,7 @@
     \class EventDescriptor
     \brief Describes a certain \l{Event}.
 
-    \ingroup guh-types
+    \ingroup nymea-types
     \ingroup rules
     \inmodule libnymea
 

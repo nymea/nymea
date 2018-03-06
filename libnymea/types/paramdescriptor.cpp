@@ -25,7 +25,7 @@
     \class ParamDescriptor
     \brief Describes a certain \l{Param}.
 
-    \ingroup guh-types
+    \ingroup nymea-types
     \ingroup rules
     \inmodule libnymea
 

@@ -259,7 +259,7 @@ QList<QJsonObject> DeviceManager::pluginsMetadata()
     return pluginList;
 }
 
-/*! Register a DevicePlugin class. This can be used to create devices internally from the guh system without having to create a full plugin.
+/*! Register a DevicePlugin class. This can be used to create devices internally from the nymea system without having to create a full plugin.
     The DeviceManager takes ownership of the object and will clean it up when exiting. Do not delete the object yourself. */
 void DeviceManager::registerStaticPlugin(DevicePlugin *plugin, const QJsonObject &metaData)
 {

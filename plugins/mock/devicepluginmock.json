@@ -24,7 +24,7 @@
         {
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
             "name": "guh",
-            "displayName": "guh",
+            "displayName": "guh GmbH",
             "deviceClasses": [
                 {
                     "id": "753f0d32-0468-4d08-82ed-1964aab03298",
@@ -643,7 +643,7 @@
                             "displayName": "URL",
                             "type": "QString",
                             "inputType": "Url",
-                            "defaultValue": "http://guh.guru"
+                            "defaultValue": "http://nymea.io"
                         },
                         {
                             "id": "e93db587-7919-48f3-8c88-1651de63c765",

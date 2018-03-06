@@ -342,7 +342,7 @@
     This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{Action} and \l{RuleAction}.
 
     \section2 RuleId
-    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{guhserver::Rule}.
+    This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a \l{nymeaserver::Rule}.
 
     \section2 PairingTransactionId
     This class is a subclass of \l{http://doc.qt.io/qt-5/quuid.html}{QUuid} and represents the \e id of a pairing transaction.

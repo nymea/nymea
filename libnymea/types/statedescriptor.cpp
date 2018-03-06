@@ -25,7 +25,7 @@
     \class StateDescriptor
     \brief Describes a certain \l{State}.
 
-    \ingroup guh-types
+    \ingroup nymea-types
     \ingroup rules
     \inmodule libnymea
 

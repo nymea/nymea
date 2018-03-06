@@ -25,7 +25,7 @@
     \class RuleActionParam
     \brief Holds the parameters for a \l{RuleAction}.
 
-    \ingroup guh-types
+    \ingroup nymea-types
     \ingroup rules
     \inmodule libnymea
 

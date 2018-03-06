@@ -26,7 +26,7 @@
     \ingroup logs
     \inmodule core
 
-    A \l{LogEntry} represents an a guh event which can be stored from the \l{LogEngine} to the database.
+    A \l{LogEntry} represents an a nymea event which can be stored from the \l{LogEngine} to the database.
     Each LogEntry has a timestamp an can be loaded from the database and stored in the database.
 
     \sa LogEngine, LogFilter, LogsResource, LoggingHandler

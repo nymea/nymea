@@ -25,7 +25,7 @@
     \class EventType
     \brief Describes a \l{Event} for a \l{Device}.
 
-    \ingroup guh-types
+    \ingroup nymea-types
     \inmodule libnymea
 
     \sa Event, EventDescriptor

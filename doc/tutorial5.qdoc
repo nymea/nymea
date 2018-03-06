@@ -43,7 +43,7 @@ In order to get started with our new \b {"Network Info"} plugin we use the minim
     \code
         include(plugins.pri)
 
-        TARGET = $$qtLibraryTarget(guh_devicepluginminimal)
+        TARGET = $$qtLibraryTarget(nymea_devicepluginminimal)
 
         message("Building $$deviceplugin$${TARGET}.so")
 
@@ -56,7 +56,7 @@ In order to get started with our new \b {"Network Info"} plugin we use the minim
     \endcode
     
     \list 1
-        \li Change the \tt TARGET name form \tt guh_devicepluginminimal \unicode{0x2192} \tt guh_devicepluginnetworkinfo
+        \li Change the \tt TARGET name form \tt nymea_devicepluginminimal \unicode{0x2192} \tt nymea_devicepluginnetworkinfo
         \li Change the SOURCES file from \tt devicepluginminimal.cpp \unicode{0x2192} \tt devicepluginnetworkinfo.cpp
         \li Change the HEADERS file from \tt devicepluginminimal.h \unicode{0x2192} \tt devicepluginnetworkinfo.h
     \endlist
@@ -65,7 +65,7 @@ In order to get started with our new \b {"Network Info"} plugin we use the minim
     \code
         include(plugins.pri)
 
-        TARGET = $$qtLibraryTarget(guh_devicepluginnetworkinfo)
+        TARGET = $$qtLibraryTarget(nymea_devicepluginnetworkinfo)
 
         message("Building $$deviceplugin$${TARGET}.so")
 
@@ -92,7 +92,7 @@ In order to get started with our new \b {"Network Info"} plugin we use the minim
         {
             Q_OBJECT
 
-            Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginminimal.json")
+            Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginminimal.json")
             Q_INTERFACES(DevicePlugin)
 
         public:
@@ -125,7 +125,7 @@ In order to get started with our new \b {"Network Info"} plugin we use the minim
         {
             Q_OBJECT
 
-            Q_PLUGIN_METADATA(IID "guru.guh.DevicePlugin" FILE "devicepluginnetworkinfo.json")
+            Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginnetworkinfo.json")
             Q_INTERFACES(DevicePlugin)
 
         public:
@@ -201,7 +201,7 @@ In order to get started with our new \b {"Network Info"} plugin we use the minim
 
     You will see in the build output following section:    
     \code
-        /usr/bin/guh-generateplugininfo ../networkinfo-diy/devicepluginnetworkinfo.json plugininfo.h
+        /usr/bin/nymea-generateplugininfo ../networkinfo-diy/devicepluginnetworkinfo.json plugininfo.h
         ../networkinfo-diy/devicepluginnetworkinfo.json -> plugininfo.h
          --> generate plugininfo.h
         PluginId for plugin "Minimal plugin" = 6878754a-f27d-4007-a4e5-b030b55853f5
@@ -257,7 +257,7 @@ In order to get started with our new \b {"Network Info"} plugin we use the minim
 
     For more details about how to write the JSON file please take a look at \l{The Plugin JSON file} documentation.
 
-    \note As you can see in this example the \l Vendor for this \l DevicePlugin is the \e guh. Of course you can define here a new Vendor (using \tt uuidgen to generate a new UUID). Please take a look at the existing \l{Vendor}{Vendors} and check if your \l Vendor already exists. If the \l{Vendor} exists, please copy the \e name, \e idName and \e id to make shore all \l{Device}{Devices} from one \l{Vendor} will be together in the system like in this example for \e guh. 
+    \note As you can see in this example the \l Vendor for this \l DevicePlugin is the \e nymea. Of course you can define here a new Vendor (using \tt uuidgen to generate a new UUID). Please take a look at the existing \l{Vendor}{Vendors} and check if your \l Vendor already exists. If the \l{Vendor} exists, please copy the \e name, \e idName and \e id to make shore all \l{Device}{Devices} from one \l{Vendor} will be together in the system like in this example for \e nymea. 
 
     Our new plugin will have the name \b {"Network Info"}, the corresponding logging categorie will be \tt dcNetworkInfo (defined from the \e {idName}). There will be one new \l{DeviceClass} with the \e name \b {Info about Network}. This \l{DeviceClass} has 6 \l{StateType}{StateTypes} and one \l{ActionType}.
 
@@ -268,8 +268,8 @@ In order to get started with our new \b {"Network Info"} plugin we use the minim
             "id": "c16852d7-f123-4dd5-983d-fc2eedb885aa",
             "vendors": [
                 {
-                    "name": "guh",
-                    "idName": "guh",
+                    "name": "nymea",
+                    "idName": "nymea",
                     "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
                     "deviceClasses": [
                         {
@@ -345,7 +345,7 @@ In order to get started with our new \b {"Network Info"} plugin we use the minim
     Once you have changed \l{The Plugin JSON file} you should rebuild the whole project to make shore all changed will be considerated. In the \e {Qt Creator} got to the menu \unicode{0x2192} \b Build \unicode{0x2192} \b{Rebuild all} to create the new \tt plugininfo.h file. You should see in the build output something like this:
 
     \code
-        /usr/bin/guh-generateplugininfo ../networkinfo-diy/devicepluginnetworkinfo.json plugininfo.h
+        /usr/bin/nymea-generateplugininfo ../networkinfo-diy/devicepluginnetworkinfo.json plugininfo.h
         ../networkinfo-diy/devicepluginnetworkinfo.json -> plugininfo.h
          --> generate plugininfo.h
         PluginId for plugin "Network Info" = c16852d7-f123-4dd5-983d-fc2eedb885aa
@@ -363,13 +363,13 @@ In order to get started with our new \b {"Network Info"} plugin we use the minim
          --> generated successfully "extern-plugininfo.h"
     \endcode
     
-    \note You have to change the \tt {qCDebug(dcMinimal)} \unicode{0x2192} \tt {qCDebug(dcNetworkInfo)} because you have changed the plugin \e idName and therefore also the logging categorie. You need to start guh now with the parameter \b {\tt {guhd -n -d NetworkInfo}} to see the debug output of the new plugin.
+    \note You have to change the \tt {qCDebug(dcMinimal)} \unicode{0x2192} \tt {qCDebug(dcNetworkInfo)} because you have changed the plugin \e idName and therefore also the logging categorie. You need to start nymea now with the parameter \b {\tt {nymead -n -d NetworkInfo}} to see the debug output of the new plugin.
 
     If you make a syntax error in the JSON file, you will get a build error with the position of the syntax error in the JSON file. Now your definitions should be in the plugininfo.h file and ready to use in the plugin source code. 
 
     \section1 Writing the plugin
     
-    Now we have our basic for starting to implement the new defined plugin. If you install the current plugin, start \tt guhd and add the a \b {Info about Network} device whith \b {\tt guh-cli} you can check the device states and should see something like this:
+    Now we have our basic for starting to implement the new defined plugin. If you install the current plugin, start \tt nymead and add the a \b {Info about Network} device whith \b {\tt nymea-cli} you can check the device states and should see something like this:
 
     \code
         ========================================================
@@ -567,20 +567,20 @@ parameter from \l{The Plugin JSON file}.
     Rebuild the whole project to make shore all changes are registered and install the plugin (see \l{Install the plugin}{Tutorial 1 - Install the plugin}).
 
     \list 1    
-        \li Start guh with following command:
+        \li Start nymea with following command:
 
             \code
-                $ guhd -n -d NetworkInfo
+                $ nymead -n -d NetworkInfo
             \endcode
 
-        \li Start guh-cli and add the a new "Info" devcice.
-        \li Use guh-cli to check if the device states are initialized with the default values from \l{Change the devicepluginnetworkinfo.json}: 
+        \li Start nymea-cli and add the a new "Info" devcice.
+        \li Use nymea-cli to check if the device states are initialized with the default values from \l{Change the devicepluginnetworkinfo.json}: 
 
             \tt "Devices" \unicode{0x2192} \tt "List..." \unicode{0x2192} \tt {"List device states"} \unicode{0x2192} \tt {"Your device name"}.
-        \li Use guh-cli to execute the \b update action: 
+        \li Use nymea-cli to execute the \b update action: 
 
             \tt "Devices" \unicode{0x2192} \tt "Execute action" \unicode{0x2192} \tt {"Your device name"} \unicode{0x2192} \tt {update}
-        \li Use guh-cli to check if the device states were updated sucessfully: 
+        \li Use nymea-cli to check if the device states were updated sucessfully: 
 
             \tt "Devices" \unicode{0x2192} \tt "List..." \unicode{0x2192} \tt {"List device states"} \unicode{0x2192} \tt {"Your device name"}.
 

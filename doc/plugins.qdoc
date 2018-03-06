@@ -4,17 +4,17 @@
     
     Here you can find the current list of supported plugins sorted by the corresponding package.    
 
-    \section2 The default \tt{guh-plugins} package:
-    \annotatedlist guh-plugins
+    \section2 The default \tt{nymea-plugins} package:
+    \annotatedlist nymea-plugins
     
-    \section2 The \tt{guh-plugins-merkur} package:
-    \annotatedlist guh-plugins-merkur
+    \section2 The \tt{nymea-plugins-merkur} package:
+    \annotatedlist nymea-plugins-merkur
 
-    \section2 The \tt{guh-plugins-maker} package:
-    \annotatedlist guh-plugins-maker
+    \section2 The \tt{nymea-plugins-maker} package:
+    \annotatedlist nymea-plugins-maker
 
-    \section2 The \tt{guh-tests} package plugins:
-    \annotatedlist guh-tests
+    \section2 The \tt{nymea-tests} package plugins:
+    \annotatedlist nymea-tests
 
 */
 

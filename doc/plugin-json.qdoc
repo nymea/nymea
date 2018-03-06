@@ -3,12 +3,12 @@
     \title The plugin JSON File
     \brief Description of the plugin JSON file structure.
     
-    Each \l{DevicePlugin}{Plugin} in guh will be defined in the corresponding JSON file. You can find information how to read JSON \l{http://json.org/}{here}. This file will be loaded from the \l{DeviceManager} to define the plugin and the corresponding DeviceClasses internal. 
+    Each \l{DevicePlugin}{Plugin} in nymea will be defined in the corresponding JSON file. You can find information how to read JSON \l{http://json.org/}{here}. This file will be loaded from the \l{DeviceManager} to define the plugin and the corresponding DeviceClasses internal. 
 
 
-    \section1 The \b {\tt guh-generateplugininfo} precompiler
+    \section1 The \b {\tt nymea-generateplugininfo} precompiler
     
-    The \tt {\b guh-generateplugininfo} precompiler will parse this file and generates a \tt plugininfo.h and a \tt extern-plugininfo.h file containing the definitions of:
+    The \tt {\b nymea-generateplugininfo} precompiler will parse this file and generates a \tt plugininfo.h and a \tt extern-plugininfo.h file containing the definitions of:
     \list
         \li \l{PluginId}: <\e pluginId \unicode{0x2192} the defined UUID for the \l{DevicePlugin}.     
         \li \l{VendorId}: <\e idName>VendorId \unicode{0x2192} the defined UUID for the corresponding \l{Vendor}. 
@@ -91,7 +91,7 @@
             qCWarning(dcExample) << "Warning the world!";
         \endcode
         
-        Please start allways with a capital letter i.e. \tt {"idName": "Example"}. The logging category allowes you to categorise the debug output. It can be configured with the \tt -d argument of guhd (see \tt {$ man guhd}).
+        Please start allways with a capital letter i.e. \tt {"idName": "Example"}. The logging category allowes you to categorise the debug output. It can be configured with the \tt -d argument of nymead (see \tt {$ man nymead}).
         \li - \underline{\e id:} The actual uuid (\l{PluginId}) of the plugin \unicode{0x2192} \l{DevicePlugin::pluginId()}
         \li - \underline{\e paramTypes:} Optionl: A list of \l{ParamType}{ParamTypes} which define the paramters of this plugin \unicode{0x2192} \l{DevicePlugin::configuration()} (see section "\l{The ParamType definition}").
         \li - \underline{\e vendors:} The list of \l{Vendor}{Vendors} objects (see section "\l{The Vendor definition}");
@@ -99,7 +99,7 @@
 
     
     \section2 The Vendor definition
-    A plugin can support more then one \l{Vendor}, so the parameter \e vendors in the plugin definition is a list. Each element of this list represents a \l{Vendor} in guh.
+    A plugin can support more then one \l{Vendor}, so the parameter \e vendors in the plugin definition is a list. Each element of this list represents a \l{Vendor} in nymea.
 
     \code
         }
@@ -127,7 +127,7 @@
     \endlist
 
     \section2 The DeviceClass definition
-    A \l{Vendor} can support more then one \l{DeviceClass}, so the parameter \e deviceClasses in the vendor definition is a list. Each element of this list represents a \l{DeviceClass} in guh. 
+    A \l{Vendor} can support more then one \l{DeviceClass}, so the parameter \e deviceClasses in the vendor definition is a list. Each element of this list represents a \l{DeviceClass} in nymea. 
 
     \code
         }
@@ -278,7 +278,7 @@
 
 
     \section2 The StateType definition
-    A \l{DeviceClass} can have a list of \l{StateType}{StateTypes} which allow you to represent a state of a device. A \l{State} can be changed/updated in the plugin code. If you change a state in the plugin using \l{Device::setStateValue()} an \l{Event} will generate automatically in the \l{guhserver::GuhCore}. This \l{Event} has the same uuid (\l{EventTypeId}) like the \l{State} which created the "<stateName> changed" \l{Event}. The event will have exactly one \l{Param}, which has the same properties like the \l{StateType} value and contains the new value.
+    A \l{DeviceClass} can have a list of \l{StateType}{StateTypes} which allow you to represent a state of a device. A \l{State} can be changed/updated in the plugin code. If you change a state in the plugin using \l{Device::setStateValue()} an \l{Event} will generate automatically in the \l{nymeaserver::NymeaCore}. This \l{Event} has the same uuid (\l{EventTypeId}) like the \l{State} which created the "<stateName> changed" \l{Event}. The event will have exactly one \l{Param}, which has the same properties like the \l{StateType} value and contains the new value.
 
 A \l{StateType} has following parameters:
 
@@ -396,7 +396,7 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
     \endlist
     
     \section2 The ActionType definition
-    A \l{DeviceClass} can have more then one \l{ActionType}, so the parameter \e actionTypes in the \l{DeviceClass} definition is a list. Each element of this list represents an \l{ActionType} in guh.
+    A \l{DeviceClass} can have more then one \l{ActionType}, so the parameter \e actionTypes in the \l{DeviceClass} definition is a list. Each element of this list represents an \l{ActionType} in nymea.
 
     \code
         }
@@ -424,7 +424,7 @@ This mechanism was created to ensure that the \l{EventType} and \l{ActionType} w
     \endlist
 
     \section2 The EventType definition
-    A \l{DeviceClass} can have more then one \l{EventType}, so the parameter \e eventTypes in the \l{DeviceClass} definition is a list. Each element of this list represents an \l{EventType} in guh.
+    A \l{DeviceClass} can have more then one \l{EventType}, so the parameter \e eventTypes in the \l{DeviceClass} definition is a list. Each element of this list represents an \l{EventType} in nymea.
 
     \code
         }

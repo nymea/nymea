@@ -25,7 +25,7 @@
     \class Param
     \brief Holds the parameters of a Param.
 
-    \ingroup guh-types
+    \ingroup nymea-types
     \inmodule libnymea
 
     \sa Device, ParamType, ParamDescriptor

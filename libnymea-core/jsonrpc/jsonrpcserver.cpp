@@ -75,7 +75,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     QVariantMap params;
 
     params.clear(); returns.clear();
-    setDescription("Hello", "Upon first connection, guh will automatically send a welcome message containing information about the setup. If this message is lost for whatever reason (connections with multiple hops might drop this if guh sends it too early), the exact same message can be retrieved multiple times by calling this Hello method. Note that the contents might change if the system changed its state in the meantime, e.g. initialSetupRequired might turn false if the initial setup has been performed in the meantime.");
+    setDescription("Hello", "Upon first connection, nymea will automatically send a welcome message containing information about the setup. If this message is lost for whatever reason (connections with multiple hops might drop this if nymea sends it too early), the exact same message can be retrieved multiple times by calling this Hello method. Note that the contents might change if the system changed its state in the meantime, e.g. initialSetupRequired might turn false if the initial setup has been performed in the meantime.");
     setParams("Hello", params);
     returns.insert("id", JsonTypes::basicTypeToString(JsonTypes::Int));
     returns.insert("server", JsonTypes::basicTypeToString(JsonTypes::String));
@@ -97,7 +97,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     setReturns("Introspect", returns);
 
     params.clear(); returns.clear();
-    setDescription("Version", "Version of this Guh/JSONRPC interface.");
+    setDescription("Version", "Version of this nymea/JSONRPC interface.");
     setParams("Version", params);
     returns.insert("version", JsonTypes::basicTypeToString(JsonTypes::String));
     returns.insert("protocol version", JsonTypes::basicTypeToString(JsonTypes::String));
@@ -111,7 +111,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     setReturns("SetNotificationStatus", returns);
 
     params.clear(); returns.clear();
-    setDescription("CreateUser", "Create a new user in the API. Currently this is only allowed to be called once when a new guh instance is set up. Call Authenticate after this to obtain a device token for this user.");
+    setDescription("CreateUser", "Create a new user in the API. Currently this is only allowed to be called once when a new nymea instance is set up. Call Authenticate after this to obtain a device token for this user.");
     params.insert("username", JsonTypes::basicTypeToString(JsonTypes::String));
     params.insert("password", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("CreateUser", params);
@@ -430,7 +430,7 @@ QVariantMap JsonRPCServer::createWelcomeMessage(TransportInterface *interface) c
 {
     QVariantMap handshake;
     handshake.insert("id", 0);
-    handshake.insert("server", "guhIO");
+    handshake.insert("server", "nymea");
     handshake.insert("name", NymeaCore::instance()->configuration()->serverName());
     handshake.insert("version", NYMEA_VERSION_STRING);
     handshake.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());

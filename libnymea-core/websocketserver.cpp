@@ -115,7 +115,7 @@ QHash<QString, QString> WebSocketServer::createTxtRecord()
     QHash<QString, QString> txt;
     txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
     txt.insert("serverVersion", NYMEA_VERSION_STRING);
-    txt.insert("manufacturer", "guh GmbH");
+    txt.insert("manufacturer", "nymea GmbH");
     txt.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", NymeaCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
@@ -201,7 +201,7 @@ void WebSocketServer::resetAvahiService()
         return;
 
     m_avahiService->resetService();
-    if (!m_avahiService->registerService(QString("guhIO-ws-%1").arg(configuration().id), configuration().port, "_ws._tcp", createTxtRecord())) {
+    if (!m_avahiService->registerService(QString("nymea-ws-%1").arg(configuration().id), configuration().port, "_ws._tcp", createTxtRecord())) {
         qCWarning(dcWebServer()) << "Could not register avahi service for" << configuration();
     }
 }
@@ -237,10 +237,10 @@ void WebSocketServer::setServerName(const QString &serverName)
 bool WebSocketServer::startServer()
 {
     if (configuration().sslEnabled) {
-        m_server = new QWebSocketServer("guh", QWebSocketServer::SecureMode, this);
+        m_server = new QWebSocketServer("nymea", QWebSocketServer::SecureMode, this);
         m_server->setSslConfiguration(m_sslConfiguration);
     } else {
-        m_server = new QWebSocketServer("guh", QWebSocketServer::NonSecureMode, this);
+        m_server = new QWebSocketServer("nymea", QWebSocketServer::NonSecureMode, this);
     }
     connect (m_server, &QWebSocketServer::newConnection, this, &WebSocketServer::onClientConnected);
     connect (m_server, &QWebSocketServer::acceptError, this, &WebSocketServer::onServerError);

@@ -163,7 +163,7 @@ void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int 
                                                                       "EXT:\r\n"
                                                                       "CONTENT-LENGTH:0\r\n"
                                                                       "LOCATION: " + locationString.toUtf8() + "\r\n"
-                                                                      "SERVER: guh/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
+                                                                      "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
                                                                       "ST:upnp:rootdevice\r\n"
                                                                       "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
                                                                       "\r\n");
@@ -381,7 +381,7 @@ void UpnpDiscoveryImplementation::sendByeByeMessage()
                                                                       "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
                                                                       "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
                                                                       "NTS: ssdp:byebye\r\n"
-                                                                      "SERVER: guh/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
+                                                                      "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
                                                                       "\r\n");
 
                     sendToMulticast(byebyeMessage);
@@ -427,7 +427,7 @@ void UpnpDiscoveryImplementation::sendAliveMessage()
                                                                       "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
                                                                       "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
                                                                       "NTS: ssdp:alive\r\n"
-                                                                      "SERVER: guh/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
+                                                                      "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
                                                                       "\r\n");
 
                     sendToMulticast(aliveMessage);

@@ -62,7 +62,7 @@ TcpServer::~TcpServer()
 
 QUrl TcpServer::serverUrl() const
 {
-    return QUrl(QString("%1://%2:%3").arg((configuration().sslEnabled ? "guhs" : "guh")).arg(configuration().address.toString()).arg(configuration().port));
+    return QUrl(QString("%1://%2:%3").arg((configuration().sslEnabled ? "nymeas" : "nymea")).arg(configuration().address.toString()).arg(configuration().port));
 }
 
 /*! Sending \a data to a list of \a clients.*/
@@ -138,7 +138,7 @@ void TcpServer::resetAvahiService()
     txt.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", NymeaCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
-    if (!m_avahiService->registerService(QString("guhIO-tcp-%1").arg(configuration().id), configuration().port, "_jsonrpc._tcp", txt)) {
+    if (!m_avahiService->registerService(QString("nymea-tcp-%1").arg(configuration().id), configuration().port, "_jsonrpc._tcp", txt)) {
         qCWarning(dcTcpServer()) << "Could not register avahi service for" << configuration();
     }
 }

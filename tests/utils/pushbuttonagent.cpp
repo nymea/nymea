@@ -33,14 +33,14 @@ bool PushButtonAgent::init(QDBusConnection::BusType busType)
 {
     QDBusConnection bus = busType == QDBusConnection::SessionBus ? QDBusConnection::sessionBus() : QDBusConnection::systemBus();
 
-    bool result = bus.registerObject("/guh/pushbuttonhandler", this, QDBusConnection::ExportScriptableContents);
+    bool result = bus.registerObject("/nymea/pushbuttonhandler", this, QDBusConnection::ExportScriptableContents);
     if (!result) {
         qDebug() << "Error registering PushButton agent on D-Bus.";
         return false;
     }
 
     QDBusMessage message = QDBusMessage::createMethodCall("io.guh.nymead", "/io/guh/nymead/UserManager", QString(), "RegisterButtonAgent");
-    message << qVariantFromValue(QDBusObjectPath("/guh/pushbuttonhandler"));
+    message << qVariantFromValue(QDBusObjectPath("/nymea/pushbuttonhandler"));
     QDBusMessage reply = bus.call(message);
     if (!reply.errorName().isEmpty()) {
         qDebug() << "Error registering PushButton agent:" << reply.errorMessage();

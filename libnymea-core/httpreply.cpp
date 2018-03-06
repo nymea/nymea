@@ -20,13 +20,13 @@
 
 /*!
     \class nymeaserver::HttpReply
-    \brief Represents a reply of the guh webserver to a \l{HttpRequest}.
+    \brief Represents a reply of the nymea webserver to a \l{HttpRequest}.
 
     \ingroup api
     \inmodule core
 
     This class holds the header and the payload data of a network reply and represents a response
-    from the guh webserver to a \l{HttpRequest}.
+    from the nymea webserver to a \l{HttpRequest}.
 
     \note RFC 7231 HTTP/1.1 Semantics and Content -> \l{http://tools.ietf.org/html/rfc7231}{http://tools.ietf.org/html/rfc7231}
 */
@@ -96,7 +96,7 @@
     \value DateHeader
         The server date header.
     \value ServerHeader
-        The name of the server i.e. "Server: guh/0.6.0"
+        The name of the server i.e. "Server: nymea/0.6.0"
 */
 
 /*! \enum nymeaserver::HttpReply::Type
@@ -156,7 +156,7 @@ HttpReply::HttpReply(QObject *parent) :
 
     // set known headers
     setHeader(HttpReply::ContentTypeHeader, "text/plain; charset=\"utf-8\";");
-    setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(NYMEA_VERSION_STRING));
+    setHeader(HttpHeaderType::ServerHeader, "nymea/" + QByteArray(NYMEA_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, NymeaCore::instance()->timeManager()->currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
@@ -179,7 +179,7 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
 
     // set known / default headers
     setHeader(HttpReply::ContentTypeHeader, "text/plain; charset=\"utf-8\";");
-    setHeader(HttpHeaderType::ServerHeader, "guh/" + QByteArray(NYMEA_VERSION_STRING));
+    setHeader(HttpHeaderType::ServerHeader, "nymea/" + QByteArray(NYMEA_VERSION_STRING));
     setHeader(HttpHeaderType::DateHeader, NymeaCore::instance()->timeManager()->currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8());
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");

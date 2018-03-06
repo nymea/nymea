@@ -191,7 +191,7 @@ void CoapTests::broken()
 
 void CoapTests::query()
 {
-    CoapRequest request(QUrl("coap://coap.me/query?guh=awesome"));
+    CoapRequest request(QUrl("coap://coap.me/query?nymea=awesome"));
     qDebug() << request.url().toString();
 
     QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
@@ -203,7 +203,7 @@ void CoapTests::query()
     QCOMPARE(reply->statusCode(), CoapPdu::Content);
     QCOMPARE(reply->contentType(), CoapPdu::TextPlain);
     QCOMPARE(reply->error(), CoapReply::NoError);
-    QVERIFY2(reply->payload() == "You asked me about: guh=awesome", "Invalid payload");
+    QVERIFY2(reply->payload() == "You asked me about: nymea=awesome", "Invalid payload");
     reply->deleteLater();
 }
 
@@ -354,7 +354,7 @@ void CoapTests::post()
     qDebug() << request.url().toString();
 
     QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
-    CoapReply *reply = m_coap->post(request, "guh is awesome");
+    CoapReply *reply = m_coap->post(request, "nymea is awesome");
     spy.wait();
 
     QVERIFY2(spy.count() > 0, "Did not get a response.");
@@ -372,7 +372,7 @@ void CoapTests::put()
     qDebug() << request.url().toString();
 
     QSignalSpy spy(m_coap, SIGNAL(replyFinished(CoapReply*)));
-    CoapReply *reply = m_coap->put(request, "guh is awesome");
+    CoapReply *reply = m_coap->put(request, "nymea is awesome");
     spy.wait();
 
     QVERIFY2(spy.count() > 0, "Did not get a response.");

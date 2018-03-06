@@ -53,7 +53,7 @@ void TestLoggingDirect::benchmarkDB_data() {
     QTest::newRow("empty, trim") << 1 << 1;
     QTest::newRow("10000, no trim") << 10000 << 20000;
     QTest::newRow("10000, trim") << 10000 << 10000;
-    QTest::newRow("20000, no trim") << 20000 << 30000;
+//    QTest::newRow("20000, no trim") << 20000 << 30000;
 //    QTest::newRow("20000, trim") << 20000 << 20000;
 //    QTest::newRow("30000, no trim") << 30000 << 40000;
 //    QTest::newRow("30000, trim") << 30000 << 30000;

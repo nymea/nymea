@@ -121,8 +121,8 @@ void TestWebserver::httpVersion()
     QSignalSpy clientSpy(socket, SIGNAL(readyRead()));
 
     QByteArray requestData;
-    requestData.append("GET /hello/guh HTTP/1\r\n");
-    requestData.append("User-Agent: guh webserver test\r\n\r\n");
+    requestData.append("GET /hello/nymea HTTP/1\r\n");
+    requestData.append("User-Agent: nymea webserver test\r\n\r\n");
 
     quint64 count = socket->write(requestData);
     QVERIFY2(count > 0, "could not write to webserver.");
@@ -234,9 +234,9 @@ void TestWebserver::checkAllowedMethodCall()
     if (method == "GET") {
         reply = nam.get(request);
     } else if(method == "PUT") {
-        reply = nam.put(request, QByteArray("Hello guh!"));
+        reply = nam.put(request, QByteArray("Hello nymea!"));
     } else if(method == "POST") {
-        reply = nam.post(request, QByteArray("Hello guh!"));
+        reply = nam.post(request, QByteArray("Hello nymea!"));
     } else if(method == "DELETE") {
         reply = nam.deleteResource(request);
     } else if(method == "HEAD") {
@@ -381,7 +381,7 @@ void TestWebserver::getFiles_data()
     QTest::newRow("get /../../etc/passwd") << "/../../etc/passwd" << 404;
     QTest::newRow("get /../../") << "/../../" << 403;
     QTest::newRow("get /../") << "/../" << 403;
-    QTest::newRow("get /etc/guh/nymead.conf") << "/etc/guh/nymead.conf" << 404;
+    QTest::newRow("get /etc/nymea/nymead.conf") << "/etc/nymea/nymead.conf" << 404;
     QTest::newRow("get /etc/sudoers") <<  "/etc/sudoers" << 404;
     QTest::newRow("get /root/.ssh/id_rsa.pub") <<  "/root/.ssh/id_rsa.pub" << 404;
 }
@@ -439,16 +439,16 @@ void TestWebserver::getIcons_data()
     QTest::addColumn<QString>("query");
     QTest::addColumn<int>("iconSize");
 
-    QTest::newRow("get /icons/guh-logo-8x8.png") << "/icons/guh-logo-8x8.png" << 228;
-    QTest::newRow("get /icons/guh-logo-16x16.png") << "/icons/guh-logo-16x16.png" << 392;
-    QTest::newRow("get /icons/guh-logo-22x22.png") << "/icons/guh-logo-22x22.png" << 512;
-    QTest::newRow("get /icons/guh-logo-32x32.png") << "/icons/guh-logo-32x32.png" << 747;
-    QTest::newRow("get /icons/guh-logo-48x48.png") << "/icons/guh-logo-48x48.png" << 1282;
-    QTest::newRow("get /icons/guh-logo-64x64.png") << "/icons/guh-logo-64x64.png" << 1825;
-    QTest::newRow("get /icons/guh-logo-120x120.png") << "/icons/guh-logo-120x120.png" << 4090;
-    QTest::newRow("get /icons/guh-logo-128x128.png") << "/icons/guh-logo-128x128.png" << 4453;
-    QTest::newRow("get /icons/guh-logo-256x256.png") << "/icons/guh-logo-256x256.png" << 10763;
-    QTest::newRow("get /icons/guh-logo-512x512.png") << "/icons/guh-logo-512x512.png" << 24287;
+    QTest::newRow("get /icons/nymea-logo-8x8.png") << "/icons/nymea-logo-8x8.png" << 228;
+    QTest::newRow("get /icons/nymea-logo-16x16.png") << "/icons/nymea-logo-16x16.png" << 392;
+    QTest::newRow("get /icons/nymea-logo-22x22.png") << "/icons/nymea-logo-22x22.png" << 512;
+    QTest::newRow("get /icons/nymea-logo-32x32.png") << "/icons/nymea-logo-32x32.png" << 747;
+    QTest::newRow("get /icons/nymea-logo-48x48.png") << "/icons/nymea-logo-48x48.png" << 1282;
+    QTest::newRow("get /icons/nymea-logo-64x64.png") << "/icons/nymea-logo-64x64.png" << 1825;
+    QTest::newRow("get /icons/nymea-logo-120x120.png") << "/icons/nymea-logo-120x120.png" << 4090;
+    QTest::newRow("get /icons/nymea-logo-128x128.png") << "/icons/nymea-logo-128x128.png" << 4453;
+    QTest::newRow("get /icons/nymea-logo-256x256.png") << "/icons/nymea-logo-256x256.png" << 10763;
+    QTest::newRow("get /icons/nymea-logo-512x512.png") << "/icons/nymea-logo-512x512.png" << 24287;
 }
 
 void TestWebserver::getIcons()

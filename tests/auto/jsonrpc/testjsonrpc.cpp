@@ -140,8 +140,8 @@ void TestJSONRPC::testHandshake()
 
     QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
     QVariantMap handShake = jsonDoc.toVariant().toMap();
-    QString guhVersionString(NYMEA_VERSION_STRING);
-    QVERIFY2(handShake.value("version").toString() == guhVersionString, "Handshake version doesn't match Guh version.");
+    QString nymeaVersionString(NYMEA_VERSION_STRING);
+    QVERIFY2(handShake.value("version").toString() == nymeaVersionString, "Handshake version doesn't match nymea version.");
 
     // Check whether pushButtonAuth is disabled
     QCOMPARE(handShake.value("pushButtonAuthAvailable").toBool(), false);
@@ -152,7 +152,7 @@ void TestJSONRPC::testHandshake()
 
     // And now check if it is sent again when calling JSONRPC.Hello
     handShake = injectAndWait("JSONRPC.Hello").toMap();
-    QCOMPARE(handShake.value("params").toMap().value("version").toString(), guhVersionString);
+    QCOMPARE(handShake.value("params").toMap().value("version").toString(), nymeaVersionString);
 
     m_mockTcpServer->clientDisconnected(newClientId);
 
@@ -161,7 +161,7 @@ void TestJSONRPC::testHandshake()
 
     // And now check if it is sent again when calling JSONRPC.Hello
     handShake = injectAndWait("JSONRPC.Hello").toMap();
-    QCOMPARE(handShake.value("params").toMap().value("version").toString(), guhVersionString);
+    QCOMPARE(handShake.value("params").toMap().value("version").toString(), nymeaVersionString);
 }
 
 void TestJSONRPC::testInitialSetup()
@@ -464,7 +464,7 @@ void TestJSONRPC::testBasicCall()
         QCOMPARE(jsonDoc.toVariant().toMap().value("id").toInt(), 42);
     }
     if (valid) {
-        QVERIFY2(jsonDoc.toVariant().toMap().value("status").toString() == "success", "Call wasn't parsed correctly by guh.");
+        QVERIFY2(jsonDoc.toVariant().toMap().value("status").toString() == "success", "Call wasn't parsed correctly by nymea.");
     }
 }
 

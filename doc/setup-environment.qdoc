@@ -20,7 +20,7 @@
 
     You can find a good instructions how to install the nymea repository on your system here:
 
-    \b {\unicode{0x2192}} \l{https://github.com/guh/guh/wiki/Install}{nymea install wiki}
+    \b {\unicode{0x2192}} \l{https://github.com/guh/nymea/wiki/Install}{nymea install wiki}
 
     For example, if you are working on Ubuntu 15.04 Vivid, you can create a source list file and add the nymea repository like this:
 
@@ -56,7 +56,7 @@
     \list
         \li \underline{\e nymea} \unicode{0x2192} the \tt nymea package is a meta package and will install the \tt nymead, \tt libnymea1 and \tt nymea-plugins package so you can start the nymea daemon.
         \li \underline{\e nymea-webinterface} \unicode{0x2192} the \tt nymea-webinterface package will install the webinterface for nymea, which is accessable on \l{http://localhost:3333}. 
-        \li \underline{\e nymea-cli} \unicode{0x2192} the \tt nymea-cli package will install the command line interface for the nymea JSON-RPC API. You can find more infomation \l{https://github.com/guh/guh/wiki/guh-cli}{here}.
+        \li \underline{\e nymea-cli} \unicode{0x2192} the \tt nymea-cli package will install the command line interface for the nymea JSON-RPC API. You can find more infomation \l{https://github.com/guh/nymea/wiki/nymea-cli}{here}.
         \li \underline{\e nymea-doc} \unicode{0x2192} the \tt nymea-doc package will install the offline documentation on your system (this homepage). You can access the documentation in your brwoser with \l{file:///usr/share/doc/nymea/html/index.html}{file:///usr/share/doc/nymea/html/index.html}.
         \li \underline{\e libnymea1-dev} \unicode{0x2192} the \tt libnymea1-dev package brings all development files of nymea (header files and lib) which will be needed to write a plugin.
     \endlist

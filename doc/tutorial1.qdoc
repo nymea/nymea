@@ -13,7 +13,7 @@
     \endlist
 
     \section1 Open the project
-    Assuming you already have downloaded the \l{https://github.com/guh/plugin-templates}{plugin-templates} you can open the \tt {plugin-templates \unicode{0x2192} minimal \unicode{0x2192} minimal.pro} file with the Qt Creator.
+    Assuming you already have downloaded the \l{https://github.com/guh/nymea-plugin-template}{nymea-plugin-template} you can open the \tt {plugin-template \unicode{0x2192} minimal \unicode{0x2192} minimal.pro} file with the Qt Creator.
 
     \image minimal-project-open.png "Qt Creator"
 
@@ -84,7 +84,7 @@
 
     Now you can use any nymea client application to examin the new plugin and device. Since the application \b {\tt nymea-cli} (nymea command line interface) was developed for developers, I will show you how this works with the \b {\tt nymea-cli}.
 
-    \note You can open two terminal tabs. In the first one you can start \tt nymead with the \tt -n parameter to see the debug output. In the second one you can start \b {\tt nymea-cli} to interact with the server and test your plugin. You can find the documentation for \b {\tt nymea-cli} \l{https://github.com/guh/guh/wiki/guh-cli}{here}.    
+    \note You can open two terminal tabs. In the first one you can start \tt nymead with the \tt -n parameter to see the debug output. In the second one you can start \b {\tt nymea-cli} to interact with the server and test your plugin. You can find the documentation for \b {\tt nymea-cli} \l{https://github.com/guh/nymea/wiki/guh-cli}{here}.    
 
     
     \section2 nymea-cli

@@ -28,7 +28,7 @@
     The nymea daemon provides two API's:
     \list
         \li \l{JSON-RPC API}{JSON-RPC}
-        \li \l{https://github.com/guh/guh/wiki/REST-API}{REST}
+        \li \l{https://github.com/guh/nymea/wiki/REST-API}{REST}
     \endlist
 
     \section1 Write your own plugin

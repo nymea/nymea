@@ -63,10 +63,6 @@ DECLARE_TYPE_ID(PairingTransaction)
 class LIBNYMEA_EXPORT Types
 {
     Q_GADGET
-    Q_ENUMS(InputType)
-    Q_ENUMS(Unit)
-    Q_ENUMS(StateOperator)
-    Q_ENUMS(ValueOperator)
 
 public:
     enum InputType {
@@ -81,6 +77,7 @@ public:
         InputTypeUrl,
         InputTypeMacAddress
     };
+    Q_ENUM(InputType)
 
     enum Unit {
         UnitNone,
@@ -134,6 +131,7 @@ public:
         UnitVoltAmpereReactive,
         UnitAmpereHour
     };
+    Q_ENUM(Unit)
 
     enum ValueOperator {
         ValueOperatorEquals,
@@ -143,10 +141,13 @@ public:
         ValueOperatorLessOrEqual,
         ValueOperatorGreaterOrEqual
     };
+    Q_ENUM(ValueOperator)
+
     enum StateOperator {
         StateOperatorAnd,
         StateOperatorOr
     };
+    Q_ENUM(StateOperator)
 
 };
 

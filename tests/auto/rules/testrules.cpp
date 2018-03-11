@@ -86,6 +86,9 @@ private slots:
     void testStateEvaluator2_data();
     void testStateEvaluator2();
 
+    void testStateEvaluator3_data();
+    void testStateEvaluator3();
+
     void testChildEvaluator_data();
     void testChildEvaluator();
 
@@ -1642,6 +1645,34 @@ void TestRules::testStateEvaluator2()
     childEvaluators.append(evaluator2);
 
     StateEvaluator mainEvaluator(childEvaluators);
+    mainEvaluator.setOperatorType(stateOperator);
+
+    QVERIFY2(mainEvaluator.evaluate() == shouldMatch, shouldMatch ? "State should match" : "State shouldn't match");
+}
+
+void TestRules::testStateEvaluator3_data()
+{
+    testStateEvaluator2_data();
+}
+
+void TestRules::testStateEvaluator3()
+{
+    QFETCH(int, intValue);
+    QFETCH(Types::ValueOperator, intOperator);
+    QFETCH(bool, boolValue);
+    QFETCH(Types::ValueOperator, boolOperator);
+    QFETCH(Types::StateOperator, stateOperator);
+    QFETCH(bool, shouldMatch);
+
+    StateDescriptor descriptor1(mockIntStateId, m_mockDeviceId, intValue, intOperator);
+    StateEvaluator childEvaluator(descriptor1);
+
+    QList<StateEvaluator> childEvaluators;
+    childEvaluators.append(childEvaluator);
+
+    StateDescriptor descriptor2(mockBoolStateId, m_mockDeviceId, boolValue, boolOperator);
+    StateEvaluator mainEvaluator(descriptor2);
+    mainEvaluator.setChildEvaluators(childEvaluators);
     mainEvaluator.setOperatorType(stateOperator);
 
     QVERIFY2(mainEvaluator.evaluate() == shouldMatch, shouldMatch ? "State should match" : "State shouldn't match");

@@ -300,7 +300,7 @@ void DeviceClass::setBasicTags(const QList<DeviceClass::BasicTag> &basicTags)
 
 /*! Returns the statesTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their states matching to this template. */
-QList<StateType> DeviceClass::stateTypes() const
+StateTypes DeviceClass::stateTypes() const
 {
     return m_stateTypes;
 }

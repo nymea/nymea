@@ -99,28 +99,44 @@ void StateEvaluator::setOperatorType(Types::StateOperator operatorType)
 /*! Returns true, if all child evaluator conditions are true depending on the \l {Types::StateOperator}{StateOperator}.*/
 bool StateEvaluator::evaluate() const
 {
+    qCDebug(dcRuleEngineDebug()) << "Evaluating StateEvaluator." << this << "Operator type" << m_operatorType << "Valid descriptor:" << m_stateDescriptor.isValid() << "Childs:" << m_childEvaluators.count();
+    bool descriptorMatching = true;
     if (m_stateDescriptor.isValid()) {
         Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(m_stateDescriptor.deviceId());
         if (!device) {
             qCWarning(dcRuleEngine) << "Device not existing!";
-            return false;
-        }
-        if (!device->hasState(m_stateDescriptor.stateTypeId())) {
-            qCWarning(dcRuleEngine) << "Device found, but it does not appear to have such a state!";
-            return false;
-        }
-        if (m_stateDescriptor != device->state(m_stateDescriptor.stateTypeId())) {
-            // state not matching
-            return false;
+            descriptorMatching = false;
+        } else {
+            DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+             if (!device->hasState(m_stateDescriptor.stateTypeId())) {
+                 qCWarning(dcRuleEngine) << "Device found, but it does not appear to have such a state!";
+                 descriptorMatching = false;
+             }
+             if (m_stateDescriptor != device->state(m_stateDescriptor.stateTypeId())) {
+                 // state not matching
+                 qCDebug(dcRuleEngineDebug()) << "State" << device->name() << deviceClass.stateTypes().findById(m_stateDescriptor.stateTypeId()).name() << "not matching:" << m_stateDescriptor.stateValue() << "!=" << device->stateValue(m_stateDescriptor.stateTypeId());
+                 descriptorMatching = false;
+             }
         }
     }
 
     if (m_operatorType == Types::StateOperatorOr) {
+        if (m_stateDescriptor.isValid() && descriptorMatching) {
+            qCDebug(dcRuleEngineDebug()) << "Descriptor is matching. Operator is OR => Evaluation result: true";
+            return true;
+        }
         foreach (const StateEvaluator &stateEvaluator, m_childEvaluators) {
             if (stateEvaluator.evaluate()) {
+                qCDebug(dcRuleEngineDebug()) << "Child evaluator evaluated to true. Operator is OR => Evaluation result: true";
                 return true;
             }
         }
+        qCDebug(dcRuleEngineDebug()) << "No child evaluator evaluated to true => Evaluation result: false";
+        return false;
+    }
+
+    if (!descriptorMatching) {
+        qCDebug(dcRuleEngineDebug()) << "Operator is AND => Evaluation result: false";
         return false;
     }
 

@@ -75,7 +75,6 @@ HEADERS += nymeacore.h \
     OpenSSL/OpenSSLConnection.hpp \
     janusconnector.h \
     pushbuttondbusservice.h \
-    nymeadbusservice.h \
     hardwaremanagerimplementation.h \
     hardware/plugintimermanagerimplementation.h \
     hardware/radio433/radio433brennenstuhl.h \
@@ -154,7 +153,6 @@ SOURCES += nymeacore.cpp \
     OpenSSL/OpenSSLConnection.cpp \
     janusconnector.cpp \
     pushbuttondbusservice.cpp \
-    nymeadbusservice.cpp \
     hardwaremanagerimplementation.cpp \
     hardware/plugintimermanagerimplementation.cpp \
     hardware/radio433/radio433brennenstuhl.cpp \

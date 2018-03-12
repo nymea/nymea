@@ -71,6 +71,7 @@ HEADERS += devicemanager.h \
         hardwareresource.h \
         plugintimer.h \
         hardwaremanager.h \
+        nymeadbusservice.h \
 
 SOURCES += devicemanager.cpp \
         loggingcategories.cpp \
@@ -127,6 +128,8 @@ SOURCES += devicemanager.cpp \
         hardwareresource.cpp \
         plugintimer.cpp \
         hardwaremanager.cpp \
+        nymeadbusservice.cpp \
+
 
 # install plugininfo python script for libnymea-dev
 generateplugininfo.files = $$top_srcdir/plugins/nymea-generateplugininfo

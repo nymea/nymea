@@ -411,7 +411,7 @@ if __name__ == '__main__':
     try:
         outputFile = open(args.builddir + '/' + args.output, 'w')
     except:
-        printError('Could not open file \"%s\"' % (args.jsonfile))
+        printError('Could not open file \"%s\"' % (args.builddir + '/' + args.output))
         exit -1
 
     # Read json file

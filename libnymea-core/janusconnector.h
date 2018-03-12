@@ -25,6 +25,7 @@
 #include <QLocalSocket>
 #include <QTimer>
 #include <QDateTime>
+#include <QTcpServer>
 
 class JanusConnector : public QObject
 {
@@ -53,10 +54,12 @@ public:
 
     void sendWebRtcHandshakeMessage(const QString &sessionId, const QVariantMap &message);
     bool sendKeepAliveMessage(const QString &sessionId);
+    void setTurnCredentials(const QVariantMap &turnCredentials);
 
 signals:
     void connected();
     void webRtcHandshakeMessageReceived(const QString &sessionId, const QVariantMap &message);
+    void requestTURNCredentials();
 
 private slots:
     void onDisconnected();
@@ -64,6 +67,8 @@ private slots:
     void onReadyRead();
     void heartbeat();
     void processQueue();
+
+    void newTurnServerConnection();
 
 private:
     QHash<QString, WebRtcSession*> m_pendingRequests;
@@ -86,6 +91,9 @@ private:
     QHash<QString, WebRtcSession*> m_sessions;
 
     QStringList m_wantedAcks;
+
+    QTcpServer *m_turnCredentialsServer = nullptr;
+    QList<QTcpSocket*> m_pendingTurnCredentialRequests;
 };
 
 QDebug operator<<(QDebug debug, const JanusConnector::WebRtcSession &session);

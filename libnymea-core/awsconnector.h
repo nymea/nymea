@@ -57,6 +57,7 @@ public:
 
 public slots:
     int sendPushNotification(const QString &userId, const QString &endpointId, const QString &title, const QString &text);
+    void requestTURNCredentials();
 
 signals:
     void connected();
@@ -66,6 +67,7 @@ signals:
     void pushNotificationEndpointsUpdated(const QList<AWSConnector::PushNotificationsEndpoint> pushNotificationEndpoints);
     void pushNotificationEndpointAdded(const AWSConnector::PushNotificationsEndpoint &pushNotificationEndpoint);
     void pushNotificationSent(int id, int status);
+    void turnCredentialsReceived(const QVariantMap &turnCredentials);
 
 private slots:
     void doConnect();

@@ -163,6 +163,7 @@ void AWSConnector::setupSubscriptions()
     subscriptions.append(QString("%1/pair/response").arg(m_clientId));
     subscriptions.append(QString("%1/notify/response").arg(m_clientId));
     subscriptions.append(QString("%1/notify/info/endpoint").arg(m_clientId));
+    subscriptions.append(QString("%1/services/turn/response").arg(m_clientId));
     subscribe(subscriptions);
 
     // fetch previous pairings
@@ -272,6 +273,21 @@ int AWSConnector::sendPushNotification(const QString &userId, const QString &end
     Q_UNUSED(userId)
     publish(QString("%1/notify/user/%2").arg(m_clientId, endpointId), params);
     return m_transactionId;
+}
+
+void AWSConnector::requestTURNCredentials()
+{
+    if (!isConnected()) {
+        qCWarning(dcAWS()) << "Not connected. Cannot request TURN credentials.";
+        emit turnCredentialsReceived(QVariantMap());
+        return;
+    }
+    qCDebug(dcAWS()) << "Requesting TURN credentials";
+    QVariantMap params;
+    params.insert("id", QUuid::createUuid());
+    params.insert("command", "getTurnCredentials");
+    params.insert("timestamp", QDateTime::currentMSecsSinceEpoch());
+    publish(QString("%1/services/turn").arg(m_clientId), params);
 }
 
 quint16 AWSConnector::publish(const QString &topic, const QVariantMap &message)
@@ -390,12 +406,12 @@ void AWSConnector::subscribeCallback(uint16_t actionId, ResponseCode rc)
 
     AWSConnector *connector = s_requestMap.take(actionId);
     if (!connector) {
-        qCWarning(dcAWS()) << "received a subscribe callback but don't have a request id for it.";
+        qCWarning(dcAWS()) << "Received a subscribe callback but don't have a request id for it.";
         return;
     }
 
     if (actionId == connector->m_createDeviceSubscriptionId) {
-        qCDebug(dcAWS()) << "subscribed to create/device/response";
+        qCDebug(dcAWS()) << "Subscribed to create/device/response";
         // We might get this callback even if we didn't explicitly ask for it as the
         // library automatically resubscribes to all the topics upon reconnect.
         if (!connector->readRegisteredFlag()) {
@@ -471,7 +487,7 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         }
         dupes.append(id+type);
 
-        qCDebug(dcAWS) << "received webrtc handshake message" << topic << jsonDoc.toJson();
+        qCDebug(dcAWS) << "received webrtc handshake message.";
         connector->webRtcHandshakeMessageReceived(topic, jsonDoc.toVariant().toMap());
     } else if (topic.startsWith(QString("%1/eu-west-1:").arg(connector->m_clientId)) && topic.contains("reply")) {
         // silently drop our own things (should not be subscribed to that in the first place)
@@ -489,8 +505,16 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         ep.endpointId = endpoint.value(cognitoId).toMap().value("endpointId").toString();
         ep.displayName = endpoint.value(cognitoId).toMap().value("displayName").toString();
         emit connector->pushNotificationEndpointAdded(ep);
+    } else if (topic == QString("%1/services/turn/response").arg(connector->m_clientId)) {
+        QVariantMap turnCreds = jsonDoc.toVariant().toMap();
+        if (turnCreds.value("result").toMap().value("code").toInt() != 201) {
+            qCWarning(dcAWS()) << "Error retrieving TURN credentials:" << turnCreds.value("result").toMap().value("code").toInt() << turnCreds.value("result").toMap().value("message").toString();
+            return ResponseCode::SUCCESS;
+        }
+        qCDebug(dcAWS()) << "Dynamic TURN credentials received";
+        emit connector->turnCredentialsReceived(turnCreds.value("turnCredentials").toMap());
     } else {
-        qCWarning(dcAWS) << "Unhandled subscription received!" << topic << QString::fromStdString(payload);
+        qCWarning(dcAWS()) << "Unhandled subscription received!" << topic << QString::fromStdString(payload);
     }
     return ResponseCode::SUCCESS;
 }

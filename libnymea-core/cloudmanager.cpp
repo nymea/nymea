@@ -37,6 +37,9 @@ CloudManager::CloudManager(NetworkManager *networkManager, QObject *parent) : QO
     m_janusConnector = new JanusConnector(this);
     connect(m_janusConnector, &JanusConnector::webRtcHandshakeMessageReceived, this, &CloudManager::onJanusWebRtcHandshakeMessageReceived);
 
+    connect(m_janusConnector, &JanusConnector::requestTURNCredentials, m_awsConnector, &AWSConnector::requestTURNCredentials);
+    connect(m_awsConnector, &AWSConnector::turnCredentialsReceived, m_janusConnector, &JanusConnector::setTurnCredentials);
+
     connect(m_networkManager, &NetworkManager::stateChanged, this, &CloudManager::onlineStateChanged);
 }
 

@@ -51,6 +51,7 @@ public:
     virtual BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress) = 0;
     virtual void unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice) = 0;
 
+public slots:
     Q_SCRIPTABLE void EnableBluetooth(bool enabled);
 };
 

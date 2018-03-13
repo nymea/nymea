@@ -37,6 +37,7 @@ public:
 
     bool agentAvailable() const;
 
+public slots:
     Q_SCRIPTABLE void RegisterButtonAgent(const QDBusObjectPath &agentPath);
     Q_SCRIPTABLE void UnregisterButtonAgent();
 

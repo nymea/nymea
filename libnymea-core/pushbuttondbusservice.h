@@ -23,13 +23,13 @@
 
 #include <QObject>
 #include <QDBusObjectPath>
+#include <QDBusContext>
 
 #include "usermanager.h"
-#include "nymeadbusservice.h"
 
 namespace nymeaserver {
 
-class PushButtonDBusService : public NymeaDBusService
+class PushButtonDBusService : public QObject, public QDBusContext
 {
     Q_OBJECT
 public:

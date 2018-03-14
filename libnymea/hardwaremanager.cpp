@@ -21,6 +21,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "hardwaremanager.h"
+#include "hardwareresource.h"
 
 HardwareManager::HardwareManager(QObject *parent) :
     QObject(parent)

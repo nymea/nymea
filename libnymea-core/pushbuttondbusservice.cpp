@@ -20,6 +20,7 @@
 
 #include "pushbuttondbusservice.h"
 #include "loggingcategories.h"
+#include "nymeadbusservice.h"
 
 #include <QDBusConnection>
 #include <QDebug>
@@ -28,10 +29,12 @@
 
 namespace nymeaserver {
 
-PushButtonDBusService::PushButtonDBusService(const QString &objectPath, UserManager *parent) : NymeaDBusService(objectPath, parent),
+PushButtonDBusService::PushButtonDBusService(const QString &objectPath, UserManager *parent) :
+    QObject(parent),
     m_userManager(parent)
 {
-    if (!isValid()) {
+    NymeaDBusService* dbusService = new NymeaDBusService(objectPath, this);
+    if (!dbusService->isValid()) {
         qCWarning(dcUserManager()) << "Failed to register PushButton D-Bus service.";
         return;
     }

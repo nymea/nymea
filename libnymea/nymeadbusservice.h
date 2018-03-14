@@ -26,7 +26,7 @@
 #include <QDBusConnection>
 #include <QDBusContext>
 
-class NymeaDBusService : public QObject, public QDBusContext
+class NymeaDBusService : public QObject
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "io.guh.nymead")

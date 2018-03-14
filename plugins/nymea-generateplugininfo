@@ -424,6 +424,23 @@ if __name__ == '__main__':
         inputFile.close()
         exit -1
 
+    # If there is no translation yet, generate an empty one
+    translationsDir = "%s/translations/" % sourceDir
+    baseTranslationFile = "%s/%s-en_US.ts" % (translationsDir, pluginMap['id'])
+    if not os.path.isfile(baseTranslationFile):
+        try:
+            os.stat(translationsDir)
+        except:
+            os.mkdir(translationsDir)
+        try:
+            tsFile = open(baseTranslationFile, 'w')
+            tsFile.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!DOCTYPE TS>\n<TS version=\"2.1\">\n</TS>")
+            tsFile.close()
+            printInfo("Successfully generated base translation file: %s" % baseTranslationFile)
+        except:
+            printError("Could not generate %s" % baseTranslationsFile)
+
+
     # Write files
     if args.filetype is 'i':
         writePluginInfoFile()

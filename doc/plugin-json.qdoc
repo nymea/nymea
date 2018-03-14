@@ -5,8 +5,7 @@
     
     Each \l{DevicePlugin}{Plugin} in nymea will be defined in the corresponding JSON file. You can find information how to read JSON \l{http://json.org/}{here}. This file will be loaded from the \l{DeviceManager} to define the plugin and the corresponding DeviceClasses internal. 
 
-
-    \section1 The \b {\tt nymea-generateplugininfo} precompiler
+    \section1 The nymea-generateplugininfo precompiler
     
     The \tt {\b nymea-generateplugininfo} precompiler will parse this file and generates a \tt plugininfo.h and a \tt extern-plugininfo.h file containing the definitions of:
     \list
@@ -142,7 +141,7 @@
                             "name": "deviceClassName",
                             "displayName": "The name of the device class (translatable)",
                             "o:deviceIcon": "Icon",
-                            "o:interfaces": [ "String" ],
+                            "o:interfaces": [ "interfacename" ],
                             "o:basicTags": [
                                 "BasicTag"
                             ],

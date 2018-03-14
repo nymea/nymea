@@ -10,7 +10,7 @@
     The JSON RPC interface represents a socket connection using plaintext string communication.
     Messages are exchanged using the JSON format. Please note that this is not a REST API as the
     transport channel is not based on HTTP. It is an internal RPC mechanism to allow communication
-    between the guh Server and the main controller interface. This communication socket is not meant
+    between the nymea Server and the main controller interface. This communication socket is not meant
     to be exported to the outside of the of the system as it allows arbitrary commands to manipulate
     the system.
 
@@ -70,12 +70,12 @@
     \code
     {
         "id": 0,
-        "name": "guh",
+        "name": "My nymea",
         "protocol version": "1.2",
         "authenticationRequired": false,
         "initialSetupRequired": false,
         "pushButtonAuthAvailable": false,
-        "server": "guhIO",
+        "server": "nymea",
         "language": "de_DE",
         "uuid": "{42842b0f-a7bb-4a94-b624-a55f31c5603e}",
         "version": "0.8.3"
@@ -134,7 +134,7 @@
     also be a compact JSON string ending with the \tt{\n} character.
 
     \code
-    {"id":122,"params":{"authenticationRequired":false,"id":0,"initialSetupRequired":false,"language":"de_DE","name":"guh gehirn","protocol version":"1.2","pushButtonAuthAvailable":false,"server":"guhIO","uuid":"{42842b0f-a7bb-4a94-b624-a55f31c5603e}","version":"0.8.3"},"status":"success"}
+    {"id":122,"params":{"authenticationRequired":false,"id":0,"initialSetupRequired":false,"language":"de_DE","name":"My nymea","protocol version":"1.2","pushButtonAuthAvailable":false,"server":"nymea","uuid":"{42842b0f-a7bb-4a94-b624-a55f31c5603e}","version":"0.8.3"},"status":"success"}
 
     \endcode
 
@@ -193,7 +193,7 @@
 
     \section2 Create a user
     
-    Currently the guhd server is a single user only system and allows only one user. Creating a new user is only allowed if
+    Currently the nymead server is a single user only system and allows only one user. Creating a new user is only allowed if
     the \l{Handshake}{handshake} property \tt initialSetupRequired is \tt{true}.
 
     Call the \l{JSONRPC.CreateUser} method with the username (should be an email address) and password. The returned \l{UserError}

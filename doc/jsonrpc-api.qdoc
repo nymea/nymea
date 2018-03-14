@@ -1,4 +1,4 @@
-In following section you can find a detaild description of the current API version 1.2.
+In following section you can find a detaild description of the current API version 1.3.
 \list
 \li \l{Types}
 \li \l{Methods}
@@ -986,7 +986,7 @@ Sets the server language to the given language. See also: "GetAvailableLanguages
 \endcode
 See also: \l{ConfigurationError}
 \section3 Configuration.SetServerName
-Set the name of the server. Default is guhIO.
+Set the name of the server. Default is nymea.
 \section4 Params
 \code
 {
@@ -1426,7 +1426,7 @@ Authenticate a client to the api via user & password challenge. Provide a device
 \endcode
 
 \section3 JSONRPC.CreateUser
-Create a new user in the API. Currently this is only allowed to be called once when a new guh instance is set up. Call Authenticate after this to obtain a device token for this user.
+Create a new user in the API. Currently this is only allowed to be called once when a new nymea instance is set up. Call Authenticate after this to obtain a device token for this user.
 \section4 Params
 \code
 {
@@ -1442,7 +1442,7 @@ Create a new user in the API. Currently this is only allowed to be called once w
 \endcode
 See also: \l{UserError}
 \section3 JSONRPC.Hello
-Upon first connection, guh will automatically send a welcome message containing information about the setup. If this message is lost for whatever reason (connections with multiple hops might drop this if guh sends it too early), the exact same message can be retrieved multiple times by calling this Hello method. Note that the contents might change if the system changed its state in the meantime, e.g. initialSetupRequired might turn false if the initial setup has been performed in the meantime.
+Upon first connection, nymea will automatically send a welcome message containing information about the setup. If this message is lost for whatever reason (connections with multiple hops might drop this if nymea sends it too early), the exact same message can be retrieved multiple times by calling this Hello method. Note that the contents might change if the system changed its state in the meantime, e.g. initialSetupRequired might turn false if the initial setup has been performed in the meantime.
 \section4 Params
 \code
 {}
@@ -1584,7 +1584,7 @@ Return a list of TokenInfo objects of all the tokens for the current user.
 \endcode
 See also: \l{TokenInfo}
 \section3 JSONRPC.Version
-Version of this Guh/JSONRPC interface.
+Version of this nymea/JSONRPC interface.
 \section4 Params
 \code
 {}
@@ -2351,7 +2351,7 @@ Emitted whenever a Rule was removed.
             }
         }, 
         "Configuration.SetServerName": {
-            "description": "Set the name of the server. Default is guhIO.", 
+            "description": "Set the name of the server. Default is nymea.", 
             "params": {
                 "serverName": "String"
             }, 
@@ -2641,7 +2641,7 @@ Emitted whenever a Rule was removed.
             }
         }, 
         "JSONRPC.CreateUser": {
-            "description": "Create a new user in the API. Currently this is only allowed to be called once when a new guh instance is set up. Call Authenticate after this to obtain a device token for this user.", 
+            "description": "Create a new user in the API. Currently this is only allowed to be called once when a new nymea instance is set up. Call Authenticate after this to obtain a device token for this user.", 
             "params": {
                 "password": "String", 
                 "username": "String"
@@ -2651,7 +2651,7 @@ Emitted whenever a Rule was removed.
             }
         }, 
         "JSONRPC.Hello": {
-            "description": "Upon first connection, guh will automatically send a welcome message containing information about the setup. If this message is lost for whatever reason (connections with multiple hops might drop this if guh sends it too early), the exact same message can be retrieved multiple times by calling this Hello method. Note that the contents might change if the system changed its state in the meantime, e.g. initialSetupRequired might turn false if the initial setup has been performed in the meantime.", 
+            "description": "Upon first connection, nymea will automatically send a welcome message containing information about the setup. If this message is lost for whatever reason (connections with multiple hops might drop this if nymea sends it too early), the exact same message can be retrieved multiple times by calling this Hello method. Note that the contents might change if the system changed its state in the meantime, e.g. initialSetupRequired might turn false if the initial setup has been performed in the meantime.", 
             "params": {}, 
             "returns": {
                 "authenticationRequired": "Bool", 
@@ -2739,7 +2739,7 @@ Emitted whenever a Rule was removed.
             }
         }, 
         "JSONRPC.Version": {
-            "description": "Version of this Guh/JSONRPC interface.", 
+            "description": "Version of this nymea/JSONRPC interface.", 
             "params": {}, 
             "returns": {
                 "protocol version": "String", 

@@ -52,18 +52,6 @@ static const char *const error = "\e[31m";
 
 using namespace nymeaserver;
 
-static void loggingCategoryFilter(QLoggingCategory *category)
-{
-    if (s_loggingFilters.contains(category->categoryName())) {
-        bool debugEnabled = s_loggingFilters.value(category->categoryName());
-        category->setEnabled(QtDebugMsg, debugEnabled);
-        category->setEnabled(QtWarningMsg, debugEnabled || s_loggingFilters.value("Warnings"));
-    } else {
-        category->setEnabled(QtDebugMsg, false);
-        category->setEnabled(QtWarningMsg, s_loggingFilters.value("qml") || s_loggingFilters.value("Warnings"));
-    }
-}
-
 static void consoleLogHandler(QtMsgType type, const QMessageLogContext& context, const QString& message)
 {
     QString messageString;
@@ -109,45 +97,6 @@ int main(int argc, char *argv[])
     application.setApplicationName("nymead");
     application.setApplicationVersion(NYMEA_VERSION_STRING);
 
-    // logging filers for core and libnymea
-    s_loggingFilters.insert("Application", true);
-    s_loggingFilters.insert("Warnings", true);
-    s_loggingFilters.insert("DeviceManager", true);
-    s_loggingFilters.insert("RuleEngine", true);
-    s_loggingFilters.insert("RuleEngineDebug", false);
-    s_loggingFilters.insert("Hardware", false);
-    s_loggingFilters.insert("Bluetooth", false);
-    s_loggingFilters.insert("Connection", true);
-    s_loggingFilters.insert("LogEngine", false);
-    s_loggingFilters.insert("TcpServer", false);
-    s_loggingFilters.insert("TcpServerTraffic", false);
-    s_loggingFilters.insert("WebServer", false);
-    s_loggingFilters.insert("WebSocketServer", false);
-    s_loggingFilters.insert("WebSocketServerTraffic", false);
-    s_loggingFilters.insert("JsonRpc", false);
-    s_loggingFilters.insert("JsonRpcTraffic", false);
-    s_loggingFilters.insert("Rest", false);
-    s_loggingFilters.insert("OAuth2", false);
-    s_loggingFilters.insert("TimeManager", false);
-    s_loggingFilters.insert("Coap", false);
-    s_loggingFilters.insert("Avahi", false);
-    s_loggingFilters.insert("UPnP", false);
-    s_loggingFilters.insert("Cloud", true);
-    s_loggingFilters.insert("NetworkManager", false);
-    s_loggingFilters.insert("UserManager", true);
-    s_loggingFilters.insert("AWS", false);
-    s_loggingFilters.insert("AWSTraffic", false);
-    s_loggingFilters.insert("Janus", false);
-    s_loggingFilters.insert("JanusTraffic", false);
-    s_loggingFilters.insert("BluetoothServer", true);
-    s_loggingFilters.insert("BluetoothServerTraffic", false);
-
-    QHash<QString, bool> loggingFiltersPlugins;
-    foreach (const QJsonObject &pluginMetadata, DeviceManager::pluginsMetadata()) {
-        QString pluginName = pluginMetadata.value("name").toString();
-        loggingFiltersPlugins.insert(pluginName.left(1).toUpper() + pluginName.mid(1), false);
-    }
-
     // Translator for the server application
     QTranslator translator;
     // check if there are local translations
@@ -177,34 +126,11 @@ int main(int argc, char *argv[])
     QCommandLineOption foregroundOption(QStringList() << "n" << "no-daemon", QCoreApplication::translate("nymea", "Run nymead in the foreground, not as daemon."));
     parser.addOption(foregroundOption);
 
-    QString debugDescription = QCoreApplication::translate("nymea", "Debug categories to enable. Prefix with \"No\" to disable. Warnings from all categories will be printed unless explicitly muted with \"NoWarnings\". \n\nCategories are:");
-
-    // create sorted loggingFiler list
-    QStringList sortedFilterList = QStringList(s_loggingFilters.keys());
-    sortedFilterList.sort();
-    foreach (const QString &filterName, sortedFilterList)
-        debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
-
-
-    // create sorted plugin loggingFiler list
-    QStringList sortedPluginList = QStringList(loggingFiltersPlugins.keys());
-    sortedPluginList.sort();
-    debugDescription += "\n\nPlugin categories:\n";
-    foreach (const QString &filterName, sortedPluginList)
-        debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
-
-
-    QCommandLineOption allOption(QStringList() << "p" << "print-all", QCoreApplication::translate("nymea", "Enables all debug categories. Single debug categories can be disabled again with -d parameter."));
-    parser.addOption(allOption);
-
     QCommandLineOption logOption({"l", "log"}, QCoreApplication::translate("nymea", "Specify a log file to write to, if this option is not specified, logs will be printed to the standard output."), "logfile", "/var/log/nymead.log");
     parser.addOption(logOption);
 
     QCommandLineOption dbusOption(QStringList() << "session", QCoreApplication::translate("nymea", "If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus."));
     parser.addOption(dbusOption);
-
-    QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory");
-    parser.addOption(debugOption);
 
     parser.process(application);
 
@@ -222,28 +148,6 @@ int main(int argc, char *argv[])
             return 1;
         }
     }
-
-    // add plugin metadata to the static hash
-    foreach (const QString &category, loggingFiltersPlugins.keys())
-        s_loggingFilters.insert(category, false);
-
-    // check debug area
-    if (parser.isSet(allOption)) {
-        foreach (const QString &debugArea, s_loggingFilters.keys()) {
-            s_loggingFilters[debugArea] = true;
-        }
-    }
-    // And allow overriding individual values
-    foreach (QString debugArea, parser.values(debugOption)) {
-        bool enable = !debugArea.startsWith("No");
-        debugArea.remove(QRegExp("^No"));
-        if (s_loggingFilters.contains(debugArea)) {
-            s_loggingFilters[debugArea] = enable;
-        } else {
-            qCWarning(dcApplication) << QCoreApplication::translate("nymea", "No such debug category:") << debugArea;
-        }
-    }
-    QLoggingCategory::installFilter(loggingCategoryFilter);
 
     if (parser.isSet(dbusOption)) {
         NymeaDBusService::setBusType(QDBusConnection::SessionBus);

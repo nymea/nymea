@@ -183,8 +183,6 @@ LogEngine::~LogEngine()
 */
 QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
 {
-    qCDebug(dcLogEngine) << "Read logging database" << m_db.databaseName();
-
     QList<LogEntry> results;
     QSqlQuery query;
 

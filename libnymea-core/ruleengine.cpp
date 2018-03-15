@@ -333,8 +333,15 @@ RuleEngine::~RuleEngine()
 QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 {
     Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
+    DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+    EventType eventType = deviceClass.eventTypes().findById(event.eventTypeId());
 
-    qCDebug(dcRuleEngineDebug) << "Evaluate event:" << event << device->name() << event.eventTypeId();
+
+    if (event.params().count() == 0) {
+        qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << device->name() << " - " << eventType.name() << " (DeviceId:" << device->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")";
+    } else {
+        qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << device->name() << " - " << eventType.name() << " (DeviceId:" << device->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")" << endl << "     " << event.params();
+    }
 
     QList<Rule> rules;
     foreach (const RuleId &id, ruleIds()) {

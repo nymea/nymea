@@ -104,7 +104,7 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
         m_daemons.insert(device, daemon);
 
         if (!daemon->isListening()) {
-            qCWarning(dcMockDevice) << "HTTP port opening failed.";
+            qCWarning(dcMockDevice) << "HTTP port opening failed:" << device->paramValue(mockHttpportParamTypeId).toInt();
             return DeviceManager::DeviceSetupStatusFailure;
         }
 

@@ -228,12 +228,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("td", NymeaSettings(NymeaSettings::SettingsRoleGlobal).translationsPath());
     writer.writeEndElement(); // tr
 
-    writer.writeStartElement("tr");
-    //: The log database path description in the server infromation section of the debug interface
-    writer.writeTextElement("th", tr("Log database"));
-    writer.writeTextElement("td", NymeaSettings(NymeaSettings::SettingsRoleGlobal).logPath());
-    writer.writeEndElement(); // tr
-
     for (int i = 0; i < NymeaCore::instance()->deviceManager()->pluginSearchDirs().count(); i++) {
         writer.writeStartElement("tr");
         writer.writeEndElement(); // tr
@@ -271,10 +265,12 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("p", tr("Log database"));
     writer.writeEndElement(); // div download-name-column
 
-    writer.writeStartElement("div");
-    writer.writeAttribute("class", "download-path-column");
-    writer.writeTextElement("p", NymeaSettings::logPath());
-    writer.writeEndElement(); // div download-path-column
+    if (QFileInfo(NymeaCore::instance()->configuration()->logDBName()).exists()) {
+        writer.writeStartElement("div");
+        writer.writeAttribute("class", "download-path-column");
+        writer.writeTextElement("p", NymeaCore::instance()->configuration()->logDBName());
+        writer.writeEndElement(); // div download-path-column
+    }
 
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-button-column");
@@ -643,10 +639,10 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
 
     // Check if this is a logdb requested
     if (requestPath.startsWith("/debug/logdb.sql")) {
-        qCDebug(dcWebServer()) << "Loading" << NymeaSettings::logPath();
-        QFile logDatabaseFile(NymeaSettings::logPath());
+        qCDebug(dcWebServer()) << "Loading" << NymeaCore::instance()->configuration()->logDBName();
+        QFile logDatabaseFile(NymeaCore::instance()->configuration()->logDBName());
         if (!logDatabaseFile.exists()) {
-            qCWarning(dcWebServer()) << "Could not read log database file for debug download" << NymeaSettings::logPath() << "file does not exist.";
+            qCWarning(dcWebServer()) << "Could not read log database file for debug download" << NymeaCore::instance()->configuration()->logDBName() << "file does not exist.";
             HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             //: The HTTP error message of the debug interface. The %1 represents the file name.
@@ -655,7 +651,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
         }
 
         if (!logDatabaseFile.open(QFile::ReadOnly)) {
-            qCWarning(dcWebServer()) << "Could not read log database file for debug download" << NymeaSettings::logPath();
+            qCWarning(dcWebServer()) << "Could not read log database file for debug download" << NymeaCore::instance()->configuration()->logDBName();
             HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             //: The HTTP error message of the debug interface. The %1 represents the file name.

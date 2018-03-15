@@ -27,7 +27,6 @@
 #include "types/event.h"
 #include "types/action.h"
 #include "rule.h"
-#include "nymeasettings.h"
 
 #include <QObject>
 #include <QSqlDatabase>
@@ -39,7 +38,7 @@ class LogEngine: public QObject
 {
     Q_OBJECT
 public:
-    LogEngine(const QString &logPath = NymeaSettings::logPath(), QObject *parent = 0);
+    LogEngine(const QString &driver, const QString &dbName, const QString &hostname = QString("127.0.0.1"), const QString &username = QString(), const QString &password = QString(), int maxDBSize = 50000, QObject *parent = 0);
     ~LogEngine();
 
     QList<LogEntry> logEntries(const LogFilter &filter = LogFilter()) const;
@@ -64,7 +63,7 @@ signals:
     void logDatabaseUpdated();
 
 private:
-    bool initDB();
+    bool initDB(const QString &username, const QString &password);
     void appendLogEntry(const LogEntry &entry);
     void rotate(const QString &dbName);
 

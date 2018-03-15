@@ -436,7 +436,7 @@ ServerManager *NymeaCore::serverManager() const
 /*! Returns the list of available system languages. */
 QStringList NymeaCore::getAvailableLanguages()
 {
-    // TODO: parse available translation files
+    // FIXME: load available translations
     return QStringList() << "en_US" << "de_DE";
 }
 

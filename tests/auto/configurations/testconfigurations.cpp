@@ -23,6 +23,7 @@
 #include "devicemanager.h"
 #include "mocktcpserver.h"
 #include "nymeacore.h"
+#include "nymeasettings.h"
 
 #include <QtTest/QtTest>
 #include <QCoreApplication>

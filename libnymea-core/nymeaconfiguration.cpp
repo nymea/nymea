@@ -25,6 +25,7 @@
 #include <QTimeZone>
 #include <QCoreApplication>
 #include <QFile>
+#include <QDir>
 
 namespace nymeaserver {
 
@@ -158,6 +159,16 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         m_webSocketServerConfigs[config.id] = config;
         storeServerConfig("WebSocketServer", config);
     }
+
+    // Write defaults for log settings
+    settings.beginGroup("Logs");
+    settings.setValue("logDBDriver", logDBDriver());
+    settings.setValue("logDBName", logDBName());
+    settings.setValue("logDBHost", logDBHost());
+    settings.setValue("logDBUser", logDBUser());
+    settings.setValue("logDBPassword", logDBPassword());
+    settings.setValue("logDBMaxEntries", logDBMaxEntries());
+    settings.endGroup();
 }
 
 QUuid NymeaConfiguration::serverUuid() const
@@ -366,6 +377,61 @@ QString NymeaConfiguration::cloudCertificateKey() const
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("Cloud");
     return settings.value("cloudCertificateKey").toString();
+}
+
+QString NymeaConfiguration::logDBDriver() const
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("Logs");
+    return settings.value("logDBDriver", "QSQLITE").toString();
+}
+
+QString NymeaConfiguration::logDBHost() const
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("Logs");
+    return settings.value("logDBHost", "127.0.0.1").toString();
+}
+
+QString NymeaConfiguration::logDBName() const
+{
+    QString defaultLogPath;
+    QString organisationName = QCoreApplication::instance()->organizationName();
+
+    if (!qgetenv("SNAP").isEmpty()) {
+        defaultLogPath = QString(qgetenv("SNAP_COMMON")) + "/nymead.sqlite";
+    } else if (organisationName == "nymea-test") {
+        defaultLogPath = "/tmp/" + organisationName + "/nymead-test.sqlite";
+    } else if (NymeaSettings::isRoot()) {
+        defaultLogPath = "/var/log/nymead.sqlite";
+    } else {
+        defaultLogPath = QDir::homePath() + "/.config/" + organisationName + "/nymead.sqlite";
+    }
+
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("Logs");
+    return settings.value("logDBName", defaultLogPath).toString();
+}
+
+QString NymeaConfiguration::logDBUser() const
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("Logs");
+    return settings.value("logDBUser").toString();
+}
+
+QString NymeaConfiguration::logDBPassword() const
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("Logs");
+    return settings.value("logDBPassword").toString();
+}
+
+int NymeaConfiguration::logDBMaxEntries() const
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("Logs");
+    return settings.value("logDBMaxEntries", 200000).toInt();
 }
 
 QString NymeaConfiguration::sslCertificate() const

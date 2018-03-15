@@ -131,13 +131,18 @@
 
 namespace nymeaserver {
 
-/*! Constructs the log engine with the given \a parent. */
-LogEngine::LogEngine(const QString &logPath, QObject *parent):
-    QObject(parent)
+/*! Constructs the log engine with the given parameters.
+    \a The Qt Database backend to be used. Depending on the installed Qt modules this can be any of QDB2 QIBASE QMYSQL QOCI QODBC QPSQL QSQLITE QSQLITE2 QTDS.
+    \a dbName is the name of the database. In case of SQLITE this should contain a file path. The Driver will create the file if required. In case of using a
+    database server like MYSQL, the database must exist on the host given by \a hostname and be accessible with the given \a username and \a password.
+*/
+LogEngine::LogEngine(const QString &driver, const QString &dbName, const QString &hostname, const QString &username, const QString &password, int maxDBSize, QObject *parent):
+    QObject(parent),
+    m_dbMaxSize(maxDBSize)
 {
-    m_db = QSqlDatabase::addDatabase("QSQLITE", "logs");
-    m_db.setDatabaseName(logPath);
-    m_dbMaxSize = 50000;
+    m_db = QSqlDatabase::addDatabase(driver, "logs");
+    m_db.setDatabaseName(dbName);
+    m_db.setHostName(hostname);
     m_overflow = 100;
 
     if (QCoreApplication::instance()->organizationName() == "nymea-test") {
@@ -151,16 +156,14 @@ LogEngine::LogEngine(const QString &logPath, QObject *parent):
         qCWarning(dcLogEngine) << "Database not valid:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
         rotate(m_db.databaseName());
     }
-    if (!m_db.open()) {
-        qCWarning(dcLogEngine) << "Error opening log database:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
-        rotate(m_db.databaseName());
-    }
 
-    if (!initDB()) {
+    if (!initDB(username, password)) {
         qCWarning(dcLogEngine()) << "Error initializing database. Trying to correct it.";
-        rotate(m_db.databaseName());
-        if (!initDB()) {
-            qCWarning(dcLogEngine()) << "Error fixing log database. Giving up. Logs can't be stored.";
+        if (QFileInfo(m_db.databaseName()).exists()) {
+            rotate(m_db.databaseName());
+            if (!initDB(username, password)) {
+                qCWarning(dcLogEngine()) << "Error fixing log database. Giving up. Logs can't be stored.";
+            }
         }
     }
 
@@ -405,6 +408,10 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
 
 void LogEngine::checkDBSize()
 {
+    if (m_dbMaxSize == -1) {
+        // No tripping required
+        return;
+    }
     QDateTime startTime = QDateTime::currentDateTime();
     QString queryString = "SELECT COUNT(*) FROM entries;";
     QSqlQuery result = m_db.exec(queryString);
@@ -529,17 +536,26 @@ bool LogEngine::migrateDatabaseVersion2to3()
     return true;
 }
 
-bool LogEngine::initDB()
+bool LogEngine::initDB(const QString &username, const QString &password)
 {
     m_db.close();
-    m_db.open();
-
-    if (!m_db.tables().contains("metadata")) {
-        m_db.exec("CREATE TABLE metadata (key varchar(10), data varchar(40));");
-        m_db.exec(QString("INSERT INTO metadata (key, data) VALUES('version', '%1');").arg(DB_SCHEMA_VERSION));
+    bool opened = m_db.open(username, password);
+    if (!opened) {
+        qCWarning(dcLogEngine()) << "Can't open Log DB. Init failed.";
+        return false;
     }
 
-    QSqlQuery query = m_db.exec("SELECT data FROM metadata WHERE key = 'version';");
+    if (!m_db.tables().contains("metadata")) {
+        qCDebug(dcLogEngine()) << "Empty Database. Setting up metadata...";
+        m_db.exec("CREATE TABLE metadata (`key` VARCHAR(10), data VARCHAR(40));");
+        if (m_db.lastError().isValid()) {
+            qCWarning(dcLogEngine) << "Error initualizing database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            return false;
+        }
+        m_db.exec(QString("INSERT INTO metadata (`key`, data) VALUES('version', '%1');").arg(DB_SCHEMA_VERSION));
+    }
+
+    QSqlQuery query = m_db.exec("SELECT data FROM metadata WHERE `key` = 'version';");
     if (query.next()) {
         int version = query.value("data").toInt();
 
@@ -575,12 +591,15 @@ bool LogEngine::initDB()
     }
 
     if (!m_db.tables().contains("loggingEventTypes")) {
-        m_db.exec("CREATE TABLE loggingEventTypes (id int, name varchar(20), PRIMARY KEY(id));");
+        m_db.exec("CREATE TABLE loggingEventTypes (id int, name varchar(40), PRIMARY KEY(id));");
         //qCDebug(dcLogEngine) << m_db.lastError().databaseText();
         QMetaEnum logTypes = Logging::staticMetaObject.enumerator(Logging::staticMetaObject.indexOfEnumerator("LoggingEventType"));
         Q_ASSERT_X(logTypes.isValid(), "LogEngine", "Logging has no enum LoggingEventType");
         for (int i = 0; i < logTypes.keyCount(); i++) {
             m_db.exec(QString("INSERT INTO loggingEventTypes (id, name) VALUES(%1, '%2');").arg(i).arg(logTypes.key(i)));
+            if (m_db.lastError().isValid()) {
+                qCWarning(dcLogEngine()) << "Failed to insert loggingEventTypes into DB. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            }
         }
     }
 

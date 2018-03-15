@@ -125,28 +125,6 @@ bool NymeaSettings::isRoot()
     return true;
 }
 
-/*! Returns the path where the logging database will be stored.
-
-  \sa nymeaserver::LogEngine
-*/
-QString NymeaSettings::logPath()
-{
-    QString logPath;
-    QString organisationName = QCoreApplication::instance()->organizationName();
-
-    if (!qgetenv("SNAP").isEmpty()) {
-        logPath = QString(qgetenv("SNAP_COMMON")) + "/nymead.sqlite";
-    } else if (organisationName == "nymea-test") {
-        logPath = "/tmp/" + organisationName + "/nymead-test.sqlite";
-    } else if (NymeaSettings::isRoot()) {
-        logPath = "/var/log/nymead.sqlite";
-    } else {
-        logPath = QDir::homePath() + "/.config/" + organisationName + "/nymead.sqlite";
-    }
-
-    return logPath;
-}
-
 /*! Returns the path to the folder where the NymeaSettings will be saved i.e. \tt{/etc/nymea}. */
 QString NymeaSettings::settingsPath()
 {

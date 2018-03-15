@@ -502,7 +502,7 @@ void NymeaCore::init() {
     m_timeManager = new TimeManager(QTimeZone::systemTimeZoneId(), this);
 
     qCDebug(dcApplication) << "Creating Log Engine";
-    m_logger = new LogEngine(NymeaSettings::logPath(), this);
+    m_logger = new LogEngine(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), m_configuration->logDBMaxEntries(), this);
 
     qCDebug(dcApplication) << "Creating Hardware Manager";
     m_hardwareManager = new HardwareManagerImplementation(this);

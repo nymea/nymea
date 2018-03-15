@@ -36,6 +36,7 @@
 #include "servermanager.h"
 #include "nymeacore.h"
 #include "certificategenerator.h"
+#include "nymeasettings.h"
 
 #include <QSslCertificate>
 #include <QSslConfiguration>

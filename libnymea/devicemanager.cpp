@@ -1365,10 +1365,15 @@ void DeviceManager::onAutoDevicesAppeared(const DeviceClassId &deviceClassId, co
     }
 
     foreach (const DeviceDescriptor &deviceDescriptor, deviceDescriptors) {
+        if (!deviceDescriptor.parentDeviceId().isNull() && !m_configuredDevices.contains(deviceDescriptor.parentDeviceId())) {
+            qCWarning(dcDeviceManager()) << "Invalid parent device id. Not adding device to the system.";
+            continue;
+        }
         Device *device = new Device(plugin->pluginId(), deviceClassId, this);
         device->m_autoCreated = true;
         device->setName(deviceDescriptor.title());
         device->setParams(deviceDescriptor.params());
+        device->setParentId(deviceDescriptor.parentDeviceId());
 
         DeviceSetupStatus setupStatus = setupDevice(device);
         switch (setupStatus) {

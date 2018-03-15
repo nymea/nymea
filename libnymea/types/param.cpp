@@ -76,9 +76,12 @@ QDebug operator<<(QDebug dbg, const Param &param)
 /*! Writes the param of the given \a params to \a dbg. */
 QDebug operator<<(QDebug dbg, const ParamList &params)
 {
-    dbg.nospace() << "ParamList (count:" << params.count() << ")" << endl;
+    dbg.nospace() << "ParamList (count:" << params.count() << ")";
+    if (params.count() == 0) {
+        dbg.nospace() << endl;
+    }
     for (int i = 0; i < params.count(); i++ ) {
-        dbg.nospace() << "     " << i << ": " << params.at(i) << endl;
+        dbg.nospace() << endl << "     " << i << ": " << params.at(i);
     }
 
     return dbg.space();

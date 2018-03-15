@@ -97,7 +97,7 @@ signals:
 
 protected:
     DeviceManager *deviceManager() const;
-    QList<Device*> myDevices() const;
+    Devices myDevices() const;
     HardwareManager *hardwareManager() const;
     Device* findDeviceByParams(const ParamList &params) const;
 

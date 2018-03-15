@@ -446,7 +446,7 @@ DeviceManager *DevicePlugin::deviceManager() const
 }
 
 /*! Returns a list of all configured devices belonging to this plugin. */
-QList<Device *> DevicePlugin::myDevices() const
+Devices DevicePlugin::myDevices() const
 {
     QList<DeviceClassId> myDeviceClassIds;
     foreach (const DeviceClass &deviceClass, m_supportedDevices) {

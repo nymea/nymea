@@ -49,6 +49,7 @@ message("REST API version $${REST_API_VERSION}")
 message("Plugin path $${NYMEA_PLUGINS_PATH}")
 message("Source directory: $${top_srcdir}")
 message("Build directory: $${top_builddir}")
+message("Translations: $${TRANSLATIONS}")
 
 # Check debug mode
 CONFIG(debug, debug|release) {

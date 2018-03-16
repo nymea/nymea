@@ -22,7 +22,7 @@
     \class CoapPdu
     \brief Represents a CoAP protocol data unit (PDU).
 
-    \ingroup coap
+    \ingroup coap-group
     \inmodule libnymea
 
 */

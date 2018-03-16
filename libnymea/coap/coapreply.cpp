@@ -22,7 +22,7 @@
     \class CoapReply
     \brief Represents a reply of a CoAP request.
 
-    \ingroup coap
+    \ingroup coap-group
     \inmodule libnymea
 
     The CoapReply class contains the data and headers for a request sent with \l{Coap} client.

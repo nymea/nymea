@@ -36,7 +36,7 @@
 
 /*! Constructs a StateType with the given \a id.
  *  When creating a \l{DevicePlugin} generate a new uuid for each StateType you define and
- *  hardcode it into the plugin. */
+ *  hardcode it into the plugin json file. */
 StateType::StateType(const StateTypeId &id):
     m_id(id)
 {
@@ -49,13 +49,13 @@ StateTypeId StateType::id() const
     return m_id;
 }
 
-/*! Returns the name of the StateType. This is used internally, e.g. to match interfaces. */
+/*! Returns the name of the StateType. This is used internally, e.g. to match \l{Interfaces for DeviceClasses}{interfaces}. */
 QString StateType::name() const
 {
     return m_name;
 }
 
-/*! Set the name of the StateType to \a name. This is used internally, e.g. to match interfaces. */
+/*! Set the name of the StateType to \a name. This is used internally, e.g. to match \l{Interfaces for DeviceClasses}{interfaces}. */
 void StateType::setName(const QString &name)
 {
     m_name = name;
@@ -67,7 +67,7 @@ QString StateType::displayName() const
     return m_displayName;
 }
 
-/*! Set the displayName of the StateType to \a name. This is visible to the user (e.g. "Color temperature"). */
+/*! Set the displayName of the StateType to \a displayName. This is visible to the user (e.g. "Color temperature"). */
 void StateType::setDisplayName(const QString &displayName)
 {
     m_displayName = displayName;
@@ -190,7 +190,7 @@ bool StateType::cached() const
     return m_cached;
 }
 
-/*! Sets whether this StateType should be cached or not. */
+/*! Sets whether this StateType should be \a cached or not. If a state value gets cached, the state will be initialized with the cached value on start.*/
 void StateType::setCached(bool cached)
 {
     m_cached = cached;

@@ -67,7 +67,7 @@ QString EventType::displayName() const
     return m_displayName;
 }
 
-/*! Set the displayName for this EventType to \a name, e.g. "Temperature changed". */
+/*! Set the displayName for this EventType to \a displayName, e.g. "Temperature changed". */
 void EventType::setDisplayName(const QString &displayName)
 {
     m_displayName = displayName;

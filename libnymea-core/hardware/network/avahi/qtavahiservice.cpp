@@ -24,7 +24,7 @@
     \class QtAvahiService
     \brief Allows to publish an avahi service to the network.
 
-    \inmodule libnymea
+    \inmodule core
 */
 
 /*! \enum QtAvahiService::QtAvahiServiceState
@@ -44,7 +44,7 @@
 
 */
 
-/*! \fn void QtAvahiService::serviceStateChanged(const QtAvahiServiceState &state);
+/*! \fn void QtAvahiService::serviceStateChanged(const QtAvahiServiceState &state)
     This signal will be emitted when the \a state of this \l{QtAvahiService} has changed.
 */
 

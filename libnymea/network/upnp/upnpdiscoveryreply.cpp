@@ -20,8 +20,75 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+  \class UpnpDiscoveryReply
+  \brief Allows to handle UPnP discovery request in the network.
+
+  \ingroup hardware
+  \inmodule libguh
+
+  \sa UpnpDevice, UpnpDiscovery
+*/
+
+/*! \enum UpnpDiscoveryReply::UpnpDiscoveryReplyError
+
+    \value UpnpDiscoveryReplyErrorNoError
+        The reply finished successfully.
+    \value UpnpDiscoveryReplyErrorNotAvailable
+        The UpnpDiscovery HardwareResource is not available.
+    \value UpnpDiscoveryReplyErrorNotEnabled
+        The UpnpDiscovery HardwareResource is not enabled.
+    \value UpnpDiscoveryReplyErrorResourceBusy
+        The UpnpDiscovery HardwareResource is currently busy.
+*/
+
+// Public
+/*! \fn UpnpDiscoveryReply::~UpnpDiscoveryReply();
+    The virtual destructor of the UpnpDiscoveryReply.
+*/
+
+/*! \fn int UpnpDiscoveryReply::searchTarget() const;
+    Returns the search target which was used for this UpnpDiscovery request.
+
+    \sa UpnpDiscovery::discoverDevices()
+*/
+
+/*! \fn int UpnpDiscoveryReply::userAgent() const;
+    Returns the user agent which was used for this UpnpDiscovery request.
+
+    \sa UpnpDiscovery::discoverDevices()
+*/
+
+/*! \fn UpnpDiscoveryReplyError UpnpDiscoveryReply::error() const;
+    Returns the current error of this UpnpDiscoveryReply.
+
+    \sa UpnpDiscoveryReplyError
+*/
+
+/*! \fn bool UpnpDiscoveryReply::isFinished() const;
+    Returns true if this UpnpDiscoveryReply is finished.
+
+    \sa UpnpDiscoveryReplyError
+*/
+
+/*! \fn QList<UpnpDeviceDescriptor> UpnpDiscoveryReply::deviceDescriptors() const;
+    Returns the list of found \l{UpnpDeviceDescriptor}{UpnpDeviceDescriptors}. This list will be empty if an error occured.
+
+    \sa finished()
+*/
+
+// Signals
+/*! \fn void UpnpDiscoveryReply::finished();
+    This signal will be emitted once the UpnpDiscoveryReply is finished.
+*/
+
+/*! \fn void UpnpDiscoveryReply::errorOccured(const UpnpDiscoveryReplyError &error);
+    This signal will be emitted once an UpnpDiscoveryReply \a error occured.
+*/
+
 #include "upnpdiscoveryreply.h"
 
+/*! Construct a new UpnpDiscoveryReply with the given \a parent. */
 UpnpDiscoveryReply::UpnpDiscoveryReply(QObject *parent) :
     QObject(parent)
 {

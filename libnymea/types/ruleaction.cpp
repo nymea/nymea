@@ -35,9 +35,18 @@
     \sa nymeaserver::Rule, RuleActionParam,
 */
 
+/*! \enum RuleAction::Type
+
+    \value TypeDevice
+        The RuleAction describes a device Action.
+    \value TypeInterface
+        The RuleAction describes an interface based Action.
+*/
+
+
 #include "ruleaction.h"
 
-/*! Constructs a RuleAction with the given by \a actionTypeId and \a deviceId. */
+/*! Constructs a RuleAction with the given by \a actionTypeId, \a deviceId and \a params. */
 RuleAction::RuleAction(const ActionTypeId &actionTypeId, const DeviceId &deviceId, const RuleActionParamList &params):
     m_id(ActionId::createActionId()),
     m_actionTypeId(actionTypeId),

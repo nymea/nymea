@@ -1,6 +1,10 @@
 /*!
     \page index.html
-
+    
+    \chapter Developer documentation
+    
+    Welcome to the nymea developer documentation. Here you can find information related to the development for nymea. 
+    
     \section1 Overview
     The nymea daemon consists of three main modules:
 
@@ -21,18 +25,12 @@
                 \li \l{Type Utils}{Global types of nymea (Type Utils)}
                 \li \l{CoAP}{The CoAP API}
             \endlist
-        \li \l{Plugins}{The nymea plugins}
     \endlist
 
-    \section1 API's
-    The nymea daemon provides two API's:
-    \list
-        \li \l{JSON-RPC API}{JSON-RPC}
-        \li \l{https://github.com/guh/nymea/wiki/REST-API}{REST}
-    \endlist
 
     \section1 Write your own plugin
     Here you can find some tutorials for developing and working with nymea:
+
     \list
         \li \l{Set up the build environment}
         \li \l{Getting started}
@@ -42,16 +40,21 @@
     \endlist
 
     \section1 Client developers
+
     \list
+        \li \l{JSON-RPC API}{The API description}
+        \li \l{Interfaces for DeviceClasses}
         \li \l{Paramtypes and the coresponding UI elements}
     \endlist
 
     \section1 Quicklinks
     Overview of all classes and modules in nymea
+
     \list
         \li \l{All nymea Classes}        
         \li \l{All nymea Modules}
     \endlist
+
 */
 
 

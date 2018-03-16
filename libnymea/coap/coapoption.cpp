@@ -22,7 +22,7 @@
     \class CoapOption
     \brief Represents the option of a \l{CoapPdu}.
 
-    \ingroup coap
+    \ingroup coap-group
     \inmodule libnymea
 
     The CoapOption class provides an easy way to create / parse CoAP options of a \l{CoapPdu} (Protocol Data Unit). An options
@@ -60,28 +60,18 @@
 
 */
 
-/*! \fn CoapOption::CoapOption();
-    Constructs a \l{CoapOption}.
-*/
-
-/*! \fn CoapOption::CoapOption(const Option &option, const QByteArray &data);
-    Constructs a \l{CoapOption} with the given \a option and option \a data.
-*/
-
-/*! \fn void CoapOption::setOption(const Option &option);
-    Sets the \l{CoapOption::Option} of this CoapOption to the given \a option.
-*/
-
 
 #include "coapoption.h"
 
 #include <QMetaEnum>
 
+/*! Constructs a CoapOption. */
 CoapOption::CoapOption()
 {
 
 }
 
+/*! Sets the \a option of this CoapOption to the given parameter. */
 void CoapOption::setOption(const CoapOption::Option &option)
 {
     m_option = option;

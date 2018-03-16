@@ -39,6 +39,14 @@
     \sa Event, EventType, nymeaserver::Rule
 */
 
+/*! \enum EventDescriptor::Type
+
+    \value TypeDevice
+        The EventDescriptor describes a device Event.
+    \value TypeInterface
+        The EventDescriptor describes an interface based Event.
+*/
+
 #include "eventdescriptor.h"
 
 /*! Constructs an EventDescriptor describing an \l{Event} with the given \a eventTypeId, \a deviceId and the given \a paramDescriptors. */
@@ -49,6 +57,7 @@ EventDescriptor::EventDescriptor(const EventTypeId &eventTypeId, const DeviceId 
 {
 }
 
+/*! Constructs an EventDescriptor describing an \l{Event} with the given \a interface, \a interfaceEvent and the given \a paramDescriptors. */
 EventDescriptor::EventDescriptor(const QString &interface, const QString &interfaceEvent, const QList<ParamDescriptor> &paramDescriptors):
     m_interface(interface),
     m_interfaceEvent(interfaceEvent),
@@ -57,6 +66,7 @@ EventDescriptor::EventDescriptor(const QString &interface, const QString &interf
 
 }
 
+/*! Returns true \l{EventDescriptor::Type}{Type} of this descriptor. */
 EventDescriptor::Type EventDescriptor::type() const
 {
     return (!m_deviceId.isNull() && !m_eventTypeId.isNull()) ? TypeDevice : TypeInterface;

@@ -290,12 +290,12 @@ strong {
 :not(pre) > code,
 :not(pre) > kbd,
 :not(pre) > samp {
-    font-size: 0.875rem;
+    font-size: 1.0rem;
     font-family: Consolas, monaco, monospace;
-    color: #d63843;
+    color: #3d8077;
     white-space: nowrap;
     padding: 2px 6px;
-    background: #efefef;
+    /* background: #efefef; */
 }
 
 em {
@@ -764,7 +764,8 @@ div.header + li {
     max-width: 1400px;
     margin-left: auto;
     margin-right: auto;
-    padding: 10rem 3.3rem 10rem;
+    padding: 3rem 3.3rem 10rem;
+    top: 101px;
     width: 100%;
     position: relative;
 }
@@ -969,14 +970,14 @@ h2:after, h3.fn:after {
     margin: 0 auto 0 0;
     left: 0;
     right: 0;
-    width: 20%;
+    width: 100%;
     background: #d3d5d6;
 }
 
 div.footer {
     position: absolute;
     border-top: 1px solid #dbdbdb;
-    bottom: 0;
+    bottom: -101px;
     left: 0;
     width: 100%;
     z-index: 5;

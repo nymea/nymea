@@ -74,6 +74,7 @@ ParamTypeId RuleActionParam::paramTypeId() const
     return m_paramTypeId;
 }
 
+/*! Returns the name of this RuleActionParam. */
 QString RuleActionParam::paramName() const
 {
     return m_paramName;

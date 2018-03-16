@@ -27,6 +27,8 @@
     \ingroup types
     \inmodule libnymea
 
+    You can find an example \l{QtAvahiServiceBrowser}{here}.
+
 */
 
 #include "avahiserviceentry.h"

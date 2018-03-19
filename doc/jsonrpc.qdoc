@@ -61,7 +61,7 @@
 
     \section1 Handshake
 
-    Once connected to the socket, the server will send immediatly a handshake message. The handshake message 
+    Once connected to the socket, the server will send immediately a handshake message. The handshake message 
     is a JSON object and contains all relevant information about the server and the API in order to start 
     communicationg with the server.
     
@@ -92,7 +92,7 @@
             The field represents the API version of the server you are connected to. This should be used for API
             compatibility checks.
         \li \code "authenticationRequired": bool \endcode
-            If this property is true, a client must perform the authentication process before beeing able to interact with the API. See section \l{Authentication} for more information. 
+            If this property is true, a client must perform the authentication process before being able to interact with the API. See section \l{Authentication} for more information. 
         \li \code "initialSetupRequired": bool \endcode
             This property indicates if the server was set up already. A server is set up if a user has been created. If the \tt authenticationRequired property is \tt{false}, this field can be ignored.
         \li \code "pushButtonAuthAvailable": bool \endcode
@@ -115,7 +115,7 @@
 
     The JSON content should always be sent as a compack JSON Object (without spaces, tabs and new line characters within the object \tt{{...}}).
     At the end of this compact JSON string the payload must be terminated with the \tt{\n} character. This makes sure, that the parsing of the
-    message is easier and a single message can be splitted in multiple cunckes during the transport. The client parsing should work the same way.
+    message is easier and a single message can be split in multiple cunckes during the transport. The client parsing should work the same way.
 
     In order to demonstrate this with an example, the \l{JSONRPC.Hello} request could look like this:
 
@@ -154,7 +154,7 @@
         \li \code "notification": string \endcode
             The notification field holds the name of this notification. Notifications are grouped into namespaces like the methods.
             The notification string consists of two parts, the namespace and the notification name, separated by a dot.
-            This property can be used to check if a recived message is a response to a request or a notification.
+            This property can be used to check if a received message is a response to a request or a notification.
         \li \code "params": object \endcode
             The params contains any JSON object. This parameter is optional and differs according to each \l{Notifications}{notification}.
     \endlist
@@ -184,7 +184,7 @@
         \li \l{Push-button authentication}
     \endlist
 
-    If both authentication methods are available, the \l{Push-button authentication} should be prefered.
+    If both authentication methods are available, the \l{Push-button authentication} should be preferred.
 
     \section1 Username and password
 

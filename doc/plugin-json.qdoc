@@ -91,9 +91,9 @@
             qCWarning(dcExample()) << "Warning the world!";
         \endcode
         
-        Please start allways with a capital letter i.e. \tt {"idName": "Example"}. The logging category allowes you to categorise the debug output. It can be configured with the \tt -d argument of nymead (see \tt {$ man nymead}).
+        Please start always with a capital letter i.e. \tt {"idName": "Example"}. The logging category allowes you to categorise the debug output. It can be configured with the \tt -d argument of nymead (see \tt {$ man nymead}).
         \li - \underline{\e id:} The actual uuid (\l{PluginId}) of the plugin \unicode{0x2192} \l{DevicePlugin::pluginId()}
-        \li - \underline{\e paramTypes:} Optionl: A list of \l{ParamType}{ParamTypes} which define the paramters of this plugin \unicode{0x2192} \l{DevicePlugin::configuration()} (see section "\l{The ParamType definition}").
+        \li - \underline{\e paramTypes:} Optionl: A list of \l{ParamType}{ParamTypes} which define the parameters of this plugin \unicode{0x2192} \l{DevicePlugin::configuration()} (see section "\l{The ParamType definition}").
         \li - \underline{\e vendors:} The list of \l{Vendor}{Vendors} objects (see section "\l{The Vendor definition}");
     \endlist
 
@@ -212,7 +212,7 @@
         \li - \underline{\e primaryStateTypeId:} Optional: Define which \l{StateType} is the primary \l{State} for this \l{Device}. This allowes a client developer to place the primary \l{State} value in the device overview.
         \li - \underline{\e primaryActionTypeId:} Optional: Define which \l{ActionType} is the primary \l{Action} for this \l{Device}. This allowes a client developer to place the primary \l{Action} element in the device overview.
         \li - \underline{\e discoveryParamTypes:} Optional: A list of \l{ParamType}{ParamTypes} which will be needed for discovering a device \unicode{0x2192} \l{DeviceClass::discoveryParamTypes()}. This parameter will only be used for devices with the \l{DeviceClass::CreateMethodDiscovery}{CreateMethodDiscovery} (see section "\l{The ParamType definition}").
-        \li - \underline{\e paramTypes:} A list of \l{ParamType}{ParamTypes} which define the paramters of a device \unicode{0x2192} \l{DeviceClass::paramTypes()} (see section "\l{The ParamType definition}").
+        \li - \underline{\e paramTypes:} A list of \l{ParamType}{ParamTypes} which define the parameters of a device \unicode{0x2192} \l{DeviceClass::paramTypes()} (see section "\l{The ParamType definition}").
         \li - \underline{\e stateTypes:} Optional: A list of \l{StateType}{StateTypes} of the device \unicode{0x2192} \l{DeviceClass::stateTypes()} (see section "\l{The StateType definition}").
         \li - \underline{\e actionTypes:} Optional: A list of \l{ActionType}{ActionTypes} of the device \unicode{0x2192} \l{DeviceClass::actionTypes()} (see section "\l{The ActionType definition}").
         \li - \underline{\e eventTypes:} Optional: A list of \l{EventType}{EventTypes} of the device \unicode{0x2192} \l{DeviceClass::eventTypes()} (see section "\l{The EventType definition}").
@@ -249,8 +249,8 @@
         \li - \underline{\e id:} The actual uuid (\l{ParamTypeId}) of the \l{ParamType} \unicode{0x2192} \l{ParamType::id()}.
         \li - \underline{\e name:} This parameter will be used to define the ParamTypeId variable named deviceClassName<Name>ParamTypeId in the plugininfo.h, so it can be used in the code.
         \li - \underline{\e displayName:} The visible name of the \l{ParamType} \unicode{0x2192} \l{ParamType::displayName()}.
-        \li - \underline{\e type:} The data type of this paramter \unicode{0x2192} \l{ParamType::type()}.  
-        \li - \underline{\e inputType:} Optional: A paramter for clients to know which kind of \l{Types::InputType}{InputType} this. See enum \l{Types::InputType} for more information. The expected value for the \e inputType parameter matches the enum name like this:
+        \li - \underline{\e type:} The data type of this parameter \unicode{0x2192} \l{ParamType::type()}.  
+        \li - \underline{\e inputType:} Optional: A parameter for clients to know which kind of \l{Types::InputType}{InputType} this. See enum \l{Types::InputType} for more information. The expected value for the \e inputType parameter matches the enum name like this:
 
         \tt {Types::InputTypeTextArea} \unicode{0x2192} \tt {"inputType": "TextArea"}
 
@@ -303,7 +303,7 @@ A \l{StateType} has following parameters:
                         "value"
                     ],
                     "o:writable": true,
-                    "o:displayNameAction": "Name of the the created ActionType (translatable)"
+                    "o:displayNameAction": "Name of the created ActionType (translatable)"
                 }
             ]
         }

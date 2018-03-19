@@ -53,7 +53,7 @@ public:
 
 signals:
     void finished();
-    void errorOccured(const UpnpDiscoveryReplyError &error);
+    void errorOccurred(const UpnpDiscoveryReplyError &error);
 
 };
 

@@ -50,7 +50,7 @@ public:
 
 signals:
     void finished();
-    void errorOccured(const BluetoothDiscoveryReplyError &error);
+    void errorOccurred(const BluetoothDiscoveryReplyError &error);
 
 };
 

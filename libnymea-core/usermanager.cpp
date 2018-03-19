@@ -256,7 +256,7 @@ bool UserManager::verifyToken(const QByteArray &token)
         return false;
     }
     if (!result.first()) {
-        qCDebug(dcUserManager) << "Authorisation failed for token" << token;
+        qCDebug(dcUserManager) << "Authorization failed for token" << token;
         return false;
     }
     //qCDebug(dcUserManager) << "Token authorized for user" << result.value("username").toString();

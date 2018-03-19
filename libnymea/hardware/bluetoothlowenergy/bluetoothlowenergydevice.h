@@ -58,7 +58,7 @@ signals:
     void connectedChanged(const bool &connected);
     void autoConnectingChanged(const bool &autoConnecting);
     void stateChanged(const QLowEnergyController::ControllerState &state);
-    void errorOccured(const QLowEnergyController::Error &error);
+    void errorOccurred(const QLowEnergyController::Error &error);
     void servicesDiscoveryFinished();
 
 };

@@ -43,7 +43,7 @@
         \list
             \li \b 1. | The main setup of the device in the plugin.
             \li \b 2. | If something goes wrong during the setup return \l{DeviceManager::DeviceSetupStatusFailure}, otherwise \l{DeviceManager::DeviceSetupStatusSuccess}.
-            \li \b 3. | If the device setup succeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
+            \li \b 3. | If the device setup succeeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
         \endlist
     \endlist
 
@@ -57,7 +57,7 @@
             \li \b 1. | The main setup of the device in the plugin.
             \li \b 2. | If the status can not be determined immediately, we have to tell the \l{DeviceManager} that the status will be communicated later.
             \li \b 3. | Once the setup status is determined, the plugin can emit the signal \l{DevicePlugin::deviceSetupFinished} to inform the \l{DeviceManager} about the result.
-            \li \b 4. | If the device setup succeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
+            \li \b 4. | If the device setup succeeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
         \endlist
     \endlist
 
@@ -75,7 +75,7 @@
         \list
             \li \b 3. | The plugin will be set up with the params of the auto discovered \l{DeviceDescriptor}.
             \li \b 4. | If something goes wrong during the setup return \l{DeviceManager::DeviceSetupStatusFailure}, otherwise \l{DeviceManager::DeviceSetupStatusSuccess}.
-            \li \b 5. | If the device setup succeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
+            \li \b 5. | If the device setup succeeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
         \endlist
     \endlist
 
@@ -95,7 +95,7 @@
         \list
             \li \b 4. | The plugin will be set up with the params of the discovered \l{DeviceDescriptor}.
             \li \b 5. | If something goes wrong during the setup return \l{DeviceManager::DeviceSetupStatusFailure}, otherwise \l{DeviceManager::DeviceSetupStatusSuccess}.
-            \li \b 6. | If the device setup succeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
+            \li \b 6. | If the device setup succeeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
         \endlist
     \endlist
 
@@ -120,7 +120,7 @@
         \list
             \li \b 7. | The plugin will be set up with the params of the paired \l{Device}.
             \li \b 8. | If something goes wrong during the setup return \l{DeviceManager::DeviceSetupStatusFailure}, otherwise \l{DeviceManager::DeviceSetupStatusSuccess}.
-            \li \b 9. | If the device setup succeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
+            \li \b 9. | If the device setup succeeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
         \endlist
     \endlist
 
@@ -145,7 +145,7 @@
         \list
             \li \b 7. | The plugin will be set up with the params of the paired \l{Device}.
             \li \b 8. | If something goes wrong during the setup return \l{DeviceManager::DeviceSetupStatusFailure}, otherwise \l{DeviceManager::DeviceSetupStatusSuccess}.
-            \li \b 9. | If the device setup succeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
+            \li \b 9. | If the device setup succeeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
         \endlist
     \endlist
 
@@ -176,7 +176,7 @@
         \list
             \li \b 9. | The plugin will be set up with the params (i.e. containing a \tt pin param) of the paired \l{Device}.
             \li \b 10. | If something goes wrong during the setup return \l{DeviceManager::DeviceSetupStatusFailure}, otherwise \l{DeviceManager::DeviceSetupStatusSuccess}.
-            \li \b 11. | If the device setup succeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
+            \li \b 11. | If the device setup succeeded and the device is in the system, the \l{DeviceManager} will call the \l{DevicePlugin::postSetupDevice()}{postSetupDevice()} method.
         \endlist
     \endlist
 */

@@ -221,7 +221,7 @@ void TestRestRules::getRules()
     // Get all rules
     QVariant response = getAndWait(QNetworkRequest(QUrl("https://localhost:3333/api/v1/rules")));
     QVariantList rulesList = response.toList();
-    QVERIFY2(rulesList.count() == 0, "Not enought rules");
+    QVERIFY2(rulesList.count() == 0, "Not enough rules");
 
     foreach (const QVariant &rule, rulesList) {
         QVariantMap ruleMap = rule.toMap();
@@ -491,7 +491,7 @@ void TestRestRules::addRemoveRules_data()
 
     // Rules without exit actions
     QTest::newRow("valid rule. enabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << true     << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << 200 << true << "TestRule";
-    QTest::newRow("valid rule. diabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << false    << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << 200 << true << "TestRule";
+    QTest::newRow("valid rule. disabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << false    << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << 200 << true << "TestRule";
     QTest::newRow("valid rule. 2 EventDescriptors, 1 Action, name")                                     << true     << validActionNoParams      << QVariantMap()            << QVariantMap()            << eventDescriptorList  << validStateEvaluator      << 200 << true << "TestRule";
     QTest::newRow("invalid action")                                                                     << true     << invalidAction            << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << 400 << false << "TestRule";
     QTest::newRow("invalid event descriptor")                                                           << true     << validActionNoParams      << QVariantMap()            << invalidEventDescriptor   << QVariantList()       << validStateEvaluator      << 400 << false << "TestRule";
@@ -723,7 +723,7 @@ void TestRestRules::editRules_data()
 
     // Rules without exit actions
     QTest::newRow("valid rule. enabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << true     << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << 200 << "TestRule";
-    QTest::newRow("valid rule. diabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << false    << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << 200 << "TestRule";
+    QTest::newRow("valid rule. disabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << false    << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << 200 << "TestRule";
     QTest::newRow("valid rule. 2 EventDescriptors, 1 Action, name")                                     << true     << validActionNoParams      << QVariantMap()            << QVariantMap()            << eventDescriptorList  << validStateEvaluator      << 200 << "TestRule";
 }
 

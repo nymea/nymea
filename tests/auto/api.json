@@ -1,4 +1,4 @@
-1.3
+1.4
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -681,7 +681,7 @@
             }
         },
         "Rules.DisableRule": {
-            "description": "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled. If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.",
+            "description": "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled. If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.",
             "params": {
                 "ruleId": "Uuid"
             },
@@ -690,7 +690,7 @@
             }
         },
         "Rules.EditRule": {
-            "description": "Edit the parameters of a rule. The configuration of the rule with the given ruleId will be replaced with the new given configuration. In ordert to enable or disable a Rule, please use the methods \"Rules.EnableRule\" and \"Rules.DisableRule\". If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.",
+            "description": "Edit the parameters of a rule. The configuration of the rule with the given ruleId will be replaced with the new given configuration. In ordert to enable or disable a Rule, please use the methods \"Rules.EnableRule\" and \"Rules.DisableRule\". If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.",
             "params": {
                 "actions": [
                     "$ref:RuleAction"
@@ -714,7 +714,7 @@
             }
         },
         "Rules.EnableRule": {
-            "description": "Enabled a rule that has previously been disabled.If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.",
+            "description": "Enabled a rule that has previously been disabled.If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.",
             "params": {
                 "ruleId": "Uuid"
             },

@@ -98,23 +98,23 @@
 
 // Signals
 /*! \fn void PluginTimer::timeout();
-    This signal will be emited if the timer timeouted.
+    This signal will be emitted if the timer timeouted.
 */
 
 /*! \fn void PluginTimer::currentTickChanged(const int &currentTick);
-    This signal will be emited whenever the \a currentTick of this PluginTimer changed.
+    This signal will be emitted whenever the \a currentTick of this PluginTimer changed.
 
     \sa currentTick()
 */
 
 /*! \fn void PluginTimer::runningChanged(const bool &running);
-    This signal will be emited whenever the \a running status of this PluginTimer changed.
+    This signal will be emitted whenever the \a running status of this PluginTimer changed.
 
     \sa running()
 */
 
 /*! \fn void PluginTimer::pausedChanged(const bool &paused);
-    This signal will be emited whenever the \a paused status of this PluginTimer changed.
+    This signal will be emitted whenever the \a paused status of this PluginTimer changed.
 
     \sa running()
 */

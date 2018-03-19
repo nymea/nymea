@@ -35,7 +35,7 @@
 
 #include <QDebug>
 
-/*! Constructs a \l Param with the given \a paramTypeId and \a value of the paramter. */
+/*! Constructs a \l Param with the given \a paramTypeId and \a value of the parameter. */
 Param::Param(const ParamTypeId &paramTypeId, const QVariant &value):
     m_paramTypeId(paramTypeId),
     m_value(value)

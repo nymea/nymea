@@ -32,7 +32,7 @@
     This enum type specifies the state of a \l{QtAvahiService}.
 
     \value QtAvahiServiceStateUncomitted
-        The group has not yet been commited, the user must still call avahi_entry_group_commit().
+        The group has not yet been committed, the user must still call avahi_entry_group_commit().
     \value QtAvahiServiceStateRegistering
         The entries of the group are currently being registered.
     \value QtAvahiServiceStateEstablished
@@ -211,7 +211,7 @@ bool QtAvahiService::updateTxtRecord(const QHash<QString, QString> &txtRecords)
     return true;
 }
 
-/*!  Returns true if the service group was added and commited to the network without errors. */
+/*!  Returns true if the service group was added and committed to the network without errors. */
 bool QtAvahiService::isValid() const
 {
     return (d_ptr->group && !d_ptr->error);

@@ -951,7 +951,7 @@ void TestDevices::reconfigureDevices()
     response = injectAndWait("Devices.ReconfigureDevice", editParams);
     verifyDeviceError(response, deviceError);
 
-    // if the edit should have been successfull
+    // if the edit should have been successful
     if (deviceError == DeviceManager::DeviceErrorNoError) {
         response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
 
@@ -1167,7 +1167,7 @@ void TestDevices::reconfigureByDiscovery()
     QVERIFY2(reply->error(), "The old daemon is still running");
     reply->deleteLater();
 
-    // check if the daemon is realy running on the new port
+    // check if the daemon is really running on the new port
     request = QNetworkRequest(QUrl(QString("http://localhost:%1").arg(55556)));
     reply = nam.get(request);
     spy.wait();

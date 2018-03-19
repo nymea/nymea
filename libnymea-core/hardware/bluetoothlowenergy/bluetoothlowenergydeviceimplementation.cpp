@@ -157,7 +157,7 @@ void BluetoothLowEnergyDeviceImplementation::onDeviceError(const QLowEnergyContr
     if (connected())
         qCWarning(dcBluetooth())  << "Device error:" << name() << address().toString() << ": " << error << m_controller->errorString();
 
-    emit errorOccured(error);
+    emit errorOccurred(error);
 }
 
 }

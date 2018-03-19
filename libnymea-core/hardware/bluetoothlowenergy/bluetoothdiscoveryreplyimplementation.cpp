@@ -51,7 +51,7 @@ void BluetoothDiscoveryReplyImplementation::setError(const BluetoothDiscoveryRep
 {
     m_error = error;
     if (m_error != BluetoothDiscoveryReplyErrorNoError) {
-        emit errorOccured(m_error);
+        emit errorOccurred(m_error);
     }
 }
 

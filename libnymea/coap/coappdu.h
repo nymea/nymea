@@ -62,7 +62,7 @@ public:
     // Methods:       https://tools.ietf.org/html/rfc7252#section-5.8
     // Respond codes: https://tools.ietf.org/html/rfc7252#section-12.1.2
     enum StatusCode {
-        Empty                    = 0x00,  // Empty mesage (ping)
+        Empty                    = 0x00,  // Empty message (ping)
         Get                      = 0x01,  // Method GET
         Post                     = 0x02,  // Method POST
         Put                      = 0x03,  // Method PUT

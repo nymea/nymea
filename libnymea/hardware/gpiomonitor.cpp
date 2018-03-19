@@ -69,7 +69,7 @@
 */
 
 /*! \fn void GpioMonitor::valueChanged(const bool &value);
- *  This signal will be emited, if the monitored \l{Gpio}{Gpios} changed his \a value. */
+ *  This signal will be emitted, if the monitored \l{Gpio}{Gpios} changed his \a value. */
 
 #include "gpiomonitor.h"
 #include "loggingcategories.h"

@@ -40,7 +40,7 @@
     \value Ok
         The request was understood and everything is Ok.
     \value Created
-        The resource was created sucessfully.
+        The resource was created successfully.
     \value Accepted
         The resource was accepted.
     \value NoContent
@@ -278,7 +278,7 @@ QByteArray HttpReply::rawHeader() const
     return m_rawHeader;
 }
 
-/*! Sets the \a close paramter of this \l{HttpReply}. If \a close is true,
+/*! Sets the \a close parameter of this \l{HttpReply}. If \a close is true,
     the connection of the client will be closed after this reply was sent.
 */
 void HttpReply::setCloseConnection(const bool &close)
@@ -286,7 +286,7 @@ void HttpReply::setCloseConnection(const bool &close)
     m_closeConnection = close;
 }
 
-/*! Returns the connection close paramter of this \l{HttpReply}. If close is true, the connection
+/*! Returns the connection close parameter of this \l{HttpReply}. If close is true, the connection
     of the client will be closed after this reply was sent.
 */
 bool HttpReply::closeConnection() const

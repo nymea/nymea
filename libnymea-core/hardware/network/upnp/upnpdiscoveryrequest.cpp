@@ -56,7 +56,7 @@ void UpnpDiscoveryRequest::discover(int timeout)
 
 void UpnpDiscoveryRequest::addDeviceDescriptor(const UpnpDeviceDescriptor &deviceDescriptor)
 {
-    // check if we allready have the device in the list
+    // check if we already have the device in the list
     bool isAlreadyInList = false;
     foreach (UpnpDeviceDescriptor upnpDeviceDescriptor, m_deviceList) {
         if (upnpDeviceDescriptor.uuid() == deviceDescriptor.uuid()) {

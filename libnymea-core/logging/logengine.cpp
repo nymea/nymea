@@ -27,7 +27,7 @@
     \inmodule core
 
     The \l{LogEngine} creates a \l{https://sqlite.org/}{SQLite3} database to stores everything what's
-    happening in the system. The database can be accessed from the API's. To controll the size of the database the
+    happening in the system. The database can be accessed from the API's. To control the size of the database the
     limit of the databse are 8000 entries.
 
 
@@ -68,7 +68,7 @@
     \value LoggingErrorLogEntryNotFound
         The requested \l{LogEntry} could not be found.
     \value LoggingErrorInvalidFilterParameter
-        The given \l{LogFilter} contains an invalid paramter.
+        The given \l{LogFilter} contains an invalid parameter.
 */
 
 /*! \enum nymeaserver::Logging::LoggingEventType

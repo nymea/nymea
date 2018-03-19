@@ -69,7 +69,7 @@ void UpnpDiscoveryReplyImplementation::setError(const UpnpDiscoveryReplyImplemen
 {
     m_error = error;
     if (m_error != UpnpDiscoveryReplyErrorNoError) {
-        emit errorOccured(m_error);
+        emit errorOccurred(m_error);
     }
 }
 

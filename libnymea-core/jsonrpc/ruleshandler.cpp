@@ -103,7 +103,7 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.clear(); returns.clear();
     setDescription("EditRule", "Edit the parameters of a rule. The configuration of the rule with the given ruleId "
                    "will be replaced with the new given configuration. In ordert to enable or disable a Rule, please use the "
-                   "methods \"Rules.EnableRule\" and \"Rules.DisableRule\". If successfull, the notification \"Rule.RuleConfigurationChanged\" "
+                   "methods \"Rules.EnableRule\" and \"Rules.DisableRule\". If successful, the notification \"Rule.RuleConfigurationChanged\" "
                    "will be emitted.");
     params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
@@ -135,7 +135,7 @@ RulesHandler::RulesHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     setDescription("EnableRule", "Enabled a rule that has previously been disabled."
-                   "If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.");
+                   "If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.");
     params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setParams("EnableRule", params);
     returns.insert("ruleError", JsonTypes::ruleErrorRef());
@@ -143,7 +143,7 @@ RulesHandler::RulesHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     setDescription("DisableRule", "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled. "
-                   "If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.");
+                   "If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.");
     params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setParams("DisableRule", params);
     returns.insert("ruleError", JsonTypes::ruleErrorRef());

@@ -99,7 +99,7 @@ void TestRestDevices::getConfiguredDevices()
     QVariant response = getAndWait(QNetworkRequest(QUrl("https://localhost:3333/api/v1/devices")));
     QVERIFY2(!response.isNull(), "Could not get device");
     QVariantList deviceList = response.toList();
-    QVERIFY2(deviceList.count() >= 2, "not enought devices.");
+    QVERIFY2(deviceList.count() >= 2, "not enough devices.");
 
     // Get each of those devices individualy
     foreach (const QVariant &device, deviceList) {
@@ -682,7 +682,7 @@ void TestRestDevices::reconfigureDevices()
     response = putAndWait(request, editParams, expectedStatusCode);
     QVERIFY2(!response.isNull(), "Could not read edit device response");
 
-    // if the reconfigure should have been successfull
+    // if the reconfigure should have been successful
     if (expectedStatusCode == 200) {
         request.setUrl(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");

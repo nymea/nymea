@@ -43,7 +43,7 @@
     \value CreateMethodUser
         The user will specify the \l{Param}s.
     \value CreateMethodAuto
-        The device will be created automaticaly.
+        The device will be created automatically.
     \value CreateMethodDiscovery
         The device will be discovered and added by the user by selecting the DeviceDescriptorId from the list of discovered possible ones.
 */

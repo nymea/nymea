@@ -1,6 +1,6 @@
 /*!
     \page paramtypes-ui-elements.html
-    \title Paramtypes and the coresponding UI elements
+    \title Paramtypes and the corresponding UI elements
 
     On this page you can find different examples how a \l{ParamType} can be displayed in a client application.
     The images used for this examples were created with the Ubuntu SDK and are ment as an example, not as a directive.

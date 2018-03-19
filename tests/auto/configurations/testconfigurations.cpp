@@ -246,7 +246,7 @@ void TestConfigurations::testLanguages()
     response = injectAndWait("Configuration.GetAvailableLanguages");
     QVERIFY2(response.toMap().value("params").toMap().contains("languages"), "Did not get list of languages");
     QVariantMap responseMap = response.toMap().value("params").toMap();
-    QVERIFY2(responseMap.value("languages").toList().count() >= 2, "Avaliable languages list to short: " +  responseMap.value("languages").toList().count());
+    QVERIFY2(responseMap.value("languages").toList().count() >= 2, "Available languages list to short: " +  responseMap.value("languages").toList().count());
 
     QVariantList languageVariantList = responseMap.value("languages").toList();
     foreach (const QVariant &languageVariant, languageVariantList) {
@@ -263,7 +263,7 @@ void TestConfigurations::testLanguages()
         notificationSpy.wait(500);
         QVariantList languageChangedNotifications = checkNotifications(notificationSpy, "Configuration.LanguageChanged");
 
-        // If the language did not change no notification should be emited
+        // If the language did not change no notification should be emitted
         if (basicConfigurationMap.value("language").toString() == languageVariant.toString()) {
             QVERIFY2(languageChangedNotifications.count() == 0, "Got Configuration.LanguageChanged notification but should have not.");
         } else {

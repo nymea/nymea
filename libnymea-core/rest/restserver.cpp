@@ -27,7 +27,7 @@
 
     The \l{RestServer} class provides the server interface for a REST API call. The \l{RestServer}
     will create a \l{WebServer} object. The \l{WebServer} will parse the \l{HttpRequest} and emits
-    the signal \l{WebServer::httpRequestReady()}. This signal will be catched from this \l{RestServer}
+    the signal \l{WebServer::httpRequestReady()}. This signal will be handled by this \l{RestServer}
     and processed by the corresponding \l{RestResource}. Once the \l{HttpRequest} is finished, the
     \l{RestServer} will send a \l{HttpReply} back to the client using \l{WebServer::sendHttpReply()}.
 

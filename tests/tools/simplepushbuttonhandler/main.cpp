@@ -35,6 +35,8 @@ int main(int argc, char *argv[])
 
     QCoreApplication a(argc, argv);
 
+    parser.process(a);
+
     PushButtonAgent agent;
     if (!agent.init(parser.isSet(dbusOption) ? QDBusConnection::SessionBus : QDBusConnection::SystemBus)) {
         return -1;

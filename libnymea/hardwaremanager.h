@@ -25,8 +25,6 @@
 
 #include <QObject>
 
-#include "hardwareresource.h"
-
 class Radio433;
 class UpnpDiscovery;
 class PluginTimerManager;
@@ -34,6 +32,7 @@ class NetworkAccessManager;
 class UpnpDeviceDescriptor;
 class QtAvahiServiceBrowser;
 class BluetoothLowEnergyManager;
+class HardwareResource;
 
 class HardwareManager : public QObject
 {

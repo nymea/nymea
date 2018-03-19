@@ -36,7 +36,7 @@ NymeaDBusService::NymeaDBusService(const QString &objectPath, QObject *parent) :
         finalObjectPath.append(part.at(0).toUpper());
         finalObjectPath.append(part.right(part.length() - 1));
     }
-    status = s_connection.registerObject(finalObjectPath, this, QDBusConnection::ExportScriptableSlots);
+    status = s_connection.registerObject(finalObjectPath, parent, QDBusConnection::ExportScriptableSlots);
     if (!status) {
         qCWarning(dcApplication()) << "Failed to register D-Bus object:" << finalObjectPath;
         return;

@@ -58,6 +58,7 @@
 */
 
 #include "hardwaremanager.h"
+#include "hardwareresource.h"
 
 /*! Constructs a new HardwareManager with the given \a parent.*/
 HardwareManager::HardwareManager(QObject *parent) :

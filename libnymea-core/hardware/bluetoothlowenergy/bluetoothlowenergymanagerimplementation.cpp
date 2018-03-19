@@ -149,11 +149,13 @@ bool BluetoothLowEnergyManagerImplementation::enabled() const
 
 void BluetoothLowEnergyManagerImplementation::setEnabled(bool enabled)
 {
-    if (m_enabled == enabled)
-        return;
-
-    m_enabled = enabled;
-    emit enabledChanged(m_enabled);
+    if (enabled && !m_enabled) {
+        m_enabled = enable();
+        emit enabledChanged(m_enabled);
+    } else if (!enabled && m_enabled) {
+        m_enabled = disable();
+        emit enabledChanged(m_enabled);
+    }
 }
 
 void BluetoothLowEnergyManagerImplementation::onReconnectTimeout()
@@ -214,25 +216,23 @@ void BluetoothLowEnergyManagerImplementation::onDiscoveryError(const QBluetoothD
 
 bool BluetoothLowEnergyManagerImplementation::enable()
 {
-    qCDebug(dcBluetooth()) << "Hardware resource enabled.";
-    setEnabled(true);
-
+    if (!available()) {
+        qCWarning(dcBluetooth()) << "Bluetooth hardware not available. Cannot enable Hardware resource";
+        return false;
+    }
     foreach (QPointer<BluetoothLowEnergyDeviceImplementation> bluetoothDevice, m_devices) {
         bluetoothDevice->setEnabled(true);
     }
-
+    qCDebug(dcBluetooth()) << "Hardware resource enabled.";
     return true;
 }
 
 bool BluetoothLowEnergyManagerImplementation::disable()
 {
-    qCDebug(dcBluetooth()) << "Hardware resource disabled.";
-    setEnabled(false);
-
     foreach (QPointer<BluetoothLowEnergyDeviceImplementation> bluetoothDevice, m_devices) {
         bluetoothDevice->setEnabled(false);
     }
-
+    qCDebug(dcBluetooth()) << "Hardware resource disabled.";
     return true;
 }
 

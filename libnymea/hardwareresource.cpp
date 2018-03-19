@@ -64,13 +64,14 @@
 #include "hardwareresource.h"
 #include "hardwaremanager.h"
 #include "loggingcategories.h"
+#include "nymeadbusservice.h"
 
 /*! Constructs a new HardwareResource with the given \a name and \a parent. */
 HardwareResource::HardwareResource(const QString &name, QObject *parent) :
-    NymeaDBusService("/io/guh/nymead/HardwareManager/" + name, parent),
+    QObject(parent),
     m_name(name)
 {
-
+    new NymeaDBusService("/io/guh/nymead/HardwareManager/" + name, this);
 }
 
 /*! Returns the name of this resource. */

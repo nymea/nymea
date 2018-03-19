@@ -41,7 +41,6 @@
 #include <QMetaObject>
 #include <QTranslator>
 #include <QPair>
-#include <QBluetoothDeviceInfo>
 
 class Device;
 class DeviceManager;

@@ -205,7 +205,7 @@ void ParamType::setReadOnly(const bool &readOnly)
     m_readOnly = readOnly;
 }
 
-/*! Returns true if this ParamType is valid. A ParamType is valid, if the the id, the name and the data type is set. */
+/*! Returns true if this ParamType is valid. A ParamType is valid, if the id, the name and the data type is set. */
 bool ParamType::isValid() const
 {
     return !m_id.isNull() && !m_name.isEmpty() && m_type != QVariant::Invalid;

@@ -1696,7 +1696,7 @@ void TestTimeManager::testEventItemYearly()
     NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
     verifyRuleNotExecuted();
 
-    // Tick next year, one minute bofore, on time, one minute after
+    // Tick next year, one minute before, on time, one minute after
     QDateTime nextYear = dateTime.addYears(1);
 
     // not triggering

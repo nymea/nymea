@@ -534,7 +534,7 @@ DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &devi
     DeviceSetupStatus status = plugin->setupDevice(device);
     switch (status) {
     case DeviceSetupStatusFailure:
-        qCWarning(dcDeviceManager) << "Device reconfiguration failed. Not saving changes of device paramters. Device setup incomplete.";
+        qCWarning(dcDeviceManager) << "Device reconfiguration failed. Not saving changes of device parameters. Device setup incomplete.";
         return DeviceErrorSetupFailed;
     case DeviceSetupStatusAsync:
         m_asyncDeviceReconfiguration.append(device);

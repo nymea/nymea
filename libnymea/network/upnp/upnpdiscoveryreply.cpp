@@ -72,7 +72,7 @@
 */
 
 /*! \fn QList<UpnpDeviceDescriptor> UpnpDiscoveryReply::deviceDescriptors() const;
-    Returns the list of found \l{UpnpDeviceDescriptor}{UpnpDeviceDescriptors}. This list will be empty if an error occured.
+    Returns the list of found \l{UpnpDeviceDescriptor}{UpnpDeviceDescriptors}. This list will be empty if an error occurred.
 
     \sa finished()
 */
@@ -82,8 +82,8 @@
     This signal will be emitted once the UpnpDiscoveryReply is finished.
 */
 
-/*! \fn void UpnpDiscoveryReply::errorOccured(const UpnpDiscoveryReplyError &error);
-    This signal will be emitted once an UpnpDiscoveryReply \a error occured.
+/*! \fn void UpnpDiscoveryReply::errorOccurred(const UpnpDiscoveryReplyError &error);
+    This signal will be emitted once an UpnpDiscoveryReply \a error occurred.
 */
 
 #include "upnpdiscoveryreply.h"

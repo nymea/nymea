@@ -359,7 +359,7 @@ JsonReply *JsonRPCServer::KeepAlive(const QVariantMap &params)
     return createReply(resultMap);
 }
 
-/*! Returns the list of registred \l{JsonHandler}{JsonHandlers} and their name.*/
+/*! Returns the list of registered \l{JsonHandler}{JsonHandlers} and their name.*/
 QHash<QString, JsonHandler *> JsonRPCServer::handlers() const
 {
     return m_handlers;

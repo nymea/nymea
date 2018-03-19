@@ -82,7 +82,7 @@ void TestRestPlugins::getPlugins()
     // Get all plugins
     QVariant response = getAndWait(QNetworkRequest(QUrl("https://localhost:3333/api/v1/plugins")));
     QVariantList pluginList = response.toList();
-    QVERIFY2(pluginList.count() > 0, "Not enought plugins.");
+    QVERIFY2(pluginList.count() > 0, "Not enough plugins.");
 
     // Get each of thouse plugins individualy
     foreach (const QVariant &plugin, pluginList) {

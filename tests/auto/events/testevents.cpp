@@ -141,7 +141,7 @@ void TestEvents::getEventType()
     verifyDeviceError(response, error);
 
     if (error == DeviceManager::DeviceErrorNoError) {
-        QVERIFY2(EventTypeId(response.toMap().value("params").toMap().value("eventType").toMap().value("id").toString()) == eventTypeId, "Didnt get reply for same actionTypeId as requested.");
+        QVERIFY2(EventTypeId(response.toMap().value("params").toMap().value("eventType").toMap().value("id").toString()) == eventTypeId, "Didn't get a reply for the same actionTypeId as requested.");
     }
 }
 

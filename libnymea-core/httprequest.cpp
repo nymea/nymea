@@ -87,7 +87,7 @@ QByteArray HttpRequest::rawHeader() const
     return m_rawHeader;
 }
 
-/*! Returns the list of raw header splitted into key and value.*/
+/*! Returns the list of raw header as key and value pairs.*/
 QHash<QByteArray, QByteArray> HttpRequest::rawHeaderList() const
 {
     return m_rawHeaderList;
@@ -235,7 +235,7 @@ void HttpRequest::validate()
             m_isComplete = false;
             return;
         }
-        // check if the content lenght bigger than header Content-Length
+        // check if the content length bigger than header Content-Length
         if (m_payload.size() > contentLength) {
             qCWarning(dcWebServer) << "Payload size greater than header Content-Length:";
             qCWarning(dcWebServer) << "   -> Content-Length:" << contentLength;

@@ -26,9 +26,9 @@
 
 namespace nymeaserver {
 
-PluginTimerImplementation::PluginTimerImplementation(int intervall, QObject *parent) :
+PluginTimerImplementation::PluginTimerImplementation(int interval, QObject *parent) :
     PluginTimer(parent),
-    m_interval(intervall)
+    m_interval(interval)
 {
     connect(NymeaCore::instance()->timeManager(), &TimeManager::tick, this, &PluginTimerImplementation::tick);
 }

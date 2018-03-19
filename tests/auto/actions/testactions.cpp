@@ -145,7 +145,7 @@ void TestActions::getActionType()
     verifyDeviceError(response, error);
 
     if (error == DeviceManager::DeviceErrorNoError) {
-        QVERIFY2(ActionTypeId(response.toMap().value("params").toMap().value("actionType").toMap().value("id").toString()) == actionTypeId, "Didnt get reply for same actionTypeId as requested.");
+        QVERIFY2(ActionTypeId(response.toMap().value("params").toMap().value("actionType").toMap().value("id").toString()) == actionTypeId, "Didn't get a reply for the same actionTypeId as requested.");
     }
 }
 

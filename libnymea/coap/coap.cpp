@@ -66,7 +66,7 @@
 */
 
 /*! \fn void Coap::notificationReceived(const CoapObserveResource &resource, const int &notificationNumber, const QByteArray &payload);
-    This signal is emitted when a value of an observed \a resource changed. The \a notificationNumber specifies the the count of the notification
+    This signal is emitted when a value of an observed \a resource changed. The \a notificationNumber specifies the count of the notification
     to keep the correct order. The value can be parsed from the \a payload parameter.
 */
 

@@ -39,7 +39,7 @@
   important part.
 
   The second possibility to sent data to a 433 MHz device is the \l{http://www.brennenstuhl.de/de-DE/steckdosenleisten-schaltgeraete-und-adapter/brematic-hausautomation/brematic-home-automation-gateway-gwy-433-1.html}
-  {Brennenstuhl 433 MHz LAN Gateway}. If there is a Gateway in the local network, this class will automaticaly detect
+  {Brennenstuhl 433 MHz LAN Gateway}. If there is a Gateway in the local network, this class will automatically detect
   it and will be used. If both transmitter are available (Gateway + GPIO), each signal will be transmitted over both sender.
 
   \note: Radio 433 on GPIO's is by default disabled. If you want to enable it, you need to compile the source with the qmake config \tt{CONFIG+=radio433gpio}

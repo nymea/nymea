@@ -448,7 +448,7 @@ void CoapTests::largeCreate()
     reply->deleteLater();
     spy.clear();
 
-    // check if the upload was realy successfull
+    // check if the upload was really successful
     reply = m_coap->get(request);
     spy.wait(20000);
 
@@ -482,7 +482,7 @@ void CoapTests::largeUpdate()
     reply->deleteLater();
     spy.clear();
 
-    // check if the upload was successfull
+    // check if the upload was successful
     reply = m_coap->get(request);
     spy.wait(20000);
 

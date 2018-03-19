@@ -38,7 +38,7 @@ class PluginTimerImplementation : public PluginTimer
     friend class PluginTimerManagerImplementation;
 
 public:
-    explicit PluginTimerImplementation(int intervall, QObject *parent = nullptr);
+    explicit PluginTimerImplementation(int interval, QObject *parent = nullptr);
 
     int interval() const override;
     int currentTick() const override;

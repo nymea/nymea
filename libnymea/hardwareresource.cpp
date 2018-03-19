@@ -54,11 +54,11 @@
 
 // Signals
 /*! \fn bool HardwareResource::enabledChanged(bool enabled);
-    This signal will be emited if the hardware resource was \a enabled or disabled.
+    This signal will be emitted if the hardware resource was \a enabled or disabled.
 */
 
 /*! \fn bool HardwareResource::availableChanged(bool available);
-    This signal will be emited if the hardware resource \a available changed.
+    This signal will be emitted if the hardware resource \a available changed.
 */
 
 #include "hardwareresource.h"

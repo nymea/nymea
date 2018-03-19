@@ -85,7 +85,7 @@ ParamList Action::params() const
     return m_params;
 }
 
-/*! Set the the parameters for this Action. \a params must match the template in the \l{ActionType}
+/*! Set the parameters for this Action. \a params must match the template in the \l{ActionType}
  *  referred by \l{Action::actionTypeId()}. */
 void Action::setParams(const ParamList &params)
 {

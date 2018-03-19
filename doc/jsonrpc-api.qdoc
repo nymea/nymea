@@ -1800,7 +1800,7 @@ Add a rule. You can describe rules by one or many EventDesciptors and a StateEva
 \endcode
 See also: \l{RuleError}, \l{RuleAction}, \l{TimeDescriptor}, \l{RuleAction}, \l{EventDescriptor}, \l{StateEvaluator}
 \section3 Rules.DisableRule
-Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled. If successfull, the notification "Rule.RuleConfigurationChanged" will be emitted.
+Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled. If successful, the notification "Rule.RuleConfigurationChanged" will be emitted.
 \section4 Params
 \code
 {
@@ -1815,7 +1815,7 @@ Disable a rule. The rule won't be triggered by it's events or state changes whil
 \endcode
 See also: \l{RuleError}
 \section3 Rules.EditRule
-Edit the parameters of a rule. The configuration of the rule with the given ruleId will be replaced with the new given configuration. In ordert to enable or disable a Rule, please use the methods "Rules.EnableRule" and "Rules.DisableRule". If successfull, the notification "Rule.RuleConfigurationChanged" will be emitted.
+Edit the parameters of a rule. The configuration of the rule with the given ruleId will be replaced with the new given configuration. In ordert to enable or disable a Rule, please use the methods "Rules.EnableRule" and "Rules.DisableRule". If successful, the notification "Rule.RuleConfigurationChanged" will be emitted.
 \section4 Params
 \code
 {
@@ -1845,7 +1845,7 @@ Edit the parameters of a rule. The configuration of the rule with the given rule
 \endcode
 See also: \l{RuleError}, \l{Rule}, \l{RuleAction}, \l{TimeDescriptor}, \l{RuleAction}, \l{EventDescriptor}, \l{StateEvaluator}
 \section3 Rules.EnableRule
-Enabled a rule that has previously been disabled.If successfull, the notification "Rule.RuleConfigurationChanged" will be emitted.
+Enabled a rule that has previously been disabled.If successful, the notification "Rule.RuleConfigurationChanged" will be emitted.
 \section4 Params
 \code
 {
@@ -2889,7 +2889,7 @@ Emitted whenever a Rule was removed.
             }
         }, 
         "Rules.DisableRule": {
-            "description": "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled. If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.", 
+            "description": "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled. If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.", 
             "params": {
                 "ruleId": "Uuid"
             }, 
@@ -2898,7 +2898,7 @@ Emitted whenever a Rule was removed.
             }
         }, 
         "Rules.EditRule": {
-            "description": "Edit the parameters of a rule. The configuration of the rule with the given ruleId will be replaced with the new given configuration. In ordert to enable or disable a Rule, please use the methods \"Rules.EnableRule\" and \"Rules.DisableRule\". If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.", 
+            "description": "Edit the parameters of a rule. The configuration of the rule with the given ruleId will be replaced with the new given configuration. In ordert to enable or disable a Rule, please use the methods \"Rules.EnableRule\" and \"Rules.DisableRule\". If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.", 
             "params": {
                 "actions": [
                     "$ref:RuleAction"
@@ -2922,7 +2922,7 @@ Emitted whenever a Rule was removed.
             }
         }, 
         "Rules.EnableRule": {
-            "description": "Enabled a rule that has previously been disabled.If successfull, the notification \"Rule.RuleConfigurationChanged\" will be emitted.", 
+            "description": "Enabled a rule that has previously been disabled.If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.", 
             "params": {
                 "ruleId": "Uuid"
             }, 

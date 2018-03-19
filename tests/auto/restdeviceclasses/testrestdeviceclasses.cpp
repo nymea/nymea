@@ -90,7 +90,7 @@ void TestRestDeviceClasses::getSupportedDevices()
     QUrl url("https://localhost:3333/api/v1/deviceclasses");
     QVariant response = getAndWait(QNetworkRequest(url));
     QVariantList deviceClassesList = response.toList();
-    QVERIFY2(deviceClassesList.count() > 0, "Not enought deviceclasses.");
+    QVERIFY2(deviceClassesList.count() > 0, "Not enough deviceclasses.");
 
     // Get each of thouse devices individualy
     foreach (const QVariant &deviceClass, deviceClassesList) {
@@ -110,7 +110,7 @@ void TestRestDeviceClasses::getSupportedDevices()
 
     response = getAndWait(QNetworkRequest(url));
     deviceClassesList = response.toList();
-    QVERIFY2(deviceClassesList.count() > 0, "Not enought deviceclasses.");
+    QVERIFY2(deviceClassesList.count() > 0, "Not enough deviceclasses.");
 
     // get with invalid vendor filter
     query.clear();

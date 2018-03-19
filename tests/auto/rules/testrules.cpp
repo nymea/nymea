@@ -492,7 +492,7 @@ void TestRules::addRemoveRules_data()
 
     // Rules without exit actions
     QTest::newRow("valid rule. enabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << true     << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << true << "TestRule";
-    QTest::newRow("valid rule. diabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << false    << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << true << "TestRule";
+    QTest::newRow("valid rule. disabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << false    << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << true << "TestRule";
     QTest::newRow("valid rule. 2 EventDescriptors, 1 Action, name")                                     << true     << validActionNoParams      << QVariantMap()            << QVariantMap()            << eventDescriptorList  << validStateEvaluator      << RuleEngine::RuleErrorNoError << true << "TestRule";
     QTest::newRow("invalid action")                                                                     << true     << invalidAction            << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorActionTypeNotFound << false << "TestRule";
     QTest::newRow("invalid event descriptor")                                                           << true     << validActionNoParams      << QVariantMap()            << invalidEventDescriptor   << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorEventTypeNotFound << false << "TestRule";
@@ -560,10 +560,10 @@ void TestRules::addRemoveRules()
     QVERIFY2(rule.value("enabled").toBool() == enabled, "Rule enabled state doesn't match");
     QVariantList eventDescriptors = rule.value("eventDescriptors").toList();
     if (!eventDescriptor.isEmpty()) {
-        QVERIFY2(eventDescriptors.count() == 1, "There shoud be exactly one eventDescriptor");
+        QVERIFY2(eventDescriptors.count() == 1, "There should be exactly one eventDescriptor");
         QVERIFY2(eventDescriptors.first().toMap() == eventDescriptor, "Event descriptor doesn't match");
     } else if (eventDescriptorList.isEmpty()){
-        QVERIFY2(eventDescriptors.count() == eventDescriptorList.count(), QString("There shoud be exactly %1 eventDescriptor").arg(eventDescriptorList.count()).toLatin1().data());
+        QVERIFY2(eventDescriptors.count() == eventDescriptorList.count(), QString("There should be exactly %1 eventDescriptor").arg(eventDescriptorList.count()).toLatin1().data());
         foreach (const QVariant &eventDescriptorVariant, eventDescriptorList) {
             bool found = false;
             foreach (const QVariant &replyEventDescriptorVariant, eventDescriptors) {
@@ -733,7 +733,7 @@ void TestRules::editRules_data()
 
     // Rules without exit actions
     QTest::newRow("valid rule. enabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << true     << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << "TestRule";
-    QTest::newRow("valid rule. diabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << false    << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << "TestRule";
+    QTest::newRow("valid rule. disabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << false    << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << "TestRule";
     QTest::newRow("valid rule. 2 EventDescriptors, 1 Action, name")                                     << true     << validActionNoParams      << QVariantMap()            << QVariantMap()            << eventDescriptorList  << validStateEvaluator      << RuleEngine::RuleErrorNoError << "TestRule";
 }
 
@@ -891,10 +891,10 @@ void TestRules::editRules()
         QVERIFY2(rule.value("enabled").toBool() == enabled, "Rule enabled state doesn't match");
         QVariantList eventDescriptors = rule.value("eventDescriptors").toList();
         if (!eventDescriptor.isEmpty()) {
-            QVERIFY2(eventDescriptors.count() == 1, "There shoud be exactly one eventDescriptor");
+            QVERIFY2(eventDescriptors.count() == 1, "There should be exactly one eventDescriptor");
             QVERIFY2(eventDescriptors.first().toMap() == eventDescriptor, "Event descriptor doesn't match");
         } else if (eventDescriptorList.isEmpty()){
-            QVERIFY2(eventDescriptors.count() == eventDescriptorList.count(), QString("There shoud be exactly %1 eventDescriptor").arg(eventDescriptorList.count()).toLatin1().data());
+            QVERIFY2(eventDescriptors.count() == eventDescriptorList.count(), QString("There should be exactly %1 eventDescriptor").arg(eventDescriptorList.count()).toLatin1().data());
             foreach (const QVariant &eventDescriptorVariant, eventDescriptorList) {
                 bool found = false;
                 foreach (const QVariant &replyEventDescriptorVariant, eventDescriptors) {
@@ -1202,7 +1202,7 @@ void TestRules::loadStoreConfig()
     QVariantMap rule1 = response.toMap().value("params").toMap().value("rule").toMap();
 
     QVariantList eventDescriptors = rule1.value("eventDescriptors").toList();
-    QVERIFY2(eventDescriptors.count() == 2, "There shoud be exactly 2 eventDescriptors");
+    QVERIFY2(eventDescriptors.count() == 2, "There should be exactly 2 eventDescriptors");
     foreach (const QVariant &expectedEventDescriptorVariant, eventDescriptorList) {
         bool found = false;
         foreach (const QVariant &replyEventDescriptorVariant, eventDescriptors) {
@@ -1221,7 +1221,7 @@ void TestRules::loadStoreConfig()
     QVERIFY2(rule1.value("name").toString() == "TestRule", "Loaded wrong name for rule");
     QVariantMap replyStateEvaluator= rule1.value("stateEvaluator").toMap();
     QVariantList replyChildEvaluators = replyStateEvaluator.value("childEvaluators").toList();
-    QVERIFY2(replyChildEvaluators.count() == 2, "There shoud be exactly 2 childEvaluators");
+    QVERIFY2(replyChildEvaluators.count() == 2, "There should be exactly 2 childEvaluators");
     QVERIFY2(replyStateEvaluator.value("operator") == "StateOperatorAnd", "There should be the AND operator.");
 
     foreach (const QVariant &childEvaluator, replyChildEvaluators) {
@@ -1262,7 +1262,7 @@ void TestRules::loadStoreConfig()
     QVariantMap replyStateEvaluator2= rule2.value("stateEvaluator").toMap();
     QVariantList replyChildEvaluators2 = replyStateEvaluator.value("childEvaluators").toList();
     QVERIFY2(replyStateEvaluator2.value("operator") == "StateOperatorAnd", "There should be the AND operator.");
-    QVERIFY2(replyChildEvaluators2.count() == 2, "There shoud be exactly 2 childEvaluators");
+    QVERIFY2(replyChildEvaluators2.count() == 2, "There should be exactly 2 childEvaluators");
 
     foreach (const QVariant &childEvaluator, replyChildEvaluators2) {
         QVERIFY2(childEvaluator.toMap().contains("stateDescriptor"), "StateDescriptor missing in StateEvaluator");
@@ -1322,7 +1322,7 @@ void TestRules::loadStoreConfig()
     qDebug() << rule3;
 
     QVariantList eventDescriptors3 = rule3.value("eventDescriptors").toList();
-    QVERIFY2(eventDescriptors3.count() == 1, "There shoud be exactly 1 eventDescriptor");
+    QVERIFY2(eventDescriptors3.count() == 1, "There should be exactly 1 eventDescriptor");
     QVariantMap eventDescriptor = eventDescriptors3.first().toMap();
     QVERIFY2(eventDescriptor.value("eventTypeId").toString() == mockEvent2Id.toString(), "Loaded the wrong eventTypeId in rule 3");
     QVERIFY2(eventDescriptor.value("deviceId").toString() == m_mockDeviceId.toString(), "Loaded the wrong deviceId from eventDescriptor in rule 3");
@@ -1958,7 +1958,7 @@ void TestRules::testEventBasedAction()
     reply->deleteLater();
 
     verifyRuleExecuted(mockActionIdWithParams);
-    // TODO: check if this action was realy executed with the int state value 42
+    // TODO: check if this action was really executed with the int state value 42
 }
 
 void TestRules::removePolicyUpdate()

@@ -369,7 +369,7 @@ In order to get started with our new \b {"Network Info"} plugin we use the minim
 
     \section1 Writing the plugin
     
-    Now we have our basic for starting to implement the new defined plugin. If you install the current plugin, start \tt nymead and add the a \b {Info about Network} device whith \b {\tt nymea-cli} you can check the device states and should see something like this:
+    Now we have our basic for starting to implement the new defined plugin. If you install the current plugin, start \tt nymead and add the a \b {Info about Network} device with \b {\tt nymea-cli} you can check the device states and should see something like this:
 
     \code
         ========================================================
@@ -427,7 +427,7 @@ parameter from \l{The Plugin JSON file}.
                 // Call the GET method from the NetworkManager
                 QNetworkReply *reply = networkManagerGet(locationRequest);
 
-                // Hash the reply, because we dont get the result immediately
+                // Hash the reply, because we don't get the result immediately
                 m_asyncActionReplies.insert(reply, action.id());
 
                 // Hash the device for this action
@@ -477,7 +477,7 @@ parameter from \l{The Plugin JSON file}.
                 return;
             }
 
-            // The request was successfull, lets read the payload
+            // The request was successful, lets read the payload
             QByteArray data = reply->readAll();
 
             // Important -> delete the reply to prevent a memory leak!
@@ -496,7 +496,7 @@ parameter from \l{The Plugin JSON file}.
         void actionDataReady(const ActionId &actionId, const QByteArray &data);
     \endcode
 
-    First we have to check if the received data is a vaild JSON document. If not, the action execution \b "update" was not successfull and we have to report the error. Otherwise we read the data and set the state values of our device.
+    First we have to check if the received data is a valid JSON document. If not, the action execution \b "update" was not successful and we have to report the error. Otherwise we read the data and set the state values of our device.
 
     \code
         void DevicePluginNetworkInfo::actionDataReady(const ActionId &actionId, const QByteArray &data)
@@ -555,7 +555,7 @@ parameter from \l{The Plugin JSON file}.
 
             qCDebug(dcNetworkInfo) << "Action" << actionId << "execution finished successfully.";
 
-            // Emit the successfull action execution result to the device manager
+            // Emit the successful action execution result to the device manager
             emit actionExecutionFinished(actionId, DeviceManager::DeviceErrorNoError);
         }
     \endcode
@@ -580,7 +580,7 @@ parameter from \l{The Plugin JSON file}.
         \li Use nymea-cli to execute the \b update action: 
 
             \tt "Devices" \unicode{0x2192} \tt "Execute action" \unicode{0x2192} \tt {"Your device name"} \unicode{0x2192} \tt {update}
-        \li Use nymea-cli to check if the device states were updated sucessfully: 
+        \li Use nymea-cli to check if the device states were updated successfully: 
 
             \tt "Devices" \unicode{0x2192} \tt "List..." \unicode{0x2192} \tt {"List device states"} \unicode{0x2192} \tt {"Your device name"}.
 

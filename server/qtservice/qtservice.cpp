@@ -570,7 +570,7 @@ int QtServiceBasePrivate::run(bool asService, const QStringList &argList)
     \row \li -e \li -exec
          \li Execute the service as a standalone application (useful for debug purposes).
             This is a blocking call, the service will be executed like a normal application.
-            In this mode you will not be able to communicate with the service from the contoller.
+            In this mode you will not be able to communicate with the service from the controller.
     \row \li -t \li -terminate \li Stop the service.
     \row \li -p \li -pause \li Pause the service.
     \row \li -r \li -resume \li Resume a paused service.

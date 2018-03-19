@@ -77,7 +77,7 @@ void TestRestVendors::getVendors()
     // Get all vendors
     QVariant response = getAndWait(QNetworkRequest(QUrl("https://localhost:3333/api/v1/vendors")));
     QVariantList vendorList = response.toList();
-    QVERIFY2(vendorList.count() > 0, "Not enought vendors.");
+    QVERIFY2(vendorList.count() > 0, "Not enough vendors.");
 
     // Get each of thouse vendors individualy
     foreach (const QVariant &vendor, vendorList) {

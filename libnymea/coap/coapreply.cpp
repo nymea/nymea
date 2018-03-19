@@ -67,7 +67,7 @@
 */
 
 /*! \fn void CoapReply::error(const Error &code);
-    This signal is emitted when an error occured. The given \a code represents the \l{CoapReply::Error}.
+    This signal is emitted when an error occurred. The given \a code represents the \l{CoapReply::Error}.
 
     \sa error(), errorString()
 */
@@ -75,7 +75,7 @@
 /*! \enum CoapReply::Error
 
     \value NoError
-        No error occured. Everything ok.
+        No error occurred. Everything ok.
     \value HostNotFoundError
         The remote host name was not found (invalid hostname).
     \value TimeoutError

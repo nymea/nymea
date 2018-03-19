@@ -124,7 +124,7 @@ NymeaCore::~NymeaCore()
 {
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), false);
 
-    // Make sure DeviceManager is teared down at first so plugins don't access any ressources any more.
+    // Make sure DeviceManager is teared down at first so plugins don't access any resources any more.
     qCDebug(dcApplication) << "Shutting down \"Device Manager\"";
     delete m_deviceManager;
 

@@ -106,6 +106,8 @@ private:
     void storeSyncedNameCache(const QString &syncedName);
     QString readSyncedNameCache();
 
+    QString getCertificateFingerprint(const QString &certificateFilePath) const;
+
 private:
     std::shared_ptr<awsiotsdk::network::OpenSSLConnection> m_networkConnection;
     std::shared_ptr<awsiotsdk::MqttClient> m_client;

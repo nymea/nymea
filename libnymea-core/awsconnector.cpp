@@ -28,6 +28,8 @@
 #include <QtConcurrent/QtConcurrentRun>
 #include <QUuid>
 #include <QSettings>
+#include <QSslCertificate>
+#include <QFile>
 
 using namespace awsiotsdk;
 using namespace awsiotsdk::network;
@@ -96,7 +98,7 @@ void AWSConnector::doConnect()
     m_client->SetAutoReconnectEnabled(false);
     m_client->SetMaxReconnectBackoffTimeout(std::chrono::seconds(10));
 
-    qCDebug(dcAWS()) << "Connecting to AWS with ID:" << m_clientId << "endpoint:" << m_currentEndpoint << "Min reconnect timeout:" << m_client->GetMinReconnectBackoffTimeout().count() << "Max reconnect timeout:" << (quint32)m_client->GetMaxReconnectBackoffTimeout().count();
+    qCDebug(dcAWS()) << "Connecting to AWS with ID:" << m_clientId << "endpoint:" << m_currentEndpoint << "Certificate file:" << m_clientCertFile << "Fingerprint:" << getCertificateFingerprint(m_clientCertFile);
     m_connectingFuture = QtConcurrent::run([&]() {
         ResponseCode rc = m_client->Connect(std::chrono::milliseconds(10000), true, mqtt::Version::MQTT_3_1_1, std::chrono::seconds(30), Utf8String::Create(m_clientId.toStdString()), nullptr, nullptr, nullptr);
         if (rc == ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED) {
@@ -525,4 +527,23 @@ QString AWSConnector::readSyncedNameCache()
 {
     QSettings settings(NymeaSettings::storagePath() + "/cloudstatus.conf", QSettings::IniFormat);
     return settings.value("syncedName", QString()).toString();
+}
+
+QString AWSConnector::getCertificateFingerprint(const QString &certificateFile) const
+{
+    QFile certFile(certificateFile);
+    if (!certFile.open(QFile::ReadOnly)) {
+        qCWarning(dcAWS()) << "Error opening certificate file" << certificateFile;
+        return QString();
+    }
+    QSslCertificate crt = QSslCertificate(certFile.readAll());
+    QByteArray output;
+    QByteArray digest = crt.digest(QCryptographicHash::Sha256);
+    for (int i = 0; i < digest.length(); i++) {
+        if (output.length() > 0) {
+            output.append(":");
+        }
+        output.append(digest.mid(i,1).toHex().toUpper());
+    }
+    return output;
 }

@@ -149,11 +149,24 @@ bool BluetoothLowEnergyManagerImplementation::enabled() const
 
 void BluetoothLowEnergyManagerImplementation::setEnabled(bool enabled)
 {
-    if (enabled && !m_enabled) {
-        m_enabled = enable();
-        emit enabledChanged(m_enabled);
-    } else if (!enabled && m_enabled) {
-        m_enabled = disable();
+    qCDebug(dcBluetooth()) << "Set" << (enabled ? "enabled" : "disabled");
+    if (m_enabled && enabled) {
+        qCDebug(dcBluetooth()) << "Already enabled.";
+        return;
+    } else if (!m_enabled && !enabled) {
+        qCDebug(dcBluetooth()) << "Already disabled.";
+        return;
+    }
+
+    bool success = false;
+    if (enabled) {
+        success = enable();
+    } else {
+        success = disable();
+    }
+
+    if (success) {
+        m_enabled = enabled;
         emit enabledChanged(m_enabled);
     }
 }

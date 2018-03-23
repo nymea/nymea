@@ -26,6 +26,7 @@
 
 #include <QJsonDocument>
 #include <QUuid>
+#include <QTcpSocket>
 
 JanusConnector::JanusConnector(QObject *parent) : QObject(parent)
 {
@@ -39,6 +40,14 @@ JanusConnector::JanusConnector(QObject *parent) : QObject(parent)
     // So let's use a rather short heartbeat to send ping messages and clean things up in case they are not acked.
     m_pingTimer.setInterval(1000);
     connect(&m_pingTimer, &QTimer::timeout, this, &JanusConnector::heartbeat);
+
+    m_turnCredentialsServer = new QTcpServer(this);
+    connect(m_turnCredentialsServer, &QTcpServer::newConnection, this, &JanusConnector::newTurnServerConnection);
+    if (m_turnCredentialsServer->listen(QHostAddress("127.0.0.1"), 8901)) {
+        qCDebug(dcJanus()) << "Dynamic TURN credential server opened.";
+    } else {
+        qCWarning(dcJanus()) << "Error opening TURN credential server. Dynamic TURN credentials won't work.";
+    }
 }
 
 bool JanusConnector::connectToJanus()
@@ -60,6 +69,7 @@ bool JanusConnector::connectToJanus()
         return false;
     }
 
+    qCDebug(dcJanus()) << "Connected to Janus";
     m_socket->setSocketDescriptor(sock);
     m_pingTimer.start();
 
@@ -162,6 +172,27 @@ bool JanusConnector::sendKeepAliveMessage(const QString &sessionId)
     return true;
 }
 
+void JanusConnector::setTurnCredentials(const QVariantMap &turnCredentials)
+{
+    while (!m_pendingTurnCredentialRequests.isEmpty()) {
+        QJsonDocument jsonDoc = QJsonDocument::fromVariant(turnCredentials);
+        QByteArray content = jsonDoc.toJson(QJsonDocument::Compact);
+        qCDebug(dcJanus()) << "Providing TURN credentials to Janus.";
+        QTcpSocket* socket = m_pendingTurnCredentialRequests.takeFirst();
+        QByteArray reply =  QByteArray("HTTP/1.1 200 Ok\r\n");
+        reply.append("Content-Type: application/json\r\n");
+        reply.append("Server: nymea\r\n");
+        reply.append("Content-Length: " + QString::number(content.length()) + "\r\n");
+        reply.append("\r\n");
+        reply.append(content);
+        reply.append("\r");
+        qCDebug(dcJanusTraffic()) << qUtf8Printable(reply);
+        socket->write(reply);
+        socket->flush();
+        socket->deleteLater();
+    }
+}
+
 void JanusConnector::processQueue()
 {
     if (!m_socket->isOpen()) {
@@ -185,7 +216,7 @@ void JanusConnector::processQueue()
                 m_pendingRequests.insert(session->offer.value("id").toString(), session);
 
                 QJsonDocument jsonDoc = QJsonDocument::fromVariant(janusMessage);
-                qCDebug(dcJanus()) << "Sending offer message to session" << session << jsonDoc.toJson();
+                qCDebug(dcJanus()) << "Sending offer message to session" << session;
                 writeToJanus(jsonDoc.toJson());
                 session->offerSent = true;
                 return;
@@ -202,12 +233,30 @@ void JanusConnector::processQueue()
                 m_pendingRequests.insert(input.value("id").toString(), session);
 
                 QJsonDocument jsonDoc = QJsonDocument::fromVariant(janusMessage);
-                qCDebug(dcJanus()) << "sending trickle message" << jsonDoc.toJson();
-                m_socket->write(jsonDoc.toJson());
+                qCDebug(dcJanus()) << "Sending trickle message";
+                writeToJanus(jsonDoc.toJson());
                 return;
             }
         }
     }
+}
+
+void JanusConnector::newTurnServerConnection()
+{
+    qCDebug(dcJanus) << "New TURN credentials server connection";
+    QTcpSocket* client = m_turnCredentialsServer->nextPendingConnection();
+    m_pendingTurnCredentialRequests.append(client);
+    connect(client, &QTcpSocket::readyRead, this, [client, this](){
+        QByteArray data = client->readAll();
+        qCDebug(dcJanusTraffic()) << "Request:" << data;
+        if (data.startsWith("GET /turn?service=turn")) {
+            emit requestTURNCredentials();
+        } else {
+            m_pendingTurnCredentialRequests.removeAll(client);
+            client->deleteLater();
+        }
+    });
+
 }
 
 void JanusConnector::onDisconnected()
@@ -223,7 +272,7 @@ void JanusConnector::onError(QLocalSocket::LocalSocketError socketError)
 void JanusConnector::onReadyRead()
 {
     QByteArray data = m_socket->readAll();
-    qCDebug(dcJanusTraffic()) << "incoming data" << data;
+    qCDebug(dcJanusTraffic()) << "Incoming data" << data;
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
     if (error.error != QJsonParseError::NoError) {
@@ -327,7 +376,7 @@ void JanusConnector::onReadyRead()
                 session->janusSessionId--;
                 qCDebug(dcJanus()) << "corrected session id after rounding error";
             }
-            qCDebug(dcJanus()) << "Session" << session << "established";// << data << map;
+            qCDebug(dcJanus()) << "Session" << session << "established";
 
             createChannel(session);
             return;
@@ -353,7 +402,7 @@ void JanusConnector::onReadyRead()
                 session->janusChannelId--;
                 qCDebug(dcJanus()) << "Corrected channel id after rounding error";
             }
-            qCDebug(dcJanus()) << "Channel for session" << session << "established";// << data << map;
+            qCDebug(dcJanus()) << "Channel for session" << session << "established";
             session->connectedToJanus = true;
             processQueue();
             return;
@@ -363,7 +412,7 @@ void JanusConnector::onReadyRead()
     }
 
     if (map.value("janus").toString() == "event" && map.value("jsep").toMap().value("type").toString() == "answer") {
-        qCDebug(dcJanus()) << "Emitting handshake event" << data;
+        qCDebug(dcJanus()) << "Emitting handshake event";
         QVariantMap reply;
         reply.insert("id", transactionId);
         reply.insert("type", "answer");

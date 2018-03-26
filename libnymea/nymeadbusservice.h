@@ -42,7 +42,8 @@ protected:
     QDBusConnection connection() const;
 
 private:
-    static QDBusConnection s_connection;
+    static QDBusConnection::BusType s_busType;
+    QDBusConnection m_connection;
     bool m_isValid = false;
 
 };

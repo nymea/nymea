@@ -22,11 +22,13 @@
 #include "nymeadbusservice.h"
 #include "loggingcategories.h"
 
-QDBusConnection NymeaDBusService::s_connection = QDBusConnection::systemBus();
+QDBusConnection::BusType NymeaDBusService::s_busType = QDBusConnection::SystemBus;
 
-NymeaDBusService::NymeaDBusService(const QString &objectPath, QObject *parent) : QObject(parent)
+NymeaDBusService::NymeaDBusService(const QString &objectPath, QObject *parent):
+    QObject(parent),
+    m_connection(s_busType == QDBusConnection::SystemBus ? QDBusConnection::systemBus() : QDBusConnection::sessionBus())
 {
-    bool status = s_connection.registerService("io.guh.nymead");
+    bool status = m_connection.registerService("io.guh.nymead");
     if (!status) {
         qCWarning(dcApplication()) << "Failed to register D-Bus service.";
         return;
@@ -36,7 +38,7 @@ NymeaDBusService::NymeaDBusService(const QString &objectPath, QObject *parent) :
         finalObjectPath.append(part.at(0).toUpper());
         finalObjectPath.append(part.right(part.length() - 1));
     }
-    status = s_connection.registerObject(finalObjectPath, "io.guh.nymead", parent, QDBusConnection::ExportScriptableSlots);
+    status = m_connection.registerObject(finalObjectPath, "io.guh.nymead", parent, QDBusConnection::ExportScriptableSlots);
     if (!status) {
         qCWarning(dcApplication()) << "Failed to register D-Bus object:" << finalObjectPath;
         return;
@@ -51,15 +53,14 @@ bool NymeaDBusService::isValid()
 
 QDBusConnection NymeaDBusService::connection() const
 {
-    return s_connection;
+    return m_connection;
 }
 
+/*! This will configure all NymeaDBusService objects to be registered on the given \a busType.
+ * Note that this will only affect instances created after this method has been called.
+ */
 void NymeaDBusService::setBusType(QDBusConnection::BusType busType)
 {
-    if (busType == QDBusConnection::SessionBus) {
-        s_connection = QDBusConnection::sessionBus();
-    } else {
-        s_connection = QDBusConnection::systemBus();
-    }
+    s_busType = busType;
 }
 

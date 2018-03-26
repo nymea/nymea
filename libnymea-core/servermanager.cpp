@@ -48,9 +48,6 @@ ServerManager::ServerManager(NymeaConfiguration *configuration, QObject *parent)
     QObject(parent),
     m_sslConfiguration(QSslConfiguration())
 {
-    // TODO: check this
-
-
     if (!QSslSocket::supportsSsl()) {
         qCWarning(dcConnection) << "SSL is not supported/installed on this platform.";
     } else {

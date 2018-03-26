@@ -52,6 +52,8 @@
 #include <QNetworkInterface>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
+#include <QNetworkConfiguration>
+#include <QNetworkConfigurationManager>
 
 namespace nymeaserver {
 
@@ -64,6 +66,11 @@ UpnpDiscoveryImplementation::UpnpDiscoveryImplementation(QNetworkAccessManager *
     m_notificationTimer->setInterval(30000);
     m_notificationTimer->setSingleShot(false);
     connect(m_notificationTimer, &QTimer::timeout, this, &UpnpDiscoveryImplementation::notificationTimeout);
+
+    QNetworkConfigurationManager *configManager = new QNetworkConfigurationManager(this);
+    connect(configManager, &QNetworkConfigurationManager::configurationAdded, this, &UpnpDiscoveryImplementation::networkConfigurationChanged);
+    connect(configManager, &QNetworkConfigurationManager::configurationRemoved, this, &UpnpDiscoveryImplementation::networkConfigurationChanged);
+    connect(configManager, &QNetworkConfigurationManager::configurationChanged, this, &UpnpDiscoveryImplementation::networkConfigurationChanged);
 
     m_available = true;
 
@@ -168,7 +175,7 @@ void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int 
                                                                       "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
                                                                       "\r\n");
 
-                    //qCDebug(dcHardware) << QString("Sending response to %1:%2\n").arg(host.toString()).arg(port);
+                    qCDebug(dcUpnp()) << QString("Sending response to %1:%2").arg(host.toString()).arg(port);
                     m_socket->writeDatagram(rootdeviceResponseMessage, host, port);
                 }
             }
@@ -200,6 +207,7 @@ void UpnpDiscoveryImplementation::setEnabled(bool enabled)
     if (m_enabled == enabled)
         return;
 
+    qCDebug(dcUpnp()) << "Enabling UPnP server";
     m_enabled = enabled;
     emit enabledChanged(m_enabled);
 
@@ -230,6 +238,7 @@ void UpnpDiscoveryImplementation::readData()
     }
 
     if (data.contains("M-SEARCH") && !QNetworkInterface::allAddresses().contains(hostAddress)) {
+        qCDebug(dcUpnp()) << "UPnP discovery request received";
         respondToSearchRequest(hostAddress, port);
         return;
     }
@@ -455,6 +464,15 @@ void UpnpDiscoveryImplementation::discoverTimeout()
     delete discoveryRequest;
 }
 
+void UpnpDiscoveryImplementation::networkConfigurationChanged(const QNetworkConfiguration &config)
+{
+    Q_UNUSED(config)
+    if (m_enabled) {
+        disable();
+        enable();
+    }
+}
+
 bool UpnpDiscoveryImplementation::enable()
 {
     // Clean up
@@ -506,6 +524,9 @@ bool UpnpDiscoveryImplementation::enable()
 
 bool UpnpDiscoveryImplementation::disable()
 {
+    if (!m_socket) {
+        return false;
+    }
     sendByeByeMessage();
     m_socket->waitForBytesWritten();
     m_socket->close();

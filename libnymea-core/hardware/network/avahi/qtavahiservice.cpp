@@ -131,7 +131,7 @@ bool QtAvahiService::registerService(const QString &name, const quint16 &port, c
         d_ptr->serviceList = QtAvahiServicePrivate::createTxtList(txtRecords);
         d_ptr->error = avahi_entry_group_add_service_strlst(d_ptr->group,
                                                             AVAHI_IF_UNSPEC,
-                                                            AVAHI_PROTO_UNSPEC,
+                                                            AVAHI_PROTO_INET,
                                                             (AvahiPublishFlags) 0,
                                                             d_ptr->name.toLatin1().data(),
                                                             d_ptr->type.toLatin1().data(),
@@ -193,7 +193,7 @@ bool QtAvahiService::updateTxtRecord(const QHash<QString, QString> &txtRecords)
     d_ptr->serviceList = QtAvahiServicePrivate::createTxtList(txtRecords);
     d_ptr->error = avahi_entry_group_update_service_txt_strlst(d_ptr->group,
                                                         AVAHI_IF_UNSPEC,
-                                                        AVAHI_PROTO_UNSPEC,
+                                                        AVAHI_PROTO_INET,
                                                         (AvahiPublishFlags) 0,
                                                         d_ptr->name.toLatin1().data(),
                                                         d_ptr->type.toLatin1().data(),

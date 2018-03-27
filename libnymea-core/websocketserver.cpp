@@ -115,7 +115,7 @@ QHash<QString, QString> WebSocketServer::createTxtRecord()
     QHash<QString, QString> txt;
     txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
     txt.insert("serverVersion", NYMEA_VERSION_STRING);
-    txt.insert("manufacturer", "nymea GmbH");
+    txt.insert("manufacturer", "guh GmbH");
     txt.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", NymeaCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");

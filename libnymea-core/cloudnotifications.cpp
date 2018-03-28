@@ -53,7 +53,7 @@ QJsonObject CloudNotifications::metaData() const
     QVariantMap pluginMetaData;
     pluginMetaData.insert("id", "ccc6dbc8-e352-48a1-8e87-3c89a4669fc2");
     pluginMetaData.insert("name", "cloudNotifications");
-    pluginMetaData.insert("displayName", "Cloud Notifications");
+    pluginMetaData.insert("displayName", tr("Cloud Notifications"));
 
     QVariantList interfaces;
     interfaces.append("notifications");
@@ -65,13 +65,13 @@ QJsonObject CloudNotifications::metaData() const
     QVariantMap userIdParam;
     userIdParam.insert("id", cloudNotificationsDeviceClassUserParamId);
     userIdParam.insert("name", "userId");
-    userIdParam.insert("displayName", "User ID");
+    userIdParam.insert("displayName", tr("User ID"));
     userIdParam.insert("type", "QString");
 
     QVariantMap endpointIdParam;
     endpointIdParam.insert("id", cloudNotificationsDeviceClassEndpointParamId);
     endpointIdParam.insert("name", "endpoint");
-    endpointIdParam.insert("displayName", "Device");
+    endpointIdParam.insert("displayName", tr("Device"));
     endpointIdParam.insert("type", "QString");
 
     QVariantList cloudNotificationDeviceClassParamTypes;
@@ -81,13 +81,13 @@ QJsonObject CloudNotifications::metaData() const
     QVariantMap notifyActionParamTitle;
     notifyActionParamTitle.insert("id", notifyActionParamTitleId);
     notifyActionParamTitle.insert("name", "title");
-    notifyActionParamTitle.insert("displayName", "Title");
+    notifyActionParamTitle.insert("displayName", tr("Title"));
     notifyActionParamTitle.insert("type", "QString");
 
     QVariantMap notifyActionParamBody;
     notifyActionParamBody.insert("id", notifyActionParamBodyId);
     notifyActionParamBody.insert("name", "body");
-    notifyActionParamBody.insert("displayName", "Message text");
+    notifyActionParamBody.insert("displayName", tr("Message text"));
     notifyActionParamBody.insert("type", "QString");
 
     QVariantList notifyActionParamTypes;
@@ -97,7 +97,7 @@ QJsonObject CloudNotifications::metaData() const
     QVariantMap notifyAction;
     notifyAction.insert("id", notifyActionTypeId);
     notifyAction.insert("name", "notify");
-    notifyAction.insert("displayName", "Send notification");
+    notifyAction.insert("displayName", tr("Send notification"));
     notifyAction.insert("paramTypes", notifyActionParamTypes);
 
     QVariantList actionTypes;
@@ -106,9 +106,9 @@ QJsonObject CloudNotifications::metaData() const
     QVariantMap connectedState;
     connectedState.insert("id", connectedStateTypeId);
     connectedState.insert("name", "connected");
-    connectedState.insert("displayName", "connected");
+    connectedState.insert("displayName", tr("connected"));
     connectedState.insert("type", "bool");
-    connectedState.insert("displayNameEvent", "Connected changed");
+    connectedState.insert("displayNameEvent", tr("Connected changed"));
     connectedState.insert("defaultValue", false);
 
     QVariantList stateTypes;
@@ -118,7 +118,7 @@ QJsonObject CloudNotifications::metaData() const
     QVariantMap cloudNotificationsDeviceClass;
     cloudNotificationsDeviceClass.insert("id", cloudNotificationsDeviceClassId);
     cloudNotificationsDeviceClass.insert("name", "cloudNotifications");
-    cloudNotificationsDeviceClass.insert("displayName", "Cloud Notifications");
+    cloudNotificationsDeviceClass.insert("displayName", tr("Cloud Notifications"));
     cloudNotificationsDeviceClass.insert("createMethods", createMethods);
     cloudNotificationsDeviceClass.insert("paramTypes", cloudNotificationDeviceClassParamTypes);
     cloudNotificationsDeviceClass.insert("interfaces", interfaces);
@@ -131,7 +131,7 @@ QJsonObject CloudNotifications::metaData() const
     QVariantMap guhVendor;
     guhVendor.insert("id", "2062d64d-3232-433c-88bc-0d33c0ba2ba6"); // guh's id
     guhVendor.insert("name", "guh");
-    guhVendor.insert("displayName", "guh");
+    guhVendor.insert("displayName", "guh GmbH");
     guhVendor.insert("deviceClasses", deviceClasses);
 
     QVariantList vendors;

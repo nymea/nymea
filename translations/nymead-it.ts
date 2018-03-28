@@ -2,6 +2,50 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="it">
 <context>
+    <name>CloudNotifications</name>
+    <message>
+        <location filename="../libnymea-core/cloudnotifications.cpp" line="56"/>
+        <location filename="../libnymea-core/cloudnotifications.cpp" line="121"/>
+        <source>Cloud Notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../libnymea-core/cloudnotifications.cpp" line="68"/>
+        <source>User ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../libnymea-core/cloudnotifications.cpp" line="74"/>
+        <source>Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../libnymea-core/cloudnotifications.cpp" line="84"/>
+        <source>Title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../libnymea-core/cloudnotifications.cpp" line="90"/>
+        <source>Message text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../libnymea-core/cloudnotifications.cpp" line="100"/>
+        <source>Send notification</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../libnymea-core/cloudnotifications.cpp" line="109"/>
+        <source>connected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../libnymea-core/cloudnotifications.cpp" line="111"/>
+        <source>Connected changed</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DevicePluginMock</name>
     <message>
         <location filename="../plugins/mock/devicepluginmock.cpp" line="219"/>

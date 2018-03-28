@@ -180,6 +180,9 @@ public:
 
     bool operator==(const DeviceClass &device) const;
 
+    static QStringList jsonProperties();
+    static QStringList mandatoryJsonProperties();
+
 private:
     DeviceClassId m_id;
     VendorId m_vendorId;

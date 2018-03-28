@@ -140,30 +140,20 @@
                             "id": "uuid",
                             "name": "deviceClassName",
                             "displayName": "The name of the device class (translatable)",
+                            "o:createMethods": [ ],
+                            "o:setupMethod": "SetupMethod",
                             "o:deviceIcon": "Icon",
                             "o:interfaces": [ "interfacename" ],
-                            "o:basicTags": [
-                                "BasicTag"
-                            ],
-                            "createMethods": [
-                                "CreateMethod"
-                            ],
-                            "o:interfaces" [ "connectable" ],
-                            "o:setupMethod": "SetupMethod",
+                            "o:basicTags": [ ],
                             "o:pairingInfo": "Information how to pair the device. (translatable)",
                             "o:criticalStateTypeId": "uuid",
                             "o:primaryStateTypeId": "uuid",
                             "o:primaryActionTypeId": "uuid",
-                            "o:discoveryParamTypes": [
-                            ],
-                            "paramTypes": [
-                            ],
-                            "o:stateTypes": [
-                            ],
-                            "o:actionTypes": [
-                            ],
-                            "o:eventTypes": [
-                            ]                            
+                            "o:discoveryParamTypes": [ ],
+                            "o:paramTypes": [ ],
+                            "o:stateTypes": [ ],
+                            "o:actionTypes": [ ],
+                            "o:eventTypes": [ ]                            
                         }
                     ]
                 }

@@ -56,6 +56,10 @@ public:
     void setGraphRelevant(const bool &graphRelevant);
 
     bool isValid() const;
+
+    static QStringList jsonProperties();
+    static QStringList mandatoryJsonProperties();
+
 private:
     EventTypeId m_id;
     QString m_name;

@@ -196,6 +196,20 @@ void StateType::setCached(bool cached)
     m_cached = cached;
 }
 
+/*! Returns a list of all valid JSON properties a DeviceClass JSON definition can have. */
+QStringList StateType::jsonProperties()
+{
+    return QStringList() << "id" << "name" << "displayName" << "displayNameEvent" << "type" << "defaultValue"
+                         << "cached" << "ruleRelevant" << "eventRuleRelevant" << "graphRelevant" << "unit"
+                         << "minValue" << "maxValue" << "possibleValues" << "writable" << "displayNameAction";
+}
+
+/*! Returns a list of mandatory JSON properties a DeviceClass JSON definition must have. */
+QStringList StateType::mandatoryJsonProperties()
+{
+    return QStringList() << "id" << "name" << "displayName" << "displayNameEvent" << "type" << "defaultValue";
+}
+
 StateTypes::StateTypes(const QList<StateType> &other)
 {
     foreach (const StateType &st, other) {

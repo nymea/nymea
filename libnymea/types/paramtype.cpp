@@ -211,7 +211,20 @@ bool ParamType::isValid() const
     return !m_id.isNull() && !m_name.isEmpty() && m_type != QVariant::Invalid;
 }
 
-/*! Writes the name, type defaultValue, min value, max value and readOnly of the given \a paramType to \a dbg. */
+/*! Returns a list of all valid JSON properties a ParamType JSON definition can have. */
+QStringList ParamType::jsonProperties()
+{
+    return QStringList() << "id" << "name" << "displayName" << "type" << "defaultValue" << "inputType"
+                         << "unit" << "minValue" << "maxValue" << "allowedValues" << "readOnly";
+}
+
+/*! Returns a list of mandatory JSON properties a ParamType JSON definition must have. */
+QStringList ParamType::mandatoryJsonProperties()
+{
+    return QStringList() << "id" << "name" << "displayName" << "type" << "defaultValue";
+}
+
+/*! Writes the name, type, defaultValue, min value, max value and readOnly of the given \a paramType to \a dbg. */
 QDebug operator<<(QDebug dbg, const ParamType &paramType)
 {
     dbg.nospace() << "ParamType(Id" << paramType.id()

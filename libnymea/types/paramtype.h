@@ -76,6 +76,9 @@ public:
 
     bool isValid() const;
 
+    static QStringList jsonProperties();
+    static QStringList mandatoryJsonProperties();
+
 private:
     ParamTypeId m_id;
     QString m_name;

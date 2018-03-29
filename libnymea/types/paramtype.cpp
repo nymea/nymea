@@ -221,7 +221,7 @@ QStringList ParamType::jsonProperties()
 /*! Returns a list of mandatory JSON properties a ParamType JSON definition must have. */
 QStringList ParamType::mandatoryJsonProperties()
 {
-    return QStringList() << "id" << "name" << "displayName" << "type" << "defaultValue";
+    return QStringList() << "id" << "name" << "displayName" << "type";
 }
 
 /*! Writes the name, type, defaultValue, min value, max value and readOnly of the given \a paramType to \a dbg. */

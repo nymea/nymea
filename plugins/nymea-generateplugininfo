@@ -210,7 +210,7 @@ def extractStateTypes(stateTypes, deviceClassName):
                 if not variableName in variableNames:
                     variableNames.append(variableName)
                     printInfo('Define ParamTypeId %s for autocreated ActionType %s = %s' % (variableName, variableName, stateType['id']))
-                    addTranslationString(stateType['displayName'], 'The name of the autocreated ParamType of the writable StateType (%s) of DeviceClass %s' % (stateType['$
+                    addTranslationString(stateType['displayName'], 'The name of the autocreated ParamType of the writable StateType (%s) of DeviceClass %s' % (stateType['id'], deviceClassName))
                     if args.filetype is 'i':
                         writeToFile('ParamTypeId %s = ParamTypeId(\"%s\");' % (variableName, stateType['id']))
                     createExternDefinition('ParamTypeId', variableName)

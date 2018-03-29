@@ -539,7 +539,7 @@ void DevicePlugin::loadMetaData()
 
     // Note: The DevicePlugin has no type class, so we define the json properties here
     QStringList pluginMandatoryJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors";
-    QStringList pluginJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors" << "paramtypes";
+    QStringList pluginJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors" << "paramTypes";
 
     QPair<QStringList, QStringList> verificationResult = verifyFields(pluginJsonProperties, pluginMandatoryJsonProperties, m_metaData);
 
@@ -561,8 +561,8 @@ void DevicePlugin::loadMetaData()
         QJsonObject vendorObject = vendorJson.toObject();
 
         // Note: The Vendor has no type class, so we define the json properties here
-        QStringList vendorMandatoryJsonProperties = QStringList() << "id" << "name" << "displayName";
-        QStringList vendorJsonProperties = QStringList() << "id" << "name" << "displayName";
+        QStringList vendorMandatoryJsonProperties = QStringList() << "id" << "name" << "displayName" << "deviceClasses";
+        QStringList vendorJsonProperties = QStringList() << "id" << "name" << "displayName" << "deviceClasses";
 
         QPair<QStringList, QStringList> verificationResult = verifyFields(vendorJsonProperties, vendorMandatoryJsonProperties, vendorObject);
 

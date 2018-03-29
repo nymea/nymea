@@ -251,7 +251,7 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
         return DeviceManager::DeviceErrorNoError;
     } else if (device->deviceClassId() == mockPushButtonDeviceClassId) {
         if (action.actionTypeId() == mockPushButtonColorActionTypeId) {
-            QString colorString = action.param(mockPushButtonColorStateParamTypeId).value().toString();
+            QString colorString = action.param(mockPushButtonColorActionParamTypeId).value().toString();
             QColor color(colorString);
             if (!color.isValid()) {
                 qCWarning(dcMockDevice) << "Invalid color parameter";
@@ -260,16 +260,16 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
             device->setStateValue(mockPushButtonColorStateTypeId, colorString);
             return DeviceManager::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockPushButtonPercentageActionTypeId) {
-            device->setStateValue(mockPushButtonPercentageStateTypeId, action.param(mockPushButtonPercentageStateParamTypeId).value().toInt());
+            device->setStateValue(mockPushButtonPercentageStateTypeId, action.param(mockPushButtonPercentageActionParamTypeId).value().toInt());
             return DeviceManager::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockPushButtonAllowedValuesActionTypeId) {
-            device->setStateValue(mockPushButtonAllowedValuesStateTypeId, action.param(mockPushButtonAllowedValuesStateParamTypeId).value().toString());
+            device->setStateValue(mockPushButtonAllowedValuesStateTypeId, action.param(mockPushButtonAllowedValuesActionParamTypeId).value().toString());
             return DeviceManager::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockPushButtonDoubleActionTypeId) {
-            device->setStateValue(mockPushButtonDoubleStateTypeId, action.param(mockPushButtonDoubleStateParamTypeId).value().toDouble());
+            device->setStateValue(mockPushButtonDoubleStateTypeId, action.param(mockPushButtonDoubleActionParamTypeId).value().toDouble());
             return DeviceManager::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockPushButtonBoolActionTypeId) {
-            device->setStateValue(mockPushButtonBoolStateTypeId, action.param(mockPushButtonBoolStateParamTypeId).value().toBool());
+            device->setStateValue(mockPushButtonBoolStateTypeId, action.param(mockPushButtonBoolActionParamTypeId).value().toBool());
             return DeviceManager::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockPushButtonTimeoutActionTypeId) {
             return DeviceManager::DeviceErrorAsync;
@@ -277,7 +277,7 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
         return DeviceManager::DeviceErrorActionTypeNotFound;
     } else if (device->deviceClassId() == mockDisplayPinDeviceClassId) {
         if (action.actionTypeId() == mockDisplayPinColorActionTypeId) {
-            QString colorString = action.param(mockDisplayPinColorStateParamTypeId).value().toString();
+            QString colorString = action.param(mockDisplayPinColorActionParamTypeId).value().toString();
             QColor color(colorString);
             if (!color.isValid()) {
                 qCWarning(dcMockDevice) << "Invalid color parameter";
@@ -286,30 +286,30 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
             device->setStateValue(mockDisplayPinColorStateTypeId, colorString);
             return DeviceManager::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockDisplayPinPercentageActionTypeId) {
-            device->setStateValue(mockDisplayPinPercentageStateTypeId, action.param(mockDisplayPinPercentageStateParamTypeId).value().toInt());
+            device->setStateValue(mockDisplayPinPercentageStateTypeId, action.param(mockDisplayPinPercentageActionParamTypeId).value().toInt());
             return DeviceManager::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockDisplayPinAllowedValuesActionTypeId) {
-            device->setStateValue(mockDisplayPinAllowedValuesStateTypeId, action.param(mockDisplayPinAllowedValuesStateParamTypeId).value().toString());
+            device->setStateValue(mockDisplayPinAllowedValuesStateTypeId, action.param(mockDisplayPinAllowedValuesActionParamTypeId).value().toString());
             return DeviceManager::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockDisplayPinDoubleActionTypeId) {
-            device->setStateValue(mockDisplayPinDoubleStateTypeId, action.param(mockDisplayPinDoubleStateParamTypeId).value().toDouble());
+            device->setStateValue(mockDisplayPinDoubleStateTypeId, action.param(mockDisplayPinDoubleActionParamTypeId).value().toDouble());
             return DeviceManager::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockDisplayPinBoolActionTypeId) {
-            device->setStateValue(mockDisplayPinBoolStateTypeId, action.param(mockDisplayPinBoolStateParamTypeId).value().toBool());
+            device->setStateValue(mockDisplayPinBoolStateTypeId, action.param(mockDisplayPinBoolActionParamTypeId).value().toBool());
             return DeviceManager::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockDisplayPinTimeoutActionTypeId) {
             return DeviceManager::DeviceErrorAsync;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
     } else if (device->deviceClassId() == mockParentDeviceClassId) {
-        if (action.actionTypeId() == mockParentBoolValueActionTypeId) {
-            device->setStateValue(mockParentBoolValueStateTypeId, action.param(mockParentBoolValueStateParamTypeId).value().toBool());
+        if (action.actionTypeId() == mockParentBoolValueParentActionTypeId) {
+            device->setStateValue(mockParentBoolValueParentStateTypeId, action.param(mockParentBoolValueParentActionParamTypeId).value().toBool());
             return DeviceManager::DeviceErrorNoError;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
     } else if (device->deviceClassId() == mockChildDeviceClassId) {
-        if (action.actionTypeId() == mockChildBoolValueActionTypeId) {
-            device->setStateValue(mockChildBoolValueStateTypeId, action.param(mockChildBoolValueStateParamTypeId).value().toBool());
+        if (action.actionTypeId() == mockChildBoolValueParentActionTypeId) {
+            device->setStateValue(mockChildBoolValueParentStateTypeId, action.param(mockChildBoolValueParentActionParamTypeId).value().toBool());
             return DeviceManager::DeviceErrorNoError;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;

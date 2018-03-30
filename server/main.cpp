@@ -29,6 +29,7 @@
 #include <QTextStream>
 #include <QDateTime>
 #include <QtPlugin>
+#include <QObject>
 #include <QtDebug>
 #include <QString>
 #include <QFile>
@@ -159,7 +160,7 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
-    QString applicationDescription = QCoreApplication::translate("main", "\nnymea is an open source IoT (Internet of Things) server, \n"
+    QString applicationDescription = QObject::tr("\nnymea is an open source IoT (Internet of Things) server, \n"
                                              "which allows to control a lot of different devices from many different \n"
                                              "manufacturers. With the powerful rule engine you are able to connect any \n"
                                              "device available in the system and create individual scenes and behaviors \n"
@@ -171,10 +172,10 @@ int main(int argc, char *argv[])
 
     parser.setApplicationDescription(applicationDescription);
 
-    QCommandLineOption foregroundOption(QStringList() << "n" << "no-daemon", QCoreApplication::translate("main", "Run nymead in the foreground, not as daemon."));
+    QCommandLineOption foregroundOption(QStringList() << "n" << "no-daemon", QObject::tr("Run nymead in the foreground, not as daemon."));
     parser.addOption(foregroundOption);
 
-    QString debugDescription = QCoreApplication::translate("main", "Debug categories to enable. Prefix with \"No\" to disable. Warnings from all categories will be printed unless explicitly muted with \"NoWarnings\". \n\nCategories are:");
+    QString debugDescription = QObject::tr("Debug categories to enable. Prefix with \"No\" to disable. Warnings from all categories will be printed unless explicitly muted with \"NoWarnings\". \n\nCategories are:");
 
     // create sorted loggingFiler list
     QStringList sortedFilterList = QStringList(s_loggingFilters.keys());
@@ -191,13 +192,13 @@ int main(int argc, char *argv[])
         debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
 
 
-    QCommandLineOption allOption(QStringList() << "p" << "print-all", QCoreApplication::translate("main", "Enables all debug categories. Single debug categories can be disabled again with -d parameter."));
+    QCommandLineOption allOption(QStringList() << "p" << "print-all", QObject::tr("Enables all debug categories. Single debug categories can be disabled again with -d parameter."));
     parser.addOption(allOption);
 
-    QCommandLineOption logOption({"l", "log"}, QCoreApplication::translate("main", "Specify a log file to write to, if this option is not specified, logs will be printed to the standard output."), "logfile", "/var/log/nymead.log");
+    QCommandLineOption logOption({"l", "log"}, QObject::tr("Specify a log file to write to, if this option is not specified, logs will be printed to the standard output."), "logfile", "/var/log/nymead.log");
     parser.addOption(logOption);
 
-    QCommandLineOption dbusOption(QStringList() << "session", QCoreApplication::translate("main", "If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus."));
+    QCommandLineOption dbusOption(QStringList() << "session", QObject::tr("If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus."));
     parser.addOption(dbusOption);
 
     QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory");
@@ -237,7 +238,7 @@ int main(int argc, char *argv[])
         if (s_loggingFilters.contains(debugArea)) {
             s_loggingFilters[debugArea] = enable;
         } else {
-            qCWarning(dcApplication) << QCoreApplication::translate("main", "No such debug category:") << debugArea;
+            qCWarning(dcApplication) << QObject::tr("No such debug category:") << debugArea;
         }
     }
     QLoggingCategory::installFilter(loggingCategoryFilter);

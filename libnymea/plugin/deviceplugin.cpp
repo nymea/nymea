@@ -555,7 +555,7 @@ void DevicePlugin::loadMetaData()
         return;
     }
 
-
+    // Load vendors
     foreach (const QJsonValue &vendorJson, m_metaData.value("vendors").toArray()) {
         bool broken = false;
         QJsonObject vendorObject = vendorJson.toObject();
@@ -581,6 +581,8 @@ void DevicePlugin::loadMetaData()
         }
 
         VendorId vendorId = vendorObject.value("id").toString();
+
+        // Load deviceclasses of this vendor
         foreach (const QJsonValue &deviceClassJson, vendorJson.toObject().value("deviceClasses").toArray()) {
             QJsonObject deviceClassObject = deviceClassJson.toObject();
             QPair<QStringList, QStringList> verificationResult = verifyFields(DeviceClass::jsonProperties(), DeviceClass::mandatoryJsonProperties(), deviceClassObject);
@@ -714,6 +716,7 @@ void DevicePlugin::loadMetaData()
                     break;
                 }
 
+                // If this is a writable stateType, there must be also the displayNameAction property
                 if (st.contains("writable") && st.value("writable").toBool()) {
                     writableState = true;
                     if (!st.contains("displayNameAction")) {
@@ -810,7 +813,6 @@ void DevicePlugin::loadMetaData()
             index = 0;
             foreach (const QJsonValue &actionTypesJson, deviceClassObject.value("actionTypes").toArray()) {
                 QJsonObject at = actionTypesJson.toObject();
-
                 QPair<QStringList, QStringList> verificationResult = verifyFields(ActionType::jsonProperties(), ActionType::mandatoryJsonProperties(), at);
 
                 // Check mandatory fields
@@ -865,7 +867,6 @@ void DevicePlugin::loadMetaData()
                     break;
                 }
 
-
                 EventType eventType(et.value("id").toString());
                 eventType.setName(et.value("name").toString());
                 eventType.setDisplayName(translateValue(m_metaData.value("name").toString(), et.value("displayName").toString()));
@@ -888,7 +889,6 @@ void DevicePlugin::loadMetaData()
             deviceClass.setEventTypes(eventTypes);
 
             // Note: keep this after the actionType / stateType / eventType parsing
-
             if (deviceClassObject.contains("criticalStateTypeId")) {
                 StateTypeId criticalStateTypeId = StateTypeId(deviceClassObject.value("criticalStateTypeId").toString());
                 if (!deviceClass.hasStateType(criticalStateTypeId)) {

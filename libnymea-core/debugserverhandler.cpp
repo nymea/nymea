@@ -58,7 +58,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("href", "/debug/styles.css");
 
     //: The header title of the debug server interface
-    writer.writeTextElement("title", QCoreApplication::translate("main", "Debug nymea"));
+    writer.writeTextElement("title", tr("Debug nymea"));
 
     writer.writeEndElement(); // head
 
@@ -75,7 +75,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("class", "nymea-main-logo");
 
     //: The main title of the debug server interface
-    writer.writeCharacters(QCoreApplication::translate("main", "nymea debug interface"));
+    writer.writeCharacters(tr("nymea debug interface"));
     writer.writeEndElement(); // h1
     writer.writeEndElement(); // div header
 
@@ -84,8 +84,8 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("class", "body");
 
     //: The welcome message of the debug interface
-    writer.writeTextElement("p", QCoreApplication::translate("main", "Welcome to the debug interface."));
-    writer.writeTextElement("p", QCoreApplication::translate("main", "This debug interface was designed to provide an easy possibility to get helpful information about the running nymea server."));
+    writer.writeTextElement("p", tr("Welcome to the debug interface."));
+    writer.writeTextElement("p", tr("This debug interface was designed to provide an easy possibility to get helpful information about the running nymea server."));
 
     // Warning
     writer.writeStartElement("div");
@@ -101,7 +101,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("div");
     writer.writeAttribute("class", "warning-message");
     //: The warning message of the debug interface
-    writer.writeCharacters(QCoreApplication::translate("main", "Be aware that this debug interface is a security risk and could offer access to sensible data."));
+    writer.writeCharacters(tr("Be aware that this debug interface is a security risk and could offer access to sensible data."));
     writer.writeEndElement(); // div warning message
     writer.writeEndElement(); // div warning
 
@@ -110,32 +110,32 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     // System information section
     //: The server information section of the debug interface
-    writer.writeTextElement("h2", QCoreApplication::translate("main", "Server information"));
+    writer.writeTextElement("h2", tr("Server information"));
     writer.writeEmptyElement("hr");
 
     writer.writeStartElement("table");
 
     writer.writeStartElement("tr");
     //: The user name in the server infromation section of the debug interface
-    writer.writeTextElement("th", QCoreApplication::translate("main", "User"));
+    writer.writeTextElement("th", tr("User"));
     writer.writeTextElement("td", qgetenv("USER"));
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The Qt build version description in the server infromation section of the debug interface
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Compiled with Qt version"));
+    writer.writeTextElement("th", tr("Compiled with Qt version"));
     writer.writeTextElement("td", QT_VERSION_STR);
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The Qt runtime version description in the server infromation section of the debug interface
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Qt runtime version"));
+    writer.writeTextElement("th", tr("Qt runtime version"));
     writer.writeTextElement("td", qVersion());
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The command description in the server infromation section of the debug interface
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Command"));
+    writer.writeTextElement("th", tr("Command"));
     writer.writeTextElement("td", QCoreApplication::arguments().join(' '));
     writer.writeEndElement(); // tr
 
@@ -144,37 +144,37 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
         writer.writeStartElement("tr");
         //: The snap name description in the server infromation section of the debug interface
-        writer.writeTextElement("th", QCoreApplication::translate("main", "Snap name"));
+        writer.writeTextElement("th", tr("Snap name"));
         writer.writeTextElement("td", qgetenv("SNAP_NAME"));
         writer.writeEndElement(); // tr
 
         writer.writeStartElement("tr");
         //: The snap version description in the server infromation section of the debug interface
-        writer.writeTextElement("th", QCoreApplication::translate("main", "Snap version"));
+        writer.writeTextElement("th", tr("Snap version"));
         writer.writeTextElement("td", qgetenv("SNAP_VERSION"));
         writer.writeEndElement(); // tr
 
         writer.writeStartElement("tr");
         //: The snap directory description in the server infromation section of the debug interface
-        writer.writeTextElement("th", QCoreApplication::translate("main", "Snap directory"));
+        writer.writeTextElement("th", tr("Snap directory"));
         writer.writeTextElement("td", qgetenv("SNAP"));
         writer.writeEndElement(); // tr
 
         writer.writeStartElement("tr");
         //: The snap application data description in the server infromation section of the debug interface
-        writer.writeTextElement("th", QCoreApplication::translate("main", "Snap application data"));
+        writer.writeTextElement("th", tr("Snap application data"));
         writer.writeTextElement("td", qgetenv("SNAP_DATA"));
         writer.writeEndElement(); // tr
 
         writer.writeStartElement("tr");
         //: The snap user data description in the server infromation section of the debug interface
-        writer.writeTextElement("th", QCoreApplication::translate("main", "Snap user data"));
+        writer.writeTextElement("th", tr("Snap user data"));
         writer.writeTextElement("td", qgetenv("SNAP_USER_DATA"));
         writer.writeEndElement(); // tr
 
         writer.writeStartElement("tr");
         //: The snap common data description in the server infromation section of the debug interface
-        writer.writeTextElement("th", QCoreApplication::translate("main", "Snap common data"));
+        writer.writeTextElement("th", tr("Snap common data"));
         writer.writeTextElement("td", qgetenv("SNAP_COMMON"));
         writer.writeEndElement(); // tr
     }
@@ -182,55 +182,55 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeStartElement("tr");
     //: The server name description in the server infromation section of the debug interface
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Server name"));
+    writer.writeTextElement("th", tr("Server name"));
     writer.writeTextElement("td", NymeaCore::instance()->configuration()->serverName());
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The server version description in the server infromation section of the debug interface
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Server version"));
+    writer.writeTextElement("th", tr("Server version"));
     writer.writeTextElement("td", NYMEA_VERSION_STRING);
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The API version description in the server infromation section of the debug interface
-    writer.writeTextElement("th", QCoreApplication::translate("main", "JSON-RPC version"));
+    writer.writeTextElement("th", tr("JSON-RPC version"));
     writer.writeTextElement("td", JSON_PROTOCOL_VERSION);
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The language description in the server infromation section of the debug interface
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Language"));
+    writer.writeTextElement("th", tr("Language"));
     writer.writeTextElement("td", NymeaCore::instance()->configuration()->locale().name() + " (" + NymeaCore::instance()->configuration()->locale().nativeCountryName() + " - " + NymeaCore::instance()->configuration()->locale().nativeLanguageName() + ")");
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The timezone description in the server infromation section of the debug interface
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Timezone"));
+    writer.writeTextElement("th", tr("Timezone"));
     writer.writeTextElement("td", QString::fromUtf8(NymeaCore::instance()->configuration()->timeZone()));
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The server id description in the server infromation section of the debug interface
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Server UUID"));
+    writer.writeTextElement("th", tr("Server UUID"));
     writer.writeTextElement("td", NymeaCore::instance()->configuration()->serverUuid().toString());
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The settings path description in the server infromation section of the debug interface
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Settings path"));
+    writer.writeTextElement("th", tr("Settings path"));
     writer.writeTextElement("td", NymeaSettings::settingsPath());
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The translation path description in the server infromation section of the debug interface
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Translations path"));
+    writer.writeTextElement("th", tr("Translations path"));
     writer.writeTextElement("td", NymeaSettings(NymeaSettings::SettingsRoleGlobal).translationsPath());
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");
     //: The log database path description in the server infromation section of the debug interface
-    writer.writeTextElement("th", QCoreApplication::translate("main", "Log database"));
+    writer.writeTextElement("th", tr("Log database"));
     writer.writeTextElement("td", NymeaSettings(NymeaSettings::SettingsRoleGlobal).logPath());
     writer.writeEndElement(); // tr
 
@@ -240,7 +240,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
         if (i == 0) {
             //: The plugins path description in the server infromation section of the debug interface
-            writer.writeTextElement("th", QCoreApplication::translate("main", "Plugin paths"));
+            writer.writeTextElement("th", tr("Plugin paths"));
         } else {
             writer.writeTextElement("th", "");
         }
@@ -253,12 +253,12 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     // Downloads section
     writer.writeEmptyElement("hr");
     //: The downloads section of the debug interface
-    writer.writeTextElement("h2", QCoreApplication::translate("main", "Downloads"));
+    writer.writeTextElement("h2", tr("Downloads"));
 
     // Logs download section
     writer.writeEmptyElement("hr");
     //: The download logs section of the debug interface
-    writer.writeTextElement("h3", QCoreApplication::translate("main", "Logs"));
+    writer.writeTextElement("h3", tr("Logs"));
     writer.writeEmptyElement("hr");
 
     // Download row
@@ -268,7 +268,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-name-column");
     //: The log databse download description of the debug interface
-    writer.writeTextElement("p", QCoreApplication::translate("main", "Log database"));
+    writer.writeTextElement("p", tr("Log database"));
     writer.writeEndElement(); // div download-name-column
 
     writer.writeStartElement("div");
@@ -286,7 +286,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
     //: The download button description of the debug interface
-    writer.writeCharacters(QCoreApplication::translate("main", "Download"));
+    writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
     writer.writeEndElement(); // div download-button-column
@@ -301,7 +301,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-name-column");
     //: The syslog download description of the debug interface
-    writer.writeTextElement("p", QCoreApplication::translate("main", "System logs"));
+    writer.writeTextElement("p", tr("System logs"));
     writer.writeEndElement(); // div download-name-column
 
     writer.writeStartElement("div");
@@ -318,7 +318,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
-    writer.writeCharacters(QCoreApplication::translate("main", "Download"));
+    writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
     writer.writeEndElement(); // div download-button-column
@@ -329,7 +329,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     // Settings download section
     writer.writeEmptyElement("hr");
     //: The settings download section title of the debug interface
-    writer.writeTextElement("h3", QCoreApplication::translate("main", "Settings"));
+    writer.writeTextElement("h3", tr("Settings"));
     writer.writeEmptyElement("hr");
 
     // Download row
@@ -339,7 +339,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-name-column");
     //: The nymead settings download description of the debug interface
-    writer.writeTextElement("p", QCoreApplication::translate("main", "nymead settings"));
+    writer.writeTextElement("p", tr("nymead settings"));
     writer.writeEndElement(); // div download-name-column
 
     writer.writeStartElement("div");
@@ -356,7 +356,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
-    writer.writeCharacters(QCoreApplication::translate("main", "Download"));
+    writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
     writer.writeEndElement(); // div download-button-column
@@ -371,7 +371,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-name-column");
     //: The device settings download description of the debug interface
-    writer.writeTextElement("p", QCoreApplication::translate("main", "Device settings"));
+    writer.writeTextElement("p", tr("Device settings"));
     writer.writeEndElement(); // div download-name-column
 
     writer.writeStartElement("div");
@@ -388,7 +388,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
-    writer.writeCharacters(QCoreApplication::translate("main", "Download"));
+    writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
     writer.writeEndElement(); // div download-button-column
@@ -403,7 +403,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-name-column");
     //: The device states settings download description of the debug interface
-    writer.writeTextElement("p", QCoreApplication::translate("main", "Device states settings"));
+    writer.writeTextElement("p", tr("Device states settings"));
     writer.writeEndElement(); // div download-name-column
 
     writer.writeStartElement("div");
@@ -420,7 +420,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
-    writer.writeCharacters(QCoreApplication::translate("main", "Download"));
+    writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
     writer.writeEndElement(); // div download-button-column
@@ -435,7 +435,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-name-column");
     //: The rules settings download description of the debug interface
-    writer.writeTextElement("p", QCoreApplication::translate("main", "Rules settings"));
+    writer.writeTextElement("p", tr("Rules settings"));
     writer.writeEndElement(); // div download-name-column
 
     writer.writeStartElement("div");
@@ -452,7 +452,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
-    writer.writeCharacters(QCoreApplication::translate("main", "Download"));
+    writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
     writer.writeEndElement(); // div download-button-column
@@ -467,7 +467,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-name-column");
     //: The plugins settings download description of the debug interface
-    writer.writeTextElement("p", QCoreApplication::translate("main", "Plugins settings"));
+    writer.writeTextElement("p", tr("Plugins settings"));
     writer.writeEndElement(); // div download-name-column
 
     writer.writeStartElement("div");
@@ -484,7 +484,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "submit");
-    writer.writeCharacters(QCoreApplication::translate("main", "Download"));
+    writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
     writer.writeEndElement(); // div download-button-column
@@ -499,7 +499,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("class", "footer");
     writer.writeTextElement("p", QString("Copyright %1 2018 guh GmbH.").arg(QChar(0xA9)));
     //: The footer license note of the debug interface
-    writer.writeTextElement("p", QCoreApplication::translate("main", "Released under the GNU GENERAL PUBLIC LICENSE Version 2."));
+    writer.writeTextElement("p", tr("Released under the GNU GENERAL PUBLIC LICENSE Version 2."));
     writer.writeEndElement(); // div footer
 
     writer.writeEndElement(); // div container
@@ -530,7 +530,7 @@ QByteArray DebugServerHandler::createErrorXmlDocument(HttpReply::HttpStatusCode 
     writer.writeAttribute("rel", "stylesheet");
     writer.writeAttribute("href", "/debug/styles.css");
 
-    writer.writeTextElement("title", QCoreApplication::translate("main", "Debug nymea"));
+    writer.writeTextElement("title", tr("Debug nymea"));
 
     writer.writeEndElement(); // head
 
@@ -543,7 +543,7 @@ QByteArray DebugServerHandler::createErrorXmlDocument(HttpReply::HttpStatusCode 
     writer.writeAttribute("class", "header");
     writer.writeTextElement("p", " ");
     //: The HTTP error message of the debug interface. The %1 represents the error code ie.e 404
-    writer.writeTextElement("h1", QCoreApplication::translate("main", "Error  %1").arg(static_cast<int>(statusCode)));
+    writer.writeTextElement("h1", tr("Error  %1").arg(static_cast<int>(statusCode)));
     writer.writeEndElement(); // div header
 
     // Body
@@ -573,7 +573,7 @@ QByteArray DebugServerHandler::createErrorXmlDocument(HttpReply::HttpStatusCode 
     writer.writeStartElement("div");
     writer.writeAttribute("class", "footer");
     writer.writeTextElement("p", QString("Copyright %1 2018 guh GmbH.").arg(QChar(0xA9)));
-    writer.writeTextElement("p", QCoreApplication::translate("main", "Released under the GNU GENERAL PUBLIC LICENSE Version 2."));
+    writer.writeTextElement("p", tr("Released under the GNU GENERAL PUBLIC LICENSE Version 2."));
     writer.writeEndElement(); // div footer
 
     writer.writeEndElement(); // div container
@@ -650,7 +650,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
             HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             //: The HTTP error message of the debug interface. The %1 represents the file name.
-            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not find file \"%1\".").arg(logDatabaseFile.fileName())));
+            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(logDatabaseFile.fileName())));
             return reply;
         }
 
@@ -659,7 +659,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
             HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             //: The HTTP error message of the debug interface. The %1 represents the file name.
-            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not open file \"%1\".").arg(logDatabaseFile.fileName())));
+            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(logDatabaseFile.fileName())));
             return reply;
         }
 
@@ -682,7 +682,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
             qCWarning(dcWebServer()) << "Could not read log database file for debug download" << syslogFileName << "file does not exist.";
             HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not find file \"%1\".").arg(syslogFileName)));
+            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(syslogFileName)));
             return reply;
         }
 
@@ -690,7 +690,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
             qCWarning(dcWebServer()) << "Could not read syslog file for debug download" << syslogFileName;
             HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not open file \"%1\".").arg(syslogFileName)));
+            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(syslogFileName)));
             return reply;
         }
 
@@ -713,7 +713,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
                 qCWarning(dcWebServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not find file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -721,7 +721,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
                 qCWarning(dcWebServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not open file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -742,7 +742,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
                 qCWarning(dcWebServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not find file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -750,7 +750,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
                 qCWarning(dcWebServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not open file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -771,7 +771,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
                 qCWarning(dcWebServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not find file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -779,7 +779,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
                 qCWarning(dcWebServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not open file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -800,7 +800,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
                 qCWarning(dcWebServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not find file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -808,7 +808,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
                 qCWarning(dcWebServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not open file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -829,7 +829,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
                 qCWarning(dcWebServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not find file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 
@@ -837,7 +837,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
                 qCWarning(dcWebServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, QCoreApplication::translate("main", "Could not open file \"%1\".").arg(settingsFileName)));
+                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
             }
 

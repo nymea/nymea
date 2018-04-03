@@ -1370,6 +1370,7 @@ void DeviceManager::onAutoDevicesAppeared(const DeviceClassId &deviceClassId, co
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
+        qCWarning(dcDeviceManager()) << "Auto device appeared for an unknown DeviceClass. Ignoring...";
         return;
     }
 

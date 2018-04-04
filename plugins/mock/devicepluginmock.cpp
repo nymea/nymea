@@ -302,14 +302,14 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
     } else if (device->deviceClassId() == mockParentDeviceClassId) {
-        if (action.actionTypeId() == mockParentBoolValueParentActionTypeId) {
-            device->setStateValue(mockParentBoolValueParentStateTypeId, action.param(mockParentBoolValueParentActionParamTypeId).value().toBool());
+        if (action.actionTypeId() == mockParentBoolValueActionTypeId) {
+            device->setStateValue(mockParentBoolValueStateTypeId, action.param(mockParentBoolValueActionParamTypeId).value().toBool());
             return DeviceManager::DeviceErrorNoError;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
     } else if (device->deviceClassId() == mockChildDeviceClassId) {
-        if (action.actionTypeId() == mockChildBoolValueParentActionTypeId) {
-            device->setStateValue(mockChildBoolValueParentStateTypeId, action.param(mockChildBoolValueParentActionParamTypeId).value().toBool());
+        if (action.actionTypeId() == mockChildBoolValueActionTypeId) {
+            device->setStateValue(mockChildBoolValueStateTypeId, action.param(mockChildBoolValueActionParamTypeId).value().toBool());
             return DeviceManager::DeviceErrorNoError;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;

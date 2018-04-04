@@ -73,8 +73,8 @@ public:
     bool cached() const;
     void setCached(bool cached);
 
-    static QStringList jsonProperties();
-    static QStringList mandatoryJsonProperties();
+    static QStringList typeProperties();
+    static QStringList mandatoryTypeProperties();
 
 private:
     StateTypeId m_id;

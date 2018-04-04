@@ -212,14 +212,14 @@ bool ParamType::isValid() const
 }
 
 /*! Returns a list of all valid JSON properties a ParamType JSON definition can have. */
-QStringList ParamType::jsonProperties()
+QStringList ParamType::typeProperties()
 {
     return QStringList() << "id" << "name" << "displayName" << "type" << "defaultValue" << "inputType"
                          << "unit" << "minValue" << "maxValue" << "allowedValues" << "readOnly";
 }
 
 /*! Returns a list of mandatory JSON properties a ParamType JSON definition must have. */
-QStringList ParamType::mandatoryJsonProperties()
+QStringList ParamType::mandatoryTypeProperties()
 {
     return QStringList() << "id" << "name" << "displayName" << "type";
 }

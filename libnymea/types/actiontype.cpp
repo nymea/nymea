@@ -104,14 +104,14 @@ void ActionType::setParamTypes(const ParamTypes &paramTypes)
     m_paramTypes = paramTypes;
 }
 
-/*! Returns a list of all valid JSON properties a ActionType JSON definition can have. */
-QStringList ActionType::jsonProperties()
+/*! Returns a list of all valid properties a ActionType definition can have. */
+QStringList ActionType::typeProperties()
 {
     return QStringList() << "id" << "name" << "displayName" << "paramTypes";
 }
 
-/*! Returns a list of mandatory JSON properties a ActionType JSON definition must have. */
-QStringList ActionType::mandatoryJsonProperties()
+/*! Returns a list of mandatory properties a ActionType definition must have. */
+QStringList ActionType::mandatoryTypeProperties()
 {
     return QStringList() << "id" << "name" << "displayName";
 }

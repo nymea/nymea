@@ -130,7 +130,6 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
         return DeviceManager::DeviceSetupStatusSuccess;
     } else if (device->deviceClassId() == mockChildDeviceClassId) {
         qCDebug(dcMockDevice) << "Setup Child mock device" << device->params();
-        device->setParentId(DeviceId(device->params().paramValue(mockChildParentUuidParamTypeId).toString()));
         return DeviceManager::DeviceSetupStatusSuccess;
     } else if (device->deviceClassId() == mockInputTypeDeviceClassId) {
         qCDebug(dcMockDevice) << "Setup InputType mock device" << device->params();
@@ -303,14 +302,14 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
     } else if (device->deviceClassId() == mockParentDeviceClassId) {
-        if (action.actionTypeId() == mockParentBoolValueParentActionTypeId) {
-            device->setStateValue(mockParentBoolValueParentStateTypeId, action.param(mockParentBoolValueParentStateParamTypeId).value().toBool());
+        if (action.actionTypeId() == mockParentBoolValueActionTypeId) {
+            device->setStateValue(mockParentBoolValueStateTypeId, action.param(mockParentBoolValueStateParamTypeId).value().toBool());
             return DeviceManager::DeviceErrorNoError;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
     } else if (device->deviceClassId() == mockChildDeviceClassId) {
-        if (action.actionTypeId() == mockChildBoolValueParentActionTypeId) {
-            device->setStateValue(mockChildBoolValueParentStateTypeId, action.param(mockChildBoolValueParentStateParamTypeId).value().toBool());
+        if (action.actionTypeId() == mockChildBoolValueActionTypeId) {
+            device->setStateValue(mockChildBoolValueStateTypeId, action.param(mockChildBoolValueStateParamTypeId).value().toBool());
             return DeviceManager::DeviceErrorNoError;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
@@ -458,11 +457,7 @@ void DevicePluginMock::onDisplayPinPairingFinished()
 void DevicePluginMock::onChildDeviceDiscovered(const DeviceId &parentId)
 {
     qCDebug(dcMockDevice) << "Child device discovered for parent" << parentId.toString();
-    DeviceDescriptor mockDescriptor(mockChildDeviceClassId, "Child Mock Device (Auto created)");
-    ParamList params;
-    params.append(Param(mockChildParentUuidParamTypeId, parentId));
-    mockDescriptor.setParams(params);
-
+    DeviceDescriptor mockDescriptor(mockChildDeviceClassId, "Child Mock Device (Auto created)", "Child Mock Device (Auto created)", parentId);
     emit autoDevicesAppeared(mockChildDeviceClassId, QList<DeviceDescriptor>() << mockDescriptor);
 }
 

@@ -240,3 +240,20 @@ void Device::setSetupComplete(const bool &complete)
 {
     m_setupComplete = complete;
 }
+
+Devices::Devices(const QList<Device*> &other)
+{
+    foreach (Device* device, other) {
+        this->append(device);
+    }
+}
+
+Device *Devices::findById(const DeviceId &id)
+{
+    foreach (Device *device, *this) {
+        if (device->id() == id) {
+            return device;
+        }
+    }
+    return nullptr;
+}

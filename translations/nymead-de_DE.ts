@@ -48,7 +48,7 @@
 <context>
     <name>DevicePluginMock</name>
     <message>
-        <location filename="../plugins/mock/devicepluginmock.cpp" line="219"/>
+        <location filename="../plugins/mock/devicepluginmock.cpp" line="218"/>
         <source>Display pin!! The pin is 243681</source>
         <translation>PIN anzeigen!! Der PIN ist 243681</translation>
     </message>

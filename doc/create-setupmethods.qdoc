@@ -3,35 +3,38 @@
     \title CreateMethods and SetupMethods
     \brief This page describes how the setup and creation of a device is working in a plugin.
 
-    This page describes how the setup and creation of a device is working in a plugin. Since the device manager handles all the plugins and devices there are certain steps during the device setup which have to be considered.
+    This page describes how the setup and creation of a device is working in a plugin. Since the device manager
+    handles all the plugins and devices there are certain steps during the device setup which have to be considered.
 
-    The \l{DeviceClass::CreateMethods}{CreateMethod} describes how the device will be created (by the user, by discovery or automatically).
-    The \l{DeviceClass::SetupMethod}{SetupMethod} describes how the device will be set up. A \l{Device} can have multiple \l{DeviceClass::CreateMethods}{CreateMethods}, but only one \l{DeviceClass::SetupMethod}{SetupMethod}.
+    The \l{DeviceClass::CreateMethods}{CreateMethod} describes how the device will be created
+    (by the user, by discovery or automatically).
+    The \l{DeviceClass::SetupMethod}{SetupMethod} describes how the device will be set up. A \l{Device} can have
+    multiple \l{DeviceClass::CreateMethods}{CreateMethods}, but only one \l{DeviceClass::SetupMethod}{SetupMethod}.
 
     \list
         \li \l{DeviceClass::CreateMethods}{CreateMethods}
         \list
-            \li \e user \unicode{0x2192} \l{DeviceClass::CreateMethodUser}
-            \li \e discovery \unicode{0x2192} \l{DeviceClass::CreateMethodDiscovery}
-            \li \e auto \unicode{0x2192} \l{DeviceClass::CreateMethodAuto}
+            \li \tt User \unicode{0x2192} \l{DeviceClass::CreateMethodUser}
+            \li \tt Discovery \unicode{0x2192} \l{DeviceClass::CreateMethodDiscovery}
+            \li \tt Auto \unicode{0x2192} \l{DeviceClass::CreateMethodAuto}
         \endlist
         \li \l{DeviceClass::SetupMethod}{SetupMethods}
         \list
-            \li \e justAdd  \unicode{0x2192} \l{DeviceClass::SetupMethodJustAdd}
-            \li \e displayPin \unicode{0x2192} \l{DeviceClass::SetupMethodDisplayPin}
-            \li \e enterPin \unicode{0x2192} \l{DeviceClass::SetupMethodEnterPin}
-            \li \e pushButton \unicode{0x2192} \l{DeviceClass::SetupMethodPushButton}
+            \li \tt JustAdd  \unicode{0x2192} \l{DeviceClass::SetupMethodJustAdd}
+            \li \tt DisplayPin \unicode{0x2192} \l{DeviceClass::SetupMethodDisplayPin}
+            \li \tt EnterPin \unicode{0x2192} \l{DeviceClass::SetupMethodEnterPin}
+            \li \tt PushButton \unicode{0x2192} \l{DeviceClass::SetupMethodPushButton}
         \endlist
     \endlist
 
 
-    \section1 CreateMethod \b "user" - SetupMethod \b "justAdd - synchronous"
+    \section1 CreateMethod \b "User" - SetupMethod \b "JustAdd - synchronous"
 
     This is the simplest setup what a device can have.
 
     \list
-        \li CreateMethod \b "user": the user has to fill out the \l{Param}{Params} of the device by hand
-        \li SetupMethod \b "justAdd": there is nothing special to do during the setup with the device.
+        \li CreateMethod \b "User": the user has to fill out the \l{Param}{Params} of the device by hand
+        \li SetupMethod \b "JustAdd": there is nothing special to do during the setup with the device.
     \endlist
 
     Once the is adding the device the \l{DeviceManager} is calling following methods in the device plugin:
@@ -47,7 +50,7 @@
         \endlist
     \endlist
 
-    \section1 CreateMethod \b "user" - SetupMethod \b "justAdd" - asynchronous
+    \section1 CreateMethod \b "User" - SetupMethod \b "JustAdd" - asynchronous
 
     \image setup-async-resized.png
 
@@ -80,7 +83,7 @@
     \endlist
 
 
-    \section1 CreateMethod \b "discovery" - SetupMethod \b "justAdd"
+    \section1 CreateMethod \b "Discovery" - SetupMethod \b "JustAdd"
 
     \image setup-discovery-resized.png
 
@@ -99,7 +102,7 @@
         \endlist
     \endlist
 
-    \section1 CreateMethod \b "discovery" - SetupMethod \b "pushButton"
+    \section1 CreateMethod \b "Discovery" - SetupMethod \b "PushButton"
 
     \image setup-discovery-pairing-resized.png
 
@@ -124,7 +127,7 @@
         \endlist
     \endlist
 
-    \section1 CreateMethod \b "discovery" - SetupMethod \b "enterPin"
+    \section1 CreateMethod \b "Discovery" - SetupMethod \b "EnterPin"
 
     \image setup-discovery-pairing-resized.png
 
@@ -150,7 +153,7 @@
     \endlist
 
 
-    \section1 CreateMethod \b "discovery" - SetupMethod \b "displayPin"
+    \section1 CreateMethod \b "Discovery" - SetupMethod \b "DisplayPin"
 
     \image setup-discovery-display-pin-resized.png
 

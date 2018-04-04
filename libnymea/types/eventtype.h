@@ -57,8 +57,8 @@ public:
 
     bool isValid() const;
 
-    static QStringList jsonProperties();
-    static QStringList mandatoryJsonProperties();
+    static QStringList typeProperties();
+    static QStringList mandatoryTypeProperties();
 
 private:
     EventTypeId m_id;

@@ -49,8 +49,8 @@ public:
     ParamTypes paramTypes() const;
     void setParamTypes(const ParamTypes &paramTypes);
 
-    static QStringList jsonProperties();
-    static QStringList mandatoryJsonProperties();
+    static QStringList typeProperties();
+    static QStringList mandatoryTypeProperties();
 
 private:
     ActionTypeId m_id;

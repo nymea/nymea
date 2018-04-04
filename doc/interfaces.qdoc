@@ -7,8 +7,8 @@
     When creating a DeviceClass, the interfaces field can be used to specify a list of interfaces this DeviceClass implements.
 
     When implementing an interface, the DeviceClass must follow the interface specification for the according interface. This means
-    the DeviceClass needs to have at least all the \l{StateType}{states}, \l{ActionType}{actions} and \l{EventType}{events} the given interface requires. A DeviceClass may
-    add custom states, actions or events, or even implement multiple interfaces.
+    the DeviceClass needs to have at least all the \l{StateType}{states}, \l{ActionType}{actions} and \l{EventType}{events} the
+    given interface requires. A DeviceClass may add custom states, actions or events, or even implement multiple interfaces.
 
     The main purpose of interfaces is to provide for a better user experience. Using interfaces, a plugin developer can suggest the
     ui to be used for this DeviceClass. For example, having a plugin that can control a dimmable light would likely have a state
@@ -26,12 +26,13 @@
     In general it is a good idea to follow as many interfaces as precicely as possible in order to provide for the best user experience.
 
     A interface can extend another interface. For example, the \l {light} interface only requires one state called powered of type bool.
-    A dimmablelight extends this type and adds a brightness property to it. This means, if a DeviceClass implements \l {dimmablelight}, it
-    also needs to cater for the \l {light} interface's states.
+    A dimmablelight extends this type and adds a brightness property to it. This means, if a DeviceClass implements \l {dimmablelight},
+    it also needs to cater for the \l {light} interface's states.
 
 
-    \section1 Currently available interfaces
+    \section1 Available interfaces
+    This following list shows you the current available interfaces.
+
     \include interfacelist.qdoc
-
 
 */

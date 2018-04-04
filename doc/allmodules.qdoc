@@ -5,7 +5,6 @@
     \table 80%
     \row \li \l{nymeaserver} \li The nymea server daemon implementation    
     \row \li \l{libnymea} \li Common data types and plugin interfaces
-    \row \li \l{Plugins} \li The device plugins of the nymea server
     \endtable
 
     \generatelist legalese-command

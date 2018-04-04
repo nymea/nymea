@@ -307,7 +307,7 @@ QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &a
     foreach (const QJsonValue &paramTypesJson, array) {
         QJsonObject pt = paramTypesJson.toObject();
 
-        QPair<QStringList, QStringList> verificationResult = verifyFields(ParamType::jsonProperties(), ParamType::mandatoryJsonProperties(), pt);
+        QPair<QStringList, QStringList> verificationResult = verifyFields(ParamType::typeProperties(), ParamType::mandatoryTypeProperties(), pt);
 
         // Check mandatory fields
         if (!verificationResult.first.isEmpty()) {
@@ -585,7 +585,7 @@ void DevicePlugin::loadMetaData()
         // Load deviceclasses of this vendor
         foreach (const QJsonValue &deviceClassJson, vendorJson.toObject().value("deviceClasses").toArray()) {
             QJsonObject deviceClassObject = deviceClassJson.toObject();
-            QPair<QStringList, QStringList> verificationResult = verifyFields(DeviceClass::jsonProperties(), DeviceClass::mandatoryJsonProperties(), deviceClassObject);
+            QPair<QStringList, QStringList> verificationResult = verifyFields(DeviceClass::typeProperties(), DeviceClass::mandatoryTypeProperties(), deviceClassObject);
 
             // Check mandatory fields
             if (!verificationResult.first.isEmpty()) {
@@ -700,7 +700,7 @@ void DevicePlugin::loadMetaData()
                 QJsonObject st = stateTypesJson.toObject();
                 bool writableState = false;
 
-                QPair<QStringList, QStringList> verificationResult = verifyFields(StateType::jsonProperties(), StateType::mandatoryJsonProperties(), st);
+                QPair<QStringList, QStringList> verificationResult = verifyFields(StateType::typeProperties(), StateType::mandatoryTypeProperties(), st);
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
@@ -813,7 +813,7 @@ void DevicePlugin::loadMetaData()
             index = 0;
             foreach (const QJsonValue &actionTypesJson, deviceClassObject.value("actionTypes").toArray()) {
                 QJsonObject at = actionTypesJson.toObject();
-                QPair<QStringList, QStringList> verificationResult = verifyFields(ActionType::jsonProperties(), ActionType::mandatoryJsonProperties(), at);
+                QPair<QStringList, QStringList> verificationResult = verifyFields(ActionType::typeProperties(), ActionType::mandatoryTypeProperties(), at);
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
@@ -851,7 +851,7 @@ void DevicePlugin::loadMetaData()
             foreach (const QJsonValue &eventTypesJson, deviceClassObject.value("eventTypes").toArray()) {
                 QJsonObject et = eventTypesJson.toObject();
 
-                QPair<QStringList, QStringList> verificationResult = verifyFields(EventType::jsonProperties(), EventType::mandatoryJsonProperties(), et);
+                QPair<QStringList, QStringList> verificationResult = verifyFields(EventType::typeProperties(), EventType::mandatoryTypeProperties(), et);
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {

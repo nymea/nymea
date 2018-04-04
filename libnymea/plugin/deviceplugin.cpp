@@ -612,11 +612,11 @@ void DevicePlugin::loadMetaData()
                 createMethods |= DeviceClass::CreateMethodUser;
             } else {
                 foreach (const QJsonValue &createMethodValue, deviceClassObject.value("createMethods").toArray()) {
-                    if (createMethodValue.toString().toUpper() == "Discovery") {
+                    if (createMethodValue.toString().toLower() == "discovery") {
                         createMethods |= DeviceClass::CreateMethodDiscovery;
-                    } else if (createMethodValue.toString().toUpper() == "Auto") {
+                    } else if (createMethodValue.toString().toLower() == "auto") {
                         createMethods |= DeviceClass::CreateMethodAuto;
-                    } else if (createMethodValue.toString().toUpper() == "User") {
+                    } else if (createMethodValue.toString().toLower() == "user") {
                         createMethods |= DeviceClass::CreateMethodUser;
                     } else {
                         qCWarning(dcDeviceManager()) << "Unknown createMehtod" << createMethodValue.toString() << "in deviceClass "
@@ -658,13 +658,13 @@ void DevicePlugin::loadMetaData()
             DeviceClass::SetupMethod setupMethod = DeviceClass::SetupMethodJustAdd;
             if (deviceClassObject.contains("setupMethod")) {
                 QString setupMethodString = deviceClassObject.value("setupMethod").toString();
-                if (setupMethodString.toUpper() == "PushButton") {
+                if (setupMethodString.toLower() == "pushbutton") {
                     setupMethod = DeviceClass::SetupMethodPushButton;
-                } else if (setupMethodString.toUpper() == "DisplayPin") {
+                } else if (setupMethodString.toLower() == "displaypin") {
                     setupMethod = DeviceClass::SetupMethodDisplayPin;
-                } else if (setupMethodString.toUpper() == "EnterPin") {
+                } else if (setupMethodString.toLower() == "enterpin") {
                     setupMethod = DeviceClass::SetupMethodEnterPin;
-                } else if (setupMethodString.toUpper() == "JustAdd") {
+                } else if (setupMethodString.toLower() == "justadd") {
                     setupMethod = DeviceClass::SetupMethodJustAdd;
                 } else {
                     qCWarning(dcDeviceManager()) << "Unknown setupMehtod" << setupMethod << "in deviceClass"

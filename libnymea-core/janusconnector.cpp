@@ -38,7 +38,7 @@ JanusConnector::JanusConnector(QObject *parent) : QObject(parent)
 
     // When Janus crashes it will leave the socket in a very broken state which causes QLocalSocket to spin the CPU
     // So let's use a rather short heartbeat to send ping messages and clean things up in case they are not acked.
-    m_pingTimer.setInterval(1000);
+    m_pingTimer.setInterval(5000);
     connect(&m_pingTimer, &QTimer::timeout, this, &JanusConnector::heartbeat);
 
     m_turnCredentialsServer = new QTcpServer(this);
@@ -177,7 +177,7 @@ void JanusConnector::setTurnCredentials(const QVariantMap &turnCredentials)
     while (!m_pendingTurnCredentialRequests.isEmpty()) {
         QJsonDocument jsonDoc = QJsonDocument::fromVariant(turnCredentials);
         QByteArray content = jsonDoc.toJson(QJsonDocument::Compact);
-        qCDebug(dcJanus()) << "Providing TURN credentials to Janus.";
+        qCDebug(dcJanus()) << "Providing TURN credentials to Janus." << qUtf8Printable(jsonDoc.toJson(QJsonDocument::Indented));
         QTcpSocket* socket = m_pendingTurnCredentialRequests.takeFirst();
         QByteArray reply =  QByteArray("HTTP/1.1 200 Ok\r\n");
         reply.append("Content-Type: application/json\r\n");

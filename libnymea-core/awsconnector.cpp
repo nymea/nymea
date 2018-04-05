@@ -217,6 +217,8 @@ void AWSConnector::onPairingsRetrieved(const QVariantMap &pairings)
 
     m_setupInProgress = false;
     emit connected();
+
+    requestTURNCredentials();
 }
 
 void AWSConnector::disconnectAWS()
@@ -284,6 +286,10 @@ void AWSConnector::requestTURNCredentials()
         emit turnCredentialsReceived(QVariantMap());
         return;
     }
+    if (!m_cachedTURNCredentials.first.isEmpty() && QDateTime::currentDateTime().secsTo(m_cachedTURNCredentials.second) > 0) {
+        emit turnCredentialsReceived(m_cachedTURNCredentials.first);
+        return;
+    }
     qCDebug(dcAWS()) << "Requesting TURN credentials";
     QVariantMap params;
     params.insert("id", QUuid::createUuid());
@@ -342,6 +348,19 @@ void AWSConnector::onDisconnected()
         qCDebug(dcAWS()) << "Reconnecting to AWS...";
         doConnect();
     }
+}
+
+void AWSConnector::onTurnCredentialsReceived(const QVariantMap &turnCredentials)
+{
+    qCDebug(dcAWS()) << "Dynamic TURN credentials received";
+
+    m_cachedTURNCredentials.first = turnCredentials;
+    m_cachedTURNCredentials.second = QDateTime::currentDateTime().addSecs(turnCredentials.value("ttl").toInt());
+    emit turnCredentialsReceived(turnCredentials);
+
+    // refresh the cache
+    QTimer::singleShot((turnCredentials.value("ttl").toInt() - 10) * 1000, this, &AWSConnector::requestTURNCredentials);
+    qCDebug(dcAWS()) << "Refreshing TURN credentials in" << (turnCredentials.value("ttl").toInt() - 10) << "seconds.";
 }
 
 void AWSConnector::setName()
@@ -513,8 +532,7 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
             qCWarning(dcAWS()) << "Error retrieving TURN credentials:" << turnCreds.value("result").toMap().value("code").toInt() << turnCreds.value("result").toMap().value("message").toString();
             return ResponseCode::SUCCESS;
         }
-        qCDebug(dcAWS()) << "Dynamic TURN credentials received";
-        emit connector->turnCredentialsReceived(turnCreds.value("turnCredentials").toMap());
+        connector->staticMetaObject.invokeMethod(connector, "onTurnCredentialsReceived", Qt::QueuedConnection, Q_ARG(QVariantMap, turnCreds.value("turnCredentials").toMap()));
     } else {
         qCWarning(dcAWS()) << "Unhandled subscription received!" << topic << QString::fromStdString(payload);
     }

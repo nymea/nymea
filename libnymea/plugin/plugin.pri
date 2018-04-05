@@ -42,18 +42,17 @@ OTHER_FILES+=deviceplugin"$$TARGET".json
 # Create plugininfo file
 plugininfo.target = $$OUT_PWD/plugininfo.h
 plugininfo_dummy.target = plugininfo.h
-plugininfo.depends = FORCE
-plugininfo.commands = nymea-generateplugininfo --filetype i --jsonfile $${_PRO_FILE_PWD_}/deviceplugin"$$TARGET".json --output plugininfo.h --builddir $$OUT_PWD
-plugininfo_dummy.commands = $$plugininfo.commands
-QMAKE_EXTRA_TARGETS += plugininfo plugininfo_dummy
-
-# Create extern-plugininfo file
 extern_plugininfo.target = $$OUT_PWD/extern-plugininfo.h
 extern_plugininfo_dummy.target = extern-plugininfo.h
-extern_plugininfo.depends = FORCE
-extern_plugininfo.commands = nymea-generateplugininfo --filetype e --jsonfile $${_PRO_FILE_PWD_}/deviceplugin"$$TARGET".json --output extern-plugininfo.h --builddir $$OUT_PWD
-extern_plugininfo_dummy.commands = $$extern_plugininfo.commands
-QMAKE_EXTRA_TARGETS += extern_plugininfo extern_plugininfo_dummy
+plugininfo.depends = FORCE
+plugininfo.commands = nymea-generateplugininfo --filetype i --jsonfile $${_PRO_FILE_PWD_}/deviceplugin"$$TARGET".json --output plugininfo.h --builddir $$OUT_PWD; \
+                      nymea-generateplugininfo --filetype e --jsonfile $${_PRO_FILE_PWD_}/deviceplugin"$$TARGET".json --output extern-plugininfo.h --builddir $$OUT_PWD
+plugininfo_dummy.commands = $$plugininfo.commands
+QMAKE_EXTRA_TARGETS += plugininfo plugininfo_dummy extern_plugininfo extern_plugininfo_dummy
+
+plugininfo_clean.commands = rm -f $$OUT_PWD/plugininfo.h $$OUT_PWD/extern-plugininfo.h
+clean.depends = plugininfo_clean
+QMAKE_EXTRA_TARGETS += clean plugininfo_clean
 
 # Install translation files
 TRANSLATIONS *= $$files($${_PRO_FILE_PWD_}/translations/*ts, true)

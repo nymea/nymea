@@ -58,7 +58,7 @@
     <message>
         <location filename="../tests/tools/simplepushbuttonhandler/main.cpp" line="34"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished">Falls angegeben, werden alle D-Bus Schnittstellen auf dem Sitzungs-Bus anstatt auf dem System-Bus zur verfügung gestellt.</translation>
+        <translation>Falls angegeben, werden alle D-Bus Schnittstellen auf dem Sitzungs-Bus anstatt auf dem System-Bus zur Verfügung gestellt.</translation>
     </message>
 </context>
 <context>
@@ -85,7 +85,8 @@ for your environment.
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
-        <translation type="unfinished">Zu aktivierende Debug-Kategorien. Kategorien mit dem Präfix &quot;No&quot; werden deaktiviert. Warnungen werden von allen Kategorien angezeigt außer sie wurden explizit mit dem Prefix &quot;NoWarnings&quot; deaktiviert.
+        <translation>Zu aktivierende Debug-Kategorien. Kategorien mit dem Präfix &quot;No&quot; werden deaktiviert. Warnungen werden von allen Kategorien angezeigt außer sie wurden explizit mit dem Prefix &quot;NoWarnings&quot; deaktiviert.
+
 Es gibt folgende Kategorien:</translation>
     </message>
     <message>
@@ -101,12 +102,12 @@ Es gibt folgende Kategorien:</translation>
     <message>
         <location filename="../server/main.cpp" line="201"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished">Falls angegeben, werden alle D-Bus Schnittstellen auf dem Sitzungs-Bus anstatt auf dem System-Bus zur verfügung gestellt.</translation>
+        <translation>Falls angegeben, werden alle D-Bus Schnittstellen auf dem Sitzungs-Bus anstatt auf dem System-Bus zur Verfügung gestellt.</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="241"/>
         <source>No such debug category:</source>
-        <translation type="unfinished">Diese Debug-Kategorie existiert nicht:</translation>
+        <translation>Diese Debug-Kategorie existiert nicht:</translation>
     </message>
 </context>
 <context>

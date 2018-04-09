@@ -73,6 +73,9 @@ public:
     bool cached() const;
     void setCached(bool cached);
 
+    static QStringList typeProperties();
+    static QStringList mandatoryTypeProperties();
+
 private:
     StateTypeId m_id;
     QString m_name;

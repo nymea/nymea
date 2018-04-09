@@ -93,4 +93,12 @@ private:
     bool m_autoCreated = false;
 };
 
+class Devices: public QList<Device*>
+{
+public:
+    Devices() = default;
+    Devices(const QList<Device *> &other);
+    Device* findById(const DeviceId &id);
+};
+
 #endif

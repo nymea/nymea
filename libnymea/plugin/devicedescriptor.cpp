@@ -44,22 +44,24 @@ DeviceDescriptor::DeviceDescriptor():
 
 }
 
-/*! Construct a DeviceDescriptor with the given \a deviceClassId, \a title and \a description.*/
-DeviceDescriptor::DeviceDescriptor(const DeviceClassId &deviceClassId, const QString &title, const QString &description):
+/*! Construct a DeviceDescriptor with the given \a deviceClassId, \a title, \a description and \a parentDeviceId.*/
+DeviceDescriptor::DeviceDescriptor(const DeviceClassId &deviceClassId, const QString &title, const QString &description, const DeviceId &parentDeviceId):
     m_id(DeviceDescriptorId::createDeviceDescriptorId()),
     m_deviceClassId(deviceClassId),
     m_title(title),
-    m_description(description)
+    m_description(description),
+    m_parentDeviceId(parentDeviceId)
 {
 
 }
 
-/*! Construct a DeviceDescriptor with the given \a id, \a deviceClassId, \a title and \a description.*/
-DeviceDescriptor::DeviceDescriptor(const DeviceDescriptorId &id, const DeviceClassId &deviceClassId, const QString &title, const QString &description) :
+/*! Construct a DeviceDescriptor with the given \a id, \a deviceClassId, \a title, \a description and \a parentDeviceId.*/
+DeviceDescriptor::DeviceDescriptor(const DeviceDescriptorId &id, const DeviceClassId &deviceClassId, const QString &title, const QString &description, const DeviceId &parentDeviceId) :
     m_id(id),
     m_deviceClassId(deviceClassId),
     m_title(title),
-    m_description(description)
+    m_description(description),
+    m_parentDeviceId(parentDeviceId)
 {
 }
 
@@ -104,6 +106,18 @@ QString DeviceDescriptor::description() const
 void DeviceDescriptor::setDescription(const QString &description)
 {
     m_description = description;
+}
+
+/*! Returns the parent device id for devices created from this DeviceDescriptor. */
+DeviceId DeviceDescriptor::parentDeviceId() const
+{
+    return m_parentDeviceId;
+}
+
+/*! Sets the parent device Id for devices created from this DeviceDescriptor. */
+void DeviceDescriptor::setParentDeviceId(const DeviceId &parentDeviceId)
+{
+    m_parentDeviceId = parentDeviceId;
 }
 
 /*! Returns the list of \l{Param}{Params} of this DeviceDescriptor. */

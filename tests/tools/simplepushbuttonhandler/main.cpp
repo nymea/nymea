@@ -20,6 +20,7 @@
 
 #include <QCoreApplication>
 #include <QDebug>
+#include <QObject>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 
@@ -30,7 +31,7 @@ int main(int argc, char *argv[])
 {
     QCommandLineParser parser;
     parser.addHelpOption();
-    QCommandLineOption dbusOption(QStringList() << "session", QCoreApplication::translate("main", "If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus."));
+    QCommandLineOption dbusOption(QStringList() << "session", QCoreApplication::translate("SimplePushButtonHandler", "If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus."));
     parser.addOption(dbusOption);
 
     QCoreApplication a(argc, argv);

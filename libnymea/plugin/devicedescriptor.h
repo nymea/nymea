@@ -34,8 +34,8 @@ class LIBNYMEA_EXPORT DeviceDescriptor
 {
 public:
     DeviceDescriptor();
-    DeviceDescriptor(const DeviceClassId &deviceClassId, const QString &title = QString(), const QString &description = QString());
-    DeviceDescriptor(const DeviceDescriptorId &id, const DeviceClassId &deviceClassId, const QString &title = QString(), const QString &description = QString());
+    DeviceDescriptor(const DeviceClassId &deviceClassId, const QString &title = QString(), const QString &description = QString(), const DeviceId &parentDeviceId = DeviceId());
+    DeviceDescriptor(const DeviceDescriptorId &id, const DeviceClassId &deviceClassId, const QString &title = QString(), const QString &description = QString(), const DeviceId &parentDeviceId = DeviceId());
 
     bool isValid() const;
 
@@ -48,6 +48,9 @@ public:
     QString description() const;
     void setDescription(const QString &description);
 
+    DeviceId parentDeviceId() const;
+    void setParentDeviceId(const DeviceId &parentDeviceId);
+
     ParamList params() const;
     void setParams(const ParamList &params);
 
@@ -56,6 +59,7 @@ private:
     DeviceClassId m_deviceClassId;
     QString m_title;
     QString m_description;
+    DeviceId m_parentDeviceId;
     ParamList m_params;
 };
 

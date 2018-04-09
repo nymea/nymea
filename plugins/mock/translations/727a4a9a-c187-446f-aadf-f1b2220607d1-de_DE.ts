@@ -48,15 +48,23 @@
 <context>
     <name>DevicePluginMock</name>
     <message>
-        <location filename="../devicepluginmock.cpp" line="219"/>
+        <location filename="../devicepluginmock.cpp" line="218"/>
         <source>Display pin!! The pin is 243681</source>
         <translation>Pin anzeigen!! Der pin lautet 243581</translation>
     </message>
 </context>
 <context>
-    <name>main</name>
+    <name>SimplePushButtonHandler</name>
     <message>
-        <location filename="../../../server/main.cpp" line="162"/>
+        <location filename="../../../tests/tools/simplepushbuttonhandler/main.cpp" line="34"/>
+        <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>nymea</name>
+    <message>
+        <location filename="../../../server/main.cpp" line="163"/>
         <source>
 nymea is an open source IoT (Internet of Things) server, 
 which allows to control a lot of different devices from many different 
@@ -68,38 +76,40 @@ for your environment.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../server/main.cpp" line="174"/>
+        <location filename="../../../server/main.cpp" line="175"/>
         <source>Run nymead in the foreground, not as daemon.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../server/main.cpp" line="177"/>
+        <location filename="../../../server/main.cpp" line="178"/>
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../server/main.cpp" line="194"/>
+        <location filename="../../../server/main.cpp" line="195"/>
         <source>Enables all debug categories. Single debug categories can be disabled again with -d parameter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../server/main.cpp" line="197"/>
+        <location filename="../../../server/main.cpp" line="198"/>
         <source>Specify a log file to write to, if this option is not specified, logs will be printed to the standard output.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../server/main.cpp" line="200"/>
-        <location filename="../../../tests/tools/simplepushbuttonhandler/main.cpp" line="33"/>
+        <location filename="../../../server/main.cpp" line="201"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../server/main.cpp" line="240"/>
+        <location filename="../../../server/main.cpp" line="241"/>
         <source>No such debug category:</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>nymeaserver::DebugServerHandler</name>
     <message>
         <location filename="../../../libnymea-core/debugserverhandler.cpp" line="61"/>
         <location filename="../../../libnymea-core/debugserverhandler.cpp" line="533"/>

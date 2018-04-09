@@ -76,6 +76,9 @@ public:
 
     bool isValid() const;
 
+    static QStringList typeProperties();
+    static QStringList mandatoryTypeProperties();
+
 private:
     ParamTypeId m_id;
     QString m_name;

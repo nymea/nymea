@@ -57,11 +57,11 @@ public:
     };
 
     enum NetworkManagerConnectivityState {
-        NetworkManagerConnectivityStateUnknown = 1,
-        NetworkManagerConnectivityStateNone = 2,
-        NetworkManagerConnectivityStatePortal = 3,
-        NetworkManagerConnectivityStateLimited = 4,
-        NetworkManagerConnectivityStateFull = 5
+        NetworkManagerConnectivityStateUnknown = 0,
+        NetworkManagerConnectivityStateNone = 1,
+        NetworkManagerConnectivityStatePortal = 2,
+        NetworkManagerConnectivityStateLimited = 3,
+        NetworkManagerConnectivityStateFull = 4
     };
 
     enum NetworkManagerError {

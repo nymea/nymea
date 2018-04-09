@@ -1149,14 +1149,28 @@ void DeviceManager::loadConfiguredDevices()
 
         // We always add the device to the list in this case. If its in the storedDevices
         // it means that it was working at some point so lets still add it as there might
-        // be rules associated with this device. Device::setupCompleted() will be false.
-        DeviceSetupStatus status = setupDevice(device);
+        // be rules associated with this device.
         m_configuredDevices.insert(device->id(), device);
+    }
+    settings.endGroup();
 
+    QHash<DeviceId, Device*> setupList = m_configuredDevices;
+    while (!setupList.isEmpty()) {
+        Device *device = nullptr;
+        foreach (Device *d, setupList) {
+            if (d->parentId().isNull() || !setupList.contains(d->parentId())) {
+                device = d;
+                setupList.take(d->id());
+                break;
+            }
+        }
+        Q_ASSERT(device != nullptr);
+
+        DeviceSetupStatus status = setupDevice(device);
         if (status == DeviceSetupStatus::DeviceSetupStatusSuccess)
             postSetupDevice(device);
     }
-    settings.endGroup();
+
 }
 
 void DeviceManager::storeConfiguredDevices()
@@ -1356,6 +1370,7 @@ void DeviceManager::onAutoDevicesAppeared(const DeviceClassId &deviceClassId, co
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
+        qCWarning(dcDeviceManager()) << "Auto device appeared for an unknown DeviceClass. Ignoring...";
         return;
     }
 
@@ -1365,10 +1380,15 @@ void DeviceManager::onAutoDevicesAppeared(const DeviceClassId &deviceClassId, co
     }
 
     foreach (const DeviceDescriptor &deviceDescriptor, deviceDescriptors) {
+        if (!deviceDescriptor.parentDeviceId().isNull() && !m_configuredDevices.contains(deviceDescriptor.parentDeviceId())) {
+            qCWarning(dcDeviceManager()) << "Invalid parent device id. Not adding device to the system.";
+            continue;
+        }
         Device *device = new Device(plugin->pluginId(), deviceClassId, this);
         device->m_autoCreated = true;
         device->setName(deviceDescriptor.title());
         device->setParams(deviceDescriptor.params());
+        device->setParentId(deviceDescriptor.parentDeviceId());
 
         DeviceSetupStatus setupStatus = setupDevice(device);
         switch (setupStatus) {

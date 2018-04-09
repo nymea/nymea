@@ -130,6 +130,18 @@ bool EventType::isValid() const
     return !m_id.isNull() && !m_name.isEmpty();
 }
 
+/*! Returns a list of all valid JSON properties a EventType JSON definition can have. */
+QStringList EventType::typeProperties()
+{
+    return QStringList() << "id" << "name" << "displayName" << "paramTypes" << "ruleRelevant" << "graphRelevant";
+}
+
+/*! Returns a list of mandatory JSON properties a EventType JSON definition must have. */
+QStringList EventType::mandatoryTypeProperties()
+{
+    return QStringList() << "id" << "name" << "displayName";
+}
+
 EventTypes::EventTypes(const QList<EventType> &other)
 {
     foreach (const EventType &at, other) {

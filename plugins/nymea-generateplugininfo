@@ -4,7 +4,7 @@
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                         #
-#  Copyright (C) 2015-2017 Simon Stuerz <simon.stuerz@guh.io>             #
+#  Copyright (C) 2015-2018 Simon Stuerz <simon.stuerz@guh.io>             #
 #  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           #
 #                                                                         #
 #  This file is part of nymea.                                            #
@@ -29,7 +29,7 @@ import json
 import os
 import subprocess
 
-__version__='1.0.1'
+__version__='1.0.2'
 
 ##################################################################################################################
 # Methods
@@ -63,11 +63,12 @@ def extractPlugin(pluginMap):
         printInfo('Define PluginId pluginId = %s' % (pluginMap['id']))
         if args.filetype is 'i':
             writeToFile('PluginId pluginId = PluginId(\"%s\");' % (pluginMap['id']))
-        addTranslationString(pluginMap['name'], 'The name of the plugin %s (%s)' % (pluginMap['name'], pluginMap['id']))
+        addTranslationString(pluginMap['displayName'], 'The name of the plugin %s (%s)' % (pluginMap['name'], pluginMap['id']))
         createExternDefinition('PluginId', variableName)
 
+    # Extract plugin params (configurations)
     if 'paramTypes' in pluginMap:
-        extractParamTypes(pluginMap['paramTypes'], pluginMap['name'])
+        extractParamTypes(pluginMap['paramTypes'], pluginMap['name'][0].lower() + pluginMap['name'][1:])
 
     if 'vendors' in pluginMap:
         extractVendors(pluginMap['vendors'])
@@ -178,20 +179,21 @@ def extractStateTypes(stateTypes, deviceClassName):
             else:
                 printWarning('Duplicated variable name \"%s\" for autocreated EventTypeId %s -> skipping' % (variableName, stateType['id']))
 
-            #ParamType for EventType/ActionType
-            variableName = '%s%sStateParamTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:])
+            # ParamType for the autocreated EventType
+            variableName = '%s%sEventParamTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:])
             if not variableName in variableNames:
                 variableNames.append(variableName)
                 printInfo('Define ParamTypeId %s for StateType %s = %s' % (variableName, variableName, stateType['id']))
+                addTranslationString(stateType['displayName'], 'The name of the ParamType of the autocreated EventType (%s) of DeviceClass %s' % (stateType['id'], deviceClassName))
                 if args.filetype is 'i':
                     writeToFile('ParamTypeId %s = ParamTypeId(\"%s\");' % (variableName, stateType['id']))
                 createExternDefinition('ParamTypeId', variableName)
-                addTranslationString(stateType['name'], 'The name of the ParamType of StateType (%s) of DeviceClass %s' % (stateType['id'], deviceClassName))
             else:
                 printWarning('Duplicated variable name \"%s\" for ParamTypeId %s -> skipping' % (variableName, stateType['id']))
 
-            # Create ActionTypeId if the state is writable
+            # Create ActionTypeId and ParamTypeId for action if the state is writable
             if 'writable' in stateType and stateType['writable']:
+                # Create ActionType for the writable state
                 variableName = '%s%sActionTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:])
                 if not variableName in variableNames:
                     variableNames.append(variableName)
@@ -202,6 +204,18 @@ def extractStateTypes(stateTypes, deviceClassName):
                     createExternDefinition('ActionTypeId', variableName)
                 else:
                     printWarning('Duplicated variable name \"%s\" for autocreated ActionTypeId %s -> skipping' % (variableName, stateType['id']))
+
+                # ParamType for the autocreated ActionType
+                variableName = '%s%sActionParamTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:])
+                if not variableName in variableNames:
+                    variableNames.append(variableName)
+                    printInfo('Define ParamTypeId %s for autocreated ActionType %s = %s' % (variableName, variableName, stateType['id']))
+                    addTranslationString(stateType['displayName'], 'The name of the autocreated ParamType of the writable StateType (%s) of DeviceClass %s' % (stateType['id'], deviceClassName))
+                    if args.filetype is 'i':
+                        writeToFile('ParamTypeId %s = ParamTypeId(\"%s\");' % (variableName, stateType['id']))
+                    createExternDefinition('ParamTypeId', variableName)
+                else:
+                    printWarning('Duplicated variable name \"%s\" for ParamTypeId %s -> skipping' % (variableName, stateType['id']))
 
         except:
             pass
@@ -288,7 +302,7 @@ def createTranslationFiles():
         path, fileName = os.path.split(translationFile)
         translationOutput = (path + '/' + pluginMap['id'] + '-' + os.path.splitext(fileName)[0] + '.qm')
         printInfo(' --> Translation update %s' % translationFile)
-        printInfo(subprocess.check_output(['mkdir', '-p', path])) 
+        printInfo(subprocess.check_output(['mkdir', '-p', path]))
         printInfo(subprocess.check_output(['lupdate', '-recursive', '-no-obsolete', sourceDir, (args.builddir + '/' + args.output), '-ts', translationFile]))
         printInfo(' --> Translation release %s' % translationOutput)
         printInfo(subprocess.check_output(['lrelease', translationFile, '-qm', translationOutput]))
@@ -407,7 +421,7 @@ if __name__ == '__main__':
     except:
         printError('Could not open file \"%s\"' % (args.jsonfile))
         exit -1
-        
+
     try:
         outputFile = open(args.builddir + '/' + args.output, 'w')
     except:

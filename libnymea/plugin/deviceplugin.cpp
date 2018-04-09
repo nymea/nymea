@@ -302,15 +302,22 @@ void DevicePlugin::initPlugin(DeviceManager *deviceManager)
 
 QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &array) const
 {
+    int index = 0;
     QList<ParamType> paramTypes;
     foreach (const QJsonValue &paramTypesJson, array) {
         QJsonObject pt = paramTypesJson.toObject();
 
-        // Check fields
-        int index = 0;
-        QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "displayName" << "type", pt);
-        if (!missingFields.isEmpty()) {
-            qCWarning(dcDeviceManager) << pluginName() << "Error parsing ParamType: missing fields" << missingFields.join(", ") << endl << pt;
+        QPair<QStringList, QStringList> verificationResult = verifyFields(ParamType::typeProperties(), ParamType::mandatoryTypeProperties(), pt);
+
+        // Check mandatory fields
+        if (!verificationResult.first.isEmpty()) {
+            qCWarning(dcDeviceManager()) << pluginName() << "Error parsing ParamType: missing fields:" << verificationResult.first.join(", ") << endl << pt;
+            return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
+        }
+
+        // Check if there are any unknown fields
+        if (!verificationResult.second.isEmpty()) {
+            qCWarning(dcDeviceManager()) << pluginName() << "Error parsing ParamType: unknown fields:" << verificationResult.second.join(", ") << endl << pt;
             return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
         }
 
@@ -325,7 +332,7 @@ QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &a
 
         ParamType paramType(ParamTypeId(pt.value("id").toString()), pt.value("name").toString(), t, pt.value("defaultValue").toVariant());
         paramType.setDisplayName(translateValue(m_metaData.value("name").toString(), pt.value("displayName").toString()));
-        paramType.setIndex(index);
+
 
         // Set allowed values
         QVariantList allowedValues;
@@ -361,10 +368,33 @@ QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &a
 
         paramType.setAllowedValues(allowedValues);
         paramType.setLimits(pt.value("minValue").toVariant(), pt.value("maxValue").toVariant());
+        paramType.setIndex(index++);
         paramTypes.append(paramType);
     }
 
     return QPair<bool, QList<ParamType> >(true, paramTypes);
+}
+
+QPair<QStringList, QStringList> DevicePlugin::verifyFields(const QStringList &possibleFields, const QStringList &mandatoryFields, const QJsonObject &value) const
+{
+    QStringList missingFields;
+    QStringList unknownFields;
+
+    // Check if we have an unknown field
+    foreach (const QString &property, value.keys()) {
+        if (!possibleFields.contains(property)) {
+            unknownFields << property;
+        }
+    }
+
+    // Check if a mandatory field is missing
+    foreach (const QString &field, mandatoryFields) {
+        if (!value.contains(field)) {
+            missingFields << field;
+        }
+    }
+
+    return QPair<QStringList, QStringList>(missingFields, unknownFields);
 }
 
 /*!
@@ -393,7 +423,7 @@ QVariant DevicePlugin::configValue(const ParamTypeId &paramTypeId) const
 DeviceManager::DeviceError DevicePlugin::setConfiguration(const ParamList &configuration)
 {
     foreach (const Param &param, configuration) {
-        qCDebug(dcDeviceManager) << "* Set plugin configuration" << param;
+        qCDebug(dcDeviceManager()) << "* Set plugin configuration" << param;
         DeviceManager::DeviceError result = setConfigValue(param.paramTypeId(), param.value());
         if (result != DeviceManager::DeviceErrorNoError)
             return result;
@@ -418,7 +448,7 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const ParamTypeId &param
     }
 
     if (!found) {
-        qCWarning(dcDeviceManager) << QString("Could not find plugin parameter with the id %1.").arg(paramTypeId.toString());
+        qCWarning(dcDeviceManager()) << QString("Could not find plugin parameter with the id %1.").arg(paramTypeId.toString());
         return DeviceManager::DeviceErrorInvalidParameter;
     }
 
@@ -446,7 +476,7 @@ DeviceManager *DevicePlugin::deviceManager() const
 }
 
 /*! Returns a list of all configured devices belonging to this plugin. */
-QList<Device *> DevicePlugin::myDevices() const
+Devices DevicePlugin::myDevices() const
 {
     QList<DeviceClassId> myDeviceClassIds;
     foreach (const DeviceClass &deviceClass, m_supportedDevices) {
@@ -507,28 +537,66 @@ void DevicePlugin::loadMetaData()
 
     }
 
-    QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "displayName" << "vendors", m_metaData);
-    if (!missingFields.isEmpty()) {
-        qCWarning(dcDeviceManager) << "Skipping plugin because of missing" << missingFields.join(", ") << m_metaData;
+    // Note: The DevicePlugin has no type class, so we define the json properties here
+    QStringList pluginMandatoryJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors";
+    QStringList pluginJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors" << "paramTypes";
+
+    QPair<QStringList, QStringList> verificationResult = verifyFields(pluginJsonProperties, pluginMandatoryJsonProperties, m_metaData);
+
+    // Check mandatory fields
+    if (!verificationResult.first.isEmpty()) {
+        qCWarning(dcDeviceManager()) << pluginName() << "Skipping plugin because of missing fields:" << verificationResult.first.join(", ") << endl << m_metaData;
         return;
     }
 
+    // Check if there are any unknown fields
+    if (!verificationResult.second.isEmpty()) {
+        qCWarning(dcDeviceManager()) << pluginName() << "Skipping plugin because of unknown fields:" << verificationResult.second.join(", ") << endl << m_metaData;
+        return;
+    }
+
+    // Load vendors
     foreach (const QJsonValue &vendorJson, m_metaData.value("vendors").toArray()) {
         bool broken = false;
         QJsonObject vendorObject = vendorJson.toObject();
-        QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "displayName", vendorObject);
-        if (!missingFields.isEmpty()) {
-            qCWarning(dcDeviceManager) << "Skipping vendor because of missing" << missingFields.join(", ") << vendorObject;
+
+        // Note: The Vendor has no type class, so we define the json properties here
+        QStringList vendorMandatoryJsonProperties = QStringList() << "id" << "name" << "displayName" << "deviceClasses";
+        QStringList vendorJsonProperties = QStringList() << "id" << "name" << "displayName" << "deviceClasses";
+
+        QPair<QStringList, QStringList> verificationResult = verifyFields(vendorJsonProperties, vendorMandatoryJsonProperties, vendorObject);
+
+        // Check mandatory fields
+        if (!verificationResult.first.isEmpty()) {
+            qCWarning(dcDeviceManager()) << pluginName() << "Skipping vendor because of missing fields:" << verificationResult.first.join(", ") << endl << vendorObject;
+            broken = true;
+            break;
+        }
+
+        // Check if there are any unknown fields
+        if (!verificationResult.second.isEmpty()) {
+            qCWarning(dcDeviceManager()) << pluginName() << "Skipping vendor because of unknown fields:" << verificationResult.second.join(", ") << endl << vendorObject;
             broken = true;
             break;
         }
 
         VendorId vendorId = vendorObject.value("id").toString();
+
+        // Load deviceclasses of this vendor
         foreach (const QJsonValue &deviceClassJson, vendorJson.toObject().value("deviceClasses").toArray()) {
             QJsonObject deviceClassObject = deviceClassJson.toObject();
-            QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "displayName" << "createMethods" << "paramTypes", deviceClassObject);
-            if (!missingFields.isEmpty()) {
-                qCWarning(dcDeviceManager) << "Skipping DeviceClass because of missing" << missingFields.join(", ") << deviceClassObject;
+            QPair<QStringList, QStringList> verificationResult = verifyFields(DeviceClass::typeProperties(), DeviceClass::mandatoryTypeProperties(), deviceClassObject);
+
+            // Check mandatory fields
+            if (!verificationResult.first.isEmpty()) {
+                qCWarning(dcDeviceManager()) << pluginName() << "Skipping device class because of missing fields:" << verificationResult.first.join(", ") << endl << deviceClassObject;
+                broken = true;
+                break;
+            }
+
+            // Check if there are any unknown fields
+            if (!verificationResult.second.isEmpty()) {
+                qCWarning(dcDeviceManager()) << pluginName() << "Skipping device class because of unknown fields:" << verificationResult.second.join(", ") << endl << deviceClassObject;
                 broken = true;
                 break;
             }
@@ -536,55 +604,80 @@ void DevicePlugin::loadMetaData()
             DeviceClass deviceClass(pluginId(), vendorId, deviceClassObject.value("id").toString());
             deviceClass.setName(deviceClassObject.value("name").toString());
             deviceClass.setDisplayName(translateValue(m_metaData.value("name").toString(), deviceClassObject.value("displayName").toString()));
+
+            // Read create methods
             DeviceClass::CreateMethods createMethods;
-            foreach (const QJsonValue &createMethodValue, deviceClassObject.value("createMethods").toArray()) {
-                if (createMethodValue.toString() == "discovery") {
-                    createMethods |= DeviceClass::CreateMethodDiscovery;
-                } else if (createMethodValue.toString() == "auto") {
-                    createMethods |= DeviceClass::CreateMethodAuto;
-                } else if (createMethodValue.toString() == "user") {
-                    createMethods |= DeviceClass::CreateMethodUser;
-                } else {
-                    qCWarning(dcDeviceManager) << "Unknown createMehtod" << createMethodValue.toString() <<
-                                                  "in deviceClass " << deviceClass.name() << ". Falling back to CreateMethodUser.";
-                    createMethods |= DeviceClass::CreateMethodUser;
+            if (!deviceClassObject.contains("createMethods")) {
+                // Default if not specified
+                createMethods |= DeviceClass::CreateMethodUser;
+            } else {
+                foreach (const QJsonValue &createMethodValue, deviceClassObject.value("createMethods").toArray()) {
+                    if (createMethodValue.toString().toLower() == "discovery") {
+                        createMethods |= DeviceClass::CreateMethodDiscovery;
+                    } else if (createMethodValue.toString().toLower() == "auto") {
+                        createMethods |= DeviceClass::CreateMethodAuto;
+                    } else if (createMethodValue.toString().toLower() == "user") {
+                        createMethods |= DeviceClass::CreateMethodUser;
+                    } else {
+                        qCWarning(dcDeviceManager()) << "Unknown createMehtod" << createMethodValue.toString() << "in deviceClass "
+                                                     << deviceClass.name() << ". Falling back to CreateMethodUser.";
+                        createMethods |= DeviceClass::CreateMethodUser;
+                    }
                 }
             }
             deviceClass.setCreateMethods(createMethods);
+
+            // Read device icon
             QPair<bool, DeviceClass::DeviceIcon> deviceIconVerification = loadAndVerifyDeviceIcon(deviceClassObject.value("deviceIcon").toString());
             if (!deviceIconVerification.first) {
                 broken = true;
+                break;
             } else {
                 deviceClass.setDeviceIcon(deviceIconVerification.second);
             }
 
-            QPair<bool, QList<ParamType> > discoveryParamVerification = parseParamTypes(deviceClassObject.value("discoveryParamTypes").toArray());
-            if (!discoveryParamVerification.first) {
-                broken = true;
-            } else {
-                deviceClass.setDiscoveryParamTypes(discoveryParamVerification.second);
-            }
-
-            QString setupMethod = deviceClassObject.value("setupMethod").toString();
-            if (setupMethod == "pushButton") {
-                deviceClass.setSetupMethod(DeviceClass::SetupMethodPushButton);
-            } else if (setupMethod == "displayPin") {
-                deviceClass.setSetupMethod(DeviceClass::SetupMethodDisplayPin);
-            } else if (setupMethod == "enterPin") {
-                deviceClass.setSetupMethod(DeviceClass::SetupMethodEnterPin);
-            } else if (setupMethod == "justAdd") {
-                qCWarning(dcDeviceManager) << "Unknown setupMehtod" << setupMethod <<
-                                              "in deviceClass " << deviceClass.name() << ". Falling back to SetupMethodJustAdd.";
-                deviceClass.setSetupMethod(DeviceClass::SetupMethodJustAdd);
-            }
-            deviceClass.setPairingInfo(translateValue(m_metaData.value("name").toString(), deviceClassObject.value("pairingInfo").toString()));
+            // Read params
             QPair<bool, QList<ParamType> > paramTypesVerification = parseParamTypes(deviceClassObject.value("paramTypes").toArray());
             if (!paramTypesVerification.first) {
                 broken = true;
+                break;
             } else {
                 deviceClass.setParamTypes(paramTypesVerification.second);
             }
 
+            // Read discover params
+            QPair<bool, QList<ParamType> > discoveryParamVerification = parseParamTypes(deviceClassObject.value("discoveryParamTypes").toArray());
+            if (!discoveryParamVerification.first) {
+                broken = true;
+                break;
+            } else {
+                deviceClass.setDiscoveryParamTypes(discoveryParamVerification.second);
+            }
+
+            // Read setup method
+            DeviceClass::SetupMethod setupMethod = DeviceClass::SetupMethodJustAdd;
+            if (deviceClassObject.contains("setupMethod")) {
+                QString setupMethodString = deviceClassObject.value("setupMethod").toString();
+                if (setupMethodString.toLower() == "pushbutton") {
+                    setupMethod = DeviceClass::SetupMethodPushButton;
+                } else if (setupMethodString.toLower() == "displaypin") {
+                    setupMethod = DeviceClass::SetupMethodDisplayPin;
+                } else if (setupMethodString.toLower() == "enterpin") {
+                    setupMethod = DeviceClass::SetupMethodEnterPin;
+                } else if (setupMethodString.toLower() == "justadd") {
+                    setupMethod = DeviceClass::SetupMethodJustAdd;
+                } else {
+                    qCWarning(dcDeviceManager()) << "Unknown setupMehtod" << setupMethod << "in deviceClass"
+                                               << deviceClass.name() << ". Falling back to SetupMethodJustAdd.";
+                    setupMethod = DeviceClass::SetupMethodJustAdd;
+                }
+            }
+            deviceClass.setSetupMethod(setupMethod);
+
+            // Read pairing info
+            deviceClass.setPairingInfo(translateValue(m_metaData.value("name").toString(), deviceClassObject.value("pairingInfo").toString()));
+
+            // Read basic tags
             QList<DeviceClass::BasicTag> basicTags;
             foreach (const QJsonValue &basicTagJson, deviceClassObject.value("basicTags").toArray()) {
                 QPair<bool, DeviceClass::BasicTag> basicTagVerification = loadAndVerifyBasicTag(basicTagJson.toString());
@@ -601,22 +694,36 @@ void DevicePlugin::loadMetaData()
             QList<StateType> stateTypes;
             QList<EventType> eventTypes;
 
-            // StateTypes
+            // Read StateTypes
             int index = 0;
             foreach (const QJsonValue &stateTypesJson, deviceClassObject.value("stateTypes").toArray()) {
                 QJsonObject st = stateTypesJson.toObject();
                 bool writableState = false;
-                QStringList requiredFields;
-                requiredFields << "type" << "id" << "name" << "displayName" << "defaultValue" << "displayNameEvent";
-                if (st.contains("writable") && st.value("writable").toBool()) {
-                    writableState = true;
-                    requiredFields << "displayNameAction";
-                }
-                QStringList missingFields = verifyFields(requiredFields, st);
-                if (!missingFields.isEmpty()) {
-                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in stateType" << st;
+
+                QPair<QStringList, QStringList> verificationResult = verifyFields(StateType::typeProperties(), StateType::mandatoryTypeProperties(), st);
+
+                // Check mandatory fields
+                if (!verificationResult.first.isEmpty()) {
+                    qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << "because of missing" << verificationResult.first.join(", ") << "in stateType" << st;
                     broken = true;
                     break;
+                }
+
+                // Check if there are any unknown fields
+                if (!verificationResult.second.isEmpty()) {
+                    qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << "because of unknown properties" << verificationResult.second.join(", ") << "in stateType" << st;
+                    broken = true;
+                    break;
+                }
+
+                // If this is a writable stateType, there must be also the displayNameAction property
+                if (st.contains("writable") && st.value("writable").toBool()) {
+                    writableState = true;
+                    if (!st.contains("displayNameAction")) {
+                        qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << ". The state is writable, but does not define the displayNameAction property" << st;
+                        broken = true;
+                        break;
+                    }
                 }
 
                 QVariant::Type t = QVariant::nameToType(st.value("type").toString().toLatin1().data());
@@ -625,6 +732,7 @@ void DevicePlugin::loadMetaData()
                     broken = true;
                     break;
                 }
+
                 StateType stateType(st.value("id").toString());
                 stateType.setName(st.value("name").toString());
                 stateType.setDisplayName(translateValue(m_metaData.value("name").toString(), st.value("displayName").toString()));
@@ -637,6 +745,7 @@ void DevicePlugin::loadMetaData()
                 } else {
                     stateType.setUnit(unitVerification.second);
                 }
+
                 stateType.setDefaultValue(st.value("defaultValue").toVariant());
                 if (st.contains("minValue"))
                     stateType.setMinValue(st.value("minValue").toVariant());
@@ -704,9 +813,18 @@ void DevicePlugin::loadMetaData()
             index = 0;
             foreach (const QJsonValue &actionTypesJson, deviceClassObject.value("actionTypes").toArray()) {
                 QJsonObject at = actionTypesJson.toObject();
-                QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "displayName", at);
-                if (!missingFields.isEmpty()) {
-                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in actionTypes" << at;
+                QPair<QStringList, QStringList> verificationResult = verifyFields(ActionType::typeProperties(), ActionType::mandatoryTypeProperties(), at);
+
+                // Check mandatory fields
+                if (!verificationResult.first.isEmpty()) {
+                    qCWarning(dcDeviceManager()) << pluginName() << "Skipping device class" << deviceClass.name() << "because of missing" << verificationResult.first.join(", ") << "in action type:" << endl << at;
+                    broken = true;
+                    break;
+                }
+
+                // Check if there are any unknown fields
+                if (!verificationResult.second.isEmpty()) {
+                    qCWarning(dcDeviceManager()) << pluginName() << "Skipping device class" << deviceClass.name() << "because of unknown fields:" << verificationResult.second.join(", ") << "in action type:" << endl << at;
                     broken = true;
                     break;
                 }
@@ -715,6 +833,7 @@ void DevicePlugin::loadMetaData()
                 actionType.setName(at.value("name").toString());
                 actionType.setDisplayName(translateValue(m_metaData.value("name").toString(), at.value("displayName").toString()));
                 actionType.setIndex(index++);
+
                 QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(at.value("paramTypes").toArray());
                 if (!paramVerification.first) {
                     broken = true;
@@ -731,9 +850,19 @@ void DevicePlugin::loadMetaData()
             index = 0;
             foreach (const QJsonValue &eventTypesJson, deviceClassObject.value("eventTypes").toArray()) {
                 QJsonObject et = eventTypesJson.toObject();
-                QStringList missingFields = verifyFields(QStringList() << "id" << "name" << "displayName", et);
-                if (!missingFields.isEmpty()) {
-                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << "because of missing" << missingFields.join(", ") << "in eventTypes:" << et;
+
+                QPair<QStringList, QStringList> verificationResult = verifyFields(EventType::typeProperties(), EventType::mandatoryTypeProperties(), et);
+
+                // Check mandatory fields
+                if (!verificationResult.first.isEmpty()) {
+                    qCWarning(dcDeviceManager()) << pluginName() << "Skipping device class" << deviceClass.name() << "because of missing" << verificationResult.first.join(", ") << "in event type:" << endl << et;
+                    broken = true;
+                    break;
+                }
+
+                // Check if there are any unknown fields
+                if (!verificationResult.second.isEmpty()) {
+                    qCWarning(dcDeviceManager()) << pluginName() << "Skipping device class" << deviceClass.name() << "because of unknown fields:" << verificationResult.second.join(", ") << "in event type:" << endl << et;
                     broken = true;
                     break;
                 }
@@ -760,15 +889,14 @@ void DevicePlugin::loadMetaData()
             deviceClass.setEventTypes(eventTypes);
 
             // Note: keep this after the actionType / stateType / eventType parsing
-
             if (deviceClassObject.contains("criticalStateTypeId")) {
                 StateTypeId criticalStateTypeId = StateTypeId(deviceClassObject.value("criticalStateTypeId").toString());
                 if (!deviceClass.hasStateType(criticalStateTypeId)) {
-                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << ": the definend critical stateTypeId" << criticalStateTypeId.toString() << "does not match any StateType of this DeviceClass.";
+                    qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << ": the definend critical stateTypeId" << criticalStateTypeId.toString() << "does not match any StateType of this DeviceClass.";
                     broken = true;
                 } else if (deviceClass.getStateType(criticalStateTypeId).type() != QVariant::Bool) {
                     // Make sure the critical stateType is a bool state
-                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << ": the definend critical stateTypeId" << criticalStateTypeId.toString() << "is not a bool StateType.";
+                    qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << ": the definend critical stateTypeId" << criticalStateTypeId.toString() << "is not a bool StateType.";
                     broken = true;
                 } else {
                     deviceClass.setCriticalStateTypeId(criticalStateTypeId);
@@ -778,7 +906,7 @@ void DevicePlugin::loadMetaData()
             if (deviceClassObject.contains("primaryStateTypeId")) {
                 StateTypeId primaryStateTypeId = StateTypeId(deviceClassObject.value("primaryStateTypeId").toString());
                 if (!deviceClass.hasStateType(primaryStateTypeId)) {
-                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << ": the definend primary stateTypeId" << primaryStateTypeId.toString() << "does not match any StateType of this DeviceClass.";
+                    qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << ": the definend primary stateTypeId" << primaryStateTypeId.toString() << "does not match any StateType of this DeviceClass.";
                     broken = true;
                 } else {
                     deviceClass.setPrimaryStateTypeId(primaryStateTypeId);
@@ -788,13 +916,14 @@ void DevicePlugin::loadMetaData()
             if (deviceClassObject.contains("primaryActionTypeId")) {
                 ActionTypeId primaryActionTypeId = ActionTypeId(deviceClassObject.value("primaryActionTypeId").toString());
                 if (!deviceClass.hasActionType(primaryActionTypeId)) {
-                    qCWarning(dcDeviceManager) << "Skipping device class" << deviceClass.name() << ": the definend primary actionTypeId" << primaryActionTypeId.toString() << "does not match any ActionType of this DeviceClass.";
+                    qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << ": the definend primary actionTypeId" << primaryActionTypeId.toString() << "does not match any ActionType of this DeviceClass.";
                     broken = true;
                 } else {
                     deviceClass.setPrimaryActionTypeId(primaryActionTypeId);
                 }
             }
 
+            // Read interfaces
             QStringList interfaces;
             foreach (const QJsonValue &value, deviceClassObject.value("interfaces").toArray()) {
                 Interface iface = loadInterface(value.toString());
@@ -802,28 +931,29 @@ void DevicePlugin::loadMetaData()
                 StateTypes stateTypes(deviceClass.stateTypes());
                 ActionTypes actionTypes(deviceClass.actionTypes());
                 EventTypes eventTypes(deviceClass.eventTypes());
+
                 bool valid = true;
                 foreach (const StateType &ifaceStateType, iface.stateTypes()) {
                     StateType stateType = stateTypes.findByName(ifaceStateType.name());
                     if (stateType.id().isNull()) {
-                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement state" << ifaceStateType.name();
+                        qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement state" << ifaceStateType.name();
                         valid = false;
                         continue;
                     }
                     if (ifaceStateType.type() != stateType.type()) {
-                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has not matching type" << stateType.type() << "!=" << ifaceStateType.type();
+                        qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has not matching type" << stateType.type() << "!=" << ifaceStateType.type();
                         valid = false;
                         continue;
                     }
                     if (ifaceStateType.minValue().isValid() && !ifaceStateType.minValue().isNull()) {
                         if (ifaceStateType.minValue().toString() == "any") {
                             if (stateType.minValue().isNull()) {
-                                qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has no minimum value defined.";
+                                qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has no minimum value defined.";
                                 valid = false;
                                 continue;
                             }
                         } else if (ifaceStateType.minValue() != stateType.minValue()) {
-                            qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has not matching minimum value:" << ifaceStateType.minValue() << "!=" << stateType.minValue();
+                            qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has not matching minimum value:" << ifaceStateType.minValue() << "!=" << stateType.minValue();
                             valid = false;
                             continue;
                         }
@@ -831,22 +961,23 @@ void DevicePlugin::loadMetaData()
                     if (ifaceStateType.maxValue().isValid() && !ifaceStateType.maxValue().isNull()) {
                         if (ifaceStateType.maxValue().toString() == "any") {
                             if (stateType.maxValue().isNull()) {
-                                qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has no maximum value defined.";
+                                qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has no maximum value defined.";
                                 valid = false;
                                 continue;
                             }
                         } else if (ifaceStateType.maxValue() != stateType.maxValue()) {
-                            qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has not matching maximum value:" << ifaceStateType.maxValue() << "!=" << stateType.minValue();
+                            qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has not matching maximum value:" << ifaceStateType.maxValue() << "!=" << stateType.minValue();
                             valid = false;
                             continue;
                         }
                     }
                     if (!ifaceStateType.possibleValues().isEmpty() && ifaceStateType.possibleValues() != stateType.possibleValues()) {
-                        qCWarning(dcDeviceManager) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has not matching allowed values" << ifaceStateType.possibleValues() << "!=" << stateType.possibleValues();
+                        qCWarning(dcDeviceManager()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has not matching allowed values" << ifaceStateType.possibleValues() << "!=" << stateType.possibleValues();
                         valid = false;
                         continue;
                     }
                 }
+
                 foreach (const ActionType &ifaceActionType, iface.actionTypes()) {
                     ActionType actionType = actionTypes.findByName(ifaceActionType.name());
                     if (actionType.id().isNull()) {
@@ -866,6 +997,7 @@ void DevicePlugin::loadMetaData()
                         }
                     }
                 }
+
                 foreach (const EventType &ifaceEventType, iface.eventTypes()) {
                     EventType eventType = eventTypes.findByName(ifaceEventType.name());
                     if (!eventType.isValid()) {
@@ -900,17 +1032,6 @@ void DevicePlugin::loadMetaData()
             }
         }
     }
-}
-
-QStringList DevicePlugin::verifyFields(const QStringList &fields, const QJsonObject &value) const
-{
-    QStringList ret;
-    foreach (const QString &field, fields) {
-        if (!value.contains(field)) {
-            ret << field;
-        }
-    }
-    return ret;
 }
 
 QString DevicePlugin::translateValue(const QString &context, const QString &string) const

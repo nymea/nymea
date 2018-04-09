@@ -1,5 +1,5 @@
 {
-    "name": "MockDevice",
+    "name": "mockDevice",
     "displayName": "Mock Devices",
     "id": "727a4a9a-c187-446f-aadf-f1b2220607d1",
     "paramTypes": [
@@ -530,7 +530,7 @@
                     "stateTypes": [
                         {
                             "id": "d24ede5f-4064-4898-bb84-cfb533b1fbc0",
-                            "name": "boolValueParent",
+                            "name": "boolValue",
                             "displayName": "bool value",
                             "displayNameEvent": "bool value changed",
                             "displayNameAction": "Set bool value",
@@ -545,23 +545,15 @@
                     "name": "mockChild",
                     "displayName": "Mock Device (Child)",
                     "createMethods": ["auto"],
+                    "paramTypes": [],
                     "basicTags": [
                         "Device",
                         "Actuator"
                     ],
-                    "paramTypes": [
-                        {
-                            "id": "104b5288-404e-42d3-bf38-e40682e75681",
-                            "name": "parentUuid",
-                            "displayName": "parent uuid",
-                            "type": "QUuid",
-                            "readOnly": true
-                        }
-                    ],
                     "stateTypes": [
                         {
                             "id": "d24ede5f-4064-4898-bb84-cfb533b1fbc0",
-                            "name": "boolValueParent",
+                            "name": "boolValue",
                             "displayName": "bool value",
                             "displayNameEvent": "bool value changed",
                             "displayNameAction": "Set bool value",

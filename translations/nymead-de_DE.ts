@@ -48,15 +48,23 @@
 <context>
     <name>DevicePluginMock</name>
     <message>
-        <location filename="../plugins/mock/devicepluginmock.cpp" line="219"/>
+        <location filename="../plugins/mock/devicepluginmock.cpp" line="218"/>
         <source>Display pin!! The pin is 243681</source>
         <translation>PIN anzeigen!! Der PIN ist 243681</translation>
     </message>
 </context>
 <context>
-    <name>main</name>
+    <name>SimplePushButtonHandler</name>
     <message>
-        <location filename="../server/main.cpp" line="162"/>
+        <location filename="../tests/tools/simplepushbuttonhandler/main.cpp" line="34"/>
+        <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
+        <translation type="unfinished">Falls angegeben, werden alle D-Bus Schnittstellen auf dem Sitzungs-Bus anstatt auf dem System-Bus zur verfügung gestellt.</translation>
+    </message>
+</context>
+<context>
+    <name>nymea</name>
+    <message>
+        <location filename="../server/main.cpp" line="163"/>
         <source>
 nymea is an open source IoT (Internet of Things) server, 
 which allows to control a lot of different devices from many different 
@@ -68,39 +76,41 @@ for your environment.
         <translation>nymea ist ein Open-Source-IoT (Internet der Dinge) Server, der es ermöglicht, viele verschiedene Geräte von verschiedenen Herstellern zu steuern. Mit der leistungsstarken Regel-Engine können Sie jedes im System verfügbare Gerät miteinander verbinden und individuelle Szenen und Verhaltensweisen für Ihre Anforderungen erstellen.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="174"/>
+        <location filename="../server/main.cpp" line="175"/>
         <source>Run nymead in the foreground, not as daemon.</source>
         <translation>Führe Nymead im Vordergrund aus, nicht als Daemon.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="177"/>
+        <location filename="../server/main.cpp" line="178"/>
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
-        <translation>Zu aktivierende Debug-Kategorien. Kategorien mit dem Präfix &quot;No&quot; werden deaktiviert. Warnungen werden von allen Kategorien angezeigt außer sie wurden explizit mit dem Prefix &quot;NoWarnings&quot; deaktiviert.
+        <translation type="unfinished">Zu aktivierende Debug-Kategorien. Kategorien mit dem Präfix &quot;No&quot; werden deaktiviert. Warnungen werden von allen Kategorien angezeigt außer sie wurden explizit mit dem Prefix &quot;NoWarnings&quot; deaktiviert.
 Es gibt folgende Kategorien:</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="194"/>
+        <location filename="../server/main.cpp" line="195"/>
         <source>Enables all debug categories. Single debug categories can be disabled again with -d parameter.</source>
         <translation>Aktiviert alle Debug-Kategorien. Einzelne Debug-Kategorien können mit dem Parameter -d wieder deaktiviert werden.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="197"/>
+        <location filename="../server/main.cpp" line="198"/>
         <source>Specify a log file to write to, if this option is not specified, logs will be printed to the standard output.</source>
         <translation>Geben Sie eine Log-datei an, in die geschrieben werden soll. Wenn diese Option nicht angegeben wird, werden Protokolle auf die Standardausgabe gedruckt.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="200"/>
-        <location filename="../tests/tools/simplepushbuttonhandler/main.cpp" line="33"/>
+        <location filename="../server/main.cpp" line="201"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation>Falls angegeben, werden alle D-Bus Schnittstellen auf dem Sitzungs-Bus anstatt auf dem System-Bus zur verfügung gestellt.</translation>
+        <translation type="unfinished">Falls angegeben, werden alle D-Bus Schnittstellen auf dem Sitzungs-Bus anstatt auf dem System-Bus zur verfügung gestellt.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="240"/>
+        <location filename="../server/main.cpp" line="241"/>
         <source>No such debug category:</source>
-        <translation>Diese Debug-Kategorie existiert nicht:</translation>
+        <translation type="unfinished">Diese Debug-Kategorie existiert nicht:</translation>
     </message>
+</context>
+<context>
+    <name>nymeaserver::DebugServerHandler</name>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="61"/>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="533"/>

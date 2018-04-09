@@ -97,7 +97,7 @@ signals:
 
 protected:
     DeviceManager *deviceManager() const;
-    QList<Device*> myDevices() const;
+    Devices myDevices() const;
     HardwareManager *hardwareManager() const;
     Device* findDeviceByParams(const ParamList &params) const;
 
@@ -108,7 +108,8 @@ private:
 
     QPair<bool, QList<ParamType> > parseParamTypes(const QJsonArray &array) const;
 
-    QStringList verifyFields(const QStringList &fields, const QJsonObject &value) const;
+    // Returns <missingFields, unknownFields>
+    QPair<QStringList, QStringList> verifyFields(const QStringList &possibleFields, const QStringList &mandatoryFields, const QJsonObject &value) const;
 
     QString translateValue(const QString &context, const QString &string) const;
 

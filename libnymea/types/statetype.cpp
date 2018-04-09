@@ -196,6 +196,20 @@ void StateType::setCached(bool cached)
     m_cached = cached;
 }
 
+/*! Returns a list of all valid properties a DeviceClass definition can have. */
+QStringList StateType::typeProperties()
+{
+    return QStringList() << "id" << "name" << "displayName" << "displayNameEvent" << "type" << "defaultValue"
+                         << "cached" << "ruleRelevant" << "eventRuleRelevant" << "graphRelevant" << "unit"
+                         << "minValue" << "maxValue" << "possibleValues" << "writable" << "displayNameAction";
+}
+
+/*! Returns a list of mandatory properties a DeviceClass definition must have. */
+QStringList StateType::mandatoryTypeProperties()
+{
+    return QStringList() << "id" << "name" << "displayName" << "displayNameEvent" << "type" << "defaultValue";
+}
+
 StateTypes::StateTypes(const QList<StateType> &other)
 {
     foreach (const StateType &st, other) {

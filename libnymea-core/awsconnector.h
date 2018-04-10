@@ -79,6 +79,7 @@ private slots:
     void onPairingsRetrieved(const QVariantMap &pairings);
     void setName();
     void onDisconnected();
+    void onTurnCredentialsReceived(const QVariantMap &turnCredentials);
 
 private:
     class SubscriptionContext: public awsiotsdk::mqtt::SubscriptionHandlerContextData
@@ -132,6 +133,7 @@ private:
     int m_reconnectCounter = 0;
     QDateTime m_lastConnectionDrop;
     QStringList m_subscriptionCache;
+    QPair<QVariantMap, QDateTime> m_cachedTURNCredentials;
 
     std::shared_ptr<awsiotsdk::mqtt::SubscriptionHandlerContextData> m_subscriptionContextData;
     std::shared_ptr<awsiotsdk::DisconnectCallbackContextData> m_disconnectContextData;

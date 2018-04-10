@@ -436,7 +436,7 @@ QVariantMap JsonRPCServer::createWelcomeMessage(TransportInterface *interface) c
     handshake.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
     handshake.insert("language", NymeaCore::instance()->configuration()->locale().name());
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
-    handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? NymeaCore::instance()->userManager()->users().isEmpty() : false));
+    handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? NymeaCore::instance()->userManager()->initRequired() : false));
     handshake.insert("authenticationRequired", interface->configuration().authenticationEnabled);
     handshake.insert("pushButtonAuthAvailable", NymeaCore::instance()->userManager()->pushButtonAuthAvailable());
     return handshake;
@@ -497,7 +497,7 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
         QStringList authExemptMethodsNoUser = {"Introspect", "Hello", "CreateUser", "RequestPushButtonAuth"};
         QStringList authExemptMethodsWithUser = {"Introspect", "Hello", "Authenticate", "RequestPushButtonAuth"};
         // if there is no user in the system yet, let's fail unless this is special method for authentication itself
-        if (NymeaCore::instance()->userManager()->users().isEmpty()) {
+        if (NymeaCore::instance()->userManager()->initRequired()) {
             if (!(targetNamespace == "JSONRPC" && authExemptMethodsNoUser.contains(method)) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
                 sendUnauthorizedResponse(interface, clientId, commandId, "Initial setup required. Call CreateUser first.");
                 return;

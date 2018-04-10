@@ -51,6 +51,23 @@ UserManager::UserManager(QObject *parent) : QObject(parent)
     m_pushButtonTransaction = qMakePair<int, QString>(-1, QString());
 }
 
+/** Will return true if the database is working fine but doesn't have any information on users whatsoever.
+ *  That is, neither a user nor an anonimous token.
+ *  This may be used to determine whether a first-time setup is required.
+ */
+bool UserManager::initRequired() const
+{
+    QString getTokensQuery = QString("SELECT id, username, creationdate, deviceName FROM tokens;");
+    QSqlQuery result = m_db.exec(getTokensQuery);
+    if (m_db.lastError().type() != QSqlError::NoError) {
+        qCWarning(dcUserManager) << "Query for tokens failed:" << m_db.lastError().databaseText() << m_db.lastError().driverText() << getTokensQuery;
+        // Note: do not return true in case the database access fails.
+        return false;
+    }
+
+    return users().isEmpty() && !result.first();
+}
+
 QStringList UserManager::users() const
 {
     QString userQuery("SELECT username FROM users;");
@@ -96,16 +113,22 @@ UserManager::UserError UserManager::createUser(const QString &username, const QS
     return UserErrorNoError;
 }
 
+/** Remove the given user and all of its tokens. If the username is empty, all anonymous tokens (e.g. issued by pushbutton auth) will be cleared. */
 UserManager::UserError UserManager::removeUser(const QString &username)
 {
-    QString dropUserQuery = QString("DELETE FROM users WHERE lower(username) =\"%1\";").arg(username.toLower());
-    QSqlQuery result = m_db.exec(dropUserQuery);
-    if (result.numRowsAffected() == 0) {
-        return UserErrorInvalidUserId;
-    }
+    if (!username.isEmpty()) {
+        QString dropUserQuery = QString("DELETE FROM users WHERE lower(username) =\"%1\";").arg(username.toLower());
+        QSqlQuery result = m_db.exec(dropUserQuery);
+        if (result.numRowsAffected() == 0) {
+            return UserErrorInvalidUserId;
+        }
 
-    QString dropTokensQuery = QString("DELETE FROM tokens WHERE lower(username) = \"%1\";").arg(username.toLower());
-    m_db.exec(dropTokensQuery);
+        QString dropTokensQuery = QString("DELETE FROM tokens WHERE lower(username) = \"%1\";").arg(username.toLower());
+        m_db.exec(dropTokensQuery);
+    } else {
+        QString dropTokensQuery = QString("DELETE FROM tokens WHERE username = \"\";").arg(username.toLower());
+        m_db.exec(dropTokensQuery);
+    }
 
     return UserErrorNoError;
 }

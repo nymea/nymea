@@ -99,6 +99,7 @@ private slots:
 
     void testPushButtonAuthConnectionDrop();
 
+    void testInitialSetupWithPushButtonAuth();
 private:
     QStringList extractRefs(const QVariant &variant);
 
@@ -169,6 +170,9 @@ void TestJSONRPC::testInitialSetup()
     foreach (const QString &user, NymeaCore::instance()->userManager()->users()) {
         NymeaCore::instance()->userManager()->removeUser(user);
     }
+    NymeaCore::instance()->userManager()->removeUser("");
+
+    QVERIFY(NymeaCore::instance()->userManager()->initRequired());
     QCOMPARE(NymeaCore::instance()->userManager()->users().count(), 0);
 
     QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
@@ -197,6 +201,7 @@ void TestJSONRPC::testInitialSetup()
     response = jsonDoc.toVariant().toMap();
     qWarning() << "Calling Hello on uninitialized instance:" << response.value("status").toString() << response.value("error").toString();
     QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+    QCOMPARE(response.value("params").toMap().value("initialSetupRequired").toBool(), true);
 
     // Any other call should fail with "unauthorized" even if we use a previously valid token
     spy.clear();
@@ -250,6 +255,19 @@ void TestJSONRPC::testInitialSetup()
     qWarning() << "Calling CreateUser on uninitialized instance:" << response.value("status").toString() << response.value("error").toString();
     QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
     QCOMPARE(NymeaCore::instance()->userManager()->users().count(), 1);
+
+    // Now that we have a user, initialSetup should be false in the Hello call
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Hello\"}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant().toMap();
+    qWarning() << "Calling Hello on initialized instance:" << response.value("status").toString() << response.value("error").toString();
+    QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
+    QCOMPARE(response.value("params").toMap().value("initialSetupRequired").toBool(), false);
 
     // Calls should still fail, given we didn't get a new token yet
     spy.clear();
@@ -1075,7 +1093,7 @@ void TestJSONRPC::testPushButtonAuthConnectionDrop()
     QUuid bobId = QUuid::createUuid();
     m_mockTcpServer->clientConnected(bobId);
 
-    // request push button auth for client 1 (alice) and check for OK reply
+    // request push button auth for client 2 (bob) and check for OK reply
     params.clear();
     params.insert("deviceName", "bob");
     response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, bobId);
@@ -1099,6 +1117,89 @@ void TestJSONRPC::testPushButtonAuthConnectionDrop()
     QCOMPARE(notification.value("params").toMap().value("transactionId").toInt(), transactionId);
     QCOMPARE(notification.value("params").toMap().value("success").toBool(), true);
     QVERIFY2(!notification.value("params").toMap().value("token").toByteArray().isEmpty(), "Token is empty while it shouldn't be");
+
+}
+
+void TestJSONRPC::testInitialSetupWithPushButtonAuth()
+{
+    foreach (const QString &user, NymeaCore::instance()->userManager()->users()) {
+        NymeaCore::instance()->userManager()->removeUser(user);
+    }
+    NymeaCore::instance()->userManager()->removeUser("");
+    QVERIFY(NymeaCore::instance()->userManager()->initRequired());
+
+    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QVERIFY(spy.isValid());
+
+    PushButtonAgent pushButtonAgent;
+    pushButtonAgent.init();
+
+    // Hello call should work in any case, telling us initial setup is required
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Hello\"}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    QVariant response = jsonDoc.toVariant();
+    qWarning() << "Calling Hello on uninitialized instance:" << response.toMap().value("status").toString() << response.toMap().value("error").toString();
+    QCOMPARE(response.toMap().value("status").toString(), QStringLiteral("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("initialSetupRequired").toBool(), true);
+
+    // request push button auth for alice and check for OK reply
+    QUuid aliceId = QUuid::createUuid();
+    m_mockTcpServer->clientConnected(aliceId);
+
+    QVariantMap params;
+    params.insert("deviceName", "alice");
+    response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, aliceId);
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
+    int transactionId = response.toMap().value("params").toMap().value("transactionId").toInt();
+
+    spy.clear();
+    pushButtonAgent.sendButtonPressed();
+
+    // Wait for things to happen
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+
+    // There should have been only exactly one message sent, the token for alice
+    QCOMPARE(spy.count(), 1);
+    QVariantMap notification = QJsonDocument::fromJson(spy.first().at(1).toByteArray()).toVariant().toMap();
+    QCOMPARE(spy.first().first().toUuid(), aliceId);
+    QCOMPARE(notification.value("notification").toString(), QLatin1String("JSONRPC.PushButtonAuthFinished"));
+    QCOMPARE(notification.value("params").toMap().value("transactionId").toInt(), transactionId);
+    QCOMPARE(notification.value("params").toMap().value("success").toBool(), true);
+    QVERIFY2(!notification.value("params").toMap().value("token").toByteArray().isEmpty(), "Token is empty while it shouldn't be");
+
+    // initialSetupRequired should be false in Hello call now
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Hello\"}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant();
+    qWarning() << "Calling Hello on uninitialized instance:" << response.toMap().value("status").toString() << response.toMap().value("error").toString();
+    QCOMPARE(response.toMap().value("status").toString(), QStringLiteral("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("initialSetupRequired").toBool(), false);
+
+
+    // CreateUser without a token should fail now even though there are 0 users in the DB
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"Dummy@guh.io\", \"password\": \"DummyPW1!\"}}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    response = jsonDoc.toVariant();
+    qWarning() << "Calling CreateUser on uninitialized instance:" << response.toMap().value("status").toString() << response.toMap().value("error").toString();
+    QCOMPARE(response.toMap().value("status").toString(), QStringLiteral("unauthorized"));
+    QCOMPARE(NymeaCore::instance()->userManager()->users().count(), 0);
 
 }
 

@@ -264,10 +264,11 @@ DeviceManager::DeviceError NymeaCore::removeConfiguredDevice(const DeviceId &dev
         return DeviceManager::DeviceErrorDeviceIsChild;
     }
 
-    if (device->autoCreated()) {
-        qCWarning(dcDeviceManager) << "This device has been auto-created and cannot be deleted manually.";
-        return DeviceManager::DeviceErrorCreationMethodNotSupported;
-    }
+    // FIXME: Let's remove this for now. It will come back with more fine grained control, presumably introducing a RemoveMethod flag in the DeviceClass
+//    if (device->autoCreated()) {
+//        qCWarning(dcDeviceManager) << "This device has been auto-created and cannot be deleted manually.";
+//        return DeviceManager::DeviceErrorCreationMethodNotSupported;
+//    }
 
     // Check if this device has child devices
     QList<Device *> devicesToRemove;

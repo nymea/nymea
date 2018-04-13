@@ -73,7 +73,10 @@ device available in the system and create individual scenes and behaviors
 for your environment.
 
 </source>
-        <translation>nymea ist ein Open-Source-IoT (Internet der Dinge) Server, der es ermöglicht, viele verschiedene Geräte von verschiedenen Herstellern zu steuern. Mit der leistungsstarken Regel-Engine können Sie jedes im System verfügbare Gerät miteinander verbinden und individuelle Szenen und Verhaltensweisen für Ihre Anforderungen erstellen.</translation>
+        <translation>
+nymea ist ein Open-Source-IoT (Internet der Dinge) Server, der es ermöglicht, viele verschiedene Geräte von verschiedenen Herstellern zu steuern. Mit der leistungsstarken Regel-Engine können Sie jedes im System verfügbare Gerät miteinander verbinden und individuelle Szenen und Verhaltensweisen für Ihre Anforderungen erstellen.
+
+</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="175"/>

@@ -53,6 +53,7 @@ class WebServerConfiguration: public ServerConfiguration
 {
 public:
     QString publicFolder;
+    bool restServerEnabled = false;
 };
 
 class NymeaConfiguration : public QObject

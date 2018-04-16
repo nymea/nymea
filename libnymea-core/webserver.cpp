@@ -106,9 +106,8 @@ WebServer::WebServer(const WebServerConfiguration &configuration, const QSslConf
 {
     if (QCoreApplication::instance()->organizationName() == "nymea-test") {
         m_configuration.publicFolder = QCoreApplication::applicationDirPath();
-        qCWarning(dcWebServer) << "Using public folder" << QDir(m_configuration.publicFolder).canonicalPath();
     }
-    qCDebug(dcWebServer) << "Using public folder" << QDir(m_configuration.publicFolder).canonicalPath();
+    qCDebug(dcWebServer) << "Starting WebServer. Interface:" << m_configuration.address << "Port:" << m_configuration.port << "SSL:" << m_configuration.sslEnabled << "AUTH:" << m_configuration.authenticationEnabled << "Public folder:" << QDir(m_configuration.publicFolder).canonicalPath();
 
     m_avahiService = new QtAvahiService(this);
     connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &WebServer::onAvahiServiceStateChanged);
@@ -351,8 +350,17 @@ void WebServer::readClient()
 
     // Verify API query
     if (request.url().path().startsWith("/api/v1")) {
-        emit httpRequestReady(clientId, request);
-        return;
+        if (m_configuration.restServerEnabled) {
+            emit httpRequestReady(clientId, request);
+            return;
+        } else {
+            qCWarning(dcWebServer()) << "The REST server is disabled. You can enable it by adding \'restServerEnabled=true\' in the WebServer section of the nymead.conf file.";
+            HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+            reply->setClientId(clientId);
+            sendHttpReply(reply);
+            reply->deleteLater();
+            return;
+        }
     }
 
     // Check icon call

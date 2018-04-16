@@ -27,7 +27,7 @@
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="90"/>
         <source>Message text</source>
-        <translation> </translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="100"/>

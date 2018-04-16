@@ -114,6 +114,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         insecureConfig.sslEnabled = false;
         insecureConfig.authenticationEnabled = false;
         insecureConfig.publicFolder = defaultWebserverPublicFolderPath();
+        insecureConfig.restServerEnabled = false;
         m_webServerConfigs[insecureConfig.id] = insecureConfig;
         storeWebServerConfig(insecureConfig);
 
@@ -124,6 +125,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         secureConfig.sslEnabled = true;
         secureConfig.authenticationEnabled = false;
         secureConfig.publicFolder = defaultWebserverPublicFolderPath();
+        secureConfig.restServerEnabled = false;
         m_webServerConfigs[secureConfig.id] = secureConfig;
         storeWebServerConfig(secureConfig);
     }
@@ -269,6 +271,7 @@ void NymeaConfiguration::setWebServerConfiguration(const WebServerConfiguration 
     settings.beginGroup("WebServer");
     settings.beginGroup(config.id);
     settings.setValue("publicFolder", config.publicFolder);
+    settings.setValue("restServerEnabled", config.restServerEnabled);
     settings.endGroup();
     settings.endGroup();
 
@@ -479,6 +482,7 @@ void NymeaConfiguration::storeWebServerConfig(const WebServerConfiguration &conf
     settings.beginGroup("WebServer");
     settings.beginGroup(config.id);
     settings.setValue("publicFolder", config.publicFolder);
+    settings.setValue("restServerEnabled", config.restServerEnabled);
     settings.endGroup();
     settings.endGroup();
 }
@@ -495,6 +499,7 @@ WebServerConfiguration NymeaConfiguration::readWebServerConfig(const QString &id
     config.sslEnabled = settings.value("sslEnabled", true).toBool();
     config.authenticationEnabled = settings.value("authenticationEnabled", true).toBool();
     config.publicFolder = settings.value("publicFolder").toString();
+    config.restServerEnabled = settings.value("restServerEnabled", false).toBool();
     settings.endGroup();
     settings.endGroup();
     return config;

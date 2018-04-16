@@ -46,8 +46,7 @@ namespace nymeaserver {
 
 /*! Constructs a \l{RestServer} with the given \a sslConfiguration and \a parent. */
 RestServer::RestServer(const QSslConfiguration &sslConfiguration, QObject *parent) :
-    QObject(parent),
-    m_webserver(0)
+    QObject(parent)
 {
     Q_UNUSED(sslConfiguration)
 
@@ -61,12 +60,10 @@ RestServer::RestServer(const QSslConfiguration &sslConfiguration, QObject *paren
  */
 void RestServer::registerWebserver(WebServer *webServer)
 {
-    m_webserver = webServer;
-    connect(m_webserver, &WebServer::clientConnected, this, &RestServer::clientConnected);
-    connect(m_webserver, &WebServer::clientDisconnected, this, &RestServer::clientDisconnected);
-    connect(m_webserver, &WebServer::httpRequestReady, this, &RestServer::processHttpRequest);
-
-    QMetaObject::invokeMethod(m_webserver, "startServer", Qt::QueuedConnection);
+    connect(webServer, &WebServer::clientConnected, this, &RestServer::clientConnected);
+    connect(webServer, &WebServer::clientDisconnected, this, &RestServer::clientDisconnected);
+    connect(webServer, &WebServer::httpRequestReady, this, &RestServer::processHttpRequest);
+    QMetaObject::invokeMethod(webServer, "startServer", Qt::QueuedConnection);
 }
 
 void RestServer::setup()
@@ -89,12 +86,13 @@ void RestServer::setup()
 
 void RestServer::clientConnected(const QUuid &clientId)
 {
-    m_clientList.append(clientId);
+    WebServer *webserver = dynamic_cast<WebServer*>(sender());
+    m_clientList.insert(clientId, webserver);
 }
 
 void RestServer::clientDisconnected(const QUuid &clientId)
 {
-    m_clientList.removeAll(clientId);
+    m_clientList.take(clientId);
 }
 
 void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &request)
@@ -102,11 +100,14 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
     QStringList urlTokens = request.url().path().split("/");
     urlTokens.removeAll(QString());
 
+    WebServer *webserver = dynamic_cast<WebServer*>(sender());
+    Q_ASSERT(webserver);
+
     // check token count
     if (urlTokens.count() < 3) {
         HttpReply *reply = RestResource::createErrorReply(HttpReply::BadRequest);
         reply->setClientId(clientId);
-        m_webserver->sendHttpReply(reply);
+        webserver->sendHttpReply(reply);
         reply->deleteLater();
         return;
     }
@@ -116,7 +117,7 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
     if (!m_resources.contains(resourceName)) {
         HttpReply *reply = RestResource::createErrorReply(HttpReply::BadRequest);
         reply->setClientId(clientId);
-        m_webserver->sendHttpReply(reply);
+        webserver->sendHttpReply(reply);
         reply->deleteLater();
         return;
     }
@@ -125,7 +126,7 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
     if (request.method() == HttpRequest::Options && urlTokens.count() == 3) {
         HttpReply *reply = RestResource::createCorsSuccessReply();
         reply->setClientId(clientId);
-        m_webserver->sendHttpReply(reply);
+        webserver->sendHttpReply(reply);
         reply->deleteLater();
         return;
     }
@@ -141,7 +142,7 @@ void RestServer::processHttpRequest(const QUuid &clientId, const HttpRequest &re
         reply->startWait();
         return;
     }
-    m_webserver->sendHttpReply(reply);
+    webserver->sendHttpReply(reply);
     reply->deleteLater();
 }
 
@@ -171,7 +172,8 @@ void RestServer::asyncReplyFinished()
         qCWarning(dcWebServer) << "Client for async reply not longer connected.";
     } else {
         reply->setClientId(clientId);
-        m_webserver->sendHttpReply(reply);
+        WebServer *webserver = m_clientList.value(clientId);
+        webserver->sendHttpReply(reply);
     }
     reply->deleteLater();
 }

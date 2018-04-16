@@ -58,7 +58,7 @@
     <message>
         <location filename="../tests/tools/simplepushbuttonhandler/main.cpp" line="34"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished">If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -85,9 +85,7 @@ for your environment.
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
-        <translation type="unfinished">Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
-
-Categories are:</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="195"/>
@@ -102,7 +100,7 @@ Categories are:</translation>
     <message>
         <location filename="../server/main.cpp" line="201"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished">If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="241"/>

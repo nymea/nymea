@@ -20,38 +20,98 @@
 
     The request message is a JSON objects and contains following properties:
 
-    \list
-        \li \code "id": integer \endcode
-            The id should be a unique identifier for the message. Any server response will contain the
-            same id allowing to match responses to requests/commands. This parameter is mandatory.
-        \li \code "method": string \endcode
-            The method field holds the method to be executed. Methods are grouped into namespaces. The
-            method string consists of two parts, the namespace and the method name, separated by a dot.
-            This parameter is mandatory. (i.e: \l{JSONRPC.Introspect})
-        \li \code "token": string \endcode
-            The token property contains the authentication token received from the \l{Authentication}{authentication} process.
-            This parameter is optional and only required if the authentication is enabled.
-        \li \code "params": object \endcode
-            The params contains any JSON object. This parameter is optional and differs according to
-            the requested method.
-    \endlist
+    \code
+        {
+            "id": integer,
+            "method": "Namespace.Method",
+            "o:token": "string",
+            "o:params" { }
+        }
+    \endcode
+
+    \note \b M = mandatory, \b O = optional
+
+    \table
+        \row
+            \li \tt id
+            \li \b M
+            \li integer
+            \li The id should be a unique identifier for the message. Any server response will contain the
+                same id allowing to match responses to requests/commands.
+        \row
+            \li \tt method
+            \li \b M
+            \li string
+            \li The method field holds the method to be executed. Methods are grouped into namespaces. The
+                method string consists of two parts, the namespace and the method name, separated by a dot
+                (i.e: \l{JSONRPC.Introspect}).
+
+                \b{See also:} \l{Methods}
+
+        \row
+            \li \tt token
+            \li \b O
+            \li string
+            \li The token property contains the authentication token received from the \l{Authentication}{authentication}
+                process. This parameter is optional and only required if the authentication is enabled.
+
+                \b{See also:} \l{Authentication}
+
+        \row
+            \li \tt params
+            \li \b O
+            \li object
+            \li The params contains any JSON object. This parameter is optional and differs according to
+                the requested method.
+
+    \endtable
+
 
     \section2 Response message
 
     The response message is a JSON objects and contains following properties:
 
-    \list
-        \li \code "id": integer \endcode
-            The id matching to the requested id.
-        \li \code "status": string \endcode
-            The status property contains either \tt {"success"}, \tt {"error"} or \tt {"unauthorized"} and is mandatory.
-        \li \code "params": object \endcode
-            The params contains the response JSON object. This parameter is optional and differs according to
-            the requested method (see \c Returns section of each method).
-        \li \code "error": string \endcode
-            The error property will only be added if a protocol related error happen and the \tt {"status"} property is \tt {"error"} or \tt {"unauthorized"}.
-            The value contains a description of the error.
-    \endlist
+    \code
+        {
+            "id": integer,
+            "status": "string",
+            "o:params" { },
+            "o:error": "string"
+        }
+    \endcode
+
+    \note \b M = mandatory, \b O = optional
+
+    \table
+        \row
+            \li \tt id
+            \li \b M
+            \li integer
+            \li The id matching to the requested \tt {id}.
+        \row
+            \li \tt status
+            \li \b M
+            \li string
+            \li The status property can be:
+                \list
+                    \li \tt {"success"}
+                    \li \tt {"error"}
+                    \li \tt {"unauthorized"}
+                \endlist
+        \row
+            \li \tt params
+            \li \b O
+            \li object
+            \li The params contains any JSON object. This parameter is optional and differs according to
+                the requested method.
+        \row
+            \li \tt error
+            \li \b O
+            \li string
+            \li The error property will only be added if a protocol related error happen and the \tt {"status"} property is \tt {error} or \tt {unauthorized}.
+                The value contains a description of the API error.
+    \endtable
+
 
     If there is an error on the JSON RPC transport layer, the server will respond with an error message. This error is related
     to the protocol layer of the communication.
@@ -82,31 +142,58 @@
     }
     \endcode
 
-    \list
-        \li \code "id": int \endcode
-            The id in the handshake has always the value 0. This is the first message during connection.
-        \li \code "name": string \endcode
-            This field represents the name of the server you are connected to. This name is user defined an can be changed
-            using \l{Configuration.SetServerName}.
-        \li \code "protocol version": string \endcode
-            The field represents the API version of the server you are connected to. This should be used for API
-            compatibility checks.
-        \li \code "authenticationRequired": bool \endcode
-            If this property is true, a client must perform the authentication process before being able to interact with the API. See section \l{Authentication} for more information. 
-        \li \code "initialSetupRequired": bool \endcode
-            This property indicates if the server was set up already. A server is set up if a user has been created. If the \tt authenticationRequired property is \tt{false}, this field can be ignored.
-        \li \code "pushButtonAuthAvailable": bool \endcode
-            This property indicates if the server has a running push-button agent and therefore the push-button authentication available. If the \tt authenticationRequired property is \tt{false}, this field can be ignored.
-            \li \code "server": string \endcode
-            This property holds the name of the server. This name can not be changed.   
-        \li \code "language": string \endcode
-            This property holds the language of the server. The language can be changed in the settings using \l{Configuration.SetLanguage}.
-        \li \code "uuid": string \endcode
-            This property holds the UUID of the server and can be used as a unique identifier.
-        \li \code "version": string \endcode
-            This property holds the build version of the server.
-    \endlist
+    \table
+        \row
+            \li \tt id
+            \li integer
+            \li The id in the handshake has always the value 0. This is the first message during connection.
+        \row
+            \li \tt name
+            \li string
+            \li This field represents the name of the server you are connected to. This name is user defined an can be changed
+                using \l{Configuration.SetServerName}.
+        \row
+            \li \tt {protocol version}
+            \li string
+            \li The field represents the API version of the server you are connected to (\tt{Major.Minor}). This should be used for API
+                compatibility checks. A major version bump indicates a breaking API change, a minor version bump is means something was added and
+                does not break the API compatibility.
+        \row
+            \li \tt authenticationRequired
+            \li bool
+            \li If this property is true, a client must perform the authentication process before being able to interact with the API.
 
+                \b{See also:} \l{Authentication}
+        \row
+            \li \tt initialSetupRequired
+            \li bool
+            \li This property indicates if the server was set up already. A server is set up if a user has been created.
+                If the \tt authenticationRequired property is \tt{false}, this field can be ignored.
+        \row
+            \li \tt pushButtonAuthAvailable
+            \li bool
+            \li This property indicates if the server has a running push-button agent and therefore the push-button authentication available.
+                If the \tt authenticationRequired property is \tt{false}, this field can be ignored.
+
+                \b{See also:} \l{Push-button authentication}
+        \row
+            \li \tt server
+            \li string
+            \li This property holds the name of the server. This name can not be changed.
+        \row
+            \li \tt language
+            \li string
+            \li This property holds the language of the server. The language can be changed in the settings using \l{Configuration.SetLanguage}.
+        \row
+            \li \tt uuid
+            \li string
+            \li This property holds the UUID of the server and can be used as a unique identifier.
+        \row
+            \li \tt version
+            \li string
+            \li This property holds the build version of the server.
+
+    \endtable
 
     \section1 Sending a request
 
@@ -148,16 +235,38 @@
 
     A notification message has following properties:
 
-    \list
-        \li \code "id": integer \endcode
-            The id should be a unique identifier for the message. The notification id will be increased for each notification sent to your connection.
-        \li \code "notification": string \endcode
-            The notification field holds the name of this notification. Notifications are grouped into namespaces like the methods.
-            The notification string consists of two parts, the namespace and the notification name, separated by a dot.
-            This property can be used to check if a received message is a response to a request or a notification.
-        \li \code "params": object \endcode
-            The params contains any JSON object. This parameter is optional and differs according to each \l{Notifications}{notification}.
-    \endlist
+    \code
+        {
+            "id": integer,
+            "notification": "Namespace.Notification",
+            "o: params": { }
+
+        }
+    \endcode
+
+    \note \b M = mandatory, \b O = optional
+
+    \table
+        \row
+            \li \tt id
+            \li \b M
+            \li integer
+            \li The id should be a unique identifier for the message. The notification id will be increased for each notification sent to your connection.
+        \row
+            \li \tt notification
+            \li \b M
+            \li string
+            \li The notification field holds the name of this notification. Notifications are grouped into namespaces like the methods.
+                The notification string consists of two parts, the namespace and the notification name, separated by a dot.
+                This property can be used to check if a received message is a response to a request or a notification.
+
+                \b{See also:} \l{Methods}
+        \row
+            \li \tt params
+            \li \b O
+            \li object
+            \li The params contains any JSON object. This parameter is optional and differs according to each \l{Notifications}{notification}.
+    \endtable
 
     \chapter Authentication
     

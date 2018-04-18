@@ -41,6 +41,9 @@ INSTALLS += translations
 
 QMAKE_EXTRA_TARGETS += licensecheck doc test lupdate lrelease
 
+# Show doc files in project tree
+OTHER_FILES += doc/*.qdoc*
+
 # Inform about nymea build
 message(============================================)
 message("Qt version:" $$[QT_VERSION])

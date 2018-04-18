@@ -72,6 +72,7 @@ void TestRestLogging::initTestCase()
     config.address = QHostAddress("127.0.0.1");
     config.port = 3333;
     config.sslEnabled = true;
+    config.restServerEnabled = true;
     NymeaCore::instance()->configuration()->setWebServerConfiguration(config);
     qApp->processEvents();
 }

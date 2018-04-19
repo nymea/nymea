@@ -12,7 +12,7 @@
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="68"/>
         <source>User ID</source>
-        <translation type="unfinished">identifiant d&apos;utilisateur</translation>
+        <translation type="unfinished">Identifiant d&apos;utilisateur</translation>
     </message>
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="74"/>
@@ -27,22 +27,22 @@
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="90"/>
         <source>Message text</source>
-        <translation>Texte du message</translation>
+        <translation type="unfinished">Texte du message</translation>
     </message>
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="100"/>
         <source>Send notification</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Envoyer une notification</translation>
     </message>
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="109"/>
         <source>connected</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">connecté</translation>
     </message>
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="111"/>
         <source>Connected changed</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Connecté modifié</translation>
     </message>
 </context>
 <context>

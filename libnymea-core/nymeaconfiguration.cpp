@@ -222,7 +222,7 @@ QLocale NymeaConfiguration::locale() const
 
 void NymeaConfiguration::setLocale(const QLocale &locale)
 {
-    qCDebug(dcApplication()) << "Configuration: set locale:" << locale.name() << locale.nativeCountryName() << locale.nativeLanguageName();
+    qCDebug(dcApplication()) << "Configuration: Set system locale:" << locale.name() << locale.nativeCountryName() << locale.nativeLanguageName();
 
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("nymead");

@@ -38,6 +38,9 @@ class TestConfigurations: public NymeaTestBase
 {
     Q_OBJECT
 
+protected slots:
+    void initTestCase();
+
 private slots:
     void getConfigurations();
 
@@ -51,6 +54,21 @@ private:
     QVariantMap loadBasicConfiguration();
 
 };
+
+void TestConfigurations::initTestCase()
+{
+    QDir dir(NymeaSettings::translationsPath());
+    dir.mkpath(NymeaSettings::translationsPath());
+    QStringList languages = {"de", "en_US"};
+    foreach (const QString &language, languages) {
+        QFile f(NymeaSettings::translationsPath().append("/nymead-" + language + ".qm"));
+        QVERIFY2(f.open(QFile::WriteOnly), "Could not create translation file.");
+        f.write(" ");
+        f.close();
+    }
+
+    NymeaTestBase::initTestCase();
+}
 
 void TestConfigurations::getConfigurations()
 {
@@ -250,18 +268,21 @@ void TestConfigurations::testLanguages()
 
     QVariantList languageVariantList = responseMap.value("languages").toList();
     foreach (const QVariant &languageVariant, languageVariantList) {
+        // create a new spy for each run as we restart the server and kill the old one in this loop
+         QSignalSpy notificationSpy2 (m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
         // Get current configurations
         basicConfigurationMap = loadBasicConfiguration();
 
         // Set language
-        params.clear(); response.clear(); notificationSpy.clear();
+        params.clear(); response.clear();
         params.insert("language", languageVariant);
         QVariant response = injectAndWait("Configuration.SetLanguage", params);
         verifyConfigurationError(response);
 
         // Check notification
-        notificationSpy.wait(500);
-        QVariantList languageChangedNotifications = checkNotifications(notificationSpy, "Configuration.LanguageChanged");
+        notificationSpy2.wait(500);
+        QVariantList languageChangedNotifications = checkNotifications(notificationSpy2, "Configuration.LanguageChanged");
 
         // If the language did not change no notification should be emitted
         if (basicConfigurationMap.value("language").toString() == languageVariant.toString()) {
@@ -274,6 +295,8 @@ void TestConfigurations::testLanguages()
 
             // Restart the server and check if the language will be loaded correctly
             restartServer();
+            enableNotifications();
+
 
             // Get configuration
             basicConfigurationMap = loadBasicConfiguration();

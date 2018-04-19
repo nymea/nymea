@@ -47,6 +47,7 @@ public:
 
     explicit UserManager(QObject *parent = 0);
 
+    bool initRequired() const;
     QStringList users() const;
 
     UserError createUser(const QString &username, const QString &password);

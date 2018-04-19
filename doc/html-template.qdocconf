@@ -18,7 +18,7 @@ HTML.postheader = \
     "        <div>\n" \
     "          <ul class=\"nymea-navbar-nav\">\n" \
     "            <li><a href=\"interfaces.html\">Interfaces</a></li>\n" \
-    "            <li><a href=\"api.html\">API</a></li>\n" \
+    "            <li><a href=\"jsonrpc.html\">API</a></li>\n" \
     "            <li><a href=\"write-plugins.html\">Write Plugins</a></li>\n" \
     "          </ul>\n" \
     "        </div>\n" \

@@ -48,8 +48,7 @@ public:
     void registerWebserver(WebServer *webServer);
 
 private:
-    WebServer *m_webserver;
-    QList<QUuid> m_clientList;
+    QHash<QUuid, WebServer*> m_clientList;
     QHash<QString, RestResource *> m_resources;
 
     QHash<QUuid, HttpReply *> m_asyncReplies;

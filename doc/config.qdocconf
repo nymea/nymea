@@ -29,7 +29,7 @@ headers.fileextensions = "*.h"
 
 imagedirs = images
 
-exampledirs = ..
+exampledirs = examples/
 
 sourcedirs = ..
 sources.fileextensions = "*.cpp *.qdoc"

@@ -17,17 +17,17 @@
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="74"/>
         <source>Device</source>
-        <translation>Dispositif</translation>
+        <translation type="unfinished">Dispositif</translation>
     </message>
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="84"/>
         <source>Title</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Titre</translation>
     </message>
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="90"/>
         <source>Message text</source>
-        <translation type="unfinished"></translation>
+        <translation>Texte du message</translation>
     </message>
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="100"/>

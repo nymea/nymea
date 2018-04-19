@@ -7,17 +7,17 @@
         <location filename="../libnymea-core/cloudnotifications.cpp" line="56"/>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="121"/>
         <source>Cloud Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Notification de cloud</translation>
     </message>
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="68"/>
         <source>User ID</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">identifiant d&apos;utilisateur</translation>
     </message>
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="74"/>
         <source>Device</source>
-        <translation type="unfinished"></translation>
+        <translation>Dispositif</translation>
     </message>
     <message>
         <location filename="../libnymea-core/cloudnotifications.cpp" line="84"/>

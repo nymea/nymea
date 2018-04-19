@@ -168,8 +168,12 @@ QString NymeaSettings::settingsPath()
 /*! Returns the default system translation path \tt{/usr/share/nymea/translations}. */
 QString NymeaSettings::translationsPath()
 {
+    QString organisationName = QCoreApplication::instance()->organizationName();
+
     if (!qgetenv("SNAP").isEmpty()) {
         return QString(qgetenv("SNAP") + "/usr/share/nymea/translations");
+    } else if (organisationName == "nymea-test") {
+        return "/tmp/" + organisationName;
     } else {
         return QString("/usr/share/nymea/translations");
     }

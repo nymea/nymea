@@ -106,6 +106,8 @@
 #include "plugin/device.h"
 #include "cloudnotifications.h"
 
+#include <QDir>
+
 namespace nymeaserver {
 
 NymeaCore* NymeaCore::s_instance = 0;
@@ -437,8 +439,23 @@ ServerManager *NymeaCore::serverManager() const
 /*! Returns the list of available system languages. */
 QStringList NymeaCore::getAvailableLanguages()
 {
-    // FIXME: load available translations
-    return QStringList() << "en_US" << "de_DE";
+    qCDebug(dcApplication()) << "Loading translations from" << NymeaSettings::translationsPath();
+
+    QDir translationDirectory(NymeaSettings::translationsPath());
+    translationDirectory.setNameFilters(QStringList() << "*.qm");
+    QStringList translationFiles = translationDirectory.entryList();
+
+    QStringList availableLanguages;
+    foreach (QString translationFile, translationFiles) {
+        if (!translationFile.startsWith("nymead-"))
+            continue;
+
+        QString language = translationFile.remove("nymead-").remove(".qm");
+        QLocale languageLocale(language);
+        availableLanguages.append(languageLocale.name());
+    }
+
+    return availableLanguages;
 }
 
 /*! Returns a pointer to the \l{BluetoothServer} instance owned by NymeaCore. */

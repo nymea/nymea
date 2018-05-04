@@ -33,6 +33,14 @@ LIBS += -lnymea
 
 PLUGIN_PATH=/usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')/nymea/plugins/
 
+QMAKE_CXXFLAGS *= -Werror -std=c++11 -g
+QMAKE_LFLAGS *= -std=c++11
+
+# Check if ccache is enabled
+ccache {
+    QMAKE_CXX = ccache g++
+}
+
 # Make the device plugin json file visible in the Qt Creator
 OTHER_FILES+=deviceplugin"$$TARGET".json
 

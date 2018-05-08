@@ -209,18 +209,24 @@ bool TcpServer::stopServer()
 
 void SslServer::incomingConnection(qintptr socketDescriptor)
 {
+
     QSslSocket *sslSocket = new QSslSocket(this);
 
     connect(sslSocket, &QSslSocket::encrypted, [this, sslSocket](){ emit clientConnected(sslSocket); });
     connect(sslSocket, &QSslSocket::readyRead, this, &SslServer::onSocketReadyRead);
     connect(sslSocket, &QSslSocket::disconnected, this, &SslServer::onClientDisconnected);
+    connect(sslSocket, &QSslSocket::stateChanged, this, &SslServer::onClientSocketStateChanged);
 
     if (!sslSocket->setSocketDescriptor(socketDescriptor)) {
-        qCWarning(dcConnection) << "Failed to set SSL socket descriptor.";
+        qCWarning(dcConnection()) << "Failed to set SSL socket descriptor.";
         delete sslSocket;
         return;
     }
+
+    qCDebug(dcTcpServer()) << "Incomming client connection from" << sslSocket->peerAddress().toString();
+
     if (m_sslEnabled) {
+        qCDebug(dcTcpServer()) << "Start server encryption for client" << sslSocket->peerAddress().toString();
         sslSocket->setSslConfiguration(m_config);
         sslSocket->startServerEncryption();
     } else {
@@ -250,5 +256,12 @@ void SslServer::onSocketReadyRead()
         m_receiveBuffer.clear();
     }
 }
+
+void SslServer::onClientSocketStateChanged(QAbstractSocket::SocketState state)
+{
+    QSslSocket *socket = static_cast<QSslSocket*>(sender());
+    qCDebug(dcTcpServer()) << "Client socket state changed" << socket->peerAddress() << state;
+}
+
 
 }

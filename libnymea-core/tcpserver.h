@@ -61,6 +61,7 @@ protected:
 private slots:
     void onClientDisconnected();
     void onSocketReadyRead();
+    void onClientSocketStateChanged(QAbstractSocket::SocketState state);
 
 private:
     bool m_sslEnabled = false;
@@ -94,6 +95,7 @@ private slots:
     void onClientConnected(QSslSocket *socket);
     void onClientDisconnected(QSslSocket *socket);
     void onDataAvailable(QSslSocket *socket, const QByteArray &data);
+
     void onError(QAbstractSocket::SocketError error);
     void onEncrypted();
 

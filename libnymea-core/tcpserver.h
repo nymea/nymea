@@ -61,6 +61,7 @@ protected:
 private slots:
     void onClientDisconnected();
     void onSocketReadyRead();
+    void onEncrypted();
     void onClientSocketStateChanged(QAbstractSocket::SocketState state);
 
 private:

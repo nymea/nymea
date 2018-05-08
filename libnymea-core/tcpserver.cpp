@@ -212,10 +212,11 @@ void SslServer::incomingConnection(qintptr socketDescriptor)
 
     QSslSocket *sslSocket = new QSslSocket(this);
 
-    connect(sslSocket, &QSslSocket::encrypted, [this, sslSocket](){ emit clientConnected(sslSocket); });
+    //connect(sslSocket, &QSslSocket::encrypted, [this, sslSocket](){ emit clientConnected(sslSocket); });
     connect(sslSocket, &QSslSocket::readyRead, this, &SslServer::onSocketReadyRead);
     connect(sslSocket, &QSslSocket::disconnected, this, &SslServer::onClientDisconnected);
     connect(sslSocket, &QSslSocket::stateChanged, this, &SslServer::onClientSocketStateChanged);
+    connect(sslSocket, &QSslSocket::encrypted, this, &SslServer::onEncrypted);
 
     if (!sslSocket->setSocketDescriptor(socketDescriptor)) {
         qCWarning(dcConnection()) << "Failed to set SSL socket descriptor.";
@@ -255,6 +256,13 @@ void SslServer::onSocketReadyRead()
         emit dataAvailable(socket, m_receiveBuffer);
         m_receiveBuffer.clear();
     }
+}
+
+void SslServer::onEncrypted()
+{
+    QSslSocket *socket = static_cast<QSslSocket*>(sender());
+    qCDebug(dcTcpServer()) << "Client socket encryted:" << socket->peerAddress();
+    emit clientConnected(socket);
 }
 
 void SslServer::onClientSocketStateChanged(QAbstractSocket::SocketState state)

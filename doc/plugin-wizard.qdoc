@@ -1,0 +1,14 @@
+/*!
+    \example template
+    \title Plugin wizard
+    \ingroup tutorials
+    \brief Explanation of the Qt Creator plugin wizard template
+
+
+    This tutorial shows you how to start a new plugin project using the nymea-qtcreator wizard. You can find the source code of the
+    qt-creator wizard on our \l{https://github.com/guh/nymea-qtcreator-wizards}{github page}.
+
+
+
+
+*/

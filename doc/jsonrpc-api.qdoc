@@ -1,4 +1,5 @@
-In following section you can find a detaild description of the current API version 1.4.
+/*!
+In the following section you can find a detaild description of the current API version 1.4.
 \list
 \li \l{Types}
 \li \l{Methods}
@@ -3764,3 +3765,4 @@ Emitted whenever a Rule was removed.
     }
 }
 \endcode
+*/

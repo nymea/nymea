@@ -201,12 +201,12 @@
     In order to send a request to the server, the client has to send an API message according to the format descibed \l{Message format}{here}.
 
     The JSON content should always be sent as a compack JSON Object (without spaces, tabs and new line characters within the object \tt{{...}}).
-    At the end of this compact JSON string the payload must be terminated with the \tt{\n} character. This makes sure, that the parsing of the
+    At the end of this compact JSON string the payload must be terminated with the \tt{\\n} character. This makes sure, that the parsing of the
     message is easier and a single message can be split in multiple cunckes during the transport. The client parsing should work the same way.
 
     In order to demonstrate this with an example, the \l{JSONRPC.Hello} request could look like this:
 
-    \note Send following content as compact JSON ending with \tt{\n}:
+    \note Send following content as compact JSON ending with \tt{\\n}:
 
     \code
     {"id":122,"method":"JSONRPC.Hello"}
@@ -218,7 +218,7 @@
     to our request.
 
     The server will return a response for this request. The response will have the same \tt id as your request. The json content of the response will
-    also be a compact JSON string ending with the \tt{\n} character.
+    also be a compact JSON string ending with the \tt{\\n} character.
 
     \code
     {"id":122,"params":{"authenticationRequired":false,"id":0,"initialSetupRequired":false,"language":"de_DE","name":"My nymea","protocol version":"1.2","pushButtonAuthAvailable":false,"server":"nymea","uuid":"{42842b0f-a7bb-4a94-b624-a55f31c5603e}","version":"0.8.3"},"status":"success"}

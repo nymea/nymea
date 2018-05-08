@@ -167,6 +167,7 @@ def writeDocumentationContent(apiVersion, apiJson):
     printInfo('--> Write API documentation content')
     printInfo('--> API version: \"%s\"' % (version))
 
+    writeToFile('/*!')
     writeToFile('In the following section you can find a detaild description of the current API version %s.' % apiVersion)
 
     writeToFile('\list')
@@ -190,6 +191,7 @@ def writeDocumentationContent(apiVersion, apiJson):
 
     writeToFile("\section1 Full introspect")
     writeCodeSection(apiJson)
+    writeToFile('*/')
 
 
 ###########################################################################

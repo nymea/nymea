@@ -1,13 +1,14 @@
 /*!
     \page build-environment.html
     \title Set up the build environment
-    \brief This tutorial shows you how to set up the build environment for developing nymea.
+    \brief This tutorial shows you how to set up the build environment for developing with nymea.
   
-    \b{\unicode{0x2192} \underline{\l{https://www.youtube.com/watch?v=7a_k0C1Ib1A}{Video for this tutorial}}}
-
-    Assuming you are working on an Ubuntu system here are the steps how to set up the build environment. Basically you can choose your preferred SDK but all tutorials are based on the Qt Creator and we reccommend to use that one. You can also use the Ubuntu SDK, which is basically a modified Qt Creator. 
+    Assuming you are working on an Ubuntu system here are the steps how to set up the build environment. Basically you
+    can choose your preferred SDK but all tutorials are based on the Qt Creator and we recommend to use that one.
     
-    \note Please take care that you are using the Qt version from the system for building. The nymea server will always be built with the official Qt version for the appropriate system version. The plugin \underline{must} have the same version like the nymea server.    
+    \note Please take care that you are using the Qt version from the system for building. The nymea server will always be
+    built with the official Qt version for the appropriate system version. The plugin \underline{must} have the same
+    version like the nymea server.
 
     \section2 Install Qt
     In the first step you need to install the Qt libraries:
@@ -20,27 +21,8 @@
 
     You can find a good instructions how to install the nymea repository on your system here:
 
-    \b {\unicode{0x2192}} \l{https://github.com/guh/nymea/wiki/Install}{nymea install wiki}
+    \b {\unicode{0x2192}} \l{https://nymea.io/en/wiki/nymea/master/install}{nymea install wiki}
 
-    For example, if you are working on Ubuntu 15.04 Vivid, you can create a source list file and add the nymea repository like this:
-
-    \code 
-    $ sudo nano /etc/apt/sources.list.d/nymea.list
-    \endcode
-    
-    Copy following 3 lines in the \tt /etc/apt/sources.list.d/nymea.list file, save and close it
-    \code 
-    ## nymea repo
-    deb http://repo.nymea.io xenial main
-    deb-src http://repo.nymea.io xenial main
-    \endcode
-
-    Now you need to add the public key of the \e nymea-repository to your key list with following command:
-
-    \code
-    $ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key 6B9376B0
-    \endcode
-    
     Update your package lists:    
 
     \code
@@ -50,17 +32,9 @@
     Now you are ready to install the nymea packages: 
     
     \code
-    $ sudo apt-get install nymea nymea-webinterface nymea-cli nymea-doc libnymea1-dev
+    $ sudo apt-get install nymea nymea-cli nymea-doc libnymea1-dev nymea-qtcreator-wizards
     \endcode
-    
-    \list
-        \li \underline{\e nymea} \unicode{0x2192} the \tt nymea package is a meta package and will install the \tt nymead, \tt libnymea1 and \tt nymea-plugins package so you can start the nymea daemon.
-        \li \underline{\e nymea-webinterface} \unicode{0x2192} the \tt nymea-webinterface package will install the webinterface for nymea, which is accessable on \l{http://localhost:3333}. 
-        \li \underline{\e nymea-cli} \unicode{0x2192} the \tt nymea-cli package will install the command line interface for the nymea JSON-RPC API. You can find more information \l{https://github.com/guh/nymea/wiki/nymea-cli}{here}.
-        \li \underline{\e nymea-doc} \unicode{0x2192} the \tt nymea-doc package will install the offline documentation on your system (this homepage). You can access the documentation in your brwoser with \l{file:///usr/share/doc/nymea/html/index.html}{file:///usr/share/doc/nymea/html/index.html}.
-        \li \underline{\e libnymea1-dev} \unicode{0x2192} the \tt libnymea1-dev package brings all development files of nymea (header files and lib) which will be needed to write a plugin.
-    \endlist
-        
+
     Once you have successfully installed everything you are ready for \l{Getting started}.
 */
 

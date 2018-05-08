@@ -3,18 +3,29 @@
     \title Getting Started
     \brief Understanding the basic concept of nymea plugins
 
-    \b{\unicode{0x2192} \underline{\l{https://www.youtube.com/watch?v=B8oqItKCcgU}{Video for this tutorial}}}
-
-    Plugins in nymea are used to exand the functionalitys and capabilitys of the nymea server. A plugin is basically a shared library, which will be loaded dynamically from the nymea server during the start up process. Each plugin has a \e name, a \e uuid and a list of supported \e vendors which will be visible in the system once the plugin is loaded. Each of thouse \l{Vendor}{Vendors} contains a list of supported \l{DeviceClass}{DeviceClasses}. A \l{DeviceClass} describes how the supported \l{Device} looks like, how it will be created (\l{DeviceClass::CreateMethod}{CreateMethod}), how the setup (\l{DeviceClass::SetupMethod}{SetupMethod}) looks like and what you can do with the \l{Device}.
+    Plugins in nymea are used to expand the functionalitys and capabilitys of the nymea server. A plugin is basically a shared library,
+    which will be loaded dynamically from the nymea server during the start up process. Each plugin has a \e name, a \e uuid and a
+    list of supported \e vendors which will be visible in the system once the plugin is loaded. Each of thouse \l{Vendor}{Vendors} contains
+    a list of supported \l{DeviceClass}{DeviceClasses}. A \l{DeviceClass} describes how the supported \l{Device} looks like, how it will be
+    created (\l{DeviceClass::CreateMethod}{CreateMethod}), how the setup (\l{DeviceClass::SetupMethod}{SetupMethod}) looks like and what you
+    can do with the \l{Device}.
 
     \section1 Devices
     A device in nymea can represent a real device, a gateway or even a service like weather. When you want to represent you own device / service in nymea, you should try to abstract that device and think in terms like:
     
     \list
-        \li \l{ParamType}{ParamTypes} \unicode{0x2192} A \l{Device} can have \l{Param}{Params}, which will be needed to set up the device (like IP addresses or device configurations) and give information for the user like name or location. The \l{ParamType} represents the description of an actual \l{Param}.
-        \li \l{StateType}{StateTypes} \unicode{0x2192} A \l{Device} can have \l{State}{States}, which basically represent a value of a \l{Device} like \e {current temperature} or \e ON/OFF. The \l{StateType} represents the description of an actual \l{State}.
-        \li \l{EventType}{EventTypes} \unicode{0x2192} A \l{Device} can emit \l{Event}{Events}, which basically represent a signal. An example of an \l{Event} could be: \e {Button pressed}. An \l{Event} can have \l{Param}{Params} to give the possibility to pass information with the signal. The \l{EventType} represents the description of an actual \l{Event}. 
-        \li \l{ActionType}{ActionTypes} \unicode{0x2192} A \l{Device} can execute \l{Action}{Actions}, which represent basically a method for the \l{Device} which the user can execute. An example of an \l{Action} could be: \e {Set temperature}. An \l{Action} can have \l{Param}{Params} to give the possibility to parameterize the action. The \l{ActionType} represents the description of an actual \l{Action}.
+        \li \l{ParamType}{ParamTypes} \unicode{0x2192} A \l{Device} can have \l{Param}{Params}, which will be needed to set up the device
+            (like IP addresses or device configurations) and give information for the user like name or location. The \l{ParamType} represents
+            the description of an actual \l{Param}.
+        \li \l{StateType}{StateTypes} \unicode{0x2192} A \l{Device} can have \l{State}{States}, which basically represent a value of a \l{Device}
+            like \e {current temperature} or \e ON/OFF. The \l{StateType} represents the description of an actual \l{State}.
+        \li \l{EventType}{EventTypes} \unicode{0x2192} A \l{Device} can emit \l{Event}{Events}, which basically represent a signal.
+            An example of an \l{Event} could be: \e {Button pressed}. An \l{Event} can have \l{Param}{Params} to give the possibility to pass
+            information with the signal. The \l{EventType} represents the description of an actual \l{Event}.
+        \li \l{ActionType}{ActionTypes} \unicode{0x2192} A \l{Device} can execute \l{Action}{Actions}, which represent basically
+            a method for the \l{Device} which the user can execute. An example of an \l{Action} could be: \e {Set temperature}.
+            An \l{Action} can have \l{Param}{Params} to give the possibility to parameterize the action. The \l{ActionType} represents
+            the description of an actual \l{Action}.
     \endlist
 
     The \l{DeviceClass} represents the description of an actual \l{Device}.
@@ -23,197 +34,8 @@
     The \e libnymea provides a list of \l{Hardware Resources}{HardwareResources}, which can be used in every plugin. When sou start writing a plugin, you need to know which resource you will need. Each resource provides it's own interface for a \l{DevicePlugin}. In the plugin you don't have to take care about the resource. 
     
     \section1 Getting started with a plugin
-    In order to show how a plugin ist structured here is an example of the most minimalistic device plugin possible for the nymea system.
-    
-    For an easier start we provide a set of plugin templates which can be used for your own plugin and to have a basic for the tutorials described in this documentation. You can get the templates with following command:
-
-    \code
-    $ git clone https://github.com/guh/plugin-templates.git
-    \endcode
-
-    This will create the \tt plugin-templates folder containing all templates and examples you will need to write your own plugin. Let's start with the smallest, simplest plugin.
-
-    \section2 Basic structure
-    
-    The name of the plugin should be clear and inform about the content in one word. In this first minimalistic example the \b <pluginName> is \e "minimal".
-
-    The basic structure of the \e minimal plugin looks like this:
-
-    \code
-        $ cd plugin-templates
-        $ ls -l minimal/ 
-
-        devicepluginminimal.cpp
-        devicepluginminimal.h
-        devicepluginminimal.json
-        minimal.pro
-        plugins.pri
-    \endcode    
-
-    \section3 minimal.pro
-    The \tt minimal.pro file is the project file of the plugin, which can be openend with the \tt{Qt Creator}. The name of this file should be the same as the folder name of the project. In this example the name would be \e "minimal".
-
-    \code
-    include(plugins.pri)
-
-    TARGET = $$qtLibraryTarget(nymea_devicepluginminimal)
-
-    message("Building $$deviceplugin$${TARGET}.so")
-
-    SOURCES += \
-        devicepluginminimal.cpp \
-
-    HEADERS += \
-        devicepluginminimal.h \
-    \endcode
-
-    The \b TARGET parameter definens the name of the resulting plugin lib file and should should have following name structure: 
-
-    \tt {nymea_deviceplugin\b<pluginName>} 
-
-    In this example the pluginname is \e minimal, which means the lib file name will be \e nymea_devicepluginminimal.so. You can check the name of the plugin in the "Project Messages" (\tt{alt + 6} in Qt Creator).
-
-    The \b SOURCES and \b HEADERS variables define the \tt .cpp and \tt .h files of your plugin like in any other Qt project. 
 
 
-    \section3 plugins.pri
-    The \tt plugins.pri file contains all relevant definitions and configuration to build a plugin. Each plugin must contain this file and \underline{should not} be changed. In this file the precompiler \b nymea-generateplugininfo will be called.
-    \code
-        TEMPLATE = lib
-        CONFIG += plugin
 
-        QT += network
-
-        QMAKE_CXXFLAGS += -Werror -std=c++11
-        QMAKE_LFLAGS += -std=c++11
-
-        INCLUDEPATH += /usr/include/nymea
-        LIBS += -lnymea
-
-        infofile.output = plugininfo.h
-        infofile.commands = /usr/bin/nymea-generateplugininfo ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
-        infofile.depends = /usr/bin/nymea-generateplugininfo
-        infofile.CONFIG = no_link
-        JSONFILES = deviceplugin"$$TARGET".json
-        infofile.input = JSONFILES
-
-        QMAKE_EXTRA_COMPILERS += infofile
-
-        target.path = /usr/lib/nymea/plugins/
-        INSTALLS += target
-    \endcode
-    
-
-    If you need an extra Qt module i.e. \tt serialport please add it in the \tt <pluginName>.pro file an \underline{not} in the \tt plugin.pri:
-    \note Please make sure you have installed the corresponding development libs i.e. \b{\tt{sudo apt-get install libqt5serialport5-dev}}
-    \code 
-        QT += serialport 
-    \endcode
-
-    \section3 devicepluginminimal.json
-    The properties of a plugin will be definend with in the \tt JSON file containing all needed information for nymea to load it. The name convention fot the json file is:
-    
-    \tt {deviceplugin\b{<pluginName>}.json}
-
-    This file must have a clear, definend structure and looking like this:
-
-    \note For more details about the structure, values and objects please take a look at the \l{The Plugin JSON File} documentation.
-
-    \code
-        {
-            "name": "Minimal plugin",
-            "idName": "Minimal",
-            "id": "6878754a-f27d-4007-a4e5-b030b55853f5",
-            "vendors": [
-                {
-                    "name": "Minimal vendor",
-                    "idName": "minimal",
-                    "id": "3897e82e-7c48-4591-9a2f-0f56c55a96a4",
-                    "deviceClasses": [
-                        {
-                            "deviceClassId": "7014e5f1-5b04-407a-a819-bbebd11fa372",
-                            "idName": "minimal",
-                            "name": "Minimal device",
-                            "createMethods": ["user"],
-                            "basicTags": [
-                                "Device"
-                            ],
-                            "paramTypes": [
-                                {
-                                    "name": "name",
-                                    "type": "QString",
-                                    "defaultValue": "Minimal device"
-                                }
-    	                    ]
-    	                }
-                    ]
-                }
-            ]
-        }
-    \endcode 
-
-    In this minimal example of a device plugin we have one \l{Vendor} ("Minimal vendor") with the VendorId \tt {3897e82e-7c48-4591-9a2f-0f56c55a96a4}, which contains one \l{DeviceClass} with the name "Minimal device". The \l{DeviceClass} has one QString \l{Param} called \e name.
-
-    \section3 devicepluginminimal.h
-    The main header file of the plugin. The naming convention is:
-
-    \tt {deviceplugin\b<pluginName>.h}
-    
-    In this file you can find the main class of the plugin: \e DevicePluginMinimal. As you can see the \e DevicePluginMinimal inherits from the class \l{DevicePlugin}. You can check out the \l{DevicePlugin} class description to find how a \l{DevicePlugin} looks like.
-
-    \code
-        #ifndef DEVICEPLUGINMINIMAL_H
-        #define DEVICEPLUGINMINIMAL_H
-
-        #include "plugin/deviceplugin.h"
-        #include "devicemanager.h"
-
-        class DevicePluginMinimal : public DevicePlugin
-        {
-            Q_OBJECT
-
-            Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginminimal.json")
-            Q_INTERFACES(DevicePlugin)
-
-        public:
-            explicit DevicePluginMinimal();
-
-            DeviceManager::HardwareResources requiredHardware() const override;
-            DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
-        };
-
-        #endif // DEVICEPLUGINBOBLIGHT_H
-    \endcode
-
-    As you can see this class has two methods which override the corresponding method in the \l{DevicePlugin} class. These two methods are pure virtual, which meas you \underline{must} implement them.     
-
-        \section3 devicepluginminimal.cpp
-    The implementation of the \l{DevicePlugin}. The naming convention is:
-
-    \tt {deviceplugin\b<pluginName>.cpp}
-    
-    \code
-        #include "devicepluginminimal.h"
-        #include "plugininfo.h"
-
-        DevicePluginMinimal::DevicePluginMinimal()
-        {
-        }
-
-        DeviceManager::HardwareResources DevicePluginMinimal::requiredHardware() const
-        {
-            return DeviceManager::HardwareResourceNone;
-        }
-
-        DeviceManager::DeviceSetupStatus DevicePluginMinimal::setupDevice(Device *device)
-        {
-            Q_UNUSED(device)
-            qCDebug(dcMinimal) << "setup device" << device->name() << device->id();
-
-            return DeviceManager::DeviceSetupStatusSuccess;
-        }
-    \endcode
-    
-    Now you can start with \l{Tutorial 1 - The "Minimal" plugin}.
 
 */

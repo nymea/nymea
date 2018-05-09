@@ -224,10 +224,10 @@ void SslServer::incomingConnection(qintptr socketDescriptor)
         return;
     }
 
-    qCDebug(dcTcpServer()) << "Incomming client connection from" << sslSocket->peerAddress().toString();
+    qCDebug(dcTcpServer()) << "Incomming client connection from" << sslSocket->socketDescriptor() << sslSocket->peerAddress().toString();
 
     if (m_sslEnabled) {
-        qCDebug(dcTcpServer()) << "Start server encryption for client" << sslSocket->peerAddress().toString();
+        qCDebug(dcTcpServer()) << "Start server encryption for client" << sslSocket->socketDescriptor() << sslSocket->peerAddress().toString();
         sslSocket->setSslConfiguration(m_config);
         sslSocket->startServerEncryption();
     } else {
@@ -261,15 +261,14 @@ void SslServer::onSocketReadyRead()
 void SslServer::onEncrypted()
 {
     QSslSocket *socket = static_cast<QSslSocket*>(sender());
-    qCDebug(dcTcpServer()) << "Client socket encryted:" << socket->peerAddress();
+    qCDebug(dcTcpServer()) << "Client socket encryted:" << socket->socketDescriptor() << socket->peerAddress();
     emit clientConnected(socket);
 }
 
 void SslServer::onClientSocketStateChanged(QAbstractSocket::SocketState state)
 {
     QSslSocket *socket = static_cast<QSslSocket*>(sender());
-    qCDebug(dcTcpServer()) << "Client socket state changed" << socket->peerAddress() << state;
+    qCDebug(dcTcpServer()) << "Client socket state changed" << socket->socketDescriptor() << state;
 }
-
 
 }

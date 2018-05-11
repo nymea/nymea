@@ -1,0 +1,17 @@
+{
+    "states": [
+        {
+            "name": "state",
+            "type": "String",
+            "allowedValues": ["open", "closed", "opening", "closing"]
+        }
+    ],
+    "actions": [
+        {
+            "name": "open"
+        },
+        {
+            "name": "close"
+        }
+    ]
+}

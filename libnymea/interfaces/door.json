@@ -2,16 +2,13 @@
     "extends": "closable",
     "states": [
         {
-            "name": "intermediatePosition",
+            "name": "latched",
             "type": "bool"
         }
     ],
     "actions": [
         {
-            "name": "stop"
-        },
-        {
-            "name": "positionIntermediate"
+            "name": "unlatch"
         }
     ]
 }

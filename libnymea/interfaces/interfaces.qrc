@@ -27,6 +27,8 @@
         <file>inputtrigger.json</file>
         <file>outputtrigger.json</file>
         <file>power.json</file>
+        <file>closable.json</file>
+        <file>door.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

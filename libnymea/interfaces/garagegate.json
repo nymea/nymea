@@ -9,9 +9,6 @@
     "actions": [
         {
             "name": "stop"
-        },
-        {
-            "name": "positionIntermediate"
         }
     ]
 }

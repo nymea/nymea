@@ -187,15 +187,23 @@ LogEngine::~LogEngine()
 QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
 {
     QList<LogEntry> results;
-    QSqlQuery query;
+    QSqlQuery query(m_db);
 
-    QString queryCall = "SELECT * FROM entries ORDER BY timestamp;";
+    QString queryString;
     if (filter.isEmpty()) {
-        query = m_db.exec(queryCall);
+        queryString = "SELECT * FROM entries ORDER BY timestamp;";
     } else {
-        queryCall = QString("SELECT * FROM entries WHERE %1 ORDER BY timestamp;").arg(filter.queryString());
-        query = m_db.exec(queryCall);
+        queryString = QString("SELECT * FROM entries WHERE %1 ORDER BY timestamp;").arg(filter.queryString());
     }
+//    qCDebug(dcLogEngine()) << "Preparing query:" << queryString;
+    query.prepare(queryString);
+
+    foreach (const QString &value, filter.values()) {
+        query.addBindValue(LogValueTool::serializeValue(value));
+        qCDebug(dcLogEngine()) << "Binding value to query:" << LogValueTool::serializeValue(value);
+    }
+
+    query.exec();
 
     if (m_db.lastError().isValid()) {
         qCWarning(dcLogEngine) << "Error fetching log entries. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
@@ -215,7 +223,7 @@ QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
         entry.setActive(query.value("active").toBool());
         results.append(entry);
     }
-    qCDebug(dcLogEngine) << "Fetched" << results.count() << "entries for db query:" << queryCall;
+//    qCDebug(dcLogEngine) << "Fetched" << results.count() << "entries for db query:" << query.executedQuery();
 
     return results;
 }

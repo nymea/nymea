@@ -69,17 +69,24 @@ void TestLoggingDirect::benchmarkDB_data() {
 
 void TestLoggingDirect::benchmarkDB()
 {
+    if (qgetenv("WITH_BENCHMARK").isEmpty()) {
+        QSKIP("Skipping benchmark tests: export WITH_BENCHMARK=1 to enable it.");
+    }
+
     QFETCH(int, prefill);
     QFETCH(int, maxSize);
 
     // setting max log entries to "prefill" to trim it down to what this test needs.
     int overflow = 10;
+    qDebug() << "Flushing DB for test";
     engine->setMaxLogEntries(prefill, overflow);
     engine->setMaxLogEntries(maxSize, overflow);
-
+    qDebug() << "DB has" << engine->logEntries().count() << "entries";
+    qDebug() << "Prefilling DB for test";
     for (int i = engine->logEntries().count(); i < prefill; i++) {
         engine->logSystemEvent(QDateTime::currentDateTime(), true);
     }
+    qDebug() << "DB has" << engine->logEntries().count() << "entries";
 
     qDebug() << "Starting benchmark with" << engine->logEntries().count() << "entries in the db";
     QBENCHMARK {

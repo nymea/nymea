@@ -201,7 +201,7 @@ void WebSocketServer::resetAvahiService()
         return;
 
     m_avahiService->resetService();
-    if (!m_avahiService->registerService(QString("nymea-ws-%1").arg(configuration().id), configuration().port, "_ws._tcp", createTxtRecord())) {
+    if (!m_avahiService->registerService(QString("nymea-ws-%1").arg(configuration().id), configuration().address, configuration().port, "_ws._tcp", createTxtRecord())) {
         qCWarning(dcWebServer()) << "Could not register avahi service for" << configuration();
     }
 }

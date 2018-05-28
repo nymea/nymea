@@ -544,7 +544,7 @@ void WebServer::resetAvahiService()
     txt.insert("name", NymeaCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", m_configuration.sslEnabled ? "true" : "false");
 
-    if (!m_avahiService->registerService(QString("nymea-http-%1").arg(m_configuration.id), m_configuration.port, "_http._tcp", txt)) {
+    if (!m_avahiService->registerService(QString("nymea-http-%1").arg(m_configuration.id), m_configuration.address, m_configuration.port, "_http._tcp", txt)) {
         qCWarning(dcTcpServer()) << "Could not register avahi service for" << m_configuration;
     }
 }

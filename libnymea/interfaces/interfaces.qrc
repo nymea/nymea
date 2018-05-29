@@ -29,6 +29,7 @@
         <file>power.json</file>
         <file>closable.json</file>
         <file>door.json</file>
+        <file>shutter.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

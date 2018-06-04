@@ -1,0 +1,13 @@
+{
+    "actions": [
+        {
+            "name": "open"
+        },
+        {
+            "name": "close"
+        },
+        {
+            "name": "stop"
+        }
+    ]
+}

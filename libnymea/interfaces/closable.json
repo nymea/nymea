@@ -2,7 +2,7 @@
     "states": [
         {
             "name": "state",
-            "type": "String",
+            "type": "QString",
             "allowedValues": ["open", "closed", "opening", "closing"]
         }
     ],

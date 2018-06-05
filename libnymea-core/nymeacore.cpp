@@ -617,7 +617,7 @@ void NymeaCore::gotEvent(const Event &event)
                 //       something like a EventParamDescriptor
 
                 ruleActionParam.setValue(eventValue);
-                qCDebug(dcRuleEngine) << "take over event param value" << ruleActionParam.value();
+                qCDebug(dcRuleEngine) << "Using param value from event:" << ruleActionParam.value();
             }
             newParams.append(ruleActionParam);
         }

@@ -104,6 +104,9 @@ private slots:
     void testRuleActionParams_data();
     void testRuleActionParams();
 
+    void testRuleActionPAramsFromEventParameter_data();
+    void testRuleActionPAramsFromEventParameter();
+
     void testInterfaceBasedRule();
 
     void testHousekeeping_data();
@@ -2170,6 +2173,66 @@ void TestRules::testRuleActionParams()
         addRuleParams.insert("actions", QVariantList() << action);
     if (!exitAction.isEmpty())
         addRuleParams.insert("exitActions", QVariantList() << exitAction);
+
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    verifyRuleError(response, error);
+}
+
+void TestRules::testRuleActionPAramsFromEventParameter_data() {
+    QTest::addColumn<QVariantMap>("event");
+    QTest::addColumn<QVariantMap>("action");
+    QTest::addColumn<RuleEngine::RuleError>("error");
+
+    QVariantMap intEvent;
+    intEvent.insert("eventTypeId", mockIntStateId);
+    intEvent.insert("deviceId", m_mockDeviceId);
+
+    QVariantMap intAction;
+    intAction.insert("actionTypeId", mockActionIdWithParams);
+    intAction.insert("deviceId", m_mockDeviceId);
+    QVariantList ruleActionParams;
+    QVariantMap intParam;
+    intParam.insert("paramTypeId", mockActionParam1ParamTypeId);
+    intParam.insert("eventTypeId", mockIntStateId);
+    intParam.insert("eventParamTypeId", mockIntStateId);
+    ruleActionParams.append(intParam);
+    QVariantMap boolParam;
+    boolParam.insert("paramTypeId", mockActionParam2ParamTypeId);
+    boolParam.insert("value", true);
+    ruleActionParams.append(boolParam);
+    intAction.insert("ruleActionParams", ruleActionParams);
+
+    QVariantMap boolAction;
+    boolAction.insert("actionTypeId", mockActionIdWithParams);
+    boolAction.insert("deviceId", m_mockDeviceId);
+    ruleActionParams.clear();
+    intParam.clear();
+    intParam.insert("paramTypeId", mockActionParam1ParamTypeId);
+    intParam.insert("value", 5);
+    ruleActionParams.append(intParam);
+    boolParam.clear();
+    boolParam.insert("paramTypeId", mockActionParam2ParamTypeId);
+    boolParam.insert("eventTypeId", mockIntStateId);
+    boolParam.insert("eventParamTypeId", mockIntStateId);
+    ruleActionParams.append(boolParam);
+    boolAction.insert("ruleActionParams", ruleActionParams);
+
+    QTest::newRow("int -> int") << intEvent << intAction << RuleEngine::RuleErrorNoError;
+    QTest::newRow("int -> bool") << intEvent << boolAction << RuleEngine::RuleErrorNoError;
+}
+
+void TestRules::testRuleActionPAramsFromEventParameter()
+{
+    QFETCH(QVariantMap, event);
+    QFETCH(QVariantMap, action);
+    QFETCH(RuleEngine::RuleError, error);
+
+    QVariantMap addRuleParams;
+    addRuleParams.insert("name", "TestRule");
+    addRuleParams.insert("enabled", true);
+
+    addRuleParams.insert("eventDescriptors", QVariantList() << event);
+    addRuleParams.insert("actions", QVariantList() << action);
 
     QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
     verifyRuleError(response, error);

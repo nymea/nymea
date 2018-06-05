@@ -595,8 +595,9 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
 
                         // check if the param type of the event and the action match
                         QVariant::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamTypeId());
+                        QVariant v(eventParamType);
                         QVariant::Type actionParamType = getActionParamType(action.actionTypeId(), ruleActionParam.paramTypeId());
-                        if (eventParamType != actionParamType) {
+                        if (eventParamType != actionParamType && !v.canConvert(actionParamType)) {
                             qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given event param " << ruleActionParam.eventParamTypeId().toString() << "have not the same type:";
                             qCWarning(dcRuleEngine) << "        -> actionParamType:" << actionParamType;
                             qCWarning(dcRuleEngine) << "        ->  eventParamType:" << eventParamType;

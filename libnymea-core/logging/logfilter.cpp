@@ -341,11 +341,11 @@ QString LogFilter::createValuesString() const
     QString query;
     if (!m_values.isEmpty()) {
         if (m_values.count() == 1) {
-            query.append(QString("value = '%1' ").arg(m_values.first()));
+            query.append("value = ? ");
         } else {
             query.append("( ");
             foreach (const QString &value, m_values) {
-                query.append(QString("value = '%1' ").arg(value));
+                query.append("value = ? ");
                 if (value != m_values.last())
                     query.append("OR ");
             }

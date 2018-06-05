@@ -605,7 +605,7 @@ bool WebServer::stopServer()
 
 QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 {
-    QByteArray uuid = NymeaCore::instance()->configuration()->serverUuid().toByteArray();
+    QByteArray uuid = NymeaCore::instance()->configuration()->serverUuid().toString().remove(QRegExp("[{}]")).toUtf8();
 
     QByteArray data;
     QXmlStreamWriter writer(&data);
@@ -619,57 +619,12 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("minor", "1");
     writer.writeEndElement(); // specVersion
 
-    if (m_configuration.sslEnabled) {
-        writer.writeTextElement("URLBase", "https://" + address.toString() + ":" + QString::number(m_configuration.port));
-    } else {
-        writer.writeTextElement("URLBase", "http://" + address.toString() + ":" + QString::number(m_configuration.port));
-    }
-
-    ServerConfiguration websocketConfiguration;
-    bool webSocketServerFound = false;
-    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {
-        if (config.address == QHostAddress("0.0.0.0") || config.address == address) {
-            if (!webSocketServerFound) {
-                websocketConfiguration = config;
-                webSocketServerFound = true;
-            } else if (!websocketConfiguration.sslEnabled && config.sslEnabled) {
-                // If the previous one is plaintext but we also have a secure one, upgrade to that.
-                websocketConfiguration = config;
-            }
-        }
-    }
-    if (webSocketServerFound) {
-        if (websocketConfiguration.sslEnabled) {
-            writer.writeTextElement("websocketURL", "wss://" + address.toString() + ":" + QString::number(websocketConfiguration.port));
-        } else {
-            writer.writeTextElement("websocketURL", "ws://" + address.toString() + ":" + QString::number(websocketConfiguration.port));
-        }
-    }
-
-    ServerConfiguration tcpServerConfiguration;
-    bool tcpServerFound = false;
-    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->tcpServerConfigurations()) {
-        if (config.address == QHostAddress("0.0.0.0") || config.address == address) {
-            if (!tcpServerFound) {
-                tcpServerConfiguration = config;
-                tcpServerFound = true;
-            } else if (!tcpServerConfiguration.sslEnabled && config.sslEnabled) {
-                // If the previous one is plaintext but we also have a secure one, upgrade to that.
-                tcpServerConfiguration = config;
-            }
-        }
-    }
-    if (tcpServerFound) {
-        if (tcpServerConfiguration.sslEnabled) {
-            writer.writeTextElement("nymeaRpcURL", "nymeas://" + address.toString() + ":" + QString::number(tcpServerConfiguration.port));
-        } else {
-            writer.writeTextElement("nymeaRpcURL", "nymea://" + address.toString() + ":" + QString::number(tcpServerConfiguration.port));
-        }
-    }
-
-    writer.writeTextElement("presentationURL", "/");
-
+    QString presentationUrl = QString("%1://%2:%3")
+            .arg(m_configuration.sslEnabled ? "https" : "http")
+            .arg(address.toString())
+            .arg(m_configuration.port);
     writer.writeStartElement("device");
+    writer.writeTextElement("presentationURL", presentationUrl);
     writer.writeTextElement("deviceType", "urn:schemas-upnp-org:device:Basic:1");
     writer.writeTextElement("friendlyName", NymeaCore::instance()->configuration()->serverName());
     writer.writeTextElement("manufacturer", "guh GmbH");
@@ -763,6 +718,36 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeEndElement(); // icon
 
     writer.writeEndElement(); // iconList
+
+    writer.writeStartElement("serviceList");
+
+    int counter = 1;
+    int sslCounter = 1;
+    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {
+        if (config.address == QHostAddress("0.0.0.0") || config.address == address) {
+            writer.writeStartElement("service");
+            writer.writeTextElement("serviceType", QString("urn:nymea.io:service:%1:%2").arg(config.sslEnabled ? "wss" : "ws").arg(config.sslEnabled ? sslCounter : counter));
+            writer.writeTextElement("serviceId", QString("urn:nymea.io:serviceId:%1:%2").arg(config.sslEnabled ? "wss" : "ws").arg(config.sslEnabled ? sslCounter++ : counter++));
+            QString url = QString("%1%2:%3").arg(config.sslEnabled ? "wss://" : "ws://").arg(address.toString()).arg(config.port);
+            writer.writeTextElement("SCPDURL", url);
+            writer.writeEndElement(); // service
+        }
+    }
+
+    counter = 1;
+    sslCounter = 1;
+    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->tcpServerConfigurations()) {
+        if (config.address == QHostAddress("0.0.0.0") || config.address == address) {
+            writer.writeStartElement("service");
+            writer.writeTextElement("serviceType", QString("urn:nymea.io:service:%1:%2").arg(config.sslEnabled ? "nymeas" : "nymea").arg(config.sslEnabled ? sslCounter : counter));
+            writer.writeTextElement("serviceId", QString("urn:nymea.io:serviceId:%1:%2").arg(config.sslEnabled ? "nymeas" : "nymea").arg(config.sslEnabled ? sslCounter++ : counter++));
+            QString url = QString("%1%2:%3").arg(config.sslEnabled ? "nymeas://" : "nymea://").arg(address.toString()).arg(config.port);
+            writer.writeTextElement("SCPDURL", url);
+            writer.writeEndElement(); // service
+        }
+    }
+
+    writer.writeEndElement(); // serviceList
 
     writer.writeEndElement(); // device
     writer.writeEndElement(); // root

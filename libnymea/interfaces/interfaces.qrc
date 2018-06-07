@@ -14,6 +14,7 @@
         <file>mediametadataprovider.json</file>
         <file>mediaplayer.json</file>
         <file>battery.json</file>
+        <file>batterylevel.json</file>
         <file>button.json</file>
         <file>simplebutton.json</file>
         <file>longpressbutton.json</file>

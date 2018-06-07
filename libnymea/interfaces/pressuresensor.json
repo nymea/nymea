@@ -1,0 +1,9 @@
+{
+    "extends": "sensor",
+    "states": [
+        {
+            "name": "pressure",
+            "type": "double"
+        }
+    ]
+}

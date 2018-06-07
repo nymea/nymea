@@ -32,6 +32,7 @@
         <file>shutter.json</file>
         <file>simpleclosable.json</file>
         <file>blind.json</file>
+        <file>pressuresensor.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

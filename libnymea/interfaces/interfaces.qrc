@@ -28,7 +28,7 @@
         <file>outputtrigger.json</file>
         <file>power.json</file>
         <file>closable.json</file>
-        <file>door.json</file>
+        <file>smartlock.json</file>
         <file>shutter.json</file>
         <file>simpleclosable.json</file>
         <file>blind.json</file>

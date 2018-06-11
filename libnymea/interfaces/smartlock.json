@@ -1,0 +1,16 @@
+{
+    "extends": "simpleclosable",
+    "states": [
+        {
+            "name": "state",
+            "type": "QString",
+            "allowedValues": ["locked", "locking", "unlocked", "unlocking", "unlatched",  "unlatching"]
+        }
+    ],
+    "actions": [
+        {
+            "name": "unlatch"
+        }
+    ]
+}
+

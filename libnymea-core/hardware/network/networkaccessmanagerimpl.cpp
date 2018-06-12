@@ -49,52 +49,72 @@ NetworkAccessManagerImpl::NetworkAccessManagerImpl(QNetworkAccessManager *networ
 
 QNetworkReply *NetworkAccessManagerImpl::get(const QNetworkRequest &request)
 {
-    return m_manager->get(request);
+    QNetworkReply *reply = m_manager->get(request);
+    hookupTimeoutTimer(reply);
+    return reply;
 }
 
 QNetworkReply *NetworkAccessManagerImpl::deleteResource(const QNetworkRequest &request)
 {
-    return m_manager->deleteResource(request);
+    QNetworkReply *reply = m_manager->deleteResource(request);
+    hookupTimeoutTimer(reply);
+    return reply;
 }
 
 QNetworkReply *NetworkAccessManagerImpl::head(const QNetworkRequest &request)
 {
-    return m_manager->head(request);
+    QNetworkReply *reply = m_manager->head(request);
+    hookupTimeoutTimer(reply);
+    return reply;
 }
 
 QNetworkReply *NetworkAccessManagerImpl::post(const QNetworkRequest &request, QIODevice *data)
 {
-    return m_manager->post(request, data);
+    QNetworkReply *reply = m_manager->post(request, data);
+    hookupTimeoutTimer(reply);
+    return reply;
 }
 
 QNetworkReply *NetworkAccessManagerImpl::post(const QNetworkRequest &request, const QByteArray &data)
 {
-    return m_manager->post(request, data);
+    QNetworkReply *reply = m_manager->post(request, data);
+    hookupTimeoutTimer(reply);
+    return reply;
 }
 
 QNetworkReply *NetworkAccessManagerImpl::post(const QNetworkRequest &request, QHttpMultiPart *multiPart)
 {
-    return m_manager->post(request, multiPart);
+    QNetworkReply *reply = m_manager->post(request, multiPart);
+    hookupTimeoutTimer(reply);
+    return reply;
 }
 
 QNetworkReply *NetworkAccessManagerImpl::put(const QNetworkRequest &request, QIODevice *data)
 {
-    return m_manager->put(request, data);
+    QNetworkReply  *reply = m_manager->put(request, data);
+    hookupTimeoutTimer(reply);
+    return reply;
 }
 
 QNetworkReply *NetworkAccessManagerImpl::put(const QNetworkRequest &request, const QByteArray &data)
 {
-    return m_manager->put(request, data);
+    QNetworkReply *reply = m_manager->put(request, data);
+    hookupTimeoutTimer(reply);
+    return reply;
 }
 
 QNetworkReply *NetworkAccessManagerImpl::put(const QNetworkRequest &request, QHttpMultiPart *multiPart)
 {
-    return m_manager->put(request, multiPart);
+    QNetworkReply *reply = m_manager->put(request, multiPart);
+    hookupTimeoutTimer(reply);
+    return reply;
 }
 
 QNetworkReply *NetworkAccessManagerImpl::sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data)
 {
-    return m_manager->sendCustomRequest(request, verb, data);
+    QNetworkReply* reply = m_manager->sendCustomRequest(request, verb, data);
+    hookupTimeoutTimer(reply);
+    return reply;
 }
 
 void NetworkAccessManagerImpl::setEnabled(bool enabled)
@@ -117,6 +137,32 @@ void NetworkAccessManagerImpl::setEnabled(bool enabled)
         qCDebug(dcNetworkManager()) << "Network Manager disabled";
     }
     m_enabled = enabled;
+}
+
+void NetworkAccessManagerImpl::hookupTimeoutTimer(QNetworkReply *reply)
+{
+    connect(reply, &QNetworkReply::finished, this, &NetworkAccessManagerImpl::networkReplyFinished);
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &NetworkAccessManagerImpl::networkTimeout);
+    timer->setSingleShot(true);
+    timer->start(30000);
+    m_timeoutTimers.insert(reply, timer);
+}
+
+void NetworkAccessManagerImpl::networkReplyFinished()
+{
+    QNetworkReply *reply = static_cast<QNetworkReply*>(sender());
+    QTimer *timer = m_timeoutTimers.take(reply);
+    timer->stop();
+    timer->deleteLater();
+}
+
+void NetworkAccessManagerImpl::networkTimeout()
+{
+    QTimer *timer = static_cast<QTimer*>(sender());
+    QNetworkReply *reply = m_timeoutTimers.key(timer);
+    qCDebug(dcNetworkManager()) << "Network request timeout for:" << reply->request().url();
+    reply->abort();
 }
 
 bool NetworkAccessManagerImpl::available() const

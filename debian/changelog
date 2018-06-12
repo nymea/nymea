@@ -1,4 +1,10 @@
-nymea (0.9.0) UNRELEASED; urgency=medium
+nymea (0.9.1) xenial; urgency=medium
+
+  * Version bump because of previous ABI break
+
+ -- Michael Zanetti <michael.zanetti@guh.io>  Tue, 06 Mar 2018 19:57:48 +0100
+
+nymea (0.9.0) xenial; urgency=medium
 
   * Rename to nymea
 

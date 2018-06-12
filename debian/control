@@ -145,7 +145,7 @@ Description: Tests and mock plugin for the nymea daemon - tests
  This package will install the mock-plugin and the corresponding tests.
 
 
-Package: libnymea1
+Package: libnymea
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -154,7 +154,9 @@ Depends: ${shlibs:Depends},
          libqt5bluetooth5,
          libavahi-client3,
          libavahi-common3
-Replaces: libguh1
+Provides: libnymea-1
+Replaces: libguh1,
+          libnymea1
 Description: An open source IoT server - core library
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
@@ -165,7 +167,7 @@ Description: An open source IoT server - core library
  This package will install shared libraries for nymea.
 
 
-Package: libnymea1-dev
+Package: libnymea-dev
 Section: libdevel
 Architecture: any
 Multi-Arch: same
@@ -179,7 +181,9 @@ Depends: libnymea1 (= ${binary:Version}),
          libqt5websockets5-dev,
          libavahi-client-dev,
          libavahi-common-dev
-Replaces: libguh1-dev
+Provides: libnymea-1-dev
+Replaces: libguh1-dev,
+          libnymea1-dev
 Description: An open source IoT server - development files
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and

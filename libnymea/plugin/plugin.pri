@@ -1,4 +1,5 @@
 #  Copyright (C) 2018 Michael Zanetti <michael.zanetti@guh.io>
+#  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>
 #
 #  This file is part of nymea.
 #
@@ -66,7 +67,7 @@ QMAKE_EXTRA_TARGETS += clean plugininfo_clean
 TRANSLATIONS *= $$files($${_PRO_FILE_PWD_}/translations/*ts, true)
 lupdate.depends = FORCE
 lupdate.depends += plugininfo
-lupdate.commands = lupdate -recursive -no-obsolete $$PWD/"$$TARGET".pro;
+lupdate.commands = lupdate -recursive -no-obsolete $${_PRO_FILE_PWD_}/"$$TARGET".pro;
 QMAKE_EXTRA_TARGETS += lupdate
 
 # make lrelease to build .qm from .ts

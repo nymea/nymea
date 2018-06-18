@@ -1155,8 +1155,18 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Devic
 
 bool RuleEngine::containsState(const StateEvaluator &stateEvaluator, const Event &stateChangeEvent)
 {
-    if (stateEvaluator.stateDescriptor().isValid() && stateEvaluator.stateDescriptor().stateTypeId().toString() == stateChangeEvent.eventTypeId().toString()) {
-        return true;
+    if (stateEvaluator.stateDescriptor().isValid()) {
+        if (stateEvaluator.stateDescriptor().type() == StateDescriptor::TypeDevice) {
+            if (stateEvaluator.stateDescriptor().stateTypeId().toString() == stateChangeEvent.eventTypeId().toString()) {
+                return true;
+            }
+        } else {
+            Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(stateChangeEvent.deviceId());
+            DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+            if (deviceClass.interfaces().contains(stateEvaluator.stateDescriptor().interface())) {
+                return true;
+            }
+        }
     }
 
     foreach (const StateEvaluator &childEvaluator, stateEvaluator.childEvaluators()) {

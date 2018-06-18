@@ -29,7 +29,9 @@
     \ingroup rules
     \inmodule libnymea
 
-    An StateDescriptor describes a \l{State} in order to match it with a \l{nymeaserver::Rule}.
+    A StateDescriptor describes a \l{State} in order to match it with a \l{nymeaserver::Rule}.
+    A StateDescriptor uses either a \l{DeviceId}/\l{StateTypeId} pair to describe a \l{State} or
+    a pair of strings describing the interface and interface action for a \l{State}.
 
     \sa State, nymeaserver::Rule
 */
@@ -54,6 +56,22 @@ StateDescriptor::StateDescriptor(const StateTypeId &stateTypeId, const DeviceId 
 
 }
 
+/*! Constructs an StateDescriptor describing an \l{State} with the given \a interface, \a interfaceState, \a stateValue and \a operatorType.*/
+StateDescriptor::StateDescriptor(const QString &interface, const QString &interfaceState, const QVariant &stateValue, Types::ValueOperator operatorType):
+    m_interface(interface),
+    m_interfaceState(interfaceState),
+    m_stateValue(stateValue),
+    m_operatorType(operatorType)
+{
+
+}
+
+/*! Returns true \l{StateDescriptor::Type}{Type} of this descriptor. */
+StateDescriptor::Type StateDescriptor::type() const
+{
+    return (!m_deviceId.isNull() && !m_stateTypeId.isNull()) ? TypeDevice : TypeInterface;
+}
+
 /*! Returns the StateTypeId of this \l{State}.*/
 StateTypeId StateDescriptor::stateTypeId() const
 {
@@ -64,6 +82,18 @@ StateTypeId StateDescriptor::stateTypeId() const
 DeviceId StateDescriptor::deviceId() const
 {
     return m_deviceId;
+}
+
+/*! Returns the interface for this \{StateDescriptor}.*/
+QString StateDescriptor::interface() const
+{
+    return m_interface;
+}
+
+/*! Returns the interface state's name for this \{StateDescriptor}.*/
+QString StateDescriptor::interfaceState() const
+{
+    return m_interfaceState;
 }
 
 /*! Returns the Value of this \l{State}.*/
@@ -84,6 +114,8 @@ bool StateDescriptor::operator ==(const StateDescriptor &other) const
 {
     return m_stateTypeId == other.stateTypeId() &&
             m_deviceId == other.deviceId() &&
+            m_interface == other.interface() &&
+            m_interfaceState == other.interfaceState() &&
             m_stateValue == other.stateValue() &&
             m_operatorType == other.operatorType();
 }
@@ -121,11 +153,11 @@ bool StateDescriptor::operator !=(const State &state) const
     return !(operator==(state));
 }
 
-/*! Returns the true if this \l{StateDescriptor} is valid. A \l{StateDescriptor} is valid
- *  if the DeviceId and the StateTypeId are set and the state value of this \l{StateDescriptor} is valid.
+/*! Returns the true if this \l{StateDescriptor} is valid. A valid \l{StateDescriptor} must
+ *  have a valid stateValue along with either a DeviceId/StateTypeId pair or an interface/interfaceState pair.
  * \sa StateDescriptor(), deviceId(), stateValue()
  */
 bool StateDescriptor::isValid() const
 {
-    return !m_deviceId.isNull() && !m_stateTypeId.isNull() && m_stateValue.isValid();
+    return ((!m_deviceId.isNull() && !m_stateTypeId.isNull()) || (!m_interface.isNull() && !m_interfaceState.isNull())) && m_stateValue.isValid();
 }

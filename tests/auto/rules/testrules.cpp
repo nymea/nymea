@@ -107,7 +107,9 @@ private slots:
     void testRuleActionPAramsFromEventParameter_data();
     void testRuleActionPAramsFromEventParameter();
 
-    void testInterfaceBasedRule();
+    void testInterfaceBasedEventRule();
+
+    void testInterfaceBasedStateRule();
 
     void testHousekeeping_data();
     void testHousekeeping();
@@ -499,7 +501,6 @@ void TestRules::addRemoveRules_data()
     QTest::newRow("valid rule. 2 EventDescriptors, 1 Action, name")                                     << true     << validActionNoParams      << QVariantMap()            << QVariantMap()            << eventDescriptorList  << validStateEvaluator      << RuleEngine::RuleErrorNoError << true << "TestRule";
     QTest::newRow("invalid action")                                                                     << true     << invalidAction            << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorActionTypeNotFound << false << "TestRule";
     QTest::newRow("invalid event descriptor")                                                           << true     << validActionNoParams      << QVariantMap()            << invalidEventDescriptor   << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorEventTypeNotFound << false << "TestRule";
-    QTest::newRow("invalid StateDescriptor")                                                            << true     << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << invalidStateEvaluator    << RuleEngine::RuleErrorInvalidParameter << true << "TestRule";
 }
 
 void TestRules::addRemoveRules()
@@ -881,7 +882,7 @@ void TestRules::editRules()
     response = injectAndWait("Rules.EditRule", params);
     verifyRuleError(response, error);
     if (error == RuleEngine::RuleErrorNoError){
-        clientSpy.wait(500);
+        clientSpy.wait(1);
         // We need to get exactly 2 replies. The actual reply and the Changed notification
         // Make sure there are no other notifications (e.g. RuleAdded or similar)
         QCOMPARE(clientSpy.count(), 2);
@@ -1090,8 +1091,19 @@ void TestRules::loadStoreConfig()
     stateEvaluator3.insert("stateDescriptor", stateDescriptor3);
     stateEvaluator3.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
 
+    QVariantMap stateDescriptor4;
+    stateDescriptor4.insert("interface", "battery");
+    stateDescriptor4.insert("interfaceState", "batteryCritical");
+    stateDescriptor4.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptor4.insert("value", true);
+
+    QVariantMap stateEvaluator4;
+    stateEvaluator4.insert("stateDescriptor", stateDescriptor4);
+    stateEvaluator4.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+
     childEvaluators.append(stateEvaluator2);
     childEvaluators.append(stateEvaluator3);
+    childEvaluators.append(stateEvaluator4);
     stateEvaluator1.insert("childEvaluators", childEvaluators);
     stateEvaluator1.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
 
@@ -1178,7 +1190,7 @@ void TestRules::loadStoreConfig()
 
     response = injectAndWait("Rules.GetRules");
     QVariantList rules = response.toMap().value("params").toMap().value("ruleDescriptions").toList();
-    qDebug() << response;
+    qDebug() << "GetRules before server shutdown:" <<  response;
 
     restartServer();
 
@@ -1219,19 +1231,26 @@ void TestRules::loadStoreConfig()
         QVERIFY2(found, "missing eventdescriptor");
     }
 
-    qDebug() << endl << rule1;
+    qDebug() << "Rule after loading from config:" << rule1;
 
     QVERIFY2(rule1.value("name").toString() == "TestRule", "Loaded wrong name for rule");
     QVariantMap replyStateEvaluator= rule1.value("stateEvaluator").toMap();
     QVariantList replyChildEvaluators = replyStateEvaluator.value("childEvaluators").toList();
-    QVERIFY2(replyChildEvaluators.count() == 2, "There should be exactly 2 childEvaluators");
+    QCOMPARE(replyChildEvaluators.count(), 3);
     QVERIFY2(replyStateEvaluator.value("operator") == "StateOperatorAnd", "There should be the AND operator.");
 
     foreach (const QVariant &childEvaluator, replyChildEvaluators) {
         QVERIFY2(childEvaluator.toMap().contains("stateDescriptor"), "StateDescriptor missing in StateEvaluator");
         QVariantMap stateDescriptor = childEvaluator.toMap().value("stateDescriptor").toMap();
-        QVERIFY2(stateDescriptor.value("deviceId") == m_mockDeviceId, "DeviceId of stateDescriptor does not match");
-        QVERIFY2(stateDescriptor.value("stateTypeId") == mockIntStateId || stateDescriptor.value("stateTypeId") == mockBoolStateId, "StateTypeId of stateDescriptor doesn't match");
+        if (stateDescriptor.contains("deviceId") && stateDescriptor.contains("stateTypeId")) {
+            QVERIFY2(stateDescriptor.value("deviceId") == m_mockDeviceId, "DeviceId of stateDescriptor does not match");
+            QVERIFY2(stateDescriptor.value("stateTypeId") == mockIntStateId || stateDescriptor.value("stateTypeId") == mockBoolStateId, "StateTypeId of stateDescriptor doesn't match");
+        } else if (stateDescriptor.contains("interface") && stateDescriptor.contains("interfaceState")) {
+            QVERIFY2(stateDescriptor.value("interface") == "battery", "Interface of stateDescriptor does not match");
+            QVERIFY2(stateDescriptor.value("interfaceState") == "batteryCritical", "InterfaceState of stateDescriptor doesn't match");
+        } else {
+            QVERIFY2(false, "StateDescriptor must have either deviceId/stateTypeId or interface/interfaceState.");
+        }
     }
 
     QVariantList replyActions = rule1.value("actions").toList();
@@ -1265,13 +1284,20 @@ void TestRules::loadStoreConfig()
     QVariantMap replyStateEvaluator2= rule2.value("stateEvaluator").toMap();
     QVariantList replyChildEvaluators2 = replyStateEvaluator.value("childEvaluators").toList();
     QVERIFY2(replyStateEvaluator2.value("operator") == "StateOperatorAnd", "There should be the AND operator.");
-    QVERIFY2(replyChildEvaluators2.count() == 2, "There should be exactly 2 childEvaluators");
+    QCOMPARE(replyChildEvaluators2.count(), 3);
 
     foreach (const QVariant &childEvaluator, replyChildEvaluators2) {
         QVERIFY2(childEvaluator.toMap().contains("stateDescriptor"), "StateDescriptor missing in StateEvaluator");
         QVariantMap stateDescriptor = childEvaluator.toMap().value("stateDescriptor").toMap();
-        QVERIFY2(stateDescriptor.value("deviceId") == m_mockDeviceId, "DeviceId of stateDescriptor does not match");
-        QVERIFY2(stateDescriptor.value("stateTypeId") == mockIntStateId || stateDescriptor.value("stateTypeId") == mockBoolStateId, "StateTypeId of stateDescriptor doesn't match");
+        if (stateDescriptor.contains("deviceId") && stateDescriptor.contains("stateTypeId")) {
+            QVERIFY2(stateDescriptor.value("deviceId") == m_mockDeviceId, "DeviceId of stateDescriptor does not match");
+            QVERIFY2(stateDescriptor.value("stateTypeId") == mockIntStateId || stateDescriptor.value("stateTypeId") == mockBoolStateId, "StateTypeId of stateDescriptor doesn't match");
+        } else if (stateDescriptor.contains("interface") && stateDescriptor.contains("interfaceState")) {
+            QVERIFY2(stateDescriptor.value("interface") == "battery", "Interface of stateDescriptor does not match");
+            QVERIFY2(stateDescriptor.value("interfaceState") == "batteryCritical", "InterfaceState of stateDescriptor doesn't match");
+        } else {
+            QVERIFY2(false, "StateDescriptor must have either deviceId/stateTypeId or interface/interfaceState.");
+        }
     }
 
     QVariantList replyActions2 = rule2.value("actions").toList();
@@ -1684,10 +1710,11 @@ void TestRules::testStateEvaluator3()
 void TestRules::testChildEvaluator_data()
 {
     cleanup();
-    enableNotifications();
 
     DeviceId testDeviceId = addDisplayPinDevice();
     QVERIFY2(!testDeviceId.isNull(), "Could not add push button device for child evaluators");
+
+    enableNotifications();
 
     // Create child evaluators
     // Action
@@ -2238,8 +2265,18 @@ void TestRules::testRuleActionPAramsFromEventParameter()
     verifyRuleError(response, error);
 }
 
-void TestRules::testInterfaceBasedRule()
+void TestRules::testInterfaceBasedEventRule()
 {
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // state battery critical state to false initially
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(false)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
     QVariantMap powerAction;
     powerAction.insert("interface", "light");
     powerAction.insert("interfaceAction", "power");
@@ -2273,16 +2310,83 @@ void TestRules::testInterfaceBasedRule()
 
     QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("interface").toString(), QString("light"));
     QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("interfaceAction").toString(), QString("power"));
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("ruleActionParams").toList().first().toMap().value("paramName").toString(), QString("power"));
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("ruleActionParams").toList().first().toMap().value("value").toString(), QString("true"));
 
 
     // Change the state
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(true)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    verifyRuleExecuted(mockActionIdPower);
+}
+
+void TestRules::testInterfaceBasedStateRule()
+{
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
-    // state battery critical state to true
-    qDebug() << "setting battery critical state to true";
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(true)));
+    // state battery critical state to false initially
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(false)));
     QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    QVariantMap powerAction;
+    powerAction.insert("interface", "light");
+    powerAction.insert("interfaceAction", "power");
+    QVariantMap powerActionParam;
+    powerActionParam.insert("paramName", "power");
+    powerActionParam.insert("value", true);
+    powerAction.insert("ruleActionParams", QVariantList() << powerActionParam);
+
+    QVariantMap lowBatteryState;
+    lowBatteryState.insert("interface", "battery");
+    lowBatteryState.insert("interfaceState", "batteryCritical");
+
+    QVariantMap stateDescriptor;
+    stateDescriptor.insert("interface", "battery");
+    stateDescriptor.insert("interfaceState", "batteryCritical");
+    stateDescriptor.insert("value", true);
+    stateDescriptor.insert("operator", "ValueOperatorEquals");
+
+    QVariantMap stateEvaluator;
+    stateEvaluator.insert("stateDescriptor", stateDescriptor);
+
+    QVariantMap addRuleParams;
+    addRuleParams.insert("name", "TestInterfaceBasedStateRule");
+    addRuleParams.insert("enabled", true);
+    addRuleParams.insert("stateEvaluator", stateEvaluator);
+    addRuleParams.insert("actions", QVariantList() << powerAction);
+
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleError").toString(), QString("RuleErrorNoError"));
+
+    QVariantMap getRuleParams;
+    getRuleParams.insert("ruleId", response.toMap().value("params").toMap().value("ruleId"));
+    response = injectAndWait("Rules.GetRuleDetails", getRuleParams);
+
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleError").toString(), QString("RuleErrorNoError"));
+
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("stateEvaluator").toMap().value("stateDescriptor").toMap().value("interface").toString(), QString("battery"));
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("stateEvaluator").toMap().value("stateDescriptor").toMap().value("interfaceState").toString(), QString("batteryCritical"));
+
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("interface").toString(), QString("light"));
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("interfaceAction").toString(), QString("power"));
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("ruleActionParams").toList().first().toMap().value("paramName").toString(), QString("power"));
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("ruleActionParams").toList().first().toMap().value("value").toString(), QString("true"));
+
+
+    // Change the state
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(true)));
+    reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();

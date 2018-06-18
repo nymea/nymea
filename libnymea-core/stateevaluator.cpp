@@ -102,21 +102,40 @@ bool StateEvaluator::evaluate() const
     qCDebug(dcRuleEngineDebug()) << "StateEvaluator:" << this << "Evaluating: Operator type" << m_operatorType << "Valid descriptor:" << m_stateDescriptor.isValid() << "Childs:" << m_childEvaluators.count();
     bool descriptorMatching = true;
     if (m_stateDescriptor.isValid()) {
-        Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(m_stateDescriptor.deviceId());
-        if (!device) {
-            qCWarning(dcRuleEngine) << "StateEvaluator:" << this << "Device not existing!";
-            descriptorMatching = false;
-        } else {
-            DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
-             if (!device->hasState(m_stateDescriptor.stateTypeId())) {
-                 qCWarning(dcRuleEngine) << "StateEvaluator:" << this << "Device found, but it does not appear to have such a state!";
-                 descriptorMatching = false;
-             }
-             if (m_stateDescriptor != device->state(m_stateDescriptor.stateTypeId())) {
-                 // state not matching
-                 descriptorMatching = false;
-             }
-             qCDebug(dcRuleEngineDebug()) << "StateEvaluator:" << this << "State" << device->name() << deviceClass.stateTypes().findById(m_stateDescriptor.stateTypeId()).name() << (descriptorMatching ? "is" : "not") << "matching:" << m_stateDescriptor.stateValue() << m_stateDescriptor.operatorType() << device->stateValue(m_stateDescriptor.stateTypeId());
+        descriptorMatching = false;
+        if (m_stateDescriptor.type() == StateDescriptor::TypeDevice) {
+            Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(m_stateDescriptor.deviceId());
+            if (device) {
+                DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+                if (device->hasState(m_stateDescriptor.stateTypeId())) {
+                    if (m_stateDescriptor == device->state(m_stateDescriptor.stateTypeId())) {
+                        qCDebug(dcRuleEngineDebug()) << "StateEvaluator:" << this << "State" << device->name() << deviceClass.stateTypes().findById(m_stateDescriptor.stateTypeId()).name() << (descriptorMatching ? "is" : "not") << "matching:" << m_stateDescriptor.stateValue() << m_stateDescriptor.operatorType() << device->stateValue(m_stateDescriptor.stateTypeId());
+                        descriptorMatching = true;
+                    }
+                } else {
+                    qCWarning(dcRuleEngine) << "StateEvaluator:" << this << "Device found, but it does not appear to have such a state!";
+                }
+            } else {
+                qCWarning(dcRuleEngine) << "StateEvaluator:" << this << "Device not existing!";
+            }
+        } else { // interface
+            foreach (Device* device, NymeaCore::instance()->deviceManager()->configuredDevices()) {
+                DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+                if (!deviceClass.isValid()) {
+                    qCWarning(dcRuleEngine()) << "Could not find DeviceClass for Device" << device->name() << device->id();
+                    continue;
+                }
+                if (deviceClass.interfaces().contains(m_stateDescriptor.interface())) {
+                    StateType stateType = deviceClass.stateTypes().findByName(m_stateDescriptor.interfaceState());
+                    State state = device->state(stateType.id());
+                    // As the StateDescriptor can't compare on it's own against interfaces, generate custom one, matching the device
+                    StateDescriptor temporaryDescriptor(stateType.id(), device->id(), m_stateDescriptor.stateValue(), m_stateDescriptor.operatorType());
+                    if (temporaryDescriptor == state) {
+                        descriptorMatching = true;
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -194,6 +213,8 @@ void StateEvaluator::dumpToSettings(NymeaSettings &settings, const QString &grou
     settings.beginGroup("stateDescriptor");
     settings.setValue("stateTypeId", m_stateDescriptor.stateTypeId().toString());
     settings.setValue("deviceId", m_stateDescriptor.deviceId().toString());
+    settings.setValue("interface", m_stateDescriptor.interface());
+    settings.setValue("interfaceState", m_stateDescriptor.interfaceState());
     settings.setValue("value", m_stateDescriptor.stateValue());
     settings.setValue("operator", m_stateDescriptor.operatorType());
     settings.endGroup();
@@ -218,8 +239,16 @@ StateEvaluator StateEvaluator::loadFromSettings(NymeaSettings &settings, const Q
     StateTypeId stateTypeId(settings.value("stateTypeId").toString());
     DeviceId deviceId(settings.value("deviceId").toString());
     QVariant stateValue = settings.value("value");
+    QString interface = settings.value("interface").toString();
+    QString interfaceState = settings.value("interfaceState").toString();
     Types::ValueOperator valueOperator = (Types::ValueOperator)settings.value("operator").toInt();
-    StateDescriptor stateDescriptor(stateTypeId, deviceId, stateValue, valueOperator);
+    StateDescriptor stateDescriptor;
+    if (!deviceId.isNull() && !stateTypeId.isNull()) {
+        stateDescriptor = StateDescriptor(stateTypeId, deviceId, stateValue, valueOperator);
+    } else {
+        stateDescriptor = StateDescriptor(interface, interfaceState, stateValue, valueOperator);
+    }
+
     settings.endGroup();
 
     StateEvaluator ret(stateDescriptor);
@@ -238,50 +267,62 @@ StateEvaluator StateEvaluator::loadFromSettings(NymeaSettings &settings, const Q
 bool StateEvaluator::isValid() const
 {
     if (m_stateDescriptor.isValid()) {
-        Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(m_stateDescriptor.deviceId());
-        if (!device) {
-            qCWarning(dcRuleEngine) << "State evaluator device does not exist!";
-            return false;
-        }
+        if (m_stateDescriptor.type() == StateDescriptor::TypeDevice) {
+            Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(m_stateDescriptor.deviceId());
+            if (!device) {
+                qCWarning(dcRuleEngine) << "State evaluator device does not exist!";
+                return false;
+            }
 
-        if (!device->hasState(m_stateDescriptor.stateTypeId())) {
-            qCWarning(dcRuleEngine) << "State evaluator device found, but it does not appear to have such a state!";
-            return false;
-        }
+            if (!device->hasState(m_stateDescriptor.stateTypeId())) {
+                qCWarning(dcRuleEngine) << "State evaluator device found, but it does not appear to have such a state!";
+                return false;
+            }
 
-        DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
-        foreach (const StateType &stateType, deviceClass.stateTypes()) {
-            if (stateType.id() == m_stateDescriptor.stateTypeId()) {
+            DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+            foreach (const StateType &stateType, deviceClass.stateTypes()) {
+                if (stateType.id() == m_stateDescriptor.stateTypeId()) {
 
-                if (!m_stateDescriptor.stateValue().canConvert(stateType.type())) {
-                    qCWarning(dcRuleEngine) << "Wrong state value for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Expected:" << QVariant::typeToName(stateType.type());
-                    return false;
-                }
-
-                if (!m_stateDescriptor.stateValue().convert(stateType.type())) {
-                    qCWarning(dcRuleEngine) << "Could not convert value of state descriptor" << m_stateDescriptor.stateTypeId() << " to:" << QVariant::typeToName(stateType.type()) << " Got:" << m_stateDescriptor.stateValue();
-                    return false;
-                }
-
-                if (stateType.maxValue().isValid() && m_stateDescriptor.stateValue() > stateType.maxValue()) {
-                    qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Max:" << stateType.maxValue();
-                    return false;
-                }
-
-                if (stateType.minValue().isValid() && m_stateDescriptor.stateValue() < stateType.minValue()) {
-                    qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Min:" << stateType.minValue();
-                    return false;
-                }
-
-                if (!stateType.possibleValues().isEmpty() && !stateType.possibleValues().contains(m_stateDescriptor.stateValue())) {
-                    QStringList possibleValues;
-                    foreach (const QVariant &value, stateType.possibleValues()) {
-                        possibleValues.append(value.toString());
+                    if (!m_stateDescriptor.stateValue().canConvert(stateType.type())) {
+                        qCWarning(dcRuleEngine) << "Wrong state value for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Expected:" << QVariant::typeToName(stateType.type());
+                        return false;
                     }
 
-                    qCWarning(dcRuleEngine) << "Value not in possible values for state type" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Possible values:" << possibleValues.join(", ");
-                    return false;
+                    if (!m_stateDescriptor.stateValue().convert(stateType.type())) {
+                        qCWarning(dcRuleEngine) << "Could not convert value of state descriptor" << m_stateDescriptor.stateTypeId() << " to:" << QVariant::typeToName(stateType.type()) << " Got:" << m_stateDescriptor.stateValue();
+                        return false;
+                    }
+
+                    if (stateType.maxValue().isValid() && m_stateDescriptor.stateValue() > stateType.maxValue()) {
+                        qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Max:" << stateType.maxValue();
+                        return false;
+                    }
+
+                    if (stateType.minValue().isValid() && m_stateDescriptor.stateValue() < stateType.minValue()) {
+                        qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Min:" << stateType.minValue();
+                        return false;
+                    }
+
+                    if (!stateType.possibleValues().isEmpty() && !stateType.possibleValues().contains(m_stateDescriptor.stateValue())) {
+                        QStringList possibleValues;
+                        foreach (const QVariant &value, stateType.possibleValues()) {
+                            possibleValues.append(value.toString());
+                        }
+
+                        qCWarning(dcRuleEngine) << "Value not in possible values for state type" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Possible values:" << possibleValues.join(", ");
+                        return false;
+                    }
                 }
+            }
+        } else { // TypeInterface
+            Interface iface = NymeaCore::instance()->deviceManager()->supportedInterfaces().findByName(m_stateDescriptor.interface());
+            if (!iface.isValid()) {
+                qWarning(dcRuleEngine()) << "No such interface:" << m_stateDescriptor.interface();
+                return false;
+            }
+            if (iface.stateTypes().findByName(m_stateDescriptor.interfaceState()).name().isEmpty()) {
+                qWarning(dcRuleEngine()) << "Interface" << iface.name() << "has no such state:" << m_stateDescriptor.interfaceState();
+                return false;
             }
         }
     }

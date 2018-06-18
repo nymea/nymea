@@ -206,8 +206,10 @@ void JsonTypes::init()
     s_state.insert("value", basicTypeToString(Variant));
 
     // StateDescriptor
-    s_stateDescriptor.insert("stateTypeId", basicTypeToString(Uuid));
-    s_stateDescriptor.insert("deviceId", basicTypeToString(Uuid));
+    s_stateDescriptor.insert("o:stateTypeId", basicTypeToString(Uuid));
+    s_stateDescriptor.insert("o:deviceId", basicTypeToString(Uuid));
+    s_stateDescriptor.insert("o:interface", basicTypeToString(String));
+    s_stateDescriptor.insert("o:interfaceState", basicTypeToString(String));
     s_stateDescriptor.insert("value", basicTypeToString(Variant));
     s_stateDescriptor.insert("operator", valueOperatorRef());
 
@@ -576,7 +578,11 @@ QVariantMap JsonTypes::packRuleAction(const RuleAction &ruleAction)
 QVariantMap JsonTypes::packRuleActionParam(const RuleActionParam &ruleActionParam)
 {
     QVariantMap variantMap;
-    variantMap.insert("paramTypeId", ruleActionParam.paramTypeId().toString());
+    if (!ruleActionParam.paramTypeId().isNull()) {
+        variantMap.insert("paramTypeId", ruleActionParam.paramTypeId().toString());
+    } else {
+        variantMap.insert("paramName", ruleActionParam.paramName());
+    }
     // if this ruleaction param has a valid EventTypeId, there is no value
     if (ruleActionParam.eventTypeId() != EventTypeId()) {
         variantMap.insert("eventTypeId", ruleActionParam.eventTypeId());
@@ -632,8 +638,13 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
 QVariantMap JsonTypes::packStateDescriptor(const StateDescriptor &stateDescriptor)
 {
     QVariantMap variantMap;
-    variantMap.insert("stateTypeId", stateDescriptor.stateTypeId().toString());
-    variantMap.insert("deviceId", stateDescriptor.deviceId().toString());
+    if (stateDescriptor.type() == StateDescriptor::TypeDevice) {
+        variantMap.insert("stateTypeId", stateDescriptor.stateTypeId().toString());
+        variantMap.insert("deviceId", stateDescriptor.deviceId().toString());
+    } else {
+        variantMap.insert("interface", stateDescriptor.interface());
+        variantMap.insert("interfaceState", stateDescriptor.interfaceState());
+    }
     variantMap.insert("value", stateDescriptor.stateValue());
     variantMap.insert("operator", s_valueOperator.at(stateDescriptor.operatorType()));
     return variantMap;
@@ -1435,9 +1446,15 @@ StateDescriptor JsonTypes::unpackStateDescriptor(const QVariantMap &stateDescrip
 {
     StateTypeId stateTypeId(stateDescriptorMap.value("stateTypeId").toString());
     DeviceId deviceId(stateDescriptorMap.value("deviceId").toString());
+    QString interface(stateDescriptorMap.value("interface").toString());
+    QString interfaceState(stateDescriptorMap.value("interfaceState").toString());
     QVariant value = stateDescriptorMap.value("value");
     Types::ValueOperator operatorType = (Types::ValueOperator)s_valueOperator.indexOf(stateDescriptorMap.value("operator").toString());
-    StateDescriptor stateDescriptor(stateTypeId, deviceId, value, operatorType);
+    if (!deviceId.isNull() && !stateTypeId.isNull()) {
+        StateDescriptor stateDescriptor(stateTypeId, deviceId, value, operatorType);
+        return stateDescriptor;
+    }
+    StateDescriptor stateDescriptor(interface, interfaceState, value, operatorType);
     return stateDescriptor;
 }
 

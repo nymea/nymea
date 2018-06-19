@@ -1,4 +1,4 @@
-1.4
+1.5
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -1270,8 +1270,9 @@
             "value": "$ref:BasicType"
         },
         "ParamDescriptor": {
+            "o:paramName": "Uuid",
+            "o:paramTypeId": "Uuid",
             "operator": "$ref:ValueOperator",
-            "paramTypeId": "Uuid",
             "value": "$ref:BasicType"
         },
         "ParamType": {
@@ -1402,9 +1403,11 @@
             "value": "Variant"
         },
         "StateDescriptor": {
-            "deviceId": "Uuid",
+            "o:deviceId": "Uuid",
+            "o:interface": "String",
+            "o:interfaceState": "String",
+            "o:stateTypeId": "Uuid",
             "operator": "$ref:ValueOperator",
-            "stateTypeId": "Uuid",
             "value": "Variant"
         },
         "StateEvaluator": {

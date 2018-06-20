@@ -34,6 +34,8 @@
 
 #include "timedescriptor.h"
 
+#include <QDebug>
+
 namespace nymeaserver {
 
 /*! Constructs an invalid \l{TimeDescriptor}.*/
@@ -103,6 +105,18 @@ bool TimeDescriptor::evaluate(const QDateTime &lastEvaluationTime, const QDateTi
     }
 
     return false;
+}
+
+QDebug operator<<(QDebug dbg, const TimeDescriptor &timeDescriptor)
+{
+    dbg.nospace() << "TimeDescriptor (TimeEventItems:" << timeDescriptor.timeEventItems().count() << ", CalendarItems:" << timeDescriptor.calendarItems().count() << ")" << endl;
+    for (int i = 0; i < timeDescriptor.timeEventItems().count(); i++) {
+        dbg.nospace() << "  " << i << ": " << timeDescriptor.timeEventItems().at(i);
+    }
+    for (int i = 0; i < timeDescriptor.calendarItems().count(); i++) {
+        dbg.nospace() << "  " << i << ": " << timeDescriptor.calendarItems().at(i);
+    }
+    return dbg;
 }
 
 }

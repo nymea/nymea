@@ -83,8 +83,13 @@ void HttpDaemon::readClient()
         QUrl url("http://foo.bar" + tokens[1]);
         QUrlQuery query(url);
         if (url.path() == "/setstate") {
-            qCDebug(dcMockDevice) << "Set state value" << query.queryItems().first().second;
-            emit setState(StateTypeId(query.queryItems().first().first), QVariant(query.queryItems().first().second));
+            StateTypeId stateTypeId = StateTypeId(query.queryItems().first().first);
+            QVariant stateValue = query.queryItems().first().second;
+            if (stateTypeId == mockBoolValueStateTypeId || stateTypeId == mockBatteryCriticalStateTypeId) {
+                stateValue.convert(QVariant::Bool);
+            }
+            qCDebug(dcMockDevice) << "Set state value" << stateValue;
+            emit setState(stateTypeId, stateValue);
         } else if (url.path() == "/generateevent") {
             emit triggerEvent(EventTypeId(query.queryItemValue("eventtypeid")));
         } else if (url.path() == "/actionhistory") {

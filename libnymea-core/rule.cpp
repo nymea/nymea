@@ -230,4 +230,20 @@ void Rule::setActive(const bool &active)
     m_active = active;
 }
 
+QDebug operator<<(QDebug dbg, const Rule &rule)
+{
+    dbg.nospace() << endl << "=== Rule begin ===" << endl;
+    dbg.nospace() << "ID:" << rule.id().toString() << endl;
+    dbg.nospace() << "Name:" << rule.name() << endl;
+    dbg.nospace() << "Enabled:" << rule.enabled() << endl;
+    dbg.nospace() << "Active:" << rule.active() << endl;
+    dbg.nospace() << rule.eventDescriptors();
+    dbg.nospace() << rule.timeDescriptor();
+    dbg.nospace() << rule.stateEvaluator();
+    dbg.nospace() << "Actions:" << rule.actions();
+    dbg.nospace() << "ExitActions:" << rule.exitActions();
+    dbg.nospace() << "=== Rule end  ===";
+    return dbg.space();
+}
+
 }

@@ -73,7 +73,6 @@ private:
     Types::ValueOperator m_operatorType;
 };
 
-QDebug operator<<(QDebug dbg, const StateDescriptor &eventDescriptor);
-QDebug operator<<(QDebug dbg, const QList<StateDescriptor> &eventDescriptors);
+QDebug operator<<(QDebug dbg, const StateDescriptor &stateDescriptor);
 
 #endif // STATEDESCRIPTOR_H

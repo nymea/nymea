@@ -197,7 +197,9 @@ void StateEvaluator::removeDevice(const DeviceId &deviceId)
 QList<DeviceId> StateEvaluator::containedDevices() const
 {
     QList<DeviceId> ret;
-    ret.append(m_stateDescriptor.deviceId());
+    if (!m_stateDescriptor.deviceId().isNull()) {
+        ret.append(m_stateDescriptor.deviceId());
+    }
     foreach (const StateEvaluator &childEvaluator, m_childEvaluators) {
         ret.append(childEvaluator.containedDevices());
     }
@@ -208,6 +210,7 @@ QList<DeviceId> StateEvaluator::containedDevices() const
     The \a groupName will normally be the corresponding \l Rule. */
 void StateEvaluator::dumpToSettings(NymeaSettings &settings, const QString &groupName) const
 {
+    qWarning() << "Dumping to settings:" << groupName;
     settings.beginGroup(groupName);
 
     settings.beginGroup("stateDescriptor");
@@ -260,6 +263,7 @@ StateEvaluator StateEvaluator::loadFromSettings(NymeaSettings &settings, const Q
     }
     settings.endGroup();
     settings.endGroup();
+    qWarning() << "*** loading from settings" << groupName << ret;
     return ret;
 }
 
@@ -342,6 +346,15 @@ bool StateEvaluator::isValid() const
         }
     }
     return true;
+}
+
+QDebug operator<<(QDebug dbg, const StateEvaluator &stateEvaluator)
+{
+    dbg.nospace() << "StateEvaluator: Operator:" << stateEvaluator.operatorType() << endl << "  " << stateEvaluator.stateDescriptor() << endl;
+    for (int i = 0; i < stateEvaluator.childEvaluators().count(); i++) {
+        dbg.nospace() << "    " << i << ": " << stateEvaluator.childEvaluators().at(i);
+    }
+    return dbg;
 }
 
 }

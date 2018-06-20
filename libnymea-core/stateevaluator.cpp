@@ -210,7 +210,6 @@ QList<DeviceId> StateEvaluator::containedDevices() const
     The \a groupName will normally be the corresponding \l Rule. */
 void StateEvaluator::dumpToSettings(NymeaSettings &settings, const QString &groupName) const
 {
-    qWarning() << "Dumping to settings:" << groupName;
     settings.beginGroup(groupName);
 
     settings.beginGroup("stateDescriptor");
@@ -263,7 +262,6 @@ StateEvaluator StateEvaluator::loadFromSettings(NymeaSettings &settings, const Q
     }
     settings.endGroup();
     settings.endGroup();
-    qWarning() << "*** loading from settings" << groupName << ret;
     return ret;
 }
 

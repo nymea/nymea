@@ -680,7 +680,6 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
                 return RuleError::RuleErrorActionTypeNotFound;
             }
             foreach (const ParamType &ifaceActionParamType, ifaceActionType.paramTypes()) {
-                qWarning() << "iface requires param:" << ifaceActionParamType.name();
                 if (!action.ruleActionParams().hasParam(ifaceActionParamType.name())) {
                     qCWarning(dcRuleEngine()) << "Cannot create rule. Interface action" << iface.name() << ":" << action.interfaceAction() << "requires a" << ifaceActionParamType.name() << "param of type" << QVariant::typeToName(ifaceActionParamType.type());
                     return RuleError::RuleErrorMissingParameter;
@@ -751,7 +750,6 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
                 return RuleError::RuleErrorActionTypeNotFound;
             }
             foreach (const ParamType &ifaceActionParamType, ifaceActionType.paramTypes()) {
-                qWarning() << "iface requires param:" << ifaceActionParamType.name();
                 if (!ruleAction.ruleActionParams().hasParam(ifaceActionParamType.name())) {
                     qCWarning(dcRuleEngine()) << "Cannot create rule. Interface action" << iface.name() << ":" << ruleAction.interfaceAction() << "requires a" << ifaceActionParamType.name() << "param of type" << QVariant::typeToName(ifaceActionParamType.type());
                     return RuleError::RuleErrorMissingParameter;
@@ -1283,7 +1281,7 @@ void RuleEngine::appendRule(const Rule &rule)
 {
     Rule newRule = rule;
     newRule.setStatesActive(newRule.stateEvaluator().evaluate());
-    qCDebug(dcRuleEngineDebug()) << "Appending new Rule:" << newRule;
+    qCDebug(dcRuleEngine()) << "Adding Rule:" << newRule;
     m_rules.insert(rule.id(), newRule);
     m_ruleIds.append(rule.id());
 }
@@ -1450,7 +1448,7 @@ void RuleEngine::saveRule(const Rule &rule)
         settings.endGroup();
     }
     settings.endGroup();
-    qWarning() << "#### Saved rule to config:" << rule;
+    qCDebug(dcRuleEngineDebug()) << "Saved rule to config:" << rule;
 }
 
 }

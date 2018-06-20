@@ -63,6 +63,7 @@ private:
 
 };
 
+QDebug operator<<(QDebug dbg, const CalendarItem &calendarItem);
 }
 
 #endif // CALENDARITEM_H

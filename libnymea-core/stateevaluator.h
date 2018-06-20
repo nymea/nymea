@@ -64,6 +64,8 @@ private:
     Types::StateOperator m_operatorType;
 };
 
+QDebug operator<<(QDebug dbg, const StateEvaluator &stateEvaluator);
+
 }
 
 #endif // STATEEVALUATOR_H

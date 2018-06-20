@@ -31,6 +31,8 @@
 
 #include "timeeventitem.h"
 
+#include <QDebug>
+
 namespace nymeaserver {
 
 /*! Constructs an invalid \l{TimeEventItem}. */
@@ -130,6 +132,12 @@ bool TimeEventItem::evaluate(const QDateTime &lastEvaluationTime, const QDateTim
 
     // Check dateTime matches
     return lastEvaluationTime < m_dateTime && m_dateTime <= dateTime;
+}
+
+QDebug operator<<(QDebug dbg, const TimeEventItem &timeEventItem)
+{
+    dbg.nospace() << "TimeEventItem (Time:" << timeEventItem.time() << ", DateTime:" << timeEventItem.dateTime().toString() << ", " << timeEventItem.repeatingOption() << ")" << endl;
+    return dbg;
 }
 
 }

@@ -161,3 +161,11 @@ bool StateDescriptor::isValid() const
 {
     return ((!m_deviceId.isNull() && !m_stateTypeId.isNull()) || (!m_interface.isNull() && !m_interfaceState.isNull())) && m_stateValue.isValid();
 }
+
+QDebug operator<<(QDebug dbg, const StateDescriptor &stateDescriptor)
+{
+    dbg.nospace() << "StateDescriptor(DeviceId:" << stateDescriptor.deviceId().toString() << ", StateTypeId:"
+                  << stateDescriptor.stateTypeId().toString() << ", Interface:" << stateDescriptor.interface()
+                  << ", InterfaceState:" << stateDescriptor.interfaceState() << ", Operator:" << stateDescriptor.operatorType() << ", Value:" << stateDescriptor.stateValue();
+    return dbg;
+}

@@ -33,12 +33,17 @@ class LIBNYMEA_EXPORT ParamDescriptor : public Param
 {
 public:
     ParamDescriptor(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
+    ParamDescriptor(const QString &paramName, const QVariant &value = QVariant());
 
+    QString paramName() const;
     Types::ValueOperator operatorType() const;
     void setOperatorType(Types::ValueOperator operatorType);
 
 private:
+    QString m_paramName;
     Types::ValueOperator m_operatorType;
 };
+
+QDebug operator<<(QDebug dbg, const ParamDescriptor &paramDescriptor);
 
 #endif // PARAMDESCRIPTOR_H

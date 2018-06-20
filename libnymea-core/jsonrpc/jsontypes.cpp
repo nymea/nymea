@@ -182,7 +182,8 @@ void JsonTypes::init()
     s_ruleActionParam.insert("o:eventParamTypeId", basicTypeToString(Uuid));
 
     // ParamDescriptor
-    s_paramDescriptor.insert("paramTypeId", basicTypeToString(Uuid));
+    s_paramDescriptor.insert("o:paramTypeId", basicTypeToString(Uuid));
+    s_paramDescriptor.insert("o:paramName", basicTypeToString(Uuid));
     s_paramDescriptor.insert("value", basicTypeRef());
     s_paramDescriptor.insert("operator", valueOperatorRef());
 
@@ -683,7 +684,11 @@ QVariantMap JsonTypes::packParam(const Param &param)
 QVariantMap JsonTypes::packParamDescriptor(const ParamDescriptor &paramDescriptor)
 {
     QVariantMap variantMap;
-    variantMap.insert("paramTypeId", paramDescriptor.paramTypeId().toString());
+    if (!paramDescriptor.paramTypeId().isNull()) {
+        variantMap.insert("paramTypeId", paramDescriptor.paramTypeId().toString());
+    } else {
+        variantMap.insert("paramName", paramDescriptor.paramName());
+    }
     variantMap.insert("value", paramDescriptor.value());
     variantMap.insert("operator", s_valueOperator.at(paramDescriptor.operatorType()));
     return variantMap;
@@ -1389,13 +1394,19 @@ RuleActionParamList JsonTypes::unpackRuleActionParams(const QVariantList &ruleAc
 /*! Returns a \l{ParamDescriptor} created from the given \a paramMap. */
 ParamDescriptor JsonTypes::unpackParamDescriptor(const QVariantMap &paramMap)
 {
-    ParamDescriptor param(ParamTypeId(paramMap.value("paramTypeId").toString()), paramMap.value("value"));
     QString operatorString = paramMap.value("operator").toString();
-
     QMetaObject metaObject = Types::staticMetaObject;
     int enumIndex = metaObject.indexOfEnumerator("ValueOperator");
     QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
-    param.setOperatorType((Types::ValueOperator)metaEnum.keyToValue(operatorString.toLatin1().data()));
+    Types::ValueOperator valueOperator = (Types::ValueOperator)metaEnum.keyToValue(operatorString.toLatin1().data());
+
+    if (paramMap.contains("paramTypeId")) {
+        ParamDescriptor param = ParamDescriptor(ParamTypeId(paramMap.value("paramTypeId").toString()), paramMap.value("value"));
+        param.setOperatorType(valueOperator);
+        return param;
+    }
+    ParamDescriptor param = ParamDescriptor(paramMap.value("paramName").toString(), paramMap.value("value"));
+    param.setOperatorType(valueOperator);
     return param;
 }
 

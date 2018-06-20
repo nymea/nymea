@@ -127,13 +127,13 @@ void RuleActionParam::setEventTypeId(const EventTypeId &eventTypeId)
 /*! Writes the paramTypeId, value, eventId and eventParamTypeId of the given \a ruleActionParam to \a dbg. */
 QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam)
 {
-    dbg.nospace() << "RuleActionParam(ParamTypeId: " << ruleActionParam.paramTypeId() << ", Value:" << ruleActionParam.value();
+    dbg.nospace() << "RuleActionParam(ParamTypeId: " << ruleActionParam.paramTypeId().toString() << ", Name:" << ruleActionParam.paramName() << ", Value:" << ruleActionParam.value();
     if (ruleActionParam.eventTypeId() != EventTypeId()) {
        dbg.nospace() << ", EventTypeId:" << ruleActionParam.eventTypeId().toString() << ", EventParamTypeId:" << ruleActionParam.eventParamTypeId().toString() << ")";
     } else {
        dbg.nospace() << ")";
     }
-    return dbg.space();
+    return dbg;
 }
 
 // ActionTypeParamList

@@ -54,6 +54,8 @@ private:
     RepeatingOption m_repeatingOption;
 };
 
+QDebug operator<<(QDebug dbg, const TimeEventItem &timeEventItem);
+
 }
 
 #endif // TIMEEVENTITEM_H

@@ -94,6 +94,8 @@ private:
     bool m_executable;
 };
 
+QDebug operator<<(QDebug dbg, const Rule &rule);
+
 }
 
 #endif // RULE_H

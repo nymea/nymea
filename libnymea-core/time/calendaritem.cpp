@@ -31,6 +31,8 @@
 #include "calendaritem.h"
 #include "loggingcategories.h"
 
+#include <QDebug>
+
 namespace nymeaserver {
 
 /*! Construct a invalid \l{CalendarItem}. */
@@ -264,6 +266,12 @@ bool CalendarItem::evaluateYearly(const QDateTime &dateTime) const
     }
 
     return false;
+}
+
+QDebug operator<<(QDebug dbg, const CalendarItem &calendarItem)
+{
+    dbg.nospace() << "CalendarItem (StartTime:" << calendarItem.startTime() << ", DateTime:" << calendarItem.dateTime().toString() << ", " << calendarItem.repeatingOption() << ", Duration:" << calendarItem.duration() << ")";
+    return dbg;
 }
 
 }

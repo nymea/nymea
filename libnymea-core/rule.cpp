@@ -230,6 +230,8 @@ void Rule::setActive(const bool &active)
     m_active = active;
 }
 
+/*! Print a Rule with all its contents to QDebug. Note that this might print a lot of data.
+ * It is useful to debug, but be cautionous with using this in production code.  */
 QDebug operator<<(QDebug dbg, const Rule &rule)
 {
     dbg.nospace() << endl << "=== Rule begin ===" << endl;

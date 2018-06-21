@@ -346,6 +346,7 @@ bool StateEvaluator::isValid() const
     return true;
 }
 
+/*! Print a StateEvaluator including childEvaluators recuresively to QDebug. */
 QDebug operator<<(QDebug dbg, const StateEvaluator &stateEvaluator)
 {
     dbg.nospace() << "StateEvaluator: Operator:" << stateEvaluator.operatorType() << endl << "  " << stateEvaluator.stateDescriptor() << endl;

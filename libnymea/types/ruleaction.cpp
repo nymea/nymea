@@ -191,6 +191,7 @@ void RuleAction::operator=(const RuleAction &other)
     m_ruleActionParams = other.ruleActionParams();
 }
 
+/*! Print a RuleAction including RuleActionParams to QDebug. */
 QDebug operator<<(QDebug dbg, const RuleAction &ruleAction)
 {
     dbg.nospace() << "RuleAction(ActionTypeId:" << ruleAction.actionTypeId().toString() << ", DeviceId:" << ruleAction.deviceId().toString() << ", Interface:" << ruleAction.interface() << ", InterfaceAction:" << ruleAction.interfaceAction() << ")" << endl;
@@ -200,6 +201,7 @@ QDebug operator<<(QDebug dbg, const RuleAction &ruleAction)
     return dbg;
 }
 
+/*! Print a List of RuleActions with all their contents to QDebug. */
 QDebug operator<<(QDebug dbg, const QList<RuleAction> &ruleActionList)
 {
     dbg.nospace() << "RuleActionList (count:" << ruleActionList.count() << "):" << endl;

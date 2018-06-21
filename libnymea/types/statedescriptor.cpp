@@ -34,8 +34,15 @@
     a pair of strings describing the interface and interface action for a \l{State}.
 
     \sa State, nymeaserver::Rule
+
 */
 
+/*! \enum StateDescriptor::Type
+    \value TypeDevice
+        Describes a state by deviceId and stateTypeId
+    \value TypeInterface
+        Describes a state by interface name and interfaceState name
+*/
 
 #include "statedescriptor.h"
 
@@ -162,6 +169,7 @@ bool StateDescriptor::isValid() const
     return ((!m_deviceId.isNull() && !m_stateTypeId.isNull()) || (!m_interface.isNull() && !m_interfaceState.isNull())) && m_stateValue.isValid();
 }
 
+/*! Print a StateDescriptor with all its contents to QDebug. */
 QDebug operator<<(QDebug dbg, const StateDescriptor &stateDescriptor)
 {
     dbg.nospace() << "StateDescriptor(DeviceId:" << stateDescriptor.deviceId().toString() << ", StateTypeId:"

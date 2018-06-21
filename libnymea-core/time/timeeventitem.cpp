@@ -134,6 +134,7 @@ bool TimeEventItem::evaluate(const QDateTime &lastEvaluationTime, const QDateTim
     return lastEvaluationTime < m_dateTime && m_dateTime <= dateTime;
 }
 
+/*! Print a TimeEvent to QDebug. */
 QDebug operator<<(QDebug dbg, const TimeEventItem &timeEventItem)
 {
     dbg.nospace() << "TimeEventItem (Time:" << timeEventItem.time() << ", DateTime:" << timeEventItem.dateTime().toString() << ", " << timeEventItem.repeatingOption() << ")" << endl;

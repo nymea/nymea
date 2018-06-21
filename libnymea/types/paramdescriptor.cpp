@@ -74,7 +74,7 @@ void ParamDescriptor::setOperatorType(Types::ValueOperator operatorType)
     m_operatorType = operatorType;
 }
 
-
+/*! Print a ParamDescriptor to QDebug. */
 QDebug operator<<(QDebug dbg, const ParamDescriptor &paramDescriptor)
 {
     dbg.nospace() << "ParamDescriptor(ParamTypeId: " << paramDescriptor.paramTypeId().toString() << ", Name:" << paramDescriptor.paramName() << ", Value:" << paramDescriptor.value() << ")" << endl;

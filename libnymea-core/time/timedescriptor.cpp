@@ -107,6 +107,7 @@ bool TimeDescriptor::evaluate(const QDateTime &lastEvaluationTime, const QDateTi
     return false;
 }
 
+/*! Print a TimeDescriptor including the full lists of CalendarItems and TimeEventItems to QDebug. */
 QDebug operator<<(QDebug dbg, const TimeDescriptor &timeDescriptor)
 {
     dbg.nospace() << "TimeDescriptor (TimeEventItems:" << timeDescriptor.timeEventItems().count() << ", CalendarItems:" << timeDescriptor.calendarItems().count() << ")" << endl;

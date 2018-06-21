@@ -268,6 +268,7 @@ bool CalendarItem::evaluateYearly(const QDateTime &dateTime) const
     return false;
 }
 
+/*! Print a CalendarItem to QDebug. */
 QDebug operator<<(QDebug dbg, const CalendarItem &calendarItem)
 {
     dbg.nospace() << "CalendarItem (StartTime:" << calendarItem.startTime() << ", DateTime:" << calendarItem.dateTime().toString() << ", " << calendarItem.repeatingOption() << ", Duration:" << calendarItem.duration() << ")";

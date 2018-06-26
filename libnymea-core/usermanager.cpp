@@ -35,6 +35,7 @@
 
 namespace nymeaserver {
 
+/** Constructs a new UserManager with the given \a dbName and \a parent. */
 UserManager::UserManager(const QString &dbName, QObject *parent):
     QObject(parent)
 {
@@ -359,7 +360,7 @@ bool UserManager::validateToken(const QByteArray &token) const
 void UserManager::onPushButtonPressed()
 {
     if (m_pushButtonTransaction.first == -1) {
-        qCDebug(dcUserManager()) << "PushButton pressed but don't have a transaction waiting for it.";
+        qCDebug(dcUserManager()) << "PushButton pressed without a client waiting for it. Ignoring the signal.";
         return;
     }
 
@@ -373,11 +374,13 @@ void UserManager::onPushButtonPressed()
 
     m_db.exec(storeTokenQuery);
     if (m_db.lastError().type() != QSqlError::NoError) {
-        qCWarning(dcUserManager) << "Error storing token in DB:" << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        qCWarning(dcUserManager()) << "Error storing token in DB:" << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        qCWarning(dcUserManager()) << "PushButton Auth failed.";
         emit pushButtonAuthFinished(m_pushButtonTransaction.first, false, QByteArray());
+    } else {
+        qCDebug(dcUserManager()) << "PushButton Auth succeeded.";
+        emit pushButtonAuthFinished(m_pushButtonTransaction.first, true, token);
     }
-    qCDebug(dcUserManager()) << "PushButton Auth succeeded";
-    emit pushButtonAuthFinished(m_pushButtonTransaction.first, true, token);
 
     m_pushButtonTransaction.first = -1;
 }

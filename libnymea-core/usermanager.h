@@ -45,7 +45,7 @@ public:
         UserErrorPermissionDenied
     };
 
-    explicit UserManager(QObject *parent = 0);
+    explicit UserManager(const QString &dbName, QObject *parent = 0);
 
     bool initRequired() const;
     QStringList users() const;
@@ -68,7 +68,8 @@ signals:
     void pushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
 
 private:
-    void initDB();
+    bool initDB();
+    void rotate(const QString &dbName);
     bool validateUsername(const QString &username) const;
     bool validateToken(const QByteArray &token) const;
 

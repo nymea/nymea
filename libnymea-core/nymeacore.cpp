@@ -514,7 +514,7 @@ void NymeaCore::init() {
     m_ruleEngine = new RuleEngine(this);
 
     qCDebug(dcApplication()) << "Creating User Manager";
-    m_userManager = new UserManager(this);
+    m_userManager = new UserManager(NymeaSettings::settingsPath() + "/user-db.sqlite", this);
 
     qCDebug(dcApplication) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_configuration, this);

@@ -35,16 +35,28 @@
 
 namespace nymeaserver {
 
-UserManager::UserManager(QObject *parent) : QObject(parent)
+UserManager::UserManager(const QString &dbName, QObject *parent):
+    QObject(parent)
 {
     m_db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), "users");
-    m_db.setDatabaseName(NymeaSettings::settingsPath() + "/user-db.sqlite");
+    m_db.setDatabaseName(dbName);
 
-    if (!m_db.open()) {
-        qCWarning(dcUserManager) << "Error opening users database:" << m_db.lastError().driverText();
-        return;
+    qCDebug(dcUserManager()) << "Opening user database" << m_db.databaseName();
+
+    if (!m_db.isValid()) {
+        qCWarning(dcUserManager()) << "The database is not valid:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
+        rotate(m_db.databaseName());
     }
-    initDB();
+
+    if (!initDB()) {
+        qCWarning(dcUserManager()) << "Error initializing user database. Trying to correct it.";
+        if (QFileInfo(m_db.databaseName()).exists()) {
+            rotate(m_db.databaseName());
+            if (!initDB()) {
+                qCWarning(dcLogEngine()) << "Error fixing user database. Giving up. Users can't be stored.";
+            }
+        }
+    }
 
     m_pushButtonDBusService = new PushButtonDBusService("/io/guh/nymead/UserManager", this);
     connect(m_pushButtonDBusService, &PushButtonDBusService::pushButtonPressed, this, &UserManager::onPushButtonPressed);
@@ -286,13 +298,49 @@ bool UserManager::verifyToken(const QByteArray &token)
     return true;
 }
 
-void UserManager::initDB()
+bool UserManager::initDB()
 {
-    if (!m_db.tables().contains("users")) {
-        m_db.exec("CREATE TABLE users (username VARCHAR(40) UNIQUE, password VARCHAR(100), salt VARCHAR(100));");
+    m_db.close();
+
+    if (!m_db.open()) {
+        qCWarning(dcUserManager()) << "Can't open user database. Init failed.";
+        return false;
     }
+
+    if (!m_db.tables().contains("users")) {
+        qCDebug(dcUserManager()) << "Empty user database. Setting up metadata...";
+        m_db.exec("CREATE TABLE users (username VARCHAR(40) UNIQUE, password VARCHAR(100), salt VARCHAR(100));");
+        if (m_db.lastError().isValid()) {
+            qCWarning(dcUserManager) << "Error initualizing user database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            return false;
+        }
+    }
+
     if (!m_db.tables().contains("tokens")) {
+        qCDebug(dcUserManager()) << "Empty user database. Setting up metadata...";
         m_db.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40));");
+        if (m_db.lastError().isValid()) {
+            qCWarning(dcUserManager()) << "Error initualizing user database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            return false;
+        }
+    }
+
+    qCDebug(dcUserManager()) << "User database initialized successfully.";
+    return true;
+}
+
+void UserManager::rotate(const QString &dbName)
+{
+    int index = 1;
+    while (QFileInfo(QString("%1.%2").arg(dbName).arg(index)).exists()) {
+        index++;
+    }
+    qCDebug(dcUserManager()) << "Backing up old database file to" << QString("%1.%2").arg(dbName).arg(index);
+    QFile f(dbName);
+    if (!f.rename(QString("%1.%2").arg(dbName).arg(index))) {
+        qCWarning(dcUserManager()) << "Error backing up old database.";
+    } else {
+        qCDebug(dcUserManager()) << "Successfully moved old database";
     }
 }
 

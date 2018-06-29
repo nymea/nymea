@@ -503,7 +503,7 @@ void TestJSONRPC::introspect()
         foreach (const QString &ref, extractRefs(item)) {
             QString typeId = ref;
             typeId.remove("$ref:");
-            QVERIFY2(types.contains(typeId), QString("Undefined ref: %1").arg(ref).toLatin1().data());
+            QVERIFY2(types.contains(typeId), QString("Undefined ref: %1. Did you forget to add it to JsonTypes::allTypes()?").arg(ref).toLatin1().data());
         }
     }
 }

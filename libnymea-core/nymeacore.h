@@ -49,6 +49,7 @@ class JsonRPCServer;
 class LogEngine;
 class NetworkManager;
 class NymeaConfiguration;
+class TagsStorage;
 
 class NymeaCore : public QObject
 {
@@ -84,6 +85,7 @@ public:
     UserManager *userManager() const;
     CloudManager *cloudManager() const;
     DebugServerHandler *debugServerHandler() const;
+    TagsStorage *tagsStorage() const;
 
     static QStringList getAvailableLanguages();
 
@@ -121,6 +123,7 @@ private:
     CloudManager *m_cloudManager;
     HardwareManagerImplementation *m_hardwareManager;
     DebugServerHandler *m_debugServerHandler;
+    TagsStorage *m_tagsStorage;
 
     NetworkManager *m_networkManager;
     UserManager *m_userManager;

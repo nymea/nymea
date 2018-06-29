@@ -154,6 +154,10 @@ protected:
         verifyError(response, "configurationError", JsonTypes::configurationErrorToString(error));
     }
 
+    inline void verifyTagError(const QVariant &response, TagsStorage::TagError error = TagsStorage::TagErrorNoError) {
+        verifyError(response, "tagError", JsonTypes::tagErrorToString(error));
+    }
+
     inline void verifyParams(const QVariantList &requestList, const QVariantList &responseList, bool allRequired = true)
     {
         if (allRequired)

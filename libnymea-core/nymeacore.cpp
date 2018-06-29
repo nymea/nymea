@@ -101,6 +101,7 @@
 #include "ruleengine.h"
 #include "networkmanager/networkmanager.h"
 #include "nymeasettings.h"
+#include "tagging/tagsstorage.h"
 
 #include "devicemanager.h"
 #include "plugin/device.h"
@@ -485,6 +486,12 @@ DebugServerHandler *NymeaCore::debugServerHandler() const
     return m_debugServerHandler;
 }
 
+/*! Returns a pointer to the \l{TagsStorage} instance owned by NymeaCore. */
+TagsStorage *NymeaCore::tagsStorage() const
+{
+    return m_tagsStorage;
+}
+
 
 /*! Constructs NymeaCore with the given \a parent. This is private.
     Use \l{NymeaCore::instance()} to access the single instance.*/
@@ -515,6 +522,9 @@ void NymeaCore::init() {
 
     qCDebug(dcApplication()) << "Creating User Manager";
     m_userManager = new UserManager(NymeaSettings::settingsPath() + "/user-db.sqlite", this);
+
+    qCDebug(dcApplication()) << "Creating Tags Storage";
+    m_tagsStorage = new TagsStorage(m_deviceManager, m_ruleEngine, this);
 
     qCDebug(dcApplication) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_configuration, this);

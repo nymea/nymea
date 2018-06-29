@@ -42,6 +42,9 @@
 #include "logging/logentry.h"
 #include "logging/logfilter.h"
 
+#include "tagging/tagsstorage.h"
+#include "tagging/tag.h"
+
 #include "time/calendaritem.h"
 #include "time/repeatingoption.h"
 #include "time/timedescriptor.h"
@@ -135,6 +138,7 @@ public:
     DECLARE_TYPE(networkManagerState, "NetworkManagerState", NetworkManager, NetworkManagerState)
     DECLARE_TYPE(networkDeviceState, "NetworkDeviceState", NetworkDevice, NetworkDeviceState)
     DECLARE_TYPE(userError, "UserError", UserManager, UserError)
+    DECLARE_TYPE(tagError, "TagError", TagsStorage, TagError)
 
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
@@ -168,6 +172,7 @@ public:
     DECLARE_OBJECT(tokenInfo, "TokenInfo")
     DECLARE_OBJECT(serverConfiguration, "ServerConfiguration")
     DECLARE_OBJECT(webServerConfiguration, "WebServerConfiguration")
+    DECLARE_OBJECT(tag, "Tag")
 
     // pack types
     static QVariantMap packEventType(const EventType &eventType);
@@ -192,6 +197,7 @@ public:
     static QVariantMap packRule(const Rule &rule);
     static QVariantMap packRuleDescription(const Rule &rule);
     static QVariantMap packLogEntry(const LogEntry &logEntry);
+    static QVariantMap packTag(const Tag &tag);
     static QVariantMap packRepeatingOption(const RepeatingOption &option);
     static QVariantMap packCalendarItem(const CalendarItem &calendarItem);
     static QVariantMap packTimeEventItem(const TimeEventItem &timeEventItem);
@@ -241,6 +247,7 @@ public:
     static CalendarItem unpackCalendarItem(const QVariantMap &calendarItemMap);
     static TimeEventItem unpackTimeEventItem(const QVariantMap &timeEventItemMap);
     static TimeDescriptor unpackTimeDescriptor(const QVariantMap &timeDescriptorMap);
+    static Tag unpackTag(const QVariantMap &tagMap);
 
     static ServerConfiguration unpackServerConfiguration(const QVariantMap &serverConfigurationMap);
     static WebServerConfiguration unpackWebServerConfiguration(const QVariantMap &webServerConfigurationMap);

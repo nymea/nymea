@@ -99,6 +99,9 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     case SettingsRoleDeviceStates:
         fileName = "devicestates.conf";
         break;
+    case SettingsRoleTags:
+        fileName = "tags.conf";
+        break;
     }
     m_settings = new QSettings(basePath + settingsPrefix + fileName, QSettings::IniFormat, this);
 }

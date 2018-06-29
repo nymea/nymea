@@ -113,6 +113,7 @@ protected:
     QVariantMap statusToReply(Logging::LoggingError status) const;
     QVariantMap statusToReply(NymeaConfiguration::ConfigurationError status) const;
     QVariantMap statusToReply(NetworkManager::NetworkManagerError status) const;
+    QVariantMap statusToReply(TagsStorage::TagError status) const;
 
 private:
     QHash<QString, QString> m_descriptions;

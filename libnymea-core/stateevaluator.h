@@ -56,6 +56,7 @@ public:
     static StateEvaluator loadFromSettings(NymeaSettings &settings, const QString &groupPrefix);
 
     bool isValid() const;
+    bool isEmpty() const;
 
 private:
     StateDescriptor m_stateDescriptor;

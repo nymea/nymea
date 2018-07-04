@@ -98,6 +98,8 @@ private slots:
 
     void testEventBasedAction();
 
+    void testEventBasedRuleWithExitAction();
+
     void removePolicyUpdate();
     void removePolicyCascade();
 
@@ -492,8 +494,9 @@ void TestRules::addRemoveRules_data()
     QTest::newRow("valid rule. enabled, 1 Action, 1 Exit Action,  1 StateEvaluator, name")              << true     << validActionNoParams      << validExitActionNoParams  << QVariantMap()            << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << true << "TestRule";
     QTest::newRow("valid rule. disabled, 1 Action, 1 Exit Action, 1 StateEvaluator, name")              << false    << validActionNoParams      << validExitActionNoParams  << QVariantMap()            << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << true << "TestRule";
     QTest::newRow("invalid rule. disabled, 1 Action, 1 invalid Exit Action, 1 StateEvaluator, name")    << false    << validActionNoParams      << invalidExitAction        << QVariantMap()            << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorActionTypeNotFound << false << "TestRule";
-    QTest::newRow("invalid rule. 1 Action, 1 Exit Action, 1 EventDescriptor, 1 StateEvaluator, name")   << true     << validActionNoParams      << validExitActionNoParams  << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorInvalidRuleFormat << false << "TestRule";
-    QTest::newRow("invalid rule. 1 Action, 1 Exit Action, eventDescriptorList, 1 StateEvaluator, name") << true     << validActionNoParams      << validExitActionNoParams  << QVariantMap()            << eventDescriptorList  << validStateEvaluator      << RuleEngine::RuleErrorInvalidRuleFormat << false << "TestRule";
+    QTest::newRow("valid rule. 1 Action, 1 Exit Action, 1 EventDescriptor, 1 StateEvaluator, name")     << true     << validActionNoParams      << validExitActionNoParams  << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << false << "TestRule";
+    QTest::newRow("invalid rule. 1 Action, 1 Exit Action, eventDescriptorList, NO StateEvaluator, name")<< true     << validActionNoParams      << validExitActionNoParams  << QVariantMap()            << eventDescriptorList  << QVariantMap()            << RuleEngine::RuleErrorInvalidRuleFormat << false << "TestRule";
+    QTest::newRow("valid rule. 1 Action, 1 Exit Action, eventDescriptorList, 1 StateEvaluator, name")   << true     << validActionNoParams      << validExitActionNoParams  << QVariantMap()            << eventDescriptorList  << validStateEvaluator      << RuleEngine::RuleErrorNoError << false << "TestRule";
 
     // Rules without exit actions
     QTest::newRow("valid rule. enabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << true     << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << true << "TestRule";
@@ -732,8 +735,8 @@ void TestRules::editRules_data()
     // Rules with exit actions
     QTest::newRow("valid rule. enabled, 1 Action, 1 Exit Action,  1 StateEvaluator, name")              << true     << validActionNoParams      << validExitActionNoParams  << QVariantMap()            << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << "TestRule";
     QTest::newRow("valid rule. disabled, 1 Action, 1 Exit Action, 1 StateEvaluator, name")              << false    << validActionNoParams      << validExitActionNoParams  << QVariantMap()            << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << "TestRule";
-    QTest::newRow("invalid rule. 1 Action, 1 Exit Action, 1 EventDescriptor, 1 StateEvaluator, name")   << true     << validActionNoParams      << validExitActionNoParams  << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorInvalidRuleFormat << "TestRule";
-    QTest::newRow("invalid rule. 1 Action, 1 Exit Action, eventDescriptorList, 1 StateEvaluator, name") << true     << validActionNoParams      << validExitActionNoParams  << QVariantMap()            << eventDescriptorList  << validStateEvaluator      << RuleEngine::RuleErrorInvalidRuleFormat << "TestRule";
+    QTest::newRow("valid rule. 1 Action, 1 Exit Action, 1 EventDescriptor, 1 StateEvaluator, name")     << true     << validActionNoParams      << validExitActionNoParams  << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << "TestRule";
+    QTest::newRow("valid rule. 1 Action, 1 Exit Action, eventDescriptorList, 1 StateEvaluator, name")   << true     << validActionNoParams      << validExitActionNoParams  << QVariantMap()            << eventDescriptorList  << validStateEvaluator      << RuleEngine::RuleErrorNoError << "TestRule";
 
     // Rules without exit actions
     QTest::newRow("valid rule. enabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << true     << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << "TestRule";
@@ -2081,6 +2084,98 @@ void TestRules::testEventBasedAction()
 
     verifyRuleExecuted(mockActionIdWithParams);
     // TODO: check if this action was really executed with the int state value 42
+}
+
+void TestRules::testEventBasedRuleWithExitAction()
+{
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // Init bool state to true
+    spy.clear();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg(true)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // Add a rule
+    QVariantMap addRuleParams;
+    QVariantMap eventDescriptor;
+    eventDescriptor.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor.insert("deviceId", m_mockDeviceId);
+    addRuleParams.insert("eventDescriptors", QVariantList() << eventDescriptor);
+    addRuleParams.insert("name", "TestRule");
+    addRuleParams.insert("enabled", true);
+
+    QVariantMap stateEvaluator;
+    QVariantMap stateDescriptor;
+    stateDescriptor.insert("deviceId", m_mockDeviceId);
+    stateDescriptor.insert("stateTypeId", mockBoolStateId);
+    stateDescriptor.insert("operator", "ValueOperatorEquals");
+    stateDescriptor.insert("value", true);
+    stateEvaluator.insert("stateDescriptor", stateDescriptor);
+    stateEvaluator.insert("operator", "StateOperatorAnd");
+    addRuleParams.insert("stateEvaluator", stateEvaluator);
+
+    QVariantList actions;
+    QVariantMap action;
+    QVariantList ruleActionParams;
+    QVariantMap param1;
+    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("value", true);
+    QVariantMap param2;
+    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("value", true);
+    ruleActionParams.append(param1);
+    ruleActionParams.append(param2);
+
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    actions.append(action);
+    addRuleParams.insert("actions", actions);
+
+    actions.clear();
+    action.insert("actionTypeId", mockActionIdWithParams);
+    action.insert("ruleActionParams", ruleActionParams);
+    actions.append(action);
+    addRuleParams.insert("exitActions", actions);
+
+    qDebug() << addRuleParams;
+
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    verifyRuleError(response);
+
+    // trigger event
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // Verify the actions got executed
+    verifyRuleExecuted(mockActionIdNoParams);
+
+    // set bool state to false
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg(false)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // trigger event
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // Verify the exit actions got executed
+    verifyRuleExecuted(mockActionIdNoParams);
+
 }
 
 void TestRules::removePolicyUpdate()

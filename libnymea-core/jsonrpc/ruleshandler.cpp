@@ -84,9 +84,17 @@ RulesHandler::RulesHandler(QObject *parent) :
     setReturns("GetRuleDetails", returns);
 
     params.clear(); returns.clear();
-    setDescription("AddRule", "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. Note that only "
-                   "one of either eventDescriptor or eventDescriptorList may be passed at a time. A rule can be created but left disabled, "
-                   "meaning it won't actually be executed until set to enabled. If not given, enabled defaults to true.");
+    setDescription("AddRule", "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. "
+                              "Note that only one of either eventDescriptor or eventDescriptorList may be passed at a time. "
+                              "A rule can be created but left disabled, meaning it won't actually be executed until set to enabled. "
+                              "If not given, enabled defaults to true. A rule can have a list of actions and exitActions. "
+                              "It must have at least one Action. For state based rules, actions will be executed when the system "
+                              "enters a state matching the stateDescriptor. The exitActions will be executed when the system leaves "
+                              "the described state again. For event based rules, actions will be executed when a matching event "
+                              "happens and if the stateEvaluator matches the system's state. ExitActions for such rules will be "
+                              "executed when a matching event happens and the stateEvaluator is not matching the system's state. "
+                              "A rule marked as executable can be executed via the API using Rules.ExecuteRule, that means, its "
+                              "actions will be executed regardless of the the eventDescriptor and stateEvaluators.");
     params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
     params.insert("actions", QVariantList() << JsonTypes::ruleActionRef());
     params.insert("o:timeDescriptor", JsonTypes::timeDescriptorRef());

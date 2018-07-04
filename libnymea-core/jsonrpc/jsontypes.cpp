@@ -89,6 +89,7 @@ QVariantList JsonTypes::s_networkManagerError;
 QVariantList JsonTypes::s_networkManagerState;
 QVariantList JsonTypes::s_networkDeviceState;
 QVariantList JsonTypes::s_userError;
+QVariantList JsonTypes::s_tagError;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -122,6 +123,7 @@ QVariantMap JsonTypes::s_wirelessNetworkDevice;
 QVariantMap JsonTypes::s_tokenInfo;
 QVariantMap JsonTypes::s_serverConfiguration;
 QVariantMap JsonTypes::s_webServerConfiguration;
+QVariantMap JsonTypes::s_tag;
 
 void JsonTypes::init()
 {
@@ -148,6 +150,7 @@ void JsonTypes::init()
     s_networkManagerState = enumToStrings(NetworkManager::staticMetaObject, "NetworkManagerState");
     s_networkDeviceState = enumToStrings(NetworkDevice::staticMetaObject, "NetworkDeviceState");
     s_userError = enumToStrings(UserManager::staticMetaObject, "UserError");
+    s_tagError = enumToStrings(TagsStorage::staticMetaObject, "TagError");
 
     // ParamType
     s_paramType.insert("id", basicTypeToString(Uuid));
@@ -387,6 +390,13 @@ void JsonTypes::init()
     s_webServerConfiguration = s_serverConfiguration;
     s_webServerConfiguration.insert("publicFolder", basicTypeToString(QVariant::String));
 
+    // Tag
+    s_tag.insert("o:deviceId", basicTypeToString(QVariant::Uuid));
+    s_tag.insert("o:ruleId", basicTypeToString(QVariant::Uuid));
+    s_tag.insert("appId", basicTypeToString(QVariant::String));
+    s_tag.insert("tagId", basicTypeToString(QVariant::String));
+    s_tag.insert("o:value", basicTypeToString(QVariant::String));
+
     s_initialized = true;
 }
 
@@ -435,6 +445,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("NetworkManagerState", networkManagerState());
     allTypes.insert("NetworkDeviceState", networkDeviceState());
     allTypes.insert("UserError", userError());
+    allTypes.insert("TagError", tagErrorRef());
 
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
@@ -467,6 +478,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("TokenInfo", tokenInfoDescription());
     allTypes.insert("ServerConfiguration", serverConfigurationDescription());
     allTypes.insert("WebServerConfiguration", serverConfigurationDescription());
+    allTypes.insert("Tag", tagDescription());
 
     return allTypes;
 }
@@ -944,6 +956,21 @@ QVariantMap JsonTypes::packLogEntry(const LogEntry &logEntry)
     }
 
     return logEntryMap;
+}
+
+/*! Returns a variant map of the given \a tag. */
+QVariantMap JsonTypes::packTag(const Tag &tag)
+{
+    QVariantMap ret;
+    if (!tag.deviceId().isNull()){
+        ret.insert("deviceId", tag.deviceId());
+    } else {
+        ret.insert("ruleId", tag.ruleId());
+    }
+    ret.insert("appId", tag.appId());
+    ret.insert("tagId", tag.tagId());
+    ret.insert("value", tag.value());
+    return ret;
 }
 
 /*! Returns a variant list of the given \a createMethods. */
@@ -1609,6 +1636,20 @@ TimeDescriptor JsonTypes::unpackTimeDescriptor(const QVariantMap &timeDescriptor
     return timeDescriptor;
 }
 
+/*! Returns a \l{Tag} created from the given \a tagMap. */
+Tag JsonTypes::unpackTag(const QVariantMap &tagMap)
+{
+    DeviceId deviceId = DeviceId(tagMap.value("deviceId").toString());
+    RuleId ruleId = RuleId(tagMap.value("ruleId").toString());
+    QString appId = tagMap.value("appId").toString();
+    QString tagId = tagMap.value("tagId").toString();
+    QString value = tagMap.value("value").toString();
+    if (!deviceId.isNull()) {
+        return Tag(deviceId, appId, tagId, value);
+    }
+    return Tag(ruleId, appId, tagId, value);
+}
+
 ServerConfiguration JsonTypes::unpackServerConfiguration(const QVariantMap &serverConfigurationMap)
 {
     ServerConfiguration serverConfiguration;
@@ -1939,6 +1980,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qCWarning(dcJsonRpc) << "WebServerConfiguration not matching";
                     return result;
                 }
+            } else if (refName == tagRef()) {
+                QPair<bool, QString> result = validateMap(tagDescription(), variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "Tag not matching";
+                    return result;
+                }
             } else if (refName == basicTypeRef()) {
                 QPair<bool, QString> result = validateBasicType(variant);
                 if (!result.first) {
@@ -2069,6 +2116,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateEnum(s_userError, variant);
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(userErrorRef());
+                    return result;
+                }
+            } else if (refName == tagErrorRef()) {
+                QPair<bool, QString> result = validateEnum(s_tagError, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc()) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(logEntryRef());
                     return result;
                 }
             } else {

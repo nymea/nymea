@@ -22,3 +22,4 @@ SUBDIRS = versioning \
         configurations \
         timemanager \
         userloading \
+        tags \

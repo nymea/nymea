@@ -57,6 +57,7 @@
 #include "websocketserver.h"
 #include "configurationhandler.h"
 #include "networkmanagerhandler.h"
+#include "tagshandler.h"
 
 #include <QJsonDocument>
 #include <QStringList>
@@ -453,6 +454,7 @@ void JsonRPCServer::setup()
     registerHandler(new StateHandler(this));
     registerHandler(new ConfigurationHandler(this));
     registerHandler(new NetworkManagerHandler(this));
+    registerHandler(new TagsHandler(this));
 
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::pairingReply, this, &JsonRPCServer::pairingFinished);
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::connectedChanged, this, &JsonRPCServer::onCloudConnectedChanged);

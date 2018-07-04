@@ -356,6 +356,7 @@ RuleEngine::RuleEngine(QObject *parent) :
         rule.setExitActions(exitActions);
         rule.setEnabled(enabled);
         rule.setExecutable(executable);
+        rule.setStatesActive(rule.stateEvaluator().evaluate());
         appendRule(rule);
         settings.endGroup();
     }
@@ -388,8 +389,10 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
     QList<Rule> rules;
     foreach (const RuleId &id, ruleIds()) {
         Rule rule = m_rules.value(id);
-        if (!rule.enabled())
+        if (!rule.enabled()) {
+            qCDebug(dcRuleEngineDebug()) << "Skipping rule" << rule.name() << "because it is disabled";
             continue;
+        }
 
         // If we have a state based on this event
         if (containsState(rule.stateEvaluator(), event)) {
@@ -1204,6 +1207,7 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Devic
         }
     }
 
+    qCDebug(dcRuleEngineDebug()) << "Rule" << rule.name() << "does not match event descriptors";
     return false;
 }
 

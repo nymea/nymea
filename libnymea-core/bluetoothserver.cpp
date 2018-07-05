@@ -87,8 +87,7 @@ void BluetoothServer::onHostModeChanged(const QBluetoothLocalDevice::HostMode &m
         return;
 
     if (mode != QBluetoothLocalDevice::HostDiscoverable || mode != QBluetoothLocalDevice::HostDiscoverableLimitedInquiry) {
-        m_localDevice->powerOn();
-        m_localDevice->setHostMode(QBluetoothLocalDevice::HostDiscoverableLimitedInquiry);
+        m_localDevice->setHostMode(QBluetoothLocalDevice::HostDiscoverable);
     }
 }
 
@@ -162,7 +161,7 @@ bool BluetoothServer::startServer()
     // Init adapter
     qCDebug(dcConnection()) << "BluetoothServer: Using adapter" << m_localDevice->name() << m_localDevice->address().toString();
     m_localDevice->powerOn();
-    m_localDevice->setHostMode(QBluetoothLocalDevice::HostDiscoverableLimitedInquiry);
+    m_localDevice->setHostMode(QBluetoothLocalDevice::HostDiscoverable);
     connect(m_localDevice, &QBluetoothLocalDevice::hostModeStateChanged, this, &BluetoothServer::onHostModeChanged);
 
     // Init bluetooth server

@@ -86,7 +86,7 @@ void BluetoothServer::onHostModeChanged(const QBluetoothLocalDevice::HostMode &m
     if (!m_server || !m_localDevice)
         return;
 
-    if (mode != QBluetoothLocalDevice::HostDiscoverable || QBluetoothLocalDevice::HostDiscoverableLimitedInquiry) {
+    if (mode != QBluetoothLocalDevice::HostDiscoverable || mode != QBluetoothLocalDevice::HostDiscoverableLimitedInquiry) {
         m_localDevice->powerOn();
         m_localDevice->setHostMode(QBluetoothLocalDevice::HostDiscoverableLimitedInquiry);
     }

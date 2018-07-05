@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2016-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -24,6 +24,7 @@
 #include <QObject>
 #include <QBluetoothSocket>
 #include <QBluetoothServer>
+#include <QBluetoothLocalDevice>
 
 #include "transportinterface.h"
 
@@ -42,11 +43,17 @@ public:
     void sendData(const QList<QUuid> &clients, const QByteArray &data) override;
 
 private:
-    QBluetoothServer *m_server;
+    QBluetoothServer *m_server = nullptr;
+    QBluetoothLocalDevice *m_localDevice = nullptr;
     QBluetoothServiceInfo m_serviceInfo;
+
+    // Client storage
     QHash<QUuid, QBluetoothSocket *> m_clientList;
+    QByteArray m_receiveBuffer;
 
 private slots:
+    void onHostModeChanged(const QBluetoothLocalDevice::HostMode &mode);
+
     void onClientConnected();
     void onClientDisconnected();
     void onError(QBluetoothSocket::SocketError error);

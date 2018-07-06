@@ -106,7 +106,8 @@ void BluetoothServer::onClientConnected()
 
     connect(client, SIGNAL(readyRead()), this, SLOT(readData()));
     connect(client, SIGNAL(disconnected()), this, SLOT(onClientDisconnected()));
-    connect(client, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(onError(QBluetoothSocket::SocketError)));
+    connect(client, SIGNAL(stateChanged(QBluetoothSocket::SocketState)), this, SLOT(onClientStateChanged(QBluetoothSocket::SocketState)));
+    connect(client, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(onClientError(QBluetoothSocket::SocketError)));
 
     emit clientConnected(clientId);
 }
@@ -123,9 +124,14 @@ void BluetoothServer::onClientDisconnected()
     emit clientDisconnected(clientId);
 }
 
-void BluetoothServer::onError(QBluetoothSocket::SocketError error)
+void BluetoothServer::onClientError(QBluetoothSocket::SocketError error)
 {
     qCWarning(dcBluetoothServer()) << "BluetoothServer: Error occured:" << error;
+}
+
+void BluetoothServer::onClientStateChanged(QBluetoothSocket::SocketState state)
+{
+    qCDebug(dcBluetoothServer()) << "Client socket state changed:" << state;
 }
 
 void BluetoothServer::readData()

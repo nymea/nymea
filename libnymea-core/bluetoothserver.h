@@ -56,7 +56,8 @@ private slots:
 
     void onClientConnected();
     void onClientDisconnected();
-    void onError(QBluetoothSocket::SocketError error);
+    void onClientError(QBluetoothSocket::SocketError error);
+    void onClientStateChanged(QBluetoothSocket::SocketState state);
     void readData();
 
 public slots:

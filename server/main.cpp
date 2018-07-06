@@ -139,6 +139,8 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("AWSTraffic", false);
     s_loggingFilters.insert("Janus", false);
     s_loggingFilters.insert("JanusTraffic", false);
+    s_loggingFilters.insert("BluetoothServer", true);
+    s_loggingFilters.insert("BluetoothServerTraffic", false);
 
     QHash<QString, bool> loggingFiltersPlugins;
     foreach (const QJsonObject &pluginMetadata, DeviceManager::pluginsMetadata()) {

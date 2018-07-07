@@ -1,8 +1,3 @@
 {
-    "extends": "simpleclosable",
-    "actions": [
-        {
-            "name": "stop"
-        }
-    ]
+    "extends": "simpleclosable"
 }

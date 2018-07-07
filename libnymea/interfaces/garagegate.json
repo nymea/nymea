@@ -2,6 +2,11 @@
     "extends": "closable",
     "states": [
         {
+            "name": "state",
+            "type": "QString",
+            "allowedValues": ["open", "closed", "opening", "closing"]
+        },
+        {
             "name": "intermediatePosition",
             "type": "bool"
         }

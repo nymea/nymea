@@ -58,7 +58,7 @@
     <message>
         <location filename="../tests/tools/simplepushbuttonhandler/main.cpp" line="34"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished"></translation>
+        <translation>Jos määritetty, kaikki D-väylä-liittymät yhdistetään istuntoväylään järjestelmäväylän sijaan.</translation>
     </message>
 </context>
 <context>
@@ -73,7 +73,10 @@ device available in the system and create individual scenes and behaviors
 for your environment.
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>
+nymea on avoimen lähdekoodin IoT (Internet of Things) -palvelin, joka mahdollistaa useiden valmistajien erilaisten laitteiden hallinnan. Tehokkaalla rule enginella voit yhdistää järjestelmän kaikkiin käytettävissä oleviin laitteisiin ja luoda yksilöllisiä näkymiä ja käytösmalleja ympäristöösi.
+
+</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="175"/>
@@ -85,7 +88,7 @@ for your environment.
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
-        <translation type="unfinished"></translation>
+        <translation>Debuggaa sallittavat luokat. Etuliite, jossa &quot;No&quot; poistaa käytöstä. Varoitukset kaikista luokista tulostetaan, ellei erikseen hiljennetty käskyllä &quot;NoWarnings&quot;. Luokat ovat:</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="195"/>
@@ -100,7 +103,7 @@ Categories are:</source>
     <message>
         <location filename="../server/main.cpp" line="201"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished"></translation>
+        <translation>Jos määritetty, kaikki D-väylä-liittymät yhdistetään istuntoväylään järjestelmäväylän sijaan.</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="241"/>

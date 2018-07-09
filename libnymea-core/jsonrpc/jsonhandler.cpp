@@ -220,6 +220,14 @@ QVariantMap JsonHandler::statusToReply(NetworkManager::NetworkManagerError statu
     return returns;
 }
 
+/*! Returns the formated error map for the given \a status. */
+QVariantMap JsonHandler::statusToReply(TagsStorage::TagError status) const
+{
+    QVariantMap returns;
+    returns.insert("tagError", JsonTypes::tagErrorToString(status));
+    return returns;
+}
+
 
 /*!
     \class nymeaserver::JsonReply

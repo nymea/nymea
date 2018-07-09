@@ -1,0 +1,11 @@
+{
+    "extends": "battery",
+    "states": [
+        {
+            "name": "batteryLevel",
+            "type": "int",
+            "minValue": 0,
+            "maxValue": 100
+        }
+    ]
+}

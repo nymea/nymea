@@ -1,23 +1,14 @@
 {
+    "extends": "closable",
     "states": [
         {
-            "name": "gateState",
-            "type": "String",
-            "allowedValues": ["open", "closed", "intermediate", "opening", "closing"]
+            "name": "intermediatePosition",
+            "type": "bool"
         }
     ],
     "actions": [
         {
-            "name": "open"
-        },
-        {
-            "name": "close"
-        },
-        {
             "name": "stop"
-        },
-        {
-            "name": "positionIntermediate"
         }
     ]
 }

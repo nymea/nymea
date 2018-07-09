@@ -40,7 +40,8 @@ public:
         SettingsRoleRules,
         SettingsRolePlugins,
         SettingsRoleGlobal,
-        SettingsRoleDeviceStates
+        SettingsRoleDeviceStates,
+        SettingsRoleTags
     };
 
     explicit NymeaSettings(const SettingsRole &role = SettingsRoleNone, QObject *parent = nullptr);
@@ -49,7 +50,6 @@ public:
     SettingsRole settingsRole() const;
 
     static bool isRoot();
-    static QString logPath();
     static QString settingsPath();
     static QString translationsPath();
     static QString storagePath();

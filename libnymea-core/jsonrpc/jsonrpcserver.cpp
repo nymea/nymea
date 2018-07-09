@@ -57,6 +57,7 @@
 #include "websocketserver.h"
 #include "configurationhandler.h"
 #include "networkmanagerhandler.h"
+#include "tagshandler.h"
 
 #include <QJsonDocument>
 #include <QStringList>
@@ -453,6 +454,7 @@ void JsonRPCServer::setup()
     registerHandler(new StateHandler(this));
     registerHandler(new ConfigurationHandler(this));
     registerHandler(new NetworkManagerHandler(this));
+    registerHandler(new TagsHandler(this));
 
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::pairingReply, this, &JsonRPCServer::pairingFinished);
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::connectedChanged, this, &JsonRPCServer::onCloudConnectedChanged);
@@ -573,8 +575,11 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
     notification.insert("notification", handler->name() + "." + method.name());
     notification.insert("params", params);
 
+    QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
+    qCDebug(dcJsonRpcTraffic()) << "Sending notification:" << data;
+
     foreach (const QUuid &clientId, m_clientNotifications.keys(true)) {
-        m_clientTransports.value(clientId)->sendData(clientId, QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact));
+        m_clientTransports.value(clientId)->sendData(clientId, data);
     }
 }
 

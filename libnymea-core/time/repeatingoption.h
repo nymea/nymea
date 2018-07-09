@@ -65,6 +65,7 @@ private:
 
 };
 
+QDebug operator<<(QDebug dbg, const RepeatingOption &RepeatingOption);
 }
 
 #endif // REPEATINGOPTION_H

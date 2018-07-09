@@ -93,7 +93,10 @@ HEADERS += nymeacore.h \
     hardware/network/avahi/qtavahiservice_p.h \
     hardware/network/avahi/qtavahiservicebrowserimplementation.h \
     hardware/network/avahi/qtavahiservicebrowserimplementation_p.h \
-    debugserverhandler.h
+    debugserverhandler.h \
+    tagging/tagsstorage.h \
+    tagging/tag.h \
+    jsonrpc/tagshandler.h
 
 SOURCES += nymeacore.cpp \
     tcpserver.cpp \
@@ -171,4 +174,7 @@ SOURCES += nymeacore.cpp \
     hardware/network/avahi/qtavahiservice_p.cpp \
     hardware/network/avahi/qtavahiservicebrowserimplementation.cpp \
     hardware/network/avahi/qtavahiservicebrowserimplementation_p.cpp \
-    debugserverhandler.cpp
+    debugserverhandler.cpp \
+    tagging/tagsstorage.cpp \
+    tagging/tag.cpp \
+    jsonrpc/tagshandler.cpp

@@ -46,6 +46,7 @@ public:
     AvahiEntryGroup *group;
     AvahiStringList *serviceList = nullptr;
     QString name;
+    QHostAddress hostAddress;
     quint16 port;
     QString type;
     QHash<QString, QString> txtRecords;

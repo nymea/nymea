@@ -33,6 +33,7 @@
 #include <QNetworkReply>
 #include <QDebug>
 #include <QUrl>
+#include <QTimer>
 
 namespace nymeaserver {
 
@@ -68,6 +69,13 @@ private:
     bool m_enabled = false;
 
     QNetworkAccessManager *m_manager;
+    QHash<QNetworkReply*, QTimer*> m_timeoutTimers;
+
+    void hookupTimeoutTimer(QNetworkReply* reply);
+
+private slots:
+    void networkReplyFinished();
+    void networkTimeout();
 
 };
 

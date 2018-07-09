@@ -1,0 +1,10 @@
+{
+    "extends": "simpleclosable",
+    "states": [
+        {
+            "name": "state",
+            "type": "QString",
+            "allowedValues": ["open", "closed", "opening", "closing"]
+        }
+    ]
+}

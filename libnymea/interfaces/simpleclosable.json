@@ -1,0 +1,10 @@
+{
+    "actions": [
+        {
+            "name": "open"
+        },
+        {
+            "name": "close"
+        }
+    ]
+}

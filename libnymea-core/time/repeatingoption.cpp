@@ -191,4 +191,11 @@ bool RepeatingOption::evaluateMonthDay(const QDateTime &dateTime) const
     return false;
 }
 
+/*! Print a RepeatingOption to QDebug. */
+QDebug operator<<(QDebug dbg, const RepeatingOption &repeatingOption)
+{
+    dbg.nospace() << "RepeatingOption(Mode:" << repeatingOption.mode() << ", Monthdays:" << repeatingOption.monthDays() << "Weekdays:" << repeatingOption.weekDays() << ")";
+    return dbg;
+}
+
 }

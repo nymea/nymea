@@ -101,10 +101,13 @@
 #include "ruleengine.h"
 #include "networkmanager/networkmanager.h"
 #include "nymeasettings.h"
+#include "tagging/tagsstorage.h"
 
 #include "devicemanager.h"
 #include "plugin/device.h"
 #include "cloudnotifications.h"
+
+#include <QDir>
 
 namespace nymeaserver {
 
@@ -437,8 +440,23 @@ ServerManager *NymeaCore::serverManager() const
 /*! Returns the list of available system languages. */
 QStringList NymeaCore::getAvailableLanguages()
 {
-    // FIXME: load available translations
-    return QStringList() << "en_US" << "de_DE";
+    qCDebug(dcApplication()) << "Loading translations from" << NymeaSettings::translationsPath();
+
+    QDir translationDirectory(NymeaSettings::translationsPath());
+    translationDirectory.setNameFilters(QStringList() << "*.qm");
+    QStringList translationFiles = translationDirectory.entryList();
+
+    QStringList availableLanguages;
+    foreach (QString translationFile, translationFiles) {
+        if (!translationFile.startsWith("nymead-"))
+            continue;
+
+        QString language = translationFile.remove("nymead-").remove(".qm");
+        QLocale languageLocale(language);
+        availableLanguages.append(languageLocale.name());
+    }
+
+    return availableLanguages;
 }
 
 /*! Returns a pointer to the \l{BluetoothServer} instance owned by NymeaCore. */
@@ -468,6 +486,12 @@ DebugServerHandler *NymeaCore::debugServerHandler() const
     return m_debugServerHandler;
 }
 
+/*! Returns a pointer to the \l{TagsStorage} instance owned by NymeaCore. */
+TagsStorage *NymeaCore::tagsStorage() const
+{
+    return m_tagsStorage;
+}
+
 
 /*! Constructs NymeaCore with the given \a parent. This is private.
     Use \l{NymeaCore::instance()} to access the single instance.*/
@@ -485,7 +509,7 @@ void NymeaCore::init() {
     m_timeManager = new TimeManager(m_configuration->timeZone(), this);
 
     qCDebug(dcApplication) << "Creating Log Engine";
-    m_logger = new LogEngine(NymeaSettings::logPath(), this);
+    m_logger = new LogEngine(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), m_configuration->logDBMaxEntries(), this);
 
     qCDebug(dcApplication) << "Creating Hardware Manager";
     m_hardwareManager = new HardwareManagerImplementation(this);
@@ -497,7 +521,10 @@ void NymeaCore::init() {
     m_ruleEngine = new RuleEngine(this);
 
     qCDebug(dcApplication()) << "Creating User Manager";
-    m_userManager = new UserManager(this);
+    m_userManager = new UserManager(NymeaSettings::settingsPath() + "/user-db.sqlite", this);
+
+    qCDebug(dcApplication()) << "Creating Tags Storage";
+    m_tagsStorage = new TagsStorage(m_deviceManager, m_ruleEngine, this);
 
     qCDebug(dcApplication) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_configuration, this);
@@ -600,7 +627,7 @@ void NymeaCore::gotEvent(const Event &event)
                 //       something like a EventParamDescriptor
 
                 ruleActionParam.setValue(eventValue);
-                qCDebug(dcRuleEngine) << "take over event param value" << ruleActionParam.value();
+                qCDebug(dcRuleEngine) << "Using param value from event:" << ruleActionParam.value();
             }
             newParams.append(ruleActionParam);
         }

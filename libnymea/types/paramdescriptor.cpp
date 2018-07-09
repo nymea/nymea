@@ -36,12 +36,30 @@
 
 #include "paramdescriptor.h"
 
+#include <QDebug>
+
 /*! Constructs an ParamDescriptor describing an \l{Param} with the given \a paramTypeId and \a value.
  *  The ValueOperator is by default ValueOperatorEquals. */
 ParamDescriptor::ParamDescriptor(const ParamTypeId &paramTypeId, const QVariant &value):
     Param(paramTypeId, value),
     m_operatorType(Types::ValueOperatorEquals)
 {
+}
+
+/*! Constructs an ParamDescriptor describing an \l{Param} with the given \a paramTypeId and \a value.
+ *  The ValueOperator is by default ValueOperatorEquals. */
+ParamDescriptor::ParamDescriptor(const QString &paramName, const QVariant &value):
+    Param(ParamTypeId(), value),
+    m_paramName(paramName),
+    m_operatorType(Types::ValueOperatorEquals)
+{
+
+}
+
+/*! Returns the paramName of this ParamDescriptor. */
+QString ParamDescriptor::paramName() const
+{
+    return m_paramName;
 }
 
 /*! Returns the ValueOperator of this ParamDescriptor. */
@@ -56,3 +74,9 @@ void ParamDescriptor::setOperatorType(Types::ValueOperator operatorType)
     m_operatorType = operatorType;
 }
 
+/*! Print a ParamDescriptor to QDebug. */
+QDebug operator<<(QDebug dbg, const ParamDescriptor &paramDescriptor)
+{
+    dbg.nospace() << "ParamDescriptor(ParamTypeId: " << paramDescriptor.paramTypeId().toString() << ", Name:" << paramDescriptor.paramName() << ", Value:" << paramDescriptor.value() << ")" << endl;
+    return dbg;
+}

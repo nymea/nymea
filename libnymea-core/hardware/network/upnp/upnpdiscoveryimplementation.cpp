@@ -128,26 +128,40 @@ void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int 
     // TODO: Once DeviceManager (and with that this can be moved into the server, use NymeaCore's configuration manager instead of parsing the config here...
     NymeaSettings globalSettings(NymeaSettings::SettingsRoleGlobal);
     globalSettings.beginGroup("nymead");
-    QByteArray uuid = globalSettings.value("uuid", QUuid()).toByteArray();
+    QByteArray uuid = globalSettings.value("uuid", QUuid()).toString().remove(QRegExp("[{}]")).toUtf8();
     globalSettings.endGroup();
 
     globalSettings.beginGroup("WebServer");
     int serverPort = -1;
-    bool useSsl = false;
+    bool useSSL = false;
     foreach (const QString &group, globalSettings.childGroups()) {
         globalSettings.beginGroup(group);
         QHostAddress serverInterface = QHostAddress(globalSettings.value("address").toString());
-        if (serverInterface == host || serverInterface == QHostAddress("0.0.0.0")) {
-            serverPort = globalSettings.value("port", -1).toInt();
-            useSsl = globalSettings.value("sslEnabled", true).toBool();
-        }
+        bool ssl = globalSettings.value("sslEnabled", true).toBool();
+        int port = globalSettings.value("port", -1).toInt();
         globalSettings.endGroup();
+
+        // We prefer unencrypted WebServers in this case. Most UPnP clients will bail out on our certificate...
+        // However, if there is none without encryption, still use one with, so that at least our own clients find it.
+        if (serverPort == -1) { // Don't have a better option yet. Use this.
+            serverPort = port;
+            useSSL = ssl;
+            continue;
+        }
+        if (!ssl && useSSL) { // There is one without ssl. Use that.
+            serverPort = port;
+            useSSL = false;
+            break;
+        }
     }
     globalSettings.endGroup();
 
     if (serverPort == -1) {
-        qCWarning(dcConnection) << "No matching WebServer configuration found. Discarding UPnP request!";
+        qCWarning(dcUpnp()) << "No matching WebServer configuration found. Discarding UPnP request! UPnP requires a plaintext webserver.";
         return;
+    }
+    if (useSSL) {
+        qCWarning(dcUpnp()) << "Could not find a WebServer without SSL. Using one with SSL. This will not work with many clients.";
     }
 
     foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {
@@ -157,7 +171,7 @@ void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int 
                 // check subnet
                 if (host.isInSubnet(QHostAddress::parseSubnet(entry.ip().toString() + "/24"))) {
                     QString locationString;
-                    if (useSsl) {
+                    if (useSSL) {
                         locationString = "https://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
                     } else {
                         locationString = "http://" + entry.ip().toString() + ":" + QString::number(serverPort) + "/server.xml";
@@ -168,11 +182,10 @@ void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int 
                                                                       "CACHE-CONTROL: max-age=1900\r\n"
                                                                       "DATE: " + QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT\r\n"
                                                                       "EXT:\r\n"
-                                                                      "CONTENT-LENGTH:0\r\n"
                                                                       "LOCATION: " + locationString.toUtf8() + "\r\n"
                                                                       "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
-                                                                      "ST:upnp:rootdevice\r\n"
-                                                                      "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                      "ST: upnp:rootdevice\r\n"
+                                                                      "USN: uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
                                                                       "\r\n");
 
                     qCDebug(dcUpnp()) << QString("Sending response to %1:%2").arg(host.toString()).arg(port);

@@ -143,21 +143,24 @@ bool EventDescriptor::operator ==(const EventDescriptor &other) const
             && paramsMatch;
 }
 
-/*! Writes the eventTypeId and the deviceId of the given \a eventDescriptor to \a dbg. */
+/*! Print an EventDescriptor including ParamDescriptors to QDebug. */
 QDebug operator<<(QDebug dbg, const EventDescriptor &eventDescriptor)
 {
-    dbg.nospace() << "EventDescriptor(EventTypeId: " << eventDescriptor.eventTypeId().toString() << ", DeviceId" << eventDescriptor.deviceId() << ")";
+    dbg.nospace() << "EventDescriptor(EventTypeId: " << eventDescriptor.eventTypeId().toString() << ", DeviceId:" << eventDescriptor.deviceId().toString() << ", Interface:" << eventDescriptor.interface() << ", InterfaceEvent:" << eventDescriptor.interfaceEvent() <<  ")" << endl;
+    for (int i = 0; i < eventDescriptor.paramDescriptors().count(); i++) {
+        dbg.nospace() << "    " << i << ": " << eventDescriptor.paramDescriptors().at(i);
+    }
 
-    return dbg.space();
+    return dbg;
 }
 
 /*! Writes each \a eventDescriptors to \a dbg. */
 QDebug operator<<(QDebug dbg, const QList<EventDescriptor> &eventDescriptors)
 {
-    dbg.nospace() << "EventDescriptorList (count:" << eventDescriptors.count() << ")";
+    dbg.nospace() << "EventDescriptorList (count:" << eventDescriptors.count() << "):" << endl;
     for (int i = 0; i < eventDescriptors.count(); i++ ) {
-        dbg.nospace() << "     " << i << ": " << eventDescriptors.at(i);
+        dbg.nospace() << "  " << i << ": " << eventDescriptors.at(i);
     }
 
-    return dbg.space();
+    return dbg;
 }

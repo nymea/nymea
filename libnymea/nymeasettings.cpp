@@ -99,6 +99,9 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     case SettingsRoleDeviceStates:
         fileName = "devicestates.conf";
         break;
+    case SettingsRoleTags:
+        fileName = "tags.conf";
+        break;
     }
     m_settings = new QSettings(basePath + settingsPrefix + fileName, QSettings::IniFormat, this);
 }
@@ -125,28 +128,6 @@ bool NymeaSettings::isRoot()
     return true;
 }
 
-/*! Returns the path where the logging database will be stored.
-
-  \sa nymeaserver::LogEngine
-*/
-QString NymeaSettings::logPath()
-{
-    QString logPath;
-    QString organisationName = QCoreApplication::instance()->organizationName();
-
-    if (!qgetenv("SNAP").isEmpty()) {
-        logPath = QString(qgetenv("SNAP_COMMON")) + "/nymead.sqlite";
-    } else if (organisationName == "nymea-test") {
-        logPath = "/tmp/" + organisationName + "/nymead-test.sqlite";
-    } else if (NymeaSettings::isRoot()) {
-        logPath = "/var/log/nymead.sqlite";
-    } else {
-        logPath = QDir::homePath() + "/.config/" + organisationName + "/nymead.sqlite";
-    }
-
-    return logPath;
-}
-
 /*! Returns the path to the folder where the NymeaSettings will be saved i.e. \tt{/etc/nymea}. */
 QString NymeaSettings::settingsPath()
 {
@@ -168,8 +149,12 @@ QString NymeaSettings::settingsPath()
 /*! Returns the default system translation path \tt{/usr/share/nymea/translations}. */
 QString NymeaSettings::translationsPath()
 {
+    QString organisationName = QCoreApplication::instance()->organizationName();
+
     if (!qgetenv("SNAP").isEmpty()) {
         return QString(qgetenv("SNAP") + "/usr/share/nymea/translations");
+    } else if (organisationName == "nymea-test") {
+        return "/tmp/" + organisationName;
     } else {
         return QString("/usr/share/nymea/translations");
     }

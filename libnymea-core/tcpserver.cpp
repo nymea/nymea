@@ -138,7 +138,7 @@ void TcpServer::resetAvahiService()
     txt.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", NymeaCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
-    if (!m_avahiService->registerService(QString("nymea-tcp-%1").arg(configuration().id), configuration().port, "_jsonrpc._tcp", txt)) {
+    if (!m_avahiService->registerService(QString("nymea-tcp-%1").arg(configuration().id), configuration().address, configuration().port, "_jsonrpc._tcp", txt)) {
         qCWarning(dcTcpServer()) << "Could not register avahi service for" << configuration();
     }
 }

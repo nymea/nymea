@@ -89,6 +89,7 @@ QVariantList JsonTypes::s_networkManagerError;
 QVariantList JsonTypes::s_networkManagerState;
 QVariantList JsonTypes::s_networkDeviceState;
 QVariantList JsonTypes::s_userError;
+QVariantList JsonTypes::s_tagError;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -122,6 +123,7 @@ QVariantMap JsonTypes::s_wirelessNetworkDevice;
 QVariantMap JsonTypes::s_tokenInfo;
 QVariantMap JsonTypes::s_serverConfiguration;
 QVariantMap JsonTypes::s_webServerConfiguration;
+QVariantMap JsonTypes::s_tag;
 
 void JsonTypes::init()
 {
@@ -148,6 +150,7 @@ void JsonTypes::init()
     s_networkManagerState = enumToStrings(NetworkManager::staticMetaObject, "NetworkManagerState");
     s_networkDeviceState = enumToStrings(NetworkDevice::staticMetaObject, "NetworkDeviceState");
     s_userError = enumToStrings(UserManager::staticMetaObject, "UserError");
+    s_tagError = enumToStrings(TagsStorage::staticMetaObject, "TagError");
 
     // ParamType
     s_paramType.insert("id", basicTypeToString(Uuid));
@@ -182,7 +185,8 @@ void JsonTypes::init()
     s_ruleActionParam.insert("o:eventParamTypeId", basicTypeToString(Uuid));
 
     // ParamDescriptor
-    s_paramDescriptor.insert("paramTypeId", basicTypeToString(Uuid));
+    s_paramDescriptor.insert("o:paramTypeId", basicTypeToString(Uuid));
+    s_paramDescriptor.insert("o:paramName", basicTypeToString(Uuid));
     s_paramDescriptor.insert("value", basicTypeRef());
     s_paramDescriptor.insert("operator", valueOperatorRef());
 
@@ -206,8 +210,10 @@ void JsonTypes::init()
     s_state.insert("value", basicTypeToString(Variant));
 
     // StateDescriptor
-    s_stateDescriptor.insert("stateTypeId", basicTypeToString(Uuid));
-    s_stateDescriptor.insert("deviceId", basicTypeToString(Uuid));
+    s_stateDescriptor.insert("o:stateTypeId", basicTypeToString(Uuid));
+    s_stateDescriptor.insert("o:deviceId", basicTypeToString(Uuid));
+    s_stateDescriptor.insert("o:interface", basicTypeToString(String));
+    s_stateDescriptor.insert("o:interfaceState", basicTypeToString(String));
     s_stateDescriptor.insert("value", basicTypeToString(Variant));
     s_stateDescriptor.insert("operator", valueOperatorRef());
 
@@ -384,6 +390,13 @@ void JsonTypes::init()
     s_webServerConfiguration = s_serverConfiguration;
     s_webServerConfiguration.insert("publicFolder", basicTypeToString(QVariant::String));
 
+    // Tag
+    s_tag.insert("o:deviceId", basicTypeToString(QVariant::Uuid));
+    s_tag.insert("o:ruleId", basicTypeToString(QVariant::Uuid));
+    s_tag.insert("appId", basicTypeToString(QVariant::String));
+    s_tag.insert("tagId", basicTypeToString(QVariant::String));
+    s_tag.insert("o:value", basicTypeToString(QVariant::String));
+
     s_initialized = true;
 }
 
@@ -432,6 +445,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("NetworkManagerState", networkManagerState());
     allTypes.insert("NetworkDeviceState", networkDeviceState());
     allTypes.insert("UserError", userError());
+    allTypes.insert("TagError", tagErrorRef());
 
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
@@ -464,6 +478,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("TokenInfo", tokenInfoDescription());
     allTypes.insert("ServerConfiguration", serverConfigurationDescription());
     allTypes.insert("WebServerConfiguration", serverConfigurationDescription());
+    allTypes.insert("Tag", tagDescription());
 
     return allTypes;
 }
@@ -576,7 +591,11 @@ QVariantMap JsonTypes::packRuleAction(const RuleAction &ruleAction)
 QVariantMap JsonTypes::packRuleActionParam(const RuleActionParam &ruleActionParam)
 {
     QVariantMap variantMap;
-    variantMap.insert("paramTypeId", ruleActionParam.paramTypeId().toString());
+    if (!ruleActionParam.paramTypeId().isNull()) {
+        variantMap.insert("paramTypeId", ruleActionParam.paramTypeId().toString());
+    } else {
+        variantMap.insert("paramName", ruleActionParam.paramName());
+    }
     // if this ruleaction param has a valid EventTypeId, there is no value
     if (ruleActionParam.eventTypeId() != EventTypeId()) {
         variantMap.insert("eventTypeId", ruleActionParam.eventTypeId());
@@ -632,8 +651,13 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType)
 QVariantMap JsonTypes::packStateDescriptor(const StateDescriptor &stateDescriptor)
 {
     QVariantMap variantMap;
-    variantMap.insert("stateTypeId", stateDescriptor.stateTypeId().toString());
-    variantMap.insert("deviceId", stateDescriptor.deviceId().toString());
+    if (stateDescriptor.type() == StateDescriptor::TypeDevice) {
+        variantMap.insert("stateTypeId", stateDescriptor.stateTypeId().toString());
+        variantMap.insert("deviceId", stateDescriptor.deviceId().toString());
+    } else {
+        variantMap.insert("interface", stateDescriptor.interface());
+        variantMap.insert("interfaceState", stateDescriptor.interfaceState());
+    }
     variantMap.insert("value", stateDescriptor.stateValue());
     variantMap.insert("operator", s_valueOperator.at(stateDescriptor.operatorType()));
     return variantMap;
@@ -672,7 +696,11 @@ QVariantMap JsonTypes::packParam(const Param &param)
 QVariantMap JsonTypes::packParamDescriptor(const ParamDescriptor &paramDescriptor)
 {
     QVariantMap variantMap;
-    variantMap.insert("paramTypeId", paramDescriptor.paramTypeId().toString());
+    if (!paramDescriptor.paramTypeId().isNull()) {
+        variantMap.insert("paramTypeId", paramDescriptor.paramTypeId().toString());
+    } else {
+        variantMap.insert("paramName", paramDescriptor.paramName());
+    }
     variantMap.insert("value", paramDescriptor.value());
     variantMap.insert("operator", s_valueOperator.at(paramDescriptor.operatorType()));
     return variantMap;
@@ -928,6 +956,21 @@ QVariantMap JsonTypes::packLogEntry(const LogEntry &logEntry)
     }
 
     return logEntryMap;
+}
+
+/*! Returns a variant map of the given \a tag. */
+QVariantMap JsonTypes::packTag(const Tag &tag)
+{
+    QVariantMap ret;
+    if (!tag.deviceId().isNull()){
+        ret.insert("deviceId", tag.deviceId());
+    } else {
+        ret.insert("ruleId", tag.ruleId());
+    }
+    ret.insert("appId", tag.appId());
+    ret.insert("tagId", tag.tagId());
+    ret.insert("value", tag.value());
+    return ret;
 }
 
 /*! Returns a variant list of the given \a createMethods. */
@@ -1378,13 +1421,19 @@ RuleActionParamList JsonTypes::unpackRuleActionParams(const QVariantList &ruleAc
 /*! Returns a \l{ParamDescriptor} created from the given \a paramMap. */
 ParamDescriptor JsonTypes::unpackParamDescriptor(const QVariantMap &paramMap)
 {
-    ParamDescriptor param(ParamTypeId(paramMap.value("paramTypeId").toString()), paramMap.value("value"));
     QString operatorString = paramMap.value("operator").toString();
-
     QMetaObject metaObject = Types::staticMetaObject;
     int enumIndex = metaObject.indexOfEnumerator("ValueOperator");
     QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
-    param.setOperatorType((Types::ValueOperator)metaEnum.keyToValue(operatorString.toLatin1().data()));
+    Types::ValueOperator valueOperator = (Types::ValueOperator)metaEnum.keyToValue(operatorString.toLatin1().data());
+
+    if (paramMap.contains("paramTypeId")) {
+        ParamDescriptor param = ParamDescriptor(ParamTypeId(paramMap.value("paramTypeId").toString()), paramMap.value("value"));
+        param.setOperatorType(valueOperator);
+        return param;
+    }
+    ParamDescriptor param = ParamDescriptor(paramMap.value("paramName").toString(), paramMap.value("value"));
+    param.setOperatorType(valueOperator);
     return param;
 }
 
@@ -1435,9 +1484,15 @@ StateDescriptor JsonTypes::unpackStateDescriptor(const QVariantMap &stateDescrip
 {
     StateTypeId stateTypeId(stateDescriptorMap.value("stateTypeId").toString());
     DeviceId deviceId(stateDescriptorMap.value("deviceId").toString());
+    QString interface(stateDescriptorMap.value("interface").toString());
+    QString interfaceState(stateDescriptorMap.value("interfaceState").toString());
     QVariant value = stateDescriptorMap.value("value");
     Types::ValueOperator operatorType = (Types::ValueOperator)s_valueOperator.indexOf(stateDescriptorMap.value("operator").toString());
-    StateDescriptor stateDescriptor(stateTypeId, deviceId, value, operatorType);
+    if (!deviceId.isNull() && !stateTypeId.isNull()) {
+        StateDescriptor stateDescriptor(stateTypeId, deviceId, value, operatorType);
+        return stateDescriptor;
+    }
+    StateDescriptor stateDescriptor(interface, interfaceState, value, operatorType);
     return stateDescriptor;
 }
 
@@ -1579,6 +1634,20 @@ TimeDescriptor JsonTypes::unpackTimeDescriptor(const QVariantMap &timeDescriptor
     }
 
     return timeDescriptor;
+}
+
+/*! Returns a \l{Tag} created from the given \a tagMap. */
+Tag JsonTypes::unpackTag(const QVariantMap &tagMap)
+{
+    DeviceId deviceId = DeviceId(tagMap.value("deviceId").toString());
+    RuleId ruleId = RuleId(tagMap.value("ruleId").toString());
+    QString appId = tagMap.value("appId").toString();
+    QString tagId = tagMap.value("tagId").toString();
+    QString value = tagMap.value("value").toString();
+    if (!deviceId.isNull()) {
+        return Tag(deviceId, appId, tagId, value);
+    }
+    return Tag(ruleId, appId, tagId, value);
 }
 
 ServerConfiguration JsonTypes::unpackServerConfiguration(const QVariantMap &serverConfigurationMap)
@@ -1911,6 +1980,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qCWarning(dcJsonRpc) << "WebServerConfiguration not matching";
                     return result;
                 }
+            } else if (refName == tagRef()) {
+                QPair<bool, QString> result = validateMap(tagDescription(), variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "Tag not matching";
+                    return result;
+                }
             } else if (refName == basicTypeRef()) {
                 QPair<bool, QString> result = validateBasicType(variant);
                 if (!result.first) {
@@ -2041,6 +2116,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateEnum(s_userError, variant);
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(userErrorRef());
+                    return result;
+                }
+            } else if (refName == tagErrorRef()) {
+                QPair<bool, QString> result = validateEnum(s_tagError, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc()) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(logEntryRef());
                     return result;
                 }
             } else {

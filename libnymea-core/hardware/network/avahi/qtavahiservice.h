@@ -26,7 +26,7 @@
 #include <QHash>
 #include <QString>
 #include <QObject>
-
+#include <QHostAddress>
 
 namespace nymeaserver {
 
@@ -49,13 +49,14 @@ public:
     explicit QtAvahiService(QObject *parent = nullptr);
     ~QtAvahiService();
 
+    QHostAddress hostAddress() const;
     quint16 port() const;
     QString name() const;
     QString serviceType() const;
     QHash<QString, QString> txtRecords() const;
     QtAvahiServiceState state() const;
 
-    bool registerService(const QString &name, const quint16 &port, const QString &serviceType = "_http._tcp", const QHash<QString, QString> &txtRecords = QHash<QString, QString>());
+    bool registerService(const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType = "_http._tcp", const QHash<QString, QString> &txtRecords = QHash<QString, QString>());
     void resetService();
 
     bool updateTxtRecord(const QHash<QString, QString> &txtRecords);

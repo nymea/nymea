@@ -35,11 +35,12 @@ private slots:
     void benchmarkDB();
 
 private:
-    LogEngine engine;
+    LogEngine *engine;
 };
 
 TestLoggingDirect::TestLoggingDirect(QObject *parent): QObject(parent)
 {
+    engine = new LogEngine("QSQLITE", "/tmp/nymea-test/nymea.sqlite");
     // Setting timeout to 20 mins
     qputenv("QTEST_FUNCTION_TIMEOUT", "1200000");
     QCoreApplication::instance()->setOrganizationName("nymea-test");
@@ -68,30 +69,37 @@ void TestLoggingDirect::benchmarkDB_data() {
 
 void TestLoggingDirect::benchmarkDB()
 {
+    if (qgetenv("WITH_BENCHMARK").isEmpty()) {
+        QSKIP("Skipping benchmark tests: export WITH_BENCHMARK=1 to enable it.");
+    }
+
     QFETCH(int, prefill);
     QFETCH(int, maxSize);
 
     // setting max log entries to "prefill" to trim it down to what this test needs.
     int overflow = 10;
-    engine.setMaxLogEntries(prefill, overflow);
-    engine.setMaxLogEntries(maxSize, overflow);
-
-    for (int i = engine.logEntries().count(); i < prefill; i++) {
-        engine.logSystemEvent(QDateTime::currentDateTime(), true);
+    qDebug() << "Flushing DB for test";
+    engine->setMaxLogEntries(prefill, overflow);
+    engine->setMaxLogEntries(maxSize, overflow);
+    qDebug() << "DB has" << engine->logEntries().count() << "entries";
+    qDebug() << "Prefilling DB for test";
+    for (int i = engine->logEntries().count(); i < prefill; i++) {
+        engine->logSystemEvent(QDateTime::currentDateTime(), true);
     }
+    qDebug() << "DB has" << engine->logEntries().count() << "entries";
 
-    qDebug() << "Starting benchmark with" << engine.logEntries().count() << "entries in the db";
+    qDebug() << "Starting benchmark with" << engine->logEntries().count() << "entries in the db";
     QBENCHMARK {
-        engine.logSystemEvent(QDateTime::currentDateTime(), true);
+        engine->logSystemEvent(QDateTime::currentDateTime(), true);
     }
     QDateTime now = QDateTime::currentDateTime();
-    while (engine.logEntries().count() > maxSize + overflow) {
+    while (engine->logEntries().count() > maxSize + overflow) {
         qApp->processEvents();
         if (now.addSecs(5) < QDateTime::currentDateTime()) {
-            QVERIFY2(false, QString("Housekeeping didn't work. Have %1 entries but expected to have max %2").arg(engine.logEntries().count()).arg(QString::number(maxSize)).toLocal8Bit());
+            QVERIFY2(false, QString("Housekeeping didn't work. Have %1 entries but expected to have max %2").arg(engine->logEntries().count()).arg(QString::number(maxSize)).toLocal8Bit());
         }
     }
-    qDebug() << "Ended benchmark with" << engine.logEntries().count() << "entries in the db";
+    qDebug() << "Ended benchmark with" << engine->logEntries().count() << "entries in the db";
 }
 
 #include "testloggingdirect.moc"

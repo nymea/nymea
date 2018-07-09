@@ -70,4 +70,7 @@ private:
     RuleActionParamList m_ruleActionParams;
 };
 
+QDebug operator<<(QDebug dbg, const RuleAction &ruleAction);
+QDebug operator<<(QDebug dbg, const QList<RuleAction> &ruleActionList);
+
 #endif // RULEACTION_H

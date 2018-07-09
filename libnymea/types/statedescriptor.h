@@ -37,11 +37,23 @@
 class LIBNYMEA_EXPORT StateDescriptor
 {
 public:
+    enum Type {
+        TypeDevice,
+        TypeInterface
+    };
+
     StateDescriptor();
     StateDescriptor(const StateTypeId &stateTypeId, const DeviceId &deviceId, const QVariant &stateValue, Types::ValueOperator operatorType = Types::ValueOperatorEquals);
+    StateDescriptor(const QString &interface, const QString &interfaceState, const QVariant &stateValue, Types::ValueOperator operatorType = Types::ValueOperatorEquals);
+
+    Type type() const;
 
     StateTypeId stateTypeId() const;
     DeviceId deviceId() const;
+
+    QString interface() const;
+    QString interfaceState() const;
+
     QVariant stateValue() const;
     Types::ValueOperator operatorType() const;
 
@@ -55,11 +67,12 @@ public:
 private:
     StateTypeId m_stateTypeId;
     DeviceId m_deviceId;
+    QString m_interface;
+    QString m_interfaceState;
     QVariant m_stateValue;
     Types::ValueOperator m_operatorType;
 };
 
-QDebug operator<<(QDebug dbg, const StateDescriptor &eventDescriptor);
-QDebug operator<<(QDebug dbg, const QList<StateDescriptor> &eventDescriptors);
+QDebug operator<<(QDebug dbg, const StateDescriptor &stateDescriptor);
 
 #endif // STATEDESCRIPTOR_H

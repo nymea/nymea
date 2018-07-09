@@ -52,6 +52,8 @@
 #include "qtavahiservice_p.h"
 #include "loggingcategories.h"
 
+#include <QNetworkInterface>
+
 namespace nymeaserver {
 
 /*! Constructs a new \l{QtAvahiService} with the given \a parent. */
@@ -77,6 +79,12 @@ QtAvahiService::~QtAvahiService()
     }
 
     delete d_ptr;
+}
+
+/*! Returns the hostAddress of this \l{QtAvahiService}. */
+QHostAddress QtAvahiService::hostAddress() const
+{
+    return d_ptr->hostAddress;
 }
 
 /*! Returns the port of this \l{QtAvahiService}. */
@@ -108,7 +116,7 @@ QtAvahiService::QtAvahiServiceState QtAvahiService::state() const
 }
 
 /*! Register a new \l{QtAvahiService} with the given \a name and \a port. The service type can be specified with the \a serviceType string. The \a txtRecords records inform about additional information. Returns true if the service could be registered. */
-bool QtAvahiService::registerService(const QString &name, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords)
+bool QtAvahiService::registerService(const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords)
 {
     // Check if the client is running
     if (!d_ptr->client->m_client || AVAHI_CLIENT_S_RUNNING != avahi_client_get_state(d_ptr->client->m_client)) {
@@ -117,6 +125,7 @@ bool QtAvahiService::registerService(const QString &name, const quint16 &port, c
     }
 
     d_ptr->name = name;
+    d_ptr->hostAddress = hostAddress;
     d_ptr->port = port;
     d_ptr->type = serviceType;
     d_ptr->txtRecords = txtRecords;
@@ -128,9 +137,23 @@ bool QtAvahiService::registerService(const QString &name, const quint16 &port, c
     // If the group is empty
     if (avahi_entry_group_is_empty(d_ptr->group)) {
         // Add the service
+        AvahiIfIndex ifIndex = AVAHI_IF_UNSPEC;
+        if (hostAddress != QHostAddress("0.0.0.0")) {
+            foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
+                foreach (const QNetworkAddressEntry &addressEntry, interface.addressEntries()) {
+                    QPair<QHostAddress, int> subnet = QHostAddress::parseSubnet(addressEntry.ip().toString() + "/" + addressEntry.netmask().toString());
+                    if (hostAddress.isInSubnet(subnet.first, subnet.second)) {
+                        ifIndex = interface.index();
+                        break;
+                    }
+                }
+            }
+        }
+        qCDebug(dcAvahi()) << "Registering avahi service" << name << hostAddress.toString() << port << serviceType << "on interface" << ifIndex;
+
         d_ptr->serviceList = QtAvahiServicePrivate::createTxtList(txtRecords);
         d_ptr->error = avahi_entry_group_add_service_strlst(d_ptr->group,
-                                                            AVAHI_IF_UNSPEC,
+                                                            ifIndex,
                                                             AVAHI_PROTO_INET,
                                                             (AvahiPublishFlags) 0,
                                                             d_ptr->name.toLatin1().data(),
@@ -234,7 +257,7 @@ bool QtAvahiService::handlCollision()
     qCDebug(dcAvahi()) << "Service name colision. Picking alternative service name" << alternativeServiceName;
 
     resetService();
-    return registerService(alternativeServiceName, port(), serviceType(), txtRecords());
+    return registerService(alternativeServiceName, hostAddress(), port(), serviceType(), txtRecords());
 }
 
 void QtAvahiService::onStateChanged(const QtAvahiServiceState &state)

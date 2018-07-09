@@ -58,7 +58,7 @@
     <message>
         <location filename="../tests/tools/simplepushbuttonhandler/main.cpp" line="34"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished"></translation>
+        <translation>Indien gespecificeerd, worden alle D-businterfaces gebonden aan de sessiebus, en niet aan de systeembus.</translation>
     </message>
 </context>
 <context>
@@ -73,7 +73,10 @@ device available in the system and create individual scenes and behaviors
 for your environment.
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>
+nymea is een open source IoT-server (IoT: Internet der dingen), waarmee zeer veel verschillende apparaten van zeer veel verschillende fabrikanten kunnen worden verbonden. Met de krachtige regelengine kunt u elk beschikbaar apparaat binnen het systeem verbinden en individuele scenes en acties voor uw omgeving instellen.
+
+</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="175"/>
@@ -85,7 +88,7 @@ for your environment.
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
-        <translation type="unfinished"></translation>
+        <translation>Debug-categorieën om in te schakelen. Voeg vooraan &quot;No&quot; toe om uit te schakelen. Tenzij deze expliciet worden onderdrukt met &quot;NoWarnings&quot;, worden waarschuwingen van alle categorieën afgedrukt. Categorieën zijn:</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="195"/>
@@ -100,7 +103,7 @@ Categories are:</source>
     <message>
         <location filename="../server/main.cpp" line="201"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished"></translation>
+        <translation>Indien gespecificeerd, worden alle D-businterfaces gebonden aan de sessiebus, en niet aan de systeembus.</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="241"/>

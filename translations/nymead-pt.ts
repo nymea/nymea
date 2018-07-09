@@ -58,7 +58,7 @@
     <message>
         <location filename="../tests/tools/simplepushbuttonhandler/main.cpp" line="34"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished"></translation>
+        <translation>Se especificado, todas as interfaces do D-Bus serão ligadas ao barramento da sessão em vez do barramento do sistema.</translation>
     </message>
 </context>
 <context>
@@ -73,19 +73,22 @@ device available in the system and create individual scenes and behaviors
 for your environment.
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>
+nymea é um servidor IoT (Internet das Coisas) de código aberto, que permite controlar muitos dispositivos diferentes de diferentes fabricantes. Com o poderoso mecanismo de regras, pode conectar qualquer dispositivo disponível no sistema e criar cenas e comportamentos individuais para o seu ambiente.
+
+</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="175"/>
         <source>Run nymead in the foreground, not as daemon.</source>
-        <translation>﻿Execute nymead em primeiro plano, não como daemon. </translation>
+        <translation>Execute nymead em primeiro plano, não como daemon.</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="178"/>
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
-        <translation type="unfinished"></translation>
+        <translation>Categorias de depuração para ativar. Prefixo com &quot;Não&quot; para desativar. Serão impressos avisos de todas as categorias, a menos que explicitamente desativado com &quot;SemAvisos&quot;. Categorias são:</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="195"/>
@@ -100,7 +103,7 @@ Categories are:</source>
     <message>
         <location filename="../server/main.cpp" line="201"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished"></translation>
+        <translation>Se especificado, todas as interfaces do D-Bus serão ligadas ao barramento da sessão em vez do barramento do sistema.</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="241"/>
@@ -306,7 +309,7 @@ Categories are:</source>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="338"/>
         <source>nymead settings</source>
         <extracomment>The nymead settings download description of the debug interface</extracomment>
-        <translation>﻿Configurações nymead </translation>
+        <translation>﻿Configurações nymead</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="370"/>

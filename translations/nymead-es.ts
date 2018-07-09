@@ -58,7 +58,7 @@
     <message>
         <location filename="../tests/tools/simplepushbuttonhandler/main.cpp" line="34"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished"></translation>
+        <translation>Si se ha especificado, todas las interfaces D-Bus estarán conectadas a la sesión en lugar de al bus de sistema.</translation>
     </message>
 </context>
 <context>
@@ -73,7 +73,10 @@ device available in the system and create individual scenes and behaviors
 for your environment.
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>
+nymea es un servidor de código abierto IoT (Internet de las cosas) que permite controlar multitud de diferentes dispositivos de diversos fabricantes. Podrá conectarse a cualquier dispositivo disponible en el sistema con el motor potente de normas y crear casos y comportamientos individuales en su entorno.
+
+</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="175"/>
@@ -85,7 +88,7 @@ for your environment.
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
-        <translation type="unfinished"></translation>
+        <translation>Las categorías de eliminación de fallos de activación. Prefijo de desactivación con &quot;No&quot;. Advertencias de todas las categorías que se imprimirán a menos que hayan sido silenciadas explícitamente con &quot;NoWarnings&quot;. Las categorías son las siguientes:</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="195"/>
@@ -100,7 +103,7 @@ Categories are:</source>
     <message>
         <location filename="../server/main.cpp" line="201"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished"></translation>
+        <translation>Si se ha especificado, todas las interfaces D-Bus estarán conectadas a la sesión en lugar de al bus de sistema.</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="241"/>

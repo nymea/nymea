@@ -58,7 +58,7 @@
     <message>
         <location filename="../tests/tools/simplepushbuttonhandler/main.cpp" line="34"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished"></translation>
+        <translation>Pokud je specifikováno, všechna rozhraní D-bus budou napojena k sekční sběrnici místo k systémové sběrnici.</translation>
     </message>
 </context>
 <context>
@@ -73,7 +73,10 @@ device available in the system and create individual scenes and behaviors
 for your environment.
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>
+nymea je otevřený (open source) server IoT (Internet of Things), který umožňuje řídit mnoho různých zařízení od mnoha různých výrobců. S výkonným motorem dokážete spojit jakékoli v systému dostupné zařízení a pro Vaše prostředí vytvořit individuální situace a způsoby reakce.
+
+</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="175"/>
@@ -85,7 +88,7 @@ for your environment.
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
-        <translation type="unfinished"></translation>
+        <translation>Kategorie ladění ke zpřístupnění. Předpona s &quot;Ne&quot; ke znepřístupnění. Výstrahy ze všech kategorií budou tištěny, dokud nebudou explicitně potlačeny s &quot;ŽádnéVýstrahy&quot;. Kategorie jsou:</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="195"/>
@@ -100,7 +103,7 @@ Categories are:</source>
     <message>
         <location filename="../server/main.cpp" line="201"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished"></translation>
+        <translation>Pokud je specifikováno, všechna rozhraní D-bus budou napojena k sekční sběrnici místo k systémové sběrnici.</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="241"/>

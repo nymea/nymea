@@ -1205,6 +1205,8 @@ void TestTimeManager::testCalendarItemEvent()
     QFETCH(QDateTime, dateTime);
     QFETCH(bool, trigger);
 
+    cleanupMockHistory();
+
     NymeaCore::instance()->timeManager()->setTime(dateTime);
 
     // Trigger event
@@ -1212,7 +1214,6 @@ void TestTimeManager::testCalendarItemEvent()
 
     if (trigger) {
         verifyRuleExecuted(mockActionIdNoParams);
-        cleanupMockHistory();
     } else {
         verifyRuleNotExecuted();
     }
@@ -1903,7 +1904,8 @@ void TestTimeManager::verifyRuleNotExecuted()
     QCOMPARE(spy.count(), 1);
 
     QByteArray actionHistory = reply->readAll();
-    QVERIFY2(actionHistory.isEmpty(), "Action is triggered while it should not have been.");
+    qWarning() << "actionHistory" << actionHistory;
+    QVERIFY2(actionHistory.isEmpty(), "Actfdsfadsion is triggered while it should not have been.");
     reply->deleteLater();
 }
 

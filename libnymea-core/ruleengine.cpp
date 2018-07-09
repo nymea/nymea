@@ -454,8 +454,10 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
 
     foreach (const Rule &r, m_rules.values()) {
         Rule rule = m_rules.value(r.id());
-        if (!rule.enabled())
+        if (!rule.enabled()) {
+            qCDebug(dcRuleEngineDebug()) << "Skipping rule" + rule.name() + "because it is disabled";
             continue;
+        }
 
         // If no timeDescriptor, do nothing
         if (rule.timeDescriptor().isEmpty())
@@ -500,6 +502,7 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
     }
 
     m_lastEvaluationTime = dateTime;
+    qCDebug(dcRuleEngine()) << "EvaluateTimeEvent evaluated" << rules.count() << "to be executed";
     return rules;
 }
 

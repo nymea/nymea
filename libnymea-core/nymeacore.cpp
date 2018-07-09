@@ -594,7 +594,7 @@ void NymeaCore::gotEvent(const Event &event)
         if (!rule.eventDescriptors().isEmpty()) {
             m_logger->logRuleTriggered(rule);
             QList<RuleAction> tmp;
-            if (rule.statesActive()) {
+            if (rule.statesActive() && rule.timeActive()) {
                 qCDebug(dcRuleEngineDebug()) << "Executing actions";
                 tmp = rule.actions();
             } else {
@@ -653,7 +653,7 @@ void NymeaCore::onDateTimeChanged(const QDateTime &dateTime)
         // TimeEvent based
         if (!rule.timeDescriptor().timeEventItems().isEmpty()) {
             m_logger->logRuleTriggered(rule);
-            if (rule.statesActive()) {
+            if (rule.statesActive() && rule.timeActive()) {
                 actions.append(rule.actions());
             } else {
                 actions.append(rule.exitActions());

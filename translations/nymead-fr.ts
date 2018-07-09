@@ -58,7 +58,7 @@
     <message>
         <location filename="../tests/tools/simplepushbuttonhandler/main.cpp" line="34"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished"></translation>
+        <translation>Si spécifié, toutes les interfaces D-Bus seront liées au bus de session au lieu du bus système.</translation>
     </message>
 </context>
 <context>
@@ -73,7 +73,10 @@ device available in the system and create individual scenes and behaviors
 for your environment.
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>
+nymea est un serveur IoT (Internet of Things) open source, qui permet de contrôler un grand nombre d&apos;appareils de différents fabricants. Avec le moteur de règles puissant, vous pouvez connecter n&apos;importe quel appareil disponible dans le système et créer des scènes et des comportements individuels pour votre environnement.
+
+</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="175"/>
@@ -85,7 +88,7 @@ for your environment.
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
-        <translation type="unfinished"></translation>
+        <translation>Catégories de débugage à activer. Mettez le préfixe &quot;No&quot; pour désactiver Les avertissements de toutes les catégories seront imprimés à moins qu&apos;ils ne soient explicitement mis en sourdine avec &quot;NoWarnings&quot;. Les catégories sont :</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="195"/>
@@ -100,12 +103,12 @@ Categories are:</source>
     <message>
         <location filename="../server/main.cpp" line="201"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
-        <translation type="unfinished"></translation>
+        <translation>Si spécifié, toutes les interfaces D-Bus seront liées au bus de session au lieu du bus système.</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="241"/>
         <source>No such debug category:</source>
-        <translation>Cette catégorie de débogage n&apos;existe pas</translation>
+        <translation>Cette catégorie de débogage n&apos;existe pas:</translation>
     </message>
 </context>
 <context>

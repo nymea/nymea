@@ -1,8 +1,31 @@
 {
     "extends": "simpleclosable",
-    "actions": [
+    "states": [
         {
-            "name": "stop"
+            "name": "position",
+            "type": "int",
+            "minimumValue": 0,
+            "maximumValue": 100,
+            "writable": true
+        },
+        {
+            "name": "currentPosition",
+            "type": "int",
+            "minimumValue": 0,
+            "maximumValue": 100
+        },
+        {
+            "name": "tilt",
+            "type": "int",
+            "minimumValue": 0,
+            "maximumValue": 100,
+            "writable": true
+        },
+        {
+            "name": "currentTilt",
+            "type": "int",
+            "minimumValue": 0,
+            "maximumValue": 100
         }
     ]
 }

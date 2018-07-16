@@ -24,6 +24,9 @@
         <file>temperaturesensor.json</file>
         <file>humiditysensor.json</file>
         <file>pressuresensor.json</file>
+        <file>moisturesensor.json</file>
+        <file>conductivitysensor.json</file>
+        <file>lightsensor.json</file>
         <file>connectable.json</file>
         <file>inputtrigger.json</file>
         <file>outputtrigger.json</file>

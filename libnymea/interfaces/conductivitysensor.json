@@ -2,8 +2,9 @@
     "extends": "sensor",
     "states": [
         {
-            "name": "temperature",
+            "name": "conductivity",
             "type": "double"
         }
     ]
 }
+

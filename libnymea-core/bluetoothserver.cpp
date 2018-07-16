@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2016-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -38,15 +38,14 @@
 #include "loggingcategories.h"
 
 #include <QJsonDocument>
-#include <QBluetoothLocalDevice>
 
 namespace nymeaserver {
 
-static const QBluetoothUuid serviceUuid(QUuid("997936b5-d2cd-4c57-b41b-c6048320cd2b"));
+static const QBluetoothUuid nymeaServiceUuid(QUuid("997936b5-d2cd-4c57-b41b-c6048320cd2b"));
+
 /*! Constructs a \l{BluetoothServer} with the given \a parent. */
 BluetoothServer::BluetoothServer(QObject *parent) :
-    TransportInterface(ServerConfiguration(), parent),
-    m_server(0)
+    TransportInterface(ServerConfiguration(), parent)
 {
 
 }
@@ -54,9 +53,6 @@ BluetoothServer::BluetoothServer(QObject *parent) :
 /*! Destructs this \l{BluetoothServer}. */
 BluetoothServer::~BluetoothServer()
 {
-    if (m_server && m_server->isListening())
-        qCDebug(dcApplication) << "Shutting down \"Bluetooth server\"";
-
     stopServer();
 }
 
@@ -72,8 +68,11 @@ void BluetoothServer::sendData(const QUuid &clientId, const QByteArray &data)
 {
     QBluetoothSocket *client = 0;
     client = m_clientList.value(clientId);
-    if (client)
-        client->write(QJsonDocument::fromVariant(data).toJson(QJsonDocument::Compact) + '\n');
+    if (!client)
+        return;
+
+    qCDebug(dcBluetoothServerTraffic()) << "Send data:" << qUtf8Printable(data);
+    client->write(data + '\n');
 }
 
 /*! Send the given \a data to the \a clients. */
@@ -83,6 +82,16 @@ void BluetoothServer::sendData(const QList<QUuid> &clients, const QByteArray &da
         sendData(client, data);
 }
 
+void BluetoothServer::onHostModeChanged(const QBluetoothLocalDevice::HostMode &mode)
+{
+    if (!m_server || !m_localDevice)
+        return;
+
+    if (mode != QBluetoothLocalDevice::HostDiscoverable) {
+        m_localDevice->setHostMode(QBluetoothLocalDevice::HostDiscoverable);
+    }
+}
+
 void BluetoothServer::onClientConnected()
 {
     // Got a new client connected
@@ -90,14 +99,15 @@ void BluetoothServer::onClientConnected()
     if (!client)
         return;
 
-    qCDebug(dcConnection) << "Bluetooth server: new client connected:" << client->localName() << client->localAddress().toString();
+    qCDebug(dcConnection()) << "BluetoothServer: New client connected:" << client->peerName() << client->peerAddress().toString();
 
     QUuid clientId = QUuid::createUuid();
     m_clientList.insert(clientId, client);
 
     connect(client, SIGNAL(readyRead()), this, SLOT(readData()));
-    connect(client, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(onError(QBluetoothSocket::SocketError)));
     connect(client, SIGNAL(disconnected()), this, SLOT(onClientDisconnected()));
+    connect(client, SIGNAL(stateChanged(QBluetoothSocket::SocketState)), this, SLOT(onClientStateChanged(QBluetoothSocket::SocketState)));
+    connect(client, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(onClientError(QBluetoothSocket::SocketError)));
 
     emit clientConnected(clientId);
 }
@@ -108,14 +118,20 @@ void BluetoothServer::onClientDisconnected()
     if (!client)
         return;
 
-    qCDebug(dcConnection) << "Bluetooth server: client disconnected:" << client->localName() << client->localAddress().toString();
+    qCDebug(dcConnection()) << "BluetoothServer: Client disconnected:" << client->peerName() << client->peerAddress().toString();
     QUuid clientId = m_clientList.key(client);
     m_clientList.take(clientId)->deleteLater();
+    emit clientDisconnected(clientId);
 }
 
-void BluetoothServer::onError(QBluetoothSocket::SocketError error)
+void BluetoothServer::onClientError(QBluetoothSocket::SocketError error)
 {
-    qCWarning(dcConnection) << "Bluetooth server error:" << error;
+    qCWarning(dcBluetoothServer()) << "BluetoothServer: Error occured:" << error;
+}
+
+void BluetoothServer::onClientStateChanged(QBluetoothSocket::SocketState state)
+{
+    qCDebug(dcBluetoothServer()) << "Client socket state changed:" << state;
 }
 
 void BluetoothServer::readData()
@@ -124,42 +140,53 @@ void BluetoothServer::readData()
     if (!client)
         return;
 
-    QByteArray message;
-    while (client->canReadLine()) {
-        QByteArray dataLine = client->readLine();
-        message.append(dataLine);
-        if (dataLine.endsWith('\n')) {
-            qCDebug(dcConnection()) << "Bluetooth data received:" << message;
-            emit dataAvailable(m_clientList.key(client), message);
-            message.clear();
-        }
+    m_receiveBuffer.append(client->readAll());
+    qCDebug(dcBluetoothServerTraffic()) << "Current data buffer:" << qUtf8Printable(m_receiveBuffer);
+    int splitIndex = m_receiveBuffer.indexOf("}\n{");
+    while (splitIndex > -1) {
+        emit dataAvailable(m_clientList.key(client), m_receiveBuffer.left(splitIndex + 1));
+        m_receiveBuffer = m_receiveBuffer.right(m_receiveBuffer.length() - splitIndex - 2);
+        splitIndex = m_receiveBuffer.indexOf("}\n{");
+    }
+
+    if (m_receiveBuffer.endsWith("}\n")) {
+        emit dataAvailable(m_clientList.key(client), m_receiveBuffer.trimmed());
+        m_receiveBuffer.clear();
     }
 }
 
 bool BluetoothServer::startServer()
 {
-    if (m_server)
+    if (m_server && m_localDevice)
         return true;
 
-    // Check if Bluetooth is available on this device
-    QBluetoothLocalDevice localDevice;
-    if (localDevice.isValid()) {
-        qCDebug(dcConnection()) << "Bluetooth: using adapter" << localDevice.name() << localDevice.address().toString();
-        localDevice.powerOn();
-        localDevice.setHostMode(QBluetoothLocalDevice::HostDiscoverable);
-    } else {
-        qCWarning(dcConnection()) << "Bluetooth server: could find any bluetooth hardware";
+    m_localDevice = new QBluetoothLocalDevice(this);
+    if (!m_localDevice->isValid()) {
+        qCWarning(dcBluetoothServer()) << "BluetoothServer: could find any bluetooth hardware";
+        delete m_localDevice;
+        m_localDevice = nullptr;
         return false;
     }
 
+    // Init adapter
+    qCDebug(dcBluetoothServer()) << "Using adapter" << m_localDevice->name() << m_localDevice->address().toString();
+    m_localDevice->powerOn();
+    m_localDevice->setHostMode(QBluetoothLocalDevice::HostDiscoverable);
+    connect(m_localDevice, &QBluetoothLocalDevice::hostModeStateChanged, this, &BluetoothServer::onHostModeChanged);
+
+    // Init bluetooth server
     m_server = new QBluetoothServer(QBluetoothServiceInfo::RfcommProtocol, this);
     connect(m_server, SIGNAL(newConnection()), this, SLOT(onClientConnected()));
-    if (!m_server->listen(localDevice.address())) {
-        qCWarning(dcConnection()) << "Bluetooth server: could not listen on local device." << localDevice.name();
+    if (!m_server->listen(m_localDevice->address())) {
+        qCWarning(dcBluetoothServer()) << "Could not listen on local device." << m_localDevice->name();
+        delete m_localDevice;
+        delete m_server;
+        m_localDevice = nullptr;
+        m_server = nullptr;
         return false;
     }
 
-    qCDebug(dcConnection) << "Started bluetooth server" << m_server->serverAddress().toString();
+    qCDebug(dcBluetoothServer()) << "Started bluetooth server" << m_server->serverAddress().toString();
 
     // Set service attributes
     QBluetoothServiceInfo::Sequence browseSequence;
@@ -169,14 +196,14 @@ bool BluetoothServer::startServer()
     QBluetoothServiceInfo::Sequence classId;
     classId << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::SerialPort));
     m_serviceInfo.setAttribute(QBluetoothServiceInfo::BluetoothProfileDescriptorList, classId);
-    classId.prepend(QVariant::fromValue(serviceUuid));
+    classId.prepend(QVariant::fromValue(nymeaServiceUuid));
 
     m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceClassIds, classId);
-
-    m_serviceInfo.setAttribute(QBluetoothServiceInfo::BluetoothProfileDescriptorList,classId);
+    m_serviceInfo.setAttribute(QBluetoothServiceInfo::BluetoothProfileDescriptorList, classId);
     m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceName, QVariant("nymea"));
     m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceDescription, QVariant("The JSON-RPC interface for nymea."));
     m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceProvider, QVariant("https://nymea.io"));
+    m_serviceInfo.setAttribute(QBluetoothServiceInfo::DocumentationUrl, QVariant("https://doc.nymea.io/jsonrpc.html"));
 
     // Define protocol
     QBluetoothServiceInfo::Sequence protocolDescriptorList;
@@ -187,15 +214,20 @@ bool BluetoothServer::startServer()
     m_serviceInfo.setAttribute(QBluetoothServiceInfo::ProtocolDescriptorList, protocolDescriptorList);
 
     // Set UUID
-    m_serviceInfo.setServiceUuid(serviceUuid);
+    m_serviceInfo.setServiceUuid(nymeaServiceUuid);
 
     // Register the service in the local device
-    if (!m_serviceInfo.registerService(localDevice.address())) {
-        qCWarning(dcConnection()) << "Bluetooth: Could not register service" << m_serviceInfo.serviceName() << serviceUuid.toString();
+    if (!m_serviceInfo.registerService(m_localDevice->address())) {
+        qCWarning(dcBluetoothServer()) << "Could not register service" << m_serviceInfo.serviceName() << nymeaServiceUuid.toString();
+        delete m_localDevice;
+        delete m_server;
+        m_localDevice = nullptr;
+        m_server = nullptr;
         return false;
     }
+    qCDebug(dcBluetoothServer()) << "Registered successfully service" << m_serviceInfo.serviceName() << nymeaServiceUuid.toString();
+    qCDebug(dcConnection()) << "Started bluetooth server" << m_localDevice->name() << m_localDevice->address().toString() << "Serivce:" << m_serviceInfo.serviceName() << nymeaServiceUuid.toString();
 
-    qCDebug(dcConnection()) << "Bluetooth: Registered successfully service" << m_serviceInfo.serviceName() << serviceUuid.toString();
     return true;
 }
 
@@ -205,14 +237,20 @@ bool BluetoothServer::stopServer()
         client->close();
     }
 
-    if (!m_server)
-        return true;
+    if (m_server) {
+        qCDebug(dcBluetoothServer()) << "Shutting down \"Bluetooth server\"";
+        m_serviceInfo.unregisterService();
+        m_server->close();
+        m_server->deleteLater();
+        m_server = nullptr;
+    }
 
-    m_serviceInfo.unregisterService();
+    if (m_localDevice) {
+        m_localDevice->deleteLater();
+        m_localDevice = nullptr;
+    }
 
-    m_server->close();
-    m_server->deleteLater();
-    m_server = 0;
+    m_receiveBuffer.clear();
     return true;
 }
 

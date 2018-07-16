@@ -1173,7 +1173,14 @@ Interface DevicePlugin::loadInterface(const QString &name)
     }
     QVariantMap content = jsonDoc.toVariant().toMap();
     if (content.contains("extends")) {
-        iface = loadInterface(content.value("extends").toString());
+        if (!content.value("extends").toString().isEmpty()) {
+            iface = loadInterface(content.value("extends").toString());
+        } else if (content.value("extends").toList().count() > 0) {
+            foreach (const QVariant &extendedIface, content.value("extends").toList()) {
+                Interface tmp = loadInterface(extendedIface.toString());
+                iface = mergeInterfaces(iface, tmp);
+            }
+        }
     }
 
     StateTypes stateTypes;
@@ -1243,6 +1250,29 @@ Interface DevicePlugin::loadInterface(const QString &name)
     return Interface(name, iface.actionTypes() << actionTypes, iface.eventTypes() << eventTypes, iface.stateTypes() << stateTypes);
 }
 
+Interface DevicePlugin::mergeInterfaces(const Interface &iface1, const Interface &iface2)
+{
+    EventTypes eventTypes = iface1.eventTypes();
+    foreach (const EventType &et, iface2.eventTypes()) {
+        if (eventTypes.findByName(et.name()).name().isEmpty()) {
+            eventTypes.append(et);
+        }
+    }
+    StateTypes stateTypes = iface1.stateTypes();
+    foreach (const StateType &st, iface2.stateTypes()) {
+        if (stateTypes.findByName(st.name()).name().isEmpty()) {
+            stateTypes.append(st);
+        }
+    }
+    ActionTypes actionTypes = iface1.actionTypes();
+    foreach (const ActionType &at, iface2.actionTypes()) {
+        if (actionTypes.findByName(at.name()).name().isEmpty()) {
+            actionTypes.append(at);
+        }
+    }
+    return Interface(QString(), actionTypes, eventTypes, stateTypes);
+}
+
 QStringList DevicePlugin::generateInterfaceParentList(const QString &interface)
 {
     QFile f(QString(":/interfaces/%1.json").arg(interface));
@@ -1259,7 +1289,13 @@ QStringList DevicePlugin::generateInterfaceParentList(const QString &interface)
     QStringList ret = {interface};
     QVariantMap content = jsonDoc.toVariant().toMap();
     if (content.contains("extends")) {
-        ret << generateInterfaceParentList(content.value("extends").toString());
+        if (!content.value("extends").toString().isEmpty()) {
+            ret << generateInterfaceParentList(content.value("extends").toString());
+        } else if (content.value("extends").toList().count() > 0) {
+            foreach (const QVariant &extendedIface, content.value("extends").toList()) {
+                ret << generateInterfaceParentList(extendedIface.toString());
+            }
+        }
     }
     return ret;
 }

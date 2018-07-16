@@ -260,9 +260,7 @@ Categories are:</source>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="265"/>
         <source>Log database</source>
-        <extracomment>The log database path description in the server infromation section of the debug interface
-----------
-The log databse download description of the debug interface</extracomment>
+        <extracomment>The log databse download description of the debug interface</extracomment>
         <translation>Log-database</translation>
     </message>
     <message>

@@ -64,7 +64,7 @@
 <context>
     <name>nymea</name>
     <message>
-        <location filename="../server/main.cpp" line="163"/>
+        <location filename="../server/main.cpp" line="165"/>
         <source>
 nymea is an open source IoT (Internet of Things) server, 
 which allows to control a lot of different devices from many different 
@@ -76,34 +76,34 @@ for your environment.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="175"/>
+        <location filename="../server/main.cpp" line="177"/>
         <source>Run nymead in the foreground, not as daemon.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="178"/>
+        <location filename="../server/main.cpp" line="180"/>
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="195"/>
+        <location filename="../server/main.cpp" line="197"/>
         <source>Enables all debug categories. Single debug categories can be disabled again with -d parameter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="198"/>
+        <location filename="../server/main.cpp" line="200"/>
         <source>Specify a log file to write to, if this option is not specified, logs will be printed to the standard output.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="201"/>
+        <location filename="../server/main.cpp" line="203"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="241"/>
+        <location filename="../server/main.cpp" line="243"/>
         <source>No such debug category:</source>
         <translation type="unfinished">No such debug category:</translation>
     </message>

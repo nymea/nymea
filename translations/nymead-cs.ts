@@ -64,7 +64,7 @@
 <context>
     <name>nymea</name>
     <message>
-        <location filename="../server/main.cpp" line="163"/>
+        <location filename="../server/main.cpp" line="165"/>
         <source>
 nymea is an open source IoT (Internet of Things) server, 
 which allows to control a lot of different devices from many different 
@@ -79,34 +79,34 @@ nymea je otevřený (open source) server IoT (Internet of Things), který umož�
 </translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="175"/>
+        <location filename="../server/main.cpp" line="177"/>
         <source>Run nymead in the foreground, not as daemon.</source>
         <translation>Spusťte nymead v popředí, ne jako démona.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="178"/>
+        <location filename="../server/main.cpp" line="180"/>
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
         <translation>Kategorie ladění ke zpřístupnění. Předpona s &quot;Ne&quot; ke znepřístupnění. Výstrahy ze všech kategorií budou tištěny, dokud nebudou explicitně potlačeny s &quot;ŽádnéVýstrahy&quot;. Kategorie jsou:</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="195"/>
+        <location filename="../server/main.cpp" line="197"/>
         <source>Enables all debug categories. Single debug categories can be disabled again with -d parameter.</source>
         <translation>Zpřístupní všechny kategorie ladění. Jednotlivé kategorie ladění mohou být opět zpřístupněny s parametrem -d .</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="198"/>
+        <location filename="../server/main.cpp" line="200"/>
         <source>Specify a log file to write to, if this option is not specified, logs will be printed to the standard output.</source>
         <translation>Specifikujte log file k zapisování, pokud tato možnost není specifikována, logs budou tištěny ke standardnímu výstupu.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="201"/>
+        <location filename="../server/main.cpp" line="203"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
         <translation>Pokud je specifikováno, všechna rozhraní D-bus budou napojena k sekční sběrnici místo k systémové sběrnici.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="241"/>
+        <location filename="../server/main.cpp" line="243"/>
         <source>No such debug category:</source>
         <translation>Žádná taková kategorie ladění:</translation>
     </message>

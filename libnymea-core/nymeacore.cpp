@@ -593,8 +593,16 @@ void NymeaCore::gotEvent(const Event &event)
         // Event based
         if (!rule.eventDescriptors().isEmpty()) {
             m_logger->logRuleTriggered(rule);
+            QList<RuleAction> tmp;
+            if (rule.statesActive() && rule.timeActive()) {
+                qCDebug(dcRuleEngineDebug()) << "Executing actions";
+                tmp = rule.actions();
+            } else {
+                qCDebug(dcRuleEngineDebug()) << "Executing exitActions";
+                tmp = rule.exitActions();
+            }
             // check if we have an event based action or a normal action
-            foreach (const RuleAction &action, rule.actions()) {
+            foreach (const RuleAction &action, tmp) {
                 if (action.isEventBased()) {
                     eventBasedActions.append(action);
                 } else {
@@ -645,8 +653,10 @@ void NymeaCore::onDateTimeChanged(const QDateTime &dateTime)
         // TimeEvent based
         if (!rule.timeDescriptor().timeEventItems().isEmpty()) {
             m_logger->logRuleTriggered(rule);
-            foreach (const RuleAction &action, rule.actions()) {
-                actions.append(action);
+            if (rule.statesActive() && rule.timeActive()) {
+                actions.append(rule.actions());
+            } else {
+                actions.append(rule.exitActions());
             }
         } else {
             // Calendar based rule

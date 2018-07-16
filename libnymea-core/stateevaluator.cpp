@@ -346,6 +346,12 @@ bool StateEvaluator::isValid() const
     return true;
 }
 
+/*! Returns true if the StateEvaluator is empty, that is, has no StateDescriptor and no ChildEvaluators */
+bool StateEvaluator::isEmpty() const
+{
+    return !m_stateDescriptor.isValid() && m_childEvaluators.isEmpty();
+}
+
 /*! Print a StateEvaluator including childEvaluators recuresively to QDebug. */
 QDebug operator<<(QDebug dbg, const StateEvaluator &stateEvaluator)
 {

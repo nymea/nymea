@@ -390,7 +390,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
     foreach (const RuleId &id, ruleIds()) {
         Rule rule = m_rules.value(id);
         if (!rule.enabled()) {
-            qCDebug(dcRuleEngineDebug()) << "Skipping rule" << rule.name() << "because it is disabled";
+            qCDebug(dcRuleEngineDebug()).nospace().noquote() << "Skipping rule " << rule.name() << " (" << rule.id().toString() << ") "  << " because it is disabled.";
             continue;
         }
 
@@ -404,7 +404,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
         if (rule.eventDescriptors().isEmpty() && rule.timeDescriptor().timeEventItems().isEmpty()) {
             if (rule.timeActive() && rule.statesActive()) {
                 if (!m_activeRules.contains(rule.id())) {
-                    qCDebug(dcRuleEngine) << "Rule" << rule.id().toString() << "active.";
+                    qCDebug(dcRuleEngine).nospace().noquote() << "Rule " << rule.name() << " (" << rule.id().toString() << ") active.";
                     rule.setActive(true);
                     m_rules[rule.id()] = rule;
                     m_activeRules.append(rule.id());
@@ -412,7 +412,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
                 }
             } else {
                 if (m_activeRules.contains(rule.id())) {
-                    qCDebug(dcRuleEngine) << "Rule" << rule.id().toString() << "inactive.";
+                    qCDebug(dcRuleEngine).nospace().noquote() << "Rule " << rule.name() << " (" << rule.id().toString() << ") inactive.";
                     rule.setActive(false);
                     m_rules[rule.id()] = rule;
                     m_activeRules.removeAll(rule.id());
@@ -421,9 +421,15 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
             }
         } else {
             // Event based rule
-            if (containsEvent(rule, event, device->deviceClassId()) && rule.statesActive() && rule.timeActive()) {
-                qCDebug(dcRuleEngine) << "Rule" << rule.id() << "contains event" << event.eventId() << "and all states match.";
-                rules.append(rule);
+            if (containsEvent(rule, event, device->deviceClassId())) {
+                qCDebug(dcRuleEngineDebug()).nospace().noquote() << "Rule " << rule.name() << " (" << rule.id().toString() << ") contains event " << event.eventId();
+                if (rule.statesActive() && rule.timeActive()) {
+                    qCDebug(dcRuleEngine).nospace().noquote() << "Rule " << rule.name() << " (" + rule.id().toString() << ") contains event" << event.eventId() << "and all states match.";
+                    rules.append(rule);
+                } else {
+                    qCDebug(dcRuleEngine).nospace().noquote() << "Rule " << rule.name() << " (" + rule.id().toString() << ") contains event" << event.eventId() << "but state are not matching.";
+                    rules.append(rule);
+                }
             }
         }
     }
@@ -448,8 +454,10 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
 
     foreach (const Rule &r, m_rules.values()) {
         Rule rule = m_rules.value(r.id());
-        if (!rule.enabled())
+        if (!rule.enabled()) {
+            qCDebug(dcRuleEngineDebug()) << "Skipping rule" + rule.name() + "because it is disabled";
             continue;
+        }
 
         // If no timeDescriptor, do nothing
         if (rule.timeDescriptor().isEmpty())
@@ -486,14 +494,15 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
         // If we have timeEvent items
         if (!rule.timeDescriptor().timeEventItems().isEmpty()) {
             bool valid = rule.timeDescriptor().evaluate(m_lastEvaluationTime, dateTime);
-            if (valid && rule.statesActive() && rule.timeActive()) {
-                qCDebug(dcRuleEngine) << "Rule" << rule.id() << "time event triggert and all states match.";
+            if (valid && rule.timeActive()) {
+                qCDebug(dcRuleEngine) << "Rule" << rule.id() << "time event triggert.";
                 rules.append(rule);
             }
         }
     }
 
     m_lastEvaluationTime = dateTime;
+    qCDebug(dcRuleEngine()) << "EvaluateTimeEvent evaluated" << rules.count() << "to be executed";
     return rules;
 }
 

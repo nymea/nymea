@@ -23,16 +23,21 @@
         <file>sensor.json</file>
         <file>temperaturesensor.json</file>
         <file>humiditysensor.json</file>
+        <file>pressuresensor.json</file>
         <file>connectable.json</file>
         <file>inputtrigger.json</file>
         <file>outputtrigger.json</file>
         <file>power.json</file>
-        <file>closable.json</file>
-        <file>smartlock.json</file>
-        <file>shutter.json</file>
         <file>simpleclosable.json</file>
+        <file>closable.json</file>
+        <file>awning.json</file>
+        <file>shutter.json</file>
         <file>blind.json</file>
-        <file>pressuresensor.json</file>
+        <file>extendedclosable.json</file>
+        <file>extendedawning.json</file>
+        <file>extendedblind.json</file>
+        <file>extendedshutter.json</file>
+        <file>smartlock.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

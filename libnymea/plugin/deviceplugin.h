@@ -124,6 +124,7 @@ private:
     // I didn't want to add even more dependencies on the devicemanager into here, so reading the list here for now.
     static Interfaces allInterfaces();
     static Interface loadInterface(const QString &name);
+    static Interface mergeInterfaces(const Interface &iface1, const Interface &iface2);
     static QStringList generateInterfaceParentList(const QString &interface);
 
     QTranslator *m_translator = nullptr;

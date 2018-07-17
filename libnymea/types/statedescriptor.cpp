@@ -134,21 +134,24 @@ bool StateDescriptor::operator ==(const State &state) const
     if ((m_stateTypeId != state.stateTypeId()) || (m_deviceId != state.deviceId())) {
         return false;
     }
-    QVariant convertedValue = state.value();
-    convertedValue.convert(m_stateValue.type());
+    if (!m_stateValue.canConvert(state.value().type())) {
+        return false;
+    }
+    QVariant convertedValue = m_stateValue;
+    convertedValue.convert(state.value().type());
     switch (m_operatorType) {
     case Types::ValueOperatorEquals:
-        return m_stateValue == convertedValue;
+        return convertedValue == state.value();
     case Types::ValueOperatorGreater:
-        return convertedValue > m_stateValue;
+        return state.value() > convertedValue;
     case Types::ValueOperatorGreaterOrEqual:
-        return convertedValue >= m_stateValue;
+        return state.value() >= convertedValue;
     case Types::ValueOperatorLess:
-        return convertedValue < m_stateValue;
+        return state.value() < convertedValue;
     case Types::ValueOperatorLessOrEqual:
-        return convertedValue <= m_stateValue;
+        return state.value() <= convertedValue;
     case Types::ValueOperatorNotEquals:
-        return m_stateValue != convertedValue;
+        return convertedValue != state.value();
     }
     return false;
 }

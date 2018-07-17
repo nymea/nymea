@@ -671,7 +671,7 @@ void TestDevices::getEventTypes_data()
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("valid deviceclass") << mockDeviceClassId << 7;
+    QTest::newRow("valid deviceclass") << mockDeviceClassId << 8;
     QTest::newRow("invalid deviceclass") << DeviceClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
@@ -696,7 +696,7 @@ void TestDevices::getStateTypes_data()
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("valid deviceclass") << mockDeviceClassId << 5;
+    QTest::newRow("valid deviceclass") << mockDeviceClassId << 6;
     QTest::newRow("invalid deviceclass") << DeviceClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
@@ -797,7 +797,7 @@ void TestDevices::getStateValues()
     QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), JsonTypes::deviceErrorToString(statusCode));
     if (statusCode == DeviceManager::DeviceErrorNoError) {
         QVariantList values = response.toMap().value("params").toMap().value("values").toList();
-        QCOMPARE(values.count(), 5); // Mock device has two states...
+        QCOMPARE(values.count(), 6); // Mock device has 6 states...
     }
 }
 

@@ -1712,6 +1712,10 @@ void TestRules::testStateEvaluator_data()
     QTest::newRow("LessOrEqual, not matching") << m_mockDeviceId << mockIntStateId << QVariant(2) << Types::ValueOperatorLessOrEqual << false;
     QTest::newRow("LessOrEqual, matching (less)") << m_mockDeviceId << mockIntStateId << QVariant(777) << Types::ValueOperatorLessOrEqual << true;
     QTest::newRow("LessOrEqual, matching (equals)") << m_mockDeviceId << mockIntStateId << QVariant(10) << Types::ValueOperatorLessOrEqual << true;
+    QTest::newRow("Less, not matching, double") << m_mockDeviceId << mockDoubleStateId << QVariant(2.1) << Types::ValueOperatorLess << false;
+    QTest::newRow("Less, not matching, double as string") << m_mockDeviceId << mockDoubleStateId << QVariant("2.1") << Types::ValueOperatorLess << false;
+    QTest::newRow("Less, matching, double") << m_mockDeviceId << mockDoubleStateId << QVariant(4.2) << Types::ValueOperatorLess << true;
+    QTest::newRow("Less, matching, double as string") << m_mockDeviceId << mockDoubleStateId << QVariant("4.2") << Types::ValueOperatorLess << true;
 }
 
 void TestRules::testStateEvaluator()

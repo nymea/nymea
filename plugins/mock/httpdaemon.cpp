@@ -85,8 +85,12 @@ void HttpDaemon::readClient()
         if (url.path() == "/setstate") {
             StateTypeId stateTypeId = StateTypeId(query.queryItems().first().first);
             QVariant stateValue = query.queryItems().first().second;
-            if (stateTypeId == mockBoolValueStateTypeId || stateTypeId == mockBatteryCriticalStateTypeId) {
+            if (stateTypeId == mockBoolStateTypeId || stateTypeId == mockBatteryCriticalStateTypeId) {
                 stateValue.convert(QVariant::Bool);
+            } else if (stateTypeId == mockIntStateTypeId) {
+                stateValue.convert(QVariant::Int);
+            } else if (stateTypeId == mockDoubleStateTypeId) {
+                stateValue.convert(QVariant::Double);
             }
             qCDebug(dcMockDevice) << "Set state value" << stateValue;
             emit setState(stateTypeId, stateValue);

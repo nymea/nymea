@@ -285,27 +285,23 @@ bool StateEvaluator::isValid() const
             foreach (const StateType &stateType, deviceClass.stateTypes()) {
                 if (stateType.id() == m_stateDescriptor.stateTypeId()) {
 
-                    if (!m_stateDescriptor.stateValue().canConvert(stateType.type())) {
-                        qCWarning(dcRuleEngine) << "Wrong state value for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Expected:" << QVariant::typeToName(stateType.type());
-                        return false;
-                    }
-
-                    if (!m_stateDescriptor.stateValue().convert(stateType.type())) {
+                    QVariant stateValue = m_stateDescriptor.stateValue();
+                    if (!stateValue.convert(stateType.type())) {
                         qCWarning(dcRuleEngine) << "Could not convert value of state descriptor" << m_stateDescriptor.stateTypeId() << " to:" << QVariant::typeToName(stateType.type()) << " Got:" << m_stateDescriptor.stateValue();
                         return false;
                     }
 
-                    if (stateType.maxValue().isValid() && m_stateDescriptor.stateValue() > stateType.maxValue()) {
+                    if (stateType.maxValue().isValid() && stateValue > stateType.maxValue()) {
                         qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Max:" << stateType.maxValue();
                         return false;
                     }
 
-                    if (stateType.minValue().isValid() && m_stateDescriptor.stateValue() < stateType.minValue()) {
+                    if (stateType.minValue().isValid() && stateValue < stateType.minValue()) {
                         qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Min:" << stateType.minValue();
                         return false;
                     }
 
-                    if (!stateType.possibleValues().isEmpty() && !stateType.possibleValues().contains(m_stateDescriptor.stateValue())) {
+                    if (!stateType.possibleValues().isEmpty() && !stateType.possibleValues().contains(stateValue)) {
                         QStringList possibleValues;
                         foreach (const QVariant &value, stateType.possibleValues()) {
                             possibleValues.append(value.toString());

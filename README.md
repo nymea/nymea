@@ -9,7 +9,7 @@ In order to getting started with *nymea* and find information you can take a loo
 
 * A detailed description how to install and getting started with the *nymea* can be found in the
 
-    [nymea | github wiki](https://github.com/guh/nymea/wiki). 
+    [nymea | github wiki](https://wiki.nymea.io). 
 
 * A detailed documentation of the source code can be found in the
 

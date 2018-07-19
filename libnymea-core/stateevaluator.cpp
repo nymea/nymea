@@ -219,6 +219,7 @@ void StateEvaluator::dumpToSettings(NymeaSettings &settings, const QString &grou
     settings.setValue("interface", m_stateDescriptor.interface());
     settings.setValue("interfaceState", m_stateDescriptor.interfaceState());
     settings.setValue("value", m_stateDescriptor.stateValue());
+    settings.setValue("valueType", (int)m_stateDescriptor.stateValue().type());
     settings.setValue("operator", m_stateDescriptor.operatorType());
     settings.endGroup();
 
@@ -242,6 +243,18 @@ StateEvaluator StateEvaluator::loadFromSettings(NymeaSettings &settings, const Q
     StateTypeId stateTypeId(settings.value("stateTypeId").toString());
     DeviceId deviceId(settings.value("deviceId").toString());
     QVariant stateValue = settings.value("value");
+    if (settings.contains("valueType")) {
+        QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
+        // Note: only warn, and continue with the QVariant guessed type
+        if (valueType == QVariant::Invalid) {
+            qCWarning(dcRuleEngine()) << "Could not load the value type of the state evaluator. The value type will be guessed by QVariant" << stateValue;
+        } else if (!stateValue.canConvert(valueType)) {
+            qCWarning(dcRuleEngine()) << "Could not convert the state evaluator value" << stateValue << "to the stored type" << valueType << ". The value type will be guessed by QVariant.";
+        } else {
+            stateValue.convert(valueType);
+        }
+    }
+
     QString interface = settings.value("interface").toString();
     QString interfaceState = settings.value("interfaceState").toString();
     Types::ValueOperator valueOperator = (Types::ValueOperator)settings.value("operator").toInt();

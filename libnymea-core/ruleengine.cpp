@@ -235,12 +235,26 @@ RuleEngine::RuleEngine(QObject *parent) :
                     if (groupName.startsWith("ParamDescriptor-")) {
                         settings.beginGroup(groupName);
                         QString strippedGroupName = groupName.remove(QRegExp("^ParamDescriptor-"));
+
+                        QVariant value = settings.value("value");
+                        if (settings.contains("valueType")) {
+                            QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
+                            // Note: only warn, and continue with the QVariant guessed type
+                            if (valueType == QVariant::Invalid) {
+                                qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the param descriptor" << strippedGroupName << ". The value type will be guessed by QVariant.";
+                            } else if (!value.canConvert(valueType)) {
+                                qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the param descriptor value" << value << "to the stored type" << valueType;
+                            } else {
+                                value.convert(valueType);
+                            }
+                        }
+
                         if (!ParamTypeId(strippedGroupName).isNull()) {
-                            ParamDescriptor paramDescriptor(ParamTypeId(strippedGroupName), settings.value("value"));
+                            ParamDescriptor paramDescriptor(ParamTypeId(strippedGroupName), value);
                             paramDescriptor.setOperatorType((Types::ValueOperator)settings.value("operator").toInt());
                             params.append(paramDescriptor);
                         } else {
-                            ParamDescriptor paramDescriptor(strippedGroupName, settings.value("value"));
+                            ParamDescriptor paramDescriptor(strippedGroupName, value);
                             paramDescriptor.setOperatorType((Types::ValueOperator)settings.value("operator").toInt());
                             params.append(paramDescriptor);
                         }
@@ -278,6 +292,18 @@ RuleEngine::RuleEngine(QObject *parent) :
                     EventTypeId eventTypeId = EventTypeId(settings.value("eventTypeId", EventTypeId()).toString());
                     ParamTypeId eventParamTypeId = ParamTypeId(settings.value("eventParamTypeId", ParamTypeId()).toString());
                     QVariant value = settings.value("value");
+                    if (settings.contains("valueType")) {
+                        QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
+                        // Note: only warn, and continue with the QVariant guessed type
+                        if (valueType == QVariant::Invalid) {
+                            qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the rule action param " << strippedParamTypeIdString << ". The value type will be guessed by QVariant.";
+                        } else if (!value.canConvert(valueType)) {
+                            qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the rule action param value" << value << "to the stored type" << valueType;
+                        } else {
+                            value.convert(valueType);
+                        }
+                    }
+
                     if (!ParamTypeId(strippedParamTypeIdString).isNull()) {
                         RuleActionParam param(ParamTypeId(strippedParamTypeIdString),
                                               value,
@@ -321,6 +347,18 @@ RuleEngine::RuleEngine(QObject *parent) :
                     settings.beginGroup(paramTypeIdString);
                     QString strippedParamTypeIdString = paramTypeIdString.remove(QRegExp("^RuleActionParam-"));
                     QVariant value = settings.value("value");
+                    if (settings.contains("valueType")) {
+                        QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
+                        // Note: only warn, and continue with the QVariant guessed type
+                        if (valueType == QVariant::Invalid) {
+                            qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the rule action param " << strippedParamTypeIdString << ". The value type will be guessed by QVariant.";
+                        } else if (!value.canConvert(valueType)) {
+                            qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the rule action param value" << value << "to the stored type" << valueType;
+                        } else {
+                            value.convert(valueType);
+                        }
+                    }
+
                     if (!ParamTypeId(strippedParamTypeIdString).isNull()) {
                         RuleActionParam param(ParamTypeId(strippedParamTypeIdString), value);
                         params.append(param);
@@ -1395,6 +1433,7 @@ void RuleEngine::saveRule(const Rule &rule)
             } else {
                 settings.beginGroup("ParamDescriptor-" + paramDescriptor.paramName());
             }
+            settings.setValue("valueType", (int)paramDescriptor.value().type());
             settings.setValue("value", paramDescriptor.value());
             settings.setValue("operator", paramDescriptor.operatorType());
             settings.endGroup();
@@ -1424,6 +1463,7 @@ void RuleEngine::saveRule(const Rule &rule)
             } else {
                 settings.beginGroup("RuleActionParam-" + param.paramName());
             }
+            settings.setValue("valueType", (int)param.value().type());
             settings.setValue("value", param.value());
             if (param.eventTypeId() != EventTypeId()) {
                 settings.setValue("eventTypeId", param.eventTypeId().toString());
@@ -1454,6 +1494,7 @@ void RuleEngine::saveRule(const Rule &rule)
             } else {
                 settings.beginGroup("RuleActionParam-" + param.paramName());
             }
+            settings.setValue("valueType", (int)param.value().type());
             settings.setValue("value", param.value());
             settings.endGroup();
         }

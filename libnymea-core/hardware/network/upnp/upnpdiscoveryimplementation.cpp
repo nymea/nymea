@@ -524,7 +524,7 @@ bool UpnpDiscoveryImplementation::enable()
 
     setEnabled(true);
 
-    qCDebug(dcHardware()) << "";
+    qCDebug(dcHardware()) << "-->" << name() << "enabled successfully.";
 
     return true;
 }

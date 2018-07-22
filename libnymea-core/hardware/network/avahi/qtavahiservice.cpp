@@ -154,7 +154,7 @@ bool QtAvahiService::registerService(const QString &name, const QHostAddress &ho
         d_ptr->serviceList = QtAvahiServicePrivate::createTxtList(txtRecords);
         d_ptr->error = avahi_entry_group_add_service_strlst(d_ptr->group,
                                                             ifIndex,
-                                                            AVAHI_PROTO_INET,
+                                                            hostAddress.protocol() == QAbstractSocket::IPv6Protocol ? AVAHI_PROTO_INET6 : AVAHI_PROTO_INET,
                                                             (AvahiPublishFlags) 0,
                                                             d_ptr->name.toLatin1().data(),
                                                             d_ptr->type.toLatin1().data(),

@@ -34,6 +34,7 @@
     \l{DevicePlugin}{device plugins}.
 */
 
+
 /*! \enum DeviceManager::DeviceError
 
     This enum type specifies the errors that can happen when working with \l{Device}{Devices}.
@@ -101,6 +102,7 @@
 */
 
 // Signals
+
 /*! \fn void DeviceManager::loaded();
     The DeviceManager will emit this signal when all \l{Device}{Devices} are loaded.
 */

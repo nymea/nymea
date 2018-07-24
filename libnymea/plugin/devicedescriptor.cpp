@@ -114,7 +114,7 @@ DeviceId DeviceDescriptor::parentDeviceId() const
     return m_parentDeviceId;
 }
 
-/*! Sets the parent device Id for devices created from this DeviceDescriptor. */
+/*! Sets the parent device Id \a parentDeviceId for devices created from this DeviceDescriptor. */
 void DeviceDescriptor::setParentDeviceId(const DeviceId &parentDeviceId)
 {
     m_parentDeviceId = parentDeviceId;

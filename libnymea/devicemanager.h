@@ -50,8 +50,6 @@ class HardwareManager;
 class LIBNYMEA_EXPORT DeviceManager : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(DeviceError)
-    Q_ENUMS(DeviceSetupStatus)
 
     friend class DevicePlugin;
 

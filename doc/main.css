@@ -58,7 +58,7 @@ body {
 }
 
 ol, ul {
-    list-style: none;
+    list-style: list-style-type:circle;
 }
 
 blockquote, q {
@@ -829,22 +829,49 @@ div.header + li {
     color: #676767;
 }
 
-.content .sidebar ul {
+.content .sidebar ul li {
     padding-left: 0;
+    list-style-type: circle;
+    text-align: left;
+}
+
+/*
+.content .sidebar .level2:before {
+    content: "#";
+    background-image: none;
+    text-align: right;
+}
+*/
+
+.content .sidebar .level1 {
+    font-size: 1.2rem;
+    line-height: 1.5;
+    list-style: "- ";
 }
 
 .content .sidebar .level2 {
     font-size: 1rem;
-    margin-left: 1rem;
+    margin-left: 1.5rem;
     line-height: 1.5;
+    list-style-type: circle;
 }
 
+.content .sidebar .level3 {
+    font-size: 1rem;
+    margin-left: 2rem;
+    line-height: 1.5;
+    list-style: "→ ";
+}
+
+
+/*
 .content .sidebar .level2:before {
     content: "-";
     background-image: none;
     text-align: right;
 }
 
+*/
 .content .context {
     width: 90%;
     margin: 0 -120px 0 auto;
@@ -869,7 +896,7 @@ div.header + li {
 .content ul li {
     line-height: 1.5;
     position: relative;
-    padding-left: calc(1.5em + 10px);
+    padding-left: 1;
 }
 
 .content ul li::before {

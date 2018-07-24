@@ -3,8 +3,8 @@
     \title All nymea Modules
 
     \table 80%
-    \row \li \l{nymeaserver} \li The nymea server daemon implementation    
-    \row \li \l{libnymea} \li Common data types and plugin interfaces
+        \row \li \l{nymeaserver} \li The nymea server daemon implementation
+        \row \li \l{libnymea} \li Common data types and plugin interfaces
     \endtable
 
     \generatelist legalese-command

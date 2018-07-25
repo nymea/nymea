@@ -34,7 +34,7 @@ class TransportInterface : public QObject
 {
     Q_OBJECT
 public:
-    explicit TransportInterface(const ServerConfiguration &config, QObject *parent = 0);
+    explicit TransportInterface(const ServerConfiguration &config, QObject *parent = nullptr);
     virtual ~TransportInterface() = 0;
 
     virtual void sendData(const QUuid &clientId, const QByteArray &data) = 0;

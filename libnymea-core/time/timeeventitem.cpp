@@ -91,7 +91,7 @@ bool TimeEventItem::isValid() const
     return (!m_dateTime.isNull() != !m_time.isNull());
 }
 
-/*! Returns true, if the given \a dateTime matches this \l{TimeEventItem}. */
+/*! Returns true, if the given \a dateTime matches this \l{TimeEventItem} since the last \a lastEvaluationTime. */
 bool TimeEventItem::evaluate(const QDateTime &lastEvaluationTime, const QDateTime &dateTime) const
 {
     // Check time matches

@@ -88,6 +88,15 @@
     This signal is emitted when the configuration of \a rule changed.
 */
 
+/*! \fn void nymeaserver::NymeaCore::initialized();
+    This signal is emitted when the core is initialized.
+*/
+
+/*! \fn void nymeaserver::NymeaCore::pluginConfigChanged(const PluginId &id, const ParamList &config);
+    This signal is emitted when the plugin \a config of the plugin with the given \a id changed.
+*/
+
+
 /*! \fn void ruleActiveChanged(const Rule &rule);
     This signal is emitted when a \a rule changed the active state.
     A \l{Rule} is active, when all \l{State}{States} match with the \l{StateDescriptor} conditions.
@@ -111,7 +120,7 @@
 
 namespace nymeaserver {
 
-NymeaCore* NymeaCore::s_instance = 0;
+NymeaCore* NymeaCore::s_instance = nullptr;
 
 /*! Returns a pointer to the single \l{NymeaCore} instance. */
 NymeaCore *NymeaCore::instance()
@@ -154,7 +163,7 @@ void NymeaCore::destroy()
         delete s_instance;
     }
 
-    s_instance = 0;
+    s_instance = nullptr;
 }
 
 /*! Removes a configured \l{Device} with the given \a deviceId and \a removePolicyList. */
@@ -471,16 +480,19 @@ NetworkManager *NymeaCore::networkManager() const
     return m_networkManager;
 }
 
+/*! Returns a pointer to the \l{UserManager} instance owned by NymeaCore. */
 UserManager *NymeaCore::userManager() const
 {
     return m_userManager;
 }
 
+/*! Returns a pointer to the CloudManager instance owned by NymeaCore. */
 CloudManager *NymeaCore::cloudManager() const
 {
     return m_cloudManager;
 }
 
+/*! Returns a pointer to the \l{DebugServerHandler} instance owned by NymeaCore. */
 DebugServerHandler *NymeaCore::debugServerHandler() const
 {
     return m_debugServerHandler;

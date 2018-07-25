@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2015 - 2018 Simon Stürz <simon.stuerz@guh.io>            *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -42,8 +42,8 @@ class WebSocketServer : public TransportInterface
 {
     Q_OBJECT
 public:
-    explicit WebSocketServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent = 0);
-    ~WebSocketServer();
+    explicit WebSocketServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent = nullptr);
+    ~WebSocketServer() override;
 
     QUrl serverUrl() const;
 
@@ -51,9 +51,9 @@ public:
     void sendData(const QList<QUuid> &clients, const QByteArray &data) override;
 
 private:
-    QWebSocketServer *m_server;
+    QWebSocketServer *m_server = nullptr;
     QHash<QUuid, QWebSocket *> m_clientList;
-    QtAvahiService *m_avahiService;
+    QtAvahiService *m_avahiService = nullptr;
     QSslConfiguration m_sslConfiguration;
     bool m_enabled;
 

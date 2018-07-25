@@ -20,6 +20,37 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
+    \class nymeaserver::SslServer
+    \brief This class represents the SSL server for nymead.
+
+    \ingroup server
+    \inmodule core
+
+    \inherits TcpServer
+
+    The SSL server allows clients to connect to the JSON-RPC API over an encrypted SSL/TLS connection.
+
+    \sa WebSocketServer, TransportInterface, TcpServer
+*/
+
+/*! \fn nymeaserver::SslServer::SslServer(bool sslEnabled, const QSslConfiguration &config, QObject *parent = nullptr)
+    Constructs a \l{SslServer} with the given \a sslEnabled, \a config and \a parent.
+*/
+
+/*! \fn void nymeaserver::SslServer::clientConnected(QSslSocket *socket);
+    This signal is emitted when a new SSL \a socket connected.
+*/
+
+/*! \fn void nymeaserver::SslServer::clientDisconnected(QSslSocket *socket);
+    This signal is emitted when a \a socket disconnected.
+*/
+
+/*! \fn void nymeaserver::SslServer::dataAvailable(QSslSocket *socket, const QByteArray &data);
+    This signal is emitted when \a data from \a socket is available.
+*/
+
+
+/*!
     \class nymeaserver::TcpServer
     \brief This class represents the tcp server for nymead.
 
@@ -40,13 +71,13 @@
 
 namespace nymeaserver {
 
-/*! Constructs a \l{TcpServer} with the given \a host, \a port and \a parent.
+/*! Constructs a \l{TcpServer} with the given \a configuration, \a sslConfiguration and \a parent.
  *
  *  \sa ServerManager
  */
 TcpServer::TcpServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent) :
     TransportInterface(configuration, parent),
-    m_server(NULL),
+    m_server(nullptr),
     m_sslConfig(sslConfiguration)
 {
     m_avahiService = new QtAvahiService(this);
@@ -60,6 +91,7 @@ TcpServer::~TcpServer()
     stopServer();
 }
 
+/*! Returns the URL of this server. */
 QUrl TcpServer::serverUrl() const
 {
     return QUrl(QString("%1://%2:%3").arg((configuration().sslEnabled ? "nymeas" : "nymea")).arg(configuration().address.toString()).arg(configuration().port));
@@ -76,7 +108,7 @@ void TcpServer::sendData(const QList<QUuid> &clients, const QByteArray &data)
 /*! Sending \a data to the client with the given \a clientId.*/
 void TcpServer::sendData(const QUuid &clientId, const QByteArray &data)
 {
-    QTcpSocket *client = 0;
+    QTcpSocket *client = nullptr;
     client = m_clientList.value(clientId);
     if (client) {
         client->write(data + '\n');
@@ -138,13 +170,13 @@ void TcpServer::resetAvahiService()
     txt.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
     txt.insert("name", NymeaCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
-    if (!m_avahiService->registerService(QString("nymea-tcp-%1").arg(configuration().id), configuration().address, configuration().port, "_jsonrpc._tcp", txt)) {
+    if (!m_avahiService->registerService(QString("nymea-tcp-%1").arg(configuration().id), configuration().address, static_cast<quint16>(configuration().port), "_jsonrpc._tcp", txt)) {
         qCWarning(dcTcpServer()) << "Could not register avahi service for" << configuration();
     }
 }
 
 
-/*! Returns true if this \l{TcpServer} could be reconfigured with the given \a address and \a port. */
+/*! Returns true if this \l{TcpServer} could be reconfigured with the given \a config. */
 void TcpServer::reconfigureServer(const ServerConfiguration &config)
 {
     if (configuration().address == config.address &&
@@ -159,6 +191,7 @@ void TcpServer::reconfigureServer(const ServerConfiguration &config)
     startServer();
 }
 
+/*! Sets the name of this server to the given \a serverName. */
 void TcpServer::setServerName(const QString &serverName)
 {
     m_serverName = serverName;
@@ -172,10 +205,10 @@ void TcpServer::setServerName(const QString &serverName)
 bool TcpServer::startServer()
 {
     m_server = new SslServer(configuration().sslEnabled, m_sslConfig);
-    if(!m_server->listen(configuration().address, configuration().port)) {
+    if(!m_server->listen(configuration().address, static_cast<quint16>(configuration().port))) {
         qCWarning(dcConnection) << "Tcp server error: can not listen on" << configuration().address.toString() << configuration().port;
         delete m_server;
-        m_server = NULL;
+        m_server = nullptr;
         return false;
     }
 
@@ -203,10 +236,11 @@ bool TcpServer::stopServer()
 
     m_server->close();
     m_server->deleteLater();
-    m_server = NULL;
+    m_server = nullptr;
     return true;
 }
 
+/*! This method will be called if a new \a socketDescriptor is about to connect to this SslSocket. */
 void SslServer::incomingConnection(qintptr socketDescriptor)
 {
     QSslSocket *sslSocket = new QSslSocket(this);

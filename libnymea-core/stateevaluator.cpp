@@ -194,6 +194,7 @@ void StateEvaluator::removeDevice(const DeviceId &deviceId)
     }
 }
 
+/*! Returns a list of \l{DeviceId}{DeviceIds} of this StateEvaluator. */
 QList<DeviceId> StateEvaluator::containedDevices() const
 {
     QList<DeviceId> ret;

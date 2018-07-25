@@ -93,16 +93,14 @@
 
 namespace nymeaserver {
 
-/*! Constructs a \l{WebServer} with the given \a host, \a port, \a publicFolder and \a parent.
+/*! Constructs a \l{WebServer} with the given \a configuration, \a sslConfiguration and \a parent.
  *
- *  \sa ServerManager
+ *  \sa ServerManager, WebServerConfiguration
  */
 WebServer::WebServer(const WebServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent) :
     QTcpServer(parent),
-    m_avahiService(nullptr),
     m_configuration(configuration),
-    m_sslConfiguration(sslConfiguration),
-    m_enabled(false)
+    m_sslConfiguration(sslConfiguration)
 {
     if (QCoreApplication::instance()->organizationName() == "nymea-test") {
         m_configuration.publicFolder = QCoreApplication::applicationDirPath();
@@ -121,6 +119,7 @@ WebServer::~WebServer()
     this->close();
 }
 
+/*! Returns the server URL of this WebServer. */
 QUrl WebServer::serverUrl() const
 {
     return QUrl(QString("%1://%2:%3").arg((m_configuration.sslEnabled ? "https" : "http")).arg(m_configuration.address.toString()).arg(m_configuration.port));
@@ -544,12 +543,15 @@ void WebServer::resetAvahiService()
     txt.insert("name", NymeaCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", m_configuration.sslEnabled ? "true" : "false");
 
-    if (!m_avahiService->registerService(QString("nymea-http-%1").arg(m_configuration.id), m_configuration.address, m_configuration.port, "_http._tcp", txt)) {
+    if (!m_avahiService->registerService(QString("nymea-http-%1").arg(m_configuration.id), m_configuration.address, static_cast<quint16>(m_configuration.port), "_http._tcp", txt)) {
         qCWarning(dcTcpServer()) << "Could not register avahi service for" << m_configuration;
     }
 }
 
-/*! Returns true if this \l{WebServer} could be reconfigured with the given \a address and \a port. */
+/*! Set the configuration of this \l{WebServer} to the given \a config.
+ *
+ * \sa WebServerConfiguration
+ */
 void WebServer::reconfigureServer(const WebServerConfiguration &config)
 {
     if (m_configuration.address == config.address &&
@@ -565,6 +567,7 @@ void WebServer::reconfigureServer(const WebServerConfiguration &config)
     startServer();
 }
 
+/*! Sets the server name to the given \a serverName. */
 void WebServer::setServerName(const QString &serverName)
 {
     m_serverName = serverName;
@@ -574,7 +577,7 @@ void WebServer::setServerName(const QString &serverName)
 /*! Returns true if this \l{WebServer} started successfully. */
 bool WebServer::startServer()
 {
-    if (!listen(m_configuration.address, m_configuration.port)) {
+    if (!listen(m_configuration.address, static_cast<quint16>(m_configuration.port))) {
         qCWarning(dcWebServer()) << "Webserver could not listen on" << serverUrl().toString() << errorString();
         m_enabled = false;
         return false;

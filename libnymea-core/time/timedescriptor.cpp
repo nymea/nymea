@@ -82,7 +82,7 @@ bool TimeDescriptor::isEmpty() const
 
 /*! Returns true if this \l{TimeDescriptor} is valid for the given \a dateTime. A \l{TimeDescriptor} is
     valid if the \l{TimeEventItem}{TimeEventItems} or \l{CalendarItem}{CalendarItems} match
-    the given \a dateTime.
+    the given \a dateTime since the \a lastEvaluationTime.
 */
 bool TimeDescriptor::evaluate(const QDateTime &lastEvaluationTime, const QDateTime &dateTime) const
 {

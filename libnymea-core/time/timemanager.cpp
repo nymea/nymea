@@ -107,6 +107,10 @@ QList<QByteArray> TimeManager::availableTimeZones() const
     return QTimeZone::availableTimeZoneIds();
 }
 
+/*! Stop the time.
+ *
+ * \note This method should only be used in tests.
+*/
 void TimeManager::stopTimer()
 {
     qCWarning(dcTimeManager()) << "TimeManager timer stopped. You should only see this in tests.";
@@ -114,6 +118,10 @@ void TimeManager::stopTimer()
     m_nymeaTimer->stop();
 }
 
+/*! Set the current time of this TimeManager to the given \a dateTime.
+ *
+ * \note This method should only be used in tests.
+*/
 void TimeManager::setTime(const QDateTime &dateTime)
 {
     qCWarning(dcTimeManager()) << "TimeManager time changed" << dateTime.toString("dd.MM.yyyy hh:mm:ss") << "You should only see this in tests.";

@@ -45,7 +45,7 @@ public:
         UserErrorPermissionDenied
     };
 
-    explicit UserManager(const QString &dbName, QObject *parent = 0);
+    explicit UserManager(const QString &dbName, QObject *parent = nullptr);
 
     bool initRequired() const;
     QStringList users() const;

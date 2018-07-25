@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2015 - 2018 Simon Stürz <simon.stuerz@guh.io>            *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -56,13 +56,12 @@
 
 namespace nymeaserver {
 
-/*! Constructs a \l{WebSocketServer} with the given \a address, \a port \a sslEnabled and \a parent.
+/*! Constructs a \l{WebSocketServer} with the given \a configuration, \a sslConfiguration and \a parent.
  *
- *  \sa ServerManager
+ *  \sa ServerManager, ServerConfiguration
  */
 WebSocketServer::WebSocketServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent) :
     TransportInterface(configuration, parent),
-    m_server(0),
     m_sslConfiguration(sslConfiguration),
     m_enabled(false)
 {
@@ -77,6 +76,7 @@ WebSocketServer::~WebSocketServer()
     stopServer();
 }
 
+/*! Returns the url of this server. */
 QUrl WebSocketServer::serverUrl() const
 {
     return QUrl(QString("%1://%2:%3").arg((configuration().sslEnabled ? "wss" : "ws")).arg(configuration().address.toString()).arg(configuration().port));
@@ -88,7 +88,7 @@ QUrl WebSocketServer::serverUrl() const
  */
 void WebSocketServer::sendData(const QUuid &clientId, const QByteArray &data)
 {
-    QWebSocket *client = 0;
+    QWebSocket *client = nullptr;
     client = m_clientList.value(clientId);
     if (client) {
         qCDebug(dcWebSocketServerTraffic()) << "Sending data to client" << data;
@@ -201,12 +201,12 @@ void WebSocketServer::resetAvahiService()
         return;
 
     m_avahiService->resetService();
-    if (!m_avahiService->registerService(QString("nymea-ws-%1").arg(configuration().id), configuration().address, configuration().port, "_ws._tcp", createTxtRecord())) {
+    if (!m_avahiService->registerService(QString("nymea-ws-%1").arg(configuration().id), configuration().address, static_cast<quint16>(configuration().port), "_ws._tcp", createTxtRecord())) {
         qCWarning(dcWebServer()) << "Could not register avahi service for" << configuration();
     }
 }
 
-/*! Returns true if this \l{WebSocketServer} could be reconfigured with the given \a address and \a port. */
+/*! Returns true if this \l{WebSocketServer} could be reconfigured with the given \a config. */
 void WebSocketServer::reconfigureServer(const ServerConfiguration &config)
 {
     if (configuration() == config && m_server->isListening()) {
@@ -224,6 +224,7 @@ void WebSocketServer::reconfigureServer(const ServerConfiguration &config)
     startServer();
 }
 
+/*! Sets the server name to the given \a serverName. */
 void WebSocketServer::setServerName(const QString &serverName)
 {
     m_serverName = serverName;
@@ -245,7 +246,7 @@ bool WebSocketServer::startServer()
     connect (m_server, &QWebSocketServer::newConnection, this, &WebSocketServer::onClientConnected);
     connect (m_server, &QWebSocketServer::acceptError, this, &WebSocketServer::onServerError);
 
-    if (!m_server->listen(configuration().address, configuration().port)) {
+    if (!m_server->listen(configuration().address, static_cast<quint16>(configuration().port))) {
         qCWarning(dcConnection) << "Websocket server" << m_server->serverName() << "could not listen on" << serverUrl().toString();
         return false;
     }

@@ -28,7 +28,7 @@
     \endlist
 
 
-    \section1 CreateMethod \b "User" - SetupMethod \b "JustAdd - synchronous"
+    \section2 CreateMethod \b "User" - SetupMethod \b "JustAdd - synchronous"
 
     This is the simplest setup what a device can have.
 
@@ -50,7 +50,7 @@
         \endlist
     \endlist
 
-    \section1 CreateMethod \b "User" - SetupMethod \b "JustAdd" - asynchronous
+    \section2 CreateMethod \b "User" - SetupMethod \b "JustAdd" - asynchronous
 
     \image setup-async-resized.png
 
@@ -64,7 +64,7 @@
         \endlist
     \endlist
 
-    \section1 CreateMethod \b "auto" - SetupMethod \b "justAdd"
+    \section2 CreateMethod \b "auto" - SetupMethod \b "justAdd"
 
     \image setup-auto-resized.png
 
@@ -83,7 +83,7 @@
     \endlist
 
 
-    \section1 CreateMethod \b "Discovery" - SetupMethod \b "JustAdd"
+    \section2 CreateMethod \b "Discovery" - SetupMethod \b "JustAdd"
 
     \image setup-discovery-resized.png
 
@@ -102,7 +102,7 @@
         \endlist
     \endlist
 
-    \section1 CreateMethod \b "Discovery" - SetupMethod \b "PushButton"
+    \section2 CreateMethod \b "Discovery" - SetupMethod \b "PushButton"
 
     \image setup-discovery-pairing-resized.png
 
@@ -127,7 +127,7 @@
         \endlist
     \endlist
 
-    \section1 CreateMethod \b "Discovery" - SetupMethod \b "EnterPin"
+    \section2 CreateMethod \b "Discovery" - SetupMethod \b "EnterPin"
 
     \image setup-discovery-pairing-resized.png
 
@@ -153,7 +153,7 @@
     \endlist
 
 
-    \section1 CreateMethod \b "Discovery" - SetupMethod \b "DisplayPin"
+    \section2 CreateMethod \b "Discovery" - SetupMethod \b "DisplayPin"
 
     \image setup-discovery-display-pin-resized.png
 

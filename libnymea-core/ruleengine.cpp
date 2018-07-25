@@ -87,6 +87,8 @@
         the \l{Action}{Actions} without the \l{Event} value.
     \value RuleErrorNoExitActions
         This rule does not have any ExitActions which means they cannot be executed.
+    \value RuleErrorInterfaceNotFound
+        There is no interface for the given string.
 */
 
 /*! \enum nymeaserver::RuleEngine::RemovePolicy

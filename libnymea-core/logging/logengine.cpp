@@ -132,7 +132,7 @@
 namespace nymeaserver {
 
 /*! Constructs the log engine with the given parameters.
-    \a The Qt Database backend to be used. Depending on the installed Qt modules this can be any of QDB2 QIBASE QMYSQL QOCI QODBC QPSQL QSQLITE QSQLITE2 QTDS.
+    The Qt Database backend to be used. Depending on the installed Qt modules this can be any of QDB2 QIBASE QMYSQL QOCI QODBC QPSQL QSQLITE QSQLITE2 QTDS.
     \a dbName is the name of the database. In case of SQLITE this should contain a file path. The Driver will create the file if required. In case of using a
     database server like MYSQL, the database must exist on the host given by \a hostname and be accessible with the given \a username and \a password.
 */

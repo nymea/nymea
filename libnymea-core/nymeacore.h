@@ -111,7 +111,7 @@ signals:
     void ruleConfigurationChanged(const Rule &rule);
 
 private:
-    explicit NymeaCore(QObject *parent = 0);
+    explicit NymeaCore(QObject *parent = nullptr);
     static NymeaCore *s_instance;
 
     NymeaConfiguration *m_configuration;

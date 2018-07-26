@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2018 Developer Name <developer.name@example.com>         *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,57 +20,35 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef QTAVAHISERVICEBROWSERIMPLEMENTATION_H
-#define QTAVAHISERVICEBROWSERIMPLEMENTATION_H
+#ifndef DEVICEPLUGINSIMPLEBUTTON_H
+#define DEVICEPLUGINSIMPLEBUTTON_H
 
-#include <QObject>
-#include <avahi-client/lookup.h>
+#include "devicemanager.h"
+#include "plugin/deviceplugin.h"
 
-#include "qtavahiclient.h"
-
-#include "network/avahi/avahiserviceentry.h"
-#include "network/avahi/qtavahiservicebrowser.h"
-
-
-namespace nymeaserver {
-
-class QtAvahiServiceBrowserImplementationPrivate;
-
-class QtAvahiServiceBrowserImplementation : public QtAvahiServiceBrowser
+class DevicePluginSimpleButton: public DevicePlugin
 {
     Q_OBJECT
 
-    friend class HardwareManagerImplementation;
+    Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginsimplebutton.json")
+    Q_INTERFACES(DevicePlugin)
+
 
 public:
-    explicit QtAvahiServiceBrowserImplementation(QObject *parent = nullptr);
-    ~QtAvahiServiceBrowserImplementation() override;
+    explicit DevicePluginSimpleButton();
 
-    QList<AvahiServiceEntry> serviceEntries() const override;
+    void init() override;
+    void startMonitoringAutoDevices() override;
+    void postSetupDevice(Device *device) override;
+    void deviceRemoved(Device *device) override;
 
-    bool available() const override;
-    bool enabled() const override;
-
-private slots:
-    void onClientStateChanged(const QtAvahiClient::QtAvahiClientState &state);
-
-protected:
-    void setEnabled(bool enabled) override;
+    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
 
 private:
-    bool m_available = false;
-    bool m_enabled = false;
 
-    QtAvahiServiceBrowserImplementationPrivate *d_ptr;
+private slots:
 
-    QList<AvahiServiceEntry> m_serviceEntries;
-    QStringList m_serviceTypes;
-
-    void createServiceBrowser(const char* serviceType);
-
-    Q_DECLARE_PRIVATE(QtAvahiServiceBrowserImplementation)
 };
 
-}
-
-#endif // QTAVAHISERVICEBROWSERIMPLEMENTATION_H
+#endif // DEVICEPLUGINSIMPLEBUTTON_H

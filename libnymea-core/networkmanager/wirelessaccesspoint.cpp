@@ -137,7 +137,10 @@ bool WirelessAccessPoint::isProtected() const
     return m_isProtected;
 }
 
-/*! Returns the security flags of this \l{WirelessAccessPoint}. \sa WirelessAccessPoint::ApSecurityModes */
+/*! Returns the security flags of this \l{WirelessAccessPoint}.
+
+    \sa ApSecurityModes
+*/
 WirelessAccessPoint::ApSecurityModes WirelessAccessPoint::securityFlags() const
 {
     return m_securityFlags;

@@ -62,7 +62,7 @@
 */
 
 /*! \fn void Coap::replyFinished(CoapReply *reply);
-    This signal is emitted when a \a reply is finished.
+    This signal is emitted when the given \a reply is finished.
 */
 
 /*! \fn void Coap::notificationReceived(const CoapObserveResource &resource, const int &notificationNumber, const QByteArray &payload);
@@ -79,7 +79,7 @@ Q_LOGGING_CATEGORY(dcCoap, "Coap")
 /*! Constructs a Coap access manager with the given \a parent and \a port. */
 Coap::Coap(QObject *parent, const quint16 &port) :
     QObject(parent),
-    m_reply(0)
+    m_reply(nullptr)
 {
     m_socket = new QUdpSocket(this);
 

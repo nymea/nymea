@@ -21,7 +21,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-  \class UpnpDiscoveryImplementation
+  \class nymeaserver::UpnpDiscoveryImplementation
   \brief Allows to detect UPnP devices in the network.
 
   \ingroup hardware
@@ -35,12 +35,6 @@
   \sa UpnpDevice, UpnpDeviceDescriptor
 */
 
-/*!
- \fn UpnpDiscoveryImplementation::upnpNotify(const QByteArray &notifyMessage)
- This signal will be emitted when a UPnP NOTIFY message \a notifyMessage will be recognized.
- \sa DevicePlugin::upnpNotifyReceived()
-
-*/
 
 #include "nymeasettings.h"
 #include "loggingcategories.h"

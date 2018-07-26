@@ -20,9 +20,44 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class Pwm
+    \brief The class represent a pulse wide modulation file system interface.
+
+    \ingroup hardware
+    \inmodule libnymea
+
+    This class provides a convenient access to the linux kernel PWM (pulse wide modulation) file system.
+
+    By default, this class will check in the system path \tt{/sys/class/pwm/} for any PWM chips.
+    You can find the kernel documentation \l{https://www.kernel.org/doc/Documentation/pwm.txt}{here}.
+
+    This class assumes a file system format where each hardware PWM chip has his own filepath.
+
+    \code
+        /sys/class/pwm/pwmchip0
+        /sys/class/pwm/pwmchip1
+    \endcode
+
+    The number \tt{pwmchip0} represents the chipNumber.
+
+*/
+
+/*! \enum Pwm::Polarity
+
+    \value PolarityNormal
+        Normal polarity. This is the default value.
+    \value PolarityInversed
+        Inversed polarity.
+    \value PolarityInvalid
+        The current polarity value is invalid.
+
+*/
+
 #include "pwm.h"
 #include "loggingcategories.h"
 
+/*! Constructs a new Pwm interface for the given \a chipNumber (\tt{/sys/class/pwm/pwmchip<chipNumber>}) with the given \a parent. */
 Pwm::Pwm(int chipNumber, QObject *parent) :
     QObject(parent),
     m_chipNumber(chipNumber),
@@ -32,17 +67,20 @@ Pwm::Pwm(int chipNumber, QObject *parent) :
     m_pwmDirectory = QDir("/sys/class/pwm/pwmchip" + QString::number(chipNumber) + "/");
 }
 
+/*! Destructor for this Pwm interface. */
 Pwm::~Pwm()
 {
     unexportPwm();
 }
 
+/*! Returns true, if the path \tt{/sys/class/pwm} exists and is not empty. */
 bool Pwm::isAvailable()
 {
     QDir pwmDirectory("/sys/class/pwm");
     return pwmDirectory.exists() && !pwmDirectory.entryList().isEmpty();
 }
 
+/*! Returns true, if this Pwm interface has been exported successfully. */
 bool Pwm::exportPwm()
 {
     QFile exportFile(m_pwmDirectory.path() + "/export");
@@ -57,6 +95,7 @@ bool Pwm::exportPwm()
     return true;
 }
 
+/*! Returns true, if this Pwm interface has been enabled successfully. */
 bool Pwm::enable()
 {
     QFile enableFile(m_pwmDirectory.path() + "/pwm0/enable");
@@ -71,6 +110,7 @@ bool Pwm::enable()
     return true;
 }
 
+/*! Returns true, if this Pwm interface has been disabled successfully. */
 bool Pwm::disable()
 {
     QFile enableFile(m_pwmDirectory.path() + "/pwm0/enable");
@@ -85,6 +125,7 @@ bool Pwm::disable()
     return true;
 }
 
+/*! Returns true, if this Pwm interface is enabled. */
 bool Pwm::isEnabled()
 {
     QFile enableFile(m_pwmDirectory.path() + "/pwm0/enable");
@@ -103,11 +144,16 @@ bool Pwm::isEnabled()
     return false;
 }
 
+/*! Returns the chip number of this \l{Pwm}.
+
+  The chip number indicates which file path will be used: \tt{/sys/class/pwm/pwmchip<chipNumber>}.
+*/
 int Pwm::chipNumber()
 {
     return m_chipNumber;
 }
 
+/*! Returns the period of this PWM. */
 long Pwm::period()
 {
     // period = active + inactive time
@@ -125,6 +171,7 @@ long Pwm::period()
     return m_period;
 }
 
+/*! Returns true, if the period of this Pwm has been set to \a nanoSeconds successfully. */
 bool Pwm::setPeriod(long nanoSeconds)
 {
     // the current duty cycle can not be greater than the period
@@ -144,11 +191,13 @@ bool Pwm::setPeriod(long nanoSeconds)
     return true;
 }
 
+/*! Returns the frequency [kHz] of the Pwm. */
 double Pwm::frequency()
 {
     return (100000000.0 / (period() * 1000));
 }
 
+/*! Returns true, if the frequency [kHz] of this Pwm has been set successfully to the given \a kHz. */
 bool Pwm::setFrequency(double kHz)
 {
     // p = 1 / f
@@ -156,7 +205,7 @@ bool Pwm::setFrequency(double kHz)
     return setPeriod(nanoSeconds);
 }
 
-// active time
+/*! Returns the duty cycle [ns] of the Pwm. The duty cycle is the active time of one period. */
 long Pwm::dutyCycle()
 {
     QFile dutyCycleFile(m_pwmDirectory.path() + "/pwm0/duty_cycle");
@@ -173,6 +222,7 @@ long Pwm::dutyCycle()
     return m_dutyCycle;
 }
 
+/*! Returns true, if the duty cycle [ns] of the Pwm has been set successfully to the given \a nanoSeconds. The duty cycle is the active time of one period. */
 bool Pwm::setDutyCycle(long nanoSeconds)
 {
     // can not be greater than period or negative
@@ -193,6 +243,7 @@ bool Pwm::setDutyCycle(long nanoSeconds)
     return true;
 }
 
+/*! Returns the Polarity of this Pwm. */
 Pwm::Polarity Pwm::polarity()
 {
     QFile polarityFile(m_pwmDirectory.path() + "/pwm0/polarity");
@@ -215,6 +266,7 @@ Pwm::Polarity Pwm::polarity()
     return PolarityInvalid;
 }
 
+/*! Returns true, if the polarity of this Pwm has been set to \a polarity successfully. */
 bool Pwm::setPolarity(Pwm::Polarity polarity)
 {
     if (polarity == Pwm::PolarityInvalid)
@@ -250,17 +302,20 @@ bool Pwm::setPolarity(Pwm::Polarity polarity)
     return true;
 }
 
+/*! Returns the current percentage of this Pwm. */
 int Pwm::percentage()
 {
     return (int)(dutyCycle() * (100.0 / period()) + 0.5);
 }
 
+/*! Returns true, if the percentage of this Pwm has been set to \a percentage successfully. */
 bool Pwm::setPercentage(int percentage)
 {
     long nanoSeconds = period() * (percentage / 100.0);
     return setDutyCycle(nanoSeconds);
 }
 
+/*! Returns true, if this Pwm interface has been unexported successfully. */
 bool Pwm::unexportPwm()
 {
     QFile unexportFile(m_pwmDirectory.path() + "/unexport");

@@ -21,7 +21,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-  \class NetworkAccessManagerImpl
+  \class nymeaserver::NetworkAccessManagerImpl
   \brief Allows to send network requests and receive replies.
 
   \ingroup hardware

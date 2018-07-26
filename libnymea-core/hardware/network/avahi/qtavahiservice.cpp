@@ -21,7 +21,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class QtAvahiService
+    \class nymeaserver::QtAvahiService
     \brief Allows to publish an avahi service to the network.
 
     \inmodule core
@@ -56,7 +56,7 @@
 
 namespace nymeaserver {
 
-/*! Constructs a new \l{QtAvahiService} with the given \a parent. */
+/*! Constructs a new QtAvahiService with the given \a parent. */
 QtAvahiService::QtAvahiService(QObject *parent) :
     QObject(parent),
     d_ptr(new QtAvahiServicePrivate),

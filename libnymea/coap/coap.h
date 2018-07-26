@@ -50,7 +50,7 @@ class LIBNYMEA_EXPORT Coap : public QObject
     Q_OBJECT
 
 public:
-    Coap(QObject *parent = 0, const quint16 &port = 5683);
+    Coap(QObject *parent = nullptr, const quint16 &port = 5683);
 
     CoapReply *ping(const CoapRequest &request);
     CoapReply *get(const CoapRequest &request);

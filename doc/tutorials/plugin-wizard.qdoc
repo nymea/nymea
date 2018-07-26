@@ -1,6 +1,6 @@
 /*!
     \example template
-    \title 1. Plugin wizard
+    \title 1. The plugin wizard
     \ingroup tutorials
     \brief Explanation of the Qt Creator plugin wizard template
 
@@ -80,17 +80,139 @@
 
     \section1 Walk trough
 
-    Starting with the new created project you can find following files in you project:
+        Starting with the new created project you can find following files in you project:
 
-    \section2 template.pro
+    \section3 template.pro
 
-    \quotefile template/template.pro
+        This is the generated project files of your plugin. If you need additional qt modules or external libraries in your project
+        you can include them normaly using i.e. \tt{QT += network} or \tt{INCLUDEPATH += /path/to/includes} and \tt{LIBS += -lfoo}
+        like in any other Qt project.
 
-    \section2 deviceplugintemplate.json
+        \quotefile template/template.pro
+        \quotefromfile template/template.pro
 
-    Here you can find the device plugin interface describibg the vendors, devices and plugin information.
-    A detailed description of each section can be found in the \l{The plugin JSON File} section.
+        \list
 
-    \quotefile template/deviceplugintemplate.json
+            \li In the first line you can see the gloabl nymea plugin include, where all the nymea plugin related
+                configrations and setting for your plugin project get included.
+                \printline include(
+
+            \li The next line defines the library file name of your plugin. If you change the plugin name, this line has to be updated to.
+                \printline TARGET
+
+
+             \li The next section is just for debugging the project configuration and showing you the project name and Qt Version you are building with.
+                \printuntil message("Building
+
+
+             \li The \tt{SOURCES} and \tt{HEADERS} section shows the included source code files for your project.
+                \printuntil
+
+        \endlist
+
+    \section3 deviceplugintemplate.json
+
+        Here you can find the device plugin interface describing the vendors, devices and plugin information.
+        A detailed description of each section can be found in the \l{The plugin JSON File} section.
+
+        \quotefile template/deviceplugintemplate.json
+
+        \quotefromfile template/deviceplugintemplate.json
+
+        In the first section you can find the plugin specific properties. The id will be set to zero and must be changed with an actual uuid.
+        The zero uuid is creaed by the plugin template in order to indicate that this field has to be updated.
+
+        \printuntil "vendors"
+
+        In the vendors section you can see the vendor specific properties. There can be multiple vendors defined in one plugin,
+        each with its own device classes. The uuid of the vendor guh is known, and therefore already filled out. You have to update
+        the vendor uuid, name and id with your plugin information.
+
+        \printuntil "deviceClasses"
+
+        Here you can see the default created deviceclass, showing you the basic structure of a device class.
+
+        \printuntil }
+
+
+    \section3 deviceplugintemplate.h
+
+    The main header file shows you the basic structure of your DevicePlugin template. The header file start with the license header
+    containing the copyright information passed during the wizard.
+
+    \code
+        /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+         *                                                                         *
+         *  Copyright (C) 2018 Developer Name <developer.name@example.com>         *
+         *                                                                         *
+         *  This file is part of nymea.                                            *
+         *                                                                         *
+         *  This library is free software; you can redistribute it and/or          *
+         *  modify it under the terms of the GNU Lesser General Public             *
+         *  License as published by the Free Software Foundation; either           *
+         *  version 2.1 of the License, or (at your option) any later version.     *
+         *                                                                         *
+         *  This library is distributed in the hope that it will be useful,        *
+         *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+         *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU      *
+         *  Lesser General Public License for more details.                        *
+         *                                                                         *
+         *  You should have received a copy of the GNU Lesser General Public       *
+         *  License along with this library; If not, see                           *
+         *  <http://www.gnu.org/licenses/>.                                        *
+         *                                                                         *
+         * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    \endcode
+
+    The main class has the name \tt{DevicePluginExample}. The device plugin class inherts from the DevicePlugin class and must implement
+    the pure virtual methods in order build correctly.
+
+    \quotefromfile template/deviceplugintemplate.h
+    \skipto DevicePluginExample
+    \printuntil };
+
+    \section3 deviceplugintemplate.cpp
+
+    The implementation of each method can be found in the corresponding \tt{cpp} file.
+
+    As you can see, the plugin includes in the cpp file the \tt{plugininfo.h} file, which will be generated during build time
+    from the \tt{nymea-generateplugininfo} tool. This tool translates the \l{deviceplugintemplate.json} into a c++ header file
+    containing all uuid definitions, tranlations strings and the debug catergory definition.
+
+    \quotefromfile template/deviceplugintemplate.cpp
+    \skipto #include
+    \printline plugininfo
+
+    The main entry point of the plugin is the \l{DevicePlugin::init()}{init()} method. This method will be called from the DeviceManager once all plugins are
+    loaded and the initialization phase starts for you all plugins. Here you can start creating your objects in initialize
+    whatever you need. This method can be seen like a constructor.
+    \skipto init
+    \printuntil }
+
+
+    The \l{DevicePlugin::startMonitoringAutoDevices()}{startMonitoringAutoDevices} method will be called from the DeviceManager once all devices are set
+    up and the plugin can start for searching device which appear automatically if your plugin supports such device types.
+    \skipto startMonitoringAutoDevices
+    \printuntil }
+
+    The \l{DevicePlugin::postSetupDevice()}{postSetupDevice} method will be called from the DeviceManager once the setup of a device has finished successfully.
+    Here is a good point to initialize the states of the device.
+    \skipto postSetupDevice
+    \printuntil }
+
+    The \l{DevicePlugin::deviceRemoved()}{deviceRemoved} method will be called from the DeviceManager once a device is about to be removed from the system.
+    Here is a good place to clean up everything releated to the device which will be removed.
+    \skipto deviceRemoved
+    \printuntil }
+
+    When the user wants to add a new device from this plugin, the \l{DevicePlugin::setupDevice()}{setupDevice()} method will be called.
+    Here you can initialize Objects and set up everything you need for your device.
+    \skipto setupDevice
+    \printuntil }
+
+    When the user wants to execute an Action of a Device from this DevicePlugin, the \l{DevicePlugin::executeAction()}{executeAction} method will be called.
+    Here you can perform the actual execution of the custom call for your Device.
+    \skipto executeAction
+    \printuntil }
 
 */

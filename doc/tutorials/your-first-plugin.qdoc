@@ -1,0 +1,29 @@
+/*!
+    \example simplebutton
+    \title 2. Your very first plugin
+    \ingroup tutorials
+    \brief A simple button example for showing the basic concepts of a \l{DevicePlugin}.
+
+    This is a nice example for showing the very basic concept of the nymea plugin mechanism.
+
+    Lets say we want to create a Button device, called \tt{Simple button}, which has a \tt{press} \l{Action} and
+    emits an \l{Event} called \tt{pressed} when someone executes the \tt{press} Action.
+
+    Based on this Event we can create a rule and we have a virtual button which can
+    be connected to any Action available in the entire system.
+
+    \section1 Create the plugin structure
+
+    Assuming you have read \l{1. The plugin wizard} {The plugin wizard} tutorial and you have installed
+    all \l{Set up the build environment}{build dependencies} we start to create a new plugin project.
+
+
+    In this image sequence you can see how this example was created.
+    \image simplebutton-tutorial.gif
+
+
+    \section1 Define the plugin properties
+
+
+
+*/

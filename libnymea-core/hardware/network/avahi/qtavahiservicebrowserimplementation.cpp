@@ -21,19 +21,11 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class QtAvahiServiceBrowserImplementation
+    \class nymeaserver::QtAvahiServiceBrowserImplementation
     \brief Allows to browse avahi services in the local network.
 
     \ingroup hardware
     \inmodule libnymea
-*/
-
-/*! \fn void QtAvahiServiceBrowserImplementation::serviceEntryAdded(const AvahiServiceEntry &entry);
-    This signal will be emitted when a new \a entry was added to the current entry list.
-*/
-
-/*! \fn void QtAvahiServiceBrowserImplementation::serviceEntryRemoved(const AvahiServiceEntry &entry);
-    This signal will be emitted when a new \a entry was removed from the current entry list.
 */
 
 #include "qtavahiservicebrowserimplementation.h"

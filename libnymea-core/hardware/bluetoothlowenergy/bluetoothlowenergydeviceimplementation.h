@@ -40,7 +40,7 @@ class BluetoothLowEnergyDeviceImplementation : public BluetoothLowEnergyDevice
     friend class BluetoothLowEnergyManagerImplementation;
 
 public:
-    explicit BluetoothLowEnergyDeviceImplementation(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::PublicAddress, QObject *parent = 0);
+    explicit BluetoothLowEnergyDeviceImplementation(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::PublicAddress, QObject *parent = nullptr);
 
     QString name() const override;
     QBluetoothAddress address() const override;

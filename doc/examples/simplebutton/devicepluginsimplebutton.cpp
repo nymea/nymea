@@ -63,5 +63,22 @@ DeviceManager::DeviceError DevicePluginSimpleButton::executeAction(Device *devic
 {
     qCDebug(dcSimpleButton()) << "Executing action for device" << device->name() << action.actionTypeId().toString() << action.params();
 
-    return DeviceManager::DeviceErrorNoError;
+    // Check the device class
+    if (device->deviceClassId() == simplebuttonDeviceClassId) {
+
+        // Check the action type
+        if (action.actionTypeId() == simplebuttonPressActionTypeId) {
+
+            // Emit the pressed event on button press
+            qCDebug(dcSimpleButton()) << "Emit event pressed for simple button" << device->name();
+            emitEvent(Event(simplebuttonPressedEventTypeId, device->id()));
+            return DeviceManager::DeviceErrorNoError;
+        }
+
+        // Unhandled action type
+        return DeviceManager::DeviceErrorActionTypeNotFound;
+    }
+
+    // Unhandled device type
+    return DeviceManager::DeviceErrorDeviceClassNotFound;
 }

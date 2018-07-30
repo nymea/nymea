@@ -15,7 +15,7 @@
                     "deviceIcon": "None",
                     "setupMethod": "JustAdd",
                     "createMethods": ["User"],
-                    "interfaces": [ ],
+                    "interfaces": [ "simplebutton" ],
                     "basicTags": [ ],
                     "paramTypes": [
 
@@ -24,10 +24,18 @@
 
                     ],
                     "actionTypes":[
-
+                        {
+                            "id": "64c4ced5-9a1a-4858-81dd-1b5c94dba495",
+                            "name": "press",
+                            "displayName": "press"
+                        }
                     ],
                     "eventTypes":[
-
+                        {
+                            "id": "f9652210-9aed-4f38-8c19-2fd54f703fbe",
+                            "name": "pressed",
+                            "displayName": "button pressed"
+                        }
                     ]
                 }
             ]

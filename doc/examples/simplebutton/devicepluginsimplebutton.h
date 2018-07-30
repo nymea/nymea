@@ -33,7 +33,6 @@ class DevicePluginSimpleButton: public DevicePlugin
     Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginsimplebutton.json")
     Q_INTERFACES(DevicePlugin)
 
-
 public:
     explicit DevicePluginSimpleButton();
 

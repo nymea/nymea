@@ -22,7 +22,7 @@ HTML.postheader = \
     "            <li><a href=\"write-plugins.html\">Write Plugins</a></li>\n" \
     "            <li>\n" \
     "              <label class=\"switch\">\n " \
-    "                <input type=\"checkbox\">\n" \
+    "                <input type=\"checkbox\" onclick=\"onSwitchChanged(this)\" id=\"themeSwitch\">\n" \
     "                <span class=\"slider round\"></span>\n" \
     "              </label>\n" \
     "            </li>\n" \

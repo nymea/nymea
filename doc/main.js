@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                                     *
- * Copyright (C) 2017 Georgi Yatsev <georgi.yatsev@guh.io>                     *
+ * Copyright (C) 2017 Georgi Yatsev <georgi.yatsev@guh.io>                             *
+ * Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                                *
  *                                                                                     *
  * Permission is hereby granted, free of charge, to any person obtaining a copy        *
  * of this software and associated documentation files (the "Software"), to deal       *
@@ -21,6 +22,48 @@
  * SOFTWARE.                                                                           *
  *                                                                                     *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+function onSwitchChanged() {
+    setDarkTheme(document.getElementById("themeSwitch").checked);
+}
+
+function setDarkTheme(enabled) {
+    if (enabled) {
+      switchTheme("style/main-dark.css")
+    } else {
+      switchTheme("style/main.css")
+    }
+
+    localStorage.setItem("darkTheme", enabled)
+}
+
+function switchTheme(themeName) {
+    console.log("Theme switched: " + themeName)
+    document.getElementById("theme").setAttribute("href", themeName);
+}
+
+function onLoaded() {
+    var darkThemeEnabled = JSON.parse(localStorage.getItem('darkTheme')) || false
+
+    console.log("Initialize theme: " + (darkThemeEnabled ? "Dark theme" : "Light theme"))
+    setDarkTheme(darkThemeEnabled)
+
+    console.log("Set theme switch " + darkThemeEnabled)
+    var themeSwitch = document.getElementById("themeSwitch");
+    if (darkThemeEnabled) {
+        themeSwitch.checked = true;
+    } else {
+        themeSwitch.checked = false;
+    }
+}
+
+document.onreadystatechange = function () {
+    console.log("--> " + document.readyState)
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    onLoaded()
+});
 
 (function (root, factory) {
     if (typeof define === "function" && define.amd) {

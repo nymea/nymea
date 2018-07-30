@@ -54,7 +54,7 @@ footer, header, hgroup, menu, nav, section {
 
 body {
     line-height: 1.5;
-    background: white;
+    background: #676767;
 }
 
 ol, ul {
@@ -261,7 +261,7 @@ a:hover {
 }
 
 a {
-    color: #676767;
+    color: #eaeaea;
     text-decoration: none;
     cursor: pointer;
 }
@@ -304,13 +304,13 @@ em {
 
 ins {
     background: #efefef;
-    color: #676767;
+    color: #eaeaea;
     text-decoration: none;
 }
 
 mark {
     background: #efefef;
-    color: #676767;
+    color: #eaeaea;
 }
 
 q {
@@ -394,7 +394,7 @@ h6 {
     margin: 0 0 20px 0;
     font-family: "Ubuntu", Helvetica, "Helvetica Neue", Arial, sans-serif;
     font-weight: normal;
-    color: #676767;
+    color: #6767671a;
     text-transform: none;
 }
 
@@ -568,9 +568,9 @@ textarea {
 }
 
 html {
-    color: #676767;
+    color: #eaeaea;
     font-family: "Ubuntu", Arial, Helvetica, sans-serif;
-    background: white;
+    background: #676767;
 }
 
 .header {
@@ -812,7 +812,7 @@ div.header + li {
     top: 100px;
     left: 0;
     bottom: 0;
-    background: white;
+    background: #676767
     box-sizing: border-box;
     width: 23.5% !important;
     padding: 40px 40px 160px 40px;

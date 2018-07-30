@@ -13,19 +13,25 @@ HTML.postheader = \
     "          </ul>\n" \
     "        </div>\n" \
     "      </div>\n" \
-    "      <a href=\"index.html\" class=\"indexref nymea-logo\"><img src=\"images/main-logo.svg\" class=\"nymea-main-logo\"/></a>\n" \
+    "      <a href=\"index.html\" class=\"indexref nymea-logo\"> <img src=\"images/main-logo.svg\" class=\"nymea-main-logo\"/> </a> \n" \
     "      <div class=\"nymea-navbar-center-right\">\n" \
     "        <div>\n" \
     "          <ul class=\"nymea-navbar-nav\">\n" \
     "            <li><a href=\"interfaces.html\">Interfaces</a></li>\n" \
     "            <li><a href=\"jsonrpc.html\">API</a></li>\n" \
     "            <li><a href=\"write-plugins.html\">Write Plugins</a></li>\n" \
+    "            <li>\n" \
+    "              <label class=\"switch\">\n " \
+    "                <input type=\"checkbox\">\n" \
+    "                <span class=\"slider round\"></span>\n" \
+    "              </label>\n" \
+    "            </li>\n" \
     "          </ul>\n" \
     "        </div>\n" \
     "      </div>\n" \
     "    </div>\n" \
     "  </nav>\n" \
-    "</div>\n"
+    "</div>\n" \
 
 
 HTML.postpostheader = \

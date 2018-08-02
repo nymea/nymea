@@ -883,19 +883,6 @@ div.header + li {
     padding-left: 1;
 }
 
-.content ul li::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 1.5em;
-    height: 1.5em;
-    background-image: url('data:image/svg+xml;utf8,<svg width="6" height="6" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg"><circle fill="#666" cx="3" cy="3" r="3"></circle></svg>');
-    background-repeat: no-repeat;
-    background-position: 50% 50%;
-    float: left;
-}
-
 .content a {
     text-decoration: none;
     color: #439c91;

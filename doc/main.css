@@ -1028,7 +1028,8 @@ div.footer p {
   right: 0;
   bottom: 0;
   padd
-  background-color: #ccc;
+  color: #57baae69;
+  background-color: #57baae69;
   -webkit-transition: .4s;
   transition: .4s;
 }
@@ -1046,11 +1047,11 @@ div.footer p {
 }
 
 input:checked + .slider {
-  background-color: #57baaef3;
+  background-color: #57baae;
 }
 
 input:focus + .slider {
-  box-shadow: 0 0 1px #57baaef3;
+  box-shadow: 0 0 1px #57baae;
 }
 
 input:checked + .slider:before {

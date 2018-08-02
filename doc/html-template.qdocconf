@@ -21,10 +21,12 @@ HTML.postheader = \
     "            <li><a href=\"jsonrpc.html\">API</a></li>\n" \
     "            <li><a href=\"write-plugins.html\">Write Plugins</a></li>\n" \
     "            <li>\n" \
-    "              <label class=\"switch\">\n " \
-    "                <input type=\"checkbox\" onclick=\"onSwitchChanged(this)\" id=\"themeSwitch\">\n" \
-    "                <span class=\"slider round\"></span>\n" \
-    "              </label>\n" \
+    "              <div class=\"switchAligner\" >\n" \
+    "                <label class=\"switch\">\n " \
+    "                  <input type=\"checkbox\" onclick=\"onSwitchChanged(this)\" id=\"themeSwitch\">\n" \
+    "                  <span class=\"slider round\"></span>\n" \
+    "                </label>\n" \
+    "              </div>\n" \
     "            </li>\n" \
     "          </ul>\n" \
     "        </div>\n" \

@@ -126,7 +126,7 @@ def extractTypes(types):
 
     typesSorted = sorted(typesList)
     for type in typesSorted:
-        writeToFile('\section3 %s' % type)
+        writeToFile('\section2 %s' % type)
         writeCodeSection(types[type])
         if isinstance(types[type], dict):
             writeToFile(createReferenceLine(types[type]))
@@ -139,11 +139,11 @@ def extractMethods(methods):
 
     methodsSorted = sorted(methodsList)
     for method in methodsSorted:
-        writeToFile('\section3 %s' % method)
+        writeToFile('\section2 %s' % method)
         writeToFile('%s' % methods[method]['description'])
-        writeToFile('\section4 Params')
+        writeToFile('Params')
         writeCodeSection(methods[method]['params'])
-        writeToFile('\section4 Returns')
+        writeToFile('Returns')
         writeCodeSection(methods[method]['returns'])
         writeToFile(createReferenceLine(methods[method]))
 
@@ -155,9 +155,9 @@ def extractNotifications(notifications):
 
     notificationsSorted = sorted(notificationsList)
     for notification in notificationsSorted:
-        writeToFile('\section3 %s' % notification)
+        writeToFile('\section2 %s' % notification)
         writeToFile('%s' % notifications[notification]['description'])
-        writeToFile('\section4 Params')
+        writeToFile('Params')
         writeCodeSection(notifications[notification]['params'])
         writeToFile(createReferenceLine(notifications[notification]))
 
@@ -167,6 +167,7 @@ def writeDocumentationContent(apiVersion, apiJson):
     printInfo('--> Write API documentation content')
     printInfo('--> API version: \"%s\"' % (version))
 
+    writeToFile('/*!')
     writeToFile('In the following section you can find a detaild description of the current API version %s.' % apiVersion)
 
     writeToFile('\list')
@@ -185,11 +186,12 @@ def writeDocumentationContent(apiVersion, apiJson):
         extractMethods(apiJson['methods'])
 
     if 'notifications' in apiJson:
-        writeToFile("\section2 Notifications")
+        writeToFile("\section1 Notifications")
         extractNotifications(apiJson['notifications'])
 
     writeToFile("\section1 Full introspect")
     writeCodeSection(apiJson)
+    writeToFile('*/')
 
 
 ###########################################################################

@@ -50,6 +50,8 @@
         file is read only.
     \value SettingsRoleDeviceStates
         This role will create the \b{device-states.conf} file and is used to store the configured \l{Device} \l{State}{States}.
+    \value SettingsRoleTags
+        This role will create the \b{tags.conf} file and is used to store the \l{Tag}{Tags}.
 
 */
 

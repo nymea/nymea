@@ -34,6 +34,7 @@
     \l{DevicePlugin}{device plugins}.
 */
 
+
 /*! \enum DeviceManager::DeviceError
 
     This enum type specifies the errors that can happen when working with \l{Device}{Devices}.
@@ -101,6 +102,7 @@
 */
 
 // Signals
+
 /*! \fn void DeviceManager::loaded();
     The DeviceManager will emit this signal when all \l{Device}{Devices} are loaded.
 */
@@ -191,7 +193,7 @@
 #include <QStandardPaths>
 #include <QDir>
 
-/*! Constructs the DeviceManager with the given \a locale and \a parent. There should only be one DeviceManager in the system created by \l{nymeaserver::NymeaCore}.
+/*! Constructs the DeviceManager with the given \a{hardwareManager}, \a locale and \a parent. There should only be one DeviceManager in the system created by \l{nymeaserver::NymeaCore}.
  *  Use \c nymeaserver::NymeaCore::instance()->deviceManager() instead to access the DeviceManager. */
 DeviceManager::DeviceManager(HardwareManager *hardwareManager, const QLocale &locale, QObject *parent) :
     QObject(parent),

@@ -72,8 +72,8 @@ class TcpServer : public TransportInterface
 {
     Q_OBJECT
 public:
-    explicit TcpServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent = 0);
-    ~TcpServer();
+    explicit TcpServer(const ServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent = nullptr);
+    ~TcpServer() override;
 
     QUrl serverUrl() const;
 

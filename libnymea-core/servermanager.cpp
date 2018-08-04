@@ -44,7 +44,7 @@
 
 namespace nymeaserver {
 
-/*! Constructs a \l{ServerManager} with the given \a parent. */
+/*! Constructs a \l{ServerManager} with the given \a configuration and \a parent. */
 ServerManager::ServerManager(NymeaConfiguration *configuration, QObject *parent) :
     QObject(parent),
     m_sslConfiguration(QSslConfiguration())
@@ -141,11 +141,13 @@ RestServer *ServerManager::restServer() const
     return m_restServer;
 }
 
+/*! Returns the pointer to the created \l{BluetoothServer} in this \l{ServerManager}. */
 BluetoothServer *ServerManager::bluetoothServer() const
 {
     return m_bluetoothServer;
 }
 
+/*! Returns the pointer to the created MockTcpServer in this \l{ServerManager}. */
 MockTcpServer *ServerManager::mockTcpServer() const
 {
     return m_mockTcpServer;
@@ -259,6 +261,7 @@ bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const
     return true;
 }
 
+/*! Set the server name for all servers to the given \a serverName. */
 void ServerManager::setServerName(const QString &serverName)
 {
     qCDebug(dcConnection()) << "Server name changed" << serverName;

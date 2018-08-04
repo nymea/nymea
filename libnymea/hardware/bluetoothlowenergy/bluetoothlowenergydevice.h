@@ -36,7 +36,7 @@ class LIBNYMEA_EXPORT BluetoothLowEnergyDevice : public QObject
     Q_OBJECT
 
 public:
-    explicit BluetoothLowEnergyDevice(QObject *parent = 0);
+    explicit BluetoothLowEnergyDevice(QObject *parent = nullptr);
     virtual ~BluetoothLowEnergyDevice() = default;
 
     virtual QString name() const = 0;

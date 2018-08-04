@@ -44,7 +44,7 @@ class QtAvahiServiceBrowserImplementation : public QtAvahiServiceBrowser
 
 public:
     explicit QtAvahiServiceBrowserImplementation(QObject *parent = nullptr);
-    ~QtAvahiServiceBrowserImplementation();
+    ~QtAvahiServiceBrowserImplementation() override;
 
     QList<AvahiServiceEntry> serviceEntries() const override;
 

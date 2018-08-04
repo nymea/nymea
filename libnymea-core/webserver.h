@@ -50,7 +50,7 @@ class WebServerClient : public QObject
 {
     Q_OBJECT
 public:
-    WebServerClient(const QHostAddress &address, QObject *parent = 0);
+    WebServerClient(const QHostAddress &address, QObject *parent = nullptr);
 
     QHostAddress address() const;
 
@@ -74,8 +74,8 @@ class WebServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit WebServer(const WebServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent = 0);
-    ~WebServer();
+    explicit WebServer(const WebServerConfiguration &configuration, const QSslConfiguration &sslConfiguration, QObject *parent = nullptr);
+    ~WebServer() override;
 
     QUrl serverUrl() const;
 
@@ -86,12 +86,12 @@ private:
     QList<WebServerClient *> m_webServerClients;
     QHash<QSslSocket *, HttpRequest> m_incompleteRequests;
 
-    QtAvahiService *m_avahiService;
+    QtAvahiService *m_avahiService = nullptr;
     QString m_serverName;
     WebServerConfiguration m_configuration;
     QSslConfiguration m_sslConfiguration;
 
-    bool m_enabled;
+    bool m_enabled = false;
 
     bool verifyFile(QSslSocket *socket, const QString &fileName);
     QString fileName(const QString &query);

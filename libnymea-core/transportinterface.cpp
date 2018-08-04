@@ -54,20 +54,18 @@
     \sa WebSocketServer::stopServer(), TcpServer::stopServer()
 */
 
-/*! \fn void nymeaserver::TransportInterface::sendData(const QUuid &clientId, const QVariantMap &data);
+/*! \fn void nymeaserver::TransportInterface::sendData(const QUuid &clientId, const QByteArray &data);
     Pure virtual method for sending \a data to the client with the id \a clientId over the corresponding \l{TransportInterface}.
 */
 
-/*! \fn void nymeaserver::TransportInterface::sendData(const QList<QUuid> &clients, const QVariantMap &data);
+/*! \fn void nymeaserver::TransportInterface::sendData(const QList<QUuid> &clients, const QByteArray &data);
     Pure virtual method for sending \a data to \a clients over the corresponding \l{TransportInterface}.
 */
 
-/*! \fn void nymeaserver::TransportInterface::dataAvailable(const QUuid &clientId, const QString &targetNamespace, const QString &method, const QVariantMap &message);
-    This signal is emitted when valid data from the client with the given \a clientId are available.
-    Data are valid if the corresponding \l{TransportInterface} has parsed successfully the given
-    \a targetNamespace, \a method and \a message.
+/*! \fn void nymeaserver::TransportInterface::dataAvailable(const QUuid &clientId, const QByteArray &data);
+    This signal is emitted when valid \a data from the client with the given \a clientId are available.
 
-    \sa WebSocketServer, TcpServer
+    \sa WebSocketServer, TcpServer, BluetoothServer
 */
 
 #include "transportinterface.h"
@@ -77,13 +75,14 @@
 
 namespace nymeaserver {
 
-/*! Constructs a \l{TransportInterface} with the given \a parent. */
+/*! Constructs a \l{TransportInterface} with the given \a config and \a parent. */
 TransportInterface::TransportInterface(const ServerConfiguration &config, QObject *parent) :
     QObject(parent),
     m_config(config)
 {
 }
 
+/*! Set the ServerConfiguration of this TransportInterface to the given \a config. */
 void TransportInterface::setConfiguration(const ServerConfiguration &config)
 {
     m_config = config;
@@ -95,6 +94,7 @@ ServerConfiguration TransportInterface::configuration() const
     return m_config;
 }
 
+/*! Set the name of this TransportInterface to the given \a serverName. */
 void TransportInterface::setServerName(const QString &serverName)
 {
     m_serverName = serverName;

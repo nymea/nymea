@@ -46,7 +46,7 @@ ParamDescriptor::ParamDescriptor(const ParamTypeId &paramTypeId, const QVariant 
 {
 }
 
-/*! Constructs an ParamDescriptor describing an \l{Param} with the given \a paramTypeId and \a value.
+/*! Constructs an ParamDescriptor describing an \l{Param} with the given \a paramName and \a value.
  *  The ValueOperator is by default ValueOperatorEquals. */
 ParamDescriptor::ParamDescriptor(const QString &paramName, const QVariant &value):
     Param(ParamTypeId(), value),

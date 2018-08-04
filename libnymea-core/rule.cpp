@@ -88,11 +88,13 @@ bool Rule::active() const
     return m_active;
 }
 
+/*! Returns true if the rule is active regarding the StateEvaluator evaluation. */
 bool Rule::statesActive() const
 {
     return m_statesActive;
 }
 
+/*! Returns true if the rule is active regarding the TimeDescriptor evaluation. */
 bool Rule::timeActive() const
 {
     if (m_timeDescriptor.calendarItems().isEmpty())

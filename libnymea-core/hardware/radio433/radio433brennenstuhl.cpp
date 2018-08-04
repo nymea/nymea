@@ -21,7 +21,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-  \class Radio433Brennenstuhl
+  \class nymeaserver::Radio433Brennenstuhl
   \brief The Radio433 class helps to interact with the 433 MHz receiver and transmitter.
 
   \ingroup hardware

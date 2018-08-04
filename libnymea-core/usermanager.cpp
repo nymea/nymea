@@ -18,6 +18,46 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*!
+    \class nymeaserver::UserManager
+    \brief This class represents the manager for the users in nymead.
+
+    \ingroup user
+    \inmodule core
+
+    The user manager is responsible for managing the user database, tokens and authentication. The user manager
+    creates a user database where all relevant information will be stored.
+
+    \sa TokenInfo, PushButtonDBusService
+*/
+
+/*! \enum nymeaserver::UserManager::UserError
+
+    This enum represents the possible errors the \l{UserManager} can have.
+
+    \value UserErrorNoError
+        No error occured. Everything is ok.4
+    \value UserErrorBackendError
+        Something went wrong in the manager. This is probably caused by a database error.
+    \value UserErrorInvalidUserId
+        The given user name is not valid.
+    \value UserErrorDuplicateUserId
+        The given user name already exits. Please use a different user name.
+    \value UserErrorBadPassword
+        The given password is to weak. Please use a stronger password.
+    \value UserErrorTokenNotFound
+        The given token is unknown to the UserManager.
+    \value UserErrorPermissionDenied
+        The permission is denied. Either invalid username, password or token.
+*/
+
+/*! \fn void nymeaserver::UserManager::pushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
+    This signal is emitted when the push authentication for the given \a transactionId is finished.
+    If \a success is true, the resulting \a token contains a non empty string.
+
+    \sa requestPushButtonAuth
+*/
+
 #include "usermanager.h"
 #include "nymeasettings.h"
 #include "loggingcategories.h"
@@ -35,7 +75,7 @@
 
 namespace nymeaserver {
 
-/** Constructs a new UserManager with the given \a dbName and \a parent. */
+/*! Constructs a new UserManager with the given \a dbName and \a parent. */
 UserManager::UserManager(const QString &dbName, QObject *parent):
     QObject(parent)
 {
@@ -64,7 +104,7 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
     m_pushButtonTransaction = qMakePair<int, QString>(-1, QString());
 }
 
-/** Will return true if the database is working fine but doesn't have any information on users whatsoever.
+/*! Will return true if the database is working fine but doesn't have any information on users whatsoever.
  *  That is, neither a user nor an anonimous token.
  *  This may be used to determine whether a first-time setup is required.
  */
@@ -81,6 +121,7 @@ bool UserManager::initRequired() const
     return users().isEmpty() && !result.first();
 }
 
+/*! Returns the list of user names for this UserManager. */
 QStringList UserManager::users() const
 {
     QString userQuery("SELECT username FROM users;");
@@ -92,6 +133,7 @@ QStringList UserManager::users() const
     return ret;
 }
 
+/*! Creates a new user with the given \a username and \a password. Returns the \l UserError to inform about the result. */
 UserManager::UserError UserManager::createUser(const QString &username, const QString &password)
 {
     if (!validateUsername(username)) {
@@ -126,7 +168,9 @@ UserManager::UserError UserManager::createUser(const QString &username, const QS
     return UserErrorNoError;
 }
 
-/** Remove the given user and all of its tokens. If the username is empty, all anonymous tokens (e.g. issued by pushbutton auth) will be cleared. */
+/*! Remove the user with the given \a username and all of its tokens. If the \a username is empty, all anonymous
+    tokens (e.g. issued by pushbutton auth) will be cleared.
+*/
 UserManager::UserError UserManager::removeUser(const QString &username)
 {
     if (!username.isEmpty()) {
@@ -146,11 +190,15 @@ UserManager::UserError UserManager::removeUser(const QString &username)
     return UserErrorNoError;
 }
 
+/*! Returns true if the push button authentication is available for this system. */
 bool UserManager::pushButtonAuthAvailable() const
 {
     return m_pushButtonDBusService->agentAvailable();
 }
 
+/*! Authenticated the given \a username with the given \a password for the \a deviceName. If the authentication was
+    successfull, the token will be returned, otherwise the return value will be an empty byte array.
+*/
 QByteArray UserManager::authenticate(const QString &username, const QString &password, const QString &deviceName)
 {
     if (!validateUsername(username)) {
@@ -188,6 +236,7 @@ QByteArray UserManager::authenticate(const QString &username, const QString &pas
     return token;
 }
 
+/*! Start the push button authentication for the device with the given \a deviceName. Returns the transaction id as refference to the request. */
 int UserManager::requestPushButtonAuth(const QString &deviceName)
 {
     if (m_pushButtonTransaction.first != -1) {
@@ -201,6 +250,10 @@ int UserManager::requestPushButtonAuth(const QString &deviceName)
     return transactionId;
 }
 
+/*! Cancel the push button authentication with the given \a transactionId.
+
+    \sa requestPushButtonAuth
+*/
 void UserManager::cancelPushButtonAuth(int transactionId)
 {
     if (m_pushButtonTransaction.first == -1) {
@@ -217,6 +270,7 @@ void UserManager::cancelPushButtonAuth(int transactionId)
 
 }
 
+/*! Returns the username for the given \a token. If the token is invalid, an empty string will be returned. */
 QString UserManager::userForToken(const QByteArray &token) const
 {
     if (!validateToken(token)) {
@@ -238,6 +292,10 @@ QString UserManager::userForToken(const QByteArray &token) const
     return result.value("username").toString();
 }
 
+/*! Returns a list of tokens for the given \a username.
+
+    \sa TokenInfo
+*/
 QList<TokenInfo> UserManager::tokens(const QString &username) const
 {
     QList<TokenInfo> ret;
@@ -260,6 +318,7 @@ QList<TokenInfo> UserManager::tokens(const QString &username) const
     return ret;
 }
 
+/*! Removes the token with the given \a tokenId. Returns \l{UserError} to inform about the result. */
 UserManager::UserError UserManager::removeToken(const QUuid &tokenId)
 {
     QString removeTokenQuery = QString("DELETE FROM tokens WHERE id = \"%1\";")
@@ -278,6 +337,7 @@ UserManager::UserError UserManager::removeToken(const QUuid &tokenId)
     return UserErrorNoError;
 }
 
+/*! Returns true, if the given \a token is valid. */
 bool UserManager::verifyToken(const QByteArray &token)
 {
     if (!validateToken(token)) {

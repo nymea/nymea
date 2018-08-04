@@ -31,64 +31,55 @@
 */
 
 
-/*!
-  \fn void DevicePlugin::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
-  This signal is emitted when the discovery of a \a deviceClassId of this DevicePlugin is finished. The \a devices parameter describes the
-  list of \l{DeviceDescriptor}{DeviceDescriptors} of all discovered \l{Device}{Devices}.
-  \sa discoverDevices()
+/*! \fn void DevicePlugin::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
+    This signal is emitted when the discovery of a \a deviceClassId of this DevicePlugin is finished. The \a devices parameter describes the
+    list of \l{DeviceDescriptor}{DeviceDescriptors} of all discovered \l{Device}{Devices}.
+    \sa discoverDevices()
 */
 
-/*!
-  \fn void DevicePlugin::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceSetupStatus status);
-  This signal is emitted when the pairing of a \a pairingTransactionId is finished.
-  The \a status of the  will be described as \l{DeviceManager::DeviceError}{DeviceError}.
-  \sa confirmPairing()
+/*! \fn void DevicePlugin::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceSetupStatus status);
+    This signal is emitted when the pairing of a \a pairingTransactionId is finished.
+    The \a status of the  will be described as \l{DeviceManager::DeviceError}{DeviceError}.
+    \sa confirmPairing()
 */
 
-/*!
-  \fn void DevicePlugin::deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status);
-  This signal is emitted when the setup of a \a device in this DevicePlugin is finished. The \a status parameter describes the
-  \l{DeviceManager::DeviceError}{DeviceError} that occurred.
+/*! \fn void DevicePlugin::deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status);
+    This signal is emitted when the setup of a \a device in this DevicePlugin is finished. The \a status parameter describes the
+    \l{DeviceManager::DeviceError}{DeviceError} that occurred.
 */
 
-/*!
-  \fn void DevicePlugin::configValueChanged(const ParamTypeId &paramTypeId, const QVariant &value);
-  This signal is emitted when the \l{Param} with a certain \a paramTypeId of a \l{Device} configuration changed the \a value.
+/*! \fn void DevicePlugin::configValueChanged(const ParamTypeId &paramTypeId, const QVariant &value);
+    This signal is emitted when the \l{Param} with a certain \a paramTypeId of a \l{Device} configuration changed the \a value.
 */
 
-/*!
-  \fn void DevicePlugin::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status)
-  This signal is to be emitted when you previously have returned \l{DeviceManager}{DeviceErrorAsync}
-  in a call of executeAction(). The \a id refers to the executed \l{Action}. The \a status of the \l{Action}
-  execution will be described as \l{DeviceManager::DeviceError}{DeviceError}.
+/*! \fn void DevicePlugin::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status)
+    This signal is to be emitted when you previously have returned \l{DeviceManager}{DeviceErrorAsync}
+    in a call of executeAction(). The \a id refers to the executed \l{Action}. The \a status of the \l{Action}
+    execution will be described as \l{DeviceManager::DeviceError}{DeviceError}.
 */
 
-/*!
-  \fn void DevicePlugin::autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors)
-   This signal is emitted when a new \l{Device} of certain \a deviceClassId appeared. The description of the \l{Device}{Devices}
-   will be in \a deviceDescriptors. This signal can only emitted from devices with the \l{DeviceClass}{CreateMethodAuto}.
+/*! \fn void DevicePlugin::autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors)
+    This signal is emitted when a new \l{Device} of certain \a deviceClassId appeared. The description of the \l{Device}{Devices}
+    will be in \a deviceDescriptors. This signal can only emitted from devices with the \l{DeviceClass}{CreateMethodAuto}.
 */
 
-/*!
-  \fn void DevicePlugin::autoDeviceDisappeared(const DeviceId &id)
-  Emit this signal when a device with the given \a id and which was created by \l{DevicePlugin::autoDevicesAppeared} has been removed from the system.
-  Be careful with this, as this will completely remove the device from the system and with it all the associated rules. Only
-  emit this if you are sure that a device will never come back. This signal should not be emitted for child auto devices
-  when the parent who created them is removed. The system will automatically remove all child devices in such a case.
+/*! \fn void DevicePlugin::autoDeviceDisappeared(const DeviceId &id)
+    Emit this signal when a device with the given \a id and which was created by \l{DevicePlugin::autoDevicesAppeared} has been removed from the system.
+    Be careful with this, as this will completely remove the device from the system and with it all the associated rules. Only
+    emit this if you are sure that a device will never come back. This signal should not be emitted for child auto devices
+    when the parent who created them is removed. The system will automatically remove all child devices in such a case.
 */
 
-/*!
- \fn void DevicePlugin::emitEvent(const Event &event)
- To produce a new event in the system, create a new \l{Event} and emit it with \a event.
- Usually events are emitted in response to incoming data or other other events happening. Find a configured
- \l{Device} from the \l{DeviceManager} and get its \l{EventType}{EventTypes}, then
- create a \l{Event} complying to that \l{EventType} and emit it here.
+/*! \fn void DevicePlugin::emitEvent(const Event &event)
+    To produce a new event in the system, create a new \l{Event} and emit it with \a event.
+    Usually events are emitted in response to incoming data or other other events happening. Find a configured
+    \l{Device} from the \l{DeviceManager} and get its \l{EventType}{EventTypes}, then
+    create a \l{Event} complying to that \l{EventType} and emit it here.
 */
 
-/*!
-  \fn void DevicePlugin::init()
-  This will be called after constructing the DevicePlugin. Override this to do any
-  initialisation work you need to do.
+/*! \fn void DevicePlugin::init()
+    This will be called after constructing the DevicePlugin. Override this to do any
+    initialisation work you need to do.
 */
 
 #include "deviceplugin.h"
@@ -189,12 +180,12 @@ bool DevicePlugin::setLocale(const QLocale &locale)
 }
 
 /*! Override this if your plugin supports Device with DeviceClass::CreationMethodAuto.
- This will be called at startup, after the configured devices have been loaded.
- This is the earliest time you should start emitting autoDevicesAppeared(). If you
- are monitoring some hardware/service for devices to appear, start monitoring now.
- If you are building the devices based on a static list, you may emit
- autoDevicesAppeard() in here.
- */
+    This will be called at startup, after the configured devices have been loaded.
+    This is the earliest time you should start emitting autoDevicesAppeared(). If you
+    are monitoring some hardware/service for devices to appear, start monitoring now.
+    If you are building the devices based on a static list, you may emit
+    autoDevicesAppeard() in here.
+*/
 void DevicePlugin::startMonitoringAutoDevices()
 {
 
@@ -204,7 +195,8 @@ void DevicePlugin::startMonitoringAutoDevices()
     This will be called to discover Devices for the given \a deviceClassId with the given \a params. This will always
     be an async operation. Return \l{DeviceManager}{DeviceErrorAsync} or \l{DeviceManager}{DeviceErrorNoError}
     if the discovery has been started successfully. Return an appropriate error otherwise.
-    Once devices are discovered, emit devicesDiscovered(). */
+    Once devices are discovered, emit devicesDiscovered().
+*/
 DeviceManager::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     Q_UNUSED(deviceClassId)
@@ -232,15 +224,17 @@ void DevicePlugin::postSetupDevice(Device *device)
 }
 
 /*! This will be called when a \a device removed. The plugin has the chance to do some teardown.
- *  The device is still valid during this call, but already removed from the system.
- *  The device will be deleted as soon as this method returns.*/
+    The device is still valid during this call, but already removed from the system.
+    The device will be deleted as soon as this method returns.
+*/
 void DevicePlugin::deviceRemoved(Device *device)
 {
     Q_UNUSED(device)
 }
 
 /*! This method will be called for \l{Device}{Devices} with the \l{DeviceClass::SetupMethodDisplayPin} right after the paring request
- *  with the given \a pairingTransactionId for the given \a deviceDescriptor.*/
+    with the given \a pairingTransactionId for the given \a deviceDescriptor.
+*/
 DeviceManager::DeviceError DevicePlugin::displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor)
 {
     Q_UNUSED(pairingTransactionId)
@@ -252,8 +246,9 @@ DeviceManager::DeviceError DevicePlugin::displayPin(const PairingTransactionId &
 }
 
 /*! Confirms the pairing of a \a deviceClassId with the given \a pairingTransactionId and \a params.
- * Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. The optional paramerter
- * \a secret contains for example the pin for \l{Device}{Devices} with the setup method \l{DeviceClass::SetupMethodDisplayPin}.*/
+    Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. The optional paramerter
+    \a secret contains for example the pin for \l{Device}{Devices} with the setup method \l{DeviceClass::SetupMethodDisplayPin}.
+*/
 DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret = QString())
 {
     Q_UNUSED(pairingTransactionId)
@@ -266,15 +261,15 @@ DeviceManager::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTrans
 }
 
 /*! This will be called to actually execute actions on the hardware. The \{Device} and
- * the \{Action} are contained in the \a device and \a action parameters.
- * Return the appropriate \l{DeviceManager::DeviceError}{DeviceError}.
- *
- * It is possible to execute actions asynchronously. You never should do anything blocking for
- * a long time (e.g. wait on a network reply from the internet) but instead return
- * DeviceManager::DeviceErrorAsync and continue processing in an async manner. Once
- * you have the reply ready, emit actionExecutionFinished() with the appropriate parameters.
- *
- * \sa actionExecutionFinished()
+    the \{Action} are contained in the \a device and \a action parameters.
+    Return the appropriate \l{DeviceManager::DeviceError}{DeviceError}.
+
+    It is possible to execute actions asynchronously. You never should do anything blocking for
+    a long time (e.g. wait on a network reply from the internet) but instead return
+    DeviceManager::DeviceErrorAsync and continue processing in an async manner. Once
+    you have the reply ready, emit actionExecutionFinished() with the appropriate parameters.
+
+    \sa actionExecutionFinished()
 */
 DeviceManager::DeviceError DevicePlugin::executeAction(Device *device, const Action &action)
 {
@@ -397,23 +392,20 @@ QPair<QStringList, QStringList> DevicePlugin::verifyFields(const QStringList &po
     return QPair<QStringList, QStringList>(missingFields, unknownFields);
 }
 
-/*!
-  Returns a map containing the plugin configuration.
-
-  When implementing a new plugin, override this and fill in the empty configuration if your plugin requires any.
- */
+/*! Returns a map containing the plugin configuration.
+    When implementing a new plugin, override this and fill in the empty configuration if your plugin requires any.
+*/
 ParamList DevicePlugin::configuration() const
 {
     return m_config;
 }
 
-/*!
- Use this to retrieve the values for your parameters. Values might not be set
- at the time when your plugin is loaded, but will be set soon after. Listen to
- configurationValueChanged() to know when something changes.
- When implementing a new plugin, specify in configurationDescription() what you want to see here.
- Returns the config value of a \l{Param} with the given \a paramTypeId of this DevicePlugin.
- */
+/*! Use this to retrieve the values for your parameters. Values might not be set
+    at the time when your plugin is loaded, but will be set soon after. Listen to
+    configurationValueChanged() to know when something changes.
+    When implementing a new plugin, specify in configurationDescription() what you want to see here.
+    Returns the config value of a \l{Param} with the given \a paramTypeId of this DevicePlugin.
+*/
 QVariant DevicePlugin::configValue(const ParamTypeId &paramTypeId) const
 {
     return m_config.paramValue(paramTypeId);
@@ -465,11 +457,9 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const ParamTypeId &param
     return DeviceManager::DeviceErrorNoError;
 }
 
-/*!
- Returns a pointer to the \l{DeviceManager}.
-
- When implementing a plugin, use this to find the \l{Device}{Devices} you need.
- */
+/*! Returns a pointer to the \l{DeviceManager}.
+    When implementing a plugin, use this to find the \l{Device}{Devices} you need.
+*/
 DeviceManager *DevicePlugin::deviceManager() const
 {
     return m_deviceManager;
@@ -498,10 +488,9 @@ HardwareManager *DevicePlugin::hardwareManager() const
     return m_deviceManager->hardwareManager();
 }
 
-/*!
- Find a certain device from myDevices() by its \a params. All parameters must
- match or the device will not be found. Be prepared for nullptrs.
- */
+/*! Find a certain device from myDevices() by its \a params. All parameters must
+    match or the device will not be found. Be prepared for nullptrs.
+*/
 Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
 {
     foreach (Device *device, myDevices()) {

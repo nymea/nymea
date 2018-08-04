@@ -4,5 +4,7 @@
 
     \brief This is the list of nymea hardware resources.
 
+    Here you can find the list of hardware resources available in for plugin development.
+
     \annotatedlist hardware
 */

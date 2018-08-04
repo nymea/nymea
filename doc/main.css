@@ -58,7 +58,7 @@ body {
 }
 
 ol, ul {
-    list-style: none;
+    list-style: list-style-type:circle;
 }
 
 blockquote, q {
@@ -712,6 +712,7 @@ div.table {
     text-decoration: none;
 }
 
+
 div.header + li {
     color: #408a83;
     font-size: 1.115rem;
@@ -829,20 +830,30 @@ div.header + li {
     color: #676767;
 }
 
-.content .sidebar ul {
+.content .sidebar ul li {
     padding-left: 0;
+    list-style-type: circle;
+    text-align: left;
+}
+
+.content .sidebar .level1 {
+    font-size: 1.2rem;
+    line-height: 1.5;
+    list-style: "- ";
 }
 
 .content .sidebar .level2 {
     font-size: 1rem;
-    margin-left: 1rem;
+    margin-left: 1.5rem;
     line-height: 1.5;
+    list-style-type: circle;
 }
 
-.content .sidebar .level2:before {
-    content: "-";
-    background-image: none;
-    text-align: right;
+.content .sidebar .level3 {
+    font-size: 1rem;
+    margin-left: 2rem;
+    line-height: 1.5;
+    list-style: "→ ";
 }
 
 .content .context {
@@ -869,20 +880,7 @@ div.header + li {
 .content ul li {
     line-height: 1.5;
     position: relative;
-    padding-left: calc(1.5em + 10px);
-}
-
-.content ul li::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 1.5em;
-    height: 1.5em;
-    background-image: url('data:image/svg+xml;utf8,<svg width="6" height="6" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg"><circle fill="#666" cx="3" cy="3" r="3"></circle></svg>');
-    background-repeat: no-repeat;
-    background-position: 50% 50%;
-    float: left;
+    padding-left: 1;
 }
 
 .content a {
@@ -1004,4 +1002,69 @@ div.footer p {
         width: 80%;
         margin: 0 -40px 0 auto;
     }
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switchAligner { 
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.switch input {display:none;}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padd
+  color: #57baae69;
+  background-color: #57baae69;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #57baae;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #57baae;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }

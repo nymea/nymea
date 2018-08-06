@@ -137,12 +137,11 @@ QStringList UserManager::users() const
 UserManager::UserError UserManager::createUser(const QString &username, const QString &password)
 {
     if (!validateUsername(username)) {
-        qCWarning(dcUserManager) << "Error creating user. Invalid username";
+        qCWarning(dcUserManager) << "Error creating user. Invalid username:" << username;
         return UserErrorInvalidUserId;
     }
 
-    QRegExp passwordValidator = QRegExp("^(?=.*[A-Za-z])(?=.*\[0-9])(?=.*[$@$!%*#?&])[A-Za-z0-9$@$!%*#?&]{8,}$");
-    if (!passwordValidator.exactMatch(password)) {
+    if (!validatePassword(password)) {
         qCWarning(dcUserManager) << "Password failed character validation. Must contain a letter, a number and a special charactar. Minimum length: 8";
         return UserErrorBadPassword;
     }
@@ -407,8 +406,25 @@ void UserManager::rotate(const QString &dbName)
 
 bool UserManager::validateUsername(const QString &username) const
 {
-    QRegExp validator("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$)");
+    QRegExp validator("(^[a-zA-Z0-9_\\.+-]+@[a-zA-Z0-9-_]+\\.[a-zA-Z]+$)");
     return validator.exactMatch(username);
+}
+
+bool UserManager::validatePassword(const QString &password) const
+{
+    if (password.length() < 8) {
+        return false;
+    }
+    if (!password.contains(QRegExp("[a-z]"))) {
+        return false;
+    }
+    if (!password.contains(QRegExp("[0-9]"))) {
+        return false;
+    }
+    if (!password.contains(QRegExp("[!\"§$%&/()#*\\'+\\.\\\\]"))) {
+        return false;
+    }
+    return true;
 }
 
 bool UserManager::validateToken(const QByteArray &token) const

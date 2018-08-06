@@ -429,7 +429,7 @@ bool UserManager::validatePassword(const QString &password) const
 
 bool UserManager::validateToken(const QByteArray &token) const
 {
-    QRegExp validator(QRegExp("(^[a-zA-Z0-9_.+-/=]+$)"));
+    QRegExp validator(QRegExp("(^[a-zA-Z0-9_\\.+-/=]+$)"));
     return validator.exactMatch(token);
 }
 

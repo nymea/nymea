@@ -421,7 +421,7 @@ bool UserManager::validatePassword(const QString &password) const
     if (!password.contains(QRegExp("[0-9]"))) {
         return false;
     }
-    if (!password.contains(QRegExp("[!\"§$%&/()#*\\'+\\.\\\\]"))) {
+    if (!password.contains(QRegExp("[!\"§$%&/()#*\\'+\\.\\\\@]"))) {
         return false;
     }
     return true;

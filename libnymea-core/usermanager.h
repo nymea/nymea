@@ -71,6 +71,7 @@ private:
     bool initDB();
     void rotate(const QString &dbName);
     bool validateUsername(const QString &username) const;
+    bool validatePassword(const QString &password) const;
     bool validateToken(const QByteArray &token) const;
 
 private slots:
@@ -83,7 +84,7 @@ private:
     QPair<int, QString> m_pushButtonTransaction;
 
 };
-
 }
+Q_DECLARE_METATYPE(nymeaserver::UserManager::UserError)
 
 #endif // USERMANAGER_H

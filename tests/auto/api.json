@@ -1,4 +1,4 @@
-1.7
+1.8
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -1565,7 +1565,9 @@
             "UnitMilliVolt",
             "UnitVoltAmpere",
             "UnitVoltAmpereReactive",
-            "UnitAmpereHour"
+            "UnitAmpereHour",
+            "UnitMicroSiemensPerCentimeter",
+            "UnitDuration"
         ],
         "UserError": [
             "UserErrorNoError",

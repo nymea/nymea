@@ -129,7 +129,9 @@ public:
         UnitMilliVolt,
         UnitVoltAmpere,
         UnitVoltAmpereReactive,
-        UnitAmpereHour
+        UnitAmpereHour,
+        UnitMicroSiemensPerCentimeter,
+        UnitDuration
     };
     Q_ENUM(Unit)
 

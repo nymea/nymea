@@ -301,6 +301,14 @@
             \li Types::UnitAmpereHour
             \li 48
             \li The value of the \l{Param} has unit \tt {[Ah]} \unicode{0x2192} ampere hour.
+        \row
+            \li Types::UnitMicroSiemensPerCentimeter
+            \li 49
+            \li The value of the \l{Param} has unit \tt {[μS/cm]} \unicode{0x2192} microsiemens per centimeter (conductivity).
+        \row
+            \li Types::UnitDuration
+            \li 50
+            \li The value of the \l{Param} has unit \tt {[ms]} \unicode{0x2192} milliseconds and represents a duration.
     \endtable
 
     \chapter UUID Types

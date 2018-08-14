@@ -3,10 +3,8 @@
 
 #include <QObject>
 #include "../transportinterface.h"
+#include "libnymea-remoteproxyclient/remoteproxyconnection.h"
 
-namespace remoteproxyclient {
-    class RemoteProxyConnection;
-}
 namespace nymeaserver {
 
 class CloudTransport : public TransportInterface
@@ -23,10 +21,22 @@ public:
 signals:
 
 public slots:
-    void connectToCloud();
+    void connectToCloud(const QString &token);
+    void remoteConnectionStateChanged(remoteproxyclient::RemoteProxyConnection::State state);
+
+private slots:
+    void transportReady();
+    void transportDataReady(const QByteArray &data);
 
 private:
-    remoteproxyclient::RemoteProxyConnection *m_remoteProxy = nullptr;
+    class ConnectionContext {
+    public:
+        QUuid clientId;
+        QString token;
+        remoteproxyclient::RemoteProxyConnection* proxyConnection;
+    };
+    QHash<remoteproxyclient::RemoteProxyConnection*, ConnectionContext> m_connections;
+
 };
 
 }

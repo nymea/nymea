@@ -69,7 +69,7 @@ signals:
     void pushNotificationSent(int id, int status);
     void turnCredentialsReceived(const QVariantMap &turnCredentials);
 
-    void proxyConnectionRequestReceived();
+    void proxyConnectionRequestReceived(const QString &token);
 
 private slots:
     void doConnect();

@@ -514,7 +514,8 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         // silently drop our own things (should not be subscribed to that in the first place)
     } else if (topic.startsWith(QString("%1/eu-west-1:").arg(connector->m_clientId)) && topic.contains("proxy")) {
         qCDebug(dcAWS) << "Proxy remote connection request received";
-        connector->staticMetaObject.invokeMethod(connector, "proxyConnectionRequestReceived", Qt::QueuedConnection);
+        QString token = jsonDoc.toVariant().toMap().value("token").toString();
+        connector->staticMetaObject.invokeMethod(connector, "proxyConnectionRequestReceived", Qt::QueuedConnection, Q_ARG(QString, token));
     } else if (topic == QString("%1/notify/response").arg(connector->m_clientId)) {
         int transactionId = jsonDoc.toVariant().toMap().value("id").toInt();
         int status = jsonDoc.toVariant().toMap().value("status").toInt();

@@ -31,7 +31,13 @@
 class JanusConnector;
 class AWSConnector;
 class CloudNotifications;
+namespace remoteproxyclient {
+class RemoteProxyConnection;
+}
 
+namespace nymeaserver {
+
+class CloudTransport;
 class CloudManager : public QObject
 {
     Q_OBJECT
@@ -53,6 +59,7 @@ public:
     bool keepAlive(const QString &sessionId);
 
     CloudNotifications* createNotificationsPlugin() const;
+    CloudTransport* createTransportInterface() const;
 
 signals:
     void connectedChanged(bool connected);
@@ -84,7 +91,8 @@ private:
     QString m_clientCertificate;
     QString m_clientCertificateKey;
 
-    CloudNotifications *m_notifications;
+    CloudTransport *m_transport;
 };
 
+}
 #endif // CLOUDMANAGER_H

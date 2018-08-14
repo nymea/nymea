@@ -23,7 +23,12 @@
 #include "janusconnector.h"
 #include "loggingcategories.h"
 #include "cloudnotifications.h"
+#include "nymeaconfiguration.h"
+#include "cloudtransport.h"
 
+#include "libnymea-remoteproxyclient/remoteproxyconnection.h"
+
+using namespace remoteproxyclient;
 
 CloudManager::CloudManager(NetworkManager *networkManager, QObject *parent) : QObject(parent),
     m_networkManager(networkManager)
@@ -41,6 +46,9 @@ CloudManager::CloudManager(NetworkManager *networkManager, QObject *parent) : QO
     connect(m_awsConnector, &AWSConnector::turnCredentialsReceived, m_janusConnector, &JanusConnector::setTurnCredentials);
 
     connect(m_networkManager, &NetworkManager::stateChanged, this, &CloudManager::onlineStateChanged);
+
+    m_transport = new CloudTransport(ServerConfiguration());
+    connect(m_awsConnector, &AWSConnector::proxyConnectionRequestReceived, m_transport, &CloudTransport::connectToCloud);
 }
 
 CloudManager::~CloudManager()
@@ -139,6 +147,11 @@ CloudNotifications *CloudManager::createNotificationsPlugin() const
 {
     CloudNotifications* notifications = new CloudNotifications(m_awsConnector);
     return notifications;
+}
+
+CloudTransport *CloudManager::createTransportInterface() const
+{
+    return m_transport;
 }
 
 void CloudManager::connect2aws()

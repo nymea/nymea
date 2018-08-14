@@ -69,6 +69,8 @@ signals:
     void pushNotificationSent(int id, int status);
     void turnCredentialsReceived(const QVariantMap &turnCredentials);
 
+    void proxyConnectionRequestReceived();
+
 private slots:
     void doConnect();
     void onConnected();

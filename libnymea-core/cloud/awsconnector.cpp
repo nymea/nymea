@@ -498,7 +498,7 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         if (jsonDoc.toVariant().toMap().value("status").toInt() == 200) {
             connector->storeSyncedNameCache(connector->m_clientName);
         }
-    } else if (topic.startsWith(QString("%1/eu-west-1:").arg(connector->m_clientId)) && !topic.contains("reply")) {
+    } else if (topic.startsWith(QString("%1/eu-west-1:").arg(connector->m_clientId)) && !topic.contains("reply") && !topic.contains("proxy")) {
         static QStringList dupes;
         QString id = jsonDoc.toVariant().toMap().value("id").toString();
         QString type = jsonDoc.toVariant().toMap().value("type").toString();
@@ -512,6 +512,9 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
         connector->webRtcHandshakeMessageReceived(topic, jsonDoc.toVariant().toMap());
     } else if (topic.startsWith(QString("%1/eu-west-1:").arg(connector->m_clientId)) && topic.contains("reply")) {
         // silently drop our own things (should not be subscribed to that in the first place)
+    } else if (topic.startsWith(QString("%1/eu-west-1:").arg(connector->m_clientId)) && topic.contains("proxy")) {
+        qCDebug(dcAWS) << "Proxy remote connection request received";
+        connector->staticMetaObject.invokeMethod(connector, "proxyConnectionRequestReceived", Qt::QueuedConnection);
     } else if (topic == QString("%1/notify/response").arg(connector->m_clientId)) {
         int transactionId = jsonDoc.toVariant().toMap().value("id").toInt();
         int status = jsonDoc.toVariant().toMap().value("status").toInt();

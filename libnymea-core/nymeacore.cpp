@@ -114,7 +114,8 @@
 
 #include "devicemanager.h"
 #include "plugin/device.h"
-#include "cloudnotifications.h"
+#include "cloud/cloudnotifications.h"
+#include "cloud/cloudtransport.h"
 
 #include <QDir>
 
@@ -557,6 +558,9 @@ void NymeaCore::init() {
 
     CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
     m_deviceManager->registerStaticPlugin(cloudNotifications, cloudNotifications->metaData());
+
+    CloudTransport *cloudTransport = m_cloudManager->createTransportInterface();
+    m_serverManager->jsonServer()->registerTransportInterface(cloudTransport, false);
 
     connect(m_configuration, &NymeaConfiguration::localeChanged, this, &NymeaCore::onLocaleChanged);
     connect(m_configuration, &NymeaConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::setEnabled);

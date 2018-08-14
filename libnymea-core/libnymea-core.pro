@@ -69,11 +69,11 @@ HEADERS += nymeacore.h \
     usermanager.h \
     tokeninfo.h \
     certificategenerator.h \
-    awsconnector.h \
-    cloudmanager.h \
-    cloudnotifications.h \
-    OpenSSL/OpenSSLConnection.hpp \
-    janusconnector.h \
+    cloud/awsconnector.h \
+    cloud/cloudmanager.h \
+    cloud/cloudnotifications.h \
+    cloud/OpenSSL/OpenSSLConnection.hpp \
+    cloud/janusconnector.h \
     pushbuttondbusservice.h \
     hardwaremanagerimplementation.h \
     hardware/plugintimermanagerimplementation.h \
@@ -96,7 +96,8 @@ HEADERS += nymeacore.h \
     debugserverhandler.h \
     tagging/tagsstorage.h \
     tagging/tag.h \
-    jsonrpc/tagshandler.h
+    jsonrpc/tagshandler.h \
+    cloud/cloudtransport.h
 
 SOURCES += nymeacore.cpp \
     tcpserver.cpp \
@@ -150,11 +151,11 @@ SOURCES += nymeacore.cpp \
     usermanager.cpp \
     tokeninfo.cpp \
     certificategenerator.cpp \
-    awsconnector.cpp \
-    cloudmanager.cpp \
-    cloudnotifications.cpp \
-    OpenSSL/OpenSSLConnection.cpp \
-    janusconnector.cpp \
+    cloud/awsconnector.cpp \
+    cloud/cloudmanager.cpp \
+    cloud/cloudnotifications.cpp \
+    cloud/OpenSSL/OpenSSLConnection.cpp \
+    cloud/janusconnector.cpp \
     pushbuttondbusservice.cpp \
     hardwaremanagerimplementation.cpp \
     hardware/plugintimermanagerimplementation.cpp \
@@ -177,4 +178,5 @@ SOURCES += nymeacore.cpp \
     debugserverhandler.cpp \
     tagging/tagsstorage.cpp \
     tagging/tag.cpp \
-    jsonrpc/tagshandler.cpp
+    jsonrpc/tagshandler.cpp \
+    cloud/cloudtransport.cpp

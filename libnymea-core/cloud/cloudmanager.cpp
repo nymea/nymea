@@ -26,7 +26,7 @@
 #include "nymeaconfiguration.h"
 #include "cloudtransport.h"
 
-#include "libnymea-remoteproxyclient/remoteproxyconnection.h"
+#include "nymea-remoteproxyclient/remoteproxyconnection.h"
 
 using namespace remoteproxyclient;
 

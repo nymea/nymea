@@ -37,22 +37,33 @@ class RemoteProxyConnection;
 
 namespace nymeaserver {
 
+class NymeaConfiguration;
 class CloudTransport;
 class CloudManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit CloudManager(NetworkManager *networkManager, QObject *parent = nullptr);
+    enum CloudConnectionState {
+        CloudConnectionStateDisabled,
+        CloudConnectionStateUnconfigured,
+        CloudConnectionStateConnecting,
+        CloudConnectionStateConnected
+    };
+    Q_ENUM(CloudConnectionState)
+
+    explicit CloudManager(NymeaConfiguration *configuration, NetworkManager *networkManager, QObject *parent = nullptr);
     ~CloudManager();
 
-    void setServerUrl(const QString &serverUrl);
-    void setDeviceId(const QUuid &deviceId);
-    void setDeviceName(const QString &name);
-    void setClientCertificates(const QString &caCertificate, const QString &clientCertificate, const QString &clientCertificateKey);
+//    void setServerUrl(const QString &serverUrl);
+//    void setDeviceId(const QUuid &deviceId);
+//    void setClientCertificates(const QString &caCertificate, const QString &clientCertificate, const QString &clientCertificateKey);
 
     bool enabled() const;
     void setEnabled(bool enabled);
-    bool connected() const;
+
+    bool installClientCertificates(const QByteArray &rootCA, const QByteArray &certificatePEM, const QByteArray &publicKey, const QByteArray &privateKey, const QString &endpoint);
+
+    CloudConnectionState connectionState() const;
 
     void pairDevice(const QString &idToken, const QString &userId);
 
@@ -62,7 +73,7 @@ public:
     CloudTransport* createTransportInterface() const;
 
 signals:
-    void connectedChanged(bool connected);
+    void connectionStateChanged();
 
     void pairingReply(QString cognitoUserId, int status, const QString &message);
 
@@ -76,12 +87,14 @@ private slots:
     void onJanusWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
     void awsConnected();
     void awsDisconnected();
+    void setDeviceName(const QString &name);
 
 private:
     QTimer m_reconnectTimer;
     bool m_enabled = false;
     AWSConnector *m_awsConnector = nullptr;
     JanusConnector *m_janusConnector = nullptr;
+    NymeaConfiguration *m_configuration = nullptr;
     NetworkManager *m_networkManager = nullptr;
 
     QString m_serverUrl;

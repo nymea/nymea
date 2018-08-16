@@ -50,12 +50,11 @@ void CloudTransport::connectToCloud(const QString &token)
     context.proxyConnection = new RemoteProxyConnection(QUuid::createUuid(), "nymea:core", this);
     m_connections.insert(context.proxyConnection, context);
 
-    context.proxyConnection->setInsecureConnection(true);
     connect(context.proxyConnection, &RemoteProxyConnection::ready, this, &CloudTransport::transportReady);
     connect(context.proxyConnection, &RemoteProxyConnection::stateChanged, this, &CloudTransport::remoteConnectionStateChanged);
     connect(context.proxyConnection, &RemoteProxyConnection::dataReady, this, &CloudTransport::transportDataReady);
 
-    context.proxyConnection->connectServer(QHostAddress("34.244.242.103"), 443);
+    context.proxyConnection->connectServer(QUrl("wss://dev-remoteproxy.nymea.io"));
 }
 
 void CloudTransport::remoteConnectionStateChanged(RemoteProxyConnection::State state)

@@ -166,6 +166,17 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     setReturns("RemoveToken", returns);
 
     params.clear(); returns.clear();
+    setDescription("SetupCloudConnection", "Sets up the cloud connection by deploying a certificate and its configuration.");
+    params.insert("rootCA", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("certificatePEM", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("publicKey", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("privateKey", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("endpoint", JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("SetupCloudConnection", params);
+    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setReturns("SetupCloudConnection", returns);
+
+    params.clear(); returns.clear();
     setDescription("SetupRemoteAccess", "Setup the remote connection by providing AWS token information. This requires the cloud to be connected.");
     params.insert("idToken", JsonTypes::basicTypeToString(JsonTypes::String));
     params.insert("userId", JsonTypes::basicTypeToString(JsonTypes::String));
@@ -175,9 +186,10 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     setReturns("SetupRemoteAccess", returns);
 
     params.clear(); returns.clear();
-    setDescription("IsCloudConnected", "Check whether the cloud is currently connected.");
+    setDescription("IsCloudConnected", "Check whether the cloud is currently connected. \"connected\" will be true whenever connectionState equals CloudConnectionStateConnected and is deprecated. Please use the connectionState value instead.");
     setParams("IsCloudConnected", params);
     returns.insert("connected", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    returns.insert("connectionState", JsonTypes::cloudConnectionStateRef());
     setReturns("IsCloudConnected", returns);
 
     params.clear(); returns.clear();
@@ -329,6 +341,25 @@ JsonReply *JsonRPCServer::RemoveToken(const QVariantMap &params)
     return createReply(ret);
 }
 
+JsonReply *JsonRPCServer::SetupCloudConnection(const QVariantMap &params)
+{
+    if (NymeaCore::instance()->cloudManager()->connectionState() != CloudManager::CloudConnectionStateUnconfigured) {
+        qCDebug(dcCloud) << "Cloud already configured. Not changing configuration as it won't work anyways. If you want to reconfigure this instance to a different cloud, change the system UUID and wipe the cloud settings from the config.";
+        QVariantMap data;
+        data.insert("success", false);
+        return createReply(data);
+    }
+    QByteArray rootCA = params.value("rootCA").toByteArray();
+    QByteArray certificatePEM = params.value("certificatePEM").toByteArray();
+    QByteArray publicKey = params.value("publicKey").toByteArray();
+    QByteArray privateKey = params.value("privateKey").toByteArray();
+    QString endpoint = params.value("endpoint").toString();
+    bool status = NymeaCore::instance()->cloudManager()->installClientCertificates(rootCA, certificatePEM, publicKey, privateKey, endpoint);
+    QVariantMap ret;
+    ret.insert("success", status);
+    return createReply(ret);
+}
+
 JsonReply *JsonRPCServer::SetupRemoteAccess(const QVariantMap &params)
 {
     QString idToken = params.value("idToken").toString();
@@ -345,9 +376,10 @@ JsonReply *JsonRPCServer::SetupRemoteAccess(const QVariantMap &params)
 JsonReply *JsonRPCServer::IsCloudConnected(const QVariantMap &params)
 {
     Q_UNUSED(params)
-    bool connected = NymeaCore::instance()->cloudManager()->connected();
+    bool connected = NymeaCore::instance()->cloudManager()->connectionState() == CloudManager::CloudConnectionStateConnected;
     QVariantMap data;
     data.insert("connected", connected);
+    data.insert("connectionState", JsonTypes::cloudConnectionStateToString(NymeaCore::instance()->cloudManager()->connectionState()));
     return createReply(data);
 }
 
@@ -457,7 +489,7 @@ void JsonRPCServer::setup()
     registerHandler(new TagsHandler(this));
 
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::pairingReply, this, &JsonRPCServer::pairingFinished);
-    connect(NymeaCore::instance()->cloudManager(), &CloudManager::connectedChanged, this, &JsonRPCServer::onCloudConnectedChanged);
+    connect(NymeaCore::instance()->cloudManager(), &CloudManager::connectionStateChanged, this, &JsonRPCServer::onCloudConnectionStateChanged);
 }
 
 void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
@@ -616,10 +648,11 @@ void JsonRPCServer::pairingFinished(QString cognitoUserId, int status, const QSt
     reply->finished();
 }
 
-void JsonRPCServer::onCloudConnectedChanged(bool connected)
+void JsonRPCServer::onCloudConnectionStateChanged()
 {
     QVariantMap params;
-    params.insert("connected", connected);
+    params.insert("connected", NymeaCore::instance()->cloudManager()->connectionState() == CloudManager::CloudConnectionStateConnected);
+    params.insert("connectionState", JsonTypes::cloudConnectionStateToString(NymeaCore::instance()->cloudManager()->connectionState()));
     emit CloudConnectedChanged(params);
 }
 

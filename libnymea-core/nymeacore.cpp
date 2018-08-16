@@ -549,12 +549,7 @@ void NymeaCore::init() {
     m_debugServerHandler = new DebugServerHandler(this);
 
     qCDebug(dcApplication) << "Creating Cloud Manager";
-    m_cloudManager = new CloudManager(m_networkManager, this);
-    m_cloudManager->setDeviceId(m_configuration->serverUuid());
-    m_cloudManager->setDeviceName(m_configuration->serverName());
-    m_cloudManager->setServerUrl(m_configuration->cloudServerUrl());
-    m_cloudManager->setClientCertificates(m_configuration->cloudCertificateCA(), m_configuration->cloudCertificate(), m_configuration->cloudCertificateKey());
-    m_cloudManager->setEnabled(m_configuration->cloudEnabled());
+    m_cloudManager = new CloudManager(m_configuration, m_networkManager, this);
 
     CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
     m_deviceManager->registerStaticPlugin(cloudNotifications, cloudNotifications->metaData());
@@ -563,8 +558,6 @@ void NymeaCore::init() {
     m_serverManager->jsonServer()->registerTransportInterface(cloudTransport, false);
 
     connect(m_configuration, &NymeaConfiguration::localeChanged, this, &NymeaCore::onLocaleChanged);
-    connect(m_configuration, &NymeaConfiguration::cloudEnabledChanged, m_cloudManager, &CloudManager::setEnabled);
-    connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_cloudManager, &CloudManager::setDeviceName);
     connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
 
     connect(m_deviceManager, &DeviceManager::pluginConfigChanged, this, &NymeaCore::pluginConfigChanged);

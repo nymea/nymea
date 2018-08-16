@@ -90,6 +90,7 @@ QVariantList JsonTypes::s_networkManagerState;
 QVariantList JsonTypes::s_networkDeviceState;
 QVariantList JsonTypes::s_userError;
 QVariantList JsonTypes::s_tagError;
+QVariantList JsonTypes::s_cloudConnectionState;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -151,6 +152,7 @@ void JsonTypes::init()
     s_networkDeviceState = enumToStrings(NetworkDevice::staticMetaObject, "NetworkDeviceState");
     s_userError = enumToStrings(UserManager::staticMetaObject, "UserError");
     s_tagError = enumToStrings(TagsStorage::staticMetaObject, "TagError");
+    s_cloudConnectionState = enumToStrings(CloudManager::staticMetaObject, "CloudConnectionState");
 
     // ParamType
     s_paramType.insert("id", basicTypeToString(Uuid));
@@ -2122,6 +2124,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateEnum(s_tagError, variant);
                 if (!result.first) {
                     qCWarning(dcJsonRpc()) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(logEntryRef());
+                    return result;
+                }
+            } else if (refName == cloudConnectionStateRef()) {
+                QPair<bool, QString> result = validateEnum(s_cloudConnectionState, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc()) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(cloudConnectionStateRef());
                     return result;
                 }
             } else {

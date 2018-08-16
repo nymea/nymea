@@ -25,12 +25,17 @@
 #include "cloudnotifications.h"
 #include "nymeaconfiguration.h"
 #include "cloudtransport.h"
+#include "nymeaconfiguration.h"
+#include "nymeasettings.h"
 
 #include "nymea-remoteproxyclient/remoteproxyconnection.h"
+#include <QDir>
 
 using namespace remoteproxyclient;
 
-CloudManager::CloudManager(NetworkManager *networkManager, QObject *parent) : QObject(parent),
+CloudManager::CloudManager(NymeaConfiguration *configuration, NetworkManager *networkManager, QObject *parent):
+    QObject(parent),
+    m_configuration(configuration),
     m_networkManager(networkManager)
 {
     m_awsConnector = new AWSConnector(this);
@@ -49,33 +54,28 @@ CloudManager::CloudManager(NetworkManager *networkManager, QObject *parent) : QO
 
     m_transport = new CloudTransport(ServerConfiguration());
     connect(m_awsConnector, &AWSConnector::proxyConnectionRequestReceived, m_transport, &CloudTransport::connectToCloud);
+
+    m_deviceId = m_configuration->serverUuid();
+    m_deviceName = m_configuration->serverName();
+    m_serverUrl = m_configuration->cloudServerUrl();
+    m_caCertificate = m_configuration->cloudCertificateCA();
+    m_clientCertificate = m_configuration->cloudCertificate();
+    m_clientCertificateKey = m_configuration->cloudCertificateKey();
+
+    setEnabled(m_configuration->cloudEnabled());
+    connect(m_configuration, &NymeaConfiguration::cloudEnabledChanged, this, &CloudManager::setEnabled);
+    connect(m_configuration, &NymeaConfiguration::serverNameChanged, this, &CloudManager::setDeviceName);
+
 }
 
 CloudManager::~CloudManager()
 {
 }
 
-void CloudManager::setServerUrl(const QString &serverUrl)
-{
-    m_serverUrl = serverUrl;
-}
-
-void CloudManager::setDeviceId(const QUuid &deviceId)
-{
-    m_deviceId = deviceId;
-}
-
 void CloudManager::setDeviceName(const QString &name)
 {
     m_deviceName = name;
     m_awsConnector->setDeviceName(name);
-}
-
-void CloudManager::setClientCertificates(const QString &caCertificate, const QString &clientCertificate, const QString &clientCertificateKey)
-{
-    m_caCertificate = caCertificate;
-    m_clientCertificate = clientCertificate;
-    m_clientCertificateKey = clientCertificateKey;
 }
 
 bool CloudManager::enabled() const
@@ -86,6 +86,9 @@ bool CloudManager::enabled() const
 void CloudManager::setEnabled(bool enabled)
 {
     if (enabled) {
+        m_enabled = true;
+        emit connectionStateChanged();
+
         bool missingConfig = false;
         if (m_deviceId.isNull()) {
             qCWarning(dcCloud()) << "Don't have a unique device ID.";
@@ -117,7 +120,6 @@ void CloudManager::setEnabled(bool enabled)
         }
 
         qCDebug(dcCloud()) << "Enabling cloud connection.";
-        m_enabled = true;
         if (!m_awsConnector->isConnected() && m_networkManager->state() == NetworkManager::NetworkManagerStateConnectedGlobal) {
             connect2aws();
         }
@@ -125,12 +127,77 @@ void CloudManager::setEnabled(bool enabled)
         qCDebug(dcCloud()) << "Disabling cloud connection.";
         m_enabled = false;
         m_awsConnector->disconnectAWS();
+        emit connectionStateChanged();
     }
 }
 
-bool CloudManager::connected() const
+bool CloudManager::installClientCertificates(const QByteArray &rootCA, const QByteArray &certificatePEM, const QByteArray &publicKey, const QByteArray &privateKey, const QString &endpoint)
 {
-    return m_awsConnector->isConnected();
+    QString baseDir = NymeaSettings::storagePath() + "/certs/cloud/";
+    QDir dir;
+    // We never delete old certs, cycle until we find an unused path
+    int i = 0;
+    do {
+        dir = QDir(baseDir + QString::number(i++) + '/');
+    } while (dir.exists());
+
+    if (!dir.mkpath(dir.absolutePath())) {
+        qCWarning(dcCloud) << "Cannot install cloud certificates. Unable to create path.";
+        return false;
+    }
+    QFile ca(dir.absoluteFilePath("aws-certification-authority.crt"));
+    if (!ca.open(QFile::WriteOnly) || ca.write(rootCA) != rootCA.length()) {
+        qCWarning(dcCloud()) << "Cannot install cloud certificates. Unable to write CA file" << dir.absoluteFilePath(ca.fileName());
+        ca.close();
+        return false;
+    }
+    ca.close();
+    QFile pem(dir.absoluteFilePath("guh-cloud.pem"));
+    if (!pem.open(QFile::WriteOnly) || pem.write(certificatePEM) != certificatePEM.length()) {
+        qCWarning(dcCloud()) << "Cannot install cloud certificates. Unable to write certificate file" << dir.absoluteFilePath(pem.fileName());
+        pem.close();
+        return false;
+    }
+    pem.close();
+    QFile pub(dir.absoluteFilePath("guh-cloud.pub"));
+    if (!pub.open(QFile::WriteOnly) || pub.write(publicKey) != publicKey.length()) {
+        qCWarning(dcCloud()) << "Cannot install cloud certificates. Unable to write public key file" << dir.absoluteFilePath(pub.fileName());
+        pub.close();
+        return false;
+    }
+    pub.close();
+    QFile key(dir.absoluteFilePath("guh-cloud.key"));
+    if (!key.open(QFile::WriteOnly) || key.write(privateKey) != privateKey.length()) {
+        qCWarning(dcCloud()) << "Cannot install cloud certificates. Unable to write private key file" << dir.absoluteFilePath(key.fileName());
+        key.close();
+        return false;
+    }
+    key.close();
+    qCDebug(dcCloud) << "Installed cloud certificates to" << dir.absolutePath();
+    m_caCertificate = dir.absoluteFilePath("aws-certification-authority.crt");
+    m_clientCertificate = dir.absoluteFilePath("guh-cloud.pem");
+    m_clientCertificateKey = dir.absoluteFilePath("guh-cloud.key");
+    m_serverUrl = endpoint;
+
+    if (m_enabled) {
+        m_awsConnector->disconnectAWS();
+        connect2aws();
+    }
+    return true;
+}
+
+CloudManager::CloudConnectionState CloudManager::connectionState() const
+{
+    if (m_awsConnector->isConnected()) {
+        return CloudConnectionStateConnected;
+    }
+    if (!m_enabled) {
+        return CloudConnectionStateDisabled;
+    }
+    if (m_deviceId.isNull() || m_deviceName.isEmpty() || m_serverUrl.isEmpty() || m_clientCertificate.isEmpty() || m_clientCertificateKey.isEmpty() || m_caCertificate.isEmpty()) {
+        return CloudConnectionStateUnconfigured;
+    }
+    return CloudConnectionStateConnecting;
 }
 
 void CloudManager::pairDevice(const QString &idToken, const QString &userId)
@@ -191,10 +258,10 @@ void CloudManager::onJanusWebRtcHandshakeMessageReceived(const QString &transact
 
 void CloudManager::awsConnected()
 {
-    emit connectedChanged(true);
+    emit connectionStateChanged();
 }
 
 void CloudManager::awsDisconnected()
 {
-    emit connectedChanged(false);
+    emit connectionStateChanged();
 }

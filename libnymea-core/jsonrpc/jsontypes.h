@@ -56,6 +56,8 @@
 #include "networkmanager/wirelessnetworkdevice.h"
 #include "networkmanager/wirelessaccesspoint.h"
 
+#include "cloud/cloudmanager.h"
+
 #include <QObject>
 
 #include <QVariantMap>
@@ -139,6 +141,7 @@ public:
     DECLARE_TYPE(networkDeviceState, "NetworkDeviceState", NetworkDevice, NetworkDeviceState)
     DECLARE_TYPE(userError, "UserError", UserManager, UserError)
     DECLARE_TYPE(tagError, "TagError", TagsStorage, TagError)
+    DECLARE_TYPE(cloudConnectionState, "CloudConnectionState", CloudManager, CloudConnectionState)
 
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")

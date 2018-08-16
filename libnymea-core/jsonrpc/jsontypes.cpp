@@ -448,6 +448,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("NetworkDeviceState", networkDeviceState());
     allTypes.insert("UserError", userError());
     allTypes.insert("TagError", tagErrorRef());
+    allTypes.insert("CloudConnectionState", cloudConnectionStateRef());
 
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());

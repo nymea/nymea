@@ -1084,6 +1084,7 @@
             "o:repeating": "$ref:RepeatingOption",
             "o:startTime": "Time"
         },
+        "CloudConnectionState": "$ref:CloudConnectionState",
         "ConfigurationError": [
             "ConfigurationErrorNoError",
             "ConfigurationErrorInvalidTimeZone",

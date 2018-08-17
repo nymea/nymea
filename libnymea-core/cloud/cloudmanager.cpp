@@ -183,6 +183,12 @@ bool CloudManager::installClientCertificates(const QByteArray &rootCA, const QBy
         m_awsConnector->disconnectAWS();
         connect2aws();
     }
+    m_configuration->setCloudCertificateCA(m_caCertificate);
+    m_configuration->setCloudCertificate(m_clientCertificate);
+    m_configuration->setCloudCertificateKey(m_clientCertificateKey);
+    m_configuration->setCloudServerUrl(m_serverUrl);
+
+    emit connectionStateChanged();
     return true;
 }
 

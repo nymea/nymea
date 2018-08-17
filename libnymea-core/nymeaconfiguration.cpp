@@ -358,11 +358,25 @@ QString NymeaConfiguration::cloudServerUrl() const
     return settings.value("cloudServerUrl").toString();
 }
 
+void NymeaConfiguration::setCloudServerUrl(const QString &cloudServerUrl)
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("Cloud");
+    settings.setValue("cloudServerUrl", cloudServerUrl);
+}
+
 QString NymeaConfiguration::cloudCertificateCA() const
 {
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("Cloud");
     return settings.value("cloudCertificateCA").toString();
+}
+
+void NymeaConfiguration::setCloudCertificateCA(const QString &cloudCertificateCA)
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("Cloud");
+    settings.setValue("cloudCertificateCA", cloudCertificateCA);
 }
 
 QString NymeaConfiguration::cloudCertificate() const
@@ -372,11 +386,25 @@ QString NymeaConfiguration::cloudCertificate() const
     return settings.value("cloudCertificate").toString();
 }
 
+void NymeaConfiguration::setCloudCertificate(const QString &cloudCertificate)
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("Cloud");
+    settings.setValue("cloudCertificate", cloudCertificate);
+}
+
 QString NymeaConfiguration::cloudCertificateKey() const
 {
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("Cloud");
     return settings.value("cloudCertificateKey").toString();
+}
+
+void NymeaConfiguration::setCloudCertificateKey(const QString &cloudCertificateKey)
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("Cloud");
+    settings.setValue("cloudCertificateKey", cloudCertificateKey);
 }
 
 QString NymeaConfiguration::logDBDriver() const

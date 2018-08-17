@@ -119,9 +119,13 @@ public:
     void setCloudEnabled(bool enabled);
 
     QString cloudServerUrl() const;
+    void setCloudServerUrl(const QString &cloudServerUrl);
     QString cloudCertificateCA() const;
+    void setCloudCertificateCA(const QString &cloudCertificateCA);
     QString cloudCertificate() const;
+    void setCloudCertificate(const QString &cloudCertificate);
     QString cloudCertificateKey() const;
+    void setCloudCertificateKey(const QString &cloudCertificateKey);
 
     // Logging
     QString logDBDriver() const;

@@ -405,8 +405,10 @@ void JsonRPCServer::registerTransportInterface(TransportInterface *interface, bo
         connect(interface, &TransportInterface::clientConnected, this, &JsonRPCServer::clientConnected);
         connect(interface, &TransportInterface::clientDisconnected, this, &JsonRPCServer::clientDisconnected);
         connect(interface, &TransportInterface::dataAvailable, this, &JsonRPCServer::processData);
+        m_interfaces.insert(interface, authenticationRequired);
+    } else {
+        m_interfaces[interface] = authenticationRequired;
     }
-    m_interfaces[interface] = authenticationRequired;
 }
 
 void JsonRPCServer::unregisterTransportInterface(TransportInterface *interface)

@@ -38,6 +38,7 @@ public:
 
     bool startServer() override;
     bool stopServer() override;
+
 signals:
 
 public slots:
@@ -49,6 +50,8 @@ private slots:
     void transportDataReady(const QByteArray &data);
 
 private:
+    QUrl m_proxyUrl;
+
     class ConnectionContext {
     public:
         QUuid clientId;

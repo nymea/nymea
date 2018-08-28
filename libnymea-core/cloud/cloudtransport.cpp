@@ -55,31 +55,25 @@ void CloudTransport::sendData(const QList<QUuid> &clientIds, const QByteArray &d
 
 bool CloudTransport::startServer()
 {
-    qCDebug(dcCloud()) << "Start cloud server";
+    qCDebug(dcCloud()) << "Started cloud transport";
     return true;
 }
 
 bool CloudTransport::stopServer()
 {
-    qCDebug(dcCloud()) << "Stop cloud server";
+    qCDebug(dcCloud()) << "Stopped cloud transport";
     return true;
 }
 
 void CloudTransport::connectToCloud(const QString &token)
 {
-    qCDebug(dcCloud()) << "Start connecting to remote proxy server" << m_proxyUrl.toString();
-
-    foreach (const ConnectionContext &connectionContext, m_connections.values()) {
-        if (connectionContext.token == token) {
-            qCWarning(dcCloud()) << "There is already a remote connection for this token. This is not allowed.";
-            return;
-        }
-    }
+    qCDebug(dcCloud()) << "Connecting to remote proxy server" << m_proxyUrl.toString();
 
     ConnectionContext context;
     context.clientId = QUuid::createUuid();
     context.token = token;
-    context.proxyConnection = new RemoteProxyConnection(NymeaCore::instance()->configuration()->serverUuid().toString(), NymeaCore::instance()->configuration()->serverName(), this);
+    QString identifier = QString("nymea:core (%1)").arg(NymeaCore::instance()->configuration()->serverName());
+    context.proxyConnection = new RemoteProxyConnection(NymeaCore::instance()->configuration()->serverUuid().toString(), identifier, this);
     m_connections.insert(context.proxyConnection, context);
 
     connect(context.proxyConnection, &RemoteProxyConnection::ready, this, &CloudTransport::transportReady);

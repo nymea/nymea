@@ -499,22 +499,39 @@ ResponseCode AWSConnector::onSubscriptionReceivedCallback(util::String topic_nam
             connector->storeSyncedNameCache(connector->m_clientName);
         }
     } else if (topic.startsWith(QString("%1/eu-west-1:").arg(connector->m_clientId)) && !topic.contains("reply") && !topic.contains("proxy")) {
-        static QStringList dupes;
+        static QHash<QString, QDateTime> dupes;
         QString id = jsonDoc.toVariant().toMap().value("id").toString();
         QString type = jsonDoc.toVariant().toMap().value("type").toString();
         if (dupes.contains(id+type)) {
             qCDebug(dcAWS()) << "Dropping duplicate packet";
             return ResponseCode::SUCCESS;
         }
-        dupes.append(id+type);
-
+        dupes.insert(id+type, QDateTime::currentDateTime());
+        foreach (const QString &dupe, dupes.keys()) {
+            if (dupes.value(dupe).addSecs(60) < QDateTime::currentDateTime()) {
+                dupes.remove(dupe);
+            }
+        }
         qCDebug(dcAWS) << "received webrtc handshake message.";
         connector->webRtcHandshakeMessageReceived(topic, jsonDoc.toVariant().toMap());
     } else if (topic.startsWith(QString("%1/eu-west-1:").arg(connector->m_clientId)) && topic.contains("reply")) {
         // silently drop our own things (should not be subscribed to that in the first place)
     } else if (topic.startsWith(QString("%1/eu-west-1:").arg(connector->m_clientId)) && topic.contains("proxy")) {
-        qCDebug(dcAWS) << "Proxy remote connection request received";
         QString token = jsonDoc.toVariant().toMap().value("token").toString();
+        qlonglong timestamp = jsonDoc.toVariant().toMap().value("timestamp").toLongLong();
+        static QHash<QString, QDateTime> dupes;
+        QString packetId = topic + token + QString::number(timestamp);
+        if (dupes.contains(packetId)) {
+            qCDebug(dcAWS()) << "Dropping duplicate packet";
+            return ResponseCode::SUCCESS;
+        }
+        dupes.insert(packetId, QDateTime::currentDateTime());
+        foreach (const QString &dupe, dupes.keys()) {
+            if (dupes.value(dupe).addSecs(60) < QDateTime::currentDateTime()) {
+                dupes.remove(dupe);
+            }
+        }
+        qCDebug(dcAWS) << "Proxy remote connection request received";
         connector->staticMetaObject.invokeMethod(connector, "proxyConnectionRequestReceived", Qt::QueuedConnection, Q_ARG(QString, token));
     } else if (topic == QString("%1/notify/response").arg(connector->m_clientId)) {
         int transactionId = jsonDoc.toVariant().toMap().value("id").toInt();

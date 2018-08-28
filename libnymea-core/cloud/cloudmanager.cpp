@@ -52,7 +52,11 @@ CloudManager::CloudManager(NymeaConfiguration *configuration, NetworkManager *ne
 
     connect(m_networkManager, &NetworkManager::stateChanged, this, &CloudManager::onlineStateChanged);
 
-    m_transport = new CloudTransport(ServerConfiguration());
+    ServerConfiguration config;
+    config.id = "remote";
+    config.authenticationEnabled = false;
+    config.sslEnabled = true;
+    m_transport = new CloudTransport(config);
     connect(m_awsConnector, &AWSConnector::proxyConnectionRequestReceived, m_transport, &CloudTransport::connectToCloud);
 
     m_deviceId = m_configuration->serverUuid();

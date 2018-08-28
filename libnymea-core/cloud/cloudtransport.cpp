@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2018 Michael Zanetti <michael.zanetti@guh.io>            *
+ *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -21,6 +22,8 @@
 #include "cloudtransport.h"
 #include "loggingcategories.h"
 
+#include "nymeacore.h"
+
 using namespace remoteproxyclient;
 
 namespace nymeaserver {
@@ -28,11 +31,12 @@ namespace nymeaserver {
 CloudTransport::CloudTransport(const ServerConfiguration &config, QObject *parent):
     TransportInterface(config, parent)
 {
+    m_proxyUrl = QUrl("wss://remoteproxy.nymea.io");
 }
 
 void CloudTransport::sendData(const QUuid &clientId, const QByteArray &data)
 {
-    qCDebug(dcCloud) << "Should send data" << clientId << data;
+    qCDebug(dcCloudTraffic()) << "Sending data" << clientId << data;
     foreach (const ConnectionContext &ctx, m_connections) {
         if (ctx.clientId == clientId) {
             ctx.proxyConnection->sendData(data);
@@ -51,30 +55,38 @@ void CloudTransport::sendData(const QList<QUuid> &clientIds, const QByteArray &d
 
 bool CloudTransport::startServer()
 {
-    qCDebug(dcCloud) << "Should start cloud server";
+    qCDebug(dcCloud()) << "Start cloud server";
     return true;
 }
 
 bool CloudTransport::stopServer()
 {
-    qCDebug(dcCloud) << "Should stop cloud server";
+    qCDebug(dcCloud()) << "Stop cloud server";
     return true;
 }
 
 void CloudTransport::connectToCloud(const QString &token)
 {
-    qCDebug(dcCloud) << "Should connect to cloud";
+    qCDebug(dcCloud()) << "Start connecting to remote proxy server" << m_proxyUrl.toString();
+
+    foreach (const ConnectionContext &connectionContext, m_connections.values()) {
+        if (connectionContext.token == token) {
+            qCWarning(dcCloud()) << "There is already a remote connection for this token. This is not allowed.";
+            return;
+        }
+    }
+
     ConnectionContext context;
     context.clientId = QUuid::createUuid();
     context.token = token;
-    context.proxyConnection = new RemoteProxyConnection(QUuid::createUuid(), "nymea:core", this);
+    context.proxyConnection = new RemoteProxyConnection(NymeaCore::instance()->configuration()->serverUuid().toString(), NymeaCore::instance()->configuration()->serverName(), this);
     m_connections.insert(context.proxyConnection, context);
 
     connect(context.proxyConnection, &RemoteProxyConnection::ready, this, &CloudTransport::transportReady);
     connect(context.proxyConnection, &RemoteProxyConnection::stateChanged, this, &CloudTransport::remoteConnectionStateChanged);
     connect(context.proxyConnection, &RemoteProxyConnection::dataReady, this, &CloudTransport::transportDataReady);
 
-    context.proxyConnection->connectServer(QUrl("wss://dev-remoteproxy.nymea.io"));
+    context.proxyConnection->connectServer(m_proxyUrl);
 }
 
 void CloudTransport::remoteConnectionStateChanged(RemoteProxyConnection::State state)
@@ -83,19 +95,28 @@ void CloudTransport::remoteConnectionStateChanged(RemoteProxyConnection::State s
     RemoteProxyConnection *proxyConnection = qobject_cast<RemoteProxyConnection*>(sender());
     ConnectionContext context = m_connections.value(proxyConnection);
 
-    if (state == RemoteProxyConnection::StateRemoteConnected) {
+    switch (state) {
+    case RemoteProxyConnection::StateRemoteConnected:
+        qCDebug(dcCloud()) << "The remote client connected successfully" << proxyConnection->tunnelPartnerName() << proxyConnection->tunnelPartnerUuid();
         emit clientConnected(context.clientId);
-    } else if (state ==RemoteProxyConnection::StateDisconnected) {
+        break;
+    case RemoteProxyConnection::StateDisconnected:
+        qCDebug(dcCloud()) << "The remote connection disconnected.";
         emit clientDisconnected(context.clientId);
+        break;
+    default:
+        qCDebug(dcCloud()) << state;
+        break;
     }
 }
 
 void CloudTransport::transportReady()
 {
-    qCDebug(dcCloud) << "Transport ready";
-    RemoteProxyConnection *proxyConnection = qobject_cast<RemoteProxyConnection*>(sender());
-    ConnectionContext context = m_connections.value(proxyConnection);
+    RemoteProxyConnection *proxyConnection = static_cast<RemoteProxyConnection *>(sender());
+    qCDebug(dcCloud()) << "Connected successfully to remote proxy server" << proxyConnection->proxyServerName() <<
+                          proxyConnection->proxyServerVersion() << "API version:" << proxyConnection->proxyServerApiVersion();
 
+    ConnectionContext context = m_connections.value(proxyConnection);
     context.proxyConnection->authenticate(context.token);
 }
 
@@ -103,7 +124,7 @@ void CloudTransport::transportDataReady(const QByteArray &data)
 {
     RemoteProxyConnection *proxyConnection = qobject_cast<RemoteProxyConnection*>(sender());
     ConnectionContext context = m_connections.value(proxyConnection);
-
+    qCDebug(dcCloudTraffic()) << "Date received:" << context.clientId.toString() << data;
     emit dataAvailable(context.clientId, data);
 }
 

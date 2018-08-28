@@ -472,7 +472,7 @@ QVariantMap JsonRPCServer::createWelcomeMessage(TransportInterface *interface) c
     handshake.insert("language", NymeaCore::instance()->configuration()->locale().name());
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
     handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? NymeaCore::instance()->userManager()->initRequired() : false));
-    handshake.insert("authenticationRequired", interface->configuration().authenticationEnabled);
+    handshake.insert("authenticationRequired", m_interfaces.value(interface));
     handshake.insert("pushButtonAuthAvailable", NymeaCore::instance()->userManager()->pushButtonAuthAvailable());
     return handshake;
 }

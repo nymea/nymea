@@ -94,7 +94,7 @@ void AWSConnector::doConnect()
     m_client = new QMQTT::Client(m_currentEndpoint, 8883, sslConfig, true, this);
     m_client->setClientId(m_clientId);
     m_client->setVersion(QMQTT::V3_1_1);
-    m_client->setKeepAlive(30*60);
+    m_client->setKeepAlive(30);
     m_client->setCleanSession(true);
     m_client->setAutoReconnect(true);
     m_client->connectToHost();

@@ -24,7 +24,7 @@ Build-Depends: debhelper (>= 9.0.0),
                libavahi-client-dev,
                libavahi-common-dev,
                libssl-dev,
-               libaws-iot-device-sdk-cpp,
+               libqmqtt-dev,
                dbus-test-runner,
 
 Package: nymea

@@ -25,18 +25,20 @@
 #include <QFuture>
 #include <QDateTime>
 
-#include "OpenSSL/OpenSSLConnection.hpp"
-#include <mqtt/Client.hpp>
-#include <mqtt/Common.hpp>
-#include "util/logging/Logging.hpp"
-#include "util/logging/LogMacros.hpp"
-#include "util/logging/ConsoleLogSystem.hpp"
+#include <qmqtt/qmqtt.h>
 
-class AWSConnector : public QObject, public awsiotsdk::mqtt::SubscriptionHandlerContextData, public awsiotsdk::DisconnectCallbackContextData
+//#include "OpenSSL/OpenSSLConnection.hpp"
+//#include <mqtt/Client.hpp>
+//#include <mqtt/Common.hpp>
+//#include "util/logging/Logging.hpp"
+//#include "util/logging/LogMacros.hpp"
+//#include "util/logging/ConsoleLogSystem.hpp"
+
+class AWSConnector : public QObject
 {
     Q_OBJECT
 public:
-    explicit AWSConnector(QObject *parent = 0);
+    explicit AWSConnector(QObject *parent = nullptr);
     ~AWSConnector();
 
     class PushNotificationsEndpoint {
@@ -74,36 +76,29 @@ signals:
 private slots:
     void doConnect();
     void onConnected();
+    void onDisconnected();
+    void onPublished(const QMQTT::Message &message, quint16 msgid);
+    void onSubscribed(const QString& topic, const quint8 qos);
+    void onSubscriptionReceived(const QMQTT::Message &message);
+
     void registerDevice();
     void onDeviceRegistered(bool needsReconnect);
     void setupSubscriptions();
     void fetchPairings();
     void onPairingsRetrieved(const QVariantMap &pairings);
     void setName();
-    void onDisconnected();
     void onTurnCredentialsReceived(const QVariantMap &turnCredentials);
 
+
 private:
-    class SubscriptionContext: public awsiotsdk::mqtt::SubscriptionHandlerContextData
-    {
-    public:
-        SubscriptionContext(AWSConnector *connector): c(connector) {}
-        AWSConnector *c;
-    };
-    class DisconnectContext: public awsiotsdk::DisconnectCallbackContextData
-    {
-    public:
-        DisconnectContext(AWSConnector *connector): c(connector) {}
-        AWSConnector *c;
-    };
     quint16 publish(const QString &topic, const QVariantMap &message);
-    quint16 subscribe(const QStringList &topics);
-    static void publishCallback(uint16_t actionId, awsiotsdk::ResponseCode rc);
-    static void subscribeCallback(uint16_t actionId, awsiotsdk::ResponseCode rc);
-    static awsiotsdk::ResponseCode onSubscriptionReceivedCallback(awsiotsdk::util::String topic_name, awsiotsdk::util::String payload,
-                                             std::shared_ptr<awsiotsdk::mqtt::SubscriptionHandlerContextData> p_app_handler_data);
-    static awsiotsdk::ResponseCode onDisconnectedCallback(awsiotsdk::util::String mqtt_client_id,
-                        std::shared_ptr<awsiotsdk::DisconnectCallbackContextData> p_app_handler_data);
+    void subscribe(const QStringList &topics);
+//    static void publishCallback(uint16_t actionId, awsiotsdk::ResponseCode rc);
+//    static void subscribeCallback(uint16_t actionId, awsiotsdk::ResponseCode rc);
+//    static awsiotsdk::ResponseCode onSubscriptionReceivedCallback(awsiotsdk::util::String topic_name, awsiotsdk::util::String payload,
+//                                             std::shared_ptr<awsiotsdk::mqtt::SubscriptionHandlerContextData> p_app_handler_data);
+//    static awsiotsdk::ResponseCode onDisconnectedCallback(awsiotsdk::util::String mqtt_client_id,
+//                        std::shared_ptr<awsiotsdk::DisconnectCallbackContextData> p_app_handler_data);
 
     void storeRegisteredFlag(bool registered);
     bool readRegisteredFlag() const;
@@ -114,8 +109,9 @@ private:
     QString getCertificateFingerprint(const QString &certificateFilePath) const;
 
 private:
-    std::shared_ptr<awsiotsdk::network::OpenSSLConnection> m_networkConnection;
-    std::shared_ptr<awsiotsdk::MqttClient> m_client;
+//    std::shared_ptr<awsiotsdk::network::OpenSSLConnection> m_networkConnection;
+//    std::shared_ptr<awsiotsdk::MqttClient> m_client;
+    QMQTT::Client *m_client = nullptr;
     QString m_currentEndpoint;
     QString m_caFile;
     QString m_clientCertFile;
@@ -137,11 +133,11 @@ private:
     QStringList m_subscriptionCache;
     QPair<QVariantMap, QDateTime> m_cachedTURNCredentials;
 
-    std::shared_ptr<awsiotsdk::mqtt::SubscriptionHandlerContextData> m_subscriptionContextData;
-    std::shared_ptr<awsiotsdk::DisconnectCallbackContextData> m_disconnectContextData;
+//    std::shared_ptr<awsiotsdk::mqtt::SubscriptionHandlerContextData> m_subscriptionContextData;
+//    std::shared_ptr<awsiotsdk::DisconnectCallbackContextData> m_disconnectContextData;
 
-    static AWSConnector* s_instance;
-    static QHash<quint16, AWSConnector*> s_requestMap;
+//    static AWSConnector* s_instance;
+//    QHash<quint16, AWSConnector*> m_requestMap;
 };
 Q_DECLARE_METATYPE(AWSConnector::PushNotificationsEndpoint)
 

@@ -8,11 +8,11 @@ INCLUDEPATH += ../libnymea ../libnymea-core
 target.path = /usr/bin
 INSTALLS += target
 
-QT *= sql xml websockets bluetooth dbus network
+QT *= sql xml websockets bluetooth dbus network qmqtt
 
 LIBS += -L$$top_builddir/libnymea/ -lnymea \
         -L$$top_builddir/libnymea-core -lnymea-core \
-        -lssl -lcrypto -laws-iot-sdk-cpp -lnymea-remoteproxyclient
+        -lssl -lcrypto -lnymea-remoteproxyclient
 
 # Server files
 include(qtservice/qtservice.pri)

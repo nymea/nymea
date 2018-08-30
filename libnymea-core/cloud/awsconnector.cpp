@@ -96,12 +96,13 @@ void AWSConnector::doConnect()
     m_client->setVersion(QMQTT::V3_1_1);
     m_client->setKeepAlive(30*60);
     m_client->setCleanSession(true);
+    m_client->setAutoReconnect(true);
     m_client->connectToHost();
 
     connect(m_client, &QMQTT::Client::connected, this, &AWSConnector::onConnected);
     connect(m_client, &QMQTT::Client::disconnected, this, &AWSConnector::onDisconnected);
     connect(m_client, &QMQTT::Client::error, this, [](const QMQTT::ClientError error){
-        qDebug() << "error" << error;
+        qCWarning(dcAWS()) << "An error happened in the MQTT transport" << error;
     });
 
     connect(m_client, &QMQTT::Client::subscribed, this, &AWSConnector::onSubscribed);

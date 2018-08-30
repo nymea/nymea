@@ -85,7 +85,6 @@ void CloudTransport::connectToCloud(const QString &token)
 
 void CloudTransport::remoteConnectionStateChanged(RemoteProxyConnection::State state)
 {
-    qCDebug(dcCloud) << "Remote connection state changed" << state;
     RemoteProxyConnection *proxyConnection = qobject_cast<RemoteProxyConnection*>(sender());
     ConnectionContext context = m_connections.value(proxyConnection);
 
@@ -99,7 +98,7 @@ void CloudTransport::remoteConnectionStateChanged(RemoteProxyConnection::State s
         emit clientDisconnected(context.clientId);
         break;
     default:
-        qCDebug(dcCloud()) << state;
+        qCDebug(dcCloud()) << "Remote connection state changed" << state;
         break;
     }
 }

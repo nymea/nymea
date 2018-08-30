@@ -3,7 +3,7 @@ TARGET = nymea-core
 
 include(../nymea.pri)
 
-QT += sql
+QT += sql qmqtt
 INCLUDEPATH += $$top_srcdir/libnymea
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto -lavahi-common -lavahi-client
 
@@ -97,7 +97,7 @@ HEADERS += nymeacore.h \
     tagging/tagsstorage.h \
     tagging/tag.h \
     jsonrpc/tagshandler.h \
-    cloud/cloudtransport.h
+    cloud/cloudtransport.h \
 
 SOURCES += nymeacore.cpp \
     tcpserver.cpp \
@@ -154,7 +154,7 @@ SOURCES += nymeacore.cpp \
     cloud/awsconnector.cpp \
     cloud/cloudmanager.cpp \
     cloud/cloudnotifications.cpp \
-    cloud/OpenSSL/OpenSSLConnection.cpp \
+#    cloud/OpenSSL/OpenSSLConnection.cpp \
     cloud/janusconnector.cpp \
     pushbuttondbusservice.cpp \
     hardwaremanagerimplementation.cpp \
@@ -179,4 +179,4 @@ SOURCES += nymeacore.cpp \
     tagging/tagsstorage.cpp \
     tagging/tag.cpp \
     jsonrpc/tagshandler.cpp \
-    cloud/cloudtransport.cpp
+    cloud/cloudtransport.cpp \

@@ -72,7 +72,6 @@ HEADERS += nymeacore.h \
     cloud/awsconnector.h \
     cloud/cloudmanager.h \
     cloud/cloudnotifications.h \
-    cloud/OpenSSL/OpenSSLConnection.hpp \
     cloud/janusconnector.h \
     pushbuttondbusservice.h \
     hardwaremanagerimplementation.h \
@@ -154,7 +153,6 @@ SOURCES += nymeacore.cpp \
     cloud/awsconnector.cpp \
     cloud/cloudmanager.cpp \
     cloud/cloudnotifications.cpp \
-#    cloud/OpenSSL/OpenSSLConnection.cpp \
     cloud/janusconnector.cpp \
     pushbuttondbusservice.cpp \
     hardwaremanagerimplementation.cpp \

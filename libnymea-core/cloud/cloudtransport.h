@@ -42,7 +42,7 @@ public:
 signals:
 
 public slots:
-    void connectToCloud(const QString &token);
+    void connectToCloud(const QString &token, const QString &nonce);
     void remoteConnectionStateChanged(remoteproxyclient::RemoteProxyConnection::State state);
 
 private slots:
@@ -56,6 +56,7 @@ private:
     public:
         QUuid clientId;
         QString token;
+        QString nonce;
         remoteproxyclient::RemoteProxyConnection* proxyConnection;
     };
     QHash<remoteproxyclient::RemoteProxyConnection*, ConnectionContext> m_connections;

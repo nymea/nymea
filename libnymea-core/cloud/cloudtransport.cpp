@@ -65,13 +65,14 @@ bool CloudTransport::stopServer()
     return true;
 }
 
-void CloudTransport::connectToCloud(const QString &token)
+void CloudTransport::connectToCloud(const QString &token, const QString &nonce)
 {
     qCDebug(dcCloud()) << "Connecting to remote proxy server" << m_proxyUrl.toString();
 
     ConnectionContext context;
     context.clientId = QUuid::createUuid();
     context.token = token;
+    context.nonce = nonce;
     QString identifier = QString("nymea:core (%1)").arg(NymeaCore::instance()->configuration()->serverName());
     context.proxyConnection = new RemoteProxyConnection(NymeaCore::instance()->configuration()->serverUuid().toString(), identifier, this);
     m_connections.insert(context.proxyConnection, context);
@@ -110,7 +111,7 @@ void CloudTransport::transportReady()
                           proxyConnection->proxyServerVersion() << "API version:" << proxyConnection->proxyServerApiVersion();
 
     ConnectionContext context = m_connections.value(proxyConnection);
-    context.proxyConnection->authenticate(context.token);
+    context.proxyConnection->authenticate(context.token, context.nonce);
 }
 
 void CloudTransport::transportDataReady(const QByteArray &data)

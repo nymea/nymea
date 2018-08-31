@@ -468,9 +468,9 @@ void AWSConnector::onSubscriptionReceived(const QMQTT::Message &message)
         // silently drop our own things (should not be subscribed to that in the first place)
     } else if (topic.startsWith(QString("%1/eu-west-1:").arg(m_clientId)) && topic.contains("proxy")) {
         QString token = jsonDoc.toVariant().toMap().value("token").toString();
-        qlonglong timestamp = jsonDoc.toVariant().toMap().value("timestamp").toLongLong();
+        QString timestamp = jsonDoc.toVariant().toMap().value("timestamp").toString();
         static QHash<QString, QDateTime> dupes;
-        QString packetId = topic + token + QString::number(timestamp);
+        QString packetId = topic + token + timestamp;
         if (dupes.contains(packetId)) {
             qCDebug(dcAWS()) << "Dropping duplicate packet";
             return;
@@ -482,7 +482,7 @@ void AWSConnector::onSubscriptionReceived(const QMQTT::Message &message)
             }
         }
         qCDebug(dcAWS) << "Proxy remote connection request received";
-        proxyConnectionRequestReceived(token);
+        proxyConnectionRequestReceived(token, timestamp);
     } else if (topic == QString("%1/notify/response").arg(m_clientId)) {
         int transactionId = jsonDoc.toVariant().toMap().value("id").toInt();
         int status = jsonDoc.toVariant().toMap().value("status").toInt();

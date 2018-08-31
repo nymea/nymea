@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2017 Michael Zanetti <michael.zanetti@guh.io>            *
+ *  Copyright (C) 2017-2018 Michael Zanetti <michael.zanetti@guh.io>       *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *

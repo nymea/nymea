@@ -94,7 +94,7 @@ private:
         DisconnectContext(AWSConnector *connector): c(connector) {}
         AWSConnector *c;
     };
-    quint16 publish(const QString &topic, const QVariantMap &message);
+    int publish(const QString &topic, const QVariantMap &message);
     quint16 subscribe(const QStringList &topics);
     static void publishCallback(uint16_t actionId, awsiotsdk::ResponseCode rc);
     static void subscribeCallback(uint16_t actionId, awsiotsdk::ResponseCode rc);

@@ -331,12 +331,19 @@ JsonReply *JsonRPCServer::RemoveToken(const QVariantMap &params)
 
 JsonReply *JsonRPCServer::SetupRemoteAccess(const QVariantMap &params)
 {
+    if (!NymeaCore::instance()->cloudManager()->connected()) {
+        QVariantMap ret;
+        ret.insert("error", 503); // Service unavailable
+        ret.insert("message", "Cannot setup remote acces. Cloud is not connected.");
+        JsonReply *error = createReply(ret);
+        return error;
+    }
     QString idToken = params.value("idToken").toString();
     QString userId = params.value("userId").toString();
     NymeaCore::instance()->cloudManager()->pairDevice(idToken, userId);
     JsonReply *reply = createAsyncReply("SetupRemoteAccess");
     m_pairingRequests.insert(userId, reply);
-    connect(reply, &JsonReply::finished, [this, userId](){
+    connect(reply, &JsonReply::finished, this, [this, userId](){
         m_pairingRequests.remove(userId);
     });
     return reply;

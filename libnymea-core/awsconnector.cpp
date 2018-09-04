@@ -298,9 +298,9 @@ void AWSConnector::requestTURNCredentials()
     publish(QString("%1/services/turn").arg(m_clientId), params);
 }
 
-quint16 AWSConnector::publish(const QString &topic, const QVariantMap &message)
+int AWSConnector::publish(const QString &topic, const QVariantMap &message)
 {
-    if (!m_setupInProgress && !isConnected()) {
+    if (m_setupInProgress || !isConnected()) {
         qCWarning(dcAWS()) << "Can't publish to AWS: Not connected.";
         return -1;
     }

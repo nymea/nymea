@@ -133,6 +133,7 @@ int main(int argc, char *argv[])
     s_loggingFilters.insert("Avahi", false);
     s_loggingFilters.insert("UPnP", false);
     s_loggingFilters.insert("Cloud", true);
+    s_loggingFilters.insert("CloudTraffic", false);
     s_loggingFilters.insert("NetworkManager", false);
     s_loggingFilters.insert("UserManager", true);
     s_loggingFilters.insert("AWS", false);

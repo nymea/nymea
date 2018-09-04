@@ -537,7 +537,7 @@ QString AWSConnector::getCertificateFingerprint(const QString &certificateFile) 
 {
     QFile certFile(certificateFile);
     if (!certFile.open(QFile::ReadOnly)) {
-        qCWarning(dcAWS()) << "Error openi<ng certificate file" << certificateFile;
+        qCWarning(dcAWS()) << "Error opening certificate file" << certificateFile;
         return QString();
     }
     QSslCertificate crt = QSslCertificate(certFile.readAll());

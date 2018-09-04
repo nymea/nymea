@@ -54,10 +54,6 @@ public:
     explicit CloudManager(NymeaConfiguration *configuration, NetworkManager *networkManager, QObject *parent = nullptr);
     ~CloudManager();
 
-//    void setServerUrl(const QString &serverUrl);
-//    void setDeviceId(const QUuid &deviceId);
-//    void setClientCertificates(const QString &caCertificate, const QString &clientCertificate, const QString &clientCertificateKey);
-
     bool enabled() const;
     void setEnabled(bool enabled);
 
@@ -96,6 +92,7 @@ private:
     JanusConnector *m_janusConnector = nullptr;
     NymeaConfiguration *m_configuration = nullptr;
     NetworkManager *m_networkManager = nullptr;
+    CloudTransport *m_transport = nullptr;
 
     QString m_serverUrl;
     QUuid m_deviceId;
@@ -103,8 +100,6 @@ private:
     QString m_caCertificate;
     QString m_clientCertificate;
     QString m_clientCertificateKey;
-
-    CloudTransport *m_transport;
 };
 
 }

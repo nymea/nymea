@@ -4,43 +4,43 @@
 <context>
     <name>CloudNotifications</name>
     <message>
-        <location filename="../../../libnymea-core/cloudnotifications.cpp" line="56"/>
-        <location filename="../../../libnymea-core/cloudnotifications.cpp" line="121"/>
+        <location filename="../../../libnymea-core/cloud/cloudnotifications.cpp" line="56"/>
+        <location filename="../../../libnymea-core/cloud/cloudnotifications.cpp" line="121"/>
         <source>Cloud Notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../libnymea-core/cloudnotifications.cpp" line="68"/>
+        <location filename="../../../libnymea-core/cloud/cloudnotifications.cpp" line="68"/>
         <source>User ID</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../libnymea-core/cloudnotifications.cpp" line="74"/>
+        <location filename="../../../libnymea-core/cloud/cloudnotifications.cpp" line="74"/>
         <source>Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../libnymea-core/cloudnotifications.cpp" line="84"/>
+        <location filename="../../../libnymea-core/cloud/cloudnotifications.cpp" line="84"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../libnymea-core/cloudnotifications.cpp" line="90"/>
+        <location filename="../../../libnymea-core/cloud/cloudnotifications.cpp" line="90"/>
         <source>Message text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../libnymea-core/cloudnotifications.cpp" line="100"/>
+        <location filename="../../../libnymea-core/cloud/cloudnotifications.cpp" line="100"/>
         <source>Send notification</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../libnymea-core/cloudnotifications.cpp" line="109"/>
+        <location filename="../../../libnymea-core/cloud/cloudnotifications.cpp" line="109"/>
         <source>connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../libnymea-core/cloudnotifications.cpp" line="111"/>
+        <location filename="../../../libnymea-core/cloud/cloudnotifications.cpp" line="111"/>
         <source>Connected changed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -64,7 +64,7 @@
 <context>
     <name>nymea</name>
     <message>
-        <location filename="../../../server/main.cpp" line="165"/>
+        <location filename="../../../server/main.cpp" line="166"/>
         <source>
 nymea is an open source IoT (Internet of Things) server, 
 which allows to control a lot of different devices from many different 
@@ -76,34 +76,34 @@ for your environment.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../server/main.cpp" line="177"/>
+        <location filename="../../../server/main.cpp" line="178"/>
         <source>Run nymead in the foreground, not as daemon.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../server/main.cpp" line="180"/>
+        <location filename="../../../server/main.cpp" line="181"/>
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
 
 Categories are:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../server/main.cpp" line="197"/>
+        <location filename="../../../server/main.cpp" line="198"/>
         <source>Enables all debug categories. Single debug categories can be disabled again with -d parameter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../server/main.cpp" line="200"/>
+        <location filename="../../../server/main.cpp" line="201"/>
         <source>Specify a log file to write to, if this option is not specified, logs will be printed to the standard output.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../server/main.cpp" line="203"/>
+        <location filename="../../../server/main.cpp" line="204"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../server/main.cpp" line="243"/>
+        <location filename="../../../server/main.cpp" line="244"/>
         <source>No such debug category:</source>
         <translation type="unfinished"></translation>
     </message>

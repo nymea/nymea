@@ -1,4 +1,4 @@
-1.8
+1.9
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -462,11 +462,12 @@
             }
         },
         "JSONRPC.IsCloudConnected": {
-            "description": "Check whether the cloud is currently connected.",
+            "description": "Check whether the cloud is currently connected. \"connected\" will be true whenever connectionState equals CloudConnectionStateConnected and is deprecated. Please use the connectionState value instead.",
             "params": {
             },
             "returns": {
-                "connected": "Bool"
+                "connected": "Bool",
+                "connectionState": "$ref:CloudConnectionState"
             }
         },
         "JSONRPC.KeepAlive": {
@@ -504,6 +505,19 @@
             },
             "returns": {
                 "enabled": "Bool"
+            }
+        },
+        "JSONRPC.SetupCloudConnection": {
+            "description": "Sets up the cloud connection by deploying a certificate and its configuration.",
+            "params": {
+                "certificatePEM": "String",
+                "endpoint": "String",
+                "privateKey": "String",
+                "publicKey": "String",
+                "rootCA": "String"
+            },
+            "returns": {
+                "success": "Bool"
             }
         },
         "JSONRPC.SetupRemoteAccess": {
@@ -1070,6 +1084,7 @@
             "o:repeating": "$ref:RepeatingOption",
             "o:startTime": "Time"
         },
+        "CloudConnectionState": "$ref:CloudConnectionState",
         "ConfigurationError": [
             "ConfigurationErrorNoError",
             "ConfigurationErrorInvalidTimeZone",

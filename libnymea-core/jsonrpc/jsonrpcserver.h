@@ -43,7 +43,7 @@ class JsonRPCServer: public JsonHandler
 {
     Q_OBJECT
 public:
-    JsonRPCServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = 0);
+    JsonRPCServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = nullptr);
 
     // JsonHandler API implementation
     QString name() const;
@@ -57,6 +57,7 @@ public:
     Q_INVOKABLE JsonReply *RequestPushButtonAuth(const QVariantMap &params);
     Q_INVOKABLE JsonReply *Tokens(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *RemoveToken(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *SetupCloudConnection(const QVariantMap &params);
     Q_INVOKABLE JsonReply *SetupRemoteAccess(const QVariantMap &params);
     Q_INVOKABLE JsonReply *IsCloudConnected(const QVariantMap &params);
     Q_INVOKABLE JsonReply *KeepAlive(const QVariantMap &params);
@@ -91,7 +92,7 @@ private slots:
     void asyncReplyFinished();
 
     void pairingFinished(QString cognitoUserId, int status, const QString &message);
-    void onCloudConnectedChanged(bool connected);
+    void onCloudConnectionStateChanged();
     void onPushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
 
 private:

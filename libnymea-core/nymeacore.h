@@ -32,7 +32,7 @@
 #include "devicemanager.h"
 #include "ruleengine.h"
 #include "servermanager.h"
-#include "cloudmanager.h"
+#include "cloud/cloudmanager.h"
 
 #include "time/timemanager.h"
 #include "hardwaremanagerimplementation.h"

@@ -176,8 +176,10 @@ void AWSConnector::fetchPairings()
 
 void AWSConnector::onPairingsRetrieved(const QVariantMap &pairings)
 {
-    m_setupInProgress = false;
-    emit connected();
+    if (m_setupInProgress) {
+        m_setupInProgress = false;
+        emit connected();
+    }
 
     qCDebug(dcAWS) << pairings.value("users").toList().count() << "devices paired in cloud.";
     if (pairings.value("users").toList().count() > 0) {

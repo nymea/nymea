@@ -33,12 +33,6 @@ ParamTypeId notifyActionParamBodyId = ParamTypeId("4bd0fa87-c663-4621-8040-99b6d
 
 StateTypeId connectedStateTypeId = StateTypeId("518e27b6-c3bf-49d7-be24-05ae978c00f7");
 
-// FIXME: This ZAPF_HOTFIX is here to disable some features in order to meet the ZAPF deadline
-// Once the cloud infrastructure is fixed to properly give out unique and persistent ids
-// for push notification enabled devices, remove this complete commit (apply -r)
-// It should remove all the ZAPF_HOTFIX parts in here and one line in awsconnector.cpp
-#define ZAPF_HOTFIX 1
-
 CloudNotifications::CloudNotifications(AWSConnector* awsConnector, QObject *parent):
     DevicePlugin(parent),
     m_awsConnector(awsConnector)
@@ -169,27 +163,6 @@ DeviceManager::DeviceError CloudNotifications::executeAction(Device *device, con
 void CloudNotifications::pushNotificationEndpointsUpdated(const QList<AWSConnector::PushNotificationsEndpoint> &endpoints)
 {
     qCDebug(dcCloud()) << "Push Notification endpoint update";
-#if ZAPF_HOTFIX
-    if (endpoints.isEmpty() && myDevices().count() > 0) {
-        emit autoDeviceDisappeared(myDevices().first()->id());
-        return;
-    }
-
-    if (myDevices().count() > 0) {
-        // already have a device, ignore it
-        return;
-    }
-
-    DeviceDescriptor descriptor(cloudNotificationsDeviceClassId, "Push notifications", "");
-    ParamList params;
-    Param userIdParam(cloudNotificationsDeviceClassUserParamId, ""); // Not used for now
-    params.append(userIdParam);
-    Param endpointIdParam(cloudNotificationsDeviceClassEndpointParamId, "everyone");
-    params.append(endpointIdParam);
-    descriptor.setParams(params);
-    emit autoDevicesAppeared(cloudNotificationsDeviceClassId, {descriptor});
-
-#else
     QList<Device*> devicesToRemove;
     foreach (Device *configuredDevice, myDevices()) {
         bool found = false;
@@ -231,14 +204,11 @@ void CloudNotifications::pushNotificationEndpointsUpdated(const QList<AWSConnect
         }
     }
     emit autoDevicesAppeared(cloudNotificationsDeviceClassId, devicesToAdd);
-#endif
+
 }
 
 void CloudNotifications::pushNotificationEndpointAdded(const AWSConnector::PushNotificationsEndpoint &endpoint)
 {
-#if ZAPF_HOTFIX
-    pushNotificationEndpointsUpdated({endpoint});
-#else
     DeviceDescriptor descriptor(cloudNotificationsDeviceClassId, endpoint.displayName, QString("Send notifications to %1").arg(endpoint.displayName));
     ParamList params;
     Param userIdParam(cloudNotificationsDeviceClassUserParamId, endpoint.userId);
@@ -247,7 +217,6 @@ void CloudNotifications::pushNotificationEndpointAdded(const AWSConnector::PushN
     params.append(endpointIdParam);
     descriptor.setParams(params);
     emit autoDevicesAppeared(cloudNotificationsDeviceClassId, {descriptor});
-#endif
 }
 
 void CloudNotifications::pushNotificationSent(int id, int status)

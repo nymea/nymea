@@ -137,10 +137,11 @@ QJsonObject CloudNotifications::metaData() const
 DeviceManager::DeviceSetupStatus CloudNotifications::setupDevice(Device *device)
 {
     device->setStateValue(connectedStateTypeId, m_awsConnector->isConnected());
-    connect(m_awsConnector, &AWSConnector::connected, device, [this, device]() {
+    qCDebug(dcCloud) << "Cloud Notifications Device setup:" << device->name() << "Connected:" << m_awsConnector->isConnected();
+    connect(m_awsConnector, &AWSConnector::connected, device, [device]() {
         device->setStateValue(connectedStateTypeId, true);
     });
-    connect(m_awsConnector, &AWSConnector::disconnected, device, [this, device]() {
+    connect(m_awsConnector, &AWSConnector::disconnected, device, [device]() {
         device->setStateValue(connectedStateTypeId, false);
     });
     return DeviceManager::DeviceSetupStatusSuccess;
@@ -184,7 +185,9 @@ void CloudNotifications::pushNotificationEndpointsUpdated(const QList<AWSConnect
     QList<DeviceDescriptor> devicesToAdd;
     foreach (const AWSConnector::PushNotificationsEndpoint &ep, endpoints) {
         bool found = false;
+        qCDebug(dcCloud) << "Checking endoint:" << ep.endpointId;
         foreach (Device *d, myDevices()) {
+            qCDebug(dcCloud) << "Have existing device:" << d->name() << d->paramValue(cloudNotificationsDeviceClassEndpointParamId);
             if (d->paramValue(cloudNotificationsDeviceClassUserParamId).toString() == ep.userId
                     && d->paramValue(cloudNotificationsDeviceClassEndpointParamId).toString() == ep.endpointId) {
                 found = true;
@@ -209,6 +212,14 @@ void CloudNotifications::pushNotificationEndpointsUpdated(const QList<AWSConnect
 
 void CloudNotifications::pushNotificationEndpointAdded(const AWSConnector::PushNotificationsEndpoint &endpoint)
 {
+    // Could be just an update, don't add it in that case...
+    foreach (Device *d, myDevices()) {
+        if (d->paramValue(cloudNotificationsDeviceClassUserParamId).toString() == endpoint.userId
+                && d->paramValue(cloudNotificationsDeviceClassEndpointParamId).toString() == endpoint.endpointId) {
+            return;
+        }
+    }
+    qCDebug(dcCloud) << "Push notification endpoint added:" << endpoint.displayName;
     DeviceDescriptor descriptor(cloudNotificationsDeviceClassId, endpoint.displayName, QString("Send notifications to %1").arg(endpoint.displayName));
     ParamList params;
     Param userIdParam(cloudNotificationsDeviceClassUserParamId, endpoint.userId);

@@ -1160,6 +1160,14 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     settings.remove("");
     settings.endGroup();
 
+    if (actions.isEmpty() && exitActions.isEmpty()) {
+        // The rule doesn't have any actions any more and is useless at this point... let's remove it altogether
+        qCDebug(dcRuleEngine()) << "Rule" << rule.name() << "(" + rule.id().toString() + ")" << "does not have any actions any more. Removing it.";
+        m_rules.take(id);
+        emit ruleRemoved(id);
+        return;
+    }
+
     Rule newRule;
     newRule.setId(id);
     newRule.setName(rule.name());

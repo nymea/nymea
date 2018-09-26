@@ -43,7 +43,6 @@
 #include "nymeaapplication.h"
 #include "loggingcategories.h"
 
-static QHash<QString, bool> s_loggingFilters;
 static QFile s_logFile;
 
 static const char *const normal = "\033[0m";
@@ -51,18 +50,6 @@ static const char *const warning = "\e[33m";
 static const char *const error = "\e[31m";
 
 using namespace nymeaserver;
-
-static void loggingCategoryFilter(QLoggingCategory *category)
-{
-    if (s_loggingFilters.contains(category->categoryName())) {
-        bool debugEnabled = s_loggingFilters.value(category->categoryName());
-        category->setEnabled(QtDebugMsg, debugEnabled);
-        category->setEnabled(QtWarningMsg, debugEnabled || s_loggingFilters.value("Warnings"));
-    } else {
-        category->setEnabled(QtDebugMsg, false);
-        category->setEnabled(QtWarningMsg, s_loggingFilters.value("qml") || s_loggingFilters.value("Warnings"));
-    }
-}
 
 static void consoleLogHandler(QtMsgType type, const QMessageLogContext& context, const QString& message)
 {
@@ -110,43 +97,45 @@ int main(int argc, char *argv[])
     application.setApplicationVersion(NYMEA_VERSION_STRING);
 
     // logging filers for core and libnymea
-    s_loggingFilters.insert("Application", true);
-    s_loggingFilters.insert("Warnings", true);
-    s_loggingFilters.insert("DeviceManager", true);
-    s_loggingFilters.insert("RuleEngine", true);
-    s_loggingFilters.insert("RuleEngineDebug", false);
-    s_loggingFilters.insert("Hardware", false);
-    s_loggingFilters.insert("Bluetooth", false);
-    s_loggingFilters.insert("Connection", true);
-    s_loggingFilters.insert("LogEngine", false);
-    s_loggingFilters.insert("TcpServer", false);
-    s_loggingFilters.insert("TcpServerTraffic", false);
-    s_loggingFilters.insert("WebServer", false);
-    s_loggingFilters.insert("WebSocketServer", false);
-    s_loggingFilters.insert("WebSocketServerTraffic", false);
-    s_loggingFilters.insert("JsonRpc", false);
-    s_loggingFilters.insert("JsonRpcTraffic", false);
-    s_loggingFilters.insert("Rest", false);
-    s_loggingFilters.insert("OAuth2", false);
-    s_loggingFilters.insert("TimeManager", false);
-    s_loggingFilters.insert("Coap", false);
-    s_loggingFilters.insert("Avahi", false);
-    s_loggingFilters.insert("UPnP", false);
-    s_loggingFilters.insert("Cloud", true);
-    s_loggingFilters.insert("CloudTraffic", false);
-    s_loggingFilters.insert("NetworkManager", false);
-    s_loggingFilters.insert("UserManager", true);
-    s_loggingFilters.insert("AWS", false);
-    s_loggingFilters.insert("AWSTraffic", false);
-    s_loggingFilters.insert("Janus", false);
-    s_loggingFilters.insert("JanusTraffic", false);
-    s_loggingFilters.insert("BluetoothServer", true);
-    s_loggingFilters.insert("BluetoothServerTraffic", false);
+    QStringList loggingFilters = {
+        "Application",
+        "Warnings",
+        "DeviceManager",
+        "RuleEngine",
+        "RuleEngineDebug",
+        "Hardware",
+        "Bluetooth",
+        "Connection",
+        "LogEngine",
+        "TcpServer",
+        "TcpServerTraffic",
+        "WebServer",
+        "WebSocketServer",
+        "WebSocketServerTraffic",
+        "JsonRpc",
+        "JsonRpcTraffic",
+        "Rest",
+        "OAuth2",
+        "TimeManager",
+        "Coap",
+        "Avahi",
+        "UPnP",
+        "Cloud",
+        "CloudTraffic",
+        "NetworkManager",
+        "UserManager",
+        "AWS",
+        "AWSTraffic",
+        "Janus",
+        "JanusTraffic",
+        "BluetoothServer",
+        "BluetoothServerTraffic"
+    };
 
-    QHash<QString, bool> loggingFiltersPlugins;
+    QStringList loggingFiltersPlugins;
     foreach (const QJsonObject &pluginMetadata, DeviceManager::pluginsMetadata()) {
         QString pluginName = pluginMetadata.value("name").toString();
-        loggingFiltersPlugins.insert(pluginName.left(1).toUpper() + pluginName.mid(1), false);
+        loggingFiltersPlugins << pluginName.left(1).toUpper() + pluginName.mid(1);
     }
 
     // Translator for the server application
@@ -164,10 +153,10 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     parser.addVersionOption();
     QString applicationDescription = QCoreApplication::translate("nymea", "\nnymea is an open source IoT (Internet of Things) server, \n"
-                                             "which allows to control a lot of different devices from many different \n"
-                                             "manufacturers. With the powerful rule engine you are able to connect any \n"
-                                             "device available in the system and create individual scenes and behaviors \n"
-                                             "for your environment.\n\n");
+                                                                          "which allows to control a lot of different devices from many different \n"
+                                                                          "manufacturers. With the powerful rule engine you are able to connect any \n"
+                                                                          "device available in the system and create individual scenes and behaviors \n"
+                                                                          "for your environment.\n\n");
 
     applicationDescription.append(QString("nymead %1 %2 2014-2018 guh GmbH\n"
                                           "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
@@ -178,24 +167,19 @@ int main(int argc, char *argv[])
     QCommandLineOption foregroundOption(QStringList() << "n" << "no-daemon", QCoreApplication::translate("nymea", "Run nymead in the foreground, not as daemon."));
     parser.addOption(foregroundOption);
 
-    QString debugDescription = QCoreApplication::translate("nymea", "Debug categories to enable. Prefix with \"No\" to disable. Warnings from all categories will be printed unless explicitly muted with \"NoWarnings\". \n\nCategories are:");
+    QString debugDescription = QCoreApplication::translate("nymea", "Debug categories to enable. Prefix with \"No\" to disable. Suffix with \"Warnings\" to address warnings.\nExamples:\n-d AWSTraffic\n-d NoDeviceManager\n-d NoBluetoothWarnings\n\nCategories are:");
 
-    // create sorted loggingFiler list
-    QStringList sortedFilterList = QStringList(s_loggingFilters.keys());
-    sortedFilterList.sort();
-    foreach (const QString &filterName, sortedFilterList)
-        debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
+    loggingFilters.sort();
+    foreach (const QString &filterName, loggingFilters)
+        debugDescription += "\n- " + filterName;
 
 
-    // create sorted plugin loggingFiler list
-    QStringList sortedPluginList = QStringList(loggingFiltersPlugins.keys());
-    sortedPluginList.sort();
+    loggingFiltersPlugins.sort();
     debugDescription += "\n\nPlugin categories:\n";
-    foreach (const QString &filterName, sortedPluginList)
-        debugDescription += "\n- " + filterName + " (" + (s_loggingFilters.value(filterName) ? "yes" : "no") + ")";
+    foreach (const QString &filterName, loggingFiltersPlugins)
+        debugDescription += "\n- " + filterName;
 
-
-    QCommandLineOption allOption(QStringList() << "p" << "print-all", QCoreApplication::translate("nymea", "Enables all debug categories. Single debug categories can be disabled again with -d parameter."));
+    QCommandLineOption allOption(QStringList() << "p" << "print-all", QCoreApplication::translate("nymea", "Enables all debug categories except *Traffic and *Debug categories. Single debug categories can be disabled again with -d parameter."));
     parser.addOption(allOption);
 
     QCommandLineOption logOption({"l", "log"}, QCoreApplication::translate("nymea", "Specify a log file to write to, if this option is not specified, logs will be printed to the standard output."), "logfile", "/var/log/nymead.log");
@@ -204,7 +188,7 @@ int main(int argc, char *argv[])
     QCommandLineOption dbusOption(QStringList() << "session", QCoreApplication::translate("nymea", "If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus."));
     parser.addOption(dbusOption);
 
-    QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory");
+    QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory[Warnings]");
     parser.addOption(debugOption);
 
     parser.process(application);
@@ -224,27 +208,28 @@ int main(int argc, char *argv[])
         }
     }
 
-    // add plugin metadata to the static hash
-    foreach (const QString &category, loggingFiltersPlugins.keys())
-        s_loggingFilters.insert(category, false);
-
-    // check debug area
+    QStringList filterRules;
     if (parser.isSet(allOption)) {
-        foreach (const QString &debugArea, s_loggingFilters.keys()) {
-            s_loggingFilters[debugArea] = true;
-        }
+        filterRules << "*.debug=true";
+        filterRules << "*Traffic.debug=false";
+        filterRules << "*Debug.debug=false";
+    } else {
+        filterRules << "*.debug=false";
     }
+
     // And allow overriding individual values
     foreach (QString debugArea, parser.values(debugOption)) {
         bool enable = !debugArea.startsWith("No");
+        bool isWarning = debugArea.endsWith("Warnings");
         debugArea.remove(QRegExp("^No"));
-        if (s_loggingFilters.contains(debugArea)) {
-            s_loggingFilters[debugArea] = enable;
+        debugArea.remove(QRegExp("Warnings$"));
+        if (loggingFilters.contains(debugArea) || loggingFiltersPlugins.contains(debugArea)) {
+            filterRules.append(QString("%1.%2=%3").arg(debugArea).arg(isWarning ? "warning" : "debug").arg(enable ? "true": "false"));
         } else {
             qCWarning(dcApplication) << QCoreApplication::translate("nymea", "No such debug category:") << debugArea;
         }
     }
-    QLoggingCategory::installFilter(loggingCategoryFilter);
+    QLoggingCategory::setFilterRules(filterRules.join('\n'));
 
     if (parser.isSet(dbusOption)) {
         NymeaDBusService::setBusType(QDBusConnection::SessionBus);
@@ -260,24 +245,24 @@ int main(int argc, char *argv[])
                 fprintf(stdout, "Could not create nymea settings directory %s", qPrintable(NymeaSettings::settingsPath()));
                 exit(EXIT_FAILURE);
             }
-            qCDebug(dcApplication) << "=====================================";
-            qCDebug(dcApplication) << "nymead" << NYMEA_VERSION_STRING << "started with user ID" << userId;
-            qCDebug(dcApplication) << "=====================================";
+            qCInfo(dcApplication) << "=====================================";
+            qCInfo(dcApplication) << "nymead" << NYMEA_VERSION_STRING << "started with user ID" << userId;
+            qCInfo(dcApplication) << "=====================================";
         } else {
-            qCDebug(dcApplication) << "=====================================";
-            qCDebug(dcApplication) << "nymead" << NYMEA_VERSION_STRING << "started as root.";
-            qCDebug(dcApplication) << "=====================================";
+            qCInfo(dcApplication) << "=====================================";
+            qCInfo(dcApplication) << "nymead" << NYMEA_VERSION_STRING << "started as root.";
+            qCInfo(dcApplication) << "=====================================";
         }
 
         // If running in a snappy environment, print out some details about it.
         if (!qgetenv("SNAP").isEmpty()) {
             // Note: http://snapcraft.io/docs/reference/env
-            qCDebug(dcApplication) << "Snap name       :" << qgetenv("SNAP_NAME");
-            qCDebug(dcApplication) << "Snap version    :" << qgetenv("SNAP_VERSION");
-            qCDebug(dcApplication) << "Snap directory  :" << qgetenv("SNAP");
-            qCDebug(dcApplication) << "Snap app data   :" << qgetenv("SNAP_DATA");
-            qCDebug(dcApplication) << "Snap user data  :" << qgetenv("SNAP_USER_DATA");
-            qCDebug(dcApplication) << "Snap app common :" << qgetenv("SNAP_COMMON");
+            qCInfo(dcApplication) << "Snap name       :" << qgetenv("SNAP_NAME");
+            qCInfo(dcApplication) << "Snap version    :" << qgetenv("SNAP_VERSION");
+            qCInfo(dcApplication) << "Snap directory  :" << qgetenv("SNAP");
+            qCInfo(dcApplication) << "Snap app data   :" << qgetenv("SNAP_DATA");
+            qCInfo(dcApplication) << "Snap user data  :" << qgetenv("SNAP_USER_DATA");
+            qCInfo(dcApplication) << "Snap app common :" << qgetenv("SNAP_COMMON");
         }
 
         // create core instance

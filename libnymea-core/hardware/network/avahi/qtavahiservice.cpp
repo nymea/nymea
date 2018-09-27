@@ -149,7 +149,7 @@ bool QtAvahiService::registerService(const QString &name, const QHostAddress &ho
                 }
             }
         }
-        qCDebug(dcAvahi()) << "Registering avahi service" << name << hostAddress.toString() << port << serviceType << "on interface" << ifIndex;
+        qCDebug(dcAvahi()) << "Registering avahi service" << name << hostAddress.toString() << port << serviceType << "on interface" << ifIndex << "with protocol" << hostAddress.protocol();
 
         d_ptr->serviceList = QtAvahiServicePrivate::createTxtList(txtRecords);
         d_ptr->error = avahi_entry_group_add_service_strlst(d_ptr->group,

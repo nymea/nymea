@@ -1084,7 +1084,12 @@
             "o:repeating": "$ref:RepeatingOption",
             "o:startTime": "Time"
         },
-        "CloudConnectionState": "$ref:CloudConnectionState",
+        "CloudConnectionState": [
+            "CloudConnectionStateDisabled",
+            "CloudConnectionStateUnconfigured",
+            "CloudConnectionStateConnecting",
+            "CloudConnectionStateConnected"
+        ],
         "ConfigurationError": [
             "ConfigurationErrorNoError",
             "ConfigurationErrorInvalidTimeZone",
@@ -1510,7 +1515,12 @@
             "o:value": "String",
             "tagId": "String"
         },
-        "TagError": "$ref:TagError",
+        "TagError": [
+            "TagErrorNoError",
+            "TagErrorDeviceNotFound",
+            "TagErrorRuleNotFound",
+            "TagErrorTagNotFound"
+        ],
         "TimeDescriptor": {
             "o:calendarItems": [
                 "$ref:CalendarItem"

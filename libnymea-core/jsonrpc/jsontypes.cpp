@@ -447,8 +447,8 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("NetworkManagerState", networkManagerState());
     allTypes.insert("NetworkDeviceState", networkDeviceState());
     allTypes.insert("UserError", userError());
-    allTypes.insert("TagError", tagErrorRef());
-    allTypes.insert("CloudConnectionState", cloudConnectionStateRef());
+    allTypes.insert("TagError", tagError());
+    allTypes.insert("CloudConnectionState", cloudConnectionState());
 
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
@@ -2124,7 +2124,7 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
             } else if (refName == tagErrorRef()) {
                 QPair<bool, QString> result = validateEnum(s_tagError, variant);
                 if (!result.first) {
-                    qCWarning(dcJsonRpc()) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(logEntryRef());
+                    qCWarning(dcJsonRpc()) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(tagErrorRef());
                     return result;
                 }
             } else if (refName == cloudConnectionStateRef()) {

@@ -1,0 +1,32 @@
+{
+    "extends": "accesscontrol",
+    "states": [
+        {
+            "name": "users",
+            "type": "QStringList"
+        }
+    ],
+    "events": [
+        {
+            "name": "accessGranted",
+            "params": [
+                {
+                    "name": "userId",
+                    "type": "QString"
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "name": "addUser",
+            "params": [
+                {
+                    "name": "userId",
+                    "type": "QString"
+                }
+
+            ]
+        }
+    ]
+}

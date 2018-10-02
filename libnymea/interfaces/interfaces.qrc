@@ -47,6 +47,9 @@
         <file>smartmeter.json</file>
         <file>extendedsmartmeterconsumer.json</file>
         <file>extendedsmartmeterproducer.json</file>
+        <file>accesscontrol.json</file>
+        <file>fingerprintreader.json</file>
+        <file>useraccesscontrol.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

@@ -25,7 +25,7 @@
 
 import argparse
 import traceback
-import json
+import simplejson
 import os
 import subprocess
 
@@ -430,7 +430,7 @@ if __name__ == '__main__':
 
     # Read json file
     try:
-        pluginMap = json.loads(inputFile.read())
+        pluginMap = simplejson.loads(inputFile.read())
         inputFile.close()
     except ValueError as error:
         printError(' --> Could not load json input file \"%s\"' % (args.jsonfile))

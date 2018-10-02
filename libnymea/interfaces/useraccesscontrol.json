@@ -27,6 +27,16 @@
                 }
 
             ]
+        },
+        {
+            "name": "removeUser",
+            "params": [
+                {
+                    "name": "userId",
+                    "type": "QString"
+                }
+
+            ]
         }
     ]
 }

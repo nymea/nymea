@@ -1,3 +1,66 @@
 {
-    "extends": "useraccesscontrol"
+    "extends": "useraccesscontrol",
+    "events": [
+        {
+            "name": "accessGranted",
+            "params": [
+                {
+                    "name": "userId",
+                    "type": "QString"
+                },
+                {
+                    "name": "finger",
+                    "type": "QString",
+                    "allowedValues": [
+                        "ThumbLeft",
+                        "IndexFingerLeft",
+                        "MiddleFingerLeft",
+                        "RingFingerLeft",
+                        "PinkyLeft",
+                        "ThumbRight",
+                        "IndexFingerRight",
+                        "MiddleFingerRight",
+                        "RingFingerRight",
+                        "PinkyRight"
+                    ]
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "name": "addUser",
+            "params": [
+                {
+                    "name": "userId",
+                    "type": "QString"
+                },
+                {
+                    "name": "finger",
+                    "type": "QString",
+                    "allowedValues": [
+                        "ThumbLeft",
+                        "IndexFingerLeft",
+                        "MiddleFingerLeft",
+                        "RingFingerLeft",
+                        "PinkyLeft",
+                        "ThumbRight",
+                        "IndexFingerRight",
+                        "MiddleFingerRight",
+                        "RingFingerRight",
+                        "PinkyRight"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "removeUser",
+            "params": [
+                {
+                    "name": "userId",
+                    "type": "QString"
+                }
+            ]
+        }
+    ]
 }

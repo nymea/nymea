@@ -1530,7 +1530,17 @@ void DeviceManager::loadDeviceStates(Device *device)
     DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
     foreach (const StateType &stateType, deviceClass.stateTypes()) {
         if (stateType.cached()) {
-            device->setStateValue(stateType.id(), settings.value(stateType.id().toString(), stateType.defaultValue()));
+            QVariant value;
+            // First try to load new style
+            if (settings.childGroups().contains(stateType.id().toString())) {
+                settings.beginGroup(stateType.id().toString());
+                value = settings.value("value", stateType.defaultValue());
+                value.convert(settings.value("type").toInt());
+                settings.endGroup();
+            } else { // Try to fall back to the pre 0.9.0 way of storing states
+                value = settings.value(stateType.id().toString(), stateType.defaultValue());
+            }
+            device->setStateValue(stateType.id(), value);
         } else {
             device->setStateValue(stateType.id(), stateType.defaultValue());
         }
@@ -1545,7 +1555,10 @@ void DeviceManager::storeDeviceStates(Device *device)
     DeviceClass deviceClass = m_supportedDevices.value(device->deviceClassId());
     foreach (const StateType &stateType, deviceClass.stateTypes()) {
         if (stateType.cached()) {
-            settings.setValue(stateType.id().toString(), device->stateValue(stateType.id()));
+            settings.beginGroup(stateType.id().toString());
+            settings.setValue("type", static_cast<int>(device->stateValue(stateType.id()).type()));
+            settings.setValue("value", device->stateValue(stateType.id()));
+            settings.endGroup();
         }
     }
     settings.endGroup();

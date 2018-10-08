@@ -94,6 +94,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     setDescription("Introspect", "Introspect this API.");
     setParams("Introspect", params);
     returns.insert("methods", JsonTypes::basicTypeToString(JsonTypes::Object));
+    returns.insert("notifications", JsonTypes::basicTypeToString(JsonTypes::Object));
     returns.insert("types", JsonTypes::basicTypeToString(JsonTypes::Object));
     setReturns("Introspect", returns);
 

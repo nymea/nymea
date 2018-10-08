@@ -5,7 +5,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                         #
 #  Copyright (C) 2015-2018 Simon Stuerz <simon.stuerz@guh.io>             #
-#  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           #
+#  Copyright (C) 2014-2018 Michael Zanetti <michael.zanetti@guh.io>       #
 #                                                                         #
 #  This file is part of nymea.                                            #
 #                                                                         #
@@ -68,7 +68,7 @@ def extractPlugin(pluginMap):
 
     # Extract plugin params (configurations)
     if 'paramTypes' in pluginMap:
-        extractParamTypes(pluginMap['paramTypes'], pluginMap['name'][0].lower() + pluginMap['name'][1:], 'plugin', '')
+        extractParamTypes(pluginMap['paramTypes'], pluginMap['name'][0].lower() + pluginMap['name'][1:], "", 'plugin')
 
     if 'vendors' in pluginMap:
         extractVendors(pluginMap['vendors'])
@@ -78,7 +78,7 @@ def extractPlugin(pluginMap):
 def extractParamTypes(paramTypes, deviceClassName, typeClass, typeName):
     for paramType in paramTypes:
         try:
-            variableName = '%sParamTypeId' % (deviceClassName + typeName[0].capitalize() + typeName[1:] + paramType['name'][0].capitalize() + paramType['name'][1:] + typeClass)
+            variableName = '%sParamTypeId' % (deviceClassName + typeName[0].capitalize() + typeName[1:] + typeClass + paramType['name'][0].capitalize() + paramType['name'][1:])
             if not variableName in variableNames:
                 variableNames.append(variableName)
                 printInfo('Define ParamTypeId %s = %s' % (variableName, paramType['id']))
@@ -136,7 +136,7 @@ def extractDeviceClasses(deviceClasses):
             pass
 
         if 'paramTypes' in deviceClass:
-            extractParamTypes(deviceClass['paramTypes'], deviceClass['name'], "", 'deviceClass')
+            extractParamTypes(deviceClass['paramTypes'], deviceClass['name'], "", 'device')
 
         if 'discoveryParamTypes' in deviceClass:
             extractParamTypes(deviceClass['discoveryParamTypes'], deviceClass['name'], "", 'discovery')
@@ -180,7 +180,7 @@ def extractStateTypes(stateTypes, deviceClassName):
                 printWarning('Duplicated variable name \"%s\" for autocreated EventTypeId %s -> skipping' % (variableName, stateType['id']))
 
             # ParamType for the autocreated EventType
-            variableName = '%s%sEventParamTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:])
+            variableName = '%s%sEvent%sParamTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:], stateType['name'][0].capitalize() + stateType['name'][1:])
             if not variableName in variableNames:
                 variableNames.append(variableName)
                 printInfo('Define ParamTypeId %s for StateType %s = %s' % (variableName, variableName, stateType['id']))
@@ -206,7 +206,7 @@ def extractStateTypes(stateTypes, deviceClassName):
                     printWarning('Duplicated variable name \"%s\" for autocreated ActionTypeId %s -> skipping' % (variableName, stateType['id']))
 
                 # ParamType for the autocreated ActionType
-                variableName = '%s%sActionParamTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:])
+                variableName = '%s%sAction%sParamTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:], stateType['name'][0].capitalize() + stateType['name'][1:])
                 if not variableName in variableNames:
                     variableNames.append(variableName)
                     printInfo('Define ParamTypeId %s for autocreated ActionType %s = %s' % (variableName, variableName, stateType['id']))

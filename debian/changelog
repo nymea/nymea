@@ -1,8 +1,8 @@
-nymea (0.9.0) UNRELEASED; urgency=medium
+nymea (0.9.0) xenial; urgency=medium
 
   * Rename to nymea
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Tue, 06 Mar 2018 19:57:48 +0100
+ -- Michael Zanetti <michael.zanetti@guh.io>  Tue, 09 Oct 2018 22:54:50 +0200
 
 guh (0.8.3) xenial; urgency=medium
 

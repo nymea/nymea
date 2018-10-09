@@ -285,14 +285,12 @@ QList<ParamType> DevicePlugin::configurationDescription() const
 }
 
 /*! This will be called when the DeviceManager initializes the plugin and set up the things behind the scenes.
-    When implementing a new plugin, use \l{DevicePlugin::init()} instead in order to do initialisation work. */
+    When implementing a new plugin, use \l{DevicePlugin::init()} instead in order to do initialisation work.
+    The \l{DevicePlugin::init()} method will be called once the plugin configuration has been loaded. */
 void DevicePlugin::initPlugin(DeviceManager *deviceManager)
 {
     m_deviceManager = deviceManager;
-
     loadMetaData();
-
-    init();
 }
 
 QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &array) const

@@ -1117,6 +1117,9 @@ void DeviceManager::loadPlugin(DevicePlugin *pluginIface)
         }
     }
 
+    // Call the init method of the plugin
+    pluginIface->init();
+
     m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
 
     connect(pluginIface, &DevicePlugin::emitEvent, this, &DeviceManager::eventTriggered);

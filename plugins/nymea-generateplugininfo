@@ -5,7 +5,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                         #
 #  Copyright (C) 2015-2018 Simon Stuerz <simon.stuerz@guh.io>             #
-#  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           #
+#  Copyright (C) 2014-2018 Michael Zanetti <michael.zanetti@guh.io>       #
 #                                                                         #
 #  This file is part of nymea.                                            #
 #                                                                         #
@@ -68,23 +68,23 @@ def extractPlugin(pluginMap):
 
     # Extract plugin params (configurations)
     if 'paramTypes' in pluginMap:
-        extractParamTypes(pluginMap['paramTypes'], pluginMap['name'][0].lower() + pluginMap['name'][1:])
+        extractParamTypes(pluginMap['paramTypes'], pluginMap['name'][0].lower() + pluginMap['name'][1:], "", 'plugin')
 
     if 'vendors' in pluginMap:
         extractVendors(pluginMap['vendors'])
 
 
 #-----------------------------------------------------------------------------------------------------------------
-def extractParamTypes(paramTypes, contextName):
+def extractParamTypes(paramTypes, deviceClassName, typeClass, typeName):
     for paramType in paramTypes:
         try:
-            variableName = '%sParamTypeId' % (contextName + paramType['name'][0].capitalize() + paramType['name'][1:])
+            variableName = '%sParamTypeId' % (deviceClassName + typeName[0].capitalize() + typeName[1:] + typeClass + paramType['name'][0].capitalize() + paramType['name'][1:])
             if not variableName in variableNames:
                 variableNames.append(variableName)
                 printInfo('Define ParamTypeId %s = %s' % (variableName, paramType['id']))
                 if args.filetype is 'i':
                     writeToFile('ParamTypeId %s = ParamTypeId(\"%s\");' % (variableName, paramType['id']))
-                addTranslationString(paramType['displayName'], 'The name of the paramType (%s) of %s' % (paramType['id'], contextName))
+                addTranslationString(paramType['displayName'], 'The name of the ParamType (DeviceClass: %s, %sType: %s, ID: %s)' % (deviceClassName, typeClass, typeName, paramType['id']))
                 createExternDefinition('ParamTypeId', variableName)
             else:
                 printWarning('Duplicated variable name \"%s\" for ParamTypeId %s -> skipping' % (variableName, paramType['id']))
@@ -136,13 +136,13 @@ def extractDeviceClasses(deviceClasses):
             pass
 
         if 'paramTypes' in deviceClass:
-            extractParamTypes(deviceClass['paramTypes'], deviceClass['name'])
+            extractParamTypes(deviceClass['paramTypes'], deviceClass['name'], "", 'device')
 
         if 'discoveryParamTypes' in deviceClass:
-            extractParamTypes(deviceClass['discoveryParamTypes'], deviceClass['name'])
+            extractParamTypes(deviceClass['discoveryParamTypes'], deviceClass['name'], "", 'discovery')
 
         if 'stateTypes' in deviceClass:
-            extractStateTypes(deviceClass['stateTypes'], deviceClass['name'])
+            extractStateTypes(deviceClass['stateTypes'], deviceClass['name'],)
 
         if 'actionTypes' in deviceClass:
             extractActionTypes(deviceClass['actionTypes'], deviceClass['name'])
@@ -170,7 +170,7 @@ def extractStateTypes(stateTypes, deviceClassName):
             # Create EventTypeId for this state
             variableName = '%s%sEventTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:])
             if not variableName in variableNames:
-                addTranslationString(stateType['displayNameEvent'], 'The name of the autocreated EventType (%s)' % stateType['id'])
+                addTranslationString(stateType['displayNameEvent'], 'The name of the autocreated EventType (DeviceClass: %s, StateType: %s, ID: %s)' % (deviceClassName, stateType['name'], stateType['id']))
                 variableNames.append(variableName)
                 printInfo('Define EventTypeId %s = %s' % (variableName, stateType['id']))
                 if args.filetype is 'i':
@@ -180,11 +180,11 @@ def extractStateTypes(stateTypes, deviceClassName):
                 printWarning('Duplicated variable name \"%s\" for autocreated EventTypeId %s -> skipping' % (variableName, stateType['id']))
 
             # ParamType for the autocreated EventType
-            variableName = '%s%sEventParamTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:])
+            variableName = '%s%sEvent%sParamTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:], stateType['name'][0].capitalize() + stateType['name'][1:])
             if not variableName in variableNames:
                 variableNames.append(variableName)
                 printInfo('Define ParamTypeId %s for StateType %s = %s' % (variableName, variableName, stateType['id']))
-                addTranslationString(stateType['displayName'], 'The name of the ParamType of the autocreated EventType (%s) of DeviceClass %s' % (stateType['id'], deviceClassName))
+                addTranslationString(stateType['displayName'], 'The name of the ParamType for the autocreated EventType (DeviceClass: %s, StateType: %s, ID: %s' % (deviceClassName, stateType['name'], stateType['id']))
                 if args.filetype is 'i':
                     writeToFile('ParamTypeId %s = ParamTypeId(\"%s\");' % (variableName, stateType['id']))
                 createExternDefinition('ParamTypeId', variableName)
@@ -198,7 +198,7 @@ def extractStateTypes(stateTypes, deviceClassName):
                 if not variableName in variableNames:
                     variableNames.append(variableName)
                     printInfo('Define ActionTypeId for writable StateType %s = %s' % (variableName, stateType['id']))
-                    addTranslationString(stateType['displayNameAction'], 'The name of the autocreated ActionType (%s)' % stateType['id'])
+                    addTranslationString(stateType['displayNameAction'], 'The name of the autocreated ActionType (DeviceClass: %s, StateType: %s, ID: %s)' % (deviceClassName, stateType['name'], stateType['id']))
                     if args.filetype is 'i':
                         writeToFile('ActionTypeId %s = ActionTypeId(\"%s\");' % (variableName, stateType['id']))
                     createExternDefinition('ActionTypeId', variableName)
@@ -206,11 +206,11 @@ def extractStateTypes(stateTypes, deviceClassName):
                     printWarning('Duplicated variable name \"%s\" for autocreated ActionTypeId %s -> skipping' % (variableName, stateType['id']))
 
                 # ParamType for the autocreated ActionType
-                variableName = '%s%sActionParamTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:])
+                variableName = '%s%sAction%sParamTypeId' % (deviceClassName, stateType['name'][0].capitalize() + stateType['name'][1:], stateType['name'][0].capitalize() + stateType['name'][1:])
                 if not variableName in variableNames:
                     variableNames.append(variableName)
                     printInfo('Define ParamTypeId %s for autocreated ActionType %s = %s' % (variableName, variableName, stateType['id']))
-                    addTranslationString(stateType['displayName'], 'The name of the autocreated ParamType of the writable StateType (%s) of DeviceClass %s' % (stateType['id'], deviceClassName))
+                    addTranslationString(stateType['displayName'], 'The name of the ParamType for the autocreated ActionType (DeviceClass: %s, StateType: %s, ID: %s)' % (deviceClassName, stateType['name'], stateType['id']))
                     if args.filetype is 'i':
                         writeToFile('ParamTypeId %s = ParamTypeId(\"%s\");' % (variableName, stateType['id']))
                     createExternDefinition('ParamTypeId', variableName)
@@ -241,7 +241,7 @@ def extractActionTypes(actionTypes, deviceClassName):
 
         # Define paramTypes of this ActionType
         if 'paramTypes' in actionType:
-            extractParamTypes(actionType['paramTypes'], deviceClassName)
+            extractParamTypes(actionType['paramTypes'], deviceClassName, 'Action', actionType['name'])
 
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -263,7 +263,7 @@ def extractEventTypes(eventTypes, deviceClassName):
 
         # Define paramTypes of this EventType
         if 'paramTypes' in eventType:
-            extractParamTypes(eventType['paramTypes'], deviceClassName)
+            extractParamTypes(eventType['paramTypes'], deviceClassName, 'Event', eventType['name'])
 
 
 #-----------------------------------------------------------------------------------------------------------------

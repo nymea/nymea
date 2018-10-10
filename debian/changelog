@@ -1,3 +1,22 @@
+nymea (0.9.37) xenial; urgency=medium
+
+  [ Jenkins ]
+  * Prepare for release
+
+  [ Simon Stürz ]
+  * Add notifications to introspect desciption. Fix #76
+
+  [ Michael Zanetti ]
+  * store the state type along with the value in the state cache
+  * fix introspect for TagError and UserError
+  * Enable usage of Qt logging filters
+  * remove rules which are left without any action after a device
+    removal
+  * don't emit connected() when we've already been connected
+  * more precise param namings and translation context strings
+
+ -- Jenkins <jenkins@nymea.io>  Wed, 10 Oct 2018 04:38:07 +0200
+
 nymea (0.9.36) bionic; urgency=medium
 
   * Bump changelog to be in line with snap package

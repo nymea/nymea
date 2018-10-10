@@ -1,3 +1,9 @@
+nymea (0.9.36) bionic; urgency=medium
+
+  * Bump changelog to be in line with snap package
+
+ -- Michael Zanetti <michael.zanetti@nymea.io>  Wed, 10 Oct 2018 03:58:10 +0200
+
 nymea (0.9.0) xenial; urgency=medium
 
   * Rename to nymea

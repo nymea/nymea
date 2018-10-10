@@ -142,7 +142,7 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
             qCDebug(dcApplication) << "Cought SIGHUP quit signal...";
             break;
         case SIGSEGV: {
-            qCDebug(dcApplication) << "Cought SIGSEGV signal. Segmentation fault!";
+            qCWarning(dcApplication) << "Cought SIGSEGV signal. Segmentation fault!";
             printBacktrace();
             exit(1);
         }
@@ -185,9 +185,9 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
             return;
         }
 
-        qCDebug(dcApplication) << "=====================================";
-        qCDebug(dcApplication) << "Shutting down nymea daemon";
-        qCDebug(dcApplication) << "=====================================";
+        qCInfo(dcApplication) << "=====================================";
+        qCInfo(dcApplication) << "Shutting down nymea daemon";
+        qCInfo(dcApplication) << "=====================================";
 
         s_aboutToShutdown = true;
         NymeaCore::instance()->destroy();

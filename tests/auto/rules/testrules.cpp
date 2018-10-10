@@ -102,6 +102,7 @@ private slots:
 
     void removePolicyUpdate();
     void removePolicyCascade();
+    void removePolicyUpdateRendersUselessRule();
 
     void testRuleActionParams_data();
     void testRuleActionParams();
@@ -2255,7 +2256,7 @@ void TestRules::removePolicyUpdate()
     verifyRuleError(response);
 
     QVariantMap rule = response.toMap().value("params").toMap().value("rule").toMap();
-    qDebug() << QJsonDocument::fromVariant(rule).toJson();
+    qDebug() << "Updated rule:" << QJsonDocument::fromVariant(rule).toJson();
     QVERIFY(rule.value("eventDescriptors").toList().count() == 1);
 
     // REMOVE rule
@@ -2332,6 +2333,83 @@ void TestRules::removePolicyCascade()
     verifyDeviceError(response);
 
     // get updated rule
+    params.clear();
+    params.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.GetRuleDetails", params);
+    verifyRuleError(response, RuleEngine::RuleErrorRuleNotFound);
+}
+
+void TestRules::removePolicyUpdateRendersUselessRule()
+{
+    // ADD parent device
+    QVariantMap params;
+    params.insert("deviceClassId", mockParentDeviceClassId);
+    params.insert("name", "Parent device");
+
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+    verifyDeviceError(response);
+
+    DeviceId parentDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY(!parentDeviceId.isNull());
+
+    // find child device
+    response = injectAndWait("Devices.GetConfiguredDevices");
+
+    QVariantList devices = response.toMap().value("params").toMap().value("devices").toList();
+
+    DeviceId childDeviceId;
+    foreach (const QVariant deviceVariant, devices) {
+        QVariantMap deviceMap = deviceVariant.toMap();
+
+        if (deviceMap.value("deviceClassId").toString() == mockChildDeviceClassId.toString()) {
+            if (deviceMap.value("parentId") == parentDeviceId.toString()) {
+                //qDebug() << QJsonDocument::fromVariant(deviceVariant).toJson();
+                childDeviceId = DeviceId(deviceMap.value("id").toString());
+            }
+        }
+    }
+    QVERIFY2(!childDeviceId.isNull(), "Could not find child device");
+
+    // Add rule with child device
+    QVariantList eventDescriptors;
+    eventDescriptors.append(createEventDescriptor(childDeviceId, mockParentChildEventId));
+    eventDescriptors.append(createEventDescriptor(parentDeviceId, mockParentChildEventId));
+    eventDescriptors.append(createEventDescriptor(m_mockDeviceId, mockEvent1Id));
+
+    params.clear(); response.clear();
+    params.insert("name", "RemovePolicy");
+    params.insert("eventDescriptors", eventDescriptors);
+
+    QVariantMap action;
+    action.insert("deviceId", childDeviceId);
+    action.insert("actionTypeId", mockParentChildActionId);
+    params.insert("actions", QVariantList() << action);
+
+    response = injectAndWait("Rules.AddRule", params);
+    verifyRuleError(response);
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+    QVERIFY2(!ruleId.isNull(), "Could not get ruleId");
+
+    // Try to remove child device
+    params.clear(); response.clear();
+    params.insert("deviceId", childDeviceId);
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response, DeviceManager::DeviceErrorDeviceIsChild);
+
+    // Try to remove child device
+    params.clear(); response.clear();
+    params.insert("deviceId", parentDeviceId);
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response, DeviceManager::DeviceErrorDeviceInRule);
+
+    // Remove policy
+    params.clear(); response.clear();
+    params.insert("deviceId", parentDeviceId);
+    params.insert("removePolicy", "RemovePolicyUpdate");
+    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
+    verifyDeviceError(response);
+
+    // get updated rule. It should've been deleted given it ended up with no actions
     params.clear();
     params.insert("ruleId", ruleId);
     response = injectAndWait("Rules.GetRuleDetails", params);

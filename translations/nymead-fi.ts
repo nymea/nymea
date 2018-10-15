@@ -64,7 +64,7 @@
 <context>
     <name>nymea</name>
     <message>
-        <location filename="../server/main.cpp" line="166"/>
+        <location filename="../server/main.cpp" line="155"/>
         <source>
 nymea is an open source IoT (Internet of Things) server, 
 which allows to control a lot of different devices from many different 
@@ -79,34 +79,38 @@ nymea on avoimen lähdekoodin IoT (Internet of Things) -palvelin, joka mahdollis
 </translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="178"/>
+        <location filename="../server/main.cpp" line="167"/>
         <source>Run nymead in the foreground, not as daemon.</source>
         <translation>Aja nymead edustalla, älä daemonina.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="181"/>
-        <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Warnings from all categories will be printed unless explicitly muted with &quot;NoWarnings&quot;. 
+        <location filename="../server/main.cpp" line="170"/>
+        <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Suffix with &quot;Warnings&quot; to address warnings.
+Examples:
+-d AWSTraffic
+-d NoDeviceManager
+-d NoBluetoothWarnings
 
 Categories are:</source>
-        <translation>Debuggaa sallittavat luokat. Etuliite, jossa &quot;No&quot; poistaa käytöstä. Varoitukset kaikista luokista tulostetaan, ellei erikseen hiljennetty käskyllä &quot;NoWarnings&quot;. Luokat ovat:</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="198"/>
-        <source>Enables all debug categories. Single debug categories can be disabled again with -d parameter.</source>
-        <translation>Salli kaikki debug-luokat. Yksittäiset debug-luokat voidaan poistaa käytöstä uudestaan d-parametrilla.</translation>
+        <location filename="../server/main.cpp" line="182"/>
+        <source>Enables all debug categories except *Traffic and *Debug categories. Single debug categories can be disabled again with -d parameter.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="201"/>
+        <location filename="../server/main.cpp" line="185"/>
         <source>Specify a log file to write to, if this option is not specified, logs will be printed to the standard output.</source>
         <translation>Määritä kirjoitettava lokitiedosto, jos tätä vaihtoehtoa ei ole määritetty, lokit tulostetaan vakiotulostuksena.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="204"/>
+        <location filename="../server/main.cpp" line="188"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
         <translation>Jos määritetty, kaikki D-väylä-liittymät yhdistetään istuntoväylään järjestelmäväylän sijaan.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="244"/>
+        <location filename="../server/main.cpp" line="229"/>
         <source>No such debug category:</source>
         <translation>Ei kyseistä debug-luokkaa:</translation>
     </message>

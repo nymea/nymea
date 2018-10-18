@@ -65,7 +65,6 @@ private slots:
 private:
     bool m_sslEnabled = false;
     QSslConfiguration m_config;
-    QByteArray m_receiveBuffer;
 };
 
 class TcpServer : public TransportInterface
@@ -79,6 +78,8 @@ public:
 
     void sendData(const QUuid &clientId, const QByteArray &data) override;
     void sendData(const QList<QUuid> &clients, const QByteArray &data) override;
+
+    void terminateClientConnection(const QUuid &clientId) override;
 
 private:
     QTimer *m_timer;

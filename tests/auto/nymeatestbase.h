@@ -101,7 +101,7 @@ class NymeaTestBase : public QObject
 {
     Q_OBJECT
 public:
-    explicit NymeaTestBase(QObject *parent = 0);
+    explicit NymeaTestBase(QObject *parent = nullptr);
 
 protected slots:
     void initTestCase();

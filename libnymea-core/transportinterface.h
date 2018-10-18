@@ -40,6 +40,8 @@ public:
     virtual void sendData(const QUuid &clientId, const QByteArray &data) = 0;
     virtual void sendData(const QList<QUuid> &clients, const QByteArray &data) = 0;
 
+    virtual void terminateClientConnection(const QUuid &clientId) = 0;
+
     void setConfiguration(const ServerConfiguration &config);
     ServerConfiguration configuration() const;
 

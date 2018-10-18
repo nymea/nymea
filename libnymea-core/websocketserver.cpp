@@ -109,6 +109,14 @@ void WebSocketServer::sendData(const QList<QUuid> &clients, const QByteArray &da
     }
 }
 
+void WebSocketServer::terminateClientConnection(const QUuid &clientId)
+{
+    QWebSocket *client = m_clientList.value(clientId);
+    if (client) {
+        client->abort();
+    }
+}
+
 QHash<QString, QString> WebSocketServer::createTxtRecord()
 {
     // Note: reversed order

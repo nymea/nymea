@@ -35,17 +35,19 @@ class MockTcpServer : public TransportInterface
 {
     Q_OBJECT
 public:
-    explicit MockTcpServer(QObject *parent = 0);
-    ~MockTcpServer();
+    explicit MockTcpServer(QObject *parent = nullptr);
+    ~MockTcpServer() override;
 
     void sendData(const QUuid &clientId, const QByteArray &data) override;
     void sendData(const QList<QUuid> &clients, const QByteArray &data) override;
+    void terminateClientConnection(const QUuid &clientId) override;
 
 /************** Used for testing **************************/
     static QList<MockTcpServer*> servers();
     void injectData(const QUuid &clientId, const QByteArray &data);
 signals:
     void outgoingData(const QUuid &clientId, const QByteArray &data);
+    void connectionTerminated(const QUuid &clientId);
 /************** Used for testing **************************/
 
 public slots:

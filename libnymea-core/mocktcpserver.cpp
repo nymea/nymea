@@ -52,6 +52,12 @@ void MockTcpServer::sendData(const QList<QUuid> &clients, const QByteArray &data
     }
 }
 
+void MockTcpServer::terminateClientConnection(const QUuid &clientId)
+{
+    emit connectionTerminated(clientId);
+    emit clientDisconnected(clientId);
+}
+
 QList<MockTcpServer *> MockTcpServer::servers()
 {
     return s_allServers;

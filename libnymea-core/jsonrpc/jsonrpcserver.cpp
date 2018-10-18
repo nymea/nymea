@@ -500,6 +500,30 @@ void JsonRPCServer::processData(const QUuid &clientId, const QByteArray &data)
     qCDebug(dcJsonRpcTraffic()) << "Incoming data:" << data;
 
     TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
+
+    // Handle packet fragmentation
+    QByteArray buffer = m_clientBuffers[clientId];
+    buffer.append(data);
+    int splitIndex = buffer.indexOf("}\n{");
+    while (splitIndex > -1) {
+        processJsonPacket(interface, clientId, buffer.left(splitIndex + 1));
+        buffer = buffer.right(buffer.length() - splitIndex - 2);
+        splitIndex = buffer.indexOf("}\n{");
+    }
+    if (buffer.trimmed().endsWith("}")) {
+        processJsonPacket(interface, clientId, buffer);
+        buffer.clear();
+    }
+    m_clientBuffers[clientId] = buffer;
+
+    if (buffer.size() > 1024 * 10) {
+        qCWarning(dcJsonRpc()) << "Client buffer larger than 10KB and no valid data. Dropping client connection.";
+        interface->terminateClientConnection(clientId);
+    }
+}
+
+void JsonRPCServer::processJsonPacket(TransportInterface *interface, const QUuid &clientId, const QByteArray &data)
+{
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
 
@@ -716,6 +740,7 @@ void JsonRPCServer::clientDisconnected(const QUuid &clientId)
     qCDebug(dcJsonRpc()) << "Client disconnected:" << clientId;
     m_clientTransports.remove(clientId);
     m_clientNotifications.remove(clientId);
+    m_clientBuffers.remove(clientId);
     if (m_pushButtonTransactions.values().contains(clientId)) {
         NymeaCore::instance()->userManager()->cancelPushButtonAuth(m_pushButtonTransactions.key(clientId));
     }

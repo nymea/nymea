@@ -41,6 +41,8 @@ class TestJSONRPC: public NymeaTestBase
     Q_OBJECT
 
 private slots:
+    void initTestCase();
+
     void testHandshake();
 
     void testInitialSetup();
@@ -100,6 +102,12 @@ private slots:
     void testPushButtonAuthConnectionDrop();
 
     void testInitialSetupWithPushButtonAuth();
+
+    void testDataFragmentation_data();
+    void testDataFragmentation();
+
+    void testGarbageData();
+
 private:
     QStringList extractRefs(const QVariant &variant);
 
@@ -127,6 +135,13 @@ QStringList TestJSONRPC::extractRefs(const QVariant &variant)
         return refs;
     }
     return QStringList();
+}
+
+void TestJSONRPC::initTestCase()
+{
+    NymeaTestBase::initTestCase();
+    QLoggingCategory::setFilterRules("*.debug=false\n"
+                                     "JsonRpc*.debug=true");
 }
 
 void TestJSONRPC::testHandshake()
@@ -179,7 +194,7 @@ void TestJSONRPC::testInitialSetup()
     QVERIFY(spy.isValid());
 
     // Introspect call should work in any case
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Introspect\"}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Introspect\"}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -192,7 +207,7 @@ void TestJSONRPC::testInitialSetup()
 
     // Hello call should work in any case too
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Hello\"}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Hello\"}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -205,7 +220,7 @@ void TestJSONRPC::testInitialSetup()
 
     // Any other call should fail with "unauthorized" even if we use a previously valid token
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Version\"}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Version\"}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -219,7 +234,7 @@ void TestJSONRPC::testInitialSetup()
 
     // But it should still fail when giving a an invalid username
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"dummy\", \"password\": \"DummyPW1!\"}}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"dummy\", \"password\": \"DummyPW1!\"}}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -232,7 +247,7 @@ void TestJSONRPC::testInitialSetup()
 
     // or when giving a bad password
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"weak\"}}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"weak\"}}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -245,7 +260,7 @@ void TestJSONRPC::testInitialSetup()
 
     // Now lets play by the rules (with an uppercase email)
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"Dummy@guh.io\", \"password\": \"DummyPW1!\"}}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"Dummy@guh.io\", \"password\": \"DummyPW1!\"}}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -258,7 +273,7 @@ void TestJSONRPC::testInitialSetup()
 
     // Now that we have a user, initialSetup should be false in the Hello call
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Hello\"}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Hello\"}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -271,7 +286,7 @@ void TestJSONRPC::testInitialSetup()
 
     // Calls should still fail, given we didn't get a new token yet
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Version\"}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Version\"}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -283,7 +298,7 @@ void TestJSONRPC::testInitialSetup()
 
     // Now lets authenticate with a wrong user
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"Dummy@wrong.domain\", \"password\": \"DummyPW1!\", \"deviceName\": \"testcase\"}}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"Dummy@wrong.domain\", \"password\": \"DummyPW1!\", \"deviceName\": \"testcase\"}}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -298,7 +313,7 @@ void TestJSONRPC::testInitialSetup()
 
     // Now lets authenticate with a wrong password
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"Dummy@guh.io\", \"password\": \"wrongpw\", \"deviceName\": \"testcase\"}}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"Dummy@guh.io\", \"password\": \"wrongpw\", \"deviceName\": \"testcase\"}}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -313,7 +328,7 @@ void TestJSONRPC::testInitialSetup()
 
     // Now lets authenticate for real (but intentionally use a lowercase email here, should still work)
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"DummyPW1!\", \"deviceName\": \"testcase\"}}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"DummyPW1!\", \"deviceName\": \"testcase\"}}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -328,7 +343,7 @@ void TestJSONRPC::testInitialSetup()
 
     // Now do a Version call with the valid token and it should work
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Version\"}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Version\"}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -347,7 +362,7 @@ void TestJSONRPC::testRevokeToken()
 
     // Now get all the tokens
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Tokens\"}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Tokens\"}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -362,7 +377,7 @@ void TestJSONRPC::testRevokeToken()
 
     // Authenticate and create a new token
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"DummyPW1!\", \"deviceName\": \"testcase\"}}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"DummyPW1!\", \"deviceName\": \"testcase\"}}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -377,7 +392,7 @@ void TestJSONRPC::testRevokeToken()
 
     // Now do a Version call with the new token and it should work
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + newToken + "\", \"method\": \"JSONRPC.Version\"}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + newToken + "\", \"method\": \"JSONRPC.Version\"}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -389,7 +404,7 @@ void TestJSONRPC::testRevokeToken()
 
     // Now get all the tokens using the old token
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Tokens\"}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Tokens\"}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -412,7 +427,7 @@ void TestJSONRPC::testRevokeToken()
 
     // Revoke the new token
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.RemoveToken\", \"params\": {\"tokenId\": \"" + newTokenId.toByteArray() + "\"}}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.RemoveToken\", \"params\": {\"tokenId\": \"" + newTokenId.toByteArray() + "\"}}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -424,7 +439,7 @@ void TestJSONRPC::testRevokeToken()
 
     // Do a call with the now removed token, it should be forbidden
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + newToken + "\", \"method\": \"JSONRPC.Version\"}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + newToken + "\", \"method\": \"JSONRPC.Version\"}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -441,14 +456,16 @@ void TestJSONRPC::testBasicCall_data()
     QTest::addColumn<bool>("idValid");
     QTest::addColumn<bool>("valid");
 
-    QTest::newRow("valid call") << QByteArray("{\"id\":42, \"method\":\"JSONRPC.Introspect\"}") << true << true;
-    QTest::newRow("missing id") << QByteArray("{\"method\":\"JSONRPC.Introspect\"}") << false << false;
-    QTest::newRow("missing method") << QByteArray("{\"id\":42}") << true << false;
-    QTest::newRow("borked") << QByteArray("{\"id\":42, \"method\":\"JSO") << false << false;
-    QTest::newRow("invalid function") << QByteArray("{\"id\":42, \"method\":\"JSONRPC.Foobar\"}") << true << false;
-    QTest::newRow("invalid namespace") << QByteArray("{\"id\":42, \"method\":\"FOO.Introspect\"}") << true << false;
-    QTest::newRow("missing dot") << QByteArray("{\"id\":42, \"method\":\"JSONRPCIntrospect\"}") << true << false;
-    QTest::newRow("invalid params") << QByteArray("{\"id\":42, \"method\":\"JSONRPC.Introspect\", \"params\":{\"törööö\":\"chooo-chooo\"}}") << true << false;
+    QTest::newRow("valid call 1") << QByteArray("{\"id\":42, \"method\":\"JSONRPC.Introspect\"}") << true << true;
+    QTest::newRow("valid call 2") << QByteArray("{\"id\":42, \"method\":\"JSONRPC.Introspect\"}\n") << true << true;
+    QTest::newRow("valid call 3") << QByteArray("{\"id\":42, \"method\":\"JSONRPC.Introspect\"}\n\n\n\n") << true << true;
+    QTest::newRow("missing id") << QByteArray("{\"method\":\"JSONRPC.Introspect\"}\n") << false << false;
+    QTest::newRow("missing method") << QByteArray("{\"id\":42}\n") << true << false;
+    QTest::newRow("borked") << QByteArray("{\"id\":42, \"method\":\"JSO}\n") << false << false;
+    QTest::newRow("invalid function") << QByteArray("{\"id\":42, \"method\":\"JSONRPC.Foobar\"}\n") << true << false;
+    QTest::newRow("invalid namespace") << QByteArray("{\"id\":42, \"method\":\"FOO.Introspect\"}\n") << true << false;
+    QTest::newRow("missing dot") << QByteArray("{\"id\":42, \"method\":\"JSONRPCIntrospect\"}\n") << true << false;
+    QTest::newRow("invalid params") << QByteArray("{\"id\":42, \"method\":\"JSONRPC.Introspect\", \"params\":{\"törööö\":\"chooo-chooo\"}}\n") << true << false;
 }
 
 void TestJSONRPC::testBasicCall()
@@ -1136,7 +1153,7 @@ void TestJSONRPC::testInitialSetupWithPushButtonAuth()
 
     // Hello call should work in any case, telling us initial setup is required
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Hello\"}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Hello\"}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -1176,7 +1193,7 @@ void TestJSONRPC::testInitialSetupWithPushButtonAuth()
 
     // initialSetupRequired should be false in Hello call now
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Hello\"}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Hello\"}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -1190,7 +1207,7 @@ void TestJSONRPC::testInitialSetupWithPushButtonAuth()
 
     // CreateUser without a token should fail now even though there are 0 users in the DB
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"Dummy@guh.io\", \"password\": \"DummyPW1!\"}}");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"Dummy@guh.io\", \"password\": \"DummyPW1!\"}}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -1200,6 +1217,66 @@ void TestJSONRPC::testInitialSetupWithPushButtonAuth()
     qWarning() << "Calling CreateUser on uninitialized instance:" << response.toMap().value("status").toString() << response.toMap().value("error").toString();
     QCOMPARE(response.toMap().value("status").toString(), QStringLiteral("unauthorized"));
     QCOMPARE(NymeaCore::instance()->userManager()->users().count(), 0);
+
+}
+
+void TestJSONRPC::testDataFragmentation_data()
+{
+    QTest::addColumn<QList<QByteArray> >("packets");
+
+    QList<QByteArray> packets;
+
+    packets.append("{\"id\": 555, \"method\": \"JSONRPC.Hello\"}\n");
+    QTest::newRow("1 packet") << packets;
+
+    packets.clear();
+    packets.append("{\"id\": 555, \"m");
+    packets.append("ethod\": \"JSONRPC.Hello\"}\n");
+    QTest::newRow("2 packets") << packets;
+
+    packets.clear();
+    packets.append("{\"id\": 555, \"m");
+    packets.append("ethod\": \"JSONRP");
+    packets.append("C.Hello\"}\n");
+    QTest::newRow("3 packets") << packets;
+
+    packets.clear();
+    packets.append("{\"id\": 555, \"method\": \"JSONRPC.Hello\"}\n{\"id\": 5556, \"metho");
+    QTest::newRow("next packet start appended") << packets;
+}
+
+void TestJSONRPC::testDataFragmentation()
+{
+    QJsonDocument jsonDoc;
+    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    QFETCH(QList<QByteArray>, packets);
+
+    foreach (const QByteArray &packet, packets) {
+        spy.clear();
+        m_mockTcpServer->injectData(m_clientId, packet);
+    }
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QCOMPARE(spy.count(), 1);
+    jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
+    QCOMPARE(jsonDoc.toVariant().toMap().value("status").toString(), QStringLiteral("success"));
+}
+
+void TestJSONRPC::testGarbageData()
+{
+    QSignalSpy spy(m_mockTcpServer, &MockTcpServer::connectionTerminated);
+
+    QByteArray data;
+    for (int i = 0; i < 1024; i++) {
+        data.append("a");
+    }
+    for (int i = 0; i < 11; i ++) {
+        m_mockTcpServer->injectData(m_clientId, data);
+    }
+
+    QCOMPARE(spy.count(), 1);
 
 }
 

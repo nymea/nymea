@@ -36,6 +36,8 @@ public:
     void sendData(const QUuid &clientId, const QByteArray &data) override;
     void sendData(const QList<QUuid> &clientIds, const QByteArray &data) override;
 
+    void terminateClientConnection(const QUuid &clientId) override;
+
     bool startServer() override;
     bool stopServer() override;
 
@@ -43,11 +45,13 @@ signals:
 
 public slots:
     void connectToCloud(const QString &token, const QString &nonce);
-    void remoteConnectionStateChanged(remoteproxyclient::RemoteProxyConnection::State state);
 
 private slots:
+    void remoteConnectionStateChanged(remoteproxyclient::RemoteProxyConnection::State state);
+    void transportConnected();
     void transportReady();
     void transportDataReady(const QByteArray &data);
+    void transportDisconnected();
 
 private:
     QUrl m_proxyUrl;

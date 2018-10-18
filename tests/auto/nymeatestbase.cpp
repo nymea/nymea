@@ -98,20 +98,6 @@ EventTypeId mockParentChildEventId = EventTypeId("d24ede5f-4064-4898-bb84-cfb533
 ActionTypeId mockParentChildActionId = ActionTypeId("d24ede5f-4064-4898-bb84-cfb533b1fbc0");
 StateTypeId mockParentChildStateId = StateTypeId("d24ede5f-4064-4898-bb84-cfb533b1fbc0");
 
-static QHash<QString, bool> s_loggingFilters;
-
-static void loggingCategoryFilter(QLoggingCategory *category)
-{
-    if (s_loggingFilters.contains(category->categoryName())) {
-        bool debugEnabled = s_loggingFilters.value(category->categoryName());
-        category->setEnabled(QtDebugMsg, debugEnabled);
-        category->setEnabled(QtWarningMsg, debugEnabled || s_loggingFilters.value("Warnings"));
-    } else {
-        category->setEnabled(QtDebugMsg, true);
-        category->setEnabled(QtWarningMsg, true);
-    }
-}
-
 NymeaTestBase::NymeaTestBase(QObject *parent) :
     QObject(parent),
     m_commandId(0)
@@ -144,39 +130,7 @@ void NymeaTestBase::initTestCase()
     NymeaSettings nymeadSettings(NymeaSettings::SettingsRoleGlobal);
     nymeadSettings.clear();
 
-    // debug categories
-    // logging filers for core and libnymea
-    s_loggingFilters.insert("Application", true);
-    s_loggingFilters.insert("Warnings", true);
-    s_loggingFilters.insert("DeviceManager", true);
-    s_loggingFilters.insert("RuleEngine", true);
-    s_loggingFilters.insert("Hardware", true);
-    s_loggingFilters.insert("Connection", true);
-    s_loggingFilters.insert("LogEngine", true);
-    s_loggingFilters.insert("TcpServer", true);
-    s_loggingFilters.insert("WebServer", true);
-    s_loggingFilters.insert("WebSocketServer", true);
-    s_loggingFilters.insert("JsonRpc", true);
-    s_loggingFilters.insert("Rest", true);
-    s_loggingFilters.insert("OAuth2", true);
-    s_loggingFilters.insert("TimeManager", true);
-
-
-    QHash<QString, bool> loggingFiltersPlugins;
-    foreach (const QJsonObject &pluginMetadata, DeviceManager::pluginsMetadata()) {
-        loggingFiltersPlugins.insert(pluginMetadata.value("idName").toString(), false);
-    }
-
-    // add plugin metadata to the static hash
-    foreach (const QString &category, loggingFiltersPlugins.keys()) {
-        if (category == "MockDevice") {
-            s_loggingFilters.insert(category, true);
-        } else {
-            s_loggingFilters.insert(category, false);
-        }
-    }
-
-    QLoggingCategory::installFilter(loggingCategoryFilter);
+    QLoggingCategory::setFilterRules("*.debug=false");
 
     // Start the server
     NymeaCore::instance();
@@ -239,7 +193,7 @@ QVariant NymeaTestBase::injectAndWait(const QString &method, const QVariantMap &
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(call);
     QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    m_mockTcpServer->injectData(clientId.isNull() ? m_clientId : clientId, jsonDoc.toJson(QJsonDocument::Compact));
+    m_mockTcpServer->injectData(clientId.isNull() ? m_clientId : clientId, jsonDoc.toJson(QJsonDocument::Compact) + "\n");
 
     if (spy.count() == 0) {
         spy.wait();

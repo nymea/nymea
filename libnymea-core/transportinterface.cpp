@@ -62,6 +62,11 @@
     Pure virtual method for sending \a data to \a clients over the corresponding \l{TransportInterface}.
 */
 
+/*! \fn void nymeaserver::TransportInterface::terminateClientConnection(const QUuid &clientId);
+    Pure virtual method for terminating \a clients connection. The JSON RPC server might call this when a
+    client violates the protocol. Transports should immediately abort the connection to the client.
+*/
+
 /*! \fn void nymeaserver::TransportInterface::dataAvailable(const QUuid &clientId, const QByteArray &data);
     This signal is emitted when valid \a data from the client with the given \a clientId are available.
 

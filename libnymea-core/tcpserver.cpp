@@ -105,6 +105,14 @@ void TcpServer::sendData(const QList<QUuid> &clients, const QByteArray &data)
     }
 }
 
+void TcpServer::terminateClientConnection(const QUuid &clientId)
+{
+    QTcpSocket *client = m_clientList.value(clientId);
+    if (client) {
+        client->abort();
+    }
+}
+
 /*! Sending \a data to the client with the given \a clientId.*/
 void TcpServer::sendData(const QUuid &clientId, const QByteArray &data)
 {
@@ -245,6 +253,8 @@ void SslServer::incomingConnection(qintptr socketDescriptor)
 {
     QSslSocket *sslSocket = new QSslSocket(this);
 
+    qCDebug(dcTcpServer()) << "New client socket connection:" << sslSocket;
+
     connect(sslSocket, &QSslSocket::encrypted, [this, sslSocket](){ emit clientConnected(sslSocket); });
     connect(sslSocket, &QSslSocket::readyRead, this, &SslServer::onSocketReadyRead);
     connect(sslSocket, &QSslSocket::disconnected, this, &SslServer::onClientDisconnected);
@@ -265,6 +275,7 @@ void SslServer::incomingConnection(qintptr socketDescriptor)
 void SslServer::onClientDisconnected()
 {
     QSslSocket *socket = static_cast<QSslSocket*>(sender());
+    qCDebug(dcTcpServer()) << "Client socket disconnected:" << socket;
     emit clientDisconnected(socket);
     socket->deleteLater();
 }
@@ -273,18 +284,8 @@ void SslServer::onSocketReadyRead()
 {
     QSslSocket *socket = static_cast<QSslSocket*>(sender());
     QByteArray data = socket->readAll();
-    qCDebug(dcTcpServerTraffic()) << "SocketReadyRead:" << data;
-    m_receiveBuffer.append(data);
-    int splitIndex = m_receiveBuffer.indexOf("}\n{");
-    while (splitIndex > -1) {
-        emit dataAvailable(socket, m_receiveBuffer.left(splitIndex + 1));
-        m_receiveBuffer = m_receiveBuffer.right(m_receiveBuffer.length() - splitIndex - 2);
-        splitIndex = m_receiveBuffer.indexOf("}\n{");
-    }
-    if (m_receiveBuffer.endsWith("}\n")) {
-        emit dataAvailable(socket, m_receiveBuffer);
-        m_receiveBuffer.clear();
-    }
+    qCDebug(dcTcpServerTraffic()) << "Reading socket data:" << data;
+    emit dataAvailable(socket, data);
 }
 
 }

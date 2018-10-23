@@ -60,9 +60,20 @@ LoggingHandler::LoggingHandler(QObject *parent) :
     QVariantMap timeFilter;
     params.clear(); returns.clear();
     setDescription("GetLogEntries", "Get the LogEntries matching the given filter. "
-                   "Each list element of a given filter will be connected with OR "
-                   "to each other. Each of the given filters will be connected with AND "
-                   "to each other.");
+                   "The result set will contain entries matching all filter rules combined. "
+                   "If multiple options are given for a single filter type, the result set will "
+                   "contain entries matching any of those. The offset starts at the newest entry "
+                   "in the result set. By default all items are returned. Example: If the specified "
+                   "filter returns a total amount of 100 entries:\n"
+                   "- a offset value of 10 would include the oldest 90 entries\n"
+                   "- a offset value of 0 would return all 100 entries\n\n"
+                   "The offset is particularly useful in combination with the maxCount property and "
+                   "can be used for pagination. E.g. A result set of 10000 entries can be fetched in "
+                   " batches of 1000 entries by fetching\n"
+                   "1) offset 0, maxCount 1000: Entries 0 to 9999\n"
+                   "2) offset 10000, maxCount 1000: Entries 10000 - 19999\n"
+                   "3) offset 20000, maxCount 1000: Entries 20000 - 29999\n"
+                   "...");
     timeFilter.insert("o:startDate", JsonTypes::basicTypeToString(JsonTypes::Int));
     timeFilter.insert("o:endDate", JsonTypes::basicTypeToString(JsonTypes::Int));
     params.insert("o:timeFilters", QVariantList() << timeFilter);
@@ -72,9 +83,13 @@ LoggingHandler::LoggingHandler(QObject *parent) :
     params.insert("o:typeIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
     params.insert("o:deviceIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
     params.insert("o:values", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Variant));
+    params.insert("o:limit", JsonTypes::basicTypeToString(JsonTypes::Int));
+    params.insert("o:offset", JsonTypes::basicTypeToString(JsonTypes::Int));
     setParams("GetLogEntries", params);
     returns.insert("loggingError", JsonTypes::loggingErrorRef());
     returns.insert("o:logEntries", QVariantList() << JsonTypes::logEntryRef());
+    returns.insert("count", JsonTypes::basicTypeToString(JsonTypes::Int));
+    returns.insert("offset", JsonTypes::basicTypeToString(JsonTypes::Int));
     setReturns("GetLogEntries", returns);
 
     // Notifications
@@ -126,7 +141,10 @@ JsonReply* LoggingHandler::GetLogEntries(const QVariantMap &params) const
         entries.append(JsonTypes::packLogEntry(entry));
     }
     QVariantMap returns = statusToReply(Logging::LoggingErrorNoError);
+
     returns.insert("logEntries", entries);
+    returns.insert("offset", filter.offset());
+    returns.insert("count", entries.count());
     return createReply(returns);
 }
 

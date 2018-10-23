@@ -1275,31 +1275,22 @@ QString JsonTypes::basicTypeToString(const QVariant::Type &type)
     switch (type) {
     case QVariant::Uuid:
         return "Uuid";
-        break;
     case QVariant::String:
         return "String";
-        break;
     case QVariant::Int:
         return "Int";
-        break;
     case QVariant::UInt:
         return "Uint";
-        break;
     case QVariant::Double:
         return "Double";
-        break;
     case QVariant::Bool:
         return "Bool";
-        break;
     case QVariant::Color:
         return "Color";
-        break;
     case QVariant::Time:
         return "Time";
-        break;
     default:
-        return QVariant::typeToName(type);
-        break;
+        return QVariant::typeToName(static_cast<int>(type));
     }
 }
 
@@ -1553,6 +1544,12 @@ LogFilter JsonTypes::unpackLogFilter(const QVariantMap &logFilterMap)
         foreach (const QVariant &value, values) {
             filter.addValue(value.toString());
         }
+    }
+    if (logFilterMap.contains("limit")) {
+        filter.setLimit(logFilterMap.value("limit", -1).toInt());
+    }
+    if (logFilterMap.contains("offset")) {
+        filter.setOffset(logFilterMap.value("offset").toInt());
     }
 
     return filter;

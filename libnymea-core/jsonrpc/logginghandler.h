@@ -31,7 +31,7 @@ class LoggingHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit LoggingHandler(QObject *parent = 0);
+    explicit LoggingHandler(QObject *parent = nullptr);
     QString name() const override;
 
     Q_INVOKABLE JsonReply *GetLogEntries(const QVariantMap &params) const;

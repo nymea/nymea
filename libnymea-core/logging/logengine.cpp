@@ -189,13 +189,21 @@ QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
     QList<LogEntry> results;
     QSqlQuery query(m_db);
 
+    QString limitString;
+    if (filter.limit() >= 0) {
+        limitString.append(QString("LIMIT %1 ").arg(filter.limit()));
+    }
+    if (filter.offset() > 0) {
+        limitString.append(QString("OFFSET %1").arg(QString::number(filter.offset())));
+    }
+
     QString queryString;
     if (filter.isEmpty()) {
-        queryString = "SELECT * FROM entries ORDER BY timestamp;";
+        queryString = QString("SELECT * FROM entries ORDER BY timestamp DESC %1;").arg(limitString);
     } else {
-        queryString = QString("SELECT * FROM entries WHERE %1 ORDER BY timestamp;").arg(filter.queryString());
+        queryString = QString("SELECT * FROM entries WHERE %1 ORDER BY timestamp DESC %2;").arg(filter.queryString()).arg(limitString);
     }
-//    qCDebug(dcLogEngine()) << "Preparing query:" << queryString;
+    qCDebug(dcLogEngine()) << "Preparing query:" << queryString;
     query.prepare(queryString);
 
     foreach (const QString &value, filter.values()) {

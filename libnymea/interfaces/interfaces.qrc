@@ -42,6 +42,7 @@
         <file>extendedshutter.json</file>
         <file>smartlock.json</file>
         <file>system.json</file>
+        <file>smartmeter.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

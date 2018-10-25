@@ -41,6 +41,7 @@
         <file>extendedblind.json</file>
         <file>extendedshutter.json</file>
         <file>smartlock.json</file>
+        <file>system.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

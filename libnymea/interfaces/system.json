@@ -1,0 +1,3 @@
+{
+    "description": "This interface is used to mark device classes as system-internal. The user interface will likely hide it."
+}

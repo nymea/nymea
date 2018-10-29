@@ -50,6 +50,8 @@ public:
     void sendData(const QUuid &clientId, const QByteArray &data) override;
     void sendData(const QList<QUuid> &clients, const QByteArray &data) override;
 
+    void terminateClientConnection(const QUuid &clientId) override;
+
 private:
     QWebSocketServer *m_server = nullptr;
     QHash<QUuid, QWebSocket *> m_clientList;

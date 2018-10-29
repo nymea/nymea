@@ -34,13 +34,15 @@ class BluetoothServer : public TransportInterface
 {
     Q_OBJECT
 public:
-    explicit BluetoothServer(QObject *parent = 0);
+    explicit BluetoothServer(QObject *parent = nullptr);
     ~BluetoothServer();
 
     static bool hardwareAvailable();
 
     void sendData(const QUuid &clientId, const QByteArray &data) override;
     void sendData(const QList<QUuid> &clients, const QByteArray &data) override;
+
+    void terminateClientConnection(const QUuid &clientId) override;
 
 private:
     QBluetoothServer *m_server = nullptr;
@@ -49,7 +51,6 @@ private:
 
     // Client storage
     QHash<QUuid, QBluetoothSocket *> m_clientList;
-    QByteArray m_receiveBuffer;
 
 private slots:
     void onHostModeChanged(const QBluetoothLocalDevice::HostMode &mode);

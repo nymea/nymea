@@ -79,6 +79,8 @@ private:
     void sendUnauthorizedResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
     QVariantMap createWelcomeMessage(TransportInterface *interface) const;
 
+    void processJsonPacket(TransportInterface *interface, const QUuid &clientId, const QByteArray &data);
+
 private slots:
     void setup();
 
@@ -101,6 +103,7 @@ private:
     QHash<JsonReply *, TransportInterface *> m_asyncReplies;
 
     QHash<QUuid, TransportInterface*> m_clientTransports;
+    QHash<QUuid, QByteArray> m_clientBuffers;
     QHash<QUuid, bool> m_clientNotifications;
     QHash<int, QUuid> m_pushButtonTransactions;
 

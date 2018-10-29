@@ -82,6 +82,14 @@ void BluetoothServer::sendData(const QList<QUuid> &clients, const QByteArray &da
         sendData(client, data);
 }
 
+void BluetoothServer::terminateClientConnection(const QUuid &clientId)
+{
+    QBluetoothSocket *client = m_clientList.value(clientId);
+    if (client) {
+        client->abort();
+    }
+}
+
 void BluetoothServer::onHostModeChanged(const QBluetoothLocalDevice::HostMode &mode)
 {
     if (!m_server || !m_localDevice)
@@ -140,19 +148,7 @@ void BluetoothServer::readData()
     if (!client)
         return;
 
-    m_receiveBuffer.append(client->readAll());
-    qCDebug(dcBluetoothServerTraffic()) << "Current data buffer:" << qUtf8Printable(m_receiveBuffer);
-    int splitIndex = m_receiveBuffer.indexOf("}\n{");
-    while (splitIndex > -1) {
-        emit dataAvailable(m_clientList.key(client), m_receiveBuffer.left(splitIndex + 1));
-        m_receiveBuffer = m_receiveBuffer.right(m_receiveBuffer.length() - splitIndex - 2);
-        splitIndex = m_receiveBuffer.indexOf("}\n{");
-    }
-
-    if (m_receiveBuffer.endsWith("}\n")) {
-        emit dataAvailable(m_clientList.key(client), m_receiveBuffer.trimmed());
-        m_receiveBuffer.clear();
-    }
+    emit dataAvailable(m_clientList.key(client), client->readAll());
 }
 
 bool BluetoothServer::startServer()
@@ -250,7 +246,6 @@ bool BluetoothServer::stopServer()
         m_localDevice = nullptr;
     }
 
-    m_receiveBuffer.clear();
     return true;
 }
 

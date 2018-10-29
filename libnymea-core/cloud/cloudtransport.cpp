@@ -53,6 +53,16 @@ void CloudTransport::sendData(const QList<QUuid> &clientIds, const QByteArray &d
     }
 }
 
+void CloudTransport::terminateClientConnection(const QUuid &clientId)
+{
+    foreach (const ConnectionContext &ctx, m_connections) {
+        if (ctx.clientId == clientId) {
+            ctx.proxyConnection->disconnectServer();
+            return;
+        }
+    }
+}
+
 bool CloudTransport::startServer()
 {
     qCDebug(dcCloud()) << "Started cloud transport";
@@ -80,28 +90,34 @@ void CloudTransport::connectToCloud(const QString &token, const QString &nonce)
     connect(context.proxyConnection, &RemoteProxyConnection::ready, this, &CloudTransport::transportReady);
     connect(context.proxyConnection, &RemoteProxyConnection::stateChanged, this, &CloudTransport::remoteConnectionStateChanged);
     connect(context.proxyConnection, &RemoteProxyConnection::dataReady, this, &CloudTransport::transportDataReady);
+    connect(context.proxyConnection, &RemoteProxyConnection::remoteConnectionEstablished, this, &CloudTransport::transportConnected);
+    connect(context.proxyConnection, &RemoteProxyConnection::disconnected, this, &CloudTransport::transportDisconnected);
 
     context.proxyConnection->connectServer(m_proxyUrl);
 }
 
 void CloudTransport::remoteConnectionStateChanged(RemoteProxyConnection::State state)
 {
+    qCDebug(dcCloudTraffic()) << "Remote connection state changed" << state;
+}
+
+void CloudTransport::transportConnected()
+{
     RemoteProxyConnection *proxyConnection = qobject_cast<RemoteProxyConnection*>(sender());
     ConnectionContext context = m_connections.value(proxyConnection);
 
-    switch (state) {
-    case RemoteProxyConnection::StateRemoteConnected:
-        qCDebug(dcCloud()) << "The remote client connected successfully" << proxyConnection->tunnelPartnerName() << proxyConnection->tunnelPartnerUuid();
-        emit clientConnected(context.clientId);
-        break;
-    case RemoteProxyConnection::StateDisconnected:
-        qCDebug(dcCloud()) << "The remote connection disconnected.";
-        emit clientDisconnected(context.clientId);
-        break;
-    default:
-        qCDebug(dcCloud()) << "Remote connection state changed" << state;
-        break;
-    }
+    qCDebug(dcCloud()) << "The remote client connected successfully" << proxyConnection->tunnelPartnerName() << proxyConnection->tunnelPartnerUuid();
+    emit clientConnected(context.clientId);
+}
+
+void CloudTransport::transportDisconnected()
+{
+    RemoteProxyConnection *proxyConnection = qobject_cast<RemoteProxyConnection*>(sender());
+    ConnectionContext context = m_connections.take(proxyConnection);
+    proxyConnection->deleteLater();
+
+    qCDebug(dcCloud()) << "The remote connection disconnected." << context.clientId;
+    emit clientDisconnected(context.clientId);
 }
 
 void CloudTransport::transportReady()
@@ -118,7 +134,7 @@ void CloudTransport::transportDataReady(const QByteArray &data)
 {
     RemoteProxyConnection *proxyConnection = qobject_cast<RemoteProxyConnection*>(sender());
     ConnectionContext context = m_connections.value(proxyConnection);
-    qCDebug(dcCloudTraffic()) << "Date received:" << context.clientId.toString() << data;
+    qCDebug(dcCloudTraffic()) << "Data received:" << context.clientId.toString() << data;
     emit dataAvailable(context.clientId, data);
 }
 

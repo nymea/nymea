@@ -64,6 +64,7 @@ private slots:
 
     void testHouseKeeping();
 
+    void testLimits();
 
     // this has to be the last test
     void removeDevice();
@@ -591,6 +592,56 @@ void TestLogging::testHouseKeeping()
 
     response = injectAndWait("Logging.GetLogEntries", params);
     QVERIFY2(response.toMap().value("params").toMap().value("logEntries").toList().count() == 0, "Device state change event still in log. Should've been cleaned by housekeeping.");
+}
+
+void TestLogging::testLimits()
+{
+    clearLoggingDatabase();
+
+    for (int i = 0; i < 50; i++) {
+        QVariantList actionParams;
+        QVariantMap param1;
+        param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+        param1.insert("value", i);
+        actionParams.append(param1);
+        QVariantMap param2;
+        param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+        param2.insert("value", true);
+        actionParams.append(param2);
+
+        QVariantMap params;
+        params.insert("actionTypeId", mockActionIdWithParams);
+        params.insert("deviceId", m_mockDeviceId);
+        params.insert("params", actionParams);
+
+        // EXECUTE with params
+        QVariant response = injectAndWait("Actions.ExecuteAction", params);
+        verifyDeviceError(response);
+    }
+
+    QVariantMap params;
+    QVariantMap response;
+
+    // No limits, should be all 50 entries
+    params.clear();
+    response = injectAndWait("Logging.GetLogEntries", params).toMap();
+    QCOMPARE(response.value("params").toMap().value("count").toInt(), 50);
+    QCOMPARE(response.value("params").toMap().value("logEntries").toList().count(), 50);
+
+    // Add a limit of 20
+    params.clear();
+    params.insert("limit", 20);
+    response = injectAndWait("Logging.GetLogEntries", params).toMap();
+    QCOMPARE(response.value("params").toMap().value("count").toInt(), 20);
+    QCOMPARE(response.value("params").toMap().value("logEntries").toList().count(), 20);
+
+    // Add a offset of 40, keeping a limit of 20. should return 10 entries
+    params.clear();
+    params.insert("limit", 20);
+    params.insert("offset", 40);
+    response = injectAndWait("Logging.GetLogEntries", params).toMap();
+    QCOMPARE(response.value("params").toMap().value("count").toInt(), 10);
+    QCOMPARE(response.value("params").toMap().value("logEntries").toList().count(), 10);
 }
 
 void TestLogging::removeDevice()

@@ -177,6 +177,47 @@ QList<QString> LogFilter::values() const
     return m_values;
 }
 
+/*! Set the maximum count for the result set. Unless a \l{offset} is specified,
+ * the newest \a count entries will be returned. \sa{setOffset}
+ */
+void LogFilter::setLimit(int limit)
+{
+    m_limit = limit;
+}
+
+/*! Returns the maximum count for the result set. \sa{setOffset} */
+int LogFilter::limit() const
+{
+    return m_limit;
+}
+
+/*! Set the offset for the result set.
+ * The offset starts at the newest entry in the result set.
+ * 0 (default) means "all items"
+ * Example: If the specified filter returns a total amount of 100 entries:
+ * - a offset value of 10 would include the oldest 90 entries
+ * - a offset value of 0 would return all 100 entries
+ *
+ * The offset is particularly useful in combination with the \l{limit} property and
+ * can be used for pagination.
+ *
+ * E.g. A result set of 10000 entries can be fetched in batches of 1000 entries by fetching
+ * 1) offset 0, limit 1000: Entries 0 to 9999
+ * 2) offset 10000, limit 1000: Entries 10000 - 19999
+ * 3) offset 20000, limit 1000: Entries 20000 - 29999
+ * ...
+ */
+void LogFilter::setOffset(int offset)
+{
+    m_offset = offset;
+}
+
+/*! Returns the offset for the result set. \sa{setOffset} */
+int LogFilter::offset() const
+{
+    return m_offset;
+}
+
 /*! Returns true if this \l{LogFilter} is empty. */
 bool LogFilter::isEmpty() const
 {

@@ -1,0 +1,10 @@
+{
+    "description": "A smartmeterproducer can monitor total energy consumed by this thing.",
+    "extends": "smartmeter",
+    "states": [
+        {
+            "name": "totalEnergyConsumed",
+            "type": "double"
+        }
+    ]
+}

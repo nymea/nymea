@@ -31,7 +31,7 @@
                     "name": "mock",
                     "displayName": "Mock Device",
                     "deviceIcon": "Tune",
-                    "interfaces": ["gateway", "light", "mediacontroller", "battery"],
+                    "interfaces": ["system", "light", "gateway", "battery"],
                     "basicTags": [
                         "Device",
                         "Actuator",
@@ -200,7 +200,7 @@
                     "id": "ab4257b3-7548-47ee-9bd4-7dc3004fd197",
                     "name": "mockDeviceAuto",
                     "displayName": "Mock Device (Auto created)",
-                    "interfaces": ["gateway"],
+                    "interfaces": ["system"],
                     "basicTags": [
                         "Device",
                         "Actuator",
@@ -320,7 +320,7 @@
                     "id": "9e03144c-e436-4eea-82d9-ccb33ef778db",
                     "name": "mockPushButton",
                     "displayName": "Mock Device (Push Button)",
-                    "interfaces": ["gateway"],
+                    "interfaces": ["system"],
                     "basicTags": [
                         "Device",
                         "Actuator",
@@ -420,7 +420,7 @@
                     "name": "mockDisplayPin",
                     "displayName": "Mock Device (Display Pin)",
                     "deviceIcon": "Tune",
-                    "interfaces": ["gateway"],
+                    "interfaces": ["system"],
                     "basicTags": [
                         "Device",
                         "Actuator",
@@ -529,7 +529,7 @@
                     "name": "mockParent",
                     "displayName": "Mock Device (Parent)",
                     "deviceIcon": "Tune",
-                    "interfaces": ["gateway"],
+                    "interfaces": ["system"],
                     "basicTags": [
                         "Device",
                         "Actuator",

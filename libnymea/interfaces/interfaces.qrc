@@ -41,6 +41,12 @@
         <file>extendedblind.json</file>
         <file>extendedshutter.json</file>
         <file>smartlock.json</file>
+        <file>system.json</file>
+        <file>smartmeterconsumer.json</file>
+        <file>smartmeterproducer.json</file>
+        <file>smartmeter.json</file>
+        <file>extendedsmartmeterconsumer.json</file>
+        <file>extendedsmartmeterproducer.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

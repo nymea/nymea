@@ -62,6 +62,12 @@ public:
     void addValue(const QString &value);
     QList<QString> values() const;
 
+    void setLimit(int limit);
+    int limit() const;
+
+    void setOffset(int offset);
+    int offset() const;
+
     bool isEmpty() const;
 
 private:
@@ -72,6 +78,8 @@ private:
     QList<QUuid> m_typeIds;
     QList<DeviceId> m_deviceIds;
     QList<QString> m_values;
+    int m_limit = -1;
+    int m_offset = 0;
 
     QString createDateString() const;
     QString createTimeFilterString(QPair<QDateTime, QDateTime> timeFilter) const;

@@ -1,0 +1,10 @@
+{
+    "description": "Like smartmeterproducer, but instead of only providing total produced energy, this also supports retrieving the current power supply rate. Note that currentPower is positive for producers but might also be negative if a device implements consumer and producer and currently consumes more than it produces.",
+    "extends": "smartmeterproducer",
+    "states": [
+        {
+            "name": "currentPower",
+            "type": "double"
+        }
+    ]
+}

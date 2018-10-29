@@ -1,9 +1,3 @@
 {
-    "states": [
-        {
-            "name": "totalEnergy",
-            "type": "double"
-        }
-
-    ]
+    "description": "This interface is used for things that can monitor energy consumption/production. This interface is the base for smartmeter things. Actual things will most likely want to use one of the extending interfaces like smartmeterconsumer and/or smartmeterproducer instead."
 }

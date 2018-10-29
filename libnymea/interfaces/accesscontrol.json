@@ -1,0 +1,10 @@
+{
+    "events": [
+        {
+            "name": "accessGranted"
+        },
+        {
+            "name": "accessDenied"
+        }
+    ]
+}

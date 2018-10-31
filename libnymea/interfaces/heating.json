@@ -1,0 +1,4 @@
+{
+    "description": "The heating interface defines basic heating appliances. They can be turned on or off.",
+    "extends": "power"
+}

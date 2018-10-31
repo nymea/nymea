@@ -1,0 +1,13 @@
+{
+    "description": "An extended version of the EV-charger interface. Supports regulation of percentage in addition ot be powered on or off.",
+    "extends": "evcharger",
+    "states": [
+        {
+            "name": "percentage",
+            "type": "int",
+            "min": 0,
+            "max": 100,
+            "writable": true
+        }
+    ]
+}

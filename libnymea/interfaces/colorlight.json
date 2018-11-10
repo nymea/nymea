@@ -1,12 +1,6 @@
 {
-    "extends": "dimmablelight",
+    "extends": "colortemperaturelight",
     "states": [
-        {
-            "name": "colorTemperature",
-            "type": "int",
-            "minimumValue": "any",
-            "maximumValue": "any"
-        },
         {
             "name": "color",
             "type": "QColor"

@@ -4,6 +4,7 @@
         <file>mediacontroller.json</file>
         <file>light.json</file>
         <file>dimmablelight.json</file>
+        <file>colortemperaturelight.json</file>
         <file>colorlight.json</file>
         <file>garagegate.json</file>
         <file>gateway.json</file>

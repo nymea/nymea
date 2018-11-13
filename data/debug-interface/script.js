@@ -52,6 +52,7 @@ function connectWebsocket() {
             var message = messageEvent.data;
             console.log("WebSocket data received: " + message);
             document.getElementById("logsTextArea").value += message;
+            document.getElementById("logsTextArea").scrollTop = document.getElementById("logsTextArea").scrollHeight 
         };
     
     } catch (exception) {

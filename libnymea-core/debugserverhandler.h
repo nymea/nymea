@@ -43,7 +43,6 @@ private:
     static QList<QWebSocket*> s_websocketClients;
     static void logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message);
 
-    QTimer *m_timer = nullptr;
     QWebSocketServer *m_websocketServer = nullptr;
 
     QProcess *m_pingProcess = nullptr;
@@ -65,7 +64,6 @@ private:
     QByteArray createErrorXmlDocument(HttpReply::HttpStatusCode statusCode, const QString &errorMessage);
 
 private slots:
-    void onTimeout();
     void onWebsocketClientConnected();
     void onWebsocketClientDisconnected();
     void onWebsocketClientError(QAbstractSocket::SocketError error);

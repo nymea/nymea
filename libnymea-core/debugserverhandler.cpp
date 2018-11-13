@@ -31,6 +31,9 @@
 #include <QMessageLogger>
 
 
+QtMessageHandler DebugServerHandler::s_oldLogMessageHandler = nullptr;
+QList<QWebSocket*> DebugServerHandler::s_websocketClients;
+
 namespace nymeaserver {
 
 DebugServerHandler::DebugServerHandler(QObject *parent) :
@@ -52,7 +55,7 @@ DebugServerHandler::DebugServerHandler(QObject *parent) :
 
     //m_timer->start();
 
-    qInstallMessageHandler(&DebugServerHandler::consoleLogHandler);
+    s_oldLogMessageHandler = qInstallMessageHandler(&logMessageHandler);
 }
 
 HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
@@ -335,6 +338,14 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
     HttpReply *reply = RestResource::createErrorReply(HttpReply::PermanentRedirect);
     reply->setHeader(HttpReply::LocationHeader, "/debug");
     return reply;
+}
+
+void DebugServerHandler::logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message) {
+  s_oldLogMessageHandler(type, context, message);
+
+  foreach (QWebSocket *client, s_websocketClients) {
+      client->sendTextMessage(message + "\n");
+  }
 }
 
 QByteArray DebugServerHandler::loadResourceData(const QString &resourceFileName)
@@ -1198,43 +1209,9 @@ QByteArray DebugServerHandler::createErrorXmlDocument(HttpReply::HttpStatusCode 
     return data;
 }
 
-void consoleLogHandler(QtMsgType type, const QMessageLogContext& context, const QString& message)
-{
-    QString messageString;
-    QString timeString = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz");
-    switch (type) {
-    case QtInfoMsg:
-        messageString = QString(" I %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, " I | %s: %s\n", context.category, message.toUtf8().data());
-        break;
-    case QtDebugMsg:
-        messageString = QString(" I %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, " I | %s: %s\n", context.category, message.toUtf8().data());
-        break;
-    case QtWarningMsg:
-        messageString = QString(" W %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stderr, " W | %s: %s\n", context.category, message.toUtf8().data());
-        break;
-    case QtCriticalMsg:
-        messageString = QString(" C %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stderr, " C | %s: %s\n", context.category, message.toUtf8().data());
-        break;
-    case QtFatalMsg:
-        messageString = QString(" F %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stderr, " F | %s: %s\n", context.category, message.toUtf8().data());
-        break;
-    }
-    fflush(stdout);
-    fflush(stderr);
-
-    foreach (QWebSocket *client, DebugServerHandler::s_websocketClients) {
-        client->sendTextMessage(messageString + "\r\n");
-    }
-}
-
 void DebugServerHandler::onTimeout()
 {
-    foreach (QWebSocket *client, DebugServerHandler::s_websocketClients) {
+    foreach (QWebSocket *client, s_websocketClients) {
         client->sendTextMessage("Hallo!\n");
     }
 }
@@ -1242,7 +1219,7 @@ void DebugServerHandler::onTimeout()
 void DebugServerHandler::onWebsocketClientConnected()
 {
     QWebSocket *client = m_websocketServer->nextPendingConnection();
-    DebugServerHandler::s_websocketClients.append(client);
+    s_websocketClients.append(client);
     qCDebug(dcWebServer()) << "DebugServer: New websocket client connected:" << client->peerAddress().toString();
 
     connect(client, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onWebsocketClientError(QAbstractSocket::SocketError)));
@@ -1253,7 +1230,7 @@ void DebugServerHandler::onWebsocketClientDisconnected()
 {
     QWebSocket *client = static_cast<QWebSocket *>(sender());
     qCDebug(dcWebServer()) << "DebugServer: Websocket client disconnected" << client->peerAddress().toString();
-    DebugServerHandler::s_websocketClients.removeAll(client);
+    s_websocketClients.removeAll(client);
     client->deleteLater();
 }
 

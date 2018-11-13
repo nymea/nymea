@@ -48,13 +48,6 @@ DebugServerHandler::DebugServerHandler(QObject *parent) :
     }
     qCDebug(dcWebServer()) << "DebugServer: Started debug server websocket interface on" << m_websocketServer->serverUrl().toString();
 
-    m_timer = new QTimer(this);
-    m_timer->setSingleShot(false);
-    m_timer->setInterval(1000);
-    connect(m_timer, &QTimer::timeout, this, &DebugServerHandler::onTimeout);
-
-    //m_timer->start();
-
     s_oldLogMessageHandler = qInstallMessageHandler(&logMessageHandler);
 }
 
@@ -1055,7 +1048,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     // Dig section
     writer.writeEmptyElement("hr");
     //: The ping section of the debug interface
-    writer.writeTextElement("h3", tr("Trace path nymea.io"));
+    writer.writeTextElement("h3", tr("Trace path to nymea.io"));
     writer.writeEmptyElement("hr");
 
     // Start tracepath button
@@ -1084,7 +1077,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("class", "logstream");
     writer.writeEmptyElement("hr");
     //: The network section of the debug interface
-    writer.writeTextElement("h2", tr("Server debug log stream"));
+    writer.writeTextElement("h2", tr("Server live logs"));
     writer.writeEmptyElement("hr");
 
     // Start stream button
@@ -1094,7 +1087,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("id", "connectWebsocketButton");
     writer.writeAttribute("onClick", "connectWebsocket()");
     //: The connect button for the log stream of the debug interface
-    writer.writeCharacters(tr("Connect stream"));
+    writer.writeCharacters(tr("Start server live logs"));
     writer.writeEndElement(); // button
 
     // Stop stream button
@@ -1105,7 +1098,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("onClick", "disconnectWebsocket()");
     writer.writeAttribute("disabled", "true");
     //: The disconnect button for the log stream of the debug interface
-    writer.writeCharacters(tr("Disconnect stream"));
+    writer.writeCharacters(tr("Stop server live logs"));
     writer.writeEndElement(); // button
 
 
@@ -1207,13 +1200,6 @@ QByteArray DebugServerHandler::createErrorXmlDocument(HttpReply::HttpStatusCode 
     writer.writeEndElement(); // html
 
     return data;
-}
-
-void DebugServerHandler::onTimeout()
-{
-    foreach (QWebSocket *client, s_websocketClients) {
-        client->sendTextMessage("Hallo!\n");
-    }
 }
 
 void DebugServerHandler::onWebsocketClientConnected()

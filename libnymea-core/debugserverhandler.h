@@ -38,10 +38,11 @@ public:
 
     HttpReply *processDebugRequest(const QString &requestPath);
 
-    static QList<QWebSocket *> s_websocketClients;
-    static void consoleLogHandler(QtMsgType type, const QMessageLogContext& context, const QString& message);
-
 private:
+    static QtMessageHandler s_oldLogMessageHandler;
+    static QList<QWebSocket*> s_websocketClients;
+    static void logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message);
+
     QTimer *m_timer = nullptr;
     QWebSocketServer *m_websocketServer = nullptr;
 

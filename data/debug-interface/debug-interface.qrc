@@ -1,8 +1,15 @@
 <RCC>
-    <qresource prefix="">
+    <qresource prefix="/">
         <file>logo.svg</file>
         <file>warning.svg</file>
+        <file>script.js</file>
         <file>styles.css</file>
+        <file>favicons/favicon-16x16.png</file>
+        <file>favicons/favicon-32x32.png</file>
+        <file>favicons/favicon-96x96.png</file>
+        <file>favicons/favicon-128.png</file>
+        <file>favicons/favicon-196x196.png</file>
+        <file>favicons/favicon.ico</file>
+        <file>favicons/favicon.svg</file>
     </qresource>
 </RCC>
-

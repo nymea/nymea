@@ -21,7 +21,10 @@
 #ifndef DEBUGSERVERHANDLER_H
 #define DEBUGSERVERHANDLER_H
 
+#include <QTimer>
 #include <QObject>
+#include <QProcess>
+#include <QWebSocketServer>
 
 #include "httpreply.h"
 
@@ -35,14 +38,40 @@ public:
 
     HttpReply *processDebugRequest(const QString &requestPath);
 
+    static QList<QWebSocket *> s_websocketClients;
+    static void consoleLogHandler(QtMsgType type, const QMessageLogContext& context, const QString& message);
+
 private:
-    QByteArray createDebugXmlDocument();
-    QByteArray createErrorXmlDocument(HttpReply::HttpStatusCode statusCode, const QString &errorMessage);
-    QByteArray loadResourceFile(const QString &resourceFileName);
+    QTimer *m_timer = nullptr;
+    QWebSocketServer *m_websocketServer = nullptr;
+
+    QProcess *m_pingProcess = nullptr;
+    HttpReply *m_pingReply = nullptr;
+
+    QProcess *m_digProcess = nullptr;
+    HttpReply *m_digReply = nullptr;
+
+    QProcess *m_tracePathProcess = nullptr;
+    HttpReply *m_tracePathReply = nullptr;
+
+    QByteArray loadResourceData(const QString &resourceFileName);
     QString getResourceFileName(const QString &requestPath);
     bool resourceFileExits(const QString &requestPath);
 
     HttpReply *processDebugFileRequest(const QString &requestPath);
+
+    QByteArray createDebugXmlDocument();
+    QByteArray createErrorXmlDocument(HttpReply::HttpStatusCode statusCode, const QString &errorMessage);
+
+private slots:
+    void onTimeout();
+    void onWebsocketClientConnected();
+    void onWebsocketClientDisconnected();
+    void onWebsocketClientError(QAbstractSocket::SocketError error);
+
+    void onPingProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void onDigProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void onTracePathProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 };
 

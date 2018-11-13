@@ -417,7 +417,7 @@ QByteArray HttpReply::getHeaderType(const HttpReply::HttpHeaderType &headerType)
  */
 void HttpReply::startWait()
 {
-    m_timer->start(10000);
+    m_timer->start(60000);
 }
 
 void HttpReply::timeout()

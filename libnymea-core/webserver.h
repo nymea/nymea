@@ -113,6 +113,7 @@ private slots:
     void onDisconnected();
     void onEncrypted();
     void onError(QAbstractSocket::SocketError error);
+    void onAsyncReplyFinished();
 
     void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
     void resetAvahiService();

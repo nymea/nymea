@@ -132,7 +132,7 @@ QUrl WebServer::serverUrl() const
 void WebServer::sendHttpReply(HttpReply *reply)
 {
     // get the right socket
-    QSslSocket *socket = 0;
+    QSslSocket *socket = nullptr;
     socket = m_clientList.value(reply->clientId());
     if (!socket) {
         qCWarning(dcWebServer) << "Invalid socket pointer! This should never happen!!! Missing clientId in reply?";
@@ -141,7 +141,7 @@ void WebServer::sendHttpReply(HttpReply *reply)
 
     // send raw data
     reply->packReply();
-    qCDebug(dcWebServer) << "respond" << reply->httpStatusCode() << reply->httpReasonPhrase();
+    qCDebug(dcWebServer) << "Respond" << reply->httpStatusCode() << reply->httpReasonPhrase();
     socket->write(reply->data());
 }
 
@@ -161,7 +161,7 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
 
     // make sure the file is in the public directory
     if (!file.canonicalFilePath().startsWith(QDir(m_configuration.publicFolder).canonicalPath())) {
-        qCWarning(dcWebServer) << "requested file" << file.fileName() << "is outside the public folder.";
+        qCWarning(dcWebServer) << "Requested file" << file.fileName() << "is outside the public folder.";
         HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
         reply->setClientId(m_clientList.key(socket));
         sendHttpReply(reply);
@@ -171,7 +171,7 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
 
     // make sure we can read the file
     if (!file.isReadable()) {
-        qCWarning(dcWebServer) << "requested file" << file.fileName() << "is not readable.";
+        qCWarning(dcWebServer) << "Requested file" << file.fileName() << "is not readable.";
         HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
         reply->setClientId(m_clientList.key(socket));
         reply->setPayload("403 Forbidden. File not readable");
@@ -388,8 +388,15 @@ void WebServer::readClient()
 
             HttpReply *reply = NymeaCore::instance()->debugServerHandler()->processDebugRequest(request.url().path());
             reply->setClientId(clientId);
-            sendHttpReply(reply);
-            reply->deleteLater();
+
+            // Handle async replies
+            if (reply->type() == HttpReply::TypeAsync) {
+                connect(reply, &HttpReply::finished, this, &WebServer::onAsyncReplyFinished);
+                reply->startWait();
+            } else {
+                sendHttpReply(reply);
+                reply->deleteLater();
+            }
             return;
         } else {
             qCWarning(dcWebServer()) << "The debug server handler is disabled. You can enable it by adding \'debugServerEnabled=true\' in the \'nymead\' section of the nymead.conf file.";
@@ -403,7 +410,7 @@ void WebServer::readClient()
 
     // Check server.xml call
     if (request.url().path() == "/server.xml" && request.method() == HttpRequest::Get) {
-        qCDebug(dcWebServer) << "server XML request call";
+        qCDebug(dcWebServer) << "Server XML request call";
         HttpReply *reply = RestResource::createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "text/xml");
         reply->setPayload(createServerXmlDocument(socket->localAddress()));
@@ -418,7 +425,7 @@ void WebServer::readClient()
     if (request.method() == HttpRequest::Get) {
         // Check if the webinterface dir does exist, otherwise a filerequest is not relevant
         if (!QDir(m_configuration.publicFolder).exists()) {
-            qCWarning(dcWebServer) << "webinterface folder" << m_configuration.publicFolder << "does not exist.";
+            qCWarning(dcWebServer) << "Webinterface folder" << m_configuration.publicFolder << "does not exist.";
             HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
             reply->setClientId(clientId);
             sendHttpReply(reply);
@@ -432,7 +439,7 @@ void WebServer::readClient()
 
         QFile file(path);
         if (file.open(QFile::ReadOnly | QFile::Truncate)) {
-            qCDebug(dcWebServer) << "load file" << file.fileName();
+            qCDebug(dcWebServer) << "Load file" << file.fileName();
             HttpReply *reply = RestResource::createSuccessReply();
 
             // Check content type
@@ -520,6 +527,21 @@ void WebServer::onError(QAbstractSocket::SocketError error)
     Q_UNUSED(error)
     QSslSocket* socket = static_cast<QSslSocket *>(sender());
     qCWarning(dcWebServer()) << QString("Client socket error %1:%2 ->").arg(socket->peerAddress().toString()).arg(socket->peerPort()) << socket->errorString();
+}
+
+void WebServer::onAsyncReplyFinished()
+{
+    HttpReply *reply = qobject_cast<HttpReply*>(sender());
+    qCDebug(dcWebServer) << "Async reply finished";
+
+    // check if the reply timeouted
+    if (reply->timedOut()) {
+        reply->clear();
+        reply->setHttpStatusCode(HttpReply::GatewayTimeout);
+    }
+
+    sendHttpReply(reply);
+    reply->deleteLater();
 }
 
 void WebServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
@@ -826,7 +848,7 @@ void WebServerClient::removeConnection(QSslSocket *socket)
  */
 void WebServerClient::resetTimout(QSslSocket *socket)
 {
-    QTimer *timer = 0;
+    QTimer *timer = nullptr;
     timer = m_runningConnections.key(socket);
     if (timer)
         timer->start();

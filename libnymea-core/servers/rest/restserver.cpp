@@ -36,8 +36,8 @@
 
 #include "restserver.h"
 #include "loggingcategories.h"
-#include "httprequest.h"
-#include "httpreply.h"
+#include "servers/httprequest.h"
+#include "servers/httpreply.h"
 
 #include <QJsonDocument>
 #include <QSslConfiguration>

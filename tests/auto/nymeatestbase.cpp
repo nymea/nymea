@@ -20,23 +20,9 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "nymeatestbase.h"
-#include "mocktcpserver.h"
 #include "nymeacore.h"
 #include "nymeasettings.h"
-#include "devicemanager.h"
-#include "loggingcategories.h"
-#include "logging/logengine.h"
-#include "jsonrpc/jsontypes.h"
-
-#include <QVariantMap>
-#include <QJsonDocument>
-#include <QJsonParseError>
-#include <QSignalSpy>
-#include <QtTest>
-#include <QDebug>
-#include <QMetaType>
-#include <QNetworkRequest>
-#include <QNetworkReply>
+#include "servers/mocktcpserver.h"
 
 using namespace nymeaserver;
 

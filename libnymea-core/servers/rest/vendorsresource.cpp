@@ -37,7 +37,7 @@
 
 
 #include "vendorsresource.h"
-#include "httprequest.h"
+#include "servers/httprequest.h"
 #include "loggingcategories.h"
 #include "nymeacore.h"
 

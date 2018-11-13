@@ -27,8 +27,8 @@
 #include <QUrlQuery>
 #include <QWebSocketServer>
 
-#include "httpreply.h"
 #include "debugreportgenerator.h"
+#include "servers/httpreply.h"
 
 namespace nymeaserver {
 

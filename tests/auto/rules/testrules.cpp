@@ -20,17 +20,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "nymeatestbase.h"
-#include "devicemanager.h"
 #include "nymeasettings.h"
-#include "mocktcpserver.h"
-
-#include <QtTest/QtTest>
-#include <QCoreApplication>
-#include <QTcpSocket>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QCoreApplication>
+#include "servers/mocktcpserver.h"
 
 using namespace nymeaserver;
 

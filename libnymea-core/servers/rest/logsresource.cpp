@@ -36,7 +36,7 @@
 */
 
 #include "logsresource.h"
-#include "httprequest.h"
+#include "servers/httprequest.h"
 #include "loggingcategories.h"
 #include "nymeacore.h"
 #include "logging/logengine.h"

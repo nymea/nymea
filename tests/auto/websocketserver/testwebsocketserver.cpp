@@ -20,16 +20,6 @@
 
 #include "nymeatestbase.h"
 #include "nymeacore.h"
-#include "devicemanager.h"
-#include "mocktcpserver.h"
-#include "webserver.h"
-
-#include <QtTest/QtTest>
-#include <QCoreApplication>
-#include <QMetaType>
-#include <QByteArray>
-#include <QSignalSpy>
-#include <QJsonDocument>
 
 #include <QWebSocket>
 

@@ -37,6 +37,15 @@
 #include "nymeacore.h"
 #include "certificategenerator.h"
 #include "nymeasettings.h"
+#include "nymeaconfiguration.h"
+
+#include "jsonrpc/jsonrpcserver.h"
+#include "servers/mocktcpserver.h"
+#include "servers/tcpserver.h"
+#include "servers/rest/restserver.h"
+#include "servers/websocketserver.h"
+#include "servers/webserver.h"
+#include "servers/bluetoothserver.h"
 
 #include <QSslCertificate>
 #include <QSslConfiguration>
@@ -120,6 +129,8 @@ ServerManager::ServerManager(NymeaConfiguration *configuration, QObject *parent)
         m_restServer->registerWebserver(webServer);
         m_webServers.insert(config.id, webServer);
     }
+
+
 
     connect(configuration, &NymeaConfiguration::tcpServerConfigurationChanged, this, &ServerManager::tcpServerConfigurationChanged);
     connect(configuration, &NymeaConfiguration::tcpServerConfigurationRemoved, this, &ServerManager::tcpServerConfigurationRemoved);

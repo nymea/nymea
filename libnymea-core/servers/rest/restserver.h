@@ -18,50 +18,58 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PLUGINSRESOURCE_H
-#define PLUGINSRESOURCE_H
+#ifndef RESTSERVER_H
+#define RESTSERVER_H
 
 #include <QObject>
-#include <QHash>
 
-#include "jsonrpc/jsontypes.h"
-#include "restresource.h"
-#include "httpreply.h"
+#include "servers/webserver.h"
+#include "jsonrpc/jsonhandler.h"
+#include "devicesresource.h"
+#include "deviceclassesresource.h"
+#include "vendorsresource.h"
+#include "pluginsresource.h"
+#include "rulesresource.h"
+#include "logsresource.h"
+
+class QSslConfiguration;
 
 namespace nymeaserver {
 
 class HttpRequest;
+class HttpReply;
 
-class PluginsResource : public RestResource
+class RestServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit PluginsResource(QObject *parent = 0);
+    explicit RestServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = 0);
 
-    QString name() const override;
-
-    HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
+    void registerWebserver(WebServer *webServer);
 
 private:
-    PluginId m_pluginId;
+    QHash<QUuid, WebServer*> m_clientList;
+    QHash<QString, RestResource *> m_resources;
 
-    // Process method
-    HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessOptionsRequest(const HttpRequest &request, const QStringList &urlTokens) override;
+    QHash<QUuid, HttpReply *> m_asyncReplies;
 
-    // Get methods
-    HttpReply *getPlugins() const;
-    HttpReply *getPlugin(const PluginId &pluginId) const;
-    HttpReply *getPluginConfiguration(const PluginId &pluginId) const;
-    HttpReply *setPluginConfiguration(const PluginId &pluginId, const QByteArray &payload) const;
+    DevicesResource *m_deviceResource;
+    DeviceClassesResource *m_deviceClassesResource;
+    VendorsResource *m_vendorsResource;
+    PluginsResource *m_pluginsResource;
+    RulesResource *m_rulesResource;
+    LogsResource *m_logsResource;
 
-    // Put methods
+private slots:
+    void setup();
+    void clientConnected(const QUuid &clientId);
+    void clientDisconnected(const QUuid &clientId);
+    
+    void processHttpRequest(const QUuid &clientId, const HttpRequest &request);
+    void asyncReplyFinished();
 
-
-    DevicePlugin *findPlugin(const PluginId &pluginId) const;
 };
 
 }
 
-#endif // PLUGINSRESOURCE_H
+#endif // RESTSERVER_H

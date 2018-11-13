@@ -18,60 +18,40 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICECLASSESRESOURCE_H
-#define DEVICECLASSESRESOURCE_H
+#ifndef LOGSRESOURCE_H
+#define LOGSRESOURCE_H
 
 #include <QObject>
 #include <QHash>
 
 #include "jsonrpc/jsontypes.h"
 #include "restresource.h"
-#include "httpreply.h"
-
+#include "servers/httpreply.h"
 
 namespace nymeaserver {
 
 class HttpRequest;
 
-class DeviceClassesResource : public RestResource
+class LogsResource : public RestResource
 {
     Q_OBJECT
 public:
-    explicit DeviceClassesResource(QObject *parent = 0);
+    explicit LogsResource(QObject *parent = 0);
 
     QString name() const override;
 
     HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:
-    mutable QHash<DeviceClassId, QPointer<HttpReply>> m_discoverRequests;
-
-    DeviceClass m_deviceClass;
-
     // Process method
     HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
     // Get methods
-    HttpReply *getDeviceClasses(const VendorId &vendorId);
-    HttpReply *getDeviceClass();
-
-    HttpReply *getActionTypes();
-    HttpReply *getActionType(const ActionTypeId &actionTypeId);
-
-    HttpReply *getStateTypes();
-    HttpReply *getStateType(const StateTypeId &stateTypeId);
-
-    HttpReply *getEventTypes();
-    HttpReply *getEventType(const EventTypeId &eventTypeId);
-
-    HttpReply *getDiscoverdDevices(const ParamList &discoveryParams);
-
-private slots:
-    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+    HttpReply *getLogEntries(const QString &filterString);
 
 
 };
 
 }
 
-#endif // DEVICECLASSESRESOURCE_H
+#endif // LOGSRESOURCE_H

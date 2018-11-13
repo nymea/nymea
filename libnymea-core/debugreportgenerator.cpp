@@ -22,6 +22,7 @@
 #include "loggingcategories.h"
 #include "nymeasettings.h"
 #include "nymeacore.h"
+#include "nymeaconfiguration.h"
 
 #include <QDir>
 #include <QFile>

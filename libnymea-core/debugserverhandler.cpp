@@ -19,20 +19,27 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "nymeacore.h"
-#include "httpreply.h"
+#include "servers/httprequest.h"
+#include "servers/httpreply.h"
+#include "servers/rest/restresource.h"
 #include "nymeasettings.h"
-#include "httprequest.h"
 #include "loggingcategories.h"
 #include "debugserverhandler.h"
+#include "nymeaconfiguration.h"
 #include "stdio.h"
 
 #include <QXmlStreamWriter>
 #include <QCoreApplication>
 #include <QMessageLogger>
 #include <QJsonDocument>
+#include <QXmlStreamWriter>
+#include <QCoreApplication>
+#include <QFileInfo>
+#include <QWebSocket>
 
 QtMessageHandler DebugServerHandler::s_oldLogMessageHandler = nullptr;
 QList<QWebSocket*> DebugServerHandler::s_websocketClients;
+
 
 namespace nymeaserver {
 

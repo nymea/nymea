@@ -37,8 +37,8 @@
 
 
 #include "devicesresource.h"
-#include "httpreply.h"
-#include "httprequest.h"
+#include "servers/httpreply.h"
+#include "servers/httprequest.h"
 #include "jsonrpc/jsontypes.h"
 #include "nymeacore.h"
 

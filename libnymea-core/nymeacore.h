@@ -50,6 +50,7 @@ class LogEngine;
 class NetworkManager;
 class NymeaConfiguration;
 class TagsStorage;
+class UserManager;
 
 class NymeaCore : public QObject
 {

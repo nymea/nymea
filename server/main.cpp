@@ -33,6 +33,7 @@
 #include <QtDebug>
 #include <QString>
 #include <QFile>
+#include <QDir>
 
 #include "stdio.h"
 #include "unistd.h"

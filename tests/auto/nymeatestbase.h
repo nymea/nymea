@@ -22,20 +22,10 @@
 #ifndef NYMEATESTBASE_H
 #define NYMEATESTBASE_H
 
-#include "typeutils.h"
-#include "logging/logging.h"
-#include "mocktcpserver.h"
-#include "devicemanager.h"
-#include "ruleengine.h"
 #include "jsonrpc/jsontypes.h"
 
-#include <QObject>
-#include <QUuid>
-#include <QVariantMap>
 #include <QSignalSpy>
 #include <QtTest>
-#include <QNetworkRequest>
-#include <QNetworkReply>
 
 extern DeviceClassId mockDeviceClassId;
 extern DeviceClassId mockDeviceAutoClassId;

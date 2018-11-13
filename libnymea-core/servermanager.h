@@ -24,24 +24,28 @@
 #include <QObject>
 
 #include "loggingcategories.h"
-#include "jsonrpc/jsonrpcserver.h"
-#include "rest/restserver.h"
-#include "websocketserver.h"
-#include "bluetoothserver.h"
-#include "tcpserver.h"
-#include "mocktcpserver.h"
 
-class QSslConfiguration;
-class QSslCertificate;
-class QSslKey;
+#include <QSslConfiguration>
+#include <QSslKey>
+
+class MockTcpServer;
 
 namespace nymeaserver {
+
+class NymeaConfiguration;
+class JsonRPCServer;
+class TcpServer;
+class WebSocketServer;
+class WebServer;
+class BluetoothServer;
+class RestServer;
+class MqttBroker;
 
 class ServerManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ServerManager(NymeaConfiguration *configuration, QObject *parent = 0);
+    explicit ServerManager(NymeaConfiguration *configuration, QObject *parent = nullptr);
 
     // Interfaces
     JsonRPCServer *jsonServer() const;

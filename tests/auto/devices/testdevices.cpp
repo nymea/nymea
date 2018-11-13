@@ -21,15 +21,7 @@
 
 #include "nymeatestbase.h"
 #include "nymeacore.h"
-#include "devicemanager.h"
 #include "nymeasettings.h"
-#include "plugin/deviceplugin.h"
-
-#include <QDebug>
-#include <QSignalSpy>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
 
 using namespace nymeaserver;
 

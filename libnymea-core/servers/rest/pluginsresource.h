@@ -18,61 +18,50 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RULESRESOURCE_H
-#define RULESRESOURCE_H
+#ifndef PLUGINSRESOURCE_H
+#define PLUGINSRESOURCE_H
 
 #include <QObject>
 #include <QHash>
 
 #include "jsonrpc/jsontypes.h"
 #include "restresource.h"
-#include "httpreply.h"
-
+#include "servers/httpreply.h"
 
 namespace nymeaserver {
 
 class HttpRequest;
 
-class RulesResource : public RestResource
+class PluginsResource : public RestResource
 {
     Q_OBJECT
 public:
-    explicit RulesResource(QObject *parent = 0);
+    explicit PluginsResource(QObject *parent = 0);
 
     QString name() const override;
 
     HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:
-    RuleId m_ruleId;
+    PluginId m_pluginId;
 
     // Process method
     HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens) override;
     HttpReply *proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens) override;
     HttpReply *proccessOptionsRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
     // Get methods
-    HttpReply *getRules(const DeviceId &deviceId) const;
-    HttpReply *getRuleDetails(const RuleId &ruleId) const;
-
-    // Delete methods
-    HttpReply *removeRule(const RuleId &ruleId) const;
-
-    // Post methods
-    HttpReply *addRule(const QByteArray &payload) const;
-    HttpReply *enableRule(const RuleId &ruleId) const;
-    HttpReply *disableRule(const RuleId &ruleId) const;
-    HttpReply *executeActions(const RuleId &ruleId) const;
-    HttpReply *executeExitActions(const RuleId &ruleId) const;
-
+    HttpReply *getPlugins() const;
+    HttpReply *getPlugin(const PluginId &pluginId) const;
+    HttpReply *getPluginConfiguration(const PluginId &pluginId) const;
+    HttpReply *setPluginConfiguration(const PluginId &pluginId, const QByteArray &payload) const;
 
     // Put methods
-    HttpReply *editRule(const RuleId &ruleId, const QByteArray &payload) const;
 
+
+    DevicePlugin *findPlugin(const PluginId &pluginId) const;
 };
 
 }
 
-#endif // RULESRESOURCE_H
+#endif // PLUGINSRESOURCE_H

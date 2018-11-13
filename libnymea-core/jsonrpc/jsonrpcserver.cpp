@@ -54,7 +54,6 @@
 #include "eventhandler.h"
 #include "logginghandler.h"
 #include "statehandler.h"
-#include "websocketserver.h"
 #include "configurationhandler.h"
 #include "networkmanagerhandler.h"
 #include "tagshandler.h"

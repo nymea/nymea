@@ -36,7 +36,7 @@
 */
 
 #include "deviceclassesresource.h"
-#include "httprequest.h"
+#include "servers/httprequest.h"
 #include "nymeacore.h"
 
 #include <QJsonDocument>

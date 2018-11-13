@@ -26,7 +26,7 @@
 
 #include "jsonrpc/jsontypes.h"
 #include "restresource.h"
-#include "httpreply.h"
+#include "servers/httpreply.h"
 
 namespace nymeaserver {
 

@@ -29,7 +29,6 @@ p {
     color: #676767;
     font-family: "Ubuntu", Helvetica, "Helvetica Neue", Arial, sans-serif;
     font-size: 100%;
-    text-align: center;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -37,6 +36,7 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: normal;
     color: #676767;
     text-transform: none;
+    text-align: center;
 }
 
 th, td {
@@ -73,11 +73,48 @@ textarea {
     border-radius: 10px;
 }
 
+.tab {
+    overflow: hidden;
+    background-color: #efefef;
+}
+
+.tab button {
+    background-color: inherit;
+    float: left;
+    width: 25%;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    opacity: 0.8;
+    transition: 0.3s;
+    font-size: 18px;
+    font-family: "Ubuntu", Helvetica, "Helvetica Neue", Arial;
+}
+
+.tab button:hover {
+    background-color: #ddd;
+}
+
+.tab button.active {
+    background-color: #57baae;
+}
+
+.tabcontent {
+    display: none;
+    animation: fadeEffect 0.5s;
+}
+
+@keyframes fadeEffect {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
 .console-textarea {
     color: white;
     margin-top: 20px;
     padding: 15px;
-    font-family: "Ubuntu Mono";
+    font-family: "Ubuntu Mono", "monospace";
     font-size: 100%;
 }
 
@@ -196,8 +233,8 @@ textarea {
 }
 
 .body {
-    padding-left: 15%;
-    padding-right: 15%;
+    padding-left: 10%;
+    padding-right: 10%;
     padding-bottom:120px;
 }
 

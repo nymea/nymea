@@ -20,10 +20,42 @@
 
 
 /* ========================================================================*/
+/* Navigation
+/* ========================================================================*/
+
+function selectSection(event, section) {
+    
+    console.log("Selected tab " +  section)
+
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    
+    document.getElementById(section).style.display = "block";
+    event.currentTarget.className += " active";
+}
+
+/* ========================================================================*/
 /* Websocket connection
 /* ========================================================================*/
 
 var webSocket = null;
+var webSocketConnected = false;
+
+function toggleWebsocketConnection() {
+    if (webSocketConnected) {
+        disconnectWebsocket()
+    } else {
+        connectWebsocket()
+    }
+}
 
 function connectWebsocket() {
     var urlString = "ws://" + window.location.hostname + ":2626"
@@ -34,17 +66,17 @@ function connectWebsocket() {
         
         webSocket.onopen = function(openEvent) {
             console.log("WebSocket connected: " + JSON.stringify(openEvent, null, 4));
-            document.getElementById("connectWebsocketButton").disabled = true;
-            document.getElementById("disconnectWebsocketButton").disabled = false;
+            webSocketConnected = true;
+            document.getElementById("toggleLogsButton").innerHTML = "Stop logs";
         };
         
-        webSocket.onclose = function (closeEvent) {
+        webSocket.onclose = function(closeEvent) {
             console.log("WebSocket disconnected: " + JSON.stringify(closeEvent, null, 4));
-            document.getElementById("connectWebsocketButton").disabled = false;
-            document.getElementById("disconnectWebsocketButton").disabled = true;
+            webSocketConnected = false;
+            document.getElementById("toggleLogsButton").innerHTML = "Start logs";
         };
         
-        webSocket.onerror = function (errorEvent) {
+        webSocket.onerror = function(errorEvent) {
             console.log("WebSocket error: " + JSON.stringify(errorEvent, null, 4));
         };
         
@@ -64,13 +96,19 @@ function connectWebsocket() {
 function disconnectWebsocket() {
     console.log("Disconnecting from: " + webSocket.url);
     webSocket.close()
+    webSocketConnected = false;
+    document.getElementById("toggleLogsButton").innerHTML = "Start logs";
 }
 
 
+/* ========================================================================*/
+/* File download / show functions
+/* ========================================================================*/
 
-/* ========================================================================*/
-/* File download function
-/* ========================================================================*/
+function showFile(path) {
+    console.log("Show file in tab " + path);
+    window.open(path, '_blank');
+}
 
 function downloadFile(filePath, fileName) {
     console.log("Download file requested " + filePath + " --> " + fileName);
@@ -151,3 +189,13 @@ function startTracePathTest() {
         }
     };
 }
+
+/* ========================================================================*/
+/* Start function calls
+/* ========================================================================*/
+
+window.onload = function() {
+    console.log("Window loading finished.");
+    document.getElementById("informationTabButton").click();
+};
+

@@ -344,7 +344,7 @@ void DebugServerHandler::logMessageHandler(QtMsgType type, const QMessageLogCont
 QByteArray DebugServerHandler::loadResourceData(const QString &resourceFileName)
 {
     QFile resourceFile(QString(":%1").arg(resourceFileName));
-    if (!resourceFile.open(QFile::ReadOnly | QFile::Text)) {
+    if (!resourceFile.open(QFile::ReadOnly)) {
         qCWarning(dcWebServer()) << "DebugServer: Could not open resource file" << resourceFile.fileName();
         return QByteArray();
     }
@@ -470,9 +470,53 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // h1
     writer.writeEndElement(); // div header
 
+    // Tab bar
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "tab");
+
+    writer.writeStartElement("button");
+    writer.writeAttribute("class", "tablinks");
+    writer.writeAttribute("id", "informationTabButton");
+    writer.writeAttribute("onclick", "selectSection(event, 'information-section')");
+    //: The name of the section tab in the debug server interface
+    writer.writeCharacters(tr("Information"));
+    writer.writeEndElement(); // button
+
+    writer.writeStartElement("button");
+    writer.writeAttribute("class", "tablinks");
+    writer.writeAttribute("id", "downloadsTabButton");
+    writer.writeAttribute("onclick", "selectSection(event, 'downloads-section')");
+    //: The name of the section tab in the debug server interface
+    writer.writeCharacters(tr("Downloads"));
+    writer.writeEndElement(); // button
+
+    writer.writeStartElement("button");
+    writer.writeAttribute("class", "tablinks");
+    writer.writeAttribute("id", "networkTabButton");
+    writer.writeAttribute("onclick", "selectSection(event, 'network-section')");
+    //: The name of the section tab in the debug server interface
+    writer.writeCharacters(tr("Network"));
+    writer.writeEndElement(); // button
+
+    writer.writeStartElement("button");
+    writer.writeAttribute("class", "tablinks");
+    writer.writeAttribute("id", "logsTabButton");
+    writer.writeAttribute("onclick", "selectSection(event, 'logs-section')");
+    //: The name of the section tab in the debug server interface
+    writer.writeCharacters(tr("Logs"));
+    writer.writeEndElement(); // button
+
+    writer.writeEndElement(); // tab
+
     // Body
     writer.writeStartElement("div");
     writer.writeAttribute("class", "body");
+
+
+    // ---------------------------------------------------------------------------
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "tabcontent");
+    writer.writeAttribute("id", "information-section");
 
     //: The welcome message of the debug interface
     writer.writeTextElement("p", tr("Welcome to the debug interface."));
@@ -633,7 +677,12 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     }
 
     writer.writeEndElement(); // table
+    writer.writeEndElement(); // information-section
 
+    // ---------------------------------------------------------------------------
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "tabcontent");
+    writer.writeAttribute("id", "downloads-section");
 
     // Downloads section
     writer.writeEmptyElement("hr");
@@ -717,7 +766,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "button");
-    writer.writeAttribute("onClick", "window.open('/debug/syslog', '_blank')");
+    writer.writeAttribute("onClick", "showFile('/debug/syslog')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -773,7 +822,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName())) {
         writer.writeAttribute("disabled", "disabled");
     }
-    writer.writeAttribute("onClick", "window.open('/debug/settings/nymead', '_blank')");
+    writer.writeAttribute("onClick", "showFile('/debug/settings/nymead')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -823,7 +872,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleDevices).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "window.open('/debug/settings/devices', '_blank')");
+    writer.writeAttribute("onClick", "showFile('/debug/settings/devices')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -873,7 +922,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleDeviceStates).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "window.open('/debug/settings/devicestates', '_blank')");
+    writer.writeAttribute("onClick", "showFile('/debug/settings/devicestates')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -923,7 +972,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleRules).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "window.open('/debug/settings/rules', '_blank')");
+    writer.writeAttribute("onClick", "showFile('/debug/settings/rules')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -973,14 +1022,20 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRolePlugins).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "window.open('/debug/settings/plugins', '_blank')");
+    writer.writeAttribute("onClick", "showFile('/debug/settings/plugins')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
     writer.writeEndElement(); // div show-button-column
 
     writer.writeEndElement(); // div download-row
+    writer.writeEndElement(); // downloads-section
 
+
+    // ---------------------------------------------------------------------------
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "tabcontent");
+    writer.writeAttribute("id", "network-section");
 
     // Network section
     writer.writeStartElement("div");
@@ -991,7 +1046,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     //: The network section description of the debug interface
     writer.writeTextElement("p", tr("This section allows you to perform different network connectivity tests in order "
-                                    "to find out if the device nymea is running on is online and has full network connectivity."));
+                                    "to find out if the device where nymea is running has full network connectivity."));
 
 
     // Ping section
@@ -999,6 +1054,8 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     //: The ping section of the debug interface
     writer.writeTextElement("h3", tr("Ping nymea.io"));
     writer.writeEmptyElement("hr");
+
+    writer.writeTextElement("p", tr("This test makes four ping attempts to the nymea.io server."));
 
     // Start ping button
     writer.writeStartElement("button");
@@ -1022,9 +1079,12 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     // Dig section
     writer.writeEmptyElement("hr");
-    //: The ping section of the debug interface
+    //: The DNS lookup section of the debug interface
     writer.writeTextElement("h3", tr("DNS lookup for nymea.io"));
     writer.writeEmptyElement("hr");
+
+    writer.writeTextElement("p", tr("This test makes a dynamic name server lookup for nymea.io."));
+
 
     // Start dig button
     writer.writeStartElement("button");
@@ -1045,11 +1105,13 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeCharacters("");
     writer.writeEndElement(); // textarea
 
-    // Dig section
+    // Trace section
     writer.writeEmptyElement("hr");
-    //: The ping section of the debug interface
+    //: The trace section of the debug interface
     writer.writeTextElement("h3", tr("Trace path to nymea.io"));
     writer.writeEmptyElement("hr");
+
+    writer.writeTextElement("p", tr("This test showes the trace path from the nymea device to the nymea.io server."));
 
     // Start tracepath button
     writer.writeStartElement("button");
@@ -1057,7 +1119,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("type", "button");
     writer.writeAttribute("id", "tracePathButton");
     writer.writeAttribute("onClick", "startTracePathTest()");
-    //: The ping button text of the debug interface
+    //: The trace path button text of the debug interface
     writer.writeCharacters(tr("Start trace path test"));
     writer.writeEndElement(); // button
 
@@ -1072,6 +1134,14 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeEndElement(); // div network
 
+    writer.writeEndElement(); // network-section
+
+
+    // ---------------------------------------------------------------------------
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "tabcontent");
+    writer.writeAttribute("id", "logs-section");
+
     // Logs stream
     writer.writeStartElement("div");
     writer.writeAttribute("class", "logstream");
@@ -1080,29 +1150,19 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("h2", tr("Server live logs"));
     writer.writeEmptyElement("hr");
 
-    // Start stream button
+    writer.writeTextElement("p", tr("This section allowes you to see the live logs of the nymea server."));
+
+    // Toggle log button
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "button");
-    writer.writeAttribute("id", "connectWebsocketButton");
-    writer.writeAttribute("onClick", "connectWebsocket()");
+    writer.writeAttribute("id", "toggleLogsButton");
+    writer.writeAttribute("onClick", "toggleWebsocketConnection()");
     //: The connect button for the log stream of the debug interface
-    writer.writeCharacters(tr("Start server live logs"));
+    writer.writeCharacters(tr("Start logs"));
     writer.writeEndElement(); // button
 
-    // Stop stream button
-    writer.writeStartElement("button");
-    writer.writeAttribute("class", "button");
-    writer.writeAttribute("type", "button");
-    writer.writeAttribute("id", "disconnectWebsocketButton");
-    writer.writeAttribute("onClick", "disconnectWebsocket()");
-    writer.writeAttribute("disabled", "true");
-    //: The disconnect button for the log stream of the debug interface
-    writer.writeCharacters(tr("Stop server live logs"));
-    writer.writeEndElement(); // button
-
-
-    // Dig output
+    // Logs output
     writer.writeStartElement("textarea");
     writer.writeAttribute("class", "console-textarea");
     writer.writeAttribute("id", "logsTextArea");
@@ -1111,6 +1171,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeCharacters("");
     writer.writeEndElement(); // textarea
 
+    writer.writeEndElement(); // logs-section
 
     writer.writeEndElement(); // div body
 

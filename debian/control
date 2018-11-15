@@ -60,12 +60,15 @@ Depends: libqt5network5,
          logrotate,
          avahi-daemon,
          bluez,
+         tar,
+         iputils-tracepath,
+         iputils-ping,
+         dnsutils,
          nymea-translations,
          libnymea1 (= ${binary:Version}),
          ${shlibs:Depends},
          ${misc:Depends}
-Recommends: nymea-webinterface,
-            nymea-cli, 
+Recommends: nymea-cli, 
             network-manager
 Replaces: guhd
 Description: An open source IoT server - daemon

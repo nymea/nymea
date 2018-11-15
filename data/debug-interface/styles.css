@@ -87,7 +87,7 @@ textarea {
     cursor: pointer;
     padding: 14px 16px;
     opacity: 0.8;
-    transition: 0.3s;
+    transition: 0.5s;
     font-size: 18px;
     font-family: "Ubuntu", Helvetica, "Helvetica Neue", Arial;
 }
@@ -102,7 +102,7 @@ textarea {
 
 .tabcontent {
     display: none;
-    animation: fadeEffect 0.5s;
+    animation: fadeEffect 0.8s;
 }
 
 @keyframes fadeEffect {
@@ -113,6 +113,7 @@ textarea {
 .console-textarea {
     color: white;
     margin-top: 20px;
+    margin-bottom: 20px;
     padding: 15px;
     font-family: "Ubuntu Mono", "monospace";
     font-size: 100%;
@@ -128,6 +129,8 @@ textarea {
 
 .warning {
     background-color: #ed3146;
+    margin-top: 20px;
+    margin-bottom: 20px;
     border-radius: 10px;
     opacity: 0.8;
     width: 80%;
@@ -175,7 +178,7 @@ textarea {
 
 .download-path-column {
     float: left;
-    width: 40%;
+    width: 30%;
     padding: 10px;
 }
 

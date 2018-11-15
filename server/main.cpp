@@ -110,6 +110,7 @@ int main(int argc, char *argv[])
         "TcpServer",
         "TcpServerTraffic",
         "WebServer",
+        "DebugServer",
         "WebSocketServer",
         "WebSocketServerTraffic",
         "JsonRpc",
@@ -238,7 +239,7 @@ int main(int argc, char *argv[])
     bool startForeground = parser.isSet(foregroundOption);
     if (startForeground) {
         // inform about userid
-        int userId = getuid();
+        uint userId = getuid();
         if (userId != 0) {
             // check if config directory for logfile exists
             if (!QDir().mkpath(NymeaSettings::settingsPath())) {

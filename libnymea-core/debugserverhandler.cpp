@@ -29,7 +29,7 @@
 #include <QXmlStreamWriter>
 #include <QCoreApplication>
 #include <QMessageLogger>
-
+#include <QJsonDocument>
 
 QtMessageHandler DebugServerHandler::s_oldLogMessageHandler = nullptr;
 QList<QWebSocket*> DebugServerHandler::s_websocketClients;
@@ -39,25 +39,17 @@ namespace nymeaserver {
 DebugServerHandler::DebugServerHandler(QObject *parent) :
     QObject(parent)
 {
-    m_websocketServer = new QWebSocketServer("Debug server", QWebSocketServer::NonSecureMode, this);
-    connect(m_websocketServer, &QWebSocketServer::newConnection, this, &DebugServerHandler::onWebsocketClientConnected);
-
-    // FIXME: enable disable server with debug server
-    if (!m_websocketServer->listen(QHostAddress::Any, 2626)) {
-        qCWarning(dcWebServer()) << "DebugServer: The debug server websocket interface could not listen on" << m_websocketServer->serverUrl().toString();
-    }
-    qCDebug(dcWebServer()) << "DebugServer: Started debug server websocket interface on" << m_websocketServer->serverUrl().toString();
-
-    s_oldLogMessageHandler = qInstallMessageHandler(&logMessageHandler);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::debugServerEnabledChanged, this, &DebugServerHandler::onDebugServerEnabledChanged);
+    onDebugServerEnabledChanged(NymeaCore::instance()->configuration()->debugServerEnabled());
 }
 
-HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
+HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, const QUrlQuery &requestQuery)
 {
-    qCDebug(dcWebServer()) << "DebugServer: Debug request for" << requestPath;
+    qCDebug(dcDebugServer()) << "Debug request for" << requestPath;
 
     // Check if debug page request
     if (requestPath == "/debug" || requestPath == "/debug/") {
-        qCDebug(dcWebServer()) << "DebugServer: Create debug interface page";
+        qCDebug(dcDebugServer()) << "Create debug interface page";
         // Fallback default debug page
         HttpReply *reply = RestResource::createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
@@ -67,10 +59,10 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
 
     // Check if this is a logdb requested
     if (requestPath.startsWith("/debug/logdb.sql")) {
-        qCDebug(dcWebServer()) << "DebugServer: Loading" << NymeaCore::instance()->configuration()->logDBName();
+        qCDebug(dcDebugServer()) << "Loading" << NymeaCore::instance()->configuration()->logDBName();
         QFile logDatabaseFile(NymeaCore::instance()->configuration()->logDBName());
         if (!logDatabaseFile.exists()) {
-            qCWarning(dcWebServer()) << "DebugServer: Could not read log database file for debug download" << NymeaCore::instance()->configuration()->logDBName() << "file does not exist.";
+            qCWarning(dcDebugServer()) << "Could not read log database file for debug download" << NymeaCore::instance()->configuration()->logDBName() << "file does not exist.";
             HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             //: The HTTP error message of the debug interface. The %1 represents the file name.
@@ -79,7 +71,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
         }
 
         if (!logDatabaseFile.open(QFile::ReadOnly)) {
-            qCWarning(dcWebServer()) << "DebugServer: Could not read log database file for debug download" << NymeaCore::instance()->configuration()->logDBName();
+            qCWarning(dcDebugServer()) << "Could not read log database file for debug download" << NymeaCore::instance()->configuration()->logDBName();
             HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             //: The HTTP error message of the debug interface. The %1 represents the file name.
@@ -100,10 +92,10 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
     // Check if this is a syslog requested
     if (requestPath.startsWith("/debug/syslog")) {
         QString syslogFileName = "/var/log/syslog";
-        qCDebug(dcWebServer()) << "DebugServer: Loading" << syslogFileName;
+        qCDebug(dcDebugServer()) << "Loading" << syslogFileName;
         QFile syslogFile(syslogFileName);
         if (!syslogFile.exists()) {
-            qCWarning(dcWebServer()) << "DebugServer: Could not read log database file for debug download" << syslogFileName << "file does not exist.";
+            qCWarning(dcDebugServer()) << "Could not read log database file for debug download" << syslogFileName << "file does not exist.";
             HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(syslogFileName)));
@@ -111,7 +103,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
         }
 
         if (!syslogFile.open(QFile::ReadOnly)) {
-            qCWarning(dcWebServer()) << "DebugServer: Could not read syslog file for debug download" << syslogFileName;
+            qCWarning(dcDebugServer()) << "Could not read syslog file for debug download" << syslogFileName;
             HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(syslogFileName)));
@@ -131,10 +123,10 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
     if (requestPath.startsWith("/debug/settings")) {
         if (requestPath.startsWith("/debug/settings/devices")) {
             QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleDevices).fileName();
-            qCDebug(dcWebServer()) << "DebugServer: Loading" << settingsFileName;
+            qCDebug(dcDebugServer()) << "Loading" << settingsFileName;
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
-                qCWarning(dcWebServer()) << "DebugServer: Could not read file for debug download" << settingsFileName << "file does not exist.";
+                qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
@@ -142,7 +134,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
             }
 
             if (!settingsFile.open(QFile::ReadOnly)) {
-                qCWarning(dcWebServer()) << "DebugServer: Could not read file for debug download" << settingsFileName;
+                qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
@@ -160,10 +152,10 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
 
         if (requestPath.startsWith("/debug/settings/rules")) {
             QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleRules).fileName();
-            qCDebug(dcWebServer()) << "DebugServer: Loading" << settingsFileName;
+            qCDebug(dcDebugServer()) << "Loading" << settingsFileName;
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
-                qCWarning(dcWebServer()) << "DebugServer: Could not read file for debug download" << settingsFileName << "file does not exist.";
+                qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
@@ -171,7 +163,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
             }
 
             if (!settingsFile.open(QFile::ReadOnly)) {
-                qCWarning(dcWebServer()) << "DebugServer: Could not read file for debug download" << settingsFileName;
+                qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
@@ -189,10 +181,10 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
 
         if (requestPath.startsWith("/debug/settings/nymead")) {
             QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName();
-            qCDebug(dcWebServer()) << "DebugServer: Loading" << settingsFileName;
+            qCDebug(dcDebugServer()) << "Loading" << settingsFileName;
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
-                qCWarning(dcWebServer()) << "DebugServer: Could not read file for debug download" << settingsFileName << "file does not exist.";
+                qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
@@ -200,7 +192,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
             }
 
             if (!settingsFile.open(QFile::ReadOnly)) {
-                qCWarning(dcWebServer()) << "DebugServer: Could not read file for debug download" << settingsFileName;
+                qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
@@ -218,10 +210,10 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
 
         if (requestPath.startsWith("/debug/settings/devicestates")) {
             QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleDeviceStates).fileName();
-            qCDebug(dcWebServer()) << "DebugServer: Loading" << settingsFileName;
+            qCDebug(dcDebugServer()) << "Loading" << settingsFileName;
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
-                qCWarning(dcWebServer()) << "DebugServer: Could not read file for debug download" << settingsFileName << "file does not exist.";
+                qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
@@ -229,7 +221,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
             }
 
             if (!settingsFile.open(QFile::ReadOnly)) {
-                qCWarning(dcWebServer()) << "DebugServer: Could not read file for debug download" << settingsFileName;
+                qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
@@ -247,10 +239,10 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
 
         if (requestPath.startsWith("/debug/settings/plugins")) {
             QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRolePlugins).fileName();
-            qCDebug(dcWebServer()) << "DebugServer: Loading" << settingsFileName;
+            qCDebug(dcDebugServer()) << "Loading" << settingsFileName;
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
-                qCWarning(dcWebServer()) << "DebugServer: Could not read file for debug download" << settingsFileName << "file does not exist.";
+                qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
@@ -258,7 +250,36 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
             }
 
             if (!settingsFile.open(QFile::ReadOnly)) {
-                qCWarning(dcWebServer()) << "DebugServer: Could not read file for debug download" << settingsFileName;
+                qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
+                HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+                reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
+                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
+                return reply;
+            }
+
+            QByteArray settingsFileData = settingsFile.readAll();
+            settingsFile.close();
+
+            HttpReply *reply = RestResource::createSuccessReply();
+            reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
+            reply->setPayload(settingsFileData);
+            return reply;
+        }
+
+        if (requestPath.startsWith("/debug/settings/tags")) {
+            QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleTags).fileName();
+            qCDebug(dcDebugServer()) << "Loading" << settingsFileName;
+            QFile settingsFile(settingsFileName);
+            if (!settingsFile.exists()) {
+                qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
+                HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+                reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
+                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
+                return reply;
+            }
+
+            if (!settingsFile.open(QFile::ReadOnly)) {
+                qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
                 HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
@@ -280,7 +301,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
         if (m_pingProcess || m_pingReply)
             return RestResource::createErrorReply(HttpReply::InternalServerError);
 
-        qCDebug(dcWebServer()) << "DebugServer: Start ping nymea.io process";
+        qCDebug(dcDebugServer()) << "Start ping nymea.io process";
         m_pingProcess = new QProcess(this);
         m_pingProcess->setProcessChannelMode(QProcess::MergedChannels);
         connect(m_pingProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onPingProcessFinished(int,QProcess::ExitStatus)));
@@ -295,7 +316,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
         if (m_digProcess || m_digReply)
             return RestResource::createErrorReply(HttpReply::InternalServerError);
 
-        qCDebug(dcWebServer()) << "DebugServer: Start dig nymea.io process";
+        qCDebug(dcDebugServer()) << "Start dig nymea.io process";
         m_digProcess = new QProcess(this);
         m_digProcess->setProcessChannelMode(QProcess::MergedChannels);
         connect(m_digProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onDigProcessFinished(int,QProcess::ExitStatus)));
@@ -310,7 +331,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
         if (m_tracePathProcess || m_tracePathReply)
             return RestResource::createErrorReply(HttpReply::InternalServerError);
 
-        qCDebug(dcWebServer()) << "DebugServer: Start tracepath nymea.io process";
+        qCDebug(dcDebugServer()) << "Start tracepath nymea.io process";
         m_tracePathProcess = new QProcess(this);
         m_tracePathProcess->setProcessChannelMode(QProcess::MergedChannels);
         connect(m_tracePathProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onTracePathProcessFinished(int,QProcess::ExitStatus)));
@@ -320,6 +341,38 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
         return m_tracePathReply;
     }
 
+    if (requestPath.startsWith("/debug/report")) {
+        // Check if download request or generate request
+        if (requestQuery.hasQueryItem("filename")) {
+            QString fileName = requestQuery.queryItemValue("filename");
+            qCDebug(dcDebugServer()) << "Report download request for" << fileName;
+
+            if (m_finishedReportGenerators.contains(fileName)) {
+                HttpReply *downloadReportReply = RestResource::createSuccessReply();
+                DebugReportGenerator *generator = m_finishedReportGenerators.take(fileName);
+                downloadReportReply->setPayload(generator->reportFileData());
+                downloadReportReply->setHeader(HttpReply::ContentTypeHeader, "application/tar+gzip;");
+                generator->deleteLater();
+
+                return downloadReportReply;
+            } else {
+                qCWarning(dcDebugServer()) << "The requested file does not exist any more" << fileName;
+                HttpReply *downloadReportReply = RestResource::createErrorReply(HttpReply::NotFound);
+                return downloadReportReply;
+            }
+
+        } else {
+            DebugReportGenerator *debugReportGenerator = new DebugReportGenerator(this);
+            connect(debugReportGenerator, &DebugReportGenerator::finished, this, &DebugServerHandler::onDebugReportGeneratorFinished);
+            connect(debugReportGenerator, &DebugReportGenerator::timeout, this, &DebugServerHandler::onDebugReportGeneratorTimeout);
+            debugReportGenerator->generateReport();
+
+            HttpReply *debugReportReply = RestResource::createAsyncReply();
+            m_runningReportGenerators.insert(debugReportGenerator, debugReportReply);
+
+            return debugReportReply;
+        }
+    }
 
     // Check if this is a resource file request
     if (resourceFileExits(requestPath)) {
@@ -327,25 +380,45 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath)
     }
 
     // If nothing matches, redirect to /debug page
-    qCWarning(dcWebServer()) << "DebugServer: Resource for debug interface not found. Redirecting to /debug";
+    qCWarning(dcDebugServer()) << "Resource for debug interface not found. Redirecting to /debug";
     HttpReply *reply = RestResource::createErrorReply(HttpReply::PermanentRedirect);
     reply->setHeader(HttpReply::LocationHeader, "/debug");
     return reply;
 }
 
-void DebugServerHandler::logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message) {
-  s_oldLogMessageHandler(type, context, message);
+void DebugServerHandler::logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
+{
+    s_oldLogMessageHandler(type, context, message);
 
-  foreach (QWebSocket *client, s_websocketClients) {
-      client->sendTextMessage(message + "\n");
-  }
+    QString finalMessage;
+    switch (type) {
+    case QtDebugMsg:
+        finalMessage = QString(" I | %1: %2\n").arg(context.category).arg(message);
+        break;
+    case QtInfoMsg:
+        finalMessage = QString(" I | %1: %2\n").arg(context.category).arg(message);
+        break;
+    case QtWarningMsg:
+        finalMessage = QString(" W | %1: %2\n").arg(context.category).arg(message);
+        break;
+    case QtCriticalMsg:
+        finalMessage = QString(" C | %1: %2\n").arg(context.category).arg(message);
+        break;
+    case QtFatalMsg:
+        finalMessage = QString(" F | %1: %2\n").arg(context.category).arg(message);
+        break;
+    }
+
+    foreach (QWebSocket *client, s_websocketClients) {
+        client->sendTextMessage(finalMessage);
+    }
 }
 
 QByteArray DebugServerHandler::loadResourceData(const QString &resourceFileName)
 {
     QFile resourceFile(QString(":%1").arg(resourceFileName));
     if (!resourceFile.open(QFile::ReadOnly)) {
-        qCWarning(dcWebServer()) << "DebugServer: Could not open resource file" << resourceFile.fileName();
+        qCWarning(dcDebugServer()) << "Could not open resource file" << resourceFile.fileName();
         return QByteArray();
     }
 
@@ -385,6 +458,144 @@ HttpReply *DebugServerHandler::processDebugFileRequest(const QString &requestPat
     }
 
     return reply;
+}
+
+
+void DebugServerHandler::onDebugServerEnabledChanged(bool enabled)
+{
+    if (enabled) {
+        m_websocketServer = new QWebSocketServer("Debug server", QWebSocketServer::NonSecureMode, this);
+        connect(m_websocketServer, &QWebSocketServer::newConnection, this, &DebugServerHandler::onWebsocketClientConnected);
+        if (!m_websocketServer->listen(QHostAddress::Any, 2626)) {
+            qCWarning(dcDebugServer()) << "The debug server websocket interface could not listen on" << m_websocketServer->serverUrl().toString();
+            m_websocketServer->deleteLater();
+            m_websocketServer = nullptr;
+            return;
+        }
+
+        qCDebug(dcDebugServer()) << "The debug server websocket interface has been started on" << m_websocketServer->serverUrl().toString();
+    } else {
+        if (m_websocketServer) {
+            m_websocketServer->close();
+            qCDebug(dcDebugServer()) << "The debug server websocket interface has been closed" << m_websocketServer->serverUrl().toString();
+            m_websocketServer->deleteLater();
+            m_websocketServer = nullptr;
+        }
+    }
+}
+
+void DebugServerHandler::onWebsocketClientConnected()
+{
+    QWebSocket *client = m_websocketServer->nextPendingConnection();
+
+    if (s_websocketClients.isEmpty()) {
+        qCDebug(dcDebugServer()) << "Install debug message handler for live logs.";
+        s_oldLogMessageHandler = qInstallMessageHandler(&logMessageHandler);
+    }
+
+    s_websocketClients.append(client);
+    qCDebug(dcDebugServer()) << "New websocket client connected:" << client->peerAddress().toString();
+
+    connect(client, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onWebsocketClientError(QAbstractSocket::SocketError)));
+    connect(client, &QWebSocket::disconnected, this, &DebugServerHandler::onWebsocketClientDisconnected);
+}
+
+void DebugServerHandler::onWebsocketClientDisconnected()
+{
+    QWebSocket *client = static_cast<QWebSocket *>(sender());
+    qCDebug(dcDebugServer()) << "Websocket client disconnected" << client->peerAddress().toString();
+    s_websocketClients.removeAll(client);
+    client->deleteLater();
+
+    if (s_websocketClients.isEmpty()) {
+        qCDebug(dcDebugServer()) << "Uninstall debug message handler for live logs and restore default message handler";
+        qInstallMessageHandler(s_oldLogMessageHandler);
+        s_oldLogMessageHandler = nullptr;
+    }
+}
+
+void DebugServerHandler::onWebsocketClientError(QAbstractSocket::SocketError error)
+{
+    QWebSocket *client = static_cast<QWebSocket *>(sender());
+    qCWarning(dcDebugServer()) << "Websocket client error" << client->peerAddress().toString() << error << client->errorString();
+}
+
+void DebugServerHandler::onPingProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    qCDebug(dcDebugServer()) << "Ping process finished" << exitCode << exitStatus;
+    QByteArray processOutput = m_pingProcess->readAll();
+    qCDebug(dcDebugServer()) << "Ping output:" << endl << qUtf8Printable(processOutput);
+
+    m_pingReply->setPayload(processOutput);
+    m_pingReply->setHttpStatusCode(HttpReply::Ok);
+    m_pingReply->finished();
+    m_pingReply = nullptr;
+
+    m_pingProcess->deleteLater();
+    m_pingProcess = nullptr;
+}
+
+void DebugServerHandler::onDigProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    qCDebug(dcDebugServer()) << "Dig process finished" << exitCode << exitStatus;
+    QByteArray processOutput = m_digProcess->readAll();
+    qCDebug(dcDebugServer()) << "Dig output:" << endl << qUtf8Printable(processOutput);
+
+    m_digReply->setPayload(processOutput);
+    m_digReply->setHttpStatusCode(HttpReply::Ok);
+    m_digReply->finished();
+    m_digReply = nullptr;
+
+    m_digProcess->deleteLater();
+    m_digProcess = nullptr;
+}
+
+void DebugServerHandler::onTracePathProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    qCDebug(dcDebugServer()) << "Tracepath process finished" << exitCode << exitStatus;
+    QByteArray processOutput = m_tracePathProcess->readAll();
+    qCDebug(dcDebugServer()) << "Tracepath output:" << endl << qUtf8Printable(processOutput);
+
+    m_tracePathReply->setPayload(processOutput);
+    m_tracePathReply->setHttpStatusCode(HttpReply::Ok);
+    m_tracePathReply->finished();
+    m_tracePathReply = nullptr;
+
+    m_tracePathProcess->deleteLater();
+    m_tracePathProcess = nullptr;
+}
+
+void DebugServerHandler::onDebugReportGeneratorFinished(bool success)
+{
+    DebugReportGenerator *debugReportGenerator = static_cast<DebugReportGenerator *>(sender());
+    qCDebug(dcDebugServer()) << "Report generation finished" << (success ? "successfully" : "with error") << debugReportGenerator->reportFileName();
+    HttpReply *httpReply = m_runningReportGenerators.take(debugReportGenerator);
+
+    if (success) {
+        QVariantMap reportInformation;
+        reportInformation.insert("fileName", debugReportGenerator->reportFileName());
+        reportInformation.insert("fileSize", debugReportGenerator->reportFileData().size());
+        reportInformation.insert("md5sum", debugReportGenerator->md5Sum());
+        httpReply->setHttpStatusCode(HttpReply::Ok);
+        httpReply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+        httpReply->setPayload(QJsonDocument::fromVariant(reportInformation).toJson(QJsonDocument::Indented));
+
+        m_finishedReportGenerators.insert(debugReportGenerator->reportFileName(), debugReportGenerator);
+    } else {
+        httpReply->setHttpStatusCode(HttpReply::InternalServerError);
+    }
+
+    httpReply->finished();
+}
+
+void DebugServerHandler::onDebugReportGeneratorTimeout()
+{
+    DebugReportGenerator *debugReportGenerator = static_cast<DebugReportGenerator *>(sender());
+    qCWarning(dcDebugServer()) << "Report generation timeouted. Cleaning up" << debugReportGenerator->reportFileName();
+    if (m_finishedReportGenerators.values().contains(debugReportGenerator)) {
+        m_finishedReportGenerators.remove(debugReportGenerator->reportFileName());
+        debugReportGenerator->deleteLater();
+    }
 }
 
 QByteArray DebugServerHandler::createDebugXmlDocument()
@@ -432,8 +643,8 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "icon");
     writer.writeAttribute("type", "image/png");
-    writer.writeAttribute("sizes", "64x64");
-    writer.writeAttribute("href", "/debug/favicons/favicon-64x64.png");
+    writer.writeAttribute("sizes", "96x96");
+    writer.writeAttribute("href", "/debug/favicons/favicon-96x96.png");
 
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "icon");
@@ -447,6 +658,45 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("sizes", "196x196");
     writer.writeAttribute("href", "/debug/favicons/favicon-196x196.png");
 
+    writer.writeEmptyElement("link");
+    writer.writeAttribute("rel", "apple-touch-icon-precomposed");
+    writer.writeAttribute("sizes", "57x57");
+    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-57x57.png");
+
+    writer.writeEmptyElement("link");
+    writer.writeAttribute("rel", "apple-touch-icon-precomposed");
+    writer.writeAttribute("sizes", "60x60");
+    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-60x60.png");
+
+    writer.writeEmptyElement("link");
+    writer.writeAttribute("rel", "apple-touch-icon-precomposed");
+    writer.writeAttribute("sizes", "72x72");
+    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-72x72.png");
+
+    writer.writeEmptyElement("link");
+    writer.writeAttribute("rel", "apple-touch-icon-precomposed");
+    writer.writeAttribute("sizes", "76x76");
+    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-76x76.png");
+
+    writer.writeEmptyElement("link");
+    writer.writeAttribute("rel", "apple-touch-icon-precomposed");
+    writer.writeAttribute("sizes", "114x114");
+    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-114x114.png");
+
+    writer.writeEmptyElement("link");
+    writer.writeAttribute("rel", "apple-touch-icon-precomposed");
+    writer.writeAttribute("sizes", "120x120");
+    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-144x144.png");
+
+    writer.writeEmptyElement("link");
+    writer.writeAttribute("rel", "apple-touch-icon-precomposed");
+    writer.writeAttribute("sizes", "144x144");
+    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-144x144.png");
+
+    writer.writeEmptyElement("link");
+    writer.writeAttribute("rel", "apple-touch-icon-precomposed");
+    writer.writeAttribute("sizes", "152x152");
+    writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-152x152.png");
 
     //: The header title of the debug server interface
     writer.writeTextElement("title", tr("Debug nymea"));
@@ -541,9 +791,9 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // div warning
 
 
-    writer.writeEmptyElement("hr");
 
     // System information section
+    writer.writeEmptyElement("hr");
     //: The server information section of the debug interface
     writer.writeTextElement("h2", tr("Server information"));
     writer.writeEmptyElement("hr");
@@ -677,6 +927,54 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     }
 
     writer.writeEndElement(); // table
+
+    // Generate report
+    writer.writeEmptyElement("hr");
+    //: In the server information section of the debug interface
+    writer.writeTextElement("h2", tr("Generate report"));
+    writer.writeEmptyElement("hr");
+
+    writer.writeTextElement("p", tr("If you want to provide all the debug information to a developer, you can generate a report file, "
+                                    "which contains all information needed for reproducing a system and get information about possible problems."));
+
+    // Warning
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "warning");
+    // Warning image
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "warning-image-area");
+    writer.writeEmptyElement("img");
+    writer.writeAttribute("class", "warning-image");
+    writer.writeAttribute("src", "/debug/warning.svg");
+    writer.writeEndElement(); // div warning image
+    // Warning message
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "warning-message");
+    //: The warning message of the debug interface
+    writer.writeCharacters(tr("Do not share these generated information public, since they can contain sensible data and should be shared very carefully and only with people you trust!"));
+    writer.writeEndElement(); // div warning message
+    writer.writeEndElement(); // div warning
+
+    // Generate report button
+    writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
+    writer.writeAttribute("type", "button");
+    writer.writeAttribute("id", "generateReportButton");
+    writer.writeAttribute("onClick", "generateReport()");
+    //: The generate debug report button text of the debug interface
+    writer.writeCharacters(tr("Generate report file"));
+    writer.writeEndElement(); // button
+
+    // Logs output
+    writer.writeStartElement("textarea");
+    writer.writeAttribute("class", "console-textarea");
+    writer.writeAttribute("id", "generateReportTextArea");
+    writer.writeAttribute("readonly", "readonly");
+    writer.writeAttribute("rows", "5");
+    writer.writeCharacters("");
+    writer.writeEndElement(); // textarea
+
+
     writer.writeEndElement(); // information-section
 
     // ---------------------------------------------------------------------------
@@ -1027,8 +1325,58 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
     writer.writeEndElement(); // div show-button-column
-
     writer.writeEndElement(); // div download-row
+
+
+
+    // Download row
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-row");
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-name-column");
+    //: The tag settings download description of the debug interface
+    writer.writeTextElement("p", tr("Tag settings"));
+    writer.writeEndElement(); // div download-name-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-path-column");
+    writer.writeTextElement("p", NymeaSettings(NymeaSettings::SettingsRoleTags).fileName());
+    writer.writeEndElement(); // div download-path-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-button-column");
+    writer.writeStartElement("form");
+    writer.writeAttribute("class", "download-button");
+    writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
+    writer.writeAttribute("type", "button");
+    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleTags).fileName())) {
+        writer.writeAttribute("disabled", "true");
+    }
+    writer.writeAttribute("onClick", "downloadFile('/debug/settings/tags', 'tags.conf')");
+    writer.writeCharacters(tr("Download"));
+    writer.writeEndElement(); // button
+    writer.writeEndElement(); // form
+    writer.writeEndElement(); // div download-button-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "show-button-column");
+    writer.writeStartElement("form");
+    writer.writeAttribute("class", "show-button");
+    writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
+    writer.writeAttribute("type", "button");
+    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleDeviceStates).fileName())) {
+        writer.writeAttribute("disabled", "true");
+    }
+    writer.writeAttribute("onClick", "showFile('/debug/settings/tags')");
+    writer.writeCharacters(tr("Show"));
+    writer.writeEndElement(); // button
+    writer.writeEndElement(); // form
+    writer.writeEndElement(); // div show-button-column
+    writer.writeEndElement(); // div download-row
+
     writer.writeEndElement(); // downloads-section
 
 
@@ -1048,11 +1396,10 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("p", tr("This section allows you to perform different network connectivity tests in order "
                                     "to find out if the device where nymea is running has full network connectivity."));
 
-
     // Ping section
     writer.writeEmptyElement("hr");
     //: The ping section of the debug interface
-    writer.writeTextElement("h3", tr("Ping nymea.io"));
+    writer.writeTextElement("h3", tr("Ping"));
     writer.writeEmptyElement("hr");
 
     writer.writeTextElement("p", tr("This test makes four ping attempts to the nymea.io server."));
@@ -1080,7 +1427,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     // Dig section
     writer.writeEmptyElement("hr");
     //: The DNS lookup section of the debug interface
-    writer.writeTextElement("h3", tr("DNS lookup for nymea.io"));
+    writer.writeTextElement("h3", tr("DNS lookup"));
     writer.writeEmptyElement("hr");
 
     writer.writeTextElement("p", tr("This test makes a dynamic name server lookup for nymea.io."));
@@ -1108,7 +1455,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     // Trace section
     writer.writeEmptyElement("hr");
     //: The trace section of the debug interface
-    writer.writeTextElement("h3", tr("Trace path to nymea.io"));
+    writer.writeTextElement("h3", tr("Trace path"));
     writer.writeEmptyElement("hr");
 
     writer.writeTextElement("p", tr("This test showes the trace path from the nymea device to the nymea.io server."));
@@ -1262,75 +1609,5 @@ QByteArray DebugServerHandler::createErrorXmlDocument(HttpReply::HttpStatusCode 
 
     return data;
 }
-
-void DebugServerHandler::onWebsocketClientConnected()
-{
-    QWebSocket *client = m_websocketServer->nextPendingConnection();
-    s_websocketClients.append(client);
-    qCDebug(dcWebServer()) << "DebugServer: New websocket client connected:" << client->peerAddress().toString();
-
-    connect(client, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onWebsocketClientError(QAbstractSocket::SocketError)));
-    connect(client, &QWebSocket::disconnected, this, &DebugServerHandler::onWebsocketClientDisconnected);
-}
-
-void DebugServerHandler::onWebsocketClientDisconnected()
-{
-    QWebSocket *client = static_cast<QWebSocket *>(sender());
-    qCDebug(dcWebServer()) << "DebugServer: Websocket client disconnected" << client->peerAddress().toString();
-    s_websocketClients.removeAll(client);
-    client->deleteLater();
-}
-
-void DebugServerHandler::onWebsocketClientError(QAbstractSocket::SocketError error)
-{
-    QWebSocket *client = static_cast<QWebSocket *>(sender());
-    qCWarning(dcWebServer()) << "DebugServer: Websocket client error" << client->peerAddress().toString() << error << client->errorString();
-}
-
-void DebugServerHandler::onPingProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
-{
-    qCDebug(dcWebServer()) << "DebugServer: Ping process finished" << exitCode << exitStatus;
-    QByteArray processOutput = m_pingProcess->readAll();
-    qCDebug(dcWebServer()) << "DebugServer: Ping output:" << endl << qUtf8Printable(processOutput);
-
-    m_pingReply->setPayload(processOutput);
-    m_pingReply->setHttpStatusCode(HttpReply::Ok);
-    m_pingReply->finished();
-    m_pingReply = nullptr;
-
-    m_pingProcess->deleteLater();
-    m_pingProcess = nullptr;
-}
-
-void DebugServerHandler::onDigProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
-{
-    qCDebug(dcWebServer()) << "DebugServer: Dig process finished" << exitCode << exitStatus;
-    QByteArray processOutput = m_digProcess->readAll();
-    qCDebug(dcWebServer()) << "DebugServer: Dig output:" << endl << qUtf8Printable(processOutput);
-
-    m_digReply->setPayload(processOutput);
-    m_digReply->setHttpStatusCode(HttpReply::Ok);
-    m_digReply->finished();
-    m_digReply = nullptr;
-
-    m_digProcess->deleteLater();
-    m_digProcess = nullptr;
-}
-
-void DebugServerHandler::onTracePathProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
-{
-    qCDebug(dcWebServer()) << "DebugServer: Tracepath process finished" << exitCode << exitStatus;
-    QByteArray processOutput = m_tracePathProcess->readAll();
-    qCDebug(dcWebServer()) << "DebugServer: Tracepath output:" << endl << qUtf8Printable(processOutput);
-
-    m_tracePathReply->setPayload(processOutput);
-    m_tracePathReply->setHttpStatusCode(HttpReply::Ok);
-    m_tracePathReply->finished();
-    m_tracePathReply = nullptr;
-
-    m_tracePathProcess->deleteLater();
-    m_tracePathProcess = nullptr;
-}
-
 
 }

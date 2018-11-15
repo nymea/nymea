@@ -373,7 +373,6 @@ void WebServer::readClient()
 
     // Check if this is a debug call
     if (request.url().path().startsWith("/debug")) {
-
         // Check if debug server is enabled
         if (NymeaCore::instance()->configuration()->debugServerEnabled()) {
             // Verify methods
@@ -386,7 +385,8 @@ void WebServer::readClient()
                 return;
             }
 
-            HttpReply *reply = NymeaCore::instance()->debugServerHandler()->processDebugRequest(request.url().path());
+            qCDebug(dcDebugServer()) << "Request:" << request.url().toString();
+            HttpReply *reply = NymeaCore::instance()->debugServerHandler()->processDebugRequest(request.url().path(), request.urlQuery());
             reply->setClientId(clientId);
 
             // Handle async replies

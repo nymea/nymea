@@ -25,7 +25,7 @@
 
 function selectSection(event, section) {
     
-    console.log("Selected tab " +  section)
+    console.log("Selected tab " +  section);
 
     var i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tabcontent");
@@ -42,6 +42,7 @@ function selectSection(event, section) {
     event.currentTarget.className += " active";
 }
 
+
 /* ========================================================================*/
 /* Websocket connection
 /* ========================================================================*/
@@ -51,14 +52,15 @@ var webSocketConnected = false;
 
 function toggleWebsocketConnection() {
     if (webSocketConnected) {
-        disconnectWebsocket()
+        disconnectWebsocket();
     } else {
-        connectWebsocket()
+        connectWebsocket();
     }
 }
 
+
 function connectWebsocket() {
-    var urlString = "ws://" + window.location.hostname + ":2626"
+    var urlString = "ws://" + window.location.hostname + ":2626";
     console.log("Connecting to: " + urlString);
     
     try {
@@ -84,7 +86,7 @@ function connectWebsocket() {
             var message = messageEvent.data;
             console.log("WebSocket data received: " + message);
             document.getElementById("logsTextArea").value += message;
-            document.getElementById("logsTextArea").scrollTop = document.getElementById("logsTextArea").scrollHeight 
+            document.getElementById("logsTextArea").scrollTop = document.getElementById("logsTextArea").scrollHeight;
         };
     
     } catch (exception) {
@@ -93,9 +95,10 @@ function connectWebsocket() {
     
 }
 
+
 function disconnectWebsocket() {
     console.log("Disconnecting from: " + webSocket.url);
-    webSocket.close()
+    webSocket.close();
     webSocketConnected = false;
     document.getElementById("toggleLogsButton").innerHTML = "Start logs";
 }
@@ -110,6 +113,7 @@ function showFile(path) {
     window.open(path, '_blank');
 }
 
+
 function downloadFile(filePath, fileName) {
     console.log("Download file requested " + filePath + " --> " + fileName);
     var element = document.createElement('a');
@@ -120,6 +124,63 @@ function downloadFile(filePath, fileName) {
     element.click();
     document.body.removeChild(element);
 }
+
+
+function generateReport() {
+    console.log("Requesting to generate report file " + "/debug/report");
+    
+    var button = document.getElementById("generateReportButton");
+    var textArea = document.getElementById("generateReportTextArea");
+
+    // Request report file generation
+    var reportGenerateRequest = new XMLHttpRequest();
+    reportGenerateRequest.open("GET", "/debug/report", true);
+    reportGenerateRequest.send(null);
+    
+    button.disabled = true;
+    textArea.value = "";
+    
+    reportGenerateRequest.onreadystatechange = function() {
+        if (reportGenerateRequest.readyState == 4) {
+            console.log("Report generation finished with " + reportGenerateRequest.status);
+
+            if (reportGenerateRequest.status != 200) {
+                console.log("Report generation finished with error.");
+                textArea.value = "Something went wrong :(";
+                button.disabled = false;
+                return;
+            }
+            
+            console.log(reportGenerateRequest.responseText);
+            var responseMap = JSON.parse(reportGenerateRequest.responseText);
+            var fileName = responseMap['fileName'];
+            var fileSize = responseMap['fileSize'];
+            var md5Sum = responseMap['md5sum'];
+            
+            console.log("Report generation finished. " + fileName + " " + fileSize + "B | " +  md5Sum)
+
+            textArea.value = "Report generated successfully: " + fileName + "\n";
+            textArea.value += "\n";
+            textArea.value += "Size: " + fileSize + " Bytes" + "\n";
+            textArea.value += "MD5 checksum: " + md5Sum + "\n";
+            
+            // Now download the generated report
+            var fileRequestUrl = "/debug/report?filename=" + fileName;
+            console.log("Download report file " + fileRequestUrl);
+            var element = document.createElement('a');
+            element.setAttribute('href', fileRequestUrl);
+            element.setAttribute('download', fileName);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+            
+            // Enable button again
+            button.disabled = false;
+        }
+    };
+}
+
 
 /* ========================================================================*/
 /* Network test functions
@@ -136,15 +197,16 @@ function startPingTest() {
     var request = new XMLHttpRequest();
     request.open("GET", "/debug/ping", true);
     request.send(null);
-    button.disabled = true
+    button.disabled = true;
     request.onreadystatechange = function() {
         if (request.readyState == 4) {
             console.log(request.responseText);
-            textArea.value = request.responseText
-            button.disabled = false
+            textArea.value = request.responseText;
+            button.disabled = false;
         }
     };
 }
+
 
 function startDigTest() {
     console.log("Start dig test");
@@ -158,15 +220,16 @@ function startDigTest() {
     var request = new XMLHttpRequest();
     request.open("GET", "/debug/dig", true);
     request.send(null);
-    button.disabled = true
+    button.disabled = true;
     request.onreadystatechange = function() {
         if (request.readyState == 4) {
             console.log(request.responseText);
-            textArea.value = request.responseText
-            button.disabled = false
+            textArea.value = request.responseText;
+            button.disabled = false;
         }
     };
 }
+
 
 function startTracePathTest() {
     console.log("Start trace path test");
@@ -180,12 +243,12 @@ function startTracePathTest() {
     var request = new XMLHttpRequest();
     request.open("GET", "/debug/tracepath", true);
     request.send(null);
-    button.disabled = true
+    button.disabled = true;
     request.onreadystatechange = function() {
         if (request.readyState == 4) {
             console.log(request.responseText);
-            textArea.value = request.responseText
-            button.disabled = false
+            textArea.value = request.responseText;
+            button.disabled = false;
         }
     };
 }

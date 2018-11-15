@@ -97,6 +97,7 @@ HEADERS += nymeacore.h \
     tagging/tag.h \
     jsonrpc/tagshandler.h \
     cloud/cloudtransport.h \
+    debugreportgenerator.h
 
 SOURCES += nymeacore.cpp \
     tcpserver.cpp \
@@ -178,3 +179,4 @@ SOURCES += nymeacore.cpp \
     tagging/tag.cpp \
     jsonrpc/tagshandler.cpp \
     cloud/cloudtransport.cpp \
+    debugreportgenerator.cpp

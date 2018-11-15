@@ -24,9 +24,11 @@
 #include <QTimer>
 #include <QObject>
 #include <QProcess>
+#include <QUrlQuery>
 #include <QWebSocketServer>
 
 #include "httpreply.h"
+#include "debugreportgenerator.h"
 
 namespace nymeaserver {
 
@@ -36,7 +38,7 @@ class DebugServerHandler : public QObject
 public:
     explicit DebugServerHandler(QObject *parent = nullptr);
 
-    HttpReply *processDebugRequest(const QString &requestPath);
+    HttpReply *processDebugRequest(const QString &requestPath, const QUrlQuery &requestQuery);
 
 private:
     static QtMessageHandler s_oldLogMessageHandler;
@@ -54,6 +56,9 @@ private:
     QProcess *m_tracePathProcess = nullptr;
     HttpReply *m_tracePathReply = nullptr;
 
+    QHash<DebugReportGenerator *, HttpReply *> m_runningReportGenerators;
+    QHash<QString, DebugReportGenerator *> m_finishedReportGenerators;
+
     QByteArray loadResourceData(const QString &resourceFileName);
     QString getResourceFileName(const QString &requestPath);
     bool resourceFileExits(const QString &requestPath);
@@ -64,6 +69,8 @@ private:
     QByteArray createErrorXmlDocument(HttpReply::HttpStatusCode statusCode, const QString &errorMessage);
 
 private slots:
+    void onDebugServerEnabledChanged(bool enabled);
+
     void onWebsocketClientConnected();
     void onWebsocketClientDisconnected();
     void onWebsocketClientError(QAbstractSocket::SocketError error);
@@ -71,7 +78,8 @@ private slots:
     void onPingProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onDigProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onTracePathProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
-
+    void onDebugReportGeneratorFinished(bool success);
+    void onDebugReportGeneratorTimeout();
 };
 
 }

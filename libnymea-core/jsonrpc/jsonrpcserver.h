@@ -112,7 +112,7 @@ private:
     int m_notificationId;
 
     void registerHandler(JsonHandler *handler);
-    QString formatAssertion(const QString &targetNamespace, const QString &method, JsonHandler *handler, const QVariantMap &data) const;
+    QString formatAssertion(const QString &targetNamespace, const QString &method, QMetaMethod::MethodType methodType, JsonHandler *handler, const QVariantMap &data) const;
 };
 
 }

@@ -24,6 +24,7 @@
 #include <QObject>
 
 #include "loggingcategories.h"
+#include "nymeaconfiguration.h"
 
 #include <QSslConfiguration>
 #include <QSslKey>
@@ -55,6 +56,8 @@ public:
 
     MockTcpServer *mockTcpServer() const;
 
+    MqttBroker *mqttBroker() const;
+
 private slots:
     void tcpServerConfigurationChanged(const QString &id);
     void tcpServerConfigurationRemoved(const QString &id);
@@ -62,6 +65,10 @@ private slots:
     void webSocketServerConfigurationRemoved(const QString &id);
     void webServerConfigurationChanged(const QString &id);
     void webServerConfigurationRemoved(const QString &id);
+    void mqttServerConfigurationChanged(const QString &id);
+    void mqttServerConfigurationRemoved(const QString &id);
+    void mqttPolicyChanged(const QString &clientId);
+    void mqttPolicyRemoved(const QString &clientId);
 
 private:
     // Interfaces
@@ -73,6 +80,8 @@ private:
     QHash<QString, WebSocketServer*> m_webSocketServers;
     QHash<QString, WebServer*> m_webServers;
     MockTcpServer *m_mockTcpServer;
+
+    MqttBroker *m_mqttBroker;
 
     // Encrytption and stuff
     QSslConfiguration m_sslConfiguration;

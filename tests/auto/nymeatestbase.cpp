@@ -230,7 +230,7 @@ QVariant NymeaTestBase::checkNotification(const QSignalSpy &spy, const QString &
 
 QVariantList NymeaTestBase::checkNotifications(const QSignalSpy &spy, const QString &notification)
 {
-    //qDebug() << "Got" << spy.count() << "notifications while waiting for" << notification;
+//    qWarning() << "Got" << spy.count() << "notifications while waiting for" << notification;
     QVariantList notificationList;
     for (int i = 0; i < spy.count(); i++) {
         // Make sure the response it a valid JSON string

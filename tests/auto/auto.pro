@@ -23,4 +23,5 @@ SUBDIRS = versioning \
         timemanager \
         userloading \
         usermanager \
+        mqttbroker \
         tags \

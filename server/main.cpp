@@ -131,7 +131,8 @@ int main(int argc, char *argv[])
         "Janus",
         "JanusTraffic",
         "BluetoothServer",
-        "BluetoothServerTraffic"
+        "BluetoothServerTraffic",
+        "Mqtt"
     };
 
     QStringList loggingFiltersPlugins;

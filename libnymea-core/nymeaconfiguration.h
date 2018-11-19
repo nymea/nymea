@@ -37,7 +37,7 @@ public:
     bool sslEnabled = true;
     bool authenticationEnabled = true;
 
-    bool operator==(const ServerConfiguration &other) {
+    bool operator==(const ServerConfiguration &other) const {
         return id == other.id
                 && address == other.address
                 && port == other.port
@@ -48,13 +48,23 @@ public:
 
 QDebug operator <<(QDebug debug, const ServerConfiguration &configuration);
 
-
 class WebServerConfiguration: public ServerConfiguration
 {
 public:
     QString publicFolder;
     bool restServerEnabled = false;
 };
+
+class MqttPolicy
+{
+public:
+    QString clientId;
+    QString username;
+    QString password;
+    QStringList allowedSubscribeTopicFilters;
+    QStringList allowedPublishTopicFilters;
+};
+typedef QList<MqttPolicy> MqttPolicies;
 
 class NymeaConfiguration : public QObject
 {
@@ -73,7 +83,7 @@ public:
         ConfigurationErrorInvalidCertificate
     };
 
-    explicit NymeaConfiguration(QObject *parent = 0);
+    explicit NymeaConfiguration(QObject *parent = nullptr);
 
     // Global settings
     QUuid serverUuid() const;
@@ -110,9 +120,18 @@ public:
     void setWebSocketServerConfiguration(const ServerConfiguration &config);
     void removeWebSocketServerConfiguration(const QString &id);
 
+    // MQTT
+    QHash<QString, ServerConfiguration> mqttServerConfigurations() const;
+    void setMqttServerConfiguration(const ServerConfiguration &config);
+    void removeMqttServerConfiguration(const QString &id);
+
+    QHash<QString, MqttPolicy> mqttPolicies() const;
+    void updateMqttPolicy(const MqttPolicy &policy);
+    bool removeMqttPolicy(const QString &clientId);
+
     // Bluetooth
     bool bluetoothServerEnabled() const;
-    void setBluetoothServerEnabled(const bool &enabled);
+    void setBluetoothServerEnabled(bool enabled);
 
     // Cloud
     bool cloudEnabled() const;
@@ -139,6 +158,8 @@ private:
     QHash<QString, ServerConfiguration> m_tcpServerConfigs;
     QHash<QString, WebServerConfiguration> m_webServerConfigs;
     QHash<QString, ServerConfiguration> m_webSocketServerConfigs;
+    QHash<QString, ServerConfiguration> m_mqttServerConfigs;
+    QHash<QString, MqttPolicy> m_mqttPolicies;
 
     void setServerUuid(const QUuid &uuid);
     void setWebServerPublicFolder(const QString & path);
@@ -151,6 +172,10 @@ private:
     void storeWebServerConfig(const WebServerConfiguration &config);
     WebServerConfiguration readWebServerConfig(const QString &id);
 
+    void storeMqttPolicy(const MqttPolicy &policy);
+    MqttPolicy readMqttPolicy(const QString &clientId);
+    void deleteMqttPolicy(const QString &clientId);
+
 signals:
     void serverNameChanged(const QString &serverName);
     void timeZoneChanged();
@@ -162,12 +187,21 @@ signals:
     void webServerConfigurationRemoved(const QString &configId);
     void webSocketServerConfigurationChanged(const QString &configId);
     void webSocketServerConfigurationRemoved(const QString &configId);
+    void mqttServerConfigurationChanged(const QString &configId);
+    void mqttServerConfigurationRemoved(const QString &configId);
+
+    void mqttPolicyChanged(const QString &clientId);
+    void mqttPolicyRemoved(const QString &clientId);
 
     void bluetoothServerEnabledChanged();
+    void mqttBrokerEnabledChanged();
+    void mqttPortChanged();
     void cloudEnabledChanged(bool enabled);
     void debugServerEnabledChanged(bool enabled);
 };
 
 }
+Q_DECLARE_METATYPE(nymeaserver::ServerConfiguration)
+Q_DECLARE_METATYPE(nymeaserver::MqttPolicy)
 
 #endif // NYMEACONFIGURATION_H

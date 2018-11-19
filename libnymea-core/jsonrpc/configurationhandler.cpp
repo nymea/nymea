@@ -100,6 +100,8 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     QVariantList webSocketServerConfigurations;
     webSocketServerConfigurations.append(JsonTypes::serverConfigurationRef());
     returns.insert("webSocketServerConfigurations", webSocketServerConfigurations);
+    QVariantList mqttServerConfigurations;
+    mqttServerConfigurations.append(JsonTypes::serverConfigurationRef());
     QVariantMap cloudConfiguration;
     cloudConfiguration.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     returns.insert("cloud", cloudConfiguration);
@@ -182,33 +184,52 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     returns.insert("configurationError", JsonTypes::configurationErrorRef());
     setReturns("SetCloudEnabled", returns);
 
+    // MQTT
+    params.clear(); returns.clear();
+    setDescription("GetMqttServerConfigurations", "Get all MQTT Server configurations.");
+    setParams("GetMqttServerConfigurations", params);
+    returns.insert("mqttServerConfigurations", QVariantList() << JsonTypes::serverConfigurationRef());
+    setReturns("GetMqttServerConfigurations", returns);
+
+    params.clear(); returns.clear();
+    setDescription("SetMqttServerConfiguration", "Configure a MQTT Server interface on the MQTT broker. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Setting authenticationEnabled to true will require MQTT clients to use credentials set in the MQTT broker policies.");
+    params.insert("configuration", JsonTypes::serverConfigurationRef());
+    setParams("SetMqttServerConfiguration", params);
+    returns.insert("configurationError", JsonTypes::configurationErrorRef());
+    setReturns("SetMqttServerConfiguration", returns);
+
+    params.clear(); returns.clear();
+    setDescription("DeleteMqttServerConfiguration", "Delete a MQTT Server interface of the server.");
+    params.insert("id", JsonTypes::basicTypeToString(QVariant::String));
+    setParams("DeleteMqttServerConfiguration", params);
+    returns.insert("configurationError", JsonTypes::configurationErrorRef());
+    setReturns("DeleteMqttServerConfiguration", returns);
+
+    params.clear(); returns.clear();
+    setDescription("GetMqttPolicies", "Get all MQTT broker policies.");
+    setParams("GetMqttPolicies", params);
+    returns.insert("mqttPolicies", QVariantList() << JsonTypes::mqttPolicyRef());
+    setReturns("GetMqttPolicies", returns);
+
+    params.clear(); returns.clear();
+    setDescription("SetMqttPolicy", "Configure a MQTT broker policy. If the ID is an existing one, the existing policy will be modified, otherwise a new one will be added.");
+    params.insert("policy", JsonTypes::mqttPolicyRef());
+    setParams("SetMqttPolicy", params);
+    returns.insert("configurationError", JsonTypes::configurationErrorRef());
+    setReturns("SetMqttPolicy", returns);
+
+    params.clear(); returns.clear();
+    setDescription("DeleteMqttPolicy", "Delete a MQTT policy from the broker.");
+    params.insert("clientId", JsonTypes::basicTypeToString(QVariant::String));
+    setParams("DeleteMqttPolicy", params);
+    returns.insert("configurationError", JsonTypes::configurationErrorRef());
+    setReturns("DeleteMqttPolicy", returns);
+
     // Notifications
     params.clear(); returns.clear();
     setDescription("BasicConfigurationChanged", "Emitted whenever the basic configuration of this server changes.");
-    params.insert("serverName", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("serverUuid", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("serverTime", JsonTypes::basicTypeToString(JsonTypes::Uint));
-    params.insert("timeZone", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("debugServerEnabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    params.insert("basicConfiguration", basicConfiguration);
     setParams("BasicConfigurationChanged", params);
-
-    params.clear(); returns.clear();
-    setDescription("TcpServerConfigurationChanged", "Emitted whenever the TCP server configuration changes.");
-    params.insert("host", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("port", JsonTypes::basicTypeToString(JsonTypes::Uint));
-    setParams("TcpServerConfigurationChanged", params);
-
-    params.clear(); returns.clear();
-    setDescription("WebServerConfigurationChanged", "Emitted whenever the web server configuration changes.");
-    params.insert("host", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("port", JsonTypes::basicTypeToString(JsonTypes::Uint));
-    setParams("WebServerConfigurationChanged", params);
-
-    params.clear(); returns.clear();
-    setDescription("WebSocketServerConfigurationChanged", "Emitted whenever the web socket server configuration changes.");
-    params.insert("host", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("port", JsonTypes::basicTypeToString(JsonTypes::Uint));
-    setParams("WebSocketServerConfigurationChanged", params);
 
     params.clear(); returns.clear();
     setDescription("LanguageChanged", "Emitted whenever the language of the server changed. The Plugins, Vendors and DeviceClasses have to be reloaded to get the translated data.");
@@ -216,19 +237,76 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     setParams("LanguageChanged", params);
 
     params.clear(); returns.clear();
+    setDescription("TcpServerConfigurationChanged", "Emitted whenever the TCP server configuration changes.");
+    params.insert("tcpServerConfiguration", JsonTypes::serverConfigurationRef());
+    setParams("TcpServerConfigurationChanged", params);
+
+    params.clear(); returns.clear();
+    setDescription("TcpServerConfigurationRemoved", "Emitted whenever a TCP server configuration is removed.");
+    params.insert("id", JsonTypes::basicTypeToString(QVariant::String));
+    setParams("TcpServerConfigurationRemoved", params);
+
+    params.clear(); returns.clear();
+    setDescription("WebSocketServerConfigurationChanged", "Emitted whenever the web socket server configuration changes.");
+    params.insert("webSocketServerConfiguration", JsonTypes::serverConfigurationRef());
+    setParams("WebSocketServerConfigurationChanged", params);
+
+    params.clear(); returns.clear();
+    setDescription("WebSocketServerConfigurationRemoved", "Emitted whenever a WebSocket server configuration is removed.");
+    params.insert("id", JsonTypes::basicTypeToString(QVariant::String));
+    setParams("WebSocketServerConfigurationRemoved", params);
+
+    params.clear(); returns.clear();
+    setDescription("MqttServerConfigurationChanged", "Emitted whenever the MQTT broker configuration is changed.");
+    params.insert("mqttServerConfiguration", JsonTypes::serverConfigurationRef());
+    setParams("MqttServerConfigurationChanged", params);
+
+    params.clear(); returns.clear();
+    setDescription("MqttServerConfigurationRemoved", "Emitted whenever a MQTT server configuration is removed.");
+    params.insert("id", JsonTypes::basicTypeToString(QVariant::String));
+    setParams("MqttServerConfigurationRemoved", params);
+
+    params.clear(); returns.clear();
+    setDescription("WebServerConfigurationChanged", "Emitted whenever the web server configuration changes.");
+    params.insert("webServerConfiguration", JsonTypes::webServerConfigurationRef());
+    setParams("WebServerConfigurationChanged", params);
+
+    params.clear(); returns.clear();
+    setDescription("WebServerConfigurationRemoved", "Emitted whenever a Web server configuration is removed.");
+    params.insert("id", JsonTypes::basicTypeToString(QVariant::String));
+    setParams("WebServerConfigurationRemoved", params);
+
+    params.clear(); returns.clear();
     setDescription("CloudConfigurationChanged", "Emitted whenever the cloud configuration is changed.");
-    params.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    params.insert("cloudConfiguration", cloudConfiguration);
     setParams("CloudConfigurationChanged", params);
+
+    params.clear(); returns.clear();
+    setDescription("MqttPolicyChanged", "Emitted whenever a MQTT broker policy is changed.");
+    params.insert("policy", JsonTypes::mqttPolicyRef());
+    setParams("MqttPolicyChanged", params);
+
+    params.clear(); returns.clear();
+    setDescription("MqttPolicyRemoved", "Emitted whenever a MQTT broker policy is removed.");
+    params.insert("clientId", JsonTypes::basicTypeToString(QVariant::String));
+    setParams("MqttPolicyRemoved", params);
 
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::serverNameChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::timeZoneChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::localeChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::debugServerEnabledChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::tcpServerConfigurationChanged, this, &ConfigurationHandler::onTcpServerConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webServerConfigurationChanged, this, &ConfigurationHandler::onWebServerConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webSocketServerConfigurationChanged, this, &ConfigurationHandler::onWebSocketServerConfigurationChanged);
-    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::cloudEnabledChanged, this, &ConfigurationHandler::onCloudConfigurationChanged);
     connect(NymeaCore::instance()->deviceManager(), &DeviceManager::languageUpdated, this, &ConfigurationHandler::onLanguageChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::tcpServerConfigurationChanged, this, &ConfigurationHandler::onTcpServerConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::tcpServerConfigurationRemoved, this, &ConfigurationHandler::onTcpServerConfigurationRemoved);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webServerConfigurationChanged, this, &ConfigurationHandler::onWebServerConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webServerConfigurationRemoved, this, &ConfigurationHandler::onWebServerConfigurationRemoved);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webSocketServerConfigurationChanged, this, &ConfigurationHandler::onWebSocketServerConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webSocketServerConfigurationRemoved, this, &ConfigurationHandler::onWebSocketServerConfigurationRemoved);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttServerConfigurationChanged, this, &ConfigurationHandler::onMqttServerConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttServerConfigurationRemoved, this, &ConfigurationHandler::onMqttServerConfigurationRemoved);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttPolicyChanged, this, &ConfigurationHandler::onMqttPolicyChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttPolicyRemoved, this, &ConfigurationHandler::onMqttPolicyRemoved);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::cloudEnabledChanged, this, &ConfigurationHandler::onCloudConfigurationChanged);
 }
 
 /*! Returns the name of the \l{ConfigurationHandler}. In this case \b Configuration.*/
@@ -397,7 +475,7 @@ JsonReply *ConfigurationHandler::SetWebSocketServerConfiguration(const QVariantM
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
     }
 
-    qCDebug(dcJsonRpc()) << QString("Configure web socket server %1:%2").arg(config.address.toString()).arg(config.port);
+    qCDebug(dcJsonRpc()) << QString("Configuring web socket server %1:%2").arg(config.address.toString()).arg(config.port);
 
     NymeaCore::instance()->configuration()->setWebSocketServerConfiguration(config);
 
@@ -412,6 +490,75 @@ JsonReply *ConfigurationHandler::DeleteWebSocketServerConfiguration(const QVaria
     }
     NymeaCore::instance()->configuration()->removeWebSocketServerConfiguration(id);
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
+}
+
+JsonReply *ConfigurationHandler::GetMqttServerConfigurations(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    QVariantMap ret;
+    QVariantList mqttServerConfigs;
+    foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->mqttServerConfigurations()) {
+        mqttServerConfigs << JsonTypes::packServerConfiguration(config);
+    }
+    ret.insert("mqttServerConfigurations", mqttServerConfigs);
+    return createReply(ret);
+}
+
+JsonReply *ConfigurationHandler::SetMqttServerConfiguration(const QVariantMap &params) const
+{
+    ServerConfiguration config = JsonTypes::unpackServerConfiguration(params.value("configuration").toMap());
+    if (config.id.isEmpty()) {
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
+    }
+    if (config.address.isNull())
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidHostAddress));
+
+    if (config.port <= 0 || config.port > 65535) {
+        qCWarning(dcJsonRpc()) << "Port out of range";
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
+    }
+
+    qCDebug(dcJsonRpc()) << QString("Configure MQTT server %1:%2").arg(config.address.toString()).arg(config.port);
+
+    NymeaCore::instance()->configuration()->setMqttServerConfiguration(config);
+
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
+}
+
+JsonReply *ConfigurationHandler::DeleteMqttServerConfiguration(const QVariantMap &params) const
+{
+    QString id = params.value("id").toString();
+    if (id.isEmpty() || !NymeaCore::instance()->configuration()->mqttServerConfigurations().contains(id)) {
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
+    }
+    NymeaCore::instance()->configuration()->removeMqttServerConfiguration(id);
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
+}
+
+JsonReply *ConfigurationHandler::GetMqttPolicies(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    QVariantList mqttPolicies;
+    foreach (const MqttPolicy &policy, NymeaCore::instance()->configuration()->mqttPolicies()) {
+        mqttPolicies << JsonTypes::packMqttPolicy(policy);
+    }
+    QVariantMap ret;
+    ret.insert("mqttPolicies", mqttPolicies);
+    return createReply(ret);
+}
+
+JsonReply *ConfigurationHandler::SetMqttPolicy(const QVariantMap &params) const
+{
+    MqttPolicy policy = JsonTypes::unpackMqttPolicy(params.value("policy").toMap());
+    NymeaCore::instance()->configuration()->updateMqttPolicy(policy);
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
+}
+
+JsonReply *ConfigurationHandler::DeleteMqttPolicy(const QVariantMap &params) const
+{
+    QString clientId = params.value("clientId").toString();
+    bool success = NymeaCore::instance()->configuration()->removeMqttPolicy(clientId);
+    return createReply(statusToReply(success ? NymeaConfiguration::ConfigurationErrorNoError : NymeaConfiguration::ConfigurationErrorInvalidId));
 }
 
 JsonReply *ConfigurationHandler::SetCloudEnabled(const QVariantMap &params) const
@@ -430,40 +577,96 @@ JsonReply *ConfigurationHandler::SetDebugServerEnabled(const QVariantMap &params
 
 void ConfigurationHandler::onBasicConfigurationChanged()
 {
-    QVariantMap params;
     qCDebug(dcJsonRpc()) << "Notification: Basic configuration changed";
+    QVariantMap params;
     params.insert("basicConfiguration", JsonTypes::packBasicConfiguration());
     emit BasicConfigurationChanged(params);
 }
 
 void ConfigurationHandler::onTcpServerConfigurationChanged(const QString &id)
 {
-    QVariantMap params;
     qCDebug(dcJsonRpc()) << "Notification: TCP server configuration changed";
+    QVariantMap params;
     params.insert("tcpServerConfiguration", JsonTypes::packServerConfiguration(NymeaCore::instance()->configuration()->tcpServerConfigurations().value(id)));
     emit TcpServerConfigurationChanged(params);
 }
 
+void ConfigurationHandler::onTcpServerConfigurationRemoved(const QString &id)
+{
+    qCDebug(dcJsonRpc) << "Notification: TCP server configuration removed";
+    QVariantMap params;
+    params.insert("id", id);
+    emit TcpServerConfigurationRemoved(params);
+}
+
 void ConfigurationHandler::onWebServerConfigurationChanged(const QString &id)
 {
-    QVariantMap params;
     qCDebug(dcJsonRpc()) << "Notification: web server configuration changed";
+    QVariantMap params;
     params.insert("webServerConfiguration", JsonTypes::packWebServerConfiguration(NymeaCore::instance()->configuration()->webServerConfigurations().value(id)));
+    emit WebServerConfigurationChanged(params);
+}
+
+void ConfigurationHandler::onWebServerConfigurationRemoved(const QString &id)
+{
+    qCDebug(dcJsonRpc()) << "Notification: Web server configuration removed";
+    QVariantMap params;
+    params.insert("id", id);
     emit WebServerConfigurationChanged(params);
 }
 
 void ConfigurationHandler::onWebSocketServerConfigurationChanged(const QString &id)
 {
-    QVariantMap params;
     qCDebug(dcJsonRpc()) << "Notification: web socket server configuration changed";
+    QVariantMap params;
     params.insert("webSocketServerConfiguration", JsonTypes::packServerConfiguration(NymeaCore::instance()->configuration()->webSocketServerConfigurations().value(id)));
     emit WebSocketServerConfigurationChanged(params);
 }
 
+void ConfigurationHandler::onWebSocketServerConfigurationRemoved(const QString &id)
+{
+    qCDebug(dcJsonRpc()) << "Notification: WebSocket server configuration removed";
+    QVariantMap params;
+    params.insert("id", id);
+    emit WebSocketServerConfigurationRemoved(params);
+}
+
+void ConfigurationHandler::onMqttServerConfigurationChanged(const QString &id)
+{
+    qCDebug(dcJsonRpc()) << "Notification: MQTT server configuration changed";
+    QVariantMap params;
+    params.insert("mqttServerConfiguration", JsonTypes::packServerConfiguration(NymeaCore::instance()->configuration()->mqttServerConfigurations().value(id)));
+    emit MqttServerConfigurationChanged(params);
+}
+
+void ConfigurationHandler::onMqttServerConfigurationRemoved(const QString &id)
+{
+    qCDebug(dcJsonRpc()) << "Notification: MQTT server configuration removed";
+    QVariantMap params;
+    params.insert("id", id);
+    emit MqttServerConfigurationRemoved(params);
+}
+
+void ConfigurationHandler::onMqttPolicyChanged(const QString &clientId)
+{
+    qCDebug(dcJsonRpc()) << "Notification: MQTT policy changed";
+    QVariantMap params;
+    params.insert("policy", JsonTypes::packMqttPolicy(NymeaCore::instance()->configuration()->mqttPolicies().value(clientId)));
+    emit MqttPolicyChanged(params);
+}
+
+void ConfigurationHandler::onMqttPolicyRemoved(const QString &clientId)
+{
+    qCDebug(dcJsonRpc()) << "Notification: MQTT policy removed";
+    QVariantMap params;
+    params.insert("clientId", clientId);
+    emit MqttPolicyRemoved(params);
+}
+
 void ConfigurationHandler::onCloudConfigurationChanged(bool enabled)
 {
+    qCDebug(dcJsonRpc()) << "Notification: cloud configuration changed";
     QVariantMap params;
-    qCDebug(dcJanus()) << "Notification: cloud configuration changed";
     QVariantMap cloudConfiguration;
     cloudConfiguration.insert("enabled", enabled);
     params.insert("cloudConfiguration", cloudConfiguration);
@@ -472,8 +675,8 @@ void ConfigurationHandler::onCloudConfigurationChanged(bool enabled)
 
 void ConfigurationHandler::onLanguageChanged()
 {
-    QVariantMap params;
     qCDebug(dcJsonRpc()) << "Notification: language configuration changed";
+    QVariantMap params;
     params.insert("language", NymeaCore::instance()->configuration()->locale().name());
     emit LanguageChanged(params);
 }

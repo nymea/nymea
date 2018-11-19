@@ -104,6 +104,9 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     case SettingsRoleTags:
         fileName = "tags.conf";
         break;
+    case SettingsRoleMqttPolicies:
+        fileName = "mqttpolicies.conf";
+        break;
     }
     m_settings = new QSettings(basePath + settingsPrefix + fileName, QSettings::IniFormat, this);
 }

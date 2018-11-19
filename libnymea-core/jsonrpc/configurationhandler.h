@@ -32,7 +32,7 @@ class ConfigurationHandler : public JsonHandler
     Q_OBJECT
 
 public:
-    ConfigurationHandler(QObject *parent = 0);
+    ConfigurationHandler(QObject *parent = nullptr);
     QString name() const;
 
     Q_INVOKABLE JsonReply *GetConfigurations(const QVariantMap &params) const;
@@ -41,31 +41,53 @@ public:
     Q_INVOKABLE JsonReply *SetServerName(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetTimeZone(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetLanguage(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *SetDebugServerEnabled(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *SetCloudEnabled(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetTcpServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *DeleteTcpServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetWebServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *DeleteWebServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetWebSocketServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *DeleteWebSocketServerConfiguration(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *SetCloudEnabled(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *SetDebugServerEnabled(const QVariantMap &params) const;
+
+    Q_INVOKABLE JsonReply *GetMqttServerConfigurations(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *SetMqttServerConfiguration(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *DeleteMqttServerConfiguration(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetMqttPolicies(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *SetMqttPolicy(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *DeleteMqttPolicy(const QVariantMap &params) const;
 
 signals:
     void BasicConfigurationChanged(const QVariantMap &params);
-    void TcpServerConfigurationChanged(const QVariantMap &params);
-    void WebServerConfigurationChanged(const QVariantMap &params);
-    void WebSocketServerConfigurationChanged(const QVariantMap &params);
-    void CloudConfigurationChanged(const QVariantMap &params);
+    // TODO: remove, should be part of BasicConfigurationChanged
     void LanguageChanged(const QVariantMap &params);
+    void CloudConfigurationChanged(const QVariantMap &params);
+    void TcpServerConfigurationChanged(const QVariantMap &params);
+    void TcpServerConfigurationRemoved(const QVariantMap &params);
+    void WebServerConfigurationChanged(const QVariantMap &params);
+    void WebServerConfigurationRemoved(const QVariantMap &params);
+    void WebSocketServerConfigurationChanged(const QVariantMap &params);
+    void WebSocketServerConfigurationRemoved(const QVariantMap &params);
+
+    void MqttServerConfigurationChanged(const QVariantMap &params);
+    void MqttServerConfigurationRemoved(const QVariantMap &params);
+    void MqttPolicyChanged(const QVariantMap &params);
+    void MqttPolicyRemoved(const QVariantMap &params);
 
 private slots:
     void onBasicConfigurationChanged();
-    void onTcpServerConfigurationChanged(const QString &id);
-    void onWebServerConfigurationChanged(const QString &id);
-    void onWebSocketServerConfigurationChanged(const QString &id);
-    void onCloudConfigurationChanged(bool enabled);
     void onLanguageChanged();
-
+    void onCloudConfigurationChanged(bool enabled);
+    void onTcpServerConfigurationChanged(const QString &id);
+    void onTcpServerConfigurationRemoved(const QString &id);
+    void onWebServerConfigurationChanged(const QString &id);
+    void onWebServerConfigurationRemoved(const QString &id);
+    void onWebSocketServerConfigurationChanged(const QString &id);
+    void onWebSocketServerConfigurationRemoved(const QString &id);
+    void onMqttServerConfigurationChanged(const QString &id);
+    void onMqttServerConfigurationRemoved(const QString &id);
+    void onMqttPolicyChanged(const QString &clientId);
+    void onMqttPolicyRemoved(const QString &clientId);
 };
 
 }

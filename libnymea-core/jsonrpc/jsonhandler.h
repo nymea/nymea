@@ -88,7 +88,7 @@ class JsonHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit JsonHandler(QObject *parent = 0);
+    explicit JsonHandler(QObject *parent = nullptr);
 
     virtual QString name() const = 0;
 

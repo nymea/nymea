@@ -5,7 +5,7 @@ include(../nymea.pri)
 
 QT += sql qmqtt
 INCLUDEPATH += $$top_srcdir/libnymea
-LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto -lavahi-common -lavahi-client
+LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto -lavahi-common -lavahi-client -lnymea-mqtt
 
 target.path = /usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')
 INSTALLS += target
@@ -37,6 +37,7 @@ HEADERS += nymeacore.h \
     servers/rest/pluginsresource.h \
     servers/rest/rulesresource.h \
     servers/websocketserver.h \
+    servers/mqttbroker.h \
     jsonrpc/jsonrpcserver.h \
     jsonrpc/jsonhandler.h \
     jsonrpc/devicehandler.h \
@@ -121,6 +122,7 @@ SOURCES += nymeacore.cpp \
     servers/rest/logsresource.cpp \
     servers/rest/pluginsresource.cpp \
     servers/rest/rulesresource.cpp \
+    servers/mqttbroker.cpp \
     jsonrpc/jsonrpcserver.cpp \
     jsonrpc/jsonhandler.cpp \
     jsonrpc/devicehandler.cpp \

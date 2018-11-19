@@ -27,6 +27,7 @@
 #include <QFile>
 #include <QTimer>
 #include <QDateTime>
+#include <QStandardPaths>
 #include <QCryptographicHash>
 #include <QProcessEnvironment>
 
@@ -62,7 +63,8 @@ void DebugReportGenerator::generateReport()
     qCDebug(dcDebugServer()) << "Start generating debug report";
     m_reportFileName = QDateTime::currentDateTime().toString("yyyyMMddhhmm") + "-nymea-debug-report";
 
-    m_reportDirectory.setPath(QString("/tmp/%1").arg(m_reportFileName));
+    m_reportDirectory.setPath(QString("%1/%2").arg(QStandardPaths::writableLocation(QStandardPaths::TempLocation)).arg(m_reportFileName));
+    //m_reportDirectory.setPath(QString("/tmp/%1").arg(m_reportFileName));
     if (!m_reportDirectory.exists()) {
         qCDebug(dcDebugServer()) << "Create temporary folder to collect the data" << m_reportDirectory.path();
         if (!m_reportDirectory.mkpath(m_reportDirectory.path())) {
@@ -121,9 +123,9 @@ void DebugReportGenerator::verifyRunningProcessesFinished()
         qCDebug(dcDebugServer()) << "All async processes are finished. Start compressing the file.";
         m_compressProcess = new QProcess(this);
         m_compressProcess->setProcessChannelMode(QProcess::MergedChannels);
-        m_compressProcess->setWorkingDirectory("/tmp");
+        m_compressProcess->setWorkingDirectory(QStandardPaths::writableLocation(QStandardPaths::TempLocation));
         connect(m_compressProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onCompressProcessFinished(int, QProcess::ExitStatus)));
-        m_compressProcess->start("tar", { "-zcf", m_reportFileName, "-C", "/tmp/", m_reportDirectory.dirName() } );
+        m_compressProcess->start("tar", { "-zcf", m_reportFileName, "-C", QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/", m_reportDirectory.dirName() } );
         qCDebug(dcDebugServer()) << "Execut command" << m_compressProcess->program() << m_compressProcess->arguments();
     }
 }
@@ -169,7 +171,7 @@ void DebugReportGenerator::saveEnv()
 
 void DebugReportGenerator::cleanupReport()
 {
-    QFile reportFile("/tmp/" + m_reportFileName);
+    QFile reportFile(QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/" + m_reportFileName);
     if (reportFile.exists()) {
         qCDebug(dcDebugServer()) << "Delete report file" << reportFile.fileName();
         if (!reportFile.remove()) {
@@ -263,7 +265,7 @@ void DebugReportGenerator::onCompressProcessFinished(int exitCode, QProcess::Exi
     }
 
     // Read the file
-    QFile reportFile("/tmp/" + m_reportFileName);
+    QFile reportFile(QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/" + m_reportFileName);
     if (!reportFile.open(QIODevice::ReadOnly)) {
         qCWarning(dcDebugServer()) << "Could not open report file name for reading" << reportFile.fileName();
         emit finished(false);

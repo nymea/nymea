@@ -126,11 +126,13 @@ function downloadFile(filePath, fileName) {
 }
 
 
+var generateReportTimer = null;
+
 function generateReport() {
     console.log("Requesting to generate report file " + "/debug/report");
     
-    var button = document.getElementById("generateReportButton");
     var textArea = document.getElementById("generateReportTextArea");
+    var button = document.getElementById("generateReportButton");
 
     // Request report file generation
     var reportGenerateRequest = new XMLHttpRequest();
@@ -138,7 +140,10 @@ function generateReport() {
     reportGenerateRequest.send(null);
     
     button.disabled = true;
-    textArea.value = "";
+    textArea.value = ".";
+    
+       // Start the timer
+    generateReportTimer = setTimeout(generateReportTimerTimeout, 1000);
     
     reportGenerateRequest.onreadystatechange = function() {
         if (reportGenerateRequest.readyState == 4) {
@@ -151,6 +156,9 @@ function generateReport() {
                 return;
             }
             
+            // Stop the timer
+            clearTimeout(generateReportTimer);
+        
             console.log(reportGenerateRequest.responseText);
             var responseMap = JSON.parse(reportGenerateRequest.responseText);
             var fileName = responseMap['fileName'];
@@ -181,25 +189,39 @@ function generateReport() {
     };
 }
 
+function generateReportTimerTimeout() {
+    var textArea = document.getElementById("generateReportTextArea");
+    textArea.value += ".";
+    generateReportTimer = setTimeout(generateReportTimerTimeout, 1000);
+}
 
 /* ========================================================================*/
 /* Network test functions
 /* ========================================================================*/
+
+var pingTimer = null;
 
 function startPingTest() {
     console.log("Start ping test");
     var textArea = document.getElementById("pingTextArea");
     var button = document.getElementById("pingButton");
     // Clear the text output
-    textArea.value = "";
+    textArea.value = ".";
     
     // Request ping output
     var request = new XMLHttpRequest();
     request.open("GET", "/debug/ping", true);
     request.send(null);
+    
+    // Start the timer
+    pingTimer = setTimeout(pingTimerTimeout, 1000);
+    
     button.disabled = true;
     request.onreadystatechange = function() {
         if (request.readyState == 4) {
+            // Stop the timer
+            clearTimeout(pingTimer);
+        
             console.log(request.responseText);
             textArea.value = request.responseText;
             button.disabled = false;
@@ -207,6 +229,15 @@ function startPingTest() {
     };
 }
 
+function pingTimerTimeout() {
+    var textArea = document.getElementById("pingTextArea");
+    textArea.value += ".";
+    pingTimer = setTimeout(pingTimerTimeout, 1000);
+}
+
+
+
+var digTimer = null;
 
 function startDigTest() {
     console.log("Start dig test");
@@ -214,15 +245,22 @@ function startDigTest() {
     var button = document.getElementById("digButton");
     
     // Clear the text output
-    textArea.value = "";
+    textArea.value = ".";
     
     // Request dig output
     var request = new XMLHttpRequest();
     request.open("GET", "/debug/dig", true);
     request.send(null);
+    
+        // Start the timer
+    digTimer = setTimeout(digTimerTimeout, 1000);
+    
     button.disabled = true;
     request.onreadystatechange = function() {
         if (request.readyState == 4) {
+            // Stop the timer
+            clearTimeout(digTimer);
+        
             console.log(request.responseText);
             textArea.value = request.responseText;
             button.disabled = false;
@@ -230,6 +268,15 @@ function startDigTest() {
     };
 }
 
+function digTimerTimeout() {
+    var textArea = document.getElementById("digTextArea");
+    textArea.value += ".";
+    digTimer = setTimeout(digTimerTimeout, 1000);
+}
+
+
+
+var tracePathTimer = null;
 
 function startTracePathTest() {
     console.log("Start trace path test");
@@ -237,21 +284,35 @@ function startTracePathTest() {
     var button = document.getElementById("tracePathButton");
     
     // Clear the text output
-    textArea.value = "";
+    textArea.value = ".";
     
     // Request dig output
     var request = new XMLHttpRequest();
     request.open("GET", "/debug/tracepath", true);
     request.send(null);
+    
+    // Start the timer
+    tracePathTimer = setTimeout(tracePathTimerTimeout, 1000);
+    
     button.disabled = true;
     request.onreadystatechange = function() {
         if (request.readyState == 4) {
+            // Stop the timer
+            clearTimeout(tracePathTimer);
+            
             console.log(request.responseText);
             textArea.value = request.responseText;
             button.disabled = false;
         }
     };
 }
+
+function tracePathTimerTimeout() {
+    var textArea = document.getElementById("tracePathTextArea");
+    textArea.value += ".";
+    tracePathTimer = setTimeout(tracePathTimerTimeout, 1000);
+}
+
 
 /* ========================================================================*/
 /* Start function calls

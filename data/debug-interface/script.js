@@ -151,6 +151,7 @@ function generateReport() {
 
             if (reportGenerateRequest.status != 200) {
                 console.log("Report generation finished with error.");
+                clearTimeout(generateReportTimer);        
                 textArea.value = "Something went wrong :(";
                 button.disabled = false;
                 return;

@@ -51,6 +51,10 @@
         <file>accesscontrol.json</file>
         <file>fingerprintreader.json</file>
         <file>useraccesscontrol.json</file>
+        <file>heating.json</file>
+        <file>extendedheating.json</file>
+        <file>evcharger.json</file>
+        <file>extendedevcharger.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

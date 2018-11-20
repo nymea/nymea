@@ -18,70 +18,59 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEBUGSERVERHANDLER_H
-#define DEBUGSERVERHANDLER_H
+#ifndef DEBUGREPORTGENERATOR_H
+#define DEBUGREPORTGENERATOR_H
 
-#include <QTimer>
+#include <QDir>
 #include <QObject>
 #include <QProcess>
-#include <QUrlQuery>
-#include <QWebSocketServer>
-
-#include "httpreply.h"
-#include "debugreportgenerator.h"
 
 namespace nymeaserver {
 
-class DebugServerHandler : public QObject
+class DebugReportGenerator : public QObject
 {
     Q_OBJECT
 public:
-    explicit DebugServerHandler(QObject *parent = nullptr);
+    explicit DebugReportGenerator(QObject *parent = nullptr);
+    ~DebugReportGenerator();
 
-    HttpReply *processDebugRequest(const QString &requestPath, const QUrlQuery &requestQuery);
+    QByteArray reportFileData() const;
+    QString reportFileName();
+    QString md5Sum() const;
+
+    void generateReport();
 
 private:
-    static QtMessageHandler s_oldLogMessageHandler;
-    static QList<QWebSocket*> s_websocketClients;
-    static void logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message);
+    QDir m_reportDirectory;
+    QString m_reportFileName;
 
-    QWebSocketServer *m_websocketServer = nullptr;
+    QProcess *m_compressProcess = nullptr;
+    QList<QProcess *> m_runningProcesses;
 
-    QProcess *m_pingProcess = nullptr;
-    HttpReply *m_pingReply = nullptr;
+    QByteArray m_reportFileData;
+    QString m_md5Sum;
 
-    QProcess *m_digProcess = nullptr;
-    HttpReply *m_digReply = nullptr;
+    void copyFileToReportDirectory(const QString &fileName, const QString &subDirectory = QString());
+    void verifyRunningProcessesFinished();
 
-    QProcess *m_tracePathProcess = nullptr;
-    HttpReply *m_tracePathReply = nullptr;
+    void saveLogFiles();
+    void saveConfigs();
+    void saveEnv();
 
-    QHash<DebugReportGenerator *, HttpReply *> m_runningReportGenerators;
-    QHash<QString, DebugReportGenerator *> m_finishedReportGenerators;
+    void cleanupReport();
 
-    QByteArray loadResourceData(const QString &resourceFileName);
-    QString getResourceFileName(const QString &requestPath);
-    bool resourceFileExits(const QString &requestPath);
-
-    HttpReply *processDebugFileRequest(const QString &requestPath);
-
-    QByteArray createDebugXmlDocument();
-    QByteArray createErrorXmlDocument(HttpReply::HttpStatusCode statusCode, const QString &errorMessage);
+signals:
+    void finished(bool success);
+    void timeout();
 
 private slots:
-    void onDebugServerEnabledChanged(bool enabled);
-
-    void onWebsocketClientConnected();
-    void onWebsocketClientDisconnected();
-    void onWebsocketClientError(QAbstractSocket::SocketError error);
-
     void onPingProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onDigProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onTracePathProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
-    void onDebugReportGeneratorFinished(bool success);
-    void onDebugReportGeneratorTimeout();
+    void onCompressProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
 };
 
 }
 
-#endif // DEBUGSERVERHANDLER_H
+#endif // DEBUGREPORTGENERATOR_H

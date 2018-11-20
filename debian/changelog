@@ -1,3 +1,18 @@
+nymea (0.9.39) xenial; urgency=medium
+
+  [ Jenkins ]
+  * Prepare for release
+
+  [ Simon Stürz ]
+  * Improve debuginterface and add more functionality
+
+  [ Michael Zanetti ]
+  * split color light interface into color temperature light
+  * add heating/evcharger interfaces
+  * Push 1.1
+
+ -- Jenkins <jenkins@nymea.io>  Tue, 20 Nov 2018 14:32:29 +0100
+
 nymea (0.9.38) xenial; urgency=medium
 
   [ Jenkins ]

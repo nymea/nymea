@@ -627,7 +627,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeCharacters("");
     writer.writeEndElement(); // script
 
-    // Favicons
+    // Default favicons
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "icon");
     writer.writeAttribute("type", "image/png");
@@ -658,6 +658,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("sizes", "196x196");
     writer.writeAttribute("href", "/debug/favicons/favicon-196x196.png");
 
+    // Apple favicons
     writer.writeEmptyElement("link");
     writer.writeAttribute("rel", "apple-touch-icon-precomposed");
     writer.writeAttribute("sizes", "57x57");
@@ -697,6 +698,35 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("rel", "apple-touch-icon-precomposed");
     writer.writeAttribute("sizes", "152x152");
     writer.writeAttribute("href", "/debug/favicons/apple-touch-icon-152x152.png");
+
+    // Microsoft favicons
+    writer.writeEmptyElement("meta");
+    writer.writeAttribute("name", "nymea");
+    writer.writeAttribute("content", "&nbsp;");
+
+    writer.writeEmptyElement("meta");
+    writer.writeAttribute("name", "msapplication-TileColor");
+    writer.writeAttribute("content", "#FFFFFF");
+
+    writer.writeEmptyElement("meta");
+    writer.writeAttribute("name", "msapplication-TileImage");
+    writer.writeAttribute("content", "/debug/favicons/mstile-144x144.png");
+
+    writer.writeEmptyElement("meta");
+    writer.writeAttribute("name", "msapplication-square70x70logo");
+    writer.writeAttribute("content", "/debug/favicons/mstile-70x70.png");
+
+    writer.writeEmptyElement("meta");
+    writer.writeAttribute("name", "msapplication-square150x150logo");
+    writer.writeAttribute("content", "/debug/favicons/mstile-150x150.png");
+
+    writer.writeEmptyElement("meta");
+    writer.writeAttribute("name", "msapplication-wide310x150logo");
+    writer.writeAttribute("content", "/debug/favicons/mstile-310x150.png");
+
+    writer.writeEmptyElement("meta");
+    writer.writeAttribute("name", "msapplication-square310x310logo");
+    writer.writeAttribute("content", "/debug/favicons/mstile-310x310.png");
 
     //: The header title of the debug server interface
     writer.writeTextElement("title", tr("Debug nymea"));
@@ -789,7 +819,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeCharacters(tr("Be aware that this debug interface is a security risk and could offer access to sensible data."));
     writer.writeEndElement(); // div warning message
     writer.writeEndElement(); // div warning
-
 
 
     // System information section
@@ -974,7 +1003,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeCharacters("");
     writer.writeEndElement(); // textarea
 
-
     writer.writeEndElement(); // information-section
 
     // ---------------------------------------------------------------------------
@@ -993,7 +1021,8 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("h3", tr("Logs"));
     writer.writeEmptyElement("hr");
 
-    // Download row
+
+    // Download row logdb
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-row");
 
@@ -1029,7 +1058,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeEndElement(); // div download-row
 
-    // Download row
+    // Download row syslog
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-row");
 
@@ -1073,7 +1102,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // div download-row
 
 
-    // Settings download section
+    // Settings download section global
     writer.writeEmptyElement("hr");
     //: The settings download section title of the debug interface
     writer.writeTextElement("h3", tr("Settings"));
@@ -1129,7 +1158,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // div download-row
 
 
-    // Download row
+    // Download row devices
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-row");
 
@@ -1179,7 +1208,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // div download-row
 
 
-    // Download row
+    // Download row device states
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-row");
 
@@ -1229,7 +1258,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // div download-row
 
 
-    // Download row
+    // Download row rules
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-row");
 
@@ -1279,7 +1308,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // div download-row
 
 
-    // Download row
+    // Download row plugins
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-row");
 
@@ -1329,7 +1358,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
 
 
-    // Download row
+    // Download row tags
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-row");
 
@@ -1367,7 +1396,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "button");
-    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleDeviceStates).fileName())) {
+    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleTags).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
     writer.writeAttribute("onClick", "showFile('/debug/settings/tags')");

@@ -77,7 +77,7 @@ void DebugReportGenerator::generateReport()
         m_reportDirectory.mkpath(m_reportDirectory.path() + "/logs");
     }
 
-    m_reportFileName += ".tag.gz";
+    m_reportFileName += ".tar.gz";
 
     saveConfigs();
     saveLogFiles();

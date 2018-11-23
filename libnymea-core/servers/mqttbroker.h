@@ -23,12 +23,17 @@ public:
 
     bool startServer(const ServerConfiguration &config, const QSslConfiguration &sslConfiguration = QSslConfiguration());
     bool isRunning(const QString &configId) const;
+    bool isRunning() const;
+    QList<ServerConfiguration> configurations() const;
     void stopServer(const QString &configId);
 
     QList<MqttPolicy> policies();
     MqttPolicy policy(const QString &clientId);
     void updatePolicy(const MqttPolicy &policy);
+    void updatePolicies(const QList<MqttPolicy> &policies);
     bool removePolicy(const QString &clientId);
+
+    void publish(const QString &topic, const QByteArray &payload);
 
 private slots:
     void onClientConnected(int serverAddressId, const QString &clientId, const QString &username, const QHostAddress &clientAddress);

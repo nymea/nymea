@@ -188,6 +188,19 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         storeServerConfig("MqttServer", config);
     }
 
+    NymeaSettings mqttPolicies(NymeaSettings::SettingsRoleMqttPolicies);
+    foreach (const QString &clientId, mqttPolicies.childGroups()) {
+        mqttPolicies.beginGroup(clientId);
+        MqttPolicy policy;
+        policy.clientId = clientId;
+        policy.username = mqttPolicies.value("username").toString();
+        policy.password = mqttPolicies.value("password").toString();
+        policy.allowedPublishTopicFilters = mqttPolicies.value("allowedPublishTopicFilters").toStringList();
+        policy.allowedSubscribeTopicFilters = mqttPolicies.value("allowedSubscribeTopicFilters").toStringList();
+        m_mqttPolicies.insert(clientId, policy);
+        mqttPolicies.endGroup();
+    }
+
     // Write defaults for log settings
     settings.beginGroup("Logs");
     settings.setValue("logDBDriver", logDBDriver());

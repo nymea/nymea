@@ -31,7 +31,7 @@ class NetworkManagerHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit NetworkManagerHandler(QObject *parent = 0);
+    explicit NetworkManagerHandler(QObject *parent = nullptr);
 
     QString name() const;
 

@@ -130,6 +130,16 @@ bool MqttBroker::isRunning(const QString &configId) const
     return false;
 }
 
+bool MqttBroker::isRunning() const
+{
+    return !m_configs.isEmpty();
+}
+
+QList<ServerConfiguration> MqttBroker::configurations() const
+{
+    return m_configs.values();
+}
+
 void MqttBroker::stopServer(const QString &configId)
 {
     int serverAddressId = -1;
@@ -171,14 +181,31 @@ void MqttBroker::updatePolicy(const MqttPolicy &policy)
     emit policyAdded(policy);
 }
 
+void MqttBroker::updatePolicies(const QList<MqttPolicy> &policies)
+{
+    foreach (const MqttPolicy &policy, policies) {
+        updatePolicy(policy);
+    }
+}
+
 bool MqttBroker::removePolicy(const QString &clientId)
 {
     if (m_policies.contains(clientId)) {
+        // Is there a client connected for this policy?
+        if (m_server->clients().contains(clientId)) {
+            m_server->disconnectClient(clientId);
+        }
+
         qCDebug(dcMqtt) << "Policy for client" << clientId << "removed";
         emit policyRemoved(m_policies.take(clientId));
         return true;
     }
     return false;
+}
+
+void MqttBroker::publish(const QString &topic, const QByteArray &payload)
+{
+    m_server->publish(topic, payload);
 }
 
 void MqttBroker::onClientConnected(int serverAddressId, const QString &clientId, const QString &username, const QHostAddress &clientAddress)

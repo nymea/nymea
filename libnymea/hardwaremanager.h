@@ -32,6 +32,7 @@ class NetworkAccessManager;
 class UpnpDeviceDescriptor;
 class QtAvahiServiceBrowser;
 class BluetoothLowEnergyManager;
+class MqttProvider;
 class HardwareResource;
 
 class HardwareManager : public QObject
@@ -48,6 +49,7 @@ public:
     virtual UpnpDiscovery *upnpDiscovery() = 0;
     virtual QtAvahiServiceBrowser *avahiBrowser() = 0;
     virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
+    virtual MqttProvider *mqttProvider() = 0;
 
 protected:
     void setResourceEnabled(HardwareResource* resource, bool enabled);

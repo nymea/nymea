@@ -93,6 +93,8 @@ HEADERS += nymeacore.h \
     hardware/network/avahi/qtavahiservice_p.h \
     hardware/network/avahi/qtavahiservicebrowserimplementation.h \
     hardware/network/avahi/qtavahiservicebrowserimplementation_p.h \
+    hardware/network/mqtt/mqttproviderimplementation.h \
+    hardware/network/mqtt/mqttchannelimplementation.h \
     debugserverhandler.h \
     tagging/tagsstorage.h \
     tagging/tag.h \
@@ -176,9 +178,11 @@ SOURCES += nymeacore.cpp \
     hardware/network/avahi/qtavahiservice_p.cpp \
     hardware/network/avahi/qtavahiservicebrowserimplementation.cpp \
     hardware/network/avahi/qtavahiservicebrowserimplementation_p.cpp \
+    hardware/network/mqtt/mqttproviderimplementation.cpp \
+    hardware/network/mqtt/mqttchannelimplementation.cpp \
     debugserverhandler.cpp \
     tagging/tagsstorage.cpp \
     tagging/tag.cpp \
     jsonrpc/tagshandler.cpp \
     cloud/cloudtransport.cpp \
-    debugreportgenerator.cpp
+    debugreportgenerator.cpp \

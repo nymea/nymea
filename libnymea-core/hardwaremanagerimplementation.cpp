@@ -29,10 +29,11 @@
 #include "hardware/radio433/radio433brennenstuhl.h"
 #include "hardware/bluetoothlowenergy/bluetoothlowenergymanagerimplementation.h"
 #include "hardware/network/avahi/qtavahiservicebrowserimplementation.h"
+#include "hardware/network/mqtt/mqttproviderimplementation.h"
 
 namespace nymeaserver {
 
-HardwareManagerImplementation::HardwareManagerImplementation(QObject *parent) :
+HardwareManagerImplementation::HardwareManagerImplementation(MqttBroker *mqttBroker, QObject *parent) :
     HardwareManager(parent)
 {
     // Create network access manager for all resources, centralized
@@ -74,6 +75,8 @@ HardwareManagerImplementation::HardwareManagerImplementation(QObject *parent) :
 
     if (m_bluetoothLowEnergyManager->available())
         setResourceEnabled(m_bluetoothLowEnergyManager, true);
+
+    m_mqttProvider = new MqttProviderImplementation(mqttBroker, this);
 }
 
 HardwareManagerImplementation::~HardwareManagerImplementation()
@@ -108,6 +111,11 @@ QtAvahiServiceBrowser *HardwareManagerImplementation::avahiBrowser()
 BluetoothLowEnergyManager *HardwareManagerImplementation::bluetoothLowEnergyManager()
 {
     return m_bluetoothLowEnergyManager;
+}
+
+MqttProvider *HardwareManagerImplementation::mqttProvider()
+{
+    return m_mqttProvider;
 }
 
 }

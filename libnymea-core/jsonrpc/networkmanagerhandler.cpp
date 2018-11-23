@@ -380,7 +380,9 @@ QVariantMap NetworkManagerHandler::packNetworkManagerStatus()
 
 void NetworkManagerHandler::onNetworkManagerStatusChanged()
 {
-    emit NetworkStatusChanged(packNetworkManagerStatus());
+    QVariantMap notification;
+    notification.insert("status", packNetworkManagerStatus());
+    emit NetworkStatusChanged(notification);
 }
 
 void NetworkManagerHandler::onWirelessNetworkDeviceAdded(WirelessNetworkDevice *networkDevice)

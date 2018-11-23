@@ -134,6 +134,7 @@ ServerManager::ServerManager(NymeaConfiguration *configuration, QObject *parent)
     foreach (const ServerConfiguration &config, configuration->mqttServerConfigurations()) {
         m_mqttBroker->startServer(config);
     }
+    m_mqttBroker->updatePolicies(configuration->mqttPolicies().values());
 
     connect(configuration, &NymeaConfiguration::tcpServerConfigurationChanged, this, &ServerManager::tcpServerConfigurationChanged);
     connect(configuration, &NymeaConfiguration::tcpServerConfigurationRemoved, this, &ServerManager::tcpServerConfigurationRemoved);

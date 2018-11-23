@@ -524,8 +524,11 @@ void NymeaCore::init() {
     qCDebug(dcApplication) << "Creating Log Engine";
     m_logger = new LogEngine(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), m_configuration->logDBMaxEntries(), this);
 
+    qCDebug(dcApplication) << "Creating Server Manager";
+    m_serverManager = new ServerManager(m_configuration, this);
+
     qCDebug(dcApplication) << "Creating Hardware Manager";
-    m_hardwareManager = new HardwareManagerImplementation(this);
+    m_hardwareManager = new HardwareManagerImplementation(m_serverManager->mqttBroker(), this);
 
     qCDebug(dcApplication) << "Creating Device Manager (locale:" << m_configuration->locale() << ")";
     m_deviceManager = new DeviceManager(m_hardwareManager, m_configuration->locale(), this);
@@ -538,9 +541,6 @@ void NymeaCore::init() {
 
     qCDebug(dcApplication()) << "Creating Tags Storage";
     m_tagsStorage = new TagsStorage(m_deviceManager, m_ruleEngine, this);
-
-    qCDebug(dcApplication) << "Creating Server Manager";
-    m_serverManager = new ServerManager(m_configuration, this);
 
     qCDebug(dcApplication) << "Creating Network Manager";
     m_networkManager = new NetworkManager(this);

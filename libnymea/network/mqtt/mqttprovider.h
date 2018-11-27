@@ -6,6 +6,7 @@
 
 #include "typeutils.h"
 #include "hardwareresource.h"
+#include "nymea-mqtt/mqttclient.h"
 
 class MqttChannel;
 
@@ -17,6 +18,8 @@ public:
 
     virtual MqttChannel* createChannel(const DeviceId &deviceId, const QHostAddress &clientAddress) = 0;
     virtual void releaseChannel(MqttChannel *channel) = 0;
+
+    virtual MqttClient* createInternalClient(const DeviceId &deviceId) = 0;
 };
 
 #endif // MQTTPROVIDER_H

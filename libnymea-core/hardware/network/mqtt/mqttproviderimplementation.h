@@ -17,6 +17,8 @@ public:
     MqttChannel* createChannel(const DeviceId &deviceId, const QHostAddress &clientAddress) override;
     void releaseChannel(MqttChannel* channel) override;
 
+    MqttClient* createInternalClient(const DeviceId &deviceId) override;
+
     bool available() const override;
     bool enabled() const override;
     void setEnabled(bool enabled) override;

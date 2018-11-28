@@ -303,16 +303,16 @@ void TestMqttBroker::testConnectAuthentication_data()
     policy.username = "bbb";
     policy.password = "ccc";
 
-    QTest::addRow("no policy for client") << policy << Mqtt::ConnectReturnCodeIdentifierRejected;
+    QTest::newRow("no policy for client") << policy << Mqtt::ConnectReturnCodeIdentifierRejected;
 
     policy.clientId = "testclient";
-    QTest::addRow("user mismatch") << policy << Mqtt::ConnectReturnCodeBadUsernameOrPassword;
+    QTest::newRow("user mismatch") << policy << Mqtt::ConnectReturnCodeBadUsernameOrPassword;
 
     policy.username = "testuser";
-    QTest::addRow("pass mismatch") << policy << Mqtt::ConnectReturnCodeBadUsernameOrPassword;
+    QTest::newRow("pass mismatch") << policy << Mqtt::ConnectReturnCodeBadUsernameOrPassword;
 
     policy.password = "testpassword";
-    QTest::addRow("user mismatch") << policy << Mqtt::ConnectReturnCodeAccepted;
+    QTest::newRow("user mismatch") << policy << Mqtt::ConnectReturnCodeAccepted;
 
 }
 

@@ -25,7 +25,7 @@
 #include <QFuture>
 #include <QDateTime>
 
-#include <qmqtt/qmqtt.h>
+#include <nymea-mqtt/mqttclient.h>
 
 class AWSConnector : public QObject
 {
@@ -70,9 +70,9 @@ private slots:
     void doConnect();
     void onConnected();
     void onDisconnected();
-    void onPublished(const QMQTT::Message &message, quint16 msgid);
-    void onSubscribed(const QString& topic, const quint8 qos);
-    void onSubscriptionReceived(const QMQTT::Message &message);
+    void onPublished(quint16 msgid, const QString &topic);
+    void onSubscribed(const QString &topic, Mqtt::SubscribeReturnCode returnCode);
+    void onPublishReceived(const QString &topic, const QByteArray &payload);
 
     void registerDevice();
     void onDeviceRegistered(bool needsReconnect);
@@ -96,7 +96,7 @@ private:
     QString getCertificateFingerprint(const QString &certificateFilePath) const;
 
 private:
-    QMQTT::Client *m_client = nullptr;
+    MqttClient *m_client = nullptr;
     QString m_currentEndpoint;
     QString m_caFile;
     QString m_clientCertFile;

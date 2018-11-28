@@ -1,3 +1,9 @@
+nymea (0.10.0) UNRELEASED; urgency=medium
+
+  * Add MQTT broker support
+
+ -- Michael Zanetti <michael.zanetti@guh.io>  Wed, 28 Nov 2018 22:38:45 +0100
+
 nymea (0.9.39) xenial; urgency=medium
 
   [ Jenkins ]

@@ -101,8 +101,11 @@ void TestMqttBroker::testServerConfigurationAPI()
     QSignalSpy connectedSpy(mqttClient, &MqttClient::connected);
     QSignalSpy disconnectedSpy(mqttClient, &MqttClient::disconnected);
     mqttClient->connectToHost("127.0.0.1", 1885);
-    QTRY_VERIFY2(connectedSpy.count() == 1, "Mqtt client didn't connect");
-    QTRY_VERIFY2(connectedSpy.first().at(0).value<Mqtt::ConnectReturnCode>() == Mqtt::ConnectReturnCodeAccepted, "Connection not accepted");
+    if (connectedSpy.count() == 0) {
+        connectedSpy.wait();
+    }
+    QVERIFY2(connectedSpy.count() == 1, "Mqtt client didn't connect");
+    QVERIFY2(connectedSpy.first().at(0).value<Mqtt::ConnectReturnCode>() == Mqtt::ConnectReturnCodeAccepted, "Connection not accepted");
 
     // Update same configuration to a different port
     notificationsSpy.clear();
@@ -135,8 +138,11 @@ void TestMqttBroker::testServerConfigurationAPI()
     connectedSpy.clear();
     disconnectedSpy.clear();
     mqttClient->connectToHost("127.0.0.1", 1886);
-    QTRY_VERIFY2(connectedSpy.count() == 1, "Mqtt client didn't connect");
-    QTRY_VERIFY2(connectedSpy.first().at(0).value<Mqtt::ConnectReturnCode>() == Mqtt::ConnectReturnCodeAccepted, "Connection not accepted");
+    if (connectedSpy.count() == 0) {
+        connectedSpy.wait();
+    }
+    QVERIFY2(connectedSpy.count() == 1, "Mqtt client didn't connect");
+    QVERIFY2(connectedSpy.first().at(0).value<Mqtt::ConnectReturnCode>() == Mqtt::ConnectReturnCodeAccepted, "Connection not accepted");
 
     // Delete the server config
     notificationsSpy.clear();
@@ -178,7 +184,10 @@ void TestMqttBroker::testPolicyConfigurationAPI()
     QSignalSpy connectedSpy(mqttClient, &MqttClient::connected);
     QSignalSpy disconnectedSpy(mqttClient, &MqttClient::disconnected);
     mqttClient->connectToHost("127.0.0.1", 1883);
-    QTRY_VERIFY2(connectedSpy.count() == 1, "Mqtt client didn't connect");
+    if (connectedSpy.count() == 0) {
+        connectedSpy.wait();
+    }
+    QVERIFY2(connectedSpy.count() == 1, "Mqtt client didn't connect");
     QCOMPARE(connectedSpy.first().at(0).value<Mqtt::ConnectReturnCode>(), Mqtt::ConnectReturnCodeIdentifierRejected);
     QCOMPARE(disconnectedSpy.count(), 1); // Connection should drop
 
@@ -322,7 +331,10 @@ void TestMqttBroker::testConnectAuthentication()
     QSignalSpy connectedSpy(mqttClient, &MqttClient::connected);
     QSignalSpy disconnectedSpy(mqttClient, &MqttClient::disconnected);
     mqttClient->connectToHost("127.0.0.1", 1883);
-    QTRY_VERIFY2(connectedSpy.count() == 1, "Mqtt client didn't connect");
+    if (connectedSpy.count() == 0) {
+        connectedSpy.wait();
+    }
+    QVERIFY2(connectedSpy.count() == 1, "Mqtt client didn't connect");
     QCOMPARE(connectedSpy.first().at(0).value<Mqtt::ConnectReturnCode>(), connectReturnCode);
     if (connectReturnCode != Mqtt::ConnectReturnCodeAccepted) {
         QVERIFY2(disconnectedSpy.count() == 1 || disconnectedSpy.wait(), "Client did get disconnected");

@@ -1,4 +1,4 @@
-1.10
+1.11
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -30,6 +30,24 @@
                         "$ref:ParamType"
                     ]
                 }
+            }
+        },
+        "Configuration.DeleteMqttPolicy": {
+            "description": "Delete a MQTT policy from the broker.",
+            "params": {
+                "clientId": "String"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.DeleteMqttServerConfiguration": {
+            "description": "Delete a MQTT Server interface of the server.",
+            "params": {
+                "id": "String"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
             }
         },
         "Configuration.DeleteTcpServerConfiguration": {
@@ -96,6 +114,26 @@
                 ]
             }
         },
+        "Configuration.GetMqttPolicies": {
+            "description": "Get all MQTT broker policies.",
+            "params": {
+            },
+            "returns": {
+                "mqttPolicies": [
+                    "$ref:MqttPolicy"
+                ]
+            }
+        },
+        "Configuration.GetMqttServerConfigurations": {
+            "description": "Get all MQTT Server configurations.",
+            "params": {
+            },
+            "returns": {
+                "mqttServerConfigurations": [
+                    "$ref:ServerConfiguration"
+                ]
+            }
+        },
         "Configuration.GetTimeZones": {
             "description": "Get the list of available timezones.",
             "params": {
@@ -128,6 +166,24 @@
             "description": "Sets the server language to the given language. See also: \"GetAvailableLanguages\"",
             "params": {
                 "language": "String"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.SetMqttPolicy": {
+            "description": "Configure a MQTT broker policy. If the ID is an existing one, the existing policy will be modified, otherwise a new one will be added.",
+            "params": {
+                "policy": "$ref:MqttPolicy"
+            },
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.SetMqttServerConfiguration": {
+            "description": "Configure a MQTT Server interface on the MQTT broker. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Setting authenticationEnabled to true will require MQTT clients to use credentials set in the MQTT broker policies.",
+            "params": {
+                "configuration": "$ref:ServerConfiguration"
             },
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
@@ -847,17 +903,22 @@
         "Configuration.BasicConfigurationChanged": {
             "description": "Emitted whenever the basic configuration of this server changes.",
             "params": {
-                "debugServerEnabled": "Bool",
-                "serverName": "String",
-                "serverTime": "Uint",
-                "serverUuid": "Uuid",
-                "timeZone": "String"
+                "basicConfiguration": {
+                    "debugServerEnabled": "Bool",
+                    "language": "String",
+                    "serverName": "String",
+                    "serverTime": "Uint",
+                    "serverUuid": "Uuid",
+                    "timeZone": "String"
+                }
             }
         },
         "Configuration.CloudConfigurationChanged": {
             "description": "Emitted whenever the cloud configuration is changed.",
             "params": {
-                "enabled": "Bool"
+                "cloudConfiguration": {
+                    "enabled": "Bool"
+                }
             }
         },
         "Configuration.LanguageChanged": {
@@ -866,25 +927,64 @@
                 "language": "String"
             }
         },
+        "Configuration.MqttPolicyChanged": {
+            "description": "Emitted whenever a MQTT broker policy is changed.",
+            "params": {
+                "policy": "$ref:MqttPolicy"
+            }
+        },
+        "Configuration.MqttPolicyRemoved": {
+            "description": "Emitted whenever a MQTT broker policy is removed.",
+            "params": {
+                "clientId": "String"
+            }
+        },
+        "Configuration.MqttServerConfigurationChanged": {
+            "description": "Emitted whenever the MQTT broker configuration is changed.",
+            "params": {
+                "mqttServerConfiguration": "$ref:ServerConfiguration"
+            }
+        },
+        "Configuration.MqttServerConfigurationRemoved": {
+            "description": "Emitted whenever a MQTT server configuration is removed.",
+            "params": {
+                "id": "String"
+            }
+        },
         "Configuration.TcpServerConfigurationChanged": {
             "description": "Emitted whenever the TCP server configuration changes.",
             "params": {
-                "host": "String",
-                "port": "Uint"
+                "tcpServerConfiguration": "$ref:ServerConfiguration"
+            }
+        },
+        "Configuration.TcpServerConfigurationRemoved": {
+            "description": "Emitted whenever a TCP server configuration is removed.",
+            "params": {
+                "id": "String"
             }
         },
         "Configuration.WebServerConfigurationChanged": {
             "description": "Emitted whenever the web server configuration changes.",
             "params": {
-                "host": "String",
-                "port": "Uint"
+                "webServerConfiguration": "$ref:WebServerConfiguration"
+            }
+        },
+        "Configuration.WebServerConfigurationRemoved": {
+            "description": "Emitted whenever a Web server configuration is removed.",
+            "params": {
+                "id": "String"
             }
         },
         "Configuration.WebSocketServerConfigurationChanged": {
             "description": "Emitted whenever the web socket server configuration changes.",
             "params": {
-                "host": "String",
-                "port": "Uint"
+                "webSocketServerConfiguration": "$ref:ServerConfiguration"
+            }
+        },
+        "Configuration.WebSocketServerConfigurationRemoved": {
+            "description": "Emitted whenever a WebSocket server configuration is removed.",
+            "params": {
+                "id": "String"
             }
         },
         "Devices.DeviceAdded": {
@@ -922,7 +1022,8 @@
         "JSONRPC.CloudConnectedChanged": {
             "description": "Emitted whenever the cloud connection status changes.",
             "params": {
-                "connected": "Bool"
+                "connected": "Bool",
+                "connectionState": "$ref:CloudConnectionState"
             }
         },
         "JSONRPC.PushButtonAuthFinished": {
@@ -1074,6 +1175,7 @@
         "BasicType": [
             "Uuid",
             "String",
+            "StringList",
             "Int",
             "Uint",
             "Double",

@@ -524,6 +524,9 @@ void NymeaCore::init() {
     qCDebug(dcApplication) << "Creating Log Engine";
     m_logger = new LogEngine(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), m_configuration->logDBMaxEntries(), this);
 
+    qCDebug(dcApplication()) << "Creating User Manager";
+    m_userManager = new UserManager(NymeaSettings::settingsPath() + "/user-db.sqlite", this);
+
     qCDebug(dcApplication) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_configuration, this);
 
@@ -535,9 +538,6 @@ void NymeaCore::init() {
 
     qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);
-
-    qCDebug(dcApplication()) << "Creating User Manager";
-    m_userManager = new UserManager(NymeaSettings::settingsPath() + "/user-db.sqlite", this);
 
     qCDebug(dcApplication()) << "Creating Tags Storage";
     m_tagsStorage = new TagsStorage(m_deviceManager, m_ruleEngine, this);

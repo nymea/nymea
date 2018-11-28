@@ -1406,6 +1406,13 @@
             "LoggingSourceStates",
             "LoggingSourceRules"
         ],
+        "MqttPolicy": {
+            "allowedPublishTopicFilters": "StringList",
+            "allowedSubscribeTopicFilters": "StringList",
+            "clientId": "String",
+            "password": "String",
+            "username": "String"
+        },
         "NetworkDeviceState": [
             "NetworkDeviceStateUnknown",
             "NetworkDeviceStateUnmanaged",

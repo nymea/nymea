@@ -490,6 +490,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("ServerConfiguration", serverConfigurationDescription());
     allTypes.insert("WebServerConfiguration", serverConfigurationDescription());
     allTypes.insert("Tag", tagDescription());
+    allTypes.insert("MqttPolicy", mqttPolicyDescription());
 
     return allTypes;
 }

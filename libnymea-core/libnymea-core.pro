@@ -3,7 +3,7 @@ TARGET = nymea-core
 
 include(../nymea.pri)
 
-QT += sql qmqtt
+QT += sql
 INCLUDEPATH += $$top_srcdir/libnymea
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto -lavahi-common -lavahi-client -lnymea-mqtt
 

@@ -111,6 +111,11 @@ MqttClient *MqttProviderImplementation::createInternalClient(const DeviceId &dev
     client->setPassword(policy.password);
     client->setAutoReconnect(false);
 
+    connect(client, &MqttClient::destroyed, this, [this, clientId]() {
+        qCDebug(dcMqtt) << "Internal MQTT client destroyed. Removing policy";
+        m_broker->removePolicy(clientId);
+    });
+
     if (preferredConfig.address == QHostAddress::Any
             || preferredConfig.address == QHostAddress::AnyIPv4
             || preferredConfig.address == QHostAddress::LocalHost) {

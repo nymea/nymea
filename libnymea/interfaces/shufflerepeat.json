@@ -3,12 +3,14 @@
     "states": [
         {
             "name": "shuffle",
-            "type": "bool"
+            "type": "bool",
+            "writable": true
         },
         {
             "name": "repeat",
             "type": "string",
-            "allowedValues": ["None", "One", "All"]
+            "allowedValues": ["None", "One", "All"],
+            "writable": true
         }
     ]
 }

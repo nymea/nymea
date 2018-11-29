@@ -8,7 +8,7 @@
         },
         {
             "name": "repeat",
-            "type": "string",
+            "type": "QString",
             "allowedValues": ["None", "One", "All"],
             "writable": true
         }

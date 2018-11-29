@@ -4,12 +4,12 @@
     "states": [
         {
             "name": "playbackStatus",
-            "type": "string",
+            "type": "QString",
             "allowedValues": ["Playing", "Paused", "Stopped"]
         },
         {
             "name": "playerType",
-            "type": "string",
+            "type": "QString",
             "allowedValues": ["audio", "video"]
         }
     ]

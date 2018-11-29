@@ -1,34 +1,10 @@
 {
+    "description": "The mediacontroller interface contains basic actions to control media streams. If a device supports fast forward and rewind, use extendedmediacontroller instead.",
     "extends": "media",
-    "states": [
-        {
-            "name": "mute",
-            "type": "bool",
-            "writable": true
-        },
-        {
-            "name": "volume",
-            "type": "int",
-            "minValue": 0,
-            "maxValue": 100,
-            "writable": true
-        },
-        {
-            "name": "playbackStatus",
-            "type": "QString",
-            "allowedValues": ["Playing", "Paused", "Stopped"],
-            "writable": true
-        }
-
-    ],
     "actions": [
         {
             "name": "skipBack"
         },
-        {
-            "name": "rewind"
-        },
-        {
             "name": "stop"
         },
         {
@@ -36,9 +12,6 @@
         },
         {
             "name": "pause"
-        },
-        {
-            "name": "fastForward"
         },
         {
             "name": "skipNext"

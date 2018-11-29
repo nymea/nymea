@@ -1,0 +1,12 @@
+{
+    "description": "A more advanced media controller interface, supporting fast forward and rewind",
+    "extends": "mediacontroller",
+    "actions": [
+        {
+            "name": "fastRewind"
+        },
+        {
+            "name": "fastForward"
+        }
+    ]
+}

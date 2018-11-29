@@ -1,11 +1,11 @@
 {
+    "description": "Media player interface. Used by devices/services which can play back media.",
     "extends": "media",
     "states": [
         {
             "name": "playbackStatus",
             "type": "string",
-            "allowedValues": ["Playing", "Paused", "Stopped"],
-            "writable": true
+            "allowedValues": ["Playing", "Paused", "Stopped"]
         },
         {
             "name": "playerType",

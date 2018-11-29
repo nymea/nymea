@@ -1,0 +1,14 @@
+{
+    "description": "Devices/services supporting this interface can control reproduction flow. E.g. a media controller, but could also be used by light scenes or other workflows",
+    "states": [
+        {
+            "name": "shuffle",
+            "type": "bool"
+        },
+        {
+            "name": "repeat",
+            "type": "string",
+            "allowedValues": ["None", "One", "All"]
+        }
+    ]
+}

@@ -4,19 +4,19 @@
     "states": [
         {
             "name": "title",
-            "type": "string"
+            "type": "QString"
         },
         {
             "name": "artist",
-            "type": "string"
+            "type": "QString"
         },
         {
             "name": "collection",
-            "type": "string"
+            "type": "QString"
         },
         {
             "name": "artwork",
-            "type": "string"
+            "type": "QString"
         }
     ]
 }

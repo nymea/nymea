@@ -96,7 +96,10 @@ QString Device::name() const
 /*! Set the \a name for this Device. This is visible to the user.*/
 void Device::setName(const QString &name)
 {
-    m_name = name;
+    if (m_name != name) {
+        m_name = name;
+        emit nameChanged();
+    }
 }
 
 /*! Returns the parameter of this Device. It must match the parameter description in the associated \l{DeviceClass}. */

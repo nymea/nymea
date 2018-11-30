@@ -73,6 +73,7 @@ public:
 
 signals:
     void stateValueChanged(const QUuid &stateTypeId, const QVariant &value);
+    void nameChanged();
 
 private:
     Device(const PluginId &pluginId, const DeviceId &id, const DeviceClassId &deviceClassId, QObject *parent = nullptr);

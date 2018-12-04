@@ -72,8 +72,8 @@ HEADERS += devicemanager.h \
         plugintimer.h \
         hardwaremanager.h \
         nymeadbusservice.h \
-    network/mqtt/mqttprovider.h \
-    network/mqtt/mqttchannel.h
+        network/mqtt/mqttprovider.h \
+        network/mqtt/mqttchannel.h
 
 SOURCES += devicemanager.cpp \
         loggingcategories.cpp \
@@ -131,8 +131,8 @@ SOURCES += devicemanager.cpp \
         plugintimer.cpp \
         hardwaremanager.cpp \
         nymeadbusservice.cpp \
-    network/mqtt/mqttprovider.cpp \
-    network/mqtt/mqttchannel.cpp
+        network/mqtt/mqttprovider.cpp \
+        network/mqtt/mqttchannel.cpp
 
 
 # install plugininfo python script for libnymea-dev

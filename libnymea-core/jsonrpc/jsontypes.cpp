@@ -2215,6 +2215,9 @@ QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
     if (variant.canConvert(QVariant::String) && QVariant(variant).convert(QVariant::String)) {
         return report(true, "");
     }
+    if (variant.canConvert(QVariant::StringList) && QVariant(variant).convert(QVariant::StringList)) {
+        return report(true, "");
+    }
     if (variant.canConvert(QVariant::Int) && QVariant(variant).convert(QVariant::Int)) {
         return report(true, "");
     }

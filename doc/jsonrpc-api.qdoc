@@ -1,5 +1,5 @@
 /*!
-In the following section you can find a detaild description of the current API version 1.7.
+In the following section you can find a detaild description of the current API version 1.10.
 \list
 \li \l{Types}
 \li \l{Methods}
@@ -78,6 +78,15 @@ See also: \l{ParamType}
 }
 \endcode
 See also: \l{RepeatingOption}
+\section2 CloudConnectionState
+\code
+[
+    "CloudConnectionStateDisabled", 
+    "CloudConnectionStateUnconfigured", 
+    "CloudConnectionStateConnecting", 
+    "CloudConnectionStateConnected"
+]
+\endcode
 \section2 ConfigurationError
 \code
 [
@@ -644,7 +653,12 @@ See also: \l{Unit}, \l{BasicType}
 
 \section2 TagError
 \code
-"$ref:TagError"
+[
+    "TagErrorNoError", 
+    "TagErrorDeviceNotFound", 
+    "TagErrorRuleNotFound", 
+    "TagErrorTagNotFound"
+]
 \endcode
 \section2 TimeDescriptor
 \code
@@ -729,7 +743,9 @@ See also: \l{RepeatingOption}
     "UnitMilliVolt", 
     "UnitVoltAmpere", 
     "UnitVoltAmpereReactive", 
-    "UnitAmpereHour"
+    "UnitAmpereHour", 
+    "UnitMicroSiemensPerCentimeter", 
+    "UnitDuration"
 ]
 \endcode
 \section2 UserError
@@ -1492,12 +1508,13 @@ Returns
 \code
 {
     "methods": "Object", 
+    "notifications": "Object", 
     "types": "Object"
 }
 \endcode
 
 \section2 JSONRPC.IsCloudConnected
-Check whether the cloud is currently connected.
+Check whether the cloud is currently connected. "connected" will be true whenever connectionState equals CloudConnectionStateConnected and is deprecated. Please use the connectionState value instead.
 Params
 \code
 {}
@@ -1505,10 +1522,11 @@ Params
 Returns
 \code
 {
-    "connected": "Bool"
+    "connected": "Bool", 
+    "connectionState": "$ref:CloudConnectionState"
 }
 \endcode
-
+See also: \l{CloudConnectionState}
 \section2 JSONRPC.KeepAlive
 Keep alive a remote connection. The sessionId is the MQTT topic which has been used to establish the session. It will return false if no ongoing session with the given ID can be found.
 Params
@@ -1570,6 +1588,25 @@ Returns
 }
 \endcode
 
+\section2 JSONRPC.SetupCloudConnection
+Sets up the cloud connection by deploying a certificate and its configuration.
+Params
+\code
+{
+    "certificatePEM": "String", 
+    "endpoint": "String", 
+    "privateKey": "String", 
+    "publicKey": "String", 
+    "rootCA": "String"
+}
+\endcode
+Returns
+\code
+{
+    "success": "Bool"
+}
+\endcode
+
 \section2 JSONRPC.SetupRemoteAccess
 Setup the remote connection by providing AWS token information. This requires the cloud to be connected.
 Params
@@ -1617,7 +1654,15 @@ Returns
 \endcode
 
 \section2 Logging.GetLogEntries
-Get the LogEntries matching the given filter. Each list element of a given filter will be connected with OR to each other. Each of the given filters will be connected with AND to each other.
+Get the LogEntries matching the given filter. The result set will contain entries matching all filter rules combined. If multiple options are given for a single filter type, the result set will contain entries matching any of those. The offset starts at the newest entry in the result set. By default all items are returned. Example: If the specified filter returns a total amount of 100 entries:
+- a offset value of 10 would include the oldest 90 entries
+- a offset value of 0 would return all 100 entries
+
+The offset is particularly useful in combination with the maxCount property and can be used for pagination. E.g. A result set of 10000 entries can be fetched in  batches of 1000 entries by fetching
+1) offset 0, maxCount 1000: Entries 0 to 9999
+2) offset 10000, maxCount 1000: Entries 10000 - 19999
+3) offset 20000, maxCount 1000: Entries 20000 - 29999
+...
 Params
 \code
 {
@@ -1627,12 +1672,14 @@ Params
     "o:eventTypes": [
         "$ref:LoggingEventType"
     ], 
+    "o:limit": "Int", 
     "o:loggingLevels": [
         "$ref:LoggingLevel"
     ], 
     "o:loggingSources": [
         "$ref:LoggingSource"
     ], 
+    "o:offset": "Int", 
     "o:timeFilters": [
         {
             "o:endDate": "Int", 
@@ -1650,10 +1697,12 @@ Params
 Returns
 \code
 {
+    "count": "Int", 
     "loggingError": "$ref:LoggingError", 
     "o:logEntries": [
         "$ref:LogEntry"
-    ]
+    ], 
+    "offset": "Int"
 }
 \endcode
 See also: \l{LogEntry}, \l{LoggingError}, \l{LoggingLevel}, \l{LoggingEventType}, \l{LoggingSource}
@@ -2768,14 +2817,16 @@ See also: \l{Tag}
             "params": {}, 
             "returns": {
                 "methods": "Object", 
+                "notifications": "Object", 
                 "types": "Object"
             }
         }, 
         "JSONRPC.IsCloudConnected": {
-            "description": "Check whether the cloud is currently connected.", 
+            "description": "Check whether the cloud is currently connected. \"connected\" will be true whenever connectionState equals CloudConnectionStateConnected and is deprecated. Please use the connectionState value instead.", 
             "params": {}, 
             "returns": {
-                "connected": "Bool"
+                "connected": "Bool", 
+                "connectionState": "$ref:CloudConnectionState"
             }
         }, 
         "JSONRPC.KeepAlive": {
@@ -2815,6 +2866,19 @@ See also: \l{Tag}
                 "enabled": "Bool"
             }
         }, 
+        "JSONRPC.SetupCloudConnection": {
+            "description": "Sets up the cloud connection by deploying a certificate and its configuration.", 
+            "params": {
+                "certificatePEM": "String", 
+                "endpoint": "String", 
+                "privateKey": "String", 
+                "publicKey": "String", 
+                "rootCA": "String"
+            }, 
+            "returns": {
+                "success": "Bool"
+            }
+        }, 
         "JSONRPC.SetupRemoteAccess": {
             "description": "Setup the remote connection by providing AWS token information. This requires the cloud to be connected.", 
             "params": {
@@ -2844,7 +2908,7 @@ See also: \l{Tag}
             }
         }, 
         "Logging.GetLogEntries": {
-            "description": "Get the LogEntries matching the given filter. Each list element of a given filter will be connected with OR to each other. Each of the given filters will be connected with AND to each other.", 
+            "description": "Get the LogEntries matching the given filter. The result set will contain entries matching all filter rules combined. If multiple options are given for a single filter type, the result set will contain entries matching any of those. The offset starts at the newest entry in the result set. By default all items are returned. Example: If the specified filter returns a total amount of 100 entries:\n- a offset value of 10 would include the oldest 90 entries\n- a offset value of 0 would return all 100 entries\n\nThe offset is particularly useful in combination with the maxCount property and can be used for pagination. E.g. A result set of 10000 entries can be fetched in  batches of 1000 entries by fetching\n1) offset 0, maxCount 1000: Entries 0 to 9999\n2) offset 10000, maxCount 1000: Entries 10000 - 19999\n3) offset 20000, maxCount 1000: Entries 20000 - 29999\n...", 
             "params": {
                 "o:deviceIds": [
                     "Uuid"
@@ -2852,12 +2916,14 @@ See also: \l{Tag}
                 "o:eventTypes": [
                     "$ref:LoggingEventType"
                 ], 
+                "o:limit": "Int", 
                 "o:loggingLevels": [
                     "$ref:LoggingLevel"
                 ], 
                 "o:loggingSources": [
                     "$ref:LoggingSource"
                 ], 
+                "o:offset": "Int", 
                 "o:timeFilters": [
                     {
                         "o:endDate": "Int", 
@@ -2872,10 +2938,12 @@ See also: \l{Tag}
                 ]
             }, 
             "returns": {
+                "count": "Int", 
                 "loggingError": "$ref:LoggingError", 
                 "o:logEntries": [
                     "$ref:LogEntry"
-                ]
+                ], 
+                "offset": "Int"
             }
         }, 
         "NetworkManager.ConnectWifiNetwork": {
@@ -3373,6 +3441,12 @@ See also: \l{Tag}
             "o:repeating": "$ref:RepeatingOption", 
             "o:startTime": "Time"
         }, 
+        "CloudConnectionState": [
+            "CloudConnectionStateDisabled", 
+            "CloudConnectionStateUnconfigured", 
+            "CloudConnectionStateConnecting", 
+            "CloudConnectionStateConnected"
+        ], 
         "ConfigurationError": [
             "ConfigurationErrorNoError", 
             "ConfigurationErrorInvalidTimeZone", 
@@ -3798,7 +3872,12 @@ See also: \l{Tag}
             "o:value": "String", 
             "tagId": "String"
         }, 
-        "TagError": "$ref:TagError", 
+        "TagError": [
+            "TagErrorNoError", 
+            "TagErrorDeviceNotFound", 
+            "TagErrorRuleNotFound", 
+            "TagErrorTagNotFound"
+        ], 
         "TimeDescriptor": {
             "o:calendarItems": [
                 "$ref:CalendarItem"
@@ -3868,7 +3947,9 @@ See also: \l{Tag}
             "UnitMilliVolt", 
             "UnitVoltAmpere", 
             "UnitVoltAmpereReactive", 
-            "UnitAmpereHour"
+            "UnitAmpereHour", 
+            "UnitMicroSiemensPerCentimeter", 
+            "UnitDuration"
         ], 
         "UserError": [
             "UserErrorNoError", 

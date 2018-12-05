@@ -65,6 +65,8 @@
         <file>co2sensor.json</file>
         <file>presencesensor.json</file>
         <file>wirelessconnectable.json</file>
+        <file>navigationpad.json</file>
+        <file>extendednavigationpad.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

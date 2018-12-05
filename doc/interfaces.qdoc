@@ -29,10 +29,6 @@
     A dimmablelight extends this type and adds a brightness property to it. This means, if a DeviceClass implements \l {dimmablelight},
     it also needs to cater for the \l {light} interface's states.
 
-
-    \section1 Available interfaces
-    This following list shows you the current available interfaces.
-
     \include interfacelist.qdoc
 
 */

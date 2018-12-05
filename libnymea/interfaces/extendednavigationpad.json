@@ -1,0 +1,12 @@
+{
+    "description": "The extended media interface offers also the info and menu button of media devices.",
+    "extends": "navigationpad",
+    "actions": [
+        {
+            "name": "navigateMenu"
+        },
+        {
+            "name": "navigateInfo"
+        }
+    ]
+}

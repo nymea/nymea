@@ -1,0 +1,24 @@
+{
+    "description": "Many media devices have a navigation pad for browsing a library or a menu. This interface represents a basic navigation pad.",
+    "extends": "media",
+    "actions": [
+        {
+            "name": "navigateUp"
+        },
+        {
+            "name": "navigateDown"
+        },
+        {
+            "name": "navigateLeft"
+        },
+        {
+            "name": "navigateRight"
+        },
+        {
+            "name": "navigateOk"
+        },
+        {
+            "name": "navigateBack"
+        }
+    ]
+}

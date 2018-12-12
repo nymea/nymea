@@ -21,18 +21,7 @@
 
 #include "nymeatestbase.h"
 #include "nymeacore.h"
-#include "time/timemanager.h"
-#include "devicemanager.h"
-#include "mocktcpserver.h"
-
-#include <QtTest/QtTest>
-#include <QCoreApplication>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QJsonDocument>
-#include <QTimeZone>
-#include <QDateTime>
+#include "servers/mocktcpserver.h"
 
 using namespace nymeaserver;
 

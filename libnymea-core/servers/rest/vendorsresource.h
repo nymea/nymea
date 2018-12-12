@@ -18,61 +18,42 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RULESRESOURCE_H
-#define RULESRESOURCE_H
+#ifndef VENDORSRESOURCE_H
+#define VENDORSRESOURCE_H
 
 #include <QObject>
 #include <QHash>
 
 #include "jsonrpc/jsontypes.h"
 #include "restresource.h"
-#include "httpreply.h"
-
+#include "servers/httpreply.h"
 
 namespace nymeaserver {
 
 class HttpRequest;
 
-class RulesResource : public RestResource
+class VendorsResource : public RestResource
 {
     Q_OBJECT
 public:
-    explicit RulesResource(QObject *parent = 0);
+    explicit VendorsResource(QObject *parent = 0);
 
     QString name() const override;
 
     HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:
-    RuleId m_ruleId;
+    VendorId m_vendorId;
 
     // Process method
     HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessDeleteRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessPostRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessOptionsRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
     // Get methods
-    HttpReply *getRules(const DeviceId &deviceId) const;
-    HttpReply *getRuleDetails(const RuleId &ruleId) const;
-
-    // Delete methods
-    HttpReply *removeRule(const RuleId &ruleId) const;
-
-    // Post methods
-    HttpReply *addRule(const QByteArray &payload) const;
-    HttpReply *enableRule(const RuleId &ruleId) const;
-    HttpReply *disableRule(const RuleId &ruleId) const;
-    HttpReply *executeActions(const RuleId &ruleId) const;
-    HttpReply *executeExitActions(const RuleId &ruleId) const;
-
-
-    // Put methods
-    HttpReply *editRule(const RuleId &ruleId, const QByteArray &payload) const;
+    HttpReply *getVendors() const;
+    HttpReply *getVendor(const VendorId &vendorId) const;
 
 };
 
 }
 
-#endif // RULESRESOURCE_H
+#endif // VENDORSRESOURCE_H

@@ -18,58 +18,60 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RESTSERVER_H
-#define RESTSERVER_H
+#ifndef DEVICECLASSESRESOURCE_H
+#define DEVICECLASSESRESOURCE_H
 
 #include <QObject>
+#include <QHash>
 
-#include "webserver.h"
-#include "jsonrpc/jsonhandler.h"
-#include "devicesresource.h"
-#include "deviceclassesresource.h"
-#include "vendorsresource.h"
-#include "pluginsresource.h"
-#include "rulesresource.h"
-#include "logsresource.h"
+#include "jsonrpc/jsontypes.h"
+#include "restresource.h"
+#include "servers/httpreply.h"
 
-class QSslConfiguration;
 
 namespace nymeaserver {
 
 class HttpRequest;
-class HttpReply;
 
-class RestServer : public QObject
+class DeviceClassesResource : public RestResource
 {
     Q_OBJECT
 public:
-    explicit RestServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = 0);
+    explicit DeviceClassesResource(QObject *parent = 0);
 
-    void registerWebserver(WebServer *webServer);
+    QString name() const override;
+
+    HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:
-    QHash<QUuid, WebServer*> m_clientList;
-    QHash<QString, RestResource *> m_resources;
+    mutable QHash<DeviceClassId, QPointer<HttpReply>> m_discoverRequests;
 
-    QHash<QUuid, HttpReply *> m_asyncReplies;
+    DeviceClass m_deviceClass;
 
-    DevicesResource *m_deviceResource;
-    DeviceClassesResource *m_deviceClassesResource;
-    VendorsResource *m_vendorsResource;
-    PluginsResource *m_pluginsResource;
-    RulesResource *m_rulesResource;
-    LogsResource *m_logsResource;
+    // Process method
+    HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
+
+    // Get methods
+    HttpReply *getDeviceClasses(const VendorId &vendorId);
+    HttpReply *getDeviceClass();
+
+    HttpReply *getActionTypes();
+    HttpReply *getActionType(const ActionTypeId &actionTypeId);
+
+    HttpReply *getStateTypes();
+    HttpReply *getStateType(const StateTypeId &stateTypeId);
+
+    HttpReply *getEventTypes();
+    HttpReply *getEventType(const EventTypeId &eventTypeId);
+
+    HttpReply *getDiscoverdDevices(const ParamList &discoveryParams);
 
 private slots:
-    void setup();
-    void clientConnected(const QUuid &clientId);
-    void clientDisconnected(const QUuid &clientId);
-    
-    void processHttpRequest(const QUuid &clientId, const HttpRequest &request);
-    void asyncReplyFinished();
+    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+
 
 };
 
 }
 
-#endif // RESTSERVER_H
+#endif // DEVICECLASSESRESOURCE_H

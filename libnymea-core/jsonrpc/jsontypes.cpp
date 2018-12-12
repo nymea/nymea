@@ -125,6 +125,7 @@ QVariantMap JsonTypes::s_tokenInfo;
 QVariantMap JsonTypes::s_serverConfiguration;
 QVariantMap JsonTypes::s_webServerConfiguration;
 QVariantMap JsonTypes::s_tag;
+QVariantMap JsonTypes::s_mqttPolicy;
 
 void JsonTypes::init()
 {
@@ -392,6 +393,13 @@ void JsonTypes::init()
     s_webServerConfiguration = s_serverConfiguration;
     s_webServerConfiguration.insert("publicFolder", basicTypeToString(QVariant::String));
 
+    // MQTT
+    s_mqttPolicy.insert("clientId", basicTypeToString(QVariant::String));
+    s_mqttPolicy.insert("username", basicTypeToString(QVariant::String));
+    s_mqttPolicy.insert("password", basicTypeToString(QVariant::String));
+    s_mqttPolicy.insert("allowedPublishTopicFilters", basicTypeToString(QVariant::StringList));
+    s_mqttPolicy.insert("allowedSubscribeTopicFilters", basicTypeToString(QVariant::StringList));
+
     // Tag
     s_tag.insert("o:deviceId", basicTypeToString(QVariant::Uuid));
     s_tag.insert("o:ruleId", basicTypeToString(QVariant::Uuid));
@@ -482,6 +490,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("ServerConfiguration", serverConfigurationDescription());
     allTypes.insert("WebServerConfiguration", serverConfigurationDescription());
     allTypes.insert("Tag", tagDescription());
+    allTypes.insert("MqttPolicy", mqttPolicyDescription());
 
     return allTypes;
 }
@@ -1197,6 +1206,16 @@ QVariantMap JsonTypes::packWebServerConfiguration(const WebServerConfiguration &
     return webServerConfiguration;
 }
 
+QVariantMap JsonTypes::packMqttPolicy(const MqttPolicy &policy)
+{
+    QVariantMap policyMap;
+    policyMap.insert("clientId", policy.clientId);
+    policyMap.insert("username", policy.username);
+    policyMap.insert("password", policy.password);
+    policyMap.insert("allowedPublishTopicFilters", policy.allowedPublishTopicFilters);
+    policyMap.insert("allowedSubscribeTopicFilters", policy.allowedSubscribeTopicFilters);
+    return policyMap;
+}
 
 /*! Returns a variant list containing all rule descriptions. */
 QVariantList JsonTypes::packRuleDescriptions()
@@ -1277,6 +1296,8 @@ QString JsonTypes::basicTypeToString(const QVariant::Type &type)
         return "Uuid";
     case QVariant::String:
         return "String";
+    case QVariant::StringList:
+        return "StringList";
     case QVariant::Int:
         return "Int";
     case QVariant::UInt:
@@ -1674,6 +1695,17 @@ WebServerConfiguration JsonTypes::unpackWebServerConfiguration(const QVariantMap
     return webServerConfiguration;
 }
 
+MqttPolicy JsonTypes::unpackMqttPolicy(const QVariantMap &mqttPolicyMap)
+{
+    MqttPolicy policy;
+    policy.clientId = mqttPolicyMap.value("clientId").toString();
+    policy.username = mqttPolicyMap.value("username").toString();
+    policy.password = mqttPolicyMap.value("password").toString();
+    policy.allowedPublishTopicFilters = mqttPolicyMap.value("allowedPublishTopicFilters").toStringList();
+    policy.allowedSubscribeTopicFilters = mqttPolicyMap.value("allowedSubscribeTopicFilters").toStringList();
+    return policy;
+}
+
 /*! Compairs the given \a map with the given \a templateMap. Returns the error string and false if
     the params are not valid. */
 QPair<bool, QString> JsonTypes::validateMap(const QVariantMap &templateMap, const QVariantMap &map)
@@ -1732,6 +1764,10 @@ QPair<bool, QString> JsonTypes::validateProperty(const QVariant &templateValue, 
     if (strippedTemplateValue == JsonTypes::basicTypeToString(QVariant::String)) {
         QString errorString = QString("Param %1 is not a string.").arg(value.toString());
         return report(value.canConvert(QVariant::String), errorString);
+    }
+    if (strippedTemplateValue == JsonTypes::basicTypeToString(QVariant::StringList)) {
+        QString errorString = QString("Param %1 is not a string list.").arg(value.toString());
+        return report(value.canConvert(QVariant::StringList), errorString);
     }
     if (strippedTemplateValue == JsonTypes::basicTypeToString(QVariant::Bool)) {
         QString errorString = QString("Param %1 is not a bool.").arg(value.toString());
@@ -1980,6 +2016,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qCWarning(dcJsonRpc) << "WebServerConfiguration not matching";
                     return result;
                 }
+            } else if (refName == mqttPolicyRef()) {
+                QPair<bool, QString> result = validateMap(s_mqttPolicy, variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "MqttPolicy not matching";
+                    return result;
+                }
             } else if (refName == tagRef()) {
                 QPair<bool, QString> result = validateMap(tagDescription(), variant.toMap());
                 if (!result.first) {
@@ -2171,6 +2213,9 @@ QPair<bool, QString> JsonTypes::validateBasicType(const QVariant &variant)
         return report(true, "");
     }
     if (variant.canConvert(QVariant::String) && QVariant(variant).convert(QVariant::String)) {
+        return report(true, "");
+    }
+    if (variant.canConvert(QVariant::StringList) && QVariant(variant).convert(QVariant::StringList)) {
         return report(true, "");
     }
     if (variant.canConvert(QVariant::Int) && QVariant(variant).convert(QVariant::Int)) {

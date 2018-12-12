@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2018 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -18,50 +18,48 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PLUGINSRESOURCE_H
-#define PLUGINSRESOURCE_H
-
-#include <QObject>
-#include <QHash>
-
-#include "jsonrpc/jsontypes.h"
-#include "restresource.h"
-#include "httpreply.h"
+#include "mqttchannelimplementation.h"
 
 namespace nymeaserver {
 
-class HttpRequest;
-
-class PluginsResource : public RestResource
+MqttChannelImplementation::MqttChannelImplementation() : MqttChannel()
 {
-    Q_OBJECT
-public:
-    explicit PluginsResource(QObject *parent = 0);
-
-    QString name() const override;
-
-    HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-
-private:
-    PluginId m_pluginId;
-
-    // Process method
-    HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessPutRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-    HttpReply *proccessOptionsRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-
-    // Get methods
-    HttpReply *getPlugins() const;
-    HttpReply *getPlugin(const PluginId &pluginId) const;
-    HttpReply *getPluginConfiguration(const PluginId &pluginId) const;
-    HttpReply *setPluginConfiguration(const PluginId &pluginId, const QByteArray &payload) const;
-
-    // Put methods
-
-
-    DevicePlugin *findPlugin(const PluginId &pluginId) const;
-};
 
 }
 
-#endif // PLUGINSRESOURCE_H
+QString MqttChannelImplementation::clientId() const
+{
+    return m_clientId;
+}
+
+QString MqttChannelImplementation::username() const
+{
+    return m_username;
+}
+
+QString MqttChannelImplementation::password() const
+{
+    return m_password;
+}
+
+QHostAddress MqttChannelImplementation::serverAddress() const
+{
+    return m_serverAddress;
+}
+
+quint16 MqttChannelImplementation::serverPort() const
+{
+    return m_serverPort;
+}
+
+QString MqttChannelImplementation::topicPrefix() const
+{
+    return m_topicPrefix;
+}
+
+void MqttChannelImplementation::publish(const QString &topic, const QByteArray &payload)
+{
+    emit pluginPublished(topic, payload);
+}
+
+}

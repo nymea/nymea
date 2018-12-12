@@ -24,24 +24,29 @@
 #include <QObject>
 
 #include "loggingcategories.h"
-#include "jsonrpc/jsonrpcserver.h"
-#include "rest/restserver.h"
-#include "websocketserver.h"
-#include "bluetoothserver.h"
-#include "tcpserver.h"
-#include "mocktcpserver.h"
+#include "nymeaconfiguration.h"
 
-class QSslConfiguration;
-class QSslCertificate;
-class QSslKey;
+#include <QSslConfiguration>
+#include <QSslKey>
+
+class MockTcpServer;
 
 namespace nymeaserver {
+
+class NymeaConfiguration;
+class JsonRPCServer;
+class TcpServer;
+class WebSocketServer;
+class WebServer;
+class BluetoothServer;
+class RestServer;
+class MqttBroker;
 
 class ServerManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ServerManager(NymeaConfiguration *configuration, QObject *parent = 0);
+    explicit ServerManager(NymeaConfiguration *configuration, QObject *parent = nullptr);
 
     // Interfaces
     JsonRPCServer *jsonServer() const;
@@ -51,6 +56,8 @@ public:
 
     MockTcpServer *mockTcpServer() const;
 
+    MqttBroker *mqttBroker() const;
+
 private slots:
     void tcpServerConfigurationChanged(const QString &id);
     void tcpServerConfigurationRemoved(const QString &id);
@@ -58,6 +65,10 @@ private slots:
     void webSocketServerConfigurationRemoved(const QString &id);
     void webServerConfigurationChanged(const QString &id);
     void webServerConfigurationRemoved(const QString &id);
+    void mqttServerConfigurationChanged(const QString &id);
+    void mqttServerConfigurationRemoved(const QString &id);
+    void mqttPolicyChanged(const QString &clientId);
+    void mqttPolicyRemoved(const QString &clientId);
 
 private:
     // Interfaces
@@ -69,6 +80,8 @@ private:
     QHash<QString, WebSocketServer*> m_webSocketServers;
     QHash<QString, WebServer*> m_webServers;
     MockTcpServer *m_mockTcpServer;
+
+    MqttBroker *m_mqttBroker;
 
     // Encrytption and stuff
     QSslConfiguration m_sslConfiguration;

@@ -20,23 +20,9 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "nymeatestbase.h"
-#include "mocktcpserver.h"
 #include "nymeacore.h"
 #include "nymeasettings.h"
-#include "devicemanager.h"
-#include "loggingcategories.h"
-#include "logging/logengine.h"
-#include "jsonrpc/jsontypes.h"
-
-#include <QVariantMap>
-#include <QJsonDocument>
-#include <QJsonParseError>
-#include <QSignalSpy>
-#include <QtTest>
-#include <QDebug>
-#include <QMetaType>
-#include <QNetworkRequest>
-#include <QNetworkReply>
+#include "servers/mocktcpserver.h"
 
 using namespace nymeaserver;
 
@@ -244,7 +230,7 @@ QVariant NymeaTestBase::checkNotification(const QSignalSpy &spy, const QString &
 
 QVariantList NymeaTestBase::checkNotifications(const QSignalSpy &spy, const QString &notification)
 {
-    //qDebug() << "Got" << spy.count() << "notifications while waiting for" << notification;
+//    qWarning() << "Got" << spy.count() << "notifications while waiting for" << notification;
     QVariantList notificationList;
     for (int i = 0; i < spy.count(); i++) {
         // Make sure the response it a valid JSON string

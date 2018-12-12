@@ -24,8 +24,8 @@
 #include <QObject>
 #include <QPair>
 
-#include "httpreply.h"
-#include "httprequest.h"
+#include "servers/httpreply.h"
+#include "servers/httprequest.h"
 #include "jsonrpc/jsontypes.h"
 
 class QVariant;

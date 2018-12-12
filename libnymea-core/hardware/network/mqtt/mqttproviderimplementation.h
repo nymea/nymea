@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2018 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -18,60 +18,43 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICECLASSESRESOURCE_H
-#define DEVICECLASSESRESOURCE_H
+#ifndef MQTTPROVIDERIMPLEMENTATION_H
+#define MQTTPROVIDERIMPLEMENTATION_H
 
 #include <QObject>
-#include <QHash>
 
-#include "jsonrpc/jsontypes.h"
-#include "restresource.h"
-#include "httpreply.h"
+#include "servers/mqttbroker.h"
 
-
+#include "network/mqtt/mqttprovider.h"
 namespace nymeaserver {
 
-class HttpRequest;
-
-class DeviceClassesResource : public RestResource
+class MqttProviderImplementation : public MqttProvider
 {
     Q_OBJECT
 public:
-    explicit DeviceClassesResource(QObject *parent = 0);
+    explicit MqttProviderImplementation(MqttBroker *broker, QObject *parent = nullptr);
 
-    QString name() const override;
+    MqttChannel* createChannel(const DeviceId &deviceId, const QHostAddress &clientAddress) override;
+    void releaseChannel(MqttChannel* channel) override;
 
-    HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
+    MqttClient* createInternalClient(const DeviceId &deviceId) override;
 
-private:
-    mutable QHash<DeviceClassId, QPointer<HttpReply>> m_discoverRequests;
-
-    DeviceClass m_deviceClass;
-
-    // Process method
-    HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
-
-    // Get methods
-    HttpReply *getDeviceClasses(const VendorId &vendorId);
-    HttpReply *getDeviceClass();
-
-    HttpReply *getActionTypes();
-    HttpReply *getActionType(const ActionTypeId &actionTypeId);
-
-    HttpReply *getStateTypes();
-    HttpReply *getStateType(const StateTypeId &stateTypeId);
-
-    HttpReply *getEventTypes();
-    HttpReply *getEventType(const EventTypeId &eventTypeId);
-
-    HttpReply *getDiscoverdDevices(const ParamList &discoveryParams);
+    bool available() const override;
+    bool enabled() const override;
+    void setEnabled(bool enabled) override;
 
 private slots:
-    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+    void onClientConnected(const QString &clientId);
+    void onClientDisconnected(const QString &clientId);
+    void onPublishReceived(const QString &clientId, const QString &topic, const QByteArray &payload);
+    void onPluginPublished(const QString &topic, const QByteArray &payload);
 
+private:
+    MqttBroker* m_broker = nullptr;
 
+    QHash<QString, MqttChannel*> m_createdChannels;
 };
 
 }
 
-#endif // DEVICECLASSESRESOURCE_H
+#endif // MQTTPROVIDERIMPLEMENTATION_H

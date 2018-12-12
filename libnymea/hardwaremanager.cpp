@@ -57,6 +57,11 @@
     Returns the BluetoothLowEnergyManager \l{HardwareResource}.
 */
 
+/*! \fn MqttProvider* HardwareManager::mqttProvider();
+    Returns the MqttProvider \l{HardwareResource}.
+*/
+
+
 #include "hardwaremanager.h"
 #include "hardwareresource.h"
 

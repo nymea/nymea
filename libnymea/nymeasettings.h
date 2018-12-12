@@ -41,7 +41,8 @@ public:
         SettingsRolePlugins,
         SettingsRoleGlobal,
         SettingsRoleDeviceStates,
-        SettingsRoleTags
+        SettingsRoleTags,
+        SettingsRoleMqttPolicies,
     };
 
     explicit NymeaSettings(const SettingsRole &role = SettingsRoleNone, QObject *parent = nullptr);

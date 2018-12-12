@@ -106,6 +106,7 @@ public:
     enum BasicType {
         Uuid,
         String,
+        StringList,
         Int,
         Uint,
         Double,
@@ -176,6 +177,7 @@ public:
     DECLARE_OBJECT(serverConfiguration, "ServerConfiguration")
     DECLARE_OBJECT(webServerConfiguration, "WebServerConfiguration")
     DECLARE_OBJECT(tag, "Tag")
+    DECLARE_OBJECT(mqttPolicy, "MqttPolicy")
 
     // pack types
     static QVariantMap packEventType(const EventType &eventType);
@@ -220,6 +222,7 @@ public:
     static QVariantMap packBasicConfiguration();
     static QVariantMap packServerConfiguration(const ServerConfiguration &config);
     static QVariantMap packWebServerConfiguration(const WebServerConfiguration &config);
+    static QVariantMap packMqttPolicy(const MqttPolicy &policy);
 
     static QVariantList packRuleDescriptions();
     static QVariantList packRuleDescriptions(const QList<Rule> &rules);
@@ -254,6 +257,7 @@ public:
 
     static ServerConfiguration unpackServerConfiguration(const QVariantMap &serverConfigurationMap);
     static WebServerConfiguration unpackWebServerConfiguration(const QVariantMap &webServerConfigurationMap);
+    static MqttPolicy unpackMqttPolicy(const QVariantMap &mqttPolicyMap);
 
     // validate
     static QPair<bool, QString> validateMap(const QVariantMap &templateMap, const QVariantMap &map);

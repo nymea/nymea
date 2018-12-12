@@ -18,42 +18,58 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef VENDORSRESOURCE_H
-#define VENDORSRESOURCE_H
+#ifndef RESTSERVER_H
+#define RESTSERVER_H
 
 #include <QObject>
-#include <QHash>
 
-#include "jsonrpc/jsontypes.h"
-#include "restresource.h"
-#include "httpreply.h"
+#include "servers/webserver.h"
+#include "jsonrpc/jsonhandler.h"
+#include "devicesresource.h"
+#include "deviceclassesresource.h"
+#include "vendorsresource.h"
+#include "pluginsresource.h"
+#include "rulesresource.h"
+#include "logsresource.h"
+
+class QSslConfiguration;
 
 namespace nymeaserver {
 
 class HttpRequest;
+class HttpReply;
 
-class VendorsResource : public RestResource
+class RestServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit VendorsResource(QObject *parent = 0);
+    explicit RestServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = 0);
 
-    QString name() const override;
-
-    HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
+    void registerWebserver(WebServer *webServer);
 
 private:
-    VendorId m_vendorId;
+    QHash<QUuid, WebServer*> m_clientList;
+    QHash<QString, RestResource *> m_resources;
 
-    // Process method
-    HttpReply *proccessGetRequest(const HttpRequest &request, const QStringList &urlTokens) override;
+    QHash<QUuid, HttpReply *> m_asyncReplies;
 
-    // Get methods
-    HttpReply *getVendors() const;
-    HttpReply *getVendor(const VendorId &vendorId) const;
+    DevicesResource *m_deviceResource;
+    DeviceClassesResource *m_deviceClassesResource;
+    VendorsResource *m_vendorsResource;
+    PluginsResource *m_pluginsResource;
+    RulesResource *m_rulesResource;
+    LogsResource *m_logsResource;
+
+private slots:
+    void setup();
+    void clientConnected(const QUuid &clientId);
+    void clientDisconnected(const QUuid &clientId);
+    
+    void processHttpRequest(const QUuid &clientId, const HttpRequest &request);
+    void asyncReplyFinished();
 
 };
 
 }
 
-#endif // VENDORSRESOURCE_H
+#endif // RESTSERVER_H

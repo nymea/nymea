@@ -33,6 +33,7 @@
 #include <QtDebug>
 #include <QString>
 #include <QFile>
+#include <QDir>
 
 #include "stdio.h"
 #include "unistd.h"
@@ -130,7 +131,8 @@ int main(int argc, char *argv[])
         "Janus",
         "JanusTraffic",
         "BluetoothServer",
-        "BluetoothServerTraffic"
+        "BluetoothServerTraffic",
+        "Mqtt"
     };
 
     QStringList loggingFiltersPlugins;

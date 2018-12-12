@@ -38,6 +38,15 @@
 #include "certificategenerator.h"
 #include "nymeasettings.h"
 
+#include "jsonrpc/jsonrpcserver.h"
+#include "servers/mocktcpserver.h"
+#include "servers/tcpserver.h"
+#include "servers/rest/restserver.h"
+#include "servers/websocketserver.h"
+#include "servers/webserver.h"
+#include "servers/bluetoothserver.h"
+#include "servers/mqttbroker.h"
+
 #include <QSslCertificate>
 #include <QSslConfiguration>
 #include <QSslKey>
@@ -121,12 +130,22 @@ ServerManager::ServerManager(NymeaConfiguration *configuration, QObject *parent)
         m_webServers.insert(config.id, webServer);
     }
 
+    m_mqttBroker = new MqttBroker(this);
+    foreach (const ServerConfiguration &config, configuration->mqttServerConfigurations()) {
+        m_mqttBroker->startServer(config);
+    }
+    m_mqttBroker->updatePolicies(configuration->mqttPolicies().values());
+
     connect(configuration, &NymeaConfiguration::tcpServerConfigurationChanged, this, &ServerManager::tcpServerConfigurationChanged);
     connect(configuration, &NymeaConfiguration::tcpServerConfigurationRemoved, this, &ServerManager::tcpServerConfigurationRemoved);
     connect(configuration, &NymeaConfiguration::webSocketServerConfigurationChanged, this, &ServerManager::webSocketServerConfigurationChanged);
     connect(configuration, &NymeaConfiguration::webSocketServerConfigurationRemoved, this, &ServerManager::webSocketServerConfigurationRemoved);
     connect(configuration, &NymeaConfiguration::webServerConfigurationChanged, this, &ServerManager::webServerConfigurationChanged);
     connect(configuration, &NymeaConfiguration::webServerConfigurationRemoved, this, &ServerManager::webServerConfigurationRemoved);
+    connect(configuration, &NymeaConfiguration::mqttServerConfigurationChanged, this, &ServerManager::mqttServerConfigurationChanged);
+    connect(configuration, &NymeaConfiguration::mqttServerConfigurationRemoved, this, &ServerManager::mqttServerConfigurationRemoved);
+    connect(configuration, &NymeaConfiguration::mqttPolicyChanged, this, &ServerManager::mqttPolicyChanged);
+    connect(configuration, &NymeaConfiguration::mqttPolicyRemoved, this, &ServerManager::mqttPolicyRemoved);
 }
 
 /*! Returns the pointer to the created \l{JsonRPCServer} in this \l{ServerManager}. */
@@ -151,6 +170,11 @@ BluetoothServer *ServerManager::bluetoothServer() const
 MockTcpServer *ServerManager::mockTcpServer() const
 {
     return m_mockTcpServer;
+}
+
+MqttBroker *ServerManager::mqttBroker() const
+{
+    return m_mqttBroker;
 }
 
 void ServerManager::tcpServerConfigurationChanged(const QString &id)
@@ -236,6 +260,30 @@ void ServerManager::webServerConfigurationRemoved(const QString &id)
     WebServer *server = m_webServers.take(id);
     server->stopServer();
     server->deleteLater();
+}
+
+void ServerManager::mqttServerConfigurationChanged(const QString &id)
+{
+    ServerConfiguration config = NymeaCore::instance()->configuration()->mqttServerConfigurations().value(id);
+    if (m_mqttBroker->isRunning(id)) {
+        m_mqttBroker->stopServer(id);
+    }
+    m_mqttBroker->startServer(config, m_sslConfiguration);
+}
+
+void ServerManager::mqttServerConfigurationRemoved(const QString &id)
+{
+    m_mqttBroker->stopServer(id);
+}
+
+void ServerManager::mqttPolicyChanged(const QString &clientId)
+{
+    m_mqttBroker->updatePolicy(NymeaCore::instance()->configuration()->mqttPolicies().value(clientId));
+}
+
+void ServerManager::mqttPolicyRemoved(const QString &clientId)
+{
+    m_mqttBroker->removePolicy(clientId);
 }
 
 bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName)

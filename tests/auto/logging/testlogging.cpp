@@ -21,17 +21,9 @@
 
 #include "nymeatestbase.h"
 #include "nymeacore.h"
-#include "devicemanager.h"
 #include "nymeasettings.h"
-#include "logging/logentry.h"
 #include "logging/logvaluetool.h"
-#include "plugin/deviceplugin.h"
-
-#include <QDebug>
-#include <QSignalSpy>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
+#include "servers/mocktcpserver.h"
 
 using namespace nymeaserver;
 
@@ -152,14 +144,19 @@ void TestLogging::systemLogs()
     QVariantList logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
     QVERIFY(logEntries.count() == 2);
 
-    QVariantMap logEntryShutdown = logEntries.first().toMap();
+    QVariantMap logEntryStartup = logEntries.first().toMap();
+    QVariantMap logEntryShutdown = logEntries.last().toMap();
+    // We cannot rely on the order those events
+    if (!logEntryStartup.value("active").toBool()) {
+        logEntryStartup = logEntries.last().toMap();
+        logEntryShutdown = logEntries.first().toMap();
+    }
 
     QCOMPARE(logEntryShutdown.value("active").toBool(), false);
     QCOMPARE(logEntryShutdown.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeActiveChange));
     QCOMPARE(logEntryShutdown.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceSystem));
     QCOMPARE(logEntryShutdown.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
 
-    QVariantMap logEntryStartup = logEntries.last().toMap();
 
     QCOMPARE(logEntryStartup.value("active").toBool(), true);
     QCOMPARE(logEntryStartup.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeActiveChange));

@@ -3,9 +3,9 @@ TARGET = nymea-core
 
 include(../nymea.pri)
 
-QT += sql qmqtt
+QT += sql
 INCLUDEPATH += $$top_srcdir/libnymea
-LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto -lavahi-common -lavahi-client
+LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto -lavahi-common -lavahi-client -lnymea-mqtt
 
 target.path = /usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')
 INSTALLS += target
@@ -16,19 +16,28 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 
 HEADERS += nymeacore.h \
-    tcpserver.h \
-    mocktcpserver.h \
     ruleengine.h \
     rule.h \
     stateevaluator.h \
-    webserver.h \
     transportinterface.h \
-    servermanager.h \
-    httprequest.h \
-    websocketserver.h \
-    httpreply.h \
     nymeaconfiguration.h \
-    bluetoothserver.h \
+    servermanager.h \
+    servers/tcpserver.h \
+    servers/mocktcpserver.h \
+    servers/webserver.h \
+    servers/httprequest.h \
+    servers/httpreply.h \
+    servers/bluetoothserver.h \
+    servers/rest/restserver.h \
+    servers/rest/restresource.h \
+    servers/rest/devicesresource.h \
+    servers/rest/deviceclassesresource.h \
+    servers/rest/vendorsresource.h \
+    servers/rest/logsresource.h \
+    servers/rest/pluginsresource.h \
+    servers/rest/rulesresource.h \
+    servers/websocketserver.h \
+    servers/mqttbroker.h \
     jsonrpc/jsonrpcserver.h \
     jsonrpc/jsonhandler.h \
     jsonrpc/devicehandler.h \
@@ -45,14 +54,6 @@ HEADERS += nymeacore.h \
     logging/logfilter.h \
     logging/logentry.h \
     logging/logvaluetool.h \
-    rest/restserver.h \
-    rest/restresource.h \
-    rest/devicesresource.h \
-    rest/deviceclassesresource.h \
-    rest/vendorsresource.h \
-    rest/logsresource.h \
-    rest/pluginsresource.h \
-    rest/rulesresource.h \
     time/timedescriptor.h \
     time/calendaritem.h \
     time/repeatingoption.h \
@@ -92,6 +93,8 @@ HEADERS += nymeacore.h \
     hardware/network/avahi/qtavahiservice_p.h \
     hardware/network/avahi/qtavahiservicebrowserimplementation.h \
     hardware/network/avahi/qtavahiservicebrowserimplementation_p.h \
+    hardware/network/mqtt/mqttproviderimplementation.h \
+    hardware/network/mqtt/mqttchannelimplementation.h \
     debugserverhandler.h \
     tagging/tagsstorage.h \
     tagging/tag.h \
@@ -100,19 +103,28 @@ HEADERS += nymeacore.h \
     debugreportgenerator.h
 
 SOURCES += nymeacore.cpp \
-    tcpserver.cpp \
-    mocktcpserver.cpp \
     ruleengine.cpp \
     rule.cpp \
     stateevaluator.cpp \
-    webserver.cpp \
     transportinterface.cpp \
-    servermanager.cpp \
-    httprequest.cpp \
-    websocketserver.cpp \
-    httpreply.cpp \
     nymeaconfiguration.cpp \
-    bluetoothserver.cpp \
+    servermanager.cpp \
+    servers/tcpserver.cpp \
+    servers/mocktcpserver.cpp \
+    servers/webserver.cpp \
+    servers/httprequest.cpp \
+    servers/httpreply.cpp \
+    servers/websocketserver.cpp \
+    servers/bluetoothserver.cpp \
+    servers/rest/restserver.cpp \
+    servers/rest/restresource.cpp \
+    servers/rest/devicesresource.cpp \
+    servers/rest/deviceclassesresource.cpp \
+    servers/rest/vendorsresource.cpp \
+    servers/rest/logsresource.cpp \
+    servers/rest/pluginsresource.cpp \
+    servers/rest/rulesresource.cpp \
+    servers/mqttbroker.cpp \
     jsonrpc/jsonrpcserver.cpp \
     jsonrpc/jsonhandler.cpp \
     jsonrpc/devicehandler.cpp \
@@ -128,14 +140,6 @@ SOURCES += nymeacore.cpp \
     logging/logfilter.cpp \
     logging/logentry.cpp \
     logging/logvaluetool.cpp \
-    rest/restserver.cpp \
-    rest/restresource.cpp \
-    rest/devicesresource.cpp \
-    rest/deviceclassesresource.cpp \
-    rest/vendorsresource.cpp \
-    rest/logsresource.cpp \
-    rest/pluginsresource.cpp \
-    rest/rulesresource.cpp \
     time/timedescriptor.cpp \
     time/calendaritem.cpp \
     time/repeatingoption.cpp \
@@ -174,9 +178,11 @@ SOURCES += nymeacore.cpp \
     hardware/network/avahi/qtavahiservice_p.cpp \
     hardware/network/avahi/qtavahiservicebrowserimplementation.cpp \
     hardware/network/avahi/qtavahiservicebrowserimplementation_p.cpp \
+    hardware/network/mqtt/mqttproviderimplementation.cpp \
+    hardware/network/mqtt/mqttchannelimplementation.cpp \
     debugserverhandler.cpp \
     tagging/tagsstorage.cpp \
     tagging/tag.cpp \
     jsonrpc/tagshandler.cpp \
     cloud/cloudtransport.cpp \
-    debugreportgenerator.cpp
+    debugreportgenerator.cpp \

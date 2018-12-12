@@ -54,7 +54,6 @@
 #include "eventhandler.h"
 #include "logginghandler.h"
 #include "statehandler.h"
-#include "websocketserver.h"
 #include "configurationhandler.h"
 #include "networkmanagerhandler.h"
 #include "tagshandler.h"
@@ -204,6 +203,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     params.clear(); returns.clear();
     setDescription("CloudConnectedChanged", "Emitted whenever the cloud connection status changes.");
     params.insert("connected", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    params.insert("connectionState", JsonTypes::cloudConnectionStateRef());
     setParams("CloudConnectedChanged", params);
 
     params.clear();
@@ -608,15 +608,15 @@ void JsonRPCServer::processJsonPacket(TransportInterface *interface, const QUuid
         reply->startWait();
     } else {
         Q_ASSERT_X((targetNamespace == "JSONRPC" && method == "Introspect") || handler->validateReturns(method, reply->data()).first
-                   ,"validating return value", formatAssertion(targetNamespace, method, handler, reply->data()).toLatin1().data());
+                   ,"validating return value", formatAssertion(targetNamespace, method, QMetaMethod::Method, handler, reply->data()).toLatin1().data());
         sendResponse(interface, clientId, commandId, reply->data());
         reply->deleteLater();
     }
 }
 
-QString JsonRPCServer::formatAssertion(const QString &targetNamespace, const QString &method, JsonHandler *handler, const QVariantMap &data) const
+QString JsonRPCServer::formatAssertion(const QString &targetNamespace, const QString &method, QMetaMethod::MethodType methodType, JsonHandler *handler, const QVariantMap &data) const
 {
-    QJsonDocument doc = QJsonDocument::fromVariant(handler->introspect(QMetaMethod::Method).value(targetNamespace + "." + method));
+    QJsonDocument doc = QJsonDocument::fromVariant(handler->introspect(methodType).value(targetNamespace + "." + method));
     QJsonDocument doc2 = QJsonDocument::fromVariant(data);
     return QString("\nMethod: %1\nTemplate: %2\nValue: %3")
             .arg(targetNamespace + "." + method)
@@ -634,6 +634,7 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
     notification.insert("notification", handler->name() + "." + method.name());
     notification.insert("params", params);
 
+    Q_ASSERT_X(handler->validateParams(method.name(), params).first, "validating return value", formatAssertion(handler->name(), method.name(), QMetaMethod::Signal, handler, notification).toLatin1().data());
     QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
     qCDebug(dcJsonRpcTraffic()) << "Sending notification:" << data;
 
@@ -653,7 +654,7 @@ void JsonRPCServer::asyncReplyFinished()
     }
     if (!reply->timedOut()) {
         Q_ASSERT_X(reply->handler()->validateReturns(reply->method(), reply->data()).first
-                   ,"validating return value", formatAssertion(reply->handler()->name(), reply->method(), reply->handler(), reply->data()).toLatin1().data());
+                   ,"validating return value", formatAssertion(reply->handler()->name(), reply->method(), QMetaMethod::Method, reply->handler(), reply->data()).toLatin1().data());
         sendResponse(interface, reply->clientId(), reply->commandId(), reply->data());
     } else {
         sendErrorResponse(interface, reply->clientId(), reply->commandId(), "Command timed out");

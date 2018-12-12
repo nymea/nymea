@@ -36,7 +36,7 @@
 */
 
 #include "rulesresource.h"
-#include "httprequest.h"
+#include "servers/httprequest.h"
 #include "typeutils.h"
 #include "loggingcategories.h"
 #include "nymeacore.h"

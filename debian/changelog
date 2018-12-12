@@ -1,7 +1,11 @@
-nymea (0.10.0) UNRELEASED; urgency=medium
+nymea (0.10.0) xenial; urgency=medium
 
+  [ Michael Zanetti ]
+  * emit a signal when a device name is changed so plugins can act on it
+  * Add an MQTT broker
+  * Add noisesensor and co2sensor interfaces
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Wed, 28 Nov 2018 22:38:45 +0100
+ -- Jenkins <jenkins@nymea.io>  Wed, 12 Dec 2018 14:44:45 +0100
 
 nymea (0.9.39) xenial; urgency=medium
 

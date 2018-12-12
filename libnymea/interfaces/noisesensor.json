@@ -1,0 +1,11 @@
+{
+    "extends": "sensor",
+    "description": "A sensor interface for noise sensors. Should deliver a median noise level in regular intervals. This is meant for overall noise level monitoring (e.g. in buildings) and not real time audio processing.",
+    "states": [
+        {
+            "name": "noise",
+            "type": "double",
+            "unit": "Dezibel"
+        }
+    ]
+}

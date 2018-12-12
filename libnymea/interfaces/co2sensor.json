@@ -1,0 +1,11 @@
+{
+    "extends": "sensor",
+    "description": "CO2 sensors. Measures co2 in parts per million.",
+    "states": [
+        {
+            "name": "co2",
+            "type": "double",
+            "unit": "PartsPerMillion"
+        }
+    ]
+}

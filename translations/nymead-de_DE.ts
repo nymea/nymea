@@ -64,7 +64,7 @@
 <context>
     <name>nymea</name>
     <message>
-        <location filename="../server/main.cpp" line="156"/>
+        <location filename="../server/main.cpp" line="158"/>
         <source>
 nymea is an open source IoT (Internet of Things) server, 
 which allows to control a lot of different devices from many different 
@@ -79,12 +79,12 @@ nymea ist ein Open-Source-IoT (Internet der Dinge) Server, der es ermöglicht, v
 </translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="168"/>
+        <location filename="../server/main.cpp" line="170"/>
         <source>Run nymead in the foreground, not as daemon.</source>
         <translation>Führe Nymead im Vordergrund aus, nicht als Daemon.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="171"/>
+        <location filename="../server/main.cpp" line="173"/>
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Suffix with &quot;Warnings&quot; to address warnings.
 Examples:
 -d AWSTraffic
@@ -95,22 +95,22 @@ Categories are:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="183"/>
+        <location filename="../server/main.cpp" line="185"/>
         <source>Enables all debug categories except *Traffic and *Debug categories. Single debug categories can be disabled again with -d parameter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="186"/>
+        <location filename="../server/main.cpp" line="188"/>
         <source>Specify a log file to write to, if this option is not specified, logs will be printed to the standard output.</source>
         <translation>Geben Sie eine Log-datei an, in die geschrieben werden soll. Wenn diese Option nicht angegeben wird, werden Protokolle auf die Standardausgabe gedruckt.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="189"/>
+        <location filename="../server/main.cpp" line="191"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
         <translation>Falls angegeben, werden alle D-Bus Schnittstellen auf dem Sitzungs-Bus anstatt auf dem System-Bus zur Verfügung gestellt.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="230"/>
+        <location filename="../server/main.cpp" line="232"/>
         <source>No such debug category:</source>
         <translation>Diese Debug-Kategorie existiert nicht:</translation>
     </message>
@@ -118,27 +118,27 @@ Categories are:</source>
 <context>
     <name>nymeaserver::DebugServerHandler</name>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="732"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1590"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="768"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1676"/>
         <source>Debug nymea</source>
         <extracomment>The header title of the debug server interface</extracomment>
         <translation>Debug nymea</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="749"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="785"/>
         <source>nymea debug interface</source>
         <extracomment>The main title of the debug server interface</extracomment>
         <translation>nymea Debug-Schnittstelle</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="762"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="798"/>
         <source>Information</source>
         <extracomment>The name of the section tab in the debug server interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="778"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1422"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="814"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1508"/>
         <source>Network</source>
         <extracomment>The name of the section tab in the debug server interface
 ----------
@@ -146,174 +146,174 @@ The network section of the debug interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="802"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="838"/>
         <source>Welcome to the debug interface.</source>
         <extracomment>The welcome message of the debug interface</extracomment>
         <translation>Willkommen bei der Debug-Schnittstelle.</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="803"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="839"/>
         <source>This debug interface was designed to provide an easy possibility to get helpful information about the running nymea server.</source>
         <translation>Diese Debug-Oberfläche wurde entwickelt, um eine einfache Möglichkeit zu geben, hilfreiche Informationen über den laufenden nymea-Server zu erhalten.</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="819"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="855"/>
         <source>Be aware that this debug interface is a security risk and could offer access to sensible data.</source>
         <extracomment>The warning message of the debug interface</extracomment>
         <translation>Beachten Sie, dass diese Debug-Schnittstelle ein Sicherheitsrisiko darstellt und Zugriff auf sensible Daten bieten könnte.</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="827"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="863"/>
         <source>Server information</source>
         <extracomment>The server information section of the debug interface</extracomment>
         <translation>Server Information</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="834"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="870"/>
         <source>User</source>
         <extracomment>The user name in the server infromation section of the debug interface</extracomment>
         <translation>Benutzer</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="840"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="876"/>
         <source>Compiled with Qt version</source>
         <extracomment>The Qt build version description in the server infromation section of the debug interface</extracomment>
         <translation>Kompiliert mit Qt-Version</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="846"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="882"/>
         <source>Qt runtime version</source>
         <extracomment>The Qt runtime version description in the server infromation section of the debug interface</extracomment>
         <translation>Qt Runtime-Version</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="852"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="888"/>
         <source>Command</source>
         <extracomment>The command description in the server infromation section of the debug interface</extracomment>
         <translation>Kommando</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="861"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="897"/>
         <source>Snap name</source>
         <extracomment>The snap name description in the server infromation section of the debug interface</extracomment>
         <translation>Snap Name</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="867"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="903"/>
         <source>Snap version</source>
         <extracomment>The snap version description in the server infromation section of the debug interface</extracomment>
         <translation>Snap Version</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="873"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="909"/>
         <source>Snap directory</source>
         <extracomment>The snap directory description in the server infromation section of the debug interface</extracomment>
         <translation>Snap Verzeichnis</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="879"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="915"/>
         <source>Snap application data</source>
         <extracomment>The snap application data description in the server infromation section of the debug interface</extracomment>
         <translation>Snap Anwendungsdaten</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="885"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="921"/>
         <source>Snap user data</source>
         <extracomment>The snap user data description in the server infromation section of the debug interface</extracomment>
         <translation>Snap Benutzerdaten</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="891"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="927"/>
         <source>Snap common data</source>
         <extracomment>The snap common data description in the server infromation section of the debug interface</extracomment>
         <translation>Snap gemeinsame Daten</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="899"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="935"/>
         <source>Server name</source>
         <extracomment>The server name description in the server infromation section of the debug interface</extracomment>
         <translation>Servername</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="905"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="941"/>
         <source>Server version</source>
         <extracomment>The server version description in the server infromation section of the debug interface</extracomment>
         <translation>Server Version</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="911"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="947"/>
         <source>JSON-RPC version</source>
         <extracomment>The API version description in the server infromation section of the debug interface</extracomment>
         <translation>JSON-RPC Version</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="917"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="953"/>
         <source>Language</source>
         <extracomment>The language description in the server infromation section of the debug interface</extracomment>
         <translation>Sprache</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="923"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="959"/>
         <source>Timezone</source>
         <extracomment>The timezone description in the server infromation section of the debug interface</extracomment>
         <translation>Zeitzone</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="929"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="965"/>
         <source>Server UUID</source>
         <extracomment>The server id description in the server infromation section of the debug interface</extracomment>
         <translation>Server UUID</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="935"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="971"/>
         <source>Settings path</source>
         <extracomment>The settings path description in the server infromation section of the debug interface</extracomment>
         <translation>Einstellungen Pfad</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="941"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="977"/>
         <source>Translations path</source>
         <extracomment>The translation path description in the server infromation section of the debug interface</extracomment>
         <translation>Übersetzungspfad</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="963"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="999"/>
         <source>Generate report</source>
         <extracomment>In the server information section of the debug interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="966"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1002"/>
         <source>If you want to provide all the debug information to a developer, you can generate a report file, which contains all information needed for reproducing a system and get information about possible problems.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="983"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1019"/>
         <source>Do not share these generated information public, since they can contain sensible data and should be shared very carefully and only with people you trust!</source>
         <extracomment>The warning message of the debug interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="994"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1030"/>
         <source>Generate report file</source>
         <extracomment>The generate debug report button text of the debug interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1032"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1068"/>
         <source>Log database</source>
         <extracomment>The log databse download description of the debug interface</extracomment>
         <translation>Logdatenbank</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="951"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="987"/>
         <source>Plugin paths</source>
         <extracomment>The plugins path description in the server infromation section of the debug interface</extracomment>
         <translation>Plugin-Pfade</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="770"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1016"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="806"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1052"/>
         <source>Downloads</source>
         <extracomment>The name of the section tab in the debug server interface
 ----------
@@ -321,8 +321,8 @@ The downloads section of the debug interface</extracomment>
         <translation>Downloads</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="786"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1021"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="822"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1057"/>
         <source>Logs</source>
         <extracomment>The name of the section tab in the debug server interface
 ----------
@@ -330,186 +330,196 @@ The download logs section of the debug interface</extracomment>
         <translation>Logs</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1054"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1084"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1137"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1187"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1237"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1287"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1337"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1387"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1090"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1120"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1173"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1223"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1273"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1323"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1373"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1423"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1472"/>
         <source>Download</source>
         <extracomment>The download button description of the debug interface</extracomment>
         <translation>Download</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1068"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1104"/>
         <source>System logs</source>
         <extracomment>The syslog download description of the debug interface</extracomment>
         <translation>Systemlogs</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1097"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1153"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1203"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1253"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1303"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1353"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1403"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1133"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1189"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1239"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1289"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1339"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1389"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1439"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1488"/>
         <source>Show</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1108"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1144"/>
         <source>Settings</source>
         <extracomment>The settings download section title of the debug interface</extracomment>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1118"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1154"/>
         <source>nymead settings</source>
         <extracomment>The nymead settings download description of the debug interface</extracomment>
         <translation>nymead Einstellungen</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1168"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1204"/>
         <source>Device settings</source>
         <extracomment>The device settings download description of the debug interface</extracomment>
         <translation>Geräteeinstellungen</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1218"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1254"/>
         <source>Device states settings</source>
         <extracomment>The device states settings download description of the debug interface</extracomment>
         <translation>Gerätestatuseinstellungen</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1268"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1304"/>
         <source>Rules settings</source>
         <extracomment>The rules settings download description of the debug interface</extracomment>
         <translation>Regeleinstellungen</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1318"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1354"/>
         <source>Plugins settings</source>
         <extracomment>The plugins settings download description of the debug interface</extracomment>
         <translation>Plugin-Einstellungen</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1368"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1404"/>
         <source>Tag settings</source>
         <extracomment>The tag settings download description of the debug interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1425"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1453"/>
+        <source>MQTT policies</source>
+        <extracomment>The MQTT policies download description of the debug interface</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1511"/>
         <source>This section allows you to perform different network connectivity tests in order to find out if the device where nymea is running has full network connectivity.</source>
         <extracomment>The network section description of the debug interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1431"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1517"/>
         <source>Ping</source>
         <extracomment>The ping section of the debug interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1434"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1520"/>
         <source>This test makes four ping attempts to the nymea.io server.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1443"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1529"/>
         <source>Start ping test</source>
         <extracomment>The ping button text of the debug interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1459"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1545"/>
         <source>DNS lookup</source>
         <extracomment>The DNS lookup section of the debug interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1462"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1548"/>
         <source>This test makes a dynamic name server lookup for nymea.io.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1472"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1558"/>
         <source>Start DNS lookup test</source>
         <extracomment>The ping button text of the debug interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1487"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1573"/>
         <source>Trace path</source>
         <extracomment>The trace section of the debug interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1490"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1576"/>
         <source>This test showes the trace path from the nymea device to the nymea.io server.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1499"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1585"/>
         <source>Start trace path test</source>
         <extracomment>The trace path button text of the debug interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1526"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1612"/>
         <source>Server live logs</source>
         <extracomment>The network section of the debug interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1529"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1615"/>
         <source>This section allowes you to see the live logs of the nymea server.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1538"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1624"/>
         <source>Start logs</source>
         <extracomment>The connect button for the log stream of the debug interface</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1559"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1633"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1645"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1719"/>
         <source>Released under the GNU GENERAL PUBLIC LICENSE Version 2.</source>
         <extracomment>The footer license note of the debug interface</extracomment>
         <translation>Veröffentlicht unter der GNU GENERAL PUBLIC LICENSE Version 2.</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1603"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1689"/>
         <source>Error  %1</source>
         <extracomment>The HTTP error message of the debug interface. The %1 represents the error code ie.e 404</extracomment>
         <translation>Fehler %1</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="69"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="101"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="132"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="161"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="190"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="219"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="248"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="277"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="76"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="108"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="139"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="168"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="197"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="226"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="255"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="284"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="314"/>
         <source>Could not find file &quot;%1&quot;.</source>
         <extracomment>The HTTP error message of the debug interface. The %1 represents the file name.</extracomment>
         <translation>Die Datei &quot;%1&quot; konnte nicht gefunden werden.</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="78"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="109"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="140"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="169"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="198"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="227"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="256"/>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="285"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="85"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="116"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="147"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="176"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="205"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="234"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="263"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="292"/>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="322"/>
         <source>Could not open file &quot;%1&quot;.</source>
         <extracomment>The HTTP error message of the debug interface. The %1 represents the file name.</extracomment>
         <translation>Die Datei &quot;% 1&quot; konnte nicht geöffnet werden.</translation>

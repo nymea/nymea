@@ -802,7 +802,7 @@ Device *DeviceManager::findConfiguredDevice(const DeviceId &id) const
             return device;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 /*! Returns all configured \{Device}{Devices} in the system. */

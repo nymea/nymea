@@ -396,7 +396,6 @@ RuleEngine::RuleEngine(QObject *parent) :
         rule.setExitActions(exitActions);
         rule.setEnabled(enabled);
         rule.setExecutable(executable);
-        rule.setStatesActive(rule.stateEvaluator().evaluate());
         appendRule(rule);
         settings.endGroup();
     }
@@ -467,7 +466,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
                     qCDebug(dcRuleEngine).nospace().noquote() << "Rule " << rule.name() << " (" + rule.id().toString() << ") contains event" << event.eventId() << "and all states match.";
                     rules.append(rule);
                 } else {
-                    qCDebug(dcRuleEngine).nospace().noquote() << "Rule " << rule.name() << " (" + rule.id().toString() << ") contains event" << event.eventId() << "but state are not matching.";
+                    qCDebug(dcRuleEngine).nospace().noquote() << "Rule " << rule.name() << " (" + rule.id().toString() << ") contains event" << event.eventId() << "and states are not matching.";
                     rules.append(rule);
                 }
             }
@@ -1513,6 +1512,13 @@ void RuleEngine::saveRule(const Rule &rule)
     }
     settings.endGroup();
     qCDebug(dcRuleEngineDebug()) << "Saved rule to config:" << rule;
+}
+
+void RuleEngine::initRuleStates()
+{
+    foreach (const RuleId &ruleId, m_rules.keys()) {
+        m_rules[ruleId].setStatesActive(m_rules[ruleId].stateEvaluator().evaluate());
+    }
 }
 
 }

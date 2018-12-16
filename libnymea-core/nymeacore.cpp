@@ -767,6 +767,8 @@ void NymeaCore::onDeviceDisappeared(const DeviceId &deviceId)
 
 void NymeaCore::deviceManagerLoaded()
 {
+    m_ruleEngine->initRuleStates();
+
     // Do some houskeeping...
     qCDebug(dcApplication()) << "Starting housekeeping...";
     QDateTime startTime = QDateTime::currentDateTime();

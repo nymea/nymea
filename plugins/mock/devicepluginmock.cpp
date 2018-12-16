@@ -236,10 +236,9 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
         if (action.actionTypeId() == mockPowerActionTypeId) {
             qCDebug(dcMockDevice()) << "Setting power to" << action.param(mockPowerActionPowerParamTypeId).value().toBool();
             device->setStateValue(mockPowerStateTypeId, action.param(mockPowerActionPowerParamTypeId).value().toBool());
-            return DeviceManager::DeviceErrorNoError;
         }
-        m_daemons.value(device)->actionExecuted(action.actionTypeId());
 
+        m_daemons.value(device)->actionExecuted(action.actionTypeId());
         return DeviceManager::DeviceErrorNoError;
     } else if (device->deviceClassId() == mockDeviceAutoDeviceClassId) {
         if (action.actionTypeId() == mockDeviceAutoMockActionAsyncActionTypeId || action.actionTypeId() == mockDeviceAutoMockActionAsyncBrokenActionTypeId) {

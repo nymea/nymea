@@ -44,6 +44,7 @@ StateTypeId mockIntStateId = StateTypeId("80baec19-54de-4948-ac46-31eabfaceb83")
 StateTypeId mockBoolStateId = StateTypeId("9dd6a97c-dfd1-43dc-acbd-367932742310");
 StateTypeId mockDoubleStateId = StateTypeId("7cac53ee-7048-4dc9-b000-7b585390f34c");
 StateTypeId mockBatteryCriticalStateId = StateTypeId("580bc611-1a55-41f3-996f-8d3ccf543db3");
+StateTypeId mockPowerStateTypeId = StateTypeId("064aed0d-da4c-49d4-b236-60f97e98ff84");
 ActionTypeId mockActionIdPower = ActionTypeId("064aed0d-da4c-49d4-b236-60f97e98ff84");
 ActionTypeId mockActionIdWithParams = ActionTypeId("dea0f4e1-65e3-4981-8eaa-2701c53a9185");
 ActionTypeId mockActionIdNoParams = ActionTypeId("defd3ed6-1a0d-400b-8879-a0202cf39935");

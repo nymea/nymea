@@ -51,6 +51,7 @@ extern StateTypeId mockIntStateId;
 extern StateTypeId mockDoubleStateId;
 extern StateTypeId mockBatteryCriticalStateId;
 extern StateTypeId mockBoolStateId;
+extern StateTypeId mockPowerStateTypeId;
 
 // ParamTypes from mock devices
 extern ParamTypeId configParamIntParamTypeId;

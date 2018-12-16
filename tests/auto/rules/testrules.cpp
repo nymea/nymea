@@ -263,8 +263,7 @@ void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
     QCOMPARE(spy.count(), 1);
 
     QByteArray actionHistory = reply->readAll();
-    qDebug() << "have action history" << actionHistory;
-    QVERIFY2(actionTypeId == ActionTypeId(actionHistory), "Action not triggered");
+    QVERIFY2(actionTypeId == ActionTypeId(actionHistory), "Action not triggered. Current action history: \"" + actionHistory + "\"");
     reply->deleteLater();
 }
 
@@ -278,8 +277,7 @@ void TestRules::verifyRuleNotExecuted()
     QCOMPARE(spy.count(), 1);
 
     QByteArray actionHistory = reply->readAll();
-    qDebug() << "have action history" << actionHistory;
-    QVERIFY2(actionHistory.isEmpty(), "Action is triggered while it should not have been.");
+    QVERIFY2(actionHistory.isEmpty(), "Action is triggered while it should not have been. Current action history: \"" + actionHistory + "\"");
     reply->deleteLater();
 }
 
@@ -373,7 +371,7 @@ void TestRules::generateEvent(const EventTypeId &eventTypeId)
 void TestRules::initTestCase()
 {
     NymeaTestBase::initTestCase();
-    QLoggingCategory::setFilterRules("*.debug=false\nRuleEngine.debug=true\nRuleEngineDebug.debug=true\nMockDevice.*=true");
+    QLoggingCategory::setFilterRules("*.debug=false\nTests.debug=true\nRuleEngine.debug=true\nRuleEngineDebug.debug=true\nMockDevice.*=true");
 }
 
 void TestRules::addRemoveRules_data()
@@ -2682,12 +2680,17 @@ void TestRules::testInterfaceBasedEventRule()
     addRuleParams.insert("actions", QVariantList() << powerAction);
     addRuleParams.insert("eventDescriptors", QVariantList() << lowBatteryEvent);
 
+    qDebug(dcTests) << "Inserting rule";
+
     QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
     QCOMPARE(response.toMap().value("status").toString(), QString("success"));
     QCOMPARE(response.toMap().value("params").toMap().value("ruleError").toString(), QString("RuleErrorNoError"));
 
     QVariantMap getRuleParams;
     getRuleParams.insert("ruleId", response.toMap().value("params").toMap().value("ruleId"));
+
+    qDebug(dcTests) << "Getting rule details";
+
     response = injectAndWait("Rules.GetRuleDetails", getRuleParams);
 
     QCOMPARE(response.toMap().value("params").toMap().value("ruleError").toString(), QString("RuleErrorNoError"));
@@ -2700,23 +2703,33 @@ void TestRules::testInterfaceBasedEventRule()
     QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("ruleActionParams").toList().first().toMap().value("paramName").toString(), QString("power"));
     QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("ruleActionParams").toList().first().toMap().value("value").toString(), QString("true"));
 
+    qDebug(dcTests) << "Clearing action history";
 
     // Change the state to true, action should trigger
     spy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port)));
     reply = nam.get(request);
+
+    qDebug(dcTests) << "Changing battery state -> true";
+
     spy.wait(); spy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(true)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
+
     verifyRuleExecuted(mockActionIdPower);
+
+    qDebug(dcTests) << "Clearing action history";
 
     // Change the state to false, action should not trigger
     spy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port)));
     reply = nam.get(request);
+
+    qDebug(dcTests) << "Changing battery state -> false";
+
     spy.wait(); spy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(false)));
     reply = nam.get(request);

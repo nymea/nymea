@@ -29,6 +29,8 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
+Q_DECLARE_LOGGING_CATEGORY(dcTests)
+
 extern DeviceClassId mockDeviceClassId;
 extern DeviceClassId mockDeviceAutoClassId;
 extern DeviceClassId mockPushButtonDeviceClassId;

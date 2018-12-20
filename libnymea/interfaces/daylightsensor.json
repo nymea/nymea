@@ -1,0 +1,20 @@
+{
+    "extends": "sensor",
+    "description": "Devices implementing the daylight sensor interface have a boolean state indicating if currently is daylight. Additionally the current times for sunrise and sunset are provided.",
+    "states": [
+        {
+            "name": "daylight",
+            "type": "bool"
+        },
+        {
+            "name": "sunriseTime",
+            "unit": "UnixTime",
+            "type": "int"
+        },
+        {
+            "name": "sunsetTime",
+            "unit": "UnixTime",
+            "type": "int"
+        }
+    ]
+}

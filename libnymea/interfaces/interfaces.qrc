@@ -2,6 +2,7 @@
     <qresource prefix="/interfaces">
         <file>light.json</file>
         <file>dimmablelight.json</file>
+        <file>daylightsensor.json</file>
         <file>colortemperaturelight.json</file>
         <file>colorlight.json</file>
         <file>garagegate.json</file>

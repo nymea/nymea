@@ -1,0 +1,15 @@
+{
+    "extends": "sensor",
+    "description": "The presence sensor interface provides information whether a certain thing, for instance a human person, a tracked animal, a tracked mobile phone or smart watch is currently present. Additionally it gives information about the last time the tracked thing has been seen.",
+    "states": [
+        {
+            "name": "isPresent",
+            "type": "bool"
+        },
+        {
+            "name": "lastSeenTime",
+            "type": "int",
+            "unit": "UnixTime"
+        }
+    ]
+}

@@ -1,0 +1,4 @@
+{
+    "extends": "power",
+    "description": "The powersocket interface is used for smart power sockets and just extends the simple power interface."
+}

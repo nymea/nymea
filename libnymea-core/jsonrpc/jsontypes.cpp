@@ -301,10 +301,11 @@ void JsonTypes::init()
     s_device.insert("setupComplete", basicTypeToString(Bool));
     s_device.insert("o:parentId", basicTypeToString(Uuid));
 
-    // DeviceDescription
+    // DeviceDescriptor
     s_deviceDescriptor.insert("id", basicTypeToString(Uuid));
     s_deviceDescriptor.insert("title", basicTypeToString(String));
     s_deviceDescriptor.insert("description", basicTypeToString(String));
+    s_deviceDescriptor.insert("deviceParams", QVariantList() << paramRef());
 
     // Rule
     s_rule.insert("id", basicTypeToString(Uuid));
@@ -862,6 +863,11 @@ QVariantMap JsonTypes::packDeviceDescriptor(const DeviceDescriptor &descriptor)
     variant.insert("id", descriptor.id());
     variant.insert("title", descriptor.title());
     variant.insert("description", descriptor.description());
+    QVariantList params;
+    foreach (const Param &param, descriptor.params()) {
+        params.append(packParam(param));
+    }
+    variant.insert("deviceParams", params);
     return variant;
 }
 

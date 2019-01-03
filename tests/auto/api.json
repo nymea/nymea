@@ -1,4 +1,4 @@
-1.11
+1.12
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -235,7 +235,7 @@
             }
         },
         "Devices.AddConfiguredDevice": {
-            "description": "Add a configured device with a setupMethod of SetupMethodJustAdd. For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId.",
+            "description": "Add a configured device with a setupMethod of SetupMethodJustAdd. For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. Devices with CreateMethodJustAdd require all parameters to be supplied here. Devices with CreateMethodDiscovery require the use of a deviceDescriptorId. For discovered devices params not not required and will be taken from the DeviceDescriptor, however they can be overridden by supplying parameters here.",
             "params": {
                 "deviceClassId": "Uuid",
                 "name": "String",
@@ -1266,6 +1266,9 @@
         },
         "DeviceDescriptor": {
             "description": "String",
+            "deviceParams": [
+                "$ref:Param"
+            ],
             "id": "Uuid",
             "title": "String"
         },

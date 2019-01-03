@@ -118,9 +118,10 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.clear(); returns.clear();
     setDescription("AddConfiguredDevice", "Add a configured device with a setupMethod of SetupMethodJustAdd. "
                                           "For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. "
-                                          "Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. "
-                                          "CreateMethodJustAdd takes the parameters you want to have with that device. "
-                                          "CreateMethodDiscovery requires the use of a deviceDescriptorId."
+                                          "Devices with CreateMethodJustAdd require all parameters to be supplied here. "
+                                          "Devices with CreateMethodDiscovery require the use of a deviceDescriptorId. For discovered "
+                                          "devices params are not required and will be taken from the DeviceDescriptor, however, they "
+                                          "may be overridden by supplying parameters here."
                    );
     params.insert("deviceClassId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
@@ -138,7 +139,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
                                  "Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd. "
                                  "Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. "
                                  "CreateMethodJustAdd takes the parameters you want to have with that device. "
-                                 "CreateMethodDiscovery requires the use of a deviceDescriptorId. "
+                                 "CreateMethodDiscovery requires the use of a deviceDescriptorId, optionally, parameters can be overridden here. "
                                  "If success is true, the return values will contain a pairingTransactionId, a displayMessage and "
                                  "the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice "
                                  "or PairDevice."
@@ -336,7 +337,7 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
     DeviceManager::DeviceError status = NymeaCore::instance()->deviceManager()->discoverDevices(deviceClassId, discoveryParams);
     if (status == DeviceManager::DeviceErrorAsync ) {
         JsonReply *reply = createAsyncReply("GetDiscoveredDevices");
-        connect(reply, &JsonReply::finished, [this, deviceClassId](){ m_discoverRequests.remove(deviceClassId); });
+        connect(reply, &JsonReply::finished, this, [this, deviceClassId](){ m_discoverRequests.remove(deviceClassId); });
         m_discoverRequests.insert(deviceClassId, reply);
         return reply;
     }
@@ -393,7 +394,7 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
     if (deviceDescriptorId.isNull()) {
         status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceName, deviceParams, newDeviceId);
     } else {
-        status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceName, deviceDescriptorId, newDeviceId);
+        status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceName, deviceDescriptorId, deviceParams, newDeviceId);
     }
     QVariantMap returns;
     switch (status) {
@@ -679,7 +680,7 @@ void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const 
         return; // We didn't start this discovery... Ignore it.
     }
 
-    JsonReply *reply = 0;
+    JsonReply *reply = nullptr;
     reply = m_discoverRequests.take(deviceClassId);
     if (!reply)
         return;

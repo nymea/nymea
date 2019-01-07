@@ -20,7 +20,6 @@
 
 #include "cloudmanager.h"
 #include "awsconnector.h"
-#include "janusconnector.h"
 #include "loggingcategories.h"
 #include "cloudnotifications.h"
 #include "nymeaconfiguration.h"
@@ -40,15 +39,8 @@ CloudManager::CloudManager(NymeaConfiguration *configuration, NetworkManager *ne
 {
     m_awsConnector = new AWSConnector(this);
     connect(m_awsConnector, &AWSConnector::devicePaired, this, &CloudManager::onPairingFinished);
-    connect(m_awsConnector, &AWSConnector::webRtcHandshakeMessageReceived, this, &CloudManager::onAWSWebRtcHandshakeMessageReceived);
     connect(m_awsConnector, &AWSConnector::connected, this, &CloudManager::awsConnected);
     connect(m_awsConnector, &AWSConnector::disconnected, this, &CloudManager::awsDisconnected);
-
-    m_janusConnector = new JanusConnector(this);
-    connect(m_janusConnector, &JanusConnector::webRtcHandshakeMessageReceived, this, &CloudManager::onJanusWebRtcHandshakeMessageReceived);
-
-    connect(m_janusConnector, &JanusConnector::requestTURNCredentials, m_awsConnector, &AWSConnector::requestTURNCredentials);
-    connect(m_awsConnector, &AWSConnector::turnCredentialsReceived, m_janusConnector, &JanusConnector::setTurnCredentials);
 
     connect(m_networkManager, &NetworkManager::stateChanged, this, &CloudManager::onlineStateChanged);
 
@@ -215,11 +207,6 @@ void CloudManager::pairDevice(const QString &idToken, const QString &userId)
     m_awsConnector->pairDevice(idToken, userId);
 }
 
-bool CloudManager::keepAlive(const QString &sessionId)
-{
-    return m_janusConnector->sendKeepAliveMessage(sessionId);
-}
-
 CloudNotifications *CloudManager::createNotificationsPlugin() const
 {
     CloudNotifications* notifications = new CloudNotifications(m_awsConnector);
@@ -254,16 +241,6 @@ void CloudManager::onlineStateChanged()
 void CloudManager::onPairingFinished(const QString &cognitoUserId, int errorCode, const QString &message)
 {
     emit pairingReply(cognitoUserId, errorCode, message);
-}
-
-void CloudManager::onAWSWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data)
-{
-    m_janusConnector->sendWebRtcHandshakeMessage(transactionId, data);
-}
-
-void CloudManager::onJanusWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data)
-{
-    m_awsConnector->sendWebRtcHandshakeMessage(transactionId, data);
 }
 
 void CloudManager::awsConnected()

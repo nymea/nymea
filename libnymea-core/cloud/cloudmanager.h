@@ -28,7 +28,6 @@
 
 #include "networkmanager/networkmanager.h"
 
-class JanusConnector;
 class AWSConnector;
 class CloudNotifications;
 namespace remoteproxyclient {
@@ -63,8 +62,6 @@ public:
 
     void pairDevice(const QString &idToken, const QString &userId);
 
-    bool keepAlive(const QString &sessionId);
-
     CloudNotifications* createNotificationsPlugin() const;
     CloudTransport* createTransportInterface() const;
 
@@ -79,8 +76,6 @@ private:
 private slots:
     void onlineStateChanged();
     void onPairingFinished(const QString &cognitoUserId, int errorCode, const QString &message);
-    void onAWSWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
-    void onJanusWebRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
     void awsConnected();
     void awsDisconnected();
     void setDeviceName(const QString &name);
@@ -89,7 +84,6 @@ private:
     QTimer m_reconnectTimer;
     bool m_enabled = false;
     AWSConnector *m_awsConnector = nullptr;
-    JanusConnector *m_janusConnector = nullptr;
     NymeaConfiguration *m_configuration = nullptr;
     NetworkManager *m_networkManager = nullptr;
     CloudTransport *m_transport = nullptr;

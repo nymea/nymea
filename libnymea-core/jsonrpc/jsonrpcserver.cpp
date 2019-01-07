@@ -193,10 +193,11 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     setReturns("IsCloudConnected", returns);
 
     params.clear(); returns.clear();
-    setDescription("KeepAlive", "Keep alive a remote connection. The sessionId is the MQTT topic which has been used to establish the session. It will return false if no ongoing session with the given ID can be found.");
+    setDescription("KeepAlive", "This is basically a Ping/Pong mechanism a client app may use to check server connectivity. Currently, the server does not actually do anything with this information and will return the call providing the given sessionId back to the caller. It is up to the client whether to use this or not and not required by the server to keep the connection alive.");
     params.insert("sessionId", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("KeepAlive", params);
     returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    returns.insert("sessionId", JsonTypes::basicTypeToString(JsonTypes::String));
     setReturns("KeepAlive", returns);
 
     // Notifications
@@ -384,12 +385,14 @@ JsonReply *JsonRPCServer::IsCloudConnected(const QVariantMap &params)
     return createReply(data);
 }
 
+/*! A client may use this as a ping/pong mechanism to check server connectivity. */
 JsonReply *JsonRPCServer::KeepAlive(const QVariantMap &params)
 {
     QString sessionId = params.value("sessionId").toString();
-    bool result = NymeaCore::instance()->cloudManager()->keepAlive(sessionId);
+    qCDebug(dcJsonRpc()) << "KeepAlive received" << sessionId;
     QVariantMap resultMap;
-    resultMap.insert("success", result);
+    resultMap.insert("success", true);
+    resultMap.insert("sessionId", sessionId);
     return createReply(resultMap);
 }
 

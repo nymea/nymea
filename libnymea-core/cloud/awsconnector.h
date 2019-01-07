@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2017-2018 Michael Zanetti <michael.zanetti@guh.io>       *
+ *  Copyright (C) 2017-2019 Michael Zanetti <michael.zanetti@guh.io>       *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -93,7 +93,7 @@ private:
     void storeSyncedNameCache(const QString &syncedName);
     QString readSyncedNameCache();
 
-    QString getCertificateFingerprint(const QString &certificateFilePath) const;
+    QString getCertificateFingerprint(const QSslCertificate &certificate) const;
 
 private:
     MqttClient *m_client = nullptr;

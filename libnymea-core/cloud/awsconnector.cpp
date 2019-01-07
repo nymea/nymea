@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2017-2018 Michael Zanetti <michael.zanetti@guh.io>       *
+ *  Copyright (C) 2017-2019 Michael Zanetti <michael.zanetti@guh.io>       *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -31,6 +31,7 @@
 #include <QSslCertificate>
 #include <QFile>
 #include <QSslKey>
+#include <QMetaEnum>
 
 AWSConnector::AWSConnector(QObject *parent) : QObject(parent)
 {
@@ -58,7 +59,6 @@ void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId,
     m_clientName = clientName;
 
     if (m_client) {
-        m_shouldReconnect = true;
         m_client->disconnectFromHost();
         qCDebug(dcAWS()) << "Disconnecting from AWS";
         return;
@@ -93,14 +93,15 @@ void AWSConnector::doConnect()
 
     m_client = new MqttClient(m_clientId, this);
     m_client->setKeepAlive(30);
-    m_client->setAutoReconnect(true);
-    qWarning() << "Connecting MQTT to" << m_currentEndpoint;
+    m_client->setAutoReconnect(false);
+    qCDebug(dcAWS()).nospace().noquote() << "Connecting MQTT to " << m_currentEndpoint << " as " << m_clientId << " with certificate " << getCertificateFingerprint(certificate);
     m_client->connectToHost(m_currentEndpoint, 8883, true, true, sslConfig);
 
     connect(m_client, &MqttClient::connected, this, &AWSConnector::onConnected);
     connect(m_client, &MqttClient::disconnected, this, &AWSConnector::onDisconnected);
-    connect(m_client, &MqttClient::error, this, [](const QAbstractSocket::SocketError error){
-        qCWarning(dcAWS()) << "An error happened in the MQTT transport" << error;
+    connect(m_client, &MqttClient::error, this, [this](const QAbstractSocket::SocketError error){
+        qCWarning(dcAWS()) << "An error happened in the MQTT transport" << error << QMetaEnum::fromType<QAbstractSocket::SocketError>().valueToKey(error);
+        onDisconnected();
     });
 
     connect(m_client, &MqttClient::subscribed, this, &AWSConnector::onSubscribed);
@@ -530,16 +531,10 @@ QString AWSConnector::readSyncedNameCache()
     return settings.value("syncedName", QString()).toString();
 }
 
-QString AWSConnector::getCertificateFingerprint(const QString &certificateFile) const
+QString AWSConnector::getCertificateFingerprint(const QSslCertificate &certificate) const
 {
-    QFile certFile(certificateFile);
-    if (!certFile.open(QFile::ReadOnly)) {
-        qCWarning(dcAWS()) << "Error opening certificate file" << certificateFile;
-        return QString();
-    }
-    QSslCertificate crt = QSslCertificate(certFile.readAll());
     QByteArray output;
-    QByteArray digest = crt.digest(QCryptographicHash::Sha256);
+    QByteArray digest = certificate.digest(QCryptographicHash::Sha256);
     for (int i = 0; i < digest.length(); i++) {
         if (output.length() > 0) {
             output.append(":");

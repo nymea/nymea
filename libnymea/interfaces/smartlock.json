@@ -1,5 +1,5 @@
 {
-    "extends": "simpleclosable",
+    "description": "The smartlock interface is used for locks which can be opened digitally. The simplest form is a door opener which just unlatches the door lock for a few seconds so a person can enter. Implement the unlatch action and set the state to \"unlatching\" while opening. Set the state back to \"locked\" when done. More advanced devices might also allow keeping a door unlatched or distinguish between locked and unlocked. Fully electric doors might even support opening and closing the entire door by combining this interface with the \"simpleclosable\" interface.",
     "states": [
         {
             "name": "state",

@@ -24,6 +24,7 @@
 #include <QObject>
 #include <QFuture>
 #include <QDateTime>
+#include <QTimer>
 
 #include <nymea-mqtt/mqttclient.h>
 
@@ -107,6 +108,7 @@ private:
     QFuture<void> m_connectingFuture;
     bool m_isCleanSession = true;
     bool m_shouldReconnect = false;
+    QTimer m_reconnectTimer;
 
     quint8 m_transactionId = 0;
     QString m_createDeviceId;

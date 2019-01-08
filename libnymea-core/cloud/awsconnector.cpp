@@ -37,6 +37,9 @@ AWSConnector::AWSConnector(QObject *parent) : QObject(parent)
 {
     qRegisterMetaType<AWSConnector::PushNotificationsEndpoint>();
     m_clientName = readSyncedNameCache();
+
+    m_reconnectTimer.setSingleShot(true);
+    connect(&m_reconnectTimer, &QTimer::timeout, this, &AWSConnector::doConnect);
 }
 
 AWSConnector::~AWSConnector()
@@ -69,6 +72,14 @@ void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId,
 
 void AWSConnector::doConnect()
 {
+    if (m_setupInProgress) {
+        qCWarning(dcAWS()) << "Connection attempt already in progress...";
+        return;
+    }
+    if (isConnected()) {
+        qCWarning(dcAWS()) << "Already connected. Not connecting again...";
+        return;
+    }
     m_setupInProgress = true;
     m_subscriptionCache.clear();
 
@@ -99,8 +110,12 @@ void AWSConnector::doConnect()
 
     connect(m_client, &MqttClient::connected, this, &AWSConnector::onConnected);
     connect(m_client, &MqttClient::disconnected, this, &AWSConnector::onDisconnected);
-    connect(m_client, &MqttClient::error, this, [](const QAbstractSocket::SocketError error){
+    connect(m_client, &MqttClient::error, this, [this](const QAbstractSocket::SocketError error){
         qCWarning(dcAWS()) << "An error happened in the MQTT transport" << error;
+        // In order to also call onDisconnected (and start the reconnect timer) even when we have never been connected
+        // we'll call it here. However, that might cause onDisconnected to be called twice. Let's prevent that.
+        disconnect(m_client, &MqttClient::disconnected, this, &AWSConnector::onDisconnected);
+        onDisconnected();
     });
 
     connect(m_client, &MqttClient::subscribed, this, &AWSConnector::onSubscribed);
@@ -310,6 +325,7 @@ void AWSConnector::onDisconnected()
     bool needReRegistering = false;
     if (m_setupInProgress) {
         qCWarning(dcAWS()) << "Setup process interrupted by disconnect.";
+        m_setupInProgress = false;
         needReRegistering = true;
     } else {
         if (m_lastConnectionDrop.addSecs(60) > QDateTime::currentDateTime()) {
@@ -331,8 +347,8 @@ void AWSConnector::onDisconnected()
     }
 
     if (m_shouldReconnect) {
-        qCDebug(dcAWS()) << "Reconnecting to AWS...";
-        QTimer::singleShot(1000, this, &AWSConnector::doConnect);
+        qCDebug(dcAWS()) << "Reconnecting to AWS in 5 seconds...";
+        m_reconnectTimer.start(5000);
     }
 }
 
@@ -361,6 +377,13 @@ void AWSConnector::setName()
 
 void AWSConnector::subscribe(const QStringList &topics)
 {
+    // Note: Do not check for isConnected here because subscribing is part of the connection
+    // flow and it needs to work before we are actually connected.
+    if (!m_client) {
+        qCWarning(dcAWS()) << "Not connected. Cannot subscribe.";
+        return;
+    }
+
     foreach (const QString &topic, topics) {
         if (m_subscriptionCache.contains(topic)) {
             qCDebug(dcAWS()) << "Already subscribed to topic:" << topic << ". Not resubscribing";

@@ -1443,6 +1443,7 @@ void DeviceManager::onAutoDeviceDisappeared(const DeviceId &deviceId)
 
 void DeviceManager::onLoaded()
 {
+    qCWarning(dcDeviceManager()) << "Done loading plugins and devices.";
     emit loaded();
 
     // schedule some housekeeping...

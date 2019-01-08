@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
         }
 
         // create core instance
-        NymeaCore::instance();
+        NymeaCore::instance()->init();
         int ret = application.exec();
         if (s_logFile.isOpen()) {
             s_logFile.close();

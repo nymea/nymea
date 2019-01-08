@@ -122,16 +122,11 @@ void NymeaTestBase::initTestCase()
     QLoggingCategory::setFilterRules("*.debug=false\nTests.debug=true");
 
     // Start the server
-    NymeaCore::instance();
+    NymeaCore::instance()->init();
 
     // Wait unitl the server is initialized
     QSignalSpy coreInitializedSpy(NymeaCore::instance(), SIGNAL(initialized()));
-    coreInitializedSpy.wait();
-
-    // Wait for the DeviceManager to signal that it has loaded plugins and everything
-    QSignalSpy deviceManagerSpy(NymeaCore::instance()->deviceManager(), SIGNAL(loaded()));
-    QVERIFY(deviceManagerSpy.isValid());
-    QVERIFY(deviceManagerSpy.wait());
+    QVERIFY(coreInitializedSpy.wait());
 
     // Yes, we're intentionally mixing upper/lower case email here... username should not be case sensitive
     NymeaCore::instance()->userManager()->removeUser("dummy@guh.io");
@@ -442,10 +437,9 @@ void NymeaTestBase::restartServer()
 {
     // Destroy and recreate the core instance...
     NymeaCore::instance()->destroy();
+    NymeaCore::instance()->init();
     QSignalSpy coreSpy(NymeaCore::instance(), SIGNAL(initialized()));
     coreSpy.wait();
-    QSignalSpy spy(NymeaCore::instance()->deviceManager(), SIGNAL(loaded()));
-    spy.wait();
     m_mockTcpServer = MockTcpServer::servers().first();
     m_mockTcpServer->clientConnected(m_clientId);
 }

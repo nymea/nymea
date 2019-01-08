@@ -126,279 +126,6 @@ namespace nymeaserver {
 RuleEngine::RuleEngine(QObject *parent) :
     QObject(parent)
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleRules);
-    qCDebug(dcRuleEngine) << "Loading rules from" << settings.fileName();
-    foreach (const QString &idString, settings.childGroups()) {
-        settings.beginGroup(idString);
-
-        QString name = settings.value("name", idString).toString();
-        bool enabled = settings.value("enabled", true).toBool();
-        bool executable = settings.value("executable", true).toBool();
-
-        qCDebug(dcRuleEngine) << "Loading rule" << name << idString;
-
-        // Load timeDescriptor
-        TimeDescriptor timeDescriptor;
-        QList<CalendarItem> calendarItems;
-        QList<TimeEventItem> timeEventItems;
-
-        settings.beginGroup("timeDescriptor");
-
-        settings.beginGroup("calendarItems");
-        foreach (const QString &childGroup, settings.childGroups()) {
-            settings.beginGroup(childGroup);
-
-            CalendarItem calendarItem;
-            calendarItem.setDateTime(QDateTime::fromTime_t(settings.value("dateTime", 0).toUInt()));
-            calendarItem.setStartTime(QTime::fromString(settings.value("startTime").toString()));
-            calendarItem.setDuration(settings.value("duration", 0).toUInt());
-
-            QList<int> weekDays;
-            QList<int> monthDays;
-            RepeatingOption::RepeatingMode mode = (RepeatingOption::RepeatingMode)settings.value("mode", 0).toInt();
-
-            // Load weekDays
-            int weekDaysCount = settings.beginReadArray("weekDays");
-            for (int i = 0; i < weekDaysCount; ++i) {
-                settings.setArrayIndex(i);
-                weekDays.append(settings.value("weekDay", 0).toInt());
-            }
-            settings.endArray();
-
-            // Load weekDays
-            int monthDaysCount = settings.beginReadArray("monthDays");
-            for (int i = 0; i < monthDaysCount; ++i) {
-                settings.setArrayIndex(i);
-                monthDays.append(settings.value("monthDay", 0).toInt());
-            }
-            settings.endArray();
-
-            settings.endGroup();
-
-            calendarItem.setRepeatingOption(RepeatingOption(mode, weekDays, monthDays));
-            calendarItems.append(calendarItem);
-        }
-        settings.endGroup();
-
-        timeDescriptor.setCalendarItems(calendarItems);
-
-        settings.beginGroup("timeEventItems");
-        foreach (const QString &childGroup, settings.childGroups()) {
-            settings.beginGroup(childGroup);
-
-            TimeEventItem timeEventItem;
-            timeEventItem.setDateTime(settings.value("dateTime", 0).toUInt());
-            timeEventItem.setTime(QTime::fromString(settings.value("time").toString()));
-
-            QList<int> weekDays;
-            QList<int> monthDays;
-            RepeatingOption::RepeatingMode mode = (RepeatingOption::RepeatingMode)settings.value("mode", 0).toInt();
-
-            // Load weekDays
-            int weekDaysCount = settings.beginReadArray("weekDays");
-            for (int i = 0; i < weekDaysCount; ++i) {
-                settings.setArrayIndex(i);
-                weekDays.append(settings.value("weekDay", 0).toInt());
-            }
-            settings.endArray();
-
-            // Load weekDays
-            int monthDaysCount = settings.beginReadArray("monthDays");
-            for (int i = 0; i < monthDaysCount; ++i) {
-                settings.setArrayIndex(i);
-                monthDays.append(settings.value("monthDay", 0).toInt());
-            }
-            settings.endArray();
-
-            settings.endGroup();
-
-            timeEventItem.setRepeatingOption(RepeatingOption(mode, weekDays, monthDays));
-            timeEventItems.append(timeEventItem);
-        }
-        settings.endGroup();
-
-        settings.endGroup();
-
-        timeDescriptor.setTimeEventItems(timeEventItems);
-
-        // Load events
-        QList<EventDescriptor> eventDescriptorList;
-        settings.beginGroup("events");
-        foreach (QString eventGroupName, settings.childGroups()) {
-            if (eventGroupName.startsWith("EventDescriptor-")) {
-                settings.beginGroup(eventGroupName);
-                EventTypeId eventTypeId(settings.value("eventTypeId").toString());
-                DeviceId deviceId(settings.value("deviceId").toString());
-                QString interface = settings.value("interface").toString();
-                QString interfaceEvent = settings.value("interfaceEvent").toString();
-
-                QList<ParamDescriptor> params;
-                foreach (QString groupName, settings.childGroups()) {
-                    if (groupName.startsWith("ParamDescriptor-")) {
-                        settings.beginGroup(groupName);
-                        QString strippedGroupName = groupName.remove(QRegExp("^ParamDescriptor-"));
-
-                        QVariant value = settings.value("value");
-                        if (settings.contains("valueType")) {
-                            QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
-                            // Note: only warn, and continue with the QVariant guessed type
-                            if (valueType == QVariant::Invalid) {
-                                qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the param descriptor" << strippedGroupName << ". The value type will be guessed by QVariant.";
-                            } else if (!value.canConvert(valueType)) {
-                                qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the param descriptor value" << value << "to the stored type" << valueType;
-                            } else {
-                                value.convert(valueType);
-                            }
-                        }
-
-                        if (!ParamTypeId(strippedGroupName).isNull()) {
-                            ParamDescriptor paramDescriptor(ParamTypeId(strippedGroupName), value);
-                            paramDescriptor.setOperatorType((Types::ValueOperator)settings.value("operator").toInt());
-                            params.append(paramDescriptor);
-                        } else {
-                            ParamDescriptor paramDescriptor(strippedGroupName, value);
-                            paramDescriptor.setOperatorType((Types::ValueOperator)settings.value("operator").toInt());
-                            params.append(paramDescriptor);
-                        }
-                        settings.endGroup();
-                    }
-                }
-
-                if (!eventTypeId.isNull()) {
-                    EventDescriptor eventDescriptor(eventTypeId, deviceId, params);
-                    eventDescriptorList.append(eventDescriptor);
-                } else {
-                    EventDescriptor eventDescriptor(interface, interfaceEvent, params);
-                    eventDescriptorList.append(eventDescriptor);
-                }
-                settings.endGroup();
-            }
-        }
-        settings.endGroup();
-
-
-        // Load stateEvaluator
-        StateEvaluator stateEvaluator = StateEvaluator::loadFromSettings(settings, "stateEvaluator");
-
-        // Load actions
-        QList<RuleAction> actions;
-        settings.beginGroup("ruleActions");
-        foreach (const QString &actionNumber, settings.childGroups()) {
-            settings.beginGroup(actionNumber);
-
-            RuleActionParamList params;
-            foreach (QString paramTypeIdString, settings.childGroups()) {
-                if (paramTypeIdString.startsWith("RuleActionParam-")) {
-                    settings.beginGroup(paramTypeIdString);
-                    QString strippedParamTypeIdString = paramTypeIdString.remove(QRegExp("^RuleActionParam-"));
-                    EventTypeId eventTypeId = EventTypeId(settings.value("eventTypeId", EventTypeId()).toString());
-                    ParamTypeId eventParamTypeId = ParamTypeId(settings.value("eventParamTypeId", ParamTypeId()).toString());
-                    QVariant value = settings.value("value");
-                    if (settings.contains("valueType")) {
-                        QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
-                        // Note: only warn, and continue with the QVariant guessed type
-                        if (valueType == QVariant::Invalid) {
-                            qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the rule action param " << strippedParamTypeIdString << ". The value type will be guessed by QVariant.";
-                        } else if (!value.canConvert(valueType)) {
-                            qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the rule action param value" << value << "to the stored type" << valueType;
-                        } else {
-                            value.convert(valueType);
-                        }
-                    }
-
-                    if (!ParamTypeId(strippedParamTypeIdString).isNull()) {
-                        RuleActionParam param(ParamTypeId(strippedParamTypeIdString),
-                                              value,
-                                              eventTypeId,
-                                              eventParamTypeId);
-                        params.append(param);
-                    } else {
-                        RuleActionParam param(strippedParamTypeIdString,
-                                              value,
-                                              eventTypeId,
-                                              eventParamTypeId);
-                        params.append(param);
-                    }
-                    settings.endGroup();
-                }
-            }
-
-            if (settings.contains("actionTypeId") && settings.contains("deviceId")) {
-                RuleAction action = RuleAction(ActionTypeId(settings.value("actionTypeId").toString()), DeviceId(settings.value("deviceId").toString()));
-                action.setRuleActionParams(params);
-                actions.append(action);
-            } else if (settings.contains("interface") && settings.contains("interfaceAction")){
-                RuleAction action = RuleAction(settings.value("interface").toString(), settings.value("interfaceAction").toString());
-                action.setRuleActionParams(params);
-                actions.append(action);
-            }
-
-            settings.endGroup();
-        }
-        settings.endGroup();
-
-        // Load exit actions
-        QList<RuleAction> exitActions;
-        settings.beginGroup("ruleExitActions");
-        foreach (const QString &actionNumber, settings.childGroups()) {
-            settings.beginGroup(actionNumber);
-
-            RuleActionParamList params;
-            foreach (QString paramTypeIdString, settings.childGroups()) {
-                if (paramTypeIdString.startsWith("RuleActionParam-")) {
-                    settings.beginGroup(paramTypeIdString);
-                    QString strippedParamTypeIdString = paramTypeIdString.remove(QRegExp("^RuleActionParam-"));
-                    QVariant value = settings.value("value");
-                    if (settings.contains("valueType")) {
-                        QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
-                        // Note: only warn, and continue with the QVariant guessed type
-                        if (valueType == QVariant::Invalid) {
-                            qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the rule action param " << strippedParamTypeIdString << ". The value type will be guessed by QVariant.";
-                        } else if (!value.canConvert(valueType)) {
-                            qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the rule action param value" << value << "to the stored type" << valueType;
-                        } else {
-                            value.convert(valueType);
-                        }
-                    }
-
-                    if (!ParamTypeId(strippedParamTypeIdString).isNull()) {
-                        RuleActionParam param(ParamTypeId(strippedParamTypeIdString), value);
-                        params.append(param);
-                    } else {
-                        RuleActionParam param(strippedParamTypeIdString, value);
-                        params.append(param);
-                    }
-                    settings.endGroup();
-                }
-            }
-
-            if (settings.contains("actionTypeId") && settings.contains("deviceId")) {
-                RuleAction action = RuleAction(ActionTypeId(settings.value("actionTypeId").toString()), DeviceId(settings.value("deviceId").toString()));
-                action.setRuleActionParams(params);
-                exitActions.append(action);
-            } else if (settings.contains("interface") && settings.contains("interfaceAction")) {
-                RuleAction action = RuleAction(settings.value("interface").toString(),settings.value("interfaceAction").toString());
-                action.setRuleActionParams(params);
-                exitActions.append(action);
-            }
-
-            settings.endGroup();
-        }
-        settings.endGroup();
-
-        Rule rule;
-        rule.setId(RuleId(idString));
-        rule.setName(name);
-        rule.setTimeDescriptor(timeDescriptor);
-        rule.setEventDescriptors(eventDescriptorList);
-        rule.setStateEvaluator(stateEvaluator);
-        rule.setActions(actions);
-        rule.setExitActions(exitActions);
-        rule.setEnabled(enabled);
-        rule.setExecutable(executable);
-        appendRule(rule);
-        settings.endGroup();
-    }
 }
 
 /*! Destructor of the \l{RuleEngine}. */
@@ -466,7 +193,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
                     qCDebug(dcRuleEngine).nospace().noquote() << "Rule " << rule.name() << " (" + rule.id().toString() << ") contains event" << event.eventId() << "and all states match.";
                     rules.append(rule);
                 } else {
-                    qCDebug(dcRuleEngine).nospace().noquote() << "Rule " << rule.name() << " (" + rule.id().toString() << ") contains event" << event.eventId() << "and states are not matching.";
+                    qCDebug(dcRuleEngine).nospace().noquote() << "Rule " << rule.name() << " (" + rule.id().toString() << ") contains event" << event.eventId() << "but state are not matching.";
                     rules.append(rule);
                 }
             }
@@ -1514,11 +1241,283 @@ void RuleEngine::saveRule(const Rule &rule)
     qCDebug(dcRuleEngineDebug()) << "Saved rule to config:" << rule;
 }
 
-void RuleEngine::initRuleStates()
+void RuleEngine::init()
 {
-    foreach (const RuleId &ruleId, m_rules.keys()) {
-        m_rules[ruleId].setStatesActive(m_rules[ruleId].stateEvaluator().evaluate());
+    NymeaSettings settings(NymeaSettings::SettingsRoleRules);
+    qCDebug(dcRuleEngine) << "Loading rules from" << settings.fileName();
+    foreach (const QString &idString, settings.childGroups()) {
+        settings.beginGroup(idString);
+
+        QString name = settings.value("name", idString).toString();
+        bool enabled = settings.value("enabled", true).toBool();
+        bool executable = settings.value("executable", true).toBool();
+
+        qCDebug(dcRuleEngine) << "Loading rule" << name << idString;
+
+        // Load timeDescriptor
+        TimeDescriptor timeDescriptor;
+        QList<CalendarItem> calendarItems;
+        QList<TimeEventItem> timeEventItems;
+
+        settings.beginGroup("timeDescriptor");
+
+        settings.beginGroup("calendarItems");
+        foreach (const QString &childGroup, settings.childGroups()) {
+            settings.beginGroup(childGroup);
+
+            CalendarItem calendarItem;
+            calendarItem.setDateTime(QDateTime::fromTime_t(settings.value("dateTime", 0).toUInt()));
+            calendarItem.setStartTime(QTime::fromString(settings.value("startTime").toString()));
+            calendarItem.setDuration(settings.value("duration", 0).toUInt());
+
+            QList<int> weekDays;
+            QList<int> monthDays;
+            RepeatingOption::RepeatingMode mode = (RepeatingOption::RepeatingMode)settings.value("mode", 0).toInt();
+
+            // Load weekDays
+            int weekDaysCount = settings.beginReadArray("weekDays");
+            for (int i = 0; i < weekDaysCount; ++i) {
+                settings.setArrayIndex(i);
+                weekDays.append(settings.value("weekDay", 0).toInt());
+            }
+            settings.endArray();
+
+            // Load weekDays
+            int monthDaysCount = settings.beginReadArray("monthDays");
+            for (int i = 0; i < monthDaysCount; ++i) {
+                settings.setArrayIndex(i);
+                monthDays.append(settings.value("monthDay", 0).toInt());
+            }
+            settings.endArray();
+
+            settings.endGroup();
+
+            calendarItem.setRepeatingOption(RepeatingOption(mode, weekDays, monthDays));
+            calendarItems.append(calendarItem);
+        }
+        settings.endGroup();
+
+        timeDescriptor.setCalendarItems(calendarItems);
+
+        settings.beginGroup("timeEventItems");
+        foreach (const QString &childGroup, settings.childGroups()) {
+            settings.beginGroup(childGroup);
+
+            TimeEventItem timeEventItem;
+            timeEventItem.setDateTime(settings.value("dateTime", 0).toUInt());
+            timeEventItem.setTime(QTime::fromString(settings.value("time").toString()));
+
+            QList<int> weekDays;
+            QList<int> monthDays;
+            RepeatingOption::RepeatingMode mode = (RepeatingOption::RepeatingMode)settings.value("mode", 0).toInt();
+
+            // Load weekDays
+            int weekDaysCount = settings.beginReadArray("weekDays");
+            for (int i = 0; i < weekDaysCount; ++i) {
+                settings.setArrayIndex(i);
+                weekDays.append(settings.value("weekDay", 0).toInt());
+            }
+            settings.endArray();
+
+            // Load weekDays
+            int monthDaysCount = settings.beginReadArray("monthDays");
+            for (int i = 0; i < monthDaysCount; ++i) {
+                settings.setArrayIndex(i);
+                monthDays.append(settings.value("monthDay", 0).toInt());
+            }
+            settings.endArray();
+
+            settings.endGroup();
+
+            timeEventItem.setRepeatingOption(RepeatingOption(mode, weekDays, monthDays));
+            timeEventItems.append(timeEventItem);
+        }
+        settings.endGroup();
+
+        settings.endGroup();
+
+        timeDescriptor.setTimeEventItems(timeEventItems);
+
+        // Load events
+        QList<EventDescriptor> eventDescriptorList;
+        settings.beginGroup("events");
+        foreach (QString eventGroupName, settings.childGroups()) {
+            if (eventGroupName.startsWith("EventDescriptor-")) {
+                settings.beginGroup(eventGroupName);
+                EventTypeId eventTypeId(settings.value("eventTypeId").toString());
+                DeviceId deviceId(settings.value("deviceId").toString());
+                QString interface = settings.value("interface").toString();
+                QString interfaceEvent = settings.value("interfaceEvent").toString();
+
+                QList<ParamDescriptor> params;
+                foreach (QString groupName, settings.childGroups()) {
+                    if (groupName.startsWith("ParamDescriptor-")) {
+                        settings.beginGroup(groupName);
+                        QString strippedGroupName = groupName.remove(QRegExp("^ParamDescriptor-"));
+
+                        QVariant value = settings.value("value");
+                        if (settings.contains("valueType")) {
+                            QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
+                            // Note: only warn, and continue with the QVariant guessed type
+                            if (valueType == QVariant::Invalid) {
+                                qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the param descriptor" << strippedGroupName << ". The value type will be guessed by QVariant.";
+                            } else if (!value.canConvert(valueType)) {
+                                qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the param descriptor value" << value << "to the stored type" << valueType;
+                            } else {
+                                value.convert(valueType);
+                            }
+                        }
+
+                        if (!ParamTypeId(strippedGroupName).isNull()) {
+                            ParamDescriptor paramDescriptor(ParamTypeId(strippedGroupName), value);
+                            paramDescriptor.setOperatorType((Types::ValueOperator)settings.value("operator").toInt());
+                            params.append(paramDescriptor);
+                        } else {
+                            ParamDescriptor paramDescriptor(strippedGroupName, value);
+                            paramDescriptor.setOperatorType((Types::ValueOperator)settings.value("operator").toInt());
+                            params.append(paramDescriptor);
+                        }
+                        settings.endGroup();
+                    }
+                }
+
+                if (!eventTypeId.isNull()) {
+                    EventDescriptor eventDescriptor(eventTypeId, deviceId, params);
+                    eventDescriptorList.append(eventDescriptor);
+                } else {
+                    EventDescriptor eventDescriptor(interface, interfaceEvent, params);
+                    eventDescriptorList.append(eventDescriptor);
+                }
+                settings.endGroup();
+            }
+        }
+        settings.endGroup();
+
+
+        // Load stateEvaluator
+        StateEvaluator stateEvaluator = StateEvaluator::loadFromSettings(settings, "stateEvaluator");
+
+        // Load actions
+        QList<RuleAction> actions;
+        settings.beginGroup("ruleActions");
+        foreach (const QString &actionNumber, settings.childGroups()) {
+            settings.beginGroup(actionNumber);
+
+            RuleActionParamList params;
+            foreach (QString paramTypeIdString, settings.childGroups()) {
+                if (paramTypeIdString.startsWith("RuleActionParam-")) {
+                    settings.beginGroup(paramTypeIdString);
+                    QString strippedParamTypeIdString = paramTypeIdString.remove(QRegExp("^RuleActionParam-"));
+                    EventTypeId eventTypeId = EventTypeId(settings.value("eventTypeId", EventTypeId()).toString());
+                    ParamTypeId eventParamTypeId = ParamTypeId(settings.value("eventParamTypeId", ParamTypeId()).toString());
+                    QVariant value = settings.value("value");
+                    if (settings.contains("valueType")) {
+                        QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
+                        // Note: only warn, and continue with the QVariant guessed type
+                        if (valueType == QVariant::Invalid) {
+                            qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the rule action param " << strippedParamTypeIdString << ". The value type will be guessed by QVariant.";
+                        } else if (!value.canConvert(valueType)) {
+                            qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the rule action param value" << value << "to the stored type" << valueType;
+                        } else {
+                            value.convert(valueType);
+                        }
+                    }
+
+                    if (!ParamTypeId(strippedParamTypeIdString).isNull()) {
+                        RuleActionParam param(ParamTypeId(strippedParamTypeIdString),
+                                              value,
+                                              eventTypeId,
+                                              eventParamTypeId);
+                        params.append(param);
+                    } else {
+                        RuleActionParam param(strippedParamTypeIdString,
+                                              value,
+                                              eventTypeId,
+                                              eventParamTypeId);
+                        params.append(param);
+                    }
+                    settings.endGroup();
+                }
+            }
+
+            if (settings.contains("actionTypeId") && settings.contains("deviceId")) {
+                RuleAction action = RuleAction(ActionTypeId(settings.value("actionTypeId").toString()), DeviceId(settings.value("deviceId").toString()));
+                action.setRuleActionParams(params);
+                actions.append(action);
+            } else if (settings.contains("interface") && settings.contains("interfaceAction")){
+                RuleAction action = RuleAction(settings.value("interface").toString(), settings.value("interfaceAction").toString());
+                action.setRuleActionParams(params);
+                actions.append(action);
+            }
+
+            settings.endGroup();
+        }
+        settings.endGroup();
+
+        // Load exit actions
+        QList<RuleAction> exitActions;
+        settings.beginGroup("ruleExitActions");
+        foreach (const QString &actionNumber, settings.childGroups()) {
+            settings.beginGroup(actionNumber);
+
+            RuleActionParamList params;
+            foreach (QString paramTypeIdString, settings.childGroups()) {
+                if (paramTypeIdString.startsWith("RuleActionParam-")) {
+                    settings.beginGroup(paramTypeIdString);
+                    QString strippedParamTypeIdString = paramTypeIdString.remove(QRegExp("^RuleActionParam-"));
+                    QVariant value = settings.value("value");
+                    if (settings.contains("valueType")) {
+                        QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
+                        // Note: only warn, and continue with the QVariant guessed type
+                        if (valueType == QVariant::Invalid) {
+                            qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the rule action param " << strippedParamTypeIdString << ". The value type will be guessed by QVariant.";
+                        } else if (!value.canConvert(valueType)) {
+                            qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the rule action param value" << value << "to the stored type" << valueType;
+                        } else {
+                            value.convert(valueType);
+                        }
+                    }
+
+                    if (!ParamTypeId(strippedParamTypeIdString).isNull()) {
+                        RuleActionParam param(ParamTypeId(strippedParamTypeIdString), value);
+                        params.append(param);
+                    } else {
+                        RuleActionParam param(strippedParamTypeIdString, value);
+                        params.append(param);
+                    }
+                    settings.endGroup();
+                }
+            }
+
+            if (settings.contains("actionTypeId") && settings.contains("deviceId")) {
+                RuleAction action = RuleAction(ActionTypeId(settings.value("actionTypeId").toString()), DeviceId(settings.value("deviceId").toString()));
+                action.setRuleActionParams(params);
+                exitActions.append(action);
+            } else if (settings.contains("interface") && settings.contains("interfaceAction")) {
+                RuleAction action = RuleAction(settings.value("interface").toString(),settings.value("interfaceAction").toString());
+                action.setRuleActionParams(params);
+                exitActions.append(action);
+            }
+
+            settings.endGroup();
+        }
+        settings.endGroup();
+
+        Rule rule;
+        rule.setId(RuleId(idString));
+        rule.setName(name);
+        rule.setTimeDescriptor(timeDescriptor);
+        rule.setEventDescriptors(eventDescriptorList);
+        rule.setStateEvaluator(stateEvaluator);
+        rule.setActions(actions);
+        rule.setExitActions(exitActions);
+        rule.setEnabled(enabled);
+        rule.setExecutable(executable);
+        rule.setStatesActive(rule.stateEvaluator().evaluate());
+        appendRule(rule);
+        settings.endGroup();
     }
+
 }
 
 }

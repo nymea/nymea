@@ -70,7 +70,7 @@ public:
 
     explicit RuleEngine(QObject *parent = nullptr);
     ~RuleEngine();
-    void initRuleStates();
+    void init();
 
     QList<Rule> evaluateEvent(const Event &event);
     QList<Rule> evaluateTime(const QDateTime &dateTime);

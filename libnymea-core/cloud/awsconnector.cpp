@@ -99,9 +99,8 @@ void AWSConnector::doConnect()
 
     connect(m_client, &MqttClient::connected, this, &AWSConnector::onConnected);
     connect(m_client, &MqttClient::disconnected, this, &AWSConnector::onDisconnected);
-    connect(m_client, &MqttClient::error, this, [this](const QAbstractSocket::SocketError error){
-        qCWarning(dcAWS()) << "An error happened in the MQTT transport" << error << QMetaEnum::fromType<QAbstractSocket::SocketError>().valueToKey(error);
-        onDisconnected();
+    connect(m_client, &MqttClient::error, this, [](const QAbstractSocket::SocketError error){
+        qCWarning(dcAWS()) << "An error happened in the MQTT transport" << error;
     });
 
     connect(m_client, &MqttClient::subscribed, this, &AWSConnector::onSubscribed);

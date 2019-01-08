@@ -132,6 +132,85 @@ NymeaCore *NymeaCore::instance()
     return s_instance;
 }
 
+/*! Constructs NymeaCore with the given \a parent. This is private.
+    Use \l{NymeaCore::instance()} to access the single instance.*/
+NymeaCore::NymeaCore(QObject *parent) :
+    QObject(parent)
+{
+}
+
+void NymeaCore::init() {
+    qCDebug(dcApplication()) << "Initializing NymeaCore";
+
+    qCDebug(dcApplication()) << "Loading nymea configurations" << NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName();
+    m_configuration = new NymeaConfiguration(this);
+
+    qCDebug(dcApplication()) << "Creating Time Manager";
+    m_timeManager = new TimeManager(m_configuration->timeZone(), this);
+
+    qCDebug(dcApplication) << "Creating Log Engine";
+    m_logger = new LogEngine(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), m_configuration->logDBMaxEntries(), this);
+
+    qCDebug(dcApplication()) << "Creating User Manager";
+    m_userManager = new UserManager(NymeaSettings::settingsPath() + "/user-db.sqlite", this);
+
+    qCDebug(dcApplication) << "Creating Server Manager";
+    m_serverManager = new ServerManager(m_configuration, this);
+
+    qCDebug(dcApplication) << "Creating Hardware Manager";
+    m_hardwareManager = new HardwareManagerImplementation(m_serverManager->mqttBroker(), this);
+
+    qCDebug(dcApplication) << "Creating Device Manager (locale:" << m_configuration->locale() << ")";
+    m_deviceManager = new DeviceManager(m_hardwareManager, m_configuration->locale(), this);
+
+    qCDebug(dcApplication) << "Creating Rule Engine";
+    m_ruleEngine = new RuleEngine(this);
+
+    qCDebug(dcApplication()) << "Creating Tags Storage";
+    m_tagsStorage = new TagsStorage(m_deviceManager, m_ruleEngine, this);
+
+    qCDebug(dcApplication) << "Creating Network Manager";
+    m_networkManager = new NetworkManager(this);
+
+    qCDebug(dcApplication) << "Creating Debug Server Handler";
+    m_debugServerHandler = new DebugServerHandler(this);
+
+    qCDebug(dcApplication) << "Creating Cloud Manager";
+    m_cloudManager = new CloudManager(m_configuration, m_networkManager, this);
+
+    CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
+    m_deviceManager->registerStaticPlugin(cloudNotifications, cloudNotifications->metaData());
+
+    CloudTransport *cloudTransport = m_cloudManager->createTransportInterface();
+    m_serverManager->jsonServer()->registerTransportInterface(cloudTransport, false);
+
+    connect(m_configuration, &NymeaConfiguration::localeChanged, this, &NymeaCore::onLocaleChanged);
+    connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
+
+    connect(m_deviceManager, &DeviceManager::pluginConfigChanged, this, &NymeaCore::pluginConfigChanged);
+    connect(m_deviceManager, &DeviceManager::eventTriggered, this, &NymeaCore::gotEvent);
+    connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &NymeaCore::deviceStateChanged);
+    connect(m_deviceManager, &DeviceManager::deviceAdded, this, &NymeaCore::deviceAdded);
+    connect(m_deviceManager, &DeviceManager::deviceChanged, this, &NymeaCore::deviceChanged);
+    connect(m_deviceManager, &DeviceManager::deviceRemoved, this, &NymeaCore::deviceRemoved);
+    connect(m_deviceManager, &DeviceManager::deviceDisappeared, this, &NymeaCore::onDeviceDisappeared);
+    connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &NymeaCore::actionExecutionFinished);
+    connect(m_deviceManager, &DeviceManager::devicesDiscovered, this, &NymeaCore::devicesDiscovered);
+    connect(m_deviceManager, &DeviceManager::deviceSetupFinished, this, &NymeaCore::deviceSetupFinished);
+    connect(m_deviceManager, &DeviceManager::deviceReconfigurationFinished, this, &NymeaCore::deviceReconfigurationFinished);
+    connect(m_deviceManager, &DeviceManager::pairingFinished, this, &NymeaCore::pairingFinished);
+    connect(m_deviceManager, &DeviceManager::loaded, this, &NymeaCore::deviceManagerLoaded);
+
+    connect(m_ruleEngine, &RuleEngine::ruleAdded, this, &NymeaCore::ruleAdded);
+    connect(m_ruleEngine, &RuleEngine::ruleRemoved, this, &NymeaCore::ruleRemoved);
+    connect(m_ruleEngine, &RuleEngine::ruleConfigurationChanged, this, &NymeaCore::ruleConfigurationChanged);
+
+    connect(m_timeManager, &TimeManager::dateTimeChanged, this, &NymeaCore::onDateTimeChanged);
+    connect(m_timeManager, &TimeManager::tick, m_deviceManager, &DeviceManager::timeTick);
+
+    m_logger->logSystemEvent(m_timeManager->currentDateTime(), true);
+}
+
 /*! Destructor of the \l{NymeaCore}. */
 NymeaCore::~NymeaCore()
 {
@@ -155,6 +234,8 @@ NymeaCore::~NymeaCore()
 
     qCDebug(dcApplication) << "Shutting down \"CloudManager\"";
     delete m_cloudManager;
+
+    qCDebug(dcApplication) << "Done shutting down NymeaCore";
 }
 
 /*! Destroyes the \l{NymeaCore} instance. */
@@ -506,88 +587,6 @@ TagsStorage *NymeaCore::tagsStorage() const
 }
 
 
-/*! Constructs NymeaCore with the given \a parent. This is private.
-    Use \l{NymeaCore::instance()} to access the single instance.*/
-NymeaCore::NymeaCore(QObject *parent) :
-    QObject(parent)
-{
-    staticMetaObject.invokeMethod(this, "init", Qt::QueuedConnection);
-}
-
-void NymeaCore::init() {
-    qCDebug(dcApplication()) << "Loading nymea configurations" << NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName();
-    m_configuration = new NymeaConfiguration(this);
-
-    qCDebug(dcApplication()) << "Creating Time Manager";
-    m_timeManager = new TimeManager(QTimeZone::systemTimeZoneId(), this);
-
-    qCDebug(dcApplication) << "Creating Log Engine";
-    m_logger = new LogEngine(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), m_configuration->logDBMaxEntries(), this);
-
-    qCDebug(dcApplication()) << "Creating User Manager";
-    m_userManager = new UserManager(NymeaSettings::settingsPath() + "/user-db.sqlite", this);
-
-    qCDebug(dcApplication) << "Creating Server Manager";
-    m_serverManager = new ServerManager(m_configuration, this);
-
-    qCDebug(dcApplication) << "Creating Hardware Manager";
-    m_hardwareManager = new HardwareManagerImplementation(m_serverManager->mqttBroker(), this);
-
-    qCDebug(dcApplication) << "Creating Device Manager (locale:" << m_configuration->locale() << ")";
-    m_deviceManager = new DeviceManager(m_hardwareManager, m_configuration->locale(), this);
-
-    qCDebug(dcApplication) << "Creating Rule Engine";
-    m_ruleEngine = new RuleEngine(this);
-
-    qCDebug(dcApplication()) << "Creating Tags Storage";
-    m_tagsStorage = new TagsStorage(m_deviceManager, m_ruleEngine, this);
-
-    qCDebug(dcApplication) << "Creating Network Manager";
-    m_networkManager = new NetworkManager(this);
-
-    qCDebug(dcApplication) << "Creating Debug Server Handler";
-    m_debugServerHandler = new DebugServerHandler(this);
-
-    qCDebug(dcApplication) << "Creating Cloud Manager";
-    m_cloudManager = new CloudManager(m_configuration, m_networkManager, this);
-
-    CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
-    m_deviceManager->registerStaticPlugin(cloudNotifications, cloudNotifications->metaData());
-
-    CloudTransport *cloudTransport = m_cloudManager->createTransportInterface();
-    m_serverManager->jsonServer()->registerTransportInterface(cloudTransport, false);
-
-    connect(m_configuration, &NymeaConfiguration::localeChanged, this, &NymeaCore::onLocaleChanged);
-    connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
-
-    connect(m_deviceManager, &DeviceManager::pluginConfigChanged, this, &NymeaCore::pluginConfigChanged);
-    connect(m_deviceManager, &DeviceManager::eventTriggered, this, &NymeaCore::gotEvent);
-    connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &NymeaCore::deviceStateChanged);
-    connect(m_deviceManager, &DeviceManager::deviceAdded, this, &NymeaCore::deviceAdded);
-    connect(m_deviceManager, &DeviceManager::deviceChanged, this, &NymeaCore::deviceChanged);
-    connect(m_deviceManager, &DeviceManager::deviceRemoved, this, &NymeaCore::deviceRemoved);
-    connect(m_deviceManager, &DeviceManager::deviceDisappeared, this, &NymeaCore::onDeviceDisappeared);
-    connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &NymeaCore::actionExecutionFinished);
-    connect(m_deviceManager, &DeviceManager::devicesDiscovered, this, &NymeaCore::devicesDiscovered);
-    connect(m_deviceManager, &DeviceManager::deviceSetupFinished, this, &NymeaCore::deviceSetupFinished);
-    connect(m_deviceManager, &DeviceManager::deviceReconfigurationFinished, this, &NymeaCore::deviceReconfigurationFinished);
-    connect(m_deviceManager, &DeviceManager::pairingFinished, this, &NymeaCore::pairingFinished);
-    connect(m_deviceManager, &DeviceManager::loaded, this, &NymeaCore::deviceManagerLoaded);
-
-    connect(m_ruleEngine, &RuleEngine::ruleAdded, this, &NymeaCore::ruleAdded);
-    connect(m_ruleEngine, &RuleEngine::ruleRemoved, this, &NymeaCore::ruleRemoved);
-    connect(m_ruleEngine, &RuleEngine::ruleConfigurationChanged, this, &NymeaCore::ruleConfigurationChanged);
-
-    connect(m_timeManager, &TimeManager::dateTimeChanged, this, &NymeaCore::onDateTimeChanged);
-    connect(m_timeManager, &TimeManager::tick, m_deviceManager, &DeviceManager::timeTick);
-
-    m_logger->logSystemEvent(m_timeManager->currentDateTime(), true);
-
-    emit initialized();
-
-    // Evaluate rules on current time
-    onDateTimeChanged(m_timeManager->currentDateTime());
-}
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in
     here will be evaluated by the \l{RuleEngine} and the according \l{RuleAction}{RuleActions} are executed.*/
@@ -767,7 +766,11 @@ void NymeaCore::onDeviceDisappeared(const DeviceId &deviceId)
 
 void NymeaCore::deviceManagerLoaded()
 {
-    m_ruleEngine->initRuleStates();
+    m_ruleEngine->init();
+    // Evaluate rules on current time
+    onDateTimeChanged(m_timeManager->currentDateTime());
+
+    emit initialized();
 
     // Do some houskeeping...
     qCDebug(dcApplication()) << "Starting housekeeping...";
@@ -789,6 +792,7 @@ void NymeaCore::deviceManagerLoaded()
     }
 
     qCDebug(dcApplication()) << "Housekeeping done in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";
+
 }
 
 }

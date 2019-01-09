@@ -11,5 +11,18 @@
         <file>favicons/favicon-196x196.png</file>
         <file>favicons/favicon.ico</file>
         <file>favicons/favicon.svg</file>
+        <file>favicons/mstile-70x70.png</file>
+        <file>favicons/mstile-144x144.png</file>
+        <file>favicons/mstile-150x150.png</file>
+        <file>favicons/mstile-310x150.png</file>
+        <file>favicons/mstile-310x310.png</file>
+        <file>favicons/apple-touch-icon-152x152.png</file>
+        <file>favicons/apple-touch-icon-144x144.png</file>
+        <file>favicons/apple-touch-icon-57x57.png</file>
+        <file>favicons/apple-touch-icon-60x60.png</file>
+        <file>favicons/apple-touch-icon-72x72.png</file>
+        <file>favicons/apple-touch-icon-76x76.png</file>
+        <file>favicons/apple-touch-icon-114x114.png</file>
+        <file>favicons/apple-touch-icon-120x120.png</file>
     </qresource>
 </RCC>

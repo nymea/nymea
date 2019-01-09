@@ -121,7 +121,8 @@ private:
 
     bool m_closeConnection;
 
-    QTimer *m_timer;
+    QTimer *m_timer = nullptr;
+    int m_timeout = 60000;
     bool m_timedOut;
 
     QByteArray getHttpReasonPhrase(const HttpStatusCode &statusCode);
@@ -138,7 +139,7 @@ signals:
 
 };
 
-QDebug operator<< (QDebug debug, const HttpReply &httpReply);
+QDebug operator<<(QDebug debug, HttpReply *httpReply);
 
 }
 

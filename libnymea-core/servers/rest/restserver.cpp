@@ -151,7 +151,7 @@ void RestServer::asyncReplyFinished()
     HttpReply *reply = qobject_cast<HttpReply*>(sender());
 
     if (!m_asyncReplies.values().contains(reply)) {
-        qCWarning(dcWebServer) << "Reply for async request does no longer exist";
+        qCWarning(dcWebServer()) << "Reply for async request does no longer exist";
         reply->deleteLater();
         return;
     }
@@ -159,7 +159,7 @@ void RestServer::asyncReplyFinished()
     QUuid clientId = m_asyncReplies.key(reply);
     m_asyncReplies.remove(clientId);
 
-    qCDebug(dcWebServer) << "Async reply finished";
+    qCDebug(dcWebServer()) << "Async reply finished";
 
     // check if the reply timeouted
     if (reply->timedOut()) {
@@ -169,7 +169,7 @@ void RestServer::asyncReplyFinished()
 
     // check if client is still connected
     if (!m_clientList.contains(clientId)) {
-        qCWarning(dcWebServer) << "Client for async reply not longer connected.";
+        qCWarning(dcWebServer()) << "Client for async reply not longer connected.";
     } else {
         reply->setClientId(clientId);
         WebServer *webserver = m_clientList.value(clientId);

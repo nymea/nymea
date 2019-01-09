@@ -268,7 +268,11 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
     }
 
     m_lastEvaluationTime = dateTime;
-    qCDebug(dcRuleEngine()) << "EvaluateTimeEvent evaluated" << rules.count() << "to be executed";
+
+    if (rules.count() > 0) { // Don't spam the log
+        qCDebug(dcRuleEngine()) << "EvaluateTimeEvent evaluated" << rules.count() << "to be executed";
+    }
+
     return rules;
 }
 

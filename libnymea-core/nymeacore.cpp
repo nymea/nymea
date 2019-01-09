@@ -598,6 +598,12 @@ void NymeaCore::gotEvent(const Event &event)
     QList<RuleAction> actions;
     QList<RuleAction> eventBasedActions;
     foreach (const Rule &rule, m_ruleEngine->evaluateEvent(event)) {
+        if (m_executingRules.contains(rule.id())) {
+            qCWarning(dcRuleEngine()) << "WARNING: Loop detected in rule execution for rule" << rule.id() << rule.name();
+            break;
+        }
+        m_executingRules.append(rule.id());
+
         // Event based
         if (!rule.eventDescriptors().isEmpty()) {
             m_logger->logRuleTriggered(rule);
@@ -652,6 +658,7 @@ void NymeaCore::gotEvent(const Event &event)
     }
 
     executeRuleActions(actions);
+    m_executingRules.clear();
 }
 
 void NymeaCore::onDateTimeChanged(const QDateTime &dateTime)

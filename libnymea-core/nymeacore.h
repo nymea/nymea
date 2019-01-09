@@ -131,6 +131,7 @@ private:
     UserManager *m_userManager;
 
     QHash<ActionId, Action> m_pendingActions;
+    QList<RuleId> m_executingRules;
 
 private slots:
     void gotEvent(const Event &event);

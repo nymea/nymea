@@ -72,7 +72,7 @@ QString DevicesResource::name() const
 */
 HttpReply *DevicesResource::proccessRequest(const HttpRequest &request, const QStringList &urlTokens)
 {
-    m_device = 0;
+    m_device = nullptr;
 
     // get the main resource
     if (urlTokens.count() >= 4 && urlTokens.at(3) != "pair" && urlTokens.at(3) != "confirmpairing") {
@@ -373,7 +373,7 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
         status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceParams, newDeviceId);
     } else {
         qCDebug(dcRest) << "Adding discovered device" << deviceName << "with DeviceDescriptorId" << deviceDescriptorId.toString();
-        status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceDescriptorId, newDeviceId);
+        status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceDescriptorId, deviceParams, newDeviceId);
     }
     if (status == DeviceManager::DeviceErrorAsync) {
         HttpReply *reply = createAsyncReply();

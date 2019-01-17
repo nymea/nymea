@@ -459,9 +459,11 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
 
 /*! Add a new configured device for the given \l{DeviceClass} the given DeviceDescriptorId and \a deviceId. Only devices with \l{DeviceClass}{CreateMethodDiscovery}
  *  can be created using this method. The \a deviceClassId must refer to an existing \l{DeviceClass} and the \a deviceDescriptorId must refer to an existing DeviceDescriptorId
- *  from the discovery. The \a name parameter should contain the device name.
+ *  from the discovery. The \a name parameter should contain the device name. Optionally device params can be passed. By default the descriptor's params as found by the discovery
+ *  are used but can be overridden here.
+ *
  *  Returns \l{DeviceError} to inform about the result. */
-DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const DeviceId &deviceId)
+DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params, const DeviceId &deviceId)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (!deviceClass.isValid()) {
@@ -476,7 +478,17 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
         return DeviceErrorDeviceDescriptorNotFound;
     }
 
-    return addConfiguredDeviceInternal(deviceClassId, name, descriptor.params(), deviceId);
+    // Merge params. Use the ones from the descriptor unless overrides are provided in the function call
+    ParamList finalParams;
+    foreach (const Param &param, descriptor.params()) {
+        if (params.hasParam(param.paramTypeId())) {
+            finalParams.append(Param(param.paramTypeId(), params.paramValue(param.paramTypeId())));
+        } else {
+            finalParams.append(param);
+        }
+    }
+
+    return addConfiguredDeviceInternal(deviceClassId, name, finalParams, deviceId);
 }
 
 

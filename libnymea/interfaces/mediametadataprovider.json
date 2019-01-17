@@ -1,21 +1,22 @@
 {
+    "description": "Provide media information, meant to be used in combination with mediaplayer. For music players, use collection to provide the album/compilation, for video players fill in the series name or a movie collection name there. Artwork can be a URL to a artwork image.",
     "extends": "media",
     "states": [
         {
-            "name": "artist",
-            "type": "string"
-        },
-        {
-            "name": "album",
-            "type": "string"
-        },
-        {
             "name": "title",
-            "type": "string"
+            "type": "QString"
+        },
+        {
+            "name": "artist",
+            "type": "QString"
+        },
+        {
+            "name": "collection",
+            "type": "QString"
         },
         {
             "name": "artwork",
-            "type": "string"
+            "type": "QString"
         }
     ]
 }

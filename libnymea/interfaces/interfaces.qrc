@@ -1,7 +1,5 @@
 <RCC>
     <qresource prefix="/interfaces">
-        <file>media.json</file>
-        <file>mediacontroller.json</file>
         <file>light.json</file>
         <file>dimmablelight.json</file>
         <file>daylightsensor.json</file>
@@ -13,8 +11,12 @@
         <file>weather.json</file>
         <file>volumecontroller.json</file>
         <file>extendedvolumecontroller.json</file>
+        <file>media.json</file>
+        <file>mediacontroller.json</file>
+        <file>extendedmediacontroller.json</file>
         <file>mediametadataprovider.json</file>
         <file>mediaplayer.json</file>
+        <file>shufflerepeat.json</file>
         <file>battery.json</file>
         <file>batterylevel.json</file>
         <file>button.json</file>

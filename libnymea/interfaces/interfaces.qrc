@@ -32,6 +32,7 @@
         <file>inputtrigger.json</file>
         <file>outputtrigger.json</file>
         <file>power.json</file>
+        <file>powersocket.json</file>
         <file>simpleclosable.json</file>
         <file>closable.json</file>
         <file>awning.json</file>

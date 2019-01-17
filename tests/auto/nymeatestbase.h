@@ -29,6 +29,8 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
+Q_DECLARE_LOGGING_CATEGORY(dcTests)
+
 extern DeviceClassId mockDeviceClassId;
 extern DeviceClassId mockDeviceAutoClassId;
 extern DeviceClassId mockPushButtonDeviceClassId;
@@ -51,6 +53,7 @@ extern StateTypeId mockIntStateId;
 extern StateTypeId mockDoubleStateId;
 extern StateTypeId mockBatteryCriticalStateId;
 extern StateTypeId mockBoolStateId;
+extern StateTypeId mockPowerStateTypeId;
 
 // ParamTypes from mock devices
 extern ParamTypeId configParamIntParamTypeId;

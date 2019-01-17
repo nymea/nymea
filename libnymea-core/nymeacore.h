@@ -61,6 +61,7 @@ public:
     static NymeaCore* instance();
     ~NymeaCore();
 
+    void init();
     void destroy();
 
     // Device handling
@@ -132,7 +133,6 @@ private:
     QHash<ActionId, Action> m_pendingActions;
 
 private slots:
-    void init();
     void gotEvent(const Event &event);
     void onDateTimeChanged(const QDateTime &dateTime);
     void onLocaleChanged();

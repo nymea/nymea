@@ -30,6 +30,8 @@ class TestTimeManager: public NymeaTestBase
     Q_OBJECT
 
 private slots:
+    void initTestCase();
+
     void changeTimeZone_data();
     void changeTimeZone();
 
@@ -66,6 +68,10 @@ private slots:
 
     void testCalendarItemStatesEvent_data();
     void testCalendarItemStatesEvent();
+
+    void testCalendarItemCrossesMidnight();
+
+    void testEventBasedWithCalendarItemCrossingMidnight();
 
     // TimeEventItems
     void testEventItemDateTime_data();
@@ -115,6 +121,12 @@ private:
     QVariantMap createTimeDescriptorCalendar(const QVariantMap &calendarItem) const;
     QVariantMap createTimeDescriptorCalendar(const QVariantList &calendarItems) const;
 };
+
+void TestTimeManager::initTestCase()
+{
+    NymeaTestBase::initTestCase();
+    QLoggingCategory::setFilterRules("*.debug=false\nTests.debug=true\nRuleEngine.debug=true\nRuleEngineDebug.debug=true\nMockDevice.*=true\nTimeManager.debug=true");
+}
 
 void TestTimeManager::changeTimeZone_data()
 {
@@ -1280,6 +1292,137 @@ void TestTimeManager::testCalendarItemStatesEvent()
     } else {
         verifyRuleNotExecuted();
     }
+}
+
+void TestTimeManager::testCalendarItemCrossesMidnight()
+{
+    initTimeManager();
+
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(20,00)));
+
+    // Action
+    QVariantMap action;
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    action.insert("ruleActionParams", QVariantList());
+
+    QVariantMap repeatingOptionDaily;
+    repeatingOptionDaily.insert("mode", "RepeatingModeDaily");
+
+    // The rule
+    QVariantMap ruleMap;
+    ruleMap.insert("name", "Time based from 23:00 to 01:00");
+    ruleMap.insert("actions", QVariantList() << action);
+    ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(createCalendarItem("23:00", 120, repeatingOptionDaily)));
+
+    QVariant response = injectAndWait("Rules.AddRule", ruleMap);
+    verifyRuleError(response);
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+
+    QVariantMap params;
+    params.insert("ruleId", ruleId);
+
+    response = injectAndWait("Rules.GetRuleDetails", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == false, "Rule is active while it should not be (20:00)");
+
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(22,59)));
+
+    response = injectAndWait("Rules.GetRuleDetails", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == false, "Rule is active while it should not be (22:59)");
+
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(23,00)));
+
+    response = injectAndWait("Rules.GetRuleDetails", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == true, "Rule is not active while it should be (23:00)");
+
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(23,10)));
+
+    response = injectAndWait("Rules.GetRuleDetails", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == true, "Rule is not active while it should be (23:10)");
+
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(00,00)));
+
+    response = injectAndWait("Rules.GetRuleDetails", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == true, "Rule is not active while it should be (00:00)");
+
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(00,30)));
+
+    response = injectAndWait("Rules.GetRuleDetails", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == true, "Rule is not active while it should be (00:30)");
+
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(01,00)));
+
+    response = injectAndWait("Rules.GetRuleDetails", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == false, "Rule is active while it should not be (01:00)");
+
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(02,00)));
+
+    response = injectAndWait("Rules.GetRuleDetails", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool() == false, "Rule is active while it should not be (02:00)");
+
+}
+
+void TestTimeManager::testEventBasedWithCalendarItemCrossingMidnight()
+{
+    initTimeManager();
+
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(20,00)));
+
+    // Event descriptor
+    QVariantMap eventDescriptor;
+    eventDescriptor.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor.insert("deviceId", m_mockDeviceId);
+
+    // Action
+    QVariantMap action;
+    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("deviceId", m_mockDeviceId);
+    action.insert("ruleActionParams", QVariantList());
+
+    QVariantMap repeatingOptionDaily;
+    repeatingOptionDaily.insert("mode", "RepeatingModeDaily");
+
+    // The rule
+    QVariantMap ruleMap;
+    ruleMap.insert("name", "Time based from 23:00 to 01:00");
+    ruleMap.insert("actions", QVariantList() << action);
+    ruleMap.insert("eventDescriptors", QVariantList() << eventDescriptor);
+    ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(createCalendarItem("23:00", 120, repeatingOptionDaily)));
+
+    QVariant response = injectAndWait("Rules.AddRule", ruleMap);
+    verifyRuleError(response);
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
+
+    QVariantMap params;
+    params.insert("ruleId", ruleId);
+
+    response = injectAndWait("Rules.GetRuleDetails", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("rule").toMap().value("id").toUuid() == ruleId, "Rule not found in GetRules");
+
+    cleanupMockHistory();
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(20, 00)));
+    triggerMockEvent1();
+    verifyRuleNotExecuted();
+
+    cleanupMockHistory();
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(23, 00)));
+    triggerMockEvent1();
+    verifyRuleExecuted(mockActionIdNoParams);
+
+    cleanupMockHistory();
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(23, 50)));
+    triggerMockEvent1();
+    verifyRuleExecuted(mockActionIdNoParams);
+
+    cleanupMockHistory();
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(00, 00)));
+    triggerMockEvent1();
+    verifyRuleExecuted(mockActionIdNoParams);
+
+    cleanupMockHistory();
+    NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(01, 00)));
+    triggerMockEvent1();
+    verifyRuleNotExecuted();
 }
 
 void TestTimeManager::testEventItemDateTime_data()

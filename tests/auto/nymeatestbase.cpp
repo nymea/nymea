@@ -26,6 +26,8 @@
 
 using namespace nymeaserver;
 
+Q_LOGGING_CATEGORY(dcTests, "Tests")
+
 PluginId mockPluginId = PluginId("727a4a9a-c187-446f-aadf-f1b2220607d1");
 VendorId guhVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
 DeviceClassId mockDeviceClassId = DeviceClassId("753f0d32-0468-4d08-82ed-1964aab03298");
@@ -44,6 +46,7 @@ StateTypeId mockIntStateId = StateTypeId("80baec19-54de-4948-ac46-31eabfaceb83")
 StateTypeId mockBoolStateId = StateTypeId("9dd6a97c-dfd1-43dc-acbd-367932742310");
 StateTypeId mockDoubleStateId = StateTypeId("7cac53ee-7048-4dc9-b000-7b585390f34c");
 StateTypeId mockBatteryCriticalStateId = StateTypeId("580bc611-1a55-41f3-996f-8d3ccf543db3");
+StateTypeId mockPowerStateTypeId = StateTypeId("064aed0d-da4c-49d4-b236-60f97e98ff84");
 ActionTypeId mockActionIdPower = ActionTypeId("064aed0d-da4c-49d4-b236-60f97e98ff84");
 ActionTypeId mockActionIdWithParams = ActionTypeId("dea0f4e1-65e3-4981-8eaa-2701c53a9185");
 ActionTypeId mockActionIdNoParams = ActionTypeId("defd3ed6-1a0d-400b-8879-a0202cf39935");
@@ -116,19 +119,14 @@ void NymeaTestBase::initTestCase()
     NymeaSettings nymeadSettings(NymeaSettings::SettingsRoleGlobal);
     nymeadSettings.clear();
 
-    QLoggingCategory::setFilterRules("*.debug=false");
+    QLoggingCategory::setFilterRules("*.debug=false\nTests.debug=true");
 
     // Start the server
-    NymeaCore::instance();
+    NymeaCore::instance()->init();
 
     // Wait unitl the server is initialized
     QSignalSpy coreInitializedSpy(NymeaCore::instance(), SIGNAL(initialized()));
-    coreInitializedSpy.wait();
-
-    // Wait for the DeviceManager to signal that it has loaded plugins and everything
-    QSignalSpy deviceManagerSpy(NymeaCore::instance()->deviceManager(), SIGNAL(loaded()));
-    QVERIFY(deviceManagerSpy.isValid());
-    QVERIFY(deviceManagerSpy.wait());
+    QVERIFY(coreInitializedSpy.wait());
 
     // Yes, we're intentionally mixing upper/lower case email here... username should not be case sensitive
     NymeaCore::instance()->userManager()->removeUser("dummy@guh.io");
@@ -439,10 +437,9 @@ void NymeaTestBase::restartServer()
 {
     // Destroy and recreate the core instance...
     NymeaCore::instance()->destroy();
+    NymeaCore::instance()->init();
     QSignalSpy coreSpy(NymeaCore::instance(), SIGNAL(initialized()));
     coreSpy.wait();
-    QSignalSpy spy(NymeaCore::instance()->deviceManager(), SIGNAL(loaded()));
-    spy.wait();
     m_mockTcpServer = MockTcpServer::servers().first();
     m_mockTcpServer->clientConnected(m_clientId);
 }

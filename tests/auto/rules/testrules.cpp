@@ -46,7 +46,11 @@ private:
 
     QVariant validIntStateBasedRule(const QString &name, const bool &executable, const bool &enabled);
 
+    void generateEvent(const EventTypeId &eventTypeId);
+
 private slots:
+
+    void initTestCase();
 
     void cleanup();
     void emptyRule();
@@ -100,6 +104,8 @@ private slots:
 
     void testRuleActionPAramsFromEventParameter_data();
     void testRuleActionPAramsFromEventParameter();
+
+    void testInitStatesActive();
 
     void testInterfaceBasedEventRule();
 
@@ -257,8 +263,7 @@ void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
     QCOMPARE(spy.count(), 1);
 
     QByteArray actionHistory = reply->readAll();
-    qDebug() << "have action history" << actionHistory;
-    QVERIFY2(actionTypeId == ActionTypeId(actionHistory), "Action not triggered");
+    QVERIFY2(actionTypeId == ActionTypeId(actionHistory), "Action not triggered. Current action history: \"" + actionHistory + "\"");
     reply->deleteLater();
 }
 
@@ -272,8 +277,7 @@ void TestRules::verifyRuleNotExecuted()
     QCOMPARE(spy.count(), 1);
 
     QByteArray actionHistory = reply->readAll();
-    qDebug() << "have action history" << actionHistory;
-    QVERIFY2(actionHistory.isEmpty(), "Action is triggered while it should not have been.");
+    QVERIFY2(actionHistory.isEmpty(), "Action is triggered while it should not have been. Current action history: \"" + actionHistory + "\"");
     reply->deleteLater();
 }
 
@@ -347,6 +351,27 @@ QVariant TestRules::validIntStateBasedRule(const QString &name, const bool &exec
     params.insert("exitActions", QVariantList() << exitAction);
 
     return params;
+}
+
+void TestRules::generateEvent(const EventTypeId &eventTypeId)
+{
+    // Trigger an event
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // trigger event in mock device
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(eventTypeId.toString())));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+}
+
+void TestRules::initTestCase()
+{
+    NymeaTestBase::initTestCase();
+    QLoggingCategory::setFilterRules("*.debug=false\nTests.debug=true\nRuleEngine.debug=true\nRuleEngineDebug.debug=true\nMockDevice.*=true");
 }
 
 void TestRules::addRemoveRules_data()
@@ -2525,6 +2550,101 @@ void TestRules::testRuleActionPAramsFromEventParameter()
     verifyRuleError(response, error);
 }
 
+void TestRules::testInitStatesActive()
+{
+
+    // Create a rule to toggle the power state on event 1
+    QVariantMap params;
+    params.insert("name", "testrule");
+
+    QVariantMap eventDescriptor;
+    eventDescriptor.insert("deviceId", m_mockDeviceId);
+    eventDescriptor.insert("eventTypeId", mockEvent1Id);
+    QVariantList eventDescriptors;
+    eventDescriptors.append(eventDescriptor);
+    params.insert("eventDescriptors", eventDescriptors);
+
+    QVariantMap stateEvaluator;
+    QVariantMap stateDescriptor;
+    stateDescriptor.insert("stateTypeId", mockPowerStateTypeId);
+    stateDescriptor.insert("operator", "ValueOperatorEquals");
+    stateDescriptor.insert("value", false);
+    stateDescriptor.insert("deviceId", m_mockDeviceId);
+    stateEvaluator.insert("stateDescriptor", stateDescriptor);
+    params.insert("stateEvaluator", stateEvaluator);
+
+    QVariantList actions;
+    QVariantMap action;
+    action.insert("actionTypeId", mockActionIdPower);
+    action.insert("deviceId", m_mockDeviceId);
+    QVariantList actionParams;
+    QVariantMap actionParam;
+    actionParam.insert("paramTypeId", mockActionIdPower);
+    actionParam.insert("value", true);
+    actionParams.append(actionParam);
+    action.insert("ruleActionParams", actionParams);
+    actions.append(action);
+    params.insert("actions", actions);
+
+    QVariantList exitActions;
+    QVariantMap exitAction;
+    exitAction.insert("actionTypeId", mockActionIdPower);
+    exitAction.insert("deviceId", m_mockDeviceId);
+    QVariantList exitActionParams;
+    QVariantMap exitActionParam;
+    exitActionParam.insert("paramTypeId", mockActionIdPower);
+    exitActionParam.insert("value", false);
+    exitActionParams.append(exitActionParam);
+    exitAction.insert("ruleActionParams", exitActionParams);
+    exitActions.append(exitAction);
+    params.insert("exitActions", exitActions);
+
+    QVariant response = injectAndWait("Rules.AddRule", params);
+    RuleId ruleId = RuleId::fromUuid(response.toMap().value("params").toMap().value("ruleId").toUuid());
+    QVERIFY2(!ruleId.isNull(), "Error adding rule");
+
+    // Get the current state value, make sure it's false
+    params.clear();
+    params.insert("deviceId", m_mockDeviceId);
+    params.insert("stateTypeId", mockPowerStateTypeId);
+
+    response = injectAndWait("Devices.GetStateValue", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("value").toBool() == false, "State initially true while it should be false");
+
+
+    // Trigger the event
+    generateEvent(mockEvent1Id);
+
+
+    // Make sure the value changed after the event has triggered
+    response = injectAndWait("Devices.GetStateValue", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("value").toBool() == true, "State is false while it should have changed to true");
+
+
+    // Trigger the event again...
+    generateEvent(mockEvent1Id);
+
+
+    // ... and make sure the value changed back to false
+    response = injectAndWait("Devices.GetStateValue", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("value").toBool() == false, "State is true while it should have changed to false");
+
+    restartServer();
+
+    // Make sure the value changed is still false
+    response = injectAndWait("Devices.GetStateValue", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("value").toBool() == false, "State is true while it should have changed to false");
+
+    // Trigger the event
+    generateEvent(mockEvent1Id);
+
+
+    // Make sure the value changed after the event has triggered
+    response = injectAndWait("Devices.GetStateValue", params);
+    QVERIFY2(response.toMap().value("params").toMap().value("value").toBool() == true, "State is false while it should have changed to true");
+
+}
+
 void TestRules::testInterfaceBasedEventRule()
 {
     QNetworkAccessManager nam;
@@ -2560,12 +2680,17 @@ void TestRules::testInterfaceBasedEventRule()
     addRuleParams.insert("actions", QVariantList() << powerAction);
     addRuleParams.insert("eventDescriptors", QVariantList() << lowBatteryEvent);
 
+    qDebug(dcTests) << "Inserting rule";
+
     QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
     QCOMPARE(response.toMap().value("status").toString(), QString("success"));
     QCOMPARE(response.toMap().value("params").toMap().value("ruleError").toString(), QString("RuleErrorNoError"));
 
     QVariantMap getRuleParams;
     getRuleParams.insert("ruleId", response.toMap().value("params").toMap().value("ruleId"));
+
+    qDebug(dcTests) << "Getting rule details";
+
     response = injectAndWait("Rules.GetRuleDetails", getRuleParams);
 
     QCOMPARE(response.toMap().value("params").toMap().value("ruleError").toString(), QString("RuleErrorNoError"));
@@ -2578,23 +2703,33 @@ void TestRules::testInterfaceBasedEventRule()
     QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("ruleActionParams").toList().first().toMap().value("paramName").toString(), QString("power"));
     QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("actions").toList().first().toMap().value("ruleActionParams").toList().first().toMap().value("value").toString(), QString("true"));
 
+    qDebug(dcTests) << "Clearing action history";
 
     // Change the state to true, action should trigger
     spy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port)));
     reply = nam.get(request);
+
+    qDebug(dcTests) << "Changing battery state -> true";
+
     spy.wait(); spy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(true)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
+
     verifyRuleExecuted(mockActionIdPower);
+
+    qDebug(dcTests) << "Clearing action history";
 
     // Change the state to false, action should not trigger
     spy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port)));
     reply = nam.get(request);
+
+    qDebug(dcTests) << "Changing battery state -> false";
+
     spy.wait(); spy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(false)));
     reply = nam.get(request);

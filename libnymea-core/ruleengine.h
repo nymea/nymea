@@ -68,8 +68,9 @@ public:
         RemovePolicyUpdate
     };
 
-    explicit RuleEngine(QObject *parent = 0);
+    explicit RuleEngine(QObject *parent = nullptr);
     ~RuleEngine();
+    void init();
 
     QList<Rule> evaluateEvent(const Event &event);
     QList<Rule> evaluateTime(const QDateTime &dateTime);

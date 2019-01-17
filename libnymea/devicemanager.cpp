@@ -802,7 +802,7 @@ Device *DeviceManager::findConfiguredDevice(const DeviceId &id) const
             return device;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 /*! Returns all configured \{Device}{Devices} in the system. */
@@ -1443,6 +1443,7 @@ void DeviceManager::onAutoDeviceDisappeared(const DeviceId &deviceId)
 
 void DeviceManager::onLoaded()
 {
+    qCWarning(dcDeviceManager()) << "Done loading plugins and devices.";
     emit loaded();
 
     // schedule some housekeeping...

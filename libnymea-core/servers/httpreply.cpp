@@ -161,7 +161,7 @@ HttpReply::HttpReply(QObject *parent) :
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     setRawHeader("Access-Control-Allow-Origin","*");
-    setRawHeader("Keep-Alive", "timeout=12, max=50");
+    setRawHeader("Keep-Alive", QString("timeout=%1, max=50").arg(m_timeout).toUtf8());
     packReply();
 }
 
@@ -184,7 +184,7 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
     setHeader(HttpHeaderType::CacheControlHeader, "no-cache");
     setHeader(HttpHeaderType::ConnectionHeader, "Keep-Alive");
     setRawHeader("Access-Control-Allow-Origin","*");
-    setRawHeader("Keep-Alive", "timeout=12, max=50");
+    setRawHeader("Keep-Alive", QString("timeout=%1, max=50").arg(m_timeout).toUtf8());
     packReply();
 }
 
@@ -326,7 +326,7 @@ void HttpReply::packReply()
     }
 
     m_rawHeader.append("\r\n");
-    m_data = m_rawHeader.append(m_payload);
+    m_data = QByteArray(m_rawHeader).append(m_payload);
 }
 
 /*! Returns the current raw data (header + payload) of this \l{HttpReply}.*/
@@ -343,72 +343,101 @@ bool HttpReply::timedOut() const
 
 QByteArray HttpReply::getHttpReasonPhrase(const HttpReply::HttpStatusCode &statusCode)
 {
+    QByteArray response;
     switch (statusCode) {
     case HttpStatusCode::Ok:
-        return "Ok";
+        response = QString("Ok").toUtf8();
+        break;
     case Created:
-        return "Created";
+        response = QString("Created").toUtf8();
+        break;
     case Accepted:
-        return "Accepted";
+        response = QString("Accepted").toUtf8();
+        break;
     case NoContent:
-        return "No Content";
+        response = QString("No Content").toUtf8();
+        break;
     case Found:
-        return "Found";
+        response = QString("Found").toUtf8();
+        break;
     case PermanentRedirect:
-        return "Permanent Redirect";
+        response = QString("Permanent Redirect").toUtf8();
+        break;
     case BadRequest:
-        return "Bad Request";
+        response = QString("Bad Request").toUtf8();
+        break;
     case Forbidden:
-        return "Forbidden";
+        response = QString("Forbidden").toUtf8();
+        break;
     case NotFound:
-        return "NotFound";
+        response = QString("NotFound").toUtf8();
+        break;
     case MethodNotAllowed:
-        return "Method Not Allowed";
+        response = QString("Method Not Allowed").toUtf8();
+        break;
     case RequestTimeout:
-        return "Request Timeout";
+        response = QString("Request Timeout").toUtf8();
+        break;
     case Conflict:
-        return "Conflict";
+        response = QString("Conflict").toUtf8();
+        break;
     case InternalServerError:
-        return "Internal Server Error";
+        response = QString("Internal Server Error").toUtf8();
+        break;
     case NotImplemented:
-        return "Not Implemented";
+        response = QString("Not Implemented").toUtf8();
+        break;
     case BadGateway:
-        return "Bad Gateway";
+        response = QString("Bad Gateway").toUtf8();
+        break;
     case ServiceUnavailable:
-        return "Service Unavailable";
+        response = QString("Service Unavailable").toUtf8();
+        break;
     case GatewayTimeout:
-        return "Gateway Timeout";
+        response = QString("Gateway Timeout").toUtf8();
+        break;
     case HttpVersionNotSupported:
-        return "HTTP Version Not Supported";
-    default:
-        return QByteArray();
+        response = QString("HTTP Version Not Supported").toUtf8();
+        break;
     }
+
+    return response;
 }
 
 QByteArray HttpReply::getHeaderType(const HttpReply::HttpHeaderType &headerType)
 {
+    QByteArray header;
     switch (headerType) {
     case ContentTypeHeader:
-        return "Content-Type";
+        header = QString("Content-Type").toUtf8();
+        break;
     case ContentLenghtHeader:
-        return "Content-Length";
+        header = QString("Content-Length").toUtf8();
+        break;
     case CacheControlHeader:
-        return "Cache-Control";
+        header = QString("Cache-Control").toUtf8();
+        break;
     case LocationHeader:
-        return "Location";
+        header = QString("Location").toUtf8();
+        break;
     case ConnectionHeader:
-        return "Connection";
+        header = QString("Connection").toUtf8();
+        break;
     case UserAgentHeader:
-        return "User-Agent";
+        header = QString("User-Agent").toUtf8();
+        break;
     case AllowHeader:
-        return "Allow";
+        header = QString("Allow").toUtf8();
+        break;
     case DateHeader:
-        return "Date";
+        header = QString("Date").toUtf8();
+        break;
     case ServerHeader:
-        return "Server";
-    default:
-        return QByteArray();
+        header = QString("Server").toUtf8();
+        break;
     }
+
+    return header;
 }
 
 /*! Starts the timer for an async \l{HttpReply}.
@@ -417,24 +446,22 @@ QByteArray HttpReply::getHeaderType(const HttpReply::HttpHeaderType &headerType)
  */
 void HttpReply::startWait()
 {
-    m_timer->start(60000);
+    m_timer->start(m_timeout);
 }
 
 void HttpReply::timeout()
 {
-    qCDebug(dcWebServer) << "Http reply timeout";
+    qCDebug(dcWebServer()) << "Http reply timeout";
     m_timedOut = true;
     emit finished();
 }
 
-QDebug operator<<(QDebug debug, const HttpReply &httpReply)
+QDebug operator<<(QDebug debug, HttpReply *httpReply)
 {
-    debug << "-----------------------------------" << "\n";
-    debug << httpReply.rawHeader() << "\n";
-    debug << "-----------------------------------" << "\n";
-    debug << httpReply.payload() << "\n";
-    debug << "-----------------------------------" << "\n";
-    return debug;
+    debug.nospace() << "HttpReply(" << httpReply->clientId().toString() << ")" << endl;
+    debug << qUtf8Printable(httpReply->rawHeader());
+    debug << qUtf8Printable(httpReply->payload());
+    return debug.space();
 }
 
 }

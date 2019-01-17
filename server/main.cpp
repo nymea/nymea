@@ -111,6 +111,7 @@ int main(int argc, char *argv[])
         "TcpServer",
         "TcpServerTraffic",
         "WebServer",
+        "WebServerTraffic",
         "DebugServer",
         "WebSocketServer",
         "WebSocketServerTraffic",

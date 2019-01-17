@@ -172,7 +172,7 @@ void HttpRequest::validate()
     // split the data into header and payload
     int headerEndIndex = m_rawData.indexOf("\r\n\r\n");
     if (headerEndIndex < 0) {
-        qCWarning(dcWebServer) << "Could not parse end of HTTP header (empty line between header and body):" << m_rawData;
+        qCWarning(dcWebServer()) << "Could not parse end of HTTP header (empty line between header and body):" << m_rawData;
         return;
     }
 
@@ -184,14 +184,14 @@ void HttpRequest::validate()
     QString statusLine = headerLines.takeFirst();
     QStringList statusLineTokens = statusLine.split(QRegExp("[ \r\n][ \r\n]*"));
     if (statusLineTokens.count() != 3) {
-        qCWarning(dcWebServer) << "Could not parse HTTP status line:" << statusLine;
+        qCWarning(dcWebServer()) << "Could not parse HTTP status line:" << statusLine;
         return;
     }
 
     // verify http version
     m_httpVersion = statusLineTokens.at(2).toUtf8().simplified();
     if (!m_httpVersion.contains("HTTP")) {
-        qCWarning(dcWebServer) << "Unknown HTTP version:" << m_httpVersion;
+        qCWarning(dcWebServer()) << "Unknown HTTP version:" << m_httpVersion;
         return;
     }
     m_methodString = statusLineTokens.at(0).simplified();
@@ -205,7 +205,7 @@ void HttpRequest::validate()
     // verify header formating
     foreach (const QString &line, headerLines) {
         if (!line.contains(":")) {
-            qCWarning(dcWebServer) << "Invalid HTTP header:" << line;
+            qCWarning(dcWebServer()) << "Invalid HTTP header:" << line;
             return;
         }
         int index = line.indexOf(":");
@@ -216,7 +216,7 @@ void HttpRequest::validate()
 
     // check User-Agent
     if (!m_rawHeaderList.contains("User-Agent"))
-        qCWarning(dcWebServer) << "User-Agent header is missing";
+        qCWarning(dcWebServer()) << "User-Agent header is missing";
 
 
     // verify content length with actual payload
@@ -224,22 +224,22 @@ void HttpRequest::validate()
         bool ok = false;
         int contentLength = m_rawHeaderList.value("Content-Length").toInt(&ok);
         if (!ok) {
-            qCWarning(dcWebServer) << "Could not parse Content-Length.";
+            qCWarning(dcWebServer()) << "Could not parse Content-Length.";
             return;
         }
         // check if we have all data
         if (m_payload.size() < contentLength) {
-            qCDebug(dcWebServer) << "Request incomplete:";
-            qCDebug(dcWebServer) << "   -> Content-Length:" << contentLength;
-            qCDebug(dcWebServer) << "   -> Payload size  :" << payload().size();
+            qCDebug(dcWebServer()) << "Request incomplete:";
+            qCDebug(dcWebServer()) << "   -> Content-Length:" << contentLength;
+            qCDebug(dcWebServer()) << "   -> Payload size  :" << payload().size();
             m_isComplete = false;
             return;
         }
         // check if the content length bigger than header Content-Length
         if (m_payload.size() > contentLength) {
-            qCWarning(dcWebServer) << "Payload size greater than header Content-Length:";
-            qCWarning(dcWebServer) << "   -> Content-Length:" << contentLength;
-            qCWarning(dcWebServer) << "   -> Payload size  :" << payload().size();
+            qCWarning(dcWebServer()) << "Payload size greater than header Content-Length:";
+            qCWarning(dcWebServer()) << "   -> Content-Length:" << contentLength;
+            qCWarning(dcWebServer()) << "   -> Payload size  :" << payload().size();
             m_isComplete = true;
             return;
         }
@@ -261,23 +261,15 @@ HttpRequest::RequestMethod HttpRequest::getRequestMethodType(const QString &meth
     } else if (methodString == "OPTIONS") {
         return RequestMethod::Options;
     }
-    qCWarning(dcWebServer) << "Method" << methodString << "will not be handled.";
+    qCWarning(dcWebServer()) << "Method" << methodString << "will not be handled.";
     return RequestMethod::Unhandled;
 }
 
 QDebug operator<<(QDebug debug, const HttpRequest &httpRequest)
 {
-    debug << "===================================" << "\n";
-    debug << "  HTTP version: " << httpRequest.httpVersion() << "\n";
-    debug << "        method: " << httpRequest.methodString() << "\n";
-    debug << "      URL path: " << httpRequest.url().path() << "\n";
-    debug << "     URL query: " << httpRequest.urlQuery().query() << "\n";
-    debug << "      is valid: " << httpRequest.isValid() << "\n";
-    debug << "-----------------------------------" << "\n";
-    debug << httpRequest.rawHeader() << "\n";
-    debug << "-----------------------------------" << "\n";
-    debug << httpRequest.payload() << "\n";
-    debug << "-----------------------------------" << "\n";
+    debug << "HttpRequest:" << endl;
+    debug << qUtf8Printable(httpRequest.rawHeader());
+    debug << qUtf8Printable(httpRequest.payload());
     return debug;
 }
 

@@ -1,6 +1,26 @@
-nymea (0.11.0) UNRELEASED; urgency=medium
+nymea (0.11.0) xenial; urgency=medium
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Thu, 03 Jan 2019 01:19:20 +0100
+  [ Simon Stürz ]
+  * Update webserver and debug server behaviour
+
+  [ Michael Zanetti ]
+  * Make loading and tearing down of the core more predictable
+  * Small fixes in AWS connection
+  * Split the smartlock and simpleclosable interfaces
+  * Discovery params override
+  * Add power socket interface
+  * add a daylight sensor interface
+  * Add a presencesensor interface
+  * Fix an issue where Rules might not be initialized properly at
+    startup
+
+  [ Simon Stürz ]
+  * Improve interfaces online documentation
+
+  [ Michael Zanetti ]
+  * rework media interfaces
+
+ -- Jenkins <jenkins@nymea.io>  Thu, 17 Jan 2019 15:37:11 +0100
 
 nymea (0.10.0) xenial; urgency=medium
 

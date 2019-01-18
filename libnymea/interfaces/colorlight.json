@@ -3,7 +3,8 @@
     "states": [
         {
             "name": "color",
-            "type": "QColor"
+            "type": "QColor",
+            "writable": true
         }
     ]
 }

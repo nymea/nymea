@@ -1317,6 +1317,8 @@ void DeviceManager::slotPairingFinished(const PairingTransactionId &pairingTrans
     ParamList params;
     QString deviceName;
 
+    DeviceId deviceId;
+
     // Do this before checking status to make sure we clean up our hashes properly
     if (m_pairingsJustAdd.contains(pairingTransactionId)) {
         DevicePairingInfo pairingInfo = m_pairingsJustAdd.take(pairingTransactionId);
@@ -1333,6 +1335,7 @@ void DeviceManager::slotPairingFinished(const PairingTransactionId &pairingTrans
         deviceClassId = pairingInfo.deviceClassId();
         deviceName = pairingInfo.deviceName();
         params = descriptor.params();
+        deviceId = descriptor.deviceId();
     }
 
     if (status != DeviceSetupStatusSuccess) {
@@ -1348,17 +1351,33 @@ void DeviceManager::slotPairingFinished(const PairingTransactionId &pairingTrans
         return;
     }
 
-    // Ok... pairing went fine... Let consumers know about it and inform them about the ongoing setup with a deviceId.
-    DeviceId id = DeviceId::createDeviceId();
-    emit pairingFinished(pairingTransactionId, DeviceErrorNoError, id);
+    // If we already have a deviceId, we're reconfiguring an existing device
+    bool addNewDevice = deviceId.isNull();
 
-    QList<DeviceId> newDevices;
-    Device *device = new Device(plugin->pluginId(), id, deviceClassId, this);
-    if (deviceName.isEmpty()) {
-        device->setName(deviceClass.name());
-    } else {
-        device->setName(deviceName);
+    if (!addNewDevice && !m_configuredDevices.contains(deviceId)) {
+        qCWarning(dcDeviceManager) << "The device to be reconfigured has disappeared!";
+        emit pairingFinished(pairingTransactionId, DeviceErrorDeviceNotFound, deviceId);
+        return;
     }
+
+    // Ok... pairing went fine... Let consumers know about it and inform them about the ongoing setup with a deviceId.
+    Device *device = nullptr;
+
+    if (addNewDevice) {
+        deviceId = DeviceId::createDeviceId();
+        qCDebug(dcDeviceManager()) << "Creating new device with ID" << deviceId;
+        device = new Device(plugin->pluginId(), deviceId, deviceClassId, this);
+        if (deviceName.isEmpty()) {
+            device->setName(deviceClass.name());
+        } else {
+            device->setName(deviceName);
+        }
+    } else {
+        qCDebug(dcDeviceManager()) << "Reconfiguring device" << device;
+        device = m_configuredDevices.value(deviceId);
+    }
+    emit pairingFinished(pairingTransactionId, DeviceErrorNoError, deviceId);
+
     device->setParams(params);
 
     DeviceSetupStatus setupStatus = setupDevice(device);
@@ -1372,12 +1391,17 @@ void DeviceManager::slotPairingFinished(const PairingTransactionId &pairingTrans
         return;
     case DeviceSetupStatusSuccess:
         qCDebug(dcDeviceManager) << "Device setup complete.";
-        newDevices.append(id);
         break;
     }
 
-    m_configuredDevices.insert(device->id(), device);
-    emit deviceAdded(device);
+    if (addNewDevice) {
+        qCDebug(dcDeviceManager()) << "Device added:" << device;
+        m_configuredDevices.insert(device->id(), device);
+        emit deviceAdded(device);
+    } else {
+        emit deviceChanged(device);
+    }
+
     storeConfiguredDevices();
     emit deviceSetupFinished(device, DeviceError::DeviceErrorNoError);
     postSetupDevice(device);

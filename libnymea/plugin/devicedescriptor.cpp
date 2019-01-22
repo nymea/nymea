@@ -84,6 +84,18 @@ DeviceClassId DeviceDescriptor::deviceClassId() const
     return m_deviceClassId;
 }
 
+/*! Returns the \a deviceId of the device matching this descriptor. */
+DeviceId DeviceDescriptor::deviceId() const
+{
+    return m_deviceId;
+}
+
+/*! Set the \a deviceId of the device matching this device descriptor. */
+void DeviceDescriptor::setDeviceId(const DeviceId &deviceId)
+{
+    m_deviceId = deviceId;
+}
+
 /*! Returns the name of this DeviceDescriptor. */
 QString DeviceDescriptor::title() const
 {

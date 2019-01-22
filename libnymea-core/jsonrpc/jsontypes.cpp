@@ -303,6 +303,7 @@ void JsonTypes::init()
 
     // DeviceDescriptor
     s_deviceDescriptor.insert("id", basicTypeToString(Uuid));
+    s_deviceDescriptor.insert("deviceId", basicTypeToString(Uuid));
     s_deviceDescriptor.insert("title", basicTypeToString(String));
     s_deviceDescriptor.insert("description", basicTypeToString(String));
     s_deviceDescriptor.insert("deviceParams", QVariantList() << paramRef());
@@ -861,6 +862,7 @@ QVariantMap JsonTypes::packDeviceDescriptor(const DeviceDescriptor &descriptor)
 {
     QVariantMap variant;
     variant.insert("id", descriptor.id());
+    variant.insert("deviceId", descriptor.deviceId());
     variant.insert("title", descriptor.title());
     variant.insert("description", descriptor.description());
     QVariantList params;

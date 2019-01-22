@@ -365,6 +365,12 @@ void DevicePluginMock::emitDevicesDiscovered()
         Param httpParam(mockDeviceHttpportParamTypeId, "55555");
         params.append(httpParam);
         d1.setParams(params);
+        foreach (Device *d, myDevices()) {
+            if (d->deviceClassId() == mockDeviceClassId && d->paramValue(mockDeviceHttpportParamTypeId).toInt() == 55555) {
+                d1.setDeviceId(d->id());
+                break;
+            }
+        }
         deviceDescriptors.append(d1);
     }
 
@@ -374,6 +380,12 @@ void DevicePluginMock::emitDevicesDiscovered()
         Param httpParam(mockDeviceHttpportParamTypeId, "55556");
         params.append(httpParam);
         d2.setParams(params);
+        foreach (Device *d, myDevices()) {
+            if (d->deviceClassId() == mockDeviceClassId && d->paramValue(mockDeviceHttpportParamTypeId).toInt() == 55556) {
+                d2.setDeviceId(d->id());
+                break;
+            }
+        }
         deviceDescriptors.append(d2);
     }
 
@@ -406,11 +418,24 @@ void DevicePluginMock::emitDisplayPinDevicesDiscovered()
 
     if (m_discoveredDeviceCount > 0) {
         DeviceDescriptor d1(mockDisplayPinDeviceClassId, "Mock Device (Display Pin)", "1");
+        foreach (Device *existingDev, myDevices()) {
+            if (existingDev->deviceClassId() == mockDisplayPinDeviceClassId) {
+                d1.setDeviceId(existingDev->id());
+                break;
+            }
+        }
         deviceDescriptors.append(d1);
     }
 
     if (m_discoveredDeviceCount > 1) {
         DeviceDescriptor d2(mockDisplayPinDeviceClassId, "Mock Device (Display Pin)", "2");
+        int count = 0;
+        foreach (Device *existingDev, myDevices()) {
+            if (existingDev->deviceClassId() == mockDisplayPinDeviceClassId && ++count > 1) {
+                d2.setDeviceId(existingDev->id());
+                break;
+            }
+        }
         deviceDescriptors.append(d2);
     }
 

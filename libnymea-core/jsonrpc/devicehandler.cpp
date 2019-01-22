@@ -170,7 +170,11 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("GetConfiguredDevices", returns);
 
     params.clear(); returns.clear();
-    setDescription("GetDiscoveredDevices", "Performs a device discovery and returns the results. This function may take a while to return.");
+    setDescription("GetDiscoveredDevices", "Performs a device discovery and returns the results. This function may take a while to return. "
+                                           "Note that this method will include all the found devices, that is, including devices that may "
+                                           "already have been added. Those devices will have deviceId set to the device id of the already "
+                                           "added device. Such results may be used to reconfigure existing devices and might be filtered "
+                                           "in cases where only unknown devices are of interest.");
     params.insert("deviceClassId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     QVariantList discoveryParams;
     discoveryParams.append(JsonTypes::paramRef());
@@ -446,7 +450,7 @@ JsonReply *DeviceHandler::ConfirmPairing(const QVariantMap &params)
     QString secret = params.value("secret").toString();
     DeviceManager::DeviceError status = NymeaCore::instance()->deviceManager()->confirmPairing(pairingTransactionId, secret);
 
-    JsonReply *reply = 0;
+    JsonReply *reply = nullptr;
     if (status == DeviceManager::DeviceErrorAsync) {
         reply = createAsyncReply("ConfirmPairing");
         connect(reply, &JsonReply::finished, [this, pairingTransactionId](){ m_asyncPairingRequests.remove(pairingTransactionId); });

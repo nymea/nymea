@@ -1,4 +1,4 @@
-1.12
+1.13
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -293,7 +293,7 @@
             }
         },
         "Devices.GetDiscoveredDevices": {
-            "description": "Performs a device discovery and returns the results. This function may take a while to return.",
+            "description": "Performs a device discovery and returns the results. This function may take a while to return. Note that this method will include all the found devices, that is, including devices that may already have been added. Those devices will have deviceId set to the device id of the already added device. Such results may be used to reconfigure existing devices and might be filtered in cases where only unknown devices are of interest.",
             "params": {
                 "deviceClassId": "Uuid",
                 "o:discoveryParams": [
@@ -1266,6 +1266,7 @@
         },
         "DeviceDescriptor": {
             "description": "String",
+            "deviceId": "Uuid",
             "deviceParams": [
                 "$ref:Param"
             ],

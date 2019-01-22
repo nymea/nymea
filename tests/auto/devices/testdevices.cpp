@@ -90,6 +90,8 @@ private slots:
     void reconfigureByDiscovery_data();
     void reconfigureByDiscovery();
 
+    void reconfigureByDiscoveryAndPair();
+
     void removeDevice_data();
     void removeDevice();
 
@@ -1170,6 +1172,107 @@ void TestDevices::reconfigureByDiscovery()
     params.insert("deviceId", deviceId.toString());
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
     verifyDeviceError(response);
+}
+
+void TestDevices::reconfigureByDiscoveryAndPair()
+{
+    QVariantList discoveryParams;
+    QVariantMap resultCountParam;
+    resultCountParam.insert("paramTypeId", resultCountParamTypeId);
+    resultCountParam.insert("value", 1);
+    discoveryParams.append(resultCountParam);
+
+    qCDebug(dcTests()) << "Discovering devices...";
+
+    QVariantMap params;
+    params.insert("deviceClassId", mockDisplayPinDeviceClassId);
+    params.insert("discoveryParams", discoveryParams);
+    QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
+
+    verifyDeviceError(response);
+    QVariantList deviceDescriptors = response.toMap().value("params").toMap().value("deviceDescriptors").toList();
+
+    qCDebug(dcTests()) << "Discovery result:" << qUtf8Printable(QJsonDocument::fromVariant(deviceDescriptors).toJson(QJsonDocument::Indented));
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), 1);
+
+    // add Discovered Device 1 port 55555
+
+    QVariant descriptor = deviceDescriptors.first();
+    DeviceDescriptorId descriptorId = DeviceDescriptorId(descriptor.toMap().value("id").toString());
+    QVERIFY2(!descriptorId.isNull(), "DeviceDescriptorId is Null");
+
+    qCDebug(dcTests()) << "Pairing descriptorId:" << descriptorId;
+
+    params.clear();
+    response.clear();
+    params.insert("deviceClassId", mockDisplayPinDeviceClassId);
+    params.insert("name", "Discoverd mock device");
+    params.insert("deviceDescriptorId", descriptorId);
+    response = injectAndWait("Devices.PairDevice", params);
+    verifyDeviceError(response);
+
+    PairingTransactionId pairingTransactionId = PairingTransactionId(response.toMap().value("params").toMap().value("pairingTransactionId").toString());
+    qCDebug(dcTests()) << "PairDevice result:" << qUtf8Printable(QJsonDocument::fromVariant(response).toJson(QJsonDocument::Indented));
+
+    qCDebug(dcTests()) << "Confirming pairing for transaction ID" << pairingTransactionId;
+    params.clear();
+    response.clear();
+    params.insert("pairingTransactionId", pairingTransactionId.toString());
+    params.insert("secret", "243681");
+    response = injectAndWait("Devices.ConfirmPairing", params);
+    verifyDeviceError(response);
+
+    DeviceId deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY(!deviceId.isNull());
+
+    qCDebug(dcTests()) << "Discovering again...";
+
+    // and now rediscover, and edit the first device with the second
+    params.clear();
+    response.clear();
+    params.insert("deviceClassId", mockDisplayPinDeviceClassId);
+    params.insert("discoveryParams", discoveryParams);
+    response = injectAndWait("Devices.GetDiscoveredDevices", params);
+
+    deviceDescriptors = response.toMap().value("params").toMap().value("deviceDescriptors").toList();
+    qCDebug(dcTests()) << "Discovery result:" << qUtf8Printable(QJsonDocument::fromVariant(deviceDescriptors).toJson(QJsonDocument::Indented));
+
+    verifyDeviceError(response, DeviceManager::DeviceErrorNoError);
+    QCOMPARE(deviceDescriptors.count(), 1);
+
+    descriptor = deviceDescriptors.first();
+    QVERIFY2(DeviceId(descriptor.toMap().value("deviceId").toString()) == deviceId, "DeviceID not set in descriptor");
+
+    // get the descriptor again
+    descriptorId = DeviceDescriptorId(descriptor.toMap().value("id").toString());
+
+    QVERIFY(!descriptorId.isNull());
+
+    qDebug() << "Reconfiguring device by pairing again" << descriptorId;
+
+    params.clear();
+    response.clear();
+    params.insert("deviceClassId", mockDisplayPinDeviceClassId);
+    params.insert("name", "Discoverd mock device");
+    params.insert("deviceDescriptorId", descriptorId);
+    response = injectAndWait("Devices.PairDevice", params);
+    verifyDeviceError(response);
+
+    pairingTransactionId = PairingTransactionId(response.toMap().value("params").toMap().value("pairingTransactionId").toString());
+    qCDebug(dcTests()) << "PairDevice result:" << qUtf8Printable(QJsonDocument::fromVariant(response).toJson(QJsonDocument::Indented));
+
+
+    qCDebug(dcTests()) << "Confirming pairing for transaction ID" << pairingTransactionId;
+    params.clear();
+    response.clear();
+    params.insert("pairingTransactionId", pairingTransactionId.toString());
+    params.insert("secret", "243681");
+    response = injectAndWait("Devices.ConfirmPairing", params);
+    verifyDeviceError(response);
+
+    deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY(!deviceId.isNull());
+
 }
 
 

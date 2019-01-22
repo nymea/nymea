@@ -32,8 +32,11 @@
 
 
 /*! \fn void DevicePlugin::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
-    This signal is emitted when the discovery of a \a deviceClassId of this DevicePlugin is finished. The \a devices parameter describes the
+    Emit this signal when the discovery of a \a deviceClassId of this DevicePlugin is finished. The \a devices parameter describes the
     list of \l{DeviceDescriptor}{DeviceDescriptors} of all discovered \l{Device}{Devices}.
+    Note: During a discovery a plugin should always return the full result set. So even if a device is already known to the system and
+    a later discovery finds the device again, it should be included in the result set but the DeviceDescriptor's deviceId should be set
+    to the device ID.
     \sa discoverDevices()
 */
 

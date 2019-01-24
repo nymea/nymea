@@ -31,6 +31,7 @@
         <file>moisturesensor.json</file>
         <file>conductivitysensor.json</file>
         <file>lightsensor.json</file>
+        <file>thermostat.json</file>
         <file>connectable.json</file>
         <file>inputtrigger.json</file>
         <file>outputtrigger.json</file>

@@ -3,7 +3,8 @@
     "states": [
         {
             "name": "lightIntensity",
-            "type": "double"
+            "type": "double",
+            "unit": "Lux"
         }
     ]
 }

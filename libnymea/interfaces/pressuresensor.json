@@ -3,7 +3,8 @@
     "states": [
         {
             "name": "pressure",
-            "type": "double"
+            "type": "double",
+            "unit": "MilliBar"
         }
     ]
 }

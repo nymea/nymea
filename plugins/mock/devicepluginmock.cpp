@@ -316,6 +316,35 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
             return DeviceManager::DeviceErrorNoError;
         }
         return DeviceManager::DeviceErrorActionTypeNotFound;
+    } else if (device->deviceClassId() == mockInputTypeDeviceClassId) {
+        if (action.actionTypeId() == mockInputTypeWritableBoolActionTypeId) {
+            device->setStateValue(mockInputTypeWritableBoolStateTypeId, action.param(mockInputTypeWritableBoolActionWritableBoolParamTypeId).value().toULongLong());
+        } else if (action.actionTypeId() == mockInputTypeWritableIntActionTypeId) {
+            device->setStateValue(mockInputTypeWritableIntStateTypeId, action.param(mockInputTypeWritableIntActionWritableIntParamTypeId).value().toLongLong());
+        } else if (action.actionTypeId() == mockInputTypeWritableIntMinMaxActionTypeId) {
+            device->setStateValue(mockInputTypeWritableIntMinMaxStateTypeId, action.param(mockInputTypeWritableIntMinMaxActionWritableIntMinMaxParamTypeId).value().toLongLong());
+        } else if (action.actionTypeId() == mockInputTypeWritableUIntActionTypeId) {
+            device->setStateValue(mockInputTypeWritableUIntStateTypeId, action.param(mockInputTypeWritableUIntActionWritableUIntParamTypeId).value().toULongLong());
+        } else if (action.actionTypeId() == mockInputTypeWritableUIntMinMaxActionTypeId) {
+            device->setStateValue(mockInputTypeWritableUIntMinMaxStateTypeId, action.param(mockInputTypeWritableUIntMinMaxActionWritableUIntMinMaxParamTypeId).value().toLongLong());
+        } else if (action.actionTypeId() == mockInputTypeWritableDoubleActionTypeId) {
+            device->setStateValue(mockInputTypeWritableDoubleStateTypeId, action.param(mockInputTypeWritableDoubleActionWritableDoubleParamTypeId).value().toDouble());
+        } else if (action.actionTypeId() == mockInputTypeWritableDoubleMinMaxActionTypeId) {
+            device->setStateValue(mockInputTypeWritableDoubleMinMaxStateTypeId, action.param(mockInputTypeWritableDoubleMinMaxActionWritableDoubleMinMaxParamTypeId).value().toDouble());
+        } else if (action.actionTypeId() == mockInputTypeWritableStringActionTypeId) {
+            device->setStateValue(mockInputTypeWritableStringStateTypeId, action.param(mockInputTypeWritableStringActionWritableStringParamTypeId).value().toString());
+        } else if (action.actionTypeId() == mockInputTypeWritableStringSelectionActionTypeId) {
+            device->setStateValue(mockInputTypeWritableStringSelectionStateTypeId, action.param(mockInputTypeWritableStringSelectionActionWritableStringSelectionParamTypeId).value().toString());
+        } else if (action.actionTypeId() == mockInputTypeWritableColorActionTypeId) {
+            device->setStateValue(mockInputTypeWritableColorStateTypeId, action.param(mockInputTypeWritableColorActionWritableColorParamTypeId).value().toString());
+        } else if (action.actionTypeId() == mockInputTypeWritableTimeActionTypeId) {
+            device->setStateValue(mockInputTypeWritableTimeStateTypeId, action.param(mockInputTypeWritableTimeActionWritableTimeParamTypeId).value().toTime());
+        } else if (action.actionTypeId() == mockInputTypeWritableTimestampIntActionTypeId) {
+            device->setStateValue(mockInputTypeWritableTimestampIntStateTypeId, action.param(mockInputTypeWritableTimestampIntActionWritableTimestampIntParamTypeId).value().toLongLong());
+        } else if (action.actionTypeId() == mockInputTypeWritableTimestampUIntActionTypeId) {
+            device->setStateValue(mockInputTypeWritableTimestampUIntStateTypeId, action.param(mockInputTypeWritableTimestampUIntActionWritableTimestampUIntParamTypeId).value().toULongLong());
+        }
+
     }
     return DeviceManager::DeviceErrorDeviceClassNotFound;
 }

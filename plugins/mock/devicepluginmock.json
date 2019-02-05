@@ -655,6 +655,228 @@
                             "inputType": "MacAddress",
                             "defaultValue": "11:22:33:aa:bb:cc"
                         }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "3bad3a09-5826-4ed7-a832-10e3e2ee2a7d",
+                            "name": "bool",
+                            "displayName": "Bool",
+                            "displayNameEvent": "Bool changed",
+                            "type": "bool",
+                            "defaultValue": true
+                        },
+                        {
+                            "id": "a7c11774-f31f-4d64-99d1-e0ae5fb35a5c",
+                            "name": "writableBool",
+                            "displayName": "Writable Bool",
+                            "displayNameEvent": "Writable Bool changed",
+                            "displayNameAction": "Set Writable Bool",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        },
+                        {
+                            "id": "d0fc56ae-5791-4e91-b76c-dadfbc7e7dbb",
+                            "name": "int",
+                            "displayName": "Int",
+                            "displayNameEvent": "Int changed",
+                            "type": "int",
+                            "defaultValue": -5
+                        },
+                        {
+                            "id": "857a8422-983c-47d6-a15f-d8450b3162f7",
+                            "name": "writableInt",
+                            "displayName": "Writable Int",
+                            "displayNameEvent": "Writable Int changed",
+                            "displayNameAction": "Set Writable Int",
+                            "type": "int",
+                            "defaultValue": -8,
+                            "writable": true,
+                            "unit": "DegreeCelsius"
+                        },
+                        {
+                            "id": "86a107bc-510a-4d38-bfeb-0a9c2b6d8d87",
+                            "name": "writableIntMinMax",
+                            "displayName": "Writable Int (min/max)",
+                            "displayNameEvent": "Writable Int (min/max) changed",
+                            "displayNameAction": "Set Writable Int (min/max)",
+                            "type": "int",
+                            "defaultValue": 45,
+                            "minValue": -100,
+                            "maxValue": 100,
+                            "writable": true
+                        },
+                        {
+                            "id": "19e74fcc-bfd5-491f-8eb6-af128e8f1162",
+                            "name": "uint",
+                            "displayName": "UInt",
+                            "displayNameEvent": "UInt changed",
+                            "type": "uint",
+                            "defaultValue": 13
+                        },
+                        {
+                            "id": "563e9c4c-5198-400a-9f6c-358f4752af58",
+                            "name": "writableUInt",
+                            "displayName": "Writable UInt",
+                            "displayNameEvent": "Writable UInt changed",
+                            "displayNameAction": "Set Writable UInt",
+                            "type": "uint",
+                            "defaultValue": 16,
+                            "writable": true,
+                            "unit": "MeterPerSecond"
+                        },
+                        {
+                            "id": "79238998-eaab-4d71-b406-5d78f1749751",
+                            "name": "writableUIntMinMax",
+                            "displayName": "Writable UInt (min/max)",
+                            "displayNameEvent": "Writable UInt (min/max) changed",
+                            "displayNameAction": "Set Writable UInt (min/max)",
+                            "type": "uint",
+                            "defaultValue": 45,
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true,
+                            "unit": "Percentage"
+                        },
+                        {
+                            "id": "f7d2063d-959e-46ac-8568-8b99722d3b22",
+                            "name": "double",
+                            "displayName": "Double",
+                            "displayNameEvent": "Double changed",
+                            "type": "double",
+                            "defaultValue": 2.346422356544,
+                            "unit": "MicroSiemensPerCentimeter"
+                        },
+                        {
+                            "id": "8e2eb91b-d60b-4461-9a50-d7b8ad263170",
+                            "name": "writableDouble",
+                            "displayName": "Writable Double",
+                            "displayNameEvent": "Writable Double changed",
+                            "displayNameAction": "Set Writable Double",
+                            "type": "double",
+                            "defaultValue": -8.8,
+                            "writable": true,
+                            "unit": "MilliBar"
+                        },
+                        {
+                            "id": "00d3425e-1da6-4748-8906-4555ceefb136",
+                            "name": "writableDoubleMinMax",
+                            "displayName": "Writable Double (min/max)",
+                            "displayNameEvent": "Writable Double (min/max) changed",
+                            "displayNameAction": "Set Writable Double (min/max)",
+                            "type": "double",
+                            "defaultValue": 12.4,
+                            "minValue": -40,
+                            "maxValue": 60,
+                            "writable": true,
+                            "unit": "Euro"
+                        },
+                        {
+                            "id": "27f69ca9-a321-40ff-bfee-4b0272a671b4",
+                            "name": "string",
+                            "displayName": "String",
+                            "displayNameEvent": "String changed",
+                            "type": "QString",
+                            "defaultValue": "A string :)"
+                        },
+                        {
+                            "id": "ef511043-bd1a-4a5f-984c-222b7da43f38",
+                            "name": "writableString",
+                            "displayName": "Writable String",
+                            "displayNameEvent": "Writable String changed",
+                            "displayNameAction": "Set Writable String",
+                            "type": "QString",
+                            "defaultValue": "Change me!",
+                            "writable": true
+                        },
+                        {
+                            "id": "209d7afc-6fe9-4fe9-939b-e472ea0ad639",
+                            "name": "writableStringSelection",
+                            "displayName": "Writable String (selection)",
+                            "displayNameEvent": "Writable String (selection) changed",
+                            "displayNameAction": "Set Writable String (selection)",
+                            "type": "QString",
+                            "defaultValue": "One",
+                            "possibleValues": ["One", "Two", "🎄"],
+                            "writable": true
+                        },
+                        {
+                            "id": "4507d5c6-b692-4bd6-87f2-00364bc0cb4d",
+                            "name": "color",
+                            "displayName": "Color",
+                            "displayNameEvent": "Color changed",
+                            "type": "QColor",
+                            "defaultValue": "#FF0000"
+                        },
+                        {
+                            "id": "455f4f68-3cb0-4e8a-a707-62e4a2a8035c",
+                            "name": "writableColor",
+                            "displayName": "Writable Color",
+                            "displayNameEvent": "Writable Color changed",
+                            "displayNameAction": "Set Writable Color",
+                            "type": "QColor",
+                            "defaultValue": "#0000FF",
+                            "writable": true
+                        },
+                        {
+                            "id": "8250c71e-59bc-41ab-b576-99fcfc34e8d1",
+                            "name": "time",
+                            "displayName": "Time",
+                            "displayNameEvent": "Time changed",
+                            "displayNameAction": "Set Time",
+                            "type": "QTime",
+                            "defaultValue": "03:04"
+                        },
+                        {
+                            "id": "d64c8b3f-ca7d-47f6-b271-867ffd80a4d4",
+                            "name": "writableTime",
+                            "displayName": "Writable Time",
+                            "displayNameEvent": "Writable Time changed",
+                            "displayNameAction": "Set Writable Time",
+                            "type": "QTime",
+                            "defaultValue": "15:12",
+                            "writable": true
+                        },
+                        {
+                            "id": "2c91b5ef-c2d1-4367-bc65-5a13abf69641",
+                            "name": "timestampInt",
+                            "displayName": "Timestamp (Int)",
+                            "displayNameEvent": "Timestamp (Int) changed",
+                            "type": "int",
+                            "defaultValue": -349394745,
+                            "unit": "UnixTime"
+                        },
+                        {
+                            "id": "88b6746a-b009-4df6-8986-d7884ffd94b2",
+                            "name": "writableTimestampInt",
+                            "displayName": "Writable Timestamp (Int)",
+                            "displayNameEvent": "Writable Timestamp (Int) changed",
+                            "displayNameAction": "Set Writable Timestamp (Int)",
+                            "type": "int",
+                            "defaultValue": -349394745,
+                            "unit": "UnixTime",
+                            "writable": true
+                        },
+                        {
+                            "id": "6c9a96e8-0d48-4f42-8967-848358fd7f79",
+                            "name": "timestampUInt",
+                            "displayName": "Timestamp (UInt)",
+                            "displayNameEvent": "Timestamp (UInt) changed",
+                            "type": "uint",
+                            "defaultValue": 1549394745,
+                            "unit": "UnixTime"
+                        },
+                        {
+                            "id": "45d0069a-63ac-4265-8170-8152778608ee",
+                            "name": "writableTimestampUInt",
+                            "displayName": "Writable Timestamp (UInt)",
+                            "displayNameEvent": "Writable Timestamp (UInt) changed",
+                            "displayNameAction": "Set Writable Timestamp (UInt)",
+                            "type": "uint",
+                            "defaultValue": 1549394745,
+                            "unit": "UnixTime",
+                            "writable": true
+                        }
                     ]
                 }
             ]

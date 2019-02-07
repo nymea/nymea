@@ -22,6 +22,7 @@
 #include "nymeatestbase.h"
 #include "nymeasettings.h"
 #include "servers/mocktcpserver.h"
+#include "nymeacore.h"
 
 using namespace nymeaserver;
 
@@ -112,6 +113,8 @@ private slots:
     void testInterfaceBasedStateRule();
 
     void testLoopingRules();
+
+    void testScene();
 
     void testHousekeeping_data();
     void testHousekeeping();
@@ -2892,6 +2895,69 @@ void TestRules::testLoopingRules()
     verifyRuleExecuted(mockActionIdPower);
 
     // No need to check anything else. This test sets up a binding loop and if the core doesn't catch it it'll crash here.
+}
+
+void TestRules::testScene()
+{
+    // Given scenes are rules without stateEvaluator and eventDescriptors, they evaluate to true when asked for "active()"
+    // This test should catch the case where such a rule might wrongly be exected by evaluating it
+    // when another state change happens or when a time event is evaluated
+
+    NymeaCore::instance()->timeManager()->stopTimer();
+    QDateTime now = QDateTime::currentDateTime();
+    NymeaCore::instance()->timeManager()->setTime(now);
+
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // state power state to false initially
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockPowerStateTypeId.toString()).arg(false)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // state battery critical state to false initially
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(false)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // Add a scene setting power to true
+    QVariantMap powerAction;
+    powerAction.insert("deviceId", m_mockDeviceId);
+    powerAction.insert("actionTypeId", mockPowerStateTypeId);
+    QVariantMap powerActionParam;
+    powerActionParam.insert("paramTypeId", mockPowerStateTypeId);
+    powerActionParam.insert("value", true);
+    powerAction.insert("ruleActionParams", QVariantList() << powerActionParam);
+
+    QVariantMap addRuleParams;
+    addRuleParams.insert("name", "TestScene");
+    addRuleParams.insert("enabled", true);
+    addRuleParams.insert("executable", true);
+    addRuleParams.insert("actions", QVariantList() << powerAction);
+
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleError").toString(), QString("RuleErrorNoError"));
+
+    // trigger state change on battery critical
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(true)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    verifyRuleNotExecuted();
+
+    // Now trigger a time change
+    NymeaCore::instance()->timeManager()->setTime(now.addSecs(1));
+
+    verifyRuleNotExecuted();
 }
 
 void TestRules::testHousekeeping_data()

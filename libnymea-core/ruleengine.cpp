@@ -167,7 +167,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
         }
 
         // If this rule does not base on an event, evaluate the rule
-        if (rule.eventDescriptors().isEmpty() && rule.timeDescriptor().timeEventItems().isEmpty()) {
+        if (rule.eventDescriptors().isEmpty() && rule.timeDescriptor().timeEventItems().isEmpty() && !rule.stateEvaluator().isEmpty()) {
             if (rule.timeActive() && rule.statesActive()) {
                 if (!m_activeRules.contains(rule.id())) {
                     qCDebug(dcRuleEngine).nospace().noquote() << "Rule " << rule.name() << " (" << rule.id().toString() << ") active.";

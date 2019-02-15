@@ -44,7 +44,7 @@ public:
 signals:
 
 public slots:
-    void connectToCloud(const QString &token, const QString &nonce);
+    void connectToCloud(const QString &token, const QString &nonce, const QString &serverUrl);
 
 private slots:
     void remoteConnectionStateChanged(remoteproxyclient::RemoteProxyConnection::State state);
@@ -54,7 +54,7 @@ private slots:
     void transportDisconnected();
 
 private:
-    QUrl m_proxyUrl;
+    QString m_defaultProxyUrl;
 
     class ConnectionContext {
     public:

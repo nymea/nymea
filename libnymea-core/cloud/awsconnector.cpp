@@ -489,6 +489,7 @@ void AWSConnector::onPublishReceived(const QString &topic, const QByteArray &pay
     } else if (topic.startsWith(QString("%1/eu-west-1:").arg(m_clientId)) && topic.contains("proxy")) {
         QString token = jsonDoc.toVariant().toMap().value("token").toString();
         QString timestamp = jsonDoc.toVariant().toMap().value("timestamp").toString();
+        QString serverUrl = jsonDoc.toVariant().toMap().value("serverUrl").toString();
         static QHash<QString, QDateTime> dupes;
         QString packetId = topic + token + timestamp;
         if (dupes.contains(packetId)) {
@@ -502,7 +503,7 @@ void AWSConnector::onPublishReceived(const QString &topic, const QByteArray &pay
             }
         }
         qCDebug(dcAWS) << "Proxy remote connection request received";
-        proxyConnectionRequestReceived(token, timestamp);
+        proxyConnectionRequestReceived(token, timestamp, serverUrl);
     } else if (topic == QString("%1/notify/response").arg(m_clientId)) {
         int transactionId = jsonDoc.toVariant().toMap().value("id").toInt();
         int status = jsonDoc.toVariant().toMap().value("status").toInt();

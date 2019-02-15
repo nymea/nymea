@@ -31,7 +31,7 @@ namespace nymeaserver {
 CloudTransport::CloudTransport(const ServerConfiguration &config, QObject *parent):
     TransportInterface(config, parent)
 {
-    m_proxyUrl = QUrl("wss://remoteproxy.nymea.io");
+    m_defaultProxyUrl = "wss://remoteproxy.nymea.io";
 }
 
 void CloudTransport::sendData(const QUuid &clientId, const QByteArray &data)
@@ -75,9 +75,10 @@ bool CloudTransport::stopServer()
     return true;
 }
 
-void CloudTransport::connectToCloud(const QString &token, const QString &nonce)
+void CloudTransport::connectToCloud(const QString &token, const QString &nonce, const QString &serverUrl)
 {
-    qCDebug(dcCloud()) << "Connecting to remote proxy server" << m_proxyUrl.toString();
+    QString proxyUrl = serverUrl.isEmpty() ? m_defaultProxyUrl : serverUrl;
+    qCDebug(dcCloud()) << "Connecting to remote proxy server" << proxyUrl;
 
     ConnectionContext context;
     context.clientId = QUuid::createUuid();
@@ -93,7 +94,7 @@ void CloudTransport::connectToCloud(const QString &token, const QString &nonce)
     connect(context.proxyConnection, &RemoteProxyConnection::remoteConnectionEstablished, this, &CloudTransport::transportConnected);
     connect(context.proxyConnection, &RemoteProxyConnection::disconnected, this, &CloudTransport::transportDisconnected);
 
-    context.proxyConnection->connectServer(m_proxyUrl);
+    context.proxyConnection->connectServer(QUrl(proxyUrl));
 }
 
 void CloudTransport::remoteConnectionStateChanged(RemoteProxyConnection::State state)

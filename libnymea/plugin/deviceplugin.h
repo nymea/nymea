@@ -100,6 +100,7 @@ protected:
     Devices myDevices() const;
     HardwareManager *hardwareManager() const;
     Device* findDeviceByParams(const ParamList &params) const;
+    bool deviceWithParamValueExists(const ParamTypeId &paramTypeId, const QVariant &value);
 
 private:
     void setMetaData(const QJsonObject &metaData);

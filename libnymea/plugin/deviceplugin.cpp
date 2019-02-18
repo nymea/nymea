@@ -505,6 +505,22 @@ Device *DevicePlugin::findDeviceByParams(const ParamList &params) const
     return nullptr;
 }
 
+/*! Returns true, if this plugin has a device with the given \a paramTypeId matching given \a value. This method should help
+    finding devices which are already added i.e. a device with a specific mac address or UUID.
+*/
+bool DevicePlugin::deviceWithParamValueExists(const ParamTypeId &paramTypeId, const QVariant &value)
+{
+    foreach (Device *device, myDevices()) {
+        if (!device->params().hasParam(paramTypeId))
+            continue;
+
+        if (device->paramValue(paramTypeId) == value)
+            return true;
+    }
+
+    return false;
+}
+
 void DevicePlugin::setMetaData(const QJsonObject &metaData)
 {
     m_metaData = metaData;

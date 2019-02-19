@@ -208,7 +208,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
 
     params.clear();
     setDescription("PushButtonAuthFinished", "Emitted when a push button authentication reaches final state. NOTE: This notification is special. It will only be emitted to connections that did actively request a push button authentication, but also it will be emitted regardless of the notification settings. ");
-    params.insert("status", JsonTypes::userErrorRef());
+    params.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
     params.insert("transactionId", JsonTypes::basicTypeToString(JsonTypes::Int));
     params.insert("o:token", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("PushButtonAuthFinished", params);

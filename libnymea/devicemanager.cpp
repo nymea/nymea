@@ -478,13 +478,13 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
         return DeviceErrorDeviceDescriptorNotFound;
     }
 
-    // Merge params. Use the ones from the descriptor unless overrides are provided in the function call
+    // Merge params from discovered descriptor and additional overrides provided on API call. User provided params have higher priority than discovery params.
     ParamList finalParams;
-    foreach (const Param &param, descriptor.params()) {
-        if (params.hasParam(param.paramTypeId())) {
-            finalParams.append(Param(param.paramTypeId(), params.paramValue(param.paramTypeId())));
-        } else {
-            finalParams.append(param);
+    foreach (const ParamType &paramType, deviceClass.paramTypes()) {
+        if (params.hasParam(paramType.id())) {
+            finalParams.append(Param(paramType.id(), params.paramValue(paramType.id())));
+        } else if (descriptor.params().hasParam(paramType.id())) {
+            finalParams.append(Param(paramType.id(), descriptor.params().paramValue(paramType.id())));
         }
     }
 

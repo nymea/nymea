@@ -4,7 +4,7 @@
     "states": [
         {
             "name": "signalStrength",
-            "type": "int",
+            "type": "uint",
             "unit": "Percentage",
             "minValue": 0,
             "maxValue": 100,

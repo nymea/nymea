@@ -160,9 +160,9 @@ int main(int argc, char *argv[])
                                                                           "device available in the system and create individual scenes and behaviors \n"
                                                                           "for your environment.\n\n");
 
-    applicationDescription.append(QString("nymead %1 %2 2014-2018 guh GmbH\n"
+    applicationDescription.append(QString("nymead %1 %2 %3 guh GmbH\n"
                                           "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
-                                          "API version: %3\n").arg(NYMEA_VERSION_STRING).arg(QChar(0xA9)).arg(JSON_PROTOCOL_VERSION));
+                                          "API version: %4\n").arg(NYMEA_VERSION_STRING).arg(QChar(0xA9)).arg(COPYRIGHT_YEAR_STRING).arg(JSON_PROTOCOL_VERSION));
 
     parser.setApplicationDescription(applicationDescription);
 

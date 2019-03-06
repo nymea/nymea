@@ -42,6 +42,9 @@ public:
     DeviceDescriptorId id() const;
     DeviceClassId deviceClassId() const;
 
+    DeviceId deviceId() const;
+    void setDeviceId(const DeviceId &deviceId);
+
     QString title() const;
     void setTitle(const QString &title);
 
@@ -57,6 +60,7 @@ public:
 private:
     DeviceDescriptorId m_id;
     DeviceClassId m_deviceClassId;
+    DeviceId m_deviceId;
     QString m_title;
     QString m_description;
     DeviceId m_parentDeviceId;

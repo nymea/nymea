@@ -73,7 +73,6 @@ HEADERS += nymeacore.h \
     cloud/awsconnector.h \
     cloud/cloudmanager.h \
     cloud/cloudnotifications.h \
-    cloud/janusconnector.h \
     pushbuttondbusservice.h \
     hardwaremanagerimplementation.h \
     hardware/plugintimermanagerimplementation.h \
@@ -158,7 +157,6 @@ SOURCES += nymeacore.cpp \
     cloud/awsconnector.cpp \
     cloud/cloudmanager.cpp \
     cloud/cloudnotifications.cpp \
-    cloud/janusconnector.cpp \
     pushbuttondbusservice.cpp \
     hardwaremanagerimplementation.cpp \
     hardware/plugintimermanagerimplementation.cpp \

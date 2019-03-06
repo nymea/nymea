@@ -266,11 +266,6 @@ void AWSConnector::pairDevice(const QString &idToken, const QString &userId)
     m_pairingRequests.insert(m_transactionId, userId);
 }
 
-void AWSConnector::sendWebRtcHandshakeMessage(const QString &sessionId, const QVariantMap &map)
-{
-    publish(sessionId + "/reply", map);
-}
-
 int AWSConnector::sendPushNotification(const QString &userId, const QString &endpointId, const QString &title, const QString &text)
 {
     QVariantMap params;
@@ -468,24 +463,6 @@ void AWSConnector::onPublishReceived(const QString &topic, const QByteArray &pay
         if (jsonDoc.toVariant().toMap().value("status").toInt() == 200) {
             storeSyncedNameCache(m_clientName);
         }
-    } else if (topic.startsWith(QString("%1/eu-west-1:").arg(m_clientId)) && !topic.contains("reply") && !topic.contains("proxy")) {
-        static QHash<QString, QDateTime> dupes;
-        QString id = jsonDoc.toVariant().toMap().value("id").toString();
-        QString type = jsonDoc.toVariant().toMap().value("type").toString();
-        if (dupes.contains(id+type)) {
-            qCDebug(dcAWS()) << "Dropping duplicate packet";
-            return;
-        }
-        dupes.insert(id+type, QDateTime::currentDateTime());
-        foreach (const QString &dupe, dupes.keys()) {
-            if (dupes.value(dupe).addSecs(60) < QDateTime::currentDateTime()) {
-                dupes.remove(dupe);
-            }
-        }
-        qCDebug(dcAWS) << "received webrtc handshake message.";
-        webRtcHandshakeMessageReceived(topic, jsonDoc.toVariant().toMap());
-    } else if (topic.startsWith(QString("%1/eu-west-1:").arg(m_clientId)) && topic.contains("reply")) {
-        // silently drop our own things (should not be subscribed to that in the first place)
     } else if (topic.startsWith(QString("%1/eu-west-1:").arg(m_clientId)) && topic.contains("proxy")) {
         QString token = jsonDoc.toVariant().toMap().value("token").toString();
         QString timestamp = jsonDoc.toVariant().toMap().value("timestamp").toString();

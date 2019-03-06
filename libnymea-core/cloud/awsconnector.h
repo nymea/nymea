@@ -49,8 +49,6 @@ public:
     void setDeviceName(const QString &deviceName);
     void pairDevice(const QString &idToken, const QString &userId);
 
-    void sendWebRtcHandshakeMessage(const QString &sessionId, const QVariantMap &map);
-
 public slots:
     int sendPushNotification(const QString &userId, const QString &endpointId, const QString &title, const QString &text);
     void requestTURNCredentials();
@@ -59,7 +57,6 @@ signals:
     void connected();
     void disconnected();
     void devicePaired(const QString &cognritoUserId, int errorCode, const QString &message);
-    void webRtcHandshakeMessageReceived(const QString &transactionId, const QVariantMap &data);
     void pushNotificationEndpointsUpdated(const QList<AWSConnector::PushNotificationsEndpoint> pushNotificationEndpoints);
     void pushNotificationEndpointAdded(const AWSConnector::PushNotificationsEndpoint &pushNotificationEndpoint);
     void pushNotificationSent(int id, int status);

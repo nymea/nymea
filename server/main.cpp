@@ -129,8 +129,6 @@ int main(int argc, char *argv[])
         "UserManager",
         "AWS",
         "AWSTraffic",
-        "Janus",
-        "JanusTraffic",
         "BluetoothServer",
         "BluetoothServerTraffic",
         "Mqtt"

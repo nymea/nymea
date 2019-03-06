@@ -528,11 +528,12 @@
             }
         },
         "JSONRPC.KeepAlive": {
-            "description": "Keep alive a remote connection. The sessionId is the MQTT topic which has been used to establish the session. It will return false if no ongoing session with the given ID can be found.",
+            "description": "This is basically a Ping/Pong mechanism a client app may use to check server connectivity. Currently, the server does not actually do anything with this information and will return the call providing the given sessionId back to the caller. It is up to the client whether to use this or not and not required by the server to keep the connection alive.",
             "params": {
                 "sessionId": "String"
             },
             "returns": {
+                "sessionId": "String",
                 "success": "Bool"
             }
         },

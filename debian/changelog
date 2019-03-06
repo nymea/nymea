@@ -1,3 +1,27 @@
+nymea (0.11.1) xenial; urgency=medium
+
+  [ Simon Stürz ]
+  * Remove power from heating interface
+  * Fix pushbutton auth notification API declaration
+
+  [ Michael Zanetti ]
+  * Update the extended evcharger interface
+  * Support providing a custom remote proxy url
+  * Fix merging params for discovered devices with user overrides
+  * Fix Scenes getting activated by state changes
+  * Mock Plugin: Extend inputTypes mock device with states for all types
+  * Add unit to pressure sensor interface
+  * Make percentage unit mandatory for extendedheating
+  * Add units to conductivity and light sensor interfaces
+  * Remove redundant "close" action from garagegate interface
+  * Add a thermostat interface
+  * Add a deviceId to DeviceDescriptors to allow reconfiguring them
+  * Make color and colorTemperature in lights interfaces writable
+  * Handle binding loops in rules properly
+  * Drop Janus and WebRTC support
+
+ -- Jenkins <jenkins@nymea.io>  Wed, 06 Mar 2019 21:13:34 +0100
+
 nymea (0.11.0) xenial; urgency=medium
 
   [ Simon Stürz ]

@@ -3,7 +3,8 @@
     "states": [
         {
             "name": "conductivity",
-            "type": "double"
+            "type": "double",
+            "unit": "UnitMicroSiemensPerCentimeter"
         }
     ]
 }

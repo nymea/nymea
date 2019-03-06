@@ -64,7 +64,7 @@
 <context>
     <name>nymea</name>
     <message>
-        <location filename="../server/main.cpp" line="159"/>
+        <location filename="../server/main.cpp" line="157"/>
         <source>
 nymea is an open source IoT (Internet of Things) server, 
 which allows to control a lot of different devices from many different 
@@ -79,12 +79,12 @@ nymea ist ein Open-Source-IoT (Internet der Dinge) Server, der es ermöglicht, v
 </translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="171"/>
+        <location filename="../server/main.cpp" line="169"/>
         <source>Run nymead in the foreground, not as daemon.</source>
         <translation>Führe Nymead im Vordergrund aus, nicht als Daemon.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="174"/>
+        <location filename="../server/main.cpp" line="172"/>
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Suffix with &quot;Warnings&quot; to address warnings.
 Examples:
 -d AWSTraffic
@@ -95,22 +95,22 @@ Categories are:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="186"/>
+        <location filename="../server/main.cpp" line="184"/>
         <source>Enables all debug categories except *Traffic and *Debug categories. Single debug categories can be disabled again with -d parameter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="189"/>
+        <location filename="../server/main.cpp" line="187"/>
         <source>Specify a log file to write to, if this option is not specified, logs will be printed to the standard output.</source>
         <translation>Geben Sie eine Log-datei an, in die geschrieben werden soll. Wenn diese Option nicht angegeben wird, werden Protokolle auf die Standardausgabe gedruckt.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="192"/>
+        <location filename="../server/main.cpp" line="190"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
         <translation>Falls angegeben, werden alle D-Bus Schnittstellen auf dem Sitzungs-Bus anstatt auf dem System-Bus zur Verfügung gestellt.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="233"/>
+        <location filename="../server/main.cpp" line="231"/>
         <source>No such debug category:</source>
         <translation>Diese Debug-Kategorie existiert nicht:</translation>
     </message>

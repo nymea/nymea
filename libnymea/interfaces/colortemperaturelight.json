@@ -5,7 +5,8 @@
             "name": "colorTemperature",
             "type": "int",
             "minimumValue": "any",
-            "maximumValue": "any"
+            "maximumValue": "any",
+            "writable": true
         }
     ]
 }

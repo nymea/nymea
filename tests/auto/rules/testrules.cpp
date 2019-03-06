@@ -22,6 +22,7 @@
 #include "nymeatestbase.h"
 #include "nymeasettings.h"
 #include "servers/mocktcpserver.h"
+#include "nymeacore.h"
 
 using namespace nymeaserver;
 
@@ -110,6 +111,10 @@ private slots:
     void testInterfaceBasedEventRule();
 
     void testInterfaceBasedStateRule();
+
+    void testLoopingRules();
+
+    void testScene();
 
     void testHousekeeping_data();
     void testHousekeeping();
@@ -255,16 +260,26 @@ void TestRules::setWritableStateValue(const DeviceId &deviceId, const StateTypeI
 void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
 {
     // Verify rule got executed
-    QNetworkAccessManager nam;
-    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockDevice1Port))));
-    QNetworkReply *reply = nam.get(request);
-    spy.wait();
-    QCOMPARE(spy.count(), 1);
+    bool actionFound = false;
+    QByteArray actionHistory;
+    int i = 0;
+    while (!actionFound && i < 50) {
+        QNetworkAccessManager nam;
+        QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+        QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockDevice1Port))));
+        QNetworkReply *reply = nam.get(request);
+        spy.wait();
+        QCOMPARE(spy.count(), 1);
 
-    QByteArray actionHistory = reply->readAll();
-    QVERIFY2(actionTypeId == ActionTypeId(actionHistory), "Action not triggered. Current action history: \"" + actionHistory + "\"");
-    reply->deleteLater();
+        actionHistory = reply->readAll();
+        actionFound = actionTypeId == ActionTypeId(actionHistory);
+        reply->deleteLater();
+        if (!actionFound) {
+            QTest::qWait(100);
+        }
+        i++;
+    }
+    QVERIFY2(actionFound, "Action not triggered. Current action history: \"" + actionHistory + "\"");
 }
 
 void TestRules::verifyRuleNotExecuted()
@@ -2806,6 +2821,143 @@ void TestRules::testInterfaceBasedStateRule()
     reply->deleteLater();
 
     verifyRuleExecuted(mockActionIdPower);
+}
+
+void TestRules::testLoopingRules()
+{
+    QVariantMap powerOnActionParam;
+    powerOnActionParam.insert("paramTypeId", mockPowerStateTypeId);
+    powerOnActionParam.insert("value", true);
+
+    QVariantMap powerOffActionParam;
+    powerOffActionParam.insert("paramTypeId", mockPowerStateTypeId);
+    powerOffActionParam.insert("value", false);
+
+    QVariantMap powerOnEventParam = powerOnActionParam;
+    powerOnEventParam.insert("operator", "ValueOperatorEquals");
+
+    QVariantMap powerOffEventParam = powerOffActionParam;
+    powerOffEventParam.insert("operator", "ValueOperatorEquals");
+
+    QVariantMap onEvent;
+    onEvent.insert("eventTypeId", mockPowerStateTypeId);
+    onEvent.insert("deviceId", m_mockDeviceId);
+    onEvent.insert("paramDescriptors", QVariantList() << powerOnEventParam);
+
+    QVariantMap offEvent;
+    offEvent.insert("eventTypeId", mockPowerStateTypeId);
+    offEvent.insert("deviceId", m_mockDeviceId);
+    offEvent.insert("paramDescriptors", QVariantList() << powerOffEventParam);
+
+    QVariantMap onAction;
+    onAction.insert("actionTypeId", mockPowerStateTypeId);
+    onAction.insert("deviceId", m_mockDeviceId);
+    onAction.insert("ruleActionParams", QVariantList() << powerOnActionParam);
+
+    QVariantMap offAction;
+    offAction.insert("actionTypeId", mockPowerStateTypeId);
+    offAction.insert("deviceId", m_mockDeviceId);
+    offAction.insert("ruleActionParams", QVariantList() << powerOffActionParam);
+
+    // Add rule 1
+    QVariantMap addRuleParams;
+    addRuleParams.insert("name", "Rule off -> on");
+    addRuleParams.insert("eventDescriptors", QVariantList() << offEvent);
+    addRuleParams.insert("actions", QVariantList() << onAction);
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    qWarning() << response;
+    verifyRuleError(response);
+
+    // Add rule 1
+    addRuleParams.clear();
+    addRuleParams.insert("name", "Rule on -> off");
+    addRuleParams.insert("eventDescriptors", QVariantList() << onEvent);
+    addRuleParams.insert("actions", QVariantList() << offAction);
+    response = injectAndWait("Rules.AddRule", addRuleParams);
+    verifyRuleError(response);
+
+    cleanupMockHistory();
+
+    QVariantMap params;
+    params.insert("deviceId", m_mockDeviceId);
+    params.insert("actionTypeId", mockPowerStateTypeId);
+    params.insert("params", QVariantList() << powerOffActionParam);
+    response = injectAndWait("Actions.ExecuteAction", params);
+    verifyRuleExecuted(mockActionIdPower);
+
+    cleanupMockHistory();
+
+    params.clear();
+    params.insert("deviceId", m_mockDeviceId);
+    params.insert("actionTypeId", mockPowerStateTypeId);
+    params.insert("params", QVariantList() << powerOnActionParam);
+    response = injectAndWait("Actions.ExecuteAction", params);
+    verifyRuleExecuted(mockActionIdPower);
+
+    // No need to check anything else. This test sets up a binding loop and if the core doesn't catch it it'll crash here.
+}
+
+void TestRules::testScene()
+{
+    // Given scenes are rules without stateEvaluator and eventDescriptors, they evaluate to true when asked for "active()"
+    // This test should catch the case where such a rule might wrongly be exected by evaluating it
+    // when another state change happens or when a time event is evaluated
+
+    NymeaCore::instance()->timeManager()->stopTimer();
+    QDateTime now = QDateTime::currentDateTime();
+    NymeaCore::instance()->timeManager()->setTime(now);
+
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // state power state to false initially
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockPowerStateTypeId.toString()).arg(false)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // state battery critical state to false initially
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(false)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // Add a scene setting power to true
+    QVariantMap powerAction;
+    powerAction.insert("deviceId", m_mockDeviceId);
+    powerAction.insert("actionTypeId", mockPowerStateTypeId);
+    QVariantMap powerActionParam;
+    powerActionParam.insert("paramTypeId", mockPowerStateTypeId);
+    powerActionParam.insert("value", true);
+    powerAction.insert("ruleActionParams", QVariantList() << powerActionParam);
+
+    QVariantMap addRuleParams;
+    addRuleParams.insert("name", "TestScene");
+    addRuleParams.insert("enabled", true);
+    addRuleParams.insert("executable", true);
+    addRuleParams.insert("actions", QVariantList() << powerAction);
+
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleError").toString(), QString("RuleErrorNoError"));
+
+    // trigger state change on battery critical
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(true)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    verifyRuleNotExecuted();
+
+    // Now trigger a time change
+    NymeaCore::instance()->timeManager()->setTime(now.addSecs(1));
+
+    verifyRuleNotExecuted();
 }
 
 void TestRules::testHousekeeping_data()

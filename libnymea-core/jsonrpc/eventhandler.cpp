@@ -88,7 +88,7 @@ JsonReply* EventHandler::GetEventType(const QVariantMap &params) const
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
             if (eventType.id() == eventTypeId) {
                 QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);
-                data.insert("eventType", JsonTypes::packEventType(eventType));
+                data.insert("eventType", JsonTypes::packEventType(eventType, deviceClass.pluginId(), params.value("locale").toLocale()));
                 return createReply(data);
             }
         }

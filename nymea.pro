@@ -32,6 +32,7 @@ lupdate.commands = lupdate -recursive -no-obsolete $$_FILE_;
 lrelease.depends = FORCE
 lrelease.commands = lrelease $$_FILE_; \
                     rsync -a $$top_srcdir/translations/*.qm $$top_builddir/translations/;
+first.depends = $(first) lrelease
 
 # Install translation files
 translations.path = /usr/share/nymea/translations

@@ -37,7 +37,7 @@ class DeviceClassesResource : public RestResource
 {
     Q_OBJECT
 public:
-    explicit DeviceClassesResource(QObject *parent = 0);
+    explicit DeviceClassesResource(QObject *parent = nullptr);
 
     QString name() const override;
 

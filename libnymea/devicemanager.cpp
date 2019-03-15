@@ -181,6 +181,7 @@
 #include "typeutils.h"
 #include "nymeasettings.h"
 #include "unistd.h"
+#include "translator.h"
 
 #include "plugintimer.h"
 
@@ -198,7 +199,8 @@
 DeviceManager::DeviceManager(HardwareManager *hardwareManager, const QLocale &locale, QObject *parent) :
     QObject(parent),
     m_hardwareManager(hardwareManager),
-    m_locale(locale)
+    m_locale(locale),
+    m_translator(new Translator(this))
 {
     qRegisterMetaType<DeviceClassId>();
     qRegisterMetaType<DeviceDescriptor>();
@@ -219,6 +221,8 @@ DeviceManager::DeviceManager(HardwareManager *hardwareManager, const QLocale &lo
 /*! Destructor of the DeviceManager. Each loaded \l{DevicePlugin} will be deleted. */
 DeviceManager::~DeviceManager()
 {
+    delete m_translator;
+
     foreach (Device *device, m_configuredDevices) {
         storeDeviceStates(device);
     }
@@ -286,44 +290,6 @@ void DeviceManager::registerStaticPlugin(DevicePlugin *plugin, const QJsonObject
     plugin->setParent(this);
     plugin->setMetaData(metaData);
     loadPlugin(plugin);
-}
-
-/*! Set the \a locale of all plugins and reload the translated strings. */
-void DeviceManager::setLocale(const QLocale &locale)
-{
-    qCDebug(dcDeviceManager()) << "Setting locale:" << locale;
-    m_locale = locale;
-    foreach (DevicePlugin *plugin, m_devicePlugins.values()) {
-        QCoreApplication::removeTranslator(plugin->translator());
-        plugin->setLocale(m_locale);
-        QCoreApplication::installTranslator(plugin->translator());
-        plugin->loadMetaData();
-    }
-
-    // Reload all plugin meta data
-
-    m_supportedVendors.clear();
-    m_supportedDevices.clear();
-
-    foreach (DevicePlugin *plugin, m_devicePlugins.values()) {
-
-        foreach (const Vendor &vendor, plugin->supportedVendors()) {
-            if (m_supportedVendors.contains(vendor.id()))
-                continue;
-
-            m_supportedVendors.insert(vendor.id(), vendor);
-        }
-
-        foreach (const DeviceClass &deviceClass, plugin->supportedDevices()) {
-            if (!m_supportedVendors.contains(deviceClass.vendorId())) {
-                qCWarning(dcDeviceManager) << "Vendor not found. Ignoring device. VendorId:" << deviceClass.vendorId() << "DeviceClass:" << deviceClass.name() << deviceClass.id();
-                continue;
-            }
-            m_supportedDevices.insert(deviceClass.id(), deviceClass);
-        }
-    }
-
-    emit languageUpdated();
 }
 
 /*! Returns the pointer to the \l{HardwareManager} of the system.
@@ -400,13 +366,15 @@ Interface DeviceManager::findInterface(const QString &name)
  *  Optionally filtered by \a vendorId. */
 QList<DeviceClass> DeviceManager::supportedDevices(const VendorId &vendorId) const
 {
-    QList<DeviceClass> ret;
     if (vendorId.isNull()) {
-        ret = m_supportedDevices.values();
-    } else {
-        foreach (const DeviceClassId &deviceClassId, m_vendorDeviceMap.value(vendorId)) {
-            ret.append(m_supportedDevices.value(deviceClassId));
+        return m_supportedDevices.values();
+    }
+    QList<DeviceClass> ret;
+    foreach (const DeviceClass &deviceClass, m_supportedDevices) {
+        if (!vendorId.isNull() && deviceClass.vendorId() != vendorId) {
+            continue;
         }
+        ret.append(deviceClass);
     }
     return ret;
 }
@@ -928,13 +896,13 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType
         return DeviceErrorInvalidParameter;
     }
 
-    if (!param.value().canConvert(paramType.type())) {
-        qCWarning(dcDeviceManager) << "Wrong parameter type for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Expected:" << QVariant::typeToName(paramType.type());
+    if (!param.value().canConvert(static_cast<int>(paramType.type()))) {
+        qCWarning(dcDeviceManager) << "Wrong parameter type for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Expected:" << QVariant::typeToName(static_cast<int>(paramType.type()));
         return DeviceErrorInvalidParameter;
     }
 
-    if (!param.value().convert(paramType.type())) {
-        qCWarning(dcDeviceManager) << "Could not convert value of param" << param.paramTypeId().toString() << " to:" << QVariant::typeToName(paramType.type()) << " Got:" << param.value();
+    if (!param.value().convert(static_cast<int>(paramType.type()))) {
+        qCWarning(dcDeviceManager) << "Could not convert value of param" << param.paramTypeId().toString() << " to:" << QVariant::typeToName(static_cast<int>(paramType.type())) << " Got:" << param.value();
         return DeviceErrorInvalidParameter;
     }
 
@@ -991,6 +959,13 @@ DeviceManager::DeviceError DeviceManager::verifyParam(const ParamType &paramType
     }
 
     return DeviceErrorNoError;
+}
+
+/*! Returns the translator. The translator can be used to translate plugin data.
+ * */
+Translator *DeviceManager::translator() const
+{
+    return m_translator;
 }
 
 /*! Execute the given \l{Action}.
@@ -1079,9 +1054,6 @@ void DeviceManager::loadPlugins()
 
 void DeviceManager::loadPlugin(DevicePlugin *pluginIface)
 {
-    pluginIface->setLocale(m_locale);
-    qApp->installTranslator(pluginIface->translator());
-
     pluginIface->initPlugin(this);
 
     qCDebug(dcDeviceManager) << "**** Loaded plugin" << pluginIface->pluginName();
@@ -1141,6 +1113,7 @@ void DeviceManager::loadPlugin(DevicePlugin *pluginIface)
     connect(pluginIface, &DevicePlugin::pairingFinished, this, &DeviceManager::slotPairingFinished);
     connect(pluginIface, &DevicePlugin::autoDevicesAppeared, this, &DeviceManager::onAutoDevicesAppeared);
     connect(pluginIface, &DevicePlugin::autoDeviceDisappeared, this, &DeviceManager::onAutoDeviceDisappeared);
+
 }
 
 void DeviceManager::loadConfiguredDevices()

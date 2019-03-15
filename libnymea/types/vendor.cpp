@@ -74,3 +74,8 @@ void Vendor::setDisplayName(const QString &displayName)
 {
     m_displayName = displayName;
 }
+
+bool Vendor::operator==(const Vendor &other) const
+{
+    return m_id == other.id();
+}

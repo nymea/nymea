@@ -68,7 +68,7 @@ JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
         foreach (const StateType &stateType, deviceClass.stateTypes()) {
             if (stateType.id() == stateTypeId) {
                 QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);
-                data.insert("stateType", JsonTypes::packStateType(stateType));
+                data.insert("stateType", JsonTypes::packStateType(stateType, deviceClass.pluginId(), params.value("locale").toLocale()));
                 return createReply(data);
             }
         }

@@ -39,6 +39,7 @@
 #include <QTimer>
 #include <QLocale>
 #include <QPluginLoader>
+#include <QTranslator>
 
 #include "hardwaremanager.h"
 
@@ -46,6 +47,7 @@ class Device;
 class DevicePlugin;
 class DevicePairingInfo;
 class HardwareManager;
+class Translator;
 
 class LIBNYMEA_EXPORT DeviceManager : public QObject
 {
@@ -96,8 +98,6 @@ public:
     static QList<QJsonObject> pluginsMetadata();
     void registerStaticPlugin(DevicePlugin* plugin, const QJsonObject &metaData);
 
-    void setLocale(const QLocale &locale);
-
     HardwareManager *hardwareManager() const;
 
     QList<DevicePlugin*> plugins() const;
@@ -136,9 +136,9 @@ public:
     DeviceError verifyParam(const QList<ParamType> paramTypes, const Param &param);
     DeviceError verifyParam(const ParamType &paramType, const Param &param);
 
+    Translator* translator() const;
 signals:
     void loaded();
-    void languageUpdated();
     void pluginConfigChanged(const PluginId &id, const ParamList &config);
     void eventTriggered(const Event &event);
     void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
@@ -186,6 +186,7 @@ private:
     HardwareManager *m_hardwareManager;
 
     QLocale m_locale;
+    Translator *m_translator = nullptr;
     QHash<VendorId, Vendor> m_supportedVendors;
     QHash<QString, Interface> m_supportedInterfaces;
     QHash<VendorId, QList<DeviceClassId> > m_vendorDeviceMap;

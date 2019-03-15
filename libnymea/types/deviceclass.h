@@ -207,4 +207,6 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(DeviceClass::CreateMethods)
 
+QDebug operator<<(QDebug &dbg, const DeviceClass &deviceClass);
+
 #endif

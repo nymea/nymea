@@ -184,7 +184,7 @@ HttpReply *DeviceClassesResource::getDeviceClass()
     qCDebug(dcRest) << "Get device class with id " << m_deviceClass.id();
     HttpReply *reply = createSuccessReply();
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packDeviceClass(m_deviceClass)).toJson());
+    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packDeviceClass(m_deviceClass, NymeaCore::instance()->configuration()->locale())).toJson());
     return reply;
 }
 
@@ -193,7 +193,7 @@ HttpReply *DeviceClassesResource::getActionTypes()
     qCDebug(dcRest) << "Get action types for device class" << m_deviceClass.id();
     HttpReply *reply = createSuccessReply();
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packActionTypes(m_deviceClass)).toJson());
+    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packActionTypes(m_deviceClass, NymeaCore::instance()->configuration()->locale())).toJson());
     return reply;
 }
 
@@ -205,7 +205,7 @@ HttpReply *DeviceClassesResource::getActionType(const ActionTypeId &actionTypeId
         if (actionType.id() == actionTypeId) {
             HttpReply *reply = createSuccessReply();
             reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-            reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packActionType(actionType)).toJson());
+            reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packActionType(actionType, m_deviceClass.pluginId(), NymeaCore::instance()->configuration()->locale())).toJson());
             return reply;
         }
     }
@@ -217,7 +217,7 @@ HttpReply *DeviceClassesResource::getStateTypes()
     qCDebug(dcRest) << "Get state types for device class" << m_deviceClass.id();
     HttpReply *reply = createSuccessReply();
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packStateTypes(m_deviceClass)).toJson());
+    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packStateTypes(m_deviceClass, NymeaCore::instance()->configuration()->locale())).toJson());
     return reply;
 }
 
@@ -229,7 +229,7 @@ HttpReply *DeviceClassesResource::getStateType(const StateTypeId &stateTypeId)
         if (stateType.id() == stateTypeId) {
             HttpReply *reply = createSuccessReply();
             reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-            reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packStateType(stateType)).toJson());
+            reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packStateType(stateType, m_deviceClass.pluginId(), NymeaCore::instance()->configuration()->locale())).toJson());
             return reply;
         }
     }
@@ -241,7 +241,7 @@ HttpReply *DeviceClassesResource::getEventTypes()
     qCDebug(dcRest) << "Get event types for device class" << m_deviceClass.id();
     HttpReply *reply = createSuccessReply();
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packEventTypes(m_deviceClass)).toJson());
+    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packEventTypes(m_deviceClass, NymeaCore::instance()->configuration()->locale())).toJson());
     return reply;
 }
 
@@ -253,7 +253,7 @@ HttpReply *DeviceClassesResource::getEventType(const EventTypeId &eventTypeId)
         if (eventType.id() == eventTypeId) {
             HttpReply *reply = createSuccessReply();
             reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-            reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packEventType(eventType)).toJson());
+            reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packEventType(eventType, m_deviceClass.pluginId(), NymeaCore::instance()->configuration()->locale())).toJson());
             return reply;
         }
     }
@@ -307,7 +307,7 @@ HttpReply *DeviceClassesResource::getDeviceClasses(const VendorId &vendorId)
 
     HttpReply *reply = createSuccessReply();
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packSupportedDevices(vendorId)).toJson());
+    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packSupportedDevices(vendorId, NymeaCore::instance()->configuration()->locale())).toJson());
     return reply;
 }
 

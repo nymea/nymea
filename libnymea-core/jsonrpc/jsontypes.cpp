@@ -56,6 +56,8 @@
 #include "ruleengine.h"
 #include "loggingcategories.h"
 #include "logging/logvaluetool.h"
+#include "translator.h"
+#include "plugin/deviceplugin.h"
 
 #include <QStringList>
 #include <QJsonDocument>
@@ -498,12 +500,12 @@ QVariantMap JsonTypes::allTypes()
 }
 
 /*! Returns a variant map of the given \a eventType. */
-QVariantMap JsonTypes::packEventType(const EventType &eventType)
+QVariantMap JsonTypes::packEventType(const EventType &eventType, const PluginId &pluginId, const QLocale &locale)
 {
     QVariantMap variant;
     variant.insert("id", eventType.id().toString());
     variant.insert("name", eventType.name());
-    variant.insert("displayName", eventType.displayName());
+    variant.insert("displayName", NymeaCore::instance()->deviceManager()->translator()->translate(pluginId, eventType.displayName(), locale));
     variant.insert("index", eventType.index());
     if (!eventType.ruleRelevant())
         variant.insert("ruleRelevant", false);
@@ -513,7 +515,7 @@ QVariantMap JsonTypes::packEventType(const EventType &eventType)
 
     QVariantList paramTypes;
     foreach (const ParamType &paramType, eventType.paramTypes())
-        paramTypes.append(packParamType(paramType));
+        paramTypes.append(packParamType(paramType, pluginId, locale));
 
     variant.insert("paramTypes", paramTypes);
     return variant;
@@ -553,16 +555,16 @@ QVariantMap JsonTypes::packEventDescriptor(const EventDescriptor &eventDescripto
 }
 
 /*! Returns a variant map of the given \a actionType. */
-QVariantMap JsonTypes::packActionType(const ActionType &actionType)
+QVariantMap JsonTypes::packActionType(const ActionType &actionType, const PluginId &pluginId, const QLocale &locale)
 {
     QVariantMap variantMap;
     variantMap.insert("id", actionType.id().toString());
     variantMap.insert("name", actionType.name());
-    variantMap.insert("displayName", actionType.displayName());
+    variantMap.insert("displayName", NymeaCore::instance()->deviceManager()->translator()->translate(pluginId, actionType.displayName(), locale));
     variantMap.insert("index", actionType.index());
     QVariantList paramTypes;
     foreach (const ParamType &paramType, actionType.paramTypes())
-        paramTypes.append(packParamType(paramType));
+        paramTypes.append(packParamType(paramType, pluginId, locale));
 
     variantMap.insert("paramTypes", paramTypes);
     return variantMap;
@@ -630,12 +632,12 @@ QVariantMap JsonTypes::packState(const State &state)
 }
 
 /*! Returns a variant map of the given \a stateType. */
-QVariantMap JsonTypes::packStateType(const StateType &stateType)
+QVariantMap JsonTypes::packStateType(const StateType &stateType, const PluginId &pluginId, const QLocale &locale)
 {
     QVariantMap variantMap;
     variantMap.insert("id", stateType.id().toString());
     variantMap.insert("name", stateType.name());
-    variantMap.insert("displayName", stateType.displayName());
+    variantMap.insert("displayName", NymeaCore::instance()->deviceManager()->translator()->translate(pluginId, stateType.displayName(), locale));
     variantMap.insert("index", stateType.index());
     variantMap.insert("type", basicTypeToString(stateType.type()));
     variantMap.insert("defaultValue", stateType.defaultValue());
@@ -721,12 +723,12 @@ QVariantMap JsonTypes::packParamDescriptor(const ParamDescriptor &paramDescripto
 }
 
 /*! Returns a variant map of the given \a paramType. */
-QVariantMap JsonTypes::packParamType(const ParamType &paramType)
+QVariantMap JsonTypes::packParamType(const ParamType &paramType, const PluginId &pluginId, const QLocale &locale)
 {
     QVariantMap variantMap;
     variantMap.insert("id", paramType.id().toString());
     variantMap.insert("name", paramType.name());
-    variantMap.insert("displayName", paramType.displayName());
+    variantMap.insert("displayName", NymeaCore::instance()->deviceManager()->translator()->translate(pluginId, paramType.displayName(), locale));
     variantMap.insert("type", basicTypeToString(paramType.type()));
     variantMap.insert("index", paramType.index());
 
@@ -756,22 +758,28 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
 }
 
 /*! Returns a variant map of the given \a vendor. */
-QVariantMap JsonTypes::packVendor(const Vendor &vendor)
+QVariantMap JsonTypes::packVendor(const Vendor &vendor, const QLocale &locale)
 {
+    DevicePlugin *plugin = nullptr;
+    foreach (DevicePlugin *p, NymeaCore::instance()->deviceManager()->plugins()) {
+        if (p->supportedVendors().contains(vendor)) {
+            plugin = p;
+        }
+    }
     QVariantMap variantMap;
     variantMap.insert("id", vendor.id().toString());
     variantMap.insert("name", vendor.name());
-    variantMap.insert("displayName", vendor.displayName());
+    variantMap.insert("displayName", NymeaCore::instance()->deviceManager()->translator()->translate(plugin->pluginId(), vendor.displayName(), locale));
     return variantMap;
 }
 
 /*! Returns a variant map of the given \a deviceClass. */
-QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
+QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass, const QLocale &locale)
 {
     QVariantMap variant;
     variant.insert("id", deviceClass.id().toString());
     variant.insert("name", deviceClass.name());
-    variant.insert("displayName", deviceClass.displayName());
+    variant.insert("displayName", NymeaCore::instance()->deviceManager()->translator()->translate(deviceClass.pluginId(), deviceClass.displayName(), locale));
     variant.insert("vendorId", deviceClass.vendorId().toString());
     variant.insert("pluginId", deviceClass.pluginId().toString());
     variant.insert("deviceIcon", s_deviceIcon.at(deviceClass.deviceIcon()));
@@ -783,23 +791,23 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
 
     QVariantList stateTypes;
     foreach (const StateType &stateType, deviceClass.stateTypes())
-        stateTypes.append(packStateType(stateType));
+        stateTypes.append(packStateType(stateType, deviceClass.pluginId(), locale));
 
     QVariantList eventTypes;
     foreach (const EventType &eventType, deviceClass.eventTypes())
-        eventTypes.append(packEventType(eventType));
+        eventTypes.append(packEventType(eventType, deviceClass.pluginId(), locale));
 
     QVariantList actionTypes;
     foreach (const ActionType &actionType, deviceClass.actionTypes())
-        actionTypes.append(packActionType(actionType));
+        actionTypes.append(packActionType(actionType, deviceClass.pluginId(), locale));
 
     QVariantList paramTypes;
     foreach (const ParamType &paramType, deviceClass.paramTypes())
-        paramTypes.append(packParamType(paramType));
+        paramTypes.append(packParamType(paramType, deviceClass.pluginId(), locale));
 
     QVariantList discoveryParamTypes;
     foreach (const ParamType &paramType, deviceClass.discoveryParamTypes())
-        discoveryParamTypes.append(packParamType(paramType));
+        discoveryParamTypes.append(packParamType(paramType, deviceClass.pluginId(), locale));
 
     if (!deviceClass.criticalStateTypeId().isNull())
         variant.insert("criticalStateTypeId", deviceClass.criticalStateTypeId().toString());
@@ -822,16 +830,16 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
 }
 
 /*! Returns a variant map of the given \a plugin. */
-QVariantMap JsonTypes::packPlugin(DevicePlugin *plugin)
+QVariantMap JsonTypes::packPlugin(DevicePlugin *plugin, const QLocale &locale)
 {
     QVariantMap pluginMap;
     pluginMap.insert("id", plugin->pluginId().toString());
     pluginMap.insert("name", plugin->pluginName());
-    pluginMap.insert("displayName", plugin->pluginDisplayName());
+    pluginMap.insert("displayName", NymeaCore::instance()->deviceManager()->translator()->translate(plugin->pluginId(), plugin->pluginDisplayName(), locale));
 
     QVariantList params;
     foreach (const ParamType &param, plugin->configurationDescription())
-        params.append(packParamType(param));
+        params.append(packParamType(param, plugin->pluginId(), locale));
 
     pluginMap.insert("paramTypes", params);
     return pluginMap;
@@ -1130,21 +1138,21 @@ QVariantMap JsonTypes::packWirelessNetworkDevice(WirelessNetworkDevice *networkD
 }
 
 /*! Returns a variant list of the supported vendors. */
-QVariantList JsonTypes::packSupportedVendors()
+QVariantList JsonTypes::packSupportedVendors(const QLocale &locale)
 {
     QVariantList supportedVendors;
     foreach (const Vendor &vendor, NymeaCore::instance()->deviceManager()->supportedVendors())
-        supportedVendors.append(packVendor(vendor));
+        supportedVendors.append(packVendor(vendor, locale));
 
     return supportedVendors;
 }
 
 /*! Returns a variant list of the supported devices with the given \a vendorId. */
-QVariantList JsonTypes::packSupportedDevices(const VendorId &vendorId)
+QVariantList JsonTypes::packSupportedDevices(const VendorId &vendorId, const QLocale &locale)
 {
     QVariantList supportedDeviceList;
     foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices(vendorId))
-        supportedDeviceList.append(packDeviceClass(deviceClass));
+        supportedDeviceList.append(packDeviceClass(deviceClass, locale));
 
     return supportedDeviceList;
 }
@@ -1246,41 +1254,41 @@ QVariantList JsonTypes::packRuleDescriptions(const QList<Rule> &rules)
 }
 
 /*! Returns a variant list of action types for the given \a deviceClass. */
-QVariantList JsonTypes::packActionTypes(const DeviceClass &deviceClass)
+QVariantList JsonTypes::packActionTypes(const DeviceClass &deviceClass, const QLocale &locale)
 {
     QVariantList actionTypes;
     foreach (const ActionType &actionType, deviceClass.actionTypes())
-        actionTypes.append(JsonTypes::packActionType(actionType));
+        actionTypes.append(JsonTypes::packActionType(actionType, deviceClass.pluginId(), locale));
 
     return actionTypes;
 }
 
 /*! Returns a variant list of state types for the given \a deviceClass. */
-QVariantList JsonTypes::packStateTypes(const DeviceClass &deviceClass)
+QVariantList JsonTypes::packStateTypes(const DeviceClass &deviceClass, const QLocale &locale)
 {
     QVariantList stateTypes;
     foreach (const StateType &stateType, deviceClass.stateTypes())
-        stateTypes.append(JsonTypes::packStateType(stateType));
+        stateTypes.append(JsonTypes::packStateType(stateType, deviceClass.pluginId(), locale));
 
     return stateTypes;
 }
 
 /*! Returns a variant list of event types for the given \a deviceClass. */
-QVariantList JsonTypes::packEventTypes(const DeviceClass &deviceClass)
+QVariantList JsonTypes::packEventTypes(const DeviceClass &deviceClass, const QLocale &locale)
 {
     QVariantList eventTypes;
     foreach (const EventType &eventType, deviceClass.eventTypes())
-        eventTypes.append(JsonTypes::packEventType(eventType));
+        eventTypes.append(JsonTypes::packEventType(eventType, deviceClass.pluginId(), locale));
 
     return eventTypes;
 }
 
 /*! Returns a variant list containing all plugins. */
-QVariantList JsonTypes::packPlugins()
+QVariantList JsonTypes::packPlugins(const QLocale &locale)
 {
     QVariantList pluginsList;
     foreach (DevicePlugin *plugin, NymeaCore::instance()->deviceManager()->plugins()) {
-        QVariantMap pluginMap = packPlugin(plugin);
+        QVariantMap pluginMap = packPlugin(plugin, locale);
         pluginsList.append(pluginMap);
     }
     return pluginsList;

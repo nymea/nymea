@@ -76,6 +76,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
 
     params.clear(); returns.clear();
     setDescription("Hello", "Upon first connection, nymea will automatically send a welcome message containing information about the setup. If this message is lost for whatever reason (connections with multiple hops might drop this if nymea sends it too early), the exact same message can be retrieved multiple times by calling this Hello method. Note that the contents might change if the system changed its state in the meantime, e.g. initialSetupRequired might turn false if the initial setup has been performed in the meantime.");
+    params.insert("o:locale", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("Hello", params);
     returns.insert("id", JsonTypes::basicTypeToString(JsonTypes::Int));
     returns.insert("server", JsonTypes::basicTypeToString(JsonTypes::String));
@@ -225,10 +226,19 @@ QString JsonRPCServer::name() const
     return QStringLiteral("JSONRPC");
 }
 
-JsonReply *JsonRPCServer::Hello(const QVariantMap &params) const
+JsonReply *JsonRPCServer::Hello(const QVariantMap &params)
 {
     Q_UNUSED(params);
     TransportInterface *interface = reinterpret_cast<TransportInterface*>(property("transportInterface").toLongLong());
+
+    qCDebug(dcJsonRpc()) << params;
+    QUuid clientId = this->property("clientId").toUuid();
+    if (params.contains("locale")) {
+        m_clientLocales.insert(clientId, QLocale(params.value("locale").toString()));
+    }
+
+    qCDebug(dcJsonRpc()) << "Client" << clientId << "initiated handshake." << m_clientLocales.value(clientId);
+
     return createReply(createWelcomeMessage(interface));
 }
 
@@ -601,6 +611,17 @@ void JsonRPCServer::processJsonPacket(TransportInterface *interface, const QUuid
 
     qCDebug(dcJsonRpc()) << "Invoking method" << targetNamespace << method.toLatin1().data();
 
+    if (targetNamespace != "JSONRPC" || method != "Hello") {
+        // If the client did request a locale in the Hello message, use that locale
+        if (m_clientLocales.contains(clientId)) {
+            params.insert("locale", m_clientLocales.value(clientId));
+        }
+        // Otherwise fall back to the locale set in the configuration.
+        else {
+            params.insert("locale", NymeaCore::instance()->configuration()->locale());
+        }
+    }
+
     JsonReply *reply;
     QMetaObject::invokeMethod(handler, method.toLatin1().data(), Q_RETURN_ARG(JsonReply*, reply), Q_ARG(QVariantMap, params));
     if (reply->type() == JsonReply::TypeAsync) {
@@ -745,6 +766,7 @@ void JsonRPCServer::clientDisconnected(const QUuid &clientId)
     m_clientTransports.remove(clientId);
     m_clientNotifications.remove(clientId);
     m_clientBuffers.remove(clientId);
+    m_clientLocales.remove(clientId);
     if (m_pushButtonTransactions.values().contains(clientId)) {
         NymeaCore::instance()->userManager()->cancelPushButtonAuth(m_pushButtonTransactions.key(clientId));
     }

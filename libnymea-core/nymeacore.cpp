@@ -118,6 +118,7 @@
 #include "cloud/cloudtransport.h"
 
 #include <QDir>
+#include <QCoreApplication>
 
 namespace nymeaserver {
 
@@ -184,7 +185,6 @@ void NymeaCore::init() {
     CloudTransport *cloudTransport = m_cloudManager->createTransportInterface();
     m_serverManager->jsonServer()->registerTransportInterface(cloudTransport, false);
 
-    connect(m_configuration, &NymeaConfiguration::localeChanged, this, &NymeaCore::onLocaleChanged);
     connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
 
     connect(m_deviceManager, &DeviceManager::pluginConfigChanged, this, &NymeaCore::pluginConfigChanged);
@@ -533,9 +533,20 @@ QStringList NymeaCore::getAvailableLanguages()
 {
     qCDebug(dcApplication()) << "Loading translations from" << NymeaSettings::translationsPath();
 
-    QDir translationDirectory(NymeaSettings::translationsPath());
-    translationDirectory.setNameFilters(QStringList() << "*.qm");
-    QStringList translationFiles = translationDirectory.entryList();
+    QStringList searchPaths;
+    searchPaths << QCoreApplication::applicationDirPath() + "/../translations";
+    searchPaths << NymeaSettings::translationsPath();
+
+    QStringList translationFiles;
+    foreach (const QString &path, searchPaths) {
+        QDir translationDirectory(path);
+        translationDirectory.setNameFilters(QStringList() << "*.qm");
+        translationFiles = translationDirectory.entryList();
+        qCDebug(dcTranslations()) << translationFiles.count() << "translations in" << path;
+        if (translationFiles.count() > 0) {
+            break;
+        }
+    }
 
     QStringList availableLanguages;
     foreach (QString translationFile, translationFiles) {
@@ -685,11 +696,6 @@ void NymeaCore::onDateTimeChanged(const QDateTime &dateTime)
         }
     }
     executeRuleActions(actions);
-}
-
-void NymeaCore::onLocaleChanged()
-{
-    m_deviceManager->setLocale(m_configuration->locale());
 }
 
 /*! Return the instance of the log engine */

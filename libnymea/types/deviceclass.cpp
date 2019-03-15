@@ -485,3 +485,9 @@ QStringList DeviceClass::mandatoryTypeProperties()
 {
     return QStringList() << "id" << "name" << "displayName";
 }
+
+QDebug operator<<(QDebug &dbg, const DeviceClass &deviceClass)
+{
+    dbg << "DeviceClass ID:" << deviceClass.id() << "Name:" << deviceClass.name();
+    return dbg;
+}

@@ -111,7 +111,7 @@ HttpReply *VendorsResource::getVendors() const
 
     QVariantList vendorsList;
     foreach (const Vendor &vendor, NymeaCore::instance()->deviceManager()->supportedVendors()) {
-        vendorsList.append(JsonTypes::packVendor(vendor));
+        vendorsList.append(JsonTypes::packVendor(vendor, NymeaCore::instance()->configuration()->locale()));
     }
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
     reply->setPayload(QJsonDocument::fromVariant(vendorsList).toJson());
@@ -125,7 +125,7 @@ HttpReply *VendorsResource::getVendor(const VendorId &vendorId) const
         if (vendor.id() == vendorId) {
             HttpReply *reply = createSuccessReply();
             reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-            reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packVendor(vendor)).toJson());
+            reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packVendor(vendor, NymeaCore::instance()->configuration()->locale())).toJson());
             return reply;
         }
     }

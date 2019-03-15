@@ -75,7 +75,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     setReturns("GetTimeZones", returns);
 
     params.clear(); returns.clear();
-    setDescription("GetAvailableLanguages", "Returns a list of locale codes available for the server. i.e. en_US, de_AT");
+    setDescription("GetAvailableLanguages", "DEPRECATED - Use the locale property in the Handshake message instead - Returns a list of locale codes available for the server. i.e. en_US, de_AT");
     setParams("GetAvailableLanguages", params);
     returns.insert("languages", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::String));
     setReturns("GetAvailableLanguages", returns);
@@ -122,7 +122,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     setReturns("SetTimeZone", returns);
 
     params.clear(); returns.clear();
-    setDescription("SetLanguage", "Sets the server language to the given language. See also: \"GetAvailableLanguages\"");
+    setDescription("SetLanguage", "DEPRECATED - Use the locale property in the Handshake message instead - Sets the server language to the given language. See also: \"GetAvailableLanguages\"");
     params.insert("language",  JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("SetLanguage", params);
     returns.insert("configurationError", JsonTypes::configurationErrorRef());
@@ -295,7 +295,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::timeZoneChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::localeChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::debugServerEnabledChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
-    connect(NymeaCore::instance()->deviceManager(), &DeviceManager::languageUpdated, this, &ConfigurationHandler::onLanguageChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::localeChanged, this, &ConfigurationHandler::onLanguageChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::tcpServerConfigurationChanged, this, &ConfigurationHandler::onTcpServerConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::tcpServerConfigurationRemoved, this, &ConfigurationHandler::onTcpServerConfigurationRemoved);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webServerConfigurationChanged, this, &ConfigurationHandler::onWebServerConfigurationChanged);

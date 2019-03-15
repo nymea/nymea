@@ -43,6 +43,8 @@ public:
     QString displayName() const;
     void setDisplayName(const QString &displayName);
 
+    bool operator==(const Vendor &other) const;
+
 private:
     VendorId m_id;
     QString m_name;

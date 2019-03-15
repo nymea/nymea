@@ -60,6 +60,7 @@
 #include "types/deviceclass.h"
 #include "plugin/device.h"
 #include "plugin/deviceplugin.h"
+#include "translator.h"
 
 #include <QDebug>
 
@@ -319,14 +320,14 @@ JsonReply* DeviceHandler::GetSupportedVendors(const QVariantMap &params) const
     Q_UNUSED(params)
 
     QVariantMap returns;
-    returns.insert("vendors", JsonTypes::packSupportedVendors());
+    returns.insert("vendors", JsonTypes::packSupportedVendors(params.value("locale").toLocale()));
     return createReply(returns);
 }
 
 JsonReply* DeviceHandler::GetSupportedDevices(const QVariantMap &params) const
 {
     QVariantMap returns;
-    returns.insert("deviceClasses", JsonTypes::packSupportedDevices(VendorId(params.value("vendorId").toString())));
+    returns.insert("deviceClasses", JsonTypes::packSupportedDevices(VendorId(params.value("vendorId").toString()), params.value("locale").toLocale()));
     return createReply(returns);
 }
 
@@ -354,7 +355,7 @@ JsonReply* DeviceHandler::GetPlugins(const QVariantMap &params) const
     Q_UNUSED(params)
 
     QVariantMap returns;
-    returns.insert("plugins", JsonTypes::packPlugins());
+    returns.insert("plugins", JsonTypes::packPlugins(params.value("locale").toLocale()));
     return createReply(returns);
 }
 
@@ -437,7 +438,7 @@ JsonReply *DeviceHandler::PairDevice(const QVariantMap &params)
     QVariantMap returns;
     returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
     if (status == DeviceManager::DeviceErrorNoError) {
-        returns.insert("displayMessage", deviceClass.pairingInfo());
+        returns.insert("displayMessage", NymeaCore::instance()->deviceManager()->translator()->translate(deviceClass.pluginId(), deviceClass.pairingInfo(), params.value("locale").toLocale()));
         returns.insert("pairingTransactionId", pairingTransactionId.toString());
         returns.insert("setupMethod", JsonTypes::setupMethod().at(deviceClass.setupMethod()));
     }
@@ -565,7 +566,7 @@ JsonReply* DeviceHandler::GetEventTypes(const QVariantMap &params) const
     QVariantList eventList;
     DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
     foreach (const EventType &eventType, deviceClass.eventTypes()) {
-        eventList.append(JsonTypes::packEventType(eventType));
+        eventList.append(JsonTypes::packEventType(eventType, deviceClass.pluginId(), params.value("locale").toLocale()));
     }
     returns.insert("eventTypes", eventList);
     return createReply(returns);
@@ -578,7 +579,7 @@ JsonReply* DeviceHandler::GetActionTypes(const QVariantMap &params) const
     QVariantList actionList;
     DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
     foreach (const ActionType &actionType, deviceClass.actionTypes()) {
-        actionList.append(JsonTypes::packActionType(actionType));
+        actionList.append(JsonTypes::packActionType(actionType, deviceClass.pluginId(), params.value("locale").toLocale()));
     }
     returns.insert("actionTypes", actionList);
     return createReply(returns);
@@ -591,7 +592,7 @@ JsonReply* DeviceHandler::GetStateTypes(const QVariantMap &params) const
     QVariantList stateList;
     DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
     foreach (const StateType &stateType, deviceClass.stateTypes()) {
-        stateList.append(JsonTypes::packStateType(stateType));
+        stateList.append(JsonTypes::packStateType(stateType, deviceClass.pluginId(), NymeaCore::instance()->configuration()->locale()));
     }
     returns.insert("stateTypes", stateList);
     return createReply(returns);

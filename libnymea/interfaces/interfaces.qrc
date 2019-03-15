@@ -61,9 +61,9 @@
         <file>evcharger.json</file>
         <file>extendedevcharger.json</file>
         <file>noisesensor.json</file>
+        <file>windspeedsensor.json</file>
         <file>co2sensor.json</file>
         <file>presencesensor.json</file>
-        <file>windspeedsensor.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

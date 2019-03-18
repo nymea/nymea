@@ -5,8 +5,8 @@ NYMEA_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"
 NYMEA_PLUGINS_PATH=/usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')/nymea/plugins/
 
 # define protocol versions
-JSON_PROTOCOL_VERSION_MAJOR=1
-JSON_PROTOCOL_VERSION_MINOR=15
+JSON_PROTOCOL_VERSION_MAJOR=2
+JSON_PROTOCOL_VERSION_MINOR=0
 REST_API_VERSION=1
 
 DEFINES += NYMEA_VERSION_STRING=\\\"$${NYMEA_VERSION_STRING}\\\" \

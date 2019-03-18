@@ -1,4 +1,4 @@
-1.15
+2.0
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -1164,26 +1164,6 @@
                 "$ref:ParamType"
             ]
         },
-        "BasicTag": [
-            "BasicTagService",
-            "BasicTagDevice",
-            "BasicTagSensor",
-            "BasicTagActuator",
-            "BasicTagLighting",
-            "BasicTagEnergy",
-            "BasicTagMultimedia",
-            "BasicTagWeather",
-            "BasicTagGateway",
-            "BasicTagHeating",
-            "BasicTagCooling",
-            "BasicTagNotification",
-            "BasicTagSecurity",
-            "BasicTagTime",
-            "BasicTagShading",
-            "BasicTagAppliance",
-            "BasicTagCamera",
-            "BasicTagLock"
-        ],
         "BasicType": [
             "Uuid",
             "String",
@@ -1244,13 +1224,9 @@
             "actionTypes": [
                 "$ref:ActionType"
             ],
-            "basicTags": [
-                "$ref:BasicTag"
-            ],
             "createMethods": [
                 "$ref:CreateMethod"
             ],
-            "deviceIcon": "$ref:DeviceIcon",
             "discoveryParamTypes": [
                 "$ref:ParamType"
             ],
@@ -1263,9 +1239,6 @@
                 "String"
             ],
             "name": "String",
-            "o:criticalStateTypeId": "Uuid",
-            "o:primaryActionTypeId": "Uuid",
-            "o:primaryStateTypeId": "Uuid",
             "paramTypes": [
                 "$ref:ParamType"
             ],
@@ -1311,44 +1284,6 @@
             "DeviceErrorPairingTransactionIdNotFound",
             "DeviceErrorParameterNotWritable"
         ],
-        "DeviceIcon": [
-            "DeviceIconNone",
-            "DeviceIconBed",
-            "DeviceIconBlinds",
-            "DeviceIconCeilingLamp",
-            "DeviceIconCouch",
-            "DeviceIconDeskLamp",
-            "DeviceIconDesk",
-            "DeviceIconHifi",
-            "DeviceIconPower",
-            "DeviceIconEnergy",
-            "DeviceIconRadio",
-            "DeviceIconSmartPhone",
-            "DeviceIconSocket",
-            "DeviceIconStandardLamp",
-            "DeviceIconSun",
-            "DeviceIconTablet",
-            "DeviceIconThermometer",
-            "DeviceIconTune",
-            "DeviceIconTv",
-            "DeviceIconBattery",
-            "DeviceIconDishwasher",
-            "DeviceIconWashingMachine",
-            "DeviceIconLaundryDryer",
-            "DeviceIconIrHeater",
-            "DeviceIconRadiator",
-            "DeviceIconSwitch",
-            "DeviceIconMotionDetectors",
-            "DeviceIconWeather",
-            "DeviceIconTime",
-            "DeviceIconLightBulb",
-            "DeviceIconGateway",
-            "DeviceIconMail",
-            "DeviceIconNetwork",
-            "DeviceIconCloud",
-            "DeviceIconGarage",
-            "DeviceIconRollerShutter"
-        ],
         "Event": {
             "deviceId": "Uuid",
             "eventTypeId": "Uuid",
@@ -1370,8 +1305,6 @@
             "id": "Uuid",
             "index": "Int",
             "name": "String",
-            "o:graphRelevant": "Bool",
-            "o:ruleRelevant": "Bool",
             "paramTypes": [
                 "$ref:ParamType"
             ]
@@ -1628,13 +1561,11 @@
             "id": "Uuid",
             "index": "Int",
             "name": "String",
-            "o:graphRelevant": "Bool",
             "o:maxValue": "Variant",
             "o:minValue": "Variant",
             "o:possibleValues": [
                 "Variant"
             ],
-            "o:ruleRelevant": "Bool",
             "o:unit": "$ref:Unit",
             "type": "$ref:BasicType"
         },

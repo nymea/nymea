@@ -30,29 +30,6 @@ See also: \l{Param}
 }
 \endcode
 See also: \l{ParamType}
-\section2 BasicTag
-\code
-[
-    "BasicTagService", 
-    "BasicTagDevice", 
-    "BasicTagSensor", 
-    "BasicTagActuator", 
-    "BasicTagLighting", 
-    "BasicTagEnergy", 
-    "BasicTagMultimedia", 
-    "BasicTagWeather", 
-    "BasicTagGateway", 
-    "BasicTagHeating", 
-    "BasicTagCooling", 
-    "BasicTagNotification", 
-    "BasicTagSecurity", 
-    "BasicTagTime", 
-    "BasicTagShading", 
-    "BasicTagAppliance", 
-    "BasicTagCamera", 
-    "BasicTagLock"
-]
-\endcode
 \section2 BasicType
 \code
 [

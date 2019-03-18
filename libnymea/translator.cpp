@@ -115,11 +115,11 @@ QString Translator::translate(const PluginId &pluginId, const QString &string, c
 {
     DevicePlugin *plugin = m_deviceManager->plugin(pluginId);
 
-    if (!m_translatorContexts.contains(plugin->pluginId()) || !m_translatorContexts.value(plugin->pluginId()).translators.contains(locale)) {
+    if (!m_translatorContexts.contains(plugin->pluginId()) || !m_translatorContexts.value(plugin->pluginId()).translators.contains(locale.name())) {
         loadTranslator(plugin, locale);
     }
 
-    QTranslator* translator = m_translatorContexts.value(plugin->pluginId()).translators.value(locale);
+    QTranslator* translator = m_translatorContexts.value(plugin->pluginId()).translators.value(locale.name());
     QString translatedString = translator->translate(plugin->pluginName().toUtf8(), string.toUtf8());
     return translatedString.isEmpty() ? string : translatedString;
 }
@@ -130,7 +130,7 @@ void Translator::loadTranslator(DevicePlugin *plugin, const QLocale &locale)
         // Create default translator for this plugin
         TranslatorContext defaultCtx;
         defaultCtx.pluginId = plugin->pluginId();
-        defaultCtx.translators.insert(QLocale("en_US"), new QTranslator());
+        defaultCtx.translators.insert("en_US", new QTranslator());
         m_translatorContexts.insert(plugin->pluginId(), defaultCtx);
         if (locale == QLocale("en_US")) {
             return;
@@ -189,7 +189,7 @@ void Translator::loadTranslator(DevicePlugin *plugin, const QLocale &locale)
 
 
     if (!loaded) {
-        translator = m_translatorContexts.value(plugin->pluginId()).translators.value(QLocale("en_US"));
+        translator = m_translatorContexts.value(plugin->pluginId()).translators.value("en_US");
     }
 
     if (!m_translatorContexts.contains(plugin->pluginId())) {
@@ -197,6 +197,6 @@ void Translator::loadTranslator(DevicePlugin *plugin, const QLocale &locale)
         ctx.pluginId = plugin->pluginId();
         m_translatorContexts.insert(plugin->pluginId(), ctx);
     }
-    m_translatorContexts[plugin->pluginId()].translators.insert(locale, translator);
+    m_translatorContexts[plugin->pluginId()].translators.insert(locale.name(), translator);
 
 }

@@ -25,7 +25,7 @@ private:
 
     struct TranslatorContext {
         PluginId pluginId;
-        QHash<QLocale, QTranslator*> translators;
+        QHash<QString, QTranslator*> translators;
     };
     QHash<PluginId, TranslatorContext> m_translatorContexts;
 };

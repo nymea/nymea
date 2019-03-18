@@ -32,8 +32,6 @@
                     "displayName": "Mock Device",
                     "interfaces": ["system", "light", "gateway", "battery"],
                     "createMethods": ["user", "discovery"],
-                    "primaryActionTypeId": "defd3ed6-1a0d-400b-8879-a0202cf39935",
-                    "primaryStateTypeId": "80baec19-54de-4948-ac46-31eabfaceb83",
                     "discoveryParamTypes": [
                         {
                             "id": "d222adb4-2f9c-4c3f-8655-76400d0fb6ce",
@@ -196,8 +194,6 @@
                     "displayName": "Mock Device (Auto created)",
                     "interfaces": ["system"],
                     "createMethods": ["auto"],
-                    "primaryActionTypeId": "defd3ed6-1a0d-400b-8879-a0202cf39935",
-                    "primaryStateTypeId": "80baec19-54de-4948-ac46-31eabfaceb83",
                     "paramTypes": [
                         {
                             "id": "d4f06047-125e-4479-9810-b54c189917f5",

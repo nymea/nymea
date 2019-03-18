@@ -833,41 +833,6 @@ void DevicePlugin::loadMetaData()
             }
             deviceClass.setEventTypes(eventTypes);
 
-            // Note: keep this after the actionType / stateType / eventType parsing
-            if (deviceClassObject.contains("criticalStateTypeId")) {
-                StateTypeId criticalStateTypeId = StateTypeId(deviceClassObject.value("criticalStateTypeId").toString());
-                if (!deviceClass.hasStateType(criticalStateTypeId)) {
-                    qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << ": the definend critical stateTypeId" << criticalStateTypeId.toString() << "does not match any StateType of this DeviceClass.";
-                    broken = true;
-                } else if (deviceClass.getStateType(criticalStateTypeId).type() != QVariant::Bool) {
-                    // Make sure the critical stateType is a bool state
-                    qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << ": the definend critical stateTypeId" << criticalStateTypeId.toString() << "is not a bool StateType.";
-                    broken = true;
-                } else {
-                    deviceClass.setCriticalStateTypeId(criticalStateTypeId);
-                }
-            }
-
-            if (deviceClassObject.contains("primaryStateTypeId")) {
-                StateTypeId primaryStateTypeId = StateTypeId(deviceClassObject.value("primaryStateTypeId").toString());
-                if (!deviceClass.hasStateType(primaryStateTypeId)) {
-                    qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << ": the definend primary stateTypeId" << primaryStateTypeId.toString() << "does not match any StateType of this DeviceClass.";
-                    broken = true;
-                } else {
-                    deviceClass.setPrimaryStateTypeId(primaryStateTypeId);
-                }
-            }
-
-            if (deviceClassObject.contains("primaryActionTypeId")) {
-                ActionTypeId primaryActionTypeId = ActionTypeId(deviceClassObject.value("primaryActionTypeId").toString());
-                if (!deviceClass.hasActionType(primaryActionTypeId)) {
-                    qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << ": the definend primary actionTypeId" << primaryActionTypeId.toString() << "does not match any ActionType of this DeviceClass.";
-                    broken = true;
-                } else {
-                    deviceClass.setPrimaryActionTypeId(primaryActionTypeId);
-                }
-            }
-
             // Read interfaces
             QStringList interfaces;
             foreach (const QJsonValue &value, deviceClassObject.value("interfaces").toArray()) {

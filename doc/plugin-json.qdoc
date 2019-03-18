@@ -194,9 +194,6 @@
                             "o:setupMethod": "SetupMethod",
                             "o:interfaces": [ "interfacename" ],
                             "o:pairingInfo": "Information how to pair the device. (translatable)",
-                            "o:criticalStateTypeId": "uuid",
-                            "o:primaryStateTypeId": "uuid",
-                            "o:primaryActionTypeId": "uuid",
                             "o:discoveryParamTypes": [ ],
                             "o:paramTypes": [ ],
                             "o:stateTypes": [ ],
@@ -268,21 +265,6 @@
             \li The \l{DeviceClass::pairingInfo()}{pairingInfo} will inform the user how to pair the device \unicode{0x2192} \l{DeviceClass::setupMethod()}.
                 This parameter will only be used for \l{DeviceClass::SetupMethodDisplayPin}{DisplayPin} and \l{DeviceClass::SetupMethodEnterPin}{EnterPin}
                 and \l{DeviceClass::SetupMethodPushButton}{PushButton}. Example: "Please press the button on the device before continue."
-        \row
-            \li \tt criticalStateTypeId
-            \li \b O
-            \li string
-            \li Deprecated: please use \l{Interfaces for DeviceClasses}{interfaces} instead.
-        \row
-            \li \tt primaryStateTypeId
-            \li \b O
-            \li string
-            \li Deprecated: please use \l{Interfaces for DeviceClasses}{interfaces} instead.
-        \row
-            \li \tt primaryActionTypeId
-            \li \b O
-            \li string
-            \li Deprecated: please use \l{Interfaces for DeviceClasses}{interfaces} instead.
         \row
             \li \tt discoveryParamTypes
             \li \b O

@@ -276,9 +276,6 @@ void JsonTypes::init()
     s_deviceClass.insert("interfaces", QVariantList() << basicTypeToString(String));
     s_deviceClass.insert("setupMethod", setupMethodRef());
     s_deviceClass.insert("createMethods", QVariantList() << createMethodRef());
-    s_deviceClass.insert("o:criticalStateTypeId", basicTypeToString(Uuid));
-    s_deviceClass.insert("o:primaryStateTypeId", basicTypeToString(Uuid));
-    s_deviceClass.insert("o:primaryActionTypeId", basicTypeToString(Uuid));
     s_deviceClass.insert("stateTypes", QVariantList() << stateTypeRef());
     s_deviceClass.insert("eventTypes", QVariantList() << eventTypeRef());
     s_deviceClass.insert("actionTypes", QVariantList() << actionTypeRef());
@@ -795,15 +792,6 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass, const QLo
     QVariantList discoveryParamTypes;
     foreach (const ParamType &paramType, deviceClass.discoveryParamTypes())
         discoveryParamTypes.append(packParamType(paramType, deviceClass.pluginId(), locale));
-
-    if (!deviceClass.criticalStateTypeId().isNull())
-        variant.insert("criticalStateTypeId", deviceClass.criticalStateTypeId().toString());
-
-    if (!deviceClass.primaryStateTypeId().isNull())
-        variant.insert("primaryStateTypeId", deviceClass.primaryStateTypeId().toString());
-
-    if (!deviceClass.primaryActionTypeId().isNull())
-        variant.insert("primaryActionTypeId", deviceClass.primaryActionTypeId().toString());
 
     variant.insert("paramTypes", paramTypes);
     variant.insert("discoveryParamTypes", discoveryParamTypes);

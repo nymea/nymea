@@ -73,9 +73,6 @@ DeviceClass::DeviceClass(const PluginId &pluginId, const VendorId &vendorId, con
     m_id(id),
     m_vendorId(vendorId),
     m_pluginId(pluginId),
-    m_criticalStateTypeId(StateTypeId()),
-    m_primaryStateTypeId(StateTypeId()),
-    m_primaryActionTypeId(ActionTypeId()),
     m_createMethods(CreateMethodUser),
     m_setupMethod(SetupMethodJustAdd)
 {
@@ -128,43 +125,6 @@ QString DeviceClass::displayName() const
 void DeviceClass::setDisplayName(const QString &displayName)
 {
     m_displayName = displayName;
-}
-
-/*! Returns the critical \l{StateTypeId} of this \l{DeviceClass}.
- * A critical \l{State} describes the state which disables the whole device (i.e. connected, available or reachable). */
-StateTypeId DeviceClass::criticalStateTypeId() const
-{
-    return m_criticalStateTypeId;
-}
-
-/*! Set the \a criticalStateTypeId of this \l{DeviceClass}. */
-void DeviceClass::setCriticalStateTypeId(const StateTypeId &criticalStateTypeId)
-{
-    m_criticalStateTypeId = criticalStateTypeId;
-}
-
-/*! Returns the primary \l{StateTypeId} of this \l{DeviceClass}. */
-StateTypeId DeviceClass::primaryStateTypeId() const
-{
-    return m_primaryStateTypeId;
-}
-
-/*! Set the \a primaryStateTypeId of this \l{DeviceClass}. */
-void DeviceClass::setPrimaryStateTypeId(const StateTypeId &primaryStateTypeId)
-{
-    m_primaryStateTypeId = primaryStateTypeId;
-}
-
-/*! Returns the primary \l{ActionTypeId} of this \l{DeviceClass}. */
-ActionTypeId DeviceClass::primaryActionTypeId() const
-{
-    return m_primaryActionTypeId;
-}
-
-/*! Set the \a primaryActionTypeId of this \l{DeviceClass}. */
-void DeviceClass::setPrimaryActionTypeId(const ActionTypeId &primaryActionTypeId)
-{
-    m_primaryActionTypeId = primaryActionTypeId;
 }
 
 /*! Returns the statesTypes of this DeviceClass. \{Device}{Devices} created
@@ -344,9 +304,8 @@ bool DeviceClass::operator==(const DeviceClass &deviceClass) const
 QStringList DeviceClass::typeProperties()
 {
     return QStringList() << "id" << "name" << "displayName" << "createMethods" << "setupMethod"
-                         << "interfaces" << "pairingInfo" << "criticalStateTypeId"
-                         << "primaryStateTypeId" << "primaryActionTypeId" << "discoveryParamTypes"
-                         << "discoveryParamTypes" << "paramTypes" << "stateTypes" << "actionTypes" << "eventTypes";
+                         << "interfaces" << "pairingInfo" << "discoveryParamTypes" << "discoveryParamTypes"
+                         << "paramTypes" << "stateTypes" << "actionTypes" << "eventTypes";
 }
 
 /*! Returns a list of mandatory JSON properties a DeviceClass JSON definition must have. */

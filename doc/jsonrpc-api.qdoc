@@ -149,9 +149,6 @@ See also: \l{Param}
         "String"
     ], 
     "name": "String", 
-    "o:criticalStateTypeId": "Uuid", 
-    "o:primaryActionTypeId": "Uuid", 
-    "o:primaryStateTypeId": "Uuid", 
     "paramTypes": [
         "$ref:ParamType"
     ], 
@@ -3432,9 +3429,6 @@ See also: \l{Tag}
                 "String"
             ], 
             "name": "String", 
-            "o:criticalStateTypeId": "Uuid", 
-            "o:primaryActionTypeId": "Uuid", 
-            "o:primaryStateTypeId": "Uuid", 
             "paramTypes": [
                 "$ref:ParamType"
             ], 

@@ -71,15 +71,6 @@ public:
     QString displayName() const;
     void setDisplayName(const QString &displayName);
 
-    StateTypeId criticalStateTypeId() const;
-    void setCriticalStateTypeId(const StateTypeId &criticalStateTypeId);
-
-    StateTypeId primaryStateTypeId() const;
-    void setPrimaryStateTypeId(const StateTypeId &primaryStateTypeId);
-
-    ActionTypeId primaryActionTypeId() const;
-    void setPrimaryActionTypeId(const ActionTypeId &primaryActionTypeId);
-
     StateTypes stateTypes() const;
     StateType getStateType(const StateTypeId &stateTypeId);
     void setStateTypes(const QList<StateType> &stateTypes);
@@ -122,9 +113,6 @@ private:
     PluginId m_pluginId;
     QString m_name;
     QString m_displayName;
-    StateTypeId m_criticalStateTypeId;
-    StateTypeId m_primaryStateTypeId;
-    ActionTypeId m_primaryActionTypeId;
     QList<StateType> m_stateTypes;
     QList<EventType> m_eventTypes;
     QList<ActionType> m_actionTypes;

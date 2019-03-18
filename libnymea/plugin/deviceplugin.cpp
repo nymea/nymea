@@ -594,15 +594,6 @@ void DevicePlugin::loadMetaData()
             }
             deviceClass.setCreateMethods(createMethods);
 
-            // Read device icon
-            QPair<bool, DeviceClass::DeviceIcon> deviceIconVerification = loadAndVerifyDeviceIcon(deviceClassObject.value("deviceIcon").toString());
-            if (!deviceIconVerification.first) {
-                broken = true;
-                break;
-            } else {
-                deviceClass.setDeviceIcon(deviceIconVerification.second);
-            }
-
             // Read params
             QPair<bool, QList<ParamType> > paramTypesVerification = parseParamTypes(deviceClassObject.value("paramTypes").toArray());
             if (!paramTypesVerification.first) {
@@ -643,19 +634,6 @@ void DevicePlugin::loadMetaData()
 
             // Read pairing info
             deviceClass.setPairingInfo(deviceClassObject.value("pairingInfo").toString());
-
-            // Read basic tags
-            QList<DeviceClass::BasicTag> basicTags;
-            foreach (const QJsonValue &basicTagJson, deviceClassObject.value("basicTags").toArray()) {
-                QPair<bool, DeviceClass::BasicTag> basicTagVerification = loadAndVerifyBasicTag(basicTagJson.toString());
-                if (!basicTagVerification.first) {
-                    broken = true;
-                    break;
-                } else {
-                    basicTags.append(basicTagVerification.second);
-                }
-            }
-            deviceClass.setBasicTags(basicTags);
 
             QList<ActionType> actionTypes;
             QList<StateType> stateTypes;
@@ -1051,58 +1029,6 @@ QPair<bool, Types::InputType> DevicePlugin::loadAndVerifyInputType(const QString
     }
 
     return QPair<bool, Types::InputType>(true, (Types::InputType)enumValue);
-}
-
-QPair<bool, DeviceClass::BasicTag> DevicePlugin::loadAndVerifyBasicTag(const QString &basicTag) const
-{
-    if (basicTag.isEmpty())
-        return QPair<bool, DeviceClass::BasicTag>(true, DeviceClass::BasicTagDevice);
-
-    QMetaObject metaObject = DeviceClass::staticMetaObject;
-    int enumIndex = metaObject.indexOfEnumerator(QString("BasicTag").toLatin1().data());
-    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
-
-    int enumValue = -1;
-    for (int i = 0; i < metaEnum.keyCount(); i++) {
-        if (QString(metaEnum.valueToKey(metaEnum.value(i))) == QString("BasicTag" + basicTag)) {
-            enumValue = metaEnum.value(i);
-            break;
-        }
-    }
-
-    // inform the plugin developer about the error in the plugin json file
-    if (enumValue == -1) {
-        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin:").arg(pluginName()).toLatin1().data() << QString("Invalid basicTag \"%1\" in json file.").arg(basicTag).toLatin1().data();
-        return QPair<bool, DeviceClass::BasicTag>(false, DeviceClass::BasicTagDevice);
-    }
-
-    return QPair<bool, DeviceClass::BasicTag>(true, (DeviceClass::BasicTag)enumValue);
-}
-
-QPair<bool, DeviceClass::DeviceIcon> DevicePlugin::loadAndVerifyDeviceIcon(const QString &deviceIcon) const
-{
-    if (deviceIcon.isEmpty())
-        return QPair<bool, DeviceClass::DeviceIcon>(true, DeviceClass::DeviceIconNone);
-
-    QMetaObject metaObject = DeviceClass::staticMetaObject;
-    int enumIndex = metaObject.indexOfEnumerator(QString("DeviceIcon").toLatin1().data());
-    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
-
-    int enumValue = -1;
-    for (int i = 0; i < metaEnum.keyCount(); i++) {
-        if (QString(metaEnum.valueToKey(metaEnum.value(i))) == QString("DeviceIcon" + deviceIcon)) {
-            enumValue = metaEnum.value(i);
-            break;
-        }
-    }
-
-    // inform the plugin developer about the error in the plugin json file
-    if (enumValue == -1) {
-        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin:").arg(pluginName()).toLatin1().data() << QString("Invalid deviceIcon \"%1\" in json file.").arg(deviceIcon).toLatin1().data();
-        return QPair<bool, DeviceClass::DeviceIcon>(false, DeviceClass::DeviceIconNone);
-    }
-
-    return QPair<bool, DeviceClass::DeviceIcon>(true, (DeviceClass::DeviceIcon)enumValue);
 }
 
 Interfaces DevicePlugin::allInterfaces()

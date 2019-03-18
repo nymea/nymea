@@ -192,9 +192,7 @@
                             "displayName": "The name of the device class (translatable)",
                             "o:createMethods": [ ],
                             "o:setupMethod": "SetupMethod",
-                            "o:deviceIcon": "Icon",
                             "o:interfaces": [ "interfacename" ],
-                            "o:basicTags": [ ],
                             "o:pairingInfo": "Information how to pair the device. (translatable)",
                             "o:criticalStateTypeId": "uuid",
                             "o:primaryStateTypeId": "uuid",
@@ -233,34 +231,9 @@
             \li \tt interfaces
             \li \b O
             \li array
-            \li A string list of \l{Interfaces for DeviceClasses}{interfaces} this plugin implements. Interfaces show you how types
-                of this DeviceClass \underline{must} look like.
+            \li A string list of \l{Interfaces for DeviceClasses}{interfaces} this plugin implements. Interfaces define states, events and actions to
+                provide more defined ways of creating device class. A plugin developer should always try to follow interface definitions if possible.
         \row
-            \li \tt basicTags
-            \li \b O
-            \li array
-            \li A string list of \l{DeviceClass::BasicTag}{BasicTags} for this device \unicode{0x2192} \l{DeviceClass::basicTags()}. A \l{DeviceClass} can have
-                multiple \l{DeviceClass::BasicTag}{BasicTags} which describe the basic category of the DeviceClass.
-                A \l{DeviceClass} should be eighter a Service or a Device, never both. See enum \l{DeviceClass::BasicTag} for more information.
-                The expected value for the \e basicTags parameters matches the enum name like this:
-
-                \tt {DeviceClass::BasicTagService} \unicode{0x2192} \tt {"basicTags": [ "Service" ]}
-
-                \tt {DeviceClass::BasicTagLighting} \unicode{0x2192} \tt {"basicTags": [ "Lighting" ]}
-
-                \tt ...
-        \row
-            \li \tt deviceIcon
-            \li \b O
-            \li string
-            \li Defines the icon for this \l{DeviceClass}. See enum \l{DeviceClass::DeviceIcon} for more information. The expected value for the \tt deviceIcon
-                parameters matches the enum name like this:
-
-                \tt {DeviceClass::DeviceIconBed} \unicode{0x2192} \tt {"deviceIcon": "Bed"}
-
-                \tt {DeviceClass::DeviceIconPower} \unicode{0x2192} \tt {"deviceIcon": "Power"}
-
-                \tt ...
         \row
             \li \tt createMethods
             \li \b O

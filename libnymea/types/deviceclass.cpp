@@ -62,103 +62,6 @@
         During the setup, a button has to be pushed in order to pair the \l{Device}.
 */
 
-/*! \enum DeviceClass::BasicTag
-
-    This enum type specifies the basic tags which describe the categories of the DeviceClass.
-    A DeviceClass can have multiple tags.
-
-    \value BasicTagService
-        The \l{DeviceClass} describes a service.
-    \value BasicTagDevice
-        The \l{DeviceClass} describes a real device.
-    \value BasicTagSensor
-        The \l{DeviceClass} describes a sensor. Any device which can measure or detect something is a sensor.
-    \value BasicTagActuator
-        The \l{DeviceClass} describes an actuator. Any device which can do something is an actuator.
-    \value BasicTagLighting
-        The \l{DeviceClass} describes a lighting device.
-    \value BasicTagEnergy
-        The \l{DeviceClass} describes an energy device.
-    \value BasicTagMultimedia
-        The \l{DeviceClass} describes a multimedia device/service.
-    \value BasicTagWeather
-        The \l{DeviceClass} describes a weather device/service.
-    \value BasicTagGateway
-        The \l{DeviceClass} describes a gateway device.
-    \value BasicTagHeating
-        The \l{DeviceClass} describes a heating device.
-    \value BasicTagCooling
-        The \l{DeviceClass} describes a cooling device.
-    \value BasicTagNotification
-        The \l{DeviceClass} describes a notification service.
-    \value BasicTagSecurity
-        The \l{DeviceClass} describes a security device/service.
-    \value BasicTagTime
-        The \l{DeviceClass} describes a time device/service.
-    \value BasicTagShading
-        The \l{DeviceClass} describes a shading device.
-    \value BasicTagAppliance
-        The \l{DeviceClass} describes an appliance.
-    \value BasicTagCamera
-        The \l{DeviceClass} describes a camera device.
-    \value BasicTagLock
-        The \l{DeviceClass} describes a lock device.
-
-*/
-
-/*! \enum DeviceClass::DeviceIcon
-
-    This enum type specifies the default device icon of the DeviceClass.
-    Each client should have an icon set containing this list of icon types.
-    If a client want's to offer special icons for a special DeviceClass or device type,
-    he can bring it's own icon for a special DeviceClassId. If there is no special icon
-    defined, he can fallback to the default icon.
-
-    \value DeviceIconNone
-    \value DeviceIconBed
-    \value DeviceIconBlinds
-    \value DeviceIconCeilingLamp
-    \value DeviceIconCouch
-    \value DeviceIconDeskLamp
-    \value DeviceIconDesk
-    \value DeviceIconHifi
-    \value DeviceIconPower
-    \value DeviceIconEnergy
-    \value DeviceIconRadio
-    \value DeviceIconSmartPhone
-    \value DeviceIconSocket
-    \value DeviceIconStandardLamp
-    \value DeviceIconSun
-    \value DeviceIconTablet
-    \value DeviceIconThermometer
-    \value DeviceIconTune
-    \value DeviceIconTv
-    \value DeviceIconBattery
-    \value DeviceIconDishwasher
-    \value DeviceIconWashingMachine
-    \value DeviceIconLaundryDryer
-    \value DeviceIconIrHeater
-    \value DeviceIconRadiator
-    \value DeviceIconSwitch
-    \value DeviceIconMotionDetectors
-    \value DeviceIconWeather
-    \value DeviceIconTime
-    \value DeviceIconLightBulb
-    \value DeviceIconGateway
-    \value DeviceIconMail
-    \value DeviceIconNetwork
-    \value DeviceIconCloud
-    \value DeviceIconGarage,
-    \value DeviceIconRollerShutter
-*/
-
-/*! \fn void DeviceClass::setBasicTags(const QList<BasicTag> &basicTags);
-    Set the list of \a basicTags of this DeviceClass.
-*/
-
-/*! \fn void DeviceClass::setDeviceIcon(const DeviceIcon &deviceIcon);
-    Set the \a deviceIcon of this DeviceClass.
-*/
 
 #include "deviceclass.h"
 
@@ -173,7 +76,6 @@ DeviceClass::DeviceClass(const PluginId &pluginId, const VendorId &vendorId, con
     m_criticalStateTypeId(StateTypeId()),
     m_primaryStateTypeId(StateTypeId()),
     m_primaryActionTypeId(ActionTypeId()),
-    m_deviceIcon(DeviceIconPower),
     m_createMethods(CreateMethodUser),
     m_setupMethod(SetupMethodJustAdd)
 {
@@ -263,39 +165,6 @@ ActionTypeId DeviceClass::primaryActionTypeId() const
 void DeviceClass::setPrimaryActionTypeId(const ActionTypeId &primaryActionTypeId)
 {
     m_primaryActionTypeId = primaryActionTypeId;
-}
-
-/*! Returns the default \l{DeviceIcon} of this \l{DeviceClass}. */
-DeviceClass::DeviceIcon DeviceClass::deviceIcon() const
-{
-    return m_deviceIcon;
-}
-
-/*! Set the \a deviceIcon of this \l{DeviceClass}.
-
-    \sa DeviceClass::DeviceIcon
-*/
-void DeviceClass::setDeviceIcon(const DeviceClass::DeviceIcon &deviceIcon)
-{
-    m_deviceIcon = deviceIcon;
-}
-
-/*! Returns the list of basicTags of this DeviceClass.
-
-    \sa DeviceClass::BasicTag
-*/
-QList<DeviceClass::BasicTag> DeviceClass::basicTags() const
-{
-    return m_basicTags;
-}
-
-/*! Set the list of \a basicTags of this DeviceClass.
-
-    \sa DeviceClass::BasicTag
-*/
-void DeviceClass::setBasicTags(const QList<DeviceClass::BasicTag> &basicTags)
-{
-    m_basicTags = basicTags;
 }
 
 /*! Returns the statesTypes of this DeviceClass. \{Device}{Devices} created
@@ -474,8 +343,8 @@ bool DeviceClass::operator==(const DeviceClass &deviceClass) const
 /*! Returns a list of all valid JSON properties a DeviceClass JSON definition can have. */
 QStringList DeviceClass::typeProperties()
 {
-    return QStringList() << "id" << "name" << "displayName" << "createMethods" << "setupMethod" << "deviceIcon"
-                         << "interfaces" << "basicTags" << "pairingInfo" << "criticalStateTypeId"
+    return QStringList() << "id" << "name" << "displayName" << "createMethods" << "setupMethod"
+                         << "interfaces" << "pairingInfo" << "criticalStateTypeId"
                          << "primaryStateTypeId" << "primaryActionTypeId" << "discoveryParamTypes"
                          << "discoveryParamTypes" << "paramTypes" << "stateTypes" << "actionTypes" << "eventTypes";
 }

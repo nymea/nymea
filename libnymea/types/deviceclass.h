@@ -41,8 +41,7 @@ class LIBNYMEA_EXPORT DeviceClass
     Q_ENUMS(CreateMethod)
     Q_ENUMS(SetupMethod)
     Q_ENUMS(BasicTag)
-    Q_ENUMS(DeviceIcon)
-    Q_FLAGS(CreateMethods)
+    Q_ENUMS(CreateMethods)
 
 public:
     enum CreateMethod {
@@ -57,66 +56,6 @@ public:
         SetupMethodDisplayPin,
         SetupMethodEnterPin,
         SetupMethodPushButton
-    };
-
-    enum BasicTag {
-        BasicTagService,
-        BasicTagDevice,
-        BasicTagSensor,
-        BasicTagActuator,
-        BasicTagLighting,
-        BasicTagEnergy,
-        BasicTagMultimedia,
-        BasicTagWeather,
-        BasicTagGateway,
-        BasicTagHeating,
-        BasicTagCooling,
-        BasicTagNotification,
-        BasicTagSecurity,
-        BasicTagTime,
-        BasicTagShading,
-        BasicTagAppliance,
-        BasicTagCamera,
-        BasicTagLock
-    };
-
-    enum DeviceIcon {
-        DeviceIconNone,
-        DeviceIconBed,
-        DeviceIconBlinds,
-        DeviceIconCeilingLamp,
-        DeviceIconCouch,
-        DeviceIconDeskLamp,
-        DeviceIconDesk,
-        DeviceIconHifi,
-        DeviceIconPower,
-        DeviceIconEnergy,
-        DeviceIconRadio,
-        DeviceIconSmartPhone,
-        DeviceIconSocket,
-        DeviceIconStandardLamp,
-        DeviceIconSun,
-        DeviceIconTablet,
-        DeviceIconThermometer,
-        DeviceIconTune,
-        DeviceIconTv,
-        DeviceIconBattery,
-        DeviceIconDishwasher,
-        DeviceIconWashingMachine,
-        DeviceIconLaundryDryer,
-        DeviceIconIrHeater,
-        DeviceIconRadiator,
-        DeviceIconSwitch,
-        DeviceIconMotionDetectors,
-        DeviceIconWeather,
-        DeviceIconTime,
-        DeviceIconLightBulb,
-        DeviceIconGateway,
-        DeviceIconMail,
-        DeviceIconNetwork,
-        DeviceIconCloud,
-        DeviceIconGarage,
-        DeviceIconRollerShutter
     };
 
     DeviceClass(const PluginId &pluginId = PluginId(), const VendorId &vendorId = VendorId(), const DeviceClassId &id = DeviceClassId());
@@ -140,12 +79,6 @@ public:
 
     ActionTypeId primaryActionTypeId() const;
     void setPrimaryActionTypeId(const ActionTypeId &primaryActionTypeId);
-
-    DeviceIcon deviceIcon() const;
-    void setDeviceIcon(const DeviceIcon &deviceIcon);
-
-    QList<BasicTag> basicTags() const;
-    void setBasicTags(const QList<BasicTag> &basicTags);
 
     StateTypes stateTypes() const;
     StateType getStateType(const StateTypeId &stateTypeId);
@@ -192,8 +125,6 @@ private:
     StateTypeId m_criticalStateTypeId;
     StateTypeId m_primaryStateTypeId;
     ActionTypeId m_primaryActionTypeId;
-    DeviceIcon m_deviceIcon;
-    QList<BasicTag> m_basicTags;
     QList<StateType> m_stateTypes;
     QList<EventType> m_eventTypes;
     QList<ActionType> m_actionTypes;

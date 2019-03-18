@@ -134,13 +134,9 @@ See also: \l{Param}
     "actionTypes": [
         "$ref:ActionType"
     ], 
-    "basicTags": [
-        "$ref:BasicTag"
-    ], 
     "createMethods": [
         "$ref:CreateMethod"
     ], 
-    "deviceIcon": "$ref:DeviceIcon", 
     "discoveryParamTypes": [
         "$ref:ParamType"
     ], 
@@ -167,7 +163,7 @@ See also: \l{Param}
     "vendorId": "Uuid"
 }
 \endcode
-See also: \l{ActionType}, \l{CreateMethod}, \l{DeviceIcon}, \l{BasicTag}, \l{ParamType}, \l{SetupMethod}, \l{StateType}, \l{EventType}, \l{ParamType}
+See also: \l{ActionType}, \l{CreateMethod}, \l{ParamType}, \l{SetupMethod}, \l{StateType}, \l{EventType}, \l{ParamType}
 \section2 DeviceDescriptor
 \code
 {
@@ -204,47 +200,6 @@ See also: \l{ActionType}, \l{CreateMethod}, \l{DeviceIcon}, \l{BasicTag}, \l{Par
     "DeviceErrorDeviceIsChild", 
     "DeviceErrorPairingTransactionIdNotFound", 
     "DeviceErrorParameterNotWritable"
-]
-\endcode
-\section2 DeviceIcon
-\code
-[
-    "DeviceIconNone", 
-    "DeviceIconBed", 
-    "DeviceIconBlinds", 
-    "DeviceIconCeilingLamp", 
-    "DeviceIconCouch", 
-    "DeviceIconDeskLamp", 
-    "DeviceIconDesk", 
-    "DeviceIconHifi", 
-    "DeviceIconPower", 
-    "DeviceIconEnergy", 
-    "DeviceIconRadio", 
-    "DeviceIconSmartPhone", 
-    "DeviceIconSocket", 
-    "DeviceIconStandardLamp", 
-    "DeviceIconSun", 
-    "DeviceIconTablet", 
-    "DeviceIconThermometer", 
-    "DeviceIconTune", 
-    "DeviceIconTv", 
-    "DeviceIconBattery", 
-    "DeviceIconDishwasher", 
-    "DeviceIconWashingMachine", 
-    "DeviceIconLaundryDryer", 
-    "DeviceIconIrHeater", 
-    "DeviceIconRadiator", 
-    "DeviceIconSwitch", 
-    "DeviceIconMotionDetectors", 
-    "DeviceIconWeather", 
-    "DeviceIconTime", 
-    "DeviceIconLightBulb", 
-    "DeviceIconGateway", 
-    "DeviceIconMail", 
-    "DeviceIconNetwork", 
-    "DeviceIconCloud", 
-    "DeviceIconGarage", 
-    "DeviceIconRollerShutter"
 ]
 \endcode
 \section2 Event
@@ -3403,26 +3358,6 @@ See also: \l{Tag}
                 "$ref:ParamType"
             ]
         }, 
-        "BasicTag": [
-            "BasicTagService", 
-            "BasicTagDevice", 
-            "BasicTagSensor", 
-            "BasicTagActuator", 
-            "BasicTagLighting", 
-            "BasicTagEnergy", 
-            "BasicTagMultimedia", 
-            "BasicTagWeather", 
-            "BasicTagGateway", 
-            "BasicTagHeating", 
-            "BasicTagCooling", 
-            "BasicTagNotification", 
-            "BasicTagSecurity", 
-            "BasicTagTime", 
-            "BasicTagShading", 
-            "BasicTagAppliance", 
-            "BasicTagCamera", 
-            "BasicTagLock"
-        ], 
         "BasicType": [
             "Uuid", 
             "String", 
@@ -3482,13 +3417,9 @@ See also: \l{Tag}
             "actionTypes": [
                 "$ref:ActionType"
             ], 
-            "basicTags": [
-                "$ref:BasicTag"
-            ], 
             "createMethods": [
                 "$ref:CreateMethod"
             ], 
-            "deviceIcon": "$ref:DeviceIcon", 
             "discoveryParamTypes": [
                 "$ref:ParamType"
             ], 
@@ -3544,44 +3475,6 @@ See also: \l{Tag}
             "DeviceErrorDeviceIsChild", 
             "DeviceErrorPairingTransactionIdNotFound", 
             "DeviceErrorParameterNotWritable"
-        ], 
-        "DeviceIcon": [
-            "DeviceIconNone", 
-            "DeviceIconBed", 
-            "DeviceIconBlinds", 
-            "DeviceIconCeilingLamp", 
-            "DeviceIconCouch", 
-            "DeviceIconDeskLamp", 
-            "DeviceIconDesk", 
-            "DeviceIconHifi", 
-            "DeviceIconPower", 
-            "DeviceIconEnergy", 
-            "DeviceIconRadio", 
-            "DeviceIconSmartPhone", 
-            "DeviceIconSocket", 
-            "DeviceIconStandardLamp", 
-            "DeviceIconSun", 
-            "DeviceIconTablet", 
-            "DeviceIconThermometer", 
-            "DeviceIconTune", 
-            "DeviceIconTv", 
-            "DeviceIconBattery", 
-            "DeviceIconDishwasher", 
-            "DeviceIconWashingMachine", 
-            "DeviceIconLaundryDryer", 
-            "DeviceIconIrHeater", 
-            "DeviceIconRadiator", 
-            "DeviceIconSwitch", 
-            "DeviceIconMotionDetectors", 
-            "DeviceIconWeather", 
-            "DeviceIconTime", 
-            "DeviceIconLightBulb", 
-            "DeviceIconGateway", 
-            "DeviceIconMail", 
-            "DeviceIconNetwork", 
-            "DeviceIconCloud", 
-            "DeviceIconGarage", 
-            "DeviceIconRollerShutter"
         ], 
         "Event": {
             "deviceId": "Uuid", 

@@ -70,8 +70,6 @@ bool JsonTypes::s_initialized = false;
 QString JsonTypes::s_lastError;
 
 QVariantList JsonTypes::s_basicType;
-QVariantList JsonTypes::s_basicTag;
-QVariantList JsonTypes::s_deviceIcon;
 QVariantList JsonTypes::s_stateOperator;
 QVariantList JsonTypes::s_valueOperator;
 QVariantList JsonTypes::s_inputType;
@@ -139,8 +137,6 @@ void JsonTypes::init()
     s_unit = enumToStrings(Types::staticMetaObject, "Unit");
     s_createMethod = enumToStrings(DeviceClass::staticMetaObject, "CreateMethod");
     s_setupMethod = enumToStrings(DeviceClass::staticMetaObject, "SetupMethod");
-    s_basicTag = enumToStrings(DeviceClass::staticMetaObject, "BasicTag");
-    s_deviceIcon = enumToStrings(DeviceClass::staticMetaObject, "DeviceIcon");
     s_removePolicy = enumToStrings(RuleEngine::staticMetaObject, "RemovePolicy");
     s_deviceError = enumToStrings(DeviceManager::staticMetaObject, "DeviceError");
     s_ruleError = enumToStrings(RuleEngine::staticMetaObject, "RuleError");
@@ -277,9 +273,7 @@ void JsonTypes::init()
     s_deviceClass.insert("pluginId", basicTypeToString(Uuid));
     s_deviceClass.insert("name", basicTypeToString(String));
     s_deviceClass.insert("displayName", basicTypeToString(String));
-    s_deviceClass.insert("deviceIcon", deviceIconRef());
     s_deviceClass.insert("interfaces", QVariantList() << basicTypeToString(String));
-    s_deviceClass.insert("basicTags", QVariantList() << basicTagRef());
     s_deviceClass.insert("setupMethod", setupMethodRef());
     s_deviceClass.insert("createMethods", QVariantList() << createMethodRef());
     s_deviceClass.insert("o:criticalStateTypeId", basicTypeToString(Uuid));
@@ -437,13 +431,11 @@ QVariantMap JsonTypes::allTypes()
 {
     QVariantMap allTypes;
     allTypes.insert("BasicType", basicType());
-    allTypes.insert("BasicTag", basicTag());
     allTypes.insert("ParamType", paramTypeDescription());
     allTypes.insert("InputType", inputType());
     allTypes.insert("Unit", unit());
     allTypes.insert("CreateMethod", createMethod());
     allTypes.insert("SetupMethod", setupMethod());
-    allTypes.insert("DeviceIcon", deviceIcon());
     allTypes.insert("ValueOperator", valueOperator());
     allTypes.insert("StateOperator", stateOperator());
     allTypes.insert("RemovePolicy", removePolicy());
@@ -782,12 +774,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass, const QLo
     variant.insert("displayName", NymeaCore::instance()->deviceManager()->translator()->translate(deviceClass.pluginId(), deviceClass.displayName(), locale));
     variant.insert("vendorId", deviceClass.vendorId().toString());
     variant.insert("pluginId", deviceClass.pluginId().toString());
-    variant.insert("deviceIcon", s_deviceIcon.at(deviceClass.deviceIcon()));
     variant.insert("interfaces", deviceClass.interfaces());
-
-    QVariantList basicTags;
-    foreach (const DeviceClass::BasicTag &basicTag, deviceClass.basicTags())
-        basicTags.append(s_basicTag.at(basicTag));
 
     QVariantList stateTypes;
     foreach (const StateType &stateType, deviceClass.stateTypes())
@@ -818,7 +805,6 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass, const QLo
     if (!deviceClass.primaryActionTypeId().isNull())
         variant.insert("primaryActionTypeId", deviceClass.primaryActionTypeId().toString());
 
-    variant.insert("basicTags", basicTags);
     variant.insert("paramTypes", paramTypes);
     variant.insert("discoveryParamTypes", discoveryParamTypes);
     variant.insert("stateTypes", stateTypes);
@@ -2119,18 +2105,6 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateEnum(s_unit, variant);
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(unitRef());
-                    return result;
-                }
-            } else if (refName == basicTagRef()) {
-                QPair<bool, QString> result = validateEnum(s_basicTag, variant);
-                if (!result.first) {
-                    qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(basicTagRef());
-                    return result;
-                }
-            } else if (refName == deviceIconRef()) {
-                QPair<bool, QString> result = validateEnum(s_deviceIcon, variant);
-                if (!result.first) {
-                    qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(deviceIconRef());
                     return result;
                 }
             } else if (refName == repeatingModeRef()) {

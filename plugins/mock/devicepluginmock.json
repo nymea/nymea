@@ -30,13 +30,7 @@
                     "id": "753f0d32-0468-4d08-82ed-1964aab03298",
                     "name": "mock",
                     "displayName": "Mock Device",
-                    "deviceIcon": "Tune",
                     "interfaces": ["system", "light", "gateway", "battery"],
-                    "basicTags": [
-                        "Device",
-                        "Actuator",
-                        "Gateway"
-                    ],
                     "createMethods": ["user", "discovery"],
                     "primaryActionTypeId": "defd3ed6-1a0d-400b-8879-a0202cf39935",
                     "primaryStateTypeId": "80baec19-54de-4948-ac46-31eabfaceb83",
@@ -201,15 +195,9 @@
                     "name": "mockDeviceAuto",
                     "displayName": "Mock Device (Auto created)",
                     "interfaces": ["system"],
-                    "basicTags": [
-                        "Device",
-                        "Actuator",
-                        "Gateway"
-                    ],
                     "createMethods": ["auto"],
                     "primaryActionTypeId": "defd3ed6-1a0d-400b-8879-a0202cf39935",
                     "primaryStateTypeId": "80baec19-54de-4948-ac46-31eabfaceb83",
-                    "deviceIcon": "Tune",
                     "paramTypes": [
                         {
                             "id": "d4f06047-125e-4479-9810-b54c189917f5",
@@ -321,14 +309,8 @@
                     "name": "mockPushButton",
                     "displayName": "Mock Device (Push Button)",
                     "interfaces": ["system"],
-                    "basicTags": [
-                        "Device",
-                        "Actuator",
-                        "Gateway"
-                    ],
                     "createMethods": ["discovery"],
                     "setupMethod": "pushButton",
-                    "deviceIcon": "Tune",
                     "pairingInfo": "Wait 3 second before you continue, the push button will be pressed automatically.",
                     "paramTypes": [ ],
                     "discoveryParamTypes": [
@@ -419,13 +401,7 @@
                     "id": "296f1fd4-e893-46b2-8a42-50d1bceb8730",
                     "name": "mockDisplayPin",
                     "displayName": "Mock Device (Display Pin)",
-                    "deviceIcon": "Tune",
                     "interfaces": ["system"],
-                    "basicTags": [
-                        "Device",
-                        "Actuator",
-                        "Gateway"
-                    ],
                     "createMethods": ["discovery"],
                     "setupMethod": "displayPin",
                     "pairingInfo": "Please enter the secret which normaly will be displayed on the device. For the mockdevice the pin is 243681.",
@@ -528,13 +504,7 @@
                     "id": "a71fbde9-9a38-4bf8-beab-c8aade2608ba",
                     "name": "mockParent",
                     "displayName": "Mock Device (Parent)",
-                    "deviceIcon": "Tune",
                     "interfaces": ["system"],
-                    "basicTags": [
-                        "Device",
-                        "Actuator",
-                        "Gateway"
-                    ],
                     "createMethods": ["user"],
                     "paramTypes": [ ],
                     "stateTypes": [
@@ -556,10 +526,6 @@
                     "displayName": "Mock Device (Child)",
                     "createMethods": ["auto"],
                     "paramTypes": [],
-                    "basicTags": [
-                        "Device",
-                        "Actuator"
-                    ],
                     "stateTypes": [
                         {
                             "id": "d24ede5f-4064-4898-bb84-cfb533b1fbc0",
@@ -577,10 +543,6 @@
                     "id": "515ffdf1-55e5-498d-9abc-4e2fe768f3a9",
                     "name": "mockInputType",
                     "displayName": "Mock Device (InputTypes)",
-                    "deviceIcon": "Tune",
-                    "basicTags": [
-                        "Device"
-                    ],
                     "createMethods": ["user"],
                     "paramTypes": [
                         {

@@ -230,8 +230,6 @@ See also: \l{ParamDescriptor}
     "id": "Uuid", 
     "index": "Int", 
     "name": "String", 
-    "o:graphRelevant": "Bool", 
-    "o:ruleRelevant": "Bool", 
     "paramTypes": [
         "$ref:ParamType"
     ]
@@ -580,13 +578,11 @@ See also: \l{StateEvaluator}, \l{StateDescriptor}, \l{StateOperator}
     "id": "Uuid", 
     "index": "Int", 
     "name": "String", 
-    "o:graphRelevant": "Bool", 
     "o:maxValue": "Variant", 
     "o:minValue": "Variant", 
     "o:possibleValues": [
         "Variant"
     ], 
-    "o:ruleRelevant": "Bool", 
     "o:unit": "$ref:Unit", 
     "type": "$ref:BasicType"
 }
@@ -3491,8 +3487,6 @@ See also: \l{Tag}
             "id": "Uuid", 
             "index": "Int", 
             "name": "String", 
-            "o:graphRelevant": "Bool", 
-            "o:ruleRelevant": "Bool", 
             "paramTypes": [
                 "$ref:ParamType"
             ]
@@ -3742,13 +3736,11 @@ See also: \l{Tag}
             "id": "Uuid", 
             "index": "Int", 
             "name": "String", 
-            "o:graphRelevant": "Bool", 
             "o:maxValue": "Variant", 
             "o:minValue": "Variant", 
             "o:possibleValues": [
                 "Variant"
             ], 
-            "o:ruleRelevant": "Bool", 
             "o:unit": "$ref:Unit", 
             "type": "$ref:BasicType"
         }, 

@@ -698,12 +698,6 @@ void DevicePlugin::loadMetaData()
                 if (st.contains("maxValue"))
                     stateType.setMaxValue(st.value("maxValue").toVariant());
 
-                if (st.contains("ruleRelevant"))
-                    stateType.setRuleRelevant(st.value("ruleRelevant").toBool());
-
-                if (st.contains("graphRelevant"))
-                    stateType.setGraphRelevant(st.value("graphRelevant").toBool());
-
                 if (st.contains("possibleValues")) {
                     QVariantList possibleValues;
                     foreach (const QJsonValue &possibleValueJson, st.value("possibleValues").toArray()) {
@@ -726,9 +720,6 @@ void DevicePlugin::loadMetaData()
 
                 // Events for state changed
                 EventType eventType(EventTypeId(stateType.id().toString()));
-                if (st.contains("eventRuleRelevant"))
-                    eventType.setRuleRelevant(st.value("eventRuleRelevant").toBool());
-
                 eventType.setName(st.value("name").toString());
                 eventType.setDisplayName(st.value("displayNameEvent").toString());
                 ParamType paramType(ParamTypeId(stateType.id().toString()), st.value("name").toString(), stateType.type());
@@ -816,11 +807,6 @@ void DevicePlugin::loadMetaData()
                 eventType.setName(et.value("name").toString());
                 eventType.setDisplayName(et.value("displayName").toString());
                 eventType.setIndex(index++);
-                if (et.contains("ruleRelevant"))
-                    eventType.setRuleRelevant(et.value("ruleRelevant").toBool());
-
-                if (et.contains("graphRelevant"))
-                    eventType.setGraphRelevant(et.value("graphRelevant").toBool());
 
                 QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(et.value("paramTypes").toArray());
                 if (!paramVerification.first) {

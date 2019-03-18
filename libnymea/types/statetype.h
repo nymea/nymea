@@ -64,12 +64,6 @@ public:
     Types::Unit unit() const;
     void setUnit(const Types::Unit &unit);
 
-    bool ruleRelevant() const;
-    void setRuleRelevant(const bool &ruleRelevant);
-
-    bool graphRelevant() const;
-    void setGraphRelevant(const bool &graphRelevant);
-
     bool cached() const;
     void setCached(bool cached);
 
@@ -87,8 +81,6 @@ private:
     QVariant m_maxValue;
     QVariantList m_possibleValues;
     Types::Unit m_unit = Types::UnitNone;
-    bool m_ruleRelevant = true;
-    bool m_graphRelevant = false;
     bool m_cached = true;
 };
 

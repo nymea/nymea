@@ -160,30 +160,6 @@ void StateType::setUnit(const Types::Unit &unit)
     m_unit = unit;
 }
 
-/*! Returns true if this StateType is relevant for the rule from a user perspective. */
-bool StateType::ruleRelevant() const
-{
-    return m_ruleRelevant;
-}
-
-/*! Sets this StateType relevant for the rule from a user perspective to \a ruleRelevant. */
-void StateType::setRuleRelevant(const bool &ruleRelevant)
-{
-    m_ruleRelevant = ruleRelevant;
-}
-
-/*! Returns true if this StateType is interesting to visualize the logs in a graph/chart from a user perspective. */
-bool StateType::graphRelevant() const
-{
-    return m_graphRelevant;
-}
-
-/*! Sets this StateType \a graphRelevant to inform the client application if this \l{StateType} is interesting to visualize the logs in a graph/chart. */
-void StateType::setGraphRelevant(const bool &graphRelevant)
-{
-    m_graphRelevant = graphRelevant;
-}
-
 /*! Returns true if this StateType is to be cached. This means, the last state value will be stored to disk upon shutdown and restored on reboot. If this is false, states will be initialized with the default value on each boot. By default all states are cached by the system. */
 bool StateType::cached() const
 {
@@ -200,8 +176,8 @@ void StateType::setCached(bool cached)
 QStringList StateType::typeProperties()
 {
     return QStringList() << "id" << "name" << "displayName" << "displayNameEvent" << "type" << "defaultValue"
-                         << "cached" << "ruleRelevant" << "eventRuleRelevant" << "graphRelevant" << "unit"
-                         << "minValue" << "maxValue" << "possibleValues" << "writable" << "displayNameAction";
+                         << "cached" << "unit" << "minValue" << "maxValue" << "possibleValues" << "writable"
+                         << "displayNameAction";
 }
 
 /*! Returns a list of mandatory properties a DeviceClass definition must have. */

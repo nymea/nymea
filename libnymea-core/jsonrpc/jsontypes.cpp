@@ -199,8 +199,6 @@ void JsonTypes::init()
     s_stateType.insert("index", basicTypeToString(Int));
     s_stateType.insert("defaultValue", basicTypeToString(Variant));
     s_stateType.insert("o:unit", unitRef());
-    s_stateType.insert("o:ruleRelevant", basicTypeToString(Bool));
-    s_stateType.insert("o:graphRelevant", basicTypeToString(Bool));
     s_stateType.insert("o:minValue", basicTypeToString(Variant));
     s_stateType.insert("o:maxValue", basicTypeToString(Variant));
     s_stateType.insert("o:possibleValues", QVariantList() << basicTypeToString(Variant));
@@ -229,8 +227,6 @@ void JsonTypes::init()
     s_eventType.insert("displayName", basicTypeToString(String));
     s_eventType.insert("index", basicTypeToString(Int));
     s_eventType.insert("paramTypes", QVariantList() << paramTypeRef());
-    s_eventType.insert("o:ruleRelevant", basicTypeToString(Bool));
-    s_eventType.insert("o:graphRelevant", basicTypeToString(Bool));
 
     // Event
     s_event.insert("eventTypeId", basicTypeToString(Uuid));
@@ -496,11 +492,6 @@ QVariantMap JsonTypes::packEventType(const EventType &eventType, const PluginId 
     variant.insert("name", eventType.name());
     variant.insert("displayName", NymeaCore::instance()->deviceManager()->translator()->translate(pluginId, eventType.displayName(), locale));
     variant.insert("index", eventType.index());
-    if (!eventType.ruleRelevant())
-        variant.insert("ruleRelevant", false);
-
-    if (eventType.graphRelevant())
-        variant.insert("graphRelevant", true);
 
     QVariantList paramTypes;
     foreach (const ParamType &paramType, eventType.paramTypes())
@@ -630,12 +621,6 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType, const PluginId 
     variantMap.insert("index", stateType.index());
     variantMap.insert("type", basicTypeToString(stateType.type()));
     variantMap.insert("defaultValue", stateType.defaultValue());
-
-    if (!stateType.ruleRelevant())
-        variantMap.insert("ruleRelevant", false);
-
-    if (stateType.graphRelevant())
-        variantMap.insert("graphRelevant", true);
 
     if (stateType.maxValue().isValid())
         variantMap.insert("maxValue", stateType.maxValue());

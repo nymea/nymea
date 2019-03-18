@@ -72,7 +72,6 @@
                             "displayName": "Dummy int state",
                             "displayNameEvent": "Dummy int state changed",
                             "defaultValue": 10,
-                            "graphRelevant": true,
                             "type": "int"
                         },
                         {
@@ -128,8 +127,7 @@
                         {
                             "id": "45bf3752-0fc6-46b9-89fd-ffd878b5b22b",
                             "name": "mockEvent1",
-                            "displayName": "Mock Event 1",
-                            "graphRelevant": true
+                            "displayName": "Mock Event 1"
                         },
                         {
                             "id": "863d5920-b1cf-4eb9-88bd-8f7b8583b1cf",
@@ -224,7 +222,6 @@
                             "displayName": "Dummy int state",
                             "displayNameEvent": "Dummy int state changed",
                             "defaultValue": 10,
-                            "graphRelevant": true,
                             "type": "int"
                         },
                         {
@@ -328,8 +325,6 @@
                             "displayNameAction": "Set color",
                             "type": "QColor",
                             "defaultValue": "#000000",
-                            "ruleRelevant": false,
-                            "eventRuleRelevant": false,
                             "writable": true
                         },
                         {
@@ -341,7 +336,6 @@
                             "type": "int",
                             "unit": "Percentage",
                             "defaultValue": 0,
-                            "ruleRelevant": false,
                             "minValue": 0,
                             "maxValue": 100,
                             "writable": true
@@ -431,8 +425,6 @@
                             "displayNameAction": "Set color",
                             "type": "QColor",
                             "defaultValue": "#000000",
-                            "ruleRelevant": false,
-                            "eventRuleRelevant": false,
                             "writable": true
                         },
                         {
@@ -444,7 +436,6 @@
                             "type": "int",
                             "unit": "Percentage",
                             "defaultValue": 0,
-                            "ruleRelevant": false,
                             "minValue": 0,
                             "maxValue": 100,
                             "writable": true

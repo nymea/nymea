@@ -431,9 +431,6 @@ A \l{StateType} has following parameters:
                     "type": "DataType",
                     "defaultValue": "The state will be initialized with this value."
                     "o:cached": "bool",
-                    "o:ruleRelevant": "bool",
-                    "o:eventRuleRelevant": "bool",
-                    "o:graphRelevant": "bool",
                     "o:unit": "The unit of the state value.",
                     "o:minValue": "Numeric minimum value for this state.",
                     "o:maxValue": "Numeric maximum value for this state.",
@@ -492,23 +489,6 @@ A \l{StateType} has following parameters:
             \li Indicates if a state value should be cached over reboot of the server. The value will be initialized with the last known value.
                 By default all states get chached. If you want to disable that behaviour you can set this property to \tt{false}. In that case the
                 value will be initialized with the default value of the State.
-        \row
-            \li \tt ruleRelevant
-            \li \b O
-            \li bool
-            \li Since not all \l{State}{States} make sense for the user in a rule, with this flag can be specified if this state should be visible
-                in the rule engine for the user or not. This flag has no effect to the ruleengine mechanism and is only ment to filter out not
-                interesting \l{State}{States}. By default, every state is rule relevant.
-        \row
-            \li \tt eventRuleRelevant
-            \li \b O
-            \li bool
-            \li Deprecated: please use \l{Interfaces for DeviceClasses}{interfaces} instead.
-        \row
-            \li \tt graphRelevant
-            \li \b O
-            \li bool
-            \li Deprecated: please use \l{Interfaces for DeviceClasses}{interfaces} instead.
         \row
             \li \tt unit
             \li \b O
@@ -665,8 +645,6 @@ A \l{StateType} has following parameters:
                     "id": "uuid",
                     "name": "eventName",
                     "displayName": "Name of the event (translatable)",
-                    "o:ruleRelevant": "bool",
-                    "o:graphRelevant": "bool",
                     "o:paramTypes": [
                         ...
                     ]
@@ -700,18 +678,6 @@ A \l{StateType} has following parameters:
             \li A list of \l{ParamType}{ParamTypes} which define the parameters of this event \unicode{0x2192} \l{EventType::paramTypes()}.
 
                 \b{See also:} \l{The ParamType definition}"
-        \row
-            \li \tt ruleRelevant
-            \li \b O
-            \li bool
-            \li Since not all \l{Event}{Events} make sense for the user in a rule, with this flag can be specidied if this event should be visible in the rule engine
-                for the user or not. This flag has no effect to the ruleengine mechanism and is only ment to filter out not interesting \l{Event}{Events}. By default,
-                every event is rule relevant.
-        \row
-            \li \tt graphRelevant
-            \li \b O
-            \li bool
-            \li Deprecated: please use \l{Interfaces for DeviceClasses}{interfaces} instead.
     \endtable
 
 */

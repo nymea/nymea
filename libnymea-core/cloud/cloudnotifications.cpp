@@ -46,7 +46,7 @@ QJsonObject CloudNotifications::metaData() const
 {
     QVariantMap pluginMetaData;
     pluginMetaData.insert("id", "ccc6dbc8-e352-48a1-8e87-3c89a4669fc2");
-    pluginMetaData.insert("name", "cloudNotifications");
+    pluginMetaData.insert("name", "CloudNotifications");
     pluginMetaData.insert("displayName", tr("Cloud Notifications"));
 
     QVariantList interfaces;
@@ -131,6 +131,10 @@ QJsonObject CloudNotifications::metaData() const
     QVariantList vendors;
     vendors.append(guhVendor);
     pluginMetaData.insert("vendors", vendors);
+
+    // Mark this plugin as built-in
+    pluginMetaData.insert("builtIn", true);
+
     return QJsonObject::fromVariantMap(pluginMetaData);
 }
 

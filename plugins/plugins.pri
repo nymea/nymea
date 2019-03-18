@@ -3,7 +3,7 @@ include(../nymea.pri)
 TEMPLATE = lib
 CONFIG += plugin
 
-QT += network bluetooth
+QT += network
 
 INCLUDEPATH += $$top_srcdir/libnymea
 LIBS += -L../../libnymea -lnymea

@@ -35,6 +35,8 @@ private slots:
 
     void testHandshake();
 
+    void testHandshakeLocale();
+
     void testInitialSetup();
 
     void testRevokeToken();
@@ -131,7 +133,9 @@ void TestJSONRPC::initTestCase()
 {
     NymeaTestBase::initTestCase();
     QLoggingCategory::setFilterRules("*.debug=false\n"
-                                     "JsonRpc*.debug=true");
+//                                     "JsonRpc*.debug=true\n"
+                                     "Translations.debug=true\n"
+                                     "Tests.debug=true");
 }
 
 void TestJSONRPC::testHandshake()
@@ -168,6 +172,42 @@ void TestJSONRPC::testHandshake()
     // And now check if it is sent again when calling JSONRPC.Hello
     handShake = injectAndWait("JSONRPC.Hello").toMap();
     QCOMPARE(handShake.value("params").toMap().value("version").toString(), nymeaVersionString);
+}
+
+void TestJSONRPC::testHandshakeLocale()
+{
+    // first test if the handshake message is auto-sent upon connecting
+    QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // Test withouth locale data
+    QVariantMap handShake = injectAndWait("JSONRPC.Hello").toMap();
+    QCOMPARE(handShake.value("params").toMap().value("locale").toString(), QString("en_US"));
+
+    QVariantMap supportedDevices = injectAndWait("Devices.GetSupportedDevices").toMap();
+    bool found = false;
+    foreach (const QVariant &dcMap, supportedDevices.value("params").toMap().value("deviceClasses").toList()) {
+        if (dcMap.toMap().value("id").toUuid() == mockDeviceAutoClassId) {
+            QCOMPARE(dcMap.toMap().value("displayName").toString(), QString("Mock Device (Auto created)"));
+            found = true;
+        }
+    }
+    QVERIFY(found);
+
+    // And now with locale info
+    QVariantMap params;
+    params.insert("locale", "de_DE");
+    handShake = injectAndWait("JSONRPC.Hello", params).toMap();
+    QCOMPARE(handShake.value("params").toMap().value("locale").toString(), QString("de_DE"));
+
+    supportedDevices = injectAndWait("Devices.GetSupportedDevices").toMap();
+    found = false;
+    foreach (const QVariant &dcMap, supportedDevices.value("params").toMap().value("deviceClasses").toList()) {
+        if (dcMap.toMap().value("id").toUuid() == mockDeviceAutoClassId) {
+            QCOMPARE(dcMap.toMap().value("displayName").toString(), QString("Mock Gerät (Automatisch erzeugt)"));
+            found = true;
+        }
+    }
+    QVERIFY(found);
 }
 
 void TestJSONRPC::testInitialSetup()

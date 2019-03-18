@@ -430,6 +430,11 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const ParamTypeId &param
     return DeviceManager::DeviceErrorNoError;
 }
 
+bool DevicePlugin::isBuiltIn() const
+{
+    return m_metaData.value("builtIn").toBool();
+}
+
 /*! Returns a pointer to the \l{DeviceManager}.
     When implementing a plugin, use this to find the \l{Device}{Devices} you need.
 */
@@ -501,7 +506,7 @@ void DevicePlugin::loadMetaData()
 
     // Note: The DevicePlugin has no type class, so we define the json properties here
     QStringList pluginMandatoryJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors";
-    QStringList pluginJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors" << "paramTypes";
+    QStringList pluginJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors" << "paramTypes" << "builtIn";
 
     QPair<QStringList, QStringList> verificationResult = verifyFields(pluginJsonProperties, pluginMandatoryJsonProperties, m_metaData);
 

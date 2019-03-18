@@ -82,6 +82,8 @@ public:
     QVariant configValue(const ParamTypeId &paramTypeId) const;
     DeviceManager::DeviceError setConfigValue(const ParamTypeId &paramTypeId, const QVariant &value);
 
+    bool isBuiltIn() const;
+
 signals:
     void emitEvent(const Event &event);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);

@@ -903,6 +903,7 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     newRule.setName(rule.name());
     newRule.setEventDescriptors(eventDescriptors);
     newRule.setStateEvaluator(stateEvalatuator);
+    newRule.setTimeDescriptor(rule.timeDescriptor());
     newRule.setActions(actions);
     newRule.setExitActions(exitActions);
     m_rules[id] = newRule;

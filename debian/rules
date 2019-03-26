@@ -19,6 +19,8 @@ endif
 QMAKE_ADDITIONAL_ARGS=
 ifneq (,$(filter coverage,$(DEB_BUILD_OPTIONS)))
 	QMAKE_ADDITIONAL_ARGS += CONFIG+=coverage CONFIG+=debug
+else
+	QMAKE_ADDITIONAL_ARGS += CONFIG+=release
 endif
 
 DPKG_EXPORT_BUILDFLAGS = 1

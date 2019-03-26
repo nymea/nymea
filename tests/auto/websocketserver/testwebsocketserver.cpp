@@ -81,8 +81,14 @@ void TestWebSocketServer::testHandshake()
 {
     QWebSocket *socket = new QWebSocket("nymea tests", QWebSocketProtocol::Version13);
     connect(socket, &QWebSocket::sslErrors, this, &TestWebSocketServer::sslErrors);
-    QSignalSpy spy(socket, SIGNAL(textMessageReceived(QString)));
+
+    QSignalSpy connectedSpy(socket, &QWebSocket::connected);
     socket->open(QUrl(QStringLiteral("wss://localhost:4444")));
+    connectedSpy.wait();
+
+    QSignalSpy spy(socket, SIGNAL(textMessageReceived(QString)));
+    socket->sendTextMessage("{\"id\":0, \"method\": \"JSONRPC.Hello\"}");
+
     spy.wait();
     QVERIFY2(spy.count() > 0, "Did not get the handshake message upon connect.");
     QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().first().toByteArray());
@@ -90,8 +96,8 @@ void TestWebSocketServer::testHandshake()
 
     QString nymeaVersionString(NYMEA_VERSION_STRING);
     QString jsonProtocolVersionString(JSON_PROTOCOL_VERSION);
-    QCOMPARE(handShake.value("version").toString(), nymeaVersionString);
-    QCOMPARE(handShake.value("protocol version").toString(), jsonProtocolVersionString);
+    QCOMPARE(handShake.value("params").toMap().value("version").toString(), nymeaVersionString);
+    QCOMPARE(handShake.value("params").toMap().value("protocol version").toString(), jsonProtocolVersionString);
 
     socket->close();
     socket->deleteLater();
@@ -173,6 +179,10 @@ QVariant TestWebSocketServer::injectSocketAndWait(const QString &method, const Q
     }
 
     QSignalSpy spy(socket, SIGNAL(textMessageReceived(QString)));
+    socket->sendTextMessage("{\"id\":0, \"method\": \"JSONRPC.Hello\"}");
+    spy.wait();
+
+    spy.clear();
     socket->sendTextMessage(QString(jsonDoc.toJson(QJsonDocument::Compact)));
     spy.wait();
 
@@ -214,6 +224,11 @@ QVariant TestWebSocketServer::injectSocketData(const QByteArray &data)
     }
 
     QSignalSpy spy(socket, SIGNAL(textMessageReceived(QString)));
+
+    socket->sendTextMessage("{\"id\":0, \"method\": \"JSONRPC.Hello\"}");
+    spy.wait();
+
+    spy.clear();
     socket->sendTextMessage(QString(data));
     spy.wait();
 

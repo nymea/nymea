@@ -1372,7 +1372,6 @@ Rule JsonTypes::unpackRule(const QVariantMap &ruleMap)
     QList<EventDescriptor> eventDescriptors;
     if (ruleMap.contains("eventDescriptors")) {
         QVariantList eventDescriptorVariantList = ruleMap.value("eventDescriptors").toList();
-        qCDebug(dcJsonRpc) << "unpacking eventDescriptors:" << eventDescriptorVariantList;
         foreach (const QVariant &eventDescriptorVariant, eventDescriptorVariantList) {
             eventDescriptors.append(JsonTypes::unpackEventDescriptor(eventDescriptorVariant.toMap()));
         }

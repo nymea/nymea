@@ -107,6 +107,7 @@ private:
     QHash<QUuid, bool> m_clientNotifications;
     QHash<QUuid, QLocale> m_clientLocales;
     QHash<int, QUuid> m_pushButtonTransactions;
+    QHash<QUuid, QTimer*> m_newConnectionWaitTimers;
 
     QHash<QString, JsonReply*> m_pairingRequests;
 

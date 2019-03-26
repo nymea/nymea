@@ -93,8 +93,9 @@ private slots:
     void enableDisableRule();
 
     void testEventBasedAction();
-
     void testEventBasedRuleWithExitAction();
+
+    void testStateBasedAction();
 
     void removePolicyUpdate();
     void removePolicyCascade();
@@ -2211,6 +2212,98 @@ void TestRules::testEventBasedRuleWithExitAction()
 
     // Verify the exit actions got executed
     verifyRuleExecuted(mockActionIdNoParams);
+
+}
+
+void TestRules::testStateBasedAction()
+{
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // Init bool state to true
+    spy.clear();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg(true)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // Init int state to 11
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(11)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // Add a rule
+    QVariantMap addRuleParams;
+    QVariantMap eventDescriptor;
+    eventDescriptor.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor.insert("deviceId", m_mockDeviceId);
+    addRuleParams.insert("eventDescriptors", QVariantList() << eventDescriptor);
+    addRuleParams.insert("name", "TestRule");
+    addRuleParams.insert("enabled", true);
+
+    QVariantList actions;
+    QVariantMap action;
+    QVariantList ruleActionParams;
+    QVariantMap param1;
+    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("deviceId", m_mockDeviceId);
+    param1.insert("stateTypeId", mockIntStateId);
+    QVariantMap param2;
+    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("deviceId", m_mockDeviceId);
+    param2.insert("stateTypeId", mockBoolStateId);
+    ruleActionParams.append(param1);
+    ruleActionParams.append(param2);
+
+    actions.clear();
+    action.insert("deviceId", m_mockDeviceId);
+    action.insert("actionTypeId", mockActionIdWithParams);
+    action.insert("ruleActionParams", ruleActionParams);
+    actions.append(action);
+    addRuleParams.insert("actions", actions);
+
+    qDebug() << addRuleParams;
+
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    verifyRuleError(response);
+
+    // trigger event
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    LogFilter filter;
+    filter.addDeviceId(m_mockDeviceId);
+    filter.addTypeId(mockActionIdWithParams);
+    QList<LogEntry> entries = NymeaCore::instance()->logEngine()->logEntries(filter);
+    qCDebug(dcTests()) << "Log entries:" << entries;
+
+    // set bool state to false
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg(false)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // trigger event
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    entries = NymeaCore::instance()->logEngine()->logEntries(filter);
+    qCDebug(dcTests()) << "Log entries:" << entries;
+
 
 }
 

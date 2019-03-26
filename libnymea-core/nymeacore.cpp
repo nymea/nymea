@@ -438,31 +438,85 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
     QList<Action> actions;
     foreach (const RuleAction &ruleAction, ruleActions) {
         if (ruleAction.type() == RuleAction::TypeDevice) {
-            actions.append(ruleAction.toAction());
+            Device *device = m_deviceManager->findConfiguredDevice(ruleAction.deviceId());
+            ActionTypeId actionTypeId = ruleAction.actionTypeId();
+            ParamList params;
+            bool ok = true;
+            foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
+                if (ruleActionParam.isValueBased()) {
+                    params.append(Param(ruleActionParam.paramTypeId(), ruleActionParam.value()));
+                } else if (ruleActionParam.isStateBased()) {
+                    Device *stateDevice = m_deviceManager->findConfiguredDevice(ruleActionParam.deviceId());
+                    if (!stateDevice) {
+                        qCWarning(dcRuleEngine()) << "Cannot find device" << ruleActionParam.deviceId() << "required by rule action" << ruleAction.id();
+                        ok = false;
+                        break;
+                    }
+                    DeviceClass stateDeviceClass = m_deviceManager->findDeviceClass(stateDevice->deviceClassId());
+                    if (!stateDeviceClass.hasStateType(ruleActionParam.stateTypeId())) {
+                        qCWarning(dcRuleEngine()) << "Device" << device->name() << device->id() << "does not have a state type" << ruleActionParam.stateTypeId();
+                        ok = false;
+                        break;
+                    }
+                    params.append(Param(ruleActionParam.paramTypeId(), stateDevice->stateValue(ruleActionParam.stateTypeId())));
+                }
+            }
+            if (!ok) {
+                qCWarning(dcRuleEngine()) << "Not executing rule action" << ruleAction.id();
+                continue;
+            }
+            Action action(actionTypeId, device->id());
+            action.setParams(params);
+            actions.append(action);
         } else {
             QList<Device*> devices = m_deviceManager->findConfiguredDevices(ruleAction.interface());
             foreach (Device* device, devices) {
-                DeviceClass dc = m_deviceManager->findDeviceClass(device->deviceClassId());
-                ActionType at = dc.actionTypes().findByName(ruleAction.interfaceAction());
-                if (at.id().isNull()) {
+                DeviceClass deviceClass = m_deviceManager->findDeviceClass(device->deviceClassId());
+                ActionType actionType = deviceClass.actionTypes().findByName(ruleAction.interfaceAction());
+                if (actionType.id().isNull()) {
                     qCWarning(dcRuleEngine()) << "Error creating Action. The given DeviceClass does not implement action:" << ruleAction.interfaceAction();
                     continue;
                 }
-                Action action = Action(at.id(), device->id());
+
                 ParamList params;
-                foreach (const RuleActionParam &rap, ruleAction.ruleActionParams()) {
-                    ParamType pt = at.paramTypes().findByName(rap.paramName());
-                    if (pt.id().isNull()) {
-                        qCWarning(dcRuleEngine()) << "Error creating Action. Failed to match interface param type to DeviceClass paramtype.";
+                bool ok = true;
+                foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
+                    ParamType paramType = actionType.paramTypes().findByName(ruleActionParam.paramName());
+                    if (paramType.id().isNull()) {
+                        qCWarning(dcRuleEngine()) << "Error creating Action. The given ActionType does not have a parameter:" << ruleActionParam.paramName();
+                        ok = false;
                         continue;
                     }
-                    params.append(Param(pt.id(), rap.value()));
+                    if (ruleActionParam.isValueBased()) {
+                        params.append(Param(paramType.id(), ruleActionParam.value()));
+                    } else if (ruleActionParam.isStateBased()) {
+                        Device *stateDevice = m_deviceManager->findConfiguredDevice(ruleActionParam.deviceId());
+                        if (!stateDevice) {
+                            qCWarning(dcRuleEngine()) << "Cannot find device" << ruleActionParam.deviceId() << "required by rule action" << ruleAction.id();
+                            ok = false;
+                            break;
+                        }
+                        DeviceClass stateDeviceClass = m_deviceManager->findDeviceClass(stateDevice->deviceClassId());
+                        if (!stateDeviceClass.hasStateType(ruleActionParam.stateTypeId())) {
+                            qCWarning(dcRuleEngine()) << "Device" << device->name() << device->id() << "does not have a state type" << ruleActionParam.stateTypeId();
+                            ok = false;
+                            break;
+                        }
+                        params.append(Param(paramType.id(), stateDevice->stateValue(ruleActionParam.stateTypeId())));
+                    }
                 }
+                if (!ok) {
+                    qCWarning(dcRuleEngine()) << "Not executing rule action" << ruleAction.id();
+                    continue;
+                }
+
+                Action action = Action(actionType.id(), device->id());
                 action.setParams(params);
                 actions.append(action);
             }
         }
     }
+
     foreach (const Action &action, actions) {
         qCDebug(dcRuleEngine) << "Executing action" << action.actionTypeId() << action.params();
         DeviceManager::DeviceError status = executeAction(action);
@@ -652,9 +706,7 @@ void NymeaCore::gotEvent(const Event &event)
         foreach (RuleActionParam ruleActionParam, ruleAction.ruleActionParams()) {
             // if this event param should be taken over in this action
             if (event.eventTypeId() == ruleActionParam.eventTypeId()) {
-                QVariant eventValue = event.params().first().value();
-
-                // TODO: get param names...when an event has more than one parameter
+                QVariant eventValue = event.params().paramValue(ruleActionParam.eventParamTypeId());
 
                 // TODO: limits / scale calculation -> actionValue = eventValue * x
                 //       something like a EventParamDescriptor

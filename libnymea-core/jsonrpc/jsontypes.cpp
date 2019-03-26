@@ -188,6 +188,8 @@ void JsonTypes::init()
     s_ruleActionParam.insert("o:value", basicTypeRef());
     s_ruleActionParam.insert("o:eventTypeId", basicTypeToString(Uuid));
     s_ruleActionParam.insert("o:eventParamTypeId", basicTypeToString(Uuid));
+    s_ruleActionParam.insert("o:deviceId", basicTypeToString(Uuid));
+    s_ruleActionParam.insert("o:stateTypeId", basicTypeToString(Uuid));
 
     // ParamDescriptor
     s_paramDescriptor.insert("o:paramTypeId", basicTypeToString(Uuid));
@@ -612,10 +614,13 @@ QVariantMap JsonTypes::packRuleActionParam(const RuleActionParam &ruleActionPara
     } else {
         variantMap.insert("paramName", ruleActionParam.paramName());
     }
-    // if this ruleaction param has a valid EventTypeId, there is no value
-    if (ruleActionParam.eventTypeId() != EventTypeId()) {
+
+    if (ruleActionParam.isEventBased()) {
         variantMap.insert("eventTypeId", ruleActionParam.eventTypeId().toString());
         variantMap.insert("eventParamTypeId", ruleActionParam.eventParamTypeId().toString());
+    } else if (ruleActionParam.isStateBased()) {
+        variantMap.insert("deviceId", ruleActionParam.deviceId().toString());
+        variantMap.insert("stateTypeId", ruleActionParam.stateTypeId().toString());
     } else {
         variantMap.insert("value", ruleActionParam.value());
     }
@@ -1429,13 +1434,19 @@ RuleActionParam JsonTypes::unpackRuleActionParam(const QVariantMap &ruleActionPa
 
     ParamTypeId paramTypeId = ParamTypeId(ruleActionParamMap.value("paramTypeId").toString());
     QString paramName = ruleActionParamMap.value("paramName").toString();
-    QVariant value = ruleActionParamMap.value("value");
-    EventTypeId eventTypeId = EventTypeId(ruleActionParamMap.value("eventTypeId").toString());
-    ParamTypeId eventParamTypeId = ParamTypeId(ruleActionParamMap.value("eventParamTypeId").toString());
+
+    RuleActionParam param;
     if (paramTypeId.isNull()) {
-        return RuleActionParam(paramName, value, eventTypeId, eventParamTypeId);
+        param = RuleActionParam(paramName);
+    } else {
+        param = RuleActionParam(paramTypeId);
     }
-    return RuleActionParam(paramTypeId, value, eventTypeId, eventParamTypeId);
+    param.setValue(ruleActionParamMap.value("value"));
+    param.setEventTypeId(EventTypeId(ruleActionParamMap.value("eventTypeId").toString()));
+    param.setEventParamTypeId(ParamTypeId(ruleActionParamMap.value("eventParamTypeId").toString()));
+    param.setDeviceId(DeviceId(ruleActionParamMap.value("deviceId").toString()));
+    param.setStateTypeId(StateTypeId(ruleActionParamMap.value("stateTypeId").toString()));
+    return param;
 }
 
 /*! Returns a \l{RuleActionParamList} created from the given \a ruleActionParamList. */

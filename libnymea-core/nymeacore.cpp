@@ -446,9 +446,9 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
                 if (ruleActionParam.isValueBased()) {
                     params.append(Param(ruleActionParam.paramTypeId(), ruleActionParam.value()));
                 } else if (ruleActionParam.isStateBased()) {
-                    Device *stateDevice = m_deviceManager->findConfiguredDevice(ruleActionParam.deviceId());
+                    Device *stateDevice = m_deviceManager->findConfiguredDevice(ruleActionParam.stateDeviceId());
                     if (!stateDevice) {
-                        qCWarning(dcRuleEngine()) << "Cannot find device" << ruleActionParam.deviceId() << "required by rule action" << ruleAction.id();
+                        qCWarning(dcRuleEngine()) << "Cannot find device" << ruleActionParam.stateDeviceId() << "required by rule action" << ruleAction.id();
                         ok = false;
                         break;
                     }
@@ -490,9 +490,9 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
                     if (ruleActionParam.isValueBased()) {
                         params.append(Param(paramType.id(), ruleActionParam.value()));
                     } else if (ruleActionParam.isStateBased()) {
-                        Device *stateDevice = m_deviceManager->findConfiguredDevice(ruleActionParam.deviceId());
+                        Device *stateDevice = m_deviceManager->findConfiguredDevice(ruleActionParam.stateDeviceId());
                         if (!stateDevice) {
-                            qCWarning(dcRuleEngine()) << "Cannot find device" << ruleActionParam.deviceId() << "required by rule action" << ruleAction.id();
+                            qCWarning(dcRuleEngine()) << "Cannot find device" << ruleActionParam.stateDeviceId() << "required by rule action" << ruleAction.id();
                             ok = false;
                             break;
                         }

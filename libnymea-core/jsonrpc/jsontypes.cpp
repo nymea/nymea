@@ -188,7 +188,7 @@ void JsonTypes::init()
     s_ruleActionParam.insert("o:value", basicTypeRef());
     s_ruleActionParam.insert("o:eventTypeId", basicTypeToString(Uuid));
     s_ruleActionParam.insert("o:eventParamTypeId", basicTypeToString(Uuid));
-    s_ruleActionParam.insert("o:deviceId", basicTypeToString(Uuid));
+    s_ruleActionParam.insert("o:stateDeviceId", basicTypeToString(Uuid));
     s_ruleActionParam.insert("o:stateTypeId", basicTypeToString(Uuid));
 
     // ParamDescriptor
@@ -619,7 +619,7 @@ QVariantMap JsonTypes::packRuleActionParam(const RuleActionParam &ruleActionPara
         variantMap.insert("eventTypeId", ruleActionParam.eventTypeId().toString());
         variantMap.insert("eventParamTypeId", ruleActionParam.eventParamTypeId().toString());
     } else if (ruleActionParam.isStateBased()) {
-        variantMap.insert("deviceId", ruleActionParam.deviceId().toString());
+        variantMap.insert("stateDeviceId", ruleActionParam.stateDeviceId().toString());
         variantMap.insert("stateTypeId", ruleActionParam.stateTypeId().toString());
     } else {
         variantMap.insert("value", ruleActionParam.value());
@@ -1444,7 +1444,7 @@ RuleActionParam JsonTypes::unpackRuleActionParam(const QVariantMap &ruleActionPa
     param.setValue(ruleActionParamMap.value("value"));
     param.setEventTypeId(EventTypeId(ruleActionParamMap.value("eventTypeId").toString()));
     param.setEventParamTypeId(ParamTypeId(ruleActionParamMap.value("eventParamTypeId").toString()));
-    param.setDeviceId(DeviceId(ruleActionParamMap.value("deviceId").toString()));
+    param.setStateDeviceId(DeviceId(ruleActionParamMap.value("stateDeviceId").toString()));
     param.setStateTypeId(StateTypeId(ruleActionParamMap.value("stateTypeId").toString()));
     return param;
 }
@@ -1466,7 +1466,7 @@ ParamDescriptor JsonTypes::unpackParamDescriptor(const QVariantMap &paramMap)
     QMetaObject metaObject = Types::staticMetaObject;
     int enumIndex = metaObject.indexOfEnumerator("ValueOperator");
     QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
-    Types::ValueOperator valueOperator = (Types::ValueOperator)metaEnum.keyToValue(operatorString.toLatin1().data());
+    Types::ValueOperator valueOperator = static_cast<Types::ValueOperator>(metaEnum.keyToValue(operatorString.toLatin1().data()));
 
     if (paramMap.contains("paramTypeId")) {
         ParamDescriptor param = ParamDescriptor(ParamTypeId(paramMap.value("paramTypeId").toString()), paramMap.value("value"));
@@ -1507,7 +1507,7 @@ StateEvaluator JsonTypes::unpackStateEvaluator(const QVariantMap &stateEvaluator
 {
     StateEvaluator ret(unpackStateDescriptor(stateEvaluatorMap.value("stateDescriptor").toMap()));
     if (stateEvaluatorMap.contains("operator")) {
-        ret.setOperatorType((Types::StateOperator)s_stateOperator.indexOf(stateEvaluatorMap.value("operator").toString()));
+        ret.setOperatorType(static_cast<Types::StateOperator>(s_stateOperator.indexOf(stateEvaluatorMap.value("operator").toString())));
     } else {
         ret.setOperatorType(Types::StateOperatorAnd);
     }
@@ -1528,7 +1528,7 @@ StateDescriptor JsonTypes::unpackStateDescriptor(const QVariantMap &stateDescrip
     QString interface(stateDescriptorMap.value("interface").toString());
     QString interfaceState(stateDescriptorMap.value("interfaceState").toString());
     QVariant value = stateDescriptorMap.value("value");
-    Types::ValueOperator operatorType = (Types::ValueOperator)s_valueOperator.indexOf(stateDescriptorMap.value("operator").toString());
+    Types::ValueOperator operatorType = static_cast<Types::ValueOperator>(s_valueOperator.indexOf(stateDescriptorMap.value("operator").toString()));
     if (!deviceId.isNull() && !stateTypeId.isNull()) {
         StateDescriptor stateDescriptor(stateTypeId, deviceId, value, operatorType);
         return stateDescriptor;
@@ -1547,10 +1547,10 @@ LogFilter JsonTypes::unpackLogFilter(const QVariantMap &logFilterMap)
             QVariantMap timeFilterMap = timeFilter.toMap();
             QDateTime startDate; QDateTime endDate;
             if (timeFilterMap.contains("startDate"))
-                startDate = QDateTime::fromTime_t(timeFilterMap.value("startDate").toInt());
+                startDate = QDateTime::fromTime_t(timeFilterMap.value("startDate").toUInt());
 
             if (timeFilterMap.contains("endDate"))
-                endDate = QDateTime::fromTime_t(timeFilterMap.value("endDate").toInt());
+                endDate = QDateTime::fromTime_t(timeFilterMap.value("endDate").toUInt());
 
             filter.addTimeFilter(startDate, endDate);
         }
@@ -1559,19 +1559,19 @@ LogFilter JsonTypes::unpackLogFilter(const QVariantMap &logFilterMap)
     if (logFilterMap.contains("loggingSources")) {
         QVariantList loggingSources = logFilterMap.value("loggingSources").toList();
         foreach (const QVariant &source, loggingSources) {
-            filter.addLoggingSource((Logging::LoggingSource)s_loggingSource.indexOf(source.toString()));
+            filter.addLoggingSource(static_cast<Logging::LoggingSource>(s_loggingSource.indexOf(source.toString())));
         }
     }
     if (logFilterMap.contains("loggingLevels")) {
         QVariantList loggingLevels = logFilterMap.value("loggingLevels").toList();
         foreach (const QVariant &level, loggingLevels) {
-            filter.addLoggingLevel((Logging::LoggingLevel)s_loggingLevel.indexOf(level.toString()));
+            filter.addLoggingLevel(static_cast<Logging::LoggingLevel>(s_loggingLevel.indexOf(level.toString())));
         }
     }
     if (logFilterMap.contains("eventTypes")) {
         QVariantList eventTypes = logFilterMap.value("eventTypes").toList();
         foreach (const QVariant &eventType, eventTypes) {
-            filter.addLoggingEventType((Logging::LoggingEventType)s_loggingEventType.indexOf(eventType.toString()));
+            filter.addLoggingEventType(static_cast<Logging::LoggingEventType>(s_loggingEventType.indexOf(eventType.toString())));
         }
     }
     if (logFilterMap.contains("typeIds")) {
@@ -1605,7 +1605,7 @@ LogFilter JsonTypes::unpackLogFilter(const QVariantMap &logFilterMap)
 /*! Returns a \l{RepeatingOption} created from the given \a repeatingOptionMap. */
 RepeatingOption JsonTypes::unpackRepeatingOption(const QVariantMap &repeatingOptionMap)
 {
-    RepeatingOption::RepeatingMode mode = (RepeatingOption::RepeatingMode)s_repeatingMode.indexOf(repeatingOptionMap.value("mode").toString());
+    RepeatingOption::RepeatingMode mode = static_cast<RepeatingOption::RepeatingMode>(s_repeatingMode.indexOf(repeatingOptionMap.value("mode").toString()));
 
     QList<int> weekDays;
     if (repeatingOptionMap.contains("weekDays")) {

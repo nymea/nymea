@@ -38,10 +38,10 @@ public:
     RuleActionParam(const Param &param = Param());
     RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
     RuleActionParam(const ParamTypeId &paramTypeId, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId);
-    RuleActionParam(const ParamTypeId &paramTypeId, const DeviceId &deviceId, const StateTypeId &stateTypeId);
+    RuleActionParam(const ParamTypeId &paramTypeId, const DeviceId &stateDeviceId, const StateTypeId &stateTypeId);
     RuleActionParam(const QString &paramName, const QVariant &value = QVariant());
     RuleActionParam(const QString &paramName, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId);
-    RuleActionParam(const QString &paramName, const DeviceId &deviceId, const StateTypeId &stateTypeId);
+    RuleActionParam(const QString &paramName, const DeviceId &stateDeviceId, const StateTypeId &stateTypeId);
 
     ParamTypeId paramTypeId() const;
     QString paramName() const;
@@ -60,8 +60,8 @@ public:
     ParamTypeId eventParamTypeId() const;
     void setEventParamTypeId(const ParamTypeId &eventParamTypeId);
 
-    DeviceId deviceId() const;
-    void setDeviceId(const DeviceId &deviceId);
+    DeviceId stateDeviceId() const;
+    void setStateDeviceId(const DeviceId &deviceId);
 
     StateTypeId stateTypeId() const;
     void setStateTypeId(const StateTypeId &stateTypeId);
@@ -74,7 +74,7 @@ private:
     EventTypeId m_eventTypeId;
     ParamTypeId m_eventParamTypeId;
 
-    DeviceId m_deviceId;
+    DeviceId m_stateDeviceId;
     StateTypeId m_stateTypeId;
 };
 

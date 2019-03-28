@@ -119,7 +119,6 @@ private slots:
 
     void testHousekeeping_data();
     void testHousekeeping();
-
 };
 
 void TestRules::cleanupMockHistory() {

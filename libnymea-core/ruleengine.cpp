@@ -809,6 +809,15 @@ QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId) const
                     offending = true;
                     break;
                 }
+                foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
+                    if (ruleActionParam.stateDeviceId() == deviceId) {
+                        offending = true;
+                        break;
+                    }
+                }
+                if (offending) {
+                    break;
+                }
             }
         }
 
@@ -816,6 +825,15 @@ QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId) const
             foreach (const RuleAction &action, rule.exitActions()) {
                 if (action.deviceId() == deviceId) {
                     offending = true;
+                    break;
+                }
+                foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
+                    if (ruleActionParam.stateDeviceId() == deviceId) {
+                        offending = true;
+                        break;
+                    }
+                }
+                if (offending) {
                     break;
                 }
             }
@@ -886,6 +904,13 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     for (int i = 0; i < actions.count(); i++) {
         if (actions.at(i).deviceId() == deviceId) {
             removeIndexes.append(i);
+            continue;
+        }
+        foreach (const RuleActionParam &param, actions.at(i).ruleActionParams()) {
+            if (param.stateDeviceId() == deviceId) {
+                removeIndexes.append(i);
+                break;
+            }
         }
     }
     while (removeIndexes.count() > 0) {
@@ -897,6 +922,13 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     for (int i = 0; i < exitActions.count(); i++) {
         if (exitActions.at(i).deviceId() == deviceId) {
             removeIndexes.append(i);
+            continue;
+        }
+        foreach (const RuleActionParam &param, exitActions.at(i).ruleActionParams()) {
+            if (param.stateDeviceId() == deviceId) {
+                removeIndexes.append(i);
+                break;
+            }
         }
     }
     while (removeIndexes.count() > 0) {
@@ -1463,7 +1495,6 @@ void RuleEngine::init()
                     param.setEventParamTypeId(eventParamTypeId);
                     param.setStateDeviceId(stateDeviceId);
                     param.setStateTypeId(stateTypeId);
-                    params.append(param);
                     params.append(param);
                     settings.endGroup();
                 }

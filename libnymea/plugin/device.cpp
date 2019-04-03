@@ -268,3 +268,22 @@ QDebug operator<<(QDebug dbg, Device *device)
     dbg.nospace() << ", deviceClassId" << device->deviceClassId() << ")";
     return dbg.space();
 }
+
+/*! Filter a Devices list by a parameter. Only Devices having a parameter of the given
+    \a paramTypeId will be returned. If \a value is given and it is not null, only Devices
+    with the given \a paramTypeId and the same \a value will be returned.
+ */
+Devices Devices::filterByParam(const ParamTypeId &paramTypeId, const QVariant &value)
+{
+    Devices ret;
+    foreach (Device* device, *this) {
+        if (paramTypeId != paramTypeId) {
+            continue;
+        }
+        if (!value.isNull() && device->paramValue(paramTypeId) != value) {
+            continue;
+        }
+        ret << device;
+    }
+    return ret;
+}

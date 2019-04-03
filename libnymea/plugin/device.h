@@ -96,12 +96,13 @@ private:
 
 QDebug operator<<(QDebug dbg, Device *device);
 
-class Devices: public QList<Device*>
+class LIBNYMEA_EXPORT Devices: public QList<Device*>
 {
 public:
     Devices() = default;
     Devices(const QList<Device *> &other);
     Device* findById(const DeviceId &id);
+    Devices filterByParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
 };
 
 #endif

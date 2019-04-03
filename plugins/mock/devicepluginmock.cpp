@@ -110,6 +110,7 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
         connect(daemon, &HttpDaemon::setState, this, &DevicePluginMock::setState);
         // Keep this queued or it might happen that the HttpDaemon is deleted before it is able to reply to the caller
         connect(daemon, &HttpDaemon::disappear, this, &DevicePluginMock::onDisappear, Qt::QueuedConnection);
+        connect(daemon, &HttpDaemon::reconfigureAutodevice, this, &DevicePluginMock::onReconfigureAutoDevice, Qt::QueuedConnection);
 
         if (async) {
             m_asyncSetupDevices.append(device);

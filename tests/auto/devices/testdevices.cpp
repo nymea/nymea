@@ -52,6 +52,8 @@ private slots:
 
     void storedDevices();
 
+    void reconfigureAutodevice();
+
     void discoverDevices_data();
     void discoverDevices();
 
@@ -91,7 +93,6 @@ private slots:
     void reconfigureByDiscovery();
 
     void reconfigureByDiscoveryAndPair();
-    void reconfigureAutodevice();
 
     void removeDevice_data();
     void removeDevice();
@@ -1278,17 +1279,23 @@ void TestDevices::reconfigureByDiscoveryAndPair()
 
 void TestDevices::reconfigureAutodevice()
 {
-    // Get the current autodevice
+    qCDebug(dcTests()) << "Reconfigure auto device";
 
-    QVariant response = injectAndWait("Devices.GetConfiguredDevices");
-    QVariantList devices = response.toMap().value("params").toMap().value("devices").toList();
+    QList<Device *> devices  = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceAutoClassId);
+    QVERIFY2(devices.count() > 0, "There needs to be at least one auto-created Mock Device for this test");
+    Device *device = devices.first();
 
-    QVariantMap autoDevice;
-    foreach (const QVariant &deviceVariant, devices) {
-        QVariantMap deviceMap = deviceVariant.toMap();
-        qDebug() << deviceMap;
+    // Setup connection to mock client
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy spy(nam, SIGNAL(finished(QNetworkReply*)));
 
-    }
+    // trigger reconfigure signal in mock device
+    QNetworkReply *reply = nam->get(QNetworkRequest(QUrl(QString("http://localhost:%1/reconfigureautodevice").arg(device->paramValue(httpportParamTypeId).toInt()))));
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+
 
 }
 

@@ -94,6 +94,8 @@ private:
     bool m_autoCreated = false;
 };
 
+QDebug operator<<(QDebug dbg, Device *device);
+
 class Devices: public QList<Device*>
 {
 public:

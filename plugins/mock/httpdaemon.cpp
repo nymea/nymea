@@ -114,6 +114,9 @@ void HttpDaemon::readClient()
         } else if (url.path() == "/disappear") {
             qCDebug(dcMockDevice) << "Should disappear";
             emit disappear();
+        } else if (url.path() == "/reconfigureautodevice") {
+            qCDebug(dcMockDevice) << "Reconfigure auto device";
+            emit reconfigureAutodevice();
         }
 
         if (tokens[0] == "GET") {

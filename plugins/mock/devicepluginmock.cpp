@@ -383,6 +383,24 @@ void DevicePluginMock::onDisappear()
     emit autoDeviceDisappeared(device->id());
 }
 
+void DevicePluginMock::onReconfigureAutoDevice()
+{
+    HttpDaemon *daemon = qobject_cast<HttpDaemon*>(sender());
+    if (!daemon) {
+        return;
+    }
+    Device *device = m_daemons.key(daemon);
+    qCDebug(dcMockDevice) << "Reconfigure auto device for" << device;
+
+    DeviceDescriptor deviceDescriptor;
+    deviceDescriptor.setTitle(device->name() + " (reconfigured)");
+    deviceDescriptor.setDescription("This auto device was reconfigured");
+    deviceDescriptor.setDeviceId(device->id());
+    deviceDescriptor.setParams(device->params());
+
+    emit autoDevicesAppeared(mockDeviceAutoDeviceClassId, { deviceDescriptor });
+}
+
 void DevicePluginMock::emitDevicesDiscovered()
 {
     QList<DeviceDescriptor> deviceDescriptors;

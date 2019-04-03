@@ -91,6 +91,7 @@ private slots:
     void reconfigureByDiscovery();
 
     void reconfigureByDiscoveryAndPair();
+    void reconfigureAutodevice();
 
     void removeDevice_data();
     void removeDevice();
@@ -1272,6 +1273,22 @@ void TestDevices::reconfigureByDiscoveryAndPair()
 
     deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY(!deviceId.isNull());
+
+}
+
+void TestDevices::reconfigureAutodevice()
+{
+    // Get the current autodevice
+
+    QVariant response = injectAndWait("Devices.GetConfiguredDevices");
+    QVariantList devices = response.toMap().value("params").toMap().value("devices").toList();
+
+    QVariantMap autoDevice;
+    foreach (const QVariant &deviceVariant, devices) {
+        QVariantMap deviceMap = deviceVariant.toMap();
+        qDebug() << deviceMap;
+
+    }
 
 }
 

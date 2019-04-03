@@ -1398,7 +1398,22 @@ void DeviceManager::onAutoDevicesAppeared(const DeviceClassId &deviceClassId, co
             qCWarning(dcDeviceManager()) << "Invalid parent device id. Not adding device to the system.";
             continue;
         }
-        Device *device = new Device(plugin->pluginId(), deviceClassId, this);
+
+        Device *device = nullptr;
+
+        // If the appreaed auto device holds a valid device id, do a reconfiguration for this device
+        if (!deviceDescriptor.deviceId().isNull()) {
+            device = findConfiguredDevice(deviceDescriptor.deviceId());
+            if (!device) {
+                qCWarning(dcDeviceManager()) << "Could not find device for auto device descriptor" << deviceDescriptor.deviceId();
+                continue;
+            }
+            qCDebug(dcDeviceManager()) << "Start reconfiguring auto device" << device;
+            reconfigureDevice(deviceDescriptor.deviceId(), deviceDescriptor.params());
+            continue;
+        }
+
+        device = new Device(plugin->pluginId(), deviceClassId, this);
         device->m_autoCreated = true;
         device->setName(deviceDescriptor.title());
         device->setParams(deviceDescriptor.params());

@@ -386,18 +386,24 @@ void DevicePluginMock::onDisappear()
 
 void DevicePluginMock::onReconfigureAutoDevice()
 {
-    HttpDaemon *daemon = qobject_cast<HttpDaemon*>(sender());
-    if (!daemon) {
+    HttpDaemon *daemon = qobject_cast<HttpDaemon *>(sender());
+    if (!daemon)
         return;
-    }
+
     Device *device = m_daemons.key(daemon);
-    qCDebug(dcMockDevice) << "Reconfigure auto device for" << device;
+    qCDebug(dcMockDevice()) << "Reconfigure auto device for" << device << device->params();
+
+    int currentPort = device->params().paramValue(mockDeviceAutoDeviceHttpportParamTypeId).toInt();
+
+    // Note: the reconfigure makes the http server listen on port + 1
+    ParamList params;
+    params.append(Param(mockDeviceAutoDeviceHttpportParamTypeId, currentPort + 1));
 
     DeviceDescriptor deviceDescriptor;
     deviceDescriptor.setTitle(device->name() + " (reconfigured)");
     deviceDescriptor.setDescription("This auto device was reconfigured");
     deviceDescriptor.setDeviceId(device->id());
-    deviceDescriptor.setParams(device->params());
+    deviceDescriptor.setParams(params);
 
     emit autoDevicesAppeared(mockDeviceAutoDeviceClassId, { deviceDescriptor });
 }

@@ -65,7 +65,10 @@ HEADERS += devicemanager.h \
         nymeadbusservice.h \
         network/mqtt/mqttprovider.h \
         network/mqtt/mqttchannel.h \
-        translator.h
+        translator.h \
+        plugin/platformplugin.h \
+        plugin/platformsystemcontroller.h \
+        plugin/platformupdatecontroller.h
 
 SOURCES += devicemanager.cpp \
         loggingcategories.cpp \
@@ -120,7 +123,10 @@ SOURCES += devicemanager.cpp \
         nymeadbusservice.cpp \
         network/mqtt/mqttprovider.cpp \
         network/mqtt/mqttchannel.cpp \
-        translator.cpp
+        translator.cpp \
+        plugin/platformplugin.cpp \
+        plugin/platformsystemcontroller.cpp \
+        plugin/platformupdatecontroller.cpp
 
 
 RESOURCES += \

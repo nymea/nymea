@@ -99,8 +99,10 @@ int main(int argc, char *argv[])
 
     // logging filers for core and libnymea
     QStringList loggingFilters = {
-        "Application",
         "Warnings",
+        "Application",
+        "System",
+        "Platform",
         "DeviceManager",
         "RuleEngine",
         "RuleEngineDebug",

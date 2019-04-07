@@ -106,11 +106,13 @@
 
 #include "nymeacore.h"
 #include "loggingcategories.h"
+#include "platform/platform.h"
 #include "jsonrpc/jsonrpcserver.h"
 #include "ruleengine.h"
 #include "networkmanager/networkmanager.h"
 #include "nymeasettings.h"
 #include "tagging/tagsstorage.h"
+#include "system/system.h"
 
 #include "devicemanager.h"
 #include "plugin/device.h"
@@ -143,11 +145,17 @@ NymeaCore::NymeaCore(QObject *parent) :
 void NymeaCore::init() {
     qCDebug(dcApplication()) << "Initializing NymeaCore";
 
+    qCDebug(dcPlatform()) << "Loading platform abstraction";
+    m_platform = new Platform(this);
+
     qCDebug(dcApplication()) << "Loading nymea configurations" << NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName();
     m_configuration = new NymeaConfiguration(this);
 
     qCDebug(dcApplication()) << "Creating Time Manager";
     m_timeManager = new TimeManager(m_configuration->timeZone(), this);
+
+    qCDebug(dcApplication()) << "Loading System platform integration";
+    m_system = new System(m_platform, this);
 
     qCDebug(dcApplication) << "Creating Log Engine";
     m_logger = new LogEngine(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), m_configuration->logDBMaxEntries(), this);
@@ -658,6 +666,12 @@ DebugServerHandler *NymeaCore::debugServerHandler() const
 TagsStorage *NymeaCore::tagsStorage() const
 {
     return m_tagsStorage;
+}
+
+/*! Returns a pointer to the \l{System} instance owned by NymeaCore. */
+System *NymeaCore::system() const
+{
+    return m_system;
 }
 
 

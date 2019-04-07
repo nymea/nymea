@@ -26,12 +26,11 @@
 #include <QLoggingCategory>
 #include <QDebug>
 
-// Include dcCoap
-#include "coap/coap.h"
-
 // Core / libnymea
 Q_DECLARE_LOGGING_CATEGORY(dcApplication)
 Q_DECLARE_LOGGING_CATEGORY(dcDeviceManager)
+Q_DECLARE_LOGGING_CATEGORY(dcSystem)
+Q_DECLARE_LOGGING_CATEGORY(dcPlatform)
 Q_DECLARE_LOGGING_CATEGORY(dcTimeManager)
 Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
 Q_DECLARE_LOGGING_CATEGORY(dcRuleEngineDebug)
@@ -63,5 +62,6 @@ Q_DECLARE_LOGGING_CATEGORY(dcBluetoothServer)
 Q_DECLARE_LOGGING_CATEGORY(dcBluetoothServerTraffic)
 Q_DECLARE_LOGGING_CATEGORY(dcMqtt)
 Q_DECLARE_LOGGING_CATEGORY(dcTranslations)
+Q_DECLARE_LOGGING_CATEGORY(dcCoap)
 
 #endif // LOGGINGCATEGORYS_H

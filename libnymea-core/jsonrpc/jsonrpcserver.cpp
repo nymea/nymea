@@ -57,6 +57,7 @@
 #include "configurationhandler.h"
 #include "networkmanagerhandler.h"
 #include "tagshandler.h"
+#include "systemhandler.h"
 
 #include <QJsonDocument>
 #include <QStringList>
@@ -518,6 +519,7 @@ void JsonRPCServer::setup()
     registerHandler(new ConfigurationHandler(this));
     registerHandler(new NetworkManagerHandler(this));
     registerHandler(new TagsHandler(this));
+    registerHandler(new SystemHandler(NymeaCore::instance()->system(), this));
 
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::pairingReply, this, &JsonRPCServer::pairingFinished);
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::connectionStateChanged, this, &JsonRPCServer::onCloudConnectionStateChanged);

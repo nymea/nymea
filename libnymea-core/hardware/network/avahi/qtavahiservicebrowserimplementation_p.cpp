@@ -28,6 +28,8 @@
 #include <avahi-common/strlst.h>
 #include <avahi-common/error.h>
 
+#include <QPointer>
+
 namespace nymeaserver {
 
 QtAvahiServiceBrowserImplementationPrivate::QtAvahiServiceBrowserImplementationPrivate(QtAvahiClient *client) :

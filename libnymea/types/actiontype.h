@@ -33,7 +33,7 @@
 class LIBNYMEA_EXPORT ActionType
 {
 public:
-    ActionType(const ActionTypeId &id);
+    ActionType(const ActionTypeId &id = ActionTypeId());
 
     ActionTypeId id() const;
 

@@ -469,17 +469,20 @@ DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &devi
 {
     Device *device = findConfiguredDevice(deviceId);
     if (!device) {
+        qCWarning(dcDeviceManager()) << "Cannot reconfigure device. Device with id" << deviceId.toString() << "not found.";
         return DeviceErrorDeviceNotFound;
     }
 
     ParamList effectiveParams = params;
     DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
     if (deviceClass.id().isNull()) {
+        qCWarning(dcDeviceManager()) << "Cannot reconfigure device. DeviceClass for device" << device->name() << deviceId.toString() << "not found.";
         return DeviceErrorDeviceClassNotFound;
     }
 
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
     if (!plugin) {
+        qCWarning(dcDeviceManager()) << "Cannot reconfigure device. Plugin for DeviceClass" << deviceClass.displayName() << deviceClass.id().toString() << "not found.";
         return DeviceErrorPluginNotFound;
     }
 
@@ -489,8 +492,10 @@ DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &devi
         foreach (const ParamType &paramType, deviceClass.paramTypes()) {
             foreach (const Param &param, params) {
                 if (paramType.id() == param.paramTypeId()) {
-                    if (paramType.readOnly())
+                    if (paramType.readOnly()) {
+                        qCWarning(dcDeviceManager()) << "Cannot reconfigure device. Read-only parameters set by user.";
                         return DeviceErrorParameterNotWritable;
+                    }
                 }
             }
         }
@@ -498,6 +503,7 @@ DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &devi
 
     DeviceError result = verifyParams(deviceClass.paramTypes(), effectiveParams, false);
     if (result != DeviceErrorNoError) {
+        qCWarning(dcDeviceManager()) << "Cannot reconfigure device. Params failed validation.";
         return result;
     }
 

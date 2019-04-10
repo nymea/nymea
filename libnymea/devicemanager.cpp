@@ -465,7 +465,7 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDevice(const DeviceClassI
  *  from a discovery or if the user set them. If it came from discovery not writable parameters (readOnly) will be changed too.
  *
  *  Returns \l{DeviceError} to inform about the result. */
-DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscovery)
+DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscoveryOrAuto)
 {
     Device *device = findConfiguredDevice(deviceId);
     if (!device) {
@@ -487,7 +487,7 @@ DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &devi
     }
 
     // if the params are discovered and not set by the user
-    if (!fromDiscovery) {
+    if (!fromDiscoveryOrAuto) {
         // check if one of the given params is not editable
         foreach (const ParamType &paramType, deviceClass.paramTypes()) {
             foreach (const Param &param, params) {
@@ -1415,7 +1415,7 @@ void DeviceManager::onAutoDevicesAppeared(const DeviceClassId &deviceClassId, co
                 continue;
             }
             qCDebug(dcDeviceManager()) << "Start reconfiguring auto device" << device;
-            reconfigureDevice(deviceDescriptor.deviceId(), deviceDescriptor.params());
+            reconfigureDevice(deviceDescriptor.deviceId(), deviceDescriptor.params(), true);
             continue;
         }
 

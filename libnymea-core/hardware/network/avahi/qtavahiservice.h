@@ -27,6 +27,7 @@
 #include <QString>
 #include <QObject>
 #include <QHostAddress>
+#include <QTimer>
 
 namespace nymeaserver {
 
@@ -78,6 +79,13 @@ private:
     QtAvahiServiceState m_state;
     Q_DECLARE_PRIVATE(QtAvahiService)
 
+    QTimer m_reregisterTimer;
+
+    QString m_name;
+    QHostAddress m_hostAddress;
+    quint16 m_port;
+    QString m_serviceType;
+    QHash<QString, QString> m_txtRecords;
 };
 
 QDebug operator <<(QDebug dbg, QtAvahiService *service);

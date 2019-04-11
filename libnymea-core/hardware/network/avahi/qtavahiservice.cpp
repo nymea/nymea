@@ -53,6 +53,7 @@
 #include "loggingcategories.h"
 
 #include <QNetworkInterface>
+#include <QUuid>
 
 namespace nymeaserver {
 
@@ -66,6 +67,14 @@ QtAvahiService::QtAvahiService(QObject *parent) :
 
     d_ptr->client = new QtAvahiClient(this);
     d_ptr->client->start();
+
+    m_reregisterTimer.setInterval(60000);
+    m_reregisterTimer.setSingleShot(true);
+    connect(&m_reregisterTimer, &QTimer::timeout, this, [this](){
+        qCDebug(dcAvahi()) << "Re-registering services.";
+        resetService();
+        registerService(m_name, m_hostAddress, m_port, m_serviceType, m_txtRecords);
+    });
 }
 
 /*! Destructs this \l{QtAvahiService}. */
@@ -124,6 +133,14 @@ bool QtAvahiService::registerService(const QString &name, const QHostAddress &ho
         return false;
     }
 
+    // Cache all values locally at first
+    m_name = name;
+    m_hostAddress = hostAddress;
+    m_port = port;
+    m_serviceType = serviceType;
+    m_txtRecords = txtRecords;
+
+    // Now set up avahi
     d_ptr->name = name;
     d_ptr->hostAddress = hostAddress;
     d_ptr->port = port;
@@ -190,6 +207,10 @@ bool QtAvahiService::registerService(const QString &name, const QHostAddress &ho
         return false;
     }
 
+    // Reregister every minute in order to work around low quality network hardware which
+    // doesn't properly keep multicast sessions alive.
+    // https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=736641
+    m_reregisterTimer.start();
     return true;
 }
 
@@ -204,6 +225,7 @@ void QtAvahiService::resetService()
         d_ptr->serviceList = nullptr;
     }
     avahi_entry_group_reset(d_ptr->group);
+    m_reregisterTimer.stop();
 }
 
 /*! Update the TXT record of this service. Returns true of the record could be updated. */
@@ -212,11 +234,26 @@ bool QtAvahiService::updateTxtRecord(const QHash<QString, QString> &txtRecords)
     if (!d_ptr->group)
         return false;
 
+    m_txtRecords = txtRecords;
+
     // Add the service
+    AvahiIfIndex ifIndex = AVAHI_IF_UNSPEC;
+    if (d_ptr->hostAddress != QHostAddress("0.0.0.0")) {
+        foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
+            foreach (const QNetworkAddressEntry &addressEntry, interface.addressEntries()) {
+                QPair<QHostAddress, int> subnet = QHostAddress::parseSubnet(addressEntry.ip().toString() + "/" + addressEntry.netmask().toString());
+                if (d_ptr->hostAddress.isInSubnet(subnet.first, subnet.second)) {
+                    ifIndex = interface.index();
+                    break;
+                }
+            }
+        }
+    }
+
     d_ptr->serviceList = QtAvahiServicePrivate::createTxtList(txtRecords);
     d_ptr->error = avahi_entry_group_update_service_txt_strlst(d_ptr->group,
-                                                        AVAHI_IF_UNSPEC,
-                                                        AVAHI_PROTO_INET,
+                                                        ifIndex,
+                                                        d_ptr->hostAddress.protocol() == QAbstractSocket::IPv6Protocol ? AVAHI_PROTO_INET6 : AVAHI_PROTO_INET,
                                                         (AvahiPublishFlags) 0,
                                                         d_ptr->name.toLatin1().data(),
                                                         d_ptr->type.toLatin1().data(),
@@ -254,7 +291,7 @@ bool QtAvahiService::handlCollision()
     char* alt = avahi_alternative_service_name(name().toStdString().data());
     QString alternativeServiceName = QLatin1String(alt);
     free(alt);
-    qCDebug(dcAvahi()) << "Service name colision. Picking alternative service name" << alternativeServiceName;
+    qCDebug(dcAvahi()) << "Service name collision. Picking alternative service name" << alternativeServiceName;
 
     resetService();
     return registerService(alternativeServiceName, hostAddress(), port(), serviceType(), txtRecords());
@@ -283,8 +320,6 @@ void QtAvahiService::onStateChanged(const QtAvahiServiceState &state)
         break;
     case QtAvahiServiceStateFailure:
         qCWarning(dcAvahi()) << this << "failure: " << errorString();
-        break;
-    default:
         break;
     }
 

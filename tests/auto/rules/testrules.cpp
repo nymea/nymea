@@ -93,8 +93,9 @@ private slots:
     void enableDisableRule();
 
     void testEventBasedAction();
-
     void testEventBasedRuleWithExitAction();
+
+    void testStateBasedAction();
 
     void removePolicyUpdate();
     void removePolicyCascade();
@@ -118,7 +119,6 @@ private slots:
 
     void testHousekeeping_data();
     void testHousekeeping();
-
 };
 
 void TestRules::cleanupMockHistory() {
@@ -1149,7 +1149,6 @@ void TestRules::loadStoreConfig()
 
     QVariantMap action2;
     action2.insert("actionTypeId", mockActionIdWithParams);
-    qDebug() << "got action id" << mockActionIdWithParams;
     action2.insert("deviceId", m_mockDeviceId);
     QVariantList action2Params;
     QVariantMap action2Param1;
@@ -1221,6 +1220,7 @@ void TestRules::loadStoreConfig()
     actionsInterfaces.append(actionInterfaces);
 
     // rule 1
+    qCDebug(dcTests()) << "Adding rule 1";
     QVariantMap params;
     QVariantList actions;
     actions.append(action1);
@@ -1235,6 +1235,7 @@ void TestRules::loadStoreConfig()
     verifyRuleError(response);
 
     // rule 2
+    qCDebug(dcTests()) << "Adding rule 2";
     QVariantMap params2;
     QVariantList actions2;
     actions2.append(action1);
@@ -1250,6 +1251,7 @@ void TestRules::loadStoreConfig()
     verifyRuleError(response2);
 
     // rule 3
+    qCDebug(dcTests()) << "Adding rule 3";
     QVariantMap params3;
     QVariantList actions3;
     actions3.append(validActionEventBased);
@@ -1262,6 +1264,7 @@ void TestRules::loadStoreConfig()
     verifyRuleError(response3);
 
     // rule 4, interface based
+    qCDebug(dcTests()) << "Adding rule 4";
     QVariantMap params4;
     params4.insert("name", "TestRule4 - Interface based");
     params4.insert("eventDescriptors", eventDescriptorsInterfaces);
@@ -1272,10 +1275,12 @@ void TestRules::loadStoreConfig()
     RuleId newRuleId4 = RuleId(response4.toMap().value("params").toMap().value("ruleId").toString());
     verifyRuleError(response4);
 
+    qCDebug(dcTests()) << "Getting rules";
     response = injectAndWait("Rules.GetRules");
     QVariantList rules = response.toMap().value("params").toMap().value("ruleDescriptions").toList();
     qDebug() << "GetRules before server shutdown:" <<  response;
 
+    qCDebug(dcTests()) << "Restarting server";
     restartServer();
 
     response = injectAndWait("Rules.GetRules");
@@ -2214,6 +2219,98 @@ void TestRules::testEventBasedRuleWithExitAction()
 
 }
 
+void TestRules::testStateBasedAction()
+{
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // Init bool state to true
+    spy.clear();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg(true)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // Init int state to 11
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(11)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // Add a rule
+    QVariantMap addRuleParams;
+    QVariantMap eventDescriptor;
+    eventDescriptor.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor.insert("deviceId", m_mockDeviceId);
+    addRuleParams.insert("eventDescriptors", QVariantList() << eventDescriptor);
+    addRuleParams.insert("name", "TestRule");
+    addRuleParams.insert("enabled", true);
+
+    QVariantList actions;
+    QVariantMap action;
+    QVariantList ruleActionParams;
+    QVariantMap param1;
+    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("stateDeviceId", m_mockDeviceId);
+    param1.insert("stateTypeId", mockIntStateId);
+    QVariantMap param2;
+    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("stateDeviceId", m_mockDeviceId);
+    param2.insert("stateTypeId", mockBoolStateId);
+    ruleActionParams.append(param1);
+    ruleActionParams.append(param2);
+
+    actions.clear();
+    action.insert("deviceId", m_mockDeviceId);
+    action.insert("actionTypeId", mockActionIdWithParams);
+    action.insert("ruleActionParams", ruleActionParams);
+    actions.append(action);
+    addRuleParams.insert("actions", actions);
+
+    qCDebug(dcTests) << "Adding rule";
+
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    verifyRuleError(response);
+
+    // trigger event
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    LogFilter filter;
+    filter.addDeviceId(m_mockDeviceId);
+    filter.addTypeId(mockActionIdWithParams);
+    QList<LogEntry> entries = NymeaCore::instance()->logEngine()->logEntries(filter);
+    qCDebug(dcTests()) << "Log entries:" << entries;
+
+    // set bool state to false
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg(false)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // trigger event
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    entries = NymeaCore::instance()->logEngine()->logEntries(filter);
+    qCDebug(dcTests()) << "Log entries:" << entries;
+
+
+}
+
 void TestRules::removePolicyUpdate()
 {
     // ADD parent device
@@ -2377,6 +2474,7 @@ void TestRules::removePolicyUpdateRendersUselessRule()
     params.insert("deviceClassId", mockParentDeviceClassId);
     params.insert("name", "Parent device");
 
+    qCDebug(dcTests()) << "Adding device";
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
     verifyDeviceError(response);
 
@@ -2384,6 +2482,7 @@ void TestRules::removePolicyUpdateRendersUselessRule()
     QVERIFY(!parentDeviceId.isNull());
 
     // find child device
+    qCDebug(dcTests()) << "Gettin devices";
     response = injectAndWait("Devices.GetConfiguredDevices");
 
     QVariantList devices = response.toMap().value("params").toMap().value("devices").toList();
@@ -2414,26 +2513,34 @@ void TestRules::removePolicyUpdateRendersUselessRule()
     QVariantMap action;
     action.insert("deviceId", childDeviceId);
     action.insert("actionTypeId", mockParentChildActionId);
+    QVariantMap ruleActionParam;
+    ruleActionParam.insert("paramTypeId", mockParentChildActionId);
+    ruleActionParam.insert("value", true);
+    action.insert("ruleActionParams", QVariantList() << ruleActionParam);
     params.insert("actions", QVariantList() << action);
 
+    qCDebug(dcTests()) << "Adding Rule";
     response = injectAndWait("Rules.AddRule", params);
     verifyRuleError(response);
     RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
     QVERIFY2(!ruleId.isNull(), "Could not get ruleId");
 
     // Try to remove child device
+    qCDebug(dcTests()) << "Removing device (expecing failure - device is child)";
     params.clear(); response.clear();
     params.insert("deviceId", childDeviceId);
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
     verifyDeviceError(response, DeviceManager::DeviceErrorDeviceIsChild);
 
     // Try to remove child device
+    qCDebug(dcTests()) << "Removing device (expeciting failure - device in use)";
     params.clear(); response.clear();
     params.insert("deviceId", parentDeviceId);
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
     verifyDeviceError(response, DeviceManager::DeviceErrorDeviceInRule);
 
     // Remove policy
+    qCDebug(dcTests()) << "Removing device with update policy";
     params.clear(); response.clear();
     params.insert("deviceId", parentDeviceId);
     params.insert("removePolicy", "RemovePolicyUpdate");
@@ -2441,6 +2548,7 @@ void TestRules::removePolicyUpdateRendersUselessRule()
     verifyDeviceError(response);
 
     // get updated rule. It should've been deleted given it ended up with no actions
+    qCDebug(dcTests()) << "Getting details";
     params.clear();
     params.insert("ruleId", ruleId);
     response = injectAndWait("Rules.GetRuleDetails", params);
@@ -2480,10 +2588,10 @@ void TestRules::testRuleActionParams_data()
 
     QTest::newRow("valid action params") << action << QVariantMap() << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid action and exit action params") << action << action << RuleEngine::RuleErrorNoError;
-    QTest::newRow("invalid action params1") << invalidAction1 << QVariantMap() << RuleEngine::RuleErrorInvalidRuleActionParameter;
-    QTest::newRow("invalid action params2") << invalidAction2 << QVariantMap() << RuleEngine::RuleErrorInvalidRuleActionParameter;
-    QTest::newRow("valid action and invalid exit action params1") << action << invalidAction1 << RuleEngine::RuleErrorInvalidRuleActionParameter;
-    QTest::newRow("valid action and invalid exit action params2") << action << invalidAction2 << RuleEngine::RuleErrorInvalidRuleActionParameter;
+    QTest::newRow("invalid action params1") << invalidAction1 << QVariantMap() << RuleEngine::RuleErrorMissingParameter;
+    QTest::newRow("invalid action params2") << invalidAction2 << QVariantMap() << RuleEngine::RuleErrorMissingParameter;
+    QTest::newRow("valid action and invalid exit action params1") << action << invalidAction1 << RuleEngine::RuleErrorMissingParameter;
+    QTest::newRow("valid action and invalid exit action params2") << action << invalidAction2 << RuleEngine::RuleErrorMissingParameter;
 }
 
 void TestRules::testRuleActionParams()

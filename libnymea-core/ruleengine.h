@@ -104,7 +104,9 @@ private:
     bool containsEvent(const Rule &rule, const Event &event, const DeviceClassId &deviceClassId);
     bool containsState(const StateEvaluator &stateEvaluator, const Event &stateChangeEvent);
 
-    bool checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId);
+    RuleError checkRuleAction(const RuleAction &ruleAction, const Rule &rule);
+    RuleError checkRuleActionParam(const RuleActionParam &ruleActionParam, const ActionType &actionType, const Rule &rule);
+
     QVariant::Type getActionParamType(const ActionTypeId &actionTypeId, const ParamTypeId &paramTypeId);
     QVariant::Type getEventParamType(const EventTypeId &eventTypeId, const ParamTypeId &paramTypeId);
 

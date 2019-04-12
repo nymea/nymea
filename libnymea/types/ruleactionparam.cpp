@@ -32,6 +32,21 @@
     A RuleActionParam allows rules to take over an \l{Event} parameter into a rule
     \l{RuleAction}.
 
+    RuleActionParams are identified by either paramTypeId or paramName (for interface based actions).
+
+    The parameter value can either be a static \l{value}, a pair of \l{EventTypeId} and \l{ParamTypeId} or a pair of
+    \l{DeviceId} and \l{StateTypeId}.
+
+    When composing the actual Param for the executeAction() call the value is generated as follows:
+    - Static value params are filled with \l{RuleActionParam::paramTypeId()} and the \l{RuleActionParam::value()}
+    - Event based actions are filled with \l{RuleActionParam::paramTypeId()} and the param value of the event that triggered this rule, identified by \l{RuleActionParam::eventTypeId()} and \l{RuleActionParam::eventParamTypeId()}
+    - State based actions are filled with \l{RuleActionParam::paramTypeId()} and the current value of the state identified by \l{RuleActionParam::deviceId()} and \l{RuleActionParam::stateTypeId()}
+
+    If the param types are not matching, nymea will do a best effort to cast the values. E.g. a RuleActionParam for
+    a param of type "string" and a state of type "int" would cast the integer to a string which would always work.
+    However, the other way round, having a parameter requiring an "int" value, and reading the value from a state of type
+    "string" might work, if the string does only hold numbers but would fail.
+
     \sa nymeaserver::Rule, RuleAction,
 */
 
@@ -41,29 +56,64 @@
  *  \sa Param, */
 RuleActionParam::RuleActionParam(const Param &param) :
     m_paramTypeId(param.paramTypeId()),
-    m_value(param.value()),
-    m_eventTypeId(EventTypeId()),
-    m_eventParamTypeId(ParamTypeId())
+    m_value(param.value())
 {
 }
 
-/*! Constructs a \l{RuleActionParam} with the given \a paramTypeId, \a value, \a eventTypeId and \a eventParamTypeId.
+/*! Constructs a \l{RuleActionParam} with the given \a paramTypeId and \a value.
  *  \sa Param, Event, */
-RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId) :
+RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value):
     m_paramTypeId(paramTypeId),
-    m_value(value),
+    m_value(value)
+{
+
+}
+
+/*! Constructs a \l{RuleActionParam} with the given \a paramTypeId, \a eventTypeId and \a eventParamTypeId.
+ *  \sa Param, Event, */
+RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId):
+    m_paramTypeId(paramTypeId),
     m_eventTypeId(eventTypeId),
     m_eventParamTypeId(eventParamTypeId)
 {
+
 }
 
-/*! Constructs a \l{RuleActionParam} with the given \a paramName, \a value, \a eventTypeId and \a eventParamTypeId.
+/*! Constructs a \l{RuleActionParam} with the given \a paramTypeId, \a stateDeviceId and \a stateTypeId.
  *  \sa Param, Event, */
-RuleActionParam::RuleActionParam(const QString &paramName, const QVariant &value, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId):
+RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const DeviceId &stateDeviceId, const StateTypeId &stateTypeId):
+    m_paramTypeId(paramTypeId),
+    m_stateDeviceId(stateDeviceId),
+    m_stateTypeId(stateTypeId)
+{
+
+}
+
+/*! Constructs a \l{RuleActionParam} with the given \a paramName and \a value.
+ *  \sa Param, Event, */
+RuleActionParam::RuleActionParam(const QString &paramName, const QVariant &value):
     m_paramName(paramName),
-    m_value(value),
+    m_value(value)
+{
+
+}
+
+/*! Constructs a \l{RuleActionParam} with the given \a paramName, \a eventTypeId and \a eventParamTypeId.
+ *  \sa Param, Event, */
+RuleActionParam::RuleActionParam(const QString &paramName, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId):
+    m_paramName(paramName),
     m_eventTypeId(eventTypeId),
     m_eventParamTypeId(eventParamTypeId)
+{
+
+}
+
+/*! Constructs a \l{RuleActionParam} with the given \a paramName, \a stateDeviceId and \a stateTypeId.
+ *  \sa Param, Event, */
+RuleActionParam::RuleActionParam(const QString &paramName, const DeviceId &stateDeviceId, const StateTypeId &stateTypeId):
+    m_paramName(paramName),
+    m_stateDeviceId(stateDeviceId),
+    m_stateTypeId(stateTypeId)
 {
 
 }
@@ -80,18 +130,6 @@ QString RuleActionParam::paramName() const
     return m_paramName;
 }
 
-/*! Returns the eventParamTypeId of this RuleActionParam. */
-ParamTypeId RuleActionParam::eventParamTypeId() const
-{
-    return m_eventParamTypeId;
-}
-
-/*! Sets the \a eventParamTypeId of this RuleActionParam. */
-void RuleActionParam::setEventParamTypeId(const ParamTypeId &eventParamTypeId)
-{
-    m_eventParamTypeId = eventParamTypeId;
-}
-
 /*! Returns the value of this RuleActionParam. */
 QVariant RuleActionParam::value() const
 {
@@ -104,14 +142,6 @@ void RuleActionParam::setValue(const QVariant &value)
     m_value = value;
 }
 
-/*! Returns true if the \tt{(paramTypeId AND value) XOR (paramTypeId AND eventTypeId AND eventParamName)} of this RuleActionParam are set.*/
-bool RuleActionParam::isValid() const
-{
-    bool validValue = (!m_paramTypeId.isNull() && m_value.isValid() && m_eventTypeId.isNull() && m_eventParamTypeId.isNull());
-    bool validEvent = (!m_paramTypeId.isNull() && !m_value.isValid() && !m_eventTypeId.isNull() && !m_eventParamTypeId.isNull());
-    return validValue ^ validEvent;
-}
-
 /*! Return the EventTypeId of the \l{Event} with the \l{Param} which will be taken over in the  \l{RuleAction}. */
 EventTypeId RuleActionParam::eventTypeId() const
 {
@@ -122,6 +152,66 @@ EventTypeId RuleActionParam::eventTypeId() const
 void RuleActionParam::setEventTypeId(const EventTypeId &eventTypeId)
 {
     m_eventTypeId = eventTypeId;
+}
+
+/*! Returns the eventParamTypeId of this RuleActionParam. */
+ParamTypeId RuleActionParam::eventParamTypeId() const
+{
+    return m_eventParamTypeId;
+}
+
+/*! Sets the \a eventParamTypeId of this RuleActionParam. */
+void RuleActionParam::setEventParamTypeId(const ParamTypeId &eventParamTypeId)
+{
+    m_eventParamTypeId = eventParamTypeId;
+}
+
+/*! Returns the deviceId identifying the device to use a state value from. */
+DeviceId RuleActionParam::stateDeviceId() const
+{
+    return m_stateDeviceId;
+}
+
+/*! Sets the deviceId identifying the device to use a state value from. */
+void RuleActionParam::setStateDeviceId(const DeviceId &stateDeviceId)
+{
+    m_stateDeviceId = stateDeviceId;
+}
+
+/*! Returns the stateTypeId identifying the state to use the value. */
+StateTypeId RuleActionParam::stateTypeId() const
+{
+    return m_stateTypeId;
+}
+
+/*! Sets the stateTypeId identifying the state to use the value from. */
+void RuleActionParam::setStateTypeId(const StateTypeId &stateTypeId)
+{
+    m_stateTypeId = stateTypeId;
+}
+
+/*! Returns true if the \tt{(paramTypeId AND value) XOR (paramTypeId AND eventTypeId AND eventParamName)} of this RuleActionParam are set.*/
+bool RuleActionParam::isValid() const
+{
+    if (m_paramTypeId.isNull() && m_paramName.isNull()) {
+        return false;
+    }
+    return isValueBased() ^ isEventBased() ^ isStateBased();
+}
+
+bool RuleActionParam::isValueBased() const
+{
+    return !m_value.isNull();
+}
+
+bool RuleActionParam::isEventBased() const
+{
+    return !m_eventTypeId.isNull() && !m_eventParamTypeId.isNull();
+}
+
+bool RuleActionParam::isStateBased() const
+{
+    return !m_stateDeviceId.isNull() && !m_stateTypeId.isNull();
 }
 
 /*! Writes the paramTypeId, value, eventId and eventParamTypeId of the given \a ruleActionParam to \a dbg. */

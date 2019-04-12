@@ -49,6 +49,11 @@
 
 #include "eventdescriptor.h"
 
+EventDescriptor::EventDescriptor()
+{
+
+}
+
 /*! Constructs an EventDescriptor describing an \l{Event} with the given \a eventTypeId, \a deviceId and the given \a paramDescriptors. */
 EventDescriptor::EventDescriptor(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors):
     m_eventTypeId(eventTypeId),

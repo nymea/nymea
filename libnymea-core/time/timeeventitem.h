@@ -33,7 +33,7 @@ public:
     TimeEventItem();
 
     QDateTime dateTime() const;
-    void setDateTime(const int &timeStamp);
+    void setDateTime(const uint &timeStamp);
 
     QTime time() const;
     void setTime(const QTime &time);

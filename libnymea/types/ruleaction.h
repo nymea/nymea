@@ -45,6 +45,7 @@ public:
     Type type() const;
 
     bool isEventBased() const;
+    bool isStateBased() const;
 
     Action toAction() const;
 

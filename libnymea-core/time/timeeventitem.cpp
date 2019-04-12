@@ -48,7 +48,7 @@ QDateTime TimeEventItem::dateTime() const
 }
 
 /*! Sets the dateTime of this \l{TimeEventItem} to the given \a timeStamp. */
-void TimeEventItem::setDateTime(const int &timeStamp)
+void TimeEventItem::setDateTime(const uint &timeStamp)
 {
     m_dateTime = QDateTime::fromTime_t(timeStamp);
 }

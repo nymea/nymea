@@ -99,7 +99,17 @@ RuleAction::Type RuleAction::type() const
 bool RuleAction::isEventBased() const
 {
     foreach (const RuleActionParam &param, m_ruleActionParams) {
-        if (param.eventTypeId() != EventTypeId()) {
+        if (param.isEventBased()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool RuleAction::isStateBased() const
+{
+    foreach (const RuleActionParam &param, m_ruleActionParams) {
+        if (param.isStateBased()) {
             return true;
         }
     }
@@ -167,7 +177,7 @@ RuleActionParam RuleAction::ruleActionParam(const ParamTypeId &ruleActionParamTy
             return ruleActionParam;
         }
     }
-    return RuleActionParam(QString());
+    return RuleActionParam();
 }
 
 /*! Returns the \l{RuleActionParam} of this RuleAction with the given \a ruleActionParamName.
@@ -180,7 +190,7 @@ RuleActionParam RuleAction::ruleActionParam(const QString &ruleActionParamName) 
             return ruleActionParam;
         }
     }
-    return RuleActionParam(QString());
+    return RuleActionParam();
 }
 
 /*! Copy the data to a \l{RuleAction} from an \a other rule action. */

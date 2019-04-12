@@ -41,6 +41,7 @@ public:
         TypeInterface
     };
 
+    EventDescriptor();
     EventDescriptor(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors = QList<ParamDescriptor>());
     EventDescriptor(const QString &interface, const QString &interfaceEvent, const QList<ParamDescriptor> &paramDescriptors = QList<ParamDescriptor>());
 

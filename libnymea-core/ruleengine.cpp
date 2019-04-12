@@ -383,165 +383,18 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
 
 
     // Check actions
-    foreach (const RuleAction &action, rule.actions()) {
-        if (!action.isValid()) {
-            qWarning(dcRuleEngine()) << "Action is incomplete. It must have either actionTypeId and deviceId, or interface and interfaceAction";
-            return RuleErrorActionTypeNotFound;
-        }
-        if (action.type() == RuleAction::TypeDevice) {
-            Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(action.deviceId());
-            if (!device) {
-                qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for action with actionTypeId" << action.actionTypeId();
-                return RuleErrorDeviceNotFound;
-            }
-
-            DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
-            if (!deviceClass.hasActionType(action.actionTypeId())) {
-                qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << action.actionTypeId();
-                return RuleErrorActionTypeNotFound;
-            }
-
-            // check possible eventTypeIds in params
-            if (action.isEventBased()) {
-                foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
-                    if (ruleActionParam.eventTypeId() != EventTypeId()) {
-                        // We have an eventTypeId
-                        if (rule.eventDescriptors().isEmpty()) {
-                            qCWarning(dcRuleEngine) << "Cannot create rule. RuleAction" << action.actionTypeId() << "contains an eventTypeId, but there are no eventDescriptors.";
-                            return RuleErrorInvalidRuleActionParameter;
-                        }
-
-                        // now check if this eventType is in the eventDescriptorList of this rule
-                        if (!checkEventDescriptors(rule.eventDescriptors(), ruleActionParam.eventTypeId())) {
-                            qCWarning(dcRuleEngine) << "Cannot create rule. EventTypeId from RuleAction" << action.actionTypeId() << "not in eventDescriptors.";
-                            return RuleErrorInvalidRuleActionParameter;
-                        }
-
-                        // check if the param type of the event and the action match
-                        QVariant::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamTypeId());
-                        QVariant v(eventParamType);
-                        QVariant::Type actionParamType = getActionParamType(action.actionTypeId(), ruleActionParam.paramTypeId());
-                        if (eventParamType != actionParamType && !v.canConvert(actionParamType)) {
-                            qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given event param " << ruleActionParam.eventParamTypeId().toString() << "have not the same type:";
-                            qCWarning(dcRuleEngine) << "        -> actionParamType:" << actionParamType;
-                            qCWarning(dcRuleEngine) << "        ->  eventParamType:" << eventParamType;
-                            return RuleErrorTypesNotMatching;
-                        }
-                    }
-                }
-            } else {
-                // verify action params
-                foreach (const ActionType &actionType, deviceClass.actionTypes()) {
-                    if (actionType.id() == action.actionTypeId()) {
-                        ParamList finalParams = action.toAction().params();
-                        DeviceManager::DeviceError paramCheck = NymeaCore::instance()->deviceManager()->verifyParams(actionType.paramTypes(), finalParams);
-                        if (paramCheck != DeviceManager::DeviceErrorNoError) {
-                            qCWarning(dcRuleEngine) << "Cannot create rule. Got an invalid actionParam.";
-                            return RuleErrorInvalidRuleActionParameter;
-                        }
-                    }
-                }
-            }
-
-            foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
-                if (!ruleActionParam.isValid()) {
-                    qCWarning(dcRuleEngine) << "Cannot create rule. Got an actionParam with \"value\" AND \"eventTypeId\".";
-                    return RuleEngine::RuleErrorInvalidRuleActionParameter;
-                }
-            }
-
-        } else { // Is TypeInterface
-            Interface iface = NymeaCore::instance()->deviceManager()->supportedInterfaces().findByName(action.interface());
-            if (!iface.isValid()) {
-                qCWarning(dcRuleEngine()) << "Cannot create rule. No such interface:" << action.interface();
-                return RuleError::RuleErrorInterfaceNotFound;
-            }
-            ActionType ifaceActionType = iface.actionTypes().findByName(action.interfaceAction());
-            if (ifaceActionType.name().isEmpty()) {
-                qCWarning(dcRuleEngine()) << "Cannot create rule. Interface" << iface.name() << "does not implement action" << action.interfaceAction();
-                return RuleError::RuleErrorActionTypeNotFound;
-            }
-            foreach (const ParamType &ifaceActionParamType, ifaceActionType.paramTypes()) {
-                if (!action.ruleActionParams().hasParam(ifaceActionParamType.name())) {
-                    qCWarning(dcRuleEngine()) << "Cannot create rule. Interface action" << iface.name() << ":" << action.interfaceAction() << "requires a" << ifaceActionParamType.name() << "param of type" << QVariant::typeToName(ifaceActionParamType.type());
-                    return RuleError::RuleErrorMissingParameter;
-                }
-                if (!action.ruleActionParam(ifaceActionParamType.name()).value().canConvert(ifaceActionParamType.type())) {
-                    qCWarning(dcRuleEngine()) << "Cannot create rule. Interface action parameter" << iface.name() << ":" << action.interfaceAction() << ":" << ifaceActionParamType.name() << "has wrong type. Expected" << QVariant::typeToName(ifaceActionParamType.type());
-                    return RuleError::RuleErrorInvalidParameter;
-                }
-            }
-            // TODO: Check params
+    foreach (const RuleAction &ruleAction, rule.actions()) {
+        RuleError ruleActionError = checkRuleAction(ruleAction, rule);
+        if (ruleActionError != RuleErrorNoError) {
+            return ruleActionError;
         }
     }
 
     // Check exit actions
-    foreach (const RuleAction &ruleAction, rule.exitActions()) {
-        if (!ruleAction.isValid()) {
-            qWarning(dcRuleEngine()) << "Exit Action is incomplete. It must have either actionTypeId and deviceId, or interface and interfaceAction";
-            return RuleErrorActionTypeNotFound;
-        }
-
-        if (ruleAction.type() == RuleAction::TypeDevice) {
-            Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(ruleAction.deviceId());
-            if (!device) {
-                qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for exit action with actionTypeId" << ruleAction.actionTypeId();
-                return RuleErrorDeviceNotFound;
-            }
-
-            DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
-            if (!deviceClass.hasActionType(ruleAction.actionTypeId())) {
-                qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << ruleAction.actionTypeId();
-                return RuleErrorActionTypeNotFound;
-            }
-
-            // verify action params
-            foreach (const ActionType &actionType, deviceClass.actionTypes()) {
-                if (actionType.id() == ruleAction.actionTypeId()) {
-                    ParamList finalParams = ruleAction.toAction().params();
-                    DeviceManager::DeviceError paramCheck = NymeaCore::instance()->deviceManager()->verifyParams(actionType.paramTypes(), finalParams);
-                    if (paramCheck != DeviceManager::DeviceErrorNoError) {
-                        qCWarning(dcRuleEngine) << "Cannot create rule. Got an invalid exit actionParam.";
-                        return RuleErrorInvalidRuleActionParameter;
-                    }
-                }
-            }
-
-            // Exit action can never be event based.
-            if (ruleAction.isEventBased()) {
-                qCWarning(dcRuleEngine) << "Cannot create rule. Got exitAction with an actionParam containing an eventTypeId. ";
-                return RuleErrorInvalidRuleActionParameter;
-            }
-
-            foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
-                if (!ruleActionParam.isValid()) {
-                    qCWarning(dcRuleEngine) << "Cannot create rule. Got an actionParam with \"value\" AND \"eventTypeId\".";
-                    return RuleEngine::RuleErrorInvalidRuleActionParameter;
-                }
-            }
-
-        } else { // Is TypeInterface
-            Interface iface = NymeaCore::instance()->deviceManager()->supportedInterfaces().findByName(ruleAction.interface());
-            if (!iface.isValid()) {
-                qCWarning(dcRuleEngine()) << "Cannot create rule. No such interface:" << ruleAction.interface();
-                return RuleError::RuleErrorInterfaceNotFound;
-            }
-            ActionType ifaceActionType = iface.actionTypes().findByName(ruleAction.interfaceAction());
-            if (ifaceActionType.name().isEmpty()) {
-                qCWarning(dcRuleEngine()) << "Cannot create rule. Interface" << iface.name() << "does not implement action" << ruleAction.interfaceAction();
-                return RuleError::RuleErrorActionTypeNotFound;
-            }
-            foreach (const ParamType &ifaceActionParamType, ifaceActionType.paramTypes()) {
-                if (!ruleAction.ruleActionParams().hasParam(ifaceActionParamType.name())) {
-                    qCWarning(dcRuleEngine()) << "Cannot create rule. Interface action" << iface.name() << ":" << ruleAction.interfaceAction() << "requires a" << ifaceActionParamType.name() << "param of type" << QVariant::typeToName(ifaceActionParamType.type());
-                    return RuleError::RuleErrorMissingParameter;
-                }
-                if (!ruleAction.ruleActionParam(ifaceActionParamType.name()).value().canConvert(ifaceActionParamType.type())) {
-                    qCWarning(dcRuleEngine()) << "Cannot create rule. Interface action parameter" << iface.name() << ":" << ruleAction.interfaceAction() << ":" << ifaceActionParamType.name() << "has wrong type. Expected" << QVariant::typeToName(ifaceActionParamType.type());
-                    return RuleError::RuleErrorInvalidParameter;
-                }
-            }
-            // TODO: Check params
+    foreach (const RuleAction &ruleExitAction, rule.exitActions()) {
+        RuleError ruleActionError = checkRuleAction(ruleExitAction, rule);
+        if (ruleActionError != RuleErrorNoError) {
+            return ruleActionError;
         }
     }
 
@@ -698,9 +551,9 @@ RuleEngine::RuleError RuleEngine::disableRule(const RuleId &ruleId)
 */
 RuleEngine::RuleError RuleEngine::executeActions(const RuleId &ruleId)
 {
-    // check if rule exits
+    // check if rule exists
     if (!m_rules.contains(ruleId)) {
-        qCWarning(dcRuleEngine) << "Not executing rule actions: rule not found.";
+        qCWarning(dcRuleEngine) << "Not executing rule actions: Rule not found.";
         return RuleErrorRuleNotFound;
     }
 
@@ -790,6 +643,15 @@ QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId) const
                     offending = true;
                     break;
                 }
+                foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
+                    if (ruleActionParam.stateDeviceId() == deviceId) {
+                        offending = true;
+                        break;
+                    }
+                }
+                if (offending) {
+                    break;
+                }
             }
         }
 
@@ -797,6 +659,15 @@ QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId) const
             foreach (const RuleAction &action, rule.exitActions()) {
                 if (action.deviceId() == deviceId) {
                     offending = true;
+                    break;
+                }
+                foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
+                    if (ruleActionParam.stateDeviceId() == deviceId) {
+                        offending = true;
+                        break;
+                    }
+                }
+                if (offending) {
                     break;
                 }
             }
@@ -867,6 +738,13 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     for (int i = 0; i < actions.count(); i++) {
         if (actions.at(i).deviceId() == deviceId) {
             removeIndexes.append(i);
+            continue;
+        }
+        foreach (const RuleActionParam &param, actions.at(i).ruleActionParams()) {
+            if (param.stateDeviceId() == deviceId) {
+                removeIndexes.append(i);
+                break;
+            }
         }
     }
     while (removeIndexes.count() > 0) {
@@ -878,6 +756,13 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     for (int i = 0; i < exitActions.count(); i++) {
         if (exitActions.at(i).deviceId() == deviceId) {
             removeIndexes.append(i);
+            continue;
+        }
+        foreach (const RuleActionParam &param, exitActions.at(i).ruleActionParams()) {
+            if (param.stateDeviceId() == deviceId) {
+                removeIndexes.append(i);
+                break;
+            }
         }
     }
     while (removeIndexes.count() > 0) {
@@ -1024,15 +909,133 @@ bool RuleEngine::containsState(const StateEvaluator &stateEvaluator, const Event
     return false;
 }
 
-bool RuleEngine::checkEventDescriptors(const QList<EventDescriptor> eventDescriptors, const EventTypeId &eventTypeId)
+RuleEngine::RuleError RuleEngine::checkRuleAction(const RuleAction &ruleAction, const Rule &rule)
 {
-    foreach (const EventDescriptor eventDescriptor, eventDescriptors) {
-        if (eventDescriptor.eventTypeId() == eventTypeId) {
-            return true;
+    if (!ruleAction.isValid()) {
+        qWarning(dcRuleEngine()) << "Action is incomplete. It must have either actionTypeId and deviceId, or interface and interfaceAction";
+        return RuleErrorActionTypeNotFound;
+    }
+
+    ActionType actionType;
+    if (ruleAction.type() == RuleAction::TypeDevice) {
+        Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(ruleAction.deviceId());
+        if (!device) {
+            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for action with actionTypeId" << ruleAction.actionTypeId();
+            return RuleErrorDeviceNotFound;
+        }
+
+        DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+        if (!deviceClass.hasActionType(ruleAction.actionTypeId())) {
+            qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << ruleAction.actionTypeId();
+            return RuleErrorActionTypeNotFound;
+        }
+
+        actionType = deviceClass.actionTypes().findById(ruleAction.actionTypeId());
+    } else if (ruleAction.type() == RuleAction::TypeInterface) {
+        Interface iface = NymeaCore::instance()->deviceManager()->supportedInterfaces().findByName(ruleAction.interface());
+        if (!iface.isValid()) {
+            qCWarning(dcRuleEngine()) << "Cannot create rule. No such interface:" << ruleAction.interface();
+            return RuleError::RuleErrorInterfaceNotFound;
+        }
+        actionType = iface.actionTypes().findByName(ruleAction.interfaceAction());
+        if (actionType.name().isEmpty()) {
+            qCWarning(dcRuleEngine()) << "Cannot create rule. Interface" << iface.name() << "does not implement action" << ruleAction.interfaceAction();
+            return RuleError::RuleErrorActionTypeNotFound;
+        }
+    } else {
+        return RuleErrorActionTypeNotFound;
+    }
+
+    // Verify given params
+    foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
+        RuleError ruleActionParamError = checkRuleActionParam(ruleActionParam, actionType, rule);
+        if (ruleActionParamError != RuleErrorNoError) {
+            return ruleActionParamError;
         }
     }
 
-    return false;
+    // Verify all required params are given
+    foreach (const ParamType &paramType, actionType.paramTypes()) {
+        bool found = false;
+        foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
+            if (ruleActionParam.paramTypeId() == paramType.id()
+                    || ruleActionParam.paramName() == paramType.name()) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return RuleErrorMissingParameter;
+        }
+    }
+
+    return RuleErrorNoError;
+}
+
+RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ruleActionParam, const ActionType &actionType, const Rule &rule)
+{
+    // Check param identifier (either paramTypeId or paramName)
+    ParamType paramType;
+    if (!ruleActionParam.paramTypeId().isNull()) {
+        paramType = actionType.paramTypes().findById(ruleActionParam.paramTypeId());
+    } else if (!ruleActionParam.paramName().isEmpty()) {
+        paramType = actionType.paramTypes().findByName(ruleActionParam.paramName());
+    } else {
+        return RuleErrorInvalidRuleActionParameter;
+    }
+
+    if (ruleActionParam.isEventBased()) {
+        // We have an eventTypeId, see if the rule actually has such a event
+        bool found = false;
+        foreach (const EventDescriptor &ed, rule.eventDescriptors()) {
+            if (ed.eventTypeId() == ruleActionParam.eventTypeId()) {
+                found = true;
+            }
+        }
+        if (!found) {
+            qCWarning(dcRuleEngine) << "Cannot create rule. EventTypeId" << ruleActionParam.eventTypeId() << "not found in rule's eventDescriptors.";
+            return RuleErrorInvalidRuleActionParameter;
+        }
+
+        // check if the param type of the event and the action match
+        QVariant::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamTypeId());
+        QVariant v(eventParamType);
+        if (eventParamType != paramType.type() && !v.canConvert(static_cast<int>(paramType.type()))) {
+            qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given event param " << ruleActionParam.eventParamTypeId().toString() << "have not the same type:";
+            qCWarning(dcRuleEngine) << "        -> actionParamType:" << paramType.type();
+            qCWarning(dcRuleEngine) << "        ->  eventParamType:" << eventParamType;
+            return RuleErrorTypesNotMatching;
+        }
+    } else if (ruleActionParam.isStateBased()) {
+        Device *d = NymeaCore::instance()->deviceManager()->findConfiguredDevice(ruleActionParam.stateDeviceId());
+        if (!d) {
+            qCWarning(dcRuleEngine()) << "Cannot create Rule. DeviceId from RuleActionParam" << ruleActionParam.paramTypeId() << "not found in system.";
+            return RuleErrorDeviceNotFound;
+        }
+        DeviceClass stateDeviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(d->deviceClassId());
+        StateType stateType = stateDeviceClass.stateTypes().findById(ruleActionParam.stateTypeId());
+        QVariant::Type actionParamType = getActionParamType(actionType.id(), ruleActionParam.paramTypeId());
+        QVariant v(stateType.type());
+        if (actionParamType != stateType.type() && !v.canConvert(static_cast<int>(actionParamType))) {
+            qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given state based param " << ruleActionParam.stateTypeId().toString() << "have not the same type:";
+            qCWarning(dcRuleEngine) << "        -> actionParamType:" << actionParamType;
+            qCWarning(dcRuleEngine) << "        ->       stateType:" << stateType.type();
+            return RuleErrorTypesNotMatching;
+        }
+    } else { // Is value based
+        if (ruleActionParam.value().isNull()) {
+            qCDebug(dcRuleEngine()) << "Cannot create rule. No param value given for action:" << ruleActionParam.paramTypeId().toString();
+            return RuleErrorInvalidRuleActionParameter;
+        }
+        if (paramType.type() != ruleActionParam.value().type() && !ruleActionParam.value().canConvert(static_cast<int>(paramType.type()))) {
+            qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given state based param " << ruleActionParam.stateTypeId().toString() << "have not the same type:";
+            qCWarning(dcRuleEngine) << "        -> actionParamType:" << paramType.type();
+            qCWarning(dcRuleEngine) << "        ->       stateType:" << ruleActionParam.value().type();
+            return RuleErrorTypesNotMatching;
+        }
+    }
+
+    return RuleErrorNoError;
 }
 
 QVariant::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, const ParamTypeId &paramTypeId)
@@ -1174,7 +1177,7 @@ void RuleEngine::saveRule(const Rule &rule)
             } else {
                 settings.beginGroup("ParamDescriptor-" + paramDescriptor.paramName());
             }
-            settings.setValue("valueType", (int)paramDescriptor.value().type());
+            settings.setValue("valueType", static_cast<int>(paramDescriptor.value().type()));
             settings.setValue("value", paramDescriptor.value());
             settings.setValue("operator", paramDescriptor.operatorType());
             settings.endGroup();
@@ -1204,11 +1207,14 @@ void RuleEngine::saveRule(const Rule &rule)
             } else {
                 settings.beginGroup("RuleActionParam-" + param.paramName());
             }
-            settings.setValue("valueType", (int)param.value().type());
+            settings.setValue("valueType", static_cast<int>(param.value().type()));
             settings.setValue("value", param.value());
-            if (param.eventTypeId() != EventTypeId()) {
+            if (param.isEventBased()) {
                 settings.setValue("eventTypeId", param.eventTypeId().toString());
                 settings.setValue("eventParamTypeId", param.eventParamTypeId());
+            } else if (param.isStateBased()) {
+                settings.setValue("stateDeviceId", param.stateDeviceId().toString());
+                settings.setValue("stateTypeId", param.stateTypeId());
             }
             settings.endGroup();
         }
@@ -1235,7 +1241,7 @@ void RuleEngine::saveRule(const Rule &rule)
             } else {
                 settings.beginGroup("RuleActionParam-" + param.paramName());
             }
-            settings.setValue("valueType", (int)param.value().type());
+            settings.setValue("valueType", static_cast<int>(param.value().type()));
             settings.setValue("value", param.value());
             settings.endGroup();
         }
@@ -1277,7 +1283,7 @@ void RuleEngine::init()
 
             QList<int> weekDays;
             QList<int> monthDays;
-            RepeatingOption::RepeatingMode mode = (RepeatingOption::RepeatingMode)settings.value("mode", 0).toInt();
+            RepeatingOption::RepeatingMode mode = static_cast<RepeatingOption::RepeatingMode>(settings.value("mode", 0).toInt());
 
             // Load weekDays
             int weekDaysCount = settings.beginReadArray("weekDays");
@@ -1314,7 +1320,7 @@ void RuleEngine::init()
 
             QList<int> weekDays;
             QList<int> monthDays;
-            RepeatingOption::RepeatingMode mode = (RepeatingOption::RepeatingMode)settings.value("mode", 0).toInt();
+            RepeatingOption::RepeatingMode mode = static_cast<RepeatingOption::RepeatingMode>(settings.value("mode", 0).toInt());
 
             // Load weekDays
             int weekDaysCount = settings.beginReadArray("weekDays");
@@ -1362,24 +1368,24 @@ void RuleEngine::init()
 
                         QVariant value = settings.value("value");
                         if (settings.contains("valueType")) {
-                            QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
+                            QVariant::Type valueType = static_cast<QVariant::Type>(settings.value("valueType").toInt());
                             // Note: only warn, and continue with the QVariant guessed type
                             if (valueType == QVariant::Invalid) {
                                 qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the param descriptor" << strippedGroupName << ". The value type will be guessed by QVariant.";
-                            } else if (!value.canConvert(valueType)) {
+                            } else if (!value.canConvert(static_cast<int>(valueType))) {
                                 qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the param descriptor value" << value << "to the stored type" << valueType;
                             } else {
-                                value.convert(valueType);
+                                value.convert(static_cast<int>(valueType));
                             }
                         }
 
                         if (!ParamTypeId(strippedGroupName).isNull()) {
                             ParamDescriptor paramDescriptor(ParamTypeId(strippedGroupName), value);
-                            paramDescriptor.setOperatorType((Types::ValueOperator)settings.value("operator").toInt());
+                            paramDescriptor.setOperatorType(static_cast<Types::ValueOperator>(settings.value("operator").toInt()));
                             params.append(paramDescriptor);
                         } else {
                             ParamDescriptor paramDescriptor(strippedGroupName, value);
-                            paramDescriptor.setOperatorType((Types::ValueOperator)settings.value("operator").toInt());
+                            paramDescriptor.setOperatorType(static_cast<Types::ValueOperator>(settings.value("operator").toInt()));
                             params.append(paramDescriptor);
                         }
                         settings.endGroup();
@@ -1415,32 +1421,34 @@ void RuleEngine::init()
                     QString strippedParamTypeIdString = paramTypeIdString.remove(QRegExp("^RuleActionParam-"));
                     EventTypeId eventTypeId = EventTypeId(settings.value("eventTypeId", EventTypeId()).toString());
                     ParamTypeId eventParamTypeId = ParamTypeId(settings.value("eventParamTypeId", ParamTypeId()).toString());
+                    DeviceId stateDeviceId = DeviceId(settings.value("stateDeviceId", DeviceId()).toString());
+                    StateTypeId stateTypeId = StateTypeId(settings.value("stateTypeId", StateTypeId()).toString());
                     QVariant value = settings.value("value");
                     if (settings.contains("valueType")) {
-                        QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
+                        QVariant::Type valueType = static_cast<QVariant::Type>(settings.value("valueType").toInt());
                         // Note: only warn, and continue with the QVariant guessed type
                         if (valueType == QVariant::Invalid) {
                             qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the rule action param " << strippedParamTypeIdString << ". The value type will be guessed by QVariant.";
-                        } else if (!value.canConvert(valueType)) {
+                        } else if (!value.canConvert(static_cast<int>(valueType))) {
                             qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the rule action param value" << value << "to the stored type" << valueType;
                         } else {
-                            value.convert(valueType);
+                            value.convert(static_cast<int>(valueType));
                         }
                     }
 
+                    RuleActionParam param;
                     if (!ParamTypeId(strippedParamTypeIdString).isNull()) {
-                        RuleActionParam param(ParamTypeId(strippedParamTypeIdString),
-                                              value,
-                                              eventTypeId,
-                                              eventParamTypeId);
-                        params.append(param);
+                        // By ParamTypeId
+                        param = RuleActionParam(ParamTypeId(strippedParamTypeIdString), value);
                     } else {
-                        RuleActionParam param(strippedParamTypeIdString,
-                                              value,
-                                              eventTypeId,
-                                              eventParamTypeId);
-                        params.append(param);
+                        // By param name
+                        param = RuleActionParam(strippedParamTypeIdString, value);
                     }
+                    param.setEventTypeId(eventTypeId);
+                    param.setEventParamTypeId(eventParamTypeId);
+                    param.setStateDeviceId(stateDeviceId);
+                    param.setStateTypeId(stateTypeId);
+                    params.append(param);
                     settings.endGroup();
                 }
             }
@@ -1472,14 +1480,14 @@ void RuleEngine::init()
                     QString strippedParamTypeIdString = paramTypeIdString.remove(QRegExp("^RuleActionParam-"));
                     QVariant value = settings.value("value");
                     if (settings.contains("valueType")) {
-                        QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
+                        QVariant::Type valueType = static_cast<QVariant::Type>(settings.value("valueType").toInt());
                         // Note: only warn, and continue with the QVariant guessed type
                         if (valueType == QVariant::Invalid) {
                             qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the rule action param " << strippedParamTypeIdString << ". The value type will be guessed by QVariant.";
-                        } else if (!value.canConvert(valueType)) {
+                        } else if (!value.canConvert(static_cast<int>(valueType))) {
                             qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the rule action param value" << value << "to the stored type" << valueType;
                         } else {
-                            value.convert(valueType);
+                            value.convert(static_cast<int>(valueType));
                         }
                     }
 

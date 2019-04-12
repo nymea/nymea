@@ -36,29 +36,46 @@ class LIBNYMEA_EXPORT RuleActionParam
 {
 public:
     RuleActionParam(const Param &param = Param());
-    RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant(), const EventTypeId &eventTypeId = EventTypeId(), const ParamTypeId &eventParamTypeId = ParamTypeId());
-    RuleActionParam(const QString &paramName, const QVariant &value = QVariant(), const EventTypeId &eventTypeId = EventTypeId(), const ParamTypeId &eventParamTypeId = ParamTypeId());
+    RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
+    RuleActionParam(const ParamTypeId &paramTypeId, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId);
+    RuleActionParam(const ParamTypeId &paramTypeId, const DeviceId &stateDeviceId, const StateTypeId &stateTypeId);
+    RuleActionParam(const QString &paramName, const QVariant &value = QVariant());
+    RuleActionParam(const QString &paramName, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId);
+    RuleActionParam(const QString &paramName, const DeviceId &stateDeviceId, const StateTypeId &stateTypeId);
 
     ParamTypeId paramTypeId() const;
     QString paramName() const;
 
-    ParamTypeId eventParamTypeId() const;
-    void setEventParamTypeId(const ParamTypeId &eventParamTypeId);
+    bool isValid() const;
+    bool isValueBased() const;
+    bool isEventBased() const;
+    bool isStateBased() const;
 
     QVariant value() const;
     void setValue(const QVariant &value);
 
-    bool isValid() const;
-
     EventTypeId eventTypeId() const;
     void setEventTypeId(const EventTypeId &eventTypeId);
+
+    ParamTypeId eventParamTypeId() const;
+    void setEventParamTypeId(const ParamTypeId &eventParamTypeId);
+
+    DeviceId stateDeviceId() const;
+    void setStateDeviceId(const DeviceId &deviceId);
+
+    StateTypeId stateTypeId() const;
+    void setStateTypeId(const StateTypeId &stateTypeId);
 
 private:
     ParamTypeId m_paramTypeId;
     QString m_paramName;
     QVariant m_value;
+
     EventTypeId m_eventTypeId;
     ParamTypeId m_eventParamTypeId;
+
+    DeviceId m_stateDeviceId;
+    StateTypeId m_stateTypeId;
 };
 
 Q_DECLARE_METATYPE(RuleActionParam)

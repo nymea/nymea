@@ -1486,6 +1486,8 @@
             "o:eventTypeId": "Uuid",
             "o:paramName": "String",
             "o:paramTypeId": "Uuid",
+            "o:stateDeviceId": "Uuid",
+            "o:stateTypeId": "Uuid",
             "o:value": "$ref:BasicType"
         },
         "RuleDescription": {

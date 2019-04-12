@@ -469,17 +469,20 @@ DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &devi
 {
     Device *device = findConfiguredDevice(deviceId);
     if (!device) {
+        qCWarning(dcDeviceManager()) << "Cannot reconfigure device. Device with id" << deviceId.toString() << "not found.";
         return DeviceErrorDeviceNotFound;
     }
 
     ParamList effectiveParams = params;
     DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
     if (deviceClass.id().isNull()) {
+        qCWarning(dcDeviceManager()) << "Cannot reconfigure device. DeviceClass for device" << device->name() << deviceId.toString() << "not found.";
         return DeviceErrorDeviceClassNotFound;
     }
 
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
     if (!plugin) {
+        qCWarning(dcDeviceManager()) << "Cannot reconfigure device. Plugin for DeviceClass" << deviceClass.displayName() << deviceClass.id().toString() << "not found.";
         return DeviceErrorPluginNotFound;
     }
 
@@ -489,8 +492,10 @@ DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &devi
         foreach (const ParamType &paramType, deviceClass.paramTypes()) {
             foreach (const Param &param, params) {
                 if (paramType.id() == param.paramTypeId()) {
-                    if (paramType.readOnly())
+                    if (paramType.readOnly()) {
+                        qCWarning(dcDeviceManager()) << "Cannot reconfigure device. Read-only parameters set by user.";
                         return DeviceErrorParameterNotWritable;
+                    }
                 }
             }
         }
@@ -498,6 +503,7 @@ DeviceManager::DeviceError DeviceManager::reconfigureDevice(const DeviceId &devi
 
     DeviceError result = verifyParams(deviceClass.paramTypes(), effectiveParams, false);
     if (result != DeviceErrorNoError) {
+        qCWarning(dcDeviceManager()) << "Cannot reconfigure device. Params failed validation.";
         return result;
     }
 
@@ -1398,7 +1404,22 @@ void DeviceManager::onAutoDevicesAppeared(const DeviceClassId &deviceClassId, co
             qCWarning(dcDeviceManager()) << "Invalid parent device id. Not adding device to the system.";
             continue;
         }
-        Device *device = new Device(plugin->pluginId(), deviceClassId, this);
+
+        Device *device = nullptr;
+
+        // If the appreaed auto device holds a valid device id, do a reconfiguration for this device
+        if (!deviceDescriptor.deviceId().isNull()) {
+            device = findConfiguredDevice(deviceDescriptor.deviceId());
+            if (!device) {
+                qCWarning(dcDeviceManager()) << "Could not find device for auto device descriptor" << deviceDescriptor.deviceId();
+                continue;
+            }
+            qCDebug(dcDeviceManager()) << "Start reconfiguring auto device" << device;
+            reconfigureDevice(deviceDescriptor.deviceId(), deviceDescriptor.params());
+            continue;
+        }
+
+        device = new Device(plugin->pluginId(), deviceClassId, this);
         device->m_autoCreated = true;
         device->setName(deviceDescriptor.title());
         device->setParams(deviceDescriptor.params());
@@ -1452,7 +1473,7 @@ void DeviceManager::onAutoDeviceDisappeared(const DeviceId &deviceId)
 
 void DeviceManager::onLoaded()
 {
-    qCWarning(dcDeviceManager()) << "Done loading plugins and devices.";
+    qCDebug(dcDeviceManager()) << "Done loading plugins and devices.";
     emit loaded();
 
     // schedule some housekeeping...

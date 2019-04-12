@@ -110,6 +110,7 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
         connect(daemon, &HttpDaemon::setState, this, &DevicePluginMock::setState);
         // Keep this queued or it might happen that the HttpDaemon is deleted before it is able to reply to the caller
         connect(daemon, &HttpDaemon::disappear, this, &DevicePluginMock::onDisappear, Qt::QueuedConnection);
+        connect(daemon, &HttpDaemon::reconfigureAutodevice, this, &DevicePluginMock::onReconfigureAutoDevice, Qt::QueuedConnection);
 
         if (async) {
             m_asyncSetupDevices.append(device);
@@ -381,6 +382,30 @@ void DevicePluginMock::onDisappear()
     Device *device = m_daemons.key(daemon);
     qCDebug(dcMockDevice) << "Emitting autoDeviceDisappeared for device" << device->id();
     emit autoDeviceDisappeared(device->id());
+}
+
+void DevicePluginMock::onReconfigureAutoDevice()
+{
+    HttpDaemon *daemon = qobject_cast<HttpDaemon *>(sender());
+    if (!daemon)
+        return;
+
+    Device *device = m_daemons.key(daemon);
+    qCDebug(dcMockDevice()) << "Reconfigure auto device for" << device << device->params();
+
+    int currentPort = device->params().paramValue(mockDeviceAutoDeviceHttpportParamTypeId).toInt();
+
+    // Note: the reconfigure makes the http server listen on port + 1
+    ParamList params;
+    params.append(Param(mockDeviceAutoDeviceHttpportParamTypeId, currentPort + 1));
+
+    DeviceDescriptor deviceDescriptor;
+    deviceDescriptor.setTitle(device->name() + " (reconfigured)");
+    deviceDescriptor.setDescription("This auto device was reconfigured");
+    deviceDescriptor.setDeviceId(device->id());
+    deviceDescriptor.setParams(params);
+
+    emit autoDevicesAppeared(mockDeviceAutoDeviceClassId, { deviceDescriptor });
 }
 
 void DevicePluginMock::emitDevicesDiscovered()

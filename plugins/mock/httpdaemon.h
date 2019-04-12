@@ -47,6 +47,7 @@ signals:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);
     void triggerEvent(const EventTypeId &eventTypeId);
     void disappear();
+    void reconfigureAutodevice();
 
 private slots:
     void readClient();

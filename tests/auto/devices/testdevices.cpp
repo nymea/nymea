@@ -91,6 +91,7 @@ private slots:
     void reconfigureByDiscovery();
 
     void reconfigureByDiscoveryAndPair();
+    void reconfigureAutodevice();
 
     void removeDevice_data();
     void removeDevice();
@@ -1273,6 +1274,34 @@ void TestDevices::reconfigureByDiscoveryAndPair()
     deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY(!deviceId.isNull());
 
+}
+
+void TestDevices::reconfigureAutodevice()
+{
+    qCDebug(dcTests()) << "Reconfigure auto device";
+
+    // Get the autodevice
+    QList<Device *> devices  = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceAutoClassId);
+    QVERIFY2(devices.count() > 0, "There needs to be at least one auto-created Mock Device for this test");
+
+    // Get current auto device infos
+    Device *currentDevice = devices.first();
+    DeviceId deviceId = currentDevice->id();
+    int currentPort = currentDevice->paramValue(httpportParamTypeId).toInt();
+
+    // Trigger reconfigure signal in mock device
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QSignalSpy spy(nam, SIGNAL(finished(QNetworkReply*)));
+    QNetworkReply *reply = nam->get(QNetworkRequest(QUrl(QString("http://localhost:%1/reconfigureautodevice").arg(currentPort))));
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(deviceId);
+    QVERIFY(device);
+    int newPort = device->paramValue(httpportParamTypeId).toInt();
+    // Note: reconfigure autodevice increases the http port by 1
+    QVERIFY(newPort == currentPort + 1);
 }
 
 

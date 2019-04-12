@@ -94,12 +94,15 @@ private:
     bool m_autoCreated = false;
 };
 
-class Devices: public QList<Device*>
+QDebug operator<<(QDebug dbg, Device *device);
+
+class LIBNYMEA_EXPORT Devices: public QList<Device*>
 {
 public:
     Devices() = default;
     Devices(const QList<Device *> &other);
     Device* findById(const DeviceId &id);
+    Devices filterByParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
 };
 
 #endif

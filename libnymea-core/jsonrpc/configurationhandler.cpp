@@ -612,7 +612,7 @@ void ConfigurationHandler::onWebServerConfigurationRemoved(const QString &id)
     qCDebug(dcJsonRpc()) << "Notification: Web server configuration removed";
     QVariantMap params;
     params.insert("id", id);
-    emit WebServerConfigurationChanged(params);
+    emit WebServerConfigurationRemoved(params);
 }
 
 void ConfigurationHandler::onWebSocketServerConfigurationChanged(const QString &id)

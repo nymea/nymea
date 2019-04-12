@@ -106,7 +106,7 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
 }
 
 /*! Will return true if the database is working fine but doesn't have any information on users whatsoever.
- *  That is, neither a user nor an anonimous token.
+ *  That is, neither a user nor an anonymous token.
  *  This may be used to determine whether a first-time setup is required.
  */
 bool UserManager::initRequired() const
@@ -373,6 +373,7 @@ bool UserManager::initDB()
         m_db.exec("CREATE TABLE users (username VARCHAR(40) UNIQUE, password VARCHAR(100), salt VARCHAR(100));");
         if (m_db.lastError().isValid()) {
             qCWarning(dcUserManager) << "Error initualizing user database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            m_db.close();
             return false;
         }
     }
@@ -381,7 +382,8 @@ bool UserManager::initDB()
         qCDebug(dcUserManager()) << "Empty user database. Setting up metadata...";
         m_db.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40));");
         if (m_db.lastError().isValid()) {
-            qCWarning(dcUserManager()) << "Error initualizing user database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            qCWarning(dcUserManager()) << "Error initializing user database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            m_db.close();
             return false;
         }
     }

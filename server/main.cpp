@@ -122,6 +122,7 @@ int main(int argc, char *argv[])
         "TimeManager",
         "Coap",
         "Avahi",
+        "AvahiDebug",
         "UPnP",
         "Cloud",
         "CloudTraffic",

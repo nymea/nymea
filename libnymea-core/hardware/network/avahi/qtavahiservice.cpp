@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -61,7 +62,7 @@ namespace nymeaserver {
 QtAvahiService::QtAvahiService(QObject *parent) :
     QObject(parent),
     d_ptr(new QtAvahiServicePrivate),
-    m_state(QtAvahiServiceStateUncomitted)
+    m_state(QtAvahiServiceStateUncommitted)
 {
     connect(this, &QtAvahiService::serviceStateChanged, this, &QtAvahiService::onStateChanged);
 
@@ -71,9 +72,9 @@ QtAvahiService::QtAvahiService(QObject *parent) :
     m_reregisterTimer.setInterval(60000);
     m_reregisterTimer.setSingleShot(true);
     connect(&m_reregisterTimer, &QTimer::timeout, this, [this](){
-        qCDebug(dcAvahi()) << "Re-registering services.";
-        resetService();
-        registerService(m_name, m_hostAddress, m_port, m_serviceType, m_txtRecords);
+        qCDebug(dcAvahiDebug()) << "Re-registering service" << this;
+        resetService(true);
+        registerService(m_name, m_hostAddress, m_port, m_serviceType, m_txtRecords, true);
     });
 }
 
@@ -125,7 +126,7 @@ QtAvahiService::QtAvahiServiceState QtAvahiService::state() const
 }
 
 /*! Register a new \l{QtAvahiService} with the given \a name and \a port. The service type can be specified with the \a serviceType string. The \a txtRecords records inform about additional information. Returns true if the service could be registered. */
-bool QtAvahiService::registerService(const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords)
+bool QtAvahiService::registerService(const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords, bool silent)
 {
     // Check if the client is running
     if (!d_ptr->client->m_client || AVAHI_CLIENT_S_RUNNING != avahi_client_get_state(d_ptr->client->m_client)) {
@@ -166,7 +167,8 @@ bool QtAvahiService::registerService(const QString &name, const QHostAddress &ho
                 }
             }
         }
-        qCDebug(dcAvahi()) << "Registering avahi service" << name << hostAddress.toString() << port << serviceType << "on interface" << ifIndex;
+
+        qCDebug((silent ? dcAvahiDebug() : dcAvahi())) << "Registering avahi service" << name << hostAddress.toString() << port << serviceType << "on interface" << ifIndex;
 
         d_ptr->serviceList = QtAvahiServicePrivate::createTxtList(txtRecords);
         d_ptr->error = avahi_entry_group_add_service_strlst(d_ptr->group,
@@ -184,7 +186,7 @@ bool QtAvahiService::registerService(const QString &name, const QHostAddress &ho
         if (d_ptr->error) {
 
             if (d_ptr->error == AVAHI_ERR_COLLISION) {
-                if (!handlCollision()) {
+                if (!handleCollision()) {
                     qCWarning(dcAvahi()) << this << "error:" << avahi_strerror(d_ptr->error);
                     return false;
                 }
@@ -215,10 +217,14 @@ bool QtAvahiService::registerService(const QString &name, const QHostAddress &ho
 }
 
 /*! Remove this service from the local network. This \l{QtAvahiService} can be reused to register a new avahi service. */
-void QtAvahiService::resetService()
+void QtAvahiService::resetService(bool silent)
 {
-    if (!d_ptr->group)
+    if (!d_ptr->group) {
+        qCWarning(dcAvahi()) << "Cannot unregister service. Service Group not existing.";
         return;
+    }
+
+    qCDebug((silent ? dcAvahiDebug() : dcAvahi())) << "Unregistering service" << this;
 
     if (d_ptr->serviceList) {
         avahi_string_list_free(d_ptr->serviceList);
@@ -286,7 +292,7 @@ QString QtAvahiService::errorString() const
     return avahi_strerror(avahi_client_errno(d_ptr->client->m_client));
 }
 
-bool QtAvahiService::handlCollision()
+bool QtAvahiService::handleCollision()
 {
     char* alt = avahi_alternative_service_name(name().toStdString().data());
     QString alternativeServiceName = QLatin1String(alt);
@@ -305,21 +311,21 @@ void QtAvahiService::onStateChanged(const QtAvahiServiceState &state)
     m_state = state;
 
     switch (m_state) {
-    case QtAvahiServiceStateUncomitted:
-        qCDebug(dcAvahi()) << this << "state changed: uncomitted";
+    case QtAvahiServiceStateUncommitted:
+        qCDebug(dcAvahiDebug()) << "Service state changed to Uncommitted:" << this;
         break;
     case QtAvahiServiceStateRegistering:
-        qCDebug(dcAvahi()) << this << "state changed: registering...";
+        qCDebug(dcAvahiDebug()) << "Service state changed to Registering:" << this;
         break;
     case QtAvahiServiceStateEstablished:
-        qCDebug(dcAvahi()) << this << "state changed: established";
+        qCDebug(dcAvahiDebug()) << "Service state changed to Established:" << this;
         break;
     case QtAvahiServiceStateCollision:
-        qCDebug(dcAvahi()) << this << "state changed: collision";
-        handlCollision();
+        qCDebug(dcAvahiDebug()) << "Service state changed to Collision:" << this;
+        handleCollision();
         break;
     case QtAvahiServiceStateFailure:
-        qCWarning(dcAvahi()) << this << "failure: " << errorString();
+        qCDebug(dcAvahiDebug()) << "Service state changed to Failure:" << this;
         break;
     }
 

@@ -50,7 +50,7 @@ void QtAvahiServicePrivate::callback(AvahiEntryGroup *group, AvahiEntryGroupStat
 
     switch (state) {
     case AVAHI_ENTRY_GROUP_UNCOMMITED:
-        emit service->serviceStateChanged(QtAvahiService::QtAvahiServiceStateUncomitted);
+        emit service->serviceStateChanged(QtAvahiService::QtAvahiServiceStateUncommitted);
         break;
     case AVAHI_ENTRY_GROUP_REGISTERING:
         emit service->serviceStateChanged(QtAvahiService::QtAvahiServiceStateRegistering);
@@ -69,7 +69,7 @@ void QtAvahiServicePrivate::callback(AvahiEntryGroup *group, AvahiEntryGroupStat
 
 AvahiStringList *QtAvahiServicePrivate::createTxtList(const QHash<QString, QString> &txt)
 {
-    AvahiStringList *list = NULL;
+    AvahiStringList *list = nullptr;
     if (txt.isEmpty())
         return list;
 

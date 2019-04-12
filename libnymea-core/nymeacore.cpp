@@ -251,12 +251,13 @@ void NymeaCore::destroy()
 /*! Removes a configured \l{Device} with the given \a deviceId and \a removePolicyList. */
 QPair<DeviceManager::DeviceError, QList<RuleId> > NymeaCore::removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList)
 {
-    // Check if this is a child device
     Device *device = m_deviceManager->findConfiguredDevice(deviceId);
 
-    if (!device)
+    if (!device) {
         return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorDeviceNotFound, QList<RuleId>());
+    }
 
+    // Check if this is a child device
     if (!device->parentId().isNull()) {
         qCWarning(dcDeviceManager) << "The device is a child of" << device->parentId().toString() << ". Please remove the parent device.";
         return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorDeviceIsChild, QList<RuleId>());
@@ -347,12 +348,13 @@ QPair<DeviceManager::DeviceError, QList<RuleId> > NymeaCore::removeConfiguredDev
 /*! Removes a configured \l{Device} with the given \a deviceId and \a removePolicy. */
 DeviceManager::DeviceError NymeaCore::removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy)
 {
-    // Check if this is a child device
     Device *device = m_deviceManager->findConfiguredDevice(deviceId);
 
-    if (!device)
+    if (!device) {
         return DeviceManager::DeviceErrorDeviceNotFound;
+    }
 
+    // Check if this is a child device
     if (!device->parentId().isNull()) {
         qCWarning(dcDeviceManager) << "The device is a child of" << device->parentId().toString() << ". Please remove the parent device.";
         return DeviceManager::DeviceErrorDeviceIsChild;

@@ -501,7 +501,7 @@ QVariantMap JsonTypes::allTypes()
 QVariantMap JsonTypes::packEventType(const EventType &eventType)
 {
     QVariantMap variant;
-    variant.insert("id", eventType.id());
+    variant.insert("id", eventType.id().toString());
     variant.insert("name", eventType.name());
     variant.insert("displayName", eventType.displayName());
     variant.insert("index", eventType.index());
@@ -523,8 +523,8 @@ QVariantMap JsonTypes::packEventType(const EventType &eventType)
 QVariantMap JsonTypes::packEvent(const Event &event)
 {
     QVariantMap variant;
-    variant.insert("eventTypeId", event.eventTypeId());
-    variant.insert("deviceId", event.deviceId());
+    variant.insert("eventTypeId", event.eventTypeId().toString());
+    variant.insert("deviceId", event.deviceId().toString());
     QVariantList params;
     foreach (const Param &param, event.params())
         params.append(packParam(param));
@@ -538,8 +538,8 @@ QVariantMap JsonTypes::packEventDescriptor(const EventDescriptor &eventDescripto
 {
     QVariantMap variant;
     if (eventDescriptor.type() == EventDescriptor::TypeDevice) {
-        variant.insert("eventTypeId", eventDescriptor.eventTypeId());
-        variant.insert("deviceId", eventDescriptor.deviceId());
+        variant.insert("eventTypeId", eventDescriptor.eventTypeId().toString());
+        variant.insert("deviceId", eventDescriptor.deviceId().toString());
     } else {
         variant.insert("interface", eventDescriptor.interface());
         variant.insert("interfaceEvent", eventDescriptor.interfaceEvent());
@@ -556,7 +556,7 @@ QVariantMap JsonTypes::packEventDescriptor(const EventDescriptor &eventDescripto
 QVariantMap JsonTypes::packActionType(const ActionType &actionType)
 {
     QVariantMap variantMap;
-    variantMap.insert("id", actionType.id());
+    variantMap.insert("id", actionType.id().toString());
     variantMap.insert("name", actionType.name());
     variantMap.insert("displayName", actionType.displayName());
     variantMap.insert("index", actionType.index());
@@ -572,8 +572,8 @@ QVariantMap JsonTypes::packActionType(const ActionType &actionType)
 QVariantMap JsonTypes::packAction(const Action &action)
 {
     QVariantMap variant;
-    variant.insert("actionTypeId", action.actionTypeId());
-    variant.insert("deviceId", action.deviceId());
+    variant.insert("actionTypeId", action.actionTypeId().toString());
+    variant.insert("deviceId", action.deviceId().toString());
     QVariantList params;
     foreach (const Param &param, action.params())
         params.append(packParam(param));
@@ -587,8 +587,8 @@ QVariantMap JsonTypes::packRuleAction(const RuleAction &ruleAction)
 {
     QVariantMap variant;
     if (ruleAction.type() == RuleAction::TypeDevice) {
-        variant.insert("actionTypeId", ruleAction.actionTypeId());
-        variant.insert("deviceId", ruleAction.deviceId());
+        variant.insert("actionTypeId", ruleAction.actionTypeId().toString());
+        variant.insert("deviceId", ruleAction.deviceId().toString());
     } else {
         variant.insert("interface", ruleAction.interface());
         variant.insert("interfaceAction", ruleAction.interfaceAction());
@@ -612,7 +612,7 @@ QVariantMap JsonTypes::packRuleActionParam(const RuleActionParam &ruleActionPara
     }
     // if this ruleaction param has a valid EventTypeId, there is no value
     if (ruleActionParam.eventTypeId() != EventTypeId()) {
-        variantMap.insert("eventTypeId", ruleActionParam.eventTypeId());
+        variantMap.insert("eventTypeId", ruleActionParam.eventTypeId().toString());
         variantMap.insert("eventParamTypeId", ruleActionParam.eventParamTypeId().toString());
     } else {
         variantMap.insert("value", ruleActionParam.value());
@@ -633,7 +633,7 @@ QVariantMap JsonTypes::packState(const State &state)
 QVariantMap JsonTypes::packStateType(const StateType &stateType)
 {
     QVariantMap variantMap;
-    variantMap.insert("id", stateType.id());
+    variantMap.insert("id", stateType.id().toString());
     variantMap.insert("name", stateType.name());
     variantMap.insert("displayName", stateType.displayName());
     variantMap.insert("index", stateType.index());
@@ -759,7 +759,7 @@ QVariantMap JsonTypes::packParamType(const ParamType &paramType)
 QVariantMap JsonTypes::packVendor(const Vendor &vendor)
 {
     QVariantMap variantMap;
-    variantMap.insert("id", vendor.id());
+    variantMap.insert("id", vendor.id().toString());
     variantMap.insert("name", vendor.name());
     variantMap.insert("displayName", vendor.displayName());
     return variantMap;
@@ -802,13 +802,13 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
         discoveryParamTypes.append(packParamType(paramType));
 
     if (!deviceClass.criticalStateTypeId().isNull())
-        variant.insert("criticalStateTypeId", deviceClass.criticalStateTypeId());
+        variant.insert("criticalStateTypeId", deviceClass.criticalStateTypeId().toString());
 
     if (!deviceClass.primaryStateTypeId().isNull())
-        variant.insert("primaryStateTypeId", deviceClass.primaryStateTypeId());
+        variant.insert("primaryStateTypeId", deviceClass.primaryStateTypeId().toString());
 
     if (!deviceClass.primaryActionTypeId().isNull())
-        variant.insert("primaryActionTypeId", deviceClass.primaryActionTypeId());
+        variant.insert("primaryActionTypeId", deviceClass.primaryActionTypeId().toString());
 
     variant.insert("basicTags", basicTags);
     variant.insert("paramTypes", paramTypes);
@@ -825,7 +825,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass)
 QVariantMap JsonTypes::packPlugin(DevicePlugin *plugin)
 {
     QVariantMap pluginMap;
-    pluginMap.insert("id", plugin->pluginId());
+    pluginMap.insert("id", plugin->pluginId().toString());
     pluginMap.insert("name", plugin->pluginName());
     pluginMap.insert("displayName", plugin->pluginDisplayName());
 
@@ -841,15 +841,15 @@ QVariantMap JsonTypes::packPlugin(DevicePlugin *plugin)
 QVariantMap JsonTypes::packDevice(Device *device)
 {
     QVariantMap variant;
-    variant.insert("id", device->id());
-    variant.insert("deviceClassId", device->deviceClassId());
+    variant.insert("id", device->id().toString());
+    variant.insert("deviceClassId", device->deviceClassId().toString());
     variant.insert("name", device->name());
     QVariantList params;
     foreach (const Param &param, device->params())
         params.append(packParam(param));
 
     if (!device->parentId().isNull())
-        variant.insert("parentId", device->parentId());
+        variant.insert("parentId", device->parentId().toString());
 
     variant.insert("params", params);
     variant.insert("states", packDeviceStates(device));
@@ -861,8 +861,8 @@ QVariantMap JsonTypes::packDevice(Device *device)
 QVariantMap JsonTypes::packDeviceDescriptor(const DeviceDescriptor &descriptor)
 {
     QVariantMap variant;
-    variant.insert("id", descriptor.id());
-    variant.insert("deviceId", descriptor.deviceId());
+    variant.insert("id", descriptor.id().toString());
+    variant.insert("deviceId", descriptor.deviceId().toString());
     variant.insert("title", descriptor.title());
     variant.insert("description", descriptor.description());
     QVariantList params;
@@ -877,7 +877,7 @@ QVariantMap JsonTypes::packDeviceDescriptor(const DeviceDescriptor &descriptor)
 QVariantMap JsonTypes::packRule(const Rule &rule)
 {
     QVariantMap ruleMap;
-    ruleMap.insert("id", rule.id());
+    ruleMap.insert("id", rule.id().toString());
     ruleMap.insert("name", rule.name());
     ruleMap.insert("enabled", rule.enabled());
     ruleMap.insert("active", rule.active());
@@ -919,7 +919,7 @@ QVariantList JsonTypes::packRules(const QList<Rule> rules)
 QVariantMap JsonTypes::packRuleDescription(const Rule &rule)
 {
     QVariantMap ruleDescriptionMap;
-    ruleDescriptionMap.insert("id", rule.id());
+    ruleDescriptionMap.insert("id", rule.id().toString());
     ruleDescriptionMap.insert("name", rule.name());
     ruleDescriptionMap.insert("enabled", rule.enabled());
     ruleDescriptionMap.insert("active", rule.active());
@@ -983,9 +983,9 @@ QVariantMap JsonTypes::packTag(const Tag &tag)
 {
     QVariantMap ret;
     if (!tag.deviceId().isNull()){
-        ret.insert("deviceId", tag.deviceId());
+        ret.insert("deviceId", tag.deviceId().toString());
     } else {
-        ret.insert("ruleId", tag.ruleId());
+        ret.insert("ruleId", tag.ruleId().toString());
     }
     ret.insert("appId", tag.appId());
     ret.insert("tagId", tag.tagId());
@@ -1188,7 +1188,7 @@ QVariantMap JsonTypes::packBasicConfiguration()
 {
     QVariantMap basicConfiguration;
     basicConfiguration.insert("serverName", NymeaCore::instance()->configuration()->serverName());
-    basicConfiguration.insert("serverUuid", NymeaCore::instance()->configuration()->serverUuid());
+    basicConfiguration.insert("serverUuid", NymeaCore::instance()->configuration()->serverUuid().toString());
     basicConfiguration.insert("serverTime", NymeaCore::instance()->timeManager()->currentDateTime().toTime_t());
     basicConfiguration.insert("timeZone", QString::fromUtf8(NymeaCore::instance()->timeManager()->timeZone()));
     basicConfiguration.insert("language", NymeaCore::instance()->configuration()->locale().name());

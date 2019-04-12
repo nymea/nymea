@@ -192,13 +192,8 @@
                             "displayName": "The name of the device class (translatable)",
                             "o:createMethods": [ ],
                             "o:setupMethod": "SetupMethod",
-                            "o:deviceIcon": "Icon",
                             "o:interfaces": [ "interfacename" ],
-                            "o:basicTags": [ ],
                             "o:pairingInfo": "Information how to pair the device. (translatable)",
-                            "o:criticalStateTypeId": "uuid",
-                            "o:primaryStateTypeId": "uuid",
-                            "o:primaryActionTypeId": "uuid",
                             "o:discoveryParamTypes": [ ],
                             "o:paramTypes": [ ],
                             "o:stateTypes": [ ],
@@ -233,34 +228,9 @@
             \li \tt interfaces
             \li \b O
             \li array
-            \li A string list of \l{Interfaces for DeviceClasses}{interfaces} this plugin implements. Interfaces show you how types
-                of this DeviceClass \underline{must} look like.
+            \li A string list of \l{Interfaces for DeviceClasses}{interfaces} this plugin implements. Interfaces define states, events and actions to
+                provide more defined ways of creating device class. A plugin developer should always try to follow interface definitions if possible.
         \row
-            \li \tt basicTags
-            \li \b O
-            \li array
-            \li A string list of \l{DeviceClass::BasicTag}{BasicTags} for this device \unicode{0x2192} \l{DeviceClass::basicTags()}. A \l{DeviceClass} can have
-                multiple \l{DeviceClass::BasicTag}{BasicTags} which describe the basic category of the DeviceClass.
-                A \l{DeviceClass} should be eighter a Service or a Device, never both. See enum \l{DeviceClass::BasicTag} for more information.
-                The expected value for the \e basicTags parameters matches the enum name like this:
-
-                \tt {DeviceClass::BasicTagService} \unicode{0x2192} \tt {"basicTags": [ "Service" ]}
-
-                \tt {DeviceClass::BasicTagLighting} \unicode{0x2192} \tt {"basicTags": [ "Lighting" ]}
-
-                \tt ...
-        \row
-            \li \tt deviceIcon
-            \li \b O
-            \li string
-            \li Defines the icon for this \l{DeviceClass}. See enum \l{DeviceClass::DeviceIcon} for more information. The expected value for the \tt deviceIcon
-                parameters matches the enum name like this:
-
-                \tt {DeviceClass::DeviceIconBed} \unicode{0x2192} \tt {"deviceIcon": "Bed"}
-
-                \tt {DeviceClass::DeviceIconPower} \unicode{0x2192} \tt {"deviceIcon": "Power"}
-
-                \tt ...
         \row
             \li \tt createMethods
             \li \b O
@@ -295,21 +265,6 @@
             \li The \l{DeviceClass::pairingInfo()}{pairingInfo} will inform the user how to pair the device \unicode{0x2192} \l{DeviceClass::setupMethod()}.
                 This parameter will only be used for \l{DeviceClass::SetupMethodDisplayPin}{DisplayPin} and \l{DeviceClass::SetupMethodEnterPin}{EnterPin}
                 and \l{DeviceClass::SetupMethodPushButton}{PushButton}. Example: "Please press the button on the device before continue."
-        \row
-            \li \tt criticalStateTypeId
-            \li \b O
-            \li string
-            \li Deprecated: please use \l{Interfaces for DeviceClasses}{interfaces} instead.
-        \row
-            \li \tt primaryStateTypeId
-            \li \b O
-            \li string
-            \li Deprecated: please use \l{Interfaces for DeviceClasses}{interfaces} instead.
-        \row
-            \li \tt primaryActionTypeId
-            \li \b O
-            \li string
-            \li Deprecated: please use \l{Interfaces for DeviceClasses}{interfaces} instead.
         \row
             \li \tt discoveryParamTypes
             \li \b O
@@ -476,9 +431,6 @@ A \l{StateType} has following parameters:
                     "type": "DataType",
                     "defaultValue": "The state will be initialized with this value."
                     "o:cached": "bool",
-                    "o:ruleRelevant": "bool",
-                    "o:eventRuleRelevant": "bool",
-                    "o:graphRelevant": "bool",
                     "o:unit": "The unit of the state value.",
                     "o:minValue": "Numeric minimum value for this state.",
                     "o:maxValue": "Numeric maximum value for this state.",
@@ -537,23 +489,6 @@ A \l{StateType} has following parameters:
             \li Indicates if a state value should be cached over reboot of the server. The value will be initialized with the last known value.
                 By default all states get chached. If you want to disable that behaviour you can set this property to \tt{false}. In that case the
                 value will be initialized with the default value of the State.
-        \row
-            \li \tt ruleRelevant
-            \li \b O
-            \li bool
-            \li Since not all \l{State}{States} make sense for the user in a rule, with this flag can be specified if this state should be visible
-                in the rule engine for the user or not. This flag has no effect to the ruleengine mechanism and is only ment to filter out not
-                interesting \l{State}{States}. By default, every state is rule relevant.
-        \row
-            \li \tt eventRuleRelevant
-            \li \b O
-            \li bool
-            \li Deprecated: please use \l{Interfaces for DeviceClasses}{interfaces} instead.
-        \row
-            \li \tt graphRelevant
-            \li \b O
-            \li bool
-            \li Deprecated: please use \l{Interfaces for DeviceClasses}{interfaces} instead.
         \row
             \li \tt unit
             \li \b O
@@ -710,8 +645,6 @@ A \l{StateType} has following parameters:
                     "id": "uuid",
                     "name": "eventName",
                     "displayName": "Name of the event (translatable)",
-                    "o:ruleRelevant": "bool",
-                    "o:graphRelevant": "bool",
                     "o:paramTypes": [
                         ...
                     ]
@@ -745,18 +678,6 @@ A \l{StateType} has following parameters:
             \li A list of \l{ParamType}{ParamTypes} which define the parameters of this event \unicode{0x2192} \l{EventType::paramTypes()}.
 
                 \b{See also:} \l{The ParamType definition}"
-        \row
-            \li \tt ruleRelevant
-            \li \b O
-            \li bool
-            \li Since not all \l{Event}{Events} make sense for the user in a rule, with this flag can be specidied if this event should be visible in the rule engine
-                for the user or not. This flag has no effect to the ruleengine mechanism and is only ment to filter out not interesting \l{Event}{Events}. By default,
-                every event is rule relevant.
-        \row
-            \li \tt graphRelevant
-            \li \b O
-            \li bool
-            \li Deprecated: please use \l{Interfaces for DeviceClasses}{interfaces} instead.
     \endtable
 
 */

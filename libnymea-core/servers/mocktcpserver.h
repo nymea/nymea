@@ -57,6 +57,8 @@ public slots:
 
 private:
     static QList<MockTcpServer*> s_allServers;
+
+    QList<QUuid> m_connectedClients;
 };
 
 #endif // TCPSERVER_H

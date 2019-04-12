@@ -30,29 +30,6 @@ See also: \l{Param}
 }
 \endcode
 See also: \l{ParamType}
-\section2 BasicTag
-\code
-[
-    "BasicTagService", 
-    "BasicTagDevice", 
-    "BasicTagSensor", 
-    "BasicTagActuator", 
-    "BasicTagLighting", 
-    "BasicTagEnergy", 
-    "BasicTagMultimedia", 
-    "BasicTagWeather", 
-    "BasicTagGateway", 
-    "BasicTagHeating", 
-    "BasicTagCooling", 
-    "BasicTagNotification", 
-    "BasicTagSecurity", 
-    "BasicTagTime", 
-    "BasicTagShading", 
-    "BasicTagAppliance", 
-    "BasicTagCamera", 
-    "BasicTagLock"
-]
-\endcode
 \section2 BasicType
 \code
 [
@@ -134,13 +111,9 @@ See also: \l{Param}
     "actionTypes": [
         "$ref:ActionType"
     ], 
-    "basicTags": [
-        "$ref:BasicTag"
-    ], 
     "createMethods": [
         "$ref:CreateMethod"
     ], 
-    "deviceIcon": "$ref:DeviceIcon", 
     "discoveryParamTypes": [
         "$ref:ParamType"
     ], 
@@ -153,9 +126,6 @@ See also: \l{Param}
         "String"
     ], 
     "name": "String", 
-    "o:criticalStateTypeId": "Uuid", 
-    "o:primaryActionTypeId": "Uuid", 
-    "o:primaryStateTypeId": "Uuid", 
     "paramTypes": [
         "$ref:ParamType"
     ], 
@@ -167,7 +137,7 @@ See also: \l{Param}
     "vendorId": "Uuid"
 }
 \endcode
-See also: \l{ActionType}, \l{CreateMethod}, \l{DeviceIcon}, \l{BasicTag}, \l{ParamType}, \l{SetupMethod}, \l{StateType}, \l{EventType}, \l{ParamType}
+See also: \l{ActionType}, \l{CreateMethod}, \l{ParamType}, \l{SetupMethod}, \l{StateType}, \l{EventType}, \l{ParamType}
 \section2 DeviceDescriptor
 \code
 {
@@ -206,47 +176,6 @@ See also: \l{ActionType}, \l{CreateMethod}, \l{DeviceIcon}, \l{BasicTag}, \l{Par
     "DeviceErrorParameterNotWritable"
 ]
 \endcode
-\section2 DeviceIcon
-\code
-[
-    "DeviceIconNone", 
-    "DeviceIconBed", 
-    "DeviceIconBlinds", 
-    "DeviceIconCeilingLamp", 
-    "DeviceIconCouch", 
-    "DeviceIconDeskLamp", 
-    "DeviceIconDesk", 
-    "DeviceIconHifi", 
-    "DeviceIconPower", 
-    "DeviceIconEnergy", 
-    "DeviceIconRadio", 
-    "DeviceIconSmartPhone", 
-    "DeviceIconSocket", 
-    "DeviceIconStandardLamp", 
-    "DeviceIconSun", 
-    "DeviceIconTablet", 
-    "DeviceIconThermometer", 
-    "DeviceIconTune", 
-    "DeviceIconTv", 
-    "DeviceIconBattery", 
-    "DeviceIconDishwasher", 
-    "DeviceIconWashingMachine", 
-    "DeviceIconLaundryDryer", 
-    "DeviceIconIrHeater", 
-    "DeviceIconRadiator", 
-    "DeviceIconSwitch", 
-    "DeviceIconMotionDetectors", 
-    "DeviceIconWeather", 
-    "DeviceIconTime", 
-    "DeviceIconLightBulb", 
-    "DeviceIconGateway", 
-    "DeviceIconMail", 
-    "DeviceIconNetwork", 
-    "DeviceIconCloud", 
-    "DeviceIconGarage", 
-    "DeviceIconRollerShutter"
-]
-\endcode
 \section2 Event
 \code
 {
@@ -278,8 +207,6 @@ See also: \l{ParamDescriptor}
     "id": "Uuid", 
     "index": "Int", 
     "name": "String", 
-    "o:graphRelevant": "Bool", 
-    "o:ruleRelevant": "Bool", 
     "paramTypes": [
         "$ref:ParamType"
     ]
@@ -628,13 +555,11 @@ See also: \l{StateEvaluator}, \l{StateDescriptor}, \l{StateOperator}
     "id": "Uuid", 
     "index": "Int", 
     "name": "String", 
-    "o:graphRelevant": "Bool", 
     "o:maxValue": "Variant", 
     "o:minValue": "Variant", 
     "o:possibleValues": [
         "Variant"
     ], 
-    "o:ruleRelevant": "Bool", 
     "o:unit": "$ref:Unit", 
     "type": "$ref:BasicType"
 }
@@ -3403,26 +3328,6 @@ See also: \l{Tag}
                 "$ref:ParamType"
             ]
         }, 
-        "BasicTag": [
-            "BasicTagService", 
-            "BasicTagDevice", 
-            "BasicTagSensor", 
-            "BasicTagActuator", 
-            "BasicTagLighting", 
-            "BasicTagEnergy", 
-            "BasicTagMultimedia", 
-            "BasicTagWeather", 
-            "BasicTagGateway", 
-            "BasicTagHeating", 
-            "BasicTagCooling", 
-            "BasicTagNotification", 
-            "BasicTagSecurity", 
-            "BasicTagTime", 
-            "BasicTagShading", 
-            "BasicTagAppliance", 
-            "BasicTagCamera", 
-            "BasicTagLock"
-        ], 
         "BasicType": [
             "Uuid", 
             "String", 
@@ -3482,13 +3387,9 @@ See also: \l{Tag}
             "actionTypes": [
                 "$ref:ActionType"
             ], 
-            "basicTags": [
-                "$ref:BasicTag"
-            ], 
             "createMethods": [
                 "$ref:CreateMethod"
             ], 
-            "deviceIcon": "$ref:DeviceIcon", 
             "discoveryParamTypes": [
                 "$ref:ParamType"
             ], 
@@ -3501,9 +3402,6 @@ See also: \l{Tag}
                 "String"
             ], 
             "name": "String", 
-            "o:criticalStateTypeId": "Uuid", 
-            "o:primaryActionTypeId": "Uuid", 
-            "o:primaryStateTypeId": "Uuid", 
             "paramTypes": [
                 "$ref:ParamType"
             ], 
@@ -3545,44 +3443,6 @@ See also: \l{Tag}
             "DeviceErrorPairingTransactionIdNotFound", 
             "DeviceErrorParameterNotWritable"
         ], 
-        "DeviceIcon": [
-            "DeviceIconNone", 
-            "DeviceIconBed", 
-            "DeviceIconBlinds", 
-            "DeviceIconCeilingLamp", 
-            "DeviceIconCouch", 
-            "DeviceIconDeskLamp", 
-            "DeviceIconDesk", 
-            "DeviceIconHifi", 
-            "DeviceIconPower", 
-            "DeviceIconEnergy", 
-            "DeviceIconRadio", 
-            "DeviceIconSmartPhone", 
-            "DeviceIconSocket", 
-            "DeviceIconStandardLamp", 
-            "DeviceIconSun", 
-            "DeviceIconTablet", 
-            "DeviceIconThermometer", 
-            "DeviceIconTune", 
-            "DeviceIconTv", 
-            "DeviceIconBattery", 
-            "DeviceIconDishwasher", 
-            "DeviceIconWashingMachine", 
-            "DeviceIconLaundryDryer", 
-            "DeviceIconIrHeater", 
-            "DeviceIconRadiator", 
-            "DeviceIconSwitch", 
-            "DeviceIconMotionDetectors", 
-            "DeviceIconWeather", 
-            "DeviceIconTime", 
-            "DeviceIconLightBulb", 
-            "DeviceIconGateway", 
-            "DeviceIconMail", 
-            "DeviceIconNetwork", 
-            "DeviceIconCloud", 
-            "DeviceIconGarage", 
-            "DeviceIconRollerShutter"
-        ], 
         "Event": {
             "deviceId": "Uuid", 
             "eventTypeId": "Uuid", 
@@ -3604,8 +3464,6 @@ See also: \l{Tag}
             "id": "Uuid", 
             "index": "Int", 
             "name": "String", 
-            "o:graphRelevant": "Bool", 
-            "o:ruleRelevant": "Bool", 
             "paramTypes": [
                 "$ref:ParamType"
             ]
@@ -3855,13 +3713,11 @@ See also: \l{Tag}
             "id": "Uuid", 
             "index": "Int", 
             "name": "String", 
-            "o:graphRelevant": "Bool", 
             "o:maxValue": "Variant", 
             "o:minValue": "Variant", 
             "o:possibleValues": [
                 "Variant"
             ], 
-            "o:ruleRelevant": "Bool", 
             "o:unit": "$ref:Unit", 
             "type": "$ref:BasicType"
         }, 

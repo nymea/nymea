@@ -33,6 +33,14 @@ MockTcpServer::MockTcpServer(QObject *parent):
     TransportInterface(ServerConfiguration(), parent)
 {
     s_allServers.append(this);
+
+    connect(this, &TransportInterface::clientConnected, this, [this](const QUuid &clientId){
+        m_connectedClients.append(clientId);
+    });
+
+    connect(this, &TransportInterface::clientDisconnected, this, [this](const QUuid &clientId){
+        m_connectedClients.removeAll(clientId);
+    });
 }
 
 MockTcpServer::~MockTcpServer()
@@ -65,6 +73,7 @@ QList<MockTcpServer *> MockTcpServer::servers()
 
 void MockTcpServer::injectData(const QUuid &clientId, const QByteArray &data)
 {
+    Q_ASSERT_X(m_connectedClients.contains(clientId), "MockTcpServer", "Cannot inject data. Client is not connected");
     emit dataAvailable(clientId, data);
 }
 

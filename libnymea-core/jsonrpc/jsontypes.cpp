@@ -70,8 +70,6 @@ bool JsonTypes::s_initialized = false;
 QString JsonTypes::s_lastError;
 
 QVariantList JsonTypes::s_basicType;
-QVariantList JsonTypes::s_basicTag;
-QVariantList JsonTypes::s_deviceIcon;
 QVariantList JsonTypes::s_stateOperator;
 QVariantList JsonTypes::s_valueOperator;
 QVariantList JsonTypes::s_inputType;
@@ -139,8 +137,6 @@ void JsonTypes::init()
     s_unit = enumToStrings(Types::staticMetaObject, "Unit");
     s_createMethod = enumToStrings(DeviceClass::staticMetaObject, "CreateMethod");
     s_setupMethod = enumToStrings(DeviceClass::staticMetaObject, "SetupMethod");
-    s_basicTag = enumToStrings(DeviceClass::staticMetaObject, "BasicTag");
-    s_deviceIcon = enumToStrings(DeviceClass::staticMetaObject, "DeviceIcon");
     s_removePolicy = enumToStrings(RuleEngine::staticMetaObject, "RemovePolicy");
     s_deviceError = enumToStrings(DeviceManager::staticMetaObject, "DeviceError");
     s_ruleError = enumToStrings(RuleEngine::staticMetaObject, "RuleError");
@@ -203,8 +199,6 @@ void JsonTypes::init()
     s_stateType.insert("index", basicTypeToString(Int));
     s_stateType.insert("defaultValue", basicTypeToString(Variant));
     s_stateType.insert("o:unit", unitRef());
-    s_stateType.insert("o:ruleRelevant", basicTypeToString(Bool));
-    s_stateType.insert("o:graphRelevant", basicTypeToString(Bool));
     s_stateType.insert("o:minValue", basicTypeToString(Variant));
     s_stateType.insert("o:maxValue", basicTypeToString(Variant));
     s_stateType.insert("o:possibleValues", QVariantList() << basicTypeToString(Variant));
@@ -233,8 +227,6 @@ void JsonTypes::init()
     s_eventType.insert("displayName", basicTypeToString(String));
     s_eventType.insert("index", basicTypeToString(Int));
     s_eventType.insert("paramTypes", QVariantList() << paramTypeRef());
-    s_eventType.insert("o:ruleRelevant", basicTypeToString(Bool));
-    s_eventType.insert("o:graphRelevant", basicTypeToString(Bool));
 
     // Event
     s_event.insert("eventTypeId", basicTypeToString(Uuid));
@@ -277,14 +269,9 @@ void JsonTypes::init()
     s_deviceClass.insert("pluginId", basicTypeToString(Uuid));
     s_deviceClass.insert("name", basicTypeToString(String));
     s_deviceClass.insert("displayName", basicTypeToString(String));
-    s_deviceClass.insert("deviceIcon", deviceIconRef());
     s_deviceClass.insert("interfaces", QVariantList() << basicTypeToString(String));
-    s_deviceClass.insert("basicTags", QVariantList() << basicTagRef());
     s_deviceClass.insert("setupMethod", setupMethodRef());
     s_deviceClass.insert("createMethods", QVariantList() << createMethodRef());
-    s_deviceClass.insert("o:criticalStateTypeId", basicTypeToString(Uuid));
-    s_deviceClass.insert("o:primaryStateTypeId", basicTypeToString(Uuid));
-    s_deviceClass.insert("o:primaryActionTypeId", basicTypeToString(Uuid));
     s_deviceClass.insert("stateTypes", QVariantList() << stateTypeRef());
     s_deviceClass.insert("eventTypes", QVariantList() << eventTypeRef());
     s_deviceClass.insert("actionTypes", QVariantList() << actionTypeRef());
@@ -437,13 +424,11 @@ QVariantMap JsonTypes::allTypes()
 {
     QVariantMap allTypes;
     allTypes.insert("BasicType", basicType());
-    allTypes.insert("BasicTag", basicTag());
     allTypes.insert("ParamType", paramTypeDescription());
     allTypes.insert("InputType", inputType());
     allTypes.insert("Unit", unit());
     allTypes.insert("CreateMethod", createMethod());
     allTypes.insert("SetupMethod", setupMethod());
-    allTypes.insert("DeviceIcon", deviceIcon());
     allTypes.insert("ValueOperator", valueOperator());
     allTypes.insert("StateOperator", stateOperator());
     allTypes.insert("RemovePolicy", removePolicy());
@@ -507,11 +492,6 @@ QVariantMap JsonTypes::packEventType(const EventType &eventType, const PluginId 
     variant.insert("name", eventType.name());
     variant.insert("displayName", NymeaCore::instance()->deviceManager()->translator()->translate(pluginId, eventType.displayName(), locale));
     variant.insert("index", eventType.index());
-    if (!eventType.ruleRelevant())
-        variant.insert("ruleRelevant", false);
-
-    if (eventType.graphRelevant())
-        variant.insert("graphRelevant", true);
 
     QVariantList paramTypes;
     foreach (const ParamType &paramType, eventType.paramTypes())
@@ -641,12 +621,6 @@ QVariantMap JsonTypes::packStateType(const StateType &stateType, const PluginId 
     variantMap.insert("index", stateType.index());
     variantMap.insert("type", basicTypeToString(stateType.type()));
     variantMap.insert("defaultValue", stateType.defaultValue());
-
-    if (!stateType.ruleRelevant())
-        variantMap.insert("ruleRelevant", false);
-
-    if (stateType.graphRelevant())
-        variantMap.insert("graphRelevant", true);
 
     if (stateType.maxValue().isValid())
         variantMap.insert("maxValue", stateType.maxValue());
@@ -782,12 +756,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass, const QLo
     variant.insert("displayName", NymeaCore::instance()->deviceManager()->translator()->translate(deviceClass.pluginId(), deviceClass.displayName(), locale));
     variant.insert("vendorId", deviceClass.vendorId().toString());
     variant.insert("pluginId", deviceClass.pluginId().toString());
-    variant.insert("deviceIcon", s_deviceIcon.at(deviceClass.deviceIcon()));
     variant.insert("interfaces", deviceClass.interfaces());
-
-    QVariantList basicTags;
-    foreach (const DeviceClass::BasicTag &basicTag, deviceClass.basicTags())
-        basicTags.append(s_basicTag.at(basicTag));
 
     QVariantList stateTypes;
     foreach (const StateType &stateType, deviceClass.stateTypes())
@@ -809,16 +778,6 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass, const QLo
     foreach (const ParamType &paramType, deviceClass.discoveryParamTypes())
         discoveryParamTypes.append(packParamType(paramType, deviceClass.pluginId(), locale));
 
-    if (!deviceClass.criticalStateTypeId().isNull())
-        variant.insert("criticalStateTypeId", deviceClass.criticalStateTypeId().toString());
-
-    if (!deviceClass.primaryStateTypeId().isNull())
-        variant.insert("primaryStateTypeId", deviceClass.primaryStateTypeId().toString());
-
-    if (!deviceClass.primaryActionTypeId().isNull())
-        variant.insert("primaryActionTypeId", deviceClass.primaryActionTypeId().toString());
-
-    variant.insert("basicTags", basicTags);
     variant.insert("paramTypes", paramTypes);
     variant.insert("discoveryParamTypes", discoveryParamTypes);
     variant.insert("stateTypes", stateTypes);
@@ -1372,7 +1331,6 @@ Rule JsonTypes::unpackRule(const QVariantMap &ruleMap)
     QList<EventDescriptor> eventDescriptors;
     if (ruleMap.contains("eventDescriptors")) {
         QVariantList eventDescriptorVariantList = ruleMap.value("eventDescriptors").toList();
-        qCDebug(dcJsonRpc) << "unpacking eventDescriptors:" << eventDescriptorVariantList;
         foreach (const QVariant &eventDescriptorVariant, eventDescriptorVariantList) {
             eventDescriptors.append(JsonTypes::unpackEventDescriptor(eventDescriptorVariant.toMap()));
         }
@@ -2120,18 +2078,6 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateEnum(s_unit, variant);
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(unitRef());
-                    return result;
-                }
-            } else if (refName == basicTagRef()) {
-                QPair<bool, QString> result = validateEnum(s_basicTag, variant);
-                if (!result.first) {
-                    qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(basicTagRef());
-                    return result;
-                }
-            } else if (refName == deviceIconRef()) {
-                QPair<bool, QString> result = validateEnum(s_deviceIcon, variant);
-                if (!result.first) {
-                    qCWarning(dcJsonRpc) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(deviceIconRef());
                     return result;
                 }
             } else if (refName == repeatingModeRef()) {

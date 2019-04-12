@@ -113,8 +113,6 @@ private:
     // load and verify enum values
     QPair<bool, Types::Unit> loadAndVerifyUnit(const QString &unitString) const;
     QPair<bool, Types::InputType> loadAndVerifyInputType(const QString &inputType) const;
-    QPair<bool, DeviceClass::BasicTag> loadAndVerifyBasicTag(const QString &basicTag) const;
-    QPair<bool, DeviceClass::DeviceIcon> loadAndVerifyDeviceIcon(const QString &deviceIcon) const;
 
     // FIXME: This is expensive because it will open all the files.
     // Once DeviceManager is in libnymea-core this should probably be there too.

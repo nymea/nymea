@@ -49,12 +49,6 @@ public:
     ParamTypes paramTypes() const;
     void setParamTypes(const ParamTypes &paramTypes);
 
-    bool ruleRelevant() const;
-    void setRuleRelevant(const bool &ruleRelevant);
-
-    bool graphRelevant() const;
-    void setGraphRelevant(const bool &graphRelevant);
-
     bool isValid() const;
 
     static QStringList typeProperties();
@@ -66,8 +60,6 @@ private:
     QString m_displayName;
     int m_index;
     QList<ParamType> m_paramTypes;
-    bool m_ruleRelevant;
-    bool m_graphRelevant;
 };
 
 class EventTypes: public QList<EventType>

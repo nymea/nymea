@@ -594,15 +594,6 @@ void DevicePlugin::loadMetaData()
             }
             deviceClass.setCreateMethods(createMethods);
 
-            // Read device icon
-            QPair<bool, DeviceClass::DeviceIcon> deviceIconVerification = loadAndVerifyDeviceIcon(deviceClassObject.value("deviceIcon").toString());
-            if (!deviceIconVerification.first) {
-                broken = true;
-                break;
-            } else {
-                deviceClass.setDeviceIcon(deviceIconVerification.second);
-            }
-
             // Read params
             QPair<bool, QList<ParamType> > paramTypesVerification = parseParamTypes(deviceClassObject.value("paramTypes").toArray());
             if (!paramTypesVerification.first) {
@@ -643,19 +634,6 @@ void DevicePlugin::loadMetaData()
 
             // Read pairing info
             deviceClass.setPairingInfo(deviceClassObject.value("pairingInfo").toString());
-
-            // Read basic tags
-            QList<DeviceClass::BasicTag> basicTags;
-            foreach (const QJsonValue &basicTagJson, deviceClassObject.value("basicTags").toArray()) {
-                QPair<bool, DeviceClass::BasicTag> basicTagVerification = loadAndVerifyBasicTag(basicTagJson.toString());
-                if (!basicTagVerification.first) {
-                    broken = true;
-                    break;
-                } else {
-                    basicTags.append(basicTagVerification.second);
-                }
-            }
-            deviceClass.setBasicTags(basicTags);
 
             QList<ActionType> actionTypes;
             QList<StateType> stateTypes;
@@ -720,12 +698,6 @@ void DevicePlugin::loadMetaData()
                 if (st.contains("maxValue"))
                     stateType.setMaxValue(st.value("maxValue").toVariant());
 
-                if (st.contains("ruleRelevant"))
-                    stateType.setRuleRelevant(st.value("ruleRelevant").toBool());
-
-                if (st.contains("graphRelevant"))
-                    stateType.setGraphRelevant(st.value("graphRelevant").toBool());
-
                 if (st.contains("possibleValues")) {
                     QVariantList possibleValues;
                     foreach (const QJsonValue &possibleValueJson, st.value("possibleValues").toArray()) {
@@ -748,9 +720,6 @@ void DevicePlugin::loadMetaData()
 
                 // Events for state changed
                 EventType eventType(EventTypeId(stateType.id().toString()));
-                if (st.contains("eventRuleRelevant"))
-                    eventType.setRuleRelevant(st.value("eventRuleRelevant").toBool());
-
                 eventType.setName(st.value("name").toString());
                 eventType.setDisplayName(st.value("displayNameEvent").toString());
                 ParamType paramType(ParamTypeId(stateType.id().toString()), st.value("name").toString(), stateType.type());
@@ -838,11 +807,6 @@ void DevicePlugin::loadMetaData()
                 eventType.setName(et.value("name").toString());
                 eventType.setDisplayName(et.value("displayName").toString());
                 eventType.setIndex(index++);
-                if (et.contains("ruleRelevant"))
-                    eventType.setRuleRelevant(et.value("ruleRelevant").toBool());
-
-                if (et.contains("graphRelevant"))
-                    eventType.setGraphRelevant(et.value("graphRelevant").toBool());
 
                 QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(et.value("paramTypes").toArray());
                 if (!paramVerification.first) {
@@ -854,41 +818,6 @@ void DevicePlugin::loadMetaData()
                 eventTypes.append(eventType);
             }
             deviceClass.setEventTypes(eventTypes);
-
-            // Note: keep this after the actionType / stateType / eventType parsing
-            if (deviceClassObject.contains("criticalStateTypeId")) {
-                StateTypeId criticalStateTypeId = StateTypeId(deviceClassObject.value("criticalStateTypeId").toString());
-                if (!deviceClass.hasStateType(criticalStateTypeId)) {
-                    qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << ": the definend critical stateTypeId" << criticalStateTypeId.toString() << "does not match any StateType of this DeviceClass.";
-                    broken = true;
-                } else if (deviceClass.getStateType(criticalStateTypeId).type() != QVariant::Bool) {
-                    // Make sure the critical stateType is a bool state
-                    qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << ": the definend critical stateTypeId" << criticalStateTypeId.toString() << "is not a bool StateType.";
-                    broken = true;
-                } else {
-                    deviceClass.setCriticalStateTypeId(criticalStateTypeId);
-                }
-            }
-
-            if (deviceClassObject.contains("primaryStateTypeId")) {
-                StateTypeId primaryStateTypeId = StateTypeId(deviceClassObject.value("primaryStateTypeId").toString());
-                if (!deviceClass.hasStateType(primaryStateTypeId)) {
-                    qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << ": the definend primary stateTypeId" << primaryStateTypeId.toString() << "does not match any StateType of this DeviceClass.";
-                    broken = true;
-                } else {
-                    deviceClass.setPrimaryStateTypeId(primaryStateTypeId);
-                }
-            }
-
-            if (deviceClassObject.contains("primaryActionTypeId")) {
-                ActionTypeId primaryActionTypeId = ActionTypeId(deviceClassObject.value("primaryActionTypeId").toString());
-                if (!deviceClass.hasActionType(primaryActionTypeId)) {
-                    qCWarning(dcDeviceManager()) << "Skipping device class" << deviceClass.name() << ": the definend primary actionTypeId" << primaryActionTypeId.toString() << "does not match any ActionType of this DeviceClass.";
-                    broken = true;
-                } else {
-                    deviceClass.setPrimaryActionTypeId(primaryActionTypeId);
-                }
-            }
 
             // Read interfaces
             QStringList interfaces;
@@ -1051,58 +980,6 @@ QPair<bool, Types::InputType> DevicePlugin::loadAndVerifyInputType(const QString
     }
 
     return QPair<bool, Types::InputType>(true, (Types::InputType)enumValue);
-}
-
-QPair<bool, DeviceClass::BasicTag> DevicePlugin::loadAndVerifyBasicTag(const QString &basicTag) const
-{
-    if (basicTag.isEmpty())
-        return QPair<bool, DeviceClass::BasicTag>(true, DeviceClass::BasicTagDevice);
-
-    QMetaObject metaObject = DeviceClass::staticMetaObject;
-    int enumIndex = metaObject.indexOfEnumerator(QString("BasicTag").toLatin1().data());
-    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
-
-    int enumValue = -1;
-    for (int i = 0; i < metaEnum.keyCount(); i++) {
-        if (QString(metaEnum.valueToKey(metaEnum.value(i))) == QString("BasicTag" + basicTag)) {
-            enumValue = metaEnum.value(i);
-            break;
-        }
-    }
-
-    // inform the plugin developer about the error in the plugin json file
-    if (enumValue == -1) {
-        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin:").arg(pluginName()).toLatin1().data() << QString("Invalid basicTag \"%1\" in json file.").arg(basicTag).toLatin1().data();
-        return QPair<bool, DeviceClass::BasicTag>(false, DeviceClass::BasicTagDevice);
-    }
-
-    return QPair<bool, DeviceClass::BasicTag>(true, (DeviceClass::BasicTag)enumValue);
-}
-
-QPair<bool, DeviceClass::DeviceIcon> DevicePlugin::loadAndVerifyDeviceIcon(const QString &deviceIcon) const
-{
-    if (deviceIcon.isEmpty())
-        return QPair<bool, DeviceClass::DeviceIcon>(true, DeviceClass::DeviceIconNone);
-
-    QMetaObject metaObject = DeviceClass::staticMetaObject;
-    int enumIndex = metaObject.indexOfEnumerator(QString("DeviceIcon").toLatin1().data());
-    QMetaEnum metaEnum = metaObject.enumerator(enumIndex);
-
-    int enumValue = -1;
-    for (int i = 0; i < metaEnum.keyCount(); i++) {
-        if (QString(metaEnum.valueToKey(metaEnum.value(i))) == QString("DeviceIcon" + deviceIcon)) {
-            enumValue = metaEnum.value(i);
-            break;
-        }
-    }
-
-    // inform the plugin developer about the error in the plugin json file
-    if (enumValue == -1) {
-        qCWarning(dcDeviceManager()) << QString("\"%1\" plugin:").arg(pluginName()).toLatin1().data() << QString("Invalid deviceIcon \"%1\" in json file.").arg(deviceIcon).toLatin1().data();
-        return QPair<bool, DeviceClass::DeviceIcon>(false, DeviceClass::DeviceIconNone);
-    }
-
-    return QPair<bool, DeviceClass::DeviceIcon>(true, (DeviceClass::DeviceIcon)enumValue);
 }
 
 Interfaces DevicePlugin::allInterfaces()

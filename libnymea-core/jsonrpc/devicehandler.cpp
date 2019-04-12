@@ -298,6 +298,12 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.insert("device", JsonTypes::deviceRef());
     setParams("DeviceChanged", params);
 
+    params.clear(); returns.clear();
+    setDescription("PluginConfigurationChanged", "Emitted whenever a plugin's configuration is changed.");
+    params.insert("pluginId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("configuration", QVariantList() << JsonTypes::paramRef());
+    setParams("PluginConfigurationChanged", params);
+
     connect(NymeaCore::instance(), &NymeaCore::pluginConfigChanged, this, &DeviceHandler::pluginConfigChanged);
     connect(NymeaCore::instance(), &NymeaCore::deviceStateChanged, this, &DeviceHandler::deviceStateChanged);
     connect(NymeaCore::instance(), &NymeaCore::deviceRemoved, this, &DeviceHandler::deviceRemovedNotification);
@@ -637,11 +643,11 @@ void DeviceHandler::pluginConfigChanged(const PluginId &id, const ParamList &con
 {
     QVariantMap params;
     params.insert("pluginId", id);
-    QVariantMap configMap;
+    QVariantList configList;
     foreach (const Param &param, config) {
-        configMap.insert(param.paramTypeId().toString(), param.value());
+        configList << JsonTypes::packParam(param);
     }
-    params.insert("configuration", configMap);
+    params.insert("configuration", configList);
     emit PluginConfigurationChanged(params);
 }
 

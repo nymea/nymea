@@ -143,9 +143,11 @@ void NymeaTestBase::initTestCase()
     m_clientId = QUuid::createUuid();
     m_mockTcpServer->clientConnected(m_clientId);
 
+    QVariant response = injectAndWait("JSONRPC.Hello");
+
     createMockDevice();
 
-    QVariant response = injectAndWait("Devices.GetConfiguredDevices", {});
+    response = injectAndWait("Devices.GetConfiguredDevices", {});
     foreach (const QVariant &device, response.toMap().value("params").toMap().value("devices").toList()) {
         if (device.toMap().value("deviceClassId").toUuid() == mockDeviceAutoClassId) {
             m_mockDeviceAutoId = DeviceId(device.toMap().value("id").toString());
@@ -442,6 +444,8 @@ void NymeaTestBase::restartServer()
     coreSpy.wait();
     m_mockTcpServer = MockTcpServer::servers().first();
     m_mockTcpServer->clientConnected(m_clientId);
+
+    injectAndWait("JSONRPC.Hello");
 }
 
 void NymeaTestBase::clearLoggingDatabase()

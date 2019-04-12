@@ -36,9 +36,7 @@
 /*! Constructs a EventType object with the given \a id. */
 EventType::EventType(const EventTypeId &id):
     m_id(id),
-    m_index(0),
-    m_ruleRelevant(true),
-    m_graphRelevant(false)
+    m_index(0)
 {
 
 }
@@ -100,30 +98,6 @@ void EventType::setParamTypes(const ParamTypes &paramTypes)
     m_paramTypes = paramTypes;
 }
 
-/*! Returns true if this EventType is relevant for the rule from a user perspective. */
-bool EventType::ruleRelevant() const
-{
-    return m_ruleRelevant;
-}
-
-/*! Sets this EventType relevant for the rule from a user perspective to \a ruleRelevant. */
-void EventType::setRuleRelevant(const bool &ruleRelevant)
-{
-    m_ruleRelevant = ruleRelevant;
-}
-
-/*! Returns true if this EventType is interesting to visualize the logs in a graph/chart from a user perspective. */
-bool EventType::graphRelevant() const
-{
-    return m_graphRelevant;
-}
-
-/*! Sets this EventType \a graphRelevant to inform the client application if this \l{EventType} is interesting to visualize the logs in a graph/chart. */
-void EventType::setGraphRelevant(const bool &graphRelevant)
-{
-    m_graphRelevant = graphRelevant;
-}
-
 /*! Returns true if this EventType has a valid id and name */
 bool EventType::isValid() const
 {
@@ -133,7 +107,7 @@ bool EventType::isValid() const
 /*! Returns a list of all valid JSON properties a EventType JSON definition can have. */
 QStringList EventType::typeProperties()
 {
-    return QStringList() << "id" << "name" << "displayName" << "paramTypes" << "ruleRelevant" << "graphRelevant";
+    return QStringList() << "id" << "name" << "displayName" << "paramTypes";
 }
 
 /*! Returns a list of mandatory JSON properties a EventType JSON definition must have. */

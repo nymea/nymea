@@ -15,11 +15,10 @@ doc.commands += cd $$top_srcdir/doc; ./generate-interfaces-qdoc.py;
 doc.commands += cd $$top_srcdir/doc; ./generate-api-qdoc.py;
 doc.commands += cd $$top_srcdir/doc; qdoc --highlighting config.qdocconf; cp -r images/* html/images/; \
                 cp -r favicons/* html/; cp -r $$top_srcdir/doc/html $$top_builddir/
+QMAKE_EXTRA_TARGETS += doc
 
 licensecheck.commands = $$top_srcdir/tests/auto/checklicenseheaders.sh $$top_srcdir
-
-test.depends = licensecheck
-test.commands = LD_LIBRARY_PATH=$$top_builddir/libnymea-core:$$top_builddir/libnymea make check
+QMAKE_EXTRA_TARGETS += licensecheck
 
 # Translations:
 # make lupdate to update .ts files
@@ -42,7 +41,11 @@ translations.path = /usr/share/nymea/translations
 translations.depends = lrelease
 INSTALLS += translations
 
-QMAKE_EXTRA_TARGETS += licensecheck doc test lupdate lrelease
+QMAKE_EXTRA_TARGETS += lupdate lrelease
+
+test.depends = licensecheck lrelease
+test.commands = LD_LIBRARY_PATH=$$top_builddir/libnymea-core:$$top_builddir/libnymea make check
+QMAKE_EXTRA_TARGETS += test
 
 # Show doc files in project tree
 OTHER_FILES += doc/*.qdoc* \

@@ -248,6 +248,11 @@ JsonReply *JsonRPCServer::Hello(const QVariantMap &params)
 
     qCDebug(dcJsonRpc()) << "Client" << clientId << "initiated handshake." << m_clientLocales.value(clientId);
 
+    // If we waited for the handshake, here it is. Remove the timer...
+    if (m_newConnectionWaitTimers.contains(clientId)) {
+        delete m_newConnectionWaitTimers.take(clientId);
+    }
+
     return createReply(createWelcomeMessage(interface, clientId));
 }
 
@@ -285,6 +290,7 @@ JsonReply* JsonRPCServer::Version(const QVariantMap &params) const
 JsonReply* JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
 {
     QUuid clientId = this->property("clientId").toUuid();
+    Q_ASSERT_X(m_clientNotifications.contains(clientId), "JsonRPCServer", "SetNotificationStatus for an unknown client called");
     m_clientNotifications[clientId] = params.value("enabled").toBool();
     QVariantMap returns;
     returns.insert("enabled", m_clientNotifications[clientId]);
@@ -585,12 +591,16 @@ void JsonRPCServer::processJsonPacket(TransportInterface *interface, const QUuid
         if (NymeaCore::instance()->userManager()->initRequired()) {
             if (!(targetNamespace == "JSONRPC" && authExemptMethodsNoUser.contains(method)) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
                 sendUnauthorizedResponse(interface, clientId, commandId, "Initial setup required. Call CreateUser first.");
+                qCWarning(dcJsonRpc()) << "Initial setup required but client does not call the setup. Dropping connection.";
+                interface->terminateClientConnection(clientId);
                 return;
             }
         } else {
             // ok, we have a user. if there isn't a valid token, let's fail unless this is a Authenticate, Introspect  Hello call
             if (!(targetNamespace == "JSONRPC" && authExemptMethodsWithUser.contains(method)) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
                 sendUnauthorizedResponse(interface, clientId, commandId, "Forbidden: Invalid token.");
+                qCWarning(dcJsonRpc()) << "Client did not not present a valid token. Dropping connection.";
+                interface->terminateClientConnection(clientId);
                 return;
             }
         }
@@ -622,7 +632,16 @@ void JsonRPCServer::processJsonPacket(TransportInterface *interface, const QUuid
 
     qCDebug(dcJsonRpc()) << "Invoking method" << targetNamespace << method.toLatin1().data();
 
-    if (targetNamespace != "JSONRPC" || method != "Hello") {
+    if (!(targetNamespace == "JSONRPC" && method == "Hello")) {
+        // This is not the handshake message. If we've waited for it, consider this a protocol violation and drop connection
+        if (m_newConnectionWaitTimers.contains(clientId)) {
+            sendErrorResponse(interface, clientId, commandId, "Handshake required. Call JSONRPC.Hello first.");
+            qCWarning(dcJsonRpc()) << "Connection requires a handshake but client did not initiate handshake. Dropping connection";
+            interface->terminateClientConnection(clientId);
+            return;
+        }
+
+
         // Unless this is the Hello message, which allows setting the locale explicity, attach the locale
         // for this connection
         // If the client did request a locale in the Hello message, use that locale
@@ -767,7 +786,17 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
     // Initialize the connection locale to the settings default
     m_clientLocales.insert(clientId, NymeaCore::instance()->configuration()->locale());
 
-    interface->sendData(clientId, QJsonDocument::fromVariant(createWelcomeMessage(interface, clientId)).toJson(QJsonDocument::Compact));
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, [this, timer, clientId, interface](){
+        // Client did not initiate handshake within timeout. Drop connection...
+        m_clientTransports.value(clientId)->disconnect();
+        timer->deleteLater();
+        m_newConnectionWaitTimers.remove(clientId);
+        qCDebug(dcJsonRpc()) << "Client" << clientId << "did not initiate the handshake within the required timeout. Dropping connection.";
+        interface->terminateClientConnection(clientId);
+    });
+    m_newConnectionWaitTimers.insert(clientId, timer);
+    timer->start(10000);
 }
 
 void JsonRPCServer::clientDisconnected(const QUuid &clientId)
@@ -779,6 +808,9 @@ void JsonRPCServer::clientDisconnected(const QUuid &clientId)
     m_clientLocales.remove(clientId);
     if (m_pushButtonTransactions.values().contains(clientId)) {
         NymeaCore::instance()->userManager()->cancelPushButtonAuth(m_pushButtonTransactions.key(clientId));
+    }
+    if (m_newConnectionWaitTimers.contains(clientId)) {
+        delete m_newConnectionWaitTimers.take(clientId);
     }
 }
 

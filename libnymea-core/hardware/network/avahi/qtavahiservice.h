@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
  *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -27,6 +28,7 @@
 #include <QString>
 #include <QObject>
 #include <QHostAddress>
+#include <QTimer>
 
 namespace nymeaserver {
 
@@ -38,7 +40,7 @@ class QtAvahiService : public QObject
 
 public:
     enum QtAvahiServiceState {
-        QtAvahiServiceStateUncomitted = 0,
+        QtAvahiServiceStateUncommitted = 0,
         QtAvahiServiceStateRegistering = 1,
         QtAvahiServiceStateEstablished = 2,
         QtAvahiServiceStateCollision = 3,
@@ -56,8 +58,8 @@ public:
     QHash<QString, QString> txtRecords() const;
     QtAvahiServiceState state() const;
 
-    bool registerService(const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType = "_http._tcp", const QHash<QString, QString> &txtRecords = QHash<QString, QString>());
-    void resetService();
+    bool registerService(const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType = "_http._tcp", const QHash<QString, QString> &txtRecords = QHash<QString, QString>(), bool silent = false);
+    void resetService(bool silent = false);
 
     bool updateTxtRecord(const QHash<QString, QString> &txtRecords);
 
@@ -71,13 +73,20 @@ protected:
     QtAvahiServicePrivate *d_ptr;
 
 private slots:
-    bool handlCollision();
+    bool handleCollision();
     void onStateChanged(const QtAvahiServiceState &state);
 
 private:
     QtAvahiServiceState m_state;
     Q_DECLARE_PRIVATE(QtAvahiService)
 
+    QTimer m_reregisterTimer;
+
+    QString m_name;
+    QHostAddress m_hostAddress;
+    quint16 m_port;
+    QString m_serviceType;
+    QHash<QString, QString> m_txtRecords;
 };
 
 QDebug operator <<(QDebug dbg, QtAvahiService *service);

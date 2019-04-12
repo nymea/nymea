@@ -46,7 +46,7 @@ QtAvahiServiceBrowserImplementation::QtAvahiServiceBrowserImplementation(QObject
 
     connect(d_ptr->client, &QtAvahiClient::clientStateChanged, this, &QtAvahiServiceBrowserImplementation::onClientStateChanged);
 
-    qCDebug(dcAvahi()) << "-->" << name() << "created successfully.";
+    qCDebug(dcAvahiDebug()) << "-->" << name() << "created successfully.";
 }
 
 /*! Destructs this \l{QtAvahiServiceBrowserImplementation}. */
@@ -86,7 +86,7 @@ bool QtAvahiServiceBrowserImplementation::enabled() const
 void QtAvahiServiceBrowserImplementation::onClientStateChanged(const QtAvahiClient::QtAvahiClientState &state)
 {
     if (state == QtAvahiClient::QtAvahiClientStateRunning) {
-        qCDebug(dcAvahi()) << "Service browser client connected.";
+        qCDebug(dcAvahiDebug()) << "Service browser client connected.";
         // Return if we already have a service type browser
         if (d_ptr->serviceTypeBrowser)
             return;

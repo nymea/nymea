@@ -1,0 +1,11 @@
+{
+    "extends": "sensor",
+    "description": "This interface represents a wind sensor measurment and has the unit [m/s].",
+    "states": [
+        {
+            "name": "windSpeed",
+            "type": "double",
+            "unit": "MeterPerSecond"
+        }
+    ]
+}

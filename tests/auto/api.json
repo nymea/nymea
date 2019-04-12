@@ -1,4 +1,4 @@
-1.13
+1.14
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -78,7 +78,7 @@
             }
         },
         "Configuration.GetAvailableLanguages": {
-            "description": "Returns a list of locale codes available for the server. i.e. en_US, de_AT",
+            "description": "DEPRECATED - Use the locale property in the Handshake message instead - Returns a list of locale codes available for the server. i.e. en_US, de_AT",
             "params": {
             },
             "returns": {
@@ -163,7 +163,7 @@
             }
         },
         "Configuration.SetLanguage": {
-            "description": "Sets the server language to the given language. See also: \"GetAvailableLanguages\"",
+            "description": "DEPRECATED - Use the locale property in the Handshake message instead - Sets the server language to the given language. See also: \"GetAvailableLanguages\"",
             "params": {
                 "language": "String"
             },
@@ -492,14 +492,16 @@
             }
         },
         "JSONRPC.Hello": {
-            "description": "Upon first connection, nymea will automatically send a welcome message containing information about the setup. If this message is lost for whatever reason (connections with multiple hops might drop this if nymea sends it too early), the exact same message can be retrieved multiple times by calling this Hello method. Note that the contents might change if the system changed its state in the meantime, e.g. initialSetupRequired might turn false if the initial setup has been performed in the meantime.",
+            "description": "Initiates a connection. Use this method to perform an initial handshake of the connection. Optionally, a parameter \"locale\" is can be passed to set up the used locale for this connection. Strings such as DeviceClass displayNames etc will be localized to this locale. If this parameter is omitted, the default system locale (depending on the configuration) is used. The reply of this method contains information about this core instance such as version information, uuid and its name. The locale valueindicates the locale used for this connection. Note: This method can be called multiple times. The locale used in the last call for this connection will be used. Other values, like initialSetupRequired might change if the setup has been performed in the meantime.",
             "params": {
+                "o:locale": "String"
             },
             "returns": {
                 "authenticationRequired": "Bool",
                 "id": "Int",
                 "initialSetupRequired": "Bool",
                 "language": "String",
+                "locale": "String",
                 "name": "String",
                 "protocol version": "String",
                 "pushButtonAuthAvailable": "Bool",

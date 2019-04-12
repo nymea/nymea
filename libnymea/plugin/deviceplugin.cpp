@@ -104,8 +104,7 @@
 
 /*! DevicePlugin constructor. DevicePlugins will be instantiated by the DeviceManager, its \a parent. */
 DevicePlugin::DevicePlugin(QObject *parent):
-    QObject(parent),
-    m_translator(new QTranslator(this))
+    QObject(parent)
 {
 }
 
@@ -124,7 +123,7 @@ QString DevicePlugin::pluginName() const
 /*! Returns the displayName of this DevicePlugin, to be shown to the user, translated. */
 QString DevicePlugin::pluginDisplayName() const
 {
-    return translateValue(m_metaData.value("name").toString(), m_metaData.value("displayName").toString());
+    return m_metaData.value("displayName").toString();
 }
 
 /*! Returns the id of this DevicePlugin.
@@ -141,7 +140,7 @@ QList<Vendor> DevicePlugin::supportedVendors() const
     QList<Vendor> vendors;
     foreach (const QJsonValue &vendorJson, m_metaData.value("vendors").toArray()) {
         Vendor vendor(vendorJson.toObject().value("id").toString(), vendorJson.toObject().value("name").toString());
-        vendor.setDisplayName(translateValue(m_metaData.value("name").toString(), vendorJson.toObject().value("displayName").toString()));
+        vendor.setDisplayName(vendorJson.toObject().value("displayName").toString());
         vendors.append(vendor);
     }
     return vendors;
@@ -153,33 +152,6 @@ QList<Vendor> DevicePlugin::supportedVendors() const
 QList<DeviceClass> DevicePlugin::supportedDevices() const
 {
     return m_supportedDevices;
-}
-
-/*! Returns the translator of this \l{DevicePlugin}. */
-QTranslator *DevicePlugin::translator()
-{
-    return m_translator;
-}
-
-/*! Returns true if the given \a locale could be set for this \l{DevicePlugin}. */
-bool DevicePlugin::setLocale(const QLocale &locale)
-{
-    // check if there are local translations
-    if (m_translator->load(locale, m_metaData.value("id").toString(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm")) {
-        qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" << QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath() + "/" + m_metaData.value("id").toString() + "-" + locale.name() + ".qm";
-        return true;
-    }
-
-    // otherwise use the system translations
-    if (m_translator->load(locale, m_metaData.value("id").toString(), "-", NymeaSettings::translationsPath(), ".qm")) {
-        qCDebug(dcDeviceManager()) << "* Load translation" << locale.name() << "for" << pluginName() << "from" <<  NymeaSettings::translationsPath();
-        return true;
-    }
-
-    if (locale.name() != "en_US")
-        qCWarning(dcDeviceManager()) << "* Could not load translation" << locale.name() << "for plugin" << pluginName();
-
-    return false;
 }
 
 /*! Override this if your plugin supports Device with DeviceClass::CreationMethodAuto.
@@ -327,7 +299,7 @@ QPair<bool, QList<ParamType> > DevicePlugin::parseParamTypes(const QJsonArray &a
         }
 
         ParamType paramType(ParamTypeId(pt.value("id").toString()), pt.value("name").toString(), t, pt.value("defaultValue").toVariant());
-        paramType.setDisplayName(translateValue(m_metaData.value("name").toString(), pt.value("displayName").toString()));
+        paramType.setDisplayName(pt.value("displayName").toString());
 
 
         // Set allowed values
@@ -458,6 +430,11 @@ DeviceManager::DeviceError DevicePlugin::setConfigValue(const ParamTypeId &param
     return DeviceManager::DeviceErrorNoError;
 }
 
+bool DevicePlugin::isBuiltIn() const
+{
+    return m_metaData.value("builtIn").toBool();
+}
+
 /*! Returns a pointer to the \l{DeviceManager}.
     When implementing a plugin, use this to find the \l{Device}{Devices} you need.
 */
@@ -529,7 +506,7 @@ void DevicePlugin::loadMetaData()
 
     // Note: The DevicePlugin has no type class, so we define the json properties here
     QStringList pluginMandatoryJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors";
-    QStringList pluginJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors" << "paramTypes";
+    QStringList pluginJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors" << "paramTypes" << "builtIn";
 
     QPair<QStringList, QStringList> verificationResult = verifyFields(pluginJsonProperties, pluginMandatoryJsonProperties, m_metaData);
 
@@ -593,7 +570,7 @@ void DevicePlugin::loadMetaData()
 
             DeviceClass deviceClass(pluginId(), vendorId, deviceClassObject.value("id").toString());
             deviceClass.setName(deviceClassObject.value("name").toString());
-            deviceClass.setDisplayName(translateValue(m_metaData.value("name").toString(), deviceClassObject.value("displayName").toString()));
+            deviceClass.setDisplayName(deviceClassObject.value("displayName").toString());
 
             // Read create methods
             DeviceClass::CreateMethods createMethods;
@@ -665,7 +642,7 @@ void DevicePlugin::loadMetaData()
             deviceClass.setSetupMethod(setupMethod);
 
             // Read pairing info
-            deviceClass.setPairingInfo(translateValue(m_metaData.value("name").toString(), deviceClassObject.value("pairingInfo").toString()));
+            deviceClass.setPairingInfo(deviceClassObject.value("pairingInfo").toString());
 
             // Read basic tags
             QList<DeviceClass::BasicTag> basicTags;
@@ -725,7 +702,7 @@ void DevicePlugin::loadMetaData()
 
                 StateType stateType(st.value("id").toString());
                 stateType.setName(st.value("name").toString());
-                stateType.setDisplayName(translateValue(m_metaData.value("name").toString(), st.value("displayName").toString()));
+                stateType.setDisplayName(st.value("displayName").toString());
                 stateType.setIndex(index++);
                 stateType.setType(t);
                 QPair<bool, Types::Unit> unitVerification = loadAndVerifyUnit(st.value("unit").toString());
@@ -775,9 +752,9 @@ void DevicePlugin::loadMetaData()
                     eventType.setRuleRelevant(st.value("eventRuleRelevant").toBool());
 
                 eventType.setName(st.value("name").toString());
-                eventType.setDisplayName(translateValue(m_metaData.value("name").toString(), st.value("displayNameEvent").toString()));
+                eventType.setDisplayName(st.value("displayNameEvent").toString());
                 ParamType paramType(ParamTypeId(stateType.id().toString()), st.value("name").toString(), stateType.type());
-                paramType.setDisplayName(translateValue(m_metaData.value("name").toString(), st.value("displayName").toString()));
+                paramType.setDisplayName(st.value("displayName").toString());
                 paramType.setAllowedValues(stateType.possibleValues());
                 paramType.setDefaultValue(stateType.defaultValue());
                 paramType.setMinValue(stateType.minValue());
@@ -791,7 +768,7 @@ void DevicePlugin::loadMetaData()
                 if (writableState) {
                     ActionType actionType(ActionTypeId(stateType.id().toString()));
                     actionType.setName(stateType.name());
-                    actionType.setDisplayName(translateValue(m_metaData.value("name").toString(), st.value("displayNameAction").toString()));
+                    actionType.setDisplayName(st.value("displayNameAction").toString());
                     actionType.setIndex(stateType.index());
                     actionType.setParamTypes(QList<ParamType>() << paramType);
                     actionTypes.append(actionType);
@@ -821,7 +798,7 @@ void DevicePlugin::loadMetaData()
 
                 ActionType actionType(at.value("id").toString());
                 actionType.setName(at.value("name").toString());
-                actionType.setDisplayName(translateValue(m_metaData.value("name").toString(), at.value("displayName").toString()));
+                actionType.setDisplayName(at.value("displayName").toString());
                 actionType.setIndex(index++);
 
                 QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(at.value("paramTypes").toArray());
@@ -859,7 +836,7 @@ void DevicePlugin::loadMetaData()
 
                 EventType eventType(et.value("id").toString());
                 eventType.setName(et.value("name").toString());
-                eventType.setDisplayName(translateValue(m_metaData.value("name").toString(), et.value("displayName").toString()));
+                eventType.setDisplayName(et.value("displayName").toString());
                 eventType.setIndex(index++);
                 if (et.contains("ruleRelevant"))
                     eventType.setRuleRelevant(et.value("ruleRelevant").toBool());
@@ -1022,15 +999,6 @@ void DevicePlugin::loadMetaData()
             }
         }
     }
-}
-
-QString DevicePlugin::translateValue(const QString &context, const QString &string) const
-{
-    QString translation = m_translator->translate(context.toUtf8().constData(), string.toUtf8().constData());
-    if (translation.isEmpty())
-        translation = string;
-
-    return translation;
 }
 
 QPair<bool, Types::Unit> DevicePlugin::loadAndVerifyUnit(const QString &unitString) const

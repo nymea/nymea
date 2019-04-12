@@ -180,23 +180,23 @@ public:
     DECLARE_OBJECT(mqttPolicy, "MqttPolicy")
 
     // pack types
-    static QVariantMap packEventType(const EventType &eventType);
+    static QVariantMap packEventType(const EventType &eventType, const PluginId &pluginId, const QLocale &locale);
     static QVariantMap packEvent(const Event &event);
     static QVariantMap packEventDescriptor(const EventDescriptor &event);
-    static QVariantMap packActionType(const ActionType &actionType);
+    static QVariantMap packActionType(const ActionType &actionType, const PluginId &pluginId, const QLocale &locale);
     static QVariantMap packAction(const Action &action);
     static QVariantMap packRuleAction(const RuleAction &ruleAction);
     static QVariantMap packRuleActionParam(const RuleActionParam &ruleActionParam);
     static QVariantMap packState(const State &state);
-    static QVariantMap packStateType(const StateType &stateType);
+    static QVariantMap packStateType(const StateType &stateType, const PluginId &pluginId, const QLocale &locale);
     static QVariantMap packStateDescriptor(const StateDescriptor &stateDescriptor);
     static QVariantMap packStateEvaluator(const StateEvaluator &stateEvaluator);
     static QVariantMap packParam(const Param &param);
-    static QVariantMap packParamType(const ParamType &paramType);
+    static QVariantMap packParamType(const ParamType &paramType, const PluginId &pluginId, const QLocale &locale);
     static QVariantMap packParamDescriptor(const ParamDescriptor &paramDescriptor);
-    static QVariantMap packVendor(const Vendor &vendor);
-    static QVariantMap packDeviceClass(const DeviceClass &deviceClass);
-    static QVariantMap packPlugin(DevicePlugin *plugin);
+    static QVariantMap packVendor(const Vendor &vendor, const QLocale &locale);
+    static QVariantMap packDeviceClass(const DeviceClass &deviceClass, const QLocale &locale);
+    static QVariantMap packPlugin(DevicePlugin *pluginid, const QLocale &locale);
     static QVariantMap packDevice(Device *device);
     static QVariantMap packDeviceDescriptor(const DeviceDescriptor &descriptor);
     static QVariantMap packRule(const Rule &rule);
@@ -213,8 +213,8 @@ public:
 
     static QVariantList packRules(const QList<Rule> rules);
     static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
-    static QVariantList packSupportedVendors();
-    static QVariantList packSupportedDevices(const VendorId &vendorId);
+    static QVariantList packSupportedVendors(const QLocale &locale);
+    static QVariantList packSupportedDevices(const VendorId &vendorId, const QLocale &locale);
     static QVariantList packConfiguredDevices();
     static QVariantList packDeviceStates(Device *device);
     static QVariantList packDeviceDescriptors(const QList<DeviceDescriptor> deviceDescriptors);
@@ -227,10 +227,10 @@ public:
     static QVariantList packRuleDescriptions();
     static QVariantList packRuleDescriptions(const QList<Rule> &rules);
 
-    static QVariantList packActionTypes(const DeviceClass &deviceClass);
-    static QVariantList packStateTypes(const DeviceClass &deviceClass);
-    static QVariantList packEventTypes(const DeviceClass &deviceClass);
-    static QVariantList packPlugins();
+    static QVariantList packActionTypes(const DeviceClass &deviceClass, const QLocale &locale);
+    static QVariantList packStateTypes(const DeviceClass &deviceClass, const QLocale &locale);
+    static QVariantList packEventTypes(const DeviceClass &deviceClass, const QLocale &locale);
+    static QVariantList packPlugins(const QLocale &locale);
 
     static QVariantMap packTokenInfo(const TokenInfo &tokenInfo);
 

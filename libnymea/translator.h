@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -21,34 +20,36 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef VENDOR_H
-#define VENDOR_H
+#ifndef TRANSLATOR_H
+#define TRANSLATOR_H
 
-#include "libnymea.h"
 #include "typeutils.h"
+#include "types/deviceclass.h"
 
-#include <QString>
+#include <QTranslator>
 
-class LIBNYMEA_EXPORT Vendor
+class DevicePlugin;
+class DeviceManager;
+
+class Translator
 {
 public:
-    Vendor(const VendorId &id, const QString &name = QString());
+    Translator(DeviceManager *deviceManager);
+    ~Translator();
 
-    VendorId id() const;
-    void setId(const VendorId &id);
-
-    QString name() const;
-    void setName(const QString &name);
-
-    QString displayName() const;
-    void setDisplayName(const QString &displayName);
-
-    bool operator==(const Vendor &other) const;
+    QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale);
 
 private:
-    VendorId m_id;
-    QString m_name;
-    QString m_displayName;
+    void loadTranslator(DevicePlugin *plugin, const QLocale &locale);
+
+private:
+    DeviceManager *m_deviceManager = nullptr;
+
+    struct TranslatorContext {
+        PluginId pluginId;
+        QHash<QString, QTranslator*> translators;
+    };
+    QHash<PluginId, TranslatorContext> m_translatorContexts;
 };
 
-#endif // VENDOR_H
+#endif // TRANSLATOR_H

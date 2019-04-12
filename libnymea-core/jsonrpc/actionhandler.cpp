@@ -100,7 +100,7 @@ JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {
             if (actionType.id() == actionTypeId) {
                 QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);
-                data.insert("actionType", JsonTypes::packActionType(actionType));
+                data.insert("actionType", JsonTypes::packActionType(actionType, deviceClass.pluginId(), params.value("locale").toLocale()));
                 return createReply(data);
             }
         }

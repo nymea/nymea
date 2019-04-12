@@ -75,7 +75,16 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     QVariantMap params;
 
     params.clear(); returns.clear();
-    setDescription("Hello", "Upon first connection, nymea will automatically send a welcome message containing information about the setup. If this message is lost for whatever reason (connections with multiple hops might drop this if nymea sends it too early), the exact same message can be retrieved multiple times by calling this Hello method. Note that the contents might change if the system changed its state in the meantime, e.g. initialSetupRequired might turn false if the initial setup has been performed in the meantime.");
+    setDescription("Hello", "Initiates a connection. Use this method to perform an initial handshake of the "
+                            "connection. Optionally, a parameter \"locale\" is can be passed to set up the used "
+                            "locale for this connection. Strings such as DeviceClass displayNames etc will be "
+                            "localized to this locale. If this parameter is omitted, the default system locale "
+                            "(depending on the configuration) is used. The reply of this method contains information "
+                            "about this core instance such as version information, uuid and its name. The locale value"
+                            "indicates the locale used for this connection. Note: This method can be called multiple "
+                            "times. The locale used in the last call for this connection will be used. Other values, "
+                            "like initialSetupRequired might change if the setup has been performed in the meantime.");
+    params.insert("o:locale", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("Hello", params);
     returns.insert("id", JsonTypes::basicTypeToString(JsonTypes::Int));
     returns.insert("server", JsonTypes::basicTypeToString(JsonTypes::String));
@@ -83,6 +92,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     returns.insert("version", JsonTypes::basicTypeToString(JsonTypes::String));
     returns.insert("uuid", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     returns.insert("language", JsonTypes::basicTypeToString(JsonTypes::String));
+    returns.insert("locale", JsonTypes::basicTypeToString(JsonTypes::String));
     returns.insert("protocol version", JsonTypes::basicTypeToString(JsonTypes::String));
     returns.insert("initialSetupRequired", JsonTypes::basicTypeToString(JsonTypes::Bool));
     returns.insert("authenticationRequired", JsonTypes::basicTypeToString(JsonTypes::Bool));
@@ -225,11 +235,20 @@ QString JsonRPCServer::name() const
     return QStringLiteral("JSONRPC");
 }
 
-JsonReply *JsonRPCServer::Hello(const QVariantMap &params) const
+JsonReply *JsonRPCServer::Hello(const QVariantMap &params)
 {
     Q_UNUSED(params);
     TransportInterface *interface = reinterpret_cast<TransportInterface*>(property("transportInterface").toLongLong());
-    return createReply(createWelcomeMessage(interface));
+
+    qCDebug(dcJsonRpc()) << params;
+    QUuid clientId = this->property("clientId").toUuid();
+    if (params.contains("locale")) {
+        m_clientLocales.insert(clientId, QLocale(params.value("locale").toString()));
+    }
+
+    qCDebug(dcJsonRpc()) << "Client" << clientId << "initiated handshake." << m_clientLocales.value(clientId);
+
+    return createReply(createWelcomeMessage(interface, clientId));
 }
 
 JsonReply* JsonRPCServer::Introspect(const QVariantMap &params) const
@@ -465,7 +484,7 @@ void JsonRPCServer::sendUnauthorizedResponse(TransportInterface *interface, cons
     interface->sendData(clientId, data);
 }
 
-QVariantMap JsonRPCServer::createWelcomeMessage(TransportInterface *interface) const
+QVariantMap JsonRPCServer::createWelcomeMessage(TransportInterface *interface, const QUuid &clientId) const
 {
     QVariantMap handshake;
     handshake.insert("id", 0);
@@ -473,7 +492,9 @@ QVariantMap JsonRPCServer::createWelcomeMessage(TransportInterface *interface) c
     handshake.insert("name", NymeaCore::instance()->configuration()->serverName());
     handshake.insert("version", NYMEA_VERSION_STRING);
     handshake.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
-    handshake.insert("language", NymeaCore::instance()->configuration()->locale().name());
+    // "language" is deprecated
+    handshake.insert("language", m_clientLocales.value(clientId).name());
+    handshake.insert("locale", m_clientLocales.value(clientId).name());
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
     handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? NymeaCore::instance()->userManager()->initRequired() : false));
     handshake.insert("authenticationRequired", interface->configuration().authenticationEnabled);
@@ -600,6 +621,13 @@ void JsonRPCServer::processJsonPacket(TransportInterface *interface, const QUuid
     handler->setProperty("transportInterface", reinterpret_cast<qint64>(interface));
 
     qCDebug(dcJsonRpc()) << "Invoking method" << targetNamespace << method.toLatin1().data();
+
+    if (targetNamespace != "JSONRPC" || method != "Hello") {
+        // Unless this is the Hello message, which allows setting the locale explicity, attach the locale
+        // for this connection
+        // If the client did request a locale in the Hello message, use that locale
+        params.insert("locale", m_clientLocales.value(clientId));
+    }
 
     JsonReply *reply;
     QMetaObject::invokeMethod(handler, method.toLatin1().data(), Q_RETURN_ARG(JsonReply*, reply), Q_ARG(QVariantMap, params));
@@ -736,7 +764,10 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
     // If authentication is required, notifications are disabled by default. Clients must enable them with a valid token
     m_clientNotifications.insert(clientId, !interface->configuration().authenticationEnabled);
 
-    interface->sendData(clientId, QJsonDocument::fromVariant(createWelcomeMessage(interface)).toJson(QJsonDocument::Compact));
+    // Initialize the connection locale to the settings default
+    m_clientLocales.insert(clientId, NymeaCore::instance()->configuration()->locale());
+
+    interface->sendData(clientId, QJsonDocument::fromVariant(createWelcomeMessage(interface, clientId)).toJson(QJsonDocument::Compact));
 }
 
 void JsonRPCServer::clientDisconnected(const QUuid &clientId)
@@ -745,6 +776,7 @@ void JsonRPCServer::clientDisconnected(const QUuid &clientId)
     m_clientTransports.remove(clientId);
     m_clientNotifications.remove(clientId);
     m_clientBuffers.remove(clientId);
+    m_clientLocales.remove(clientId);
     if (m_pushButtonTransactions.values().contains(clientId)) {
         NymeaCore::instance()->userManager()->cancelPushButtonAuth(m_pushButtonTransactions.key(clientId));
     }

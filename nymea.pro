@@ -23,19 +23,22 @@ test.commands = LD_LIBRARY_PATH=$$top_builddir/libnymea-core:$$top_builddir/libn
 
 # Translations:
 # make lupdate to update .ts files
-TRANSLATIONS += $$files(translations/*.ts, true)
-TRANSLATIONS += $$files(plugins/mock/translations/*.ts, true)
+CORE_TRANSLATIONS += $$files($${top_srcdir}/translations/*.ts, true)
+lupdate.commands = lupdate -recursive -no-obsolete $${top_srcdir} -ts $${CORE_TRANSLATIONS};
+PLUGIN_TRANSLATIONS += $$files($${top_srcdir}/plugins/mock/translations/*.ts, true)
+lupdate.commands += lupdate -recursive -no-obsolete $${top_builddir}/plugins/mock/ -ts $${PLUGIN_TRANSLATIONS};
 lupdate.depends = FORCE
-lupdate.commands = lupdate -recursive -no-obsolete $$_FILE_;
+TRANSLATIONS = $${CORE_TRANSLATIONS} $${PLUGIN_TRANSLATIONS}
 
 # make lrelease to compile .ts to .qm
 lrelease.depends = FORCE
 lrelease.commands = lrelease $$_FILE_; \
-                    rsync -a $$top_srcdir/translations/*.qm $$top_builddir/translations/;
+                    rsync -a $$top_srcdir/translations/*.qm $$top_builddir/translations/; \
+                    rsync -a $$top_srcdir/plugins/mock/translations/*.qm $$top_builddir/plugins/mock/translations/;
+first.depends = $(first) lrelease
 
 # Install translation files
 translations.path = /usr/share/nymea/translations
-translations.files = $$[QT_SOURCE_TREE]/translations/*.qm
 translations.depends = lrelease
 INSTALLS += translations
 

@@ -63,9 +63,6 @@ public:
     QList<Vendor> supportedVendors() const;
     QList<DeviceClass> supportedDevices() const;
 
-    QTranslator *translator();
-    bool setLocale(const QLocale &locale);
-
     virtual void startMonitoringAutoDevices();
     virtual DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
 
@@ -84,6 +81,8 @@ public:
     ParamList configuration() const;
     QVariant configValue(const ParamTypeId &paramTypeId) const;
     DeviceManager::DeviceError setConfigValue(const ParamTypeId &paramTypeId, const QVariant &value);
+
+    bool isBuiltIn() const;
 
 signals:
     void emitEvent(const Event &event);
@@ -111,8 +110,6 @@ private:
     // Returns <missingFields, unknownFields>
     QPair<QStringList, QStringList> verifyFields(const QStringList &possibleFields, const QStringList &mandatoryFields, const QJsonObject &value) const;
 
-    QString translateValue(const QString &context, const QString &string) const;
-
     // load and verify enum values
     QPair<bool, Types::Unit> loadAndVerifyUnit(const QString &unitString) const;
     QPair<bool, Types::InputType> loadAndVerifyInputType(const QString &inputType) const;
@@ -127,7 +124,6 @@ private:
     static Interface mergeInterfaces(const Interface &iface1, const Interface &iface2);
     static QStringList generateInterfaceParentList(const QString &interface);
 
-    QTranslator *m_translator = nullptr;
     DeviceManager *m_deviceManager = nullptr;
 
     QList<ParamType> m_configurationDescription;

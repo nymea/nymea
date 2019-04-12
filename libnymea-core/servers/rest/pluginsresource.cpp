@@ -139,7 +139,7 @@ HttpReply *PluginsResource::getPlugins() const
     qCDebug(dcRest) << "Get plugins";
     HttpReply *reply = createSuccessReply();
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packPlugins()).toJson());
+    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packPlugins(NymeaCore::instance()->configuration()->locale())).toJson());
     return reply;
 }
 
@@ -150,7 +150,7 @@ HttpReply *PluginsResource::getPlugin(const PluginId &pluginId) const
     foreach (DevicePlugin *plugin, NymeaCore::instance()->deviceManager()->plugins()) {
         if (plugin->pluginId() == pluginId) {
             reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-            reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packPlugin(plugin)).toJson());
+            reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packPlugin(plugin, NymeaCore::instance()->configuration()->locale())).toJson());
             return reply;
         }
     }

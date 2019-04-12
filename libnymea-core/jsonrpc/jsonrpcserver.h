@@ -47,7 +47,7 @@ public:
 
     // JsonHandler API implementation
     QString name() const;
-    Q_INVOKABLE JsonReply *Hello(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *Hello(const QVariantMap &params);
     Q_INVOKABLE JsonReply *Introspect(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *Version(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetNotificationStatus(const QVariantMap &params);
@@ -77,7 +77,7 @@ private:
     void sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
     void sendErrorResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
     void sendUnauthorizedResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
-    QVariantMap createWelcomeMessage(TransportInterface *interface) const;
+    QVariantMap createWelcomeMessage(TransportInterface *interface, const QUuid &clientId) const;
 
     void processJsonPacket(TransportInterface *interface, const QUuid &clientId, const QByteArray &data);
 
@@ -105,6 +105,7 @@ private:
     QHash<QUuid, TransportInterface*> m_clientTransports;
     QHash<QUuid, QByteArray> m_clientBuffers;
     QHash<QUuid, bool> m_clientNotifications;
+    QHash<QUuid, QLocale> m_clientLocales;
     QHash<int, QUuid> m_pushButtonTransactions;
 
     QHash<QString, JsonReply*> m_pairingRequests;

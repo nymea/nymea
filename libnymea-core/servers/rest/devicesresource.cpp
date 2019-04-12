@@ -41,6 +41,7 @@
 #include "servers/httprequest.h"
 #include "jsonrpc/jsontypes.h"
 #include "nymeacore.h"
+#include "translator.h"
 
 #include <QJsonDocument>
 
@@ -442,7 +443,7 @@ HttpReply *DevicesResource::pairDevice(const QByteArray &payload) const
         return createDeviceErrorReply(HttpReply::BadRequest, status);
 
     QVariantMap returns;
-    returns.insert("displayMessage", deviceClass.pairingInfo());
+    returns.insert("displayMessage", NymeaCore::instance()->deviceManager()->translator()->translate(deviceClass.pluginId(), deviceClass.pairingInfo(), NymeaCore::instance()->configuration()->locale()));
     returns.insert("pairingTransactionId", pairingTransactionId.toString());
     returns.insert("setupMethod", JsonTypes::setupMethod().at(deviceClass.setupMethod()));
     HttpReply *reply = createSuccessReply();

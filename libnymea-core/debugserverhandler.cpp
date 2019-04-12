@@ -1715,7 +1715,7 @@ QByteArray DebugServerHandler::createErrorXmlDocument(HttpReply::HttpStatusCode 
     // Footer
     writer.writeStartElement("div");
     writer.writeAttribute("class", "footer");
-    writer.writeTextElement("p", QString("Copyright %1 2018 guh GmbH.").arg(QChar(0xA9)));
+    writer.writeTextElement("p", QString("Copyright %1 %2 guh GmbH.").arg(QChar(0xA9)).arg(COPYRIGHT_YEAR_STRING));
     writer.writeTextElement("p", tr("Released under the GNU GENERAL PUBLIC LICENSE Version 2."));
     writer.writeEndElement(); // div footer
 

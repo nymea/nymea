@@ -48,6 +48,7 @@ OTHER_FILES += doc/*.qdoc* \
 # Inform about nymea build
 message(============================================)
 message("Qt version:" $$[QT_VERSION])
+message("Copyright $${COPYRIGHT_YEAR_FROM} - $${COPYRIGHT_YEAR_TO}")
 message("Building nymea version $${NYMEA_VERSION_STRING}")
 message("JSON-RPC API version $${JSON_PROTOCOL_VERSION_MAJOR}.$${JSON_PROTOCOL_VERSION_MINOR}")
 message("REST API version $${REST_API_VERSION}")

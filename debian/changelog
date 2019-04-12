@@ -1,6 +1,33 @@
-nymea (0.12.0) UNRELEASED; urgency=medium
+nymea (0.12.0) xenial; urgency=medium
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Fri, 22 Mar 2019 00:49:04 +0100
+  [ Simon Stürz ]
+  * New interface: wirelessconnectable
+  * Change copyright year to 2019
+  * Unify API uuid to string convertion
+
+  [ Michael Zanetti ]
+  * Properly close the DB even on failures.
+  * Rework translation mechanism
+
+  [ Simon Stürz ]
+  * New interface: windspeedsensor
+
+  [ Michael Zanetti ]
+  * Drop deprecated api
+  * Fix the notification for deleting a web server configuration
+  * Fix TimeDescriptors getting lost when updating a rule
+  * Fix package to build with Qt 5.12
+  * Make the JsonRPC handshake mandatory for all new connections
+  * Add a method to filter Devices
+
+  [ Simon Stürz ]
+  * Add auto device reconfigure mechanism
+
+  [ Michael Zanetti ]
+  * Add support for state based rule action parameters
+  * Workaround zeroconf breaking because of broken multicast hardware
+
+ -- Jenkins <jenkins@nymea.io>  Fri, 12 Apr 2019 13:42:35 +0200
 
 nymea (0.11.1) xenial; urgency=medium
 

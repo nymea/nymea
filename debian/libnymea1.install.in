@@ -1,3 +1,1 @@
-usr/lib/@DEB_HOST_MULTIARCH@/libnymea.so.1
-usr/lib/@DEB_HOST_MULTIARCH@/libnymea.so.1.0
-usr/lib/@DEB_HOST_MULTIARCH@/libnymea.so.1.0.0
+usr/lib/libnymea.so.* usr/lib/@DEB_HOST_MULTIARCH@/

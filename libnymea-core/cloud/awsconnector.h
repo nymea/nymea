@@ -51,7 +51,6 @@ public:
 
 public slots:
     int sendPushNotification(const QString &userId, const QString &endpointId, const QString &title, const QString &text);
-    void requestTURNCredentials();
 
 signals:
     void connected();
@@ -60,7 +59,6 @@ signals:
     void pushNotificationEndpointsUpdated(const QList<AWSConnector::PushNotificationsEndpoint> pushNotificationEndpoints);
     void pushNotificationEndpointAdded(const AWSConnector::PushNotificationsEndpoint &pushNotificationEndpoint);
     void pushNotificationSent(int id, int status);
-    void turnCredentialsReceived(const QVariantMap &turnCredentials);
 
     void proxyConnectionRequestReceived(const QString &token, const QString &nonce, const QString &serverUrl);
 
@@ -78,7 +76,6 @@ private slots:
     void fetchPairings();
     void onPairingsRetrieved(const QVariantMap &pairings);
     void setName();
-    void onTurnCredentialsReceived(const QVariantMap &turnCredentials);
 
 
 private:

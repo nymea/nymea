@@ -171,7 +171,6 @@ void AWSConnector::setupSubscriptions()
     subscriptions.append(QString("%1/pair/response").arg(m_clientId));
     subscriptions.append(QString("%1/notify/response").arg(m_clientId));
     subscriptions.append(QString("%1/notify/info/endpoint").arg(m_clientId));
-    subscriptions.append(QString("%1/services/turn/response").arg(m_clientId));
     subscribe(subscriptions);
 
     // fetch previous pairings
@@ -226,8 +225,6 @@ void AWSConnector::onPairingsRetrieved(const QVariantMap &pairings)
     }
 
     emit pushNotificationEndpointsUpdated(pushNotificationEndpoints);
-
-    requestTURNCredentials();
 }
 
 void AWSConnector::disconnectAWS()
@@ -278,25 +275,6 @@ int AWSConnector::sendPushNotification(const QString &userId, const QString &end
     return m_transactionId;
 }
 
-void AWSConnector::requestTURNCredentials()
-{
-    if (!isConnected()) {
-        qCWarning(dcAWS()) << "Not connected. Cannot request TURN credentials.";
-        emit turnCredentialsReceived(QVariantMap());
-        return;
-    }
-    if (!m_cachedTURNCredentials.first.isEmpty() && QDateTime::currentDateTime().secsTo(m_cachedTURNCredentials.second) > 0) {
-        emit turnCredentialsReceived(m_cachedTURNCredentials.first);
-        return;
-    }
-    qCDebug(dcAWS()) << "Requesting TURN credentials";
-    QVariantMap params;
-    params.insert("id", QUuid::createUuid());
-    params.insert("command", "getTurnCredentials");
-    params.insert("timestamp", QDateTime::currentMSecsSinceEpoch());
-    publish(QString("%1/services/turn").arg(m_clientId), params);
-}
-
 quint16 AWSConnector::publish(const QString &topic, const QVariantMap &message)
 {
     if (!m_setupInProgress && !isConnected()) {
@@ -345,19 +323,6 @@ void AWSConnector::onDisconnected()
         qCDebug(dcAWS()) << "Reconnecting to AWS in 5 seconds...";
         m_reconnectTimer.start(5000);
     }
-}
-
-void AWSConnector::onTurnCredentialsReceived(const QVariantMap &turnCredentials)
-{
-    qCDebug(dcAWS()) << "Dynamic TURN credentials received";
-
-    m_cachedTURNCredentials.first = turnCredentials;
-    m_cachedTURNCredentials.second = QDateTime::currentDateTime().addSecs(turnCredentials.value("ttl").toInt());
-    emit turnCredentialsReceived(turnCredentials);
-
-    // refresh the cache
-    QTimer::singleShot((turnCredentials.value("ttl").toInt() - 10) * 1000, this, &AWSConnector::requestTURNCredentials);
-    qCDebug(dcAWS()) << "Refreshing TURN credentials in" << (turnCredentials.value("ttl").toInt() - 10) << "seconds.";
 }
 
 void AWSConnector::setName()
@@ -423,7 +388,8 @@ void AWSConnector::onPublishReceived(const QString &topic, const QByteArray &pay
         return;
     }
 
-    qCDebug(dcAWSTraffic()) << "Subscription received: Topic:" << topic << "payload:" << payload;
+    qCDebug(dcAWSTraffic()) << "Subscription received on topic" << topic;
+    qCDebug(dcAWSTraffic()) << qUtf8Printable(jsonDoc.toJson(QJsonDocument::Indented));
 
     if (topic.startsWith("create/device/")) {
         int statusCode = jsonDoc.toVariant().toMap().value("result").toMap().value("code").toInt();
@@ -495,13 +461,6 @@ void AWSConnector::onPublishReceived(const QString &topic, const QByteArray &pay
         ep.endpointId = endpoint.value(cognitoId).toMap().value("endpointId").toString();
         ep.displayName = endpoint.value(cognitoId).toMap().value("displayName").toString();
         emit pushNotificationEndpointAdded(ep);
-    } else if (topic == QString("%1/services/turn/response").arg(m_clientId)) {
-        QVariantMap turnCreds = jsonDoc.toVariant().toMap();
-        if (turnCreds.value("result").toMap().value("code").toInt() != 201) {
-            qCWarning(dcAWS()) << "Error retrieving TURN credentials:" << turnCreds.value("result").toMap().value("code").toInt() << turnCreds.value("result").toMap().value("message").toString();
-            return;
-        }
-        onTurnCredentialsReceived(turnCreds.value("turnCredentials").toMap());
     } else {
         qCWarning(dcAWS()) << "Unhandled subscription received!" << topic << payload;
     }

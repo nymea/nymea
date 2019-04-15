@@ -2,7 +2,7 @@
 NYMEA_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"')
 
 # Install path for plugins
-NYMEA_PLUGINS_PATH=/usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')/nymea/plugins/
+NYMEA_PLUGINS_PATH=/usr/lib/nymea/plugins/
 
 # define protocol versions
 JSON_PROTOCOL_VERSION_MAJOR=2

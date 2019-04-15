@@ -121,24 +121,38 @@
 
     \section1 Handshake
 
-    Once connected to the socket, the server will send immediately a handshake message. The handshake message 
-    is a JSON object and contains all relevant information about the server and the API in order to start 
-    communicationg with the server.
+    Once connected to the socket, the first thing you have to do is to initiate the Handshake. This is done by calling the
+    JSONRPC.Hello message. The server will reply with with information about the running instance. Use this handshake message
+    to configure basic parameters for the connection, for instance the locale.
     
-    Here is an example of a handshake:
-    
+    Here is an example of a handshake request:
+
     \code
     {
         "id": 0,
-        "name": "My nymea",
-        "protocol version": "1.2",
-        "authenticationRequired": false,
-        "initialSetupRequired": false,
-        "pushButtonAuthAvailable": false,
-        "server": "nymea",
-        "language": "de_DE",
-        "uuid": "{42842b0f-a7bb-4a94-b624-a55f31c5603e}",
-        "version": "0.8.3"
+        "method": "JSONRPC.Hello",
+        "params": {
+            "locale": "de_DE"
+        }
+    }
+    \endcode
+    
+    And the according reply of the server.
+    \code
+    {
+        "id": 0,
+        "status": "success",
+        "params": {
+            "name": "My nymea",
+            "protocol version": "2.0",
+            "authenticationRequired": false,
+            "initialSetupRequired": false,
+            "pushButtonAuthAvailable": false,
+            "server": "nymea",
+            "locale": "de_DE",
+            "uuid": "{42842b0f-a7bb-4a94-b624-a55f31c5603e}",
+            "version": "0.12.1"
+        }
     }
     \endcode
 
@@ -146,7 +160,15 @@
         \row
             \li \tt id
             \li integer
-            \li The id in the handshake has always the value 0. This is the first message during connection.
+            \li It will be the same ID as the request
+        \row
+            \li \tt status
+            \li string
+            \li Whether or not the JSONRPC request was successfull.
+        \row
+            \li \tt params
+            \li json object
+            \li The response parameters
         \row
             \li \tt name
             \li string
@@ -181,9 +203,11 @@
             \li string
             \li This property holds the name of the server. This name can not be changed.
         \row
-            \li \tt language
+            \li \tt locale
             \li string
-            \li This property holds the language of the server. The language can be changed in the settings using \l{Configuration.SetLanguage}.
+            \li This property holds the locale for this connection. It should generally match with the locale you requested in the Hello message.
+                If you did not pass any locale request, the server default will be used which can be configured using Settings.SetLanguage. However,
+                Configuration.SetLanguage is deprecated as of 2.0. Clients should request a per-connection locale.
         \row
             \li \tt uuid
             \li string
@@ -195,33 +219,38 @@
 
     \endtable
 
+    Note that the client can re-initiate the handshake at any point. This might be useful to check whether server properties have changed (e.g.
+    the initialSetup has been performed by another client in the meantime, or to change connection parameters for the connection, for example
+    the locale.
+
     \section1 Sending a request
 
-    Once connected to the socket and received the \l{Handshake}{handshake}, the normal communication with the server can begin.
+    Once the \l{Handshake}{handshake} has been performed, normal communication with the server can begin.
     In order to send a request to the server, the client has to send an API message according to the format descibed \l{Message format}{here}.
 
     The JSON content should always be sent as a compack JSON Object (without spaces, tabs and new line characters within the object \tt{{...}}).
     At the end of this compact JSON string the payload must be terminated with the \tt{\\n} character. This makes sure, that the parsing of the
     message is easier and a single message can be split in multiple cunckes during the transport. The client parsing should work the same way.
 
+    Note that the Handshake already follows this model, that is, the Handshake is like any other regular method.
+
     In order to demonstrate this with an example, the \l{JSONRPC.Hello} request could look like this:
 
     \note Send following content as compact JSON ending with \tt{\\n}:
 
     \code
-    {"id":122,"method":"JSONRPC.Hello"}
+    {"id":122,"method":"JSONRPC.KeepAlive", "params": {"sessionId": "my-session"}}
 
     \endcode
 
     The \tt id can be a random integer, just make sure there are no other commands with the same id around. The easiest way to do that
-    is incrementing the id with each new request. The \l{JSONRPC.Hello} method has no parameters, so we don't need to add that property
-    to our request.
+    is incrementing the id with each new request. The \l{JSONRPC.KeepAlive} method requires one additional parameter,  a sessionId.
 
     The server will return a response for this request. The response will have the same \tt id as your request. The json content of the response will
     also be a compact JSON string ending with the \tt{\\n} character.
 
     \code
-    {"id":122,"params":{"authenticationRequired":false,"id":0,"initialSetupRequired":false,"language":"de_DE","name":"My nymea","protocol version":"1.2","pushButtonAuthAvailable":false,"server":"nymea","uuid":"{42842b0f-a7bb-4a94-b624-a55f31c5603e}","version":"0.8.3"},"status":"success"}
+    {"id":122,"params":{"success": true, "sessionId": "my-session"}}
 
     \endcode
 

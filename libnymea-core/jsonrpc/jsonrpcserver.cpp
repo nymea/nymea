@@ -86,7 +86,6 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
                             "like initialSetupRequired might change if the setup has been performed in the meantime.");
     params.insert("o:locale", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("Hello", params);
-    returns.insert("id", JsonTypes::basicTypeToString(JsonTypes::Int));
     returns.insert("server", JsonTypes::basicTypeToString(JsonTypes::String));
     returns.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
     returns.insert("version", JsonTypes::basicTypeToString(JsonTypes::String));
@@ -493,7 +492,6 @@ void JsonRPCServer::sendUnauthorizedResponse(TransportInterface *interface, cons
 QVariantMap JsonRPCServer::createWelcomeMessage(TransportInterface *interface, const QUuid &clientId) const
 {
     QVariantMap handshake;
-    handshake.insert("id", 0);
     handshake.insert("server", "nymea");
     handshake.insert("name", NymeaCore::instance()->configuration()->serverName());
     handshake.insert("version", NYMEA_VERSION_STRING);

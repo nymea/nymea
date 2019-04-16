@@ -245,14 +245,13 @@ QStringList DeviceManager::pluginSearchDirs()
     if (!envPath.isEmpty()) {
         searchDirs << QString(envPath).split(':');
     }
+
+    foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+        searchDirs << libraryPath.replace("qt5", "nymea");
+    }
     searchDirs << QCoreApplication::applicationDirPath() + "/../lib/nymea/plugins";
     searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";
     searchDirs << QCoreApplication::applicationDirPath() + "/../../../plugins/";
-    searchDirs << QString("%1").arg(NYMEA_PLUGINS_PATH);
-    QString snapDir = QString::fromUtf8(qgetenv("SNAP"));
-    if (!snapDir.isEmpty()) {
-        searchDirs << QString("%1%2").arg(snapDir).arg(NYMEA_PLUGINS_PATH);
-    }
     return searchDirs;
 }
 

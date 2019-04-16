@@ -34,5 +34,5 @@ PRE_TARGETDEPS += compiler_plugininfo_make_all compiler_externplugininfo_make_al
 QMAKE_EXTRA_COMPILERS += plugininfo externplugininfo
 
 # Install plugin
-target.path = $$NYMEA_PLUGINS_PATH
+target.path = /usr/lib/nymea/plugins/
 INSTALLS += target

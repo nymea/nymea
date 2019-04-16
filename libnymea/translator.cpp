@@ -85,12 +85,7 @@ void Translator::loadTranslator(DevicePlugin *plugin, const QLocale &locale)
     } else {
         QString pluginId = plugin->pluginId().toString().remove(QRegExp("[{}]"));
 
-        QStringList searchDirs = QString(qgetenv("NYMEA_PLUGINS_PATH")).split(':');
-        searchDirs << QCoreApplication::applicationDirPath() + "/../lib/nymea/plugins";
-        searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";
-        searchDirs << QCoreApplication::applicationDirPath() + "/../../../plugins/";
-
-        foreach (const QString &pluginPath, searchDirs) {
+        foreach (const QString &pluginPath, m_deviceManager->pluginSearchDirs()) {
             if (translator->load(locale, pluginId, "-", QDir(pluginPath + "/translations/").absolutePath(), ".qm")) {
                 qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for plugin" << plugin->pluginName() << "from" << QDir(pluginPath + "/translations/").absolutePath();
                 loaded = true;

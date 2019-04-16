@@ -776,6 +776,7 @@ void JsonRPCServer::registerHandler(JsonHandler *handler)
 
 void JsonRPCServer::clientConnected(const QUuid &clientId)
 {
+    qCDebug(dcJsonRpc()) << "Client connected with uuid" << clientId.toString();
     TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
 
     m_clientTransports.insert(clientId, interface);
@@ -788,11 +789,9 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
 
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, [this, timer, clientId, interface](){
-        // Client did not initiate handshake within timeout. Drop connection...
-        m_clientTransports.value(clientId)->disconnect();
+        qCDebug(dcJsonRpc()) << "Client" << clientId << "did not initiate the handshake within the required timeout. Dropping connection.";
         timer->deleteLater();
         m_newConnectionWaitTimers.remove(clientId);
-        qCDebug(dcJsonRpc()) << "Client" << clientId << "did not initiate the handshake within the required timeout. Dropping connection.";
         interface->terminateClientConnection(clientId);
     });
     m_newConnectionWaitTimers.insert(clientId, timer);

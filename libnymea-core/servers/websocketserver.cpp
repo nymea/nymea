@@ -145,7 +145,7 @@ void WebSocketServer::onClientConnected()
 
     QUuid clientId = QUuid::createUuid();
 
-    qCDebug(dcConnection) << "Websocket server: new client connected:" << client->peerAddress().toString() << clientId;
+    qCDebug(dcWebSocketServer()) << "New client connected:" << clientId.toString() << "(Remote address:" << client->peerAddress().toString() << ")";
 
     // append the new client to the client list
     m_clientList.insert(clientId, client);
@@ -163,7 +163,7 @@ void WebSocketServer::onClientDisconnected()
 {
     QWebSocket *client = qobject_cast<QWebSocket *>(sender());
     QUuid clientId = m_clientList.key(client);
-    qCDebug(dcConnection) << "Websocket server: client disconnected:" << client->peerAddress().toString() << clientId;
+    qCDebug(dcWebSocketServer()) << "Client" << clientId.toString() << "disconnected. (Remote address:" << client->peerAddress().toString() << ")" ;
     m_clientList.take(clientId)->deleteLater();
     emit clientDisconnected(clientId);
 }
@@ -171,31 +171,35 @@ void WebSocketServer::onClientDisconnected()
 void WebSocketServer::onBinaryMessageReceived(const QByteArray &data)
 {
     QWebSocket *client = qobject_cast<QWebSocket *>(sender());
-    qCDebug(dcWebSocketServerTraffic()) << "Binary message from" << client->peerAddress().toString() << ":" << data;
+    QUuid clientId = m_clientList.key(client);
+    qCDebug(dcWebSocketServerTraffic()) << "Binary message from" << clientId.toString() << ":" << data;
 }
 
 void WebSocketServer::onTextMessageReceived(const QString &message)
 {
     QWebSocket *client = qobject_cast<QWebSocket *>(sender());
-    qCDebug(dcWebSocketServerTraffic()) << "Text message from" << client->peerAddress().toString() << ":" << message;
-    emit dataAvailable(m_clientList.key(client), message.toUtf8());
+    QUuid clientId = m_clientList.key(client);
+    qCDebug(dcWebSocketServerTraffic()) << "Text message from" << clientId.toString() << ":" << message;
+    emit dataAvailable(clientId, message.toUtf8());
 }
 
 void WebSocketServer::onClientError(QAbstractSocket::SocketError error)
 {
     QWebSocket *client = qobject_cast<QWebSocket *>(sender());
-    qCWarning(dcConnection) << "Websocket client error:" << error << client->errorString();
+    QUuid clientId = m_clientList.key(client);
+    qCWarning(dcWebSocketServer()) << "Client error from" << clientId.toString() << ":" << error << client->errorString();
 }
 
 void WebSocketServer::onServerError(QAbstractSocket::SocketError error)
 {
-    qCWarning(dcConnection) << "Websocket server error:" << error << m_server->errorString();
+    qCWarning(dcWebSocketServer()) << "Server error " << error << m_server->errorString();
 }
 
 void WebSocketServer::onPing(quint64 elapsedTime, const QByteArray &payload)
 {
     QWebSocket *client = qobject_cast<QWebSocket *>(sender());
-    qCDebug(dcWebSocketServer) << "ping response" << client->peerAddress() << elapsedTime << payload;
+    QUuid clientId = m_clientList.key(client);
+    qCDebug(dcWebSocketServer) << "Ping response from" << clientId.toString() << elapsedTime << payload;
 }
 
 void WebSocketServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
@@ -210,7 +214,7 @@ void WebSocketServer::resetAvahiService()
 
     m_avahiService->resetService();
     if (!m_avahiService->registerService(QString("nymea-ws-%1").arg(configuration().id), configuration().address, static_cast<quint16>(configuration().port), "_ws._tcp", createTxtRecord())) {
-        qCWarning(dcWebServer()) << "Could not register avahi service for" << configuration();
+        qCWarning(dcWebSocketServer()) << "Could not register avahi service for" << configuration();
     }
 }
 
@@ -255,11 +259,11 @@ bool WebSocketServer::startServer()
     connect (m_server, &QWebSocketServer::acceptError, this, &WebSocketServer::onServerError);
 
     if (!m_server->listen(configuration().address, static_cast<quint16>(configuration().port))) {
-        qCWarning(dcConnection) << "Websocket server" << m_server->serverName() << "could not listen on" << serverUrl().toString();
+        qCWarning(dcWebSocketServer()) << "Error listening on" << serverUrl().toString();
         return false;
     }
 
-    qCDebug(dcConnection()) << "Started websocket server" << m_server->serverName() << "on" << serverUrl().toString();
+    qCDebug(dcWebSocketServer()) << "Server started on" << serverUrl().toString();
     resetAvahiService();
     return true;
 }

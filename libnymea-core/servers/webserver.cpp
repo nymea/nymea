@@ -614,7 +614,7 @@ bool WebServer::startServer()
         return false;
     }
 
-    qCDebug(dcConnection()) << "Started web server on" << serverUrl().toString();
+    qCDebug(dcWebServer()) << "Started web server on" << serverUrl().toString();
     resetAvahiService();
 
     m_enabled = true;

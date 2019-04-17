@@ -78,14 +78,13 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         settings.endGroup();
     }
     if (createDefaults) {
-        qCWarning(dcApplication) << "No TCP server configuration found. Generating default of 0.0.0.0:2222";
+        qCWarning(dcApplication) << "No TCP server configuration found. Generating default of nymeas://0.0.0.0:2222";
         ServerConfiguration config;
         config.id = "default";
         config.address = QHostAddress("0.0.0.0");
         config.port = 2222;
-        // TODO enable encryption/authentication by default once the important clients are supporting it
-        config.sslEnabled = false;
-        config.authenticationEnabled = false;
+        config.sslEnabled = true;
+        config.authenticationEnabled = true;
         m_tcpServerConfigs[config.id] = config;
         storeServerConfig("TcpServer", config);
     }
@@ -107,7 +106,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         settings.endGroup();
     }
     if (createDefaults) {
-        qCWarning(dcApplication) << "No Web server configuration found. Generating default of 0.0.0.0:3333";
+        qCWarning(dcApplication) << "No Web server configuration found. Generating defaults of http://0.0.0.0:80 and https://0.0.0.0:443";
         WebServerConfiguration insecureConfig;
         insecureConfig.id = "insecure";
         insecureConfig.address = QHostAddress("0.0.0.0");
@@ -148,14 +147,13 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         settings.endGroup();
     }
     if (createDefaults) {
-        qCWarning(dcApplication) << "No WebSocket server configuration found. Generating default of 0.0.0.0:4444";
+        qCWarning(dcApplication) << "No WebSocket server configuration found. Generating default of wss://0.0.0.0:4444";
         ServerConfiguration config;
         config.id = "default";
         config.address = QHostAddress("0.0.0.0");
         config.port = 4444;
-        // TODO enable encryption/authentication by default once the important clients are supporting it
-        config.sslEnabled = false;
-        config.authenticationEnabled = false;
+        config.sslEnabled = true;
+        config.authenticationEnabled = true;
         m_webSocketServerConfigs[config.id] = config;
         storeServerConfig("WebSocketServer", config);
     }

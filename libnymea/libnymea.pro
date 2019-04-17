@@ -8,7 +8,7 @@ DEFINES += LIBNYMEA_LIBRARY
 
 QMAKE_LFLAGS += -fPIC
 
-target.path = /usr/lib/
+target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target
 
 # Avahi libs

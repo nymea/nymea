@@ -7,7 +7,7 @@ QT += sql
 INCLUDEPATH += $$top_srcdir/libnymea
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto -lavahi-common -lavahi-client -lnymea-mqtt
 
-target.path = /usr/lib/
+target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target
 
 # icons for the webserver

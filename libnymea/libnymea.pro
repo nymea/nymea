@@ -8,10 +8,6 @@ DEFINES += LIBNYMEA_LIBRARY
 
 QMAKE_LFLAGS += -fPIC
 
-target.path = $$[QT_INSTALL_LIBS]
-INSTALLS += target
-
-# Avahi libs
 LIBS += -lavahi-common -lavahi-client
 
 HEADERS += devicemanager.h \
@@ -35,11 +31,6 @@ HEADERS += devicemanager.h \
         network/oauth2.h \
         network/avahi/qtavahiservicebrowser.h \
         network/avahi/avahiserviceentry.h \
-        #network/avahi/qtavahiclient.h \
-        #network/avahi/qt-watch.h \
-        #network/avahi/qtavahiservice.h \
-        #network/avahi/qtavahiservice_p.h \
-        #network/avahi/qtavahiservicebrowser_p.h \
         hardware/bluetoothlowenergy/bluetoothlowenergydevice.h \
         hardware/bluetoothlowenergy/bluetoothdiscoveryreply.h \
         hardware/bluetoothlowenergy/bluetoothlowenergymanager.h \
@@ -74,7 +65,7 @@ HEADERS += devicemanager.h \
         nymeadbusservice.h \
         network/mqtt/mqttprovider.h \
         network/mqtt/mqttchannel.h \
-    translator.h
+        translator.h
 
 SOURCES += devicemanager.cpp \
         loggingcategories.cpp \
@@ -95,11 +86,6 @@ SOURCES += devicemanager.cpp \
         network/oauth2.cpp \
         network/avahi/avahiserviceentry.cpp \
         network/avahi/qtavahiservicebrowser.cpp \
-        #network/avahi/qt-watch.cpp \
-        #network/avahi/qtavahiclient.cpp \
-        #network/avahi/qtavahiservice.cpp \
-        #network/avahi/qtavahiservice_p.cpp \
-        #network/avahi/qtavahiservicebrowser_p.cpp \
         hardware/bluetoothlowenergy/bluetoothlowenergymanager.cpp \
         hardware/bluetoothlowenergy/bluetoothlowenergydevice.cpp \
         hardware/bluetoothlowenergy/bluetoothdiscoveryreply.cpp \
@@ -134,8 +120,13 @@ SOURCES += devicemanager.cpp \
         nymeadbusservice.cpp \
         network/mqtt/mqttprovider.cpp \
         network/mqtt/mqttchannel.cpp \
-    translator.cpp
+        translator.cpp
 
+
+RESOURCES += \
+        interfaces/interfaces.qrc
+
+## Install instructions
 
 # install plugininfo python script for libnymea-dev
 generateplugininfo.files = $$top_srcdir/plugins/nymea-generateplugininfo
@@ -145,11 +136,21 @@ INSTALLS +=  generateplugininfo
 
 # install header file with relative subdirectory
 for(header, HEADERS) {
-    path = /usr/include/nymea/$${dirname(header)}
+    path = $${PREFIX}/include/nymea/$${dirname(header)}
     eval(headers_$${path}.files += $${header})
     eval(headers_$${path}.path = $${path})
     eval(INSTALLS *= headers_$${path})
 }
 
-RESOURCES += \
-        interfaces/interfaces.qrc
+# define install target
+target.path = $$[QT_INSTALL_LIBS]
+INSTALLS += target
+
+# Create pkgconfig file
+CONFIG += create_pc create_prl no_install_prl
+QMAKE_PKGCONFIG_NAME = libnymea
+QMAKE_PKGCONFIG_DESCRIPTION = nymea development library
+QMAKE_PKGCONFIG_PREFIX = $${PREFIX}
+QMAKE_PKGCONFIG_LIBDIR = $$target.path
+QMAKE_PKGCONFIG_INCDIR = /usr/include/nymea
+QMAKE_PKGCONFIG_VERSION = $$NYMEA_VERSION_STRING

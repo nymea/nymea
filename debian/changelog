@@ -1,3 +1,18 @@
+nymea (0.12.1) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Fix docs for UnitBpm
+  * Fix documentation after API changes
+  * Don't set debian/ubuntu specific paths in project file
+  * Drop logic to retrieve dynamic turn credentials
+  * Improve translator debug
+  * Fix JsonRpc server breaking transports upon guard timer timeouts
+  * Do a more controlled teardown on shutdown
+  * Enable encryption and authentication for default configurations
+  * Add a warning message in JsonRpcServer when a call times out
+
+ -- Jenkins <jenkins@nymea.io>  Thu, 02 May 2019 11:56:07 +0200
+
 nymea (0.12.0) xenial; urgency=medium
 
   [ Simon Stürz ]

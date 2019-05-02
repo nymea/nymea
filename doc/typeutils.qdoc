@@ -216,7 +216,7 @@
         \row
             \li Types::UnitBpm
             \li 27
-            \li The value of the \l{Param} has unit \tt {[db]} \unicode{0x2192} dezibel.
+            \li The value of the \l{Param} has unit \tt {[bpm]} \unicode{0x2192} beats per minute.
         \row
             \li Types::UnitKiloByte
             \li 28

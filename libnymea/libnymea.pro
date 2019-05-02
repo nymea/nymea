@@ -136,7 +136,7 @@ INSTALLS +=  generateplugininfo
 
 # install header file with relative subdirectory
 for(header, HEADERS) {
-    path = $${PREFIX}/include/nymea/$${dirname(header)}
+    path = $$[QT_INSTALL_PREFIX]/include/nymea/$${dirname(header)}
     eval(headers_$${path}.files += $${header})
     eval(headers_$${path}.path = $${path})
     eval(INSTALLS *= headers_$${path})
@@ -150,7 +150,7 @@ INSTALLS += target
 CONFIG += create_pc create_prl no_install_prl
 QMAKE_PKGCONFIG_NAME = libnymea
 QMAKE_PKGCONFIG_DESCRIPTION = nymea development library
-QMAKE_PKGCONFIG_PREFIX = $${PREFIX}
+QMAKE_PKGCONFIG_PREFIX = $$[QT_INSTALL_PREFIX]
 QMAKE_PKGCONFIG_LIBDIR = $$target.path
 QMAKE_PKGCONFIG_INCDIR = /usr/include/nymea
 QMAKE_PKGCONFIG_VERSION = $$NYMEA_VERSION_STRING

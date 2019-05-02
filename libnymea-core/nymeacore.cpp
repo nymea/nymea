@@ -216,24 +216,31 @@ NymeaCore::~NymeaCore()
 {
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), false);
 
-    // Make sure DeviceManager is teared down at first so plugins don't access any resources any more.
+    // Disconnect everything that could still spawn events
+    disconnect(m_deviceManager);
+    disconnect(m_ruleEngine);
+    disconnect(m_timeManager);
+
+    // At very first, cut off the outside world
+    qCDebug(dcApplication) << "Shutting down \"Server Manager\"";
+    delete m_serverManager;
+    qCDebug(dcApplication) << "Shutting down \"CloudManager\"";
+    delete m_cloudManager;
+
+    // Then stop magic from happening
+    qCDebug(dcApplication) << "Shutting down \"Rule Engine\"";
+    delete m_ruleEngine;
+
+    // Next, DeviceManager, so plugins don't access any resources any more.
     qCDebug(dcApplication) << "Shutting down \"Device Manager\"";
     delete m_deviceManager;
 
+    // Now go ahead and clean up stuff.
     qCDebug(dcApplication) << "Shutting down \"Log Engine\"";
     delete m_logger;
 
     qCDebug(dcApplication()) << "Shutting down \"Hardware Manager\"";
     delete m_hardwareManager;
-
-    qCDebug(dcApplication) << "Shutting down \"Rule Engine\"";
-    delete m_ruleEngine;
-
-    qCDebug(dcApplication) << "Shutting down \"Server Manager\"";
-    delete m_serverManager;
-
-    qCDebug(dcApplication) << "Shutting down \"CloudManager\"";
-    delete m_cloudManager;
 
     qCDebug(dcApplication) << "Done shutting down NymeaCore";
 }

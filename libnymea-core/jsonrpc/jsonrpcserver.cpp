@@ -705,6 +705,7 @@ void JsonRPCServer::asyncReplyFinished()
                    ,"validating return value", formatAssertion(reply->handler()->name(), reply->method(), QMetaMethod::Method, reply->handler(), reply->data()).toLatin1().data());
         sendResponse(interface, reply->clientId(), reply->commandId(), reply->data());
     } else {
+        qCWarning(dcJsonRpc()) << "RPC call timed out:" << reply->handler()->name() << ":" << reply->method();
         sendErrorResponse(interface, reply->clientId(), reply->commandId(), "Command timed out");
     }
 

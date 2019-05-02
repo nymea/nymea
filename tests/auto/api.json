@@ -498,7 +498,6 @@
             },
             "returns": {
                 "authenticationRequired": "Bool",
-                "id": "Int",
                 "initialSetupRequired": "Bool",
                 "language": "String",
                 "locale": "String",

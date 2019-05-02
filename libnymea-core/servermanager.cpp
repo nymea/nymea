@@ -59,9 +59,9 @@ ServerManager::ServerManager(NymeaConfiguration *configuration, QObject *parent)
     m_sslConfiguration(QSslConfiguration())
 {
     if (!QSslSocket::supportsSsl()) {
-        qCWarning(dcConnection) << "SSL is not supported/installed on this platform.";
+        qCWarning(dcServerManager()) << "SSL is not supported/installed on this platform.";
     } else {
-        qCDebug(dcConnection) << "SSL library version:" << QSslSocket::sslLibraryVersionString();
+        qCDebug(dcServerManager()) << "SSL library version:" << QSslSocket::sslLibraryVersionString();
 
         QString configCertificateFileName = configuration->sslCertificate();
         QString configKeyFileName = configuration->sslCertificateKey();
@@ -71,19 +71,19 @@ ServerManager::ServerManager(NymeaConfiguration *configuration, QObject *parent)
 
         bool certsLoaded = false;
         if (loadCertificate(configKeyFileName, configCertificateFileName)) {
-            qCDebug(dcConnection) << "Using SSL certificate:" << configKeyFileName;
+            qCDebug(dcServerManager()) << "Using SSL certificate:" << configKeyFileName;
             certsLoaded = true;
         } else if (loadCertificate(fallbackKeyFileName, fallbackCertificateFileName)) {
             certsLoaded = true;
-            qCWarning(dcConnection) << "Using fallback self-signed SSL certificate:" << fallbackCertificateFileName;
+            qCWarning(dcServerManager()) << "Using fallback self-signed SSL certificate:" << fallbackCertificateFileName;
         } else {
-            qCDebug(dcConnection) << "Generating self signed certificates...";
+            qCDebug(dcServerManager()) << "Generating self signed certificates...";
             CertificateGenerator::generate(fallbackCertificateFileName, fallbackKeyFileName);
             if (loadCertificate(fallbackKeyFileName, fallbackCertificateFileName)) {
-                qCWarning(dcConnection) << "Using newly created self-signed SSL certificate:" << fallbackCertificateFileName;
+                qCWarning(dcServerManager()) << "Using newly created self-signed SSL certificate:" << fallbackCertificateFileName;
                 certsLoaded = true;
             } else {
-                qCWarning(dcConnection) << "Failed to load SSL certificates. SSL encryption disabled.";
+                qCWarning(dcServerManager()) << "Failed to load SSL certificates. SSL encryption disabled.";
             }
         }
         if (certsLoaded) {
@@ -182,11 +182,11 @@ void ServerManager::tcpServerConfigurationChanged(const QString &id)
     ServerConfiguration config = NymeaCore::instance()->configuration()->tcpServerConfigurations().value(id);
     TcpServer *server = m_tcpServers.value(id);
     if (server) {
-        qDebug(dcConnection) << "Restarting TCP server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
+        qDebug(dcServerManager()) << "Restarting TCP server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
         server->stopServer();
         server->setConfiguration(config);
     } else {
-        qDebug(dcConnection) << "Received a TCP Server config change event but don't have a TCP Server instance for it. Creating new Server instance.";
+        qDebug(dcServerManager()) << "Received a TCP Server config change event but don't have a TCP Server instance for it. Creating new Server instance.";
         server = new TcpServer(config, m_sslConfiguration, this);
         m_tcpServers.insert(config.id, server);
     }
@@ -197,7 +197,7 @@ void ServerManager::tcpServerConfigurationChanged(const QString &id)
 void ServerManager::tcpServerConfigurationRemoved(const QString &id)
 {
     if (!m_tcpServers.contains(id)) {
-        qWarning(dcConnection) << "Received a TCP Server config removed event but don't have a TCP Server instance for it.";
+        qWarning(dcServerManager()) << "Received a TCP Server config removed event but don't have a TCP Server instance for it.";
         return;
     }
     TcpServer *server = m_tcpServers.take(id);
@@ -211,11 +211,11 @@ void ServerManager::webSocketServerConfigurationChanged(const QString &id)
     WebSocketServer *server = m_webSocketServers.value(id);
     ServerConfiguration config = NymeaCore::instance()->configuration()->webSocketServerConfigurations().value(id);
     if (server) {
-        qDebug(dcConnection) << "Restarting WebSocket server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
+        qDebug(dcServerManager()) << "Restarting WebSocket server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
         server->stopServer();
         server->setConfiguration(config);
     } else {
-        qDebug(dcConnection) << "Received a WebSocket Server config change event but don't have a WebSocket Server instance for it. Creating new instance.";
+        qDebug(dcServerManager()) << "Received a WebSocket Server config change event but don't have a WebSocket Server instance for it. Creating new instance.";
         server = new WebSocketServer(config, m_sslConfiguration, this);
         m_webSocketServers.insert(server->configuration().id, server);
     }
@@ -226,7 +226,7 @@ void ServerManager::webSocketServerConfigurationChanged(const QString &id)
 void ServerManager::webSocketServerConfigurationRemoved(const QString &id)
 {
     if (!m_webSocketServers.contains(id)) {
-        qWarning(dcConnection) << "Received a WebSocket Server config removed event but don't have a WebSocket Server instance for it.";
+        qWarning(dcServerManager()) << "Received a WebSocket Server config removed event but don't have a WebSocket Server instance for it.";
         return;
     }
     WebSocketServer *server = m_webSocketServers.take(id);
@@ -240,11 +240,11 @@ void ServerManager::webServerConfigurationChanged(const QString &id)
     WebServerConfiguration config = NymeaCore::instance()->configuration()->webServerConfigurations().value(id);
     WebServer *server = m_webServers.value(id);
     if (server) {
-        qDebug(dcConnection) << "Restarting Web server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
+        qDebug(dcServerManager()) << "Restarting Web server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
         server->stopServer();
         server->reconfigureServer(config);
     } else {
-        qDebug(dcConnection) << "Received a Web Server config change event but don't have a Web Server instance for it. Creating new WebServer instance on" << config.address.toString() << config.port << "(SSL:" << config.sslEnabled << ")";
+        qDebug(dcServerManager()) << "Received a Web Server config change event but don't have a Web Server instance for it. Creating new WebServer instance on" << config.address.toString() << config.port << "(SSL:" << config.sslEnabled << ")";
         server = new WebServer(config, m_sslConfiguration, this);
         m_restServer->registerWebserver(server);
         m_webServers.insert(config.id, server);
@@ -254,7 +254,7 @@ void ServerManager::webServerConfigurationChanged(const QString &id)
 void ServerManager::webServerConfigurationRemoved(const QString &id)
 {
     if (!m_webServers.contains(id)) {
-        qWarning(dcConnection) << "Received a Web Server config removed event but don't have a Web Server instance for it.";
+        qWarning(dcServerManager()) << "Received a Web Server config removed event but don't have a Web Server instance for it.";
         return;
     }
     WebServer *server = m_webServers.take(id);
@@ -290,20 +290,20 @@ bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const
 {
     QFile certificateKeyFile(certificateKeyFileName);
     if (!certificateKeyFile.open(QIODevice::ReadOnly)) {
-        qCWarning(dcConnection) << "Could not open" << certificateKeyFile.fileName() << ":" << certificateKeyFile.errorString();
+        qCWarning(dcServerManager()) << "Could not open" << certificateKeyFile.fileName() << ":" << certificateKeyFile.errorString();
         return false;
     }
     m_certificateKey = QSslKey(certificateKeyFile.readAll(), QSsl::Rsa);
-    qCDebug(dcConnection) << "Loaded private certificate key " << certificateKeyFileName;
+    qCDebug(dcServerManager()) << "Loaded private certificate key " << certificateKeyFileName;
     certificateKeyFile.close();
 
     QFile certificateFile(certificateFileName);
     if (!certificateFile.open(QIODevice::ReadOnly)) {
-        qCWarning(dcConnection) << "Could not open" << certificateFile.fileName() << ":" << certificateFile.errorString();
+        qCWarning(dcServerManager()) << "Could not open" << certificateFile.fileName() << ":" << certificateFile.errorString();
         return false;
     }
     m_certificate = QSslCertificate(certificateFile.readAll());
-    qCDebug(dcConnection) << "Loaded certificate file " << certificateFileName;
+    qCDebug(dcServerManager()) << "Loaded certificate file " << certificateFileName;
     certificateFile.close();
 
     return true;
@@ -312,7 +312,7 @@ bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const
 /*! Set the server name for all servers to the given \a serverName. */
 void ServerManager::setServerName(const QString &serverName)
 {
-    qCDebug(dcConnection()) << "Server name changed" << serverName;
+    qCDebug(dcServerManager()) << "Server name changed" << serverName;
 
     foreach (WebSocketServer *websocketServer, m_webSocketServers.values()) {
         websocketServer->setServerName(serverName);

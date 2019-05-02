@@ -107,7 +107,7 @@ void BluetoothServer::onClientConnected()
     if (!client)
         return;
 
-    qCDebug(dcConnection()) << "BluetoothServer: New client connected:" << client->peerName() << client->peerAddress().toString();
+    qCDebug(dcBluetoothServer()) << "New client connected:" << client->peerName() << client->peerAddress().toString();
 
     QUuid clientId = QUuid::createUuid();
     m_clientList.insert(clientId, client);
@@ -126,7 +126,7 @@ void BluetoothServer::onClientDisconnected()
     if (!client)
         return;
 
-    qCDebug(dcConnection()) << "BluetoothServer: Client disconnected:" << client->peerName() << client->peerAddress().toString();
+    qCDebug(dcBluetoothServer()) << "Client disconnected:" << client->peerName() << client->peerAddress().toString();
     QUuid clientId = m_clientList.key(client);
     m_clientList.take(clientId)->deleteLater();
     emit clientDisconnected(clientId);
@@ -182,8 +182,6 @@ bool BluetoothServer::startServer()
         return false;
     }
 
-    qCDebug(dcBluetoothServer()) << "Started bluetooth server" << m_server->serverAddress().toString();
-
     // Set service attributes
     QBluetoothServiceInfo::Sequence browseSequence;
     browseSequence << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::PublicBrowseGroup));
@@ -221,8 +219,7 @@ bool BluetoothServer::startServer()
         m_server = nullptr;
         return false;
     }
-    qCDebug(dcBluetoothServer()) << "Registered successfully service" << m_serviceInfo.serviceName() << nymeaServiceUuid.toString();
-    qCDebug(dcConnection()) << "Started bluetooth server" << m_localDevice->name() << m_localDevice->address().toString() << "Serivce:" << m_serviceInfo.serviceName() << nymeaServiceUuid.toString();
+    qCDebug(dcBluetoothServer()) << "Started bluetooth server" << m_localDevice->name() << m_localDevice->address().toString() << "Serivce:" << m_serviceInfo.serviceName() << nymeaServiceUuid.toString();
 
     return true;
 }

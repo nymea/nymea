@@ -96,7 +96,6 @@ private slots:
     void onClientDisconnected(QSslSocket *socket);
     void onDataAvailable(QSslSocket *socket, const QByteArray &data);
     void onError(QAbstractSocket::SocketError error);
-    void onEncrypted();
 
     void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
     void resetAvahiService();

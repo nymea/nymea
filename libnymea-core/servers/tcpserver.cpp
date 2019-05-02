@@ -127,16 +127,16 @@ void TcpServer::sendData(const QUuid &clientId, const QByteArray &data)
 
 void TcpServer::onClientConnected(QSslSocket *socket)
 {
-    qCDebug(dcConnection) << "Tcp server: new client connected:" << socket->peerAddress().toString();
     QUuid clientId = QUuid::createUuid();
+    qCDebug(dcTcpServer()) << "New client connected:" << clientId.toString() << "(Remote address:" << socket->peerAddress().toString() << ")";
     m_clientList.insert(clientId, socket);
     emit clientConnected(clientId);
 }
 
 void TcpServer::onClientDisconnected(QSslSocket *socket)
 {
-    qCDebug(dcConnection) << "Tcp server: client disconnected:" << socket->peerAddress().toString();
     QUuid clientId = m_clientList.key(socket);
+    qCDebug(dcTcpServer()) << "Client disconnected:" << clientId.toString() << "(Remote address:" << socket->peerAddress().toString() << ")";
     m_clientList.take(clientId);
     emit clientDisconnected(clientId);
 }
@@ -144,13 +144,8 @@ void TcpServer::onClientDisconnected(QSslSocket *socket)
 void TcpServer::onError(QAbstractSocket::SocketError error)
 {
     QTcpServer *server = qobject_cast<QTcpServer *>(sender());
-    qCWarning(dcTcpServer) << server->serverAddress().toString() << "error:" << error << server->errorString();
+    qCWarning(dcTcpServer) << "Server error on" << server->serverAddress().toString() << ":" << error << server->errorString();
     stopServer();
-}
-
-void TcpServer::onEncrypted()
-{
-    qCDebug(dcTcpServer) << "TCP Server connection encrypted";
 }
 
 void TcpServer::onDataAvailable(QSslSocket * socket, const QByteArray &data)
@@ -214,7 +209,7 @@ bool TcpServer::startServer()
 {
     m_server = new SslServer(configuration().sslEnabled, m_sslConfig);
     if(!m_server->listen(configuration().address, static_cast<quint16>(configuration().port))) {
-        qCWarning(dcConnection) << "Tcp server error: can not listen on" << configuration().address.toString() << configuration().port;
+        qCWarning(dcTcpServer()) << "Tcp server error: can not listen on" << configuration().address.toString() << configuration().port;
         delete m_server;
         m_server = nullptr;
         return false;
@@ -224,7 +219,7 @@ bool TcpServer::startServer()
     connect(m_server, SIGNAL(clientDisconnected(QSslSocket *)), SLOT(onClientDisconnected(QSslSocket *)));
     connect(m_server, &SslServer::dataAvailable, this, &TcpServer::onDataAvailable);
 
-    qCDebug(dcConnection) << "Started Tcp server" << serverUrl().toString();
+    qCDebug(dcTcpServer()) << "Started Tcp server" << serverUrl().toString();
     resetAvahiService();
 
     return true;
@@ -260,7 +255,7 @@ void SslServer::incomingConnection(qintptr socketDescriptor)
     connect(sslSocket, &QSslSocket::disconnected, this, &SslServer::onClientDisconnected);
 
     if (!sslSocket->setSocketDescriptor(socketDescriptor)) {
-        qCWarning(dcConnection) << "Failed to set SSL socket descriptor.";
+        qCWarning(dcTcpServer()) << "Failed to set SSL socket descriptor.";
         delete sslSocket;
         return;
     }

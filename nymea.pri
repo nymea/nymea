@@ -1,9 +1,6 @@
 # Parse and export NYMEA_VERSION_STRING
 NYMEA_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"')
 
-# Install path for plugins
-NYMEA_PLUGINS_PATH=/usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')/nymea/plugins/
-
 # define protocol versions
 JSON_PROTOCOL_VERSION_MAJOR=2
 JSON_PROTOCOL_VERSION_MINOR=0
@@ -15,8 +12,7 @@ COPYRIGHT_YEAR_TO=2019
 DEFINES += NYMEA_VERSION_STRING=\\\"$${NYMEA_VERSION_STRING}\\\" \
            JSON_PROTOCOL_VERSION=\\\"$${JSON_PROTOCOL_VERSION_MAJOR}.$${JSON_PROTOCOL_VERSION_MINOR}\\\" \
            REST_API_VERSION=\\\"$${REST_API_VERSION}\\\" \
-           COPYRIGHT_YEAR_STRING=\\\"$${COPYRIGHT_YEAR_FROM}-$${COPYRIGHT_YEAR_TO}\\\" \
-           NYMEA_PLUGINS_PATH=\\\"$${NYMEA_PLUGINS_PATH}\\\"
+           COPYRIGHT_YEAR_STRING=\\\"$${COPYRIGHT_YEAR_FROM}-$${COPYRIGHT_YEAR_TO}\\\"
 
 QT *= network websockets bluetooth dbus
 

@@ -131,8 +131,12 @@ RESOURCES += \
 # install plugininfo python script for libnymea-dev
 generateplugininfo.files = $$top_srcdir/plugins/nymea-generateplugininfo
 generateplugininfo.path = /usr/bin
-
 INSTALLS +=  generateplugininfo
+
+# install plugin.pri for external plugins
+pluginpri.files = $$top_srcdir/plugins/plugin.pri
+pluginpri.path = $$[QT_INSTALL_PREFIX]/include/nymea/plugin.pri
+INSTALLS += pluginpri
 
 # install header file with relative subdirectory
 for(header, HEADERS) {

@@ -27,10 +27,9 @@
 
 
 TEMPLATE = lib
-CONFIG += plugin
+CONFIG += plugin link_pkgconfig
 
-INCLUDEPATH += /usr/include/nymea
-LIBS += -lnymea
+PKGCONFIG += nymea
 
 PLUGIN_PATH=/usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')/nymea/plugins/
 

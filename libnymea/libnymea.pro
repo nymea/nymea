@@ -129,7 +129,7 @@ RESOURCES += \
 ## Install instructions
 
 # install plugininfo python script for libnymea-dev
-generateplugininfo.files = $$top_srcdir/plugins/nymea-generateplugininfo
+generateplugininfo.files = plugin/nymea-generateplugininfo
 generateplugininfo.path = $$[QT_INSTALL_PREFIX]/bin
 INSTALLS += generateplugininfo
 

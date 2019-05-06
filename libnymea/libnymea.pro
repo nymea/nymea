@@ -130,12 +130,12 @@ RESOURCES += \
 
 # install plugininfo python script for libnymea-dev
 generateplugininfo.files = $$top_srcdir/plugins/nymea-generateplugininfo
-generateplugininfo.path = /usr/bin
-INSTALLS +=  generateplugininfo
+generateplugininfo.path = $$[QT_INSTALL_PREFIX]/bin
+INSTALLS += generateplugininfo
 
 # install plugin.pri for external plugins
-pluginpri.files = $$top_srcdir/plugins/plugin.pri
-pluginpri.path = $$[QT_INSTALL_PREFIX]/include/nymea/plugin.pri
+pluginpri.files = plugin/plugin.pri
+pluginpri.path = $$[QT_INSTALL_PREFIX]/include/nymea/
 INSTALLS += pluginpri
 
 # install header file with relative subdirectory
@@ -160,3 +160,4 @@ QMAKE_PKGCONFIG_LIBDIR = $$target.path
 QMAKE_PKGCONFIG_VERSION = $$NYMEA_VERSION_STRING
 QMAKE_PKGCONFIG_FILE = nymea
 QMAKE_PKGCONFIG_DESTDIR = pkgconfig
+

@@ -10,28 +10,20 @@ LIBS += -L../../libnymea -lnymea
 HEADERS += plugininfo.h
 
 # Create plugininfo file
-JSONFILES = deviceplugin"$$TARGET".json
-plugininfo.target = plugininfo.h
-plugininfo.output = plugininfo.h
-plugininfo.CONFIG = no_link
-plugininfo.input = JSONFILES
-plugininfo.commands = touch ${QMAKE_FILE_OUT}; $$top_srcdir/plugins/nymea-generateplugininfo \
+plugininfo.target = plugininfo
+plugininfo.commands = $$top_srcdir/plugins/nymea-generateplugininfo \
                             --filetype i \
-                            --jsonfile ${QMAKE_FILE_NAME} \
-                            --output ${QMAKE_FILE_OUT} \
-                            --builddir $$OUT_PWD;
-
-externplugininfo.target = extern-plugininfo.h
-externplugininfo.output = extern-plugininfo.h
-externplugininfo.CONFIG = no_link
-externplugininfo.input = JSONFILES
-externplugininfo.commands = touch ${QMAKE_FILE_OUT}; $$top_srcdir/plugins/nymea-generateplugininfo \
+                            --jsonfile $$PWD/$$TARGET/deviceplugin"$$TARGET".json \
+                            --output plugininfo.h \
+                            --builddir $$OUT_PWD; \
+                      $$top_srcdir/plugins/nymea-generateplugininfo \
                             --filetype e \
-                            --jsonfile ${QMAKE_FILE_NAME} \
-                            --output ${QMAKE_FILE_OUT} \
+                            --jsonfile $$PWD/$$TARGET/deviceplugin"$$TARGET".json \
+                            --output extern-plugininfo.h \
                             --builddir $$OUT_PWD;
-PRE_TARGETDEPS += compiler_plugininfo_make_all compiler_externplugininfo_make_all
-QMAKE_EXTRA_COMPILERS += plugininfo externplugininfo
+QMAKE_EXTRA_TARGETS += plugininfo
+
+PRE_TARGETDEPS += plugininfo
 
 # Install plugin
 target.path = $$[QT_INSTALL_LIBS]/nymea/plugins/

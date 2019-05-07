@@ -24,9 +24,10 @@ QMAKE_EXTRA_TARGETS += licensecheck
 # make lupdate to update .ts files
 CORE_TRANSLATIONS += $$files($${top_srcdir}/translations/*.ts, true)
 lupdate.commands = lupdate -recursive -no-obsolete $${top_srcdir} -ts $${CORE_TRANSLATIONS};
+lupdate.commands += make -C plugins/mock plugininfo;
 PLUGIN_TRANSLATIONS += $$files($${top_srcdir}/plugins/mock/translations/*.ts, true)
 lupdate.commands += lupdate -recursive -no-obsolete $${top_builddir}/plugins/mock/ -ts $${PLUGIN_TRANSLATIONS};
-lupdate.depends = FORCE
+lupdate.depends = FORCE qmake_all
 TRANSLATIONS = $${CORE_TRANSLATIONS} $${PLUGIN_TRANSLATIONS}
 
 # make lrelease to compile .ts to .qm

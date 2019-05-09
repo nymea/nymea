@@ -37,11 +37,11 @@
 #include <QFileInfo>
 #include <QWebSocket>
 
-QtMessageHandler DebugServerHandler::s_oldLogMessageHandler = nullptr;
-QList<QWebSocket*> DebugServerHandler::s_websocketClients;
-
 
 namespace nymeaserver {
+
+QtMessageHandler DebugServerHandler::s_oldLogMessageHandler = nullptr;
+QList<QWebSocket*> DebugServerHandler::s_websocketClients;
 
 DebugServerHandler::DebugServerHandler(QObject *parent) :
     QObject(parent)

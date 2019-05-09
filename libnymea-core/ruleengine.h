@@ -123,8 +123,7 @@ private:
 
 }
 
-using namespace nymeaserver;
-Q_DECLARE_METATYPE(RuleEngine::RuleError)
+Q_DECLARE_METATYPE(nymeaserver::RuleEngine::RuleError)
 
 
 #endif // RULEENGINE_H

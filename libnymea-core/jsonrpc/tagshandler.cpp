@@ -23,6 +23,8 @@
 #include "nymeacore.h"
 #include "tagging/tagsstorage.h"
 
+namespace nymeaserver {
+
 TagsHandler::TagsHandler(QObject *parent) : JsonHandler(parent)
 {
     QVariantMap params;
@@ -140,4 +142,6 @@ void TagsHandler::onTagValueChanged(const Tag &tag)
     QVariantMap params;
     params.insert("tag", JsonTypes::packTag(tag));
     emit TagValueChanged(params);
+}
+
 }

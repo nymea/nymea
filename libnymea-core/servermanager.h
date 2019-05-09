@@ -29,7 +29,6 @@
 #include <QSslConfiguration>
 #include <QSslKey>
 
-class MockTcpServer;
 
 namespace nymeaserver {
 
@@ -41,6 +40,8 @@ class WebServer;
 class BluetoothServer;
 class RestServer;
 class MqttBroker;
+
+class MockTcpServer;
 
 class ServerManager : public QObject
 {

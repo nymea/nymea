@@ -32,6 +32,8 @@
 
 using namespace remoteproxyclient;
 
+namespace nymeaserver {
+
 CloudManager::CloudManager(NymeaConfiguration *configuration, NetworkManager *networkManager, QObject *parent):
     QObject(parent),
     m_configuration(configuration),
@@ -251,4 +253,6 @@ void CloudManager::awsConnected()
 void CloudManager::awsDisconnected()
 {
     emit connectionStateChanged();
+}
+
 }

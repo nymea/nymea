@@ -160,8 +160,7 @@ private slots:
 
 }
 
-using namespace nymeaserver;
-Q_DECLARE_METATYPE(NetworkManager::NetworkManagerState)
-Q_DECLARE_METATYPE(NetworkManager::NetworkManagerError)
+Q_DECLARE_METATYPE(nymeaserver::NetworkManager::NetworkManagerState)
+Q_DECLARE_METATYPE(nymeaserver::NetworkManager::NetworkManagerError)
 
 #endif // NETWORKMANAGER_H

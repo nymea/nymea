@@ -66,9 +66,9 @@ HEADERS += devicemanager.h \
         network/mqtt/mqttprovider.h \
         network/mqtt/mqttchannel.h \
         translator.h \
-        plugin/platformplugin.h \
-        plugin/platformsystemcontroller.h \
-        plugin/platformupdatecontroller.h
+        platform/platformplugin.h \
+        platform/platformsystemcontroller.h \
+        platform/platformupdatecontroller.h
 
 SOURCES += devicemanager.cpp \
         loggingcategories.cpp \
@@ -124,9 +124,9 @@ SOURCES += devicemanager.cpp \
         network/mqtt/mqttprovider.cpp \
         network/mqtt/mqttchannel.cpp \
         translator.cpp \
-        plugin/platformplugin.cpp \
-        plugin/platformsystemcontroller.cpp \
-        plugin/platformupdatecontroller.cpp
+        platform/platformplugin.cpp \
+        platform/platformsystemcontroller.cpp \
+        platform/platformupdatecontroller.cpp
 
 
 RESOURCES += \

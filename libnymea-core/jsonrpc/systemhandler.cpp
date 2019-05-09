@@ -1,10 +1,12 @@
 #include "systemhandler.h"
 
-#include "system/system.h"
+#include "platform/platform.h"
+#include "platform/platformupdatecontroller.h"
+#include "platform/platformsystemcontroller.h"
 
-SystemHandler::SystemHandler(System *system, QObject *parent):
+SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     JsonHandler(parent),
-    m_system(system)
+    m_platform(platform)
 {
     // Methods
     QVariantMap params; QVariantMap returns;
@@ -62,7 +64,7 @@ SystemHandler::SystemHandler(System *system, QObject *parent):
     params.insert("updateInProgress", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setParams("UpdateStatusChanged", params);
 
-    connect(m_system, &System::updateStatusChanged, this, &SystemHandler::onUpdateStatusChanged);
+    connect(m_platform->updateController(), &PlatformUpdateController::updateStatusChanged, this, &SystemHandler::onUpdateStatusChanged);
 }
 
 QString SystemHandler::name() const
@@ -74,15 +76,15 @@ JsonReply *SystemHandler::GetCapabilities(const QVariantMap &params)
 {
     Q_UNUSED(params)
     QVariantMap data;
-    data.insert("powerManagement", m_system->powerManagementAvailable());
-    data.insert("updateManagement", m_system->updateManagementAvailable());
+    data.insert("powerManagement", m_platform->systemController()->powerManagementAvailable());
+    data.insert("updateManagement", m_platform->updateController()->updateManagementAvailable());
     return createReply(data);
 }
 
 JsonReply *SystemHandler::Reboot(const QVariantMap &params) const
 {
     Q_UNUSED(params);
-    bool status = m_system->reboot();
+    bool status = m_platform->systemController()->reboot();
     QVariantMap returns;
     returns.insert("success", status);
     return createReply(returns);
@@ -91,7 +93,7 @@ JsonReply *SystemHandler::Reboot(const QVariantMap &params) const
 JsonReply *SystemHandler::Shutdown(const QVariantMap &params) const
 {
     Q_UNUSED(params);
-    bool status = m_system->shutdown();
+    bool status = m_platform->systemController()->shutdown();
     QVariantMap returns;
     returns.insert("success", status);
     return createReply(returns);
@@ -101,12 +103,12 @@ JsonReply *SystemHandler::GetUpdateStatus(const QVariantMap &params) const
 {
     Q_UNUSED(params);
     QVariantMap returns;
-    returns.insert("updateAvailable", m_system->updateAvailable());
-    returns.insert("currentVersion", m_system->currentVersion());
-    returns.insert("candidateVersion", m_system->candidateVersion());
-    returns.insert("availableChannels", m_system->availableChannels());
-    returns.insert("currentChannel", m_system->currentChannel());
-    returns.insert("updateInProgress", m_system->updateInProgress());
+    returns.insert("updateAvailable", m_platform->updateController()->updateAvailable());
+    returns.insert("currentVersion", m_platform->updateController()->currentVersion());
+    returns.insert("candidateVersion", m_platform->updateController()->candidateVersion());
+    returns.insert("availableChannels", m_platform->updateController()->availableChannels());
+    returns.insert("currentChannel", m_platform->updateController()->currentChannel());
+    returns.insert("updateInProgress", m_platform->updateController()->updateInProgress());
     return createReply(returns);
 }
 
@@ -114,7 +116,7 @@ JsonReply *SystemHandler::StartUpdate(const QVariantMap &params)
 {
     Q_UNUSED(params)
     QVariantMap returns;
-    bool success = m_system->startUpdate();
+    bool success = m_platform->updateController()->startUpdate();
     returns.insert("success", success);
     return createReply(returns);
 }
@@ -124,8 +126,8 @@ JsonReply *SystemHandler::SelectChannel(const QVariantMap &params)
     QString channel = params.value("channel").toString();
 
     QVariantMap returns;
-    if (m_system->availableChannels().contains(channel)) {
-        bool success = m_system->selectChannel(channel);
+    if (m_platform->updateController()->availableChannels().contains(channel)) {
+        bool success = m_platform->updateController()->selectChannel(channel);
         returns.insert("success", success);
     } else {
         returns.insert("success", false);
@@ -136,12 +138,11 @@ JsonReply *SystemHandler::SelectChannel(const QVariantMap &params)
 void SystemHandler::onUpdateStatusChanged()
 {
     QVariantMap params;
-    params.insert("updateAvailable", m_system->updateAvailable());
-    params.insert("currentVersion", m_system->currentVersion());
-    params.insert("candidateVersion", m_system->candidateVersion());
-    params.insert("availableChannels", m_system->availableChannels());
-    params.insert("currentChannel", m_system->currentChannel());
-    params.insert("updateInProgress", m_system->updateInProgress());
+    params.insert("updateAvailable", m_platform->updateController()->updateAvailable());
+    params.insert("currentVersion", m_platform->updateController()->currentVersion());
+    params.insert("candidateVersion", m_platform->updateController()->candidateVersion());
+    params.insert("availableChannels", m_platform->updateController()->availableChannels());
+    params.insert("currentChannel", m_platform->updateController()->currentChannel());
+    params.insert("updateInProgress", m_platform->updateController()->updateInProgress());
     emit UpdateStatusChanged(params);
-
 }

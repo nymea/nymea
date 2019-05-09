@@ -90,7 +90,7 @@ public:
     CloudManager *cloudManager() const;
     DebugServerHandler *debugServerHandler() const;
     TagsStorage *tagsStorage() const;
-    System *system() const;
+    Platform *platform() const;
 
     static QStringList getAvailableLanguages();
 

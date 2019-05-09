@@ -1,5 +1,5 @@
 #include "platform.h"
-#include "plugin/platformplugin.h"
+#include "platform/platformplugin.h"
 
 #include "loggingcategories.h"
 
@@ -51,6 +51,7 @@ Platform::Platform(QObject *parent) : QObject(parent)
     }
     if (!m_platformPlugin) {
         qCWarning(dcPlatform()) << "Could not load a platform plugin. Platform related features won't be available.";
+        m_platformPlugin = new PlatformPlugin(this);
     }
 
 }

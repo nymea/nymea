@@ -112,7 +112,7 @@
 #include "networkmanager/networkmanager.h"
 #include "nymeasettings.h"
 #include "tagging/tagsstorage.h"
-#include "system/system.h"
+#include "platform/platform.h"
 
 #include "devicemanager.h"
 #include "plugin/device.h"
@@ -153,9 +153,6 @@ void NymeaCore::init() {
 
     qCDebug(dcApplication()) << "Creating Time Manager";
     m_timeManager = new TimeManager(m_configuration->timeZone(), this);
-
-    qCDebug(dcApplication()) << "Loading System platform integration";
-    m_system = new System(m_platform, this);
 
     qCDebug(dcApplication) << "Creating Log Engine";
     m_logger = new LogEngine(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), m_configuration->logDBMaxEntries(), this);
@@ -668,12 +665,13 @@ TagsStorage *NymeaCore::tagsStorage() const
     return m_tagsStorage;
 }
 
-/*! Returns a pointer to the \l{System} instance owned by NymeaCore. */
-System *NymeaCore::system() const
+/*! Returns a pointer to the \l{Platform} instance owned by NymeaCore.
+    The Platform represents the host system this nymea instance is running on.
+*/
+Platform *NymeaCore::platform() const
 {
-    return m_system;
+    return m_platform;
 }
-
 
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in

@@ -47,6 +47,7 @@
 #include "rule.h"
 #include "ruleengine.h"
 #include "loggingcategories.h"
+#include "platform/platform.h"
 
 #include "devicehandler.h"
 #include "actionhandler.h"
@@ -519,7 +520,7 @@ void JsonRPCServer::setup()
     registerHandler(new ConfigurationHandler(this));
     registerHandler(new NetworkManagerHandler(this));
     registerHandler(new TagsHandler(this));
-    registerHandler(new SystemHandler(NymeaCore::instance()->system(), this));
+    registerHandler(new SystemHandler(NymeaCore::instance()->platform(), this));
 
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::pairingReply, this, &JsonRPCServer::pairingFinished);
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::connectionStateChanged, this, &JsonRPCServer::onCloudConnectionStateChanged);

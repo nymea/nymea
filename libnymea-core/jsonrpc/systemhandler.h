@@ -25,15 +25,15 @@
 
 #include "jsonhandler.h"
 
-namespace nymeaserver {
+#include "platform/platform.h"
 
-class System;
+namespace nymeaserver {
 
 class SystemHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit SystemHandler(System* system, QObject *parent = nullptr);
+    explicit SystemHandler(Platform *platform, QObject *parent = nullptr);
 
     QString name() const override;
 
@@ -52,7 +52,7 @@ signals:
 private slots:
     void onUpdateStatusChanged();
 private:
-    System *m_system = nullptr;
+    Platform *m_platform = nullptr;
 };
 
 }

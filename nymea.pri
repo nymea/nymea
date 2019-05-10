@@ -3,7 +3,7 @@ NYMEA_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"
 
 # define protocol versions
 JSON_PROTOCOL_VERSION_MAJOR=2
-JSON_PROTOCOL_VERSION_MINOR=0
+JSON_PROTOCOL_VERSION_MINOR=1
 REST_API_VERSION=1
 
 COPYRIGHT_YEAR_FROM=2013

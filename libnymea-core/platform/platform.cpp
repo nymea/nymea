@@ -17,7 +17,7 @@ Platform::Platform(QObject *parent) : QObject(parent)
         foreach (const QString &entry, dir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
             qCDebug(dcPlatform()) << "Found dir entry" << entry;
             QFileInfo fi;
-            if (entry.startsWith("libnymea_systemplugin") && entry.endsWith(".so")) {
+            if (entry.startsWith("libnymea_platformplugin") && entry.endsWith(".so")) {
                 fi.setFile(path + "/" + entry);
             } else {
                 fi.setFile(path + "/" + entry + "/libnymea_platformplugin" + entry + ".so");
@@ -68,10 +68,19 @@ PlatformUpdateController *Platform::updateController() const
 
 QStringList Platform::pluginSearchDirs() const
 {
-    QStringList ret;
-    ret << QString(qgetenv("NYMEA_PLATFORM_PLUGINS_PATH")).split(':');
-    ret << QCoreApplication::applicationDirPath();
-    return ret;
+    QStringList searchDirs;
+    QByteArray envPath = qgetenv("NYMEA_PLATFORM_PLUGINS_PATH");
+    if (!envPath.isEmpty()) {
+        searchDirs << QString(envPath).split(':');
+    }
+
+    foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+        searchDirs << libraryPath.replace("qt5", "nymea").replace("plugins", "platforms");
+    }
+    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/nymea/platforms";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../platforms/";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../../../platforms/";
+    return searchDirs;
 }
 
 }

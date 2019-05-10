@@ -1,4 +1,4 @@
-2.0
+2.1
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -867,6 +867,61 @@
                 "o:stateType": "$ref:StateType"
             }
         },
+        "System.GetCapabilities": {
+            "description": "Get the list of capabilites on this system. This allows reading whether things like rebooting or shutting down the system running nymea:core is supported on this host.",
+            "params": {
+            },
+            "returns": {
+                "powerManagement": "Bool",
+                "updateManagement": "Bool"
+            }
+        },
+        "System.GetUpdateStatus": {
+            "description": "Get the current system status in regard to updates. That is, the currently installed version, any candidate version available etc.",
+            "params": {
+            },
+            "returns": {
+                "availableChannels": "StringList",
+                "candidateVersion": "String",
+                "currentChannel": "String",
+                "currentVersion": "String",
+                "updateAvailable": "Bool",
+                "updateInProgress": "Bool"
+            }
+        },
+        "System.Reboot": {
+            "description": "Initiate a reboot of the system. The return value will indicate whether the procedure has been initiated successfully.",
+            "params": {
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
+        "System.SelectChannel": {
+            "description": "Select an update channel.",
+            "params": {
+                "channel": "String"
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
+        "System.Shutdown": {
+            "description": "Initiate a shutdown of the system. The return value will indicate whether the procedure has been initiated successfully.",
+            "params": {
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
+        "System.StartUpdate": {
+            "description": "Starts a system update. Returns true if the upgrade has been started successfully.",
+            "params": {
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
         "Tags.AddTag": {
             "description": "Add a Tag. A Tag must have a deviceId OR a ruleId (call this method twice if you want to attach the same tag to a device and a rule), an appId (Use the appId of your app), a tagId (e.g. \"favorites\") and a value. Upon success, a TagAdded notification will be emitted. Calling this method twice for the same ids (device/rule, appId and tagId) but with a different value will update the tag's value and the TagValueChanged notification will be emitted.",
             "params": {
@@ -1125,6 +1180,17 @@
             "description": "Emitted whenever a Rule was removed.",
             "params": {
                 "ruleId": "Uuid"
+            }
+        },
+        "System.UpdateStatusChanged": {
+            "description": "Emitted whenever there is a change in the information from GetUpdateStatus",
+            "params": {
+                "availableChannels": "StringList",
+                "candidateVersion": "String",
+                "currentChannel": "String",
+                "currentVersion": "String",
+                "updateAvailable": "Bool",
+                "updateInProgress": "Bool"
             }
         },
         "Tags.TagAdded": {

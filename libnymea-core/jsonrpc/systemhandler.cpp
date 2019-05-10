@@ -4,6 +4,8 @@
 #include "platform/platformupdatecontroller.h"
 #include "platform/platformsystemcontroller.h"
 
+namespace nymeaserver {
+
 SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     JsonHandler(parent),
     m_platform(platform)
@@ -145,4 +147,6 @@ void SystemHandler::onUpdateStatusChanged()
     params.insert("currentChannel", m_platform->updateController()->currentChannel());
     params.insert("updateInProgress", m_platform->updateController()->updateInProgress());
     emit UpdateStatusChanged(params);
+}
+
 }

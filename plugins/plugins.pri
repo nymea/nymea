@@ -15,14 +15,14 @@ plugininfo.input = JSONFILE
 plugininfo.output = plugininfo.h
 plugininfo.CONFIG = no_link target_predeps
 plugininfo.commands = $$top_srcdir/plugins/nymea-generateplugininfo \
-                            --filetype i \
-                            --jsonfile $$PWD/$$TARGET/deviceplugin"$$TARGET".json \
-                            --output plugininfo.h \
-                            --builddir $$OUT_PWD; \
-                      $$top_srcdir/plugins/nymea-generateplugininfo \
                             --filetype e \
                             --jsonfile $$PWD/$$TARGET/deviceplugin"$$TARGET".json \
                             --output extern-plugininfo.h \
+                            --builddir $$OUT_PWD; \
+                      $$top_srcdir/plugins/nymea-generateplugininfo \
+                            --filetype i \
+                            --jsonfile $$PWD/$$TARGET/deviceplugin"$$TARGET".json \
+                            --output plugininfo.h \
                             --builddir $$OUT_PWD;
 # Add it as a compiler, so it will be called before building like moc
 QMAKE_EXTRA_COMPILERS += plugininfo

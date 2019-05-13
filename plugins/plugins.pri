@@ -12,7 +12,7 @@ HEADERS += plugininfo.h
 # Create plugininfo file
 JSONFILE=$$PWD/$$TARGET/deviceplugin"$$TARGET".json
 plugininfo.input = JSONFILE
-plugininfo.output = plugininfo.h
+plugininfo.output = plugininfo.h extern-plugininfo.h
 plugininfo.CONFIG = no_link target_predeps
 plugininfo.commands = $$top_srcdir/plugins/nymea-generateplugininfo \
                             --filetype e \

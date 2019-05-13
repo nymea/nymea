@@ -1,12 +1,16 @@
 # nymea - open source IoT edge server
 --------------------------------------------
-<img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/nymea-logo.svg" width="100" height="100" align="middle">
+<p align="center">
+  <a src='https://nymea.io'>
+    <img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/nymea-logo.svg" width=300 />
+  </a>
+</p>
 
-nymea (/[n'aiːmea:]/ - is an open source IoT (Internet of Things) server, which allows to control a lot of different devices from many different manufacturers. With the powerful rule engine you are able to connect any device available in the system and create individual scenes and behaviours for your environment.
+nymea (/[n'aiːmea:]/ - is an open source IoT edge server. It allows to control a lot of different things. With the powerful rule engine you are able to connect any device or services available in the system and create individual scenes and behaviours for your environment.
 
 ## Quick Install on Ubuntu 
 
-![nymea loves ubuntu](https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/nymea-ubuntu.svg)
+<img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/nymea-ubuntu.svg" width=300 >
 
 In order to install nymea on Ubuntu, you simply need to download this bash script:
 
@@ -23,30 +27,37 @@ Once the success message has printed on your screen, simply run: *sudo nymead -n
 
 ## Quick Install on a Raspberry Pi
 
-![nymea loves Raspberry Pi](https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/nymea-pi.svg)
+<img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/nymea-pi.svg" width=300 >
 
 We have created an image for your Raspberry Pi (2/3) that comes with an array of plugins for different smart devices!
  [Download  .zip](https://downloads.nymea.io/images/rpi3/nymea-debian-stretch-9-armhf-raspberry-pi-3.zip)
 
 ## Get the nymea mobile app here:
 
-![nymea app iOS](https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/community/app-shots/ios-app.png)
+<p align="center">
+  <img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/community/app-shots/ios-app.png" width=300 />
+</p>
 
-[nymea for iPhone](https://itunes.apple.com/us/app/nymea-app/id1400810250?mt=8)
+<table width:100%>
+  <tr>
+    <td> <a href="https://itunes.apple.com/us/app/nymea-app/id1400810250?mt=8">nymea for iOS </a>
+    <td> <a href="https://play.google.com/store/apps/details?id=io.guh.nymeaapp&hl=en&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1">nymea for Android</a>
+   </tr>
+</table>
 
-![nymea app Android](https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/community/app-shots/android-app.png)
-
-[nymea for Android](https://play.google.com/store/apps/details?id=io.guh.nymeaapp&hl=en&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1)
 
 ## Get the nymea desktop app here:
+<p align="center">
+   <img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/community/app-shots/desktop-app.png" width=100% />
+</p>
 
-![nymea app desktop](https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/community/app-shots/desktop-app.png)
-
-[nymea for macOS](https://downloads.nymea.io/nymea-app/nymea-app-osx-bundle.dmg)
-
-[nymea for Linux](https://snapcraft.io/nymea-app)
-
-[nymea for Windows](https://downloads.nymea.io/nymea-app/nymea-app-win-installer.exe)
+<table width:100%>
+  <tr>
+    <td> <a href="https://downloads.nymea.io/nymea-app/nymea-app-osx-bundle.dmg">nymea for macOS </a>
+    <td> <a href="https://snapcraft.io/nymea-app">nymea for Linux</td>
+    <td> <a href="https://downloads.nymea.io/nymea-app/nymea-app-win-installer.exe">nymea for Windows</td>
+  </tr>
+</table>
 
 ## Getting help
 

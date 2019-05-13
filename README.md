@@ -1,7 +1,6 @@
 # nymea - open source IoT edge server
 --------------------------------------------
-
-![nymea logo](https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/nymea-logo.svg)
+<img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/nymea-logo.svg" width="100" height="100" align="middle">
 
 nymea (/[n'aiːmea:]/ - is an open source IoT (Internet of Things) server, which allows to control a lot of different devices from many different manufacturers. With the powerful rule engine you are able to connect any device available in the system and create individual scenes and behaviours for your environment.
 

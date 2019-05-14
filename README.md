@@ -1,12 +1,12 @@
 # nymea - open source IoT edge server
 --------------------------------------------
 <p align="center">
-  <a src='https://nymea.io'>
-    <img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/nymea-logo.svg" width=300 />
+  <a  href="https://nymea.io">
+    <img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/nymea-logo.svg" width=300>
   </a>
 </p>
 
-nymea (/[n'aiːmea:]/ - is an open source IoT edge server. The plug-in based architecture allows to integrate protocols, APIs and . With the build-in rule engine you are able to interconnect devices or services available in the system and create individual scenes and behaviours for your environment.
+nymea (/[n'aiːmea:]/ - is an open source IoT edge server. The plug-in based architecture allows to integrate protocols and APIs. With the build-in rule engine you are able to interconnect devices or services available in the system and create individual scenes and behaviours for your environment.
 
 ## Quick Install on Ubuntu 
 
@@ -35,27 +35,52 @@ We have created an image for your Raspberry Pi (2/3) that comes with an array of
 ## Get the nymea mobile app here:
 
 <p align="center">
-  <img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/community/app-shots/ios-app.png" width=300 />
+  <img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/community/app-shots/ios-app.png" width=300>
 </p>
 
-<table width:100%>
+<table align="middle">
   <tr>
-    <td> <a href="https://itunes.apple.com/us/app/nymea-app/id1400810250?mt=8">nymea for iOS </a>
-    <td> <a href="https://play.google.com/store/apps/details?id=io.guh.nymeaapp&hl=en&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1">nymea for Android</a>
+    <td> 
+      <p>
+        <a href="https://itunes.apple.com/us/app/nymea-app/id1400810250?mt=8">
+          <img border="0" align="middle" alt="iOS Badge" src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/app-store/appstore.png" width=200>
+     </p>
+    </td>
+    <td> 
+      <p>
+         <a href="https://play.google.com/store/apps/details?id=io.guh.nymeaapp&hl=en&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1">
+         <img border="0" align="middle" alt="Android Badge" src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/app-store/playstore.png" width=200>
+     </p>
+    </td>
    </tr>
 </table>
 
 
 ## Get the nymea desktop app here:
 <p align="center">
-   <img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/community/app-shots/desktop-app.png" width=100% />
+   <img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/community/app-shots/desktop-app.png?v=1555314733">
 </p>
 
-<table width:100%>
+<table align="middle">
   <tr>
-    <td> <a href="https://downloads.nymea.io/nymea-app/nymea-app-osx-bundle.dmg">nymea for macOS </a>
-    <td> <a href="https://snapcraft.io/nymea-app">nymea for Linux</td>
-    <td> <a href="https://downloads.nymea.io/nymea-app/nymea-app-win-installer.exe">nymea for Windows</td>
+    <td> 
+      <p>
+         <a href="https://downloads.nymea.io/nymea-app/nymea-app-osx-bundle.dmg">
+         <img border="0" align="middle" alt="macOS Badge" src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/app-store/macos.png" width=200">
+      </p>
+    </td>
+    <td> 
+      <p>
+        <a href="https://snapcraft.io/nymea-app">
+        <img border="0" align="middle" alt="Snap Badge" src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/app-store/snap-store.png" width=200>
+      </p>
+    </td>
+    <td> 
+      <p>
+        <a href="https://downloads.nymea.io/nymea-app/nymea-app-win-installer.exe">
+        <img border="0" align="middle" alt="Windows Badge" src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/app-store/windows.svg" width=200>
+      </p>
+    </td>
   </tr>
 </table>
 

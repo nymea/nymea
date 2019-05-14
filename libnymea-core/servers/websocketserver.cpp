@@ -65,8 +65,6 @@ WebSocketServer::WebSocketServer(const ServerConfiguration &configuration, const
     m_sslConfiguration(sslConfiguration),
     m_enabled(false)
 {
-    m_avahiService = new QtAvahiService(this);
-    connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &WebSocketServer::onAvahiServiceStateChanged);
 }
 
 /*! Destructor of this \l{WebSocketServer}. */
@@ -115,19 +113,6 @@ void WebSocketServer::terminateClientConnection(const QUuid &clientId)
     if (client) {
         client->abort();
     }
-}
-
-QHash<QString, QString> WebSocketServer::createTxtRecord()
-{
-    // Note: reversed order
-    QHash<QString, QString> txt;
-    txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
-    txt.insert("serverVersion", NYMEA_VERSION_STRING);
-    txt.insert("manufacturer", "guh GmbH");
-    txt.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
-    txt.insert("name", NymeaCore::instance()->configuration()->serverName());
-    txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
-    return txt;
 }
 
 void WebSocketServer::onClientConnected()
@@ -202,21 +187,6 @@ void WebSocketServer::onPing(quint64 elapsedTime, const QByteArray &payload)
     qCDebug(dcWebSocketServer) << "Ping response from" << clientId.toString() << elapsedTime << payload;
 }
 
-void WebSocketServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
-{
-    Q_UNUSED(state)
-}
-
-void WebSocketServer::resetAvahiService()
-{
-    if (!m_avahiService)
-        return;
-
-    m_avahiService->resetService();
-    if (!m_avahiService->registerService(QString("nymea-ws-%1").arg(configuration().id), configuration().address, static_cast<quint16>(configuration().port), "_ws._tcp", createTxtRecord())) {
-        qCWarning(dcWebSocketServer()) << "Could not register avahi service for" << configuration();
-    }
-}
 
 /*! Returns true if this \l{WebSocketServer} could be reconfigured with the given \a config. */
 void WebSocketServer::reconfigureServer(const ServerConfiguration &config)
@@ -240,7 +210,6 @@ void WebSocketServer::reconfigureServer(const ServerConfiguration &config)
 void WebSocketServer::setServerName(const QString &serverName)
 {
     m_serverName = serverName;
-    resetAvahiService();
 }
 
 /*! Returns true if this \l{WebSocketServer} started successfully.
@@ -264,7 +233,6 @@ bool WebSocketServer::startServer()
     }
 
     qCDebug(dcWebSocketServer()) << "Server started on" << serverUrl().toString();
-    resetAvahiService();
     return true;
 }
 
@@ -274,9 +242,6 @@ bool WebSocketServer::startServer()
  */
 bool WebSocketServer::stopServer()
 {
-    if (m_avahiService)
-        m_avahiService->resetService();
-
     foreach (QWebSocket *client, m_clientList.values()) {
         client->close(QWebSocketProtocol::CloseCodeNormal, "Stop server");
     }

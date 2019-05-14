@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016-2018 Simon Stürz <simon.stuerz@guh.io>              *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,30 +20,29 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef QTAVAHISERVICEBROWSER_H
-#define QTAVAHISERVICEBROWSER_H
+#ifndef PLATFORMZEROCONFCONTROLLER_H
+#define PLATFORMZEROCONFCONTROLLER_H
 
 #include <QObject>
-#include <avahi-client/lookup.h>
 
-#include "libnymea.h"
-#include "hardwareresource.h"
-#include "avahiserviceentry.h"
+class ZeroConfServiceBrowser;
+class ZeroConfServicePublisher;
 
-class LIBNYMEA_EXPORT QtAvahiServiceBrowser : public HardwareResource
+class PlatformZeroConfController: public QObject
 {
     Q_OBJECT
-
 public:
-    explicit QtAvahiServiceBrowser(QObject *parent = nullptr);
-    virtual ~QtAvahiServiceBrowser() = default;
+    explicit PlatformZeroConfController(QObject *parent = nullptr);
+    virtual ~PlatformZeroConfController() = default;
 
-    virtual QList<AvahiServiceEntry> serviceEntries() const = 0;
+    virtual ZeroConfServiceBrowser *zeroConfServiceBrowser() const;
+    virtual ZeroConfServicePublisher *zeroConfServicePublisher() const;
 
-signals:
-    void serviceEntryAdded(const AvahiServiceEntry &entry);
-    void serviceEntryRemoved(const AvahiServiceEntry &entry);
-
+private:
+    ZeroConfServiceBrowser *m_zeroConfBrowserStub = nullptr;
+    ZeroConfServicePublisher *m_zeroConfPublisherStub = nullptr;
 };
 
-#endif // QTAVAHISERVICEBROWSER_H
+Q_DECLARE_INTERFACE(PlatformZeroConfController, "io.nymea.PlatformZeroConfController")
+
+#endif // PLATFORMZEROCONFCONTROLLER_H

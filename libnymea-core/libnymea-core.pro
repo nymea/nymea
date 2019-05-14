@@ -5,7 +5,7 @@ include(../nymea.pri)
 
 QT += sql
 INCLUDEPATH += $$top_srcdir/libnymea
-LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto -lavahi-common -lavahi-client -lnymea-mqtt
+LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto -lnymea-mqtt
 
 target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target
@@ -86,12 +86,6 @@ HEADERS += nymeacore.h \
     hardware/network/upnp/upnpdiscoveryimplementation.h \
     hardware/network/upnp/upnpdiscoveryrequest.h \
     hardware/network/upnp/upnpdiscoveryreplyimplementation.h \
-    hardware/network/avahi/qt-watch.h \
-    hardware/network/avahi/qtavahiclient.h \
-    hardware/network/avahi/qtavahiservice.h \
-    hardware/network/avahi/qtavahiservice_p.h \
-    hardware/network/avahi/qtavahiservicebrowserimplementation.h \
-    hardware/network/avahi/qtavahiservicebrowserimplementation_p.h \
     hardware/network/mqtt/mqttproviderimplementation.h \
     hardware/network/mqtt/mqttchannelimplementation.h \
     debugserverhandler.h \
@@ -172,12 +166,6 @@ SOURCES += nymeacore.cpp \
     hardware/network/upnp/upnpdiscoveryimplementation.cpp \
     hardware/network/upnp/upnpdiscoveryrequest.cpp \
     hardware/network/upnp/upnpdiscoveryreplyimplementation.cpp \
-    hardware/network/avahi/qt-watch.cpp \
-    hardware/network/avahi/qtavahiclient.cpp \
-    hardware/network/avahi/qtavahiservice.cpp \
-    hardware/network/avahi/qtavahiservice_p.cpp \
-    hardware/network/avahi/qtavahiservicebrowserimplementation.cpp \
-    hardware/network/avahi/qtavahiservicebrowserimplementation_p.cpp \
     hardware/network/mqtt/mqttproviderimplementation.cpp \
     hardware/network/mqtt/mqttchannelimplementation.cpp \
     debugserverhandler.cpp \

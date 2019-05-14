@@ -20,57 +20,60 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef QTAVAHISERVICEBROWSERIMPLEMENTATION_H
-#define QTAVAHISERVICEBROWSERIMPLEMENTATION_H
+#ifndef ZEROCONFSERVICEENTRY_H
+#define ZEROCONFSERVICEENTRY_H
 
 #include <QObject>
-#include <avahi-client/lookup.h>
+#include <QString>
+#include <QHostAddress>
+#include <QAbstractSocket>
 
-#include "qtavahiclient.h"
+#include "libnymea.h"
 
-#include "network/avahi/avahiserviceentry.h"
-#include "network/avahi/qtavahiservicebrowser.h"
-
-
-namespace nymeaserver {
-
-class QtAvahiServiceBrowserImplementationPrivate;
-
-class QtAvahiServiceBrowserImplementation : public QtAvahiServiceBrowser
+class LIBNYMEA_EXPORT ZeroConfServiceEntry
 {
-    Q_OBJECT
-
-    friend class HardwareManagerImplementation;
-
 public:
-    explicit QtAvahiServiceBrowserImplementation(QObject *parent = nullptr);
-    ~QtAvahiServiceBrowserImplementation() override;
+    ZeroConfServiceEntry();
+    ZeroConfServiceEntry(QString name, QString serviceType, QHostAddress hostAddress, QString domain, QString hostName, quint16 port, QAbstractSocket::NetworkLayerProtocol protocol, QStringList txt, bool cached, bool isWideArea, bool isMulticase, bool isLocal, bool isOurOwn);
 
-    QList<AvahiServiceEntry> serviceEntries() const override;
+    QString name() const;
+    QString serviceType() const;
+    QHostAddress hostAddress() const;
+    QString domain() const;
+    QString hostName() const;
+    quint16 port() const;
+    QAbstractSocket::NetworkLayerProtocol protocol() const;
+    QStringList txt() const;
 
-    bool available() const override;
-    bool enabled() const override;
+    bool isValid() const;
 
-private slots:
-    void onClientStateChanged(const QtAvahiClient::QtAvahiClientState &state);
+    bool isChached() const;
+    bool isWideArea() const;
+    bool isMulticast() const;
+    bool isLocal() const;
+    bool isOurOwn() const;
 
-protected:
-    void setEnabled(bool enabled) override;
+    bool operator ==(const ZeroConfServiceEntry &other) const;
+    bool operator !=(const ZeroConfServiceEntry &other) const;
 
 private:
-    bool m_available = false;
-    bool m_enabled = false;
+    QString m_name;
+    QString m_serviceType;
+    QHostAddress m_hostAddress;
+    QString m_domain;
+    QString m_hostName;
+    quint16 m_port;
+    QAbstractSocket::NetworkLayerProtocol m_protocol;
+    QStringList m_txt;
 
-    QtAvahiServiceBrowserImplementationPrivate *d_ptr;
-
-    QList<AvahiServiceEntry> m_serviceEntries;
-    QStringList m_serviceTypes;
-
-    void createServiceBrowser(const char* serviceType);
-
-    Q_DECLARE_PRIVATE(QtAvahiServiceBrowserImplementation)
+    bool m_isCached = false;
+    bool m_isWideArea = false;
+    bool m_isMulticast = false;
+    bool m_isLocal = false;
+    bool m_isOurOwn = false;
 };
 
-}
+QDebug operator <<(QDebug dbg, const ZeroConfServiceEntry &entry);
+Q_DECLARE_METATYPE(ZeroConfServiceEntry)
 
-#endif // QTAVAHISERVICEBROWSERIMPLEMENTATION_H
+#endif // ZEROCONFSERVICEENTRY_H

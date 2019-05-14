@@ -34,11 +34,12 @@ class UpnpDiscovery;
 class PluginTimerManager;
 class NetworkAccessManager;
 class UpnpDeviceDescriptor;
-class QtAvahiServiceBrowser;
+class ZeroConfServiceBrowser;
 class BluetoothLowEnergyManager;
 
 namespace nymeaserver {
 
+class Platform;
 class MqttBroker;
 
 class HardwareManagerImplementation : public HardwareManager
@@ -46,26 +47,27 @@ class HardwareManagerImplementation : public HardwareManager
     Q_OBJECT
 
 public:
-    explicit HardwareManagerImplementation(MqttBroker *mqttBroker, QObject *parent = nullptr);
+    explicit HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, QObject *parent = nullptr);
     ~HardwareManagerImplementation() override;
 
     Radio433 *radio433() override;
     PluginTimerManager *pluginTimerManager() override;
     NetworkAccessManager *networkManager() override;
     UpnpDiscovery *upnpDiscovery() override;
-    QtAvahiServiceBrowser *avahiBrowser() override;
+    ZeroConfServiceBrowser *zeroConfServiceBrowser() override;
     BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
     MqttProvider *mqttProvider() override;
 
 private:
     QNetworkAccessManager *m_networkAccessManager = nullptr;
 
+    Platform *m_platform = nullptr;
+
     // Hardware Resources
     PluginTimerManager *m_pluginTimerManager = nullptr;
     Radio433 *m_radio433 = nullptr;
     NetworkAccessManager *m_networkManager = nullptr;
     UpnpDiscovery *m_upnpDiscovery = nullptr;
-    QtAvahiServiceBrowser *m_avahiBrowser = nullptr;
     BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
     MqttProvider *m_mqttProvider = nullptr;
 };

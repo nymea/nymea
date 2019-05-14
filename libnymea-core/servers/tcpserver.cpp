@@ -80,8 +80,6 @@ TcpServer::TcpServer(const ServerConfiguration &configuration, const QSslConfigu
     m_server(nullptr),
     m_sslConfig(sslConfiguration)
 {
-    m_avahiService = new QtAvahiService(this);
-    connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &TcpServer::onAvahiServiceStateChanged);
 }
 
 /*! Destructor of this \l{TcpServer}. */
@@ -155,29 +153,6 @@ void TcpServer::onDataAvailable(QSslSocket * socket, const QByteArray &data)
     emit dataAvailable(clientId, data);
 }
 
-void TcpServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
-{
-    Q_UNUSED(state)
-}
-
-void TcpServer::resetAvahiService()
-{
-    if (m_avahiService)
-        m_avahiService->resetService();
-
-    // Note: reversed order
-    QHash<QString, QString> txt;
-    txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
-    txt.insert("serverVersion", NYMEA_VERSION_STRING);
-    txt.insert("manufacturer", "guh GmbH");
-    txt.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
-    txt.insert("name", NymeaCore::instance()->configuration()->serverName());
-    txt.insert("sslEnabled", configuration().sslEnabled ? "true" : "false");
-    if (!m_avahiService->registerService(QString("nymea-tcp-%1").arg(configuration().id), configuration().address, static_cast<quint16>(configuration().port), "_jsonrpc._tcp", txt)) {
-        qCWarning(dcTcpServer()) << "Could not register avahi service for" << configuration();
-    }
-}
-
 
 /*! Returns true if this \l{TcpServer} could be reconfigured with the given \a config. */
 void TcpServer::reconfigureServer(const ServerConfiguration &config)
@@ -198,7 +173,6 @@ void TcpServer::reconfigureServer(const ServerConfiguration &config)
 void TcpServer::setServerName(const QString &serverName)
 {
     m_serverName = serverName;
-    resetAvahiService();
 }
 
 /*! Returns true if this \l{TcpServer} started successfully.
@@ -220,7 +194,6 @@ bool TcpServer::startServer()
     connect(m_server, &SslServer::dataAvailable, this, &TcpServer::onDataAvailable);
 
     qCDebug(dcTcpServer()) << "Started Tcp server" << serverUrl().toString();
-    resetAvahiService();
 
     return true;
 }
@@ -231,9 +204,6 @@ bool TcpServer::startServer()
  */
 bool TcpServer::stopServer()
 {
-    if (m_avahiService)
-        m_avahiService->resetService();
-
     if (!m_server)
         return true;
 

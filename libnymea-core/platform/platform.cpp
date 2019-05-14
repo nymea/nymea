@@ -23,6 +23,7 @@
 #include "platform.h"
 #include "platform/platformsystemcontroller.h"
 #include "platform/platformupdatecontroller.h"
+#include "platform/platformzeroconfcontroller.h"
 
 #include "loggingcategories.h"
 
@@ -44,26 +45,34 @@ Platform::Platform(QObject *parent) : QObject(parent)
                     loadSystemPlugin(path + "/" + entry);
                 } else if (entry.startsWith("libnymea_updateplugin") && entry.endsWith(".so")) {
                     loadUpdatePlugin(path + "/" + entry);
+                } else if (entry.startsWith("libnymea_zeroconfplugin") && entry.endsWith(".so")) {
+                    loadZeroConfPlugin(path + "/" + entry);
                 }
             } else if (fi.isDir()) {
                 if (QFileInfo::exists(path + "/" + entry + "/libnymea_systemplugin" + entry + ".so")) {
                     loadSystemPlugin(path + "/" +  entry + "/libnymea_systemplugin" + entry + ".so");
                 } else if (QFileInfo::exists(path + "/" + entry + "/libnymea_updateplugin" + entry + ".so")) {
                     loadUpdatePlugin(path + "/" +  entry + "/libnymea_updateplugin" + entry + ".so");
+                } else if (QFileInfo::exists(path + "/" + entry + "/libnymea_zeroconfplugin" + entry + ".so")) {
+                    loadZeroConfPlugin(path + "/" +  entry + "/libnymea_zeroconfplugin" + entry + ".so");
                 }
             }
         }
-        if (m_platformSystemController && m_platformUpdateController) {
+        if (m_platformSystemController && m_platformUpdateController && m_platformZeroConfController) {
             break;
         }
     }
     if (!m_platformSystemController) {
-        qCWarning(dcPlatform()) << "Could not load a system plugin. System control features won't be available.";
+        qCWarning(dcPlatform()) << "No system plugin loaded. System control features won't be available.";
         m_platformSystemController = new PlatformSystemController(this);
     }
     if (!m_platformUpdateController) {
-        qCWarning(dcPlatform()) << "Could not load an update plugin. System update features won't be available.";
+        qCWarning(dcPlatform()) << "No update plugin loaded. System update features won't be available.";
         m_platformUpdateController = new PlatformUpdateController(this);
+    }
+    if (!m_platformZeroConfController) {
+        qCWarning(dcPlatform()) << "No ZeroConf plugin loaded. ZeroConf will not be available.";
+        m_platformZeroConfController = new PlatformZeroConfController(this);
     }
 }
 
@@ -75,6 +84,11 @@ PlatformSystemController *Platform::systemController() const
 PlatformUpdateController *Platform::updateController() const
 {
     return m_platformUpdateController;
+}
+
+PlatformZeroConfController *Platform::zeroConfController() const
+{
+    return m_platformZeroConfController;
 }
 
 QStringList Platform::pluginSearchDirs() const
@@ -103,16 +117,16 @@ void Platform::loadSystemPlugin(const QString &file)
     loader.setFileName(file);
     loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
     if (!loader.load()) {
-        qCWarning(dcPlatform) << "Could not load plugin data of" << file << "\n" << loader.errorString();
+        qCWarning(dcPlatform) << loader.errorString();
         return;
     }
     m_platformSystemController = qobject_cast<PlatformSystemController*>(loader.instance());
     if (!m_platformSystemController) {
-        qCWarning(dcPlatform) << "Could not get plugin instance of" << file;
+        qCWarning(dcPlatform) << "Could not get plugin instance of" << loader.fileName();
         loader.unload();
         return;
     }
-    qCDebug(dcPlatform()) << "Loaded system plugin:" << file;
+    qCDebug(dcPlatform()) << "Loaded system plugin:" << loader.fileName();
     m_platformSystemController->setParent(this);
 }
 
@@ -125,17 +139,39 @@ void Platform::loadUpdatePlugin(const QString &file)
     loader.setFileName(file);
     loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
     if (!loader.load()) {
-        qCWarning(dcPlatform) << "Could not load plugin data of" << file << "\n" << loader.errorString();
+        qCWarning(dcPlatform) << loader.errorString();
         return;
     }
     m_platformUpdateController = qobject_cast<PlatformUpdateController*>(loader.instance());
     if (!m_platformUpdateController) {
-        qCWarning(dcPlatform) << "Could not get plugin instance of" << file;
+        qCWarning(dcPlatform) << "Could not get plugin instance of" << loader.fileName();
         loader.unload();
         return;
     }
-    qCDebug(dcPlatform()) << "Loaded update plugin:" << file;
+    qCDebug(dcPlatform()) << "Loaded update plugin:" << loader.fileName();
     m_platformUpdateController->setParent(this);
+}
+
+void Platform::loadZeroConfPlugin(const QString &file)
+{
+    if (m_platformZeroConfController) {
+        return; // Not loading another...
+    }
+    QPluginLoader loader;
+    loader.setFileName(file);
+    loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+    if (!loader.load()) {
+        qCWarning(dcPlatform) << loader.errorString();
+        return;
+    }
+    m_platformZeroConfController = qobject_cast<PlatformZeroConfController*>(loader.instance());
+    if (!m_platformZeroConfController) {
+        qCWarning(dcPlatform) << "Could not get plugin instance of" << loader.fileName();
+        loader.unload();
+        return;
+    }
+    qCDebug(dcPlatform()) << "Loaded ZeroConf plugin:" << loader.fileName();
+    m_platformZeroConfController->setParent(this);
 }
 
 }

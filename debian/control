@@ -20,8 +20,6 @@ Build-Depends: debhelper (>= 9.0.0),
                libqt5bluetooth5,
                libqt5sql5-sqlite,
                libqt5dbus5,
-               libavahi-client-dev,
-               libavahi-common-dev,
                libssl-dev,
                libnymea-mqtt-dev,
                dbus-test-runner,
@@ -57,7 +55,6 @@ Depends: libqt5network5,
          libqt5bluetooth5,
          libqt5sql5-sqlite,
          logrotate,
-         avahi-daemon,
          bluez,
          tar,
          iputils-tracepath,
@@ -71,6 +68,7 @@ Recommends: nymea-cli,
             network-manager,
             nymea-update-plugin-impl,
             nymea-system-plugin-impl,
+            nymea-zeroconf-plugin-impl,
 Replaces: guhd
 Description: An open source IoT server - daemon
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
@@ -157,8 +155,6 @@ Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          libqt5bluetooth5,
-         libavahi-client3,
-         libavahi-common3
 Replaces: libguh1
 Description: An open source IoT server - core library
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
@@ -182,8 +178,6 @@ Depends: libnymea1 (= ${binary:Version}),
          qtconnectivity5-dev,
          qttools5-dev-tools,
          libqt5websockets5-dev,
-         libavahi-client-dev,
-         libavahi-common-dev
 Replaces: libguh1-dev
 Description: An open source IoT server - development files
  The nymea daemon is a plugin based IoT (Internet of Things) server. The

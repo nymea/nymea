@@ -37,6 +37,8 @@
 #include "nymeacore.h"
 #include "certificategenerator.h"
 #include "nymeasettings.h"
+#include "platform/platform.h"
+#include "platform/platformzeroconfcontroller.h"
 
 #include "jsonrpc/jsonrpcserver.h"
 #include "servers/mocktcpserver.h"
@@ -47,6 +49,8 @@
 #include "servers/bluetoothserver.h"
 #include "servers/mqttbroker.h"
 
+#include "network/zeroconf/zeroconfservicepublisher.h"
+
 #include <QSslCertificate>
 #include <QSslConfiguration>
 #include <QSslKey>
@@ -54,8 +58,9 @@
 namespace nymeaserver {
 
 /*! Constructs a \l{ServerManager} with the given \a configuration and \a parent. */
-ServerManager::ServerManager(NymeaConfiguration *configuration, QObject *parent) :
+ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configuration, QObject *parent) :
     QObject(parent),
+    m_platform(platform),
     m_sslConfiguration(QSslConfiguration())
 {
     if (!QSslSocket::supportsSsl()) {
@@ -108,14 +113,18 @@ ServerManager::ServerManager(NymeaConfiguration *configuration, QObject *parent)
         TcpServer *tcpServer = new TcpServer(config, m_sslConfiguration, this);
         m_jsonServer->registerTransportInterface(tcpServer, config.authenticationEnabled);
         m_tcpServers.insert(config.id, tcpServer);
-        tcpServer->startServer();
+        if (tcpServer->startServer()) {
+            registerZeroConfService(config, "nymea-tcp", "_jsonrpc._tcp");
+        }
     }
 
     foreach (const ServerConfiguration &config, configuration->webSocketServerConfigurations()) {
         WebSocketServer *webSocketServer = new WebSocketServer(config, m_sslConfiguration, this);
         m_jsonServer->registerTransportInterface(webSocketServer, config.authenticationEnabled);
         m_webSocketServers.insert(config.id, webSocketServer);
-        webSocketServer->startServer();
+        if (webSocketServer->startServer()) {
+            registerZeroConfService(config, "nymea-ws", "_ws._tcp");
+        }
     }
 
     m_bluetoothServer = new BluetoothServer(this);
@@ -128,11 +137,16 @@ ServerManager::ServerManager(NymeaConfiguration *configuration, QObject *parent)
         WebServer *webServer = new WebServer(config, m_sslConfiguration, this);
         m_restServer->registerWebserver(webServer);
         m_webServers.insert(config.id, webServer);
+        if (webServer->startServer()) {
+            registerZeroConfService(config, "nymea-http", "_http._tcp");
+        }
     }
 
     m_mqttBroker = new MqttBroker(this);
     foreach (const ServerConfiguration &config, configuration->mqttServerConfigurations()) {
-        m_mqttBroker->startServer(config);
+        if (m_mqttBroker->startServer(config)) {
+            registerZeroConfService(config, "nymea-mqtt", "_mqtt._tcp");
+        }
     }
     m_mqttBroker->updatePolicies(configuration->mqttPolicies().values());
 
@@ -183,6 +197,7 @@ void ServerManager::tcpServerConfigurationChanged(const QString &id)
     TcpServer *server = m_tcpServers.value(id);
     if (server) {
         qDebug(dcServerManager()) << "Restarting TCP server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
+        unregisterZeroConfService(config.id);
         server->stopServer();
         server->setConfiguration(config);
     } else {
@@ -191,7 +206,9 @@ void ServerManager::tcpServerConfigurationChanged(const QString &id)
         m_tcpServers.insert(config.id, server);
     }
     m_jsonServer->registerTransportInterface(server, config.authenticationEnabled);
-    server->startServer();
+    if (server->startServer()) {
+        registerZeroConfService(config, "nymea-tcp", "_jsonrpc._tcp");
+    }
 }
 
 void ServerManager::tcpServerConfigurationRemoved(const QString &id)
@@ -202,6 +219,7 @@ void ServerManager::tcpServerConfigurationRemoved(const QString &id)
     }
     TcpServer *server = m_tcpServers.take(id);
     m_jsonServer->unregisterTransportInterface(server);
+    unregisterZeroConfService(id);
     server->stopServer();
     server->deleteLater();
 }
@@ -212,6 +230,7 @@ void ServerManager::webSocketServerConfigurationChanged(const QString &id)
     ServerConfiguration config = NymeaCore::instance()->configuration()->webSocketServerConfigurations().value(id);
     if (server) {
         qDebug(dcServerManager()) << "Restarting WebSocket server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
+        unregisterZeroConfService(id);
         server->stopServer();
         server->setConfiguration(config);
     } else {
@@ -220,7 +239,9 @@ void ServerManager::webSocketServerConfigurationChanged(const QString &id)
         m_webSocketServers.insert(server->configuration().id, server);
     }
     m_jsonServer->registerTransportInterface(server, config.authenticationEnabled);
-    server->startServer();
+    if (server->startServer()) {
+        registerZeroConfService(config, "nymea-ws", "_ws._tcp");
+    }
 }
 
 void ServerManager::webSocketServerConfigurationRemoved(const QString &id)
@@ -231,6 +252,7 @@ void ServerManager::webSocketServerConfigurationRemoved(const QString &id)
     }
     WebSocketServer *server = m_webSocketServers.take(id);
     m_jsonServer->unregisterTransportInterface(server);
+    unregisterZeroConfService(id);
     server->stopServer();
     server->deleteLater();
 }
@@ -241,6 +263,7 @@ void ServerManager::webServerConfigurationChanged(const QString &id)
     WebServer *server = m_webServers.value(id);
     if (server) {
         qDebug(dcServerManager()) << "Restarting Web server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
+        unregisterZeroConfService(id);
         server->stopServer();
         server->reconfigureServer(config);
     } else {
@@ -248,6 +271,9 @@ void ServerManager::webServerConfigurationChanged(const QString &id)
         server = new WebServer(config, m_sslConfiguration, this);
         m_restServer->registerWebserver(server);
         m_webServers.insert(config.id, server);
+    }
+    if (server->startServer()) {
+        registerZeroConfService(config, "nymea-http", "_http._tcp");
     }
 }
 
@@ -258,6 +284,7 @@ void ServerManager::webServerConfigurationRemoved(const QString &id)
         return;
     }
     WebServer *server = m_webServers.take(id);
+    unregisterZeroConfService(id);
     server->stopServer();
     server->deleteLater();
 }
@@ -266,13 +293,18 @@ void ServerManager::mqttServerConfigurationChanged(const QString &id)
 {
     ServerConfiguration config = NymeaCore::instance()->configuration()->mqttServerConfigurations().value(id);
     if (m_mqttBroker->isRunning(id)) {
+        unregisterZeroConfService(id);
         m_mqttBroker->stopServer(id);
     }
-    m_mqttBroker->startServer(config, m_sslConfiguration);
+    if (m_mqttBroker->startServer(config, m_sslConfiguration)) {
+        registerZeroConfService(config, "nymea-mqtt", "_mqtt._tcp");
+    }
+
 }
 
 void ServerManager::mqttServerConfigurationRemoved(const QString &id)
 {
+    unregisterZeroConfService(id);
     m_mqttBroker->stopServer(id);
 }
 
@@ -284,6 +316,29 @@ void ServerManager::mqttPolicyChanged(const QString &clientId)
 void ServerManager::mqttPolicyRemoved(const QString &clientId)
 {
     m_mqttBroker->removePolicy(clientId);
+}
+
+bool ServerManager::registerZeroConfService(const ServerConfiguration &configuration, const QString &namePrefix, const QString &serviceType)
+{
+    // Note: reversed order
+    QHash<QString, QString> txt;
+    txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
+    txt.insert("serverVersion", NYMEA_VERSION_STRING);
+    txt.insert("manufacturer", "guh GmbH");
+    txt.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
+    txt.insert("name", NymeaCore::instance()->configuration()->serverName());
+    txt.insert("sslEnabled", configuration.sslEnabled ? "true" : "false");
+    QString name = namePrefix + "-" + configuration.id;
+    if (!m_platform->zeroConfController()->zeroConfServicePublisher()->registerService(configuration.id, name, configuration.address, static_cast<quint16>(configuration.port), serviceType, txt)) {
+        qCWarning(dcTcpServer()) << "Could not register ZeroConf service for" << configuration;
+        return false;
+    }
+    return true;
+}
+
+void ServerManager::unregisterZeroConfService(const QString &configId)
+{
+    m_platform->zeroConfController()->zeroConfServicePublisher()->unregisterService(configId);
 }
 
 bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName)

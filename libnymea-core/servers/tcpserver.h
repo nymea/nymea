@@ -32,7 +32,6 @@
 #include <QDebug>
 
 #include "transportinterface.h"
-#include "hardware/network/avahi/qtavahiservice.h"
 
 #include "loggingcategories.h"
 
@@ -84,8 +83,6 @@ public:
 private:
     QTimer *m_timer;
 
-    QtAvahiService *m_avahiService;
-
     SslServer * m_server;
     QHash<QUuid, QTcpSocket *> m_clientList;
 
@@ -96,9 +93,6 @@ private slots:
     void onClientDisconnected(QSslSocket *socket);
     void onDataAvailable(QSslSocket *socket, const QByteArray &data);
     void onError(QAbstractSocket::SocketError error);
-
-    void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
-    void resetAvahiService();
 
 public slots:
     void reconfigureServer(const ServerConfiguration &configuration);

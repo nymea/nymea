@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2016-2018 Simon Stürz <simon.stuerz@guh.io>              *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,59 +20,34 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef AVAHISERVICEENTRY_H
-#define AVAHISERVICEENTRY_H
+#ifndef ZEROCONFSERVICEBROWSER_H
+#define ZEROCONFSERVICEBROWSER_H
 
 #include <QObject>
-#include <QString>
-#include <QHostAddress>
-#include <QAbstractSocket>
-
-#include <avahi-client/publish.h>
 
 #include "libnymea.h"
+#include "hardwareresource.h"
+#include "zeroconfserviceentry.h"
 
-class LIBNYMEA_EXPORT AvahiServiceEntry
+class LIBNYMEA_EXPORT ZeroConfServiceBrowser : public HardwareResource
 {
+    Q_OBJECT
+
 public:
-    AvahiServiceEntry();
-    AvahiServiceEntry(QString name, QString serviceType, QHostAddress hostAddress, QString domain, QString hostName, quint16 port, QAbstractSocket::NetworkLayerProtocol protocol, QStringList txt, AvahiLookupResultFlags flags);
+    explicit ZeroConfServiceBrowser(QObject *parent = nullptr);
+    virtual ~ZeroConfServiceBrowser() = default;
 
-    QString name() const;
-    QString serviceType() const;
-    QHostAddress hostAddress() const;
-    QString domain() const;
-    QString hostName() const;
-    quint16 port() const;
-    QAbstractSocket::NetworkLayerProtocol protocol() const;
-    AvahiLookupResultFlags flags() const;
-    QStringList txt() const;
+    virtual bool available() const override;
+    virtual bool enabled() const override;
+    virtual void setEnabled(bool enabled) override;
 
-    bool isValid() const;
 
-    bool isChached() const;
-    bool isWideArea() const;
-    bool isMulticast() const;
-    bool isLocal() const;
-    bool isOurOwn() const;
+    virtual QList<ZeroConfServiceEntry> serviceEntries() const;
 
-    bool operator ==(const AvahiServiceEntry &other) const;
-    bool operator !=(const AvahiServiceEntry &other) const;
-
-private:
-    QString m_name;
-    QString m_serviceType;
-    QHostAddress m_hostAddress;
-    QString m_domain;
-    QString m_hostName;
-    quint16 m_port;
-    QAbstractSocket::NetworkLayerProtocol m_protocol;
-    QStringList m_txt;
-    AvahiLookupResultFlags m_flags;
+signals:
+    void serviceEntryAdded(const ZeroConfServiceEntry &entry);
+    void serviceEntryRemoved(const ZeroConfServiceEntry &entry);
 
 };
 
-QDebug operator <<(QDebug dbg, const AvahiServiceEntry &entry);
-Q_DECLARE_METATYPE(AvahiServiceEntry)
-
-#endif // AVAHISERVICEENTRY_H
+#endif // ZEROCONFSERVICEBROWSER_H

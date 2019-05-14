@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2017-2018 Simon Stürz <simon.stuerz@guh.io>              *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,39 +20,21 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#ifndef ZEROCONFSERVICEPUBLISHER_H
+#define ZEROCONFSERVICEPUBLISHER_H
 
 #include <QObject>
+#include <QHostAddress>
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class ZeroConfServiceBrowser;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class HardwareResource;
-
-class HardwareManager : public QObject
+class ZeroConfServicePublisher : public QObject
 {
     Q_OBJECT
-
 public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
+    explicit ZeroConfServicePublisher(QObject *parent = nullptr);
+    virtual ~ZeroConfServicePublisher() = default;
 
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual ZeroConfServiceBrowser *zeroConfServiceBrowser() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-
-protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+    virtual bool registerService(const QString &id, const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords);
+    virtual void unregisterService(const QString &id);
 };
 
-#endif // HARDWAREMANAGER_H
+#endif // ZEROCONFSERVICEPUBLISHER_H

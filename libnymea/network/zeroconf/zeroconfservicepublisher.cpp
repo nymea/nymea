@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,43 +20,40 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef QTAVAHISERVICEPRIVATE_P
-#define QTAVAHISERVICEPRIVATE_P
+#include "zeroconfservicepublisher.h"
 
-#include <QObject>
-#include <QString>
-
-#include "qtavahiservice.h"
-#include "qtavahiclient.h"
-
-#include <avahi-client/publish.h>
-#include <avahi-common/error.h>
-#include <avahi-common/alternative.h>
-
-namespace nymeaserver {
-
-class QtAvahiServicePrivate
+ZeroConfServicePublisher::ZeroConfServicePublisher(QObject *parent) : QObject(parent)
 {
-public:
-    QtAvahiServicePrivate();
-
-    static void callback(AvahiEntryGroup *group, AvahiEntryGroupState state, void *userdata);
-
-    QtAvahiClient *client;
-    AvahiEntryGroup *group;
-    AvahiStringList *serviceList = nullptr;
-    QString name;
-    QHostAddress hostAddress;
-    quint16 port;
-    QString type;
-    QHash<QString, QString> txtRecords;
-    int error;
-
-    static AvahiStringList *createTxtList(const QHash<QString, QString> &txt);
-
-};
 
 }
 
-#endif // QTAVAHISERVICEPRIVATE_P
+/*!
+ * \brief ZeroConfServicePublisher::registerService
+ * \param id An ID used to track this service instance. Pick a unique id and use the same for updating or unregistering the service
+ * \param name The name as it should appear on the network. Note that it might be changed when collisions appear
+ * \param hostAddress The hostAddress the server is running
+ * \param port The port of the server
+ * \param serviceType The service type as it should appear on the network, for instance "_http.tcp"
+ * \param txtRecords A Map of txt records that should be published with this service
+ * \return
+ */
 
+bool ZeroConfServicePublisher::registerService(const QString &id, const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords)
+{
+    Q_UNUSED(id)
+    Q_UNUSED(name)
+    Q_UNUSED(hostAddress)
+    Q_UNUSED(port)
+    Q_UNUSED(serviceType)
+    Q_UNUSED(txtRecords)
+    return false;
+}
+
+/*!
+ * \brief ZeroConfServicePublisher::unregisterService
+ * \param id The id previously used to register the server
+ */
+void ZeroConfServicePublisher::unregisterService(const QString &id)
+{
+    Q_UNUSED(id)
+}

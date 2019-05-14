@@ -21,7 +21,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class AvahiServiceEntry
+    \class ZeroConfServiceEntry
     \brief Holds information about an avahi service entry.
 
     \ingroup types
@@ -31,19 +31,18 @@
 
 */
 
-#include "avahiserviceentry.h"
+#include "zeroconfserviceentry.h"
 
-/*! Constructs an empty invalid \l{AvahiServiceEntry}*/
-AvahiServiceEntry::AvahiServiceEntry() :
+/*! Constructs an empty invalid \l{ZeroConfServiceEntry}*/
+ZeroConfServiceEntry::ZeroConfServiceEntry() :
     m_port(0),
     m_protocol(QAbstractSocket::UnknownNetworkLayerProtocol)
 {
 
 }
 
-
-/*! Constructs a new \l{AvahiServiceEntry} with the given \a name, \a serviceType, \a hostAddress, \a domain, \a hostName, \a port, \a protocol, \a txt and \a flags.*/
-AvahiServiceEntry::AvahiServiceEntry(QString name, QString serviceType, QHostAddress hostAddress, QString domain, QString hostName, quint16 port, QAbstractSocket::NetworkLayerProtocol protocol, QStringList txt, AvahiLookupResultFlags flags) :
+/*! Constructs a new \l{ZeroConfServiceEntry} with the given \a name, \a serviceType, \a hostAddress, \a domain, \a hostName, \a port, \a protocol, \a txt and flags.*/
+ZeroConfServiceEntry::ZeroConfServiceEntry(QString name, QString serviceType, QHostAddress hostAddress, QString domain, QString hostName, quint16 port, QAbstractSocket::NetworkLayerProtocol protocol, QStringList txt, bool cached, bool isWideArea, bool isMulticast, bool isLocal, bool isOurOwn):
     m_name(name),
     m_serviceType(serviceType),
     m_hostAddress(hostAddress),
@@ -52,103 +51,101 @@ AvahiServiceEntry::AvahiServiceEntry(QString name, QString serviceType, QHostAdd
     m_port(port),
     m_protocol(protocol),
     m_txt(txt),
-    m_flags(flags)
+    m_isCached(cached),
+    m_isWideArea(isWideArea),
+    m_isMulticast(isMulticast),
+    m_isLocal(isLocal),
+    m_isOurOwn(isOurOwn)
 {
 
 }
 
-/*! Returns the name of this \l{AvahiServiceEntry}.*/
-QString AvahiServiceEntry::name() const
+/*! Returns the name of this \l{ZeroConfServiceEntry}.*/
+QString ZeroConfServiceEntry::name() const
 {
     return m_name;
 }
 
-/*! Returns the service type of this \l{AvahiServiceEntry}.*/
-QString AvahiServiceEntry::serviceType() const
+/*! Returns the service type of this \l{ZeroConfServiceEntry}.*/
+QString ZeroConfServiceEntry::serviceType() const
 {
     return m_serviceType;
 }
 
-/*! Returns the host address of this \l{AvahiServiceEntry}.*/
-QHostAddress AvahiServiceEntry::hostAddress() const
+/*! Returns the host address of this \l{ZeroConfServiceEntry}.*/
+QHostAddress ZeroConfServiceEntry::hostAddress() const
 {
     return m_hostAddress;
 }
 
-/*! Returns the domain of this \l{AvahiServiceEntry}.*/
-QString AvahiServiceEntry::domain() const
+/*! Returns the domain of this \l{ZeroConfServiceEntry}.*/
+QString ZeroConfServiceEntry::domain() const
 {
     return m_domain;
 }
 
-/*! Returns the host name of this \l{AvahiServiceEntry}.*/
-QString AvahiServiceEntry::hostName() const
+/*! Returns the host name of this \l{ZeroConfServiceEntry}.*/
+QString ZeroConfServiceEntry::hostName() const
 {
     return m_hostName;
 }
 
-/*! Returns the port of this \l{AvahiServiceEntry}.*/
-quint16 AvahiServiceEntry::port() const
+/*! Returns the port of this \l{ZeroConfServiceEntry}.*/
+quint16 ZeroConfServiceEntry::port() const
 {
     return m_port;
 }
 
-/*! Returns the network protocol of this \l{AvahiServiceEntry}.*/
-QAbstractSocket::NetworkLayerProtocol AvahiServiceEntry::protocol() const
+/*! Returns the network protocol of this \l{ZeroConfServiceEntry}.*/
+QAbstractSocket::NetworkLayerProtocol ZeroConfServiceEntry::protocol() const
 {
     return m_protocol;
 }
 
-/*! Returns the avahi flags of this \l{AvahiServiceEntry}.*/
-AvahiLookupResultFlags AvahiServiceEntry::flags() const
-{
-    return m_flags;
-}
-
-/*! Returns the txt string list of this \l{AvahiServiceEntry}.*/
-QStringList AvahiServiceEntry::txt() const
+/*! Returns the txt string list of this \l{ZeroConfServiceEntry}.*/
+QStringList ZeroConfServiceEntry::txt() const
 {
     return m_txt;
 }
 
-/*! Returns true if this \l{AvahiServiceEntry} is valid.*/
-bool AvahiServiceEntry::isValid() const
+/*! Returns true if this \l{ZeroConfServiceEntry} is valid.*/
+bool ZeroConfServiceEntry::isValid() const
 {
     return !m_hostAddress.isNull() && !m_hostName.isEmpty() && m_port != 0 && m_protocol != QAbstractSocket::UnknownNetworkLayerProtocol;
 }
 
-/*! Returns true if this \l{AvahiServiceEntry} is cached.*/
-bool AvahiServiceEntry::isChached() const
+/*! Returns true if this \l{ZeroConfServiceEntry} is cached.*/
+bool ZeroConfServiceEntry::isChached() const
 {
-    return m_flags & AVAHI_LOOKUP_RESULT_CACHED;
+    return m_isCached;
 }
 
-/*! Returns true if this \l{AvahiServiceEntry} was found in the wide area.*/
-bool AvahiServiceEntry::isWideArea() const
+/*! Returns true if this \l{ZeroConfServiceEntry} was found in the wide area.*/
+bool ZeroConfServiceEntry::isWideArea() const
 {
-    return m_flags & AVAHI_LOOKUP_RESULT_WIDE_AREA;
+    return m_isWideArea;
 }
 
-/*! Returns true if this \l{AvahiServiceEntry} is a multicast service.*/
-bool AvahiServiceEntry::isMulticast() const
+/*! Returns true if this \l{ZeroConfServiceEntry} is a multicast service.*/
+bool ZeroConfServiceEntry::isMulticast() const
 {
-    return m_flags & AVAHI_LOOKUP_RESULT_MULTICAST;
+    return m_isMulticast;
 }
 
-/*! Returns true if this \l{AvahiServiceEntry} was found local.*/
-bool AvahiServiceEntry::isLocal() const
+/*! Returns true if this \l{ZeroConfServiceEntry} was found local.*/
+bool ZeroConfServiceEntry::isLocal() const
 {
-    return m_flags & AVAHI_LOOKUP_RESULT_LOCAL;
+    return m_isLocal;
 }
 
-/*! Returns true if this \l{AvahiServiceEntry} is our own service.*/
-bool AvahiServiceEntry::isOurOwn() const
+/*! Returns true if this \l{ZeroConfServiceEntry} is our own service.*/
+bool ZeroConfServiceEntry::isOurOwn() const
 {
-    return m_flags & AVAHI_LOOKUP_RESULT_OUR_OWN;
+    return m_isOurOwn;
 }
 
-/*! Returns true if this \l{AvahiServiceEntry} is equal to \a other; otherwise returns false.*/
-bool AvahiServiceEntry::operator ==(const AvahiServiceEntry &other) const
+/*! Returns true if this \l{ZeroConfServiceEntry} is equal to \a other; otherwise returns false.*/
+bool ZeroConfServiceEntry::operator ==(const ZeroConfServiceEntry &other) const
 {
     return other.name() == m_name &&
             other.serviceType() == m_serviceType &&
@@ -157,20 +154,24 @@ bool AvahiServiceEntry::operator ==(const AvahiServiceEntry &other) const
             other.hostName() == m_hostName &&
             other.port() == m_port &&
             other.protocol() == m_protocol &&
-            other.flags() == m_flags &&
+            other.isChached() == m_isCached &&
+            other.isWideArea() == m_isWideArea &&
+            other.isMulticast() == m_isMulticast &&
+            other.isLocal() == m_isLocal &&
+            other.isOurOwn() == m_isOurOwn &&
             other.txt() == m_txt;
 }
 
-/*! Returns true if this \l{AvahiServiceEntry} is not equal to \a other; otherwise returns false.*/
-bool AvahiServiceEntry::operator !=(const AvahiServiceEntry &other) const
+/*! Returns true if this \l{ZeroConfServiceEntry} is not equal to \a other; otherwise returns false.*/
+bool ZeroConfServiceEntry::operator !=(const ZeroConfServiceEntry &other) const
 {
     return !operator==(other);
 }
 
 /*! Writes the given \a entry to the specified \a dbg.*/
-QDebug operator <<(QDebug dbg, const AvahiServiceEntry &entry)
+QDebug operator <<(QDebug dbg, const ZeroConfServiceEntry &entry)
 {
-    dbg.nospace() << "AvahiServiceEntry(";
+    dbg.nospace() << "ZeroConfServiceEntry(";
     dbg << entry.name() << ")" << endl;
     dbg << "    location: " << entry.hostAddress().toString() << ":" << entry.port() << endl;
     dbg << "    hostname: " << entry.hostName() << endl;

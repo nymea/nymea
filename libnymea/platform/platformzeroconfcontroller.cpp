@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,59 +20,24 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef QTAVAHICLIENT_H
-#define QTAVAHICLIENT_H
+#include "platformzeroconfcontroller.h"
 
-#include <QObject>
-#include <avahi-client/client.h>
+#include "network/zeroconf/zeroconfservicebrowser.h"
+#include "network/zeroconf/zeroconfservicepublisher.h"
 
-namespace nymeaserver {
-
-class QtAvahiClient : public QObject
+PlatformZeroConfController::PlatformZeroConfController(QObject *parent):
+    QObject(parent)
 {
-    Q_OBJECT
-    Q_ENUMS(QtAvahiClientState)
-
-public:
-    enum QtAvahiClientState {
-        QtAvahiClientStateNone,
-        QtAvahiClientStateRunning,
-        QtAvahiClientStateFailure,
-        QtAvahiClientStateCollision,
-        QtAvahiClientStateRegistering,
-        QtAvahiClientStateConnecting
-    };
-
-    explicit QtAvahiClient(QObject *parent = nullptr);
-    ~QtAvahiClient();
-
-    QtAvahiClientState state() const;
-
-private:
-    friend class QtAvahiService;
-    friend class QtAvahiServiceBrowserImplementation;
-    friend class QtAvahiServiceBrowserImplementationPrivate;
-
-    const AvahiPoll *m_poll;
-    AvahiClient *m_client;
-    int error;
-    QtAvahiClientState m_state;
-
-    void start();
-    void stop();
-    QString errorString() const;
-
-    static void callback(AvahiClient *client, AvahiClientState state, void *userdata);
-
-private slots:
-    void onClientStateChanged(const QtAvahiClientState &state);
-
-signals:
-    void clientStateChanged(const QtAvahiClientState &state);
-    void clientStateChangedInternal(const QtAvahiClientState &state);
-
-};
-
+    m_zeroConfBrowserStub = new ZeroConfServiceBrowser(this);
+    m_zeroConfPublisherStub = new ZeroConfServicePublisher(this);
 }
 
-#endif // QTAVAHICLIENT_H
+ZeroConfServiceBrowser *PlatformZeroConfController::zeroConfServiceBrowser() const
+{
+    return m_zeroConfBrowserStub;
+}
+
+ZeroConfServicePublisher *PlatformZeroConfController::zeroConfServicePublisher() const
+{
+    return m_zeroConfPublisherStub;
+}

@@ -21,13 +21,13 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class QtAvahiServiceBrowser
+    \class ZeroConfServiceBrowser
     \brief Allows to browse avahi services in the local network.
 
     \ingroup hardware
     \inmodule libnymea
 
-    The QtAvahiServiceBrowser allows to discover the avahi network and get services.
+    The ZeroConfServiceBrowser allows to discover the avahi network and get services.
 
 
     \chapter Example
@@ -37,7 +37,7 @@
     \tt devicepluginexample.h
 
     \code
-    #include "network/avahi/avahiserviceentry.h"
+    #include "network/avahi/ZeroConfServiceEntry.h"
 
     class DevicePluginExample : public DevicePlugin
     {
@@ -47,8 +47,8 @@
         void init() override;
 
     private slots:
-        void onServiceEntryAdded(const AvahiServiceEntry &serviceEntry);
-        void onServiceEntryRemoved(const AvahiServiceEntry &serviceEntry);
+        void onServiceEntryAdded(const ZeroConfServiceEntry &serviceEntry);
+        void onServiceEntryRemoved(const ZeroConfServiceEntry &serviceEntry);
 
     ...
 
@@ -60,17 +60,17 @@
     \code
 
     void DevicePluginExample::init() {
-        connect(hardwareManager()->avahiBrowser(), &QtAvahiServiceBrowser::serviceEntryAdded, this, &DevicePluginExample::onServiceEntryAdded);
-        connect(hardwareManager()->avahiBrowser(), &QtAvahiServiceBrowser::serviceEntryRemoved, this, &DevicePluginExample::onServiceEntryRemoved);
+        connect(hardwareManager()->avahiBrowser(), &ZeroConfServiceBrowser::serviceEntryAdded, this, &DevicePluginExample::onServiceEntryAdded);
+        connect(hardwareManager()->avahiBrowser(), &ZeroConfServiceBrowser::serviceEntryRemoved, this, &DevicePluginExample::onServiceEntryRemoved);
     }
 
-    void DevicePluginExample::onServiceEntryAdded(const AvahiServiceEntry &serviceEntry) {
+    void DevicePluginExample::onServiceEntryAdded(const ZeroConfServiceEntry &serviceEntry) {
         qCDebug(dcExample()) << "New service added to network:" << serviceEntry;
 
         ...
     }
 
-    void DevicePluginExample::onServiceEntryRemoved(const AvahiServiceEntry &serviceEntry) {
+    void DevicePluginExample::onServiceEntryRemoved(const ZeroConfServiceEntry &serviceEntry) {
         qCDebug(dcExample()) << "Service removed from network:" << serviceEntry;
 
         ...
@@ -78,34 +78,54 @@
 
     \endcode
 
-    \sa AvahiServiceEntry
+    \sa ZeroConfServiceEntry
 
 */
 
-/*! \fn QtAvahiServiceBrowser::~QtAvahiServiceBrowser();
-    Destroys this QtAvahiServiceBrowser;
+/*! \fn ZeroConfServiceBrowser::~ZeroConfServiceBrowser();
+    Destroys this ZeroConfServiceBrowser;
 */
 
-/*! \fn QList<AvahiServiceEntry> QtAvahiServiceBrowser::serviceEntries() const;
+/*! \fn QList<ZeroConfServiceEntry> ZeroConfServiceBrowser::serviceEntries() const;
     Returns the list of available service entries in the network of this browser.
 */
 
 // Signals
-/*! \fn void QtAvahiServiceBrowser::serviceEntryAdded(const AvahiServiceEntry &entry);
+/*! \fn void ZeroConfServiceBrowser::serviceEntryAdded(const ZeroConfServiceEntry &entry);
     This signal will be emitted when a new \a entry was added to the current entry list.
 */
 
-/*! \fn void QtAvahiServiceBrowser::serviceEntryRemoved(const AvahiServiceEntry &entry);
+/*! \fn void ZeroConfServiceBrowser::serviceEntryRemoved(const ZeroConfServiceEntry &entry);
     This signal will be emitted when a new \a entry was removed from the current entry list.
 */
 
-#include "qtavahiservicebrowser.h"
+#include "zeroconfservicebrowser.h"
 
-/*! Constructs a new \l{QtAvahiServiceBrowser} with the given \a parent. */
-QtAvahiServiceBrowser::QtAvahiServiceBrowser(QObject *parent) :
-    HardwareResource("Avahi service browser", parent)
+/*! Constructs a new \l{ZeroConfServiceBrowser} with the given \a parent. */
+ZeroConfServiceBrowser::ZeroConfServiceBrowser(QObject *parent) :
+    HardwareResource("ZeroConf service browser", parent)
 {
 
+}
+
+bool ZeroConfServiceBrowser::available() const
+{
+    return false;
+}
+
+bool ZeroConfServiceBrowser::enabled() const
+{
+    return false;
+}
+
+void ZeroConfServiceBrowser::setEnabled(bool enabled)
+{
+    Q_UNUSED(enabled)
+}
+
+QList<ZeroConfServiceEntry> ZeroConfServiceBrowser::serviceEntries() const
+{
+    return {};
 }
 
 

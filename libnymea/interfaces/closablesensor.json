@@ -1,0 +1,9 @@
+{
+    "description": "This interface can be used for i.e. magnetic window/door sensors",
+    "states": [
+        {
+            "name": "closed",
+            "type": "bool"
+        }
+    ]
+}

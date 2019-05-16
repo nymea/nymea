@@ -123,9 +123,9 @@ QJsonObject CloudNotifications::metaData() const
     deviceClasses.append(cloudNotificationsDeviceClass);
 
     QVariantMap guhVendor;
-    guhVendor.insert("id", "2062d64d-3232-433c-88bc-0d33c0ba2ba6"); // guh's id
-    guhVendor.insert("name", "guh");
-    guhVendor.insert("displayName", "guh GmbH");
+    guhVendor.insert("id", "2062d64d-3232-433c-88bc-0d33c0ba2ba6"); // nymea's id
+    guhVendor.insert("name", "nymea");
+    guhVendor.insert("displayName", "nymea");
     guhVendor.insert("deviceClasses", deviceClasses);
 
     QVariantList vendors;

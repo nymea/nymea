@@ -23,8 +23,8 @@
     "vendors": [
         {
             "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
-            "name": "guh",
-            "displayName": "guh GmbH",
+            "name": "nymea",
+            "displayName": "nymea",
             "deviceClasses": [
                 {
                     "id": "753f0d32-0468-4d08-82ed-1964aab03298",

@@ -43,14 +43,26 @@ public:
     Q_INVOKABLE JsonReply *Shutdown(const QVariantMap &params) const;
 
     Q_INVOKABLE JsonReply *GetUpdateStatus(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *StartUpdate(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *SelectChannel(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetPackages(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *UpdatePackages(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *RollbackPackages(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *RemovePackages(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetRepositories(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *EnableRepository(const QVariantMap &params) const;
 
 signals:
+    void CapabilitiesChanged(const QVariantMap &params);
     void UpdateStatusChanged(const QVariantMap &params);
+    void PackageAdded(const QVariantMap &params);
+    void PackageChanged(const QVariantMap &params);
+    void PackageRemoved(const QVariantMap &params);
+    void RepositoryAdded(const QVariantMap &params);
+    void RepositoryChanged(const QVariantMap &params);
+    void RepositoryRemoved(const QVariantMap &params);
 
 private slots:
-    void onUpdateStatusChanged();
+    void onCapabilitiesChanged();
+
 private:
     Platform *m_platform = nullptr;
 };

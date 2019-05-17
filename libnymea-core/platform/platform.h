@@ -25,7 +25,6 @@
 
 #include <QObject>
 
-class PlatformPlugin;
 class PlatformSystemController;
 class PlatformUpdateController;
 
@@ -43,8 +42,12 @@ public:
 private:
     QStringList pluginSearchDirs() const;
 
+    void loadSystemPlugin(const QString &file);
+    void loadUpdatePlugin(const QString &file);
+
 private:
-    PlatformPlugin *m_platformPlugin = nullptr;
+    PlatformSystemController *m_platformSystemController = nullptr;
+    PlatformUpdateController *m_platformUpdateController = nullptr;
 };
 
 }

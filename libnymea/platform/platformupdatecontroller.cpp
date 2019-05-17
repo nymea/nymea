@@ -36,14 +36,19 @@ bool PlatformUpdateController::updateManagementAvailable()
     return false;
 }
 
-QString PlatformUpdateController::currentVersion() const
+bool PlatformUpdateController::updateRunning() const
 {
-    return tr("N/A");
+    return false;
 }
 
-QString PlatformUpdateController::candidateVersion() const
+QList<Package> PlatformUpdateController::packages() const
 {
-    return tr("N/A");
+    return {};
+}
+
+QList<Repository> PlatformUpdateController::repositories() const
+{
+    return {};
 }
 
 void PlatformUpdateController::checkForUpdates()
@@ -51,43 +56,28 @@ void PlatformUpdateController::checkForUpdates()
     // Nothing to do here
 }
 
-bool PlatformUpdateController::updateAvailable() const
+bool PlatformUpdateController::startUpdate(const QStringList &packageIds)
 {
+    Q_UNUSED(packageIds)
     return false;
 }
 
-bool PlatformUpdateController::startUpdate()
+bool PlatformUpdateController::rollback(const QStringList &packageIds)
 {
+    Q_UNUSED(packageIds)
     return false;
 }
 
-bool PlatformUpdateController::rollbackAvailable() const
+bool PlatformUpdateController::removePackages(const QStringList &packageIds)
 {
+    Q_UNUSED(packageIds)
     return false;
 }
 
-bool PlatformUpdateController::startRollback()
+bool PlatformUpdateController::enableRepository(const QString &repositoryId, bool enabled)
 {
+    Q_UNUSED(repositoryId)
+    Q_UNUSED(enabled)
     return false;
 }
 
-bool PlatformUpdateController::updateInProgress() const
-{
-    return false;
-}
-
-QStringList PlatformUpdateController::availableChannels() const
-{
-    return {};
-}
-
-QString PlatformUpdateController::currentChannel() const
-{
-    return tr("N/A");
-}
-
-bool PlatformUpdateController::selectChannel(const QString &channel)
-{
-    Q_UNUSED(channel)
-    return false;
-}

@@ -53,42 +53,127 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     setReturns("Shutdown", returns);
 
     params.clear(); returns.clear();
-    setDescription("GetUpdateStatus", "Get the current system status in regard to updates. That is, the currently installed version, any candidate version available etc.");
-    setParams("GetUpdateStatus", params);
-    returns.insert("updateAvailable", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    returns.insert("currentVersion", JsonTypes::basicTypeToString(JsonTypes::String));
-    returns.insert("candidateVersion", JsonTypes::basicTypeToString(JsonTypes::String));
-    returns.insert("availableChannels", JsonTypes::basicTypeToString(JsonTypes::StringList));
-    returns.insert("currentChannel", JsonTypes::basicTypeToString(JsonTypes::String));
-    returns.insert("updateInProgress", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setReturns("GetUpdateStatus", returns);
+    setDescription("GetPackages", "Get the list of packages currently available to the system. This includes installed and available but not installed packages.");
+    setParams("GetPackages", params);
+    returns.insert("packages", QVariantList() << JsonTypes::packageRef());
+    setReturns("GetPackages", returns);
 
     params.clear(); returns.clear();
-    setDescription("StartUpdate", "Starts a system update. Returns true if the upgrade has been started successfully.");
-    setParams("StartUpdate", params);
+    setDescription("UpdatePackages", "Starts updating/installing packages with the given ids. Returns true if the upgrade has been started successfully. Note that it might still fail later.");
+    params.insert("o:packageIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("UpdatePackages", params);
     returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setReturns("StartUpdate", returns);
+    setReturns("UpdatePackages", returns);
 
     params.clear(); returns.clear();
-    setDescription("SelectChannel", "Select an update channel.");
-    params.insert("channel", JsonTypes::basicTypeToString(JsonTypes::String));
-    setParams("SelectChannel", params);
+    setDescription("RollbackPackages", "Starts a rollback. Returns true if the rollback has been started successfully.");
+    params.insert("packageIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("RollbackPackages", params);
     returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setReturns("SelectChannel", returns);
+    setReturns("RollbackPackages", returns);
+
+    params.clear(); returns.clear();
+    setDescription("RemovePackages", "Starts removing a package. Returns true if the removal has been started successfully.");
+    params.insert("packageIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("RemovePackages", params);
+    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setReturns("RemovePackages", returns);
+
+    params.clear(); returns.clear();
+    setDescription("GetRepositories", "Get the list of repositories currently available to the system.");
+    setParams("GetRepositories", params);
+    returns.insert("repositories", QVariantList() << JsonTypes::repositoryRef());
+    setReturns("GetRepositories", returns);
+
+    params.clear(); returns.clear();
+    setDescription("EnableRepository", "Enable or disable a repository.");
+    params.insert("repositoryId", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setParams("EnableRepository", params);
+    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setReturns("EnableRepository", returns);
 
 
     // Notifications
     params.clear();
-    setDescription("UpdateStatusChanged", "Emitted whenever there is a change in the information from GetUpdateStatus");
-    params.insert("updateAvailable", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    params.insert("currentVersion", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("candidateVersion", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("availableChannels", JsonTypes::basicTypeToString(JsonTypes::StringList));
-    params.insert("currentChannel", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("updateInProgress", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setDescription("CapabilitiesChanged", "Emitted whenever the system capabilities change.");
+    params.insert("powerManagement", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    params.insert("updateManagement", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setParams("CapabilitiesChanged", params);
+
+    params.clear();
+    setDescription("UpdateStatusChanged", "Emitted whenever the update status changes.");
+    params.insert("updateRunning", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setParams("UpdateStatusChanged", params);
 
-    connect(m_platform->updateController(), &PlatformUpdateController::updateStatusChanged, this, &SystemHandler::onUpdateStatusChanged);
+    params.clear();
+    setDescription("PackageAdded", "Emitted whenever a package is added to the list of packages.");
+    params.insert("package", JsonTypes::packageRef());
+    setParams("PackageAdded", params);
+
+    params.clear();
+    setDescription("PackageChanged", "Emitted whenever a package in the list of packages changes.");
+    params.insert("package", JsonTypes::packageRef());
+    setParams("PackageChanged", params);
+
+    params.clear();
+    setDescription("PackageRemoved", "Emitted whenever a package is removed from the list of packages.");
+    params.insert("packageId", JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("PackageRemoved", params);
+
+    params.clear();
+    setDescription("RepositoryAdded", "Emitted whenever a repository is added to the list of repositories.");
+    params.insert("repository", JsonTypes::repositoryRef());
+    setParams("RepositoryAdded", params);
+
+    params.clear();
+    setDescription("RepositoryChanged", "Emitted whenever a repository in the list of repositories changes.");
+    params.insert("repository", JsonTypes::repositoryRef());
+    setParams("RepositoryChanged", params);
+
+    params.clear();
+    setDescription("RepositoryRemoved", "Emitted whenever a repository is removed from the list of repositories.");
+    params.insert("repository", JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("RepositoryRemoved", params);
+
+
+    connect(m_platform->systemController(), &PlatformSystemController::availableChanged, this, &SystemHandler::onCapabilitiesChanged);
+    connect(m_platform->updateController(), &PlatformUpdateController::availableChanged, this, &SystemHandler::onCapabilitiesChanged);
+    connect(m_platform->updateController(), &PlatformUpdateController::updateRunningChanged, this, [this](){
+        QVariantMap params;
+        params.insert("updateRunning", m_platform->updateController()->updateRunning());
+        emit UpdateStatusChanged(params);
+    });
+    connect(m_platform->updateController(), &PlatformUpdateController::packageAdded, this, [this](const Package &package){
+        QVariantMap params;
+        params.insert("package", JsonTypes::packPackage(package));
+        emit PackageAdded(params);
+    });
+    connect(m_platform->updateController(), &PlatformUpdateController::packageChanged, this, [this](const Package &package){
+        QVariantMap params;
+        params.insert("package", JsonTypes::packPackage(package));
+        emit PackageChanged(params);
+    });
+    connect(m_platform->updateController(), &PlatformUpdateController::packageRemoved, this, [this](const QString &packageId){
+        QVariantMap params;
+        params.insert("packageId", packageId);
+        emit PackageRemoved(params);
+    });
+    connect(m_platform->updateController(), &PlatformUpdateController::repositoryAdded, this, [this](const Repository &repository){
+        QVariantMap params;
+        params.insert("repository", JsonTypes::packRepository(repository));
+        emit RepositoryAdded(params);
+    });
+    connect(m_platform->updateController(), &PlatformUpdateController::repositoryChanged, this, [this](const Repository &repository){
+        QVariantMap params;
+        params.insert("repository", JsonTypes::packRepository(repository));
+        emit RepositoryChanged(params);
+    });
+    connect(m_platform->updateController(), &PlatformUpdateController::repositoryRemoved, this, [this](const QString &repositoryId){
+        QVariantMap params;
+        params.insert("repositoryId", repositoryId);
+        emit RepositoryRemoved(params);
+    });
 }
 
 QString SystemHandler::name() const
@@ -125,50 +210,75 @@ JsonReply *SystemHandler::Shutdown(const QVariantMap &params) const
 
 JsonReply *SystemHandler::GetUpdateStatus(const QVariantMap &params) const
 {
-    Q_UNUSED(params);
+    Q_UNUSED(params)
+    QVariantMap ret;
+    ret.insert("updateRunning", m_platform->updateController()->updateRunning());
+    return createReply(ret);
+}
+
+JsonReply *SystemHandler::GetPackages(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    QVariantList packagelist;
+    foreach (const Package &package, m_platform->updateController()->packages()) {
+        packagelist.append(JsonTypes::packPackage(package));
+    }
     QVariantMap returns;
-    returns.insert("updateAvailable", m_platform->updateController()->updateAvailable());
-    returns.insert("currentVersion", m_platform->updateController()->currentVersion());
-    returns.insert("candidateVersion", m_platform->updateController()->candidateVersion());
-    returns.insert("availableChannels", m_platform->updateController()->availableChannels());
-    returns.insert("currentChannel", m_platform->updateController()->currentChannel());
-    returns.insert("updateInProgress", m_platform->updateController()->updateInProgress());
+    returns.insert("packages", packagelist);
     return createReply(returns);
 }
 
-JsonReply *SystemHandler::StartUpdate(const QVariantMap &params)
+JsonReply *SystemHandler::UpdatePackages(const QVariantMap &params) const
 {
-    Q_UNUSED(params)
+    bool success = m_platform->updateController()->startUpdate(params.value("packageIds").toStringList());
     QVariantMap returns;
-    bool success = m_platform->updateController()->startUpdate();
     returns.insert("success", success);
     return createReply(returns);
 }
 
-JsonReply *SystemHandler::SelectChannel(const QVariantMap &params)
+JsonReply *SystemHandler::RollbackPackages(const QVariantMap &params) const
 {
-    QString channel = params.value("channel").toString();
-
+    bool success = m_platform->updateController()->rollback(params.value("packageIds").toStringList());
     QVariantMap returns;
-    if (m_platform->updateController()->availableChannels().contains(channel)) {
-        bool success = m_platform->updateController()->selectChannel(channel);
-        returns.insert("success", success);
-    } else {
-        returns.insert("success", false);
-    }
+    returns.insert("success", success);
     return createReply(returns);
 }
 
-void SystemHandler::onUpdateStatusChanged()
+JsonReply *SystemHandler::RemovePackages(const QVariantMap &params) const
 {
-    QVariantMap params;
-    params.insert("updateAvailable", m_platform->updateController()->updateAvailable());
-    params.insert("currentVersion", m_platform->updateController()->currentVersion());
-    params.insert("candidateVersion", m_platform->updateController()->candidateVersion());
-    params.insert("availableChannels", m_platform->updateController()->availableChannels());
-    params.insert("currentChannel", m_platform->updateController()->currentChannel());
-    params.insert("updateInProgress", m_platform->updateController()->updateInProgress());
-    emit UpdateStatusChanged(params);
+    bool success = m_platform->updateController()->removePackages(params.value("packageIds").toStringList());
+    QVariantMap returns;
+    returns.insert("success", success);
+    return createReply(returns);
+}
+
+JsonReply *SystemHandler::GetRepositories(const QVariantMap &params) const
+{
+    Q_UNUSED(params);
+    QVariantList repos;
+    foreach (const Repository &repository, m_platform->updateController()->repositories()) {
+        repos.append(JsonTypes::packRepository(repository));
+    }
+    QVariantMap returns;
+    returns.insert("repositories", repos);
+    return createReply(returns);
+
+}
+
+JsonReply *SystemHandler::EnableRepository(const QVariantMap &params) const
+{
+    bool success = m_platform->updateController()->enableRepository(params.value("repositoryId").toString(), params.value("enabled").toBool());
+    QVariantMap returns;
+    returns.insert("success", success);
+    return createReply(returns);
+}
+
+void SystemHandler::onCapabilitiesChanged()
+{
+    QVariantMap caps;
+    caps.insert("powerManagement", m_platform->systemController()->powerManagementAvailable());
+    caps.insert("updateManagement", m_platform->updateController()->updateManagementAvailable());
+    emit CapabilitiesChanged(caps);
 }
 
 }

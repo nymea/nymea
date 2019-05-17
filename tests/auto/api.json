@@ -867,6 +867,16 @@
                 "o:stateType": "$ref:StateType"
             }
         },
+        "System.EnableRepository": {
+            "description": "Enable or disable a repository.",
+            "params": {
+                "enabled": "Bool",
+                "repositoryId": "String"
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
         "System.GetCapabilities": {
             "description": "Get the list of capabilites on this system. This allows reading whether things like rebooting or shutting down the system running nymea:core is supported on this host.",
             "params": {
@@ -876,17 +886,24 @@
                 "updateManagement": "Bool"
             }
         },
-        "System.GetUpdateStatus": {
-            "description": "Get the current system status in regard to updates. That is, the currently installed version, any candidate version available etc.",
+        "System.GetPackages": {
+            "description": "Get the list of packages currently available to the system. This includes installed and available but not installed packages.",
             "params": {
             },
             "returns": {
-                "availableChannels": "StringList",
-                "candidateVersion": "String",
-                "currentChannel": "String",
-                "currentVersion": "String",
-                "updateAvailable": "Bool",
-                "updateInProgress": "Bool"
+                "packages": [
+                    "$ref:Package"
+                ]
+            }
+        },
+        "System.GetRepositories": {
+            "description": "Get the list of repositories currently available to the system.",
+            "params": {
+            },
+            "returns": {
+                "repositories": [
+                    "$ref:Repository"
+                ]
             }
         },
         "System.Reboot": {
@@ -897,10 +914,23 @@
                 "success": "Bool"
             }
         },
-        "System.SelectChannel": {
-            "description": "Select an update channel.",
+        "System.RemovePackages": {
+            "description": "Starts removing a package. Returns true if the removal has been started successfully.",
             "params": {
-                "channel": "String"
+                "packageIds": [
+                    "String"
+                ]
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
+        "System.RollbackPackages": {
+            "description": "Starts a rollback. Returns true if the rollback has been started successfully.",
+            "params": {
+                "packageIds": [
+                    "String"
+                ]
             },
             "returns": {
                 "success": "Bool"
@@ -914,9 +944,12 @@
                 "success": "Bool"
             }
         },
-        "System.StartUpdate": {
-            "description": "Starts a system update. Returns true if the upgrade has been started successfully.",
+        "System.UpdatePackages": {
+            "description": "Starts updating/installing packages with the given ids. Returns true if the upgrade has been started successfully. Note that it might still fail later.",
             "params": {
+                "o:packageIds": [
+                    "String"
+                ]
             },
             "returns": {
                 "success": "Bool"
@@ -1182,15 +1215,53 @@
                 "ruleId": "Uuid"
             }
         },
-        "System.UpdateStatusChanged": {
-            "description": "Emitted whenever there is a change in the information from GetUpdateStatus",
+        "System.CapabilitiesChanged": {
+            "description": "Emitted whenever the system capabilities change.",
             "params": {
-                "availableChannels": "StringList",
-                "candidateVersion": "String",
-                "currentChannel": "String",
-                "currentVersion": "String",
-                "updateAvailable": "Bool",
-                "updateInProgress": "Bool"
+                "powerManagement": "Bool",
+                "updateManagement": "Bool"
+            }
+        },
+        "System.PackageAdded": {
+            "description": "Emitted whenever a package is added to the list of packages.",
+            "params": {
+                "package": "$ref:Package"
+            }
+        },
+        "System.PackageChanged": {
+            "description": "Emitted whenever a package in the list of packages changes.",
+            "params": {
+                "package": "$ref:Package"
+            }
+        },
+        "System.PackageRemoved": {
+            "description": "Emitted whenever a package is removed from the list of packages.",
+            "params": {
+                "packageId": "String"
+            }
+        },
+        "System.RepositoryAdded": {
+            "description": "Emitted whenever a repository is added to the list of repositories.",
+            "params": {
+                "repository": "$ref:Repository"
+            }
+        },
+        "System.RepositoryChanged": {
+            "description": "Emitted whenever a repository in the list of repositories changes.",
+            "params": {
+                "repository": "$ref:Repository"
+            }
+        },
+        "System.RepositoryRemoved": {
+            "description": "Emitted whenever a repository is removed from the list of repositories.",
+            "params": {
+                "repository": "String"
+            }
+        },
+        "System.UpdateStatusChanged": {
+            "description": "Emitted whenever the update status changes.",
+            "params": {
+                "updateRunning": "Bool"
             }
         },
         "Tags.TagAdded": {

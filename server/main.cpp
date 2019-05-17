@@ -103,6 +103,7 @@ int main(int argc, char *argv[])
         "Application",
         "System",
         "Platform",
+        "PlatformUpdate",
         "DeviceManager",
         "RuleEngine",
         "RuleEngineDebug",

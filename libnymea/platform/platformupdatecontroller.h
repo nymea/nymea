@@ -23,6 +23,9 @@
 #ifndef PLATFORMUPDATECONTROLLER_H
 #define PLATFORMUPDATECONTROLLER_H
 
+#include "package.h"
+#include "repository.h"
+
 #include <QObject>
 
 class PlatformUpdateController : public QObject
@@ -34,26 +37,30 @@ public:
 
     virtual bool updateManagementAvailable();
 
-    virtual QString currentVersion() const;
-    virtual QString candidateVersion() const;
+    virtual bool updateRunning() const;
 
-//    virtual QMap<QString, QString> changelog() const = 0;
+    virtual QList<Package> packages() const;
+    virtual QList<Repository> repositories() const;
 
     virtual void checkForUpdates();
-    virtual bool updateAvailable() const;
-    virtual bool startUpdate();
 
-    virtual bool rollbackAvailable() const;
-    virtual bool startRollback();
+    virtual bool startUpdate(const QStringList &packageIds = QStringList());
+    virtual bool rollback(const QStringList &packageIds);
+    virtual bool removePackages(const QStringList &packageIds);
 
-    virtual bool updateInProgress() const;
-
-    virtual QStringList availableChannels() const;
-    virtual QString currentChannel() const;
-    virtual bool selectChannel(const QString &channel);
+    virtual bool enableRepository(const QString &repositoryId, bool enabled);
 
 signals:
-    void updateStatusChanged();
+    void availableChanged();
+    void updateRunningChanged();
+    void packageAdded(const Package &pacakge);
+    void packageChanged(const Package &package);
+    void packageRemoved(const QString &packageId);
+    void repositoryAdded(const Repository &repository);
+    void repositoryChanged(const Repository &repository);
+    void repositoryRemoved(const QString &repositoryId);
 };
+
+Q_DECLARE_INTERFACE(PlatformUpdateController, "io.nymea.PlatformUpdateController")
 
 #endif // PLATFORMUPDATECONTROLLER_H

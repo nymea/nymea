@@ -35,6 +35,11 @@ public:
     virtual bool powerManagementAvailable() const;
     virtual bool reboot();
     virtual bool shutdown();
+
+signals:
+    void availableChanged();
 };
+
+Q_DECLARE_INTERFACE(PlatformSystemController, "io.nymea.PlatformSystemController")
 
 #endif // PLATFORMSYSTEMCONTROLLER_H

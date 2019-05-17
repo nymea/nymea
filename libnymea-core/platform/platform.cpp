@@ -21,7 +21,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "platform.h"
-#include "platform/platformplugin.h"
+#include "platform/platformsystemcontroller.h"
+#include "platform/platformupdatecontroller.h"
 
 #include "loggingcategories.h"
 
@@ -38,54 +39,43 @@ Platform::Platform(QObject *parent) : QObject(parent)
         qCDebug(dcPlatform) << "Loading plugins from:" << dir.absolutePath();
         foreach (const QString &entry, dir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
             qCDebug(dcPlatform()) << "Found dir entry" << entry;
-            QFileInfo fi;
-            if (entry.startsWith("libnymea_platformplugin") && entry.endsWith(".so")) {
-                fi.setFile(path + "/" + entry);
-            } else {
-                fi.setFile(path + "/" + entry + "/libnymea_platformplugin" + entry + ".so");
+            QFileInfo fi(path + "/" + entry);
+            if (fi.isFile()) {
+                if (entry.startsWith("libnymea_systemplugin") && entry.endsWith(".so")) {
+                    loadSystemPlugin(path + "/" + entry);
+                } else if (entry.startsWith("libnymea_updateplugin") && entry.endsWith(".so")) {
+                    loadUpdatePlugin(path + "/" + entry);
+                }
+            } else if (fi.isDir()) {
+                if (QFileInfo::exists(path + "/" + entry + "/libnymea_systemplugin" + entry + ".so")) {
+                    loadSystemPlugin(path + "/" +  entry + "/libnymea_systemplugin" + entry + ".so");
+                } else if (QFileInfo::exists(path + "/" + entry + "/libnymea_platformplugin" + entry + ".so")) {
+                    loadUpdatePlugin(path + "/" +  entry + "/libnymea_platformplugin" + entry + ".so");
+                }
             }
-
-            if (!fi.exists())
-                continue;
-
-
-            QPluginLoader loader;
-            loader.setFileName(fi.absoluteFilePath());
-            loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
-
-            if (!loader.load()) {
-                qCWarning(dcPlatform) << "Could not load plugin data of" << entry << "\n" << loader.errorString();
-                continue;
-            }
-
-            m_platformPlugin = qobject_cast<PlatformPlugin *>(loader.instance());
-            if (!m_platformPlugin) {
-                qCWarning(dcPlatform) << "Could not get plugin instance of" << entry;
-                continue;
-            }
-            qCDebug(dcPlatform()) << "Loaded platform plugin:" << entry;
-            m_platformPlugin->setParent(this);
-            break;
         }
-        if (m_platformPlugin) {
+        if (m_platformSystemController && m_platformUpdateController) {
             break;
         }
     }
-    if (!m_platformPlugin) {
-        qCWarning(dcPlatform()) << "Could not load a platform plugin. Platform related features won't be available.";
-        m_platformPlugin = new PlatformPlugin(this);
+    if (!m_platformSystemController) {
+        qCWarning(dcPlatform()) << "Could not load a system plugin. System control features won't be available.";
+        m_platformSystemController = new PlatformSystemController(this);
     }
-
+    if (!m_platformUpdateController) {
+        qCWarning(dcPlatform()) << "Could not load an update plugin. System update features won't be available.";
+        m_platformUpdateController = new PlatformUpdateController(this);
+    }
 }
 
 PlatformSystemController *Platform::systemController() const
 {
-    return m_platformPlugin->systemController();
+    return m_platformSystemController;
 }
 
 PlatformUpdateController *Platform::updateController() const
 {
-    return m_platformPlugin->updateController();
+    return m_platformUpdateController;
 }
 
 QStringList Platform::pluginSearchDirs() const
@@ -97,12 +87,56 @@ QStringList Platform::pluginSearchDirs() const
     }
 
     foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
-        searchDirs << libraryPath.replace("qt5", "nymea").replace("plugins", "platforms");
+        searchDirs << libraryPath.replace("qt5", "nymea").replace("plugins", "platform");
     }
-    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/nymea/platforms";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../platforms/";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../../../platforms/";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/nymea/platform";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../platform/";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../../../platform/";
     return searchDirs;
+}
+
+void Platform::loadSystemPlugin(const QString &file)
+{
+    if (m_platformSystemController) {
+        return; // Not loading another...
+    }
+    QPluginLoader loader;
+    loader.setFileName(file);
+    loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+    if (!loader.load()) {
+        qCWarning(dcPlatform) << "Could not load plugin data of" << file << "\n" << loader.errorString();
+        return;
+    }
+    m_platformSystemController = qobject_cast<PlatformSystemController*>(loader.instance());
+    if (!m_platformSystemController) {
+        qCWarning(dcPlatform) << "Could not get plugin instance of" << file;
+        loader.unload();
+        return;
+    }
+    qCDebug(dcPlatform()) << "Loaded system plugin:" << file;
+    m_platformSystemController->setParent(this);
+}
+
+void Platform::loadUpdatePlugin(const QString &file)
+{
+    if (m_platformUpdateController) {
+        return; // Not loading another...
+    }
+    QPluginLoader loader;
+    loader.setFileName(file);
+    loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+    if (!loader.load()) {
+        qCWarning(dcPlatform) << "Could not load plugin data of" << file << "\n" << loader.errorString();
+        return;
+    }
+    m_platformUpdateController = qobject_cast<PlatformUpdateController*>(loader.instance());
+    if (!m_platformUpdateController) {
+        qCWarning(dcPlatform) << "Could not get plugin instance of" << file;
+        loader.unload();
+        return;
+    }
+    qCDebug(dcPlatform()) << "Loaded update plugin:" << file;
+    m_platformUpdateController->setParent(this);
 }
 
 }

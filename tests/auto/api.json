@@ -1535,6 +1535,16 @@
             "NetworkManagerStateConnectedSite",
             "NetworkManagerStateConnectedGlobal"
         ],
+        "Package": {
+            "canRemove": "Bool",
+            "candidateVersion": "String",
+            "changelog": "String",
+            "displayName": "String",
+            "id": "String",
+            "installedVersion": "String",
+            "rollbackAvailable": "Bool",
+            "updateAvailable": "Bool"
+        },
         "Param": {
             "paramTypeId": "Uuid",
             "value": "$ref:BasicType"
@@ -1589,6 +1599,11 @@
             "o:weekDays": [
                 "Int"
             ]
+        },
+        "Repository": {
+            "displayName": "String",
+            "enabled": "Bool",
+            "id": "String"
         },
         "Rule": {
             "actions": [

@@ -51,11 +51,6 @@ QList<Repository> PlatformUpdateController::repositories() const
     return {};
 }
 
-void PlatformUpdateController::checkForUpdates()
-{
-    // Nothing to do here
-}
-
 bool PlatformUpdateController::startUpdate(const QStringList &packageIds)
 {
     Q_UNUSED(packageIds)

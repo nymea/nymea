@@ -42,8 +42,6 @@ public:
     virtual QList<Package> packages() const;
     virtual QList<Repository> repositories() const;
 
-    virtual void checkForUpdates();
-
     virtual bool startUpdate(const QStringList &packageIds = QStringList());
     virtual bool rollback(const QStringList &packageIds);
     virtual bool removePackages(const QStringList &packageIds);

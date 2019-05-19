@@ -36,9 +36,8 @@ Platform::Platform(QObject *parent) : QObject(parent)
 {
     foreach (const QString &path, pluginSearchDirs()) {
         QDir dir(path);
-        qCDebug(dcPlatform) << "Loading plugins from:" << dir.absolutePath();
+        qCDebug(dcPlatform) << "Loading platform plugins from:" << dir.absolutePath();
         foreach (const QString &entry, dir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
-            qCDebug(dcPlatform()) << "Found dir entry" << entry;
             QFileInfo fi(path + "/" + entry);
             if (fi.isFile()) {
                 if (entry.startsWith("libnymea_systemplugin") && entry.endsWith(".so")) {
@@ -49,8 +48,8 @@ Platform::Platform(QObject *parent) : QObject(parent)
             } else if (fi.isDir()) {
                 if (QFileInfo::exists(path + "/" + entry + "/libnymea_systemplugin" + entry + ".so")) {
                     loadSystemPlugin(path + "/" +  entry + "/libnymea_systemplugin" + entry + ".so");
-                } else if (QFileInfo::exists(path + "/" + entry + "/libnymea_platformplugin" + entry + ".so")) {
-                    loadUpdatePlugin(path + "/" +  entry + "/libnymea_platformplugin" + entry + ".so");
+                } else if (QFileInfo::exists(path + "/" + entry + "/libnymea_updateplugin" + entry + ".so")) {
+                    loadUpdatePlugin(path + "/" +  entry + "/libnymea_updateplugin" + entry + ".so");
                 }
             }
         }

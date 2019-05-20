@@ -1097,7 +1097,7 @@ void DeviceManager::loadPlugin(DevicePlugin *pluginIface)
                 ParamTypeId paramTypeId(paramTypeIdString);
                 ParamType paramType = pluginIface->configurationDescription().findById(paramTypeId);
                 if (!paramType.isValid()) {
-                    qCWarning(dcDeviceManager()) << "Skip loading Param for plugin" << pluginIface->pluginName() << "because the ParamType for the saved Param" << ParamTypeId(paramTypeIdString).toString() << "could not be found.";
+                    qCWarning(dcDeviceManager()) << "Not loading Param for plugin" << pluginIface->pluginName() << "because the ParamType for the saved Param" << ParamTypeId(paramTypeIdString).toString() << "could not be found.";
                     continue;
                 }
 
@@ -1162,7 +1162,7 @@ void DeviceManager::loadConfiguredDevices()
 
         DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
         if (!deviceClass.isValid()) {
-            qCWarning(dcDeviceManager()) << "Skip loading device" << device << "because the device class for this device could not be found.";
+            qCWarning(dcDeviceManager()) << "Not loading device" << device << "because the device class for this device could not be found.";
             settings.endGroup(); // DeviceId
             continue;
         }
@@ -1174,7 +1174,7 @@ void DeviceManager::loadConfiguredDevices()
                 ParamTypeId paramTypeId(paramTypeIdString);
                 ParamType paramType = deviceClass.paramTypes().findById(paramTypeId);
                 if (!paramType.isValid()) {
-                    qCWarning(dcDeviceManager()) << "Skip loading Param for device" << device << "because the ParamType for the saved Param" << ParamTypeId(paramTypeIdString).toString() << "could not be found.";
+                    qCWarning(dcDeviceManager()) << "Not loading Param for device" << device << "because the ParamType for the saved Param" << ParamTypeId(paramTypeIdString).toString() << "could not be found.";
                     continue;
                 }
 

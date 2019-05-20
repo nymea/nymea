@@ -687,7 +687,8 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
 
     Q_ASSERT_X(handler->validateParams(method.name(), params).first, "validating return value", formatAssertion(handler->name(), method.name(), QMetaMethod::Signal, handler, notification).toLatin1().data());
     QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
-    qCDebug(dcJsonRpcTraffic()) << "Sending notification:" << data;
+    qCDebug(dcJsonRpc()) << "Sending notification:" << handler->name() + "." + method.name();
+    qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
 
     foreach (const QUuid &clientId, m_clientNotifications.keys(true)) {
         m_clientTransports.value(clientId)->sendData(clientId, data);

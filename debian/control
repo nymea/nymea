@@ -133,7 +133,7 @@ Description: Translation files for nymead and plugins - translations
 
 
 Package: nymea-tests
-Section: misc
+Section: devel
 Architecture: any
 Multi-Arch: same
 Depends: nymea (= ${binary:Version}),

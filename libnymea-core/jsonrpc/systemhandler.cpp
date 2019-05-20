@@ -53,27 +53,63 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     setReturns("Shutdown", returns);
 
     params.clear(); returns.clear();
-    setDescription("GetPackages", "Get the list of packages currently available to the system. This includes installed and available but not installed packages.");
+    setDescription("GetUpdateStatus",
+                   "Get the current status of the update system. \"busy\" indicates that the system is current busy with "
+                   "an operation regarding updates. This does not necessarily mean an actual update is running. When this "
+                   "is true, update related functions on the client should be marked as busy and no interaction with update "
+                   "components shall be allowed. An example for such a state is when the system queries the server if there "
+                   "are updates available, typically after a call to CheckForUpdates. \"updateRunning\" on the other hand "
+                   "indicates an actual update process is ongoing. The user should be informed about it, the system also "
+                   "might restart at any point while an update is running.");
+    setParams("GetUpdateStatus", params);
+    returns.insert("busy", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    returns.insert("updateRunning", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setReturns("GetUpdateStatus", returns);
+
+    params.clear(); returns.clear();
+    setDescription("CheckForUpdates",
+                   "Instruct the system to poll the server for updates. Normally the system should automatically do this "
+                   "in regular intervals, however, if the client wants to allow the user to manually check for new updates "
+                   "now, this can be called. Returns true if the operation has been started successfully and the update "
+                   "manager will become busy. In order to know whether there are updates available, clients should walk through "
+                   "the list of packages retrieved from GetPackages and check whether there are packages with the updateAvailable "
+                   "flag set to true.");
+    setParams("CheckForUpdates", params);
+    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setReturns("CheckForUpdates", returns);
+
+    params.clear(); returns.clear();
+    setDescription("GetPackages",
+                   "Get the list of packages currently available to the system. This might include installed available but "
+                   "not installed packages. Installed packages will have the installedVersion set to a non-empty value.");
     setParams("GetPackages", params);
     returns.insert("packages", QVariantList() << JsonTypes::packageRef());
     setReturns("GetPackages", returns);
 
     params.clear(); returns.clear();
-    setDescription("UpdatePackages", "Starts updating/installing packages with the given ids. Returns true if the upgrade has been started successfully. Note that it might still fail later.");
+    setDescription("UpdatePackages",
+                   "Starts updating/installing packages with the given ids. Returns true if the upgrade has been started "
+                   "successfully. Note that it might still fail later. Before calling this method, clients should "
+                   "check the packages whether they are in a state where they can either be installed (no installedVersion "
+                   "set) or upgraded (updateAvailable set to true).");
     params.insert("o:packageIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("UpdatePackages", params);
     returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setReturns("UpdatePackages", returns);
 
     params.clear(); returns.clear();
-    setDescription("RollbackPackages", "Starts a rollback. Returns true if the rollback has been started successfully.");
+    setDescription("RollbackPackages",
+                   "Starts a rollback. Returns true if the rollback has been started successfully. Before calling this "
+                   "method, clients should check whether the package can be rolled back (canRollback set to true).");
     params.insert("packageIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("RollbackPackages", params);
     returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setReturns("RollbackPackages", returns);
 
     params.clear(); returns.clear();
-    setDescription("RemovePackages", "Starts removing a package. Returns true if the removal has been started successfully.");
+    setDescription("RemovePackages",
+                   "Starts removing a package. Returns true if the removal has been started successfully. Before calling "
+                   "this method, clients should check whether the package can be removed (canRemove set to true).");
     params.insert("packageIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("RemovePackages", params);
     returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
@@ -103,6 +139,7 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
 
     params.clear();
     setDescription("UpdateStatusChanged", "Emitted whenever the update status changes.");
+    params.insert("busy", JsonTypes::basicTypeToString(JsonTypes::Bool));
     params.insert("updateRunning", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setParams("UpdateStatusChanged", params);
 
@@ -139,8 +176,15 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
 
     connect(m_platform->systemController(), &PlatformSystemController::availableChanged, this, &SystemHandler::onCapabilitiesChanged);
     connect(m_platform->updateController(), &PlatformUpdateController::availableChanged, this, &SystemHandler::onCapabilitiesChanged);
+    connect(m_platform->updateController(), &PlatformUpdateController::busyChanged, this, [this](){
+        QVariantMap params;
+        params.insert("busy", m_platform->updateController()->busy());
+        params.insert("updateRunning", m_platform->updateController()->updateRunning());
+        emit UpdateStatusChanged(params);
+    });
     connect(m_platform->updateController(), &PlatformUpdateController::updateRunningChanged, this, [this](){
         QVariantMap params;
+        params.insert("busy", m_platform->updateController()->busy());
         params.insert("updateRunning", m_platform->updateController()->updateRunning());
         emit UpdateStatusChanged(params);
     });
@@ -212,7 +256,17 @@ JsonReply *SystemHandler::GetUpdateStatus(const QVariantMap &params) const
 {
     Q_UNUSED(params)
     QVariantMap ret;
+    ret.insert("busy", m_platform->updateController()->updateRunning());
     ret.insert("updateRunning", m_platform->updateController()->updateRunning());
+    return createReply(ret);
+}
+
+JsonReply *SystemHandler::CheckForUpdates(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    QVariantMap ret;
+    bool success = m_platform->updateController()->checkForUpdates();
+    ret.insert("success", success);
     return createReply(ret);
 }
 

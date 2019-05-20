@@ -43,6 +43,7 @@ public:
     Q_INVOKABLE JsonReply *Shutdown(const QVariantMap &params) const;
 
     Q_INVOKABLE JsonReply *GetUpdateStatus(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *CheckForUpdates(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetPackages(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *UpdatePackages(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *RollbackPackages(const QVariantMap &params) const;

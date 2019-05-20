@@ -35,8 +35,10 @@ public:
     explicit PlatformUpdateController(QObject *parent = nullptr);
     virtual ~PlatformUpdateController() = default;
 
-    virtual bool updateManagementAvailable();
+    virtual bool updateManagementAvailable() const;
 
+    virtual bool checkForUpdates();
+    virtual bool busy() const;
     virtual bool updateRunning() const;
 
     virtual QList<Package> packages() const;
@@ -50,6 +52,7 @@ public:
 
 signals:
     void availableChanged();
+    void busyChanged();
     void updateRunningChanged();
     void packageAdded(const Package &pacakge);
     void packageChanged(const Package &package);

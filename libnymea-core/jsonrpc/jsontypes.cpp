@@ -404,6 +404,7 @@ void JsonTypes::init()
 
     s_package.insert("id", basicTypeToString(QVariant::String));
     s_package.insert("displayName", basicTypeToString(QVariant::String));
+    s_package.insert("summary", basicTypeToString(QVariant::String));
     s_package.insert("installedVersion", basicTypeToString(QVariant::String));
     s_package.insert("candidateVersion", basicTypeToString(QVariant::String));
     s_package.insert("changelog", basicTypeToString(QVariant::String));
@@ -1290,6 +1291,7 @@ QVariantMap JsonTypes::packPackage(const Package &package)
     QVariantMap ret;
     ret.insert("id", package.packageId());
     ret.insert("displayName", package.displayName());
+    ret.insert("summary", package.summary());
     ret.insert("installedVersion", package.installedVersion());
     ret.insert("candidateVersion", package.candidateVersion());
     ret.insert("changelog", package.changelog());

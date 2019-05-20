@@ -42,6 +42,16 @@ QString Package::displayName() const
     return m_displayName;
 }
 
+QString Package::summary() const
+{
+    return m_summary;
+}
+
+void Package::setSummary(const QString &summary)
+{
+    m_summary = summary;
+}
+
 QString Package::installedVersion() const
 {
     return m_installedVersion;
@@ -106,6 +116,7 @@ bool Package::operator==(const Package &other) const
 {
     return m_packageId == other.packageId() &&
             m_displayName == other.displayName() &&
+            m_summary == other.summary() &&
             m_installedVersion == other.installedVersion() &&
             m_candidateVersion == other.candidateVersion() &&
             m_changeLog == other.changelog() &&

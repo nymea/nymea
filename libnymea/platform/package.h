@@ -32,6 +32,10 @@ public:
 
     QString packageId() const;
     QString displayName() const;
+
+    QString summary() const;
+    void setSummary(const QString &summary);
+
     QString installedVersion() const;
     void setInstalledVersion(const QString &installedVersion);
 
@@ -56,6 +60,7 @@ public:
 private:
     QString m_packageId;
     QString m_displayName;
+    QString m_summary;
     QString m_installedVersion;
     QString m_candidateVersion;
     QString m_changeLog;

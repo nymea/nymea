@@ -170,7 +170,7 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
 
     params.clear();
     setDescription("RepositoryRemoved", "Emitted whenever a repository is removed from the list of repositories.");
-    params.insert("repository", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("repositoryId", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("RepositoryRemoved", params);
 
 

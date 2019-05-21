@@ -1272,7 +1272,7 @@
         "System.RepositoryRemoved": {
             "description": "Emitted whenever a repository is removed from the list of repositories.",
             "params": {
-                "repository": "String"
+                "repositoryId": "String"
             }
         },
         "System.UpdateStatusChanged": {

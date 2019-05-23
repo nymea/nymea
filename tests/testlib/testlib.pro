@@ -10,7 +10,7 @@ INCLUDEPATH += $$top_srcdir/libnymea \
 
 LIBS += -L$$top_builddir/libnymea/ -lnymea \
         -L$$top_builddir/libnymea-core/ -lnymea-core \
-        -lssl -lcrypto -lavahi-common -lavahi-client -lnymea-remoteproxyclient
+        -lssl -lcrypto -lnymea-remoteproxyclient
 
 HEADERS += nymeatestbase.h
 SOURCES += nymeatestbase.cpp

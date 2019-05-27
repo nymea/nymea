@@ -104,6 +104,7 @@ int main(int argc, char *argv[])
         "System",
         "Platform",
         "PlatformUpdate",
+        "PlatformZeroConf",
         "DeviceManager",
         "RuleEngine",
         "RuleEngineDebug",

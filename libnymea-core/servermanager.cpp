@@ -330,7 +330,7 @@ bool ServerManager::registerZeroConfService(const ServerConfiguration &configura
     txt.insert("sslEnabled", configuration.sslEnabled ? "true" : "false");
     QString name = namePrefix + "-" + configuration.id;
     if (!m_platform->zeroConfController()->zeroConfServicePublisher()->registerService(configuration.id, name, configuration.address, static_cast<quint16>(configuration.port), serviceType, txt)) {
-        qCWarning(dcTcpServer()) << "Could not register ZeroConf service for" << configuration;
+        qCWarning(dcServerManager()) << "Could not register ZeroConf service for" << configuration;
         return false;
     }
     return true;

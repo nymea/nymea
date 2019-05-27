@@ -114,7 +114,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         m_jsonServer->registerTransportInterface(tcpServer, config.authenticationEnabled);
         m_tcpServers.insert(config.id, tcpServer);
         if (tcpServer->startServer()) {
-            registerZeroConfService(config, "nymea-tcp", "_jsonrpc._tcp");
+            registerZeroConfService(config, "tcp", "_jsonrpc._tcp");
         }
     }
 
@@ -123,7 +123,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         m_jsonServer->registerTransportInterface(webSocketServer, config.authenticationEnabled);
         m_webSocketServers.insert(config.id, webSocketServer);
         if (webSocketServer->startServer()) {
-            registerZeroConfService(config, "nymea-ws", "_ws._tcp");
+            registerZeroConfService(config, "ws", "_ws._tcp");
         }
     }
 
@@ -138,14 +138,14 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         m_restServer->registerWebserver(webServer);
         m_webServers.insert(config.id, webServer);
         if (webServer->startServer()) {
-            registerZeroConfService(config, "nymea-http", "_http._tcp");
+            registerZeroConfService(config, "http", "_http._tcp");
         }
     }
 
     m_mqttBroker = new MqttBroker(this);
     foreach (const ServerConfiguration &config, configuration->mqttServerConfigurations()) {
         if (m_mqttBroker->startServer(config)) {
-            registerZeroConfService(config, "nymea-mqtt", "_mqtt._tcp");
+            registerZeroConfService(config, "mqtt", "_mqtt._tcp");
         }
     }
     m_mqttBroker->updatePolicies(configuration->mqttPolicies().values());

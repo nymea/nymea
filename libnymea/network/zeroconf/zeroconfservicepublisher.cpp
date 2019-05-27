@@ -29,8 +29,7 @@ ZeroConfServicePublisher::ZeroConfServicePublisher(QObject *parent) : QObject(pa
 
 /*!
  * \brief ZeroConfServicePublisher::registerService
- * \param id An ID used to track this service instance. Pick a unique id and use the same for updating or unregistering the service
- * \param name The name as it should appear on the network. Note that it might be changed when collisions appear
+ * \param name The name as it should appear on the network. This name must be unique across all registered services and is used to unregister/update. Note that the actual name as it appears on the network might be changed when collisions with other hosts happen.
  * \param hostAddress The hostAddress the server is running
  * \param port The port of the server
  * \param serviceType The service type as it should appear on the network, for instance "_http.tcp"
@@ -38,9 +37,8 @@ ZeroConfServicePublisher::ZeroConfServicePublisher(QObject *parent) : QObject(pa
  * \return
  */
 
-bool ZeroConfServicePublisher::registerService(const QString &id, const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords)
+bool ZeroConfServicePublisher::registerService(const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords)
 {
-    Q_UNUSED(id)
     Q_UNUSED(name)
     Q_UNUSED(hostAddress)
     Q_UNUSED(port)

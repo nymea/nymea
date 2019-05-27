@@ -33,7 +33,7 @@ public:
     explicit ZeroConfServicePublisher(QObject *parent = nullptr);
     virtual ~ZeroConfServicePublisher() = default;
 
-    virtual bool registerService(const QString &id, const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords);
+    virtual bool registerService(const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords);
     virtual void unregisterService(const QString &id);
 };
 

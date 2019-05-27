@@ -72,8 +72,8 @@ private slots:
     void mqttPolicyRemoved(const QString &clientId);
 
 private:
-    bool registerZeroConfService(const ServerConfiguration &configuration, const QString &namePrefix, const QString &serviceType);
-    void unregisterZeroConfService(const QString &configId);
+    bool registerZeroConfService(const ServerConfiguration &configuration, const QString &serverType, const QString &serviceType);
+    void unregisterZeroConfService(const QString &configId, const QString &serverType);
 
 private:
     Platform *m_platform = nullptr;

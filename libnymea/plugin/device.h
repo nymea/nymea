@@ -103,6 +103,7 @@ public:
     Devices(const QList<Device *> &other);
     Device* findById(const DeviceId &id);
     Devices filterByParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
+    Devices filterByDeviceClassId(const DeviceClassId &deviceClassId);
 };
 
 #endif

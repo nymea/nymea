@@ -20,8 +20,7 @@
 # This project include file is meant to be used by nymea plugins.
 # Example project file for a plugin:
 
-# include(/usr/include/nymea/plugi.pri)
-# TARGET = $$qtLibraryTarget(nymea_devicepluginexample)
+# include($$[QT_INSTALL_PREFIX]/include/nymea/plugin.pri)
 # SOURCES += devicepluginexample.cpp
 # HEADERS += devicepluginexample.h
 
@@ -82,6 +81,8 @@ translations.files = $$[QT_SOURCE_TREE]/translations/*.qm
 HEADERS += $$OUT_PWD/plugininfo.h \
            $$OUT_PWD/extern-plugininfo.h
 DEPENDPATH += $$OUT_PWD
+
+TARGET = $$qtLibraryTarget(nymea_deviceplugin"$$TARGET")
 
 # Install plugin
 target.path = $$PLUGIN_PATH

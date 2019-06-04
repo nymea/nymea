@@ -24,23 +24,28 @@
 #define PLATFORMZEROCONFCONTROLLER_H
 
 #include <QObject>
+#include "hardwareresource.h"
 
 class ZeroConfServiceBrowser;
 class ZeroConfServicePublisher;
 
-class PlatformZeroConfController: public QObject
+class PlatformZeroConfController: public HardwareResource
 {
     Q_OBJECT
 public:
     explicit PlatformZeroConfController(QObject *parent = nullptr);
     virtual ~PlatformZeroConfController() = default;
 
-    virtual ZeroConfServiceBrowser *zeroConfServiceBrowser() const;
-    virtual ZeroConfServicePublisher *zeroConfServicePublisher() const;
+    virtual ZeroConfServiceBrowser *createServiceBrowser(const QString &serviceType = QString());
+    virtual ZeroConfServicePublisher *servicePublisher() const;
+
+    // HardwareResource
+    virtual bool available() const override;
+    virtual bool enabled() const override;
+    virtual void setEnabled(bool enabled) override;
 
 private:
-    ZeroConfServiceBrowser *m_zeroConfBrowserStub = nullptr;
-    ZeroConfServicePublisher *m_zeroConfPublisherStub = nullptr;
+    ZeroConfServicePublisher *m_zeroConfPublisherDummy = nullptr;
 };
 
 Q_DECLARE_INTERFACE(PlatformZeroConfController, "io.nymea.PlatformZeroConfController")

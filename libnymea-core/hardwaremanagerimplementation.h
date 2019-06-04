@@ -34,7 +34,7 @@ class UpnpDiscovery;
 class PluginTimerManager;
 class NetworkAccessManager;
 class UpnpDeviceDescriptor;
-class ZeroConfServiceBrowser;
+class PlatformZeroConfController;
 class BluetoothLowEnergyManager;
 
 namespace nymeaserver {
@@ -54,7 +54,7 @@ public:
     PluginTimerManager *pluginTimerManager() override;
     NetworkAccessManager *networkManager() override;
     UpnpDiscovery *upnpDiscovery() override;
-    ZeroConfServiceBrowser *zeroConfServiceBrowser() override;
+    PlatformZeroConfController *zeroConfController() override;
     BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
     MqttProvider *mqttProvider() override;
 

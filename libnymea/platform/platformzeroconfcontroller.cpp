@@ -26,18 +26,32 @@
 #include "network/zeroconf/zeroconfservicepublisher.h"
 
 PlatformZeroConfController::PlatformZeroConfController(QObject *parent):
-    QObject(parent)
+    HardwareResource("ZeroConf", parent)
 {
-    m_zeroConfBrowserStub = new ZeroConfServiceBrowser(this);
-    m_zeroConfPublisherStub = new ZeroConfServicePublisher(this);
+    m_zeroConfPublisherDummy = new ZeroConfServicePublisher(this);
 }
 
-ZeroConfServiceBrowser *PlatformZeroConfController::zeroConfServiceBrowser() const
+ZeroConfServiceBrowser *PlatformZeroConfController::createServiceBrowser(const QString &serviceType)
 {
-    return m_zeroConfBrowserStub;
+    return new ZeroConfServiceBrowser(serviceType, this);
 }
 
-ZeroConfServicePublisher *PlatformZeroConfController::zeroConfServicePublisher() const
+ZeroConfServicePublisher *PlatformZeroConfController::servicePublisher() const
 {
-    return m_zeroConfPublisherStub;
+    return m_zeroConfPublisherDummy;
+}
+
+bool PlatformZeroConfController::available() const
+{
+    return false;
+}
+
+bool PlatformZeroConfController::enabled() const
+{
+    return false;
+}
+
+void PlatformZeroConfController::setEnabled(bool enabled)
+{
+    Q_UNUSED(enabled)
 }

@@ -102,25 +102,10 @@
 #include "zeroconfservicebrowser.h"
 
 /*! Constructs a new \l{ZeroConfServiceBrowser} with the given \a parent. */
-ZeroConfServiceBrowser::ZeroConfServiceBrowser(QObject *parent) :
-    HardwareResource("ZeroConf service browser", parent)
+ZeroConfServiceBrowser::ZeroConfServiceBrowser(const QString &serviceType, QObject *parent):
+    QObject(parent)
 {
-
-}
-
-bool ZeroConfServiceBrowser::available() const
-{
-    return false;
-}
-
-bool ZeroConfServiceBrowser::enabled() const
-{
-    return false;
-}
-
-void ZeroConfServiceBrowser::setEnabled(bool enabled)
-{
-    Q_UNUSED(enabled)
+    Q_UNUSED(serviceType)
 }
 
 QList<ZeroConfServiceEntry> ZeroConfServiceBrowser::serviceEntries() const

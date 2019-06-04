@@ -329,7 +329,7 @@ bool ServerManager::registerZeroConfService(const ServerConfiguration &configura
     txt.insert("name", NymeaCore::instance()->configuration()->serverName());
     txt.insert("sslEnabled", configuration.sslEnabled ? "true" : "false");
     QString name = "nymea-" + serverType + "-" + configuration.id;
-    if (!m_platform->zeroConfController()->zeroConfServicePublisher()->registerService(name, configuration.address, static_cast<quint16>(configuration.port), serviceType, txt)) {
+    if (!m_platform->zeroConfController()->servicePublisher()->registerService(name, configuration.address, static_cast<quint16>(configuration.port), serviceType, txt)) {
         qCWarning(dcServerManager()) << "Could not register ZeroConf service for" << configuration;
         return false;
     }
@@ -338,7 +338,7 @@ bool ServerManager::registerZeroConfService(const ServerConfiguration &configura
 
 void ServerManager::unregisterZeroConfService(const QString &configId, const QString &serverType)
 {
-    m_platform->zeroConfController()->zeroConfServicePublisher()->unregisterService("nymea-" + serverType + "-" + configId);
+    m_platform->zeroConfController()->servicePublisher()->unregisterService("nymea-" + serverType + "-" + configId);
 }
 
 bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName)

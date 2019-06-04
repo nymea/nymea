@@ -26,21 +26,15 @@
 #include <QObject>
 
 #include "libnymea.h"
-#include "hardwareresource.h"
 #include "zeroconfserviceentry.h"
 
-class LIBNYMEA_EXPORT ZeroConfServiceBrowser : public HardwareResource
+class LIBNYMEA_EXPORT ZeroConfServiceBrowser : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit ZeroConfServiceBrowser(QObject *parent = nullptr);
+    explicit ZeroConfServiceBrowser(const QString &serviceType = QString(), QObject *parent = nullptr);
     virtual ~ZeroConfServiceBrowser() = default;
-
-    virtual bool available() const override;
-    virtual bool enabled() const override;
-    virtual void setEnabled(bool enabled) override;
-
 
     virtual QList<ZeroConfServiceEntry> serviceEntries() const;
 

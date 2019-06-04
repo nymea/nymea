@@ -25,7 +25,6 @@
 #include "platform/platform.h"
 
 #include "platform/platformzeroconfcontroller.h"
-#include "network/zeroconf/zeroconfservicebrowser.h"
 
 #include "hardwaremanagerimplementation.h"
 #include "hardware/plugintimermanagerimplementation.h"
@@ -72,8 +71,8 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
     if (m_upnpDiscovery->available())
         setResourceEnabled(m_upnpDiscovery, true);
 
-    if (m_platform->zeroConfController()->zeroConfServiceBrowser()->available())
-        setResourceEnabled(m_platform->zeroConfController()->zeroConfServiceBrowser(), true);
+    if (m_platform->zeroConfController()->available())
+        setResourceEnabled(m_platform->zeroConfController(), true);
 
     if (m_bluetoothLowEnergyManager->available())
         setResourceEnabled(m_bluetoothLowEnergyManager, true);
@@ -105,9 +104,9 @@ UpnpDiscovery *HardwareManagerImplementation::upnpDiscovery()
     return m_upnpDiscovery;
 }
 
-ZeroConfServiceBrowser *HardwareManagerImplementation::zeroConfServiceBrowser()
+PlatformZeroConfController *HardwareManagerImplementation::zeroConfController()
 {
-    return m_platform->zeroConfController()->zeroConfServiceBrowser();
+    return m_platform->zeroConfController();
 }
 
 BluetoothLowEnergyManager *HardwareManagerImplementation::bluetoothLowEnergyManager()

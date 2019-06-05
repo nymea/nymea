@@ -92,9 +92,8 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
             }
         }
         if (certsLoaded) {
-            // Enable this when we can
-            // Debian jessie doesn't have better options yet and the client apps currently only support up to TLS 1.1
-//            m_sslConfiguration.setProtocol(QSsl::TlsV1_1OrLater);
+            // Update this to 1.3 when minimum required Qt is 5.12 (and known client apps can deal with it)
+            m_sslConfiguration.setProtocol(QSsl::TlsV1_2OrLater);
             m_sslConfiguration.setPrivateKey(m_certificateKey);
             m_sslConfiguration.setLocalCertificate(m_certificate);
         }

@@ -212,6 +212,14 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("EditDevice", returns);
 
     params.clear(); returns.clear();
+    setDescription("SetDeviceSettings", "Change the settings of a device.");
+    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("settings", QVariantList() << JsonTypes::paramRef());
+    setParams("SetDeviceSettings", params);
+    returns.insert("deviceError", JsonTypes::deviceErrorRef());
+    setReturns("SetDeviceSettings", returns);
+
+    params.clear(); returns.clear();
     setDescription("RemoveConfiguredDevice", "Remove a device from the system.");
     params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     QVariantList removePolicyList;
@@ -294,9 +302,16 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setParams("DeviceAdded", params);
 
     params.clear(); returns.clear();
-    setDescription("DeviceChanged", "Emitted whenever the params or name of a Device changed (by EditDevice or ReconfigureDevice).");
+    setDescription("DeviceChanged", "Emitted whenever the params or name of a Device are changed (by EditDevice or ReconfigureDevice).");
     params.insert("device", JsonTypes::deviceRef());
     setParams("DeviceChanged", params);
+
+    params.clear(); returns.clear();
+    setDescription("DeviceSettingChanged", "Emitted whenever the setting of a Device is changed.");
+    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("paramTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("value", JsonTypes::basicTypeToString(JsonTypes::Variant));
+    setParams("DeviceSettingChanged", params);
 
     params.clear(); returns.clear();
     setDescription("PluginConfigurationChanged", "Emitted whenever a plugin's configuration is changed.");
@@ -309,6 +324,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     connect(NymeaCore::instance(), &NymeaCore::deviceRemoved, this, &DeviceHandler::deviceRemovedNotification);
     connect(NymeaCore::instance(), &NymeaCore::deviceAdded, this, &DeviceHandler::deviceAddedNotification);
     connect(NymeaCore::instance(), &NymeaCore::deviceChanged, this, &DeviceHandler::deviceChangedNotification);
+    connect(NymeaCore::instance(), &NymeaCore::deviceSettingChanged, this, &DeviceHandler::deviceSettingChangedNotification);
     connect(NymeaCore::instance(), &NymeaCore::devicesDiscovered, this, &DeviceHandler::devicesDiscovered, Qt::QueuedConnection);
     connect(NymeaCore::instance(), &NymeaCore::deviceSetupFinished, this, &DeviceHandler::deviceSetupFinished);
     connect(NymeaCore::instance(), &NymeaCore::deviceReconfigurationFinished, this, &DeviceHandler::deviceReconfigurationFinished);
@@ -565,6 +581,16 @@ JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
     return createReply(returns);
 }
 
+JsonReply *DeviceHandler::SetDeviceSettings(const QVariantMap &params)
+{
+    QVariantMap returns;
+    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+    ParamList settings = JsonTypes::unpackParams(params.value("settings").toList());
+    DeviceManager::DeviceError status = NymeaCore::instance()->deviceManager()->setDeviceSettings(deviceId, settings);
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
+    return createReply(returns);
+}
+
 JsonReply* DeviceHandler::GetEventTypes(const QVariantMap &params) const
 {
     QVariantMap returns;
@@ -683,6 +709,15 @@ void DeviceHandler::deviceChangedNotification(Device *device)
     params.insert("device", JsonTypes::packDevice(device));
 
     emit DeviceChanged(params);
+}
+
+void DeviceHandler::deviceSettingChangedNotification(const DeviceId deviceId, const ParamTypeId &paramTypeId, const QVariant &value)
+{
+    QVariantMap params;
+    params.insert("deviceId", deviceId);
+    params.insert("paramTypeId", paramTypeId.toString());
+    params.insert("value", value);
+    emit DeviceSettingChanged(params);
 }
 
 void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)

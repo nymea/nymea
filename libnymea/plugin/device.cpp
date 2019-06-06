@@ -34,7 +34,7 @@
   \sa DeviceClass, DeviceDescriptor
 */
 
-/*! \fn void Device::stateValueChanged(const QUuid &stateTypeId, const QVariant &value)
+/*! \fn void Device::stateValueChanged(const StateTypeId &stateTypeId, const QVariant &value)
     This signal is emitted when the \l{State} with the given \a stateTypeId changed.
     The \a value parameter describes the new value of the State.
 */
@@ -136,6 +136,59 @@ void Device::setParamValue(const ParamTypeId &paramTypeId, const QVariant &value
         params << param;
     }
     m_params = params;
+}
+
+ParamList Device::settings() const
+{
+    return m_settings;
+}
+
+bool Device::hasSetting(const ParamTypeId &paramTypeId) const
+{
+    return m_settings.hasParam(paramTypeId);
+}
+
+void Device::setSettings(const ParamList &settings)
+{
+    m_settings = settings;
+    foreach (const Param &param, m_settings) {
+        emit settingChanged(param.paramTypeId(), param.value());
+    }
+}
+
+QVariant Device::setting(const ParamTypeId &paramTypeId) const
+{
+    foreach (Param setting, m_settings) {
+        if (setting.paramTypeId() == paramTypeId) {
+            return setting.value();
+        }
+    }
+    return QVariant();
+}
+
+void Device::setSettingValue(const ParamTypeId &paramTypeId, const QVariant &value)
+{
+    ParamList settings;
+    bool found = false;
+    bool changed = false;
+    foreach (Param param, m_settings) {
+        if (param.paramTypeId() == paramTypeId) {
+            found = true;
+            if (param.value() != value) {
+                param.setValue(value);
+                changed = true;
+            }
+        }
+        settings << param;
+    }
+    if (!found) {
+        qCWarning(dcDeviceManager()) << "Device" << m_name << "(" << m_id.toString() << ") does not have a setting with id" << paramTypeId;
+        return;
+    }
+    if (changed) {
+        m_settings = settings;
+        emit settingChanged(paramTypeId, value);
+    }
 }
 
 /*! Returns the states of this Device. It must match the \l{StateType} description in the associated \l{DeviceClass}. */

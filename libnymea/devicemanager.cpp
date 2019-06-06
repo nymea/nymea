@@ -590,6 +590,25 @@ DeviceManager::DeviceError DeviceManager::editDevice(const DeviceId &deviceId, c
     return DeviceErrorNoError;
 }
 
+DeviceManager::DeviceError DeviceManager::setDeviceSettings(const DeviceId &deviceId, const ParamList &settings)
+{
+    Device *device = findConfiguredDevice(deviceId);
+    if (!device) {
+        qCWarning(dcDeviceManager()) << "Cannot set device settings. Device" << deviceId.toString() << "not found";
+        return DeviceErrorDeviceNotFound;
+    }
+    ParamList effectiveSettings = settings;
+    DeviceManager::DeviceError status = verifyParams(findDeviceClass(device->deviceClassId()).settingsTypes(), effectiveSettings);
+    if (status != DeviceManager::DeviceErrorNoError) {
+        qCWarning(dcDeviceManager()) << "Error setting device settings for device" << device->name() << device->id().toString();
+        return status;
+    }
+    foreach (const Param &setting, settings) {
+        device->setSettingValue(setting.paramTypeId(), setting.value());
+    }
+    return DeviceErrorNoError;
+}
+
 /*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId, \a name and \a params.
  *  Returns \l{DeviceManager::DeviceError}{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const ParamList &params)
@@ -701,7 +720,6 @@ DeviceManager::DeviceError DeviceManager::confirmPairing(const PairingTransactio
  *  Returns \l{DeviceError} to inform about the result. */
 DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id)
 {
-    ParamList effectiveParams = params;
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (deviceClass.id().isNull()) {
         return DeviceErrorDeviceClassNotFound;
@@ -709,11 +727,6 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const Devi
 
     if (deviceClass.setupMethod() != DeviceClass::SetupMethodJustAdd) {
         return DeviceErrorCreationMethodNotSupported;
-    }
-
-    DeviceError result = verifyParams(deviceClass.paramTypes(), effectiveParams);
-    if (result != DeviceErrorNoError) {
-        return result;
     }
 
     foreach(Device *device, m_configuredDevices) {
@@ -727,6 +740,12 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const Devi
         return DeviceErrorPluginNotFound;
     }
 
+    ParamList effectiveParams = params;
+    DeviceError paramsResult = verifyParams(deviceClass.paramTypes(), effectiveParams);
+    if (paramsResult != DeviceErrorNoError) {
+        return paramsResult;
+    }
+
     Device *device = new Device(plugin->pluginId(), id, deviceClassId, this);
     if (name.isEmpty()) {
         device->setName(deviceClass.name());
@@ -734,6 +753,11 @@ DeviceManager::DeviceError DeviceManager::addConfiguredDeviceInternal(const Devi
         device->setName(name);
     }
     device->setParams(effectiveParams);
+
+    ParamList settings;
+    verifyParams(deviceClass.settingsTypes(), settings);
+    qCDebug(dcDeviceManager()) << "Adding device settings" << settings;
+    device->setSettings(settings);
 
     DeviceSetupStatus status = setupDevice(device);
     switch (status) {
@@ -1191,9 +1215,37 @@ void DeviceManager::loadConfiguredDevices()
                 params.append(Param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString)));
             }
         }
-
         device->setParams(params);
         settings.endGroup(); // Params
+
+        ParamList deviceSettings;
+        settings.beginGroup("Settings");
+        if (!settings.childGroups().isEmpty()) {
+            foreach (const QString &paramTypeIdString, settings.childGroups()) {
+                ParamTypeId paramTypeId(paramTypeIdString);
+                ParamType paramType = deviceClass.settingsTypes().findById(paramTypeId);
+                if (!paramType.isValid()) {
+                    qCWarning(dcDeviceManager()) << "Not loading Setting for device" << device << "because the ParamType for the saved Setting" << ParamTypeId(paramTypeIdString).toString() << "could not be found.";
+                    continue;
+                }
+
+                // Note: since nymea 0.12.2
+                QVariant paramValue;
+                settings.beginGroup(paramTypeIdString);
+                paramValue = settings.value("value", paramType.defaultValue());
+                paramValue.convert(settings.value("type").toInt());
+                deviceSettings.append(Param(paramTypeId, paramValue));
+                settings.endGroup(); // ParamId
+            }
+        } else {
+            foreach (const QString &paramTypeIdString, settings.allKeys()) {
+                params.append(Param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString)));
+            }
+        }
+        verifyParams(deviceClass.settingsTypes(), deviceSettings);
+        device->setSettings(deviceSettings);
+
+        settings.endGroup(); // Settings
         settings.endGroup(); // DeviceId
 
         // We always add the device to the list in this case. If its in the storedDevices
@@ -1245,6 +1297,16 @@ void DeviceManager::storeConfiguredDevices()
             settings.endGroup(); // ParamTypeId
         }
         settings.endGroup(); // Params
+
+        settings.beginGroup("Settings");
+        foreach (const Param &param, device->settings()) {
+            settings.beginGroup(param.paramTypeId().toString());
+            settings.setValue("type", static_cast<int>(param.value().type()));
+            settings.setValue("value", param.value());
+            settings.endGroup(); // ParamTypeId
+        }
+        settings.endGroup(); // Settings
+
 
         settings.endGroup(); // DeviceId
     }
@@ -1333,7 +1395,8 @@ void DeviceManager::slotDeviceSetupFinished(Device *device, DeviceManager::Devic
         return;
     }
 
-    connect(device, SIGNAL(stateValueChanged(QUuid,QVariant)), this, SLOT(slotDeviceStateValueChanged(QUuid,QVariant)));
+    connect(device, &Device::stateValueChanged, this, &DeviceManager::slotDeviceStateValueChanged);
+    connect(device, &Device::settingChanged, this, &DeviceManager::slotDeviceSettingChanged);
 
     device->setupCompleted();
     emit deviceSetupFinished(device, DeviceManager::DeviceErrorNoError);
@@ -1417,6 +1480,10 @@ void DeviceManager::slotPairingFinished(const PairingTransactionId &pairingTrans
     emit pairingFinished(pairingTransactionId, DeviceErrorNoError, deviceId);
 
     device->setParams(params);
+    ParamList settings;
+    // Use verifyParams to populate it with defaults
+    verifyParams(deviceClass.settingsTypes(), settings);
+    device->setSettings(settings);
 
     DeviceSetupStatus setupStatus = setupDevice(device);
     switch (setupStatus) {
@@ -1482,6 +1549,9 @@ void DeviceManager::onAutoDevicesAppeared(const DeviceClassId &deviceClassId, co
         device->m_autoCreated = true;
         device->setName(deviceDescriptor.title());
         device->setParams(deviceDescriptor.params());
+        ParamList settings;
+        verifyParams(deviceClass.settingsTypes(), settings);
+        device->setSettings(settings);
         device->setParentId(deviceDescriptor.parentDeviceId());
 
         DeviceSetupStatus setupStatus = setupDevice(device);
@@ -1551,7 +1621,7 @@ void DeviceManager::cleanupDeviceStateCache()
     }
 }
 
-void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value)
+void DeviceManager::slotDeviceStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value)
 {
     Device *device = qobject_cast<Device*>(sender());
     if (!device) {
@@ -1562,6 +1632,16 @@ void DeviceManager::slotDeviceStateValueChanged(const QUuid &stateTypeId, const 
     Param valueParam(ParamTypeId(stateTypeId.toString()), value);
     Event event(EventTypeId(stateTypeId.toString()), device->id(), ParamList() << valueParam, true);
     emit eventTriggered(event);
+}
+
+void DeviceManager::slotDeviceSettingChanged(const ParamTypeId &paramTypeId, const QVariant &value)
+{
+    Device *device = qobject_cast<Device*>(sender());
+    if (!device) {
+        return;
+    }
+    storeConfiguredDevices();
+    emit deviceSettingChanged(device->id(), paramTypeId, value);
 }
 
 bool DeviceManager::verifyPluginMetadata(const QJsonObject &data)
@@ -1602,7 +1682,8 @@ DeviceManager::DeviceSetupStatus DeviceManager::setupDevice(Device *device)
         return status;
     }
 
-    connect(device, SIGNAL(stateValueChanged(QUuid,QVariant)), this, SLOT(slotDeviceStateValueChanged(QUuid,QVariant)));
+    connect(device, &Device::stateValueChanged, this, &DeviceManager::slotDeviceStateValueChanged);
+    connect(device, &Device::settingChanged, this, &DeviceManager::slotDeviceSettingChanged);
 
     device->setupCompleted();
     return status;

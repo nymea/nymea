@@ -82,6 +82,7 @@ extern ParamTypeId ip4ParamTypeId;
 extern ParamTypeId ip6ParamTypeId;
 extern ParamTypeId urlParamTypeId;
 extern ParamTypeId macParamTypeId;
+extern ParamTypeId mockSetting1ParamTypeId;
 
 // Parent / Child device
 extern EventTypeId mockParentChildEventId;

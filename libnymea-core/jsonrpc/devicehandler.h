@@ -31,7 +31,7 @@ class DeviceHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit DeviceHandler(QObject *parent = 0);
+    explicit DeviceHandler(QObject *parent = nullptr);
 
     QString name() const override;
 
@@ -49,6 +49,7 @@ public:
     Q_INVOKABLE JsonReply *ReconfigureDevice(const QVariantMap &params);
     Q_INVOKABLE JsonReply *EditDevice(const QVariantMap &params);
     Q_INVOKABLE JsonReply *RemoveConfiguredDevice(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *SetDeviceSettings(const QVariantMap &params);
 
     Q_INVOKABLE JsonReply *GetEventTypes(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetActionTypes(const QVariantMap &params) const;
@@ -62,6 +63,7 @@ signals:
     void DeviceRemoved(const QVariantMap &params);
     void DeviceAdded(const QVariantMap &params);
     void DeviceChanged(const QVariantMap &params);
+    void DeviceSettingChanged(const QVariantMap &params);
 
 private slots:
     void pluginConfigChanged(const PluginId &id, const ParamList &config);
@@ -73,6 +75,8 @@ private slots:
     void deviceAddedNotification(Device *device);
 
     void deviceChangedNotification(Device *device);
+
+    void deviceSettingChangedNotification(const DeviceId deviceId, const ParamTypeId &paramTypeId, const QVariant &value);
 
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
 

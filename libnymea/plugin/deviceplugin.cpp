@@ -603,6 +603,15 @@ void DevicePlugin::loadMetaData()
                 deviceClass.setParamTypes(paramTypesVerification.second);
             }
 
+            // Read settings
+            QPair<bool, QList<ParamType> > settingsTypesVerification = parseParamTypes(deviceClassObject.value("settingsTypes").toArray());
+            if (!settingsTypesVerification.first) {
+                broken = true;
+                break;
+            } else {
+                deviceClass.setSettingsTypes(settingsTypesVerification.second);
+            }
+
             // Read discover params
             QPair<bool, QList<ParamType> > discoveryParamVerification = parseParamTypes(deviceClassObject.value("discoveryParamTypes").toArray());
             if (!discoveryParamVerification.first) {

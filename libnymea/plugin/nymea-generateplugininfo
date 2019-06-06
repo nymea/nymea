@@ -5,7 +5,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                         #
 #  Copyright (C) 2015-2018 Simon Stuerz <simon.stuerz@guh.io>             #
-#  Copyright (C) 2014-2018 Michael Zanetti <michael.zanetti@guh.io>       #
+#  Copyright (C) 2014-2019 Michael Zanetti <michael.zanetti@nymea.io>     #
 #                                                                         #
 #  This file is part of nymea.                                            #
 #                                                                         #
@@ -79,6 +79,7 @@ def extractParamTypes(paramTypes, deviceClassName, typeClass, typeName):
     for paramType in paramTypes:
         try:
             variableName = '%sParamTypeId' % (deviceClassName + typeName[0].capitalize() + typeName[1:] + typeClass + paramType['name'][0].capitalize() + paramType['name'][1:])
+            print("....variable:", variableName)
             if not variableName in variableNames:
                 variableNames.append(variableName)
                 printInfo('Define ParamTypeId %s = %s' % (variableName, paramType['id']))
@@ -137,6 +138,9 @@ def extractDeviceClasses(deviceClasses):
 
         if 'paramTypes' in deviceClass:
             extractParamTypes(deviceClass['paramTypes'], deviceClass['name'], "", 'device')
+
+        if 'settingsTypes' in deviceClass:
+            extractParamTypes(deviceClass['settingsTypes'], deviceClass['name'], "", 'settings')
 
         if 'discoveryParamTypes' in deviceClass:
             extractParamTypes(deviceClass['discoveryParamTypes'], deviceClass['name'], "", 'discovery')

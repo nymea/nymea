@@ -103,6 +103,7 @@ signals:
     void deviceRemoved(const DeviceId &deviceId);
     void deviceAdded(Device *device);
     void deviceChanged(Device *device);
+    void deviceSettingChanged(const DeviceId deviceId, const ParamTypeId &settingParamTypeId, const QVariant &value);
     void actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
 
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);

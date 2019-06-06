@@ -1,4 +1,4 @@
-2.1
+2.2
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -445,6 +445,18 @@
                 "o:ruleIds": [
                     "Uuid"
                 ]
+            }
+        },
+        "Devices.SetDeviceSettings": {
+            "description": "Change the settings of a device.",
+            "params": {
+                "deviceId": "Uuid",
+                "settings": [
+                    "$ref:Param"
+                ]
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError"
             }
         },
         "Devices.SetPluginConfiguration": {
@@ -1101,7 +1113,7 @@
             }
         },
         "Devices.DeviceChanged": {
-            "description": "Emitted whenever the params or name of a Device changed (by EditDevice or ReconfigureDevice).",
+            "description": "Emitted whenever the params or name of a Device are changed (by EditDevice or ReconfigureDevice).",
             "params": {
                 "device": "$ref:Device"
             }
@@ -1110,6 +1122,14 @@
             "description": "Emitted whenever a Device was removed.",
             "params": {
                 "deviceId": "Uuid"
+            }
+        },
+        "Devices.DeviceSettingChanged": {
+            "description": "Emitted whenever the setting of a Device is changed.",
+            "params": {
+                "deviceId": "Uuid",
+                "paramTypeId": "Uuid",
+                "value": "Variant"
             }
         },
         "Devices.PluginConfigurationChanged": {
@@ -1366,6 +1386,9 @@
             "params": [
                 "$ref:Param"
             ],
+            "settings": [
+                "$ref:Param"
+            ],
             "setupComplete": "Bool",
             "states": [
                 {
@@ -1397,6 +1420,9 @@
                 "$ref:ParamType"
             ],
             "pluginId": "Uuid",
+            "settingsTypes": [
+                "$ref:ParamType"
+            ],
             "setupMethod": "$ref:SetupMethod",
             "stateTypes": [
                 "$ref:StateType"

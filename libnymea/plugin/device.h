@@ -56,6 +56,13 @@ public:
     QVariant paramValue(const ParamTypeId &paramTypeId) const;
     void setParamValue(const ParamTypeId &paramName, const QVariant &value);
 
+    ParamList settings() const;
+    bool hasSetting(const ParamTypeId &paramTypeId) const;
+    void setSettings(const ParamList &settings);
+
+    QVariant setting(const ParamTypeId &paramTypeId) const;
+    void setSettingValue(const ParamTypeId &paramTypeId, const QVariant &value);
+
     QList<State> states() const;
     bool hasState(const StateTypeId &stateTypeId) const;
     void setStates(const QList<State> &states);
@@ -72,7 +79,8 @@ public:
     bool autoCreated() const;
 
 signals:
-    void stateValueChanged(const QUuid &stateTypeId, const QVariant &value);
+    void stateValueChanged(const StateTypeId &stateTypeId, const QVariant &value);
+    void settingChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     void nameChanged();
 
 private:
@@ -89,6 +97,7 @@ private:
     PluginId m_pluginId;
     QString m_name;
     ParamList m_params;
+    ParamList m_settings;
     QList<State> m_states;
     bool m_setupComplete = false;
     bool m_autoCreated = false;

@@ -220,11 +220,25 @@ ParamTypes DeviceClass::paramTypes() const
     return m_paramTypes;
 }
 
-/*! Set the \a params of this DeviceClass. \{Device}{Devices} created
-    from this \l{DeviceClass} must have their actions matching to this template. */
+/*! Set the \a paramsTypes of this DeviceClass. \{Device}{Devices} created
+    from this \l{DeviceClass} must have their params matching to this template. */
 void DeviceClass::setParamTypes(const ParamTypes &params)
 {
     m_paramTypes = params;
+}
+
+/*! Returns the settings description of this DeviceClass. \{Device}{Devices} created
+    from this \l{DeviceClass} must have their settings matching to this template. */
+ParamTypes DeviceClass::settingsTypes() const
+{
+    return m_settingsTypes;
+}
+
+/*! Set the \a settingsTypes of this DeviceClass. \{Device}{Devices} created
+    from this \l{DeviceClass} must have their settings matching to this template. */
+void DeviceClass::setSettingsTypes(const ParamTypes &settingsTypes)
+{
+    m_settingsTypes = settingsTypes;
 }
 
 /*! Returns the discovery params description of this DeviceClass. \{Device}{Devices} created
@@ -305,7 +319,7 @@ QStringList DeviceClass::typeProperties()
 {
     return QStringList() << "id" << "name" << "displayName" << "createMethods" << "setupMethod"
                          << "interfaces" << "pairingInfo" << "discoveryParamTypes" << "discoveryParamTypes"
-                         << "paramTypes" << "stateTypes" << "actionTypes" << "eventTypes";
+                         << "paramTypes" << "settingsTypes" << "stateTypes" << "actionTypes" << "eventTypes";
 }
 
 /*! Returns a list of mandatory JSON properties a DeviceClass JSON definition must have. */

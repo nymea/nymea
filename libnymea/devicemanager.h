@@ -119,6 +119,7 @@ public:
     DeviceError reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId);
 
     DeviceError editDevice(const DeviceId &deviceId, const QString &name);
+    DeviceError setDeviceSettings(const DeviceId &deviceId, const ParamList &settings);
 
     DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const ParamList &params);
     DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId);
@@ -141,11 +142,12 @@ signals:
     void loaded();
     void pluginConfigChanged(const PluginId &id, const ParamList &config);
     void eventTriggered(const Event &event);
-    void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
+    void deviceStateChanged(Device *device, const StateTypeId &stateTypeId, const QVariant &value);
     void deviceRemoved(const DeviceId &deviceId);
     void deviceDisappeared(const DeviceId &deviceId);
     void deviceAdded(Device *device);
     void deviceChanged(Device *device);
+    void deviceSettingChanged(const DeviceId deviceId, const ParamTypeId &settingParamTypeId, const QVariant &value);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
     void deviceSetupFinished(Device *device, DeviceError status);
     void deviceReconfigurationFinished(Device *device, DeviceError status);
@@ -171,7 +173,8 @@ private slots:
     void cleanupDeviceStateCache();
 
     // Only connect this to Devices. It will query the sender()
-    void slotDeviceStateValueChanged(const QUuid &stateTypeId, const QVariant &value);
+    void slotDeviceStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value);
+    void slotDeviceSettingChanged(const ParamTypeId &paramTypeId, const QVariant &value);
 
 private:
     bool verifyPluginMetadata(const QJsonObject &data);

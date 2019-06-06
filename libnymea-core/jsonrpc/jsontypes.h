@@ -194,6 +194,7 @@ public:
     static QVariantMap packStateDescriptor(const StateDescriptor &stateDescriptor);
     static QVariantMap packStateEvaluator(const StateEvaluator &stateEvaluator);
     static QVariantMap packParam(const Param &param);
+    static QVariantList packParams(const ParamList &paramList);
     static QVariantMap packParamType(const ParamType &paramType, const PluginId &pluginId, const QLocale &locale);
     static QVariantMap packParamDescriptor(const ParamDescriptor &paramDescriptor);
     static QVariantMap packVendor(const Vendor &vendor, const QLocale &locale);

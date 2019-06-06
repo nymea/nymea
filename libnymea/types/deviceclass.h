@@ -87,6 +87,9 @@ public:
     ParamTypes paramTypes() const;
     void setParamTypes(const ParamTypes &paramTypes);
 
+    ParamTypes settingsTypes() const;
+    void setSettingsTypes(const ParamTypes &settingsTypes);
+
     ParamTypes discoveryParamTypes() const;
     void setDiscoveryParamTypes(const ParamTypes &paramTypes);
 
@@ -117,6 +120,7 @@ private:
     EventTypes m_eventTypes;
     ActionTypes m_actionTypes;
     ParamTypes m_paramTypes;
+    ParamTypes m_settingsTypes;
     ParamTypes m_discoveryParamTypes;
     CreateMethods m_createMethods;
     SetupMethod m_setupMethod;

@@ -197,6 +197,7 @@ void NymeaCore::init() {
     connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &NymeaCore::deviceStateChanged);
     connect(m_deviceManager, &DeviceManager::deviceAdded, this, &NymeaCore::deviceAdded);
     connect(m_deviceManager, &DeviceManager::deviceChanged, this, &NymeaCore::deviceChanged);
+    connect(m_deviceManager, &DeviceManager::deviceSettingChanged, this, &NymeaCore::deviceSettingChanged);
     connect(m_deviceManager, &DeviceManager::deviceRemoved, this, &NymeaCore::deviceRemoved);
     connect(m_deviceManager, &DeviceManager::deviceDisappeared, this, &NymeaCore::onDeviceDisappeared);
     connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &NymeaCore::actionExecutionFinished);

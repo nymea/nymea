@@ -80,6 +80,7 @@ ParamTypeId ip4ParamTypeId = ParamTypeId("9e5f86a0-4bb3-4892-bff8-3fc4032af6e2")
 ParamTypeId ip6ParamTypeId = ParamTypeId("43bf3832-dd48-4090-a836-656e8b60216e");
 ParamTypeId urlParamTypeId = ParamTypeId("fa67229f-fcef-496f-b671-59a4b48f3ab5");
 ParamTypeId macParamTypeId = ParamTypeId("e93db587-7919-48f3-8c88-1651de63c765");
+ParamTypeId mockSetting1ParamTypeId = ParamTypeId("367f7ba4-5039-47be-abd8-59cc8eaf4b9a");
 
 
 // Parent device

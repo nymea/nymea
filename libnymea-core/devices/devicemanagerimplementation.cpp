@@ -710,6 +710,14 @@ Device::DeviceError DeviceManagerImplementation::removeConfiguredDevice(const De
     return Device::DeviceErrorNoError;
 }
 
+BrowserItems DeviceManagerImplementation::browseDevice(const DeviceId &deviceId, const QString &browser, const BrowserItemId &node)
+{
+    Q_UNUSED(deviceId)
+    Q_UNUSED(browser)
+    Q_UNUSED(node)
+    return BrowserItems();
+}
+
 QString DeviceManagerImplementation::translate(const PluginId &pluginId, const QString &string, const QLocale &locale)
 {
     return m_translator->translate(pluginId, string, locale);

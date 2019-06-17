@@ -60,6 +60,8 @@ DECLARE_TYPE_ID(Rule)
 
 DECLARE_TYPE_ID(PairingTransaction)
 
+DECLARE_TYPE_ID(BrowserItem)
+
 class LIBNYMEA_EXPORT Types
 {
     Q_GADGET

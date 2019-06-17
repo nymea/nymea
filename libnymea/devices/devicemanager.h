@@ -29,6 +29,7 @@
 #include "deviceplugin.h"
 #include "types/interface.h"
 #include "types/vendor.h"
+#include "types/browseritem.h"
 
 class DeviceManager : public QObject
 {
@@ -68,6 +69,8 @@ public:
     virtual Device::DeviceError confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString()) = 0;
 
     virtual Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId) = 0;
+
+    virtual BrowserItems browseDevice(const DeviceId &deviceId, const QString &browser, const BrowserItemId &node = BrowserItemId()) = 0;
 
     virtual QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) = 0;
 

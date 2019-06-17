@@ -57,6 +57,8 @@ public:
     Q_INVOKABLE JsonReply *GetStateValue(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetStateValues(const QVariantMap &params) const;
 
+    Q_INVOKABLE JsonReply *BrowseDevice(const QVariantMap &params) const;
+
 signals:
     void PluginConfigurationChanged(const QVariantMap &params);
     void StateChanged(const QVariantMap &params);

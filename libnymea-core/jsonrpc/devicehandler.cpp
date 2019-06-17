@@ -665,6 +665,21 @@ JsonReply *DeviceHandler::GetStateValues(const QVariantMap &params) const
     return createReply(returns);
 }
 
+JsonReply *DeviceHandler::BrowseDevice(const QVariantMap &params) const
+{
+    QVariantMap returns;
+    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+    QString browser = params.value("browser").toString();
+
+    Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(deviceId);
+    if (!device) {
+        returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorDeviceNotFound));
+        return createReply(returns);
+    }
+    NymeaCore::instance()->deviceManager()->browseDevice(device->id(), browser);
+    return createReply(returns);
+}
+
 void DeviceHandler::pluginConfigChanged(const PluginId &id, const ParamList &config)
 {
     QVariantMap params;

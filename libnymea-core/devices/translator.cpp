@@ -22,13 +22,14 @@
 
 #include "translator.h"
 #include "nymeasettings.h"
+#include "devicemanagerimplementation.h"
 
 #include "loggingcategories.h"
-#include "plugin/deviceplugin.h"
+#include "devices/deviceplugin.h"
 #include <QCoreApplication>
 #include <QDir>
 
-Translator::Translator(DeviceManager *deviceManager):
+Translator::Translator(DeviceManagerImplementation *deviceManager):
     m_deviceManager(deviceManager)
 {
 
@@ -46,7 +47,7 @@ Translator::~Translator()
 
 QString Translator::translate(const PluginId &pluginId, const QString &string, const QLocale &locale)
 {
-    DevicePlugin *plugin = m_deviceManager->plugin(pluginId);
+    DevicePlugin *plugin = m_deviceManager->plugins().findById(pluginId);
 
     if (!m_translatorContexts.contains(plugin->pluginId()) || !m_translatorContexts.value(plugin->pluginId()).translators.contains(locale.name())) {
         loadTranslator(plugin, locale);

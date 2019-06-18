@@ -173,9 +173,9 @@ JsonReply* JsonHandler::createAsyncReply(const QString &method) const
 
 /*! Returns the formated error map for the given \a status.
  *
- *  \sa DeviceManager::DeviceError
+ *  \sa Device::DeviceError
  */
-QVariantMap JsonHandler::statusToReply(DeviceManager::DeviceError status) const
+QVariantMap JsonHandler::statusToReply(Device::DeviceError status) const
 {
     QVariantMap returns;
     returns.insert("deviceError", JsonTypes::deviceErrorToString(status));

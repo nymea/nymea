@@ -24,21 +24,23 @@
 #ifndef DEVICEPLUGIN_H
 #define DEVICEPLUGIN_H
 
-#include "devicemanager.h"
-
 #include "libnymea.h"
 #include "typeutils.h"
+
+#include "device.h"
+#include "devicedescriptor.h"
+#include "pluginmetadata.h"
 
 #include "types/deviceclass.h"
 #include "types/event.h"
 #include "types/action.h"
 #include "types/vendor.h"
 #include "types/param.h"
+#include "types/interface.h"
+
+#include "hardwaremanager.h"
 
 #include <QObject>
-#include <QMetaEnum>
-#include <QJsonObject>
-#include <QMetaObject>
 #include <QTranslator>
 #include <QPair>
 
@@ -50,6 +52,7 @@ class LIBNYMEA_EXPORT DevicePlugin: public QObject
     Q_OBJECT
 
     friend class DeviceManager;
+    friend class DeviceManagerImplementation;
 
 public:
     DevicePlugin(QObject *parent = nullptr);
@@ -60,50 +63,47 @@ public:
     PluginId pluginId() const;
     QString pluginName() const;
     QString pluginDisplayName() const;
-    QList<Vendor> supportedVendors() const;
-    QList<DeviceClass> supportedDevices() const;
+    Vendors supportedVendors() const;
+    DeviceClasses supportedDevices() const;
 
     virtual void startMonitoringAutoDevices();
-    virtual DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
+    virtual Device::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
 
-    virtual DeviceManager::DeviceSetupStatus setupDevice(Device *device);
+    virtual Device::DeviceSetupStatus setupDevice(Device *device);
     virtual void postSetupDevice(Device *device);
     virtual void deviceRemoved(Device *device);
 
-    virtual DeviceManager::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor);
-    virtual DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret);
+    virtual Device::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor);
+    virtual Device::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret);
 
-    virtual DeviceManager::DeviceError executeAction(Device *device, const Action &action);
+    virtual Device::DeviceError executeAction(Device *device, const Action &action);
 
     // Configuration
     ParamTypes configurationDescription() const;
-    DeviceManager::DeviceError setConfiguration(const ParamList &configuration);
+    Device::DeviceError setConfiguration(const ParamList &configuration);
     ParamList configuration() const;
     QVariant configValue(const ParamTypeId &paramTypeId) const;
-    DeviceManager::DeviceError setConfigValue(const ParamTypeId &paramTypeId, const QVariant &value);
+    Device::DeviceError setConfigValue(const ParamTypeId &paramTypeId, const QVariant &value);
 
     bool isBuiltIn() const;
 
 signals:
     void emitEvent(const Event &event);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
-    void deviceSetupFinished(Device *device, DeviceManager::DeviceSetupStatus status);
-    void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceSetupStatus status);
-    void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
+    void deviceSetupFinished(Device *device, Device::DeviceSetupStatus status);
+    void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceSetupStatus status);
+    void actionExecutionFinished(const ActionId &id, Device::DeviceError status);
     void configValueChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     void autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
     void autoDeviceDisappeared(const DeviceId &deviceId);
 
 protected:
-    DeviceManager *deviceManager() const;
     Devices myDevices() const;
     HardwareManager *hardwareManager() const;
-    Device* findDeviceByParams(const ParamList &params) const;
 
 private:
-    void setMetaData(const QJsonObject &metaData);
-    void loadMetaData();
-    void initPlugin(DeviceManager *deviceManager);
+    void setMetaData(const PluginMetadata &metaData);
+    void initPlugin(const PluginMetadata &metadata, DeviceManager *deviceManager, HardwareManager *hardwareManager);
 
     QPair<bool, QList<ParamType> > parseParamTypes(const QJsonArray &array) const;
 
@@ -114,25 +114,22 @@ private:
     QPair<bool, Types::Unit> loadAndVerifyUnit(const QString &unitString) const;
     QPair<bool, Types::InputType> loadAndVerifyInputType(const QString &inputType) const;
 
-    // FIXME: This is expensive because it will open all the files.
-    // Once DeviceManager is in libnymea-core this should probably be there too.
-    // I didn't want to add even more dependencies on the devicemanager into here, so reading the list here for now.
-    static Interfaces allInterfaces();
-    static Interface loadInterface(const QString &name);
-    static Interface mergeInterfaces(const Interface &iface1, const Interface &iface2);
-    static QStringList generateInterfaceParentList(const QString &interface);
-
     DeviceManager *m_deviceManager = nullptr;
+    HardwareManager *m_hardwareManager = nullptr;
 
-    QList<ParamType> m_configurationDescription;
+    PluginMetadata m_metaData;
     ParamList m_config;
-
-    QJsonObject m_metaData;
-
-    mutable QList<DeviceClass> m_supportedDevices;
-
 };
 
 Q_DECLARE_INTERFACE(DevicePlugin, "io.nymea.DevicePlugin")
+
+
+class LIBNYMEA_EXPORT DevicePlugins: public QList<DevicePlugin*>
+{
+public:
+    DevicePlugins();
+    DevicePlugins(const QList<DevicePlugin*> &other);
+    DevicePlugin* findById(const PluginId &id) const;
+};
 
 #endif // DEVICEPLUGIN_H

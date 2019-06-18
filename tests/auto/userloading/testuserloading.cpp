@@ -23,7 +23,7 @@
 #include "logging/logengine.h"
 #include "logging/logvaluetool.h"
 
-#include "usermanager.h"
+#include "usermanager/usermanager.h"
 
 using namespace nymeaserver;
 

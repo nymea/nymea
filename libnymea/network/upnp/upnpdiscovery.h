@@ -32,7 +32,6 @@
 #include <QUrl>
 
 #include "libnymea.h"
-#include "devicemanager.h"
 #include "hardwareresource.h"
 #include "upnpdiscoveryreply.h"
 #include "upnpdevicedescriptor.h"

@@ -110,8 +110,8 @@
 #include "types/eventdescriptor.h"
 #include "types/paramdescriptor.h"
 #include "nymeasettings.h"
-#include "devicemanager.h"
-#include "plugin/device.h"
+#include "devices/devicemanager.h"
+#include "devices/device.h"
 
 #include <QDebug>
 #include <QStringList>

@@ -35,7 +35,7 @@
 #include "actionhandler.h"
 
 #include "nymeacore.h"
-#include "devicemanager.h"
+#include "devices/devicemanager.h"
 #include "types/action.h"
 #include "loggingcategories.h"
 
@@ -80,8 +80,8 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
     Action action(actionTypeId, deviceId);
     action.setParams(actionParams);
 
-    DeviceManager::DeviceError status = NymeaCore::instance()->executeAction(action);
-    if (status == DeviceManager::DeviceErrorAsync) {
+    Device::DeviceError status = NymeaCore::instance()->executeAction(action);
+    if (status == Device::DeviceErrorAsync) {
         JsonReply *reply = createAsyncReply("ExecuteAction");
         ActionId id = action.id();
         connect(reply, &JsonReply::finished, [this, id](){ m_asyncActionExecutions.remove(id); });
@@ -99,16 +99,16 @@ JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
     foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {
             if (actionType.id() == actionTypeId) {
-                QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);
+                QVariantMap data = statusToReply(Device::DeviceErrorNoError);
                 data.insert("actionType", JsonTypes::packActionType(actionType, deviceClass.pluginId(), params.value("locale").toLocale()));
                 return createReply(data);
             }
         }
     }
-    return createReply(statusToReply(DeviceManager::DeviceErrorActionTypeNotFound));
+    return createReply(statusToReply(Device::DeviceErrorActionTypeNotFound));
 }
 
-void ActionHandler::actionExecuted(const ActionId &id, DeviceManager::DeviceError status)
+void ActionHandler::actionExecuted(const ActionId &id, Device::DeviceError status)
 {
     if (!m_asyncActionExecutions.contains(id)) {
         return; // Not the action we are waiting for.

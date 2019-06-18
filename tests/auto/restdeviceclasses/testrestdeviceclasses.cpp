@@ -105,7 +105,7 @@ void TestRestDeviceClasses::getSupportedDevices()
     url.setQuery(query);
 
     response = getAndWait(QNetworkRequest(url), 400);
-    QCOMPARE(JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorVendorNotFound), response.toMap().value("error").toString());
+    QCOMPARE(JsonTypes::deviceErrorToString(Device::DeviceErrorVendorNotFound), response.toMap().value("error").toString());
 }
 
 void TestRestDeviceClasses::invalidMethod()
@@ -136,17 +136,17 @@ void TestRestDeviceClasses::getActionTypes_data()
     QTest::addColumn<QString>("deviceClassId");
     QTest::addColumn<QString>("actionTypeId");
     QTest::addColumn<int>("expectedStatusCode");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("all ActionTypes") << mockDeviceClassId.toString() << QString() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("ActionType async") << mockDeviceClassId.toString() << mockActionIdAsync.toString() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("ActionType no params") << mockDeviceClassId.toString() << mockActionIdNoParams.toString() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("ActionType failing") << mockDeviceClassId.toString() << mockActionIdFailing.toString() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("ActionType with params") << mockDeviceClassId.toString() << mockActionIdWithParams.toString() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid DeviceClassId") << DeviceClassId::createDeviceClassId().toString() << mockActionIdNoParams.toString() << 404 << DeviceManager::DeviceErrorDeviceClassNotFound;
-    QTest::newRow("invalid ActionTypeId") << mockDeviceClassId.toString() << ActionTypeId::createActionTypeId().toString() << 404 << DeviceManager::DeviceErrorActionTypeNotFound;
-    QTest::newRow("invalid ActionTypeId format") << mockDeviceClassId.toString() << "uuid" << 400 << DeviceManager::DeviceErrorActionTypeNotFound;
-    QTest::newRow("invalid DeviceClassId format") << "uuid" << "uuid" << 400 << DeviceManager::DeviceErrorDeviceClassNotFound;
+    QTest::newRow("all ActionTypes") << mockDeviceClassId.toString() << QString() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("ActionType async") << mockDeviceClassId.toString() << mockActionIdAsync.toString() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("ActionType no params") << mockDeviceClassId.toString() << mockActionIdNoParams.toString() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("ActionType failing") << mockDeviceClassId.toString() << mockActionIdFailing.toString() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("ActionType with params") << mockDeviceClassId.toString() << mockActionIdWithParams.toString() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("invalid DeviceClassId") << DeviceClassId::createDeviceClassId().toString() << mockActionIdNoParams.toString() << 404 << Device::DeviceErrorDeviceClassNotFound;
+    QTest::newRow("invalid ActionTypeId") << mockDeviceClassId.toString() << ActionTypeId::createActionTypeId().toString() << 404 << Device::DeviceErrorActionTypeNotFound;
+    QTest::newRow("invalid ActionTypeId format") << mockDeviceClassId.toString() << "uuid" << 400 << Device::DeviceErrorActionTypeNotFound;
+    QTest::newRow("invalid DeviceClassId format") << "uuid" << "uuid" << 400 << Device::DeviceErrorDeviceClassNotFound;
 
 }
 
@@ -155,7 +155,7 @@ void TestRestDeviceClasses::getActionTypes()
     QFETCH(QString, deviceClassId);
     QFETCH(QString, actionTypeId);
     QFETCH(int, expectedStatusCode);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
 
     QNetworkRequest request;
     if (!actionTypeId.isEmpty()) {
@@ -177,15 +177,15 @@ void TestRestDeviceClasses::getStateTypes_data()
     QTest::addColumn<QString>("deviceClassId");
     QTest::addColumn<QString>("stateTypeId");
     QTest::addColumn<int>("expectedStatusCode");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("all ActionTypes") << mockDeviceClassId.toString() << QString() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("StateType bool") << mockDeviceClassId.toString() << mockBoolStateId.toString() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("StateType int") << mockDeviceClassId.toString() << mockIntStateId.toString() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid DeviceClassId") << DeviceClassId::createDeviceClassId().toString() << mockBoolStateId.toString() << 404 << DeviceManager::DeviceErrorDeviceClassNotFound;
-    QTest::newRow("invalid StateTypeId") << mockDeviceClassId.toString() << StateTypeId::createStateTypeId().toString() << 404 << DeviceManager::DeviceErrorStateTypeNotFound;
-    QTest::newRow("invalid StateTypeId format") << mockDeviceClassId.toString() << "uuid" << 400 << DeviceManager::DeviceErrorStateTypeNotFound;
-    QTest::newRow("invalid DeviceClassId format") << "uuid" << "uuid" << 400 << DeviceManager::DeviceErrorDeviceClassNotFound;
+    QTest::newRow("all ActionTypes") << mockDeviceClassId.toString() << QString() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("StateType bool") << mockDeviceClassId.toString() << mockBoolStateId.toString() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("StateType int") << mockDeviceClassId.toString() << mockIntStateId.toString() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("invalid DeviceClassId") << DeviceClassId::createDeviceClassId().toString() << mockBoolStateId.toString() << 404 << Device::DeviceErrorDeviceClassNotFound;
+    QTest::newRow("invalid StateTypeId") << mockDeviceClassId.toString() << StateTypeId::createStateTypeId().toString() << 404 << Device::DeviceErrorStateTypeNotFound;
+    QTest::newRow("invalid StateTypeId format") << mockDeviceClassId.toString() << "uuid" << 400 << Device::DeviceErrorStateTypeNotFound;
+    QTest::newRow("invalid DeviceClassId format") << "uuid" << "uuid" << 400 << Device::DeviceErrorDeviceClassNotFound;
 }
 
 void TestRestDeviceClasses::getStateTypes()
@@ -193,7 +193,7 @@ void TestRestDeviceClasses::getStateTypes()
     QFETCH(QString, deviceClassId);
     QFETCH(QString, stateTypeId);
     QFETCH(int, expectedStatusCode);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
 
     QNetworkRequest request;
     if (!stateTypeId.isEmpty()) {
@@ -215,15 +215,15 @@ void TestRestDeviceClasses::getEventTypes_data()
     QTest::addColumn<QString>("deviceClassId");
     QTest::addColumn<QString>("eventTypeId");
     QTest::addColumn<int>("expectedStatusCode");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("all ActionTypes") << mockDeviceClassId.toString() << QString() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("EventType 1") << mockDeviceClassId.toString() << mockEvent1Id.toString() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("EventType 2") << mockDeviceClassId.toString() << mockEvent2Id.toString() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid DeviceClassId") << DeviceClassId::createDeviceClassId().toString() << mockEvent2Id.toString() << 404 << DeviceManager::DeviceErrorDeviceClassNotFound;
-    QTest::newRow("invalid EventTypeId") << mockDeviceClassId.toString() << EventTypeId::createEventTypeId().toString() << 404 << DeviceManager::DeviceErrorEventTypeNotFound;
-    QTest::newRow("invalid EventTypeId format") << mockDeviceClassId.toString() << "uuid" << 400 << DeviceManager::DeviceErrorEventTypeNotFound;
-    QTest::newRow("invalid DeviceClassId format") << "uuid" << "uuid" << 400 << DeviceManager::DeviceErrorDeviceClassNotFound;
+    QTest::newRow("all ActionTypes") << mockDeviceClassId.toString() << QString() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("EventType 1") << mockDeviceClassId.toString() << mockEvent1Id.toString() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("EventType 2") << mockDeviceClassId.toString() << mockEvent2Id.toString() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("invalid DeviceClassId") << DeviceClassId::createDeviceClassId().toString() << mockEvent2Id.toString() << 404 << Device::DeviceErrorDeviceClassNotFound;
+    QTest::newRow("invalid EventTypeId") << mockDeviceClassId.toString() << EventTypeId::createEventTypeId().toString() << 404 << Device::DeviceErrorEventTypeNotFound;
+    QTest::newRow("invalid EventTypeId format") << mockDeviceClassId.toString() << "uuid" << 400 << Device::DeviceErrorEventTypeNotFound;
+    QTest::newRow("invalid DeviceClassId format") << "uuid" << "uuid" << 400 << Device::DeviceErrorDeviceClassNotFound;
 }
 
 void TestRestDeviceClasses::getEventTypes()
@@ -231,7 +231,7 @@ void TestRestDeviceClasses::getEventTypes()
     QFETCH(QString, deviceClassId);
     QFETCH(QString, eventTypeId);
     QFETCH(int, expectedStatusCode);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
 
     QNetworkRequest request;
     if (!eventTypeId.isNull()) {
@@ -254,7 +254,7 @@ void TestRestDeviceClasses::discoverDevices_data()
     QTest::addColumn<int>("resultCount");
     QTest::addColumn<QVariantList>("discoveryParams");
     QTest::addColumn<int>("expectedStatusCode");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
 
     QVariantMap resultCountParam;
     resultCountParam.insert("paramTypeId", resultCountParamTypeId);
@@ -270,10 +270,10 @@ void TestRestDeviceClasses::discoverDevices_data()
     QVariantList invalidDiscoveryParams;
     invalidDiscoveryParams.append(invalidResultCountParam);
 
-    QTest::newRow("valid deviceClassId without params") << mockDeviceClassId << 2 << QVariantList() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("valid deviceClassId with params") << mockDeviceClassId << 1 << discoveryParams << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid deviceClassId") << DeviceClassId::createDeviceClassId() << 0 << QVariantList() << 404 << DeviceManager::DeviceErrorDeviceClassNotFound;
-    QTest::newRow("valid deviceClassId with invalid params") << mockDeviceClassId << 10 << invalidDiscoveryParams << 500 << DeviceManager::DeviceErrorInvalidParameter;
+    QTest::newRow("valid deviceClassId without params") << mockDeviceClassId << 2 << QVariantList() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("valid deviceClassId with params") << mockDeviceClassId << 1 << discoveryParams << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("invalid deviceClassId") << DeviceClassId::createDeviceClassId() << 0 << QVariantList() << 404 << Device::DeviceErrorDeviceClassNotFound;
+    QTest::newRow("valid deviceClassId with invalid params") << mockDeviceClassId << 10 << invalidDiscoveryParams << 500 << Device::DeviceErrorInvalidParameter;
 }
 
 void TestRestDeviceClasses::discoverDevices()
@@ -282,7 +282,7 @@ void TestRestDeviceClasses::discoverDevices()
     QFETCH(int, resultCount);
     QFETCH(QVariantList, discoveryParams);
     QFETCH(int, expectedStatusCode);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
 
     QVariantMap params;
     params.insert("deviceClassId", deviceClassId);

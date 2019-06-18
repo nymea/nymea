@@ -20,36 +20,29 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef TRANSLATOR_H
-#define TRANSLATOR_H
+#ifndef DEVICEUTILS_H
+#define DEVICEUTILS_H
 
-#include "typeutils.h"
-#include "types/deviceclass.h"
+#include "device.h"
+#include "pluginmetadata.h"
 
-#include <QTranslator>
+#include "types/paramtype.h"
+#include "types/interface.h"
 
-class DevicePlugin;
-class DeviceManager;
-
-class Translator
+class DeviceUtils
 {
 public:
-    Translator(DeviceManager *deviceManager);
-    ~Translator();
+    DeviceUtils();
 
-    QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale);
+    static Device::DeviceError verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll = true);
+    static Device::DeviceError verifyParam(const QList<ParamType> paramTypes, const Param &param);
+    static Device::DeviceError verifyParam(const ParamType &paramType, const Param &param);
 
-private:
-    void loadTranslator(DevicePlugin *plugin, const QLocale &locale);
+    static Interfaces allInterfaces();
+    static Interface loadInterface(const QString &name);
+    static Interface mergeInterfaces(const Interface &iface1, const Interface &iface2);
+    static QStringList generateInterfaceParentList(const QString &interface);
 
-private:
-    DeviceManager *m_deviceManager = nullptr;
-
-    struct TranslatorContext {
-        PluginId pluginId;
-        QHash<QString, QTranslator*> translators;
-    };
-    QHash<PluginId, TranslatorContext> m_translatorContexts;
 };
 
-#endif // TRANSLATOR_H
+#endif // DEVICEUTILS_H

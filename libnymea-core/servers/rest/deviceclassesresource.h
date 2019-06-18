@@ -23,6 +23,7 @@
 
 #include <QObject>
 #include <QHash>
+#include <QPointer>
 
 #include "jsonrpc/jsontypes.h"
 #include "restresource.h"
@@ -33,7 +34,7 @@ namespace nymeaserver {
 
 class HttpRequest;
 
-class DeviceClassesResource : public RestResource
+class DeviceClassesResource: public RestResource
 {
     Q_OBJECT
 public:
@@ -68,7 +69,6 @@ private:
 
 private slots:
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
-
 
 };
 

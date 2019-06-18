@@ -120,16 +120,16 @@ void TestDevices::getPlugins()
 void TestDevices::getPluginConfig_data()
 {
     QTest::addColumn<PluginId>("pluginId");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("valid plugin") << mockPluginId << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid plugin") << PluginId::createPluginId() << DeviceManager::DeviceErrorPluginNotFound;
+    QTest::newRow("valid plugin") << mockPluginId << Device::DeviceErrorNoError;
+    QTest::newRow("invalid plugin") << PluginId::createPluginId() << Device::DeviceErrorPluginNotFound;
 }
 
 void TestDevices::getPluginConfig()
 {
     QFETCH(PluginId, pluginId);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
 
     QVariantMap params;
     params.insert("pluginId", pluginId);
@@ -141,20 +141,20 @@ void TestDevices::setPluginConfig_data()
 {
     QTest::addColumn<PluginId>("pluginId");
     QTest::addColumn<QVariant>("value");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("valid") << mockPluginId << QVariant(13) << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid plugin") << PluginId::createPluginId() << QVariant(13) <<  DeviceManager::DeviceErrorPluginNotFound;
-    QTest::newRow("too big") << mockPluginId << QVariant(130) << DeviceManager::DeviceErrorInvalidParameter;
-    QTest::newRow("too small") << mockPluginId << QVariant(-13) << DeviceManager::DeviceErrorInvalidParameter;
-    QTest::newRow("wrong type") << mockPluginId << QVariant("wrontType") << DeviceManager::DeviceErrorInvalidParameter;
+    QTest::newRow("valid") << mockPluginId << QVariant(13) << Device::DeviceErrorNoError;
+    QTest::newRow("invalid plugin") << PluginId::createPluginId() << QVariant(13) <<  Device::DeviceErrorPluginNotFound;
+    QTest::newRow("too big") << mockPluginId << QVariant(130) << Device::DeviceErrorInvalidParameter;
+    QTest::newRow("too small") << mockPluginId << QVariant(-13) << Device::DeviceErrorInvalidParameter;
+    QTest::newRow("wrong type") << mockPluginId << QVariant("wrontType") << Device::DeviceErrorInvalidParameter;
 }
 
 void TestDevices::setPluginConfig()
 {
     QFETCH(PluginId, pluginId);
     QFETCH(QVariant, value);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
 
     QVariantMap params;
     params.insert("pluginId", pluginId);
@@ -168,7 +168,7 @@ void TestDevices::setPluginConfig()
     QVariant response = injectAndWait("Devices.SetPluginConfiguration", params);
     verifyDeviceError(response, error);
 
-    if (error == DeviceManager::DeviceErrorNoError) {
+    if (error == Device::DeviceErrorNoError) {
         params.clear();
         params.insert("pluginId", pluginId);
         response = injectAndWait("Devices.GetPluginConfiguration", params);
@@ -252,7 +252,7 @@ void TestDevices::addConfiguredDevice_data()
 {
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<QVariantList>("deviceParams");
-    QTest::addColumn<DeviceManager::DeviceError>("deviceError");
+    QTest::addColumn<Device::DeviceError>("deviceError");
 
     QVariantMap httpportParam;
     httpportParam.insert("paramTypeId", httpportParamTypeId.toString());
@@ -267,27 +267,27 @@ void TestDevices::addConfiguredDevice_data()
     QVariantList deviceParams;
 
     deviceParams.clear(); deviceParams << httpportParam;
-    QTest::newRow("User, JustAdd") << mockDeviceClassId << deviceParams << DeviceManager::DeviceErrorNoError;
+    QTest::newRow("User, JustAdd") << mockDeviceClassId << deviceParams << Device::DeviceErrorNoError;
     deviceParams.clear(); deviceParams << httpportParam << asyncParam;
-    QTest::newRow("User, JustAdd, Async") << mockDeviceClassId << deviceParams << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("Invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << deviceParams << DeviceManager::DeviceErrorDeviceClassNotFound;
+    QTest::newRow("User, JustAdd, Async") << mockDeviceClassId << deviceParams << Device::DeviceErrorNoError;
+    QTest::newRow("Invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << deviceParams << Device::DeviceErrorDeviceClassNotFound;
     deviceParams.clear(); deviceParams << httpportParam << brokenParam;
-    QTest::newRow("Setup failure") << mockDeviceClassId << deviceParams << DeviceManager::DeviceErrorSetupFailed;
+    QTest::newRow("Setup failure") << mockDeviceClassId << deviceParams << Device::DeviceErrorSetupFailed;
     deviceParams.clear(); deviceParams << httpportParam << asyncParam << brokenParam;
-    QTest::newRow("Setup failure, Async") << mockDeviceClassId << deviceParams << DeviceManager::DeviceErrorSetupFailed;
+    QTest::newRow("Setup failure, Async") << mockDeviceClassId << deviceParams << Device::DeviceErrorSetupFailed;
 
     QVariantList invalidDeviceParams;
-    QTest::newRow("User, JustAdd, missing params") << mockDeviceClassId << invalidDeviceParams << DeviceManager::DeviceErrorMissingParameter;
+    QTest::newRow("User, JustAdd, missing params") << mockDeviceClassId << invalidDeviceParams << Device::DeviceErrorMissingParameter;
 
     QVariantMap fakeparam;
     fakeparam.insert("paramTypeId", ParamTypeId::createParamTypeId());
     invalidDeviceParams.append(fakeparam);
-    QTest::newRow("User, JustAdd, invalid param") << mockDeviceClassId << invalidDeviceParams << DeviceManager::DeviceErrorInvalidParameter;
+    QTest::newRow("User, JustAdd, invalid param") << mockDeviceClassId << invalidDeviceParams << Device::DeviceErrorInvalidParameter;
 
     fakeparam.insert("value", "buhuu");
     invalidDeviceParams.clear();
     invalidDeviceParams.append(fakeparam);
-    QTest::newRow("User, JustAdd, wrong param") << mockDeviceClassId << invalidDeviceParams << DeviceManager::DeviceErrorInvalidParameter;
+    QTest::newRow("User, JustAdd, wrong param") << mockDeviceClassId << invalidDeviceParams << Device::DeviceErrorInvalidParameter;
 
 }
 
@@ -295,7 +295,7 @@ void TestDevices::addConfiguredDevice()
 {
     QFETCH(DeviceClassId, deviceClassId);
     QFETCH(QVariantList, deviceParams);
-    QFETCH(DeviceManager::DeviceError, deviceError);
+    QFETCH(Device::DeviceError, deviceError);
 
     QVariantMap params;
     params.insert("deviceClassId", deviceClassId);
@@ -306,7 +306,7 @@ void TestDevices::addConfiguredDevice()
 
     verifyDeviceError(response, deviceError);
 
-    if (deviceError == DeviceManager::DeviceErrorNoError) {
+    if (deviceError == Device::DeviceErrorNoError) {
         QUuid deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
         params.clear();
         params.insert("deviceId", deviceId.toString());
@@ -375,7 +375,7 @@ void TestDevices::discoverDevices_data()
 {
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<int>("resultCount");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
     QTest::addColumn<QVariantList>("discoveryParams");
 
     QVariantList discoveryParams;
@@ -384,16 +384,16 @@ void TestDevices::discoverDevices_data()
     resultCountParam.insert("value", 1);
     discoveryParams.append(resultCountParam);
 
-    QTest::newRow("valid deviceClassId") << mockDeviceClassId << 2 << DeviceManager::DeviceErrorNoError << QVariantList();
-    QTest::newRow("valid deviceClassId with params") << mockDeviceClassId << 1 << DeviceManager::DeviceErrorNoError << discoveryParams;
-    QTest::newRow("invalid deviceClassId") << DeviceClassId::createDeviceClassId() << 0 << DeviceManager::DeviceErrorDeviceClassNotFound << QVariantList();
+    QTest::newRow("valid deviceClassId") << mockDeviceClassId << 2 << Device::DeviceErrorNoError << QVariantList();
+    QTest::newRow("valid deviceClassId with params") << mockDeviceClassId << 1 << Device::DeviceErrorNoError << discoveryParams;
+    QTest::newRow("invalid deviceClassId") << DeviceClassId::createDeviceClassId() << 0 << Device::DeviceErrorDeviceClassNotFound << QVariantList();
 }
 
 void TestDevices::discoverDevices()
 {
     QFETCH(DeviceClassId, deviceClassId);
     QFETCH(int, resultCount);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
     QFETCH(QVariantList, discoveryParams);
 
     QVariantMap params;
@@ -402,12 +402,12 @@ void TestDevices::discoverDevices()
     QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
 
     verifyDeviceError(response, error);
-    if (error == DeviceManager::DeviceErrorNoError) {
+    if (error == Device::DeviceErrorNoError) {
         QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), resultCount);
     }
 
     // If we found something, lets try to add it
-    if (DeviceManager::DeviceErrorNoError) {
+    if (Device::DeviceErrorNoError) {
         DeviceDescriptorId descriptorId = DeviceDescriptorId(response.toMap().value("params").toMap().value("deviceDescriptors").toList().first().toMap().value("id").toString());
 
         params.clear();
@@ -429,17 +429,17 @@ void TestDevices::discoverDevices()
 void TestDevices::addPushButtonDevices_data()
 {
     QTest::addColumn<DeviceClassId>("deviceClassId");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
     QTest::addColumn<bool>("waitForButtonPressed");
 
-    QTest::newRow("Valid: Add PushButton device") << mockPushButtonDeviceClassId << DeviceManager::DeviceErrorNoError << true;
-    QTest::newRow("Invalid: Add PushButton device (press to early)") << mockPushButtonDeviceClassId << DeviceManager::DeviceErrorSetupFailed << false;
+    QTest::newRow("Valid: Add PushButton device") << mockPushButtonDeviceClassId << Device::DeviceErrorNoError << true;
+    QTest::newRow("Invalid: Add PushButton device (press to early)") << mockPushButtonDeviceClassId << Device::DeviceErrorSetupFailed << false;
 }
 
 void TestDevices::addPushButtonDevices()
 {
     QFETCH(DeviceClassId, deviceClassId);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
     QFETCH(bool, waitForButtonPressed);
 
     // Discover device
@@ -454,7 +454,7 @@ void TestDevices::addPushButtonDevices()
     params.insert("discoveryParams", discoveryParams);
     QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
 
-    verifyDeviceError(response, DeviceManager::DeviceErrorNoError);
+    verifyDeviceError(response, Device::DeviceErrorNoError);
     QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), 1);
 
 
@@ -483,7 +483,7 @@ void TestDevices::addPushButtonDevices()
 
     verifyDeviceError(response, error);
 
-    if (error == DeviceManager::DeviceErrorNoError) {
+    if (error == Device::DeviceErrorNoError) {
         DeviceId deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
         params.clear();
         params.insert("deviceId", deviceId.toString());
@@ -495,17 +495,17 @@ void TestDevices::addPushButtonDevices()
 void TestDevices::addDisplayPinDevices_data()
 {
     QTest::addColumn<DeviceClassId>("deviceClassId");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
     QTest::addColumn<QString>("secret");
 
-    QTest::newRow("Valid: Add DisplayPin device") << mockDisplayPinDeviceClassId << DeviceManager::DeviceErrorNoError << "243681";
-    QTest::newRow("Invalid: Add DisplayPin device (wrong pin)") << mockDisplayPinDeviceClassId << DeviceManager::DeviceErrorSetupFailed << "243682";
+    QTest::newRow("Valid: Add DisplayPin device") << mockDisplayPinDeviceClassId << Device::DeviceErrorNoError << "243681";
+    QTest::newRow("Invalid: Add DisplayPin device (wrong pin)") << mockDisplayPinDeviceClassId << Device::DeviceErrorSetupFailed << "243682";
 }
 
 void TestDevices::addDisplayPinDevices()
 {
     QFETCH(DeviceClassId, deviceClassId);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
     QFETCH(QString, secret);
 
     // Discover device
@@ -520,7 +520,7 @@ void TestDevices::addDisplayPinDevices()
     params.insert("discoveryParams", discoveryParams);
     QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
 
-    verifyDeviceError(response, DeviceManager::DeviceErrorNoError);
+    verifyDeviceError(response, Device::DeviceErrorNoError);
     QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), 1);
 
     // Pair device
@@ -545,7 +545,7 @@ void TestDevices::addDisplayPinDevices()
 
     verifyDeviceError(response, error);
 
-    if (error == DeviceManager::DeviceErrorNoError) {
+    if (error == Device::DeviceErrorNoError) {
         DeviceId deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
         params.clear();
         params.insert("deviceId", deviceId.toString());
@@ -591,7 +591,7 @@ void TestDevices::parentChildDevices()
     params.clear();
     params.insert("deviceId", childDeviceId.toString());
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-    verifyDeviceError(response, DeviceManager::DeviceErrorDeviceIsChild);
+    verifyDeviceError(response, Device::DeviceErrorDeviceIsChild);
 
     // check if the child device is still there
     response = injectAndWait("Devices.GetConfiguredDevices");
@@ -716,24 +716,24 @@ void TestDevices::getStateTypes()
 void TestDevices::getStateType_data()
 {
     QTest::addColumn<StateTypeId>("stateTypeId");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("valid int state") << mockIntStateId << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("valid bool state") << mockBoolStateId << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid stateTypeId") << StateTypeId::createStateTypeId() << DeviceManager::DeviceErrorStateTypeNotFound;
+    QTest::newRow("valid int state") << mockIntStateId << Device::DeviceErrorNoError;
+    QTest::newRow("valid bool state") << mockBoolStateId << Device::DeviceErrorNoError;
+    QTest::newRow("invalid stateTypeId") << StateTypeId::createStateTypeId() << Device::DeviceErrorStateTypeNotFound;
 }
 
 void TestDevices::getStateType()
 {
     QFETCH(StateTypeId, stateTypeId);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
 
     QVariantMap params;
     params.insert("stateTypeId", stateTypeId);
     QVariant response = injectAndWait("States.GetStateType", params);
     verifyDeviceError(response, error);
 
-    if (error != DeviceManager::DeviceErrorNoError)
+    if (error != Device::DeviceErrorNoError)
         return;
 
     QVariantMap stateType = response.toMap().value("params").toMap().value("stateType").toMap();
@@ -748,18 +748,18 @@ void TestDevices::getStateValue_data()
 {
     QTest::addColumn<DeviceId>("deviceId");
     QTest::addColumn<StateTypeId>("stateTypeId");
-    QTest::addColumn<DeviceManager::DeviceError>("statusCode");
+    QTest::addColumn<Device::DeviceError>("statusCode");
 
-    QTest::newRow("valid deviceId") << m_mockDeviceId << mockIntStateId << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid deviceId") << DeviceId("094f8024-5caa-48c1-ab6a-de486a92088f") << mockIntStateId << DeviceManager::DeviceErrorDeviceNotFound;
-    QTest::newRow("invalid statetypeId") << m_mockDeviceId << StateTypeId("120514f1-343e-4621-9bff-dac616169df9") << DeviceManager::DeviceErrorStateTypeNotFound;
+    QTest::newRow("valid deviceId") << m_mockDeviceId << mockIntStateId << Device::DeviceErrorNoError;
+    QTest::newRow("invalid deviceId") << DeviceId("094f8024-5caa-48c1-ab6a-de486a92088f") << mockIntStateId << Device::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid statetypeId") << m_mockDeviceId << StateTypeId("120514f1-343e-4621-9bff-dac616169df9") << Device::DeviceErrorStateTypeNotFound;
 }
 
 void TestDevices::getStateValue()
 {
     QFETCH(DeviceId, deviceId);
     QFETCH(StateTypeId, stateTypeId);
-    QFETCH(DeviceManager::DeviceError, statusCode);
+    QFETCH(Device::DeviceError, statusCode);
 
     QVariantMap params;
     params.insert("deviceId", deviceId);
@@ -767,7 +767,7 @@ void TestDevices::getStateValue()
     QVariant response = injectAndWait("Devices.GetStateValue", params);
 
     QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), JsonTypes::deviceErrorToString(statusCode));
-    if (statusCode == DeviceManager::DeviceErrorNoError) {
+    if (statusCode == Device::DeviceErrorNoError) {
         QVariant value = response.toMap().value("params").toMap().value("value");
         QCOMPARE(value.toInt(), 10); // Mock device has value 10 by default...
     }
@@ -776,23 +776,23 @@ void TestDevices::getStateValue()
 void TestDevices::getStateValues_data()
 {
     QTest::addColumn<DeviceId>("deviceId");
-    QTest::addColumn<DeviceManager::DeviceError>("statusCode");
+    QTest::addColumn<Device::DeviceError>("statusCode");
 
-    QTest::newRow("valid deviceId") << m_mockDeviceId << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid deviceId") << DeviceId("094f8024-5caa-48c1-ab6a-de486a92088f") << DeviceManager::DeviceErrorDeviceNotFound;
+    QTest::newRow("valid deviceId") << m_mockDeviceId << Device::DeviceErrorNoError;
+    QTest::newRow("invalid deviceId") << DeviceId("094f8024-5caa-48c1-ab6a-de486a92088f") << Device::DeviceErrorDeviceNotFound;
 }
 
 void TestDevices::getStateValues()
 {
     QFETCH(DeviceId, deviceId);
-    QFETCH(DeviceManager::DeviceError, statusCode);
+    QFETCH(Device::DeviceError, statusCode);
 
     QVariantMap params;
     params.insert("deviceId", deviceId);
     QVariant response = injectAndWait("Devices.GetStateValues", params);
 
     QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), JsonTypes::deviceErrorToString(statusCode));
-    if (statusCode == DeviceManager::DeviceErrorNoError) {
+    if (statusCode == Device::DeviceErrorNoError) {
         QVariantList values = response.toMap().value("params").toMap().value("values").toList();
         QCOMPARE(values.count(), 6); // Mock device has 6 states...
     }
@@ -980,19 +980,19 @@ void TestDevices::reconfigureDevices_data()
 
     QTest::addColumn<bool>("broken");
     QTest::addColumn<QVariantList>("newDeviceParams");
-    QTest::addColumn<DeviceManager::DeviceError>("deviceError");
+    QTest::addColumn<Device::DeviceError>("deviceError");
 
-    QTest::newRow("valid - change async param") << false << asyncChangeDeviceParams << DeviceManager::DeviceErrorParameterNotWritable;
-    QTest::newRow("valid - change httpport param") << false <<  httpportChangeDeviceParams << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid - change httpport and async param") << false << asyncAndPortChangeDeviceParams << DeviceManager::DeviceErrorParameterNotWritable;
-    QTest::newRow("invalid - change all params (except broken)") << false << changeAllWritableDeviceParams << DeviceManager::DeviceErrorParameterNotWritable;
+    QTest::newRow("valid - change async param") << false << asyncChangeDeviceParams << Device::DeviceErrorParameterNotWritable;
+    QTest::newRow("valid - change httpport param") << false <<  httpportChangeDeviceParams << Device::DeviceErrorNoError;
+    QTest::newRow("invalid - change httpport and async param") << false << asyncAndPortChangeDeviceParams << Device::DeviceErrorParameterNotWritable;
+    QTest::newRow("invalid - change all params (except broken)") << false << changeAllWritableDeviceParams << Device::DeviceErrorParameterNotWritable;
 }
 
 void TestDevices::reconfigureDevices()
 {
     QFETCH(bool, broken);
     QFETCH(QVariantList, newDeviceParams);
-    QFETCH(DeviceManager::DeviceError, deviceError);
+    QFETCH(Device::DeviceError, deviceError);
 
     // add device
     QVariantMap params;
@@ -1029,7 +1029,7 @@ void TestDevices::reconfigureDevices()
     verifyDeviceError(response, deviceError);
 
     // if the edit should have been successful
-    if (deviceError == DeviceManager::DeviceErrorNoError) {
+    if (deviceError == Device::DeviceErrorNoError) {
         response = injectAndWait("Devices.GetConfiguredDevices", QVariantMap());
 
         bool found = false;
@@ -1118,7 +1118,7 @@ void TestDevices::reconfigureByDiscovery_data()
 {
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<int>("resultCount");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
     QTest::addColumn<QVariantList>("discoveryParams");
 
     QVariantList discoveryParams;
@@ -1127,14 +1127,14 @@ void TestDevices::reconfigureByDiscovery_data()
     resultCountParam.insert("value", 2);
     discoveryParams.append(resultCountParam);
 
-    QTest::newRow("discover 2 devices with params") << mockDeviceClassId << 2 << DeviceManager::DeviceErrorNoError << discoveryParams;
+    QTest::newRow("discover 2 devices with params") << mockDeviceClassId << 2 << Device::DeviceErrorNoError << discoveryParams;
 }
 
 void TestDevices::reconfigureByDiscovery()
 {
     QFETCH(DeviceClassId, deviceClassId);
     QFETCH(int, resultCount);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
     QFETCH(QVariantList, discoveryParams);
 
     QVariantMap params;
@@ -1143,7 +1143,7 @@ void TestDevices::reconfigureByDiscovery()
     QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
 
     verifyDeviceError(response);
-    if (error == DeviceManager::DeviceErrorNoError) {
+    if (error == Device::DeviceErrorNoError) {
         QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), resultCount);
     }
 
@@ -1182,7 +1182,7 @@ void TestDevices::reconfigureByDiscovery()
     response = injectAndWait("Devices.GetDiscoveredDevices", params);
 
     verifyDeviceError(response, error);
-    if (error == DeviceManager::DeviceErrorNoError) {
+    if (error == Device::DeviceErrorNoError) {
         QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), resultCount);
     }
 
@@ -1320,7 +1320,7 @@ void TestDevices::reconfigureByDiscoveryAndPair()
     deviceDescriptors = response.toMap().value("params").toMap().value("deviceDescriptors").toList();
     qCDebug(dcTests()) << "Discovery result:" << qUtf8Printable(QJsonDocument::fromVariant(deviceDescriptors).toJson(QJsonDocument::Indented));
 
-    verifyDeviceError(response, DeviceManager::DeviceErrorNoError);
+    verifyDeviceError(response, Device::DeviceErrorNoError);
     QCOMPARE(deviceDescriptors.count(), 1);
 
     descriptor = deviceDescriptors.first();
@@ -1390,21 +1390,21 @@ void TestDevices::reconfigureAutodevice()
 void TestDevices::removeDevice_data()
 {
     QTest::addColumn<DeviceId>("deviceId");
-    QTest::addColumn<DeviceManager::DeviceError>("deviceError");
+    QTest::addColumn<Device::DeviceError>("deviceError");
 
-    QTest::newRow("Existing Device") << m_mockDeviceId << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("Not existing Device") << DeviceId::createDeviceId() << DeviceManager::DeviceErrorDeviceNotFound;
-//    QTest::newRow("Auto device") << m_mockDeviceAutoId << DeviceManager::DeviceErrorCreationMethodNotSupported;
+    QTest::newRow("Existing Device") << m_mockDeviceId << Device::DeviceErrorNoError;
+    QTest::newRow("Not existing Device") << DeviceId::createDeviceId() << Device::DeviceErrorDeviceNotFound;
+//    QTest::newRow("Auto device") << m_mockDeviceAutoId << Device::DeviceErrorCreationMethodNotSupported;
 }
 
 void TestDevices::removeDevice()
 {
     QFETCH(DeviceId, deviceId);
-    QFETCH(DeviceManager::DeviceError, deviceError);
+    QFETCH(Device::DeviceError, deviceError);
 
     NymeaSettings settings(NymeaSettings::SettingsRoleDevices);
     settings.beginGroup("DeviceConfig");
-    if (deviceError == DeviceManager::DeviceErrorNoError) {
+    if (deviceError == Device::DeviceErrorNoError) {
         settings.beginGroup(m_mockDeviceId.toString());
         // Make sure we have some config values for this device
         QVERIFY(settings.allKeys().count() > 0);
@@ -1417,7 +1417,7 @@ void TestDevices::removeDevice()
 
     verifyDeviceError(response, deviceError);
 
-    if (DeviceManager::DeviceErrorNoError) {
+    if (Device::DeviceErrorNoError) {
         // Make sure the device is gone from settings too
         QCOMPARE(settings.allKeys().count(), 0);
     }

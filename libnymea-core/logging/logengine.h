@@ -26,7 +26,7 @@
 #include "logfilter.h"
 #include "types/event.h"
 #include "types/action.h"
-#include "rule.h"
+#include "ruleengine/rule.h"
 
 #include <QObject>
 #include <QSqlDatabase>

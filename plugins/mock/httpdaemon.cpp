@@ -23,8 +23,8 @@
 
 #include "httpdaemon.h"
 
-#include "plugin/device.h"
-#include "plugin/deviceplugin.h"
+#include "devices/device.h"
+#include "devices/deviceplugin.h"
 #include "types/deviceclass.h"
 #include "types/statetype.h"
 #include "extern-plugininfo.h"

@@ -67,13 +67,13 @@ JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
     foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const StateType &stateType, deviceClass.stateTypes()) {
             if (stateType.id() == stateTypeId) {
-                QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);
+                QVariantMap data = statusToReply(Device::DeviceErrorNoError);
                 data.insert("stateType", JsonTypes::packStateType(stateType, deviceClass.pluginId(), params.value("locale").toLocale()));
                 return createReply(data);
             }
         }
     }
-    return createReply(statusToReply(DeviceManager::DeviceErrorStateTypeNotFound));
+    return createReply(statusToReply(Device::DeviceErrorStateTypeNotFound));
 }
 
 }

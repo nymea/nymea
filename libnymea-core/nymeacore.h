@@ -22,15 +22,16 @@
 #ifndef NYMEACORE_H
 #define NYMEACORE_H
 
-#include "rule.h"
 #include "types/event.h"
 #include "types/deviceclass.h"
-#include "plugin/deviceplugin.h"
-#include "plugin/devicedescriptor.h"
+#include "devices/deviceplugin.h"
+#include "devices/devicedescriptor.h"
+#include "devices/devicemanagerimplementation.h"
+
+#include "ruleengine/rule.h"
+#include "ruleengine/ruleengine.h"
 
 #include "logging/logengine.h"
-#include "devicemanager.h"
-#include "ruleengine.h"
 #include "servermanager.h"
 #include "cloud/cloudmanager.h"
 
@@ -67,10 +68,10 @@ public:
     void destroy();
 
     // Device handling
-    QPair<DeviceManager::DeviceError, QList<RuleId> >removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
-    DeviceManager::DeviceError removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy);
+    QPair<Device::DeviceError, QList<RuleId> >removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
+    Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy);
 
-    DeviceManager::DeviceError executeAction(const Action &action);
+    Device::DeviceError executeAction(const Action &action);
 
     void executeRuleActions(const QList<RuleAction> ruleActions);
 
@@ -104,12 +105,12 @@ signals:
     void deviceAdded(Device *device);
     void deviceChanged(Device *device);
     void deviceSettingChanged(const DeviceId deviceId, const ParamTypeId &settingParamTypeId, const QVariant &value);
-    void actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
+    void actionExecuted(const ActionId &id, Device::DeviceError status);
 
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
-    void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
-    void deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status);
-    void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
+    void deviceSetupFinished(Device *device, Device::DeviceError status);
+    void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
+    void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId);
 
     void ruleRemoved(const RuleId &ruleId);
     void ruleAdded(const Rule &rule);
@@ -124,7 +125,7 @@ private:
 
     NymeaConfiguration *m_configuration;
     ServerManager *m_serverManager;
-    DeviceManager *m_deviceManager;
+    DeviceManagerImplementation *m_deviceManager;
     RuleEngine *m_ruleEngine;
     LogEngine *m_logger;
     TimeManager *m_timeManager;
@@ -143,7 +144,7 @@ private:
 private slots:
     void gotEvent(const Event &event);
     void onDateTimeChanged(const QDateTime &dateTime);
-    void actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status);
+    void actionExecutionFinished(const ActionId &id, Device::DeviceError status);
     void onDeviceDisappeared(const DeviceId &deviceId);
     void deviceManagerLoaded();
 

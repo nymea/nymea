@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -21,50 +20,47 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PARAM_H
-#define PARAM_H
+#ifndef PLUGINMETADATA_H
+#define PLUGINMETADATA_H
 
-#include "libnymea.h"
-#include "typeutils.h"
+#include "types/paramtype.h"
+#include "types/deviceclass.h"
 
-#include <QString>
-#include <QVariant>
-
-class LIBNYMEA_EXPORT Param
+class PluginMetadata
 {
 public:
-    Param(const ParamTypeId &paramTypeId = ParamTypeId(), const QVariant &value = QVariant());
-
-    ParamTypeId paramTypeId() const;
-
-    QVariant value() const;
-    void setValue(const QVariant &value);
+    PluginMetadata();
+    PluginMetadata(const QJsonObject &jsonObject, bool isBuiltIn = false);
 
     bool isValid() const;
 
-private:
-    ParamTypeId m_paramTypeId;
-    QVariant m_value;
-};
+    PluginId pluginId() const;
+    QString pluginName() const;
+    QString pluginDisplayName() const;
+    bool isBuiltIn() const;
 
-Q_DECLARE_METATYPE(Param)
-QDebug operator<<(QDebug dbg, const Param &param);
+    ParamTypes pluginSettings() const;
 
-class LIBNYMEA_EXPORT ParamList: public QList<Param>
-{
-public:
-    ParamList();
-    ParamList(const QList<Param> &other);
-    bool hasParam(const ParamTypeId &paramTypeId) const;
-    QVariant paramValue(const ParamTypeId &paramTypeId) const;
-    bool setParamValue(const ParamTypeId &paramTypeId, const QVariant &value);
-    ParamList operator<<(const Param &param);
+    Vendors vendors() const;
+    DeviceClasses deviceClasses() const;
+
 
 private:
-    QList<ParamTypeId> m_ids;
+    void parse(const QJsonObject &jsonObject);
+    QPair<bool, ParamTypes> parseParamTypes(const QJsonArray &array);
+    QPair<QStringList, QStringList> verifyFields(const QStringList &possibleFields, const QStringList &mandatoryFields, const QJsonObject &value);
+    QPair<bool, Types::Unit> loadAndVerifyUnit(const QString &unitString);
+    QPair<bool, Types::InputType> loadAndVerifyInputType(const QString &inputType);
 
+private:
+    bool m_isValid = false;
+    bool m_isBuiltIn = false;
+    PluginId m_pluginId;
+    QString m_pluginName;
+    QString m_pluginDisplayName;
+    ParamTypes m_pluginSettings;
+    Vendors m_vendors;
+    DeviceClasses m_deviceClasses;
 };
 
-QDebug operator<<(QDebug dbg, const ParamList &params);
-
-#endif // PARAM_H
+#endif // PLUGINMETADATA_H

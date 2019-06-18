@@ -54,7 +54,7 @@
 
 #include "ruleshandler.h"
 #include "nymeacore.h"
-#include "ruleengine.h"
+#include "ruleengine/ruleengine.h"
 #include "loggingcategories.h"
 
 #include <QDebug>

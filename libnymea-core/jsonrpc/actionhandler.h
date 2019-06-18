@@ -23,7 +23,7 @@
 #define ACTIONHANDLER_H
 
 #include "jsonhandler.h"
-#include "devicemanager.h"
+#include "devices/devicemanager.h"
 
 namespace nymeaserver {
 
@@ -31,7 +31,7 @@ class ActionHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit ActionHandler(QObject *parent = 0);
+    explicit ActionHandler(QObject *parent = nullptr);
 
     QString name() const;
 
@@ -39,7 +39,7 @@ public:
     Q_INVOKABLE JsonReply *GetActionType(const QVariantMap &params) const;
 
 private slots:
-    void actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
+    void actionExecuted(const ActionId &id, Device::DeviceError status);
 
 private:
     QHash<ActionId, JsonReply *> m_asyncActionExecutions;

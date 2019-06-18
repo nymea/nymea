@@ -27,6 +27,7 @@
 #include <QDebug>
 #include <QTimer>
 #include <QMetaObject>
+#include <QPointer>
 
 #include "upnpdiscoveryreplyimplementation.h"
 #include "network/upnp/upnpdiscovery.h"

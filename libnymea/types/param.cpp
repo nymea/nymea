@@ -97,6 +97,18 @@ QDebug operator<<(QDebug dbg, const ParamList &params)
     \sa Param,
 */
 
+/*! Constructs an empty ParamList. */
+ParamList::ParamList()
+{
+
+}
+
+/*! Constructs a ParamList from a QList<Param>. */
+ParamList::ParamList(const QList<Param> &other): QList<Param>(other)
+{
+
+}
+
 /*! Returns true if this ParamList contains a Param with the given \a paramTypeId. */
 bool ParamList::hasParam(const ParamTypeId &paramTypeId) const
 {

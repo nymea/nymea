@@ -105,6 +105,7 @@ int main(int argc, char *argv[])
         "Platform",
         "PlatformUpdate",
         "PlatformZeroConf",
+        "Device",
         "DeviceManager",
         "RuleEngine",
         "RuleEngineDebug",
@@ -141,7 +142,7 @@ int main(int argc, char *argv[])
     };
 
     QStringList loggingFiltersPlugins;
-    foreach (const QJsonObject &pluginMetadata, DeviceManager::pluginsMetadata()) {
+    foreach (const QJsonObject &pluginMetadata, DeviceManagerImplementation::pluginsMetadata()) {
         QString pluginName = pluginMetadata.value("name").toString();
         loggingFiltersPlugins << pluginName.left(1).toUpper() + pluginName.mid(1);
     }

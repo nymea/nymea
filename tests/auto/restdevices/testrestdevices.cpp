@@ -371,7 +371,7 @@ void TestRestDevices::parentChildDevices()
     QNetworkRequest deleteRequest(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(childDeviceId.toString())));
     response = deleteAndWait(deleteRequest, 400);
     //QVERIFY2(!response.isNull(), "Could not delete device");
-    QCOMPARE(JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorDeviceIsChild), response.toMap().value("error").toString());
+    QCOMPARE(JsonTypes::deviceErrorToString(Device::DeviceErrorDeviceIsChild), response.toMap().value("error").toString());
 
     // check if the child device is still there
     response = getAndWait(QNetworkRequest(QUrl("https://localhost:3333/api/v1/devices")));
@@ -415,7 +415,7 @@ void TestRestDevices::executeAction_data()
     QTest::addColumn<ActionTypeId>("actionTypeId");
     QTest::addColumn<QVariantList>("actionParams");
     QTest::addColumn<int>("expectedStatusCode");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
 
     QVariantList params;
     QVariantMap param1;
@@ -427,13 +427,13 @@ void TestRestDevices::executeAction_data()
     param2.insert("value", true);
     params.append(param2);
 
-    QTest::newRow("valid action") << m_mockDeviceId << mockActionIdWithParams << params << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockActionIdWithParams << params << 404 << DeviceManager::DeviceErrorDeviceNotFound;
-    QTest::newRow("invalid actionTypeId") << m_mockDeviceId << ActionTypeId::createActionTypeId() << params << 404 << DeviceManager::DeviceErrorActionTypeNotFound;
-    QTest::newRow("missing params") << m_mockDeviceId << mockActionIdWithParams << QVariantList() << 500 << DeviceManager::DeviceErrorMissingParameter;
-    QTest::newRow("async action") << m_mockDeviceId << mockActionIdAsync << QVariantList() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("broken action") << m_mockDeviceId << mockActionIdFailing << QVariantList() << 500 << DeviceManager::DeviceErrorSetupFailed;
-    QTest::newRow("async broken action") << m_mockDeviceId << mockActionIdAsyncFailing << QVariantList() << 500 << DeviceManager::DeviceErrorSetupFailed;
+    QTest::newRow("valid action") << m_mockDeviceId << mockActionIdWithParams << params << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockActionIdWithParams << params << 404 << Device::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid actionTypeId") << m_mockDeviceId << ActionTypeId::createActionTypeId() << params << 404 << Device::DeviceErrorActionTypeNotFound;
+    QTest::newRow("missing params") << m_mockDeviceId << mockActionIdWithParams << QVariantList() << 500 << Device::DeviceErrorMissingParameter;
+    QTest::newRow("async action") << m_mockDeviceId << mockActionIdAsync << QVariantList() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("broken action") << m_mockDeviceId << mockActionIdFailing << QVariantList() << 500 << Device::DeviceErrorSetupFailed;
+    QTest::newRow("async broken action") << m_mockDeviceId << mockActionIdAsyncFailing << QVariantList() << 500 << Device::DeviceErrorSetupFailed;
 }
 
 void TestRestDevices::executeAction()
@@ -442,7 +442,7 @@ void TestRestDevices::executeAction()
     QFETCH(ActionTypeId, actionTypeId);
     QFETCH(QVariantList, actionParams);
     QFETCH(int, expectedStatusCode);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
 
     // execute action
     QVariantMap params;
@@ -465,7 +465,7 @@ void TestRestDevices::executeAction()
     reply->deleteLater();
     QByteArray data = reply->readAll();
 
-    if (error == DeviceManager::DeviceErrorNoError) {
+    if (error == Device::DeviceErrorNoError) {
         QVERIFY2(actionTypeId == ActionTypeId(data), QString("ActionTypeId mismatch. Got %1, Expected: %2")
                  .arg(ActionTypeId(data).toString()).arg(actionTypeId.toString()).toLatin1().data());
     } else {
@@ -499,14 +499,14 @@ void TestRestDevices::getStateValue_data()
     QTest::addColumn<QString>("deviceId");
     QTest::addColumn<QString>("stateTypeId");
     QTest::addColumn<int>("expectedStatusCode");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("existing state") << device->id().toString() << mockIntStateId.toString() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("all states") << device->id().toString() << QString() << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid device") << DeviceId::createDeviceId().toString() << mockIntStateId.toString() << 404 << DeviceManager::DeviceErrorDeviceNotFound;
-    QTest::newRow("invalid device id format") << "uuid" << StateTypeId::createStateTypeId().toString() << 400 << DeviceManager::DeviceErrorDeviceNotFound;
-    QTest::newRow("invalid statetype") << device->id().toString() << StateTypeId::createStateTypeId().toString() << 404 << DeviceManager::DeviceErrorStateTypeNotFound;
-    QTest::newRow("invalid statetype format") << device->id().toString() << "uuid" << 400 << DeviceManager::DeviceErrorStateTypeNotFound;
+    QTest::newRow("existing state") << device->id().toString() << mockIntStateId.toString() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("all states") << device->id().toString() << QString() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("invalid device") << DeviceId::createDeviceId().toString() << mockIntStateId.toString() << 404 << Device::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid device id format") << "uuid" << StateTypeId::createStateTypeId().toString() << 400 << Device::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid statetype") << device->id().toString() << StateTypeId::createStateTypeId().toString() << 404 << Device::DeviceErrorStateTypeNotFound;
+    QTest::newRow("invalid statetype format") << device->id().toString() << "uuid" << 400 << Device::DeviceErrorStateTypeNotFound;
 }
 
 void TestRestDevices::getStateValue()
@@ -514,7 +514,7 @@ void TestRestDevices::getStateValue()
     QFETCH(QString, deviceId);
     QFETCH(QString, stateTypeId);
     QFETCH(int, expectedStatusCode);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
 
     QNetworkRequest request;
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
@@ -572,7 +572,7 @@ void TestRestDevices::editDevices()
     deviceRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
     response = postAndWait(deviceRequest, params);
-    QVERIFY2(response.toMap().value("error").toString() == JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError), "Could not edit device name");
+    QVERIFY2(response.toMap().value("error").toString() == JsonTypes::deviceErrorToString(Device::DeviceErrorNoError), "Could not edit device name");
 
     // check device name
     response = getAndWait(deviceRequest);
@@ -580,7 +580,7 @@ void TestRestDevices::editDevices()
 
     // Remove the device
     response = deleteAndWait(deviceRequest);
-    QVERIFY2(response.toMap().value("error").toString() == JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError), "Could not remove device");
+    QVERIFY2(response.toMap().value("error").toString() == JsonTypes::deviceErrorToString(Device::DeviceErrorNoError), "Could not remove device");
 }
 
 void TestRestDevices::reconfigureDevices_data()
@@ -614,12 +614,12 @@ void TestRestDevices::reconfigureDevices_data()
     QTest::addColumn<bool>("broken");
     QTest::addColumn<QVariantList>("newDeviceParams");
     QTest::addColumn<int>("expectedStatusCode");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("invalid - change async param") << false << asyncChangeDeviceParams << 500 << DeviceManager::DeviceErrorParameterNotWritable;
-    QTest::newRow("valid - change httpport param") << false <<  httpportChangeDeviceParams << 200 << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("valid - change httpport and async param") << false << asyncAndPortChangeDeviceParams << 500 << DeviceManager::DeviceErrorParameterNotWritable;
-    QTest::newRow("invalid - change all params (except broken)") << false << changeAllWritableDeviceParams << 500 << DeviceManager::DeviceErrorParameterNotWritable;
+    QTest::newRow("invalid - change async param") << false << asyncChangeDeviceParams << 500 << Device::DeviceErrorParameterNotWritable;
+    QTest::newRow("valid - change httpport param") << false <<  httpportChangeDeviceParams << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("valid - change httpport and async param") << false << asyncAndPortChangeDeviceParams << 500 << Device::DeviceErrorParameterNotWritable;
+    QTest::newRow("invalid - change all params (except broken)") << false << changeAllWritableDeviceParams << 500 << Device::DeviceErrorParameterNotWritable;
 }
 
 void TestRestDevices::reconfigureDevices()
@@ -627,7 +627,7 @@ void TestRestDevices::reconfigureDevices()
     QFETCH(bool, broken);
     QFETCH(QVariantList, newDeviceParams);
     QFETCH(int, expectedStatusCode);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
 
     // add device
     QVariantMap params;

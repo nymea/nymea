@@ -21,7 +21,7 @@
 #ifndef CLOUDNOTIFICATIONS_H
 #define CLOUDNOTIFICATIONS_H
 
-#include "plugin/deviceplugin.h"
+#include "devices/deviceplugin.h"
 #include "awsconnector.h"
 
 class CloudNotifications : public DevicePlugin
@@ -34,11 +34,11 @@ class CloudNotifications : public DevicePlugin
 public:
     CloudNotifications(AWSConnector *awsConnector, QObject* parent = nullptr);
 
-    QJsonObject metaData() const;
+    PluginMetadata metaData() const;
 
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    Device::DeviceSetupStatus setupDevice(Device *device) override;
     void startMonitoringAutoDevices() override;
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    Device::DeviceError executeAction(Device *device, const Action &action) override;
 
 private slots:
     void pushNotificationEndpointsUpdated(const QList<AWSConnector::PushNotificationsEndpoint> &endpoints);

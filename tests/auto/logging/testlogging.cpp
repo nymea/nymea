@@ -348,7 +348,7 @@ void TestLogging::actionLog()
     params.insert("actionTypeId", mockActionIdFailing);
     params.insert("deviceId", m_mockDeviceId);
     response = injectAndWait("Actions.ExecuteAction", params);
-    verifyDeviceError(response, DeviceManager::DeviceErrorSetupFailed);
+    verifyDeviceError(response, Device::DeviceErrorSetupFailed);
 
     clientSpy.wait(200);
 
@@ -367,7 +367,7 @@ void TestLogging::actionLog()
             QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
             QCOMPARE(logEntry.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
             QCOMPARE(logEntry.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelAlert));
-            QCOMPARE(logEntry.value("errorCode").toString(), JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorSetupFailed));
+            QCOMPARE(logEntry.value("errorCode").toString(), JsonTypes::deviceErrorToString(Device::DeviceErrorSetupFailed));
             break;
         }
     }
@@ -474,7 +474,7 @@ void TestLogging::testDoubleValues()
     params.insert("discoveryParams", discoveryParams);
     QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
 
-    verifyDeviceError(response, DeviceManager::DeviceErrorNoError);
+    verifyDeviceError(response, Device::DeviceErrorNoError);
 
     // Pair device
     DeviceDescriptorId descriptorId = DeviceDescriptorId(response.toMap().value("params").toMap().value("deviceDescriptors").toList().first().toMap().value("id").toString());

@@ -74,12 +74,12 @@ HttpReply *DeviceClassesResource::proccessRequest(const HttpRequest &request, co
         DeviceClassId deviceClassId = DeviceClassId(urlTokens.at(3));
         if (deviceClassId.isNull()) {
             qCWarning(dcRest) << "Could not parse DeviceClassId:" << urlTokens.at(3);
-            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorDeviceClassNotFound);
+            return createDeviceErrorReply(HttpReply::BadRequest, Device::DeviceErrorDeviceClassNotFound);
         }
         m_deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(deviceClassId);
         if (!m_deviceClass.isValid()) {
             qCWarning(dcRest) << "DeviceClassId" << deviceClassId.toString() << "not found";
-            return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorDeviceClassNotFound);
+            return createDeviceErrorReply(HttpReply::NotFound, Device::DeviceErrorDeviceClassNotFound);
         }
     }
 
@@ -108,7 +108,7 @@ HttpReply *DeviceClassesResource::proccessGetRequest(const HttpRequest &request,
                 vendorId = VendorId(request.urlQuery().queryItemValue("vendorId"));
                 if (vendorId.isNull()) {
                     qCWarning(dcRest) << "Could not parse VendorId:" << request.urlQuery().queryItemValue("vendorId");
-                    return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorVendorNotFound);
+                    return createDeviceErrorReply(HttpReply::BadRequest, Device::DeviceErrorVendorNotFound);
                 }
             }
         }
@@ -128,7 +128,7 @@ HttpReply *DeviceClassesResource::proccessGetRequest(const HttpRequest &request,
         ActionTypeId actionTypeId = ActionTypeId(urlTokens.at(5));
         if (actionTypeId.isNull()) {
             qCWarning(dcRest) << "Could not parse ActionTypeId:" << urlTokens.at(5);
-            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorActionTypeNotFound);
+            return createDeviceErrorReply(HttpReply::BadRequest, Device::DeviceErrorActionTypeNotFound);
         }
         return getActionType(actionTypeId);
     }
@@ -142,7 +142,7 @@ HttpReply *DeviceClassesResource::proccessGetRequest(const HttpRequest &request,
         StateTypeId stateTypeId = StateTypeId(urlTokens.at(5));
         if (stateTypeId.isNull()) {
             qCWarning(dcRest) << "Could not parse StateTypeId:" << urlTokens.at(5);
-            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorStateTypeNotFound);
+            return createDeviceErrorReply(HttpReply::BadRequest, Device::DeviceErrorStateTypeNotFound);
         }
         return getStateType(stateTypeId);
     }
@@ -156,7 +156,7 @@ HttpReply *DeviceClassesResource::proccessGetRequest(const HttpRequest &request,
         EventTypeId eventTypeId = EventTypeId(urlTokens.at(5));
         if (eventTypeId.isNull()) {
             qCWarning(dcRest) << "Could not parse EventTypeId:" << urlTokens.at(5);
-            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorEventTypeNotFound);
+            return createDeviceErrorReply(HttpReply::BadRequest, Device::DeviceErrorEventTypeNotFound);
         }
         return getEventType(eventTypeId);
     }
@@ -209,7 +209,7 @@ HttpReply *DeviceClassesResource::getActionType(const ActionTypeId &actionTypeId
             return reply;
         }
     }
-    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorActionTypeNotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, Device::DeviceErrorActionTypeNotFound);
 }
 
 HttpReply *DeviceClassesResource::getStateTypes()
@@ -233,7 +233,7 @@ HttpReply *DeviceClassesResource::getStateType(const StateTypeId &stateTypeId)
             return reply;
         }
     }
-    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorStateTypeNotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, Device::DeviceErrorStateTypeNotFound);
 }
 
 HttpReply *DeviceClassesResource::getEventTypes()
@@ -257,7 +257,7 @@ HttpReply *DeviceClassesResource::getEventType(const EventTypeId &eventTypeId)
             return reply;
         }
     }
-    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorEventTypeNotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, Device::DeviceErrorEventTypeNotFound);
 }
 
 HttpReply *DeviceClassesResource::getDiscoverdDevices(const ParamList &discoveryParams)
@@ -265,15 +265,15 @@ HttpReply *DeviceClassesResource::getDiscoverdDevices(const ParamList &discovery
     qCDebug(dcRest) << "Discover devices for DeviceClass" << m_deviceClass.id();
     qCDebug(dcRest) << discoveryParams;
 
-    DeviceManager::DeviceError status = NymeaCore::instance()->deviceManager()->discoverDevices(m_deviceClass.id(), discoveryParams);
+    Device::DeviceError status = NymeaCore::instance()->deviceManager()->discoverDevices(m_deviceClass.id(), discoveryParams);
 
-    if (status == DeviceManager::DeviceErrorAsync) {
+    if (status == Device::DeviceErrorAsync) {
         HttpReply *reply = createAsyncReply();
         m_discoverRequests.insert(m_deviceClass.id(), reply);
         return reply;
     }
 
-    if (status != DeviceManager::DeviceErrorNoError)
+    if (status != Device::DeviceErrorNoError)
         return createDeviceErrorReply(HttpReply::InternalServerError, status);
 
     return createSuccessReply();

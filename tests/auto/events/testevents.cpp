@@ -113,16 +113,16 @@ void TestEvents::params()
 void TestEvents::getEventType_data()
 {
     QTest::addColumn<EventTypeId>("eventTypeId");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("valid eventypeid") << mockEvent1Id << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid eventypeid") << EventTypeId::createEventTypeId() << DeviceManager::DeviceErrorEventTypeNotFound;
+    QTest::newRow("valid eventypeid") << mockEvent1Id << Device::DeviceErrorNoError;
+    QTest::newRow("invalid eventypeid") << EventTypeId::createEventTypeId() << Device::DeviceErrorEventTypeNotFound;
 }
 
 void TestEvents::getEventType()
 {
     QFETCH(EventTypeId, eventTypeId);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
 
     QVariantMap params;
     params.insert("eventTypeId", eventTypeId.toString());
@@ -130,7 +130,7 @@ void TestEvents::getEventType()
 
     verifyDeviceError(response, error);
 
-    if (error == DeviceManager::DeviceErrorNoError) {
+    if (error == Device::DeviceErrorNoError) {
         QVERIFY2(EventTypeId(response.toMap().value("params").toMap().value("eventType").toMap().value("id").toString()) == eventTypeId, "Didn't get a reply for the same actionTypeId as requested.");
     }
 }

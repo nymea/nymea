@@ -272,7 +272,7 @@ void TestRestLogging::actionLog()
     params.insert("actionTypeId", mockActionIdFailing);
     params.insert("deviceId", m_mockDeviceId);
     response = injectAndWait("Actions.ExecuteAction", params);
-    verifyDeviceError(response, DeviceManager::DeviceErrorSetupFailed);
+    verifyDeviceError(response, Device::DeviceErrorSetupFailed);
 
     clientSpy.wait(200);
     notification = checkNotification(clientSpy, "Logging.LogEntryAdded");
@@ -286,7 +286,7 @@ void TestRestLogging::actionLog()
     QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
     QCOMPARE(logEntry.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
     QCOMPARE(logEntry.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelAlert));
-    QCOMPARE(logEntry.value("errorCode").toString(), JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorSetupFailed));
+    QCOMPARE(logEntry.value("errorCode").toString(), JsonTypes::deviceErrorToString(Device::DeviceErrorSetupFailed));
 
     // get this logentry with filter
     params.clear();

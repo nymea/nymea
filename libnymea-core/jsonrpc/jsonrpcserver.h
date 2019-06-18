@@ -24,7 +24,7 @@
 
 #include "jsonhandler.h"
 #include "transportinterface.h"
-#include "usermanager.h"
+#include "usermanager/usermanager.h"
 
 #include "types/deviceclass.h"
 #include "types/action.h"

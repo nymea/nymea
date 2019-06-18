@@ -16,9 +16,11 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 
 HEADERS += nymeacore.h \
-    ruleengine.h \
-    rule.h \
-    stateevaluator.h \
+    devices/devicemanagerimplementation.h \
+    devices/translator.h \
+    devices/stateevaluator.h \
+    ruleengine/ruleengine.h \
+    ruleengine/rule.h \
     transportinterface.h \
     nymeaconfiguration.h \
     servermanager.h \
@@ -67,13 +69,13 @@ HEADERS += nymeacore.h \
     networkmanager/networksettings.h \
     networkmanager/networkconnection.h \
     networkmanager/wirednetworkdevice.h \
-    usermanager.h \
-    tokeninfo.h \
+    usermanager/usermanager.h \
+    usermanager/tokeninfo.h \
+    usermanager/pushbuttondbusservice.h \
     certificategenerator.h \
     cloud/awsconnector.h \
     cloud/cloudmanager.h \
     cloud/cloudnotifications.h \
-    pushbuttondbusservice.h \
     hardwaremanagerimplementation.h \
     hardware/plugintimermanagerimplementation.h \
     hardware/radio433/radio433brennenstuhl.h \
@@ -98,9 +100,11 @@ HEADERS += nymeacore.h \
     jsonrpc/systemhandler.h
 
 SOURCES += nymeacore.cpp \
-    ruleengine.cpp \
-    rule.cpp \
-    stateevaluator.cpp \
+    devices/devicemanagerimplementation.cpp \
+    devices/translator.cpp \
+    devices/stateevaluator.cpp \
+    ruleengine/ruleengine.cpp \
+    ruleengine/rule.cpp \
     transportinterface.cpp \
     nymeaconfiguration.cpp \
     servermanager.cpp \
@@ -147,13 +151,13 @@ SOURCES += nymeacore.cpp \
     networkmanager/networksettings.cpp \
     networkmanager/networkconnection.cpp \
     networkmanager/wirednetworkdevice.cpp \
-    usermanager.cpp \
-    tokeninfo.cpp \
+    usermanager/usermanager.cpp \
+    usermanager/tokeninfo.cpp \
+    usermanager/pushbuttondbusservice.cpp \
     certificategenerator.cpp \
     cloud/awsconnector.cpp \
     cloud/cloudmanager.cpp \
     cloud/cloudnotifications.cpp \
-    pushbuttondbusservice.cpp \
     hardwaremanagerimplementation.cpp \
     hardware/plugintimermanagerimplementation.cpp \
     hardware/radio433/radio433brennenstuhl.cpp \

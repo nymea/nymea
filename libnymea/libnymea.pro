@@ -8,17 +8,20 @@ DEFINES += LIBNYMEA_LIBRARY
 
 QMAKE_LFLAGS += -fPIC
 
-HEADERS += devicemanager.h \
+HEADERS += \
+        devices/devicemanager.h \
+        devices/deviceutils.h \
+        devices/pluginmetadata.h \
         libnymea.h \
         platform/package.h \
         platform/repository.h \
         typeutils.h \
         loggingcategories.h \
         nymeasettings.h \
-        plugin/device.h \
-        plugin/deviceplugin.h \
-        plugin/devicedescriptor.h \
-        plugin/devicepairinginfo.h \
+        devices/device.h \
+        devices/deviceplugin.h \
+        devices/devicedescriptor.h \
+        devices/devicepairinginfo.h \
         hardware/gpio.h \
         hardware/gpiomonitor.h \
         hardware/pwm.h \
@@ -66,20 +69,22 @@ HEADERS += devicemanager.h \
         nymeadbusservice.h \
         network/mqtt/mqttprovider.h \
         network/mqtt/mqttchannel.h \
-        translator.h \
         platform/platformsystemcontroller.h \
         platform/platformupdatecontroller.h \
         platform/platformzeroconfcontroller.h \
 
-SOURCES += devicemanager.cpp \
+SOURCES += \
+        devices/devicemanager.cpp \
+        devices/deviceutils.cpp \
+        devices/pluginmetadata.cpp \
         loggingcategories.cpp \
         nymeasettings.cpp \
         platform/package.cpp \
         platform/repository.cpp \
-        plugin/device.cpp \
-        plugin/deviceplugin.cpp \
-        plugin/devicedescriptor.cpp \
-        plugin/devicepairinginfo.cpp \
+        devices/device.cpp \
+        devices/deviceplugin.cpp \
+        devices/devicedescriptor.cpp \
+        devices/devicepairinginfo.cpp \
         hardware/gpio.cpp \
         hardware/gpiomonitor.cpp \
         hardware/pwm.cpp \
@@ -127,7 +132,6 @@ SOURCES += devicemanager.cpp \
         nymeadbusservice.cpp \
         network/mqtt/mqttprovider.cpp \
         network/mqtt/mqttchannel.cpp \
-        translator.cpp \
         platform/platformsystemcontroller.cpp \
         platform/platformupdatecontroller.cpp \
         platform/platformzeroconfcontroller.cpp \
@@ -139,12 +143,12 @@ RESOURCES += \
 ## Install instructions
 
 # install plugininfo python script for libnymea-dev
-generateplugininfo.files = plugin/nymea-generateplugininfo
+generateplugininfo.files = devices/nymea-generateplugininfo
 generateplugininfo.path = $$[QT_INSTALL_PREFIX]/bin
 INSTALLS += generateplugininfo
 
 # install plugin.pri for external plugins
-pluginpri.files = plugin/plugin.pri
+pluginpri.files = devices/plugin.pri
 pluginpri.path = $$[QT_INSTALL_PREFIX]/include/nymea/
 INSTALLS += pluginpri
 

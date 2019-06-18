@@ -47,7 +47,7 @@ private:
     StateTypes m_stateTypes;
 };
 
-class Interfaces: public QList<Interface>
+class LIBNYMEA_EXPORT Interfaces: public QList<Interface>
 {
 public:
     Interfaces() = default;

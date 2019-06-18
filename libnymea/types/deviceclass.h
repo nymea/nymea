@@ -107,9 +107,6 @@ public:
 
     bool operator==(const DeviceClass &device) const;
 
-    static QStringList typeProperties();
-    static QStringList mandatoryTypeProperties();
-
 private:
     DeviceClassId m_id;
     VendorId m_vendorId;
@@ -131,5 +128,13 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(DeviceClass::CreateMethods)
 
 QDebug operator<<(QDebug &dbg, const DeviceClass &deviceClass);
+
+class LIBNYMEA_EXPORT DeviceClasses: public QList<DeviceClass>
+{
+public:
+    DeviceClasses();
+    DeviceClasses(const QList<DeviceClass> &other);
+    DeviceClass findById(const DeviceClassId &id) const;
+};
 
 #endif

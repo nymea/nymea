@@ -23,6 +23,7 @@
 #include "loggingcategories.h"
 
 Q_LOGGING_CATEGORY(dcApplication, "Application")
+Q_LOGGING_CATEGORY(dcDevice, "Device")
 Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")
 Q_LOGGING_CATEGORY(dcSystem, "System")
 Q_LOGGING_CATEGORY(dcPlatform, "Platform")

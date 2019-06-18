@@ -23,6 +23,7 @@
 
 #include <QObject>
 #include <QHash>
+#include <QPointer>
 
 #include "jsonrpc/jsontypes.h"
 #include "restresource.h"
@@ -36,7 +37,7 @@ class DevicesResource: public RestResource
 {
     Q_OBJECT
 public:
-    explicit DevicesResource(QObject *parent = 0);
+    explicit DevicesResource(QObject *parent = nullptr);
 
     QString name() const override;
 
@@ -77,10 +78,10 @@ private:
     HttpReply *reconfigureDevice(Device *device, const QByteArray &payload) const;
 
 private slots:
-    void actionExecuted(const ActionId &actionId, DeviceManager::DeviceError status);
-    void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
-    void deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status);
-    void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
+    void actionExecuted(const ActionId &actionId, Device::DeviceError status);
+    void deviceSetupFinished(Device *device, Device::DeviceError status);
+    void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
+    void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId);
 };
 
 }

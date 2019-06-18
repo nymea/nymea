@@ -79,3 +79,23 @@ bool Vendor::operator==(const Vendor &other) const
 {
     return m_id == other.id();
 }
+
+Vendors::Vendors()
+{
+
+}
+
+Vendors::Vendors(const QList<Vendor> &other): QList<Vendor>(other)
+{
+
+}
+
+Vendor Vendors::findById(const VendorId &vendorId) const
+{
+    foreach (const Vendor &vendor, *this) {
+        if (vendor.id() == vendorId) {
+            return vendor;
+        }
+    }
+    return Vendor(VendorId());
+}

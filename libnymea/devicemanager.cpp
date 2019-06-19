@@ -1097,7 +1097,7 @@ void DeviceManager::loadPlugin(DevicePlugin *pluginIface)
                 ParamTypeId paramTypeId(paramTypeIdString);
                 ParamType paramType = pluginIface->configurationDescription().findById(paramTypeId);
                 if (!paramType.isValid()) {
-                    qCWarning(dcDeviceManager()) << "Skip loading Param for plugin" << pluginIface->pluginName() << "because could not find ParamType for saved Param" << ParamTypeId(paramTypeIdString).toString();
+                    qCWarning(dcDeviceManager()) << "Not loading Param for plugin" << pluginIface->pluginName() << "because the ParamType for the saved Param" << ParamTypeId(paramTypeIdString).toString() << "could not be found.";
                     continue;
                 }
 
@@ -1162,19 +1162,19 @@ void DeviceManager::loadConfiguredDevices()
 
         DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
         if (!deviceClass.isValid()) {
-            qCWarning(dcDeviceManager()) << "Skip loading device" << device << " because could not find device class for this device.";
+            qCWarning(dcDeviceManager()) << "Not loading device" << device << "because the device class for this device could not be found.";
+            settings.endGroup(); // DeviceId
             continue;
         }
 
         ParamList params;
         settings.beginGroup("Params");
-
         if (!settings.childGroups().isEmpty()) {
             foreach (const QString &paramTypeIdString, settings.childGroups()) {
                 ParamTypeId paramTypeId(paramTypeIdString);
                 ParamType paramType = deviceClass.paramTypes().findById(paramTypeId);
                 if (!paramType.isValid()) {
-                    qCWarning(dcDeviceManager()) << "Skip loading Param for device" << device << "because could not find ParamType for saved Param" << ParamTypeId(paramTypeIdString).toString();
+                    qCWarning(dcDeviceManager()) << "Not loading Param for device" << device << "because the ParamType for the saved Param" << ParamTypeId(paramTypeIdString).toString() << "could not be found.";
                     continue;
                 }
 
@@ -1184,7 +1184,7 @@ void DeviceManager::loadConfiguredDevices()
                 paramValue = settings.value("value", paramType.defaultValue());
                 paramValue.convert(settings.value("type").toInt());
                 params.append(Param(paramTypeId, paramValue));
-                settings.endGroup();
+                settings.endGroup(); // ParamId
             }
         } else {
             foreach (const QString &paramTypeIdString, settings.allKeys()) {
@@ -1193,8 +1193,8 @@ void DeviceManager::loadConfiguredDevices()
         }
 
         device->setParams(params);
-        settings.endGroup();
-        settings.endGroup();
+        settings.endGroup(); // Params
+        settings.endGroup(); // DeviceId
 
         // We always add the device to the list in this case. If its in the storedDevices
         // it means that it was working at some point so lets still add it as there might
@@ -1242,12 +1242,13 @@ void DeviceManager::storeConfiguredDevices()
             settings.beginGroup(param.paramTypeId().toString());
             settings.setValue("type", static_cast<int>(param.value().type()));
             settings.setValue("value", param.value());
-            settings.endGroup();
+            settings.endGroup(); // ParamTypeId
         }
-        settings.endGroup();
-        settings.endGroup();
+        settings.endGroup(); // Params
+
+        settings.endGroup(); // DeviceId
     }
-    settings.endGroup();
+    settings.endGroup(); // DeviceConfig
 }
 
 void DeviceManager::startMonitoringAutoDevices()

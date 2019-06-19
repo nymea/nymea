@@ -264,8 +264,8 @@ Device *Devices::findById(const DeviceId &id)
 QDebug operator<<(QDebug dbg, Device *device)
 {
     dbg.nospace() << "Device(" << device->name();
-    dbg.nospace() << ", id" << device->id();
-    dbg.nospace() << ", deviceClassId" << device->deviceClassId() << ")";
+    dbg.nospace() << ", id: " << device->id().toString();
+    dbg.nospace() << ", deviceClassId: " << device->deviceClassId().toString() << ")";
     return dbg.space();
 }
 

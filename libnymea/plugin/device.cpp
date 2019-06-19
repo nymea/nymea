@@ -287,3 +287,14 @@ Devices Devices::filterByParam(const ParamTypeId &paramTypeId, const QVariant &v
     }
     return ret;
 }
+
+Devices Devices::filterByDeviceClassId(const DeviceClassId &deviceClassId)
+{
+    Devices ret;
+    foreach (Device* device, *this) {
+        if (device->deviceClassId() == deviceClassId) {
+            ret << device;
+        }
+    }
+    return ret;
+}

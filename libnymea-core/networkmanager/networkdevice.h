@@ -213,9 +213,8 @@ QDebug operator<<(QDebug debug, NetworkDevice *device);
 
 }
 
-using namespace nymeaserver;
-Q_DECLARE_METATYPE(NetworkDevice::NetworkDeviceType)
-Q_DECLARE_METATYPE(NetworkDevice::NetworkDeviceState)
-Q_DECLARE_METATYPE(NetworkDevice::NetworkDeviceStateReason)
+Q_DECLARE_METATYPE(nymeaserver::NetworkDevice::NetworkDeviceType)
+Q_DECLARE_METATYPE(nymeaserver::NetworkDevice::NetworkDeviceState)
+Q_DECLARE_METATYPE(nymeaserver::NetworkDevice::NetworkDeviceStateReason)
 
 #endif // NETWORKDEVICE_H

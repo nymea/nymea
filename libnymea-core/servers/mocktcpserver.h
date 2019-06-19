@@ -27,9 +27,9 @@
 
 #include "transportinterface.h"
 
-using namespace nymeaserver;
-
 class JsonRPCServer;
+
+namespace nymeaserver {
 
 class MockTcpServer : public TransportInterface
 {
@@ -60,6 +60,8 @@ private:
 
     QList<QUuid> m_connectedClients;
 };
+
+}
 
 #endif // TCPSERVER_H
 

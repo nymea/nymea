@@ -88,8 +88,8 @@ extern EventTypeId mockParentChildEventId;
 extern ActionTypeId mockParentChildActionId;
 extern StateTypeId mockParentChildStateId;
 
-using namespace nymeaserver;
 
+namespace nymeaserver {
 class MockTcpServer;
 
 class NymeaTestBase : public QObject
@@ -200,5 +200,7 @@ protected:
     QByteArray m_apiToken;
 
 };
+
+}
 
 #endif // NYMEATESTBASE_H

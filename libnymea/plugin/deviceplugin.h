@@ -76,7 +76,7 @@ public:
     virtual DeviceManager::DeviceError executeAction(Device *device, const Action &action);
 
     // Configuration
-    QList<ParamType> configurationDescription() const;
+    ParamTypes configurationDescription() const;
     DeviceManager::DeviceError setConfiguration(const ParamList &configuration);
     ParamList configuration() const;
     QVariant configValue(const ParamTypeId &paramTypeId) const;

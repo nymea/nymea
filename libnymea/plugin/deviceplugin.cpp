@@ -254,7 +254,7 @@ DeviceManager::DeviceError DevicePlugin::executeAction(Device *device, const Act
 }
 
 /*! Returns the configuration description of this DevicePlugin as a list of \l{ParamType}{ParamTypes}. */
-QList<ParamType> DevicePlugin::configurationDescription() const
+ParamTypes DevicePlugin::configurationDescription() const
 {
     return m_configurationDescription;
 }

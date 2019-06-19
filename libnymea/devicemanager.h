@@ -181,7 +181,6 @@ private:
     void storeDeviceStates(Device *device);
     void loadDeviceStates(Device *device);
 
-
 private:
     HardwareManager *m_hardwareManager;
 

@@ -215,27 +215,27 @@ bool DeviceClass::hasActionType(const ActionTypeId &actionTypeId)
 
 /*! Returns the params description of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their params matching to this template. */
-QList<ParamType> DeviceClass::paramTypes() const
+ParamTypes DeviceClass::paramTypes() const
 {
     return m_paramTypes;
 }
 
 /*! Set the \a params of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their actions matching to this template. */
-void DeviceClass::setParamTypes(const QList<ParamType> &params)
+void DeviceClass::setParamTypes(const ParamTypes &params)
 {
     m_paramTypes = params;
 }
 
 /*! Returns the discovery params description of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their params matching to this template. */
-QList<ParamType> DeviceClass::discoveryParamTypes() const
+ParamTypes DeviceClass::discoveryParamTypes() const
 {
     return m_discoveryParamTypes;
 }
 /*! Set the \a params of this DeviceClass for the discovery. \{Device}{Devices} created
     from this \l{DeviceClass} must have their actions matching to this template. */
-void DeviceClass::setDiscoveryParamTypes(const QList<ParamType> &params)
+void DeviceClass::setDiscoveryParamTypes(const ParamTypes &params)
 {
     m_discoveryParamTypes = params;
 }

@@ -84,11 +84,11 @@ public:
     void setActionTypes(const QList<ActionType> &actionTypes);
     bool hasActionType(const ActionTypeId &actionTypeId);
 
-    QList<ParamType> paramTypes() const;
-    void setParamTypes(const QList<ParamType> &paramTypes);
+    ParamTypes paramTypes() const;
+    void setParamTypes(const ParamTypes &paramTypes);
 
-    QList<ParamType> discoveryParamTypes() const;
-    void setDiscoveryParamTypes(const QList<ParamType> &paramTypes);
+    ParamTypes discoveryParamTypes() const;
+    void setDiscoveryParamTypes(const ParamTypes &paramTypes);
 
     CreateMethods createMethods() const;
     void setCreateMethods(CreateMethods createMethods);
@@ -113,11 +113,11 @@ private:
     PluginId m_pluginId;
     QString m_name;
     QString m_displayName;
-    QList<StateType> m_stateTypes;
-    QList<EventType> m_eventTypes;
-    QList<ActionType> m_actionTypes;
-    QList<ParamType> m_paramTypes;
-    QList<ParamType> m_discoveryParamTypes;
+    StateTypes m_stateTypes;
+    EventTypes m_eventTypes;
+    ActionTypes m_actionTypes;
+    ParamTypes m_paramTypes;
+    ParamTypes m_discoveryParamTypes;
     CreateMethods m_createMethods;
     SetupMethod m_setupMethod;
     QString m_pairingInfo;

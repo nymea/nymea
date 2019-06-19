@@ -334,9 +334,14 @@ DeviceManager::DeviceError DeviceManager::setPluginConfig(const PluginId &plugin
     NymeaSettings settings(NymeaSettings::SettingsRolePlugins);
     settings.beginGroup("PluginConfig");
     settings.beginGroup(plugin->pluginId().toString());
-    foreach (const Param &param, params) {
-        settings.setValue(param.paramTypeId().toString(), param.value());
+
+    foreach (const Param &param, pluginConfig) {
+        settings.beginGroup(param.paramTypeId().toString());
+        settings.setValue("type", static_cast<int>(param.value().type()));
+        settings.setValue("value", param.value());
+        settings.endGroup();
     }
+
     settings.endGroup();
     settings.endGroup();
     emit pluginConfigChanged(plugin->pluginId(), pluginConfig);
@@ -1085,10 +1090,31 @@ void DeviceManager::loadPlugin(DevicePlugin *pluginIface)
     ParamList params;
     if (settings.childGroups().contains(pluginIface->pluginId().toString())) {
         settings.beginGroup(pluginIface->pluginId().toString());
-        foreach (const QString &paramTypeIdString, settings.allKeys()) {
-            Param param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString));
-            params.append(param);
+
+        if (!settings.childGroups().isEmpty()) {
+            // Note: since nymea 0.12.2 the param type gets saved too for better data converting
+            foreach (const QString &paramTypeIdString, settings.childGroups()) {
+                ParamTypeId paramTypeId(paramTypeIdString);
+                ParamType paramType = pluginIface->configurationDescription().findById(paramTypeId);
+                if (!paramType.isValid()) {
+                    qCWarning(dcDeviceManager()) << "Skip loading Param for plugin" << pluginIface->pluginName() << "because could not find ParamType for saved Param" << ParamTypeId(paramTypeIdString).toString();
+                    continue;
+                }
+
+                QVariant paramValue;
+                settings.beginGroup(paramTypeIdString);
+                paramValue = settings.value("value", paramType.defaultValue());
+                paramValue.convert(settings.value("type").toInt());
+                params.append(Param(paramTypeId, paramValue));
+                settings.endGroup();
+            }
+        } else {
+            // Note: < nymea 0.12.2
+            foreach (const QString &paramTypeIdString, settings.allKeys()) {
+                params.append(Param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString)));
+            }
         }
+
         settings.endGroup();
     } else if (!pluginIface->configurationDescription().isEmpty()){
         // plugin requires config but none stored. Init with defaults
@@ -1121,6 +1147,7 @@ void DeviceManager::loadPlugin(DevicePlugin *pluginIface)
 
 }
 
+
 void DeviceManager::loadConfiguredDevices()
 {
     NymeaSettings settings(NymeaSettings::SettingsRoleDevices);
@@ -1133,11 +1160,38 @@ void DeviceManager::loadConfiguredDevices()
         device->setName(settings.value("devicename").toString());
         device->setParentId(DeviceId(settings.value("parentid", QUuid()).toString()));
 
+        DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
+        if (!deviceClass.isValid()) {
+            qCWarning(dcDeviceManager()) << "Skip loading device" << device << " because could not find device class for this device.";
+            continue;
+        }
+
         ParamList params;
         settings.beginGroup("Params");
-        foreach (const QString &paramTypeIdString, settings.allKeys()) {
-            params.append(Param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString)));
+
+        if (!settings.childGroups().isEmpty()) {
+            foreach (const QString &paramTypeIdString, settings.childGroups()) {
+                ParamTypeId paramTypeId(paramTypeIdString);
+                ParamType paramType = deviceClass.paramTypes().findById(paramTypeId);
+                if (!paramType.isValid()) {
+                    qCWarning(dcDeviceManager()) << "Skip loading Param for device" << device << "because could not find ParamType for saved Param" << ParamTypeId(paramTypeIdString).toString();
+                    continue;
+                }
+
+                // Note: since nymea 0.12.2
+                QVariant paramValue;
+                settings.beginGroup(paramTypeIdString);
+                paramValue = settings.value("value", paramType.defaultValue());
+                paramValue.convert(settings.value("type").toInt());
+                params.append(Param(paramTypeId, paramValue));
+                settings.endGroup();
+            }
+        } else {
+            foreach (const QString &paramTypeIdString, settings.allKeys()) {
+                params.append(Param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString)));
+            }
         }
+
         device->setParams(params);
         settings.endGroup();
         settings.endGroup();
@@ -1174,6 +1228,8 @@ void DeviceManager::storeConfiguredDevices()
     settings.beginGroup("DeviceConfig");
     foreach (Device *device, m_configuredDevices) {
         settings.beginGroup(device->id().toString());
+        // Note: clean device settings before storing it for clean up
+        settings.remove("");
         settings.setValue("autoCreated", device->autoCreated());
         settings.setValue("devicename", device->name());
         settings.setValue("deviceClassId", device->deviceClassId().toString());
@@ -1183,7 +1239,10 @@ void DeviceManager::storeConfiguredDevices()
 
         settings.beginGroup("Params");
         foreach (const Param &param, device->params()) {
-            settings.setValue(param.paramTypeId().toString(), param.value());
+            settings.beginGroup(param.paramTypeId().toString());
+            settings.setValue("type", static_cast<int>(param.value().type()));
+            settings.setValue("value", param.value());
+            settings.endGroup();
         }
         settings.endGroup();
         settings.endGroup();
@@ -1351,8 +1410,8 @@ void DeviceManager::slotPairingFinished(const PairingTransactionId &pairingTrans
             device->setName(deviceName);
         }
     } else {
-        qCDebug(dcDeviceManager()) << "Reconfiguring device" << device;
         device = m_configuredDevices.value(deviceId);
+        qCDebug(dcDeviceManager()) << "Reconfiguring device" << device;
     }
     emit pairingFinished(pairingTransactionId, DeviceErrorNoError, deviceId);
 

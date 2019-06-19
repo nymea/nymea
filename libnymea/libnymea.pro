@@ -12,6 +12,8 @@ LIBS += -lavahi-common -lavahi-client
 
 HEADERS += devicemanager.h \
         libnymea.h \
+        platform/package.h \
+        platform/repository.h \
         typeutils.h \
         loggingcategories.h \
         nymeasettings.h \
@@ -65,11 +67,15 @@ HEADERS += devicemanager.h \
         nymeadbusservice.h \
         network/mqtt/mqttprovider.h \
         network/mqtt/mqttchannel.h \
-        translator.h
+        translator.h \
+        platform/platformsystemcontroller.h \
+        platform/platformupdatecontroller.h
 
 SOURCES += devicemanager.cpp \
         loggingcategories.cpp \
         nymeasettings.cpp \
+        platform/package.cpp \
+        platform/repository.cpp \
         plugin/device.cpp \
         plugin/deviceplugin.cpp \
         plugin/devicedescriptor.cpp \
@@ -120,7 +126,9 @@ SOURCES += devicemanager.cpp \
         nymeadbusservice.cpp \
         network/mqtt/mqttprovider.cpp \
         network/mqtt/mqttchannel.cpp \
-        translator.cpp
+        translator.cpp \
+        platform/platformsystemcontroller.cpp \
+        platform/platformupdatecontroller.cpp
 
 
 RESOURCES += \

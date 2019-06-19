@@ -57,6 +57,8 @@
 #include "networkmanager/wirelessaccesspoint.h"
 
 #include "cloud/cloudmanager.h"
+#include "platform/package.h"
+#include "platform/repository.h"
 
 #include <QObject>
 
@@ -176,6 +178,8 @@ public:
     DECLARE_OBJECT(webServerConfiguration, "WebServerConfiguration")
     DECLARE_OBJECT(tag, "Tag")
     DECLARE_OBJECT(mqttPolicy, "MqttPolicy")
+    DECLARE_OBJECT(package, "Package")
+    DECLARE_OBJECT(repository, "Repository")
 
     // pack types
     static QVariantMap packEventType(const EventType &eventType, const PluginId &pluginId, const QLocale &locale);
@@ -231,6 +235,9 @@ public:
     static QVariantList packPlugins(const QLocale &locale);
 
     static QVariantMap packTokenInfo(const TokenInfo &tokenInfo);
+
+    static QVariantMap packPackage(const Package &package);
+    static QVariantMap packRepository(const Repository &repository);
 
     static QString basicTypeToString(const QVariant::Type &type);
 

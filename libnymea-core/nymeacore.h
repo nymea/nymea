@@ -51,6 +51,8 @@ class NetworkManager;
 class NymeaConfiguration;
 class TagsStorage;
 class UserManager;
+class Platform;
+class System;
 
 class NymeaCore : public QObject
 {
@@ -88,6 +90,7 @@ public:
     CloudManager *cloudManager() const;
     DebugServerHandler *debugServerHandler() const;
     TagsStorage *tagsStorage() const;
+    Platform *platform() const;
 
     static QStringList getAvailableLanguages();
 
@@ -116,6 +119,8 @@ private:
     explicit NymeaCore(QObject *parent = nullptr);
     static NymeaCore *s_instance;
 
+    Platform *m_platform = nullptr;
+
     NymeaConfiguration *m_configuration;
     ServerManager *m_serverManager;
     DeviceManager *m_deviceManager;
@@ -129,6 +134,7 @@ private:
 
     NetworkManager *m_networkManager;
     UserManager *m_userManager;
+    System *m_system;
 
     QHash<ActionId, Action> m_pendingActions;
     QList<RuleId> m_executingRules;

@@ -106,11 +106,13 @@
 
 #include "nymeacore.h"
 #include "loggingcategories.h"
+#include "platform/platform.h"
 #include "jsonrpc/jsonrpcserver.h"
 #include "ruleengine.h"
 #include "networkmanager/networkmanager.h"
 #include "nymeasettings.h"
 #include "tagging/tagsstorage.h"
+#include "platform/platform.h"
 
 #include "devicemanager.h"
 #include "plugin/device.h"
@@ -142,6 +144,9 @@ NymeaCore::NymeaCore(QObject *parent) :
 
 void NymeaCore::init() {
     qCDebug(dcApplication()) << "Initializing NymeaCore";
+
+    qCDebug(dcPlatform()) << "Loading platform abstraction";
+    m_platform = new Platform(this);
 
     qCDebug(dcApplication()) << "Loading nymea configurations" << NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName();
     m_configuration = new NymeaConfiguration(this);
@@ -660,6 +665,13 @@ TagsStorage *NymeaCore::tagsStorage() const
     return m_tagsStorage;
 }
 
+/*! Returns a pointer to the \l{Platform} instance owned by NymeaCore.
+    The Platform represents the host system this nymea instance is running on.
+*/
+Platform *NymeaCore::platform() const
+{
+    return m_platform;
+}
 
 
 /*! Connected to the DeviceManager's emitEvent signal. Events received in

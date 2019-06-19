@@ -47,6 +47,7 @@
 #include "rule.h"
 #include "ruleengine.h"
 #include "loggingcategories.h"
+#include "platform/platform.h"
 
 #include "devicehandler.h"
 #include "actionhandler.h"
@@ -57,6 +58,7 @@
 #include "configurationhandler.h"
 #include "networkmanagerhandler.h"
 #include "tagshandler.h"
+#include "systemhandler.h"
 
 #include <QJsonDocument>
 #include <QStringList>
@@ -518,6 +520,7 @@ void JsonRPCServer::setup()
     registerHandler(new ConfigurationHandler(this));
     registerHandler(new NetworkManagerHandler(this));
     registerHandler(new TagsHandler(this));
+    registerHandler(new SystemHandler(NymeaCore::instance()->platform(), this));
 
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::pairingReply, this, &JsonRPCServer::pairingFinished);
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::connectionStateChanged, this, &JsonRPCServer::onCloudConnectionStateChanged);
@@ -684,7 +687,8 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
 
     Q_ASSERT_X(handler->validateParams(method.name(), params).first, "validating return value", formatAssertion(handler->name(), method.name(), QMetaMethod::Signal, handler, notification).toLatin1().data());
     QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
-    qCDebug(dcJsonRpcTraffic()) << "Sending notification:" << data;
+    qCDebug(dcJsonRpc()) << "Sending notification:" << handler->name() + "." + method.name();
+    qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
 
     foreach (const QUuid &clientId, m_clientNotifications.keys(true)) {
         m_clientTransports.value(clientId)->sendData(clientId, data);

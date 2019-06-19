@@ -1,4 +1,4 @@
-2.0
+2.1
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -867,6 +867,111 @@
                 "o:stateType": "$ref:StateType"
             }
         },
+        "System.CheckForUpdates": {
+            "description": "Instruct the system to poll the server for updates. Normally the system should automatically do this in regular intervals, however, if the client wants to allow the user to manually check for new updates now, this can be called. Returns true if the operation has been started successfully and the update manager will become busy. In order to know whether there are updates available, clients should walk through the list of packages retrieved from GetPackages and check whether there are packages with the updateAvailable flag set to true.",
+            "params": {
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
+        "System.EnableRepository": {
+            "description": "Enable or disable a repository.",
+            "params": {
+                "enabled": "Bool",
+                "repositoryId": "String"
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
+        "System.GetCapabilities": {
+            "description": "Get the list of capabilites on this system. This allows reading whether things like rebooting or shutting down the system running nymea:core is supported on this host.",
+            "params": {
+            },
+            "returns": {
+                "powerManagement": "Bool",
+                "updateManagement": "Bool"
+            }
+        },
+        "System.GetPackages": {
+            "description": "Get the list of packages currently available to the system. This might include installed available but not installed packages. Installed packages will have the installedVersion set to a non-empty value.",
+            "params": {
+            },
+            "returns": {
+                "packages": [
+                    "$ref:Package"
+                ]
+            }
+        },
+        "System.GetRepositories": {
+            "description": "Get the list of repositories currently available to the system.",
+            "params": {
+            },
+            "returns": {
+                "repositories": [
+                    "$ref:Repository"
+                ]
+            }
+        },
+        "System.GetUpdateStatus": {
+            "description": "Get the current status of the update system. \"busy\" indicates that the system is current busy with an operation regarding updates. This does not necessarily mean an actual update is running. When this is true, update related functions on the client should be marked as busy and no interaction with update components shall be allowed. An example for such a state is when the system queries the server if there are updates available, typically after a call to CheckForUpdates. \"updateRunning\" on the other hand indicates an actual update process is ongoing. The user should be informed about it, the system also might restart at any point while an update is running.",
+            "params": {
+            },
+            "returns": {
+                "busy": "Bool",
+                "updateRunning": "Bool"
+            }
+        },
+        "System.Reboot": {
+            "description": "Initiate a reboot of the system. The return value will indicate whether the procedure has been initiated successfully.",
+            "params": {
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
+        "System.RemovePackages": {
+            "description": "Starts removing a package. Returns true if the removal has been started successfully. Before calling this method, clients should check whether the package can be removed (canRemove set to true).",
+            "params": {
+                "packageIds": [
+                    "String"
+                ]
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
+        "System.RollbackPackages": {
+            "description": "Starts a rollback. Returns true if the rollback has been started successfully. Before calling this method, clients should check whether the package can be rolled back (canRollback set to true).",
+            "params": {
+                "packageIds": [
+                    "String"
+                ]
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
+        "System.Shutdown": {
+            "description": "Initiate a shutdown of the system. The return value will indicate whether the procedure has been initiated successfully.",
+            "params": {
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
+        "System.UpdatePackages": {
+            "description": "Starts updating/installing packages with the given ids. Returns true if the upgrade has been started successfully. Note that it might still fail later. Before calling this method, clients should check the packages whether they are in a state where they can either be installed (no installedVersion set) or upgraded (updateAvailable set to true).",
+            "params": {
+                "o:packageIds": [
+                    "String"
+                ]
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
         "Tags.AddTag": {
             "description": "Add a Tag. A Tag must have a deviceId OR a ruleId (call this method twice if you want to attach the same tag to a device and a rule), an appId (Use the appId of your app), a tagId (e.g. \"favorites\") and a value. Upon success, a TagAdded notification will be emitted. Calling this method twice for the same ids (device/rule, appId and tagId) but with a different value will update the tag's value and the TagValueChanged notification will be emitted.",
             "params": {
@@ -1125,6 +1230,56 @@
             "description": "Emitted whenever a Rule was removed.",
             "params": {
                 "ruleId": "Uuid"
+            }
+        },
+        "System.CapabilitiesChanged": {
+            "description": "Emitted whenever the system capabilities change.",
+            "params": {
+                "powerManagement": "Bool",
+                "updateManagement": "Bool"
+            }
+        },
+        "System.PackageAdded": {
+            "description": "Emitted whenever a package is added to the list of packages.",
+            "params": {
+                "package": "$ref:Package"
+            }
+        },
+        "System.PackageChanged": {
+            "description": "Emitted whenever a package in the list of packages changes.",
+            "params": {
+                "package": "$ref:Package"
+            }
+        },
+        "System.PackageRemoved": {
+            "description": "Emitted whenever a package is removed from the list of packages.",
+            "params": {
+                "packageId": "String"
+            }
+        },
+        "System.RepositoryAdded": {
+            "description": "Emitted whenever a repository is added to the list of repositories.",
+            "params": {
+                "repository": "$ref:Repository"
+            }
+        },
+        "System.RepositoryChanged": {
+            "description": "Emitted whenever a repository in the list of repositories changes.",
+            "params": {
+                "repository": "$ref:Repository"
+            }
+        },
+        "System.RepositoryRemoved": {
+            "description": "Emitted whenever a repository is removed from the list of repositories.",
+            "params": {
+                "repositoryId": "String"
+            }
+        },
+        "System.UpdateStatusChanged": {
+            "description": "Emitted whenever the update status changes.",
+            "params": {
+                "busy": "Bool",
+                "updateRunning": "Bool"
             }
         },
         "Tags.TagAdded": {
@@ -1398,6 +1553,17 @@
             "NetworkManagerStateConnectedSite",
             "NetworkManagerStateConnectedGlobal"
         ],
+        "Package": {
+            "canRemove": "Bool",
+            "candidateVersion": "String",
+            "changelog": "String",
+            "displayName": "String",
+            "id": "String",
+            "installedVersion": "String",
+            "rollbackAvailable": "Bool",
+            "summary": "String",
+            "updateAvailable": "Bool"
+        },
         "Param": {
             "paramTypeId": "Uuid",
             "value": "$ref:BasicType"
@@ -1452,6 +1618,11 @@
             "o:weekDays": [
                 "Int"
             ]
+        },
+        "Repository": {
+            "displayName": "String",
+            "enabled": "Bool",
+            "id": "String"
         },
         "Rule": {
             "actions": [

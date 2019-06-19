@@ -68,7 +68,9 @@ Depends: libqt5network5,
          ${shlibs:Depends},
          ${misc:Depends}
 Recommends: nymea-cli, 
-            network-manager
+            network-manager,
+            nymea-update-plugin-impl,
+            nymea-system-plugin-impl,
 Replaces: guhd
 Description: An open source IoT server - daemon
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
@@ -131,7 +133,7 @@ Description: Translation files for nymead and plugins - translations
 
 
 Package: nymea-tests
-Section: misc
+Section: devel
 Architecture: any
 Multi-Arch: same
 Depends: nymea (= ${binary:Version}),

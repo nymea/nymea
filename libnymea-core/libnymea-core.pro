@@ -99,7 +99,9 @@ HEADERS += nymeacore.h \
     tagging/tag.h \
     jsonrpc/tagshandler.h \
     cloud/cloudtransport.h \
-    debugreportgenerator.h
+    debugreportgenerator.h \
+    platform/platform.h \
+    jsonrpc/systemhandler.h
 
 SOURCES += nymeacore.cpp \
     ruleengine.cpp \
@@ -184,3 +186,5 @@ SOURCES += nymeacore.cpp \
     jsonrpc/tagshandler.cpp \
     cloud/cloudtransport.cpp \
     debugreportgenerator.cpp \
+    platform/platform.cpp \
+    jsonrpc/systemhandler.cpp

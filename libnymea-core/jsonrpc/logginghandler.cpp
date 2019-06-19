@@ -118,7 +118,6 @@ QString LoggingHandler::name() const
 
 void LoggingHandler::logEntryAdded(const LogEntry &logEntry)
 {
-    qCDebug(dcJsonRpc) << "Notify \"Logging.LogEntryAdded\"";
     QVariantMap params;
     params.insert("logEntry", JsonTypes::packLogEntry(logEntry));
     emit LogEntryAdded(params);
@@ -126,14 +125,11 @@ void LoggingHandler::logEntryAdded(const LogEntry &logEntry)
 
 void LoggingHandler::logDatabaseUpdated()
 {
-    qCDebug(dcJsonRpc) << "Notify \"Logging.LogDatabaseUpdated\"";
     emit LogDatabaseUpdated(QVariantMap());
 }
 
 JsonReply* LoggingHandler::GetLogEntries(const QVariantMap &params) const
 {
-    qCDebug(dcJsonRpc) << "Asked for log entries" << params;
-
     LogFilter filter = JsonTypes::unpackLogFilter(params);
 
     QVariantList entries;

@@ -43,8 +43,6 @@
  *
  */
 
-Q_DECLARE_LOGGING_CATEGORY(dcCoap)
-
 class LIBNYMEA_EXPORT Coap : public QObject
 {
     Q_OBJECT

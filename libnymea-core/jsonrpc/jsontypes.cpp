@@ -126,6 +126,8 @@ QVariantMap JsonTypes::s_serverConfiguration;
 QVariantMap JsonTypes::s_webServerConfiguration;
 QVariantMap JsonTypes::s_tag;
 QVariantMap JsonTypes::s_mqttPolicy;
+QVariantMap JsonTypes::s_package;
+QVariantMap JsonTypes::s_repository;
 
 void JsonTypes::init()
 {
@@ -400,6 +402,20 @@ void JsonTypes::init()
     s_tag.insert("tagId", basicTypeToString(QVariant::String));
     s_tag.insert("o:value", basicTypeToString(QVariant::String));
 
+    s_package.insert("id", basicTypeToString(QVariant::String));
+    s_package.insert("displayName", basicTypeToString(QVariant::String));
+    s_package.insert("summary", basicTypeToString(QVariant::String));
+    s_package.insert("installedVersion", basicTypeToString(QVariant::String));
+    s_package.insert("candidateVersion", basicTypeToString(QVariant::String));
+    s_package.insert("changelog", basicTypeToString(QVariant::String));
+    s_package.insert("updateAvailable", basicTypeToString(QVariant::Bool));
+    s_package.insert("rollbackAvailable", basicTypeToString(QVariant::Bool));
+    s_package.insert("canRemove", basicTypeToString(QVariant::Bool));
+
+    s_repository.insert("id", basicTypeToString(QVariant::String));
+    s_repository.insert("displayName", basicTypeToString(QVariant::String));
+    s_repository.insert("enabled", basicTypeToString(QVariant::Bool));
+
     s_initialized = true;
 }
 
@@ -482,6 +498,8 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("WebServerConfiguration", serverConfigurationDescription());
     allTypes.insert("Tag", tagDescription());
     allTypes.insert("MqttPolicy", mqttPolicyDescription());
+    allTypes.insert("Package", packageDescription());
+    allTypes.insert("Repository", repositoryDescription());
 
     return allTypes;
 }
@@ -1268,6 +1286,30 @@ QVariantMap JsonTypes::packTokenInfo(const TokenInfo &tokenInfo)
     return ret;
 }
 
+QVariantMap JsonTypes::packPackage(const Package &package)
+{
+    QVariantMap ret;
+    ret.insert("id", package.packageId());
+    ret.insert("displayName", package.displayName());
+    ret.insert("summary", package.summary());
+    ret.insert("installedVersion", package.installedVersion());
+    ret.insert("candidateVersion", package.candidateVersion());
+    ret.insert("changelog", package.changelog());
+    ret.insert("updateAvailable", package.updateAvailable());
+    ret.insert("rollbackAvailable", package.rollbackAvailable());
+    ret.insert("canRemove", package.canRemove());
+    return ret;
+}
+
+QVariantMap JsonTypes::packRepository(const Repository &repository)
+{
+    QVariantMap ret;
+    ret.insert("id", repository.id());
+    ret.insert("displayName", repository.displayName());
+    ret.insert("enabled", repository.enabled());
+    return ret;
+}
+
 /*! Returns the type string for the given \a type. */
 QString JsonTypes::basicTypeToString(const QVariant::Type &type)
 {
@@ -2011,6 +2053,18 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateMap(tagDescription(), variant.toMap());
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << "Tag not matching";
+                    return result;
+                }
+            } else if (refName == packageRef()) {
+                QPair<bool, QString> result = validateMap(packageDescription(), variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "Package not matching";
+                    return result;
+                }
+            } else if (refName == repositoryRef()) {
+                QPair<bool, QString> result = validateMap(repositoryDescription(), variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "Repository not matching";
                     return result;
                 }
             } else if (refName == basicTypeRef()) {

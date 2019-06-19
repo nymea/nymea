@@ -1,3 +1,5 @@
 TEMPLATE = subdirs
 
-SUBDIRS = auto tools/simplepushbuttonhandler
+SUBDIRS = testlib auto tools/simplepushbuttonhandler
+
+auto.depends += testlib

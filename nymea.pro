@@ -45,7 +45,7 @@ INSTALLS += translations
 QMAKE_EXTRA_TARGETS += lupdate lrelease
 
 test.depends = licensecheck lrelease
-test.commands = LD_LIBRARY_PATH=$$top_builddir/libnymea-core:$$top_builddir/libnymea make check
+test.commands = LD_LIBRARY_PATH=$$top_builddir/libnymea-core:$$top_builddir/libnymea:$$top_builddir/tests/testlib make check
 QMAKE_EXTRA_TARGETS += test
 
 # Show doc files in project tree

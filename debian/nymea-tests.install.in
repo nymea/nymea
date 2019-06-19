@@ -1,2 +1,3 @@
 usr/tests/* usr/lib/@DEB_HOST_MULTIARCH@/nymea/tests
 usr/lib/@DEB_HOST_MULTIARCH@/nymea/plugins/libnymea_devicepluginmock.so
+usr/lib/@DEB_HOST_MULTIARCH@/libnymea-testlib.so*

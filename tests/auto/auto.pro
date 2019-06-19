@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
+
 SUBDIRS = versioning \
         devices \
         jsonrpc \
@@ -25,3 +26,4 @@ SUBDIRS = versioning \
         usermanager \
         mqttbroker \
         tags \
+

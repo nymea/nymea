@@ -115,15 +115,15 @@ void CloudManager::setEnabled(bool enabled)
             return;
         }
 
-        qCDebug(dcCloud()) << "Enabling cloud connection.";
-        if (!m_awsConnector->isConnected() && m_networkManager->state() == NetworkManager::NetworkManagerStateConnectedGlobal) {
-            connect2aws();
-        }
+        qCDebug(dcCloud()) << "Cloud connection is now enabled. Trying to connect...";
+        // FIXME: Ideally we'd check if the network is connected, however, on some platforms we have no reliable
+        // way to know that yet. Let's always try to connect for now.
+        connect2aws();
     } else {
-        qCDebug(dcCloud()) << "Disabling cloud connection.";
         m_enabled = false;
         m_awsConnector->disconnectAWS();
         emit connectionStateChanged();
+        qCDebug(dcCloud()) << "Cloud connection is now disabled.";
     }
 }
 

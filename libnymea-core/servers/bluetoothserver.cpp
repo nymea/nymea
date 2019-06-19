@@ -86,7 +86,7 @@ void BluetoothServer::terminateClientConnection(const QUuid &clientId)
 {
     QBluetoothSocket *client = m_clientList.value(clientId);
     if (client) {
-        client->abort();
+        client->close();
     }
 }
 

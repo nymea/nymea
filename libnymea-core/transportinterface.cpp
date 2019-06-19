@@ -64,7 +64,10 @@
 
 /*! \fn void nymeaserver::TransportInterface::terminateClientConnection(const QUuid &clientId);
     Pure virtual method for terminating \a clients connection. The JSON RPC server might call this when a
-    client violates the protocol. Transports should immediately abort the connection to the client.
+    client violates the protocol. Transports should close the connection to the client.
+    IMPORTANT: Any pending outgoing buffers should be sent before termination. This is important for clients
+    to receive error messages when the server terminates the connection because of and error. I.e. do not
+    abort the connection but close it after flushing outgoing  buffers.
 */
 
 /*! \fn void nymeaserver::TransportInterface::dataAvailable(const QUuid &clientId, const QByteArray &data);

@@ -1,7 +1,33 @@
-nymea (0.13.0) UNRELEASED; urgency=medium
+nymea (0.13.0) xenial; urgency=medium
 
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Fri, 10 May 2019 12:18:54 +0200
+  [ Simon Stürz ]
+  * Add navigation pad interfaces
+
+  [ Michael Zanetti ]
+  * Fix make lupdate
+  * Don't rely on NetworkManager to determine the online status
+  * Fix include installs
+  * Don't use namespaces in headers in an inheritative way.
+  * System manager
+
+  [ Bernhard Trinnes ]
+  * Update readme
+
+  [ Simon Stürz ]
+  * Fix loading/saving of params using typeId
+  * Add new interface closablesensor
+
+  [ Michael Zanetti ]
+  * Rename vendor
+  * Move nymeatestbase into a nymea-testlib to speed up building
+  * Abstract ZeroConf into a platform plugin
+  * Add filterByDeviceClass to Devices
+  * Rename the target in the plugin.pri so plugin devs don't have to do
+    it
+  * Flush client buffers before terminating a connection
+
+ -- Jenkins <jenkins@nymea.io>  Wed, 19 Jun 2019 23:52:23 +0200
 
 nymea (0.12.1) xenial; urgency=medium
 

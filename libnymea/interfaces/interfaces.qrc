@@ -67,6 +67,7 @@
         <file>wirelessconnectable.json</file>
         <file>navigationpad.json</file>
         <file>extendednavigationpad.json</file>
+        <file>closablesensor.json</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

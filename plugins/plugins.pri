@@ -10,28 +10,27 @@ LIBS += -L../../libnymea -lnymea
 HEADERS += plugininfo.h
 
 # Create plugininfo file
-JSONFILES = deviceplugin"$$TARGET".json
-plugininfo.target = plugininfo.h
+JSONFILE=$$PWD/$$TARGET/deviceplugin"$$TARGET".json
+plugininfo.input = JSONFILE
 plugininfo.output = plugininfo.h
-plugininfo.CONFIG = no_link
-plugininfo.input = JSONFILES
-plugininfo.commands = touch ${QMAKE_FILE_OUT}; $$top_srcdir/plugins/nymea-generateplugininfo \
+plugininfo.CONFIG = no_link target_predeps
+plugininfo.commands = $$top_srcdir/plugins/nymea-generateplugininfo \
                             --filetype i \
-                            --jsonfile ${QMAKE_FILE_NAME} \
-                            --output ${QMAKE_FILE_OUT} \
+                            --jsonfile $$PWD/$$TARGET/deviceplugin"$$TARGET".json \
+                            --output plugininfo.h \
                             --builddir $$OUT_PWD;
-
-externplugininfo.target = extern-plugininfo.h
-externplugininfo.output = extern-plugininfo.h
-externplugininfo.CONFIG = no_link
-externplugininfo.input = JSONFILES
-externplugininfo.commands = touch ${QMAKE_FILE_OUT}; $$top_srcdir/plugins/nymea-generateplugininfo \
+extern-plugininfo.input = JSONFILE
+extern-plugininfo.output = extern-plugininfo.h
+extern-plugininfo.CONFIG = no_link target_predeps
+extern-plugininfo.commands = $$top_srcdir/libnymea/plugin/nymea-generateplugininfo \
                             --filetype e \
-                            --jsonfile ${QMAKE_FILE_NAME} \
-                            --output ${QMAKE_FILE_OUT} \
+                            --jsonfile $$PWD/$$TARGET/deviceplugin"$$TARGET".json \
+                            --output extern-plugininfo.h \
                             --builddir $$OUT_PWD;
-PRE_TARGETDEPS += compiler_plugininfo_make_all compiler_externplugininfo_make_all
-QMAKE_EXTRA_COMPILERS += plugininfo externplugininfo
+# Add it as a compiler, so it will be called before building like moc
+QMAKE_EXTRA_COMPILERS += plugininfo extern-plugininfo
+# But also add it as a target so we can add it separately without building. E.g. for updating translations.
+QMAKE_EXTRA_TARGETS += plugininfo extern-plugininfo
 
 # Install plugin
 target.path = $$[QT_INSTALL_LIBS]/nymea/plugins/

@@ -27,12 +27,9 @@
 
 
 TEMPLATE = lib
-CONFIG += plugin
+CONFIG += plugin link_pkgconfig
 
-INCLUDEPATH += /usr/include/nymea
-LIBS += -lnymea
-
-PLUGIN_PATH=/usr/lib/$$system('dpkg-architecture -q DEB_HOST_MULTIARCH')/nymea/plugins/
+PKGCONFIG += nymea
 
 QMAKE_CXXFLAGS *= -Werror -std=c++11 -g
 QMAKE_LFLAGS *= -std=c++11
@@ -84,5 +81,5 @@ HEADERS += $$OUT_PWD/plugininfo.h \
 DEPENDPATH += $$OUT_PWD
 
 # Install plugin
-target.path = $$PLUGIN_PATH
+target.path = $$[QT_INSTALL_LIBS]/nymea/plugins/
 INSTALLS += target translations

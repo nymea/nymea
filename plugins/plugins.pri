@@ -14,7 +14,7 @@ JSONFILE=$$PWD/$$TARGET/deviceplugin"$$TARGET".json
 plugininfo.input = JSONFILE
 plugininfo.output = plugininfo.h
 plugininfo.CONFIG = no_link target_predeps
-plugininfo.commands = $$top_srcdir/plugins/nymea-generateplugininfo \
+plugininfo.commands = $$top_srcdir/libnymea/plugin/nymea-generateplugininfo \
                             --filetype i \
                             --jsonfile $$PWD/$$TARGET/deviceplugin"$$TARGET".json \
                             --output plugininfo.h \

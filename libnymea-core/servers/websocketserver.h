@@ -28,7 +28,6 @@
 #include <QWebSocket>
 #include <QWebSocketServer>
 
-#include "hardware/network/avahi/qtavahiservice.h"
 #include "transportinterface.h"
 
 // Note: WebSocket Protocol from the Internet Engineering Task Force (IETF) -> RFC6455 V13:
@@ -55,11 +54,8 @@ public:
 private:
     QWebSocketServer *m_server = nullptr;
     QHash<QUuid, QWebSocket *> m_clientList;
-    QtAvahiService *m_avahiService = nullptr;
     QSslConfiguration m_sslConfiguration;
     bool m_enabled;
-
-    QHash<QString, QString> createTxtRecord();
 
 private slots:
     void onClientConnected();
@@ -69,9 +65,6 @@ private slots:
     void onClientError(QAbstractSocket::SocketError error);
     void onServerError(QAbstractSocket::SocketError error);
     void onPing(quint64 elapsedTime, const QByteArray & payload);
-
-    void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
-    void resetAvahiService();
 
 public slots:
     void reconfigureServer(const ServerConfiguration &config);

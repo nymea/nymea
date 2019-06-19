@@ -30,7 +30,7 @@ class UpnpDiscovery;
 class PluginTimerManager;
 class NetworkAccessManager;
 class UpnpDeviceDescriptor;
-class QtAvahiServiceBrowser;
+class PlatformZeroConfController;
 class BluetoothLowEnergyManager;
 class MqttProvider;
 class HardwareResource;
@@ -47,7 +47,7 @@ public:
     virtual PluginTimerManager *pluginTimerManager() = 0;
     virtual NetworkAccessManager *networkManager() = 0;
     virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual QtAvahiServiceBrowser *avahiBrowser() = 0;
+    virtual PlatformZeroConfController *zeroConfController() = 0;
     virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
     virtual MqttProvider *mqttProvider() = 0;
 

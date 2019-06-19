@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,43 +20,38 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef QTAVAHISERVICEPRIVATE_P
-#define QTAVAHISERVICEPRIVATE_P
+#include "platformzeroconfcontroller.h"
 
-#include <QObject>
-#include <QString>
+#include "network/zeroconf/zeroconfservicebrowser.h"
+#include "network/zeroconf/zeroconfservicepublisher.h"
 
-#include "qtavahiservice.h"
-#include "qtavahiclient.h"
-
-#include <avahi-client/publish.h>
-#include <avahi-common/error.h>
-#include <avahi-common/alternative.h>
-
-namespace nymeaserver {
-
-class QtAvahiServicePrivate
+PlatformZeroConfController::PlatformZeroConfController(QObject *parent):
+    HardwareResource("ZeroConf", parent)
 {
-public:
-    QtAvahiServicePrivate();
-
-    static void callback(AvahiEntryGroup *group, AvahiEntryGroupState state, void *userdata);
-
-    QtAvahiClient *client;
-    AvahiEntryGroup *group;
-    AvahiStringList *serviceList = nullptr;
-    QString name;
-    QHostAddress hostAddress;
-    quint16 port;
-    QString type;
-    QHash<QString, QString> txtRecords;
-    int error;
-
-    static AvahiStringList *createTxtList(const QHash<QString, QString> &txt);
-
-};
-
+    m_zeroConfPublisherDummy = new ZeroConfServicePublisher(this);
 }
 
-#endif // QTAVAHISERVICEPRIVATE_P
+ZeroConfServiceBrowser *PlatformZeroConfController::createServiceBrowser(const QString &serviceType)
+{
+    return new ZeroConfServiceBrowser(serviceType, this);
+}
 
+ZeroConfServicePublisher *PlatformZeroConfController::servicePublisher() const
+{
+    return m_zeroConfPublisherDummy;
+}
+
+bool PlatformZeroConfController::available() const
+{
+    return false;
+}
+
+bool PlatformZeroConfController::enabled() const
+{
+    return false;
+}
+
+void PlatformZeroConfController::setEnabled(bool enabled)
+{
+    Q_UNUSED(enabled)
+}

@@ -8,8 +8,6 @@ DEFINES += LIBNYMEA_LIBRARY
 
 QMAKE_LFLAGS += -fPIC
 
-LIBS += -lavahi-common -lavahi-client
-
 HEADERS += devicemanager.h \
         libnymea.h \
         platform/package.h \
@@ -31,8 +29,9 @@ HEADERS += devicemanager.h \
         network/upnp/upnpdiscoveryreply.h \
         network/networkaccessmanager.h \
         network/oauth2.h \
-        network/avahi/qtavahiservicebrowser.h \
-        network/avahi/avahiserviceentry.h \
+        network/zeroconf/zeroconfservicebrowser.h \
+        network/zeroconf/zeroconfserviceentry.h \
+        network/zeroconf/zeroconfservicepublisher.h \
         hardware/bluetoothlowenergy/bluetoothlowenergydevice.h \
         hardware/bluetoothlowenergy/bluetoothdiscoveryreply.h \
         hardware/bluetoothlowenergy/bluetoothlowenergymanager.h \
@@ -69,7 +68,8 @@ HEADERS += devicemanager.h \
         network/mqtt/mqttchannel.h \
         translator.h \
         platform/platformsystemcontroller.h \
-        platform/platformupdatecontroller.h
+        platform/platformupdatecontroller.h \
+        platform/platformzeroconfcontroller.h \
 
 SOURCES += devicemanager.cpp \
         loggingcategories.cpp \
@@ -90,8 +90,9 @@ SOURCES += devicemanager.cpp \
         network/upnp/upnpdiscoveryreply.cpp \
         network/networkaccessmanager.cpp \
         network/oauth2.cpp \
-        network/avahi/avahiserviceentry.cpp \
-        network/avahi/qtavahiservicebrowser.cpp \
+        network/zeroconf/zeroconfserviceentry.cpp \
+        network/zeroconf/zeroconfservicebrowser.cpp \
+        network/zeroconf/zeroconfservicepublisher.cpp \
         hardware/bluetoothlowenergy/bluetoothlowenergymanager.cpp \
         hardware/bluetoothlowenergy/bluetoothlowenergydevice.cpp \
         hardware/bluetoothlowenergy/bluetoothdiscoveryreply.cpp \
@@ -128,7 +129,8 @@ SOURCES += devicemanager.cpp \
         network/mqtt/mqttchannel.cpp \
         translator.cpp \
         platform/platformsystemcontroller.cpp \
-        platform/platformupdatecontroller.cpp
+        platform/platformupdatecontroller.cpp \
+        platform/platformzeroconfcontroller.cpp \
 
 
 RESOURCES += \

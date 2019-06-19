@@ -106,9 +106,6 @@ WebServer::WebServer(const WebServerConfiguration &configuration, const QSslConf
         m_configuration.publicFolder = QCoreApplication::applicationDirPath();
     }
     qCDebug(dcWebServer()) << "Starting WebServer. Interface:" << m_configuration.address << "Port:" << m_configuration.port << "SSL:" << m_configuration.sslEnabled << "AUTH:" << m_configuration.authenticationEnabled << "Public folder:" << QDir(m_configuration.publicFolder).canonicalPath();
-
-    m_avahiService = new QtAvahiService(this);
-    connect(m_avahiService, &QtAvahiService::serviceStateChanged, this, &WebServer::onAvahiServiceStateChanged);
 }
 
 /*! Destructor of this \l{WebServer}. */
@@ -553,32 +550,6 @@ void WebServer::onAsyncReplyFinished()
     reply->deleteLater();
 }
 
-void WebServer::onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state)
-{
-    Q_UNUSED(state)
-}
-
-void WebServer::resetAvahiService()
-{
-    if (!m_avahiService)
-        return;
-
-    m_avahiService->resetService();
-
-    // Note: reversed order
-    QHash<QString, QString> txt;
-    txt.insert("jsonrpcVersion", JSON_PROTOCOL_VERSION);
-    txt.insert("serverVersion", NYMEA_VERSION_STRING);
-    txt.insert("manufacturer", "guh GmbH");
-    txt.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
-    txt.insert("name", NymeaCore::instance()->configuration()->serverName());
-    txt.insert("sslEnabled", m_configuration.sslEnabled ? "true" : "false");
-
-    if (!m_avahiService->registerService(QString("nymea-http-%1").arg(m_configuration.id), m_configuration.address, static_cast<quint16>(m_configuration.port), "_http._tcp", txt)) {
-        qCWarning(dcTcpServer()) << "Could not register avahi service for" << m_configuration;
-    }
-}
-
 /*! Set the configuration of this \l{WebServer} to the given \a config.
  *
  * \sa WebServerConfiguration
@@ -602,7 +573,6 @@ void WebServer::reconfigureServer(const WebServerConfiguration &config)
 void WebServer::setServerName(const QString &serverName)
 {
     m_serverName = serverName;
-    resetAvahiService();
 }
 
 /*! Returns true if this \l{WebServer} started successfully. */
@@ -615,7 +585,6 @@ bool WebServer::startServer()
     }
 
     qCDebug(dcWebServer()) << "Started web server on" << serverUrl().toString();
-    resetAvahiService();
 
     m_enabled = true;
     return true;
@@ -624,9 +593,6 @@ bool WebServer::startServer()
 /*! Returns true if this \l{WebServer} stopped successfully. */
 bool WebServer::stopServer()
 {
-    if (m_avahiService)
-        m_avahiService->resetService();
-
     foreach (QSslSocket *client, m_clientList.values())
         client->close();
 

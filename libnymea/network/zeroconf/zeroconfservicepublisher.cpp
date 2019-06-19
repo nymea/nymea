@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,59 +20,38 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef QTAVAHICLIENT_H
-#define QTAVAHICLIENT_H
+#include "zeroconfservicepublisher.h"
 
-#include <QObject>
-#include <avahi-client/client.h>
-
-namespace nymeaserver {
-
-class QtAvahiClient : public QObject
+ZeroConfServicePublisher::ZeroConfServicePublisher(QObject *parent) : QObject(parent)
 {
-    Q_OBJECT
-    Q_ENUMS(QtAvahiClientState)
-
-public:
-    enum QtAvahiClientState {
-        QtAvahiClientStateNone,
-        QtAvahiClientStateRunning,
-        QtAvahiClientStateFailure,
-        QtAvahiClientStateCollision,
-        QtAvahiClientStateRegistering,
-        QtAvahiClientStateConnecting
-    };
-
-    explicit QtAvahiClient(QObject *parent = nullptr);
-    ~QtAvahiClient();
-
-    QtAvahiClientState state() const;
-
-private:
-    friend class QtAvahiService;
-    friend class QtAvahiServiceBrowserImplementation;
-    friend class QtAvahiServiceBrowserImplementationPrivate;
-
-    const AvahiPoll *m_poll;
-    AvahiClient *m_client;
-    int error;
-    QtAvahiClientState m_state;
-
-    void start();
-    void stop();
-    QString errorString() const;
-
-    static void callback(AvahiClient *client, AvahiClientState state, void *userdata);
-
-private slots:
-    void onClientStateChanged(const QtAvahiClientState &state);
-
-signals:
-    void clientStateChanged(const QtAvahiClientState &state);
-    void clientStateChangedInternal(const QtAvahiClientState &state);
-
-};
 
 }
 
-#endif // QTAVAHICLIENT_H
+/*!
+ * \brief ZeroConfServicePublisher::registerService
+ * \param name The name as it should appear on the network. This name must be unique across all registered services and is used to unregister/update. Note that the actual name as it appears on the network might be changed when collisions with other hosts happen.
+ * \param hostAddress The hostAddress the server is running
+ * \param port The port of the server
+ * \param serviceType The service type as it should appear on the network, for instance "_http.tcp"
+ * \param txtRecords A Map of txt records that should be published with this service
+ * \return
+ */
+
+bool ZeroConfServicePublisher::registerService(const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords)
+{
+    Q_UNUSED(name)
+    Q_UNUSED(hostAddress)
+    Q_UNUSED(port)
+    Q_UNUSED(serviceType)
+    Q_UNUSED(txtRecords)
+    return false;
+}
+
+/*!
+ * \brief ZeroConfServicePublisher::unregisterService
+ * \param id The id previously used to register the server
+ */
+void ZeroConfServicePublisher::unregisterService(const QString &id)
+{
+    Q_UNUSED(id)
+}

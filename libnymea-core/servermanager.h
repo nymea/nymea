@@ -32,6 +32,7 @@
 
 namespace nymeaserver {
 
+class Platform;
 class NymeaConfiguration;
 class JsonRPCServer;
 class TcpServer;
@@ -47,7 +48,7 @@ class ServerManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ServerManager(NymeaConfiguration *configuration, QObject *parent = nullptr);
+    explicit ServerManager(Platform *platform, NymeaConfiguration *configuration, QObject *parent = nullptr);
 
     // Interfaces
     JsonRPCServer *jsonServer() const;
@@ -72,6 +73,12 @@ private slots:
     void mqttPolicyRemoved(const QString &clientId);
 
 private:
+    bool registerZeroConfService(const ServerConfiguration &configuration, const QString &serverType, const QString &serviceType);
+    void unregisterZeroConfService(const QString &configId, const QString &serverType);
+
+private:
+    Platform *m_platform = nullptr;
+
     // Interfaces
     JsonRPCServer *m_jsonServer;
     RestServer *m_restServer;

@@ -22,19 +22,23 @@
 
 #include "loggingcategories.h"
 
+#include "platform/platform.h"
+
+#include "platform/platformzeroconfcontroller.h"
+
 #include "hardwaremanagerimplementation.h"
 #include "hardware/plugintimermanagerimplementation.h"
 #include "hardware/network/upnp/upnpdiscoveryimplementation.h"
 #include "hardware/network/networkaccessmanagerimpl.h"
 #include "hardware/radio433/radio433brennenstuhl.h"
 #include "hardware/bluetoothlowenergy/bluetoothlowenergymanagerimplementation.h"
-#include "hardware/network/avahi/qtavahiservicebrowserimplementation.h"
 #include "hardware/network/mqtt/mqttproviderimplementation.h"
 
 namespace nymeaserver {
 
-HardwareManagerImplementation::HardwareManagerImplementation(MqttBroker *mqttBroker, QObject *parent) :
-    HardwareManager(parent)
+HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, QObject *parent) :
+    HardwareManager(parent),
+    m_platform(platform)
 {
     // Create network access manager for all resources, centralized
     // Note: configuration and proxy settings could be implemented here
@@ -52,9 +56,6 @@ HardwareManagerImplementation::HardwareManagerImplementation(MqttBroker *mqttBro
     // UPnP discovery
     m_upnpDiscovery = new UpnpDiscoveryImplementation(m_networkAccessManager, this);
 
-    // Avahi Browser
-    m_avahiBrowser = new QtAvahiServiceBrowserImplementation(this);
-
     // Bluetooth LE
     m_bluetoothLowEnergyManager = new BluetoothLowEnergyManagerImplementation(m_pluginTimerManager->registerTimer(10), this);
 
@@ -70,8 +71,8 @@ HardwareManagerImplementation::HardwareManagerImplementation(MqttBroker *mqttBro
     if (m_upnpDiscovery->available())
         setResourceEnabled(m_upnpDiscovery, true);
 
-    if (m_avahiBrowser->available())
-        setResourceEnabled(m_avahiBrowser, true);
+    if (m_platform->zeroConfController()->available())
+        setResourceEnabled(m_platform->zeroConfController(), true);
 
     if (m_bluetoothLowEnergyManager->available())
         setResourceEnabled(m_bluetoothLowEnergyManager, true);
@@ -103,9 +104,9 @@ UpnpDiscovery *HardwareManagerImplementation::upnpDiscovery()
     return m_upnpDiscovery;
 }
 
-QtAvahiServiceBrowser *HardwareManagerImplementation::avahiBrowser()
+PlatformZeroConfController *HardwareManagerImplementation::zeroConfController()
 {
-    return m_avahiBrowser;
+    return m_platform->zeroConfController();
 }
 
 BluetoothLowEnergyManager *HardwareManagerImplementation::bluetoothLowEnergyManager()

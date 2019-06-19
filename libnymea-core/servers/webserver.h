@@ -36,8 +36,6 @@
 
 #include "nymeaconfiguration.h"
 
-#include "hardware/network/avahi/qtavahiservice.h"
-
 // Note: Hypertext Transfer Protocol (HTTP/1.1) from the Internet Engineering Task Force (IETF):
 //       https://tools.ietf.org/html/rfc7231
 
@@ -86,7 +84,6 @@ private:
     QList<WebServerClient *> m_webServerClients;
     QHash<QSslSocket *, HttpRequest> m_incompleteRequests;
 
-    QtAvahiService *m_avahiService = nullptr;
     QString m_serverName;
     WebServerConfiguration m_configuration;
     QSslConfiguration m_sslConfiguration;
@@ -114,9 +111,6 @@ private slots:
     void onEncrypted();
     void onError(QAbstractSocket::SocketError error);
     void onAsyncReplyFinished();
-
-    void onAvahiServiceStateChanged(const QtAvahiService::QtAvahiServiceState &state);
-    void resetAvahiService();
 
 public slots:
     void reconfigureServer(const WebServerConfiguration &config);

@@ -161,10 +161,10 @@ void NymeaCore::init() {
     m_userManager = new UserManager(NymeaSettings::settingsPath() + "/user-db.sqlite", this);
 
     qCDebug(dcApplication) << "Creating Server Manager";
-    m_serverManager = new ServerManager(m_configuration, this);
+    m_serverManager = new ServerManager(m_platform, m_configuration, this);
 
     qCDebug(dcApplication) << "Creating Hardware Manager";
-    m_hardwareManager = new HardwareManagerImplementation(m_serverManager->mqttBroker(), this);
+    m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), this);
 
     qCDebug(dcApplication) << "Creating Device Manager (locale:" << m_configuration->locale() << ")";
     m_deviceManager = new DeviceManager(m_hardwareManager, m_configuration->locale(), this);

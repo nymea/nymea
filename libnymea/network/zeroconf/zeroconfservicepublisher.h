@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2017-2018 Simon Stürz <simon.stuerz@guh.io>              *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,58 +20,21 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGERIMPLEMENTATION_H
-#define HARDWAREMANAGERIMPLEMENTATION_H
+#ifndef ZEROCONFSERVICEPUBLISHER_H
+#define ZEROCONFSERVICEPUBLISHER_H
 
 #include <QObject>
-#include <QDBusConnection>
-#include <QNetworkAccessManager>
+#include <QHostAddress>
 
-#include "hardwaremanager.h"
-
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-
-namespace nymeaserver {
-
-class Platform;
-class MqttBroker;
-
-class HardwareManagerImplementation : public HardwareManager
+class ZeroConfServicePublisher : public QObject
 {
     Q_OBJECT
-
 public:
-    explicit HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, QObject *parent = nullptr);
-    ~HardwareManagerImplementation() override;
+    explicit ZeroConfServicePublisher(QObject *parent = nullptr);
+    virtual ~ZeroConfServicePublisher() = default;
 
-    Radio433 *radio433() override;
-    PluginTimerManager *pluginTimerManager() override;
-    NetworkAccessManager *networkManager() override;
-    UpnpDiscovery *upnpDiscovery() override;
-    PlatformZeroConfController *zeroConfController() override;
-    BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
-    MqttProvider *mqttProvider() override;
-
-private:
-    QNetworkAccessManager *m_networkAccessManager = nullptr;
-
-    Platform *m_platform = nullptr;
-
-    // Hardware Resources
-    PluginTimerManager *m_pluginTimerManager = nullptr;
-    Radio433 *m_radio433 = nullptr;
-    NetworkAccessManager *m_networkManager = nullptr;
-    UpnpDiscovery *m_upnpDiscovery = nullptr;
-    BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
-    MqttProvider *m_mqttProvider = nullptr;
+    virtual bool registerService(const QString &name, const QHostAddress &hostAddress, const quint16 &port, const QString &serviceType, const QHash<QString, QString> &txtRecords);
+    virtual void unregisterService(const QString &id);
 };
 
-}
-
-#endif // HARDWAREMANAGERIMPLEMENTATION_H
+#endif // ZEROCONFSERVICEPUBLISHER_H

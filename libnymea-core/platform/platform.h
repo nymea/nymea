@@ -27,6 +27,7 @@
 
 class PlatformSystemController;
 class PlatformUpdateController;
+class PlatformZeroConfController;
 
 namespace nymeaserver {
 
@@ -38,16 +39,19 @@ public:
 
     PlatformSystemController *systemController() const;
     PlatformUpdateController *updateController() const;
+    PlatformZeroConfController *zeroConfController() const;
 
 private:
     QStringList pluginSearchDirs() const;
 
     void loadSystemPlugin(const QString &file);
     void loadUpdatePlugin(const QString &file);
+    void loadZeroConfPlugin(const QString &file);
 
 private:
     PlatformSystemController *m_platformSystemController = nullptr;
     PlatformUpdateController *m_platformUpdateController = nullptr;
+    PlatformZeroConfController *m_platformZeroConfController = nullptr;
 };
 
 }

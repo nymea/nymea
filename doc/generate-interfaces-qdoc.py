@@ -72,7 +72,7 @@ def loadInterfaces():
         if ".json" in fileName:
             interfaceFiles.append(interfacesDirectory + "/" + fileName)
 
-    # Sort file lists for beeing able to get the last n days logs
+    # Sort file lists for being able to get the last n days logs
     interfaceFiles.sort()
     for fileName in interfaceFiles:
         name = os.path.basename(fileName)

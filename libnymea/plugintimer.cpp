@@ -27,7 +27,7 @@
     \ingroup hardware
     \inmodule libguh
 
-    The plugin timer allowes to trigger repeating actions in a device plugin. This timer does not represent a precise timer
+    The plugin timer allows to trigger repeating actions in a device plugin. This timer does not represent a precise timer
     should be used for not time critical things. The PluginTimerManager will schedule the requested timer as needed and
     trigger the timeout() method.
 

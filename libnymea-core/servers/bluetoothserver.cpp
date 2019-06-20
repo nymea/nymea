@@ -134,7 +134,7 @@ void BluetoothServer::onClientDisconnected()
 
 void BluetoothServer::onClientError(QBluetoothSocket::SocketError error)
 {
-    qCWarning(dcBluetoothServer()) << "BluetoothServer: Error occured:" << error;
+    qCWarning(dcBluetoothServer()) << "BluetoothServer: Error occurred:" << error;
 }
 
 void BluetoothServer::onClientStateChanged(QBluetoothSocket::SocketState state)

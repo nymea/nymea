@@ -108,7 +108,7 @@
 
     The server will verify if the required types for an interface match the template. This will be evaluated once the server loads the plugin.
 
-    Once you updated the JSON file, you have to rebuild the whole plugin in order to trigger a rebuild of the the plugin information
+    Once you updated the JSON file, you have to rebuild the whole plugin in order to trigger a rebuild of the plugin information
     include files.
 
     \section2 nymea-generateplugininfo
@@ -145,14 +145,14 @@
 
     And finally, once the action \tt press gets called, the event \tt pressed will be emitted in the system.
 
-    This event can be connected whithin a rule to execute whatever action you want.
+    This event can be connected within a rule to execute whatever action you want.
 
     \section1 Test the plugin
 
     Now it's time to build you first plugin. In order to make sure all changes in you JSON file are up to date press the \tt{Rebuild all} instead
     of only \tt {Build}. This will rerun the nymea-generateplugininfo tool and update the \tt plugininfo.h and \tt extern-plugininfo.h files.
 
-    \note Comming soon!
+    \note Coming soon!
 
 
 */

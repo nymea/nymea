@@ -31,7 +31,7 @@
     For one it supports establishing a secure channel between the device and the plugin, using nymea's internal MQTT
     broker. The second approach is to provide a generic MQTT client object connected to nymea's internal MQTT broker.
 
-    Note, if you whish to establish a MQTT connection to an external MQTT broker, you can just create your own MqttClient
+    Note, if you wish to establish a MQTT connection to an external MQTT broker, you can just create your own MqttClient
     and connect to wherever you need to. The MqttProvider hardware resource only manages connections to the nymea internal
     MQTT broker.
 

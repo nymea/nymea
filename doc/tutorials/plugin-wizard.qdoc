@@ -69,7 +69,7 @@
         \image plugin-template-5.png Kit selection
 
     \section2 Project Management
-        Here you can select your prefered project management tool. If you choose git,
+        Here you can select your preferred project management tool. If you choose git,
         the default \tt{.gitignore} file will be added to the project.
 
         \image plugin-template-6.png Project Management
@@ -94,7 +94,7 @@
         \list
 
             \li In the first line you can see the gloabl nymea plugin include, where all the nymea plugin related
-                configrations and setting for your plugin project get included.
+                configurations and setting for your plugin project get included.
                 \printline include(
 
             \li The next line defines the library file name of your plugin. If you change the plugin name, this line has to be updated to.
@@ -177,7 +177,7 @@
 
     As you can see, the plugin includes in the cpp file the \tt{plugininfo.h} file, which will be generated during build time
     from the \tt{nymea-generateplugininfo} tool. This tool translates the \l{deviceplugintemplate.json} into a c++ header file
-    containing all uuid definitions, tranlations strings and the debug catergory definition.
+    containing all uuid definitions, translations strings and the debug catergory definition.
 
     \quotefromfile template/deviceplugintemplate.cpp
     \skipto #include
@@ -201,7 +201,7 @@
     \printuntil }
 
     The \l{DevicePlugin::deviceRemoved()}{deviceRemoved} method will be called from the DeviceManager once a device is about to be removed from the system.
-    Here is a good place to clean up everything releated to the device which will be removed.
+    Here is a good place to clean up everything related to the device which will be removed.
     \skipto deviceRemoved
     \printuntil }
 

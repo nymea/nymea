@@ -94,7 +94,7 @@ RulesHandler::RulesHandler(QObject *parent) :
                               "happens and if the stateEvaluator matches the system's state. ExitActions for such rules will be "
                               "executed when a matching event happens and the stateEvaluator is not matching the system's state. "
                               "A rule marked as executable can be executed via the API using Rules.ExecuteRule, that means, its "
-                              "actions will be executed regardless of the the eventDescriptor and stateEvaluators.");
+                              "actions will be executed regardless of the eventDescriptor and stateEvaluators.");
     params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
     params.insert("actions", QVariantList() << JsonTypes::ruleActionRef());
     params.insert("o:timeDescriptor", JsonTypes::timeDescriptorRef());

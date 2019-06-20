@@ -38,7 +38,7 @@
     This enum represents the possible errors of a BluetoothDiscoveryReply.
 
     \value BluetoothDiscoveryReplyErrorNoError
-        No error occured. Everything is fine.
+        No error occurred. Everything is fine.
     \value BluetoothDiscoveryReplyErrorNotAvailable
         The discovery could not be performed because there is no Bluetooth hardware available.
     \value BluetoothDiscoveryReplyErrorNotEnabled
@@ -62,7 +62,7 @@
 */
 
 /*! \fn void BluetoothDiscoveryReply::errorOccurred(const BluetoothDiscoveryReplyError &error);
-    This signal will be emitted whenever an \a error occured.
+    This signal will be emitted whenever an \a error occurred.
 
     \sa error, BluetoothDiscoveryReplyError
 */

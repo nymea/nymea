@@ -643,7 +643,7 @@ void JsonRPCServer::processJsonPacket(TransportInterface *interface, const QUuid
         }
 
 
-        // Unless this is the Hello message, which allows setting the locale explicity, attach the locale
+        // Unless this is the Hello message, which allows setting the locale explicitly, attach the locale
         // for this connection
         // If the client did request a locale in the Hello message, use that locale
         params.insert("locale", m_clientLocales.value(clientId));

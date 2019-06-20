@@ -1612,7 +1612,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("h2", tr("Server live logs"));
     writer.writeEmptyElement("hr");
 
-    writer.writeTextElement("p", tr("This section allowes you to see the live logs of the nymea server."));
+    writer.writeTextElement("p", tr("This section allows you to see the live logs of the nymea server."));
 
     // Toggle log button
     writer.writeStartElement("button");

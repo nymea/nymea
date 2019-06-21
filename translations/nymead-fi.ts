@@ -48,9 +48,39 @@
 <context>
     <name>DevicePluginMock</name>
     <message>
-        <location filename="../plugins/mock/devicepluginmock.cpp" line="216"/>
+        <location filename="../plugins/mock/devicepluginmock.cpp" line="217"/>
         <source>Display pin!! The pin is 243681</source>
         <translation>Näytä PIN!! PIN on 243681</translation>
+    </message>
+</context>
+<context>
+    <name>SimpleButton</name>
+    <message>
+        <location filename="../doc/examples/simplebutton/plugininfo.h" line="29"/>
+        <location filename="../doc/examples/simplebutton/plugininfo.h" line="35"/>
+        <source>Simple button</source>
+        <extracomment>The name of the plugin SimpleButton (28c7b102-3ac8-41f6-8dc0-f4787222a186)
+----------
+The name of the DeviceClass (c16ba02d-c982-4b45-8ca2-1945d94d8e66)</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../doc/examples/simplebutton/plugininfo.h" line="32"/>
+        <source>nymea</source>
+        <extracomment>The name of the vendor (2062d64d-3232-433c-88bc-0d33c0ba2ba6)</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../doc/examples/simplebutton/plugininfo.h" line="38"/>
+        <source>press</source>
+        <extracomment>The name of the ActionType 64c4ced5-9a1a-4858-81dd-1b5c94dba495 of deviceClass simplebutton</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../doc/examples/simplebutton/plugininfo.h" line="41"/>
+        <source>button pressed</source>
+        <extracomment>The name of the EventType f9652210-9aed-4f38-8c19-2fd54f703fbe of deviceClass simplebutton</extracomment>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -64,7 +94,7 @@
 <context>
     <name>nymea</name>
     <message>
-        <location filename="../server/main.cpp" line="157"/>
+        <location filename="../server/main.cpp" line="163"/>
         <source>
 nymea is an open source IoT (Internet of Things) server, 
 which allows to control a lot of different devices from many different 
@@ -79,12 +109,12 @@ nymea on avoimen lähdekoodin IoT (Internet of Things) -palvelin, joka mahdollis
 </translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="169"/>
+        <location filename="../server/main.cpp" line="175"/>
         <source>Run nymead in the foreground, not as daemon.</source>
         <translation>Aja nymead edustalla, älä daemonina.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="172"/>
+        <location filename="../server/main.cpp" line="178"/>
         <source>Debug categories to enable. Prefix with &quot;No&quot; to disable. Suffix with &quot;Warnings&quot; to address warnings.
 Examples:
 -d AWSTraffic
@@ -95,22 +125,22 @@ Categories are:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="184"/>
+        <location filename="../server/main.cpp" line="190"/>
         <source>Enables all debug categories except *Traffic and *Debug categories. Single debug categories can be disabled again with -d parameter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="187"/>
+        <location filename="../server/main.cpp" line="193"/>
         <source>Specify a log file to write to, if this option is not specified, logs will be printed to the standard output.</source>
         <translation>Määritä kirjoitettava lokitiedosto, jos tätä vaihtoehtoa ei ole määritetty, lokit tulostetaan vakiotulostuksena.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="190"/>
+        <location filename="../server/main.cpp" line="196"/>
         <source>If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus.</source>
         <translation>Jos määritetty, kaikki D-väylä-liittymät yhdistetään istuntoväylään järjestelmäväylän sijaan.</translation>
     </message>
     <message>
-        <location filename="../server/main.cpp" line="231"/>
+        <location filename="../server/main.cpp" line="237"/>
         <source>No such debug category:</source>
         <translation>Ei kyseistä debug-luokkaa:</translation>
     </message>

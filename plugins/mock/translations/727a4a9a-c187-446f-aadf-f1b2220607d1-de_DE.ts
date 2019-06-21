@@ -2,6 +2,13 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="de_DE">
 <context>
+    <name>DevicePluginMock</name>
+    <message>
+        <source>Display pin!! The pin is 243681</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>mockDevice</name>
     <message>
         <source>Mock Devices</source>
@@ -16,11 +23,6 @@
     <message>
         <source>configParamBool</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDevice, Type: plugin, ID: c75723b6-ea4f-4982-9751-6c5e39c88145)</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>guh GmbH</source>
-        <extracomment>The name of the vendor (2062d64d-3232-433c-88bc-0d33c0ba2ba6)</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -744,6 +746,11 @@ The name of the ParamType for the autocreated ActionType (DeviceClass: mockInput
     <message>
         <source>Set Writable Timestamp (UInt)</source>
         <extracomment>The name of the autocreated ActionType (DeviceClass: mockInputType, StateType: writableTimestampUInt, ID: 45d0069a-63ac-4265-8170-8152778608ee)</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>nymea</source>
+        <extracomment>The name of the vendor (2062d64d-3232-433c-88bc-0d33c0ba2ba6)</extracomment>
         <translation type="unfinished"></translation>
     </message>
 </context>

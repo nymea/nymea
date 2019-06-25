@@ -65,7 +65,7 @@ We have created an image for your Raspberry Pi (2/3) that comes with an array of
    <img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/community/app-shots/desktop-app.png?v=1555314733">
 </p>
 
-<table align="middle">
+<table align="center">
   <tr>
     <td> 
       <p>

@@ -847,15 +847,35 @@ void DeviceManagerImplementation::loadPlugins()
                 continue;
             }
 
+            // Check plugin API version compatibility
+            QLibrary lib(fi.absoluteFilePath());
+            QString *version = reinterpret_cast<QString*>(lib.resolve("nymea_plugin_api_version"));
+            if (!version) {
+                qCWarning(dcDeviceManager()).nospace() << "Unable to resolve version in plugin " << entry << ". Not loading plugin.";
+                loader.unload();
+                lib.unload();
+                continue;
+            }
+            lib.unload();
+            QStringList parts = version->split('.');
+            QStringList coreParts = QString(DEVICE_PLUGIN_API_VERSION).split('.');
+            if (parts.length() != 2 || parts.at(0).toInt() != coreParts.at(0).toInt() || parts.at(1).toInt() > coreParts.at(1).toInt()) {
+                qCWarning(dcDeviceManager()).nospace() << "Plugin API mismatch for " << entry << ". Core API: " << DEVICE_PLUGIN_API_VERSION << ", Plugin API: " << *version;
+                loader.unload();
+                continue;
+            }
+
             PluginMetadata metaData(loader.metaData().value("MetaData").toObject());
             if (!metaData.isValid()) {
                 qCWarning(dcDeviceManager()) << "Plugin metadata not valid for" << entry;
+                loader.unload();
                 continue;
             }
 
             DevicePlugin *pluginIface = qobject_cast<DevicePlugin *>(loader.instance());
             if (!pluginIface) {
                 qCWarning(dcDeviceManager) << "Could not get plugin instance of" << entry;
+                loader.unload();
                 continue;
             }
             loadPlugin(pluginIface, metaData);

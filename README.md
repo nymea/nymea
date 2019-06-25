@@ -30,7 +30,7 @@ Once the success message has printed on your screen, simply run: *sudo nymead -n
 <img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/nymea-pi.svg" width=300 >
 
 We have created an image for your Raspberry Pi (2/3) that comes with an array of plugins for different smart devices!
- [Download](https://downloads.nymea.io/images/nymea-community/nymea-ubuntu-18.04.2-latest-armhf+raspi.zip)
+ [Download](https://downloads.nymea.io/images/nymea-community/nymea-ubuntu-18.04.2-latest-armhf+raspi.img.xz)
 
 ## Get the nymea mobile app here:
 

@@ -6,6 +6,7 @@ TEMPLATE = lib
 QT += network bluetooth
 DEFINES += LIBNYMEA_LIBRARY
 
+QMAKE_CXXFLAGS += -Og
 QMAKE_LFLAGS += -fPIC
 
 HEADERS += \
@@ -141,11 +142,6 @@ RESOURCES += \
         interfaces/interfaces.qrc
 
 ## Install instructions
-
-# install plugininfo python script for libnymea-dev
-generateplugininfo.files = devices/nymea-generateplugininfo
-generateplugininfo.path = $$[QT_INSTALL_PREFIX]/bin
-INSTALLS += generateplugininfo
 
 # install plugin.pri for external plugins
 pluginpri.files = devices/plugin.pri

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+HOST_ARCH=`dpkg-architecture -qDEB_HOST_ARCH_CPU`
+HOST_MULTI_ARCH=`dpkg-architecture -qDEB_HOST_MULTIARCH`
+
+if [ "$DPKG_MAINTSCRIPT_ARCH" = "$HOST_ARCH" ]; then
+    echo Symlinking /usr/lib/$HOST_MULTI_ARCH/nymea/bin/nymea-plugininfocompiler to /usr/bin/nymea-plugininfocompiler
+    ln -s /usr/lib/$HOST_MULTI_ARCH/nymea/bin/nymea-plugininfocompiler /usr/bin/nymea-plugininfocompiler
+fi

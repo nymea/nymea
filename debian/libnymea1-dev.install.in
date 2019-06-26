@@ -1,5 +1,5 @@
 usr/lib/@DEB_HOST_MULTIARCH@/libnymea.so
 usr/include/nymea/* usr/include/nymea
-usr/bin/nymea-generateplugininfo usr/bin
+usr/bin/nymea-plugininfocompiler usr/lib/@DEB_HOST_MULTIARCH@/nymea/bin
 libnymea/devices/plugin.pri usr/include/nymea/
 usr/lib/@DEB_HOST_MULTIARCH@/pkgconfig/nymea.pc

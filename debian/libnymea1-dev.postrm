@@ -1,0 +1,10 @@
+#!/bin/bash
+
+HOST_ARCH=`dpkg-architecture -qDEB_HOST_ARCH_CPU`
+
+if [ "$DPKG_MAINTSCRIPT_ARCH" = "$HOST_ARCH" ]; then
+    if [ -e /usr/bin/nymea-plugininfocompiler ]; then
+      echo Removing symlink /usr/bin/nymea-plugininfocompiler
+      rm /usr/bin/nymea-plugininfocompiler
+    fi
+fi

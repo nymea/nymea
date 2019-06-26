@@ -23,8 +23,6 @@ qrc_*.cpp
 *.dirs
 *.install
 *.substvars
-plugininfo.h
-extern-plugininfo.h
 tests/auto/actions/testactions
 tests/auto/configurations/testconfigurations
 tests/auto/devices/testdevices

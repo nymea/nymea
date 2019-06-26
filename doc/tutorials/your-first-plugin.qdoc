@@ -111,9 +111,9 @@
     Once you updated the JSON file, you have to rebuild the whole plugin in order to trigger a rebuild of the plugin information
     include files.
 
-    \section2 nymea-generateplugininfo
+    \section2 nymea-plugininfocompiler
 
-    Before the source code will be compiled, a precompiler called \tt {nymea-generateplugininfo} will be launched. This tool will
+    Before the source code will be compiled, a precompiler called \tt {nymea-plugininfocompiler} will be launched. This tool will
     read the plugin JSON file and generate two header files for the plugin in the build directory.
 
     \section3 plugininfo.h
@@ -150,7 +150,7 @@
     \section1 Test the plugin
 
     Now it's time to build you first plugin. In order to make sure all changes in you JSON file are up to date press the \tt{Rebuild all} instead
-    of only \tt {Build}. This will rerun the nymea-generateplugininfo tool and update the \tt plugininfo.h and \tt extern-plugininfo.h files.
+    of only \tt {Build}. This will rerun the nymea-plugininfocompiler tool and update the \tt plugininfo.h and \tt extern-plugininfo.h files.
 
     \note Coming soon!
 

@@ -176,7 +176,7 @@
     The implementation of each method can be found in the corresponding \tt{cpp} file.
 
     As you can see, the plugin includes in the cpp file the \tt{plugininfo.h} file, which will be generated during build time
-    from the \tt{nymea-generateplugininfo} tool. This tool translates the \l{deviceplugintemplate.json} into a c++ header file
+    from the \tt{nymea-plugininfocompiler} tool. This tool translates the \l{deviceplugintemplate.json} into a c++ header file
     containing all uuid definitions, translations strings and the debug catergory definition.
 
     \quotefromfile template/deviceplugintemplate.cpp

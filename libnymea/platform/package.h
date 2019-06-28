@@ -28,7 +28,7 @@
 class Package
 {
 public:
-    explicit Package(const QString &packageId = QString(), const QString &displayName = QString(), const QString &installedVersion = QString(), const QString &candidateVersion = QString(), const QString &changelog = QString());
+    explicit Package(const QString &packageId, const QString &displayName, const QString &installedVersion = QString(), const QString &candidateVersion = QString(), const QString &changelog = QString());
 
     QString packageId() const;
     QString displayName() const;

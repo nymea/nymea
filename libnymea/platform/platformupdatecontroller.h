@@ -54,7 +54,7 @@ signals:
     void availableChanged();
     void busyChanged();
     void updateRunningChanged();
-    void packageAdded(const Package &pacakge);
+    void packageAdded(const Package &package);
     void packageChanged(const Package &package);
     void packageRemoved(const QString &packageId);
     void repositoryAdded(const Repository &repository);

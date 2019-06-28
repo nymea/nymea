@@ -36,7 +36,7 @@
     This enum represents the possible errors the \l{UserManager} can have.
 
     \value UserErrorNoError
-        No error occured. Everything is ok.4
+        No error occurred. Everything is ok.4
     \value UserErrorBackendError
         Something went wrong in the manager. This is probably caused by a database error.
     \value UserErrorInvalidUserId
@@ -197,7 +197,7 @@ bool UserManager::pushButtonAuthAvailable() const
 }
 
 /*! Authenticated the given \a username with the given \a password for the \a deviceName. If the authentication was
-    successfull, the token will be returned, otherwise the return value will be an empty byte array.
+    successful, the token will be returned, otherwise the return value will be an empty byte array.
 */
 QByteArray UserManager::authenticate(const QString &username, const QString &password, const QString &deviceName)
 {

@@ -58,7 +58,7 @@ BluetoothLowEnergyManager::BluetoothLowEnergyManager(QObject *parent) :
 {
 }
 
-/*! This method enables / disables this hardwareresource for all plugins. This method is available on the D-Bus. This can be usefull if a Bluetooth LE server
+/*! This method enables / disables this hardwareresource for all plugins. This method is available on the D-Bus. This can be useful if a Bluetooth LE server
     needs access to the hardware. By disabling the bluetooth support, nymea will not allow to use the hardware until it gets reenabled.
 */
 void BluetoothLowEnergyManager::EnableBluetooth(bool enabled)

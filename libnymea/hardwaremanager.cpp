@@ -72,7 +72,7 @@ HardwareManager::HardwareManager(QObject *parent) :
 
 }
 
-/*! Sets the given \a resource to \a enabled. This allowes to enable/disable individual \l{HardwareResource}{HardwareResources}. */
+/*! Sets the given \a resource to \a enabled. This allows to enable/disable individual \l{HardwareResource}{HardwareResources}. */
 void HardwareManager::setResourceEnabled(HardwareResource *resource, bool enabled)
 {
     resource->setEnabled(enabled);

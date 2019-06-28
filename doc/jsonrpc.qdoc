@@ -164,7 +164,7 @@
         \row
             \li \tt status
             \li string
-            \li Whether or not the JSONRPC request was successfull.
+            \li Whether or not the JSONRPC request was successful.
         \row
             \li \tt params
             \li json object

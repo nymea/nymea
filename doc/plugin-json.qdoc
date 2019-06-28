@@ -505,7 +505,7 @@ A \l{StateType} has following parameters:
             \li \tt possibleValues
             \li \b O
             \li array
-            \li Gives you the possibility to define a list of possible values which this state can have. This allowes a user to create a rule based
+            \li Gives you the possibility to define a list of possible values which this state can have. This allows a user to create a rule based
                 on a state and define only values which are possible. This is typically used for strings i.e. \tt {["Loading", "Installing", "Removing"]}.
         \row
             \li \tt writable

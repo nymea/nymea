@@ -112,7 +112,7 @@
 */
 
 /*! \fn void BluetoothLowEnergyDevice::errorOccurred(const QLowEnergyController::Error &error);
-    This signal will be emitted whenever an \a error occured.
+    This signal will be emitted whenever an \a error occurred.
 */
 
 /*! \fn void BluetoothLowEnergyDevice::servicesDiscoveryFinished();

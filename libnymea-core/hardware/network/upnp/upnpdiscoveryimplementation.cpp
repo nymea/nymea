@@ -68,7 +68,7 @@ UpnpDiscoveryImplementation::UpnpDiscoveryImplementation(QNetworkAccessManager *
 
     m_available = true;
 
-    qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
+    qCDebug(dcUpnp()) << "-->" << name() << "created successfully.";
 }
 
 /*! Destruct this \l{UpnpDiscoveryImplementation} object. */
@@ -100,7 +100,7 @@ UpnpDiscoveryReply *UpnpDiscoveryImplementation::discoverDevices(const QString &
         return reply.data();
     }
 
-    qCDebug(dcHardware) << name() << "discover" << searchTarget << userAgent;
+    qCDebug(dcUpnp) << "Starging discovery for" << searchTarget << "(User agent:" << userAgent << ")";
 
     // Looks good so far, lets start a request
     UpnpDiscoveryRequest *request = new UpnpDiscoveryRequest(this, reply.data());
@@ -112,6 +112,7 @@ UpnpDiscoveryReply *UpnpDiscoveryImplementation::discoverDevices(const QString &
 
 void UpnpDiscoveryImplementation::requestDeviceInformation(const QNetworkRequest &networkRequest, const UpnpDeviceDescriptor &upnpDeviceDescriptor)
 {
+    qCDebug(dcUpnp()) << "Requesting device information for" << networkRequest.url();
     QNetworkReply *replay = m_networkAccessManager->get(networkRequest);
     connect(replay, &QNetworkReply::finished, this, &UpnpDiscoveryImplementation::replyFinished);
     m_informationRequestList.insert(replay, upnpDeviceDescriptor);
@@ -228,7 +229,7 @@ void UpnpDiscoveryImplementation::setEnabled(bool enabled)
 
 void UpnpDiscoveryImplementation::error(QAbstractSocket::SocketError error)
 {
-    qCWarning(dcHardware) << name() << "socket error:" << error << m_socket->errorString();
+    qCWarning(dcUpnp) << name() << "socket error:" << error << m_socket->errorString();
 }
 
 void UpnpDiscoveryImplementation::readData()
@@ -245,7 +246,7 @@ void UpnpDiscoveryImplementation::readData()
     }
 
     if (data.contains("M-SEARCH") && !QNetworkInterface::allAddresses().contains(hostAddress)) {
-        qCDebug(dcUpnp()) << "UPnP discovery request received";
+        qCDebug(dcUpnp()) << "UPnP discovery request received. Responding...";
         respondToSearchRequest(hostAddress, port);
         return;
     }
@@ -344,13 +345,15 @@ void UpnpDiscoveryImplementation::replyFinished()
             }
         }
 
+        qCDebug(dcUpnp()) << "Discovery result:" << upnpDeviceDescriptor.hostAddress().toString();
+        qCDebug(dcUpnp()) << "Have" << m_discoverRequests.count() << "running discoveries";
         foreach (UpnpDiscoveryRequest *upnpDiscoveryRequest, m_discoverRequests) {
             upnpDiscoveryRequest->addDeviceDescriptor(upnpDeviceDescriptor);
         }
         break;
     }
     default:
-        qCWarning(dcHardware) << name() << "HTTP request error" << reply->request().url().toString() << status;
+        qCWarning(dcUpnp()) << name() << "HTTP request error" << reply->request().url().toString() << status;
         m_informationRequestList.remove(reply);
     }
 
@@ -462,6 +465,8 @@ void UpnpDiscoveryImplementation::discoverTimeout()
     if (reply.isNull()) {
         qCWarning(dcUpnp()) << name() << "Reply does not exist any more. Please don't delete the reply before it has finished.";
     }  else {
+        qCDebug(dcUpnp()) << "Descovery finished. Found devices:";
+        qCDebug(dcUpnp()) << discoveryRequest->deviceList();
         reply->setDeviceDescriptors(discoveryRequest->deviceList());
         reply->setError(UpnpDiscoveryReplyImplementation::UpnpDiscoveryReplyErrorNoError);
         reply->setFinished();
@@ -524,7 +529,7 @@ bool UpnpDiscoveryImplementation::enable()
 
     setEnabled(true);
 
-    qCDebug(dcHardware()) << "-->" << name() << "enabled successfully.";
+    qCDebug(dcUpnp()) << "-->" << name() << "enabled successfully.";
 
     return true;
 }

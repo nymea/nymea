@@ -41,8 +41,11 @@ void UpnpDiscoveryRequest::discover(int timeout)
                                               "HOST:239.255.255.250:1900\r\n"
                                               "MAN:\"ssdp:discover\"\r\n"
                                               "MX:4\r\n"
-                                              "ST: " + reply()->searchTarget().toUtf8() + "\r\n"
-                                              "USR-AGENT: " + reply()->userAgent().toUtf8() + "\r\n\r\n");
+                                              "ST: " + reply()->searchTarget().toUtf8() + "\r\n");
+    if (!reply()->userAgent().isEmpty()) {
+        m_ssdpSearchMessage.append("USR-AGENT: " + reply()->userAgent().toUtf8() + "\r\n");
+    }
+    m_ssdpSearchMessage.append("\r\n");
 
     m_upnpDiscovery->sendToMulticast(m_ssdpSearchMessage);
 

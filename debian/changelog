@@ -1,3 +1,12 @@
+nymea (0.13.1) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Fix some typos
+  * Improve UPnP debug output for easier debugging
+  * Update link to image
+
+ -- Jenkins <jenkins@nymea.io>  Fri, 28 Jun 2019 12:45:38 +0200
+
 nymea (0.13.0) xenial; urgency=medium
 
 

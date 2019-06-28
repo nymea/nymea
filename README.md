@@ -10,7 +10,9 @@ nymea (/[n'aiːmea:]/ - is an open source IoT edge server. The plug-in based arc
 
 ## Quick Install on Ubuntu 
 
+<p align="center">
 <img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/nymea-ubuntu.svg" width=300 >
+</p>
 
 In order to install nymea on Ubuntu, you simply need to download this bash script:
 
@@ -27,10 +29,12 @@ Once the success message has printed on your screen, simply run: *sudo nymead -n
 
 ## Quick Install on a Raspberry Pi
 
+<p align="center">
 <img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/nymea-pi.svg" width=300 >
+</p>
 
 We have created an image for your Raspberry Pi (2/3) that comes with an array of plugins for different smart devices!
- [Download  .zip](https://downloads.nymea.io/images/rpi3/nymea-debian-stretch-9-armhf-raspberry-pi-3.zip)
+ [Download](https://downloads.nymea.io/images/nymea-community/nymea-ubuntu-18.04.2-latest-armhf+raspi.img.xz)
 
 ## Get the nymea mobile app here:
 
@@ -61,7 +65,7 @@ We have created an image for your Raspberry Pi (2/3) that comes with an array of
    <img src="https://nymea.io/app/default/assets/addons/default/guh/default-theme/resources/img/community/app-shots/desktop-app.png?v=1555314733">
 </p>
 
-<table align="middle">
+<table align="center">
   <tr>
     <td> 
       <p>

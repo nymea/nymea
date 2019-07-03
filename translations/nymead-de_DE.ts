@@ -336,6 +336,11 @@ The network section of the debug interface</extracomment>
         <translation>Logdatenbank</translation>
     </message>
     <message>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1615"/>
+        <source>This section allows you to see the live logs of the nymea server.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="987"/>
         <source>Plugin paths</source>
         <extracomment>The plugins path description in the server infromation section of the debug interface</extracomment>
@@ -500,11 +505,6 @@ The download logs section of the debug interface</extracomment>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1612"/>
         <source>Server live logs</source>
         <extracomment>The network section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1615"/>
-        <source>This section allowes you to see the live logs of the nymea server.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

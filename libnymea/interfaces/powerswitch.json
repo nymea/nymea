@@ -1,0 +1,10 @@
+{
+    "extends": "button",
+    "description": "The powerswitch interface is used for smart power switches and just extends the simple button interface. Use this for switches that can be on or off.",
+    "states": [
+        {
+            "name": "power",
+            "type": "bool"
+        }
+    ]
+}

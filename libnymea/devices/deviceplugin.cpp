@@ -248,6 +248,22 @@ Device::DeviceError DevicePlugin::executeAction(Device *device, const Action &ac
     return Device::DeviceErrorNoError;
 }
 
+Device::BrowseResult DevicePlugin::browseDevice(Device *device, Device::BrowseResult result, const QString &nodeId)
+{
+    Q_UNUSED(device)
+    Q_UNUSED(nodeId)
+
+    result.status = Device::DeviceErrorUnsupportedFeature;
+    return result;
+}
+
+Device::DeviceError DevicePlugin::executeBrowserItem(Device *device, const QString &nodeId)
+{
+    Q_UNUSED(device)
+    Q_UNUSED(nodeId)
+    return Device::DeviceErrorUnsupportedFeature;
+}
+
 /*! Returns the configuration description of this DevicePlugin as a list of \l{ParamType}{ParamTypes}. */
 ParamTypes DevicePlugin::configurationDescription() const
 {

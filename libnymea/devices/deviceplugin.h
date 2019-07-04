@@ -78,6 +78,9 @@ public:
 
     virtual Device::DeviceError executeAction(Device *device, const Action &action);
 
+    virtual Device::BrowseResult browseDevice(Device *device, Device::BrowseResult result, const QString &nodeId = QString());
+    virtual Device::DeviceError executeBrowserItem(Device *device, const QString &nodeId);
+
     // Configuration
     ParamTypes configurationDescription() const;
     Device::DeviceError setConfiguration(const ParamList &configuration);
@@ -96,6 +99,7 @@ signals:
     void configValueChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     void autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
     void autoDeviceDisappeared(const DeviceId &deviceId);
+    void browseRequestFinished(const Device::BrowseResult &result);
 
 protected:
     Devices myDevices() const;

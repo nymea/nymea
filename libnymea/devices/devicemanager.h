@@ -70,7 +70,8 @@ public:
 
     virtual Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId) = 0;
 
-    virtual BrowserItems browseDevice(const DeviceId &deviceId, const QString &browser, const BrowserItemId &node = BrowserItemId()) = 0;
+    virtual Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &nodeId = QString()) = 0;
+    virtual Device::DeviceError executeBrowserItem(const DeviceId &deviceId, const QString &nodeId) = 0;
 
     virtual QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) = 0;
 
@@ -88,7 +89,11 @@ signals:
     void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
     void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId = DeviceId());
     void actionExecutionFinished(const ActionId &actionId, Device::DeviceError status);
+    void browseRequestFinished(const Device::BrowseResult &result);
 
+protected:
+    Device::BrowseResult createBrowseResult();
+    QUuid browseResultId(const Device::BrowseResult &result);
 };
 
 #endif // DEVICEMANAGER_H

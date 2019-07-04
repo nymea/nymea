@@ -105,6 +105,9 @@ public:
     QStringList interfaces() const;
     void setInterfaces(const QStringList &interfaces);
 
+    bool browsable() const;
+    void setBrowsable(bool browsable);
+
     bool operator==(const DeviceClass &device) const;
 
 private:
@@ -113,6 +116,7 @@ private:
     PluginId m_pluginId;
     QString m_name;
     QString m_displayName;
+    bool m_browsable = false;
     StateTypes m_stateTypes;
     EventTypes m_eventTypes;
     ActionTypes m_actionTypes;

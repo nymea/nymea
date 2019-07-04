@@ -154,6 +154,18 @@ PluginId Device::pluginId() const
     return m_plugin->pluginId();
 }
 
+/*! Returns the \l{DeviceClass} of this device. */
+DeviceClass Device::deviceClass() const
+{
+    return m_deviceClass;
+}
+
+/*! Returns the the \l{DevicePlugin} this Device is managed by. */
+DevicePlugin *Device::plugin() const
+{
+    return m_plugin;
+}
+
 /*! Returns the name of this Device. This is visible to the user. */
 QString Device::name() const
 {

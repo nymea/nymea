@@ -239,6 +239,30 @@ Device::DeviceError DevicePluginMock::displayPin(const PairingTransactionId &pai
     return Device::DeviceErrorNoError;
 }
 
+Device::BrowseResult DevicePluginMock::browseDevice(Device *device, Device::BrowseResult result, const QString &nodeId)
+{
+    qCDebug(dcMockDevice()) << "Browse device called" << device;
+    if (device->deviceClassId() == mockDeviceClassId) {
+        if (device->paramValue(mockDeviceAsyncParamTypeId).toBool()) {
+            result.status = Device::DeviceErrorAsync;
+            QTimer::singleShot(1000, device, [this, device, result, nodeId]() mutable {
+                if (device->paramValue(mockDeviceBrokenParamTypeId).toBool()) {
+                    result.status = Device::DeviceErrorHardwareFailure;
+                } else {
+                    result = generateBrowseItems(nodeId, result);
+                }
+                emit browseRequestFinished(result);
+            });
+        }
+        else if (device->paramValue(mockDeviceBrokenParamTypeId).toBool()) {
+            result.status = Device::DeviceErrorHardwareFailure;
+        } else {
+            result = generateBrowseItems(nodeId, result);
+        }
+    }
+    return result;
+}
+
 Device::DeviceError DevicePluginMock::executeAction(Device *device, const Action &action)
 {
     if (!myDevices().contains(device))
@@ -565,4 +589,39 @@ void DevicePluginMock::onChildDeviceDiscovered(const DeviceId &parentId)
 void DevicePluginMock::onPluginConfigChanged()
 {
 
+}
+
+Device::BrowseResult DevicePluginMock::generateBrowseItems(const QString &nodeId, Device::BrowseResult result)
+{
+    result.status = Device::DeviceErrorNoError;
+
+    if (nodeId.isEmpty()) {
+        result.items.append(BrowserItem("0", "Item 0", true));
+        result.items.append(BrowserItem("1", "Item 1"));
+        result.items.append(BrowserItem("2", "Item 2", true));
+        result.items.append(BrowserItem("3", "Item 3"));
+        result.items.append(BrowserItem("4", "Item 4"));
+    }
+    else if (nodeId == "0") {
+        result.items.append(BrowserItem("5", "Item 5"));
+        result.items.append(BrowserItem("6", "Item 6"));
+        result.items.append(BrowserItem("7", "Item 7"));
+        result.items.append(BrowserItem("8", "Item 8"));
+        result.items.append(BrowserItem("9", "Item 9"));
+    }
+    else if (nodeId == "2") {
+        result.items.append(BrowserItem("10", "Item 10", true));
+        result.items.append(BrowserItem("11", "Item 11"));
+        result.items.append(BrowserItem("12", "Item 12"));
+        result.items.append(BrowserItem("13", "Item 13"));
+        result.items.append(BrowserItem("14", "Item 14"));
+    }
+    else if (nodeId == "10") {
+        result.items.append(BrowserItem("15", "Item 15"));
+        result.items.append(BrowserItem("16", "Item 16"));
+    } else {
+        result.status = Device::DeviceErrorInvalidParameter;
+    }
+
+    return result;
 }

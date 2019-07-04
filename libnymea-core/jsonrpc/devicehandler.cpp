@@ -283,6 +283,23 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     returns.insert("o:values", states);
     setReturns("GetStateValues", returns);
 
+    params.clear(); returns.clear();
+    setDescription("BrowseDevice", "Browse a device. If a DeviceClass indicates a device is browsable, this method will return the BrowserItems. If no parameter besides the deviceId is used, the root node of this device will be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.");
+    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("o:nodeId", JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("BrowseDevice", params);
+    returns.insert("deviceError", JsonTypes::deviceErrorRef());
+    returns.insert("items", QVariantList() << JsonTypes::browserItemRef());
+    setReturns("BrowseDevice", returns);
+
+    params.clear(); returns.clear();
+    setDescription("ExecuteBrowserItem", "Execute the item identified by nodeId on the given device.");
+    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("o:nodeId", JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("ExecuteBrowserItem", params);
+    returns.insert("deviceError", JsonTypes::deviceErrorRef());
+    setReturns("ExecuteBrowserItem", returns);
+
     // Notifications
     params.clear(); returns.clear();
     setDescription("StateChanged", "Emitted whenever a State of a device changes.");
@@ -329,6 +346,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     connect(NymeaCore::instance(), &NymeaCore::deviceSetupFinished, this, &DeviceHandler::deviceSetupFinished);
     connect(NymeaCore::instance(), &NymeaCore::deviceReconfigurationFinished, this, &DeviceHandler::deviceReconfigurationFinished);
     connect(NymeaCore::instance(), &NymeaCore::pairingFinished, this, &DeviceHandler::pairingFinished);
+    connect(NymeaCore::instance()->deviceManager(), &DeviceManager::browseRequestFinished, this, &DeviceHandler::browseRequestFinished);
 }
 
 /*! Returns the name of the \l{DeviceHandler}. In this case \b Devices.*/
@@ -669,14 +687,31 @@ JsonReply *DeviceHandler::BrowseDevice(const QVariantMap &params) const
 {
     QVariantMap returns;
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
-    QString browser = params.value("browser").toString();
+    QString nodeId = params.value("nodeId").toString();
 
-    Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(deviceId);
-    if (!device) {
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorDeviceNotFound));
-        return createReply(returns);
+    Device::BrowseResult result = NymeaCore::instance()->deviceManager()->browseDevice(deviceId, nodeId);
+
+    if (result.status == Device::DeviceErrorAsync ) {
+        JsonReply *reply = createAsyncReply("BrowseDevice");
+        m_asyncBrowseRequests.insert(result.id, reply);
+        connect(reply, &JsonReply::finished, this, [this, result](){
+            m_asyncBrowseRequests.remove(result.id);
+        });
+        return reply;
     }
-    NymeaCore::instance()->deviceManager()->browseDevice(device->id(), browser);
+
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(result.status));
+    returns.insert("items", JsonTypes::packBrowserItems(result.items));
+    return createReply(returns);
+}
+
+JsonReply *DeviceHandler::ExecuteBrowserItem(const QVariantMap &params)
+{
+    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+    QString nodeId = params.value("nodeId").toString();
+    Device::DeviceError status = NymeaCore::instance()->deviceManager()->executeBrowserItem(deviceId, nodeId);
+    QVariantMap returns;
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
     return createReply(returns);
 }
 
@@ -803,6 +838,20 @@ void DeviceHandler::pairingFinished(const PairingTransactionId &pairingTransacti
         return;
     }
     m_asynDeviceAdditions.insert(deviceId, reply);
+}
+
+void DeviceHandler::browseRequestFinished(const Device::BrowseResult &result)
+{
+    if (!m_asyncBrowseRequests.contains(result.id)) {
+        qCWarning(dcJsonRpc()) << "No pending JsonRpc reply. Did it time out?";
+        return;
+    }
+    JsonReply *reply = m_asyncBrowseRequests.take(result.id);
+    QVariantMap params;
+    params.insert("deviceError", JsonTypes::deviceErrorToString(result.status));
+    params.insert("items", JsonTypes::packBrowserItems(result.items));
+    reply->setData(params);
+    reply->finished();
 }
 
 }

@@ -308,6 +308,16 @@ void DeviceClass::setInterfaces(const QStringList &interfaces)
     m_interfaces = interfaces;
 }
 
+bool DeviceClass::browsable() const
+{
+    return m_browsable;
+}
+
+void DeviceClass::setBrowsable(bool browsable)
+{
+    m_browsable = browsable;
+}
+
 /*! Compare this \a deviceClass to another. This is effectively the same as calling a.id() == b.id(). Returns true if the ids match.*/
 bool DeviceClass::operator==(const DeviceClass &deviceClass) const
 {

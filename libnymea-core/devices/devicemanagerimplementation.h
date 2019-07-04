@@ -97,7 +97,8 @@ public:
 
     Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId) override;
 
-    BrowserItems browseDevice(const DeviceId &deviceId, const QString &browser, const BrowserItemId &node = BrowserItemId()) override;
+    Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &nodeId = QString()) override;
+    Device::DeviceError executeBrowserItem(const DeviceId &deviceId, const QString &nodeId) override;
 
     QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) override;
 

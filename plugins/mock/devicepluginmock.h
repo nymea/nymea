@@ -52,6 +52,8 @@ public:
     Device::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret) override;
     Device::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor) override;
 
+    Device::BrowseResult browseDevice(Device *device, Device::BrowseResult result, const QString &nodeId = QString()) override;
+
 public slots:
     Device::DeviceError executeAction(Device *device, const Action &action) override;
 
@@ -71,6 +73,9 @@ private slots:
     void onDisplayPinPairingFinished();
     void onChildDeviceDiscovered(const DeviceId &parentId);
     void onPluginConfigChanged();
+
+private:
+    Device::BrowseResult generateBrowseItems(const QString &nodeId, Device::BrowseResult result);
 
 private:
     QHash<Device*, HttpDaemon*> m_daemons;

@@ -180,6 +180,7 @@ public:
     DECLARE_OBJECT(mqttPolicy, "MqttPolicy")
     DECLARE_OBJECT(package, "Package")
     DECLARE_OBJECT(repository, "Repository")
+    DECLARE_OBJECT(browserItem, "BrowserItem")
 
     // pack types
     static QVariantMap packEventType(const EventType &eventType, const PluginId &pluginId, const QLocale &locale);
@@ -194,7 +195,7 @@ public:
     static QVariantMap packStateDescriptor(const StateDescriptor &stateDescriptor);
     static QVariantMap packStateEvaluator(const StateEvaluator &stateEvaluator);
     static QVariantMap packParam(const Param &param);
-    static QVariantList packParams(const ParamList &paramList);
+    static QVariantMap packBrowserItem(const BrowserItem &item);
     static QVariantMap packParamType(const ParamType &paramType, const PluginId &pluginId, const QLocale &locale);
     static QVariantMap packParamDescriptor(const ParamDescriptor &paramDescriptor);
     static QVariantMap packVendor(const Vendor &vendor, const QLocale &locale);
@@ -214,6 +215,8 @@ public:
     static QVariantMap packWiredNetworkDevice(WiredNetworkDevice *networkDevice);
     static QVariantMap packWirelessNetworkDevice(WirelessNetworkDevice *networkDevice);
 
+    static QVariantList packParams(const ParamList &paramList);
+    static QVariantList packBrowserItems(const BrowserItems &items);
     static QVariantList packRules(const QList<Rule> rules);
     static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
     static QVariantList packSupportedVendors(const QLocale &locale);

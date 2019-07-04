@@ -162,7 +162,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             QJsonObject deviceClassObject = deviceClassJson.toObject();
             /*! Returns a list of all valid JSON properties a DeviceClass JSON definition can have. */
             QStringList deviceClassProperties = QStringList() << "id" << "name" << "displayName" << "createMethods" << "setupMethod"
-                                     << "interfaces" << "pairingInfo" << "discoveryParamTypes" << "discoveryParamTypes"
+                                     << "interfaces" << "browsable" << "pairingInfo" << "discoveryParamTypes" << "discoveryParamTypes"
                                      << "paramTypes" << "settingsTypes" << "stateTypes" << "actionTypes" << "eventTypes";
             QStringList mandatoryDeviceClassProperties = QStringList() << "id" << "name" << "displayName";
 
@@ -192,6 +192,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             DeviceClass deviceClass(pluginId(), vendorId, deviceClassId);
             deviceClass.setName(deviceClassName);
             deviceClass.setDisplayName(deviceClassObject.value("displayName").toString());
+            deviceClass.setBrowsable(deviceClassObject.value("browsable").toBool());
 
             // Read create methods
             DeviceClass::CreateMethods createMethods;

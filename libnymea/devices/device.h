@@ -30,6 +30,7 @@
 #include "types/deviceclass.h"
 #include "types/state.h"
 #include "types/param.h"
+#include "types/browseritem.h"
 
 #include <QObject>
 #include <QUuid>
@@ -69,7 +70,8 @@ public:
         DeviceErrorDeviceInRule,
         DeviceErrorDeviceIsChild,
         DeviceErrorPairingTransactionIdNotFound,
-        DeviceErrorParameterNotWritable
+        DeviceErrorParameterNotWritable,
+        DeviceErrorUnsupportedFeature,
     };
     Q_ENUM(DeviceError)
 
@@ -80,12 +82,22 @@ public:
     };
     Q_ENUM(DeviceSetupStatus)
 
+    class BrowseResult {
+    public:
+        QUuid id;
+        Device::DeviceError status = Device::DeviceErrorNoError;
+        BrowserItems items;
+    private:
+        BrowseResult(): id(QUuid::createUuid()) {}
+        friend class DeviceManager;
+    };
+
     DeviceId id() const;
     DeviceClassId deviceClassId() const;
     PluginId pluginId() const;
 
     DeviceClass deviceClass() const;
-    DevicePlugin* plugin();
+    DevicePlugin* plugin() const;
 
     QString name() const;
     void setName(const QString &name);

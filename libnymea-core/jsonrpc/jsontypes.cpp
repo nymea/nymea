@@ -127,6 +127,7 @@ QVariantMap JsonTypes::s_tag;
 QVariantMap JsonTypes::s_mqttPolicy;
 QVariantMap JsonTypes::s_package;
 QVariantMap JsonTypes::s_repository;
+QVariantMap JsonTypes::s_browserItem;
 
 void JsonTypes::init()
 {
@@ -273,6 +274,7 @@ void JsonTypes::init()
     s_deviceClass.insert("name", basicTypeToString(String));
     s_deviceClass.insert("displayName", basicTypeToString(String));
     s_deviceClass.insert("interfaces", QVariantList() << basicTypeToString(String));
+    s_deviceClass.insert("browsable", basicTypeToString(Bool));
     s_deviceClass.insert("setupMethod", setupMethodRef());
     s_deviceClass.insert("createMethods", QVariantList() << createMethodRef());
     s_deviceClass.insert("stateTypes", QVariantList() << stateTypeRef());
@@ -403,6 +405,7 @@ void JsonTypes::init()
     s_tag.insert("tagId", basicTypeToString(QVariant::String));
     s_tag.insert("o:value", basicTypeToString(QVariant::String));
 
+    // Package
     s_package.insert("id", basicTypeToString(QVariant::String));
     s_package.insert("displayName", basicTypeToString(QVariant::String));
     s_package.insert("summary", basicTypeToString(QVariant::String));
@@ -413,9 +416,18 @@ void JsonTypes::init()
     s_package.insert("rollbackAvailable", basicTypeToString(QVariant::Bool));
     s_package.insert("canRemove", basicTypeToString(QVariant::Bool));
 
+    // Repository
     s_repository.insert("id", basicTypeToString(QVariant::String));
     s_repository.insert("displayName", basicTypeToString(QVariant::String));
     s_repository.insert("enabled", basicTypeToString(QVariant::Bool));
+
+    // BrowserItem
+    s_browserItem.insert("id", basicTypeToString(QVariant::String));
+    s_browserItem.insert("displayName", basicTypeToString(QVariant::String));
+    s_browserItem.insert("description", basicTypeToString(QVariant::String));
+    s_browserItem.insert("thumbnail", basicTypeToString(QVariant::String));
+    s_browserItem.insert("executable", basicTypeToString(QVariant::Bool));
+    s_browserItem.insert("browsable", basicTypeToString(QVariant::Bool));
 
     s_initialized = true;
 }
@@ -706,6 +718,18 @@ QVariantMap JsonTypes::packParam(const Param &param)
     return variantMap;
 }
 
+QVariantMap JsonTypes::packBrowserItem(const BrowserItem &item)
+{
+    QVariantMap ret;
+    ret.insert("id", item.id());
+    ret.insert("displayName", item.displayName());
+    ret.insert("description", item.description());
+    ret.insert("thumbnail", item.thumbnail());
+    ret.insert("executable", item.executable());
+    ret.insert("browsable", item.browsable());
+    return ret;
+}
+
 QVariantList JsonTypes::packParams(const ParamList &paramList)
 {
     QVariantList ret;
@@ -790,6 +814,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass, const QLo
     variant.insert("vendorId", deviceClass.vendorId().toString());
     variant.insert("pluginId", deviceClass.pluginId().toString());
     variant.insert("interfaces", deviceClass.interfaces());
+    variant.insert("browsable", deviceClass.browsable());
 
     QVariantList stateTypes;
     foreach (const StateType &stateType, deviceClass.stateTypes())
@@ -1184,6 +1209,15 @@ QVariantList JsonTypes::packDeviceDescriptors(const QList<DeviceDescriptor> devi
         deviceDescriptorList.append(JsonTypes::packDeviceDescriptor(deviceDescriptor));
 
     return deviceDescriptorList;
+}
+
+QVariantList JsonTypes::packBrowserItems(const BrowserItems &items)
+{
+    QVariantList ret;
+    foreach (const BrowserItem &item, items) {
+        ret.append(packBrowserItem(item));
+    }
+    return ret;
 }
 
 /*! Returns a variant map with the current basic configuration of the server. */
@@ -2078,6 +2112,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateMap(repositoryDescription(), variant.toMap());
                 if (!result.first) {
                     qCWarning(dcJsonRpc) << "Repository not matching";
+                    return result;
+                }
+            } else if (refName == browserItemRef()) {
+                QPair<bool, QString> result = validateMap(browserItemDescription(), variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "BrowserItem not matching";
                     return result;
                 }
             } else if (refName == basicTypeRef()) {

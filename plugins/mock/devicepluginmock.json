@@ -32,6 +32,7 @@
                     "displayName": "Mock Device",
                     "interfaces": ["system", "light", "battery"],
                     "createMethods": ["user", "discovery"],
+                    "browsable": true,
                     "discoveryParamTypes": [
                         {
                             "id": "d222adb4-2f9c-4c3f-8655-76400d0fb6ce",

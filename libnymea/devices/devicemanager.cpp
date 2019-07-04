@@ -39,3 +39,14 @@ DeviceManager::DeviceManager(QObject *parent) : QObject(parent)
 {
 
 }
+
+Device::BrowseResult DeviceManager::createBrowseResult()
+{
+    Device::BrowseResult result = Device::BrowseResult();
+    return result;
+}
+
+QUuid DeviceManager::browseResultId(const Device::BrowseResult &result)
+{
+    return result.id;
+}

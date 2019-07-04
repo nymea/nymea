@@ -117,6 +117,7 @@ public slots:
     void setServerName(const QString &serverName);
     bool startServer();
     bool stopServer();
+    WebServerConfiguration configuration() const;
 
 };
 

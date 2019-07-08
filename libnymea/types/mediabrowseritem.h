@@ -23,8 +23,6 @@
 #ifndef MEDIABROWSERITEM_H
 #define MEDIABROWSERITEM_H
 
-#include <QHash>
-
 #include "browseritem.h"
 
 class MediaBrowserItem: public BrowserItem

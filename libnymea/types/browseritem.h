@@ -27,6 +27,8 @@
 #include "typeutils.h"
 
 #include <QList>
+#include <QHash>
+#include <QVariant>
 
 class LIBNYMEA_EXPORT BrowserItem
 {

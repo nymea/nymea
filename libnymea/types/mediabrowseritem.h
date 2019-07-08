@@ -20,98 +20,48 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef MEDIABROWSERITEM_H
+#define MEDIABROWSERITEM_H
+
+#include <QHash>
+
 #include "browseritem.h"
 
-
-BrowserItem::BrowserItem(const QString &id, const QString &displayName, bool browsable):
-    m_id(id),
-    m_displayName(displayName),
-    m_browsable(browsable)
+class MediaBrowserItem: public BrowserItem
 {
+    Q_GADGET
+public:
+    enum MediaBrowserIcon {
+        MediaBrowserIconNone = 1,
+        MediaBrowserIconPlaylist = 2,
+        MediaBrowserIconRecentlyPlayed = 3,
+        MediaBrowserIconLibrary = 4,
+        MediaBrowserIconMusicLibrary = 5,
+        MediaBrowserIconVideoLibrary = 6,
+        MediaBrowserIconPictureLibrary = 7,
 
-}
+        MediaBrowserIconDisk = 100,
+        MediaBrowserIconUSB = 101,
+        MediaBrowserIconNetwork = 102,
+        MediaBrowserIconAux = 103,
 
-QString BrowserItem::id() const
-{
-    return m_id;
-}
+        MediaBrowserIconSpotify = 200,
+        MediaBrowserIconAmazon = 201,
+        MediaBrowserIconTuneIn = 202,
+        MediaBrowserIconSiriusXM = 203,
+        MediaBrowserIconVTuner = 204,
+        MediaBrowserIconTidal = 205,
+        MediaBrowserIconAirable = 206,
+    };
+    Q_ENUM(MediaBrowserIcon)
 
-QString BrowserItem::displayName() const
-{
-    return m_displayName;
-}
+    MediaBrowserItem(const QString &id = QString(), const QString &displayName = QString(), bool browsable = false);
 
-void BrowserItem::setDisplayName(const QString &displayName)
-{
-    m_displayName = displayName;
-}
+    MediaBrowserIcon mediaIcon() const;
+    void setMediaIcon(MediaBrowserIcon mediaIcon);
 
-QString BrowserItem::description() const
-{
-    return m_description;
-}
+    int playCount() const;
+    void setPlayCount(int playCount);
+};
 
-void BrowserItem::setDescription(const QString &description)
-{
-    m_description = description;
-}
-
-bool BrowserItem::executable() const
-{
-    return m_executable;
-}
-
-void BrowserItem::setExecutable(bool executable)
-{
-    m_executable = executable;
-}
-
-bool BrowserItem::browsable() const
-{
-    return m_browsable;
-}
-
-void BrowserItem::setBrowsable(bool browsable)
-{
-    m_browsable = browsable;
-}
-
-BrowserItem::BrowserIcon BrowserItem::icon() const
-{
-    return m_icon;
-}
-
-void BrowserItem::setIcon(BrowserIcon icon)
-{
-    m_icon = icon;
-}
-
-QString BrowserItem::thumbnail() const
-{
-    return m_thumbnail;
-}
-
-void BrowserItem::setThumbnail(const QString &thumbnail)
-{
-    m_thumbnail = thumbnail;
-}
-
-BrowserItem::ExtendedPropertiesFlags BrowserItem::extendedPropertiesFlags() const
-{
-    return m_extendedPropertiesFlags;
-}
-
-QVariant BrowserItem::extendedProperty(const QString &propertyName) const
-{
-    return m_extendedProperties[propertyName];
-}
-
-BrowserItems::BrowserItems()
-{
-
-}
-
-BrowserItems::BrowserItems(const QList<BrowserItem> &other): QList<BrowserItem>(other)
-{
-
-}
+#endif // MEDIABROWSERITEM_H

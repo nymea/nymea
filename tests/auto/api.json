@@ -1,4 +1,4 @@
-2.2
+2.3
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -249,6 +249,19 @@
                 "o:deviceId": "Uuid"
             }
         },
+        "Devices.BrowseDevice": {
+            "description": "Browse a device. If a DeviceClass indicates a device is browsable, this method will return the BrowserItems. If no parameter besides the deviceId is used, the root node of this device will be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.",
+            "params": {
+                "deviceId": "Uuid",
+                "o:nodeId": "String"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError",
+                "items": [
+                    "$ref:BrowserItem"
+                ]
+            }
+        },
         "Devices.ConfirmPairing": {
             "description": "Confirm an ongoing pairing. In case of SetupMethodEnterPin also provide the pin in the params.",
             "params": {
@@ -265,6 +278,16 @@
             "params": {
                 "deviceId": "Uuid",
                 "name": "String"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError"
+            }
+        },
+        "Devices.ExecuteBrowserItem": {
+            "description": "Execute the item identified by nodeId on the given device.",
+            "params": {
+                "deviceId": "Uuid",
+                "o:nodeId": "String"
             },
             "returns": {
                 "deviceError": "$ref:DeviceError"
@@ -1351,6 +1374,17 @@
             "Time",
             "Object"
         ],
+        "BrowserIcon": "$ref:BrowserIcon",
+        "BrowserItem": {
+            "browsable": "Bool",
+            "description": "String",
+            "displayName": "String",
+            "executable": "Bool",
+            "icon": "$ref:BrowserIcon",
+            "id": "String",
+            "o:mediaIcon": "$ref:MediaBrowserIcon",
+            "thumbnail": "String"
+        },
         "CalendarItem": {
             "duration": "Uint",
             "o:datetime": "Uint",
@@ -1401,6 +1435,7 @@
             "actionTypes": [
                 "$ref:ActionType"
             ],
+            "browsable": "Bool",
             "createMethods": [
                 "$ref:CreateMethod"
             ],
@@ -1462,7 +1497,8 @@
             "DeviceErrorDeviceInRule",
             "DeviceErrorDeviceIsChild",
             "DeviceErrorPairingTransactionIdNotFound",
-            "DeviceErrorParameterNotWritable"
+            "DeviceErrorParameterNotWritable",
+            "DeviceErrorUnsupportedFeature"
         ],
         "Event": {
             "deviceId": "Uuid",
@@ -1535,6 +1571,7 @@
             "LoggingSourceStates",
             "LoggingSourceRules"
         ],
+        "MediaBrowserIcon": "$ref:MediaBrowserIcon",
         "MqttPolicy": {
             "allowedPublishTopicFilters": "StringList",
             "allowedSubscribeTopicFilters": "StringList",

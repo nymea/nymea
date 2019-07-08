@@ -35,9 +35,6 @@ namespace nymeaserver {
 class NetworkDevice : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(NetworkDeviceType)
-    Q_ENUMS(NetworkDeviceState)
-    Q_ENUMS(NetworkDeviceStateReason)
 
 public:
     enum NetworkDeviceState {
@@ -55,6 +52,7 @@ public:
         NetworkDeviceStateDeactivating = 110,
         NetworkDeviceStateFailed = 120
     };
+    Q_ENUM(NetworkDeviceState)
 
     enum NetworkDeviceStateReason {
         NetworkDeviceStateReasonNone = 0,
@@ -121,6 +119,7 @@ public:
         NetworkDeviceStateReasonParentChanged = 61,
         NetworkDeviceStateReasonParentManagedChanged = 62
     };
+    Q_ENUM(NetworkDeviceStateReason)
 
     enum NetworkDeviceType {
         NetworkDeviceTypeUnknown = 0,
@@ -143,8 +142,9 @@ public:
         NetworkDeviceTypeVXLan = 19,
         NetworkDeviceTypeVEth = 20,
     };
+    Q_ENUM(NetworkDeviceType)
 
-    explicit NetworkDevice(const QDBusObjectPath &objectPath, QObject *parent = 0);
+    explicit NetworkDevice(const QDBusObjectPath &objectPath, QObject *parent = nullptr);
 
     QDBusObjectPath objectPath() const;
 

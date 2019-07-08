@@ -15,7 +15,8 @@ HEADERS += \
         libnymea.h \
         platform/package.h \
         platform/repository.h \
-    types/browseritem.h \
+        types/browseritem.h \
+        types/mediabrowseritem.h \
         typeutils.h \
         loggingcategories.h \
         nymeasettings.h \
@@ -111,7 +112,8 @@ SOURCES += \
         coap/corelinkparser.cpp \
         coap/corelink.cpp \
         coap/coapobserveresource.cpp \
-    types/browseritem.cpp \
+        types/browseritem.cpp \
+        types/mediabrowseritem.cpp \
         types/deviceclass.cpp \
         types/action.cpp \
         types/actiontype.cpp \

@@ -40,9 +40,6 @@ namespace nymeaserver {
 class NetworkManager : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(NetworkManagerState)
-    Q_ENUMS(NetworkManagerConnectivityState)
-    Q_ENUMS(NetworkManagerError)
 
 public:
     enum NetworkManagerState {
@@ -55,6 +52,7 @@ public:
         NetworkManagerStateConnectedSite = 60,
         NetworkManagerStateConnectedGlobal = 70
     };
+    Q_ENUM(NetworkManagerState)
 
     enum NetworkManagerConnectivityState {
         NetworkManagerConnectivityStateUnknown = 0,
@@ -63,6 +61,7 @@ public:
         NetworkManagerConnectivityStateLimited = 3,
         NetworkManagerConnectivityStateFull = 4
     };
+    Q_ENUM(NetworkManagerConnectivityState)
 
     enum NetworkManagerError {
         NetworkManagerErrorNoError,
@@ -76,8 +75,9 @@ public:
         NetworkManagerErrorNetworkingDisabled,
         NetworkManagerErrorNetworkManagerNotAvailable
     };
+    Q_ENUM(NetworkManagerError)
 
-    explicit NetworkManager(QObject *parent = 0);
+    explicit NetworkManager(QObject *parent = nullptr);
 
     bool available();
     bool wifiAvailable();

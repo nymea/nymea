@@ -38,10 +38,6 @@
 class LIBNYMEA_EXPORT DeviceClass
 {
     Q_GADGET
-    Q_ENUMS(CreateMethod)
-    Q_ENUMS(SetupMethod)
-    Q_ENUMS(BasicTag)
-    Q_ENUMS(CreateMethods)
 
 public:
     enum CreateMethod {
@@ -49,6 +45,7 @@ public:
         CreateMethodAuto = 0x02,
         CreateMethodDiscovery = 0x04
     };
+    Q_ENUM(CreateMethod)
     Q_DECLARE_FLAGS(CreateMethods, CreateMethod)
 
     enum SetupMethod {
@@ -57,6 +54,7 @@ public:
         SetupMethodEnterPin,
         SetupMethodPushButton
     };
+    Q_ENUM(SetupMethod)
 
     DeviceClass(const PluginId &pluginId = PluginId(), const VendorId &vendorId = VendorId(), const DeviceClassId &id = DeviceClassId());
 

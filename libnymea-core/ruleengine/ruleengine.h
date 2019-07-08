@@ -36,8 +36,6 @@ namespace nymeaserver {
 class RuleEngine : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(RuleError)
-    Q_ENUMS(RemovePolicy)
 public:
     enum RuleError {
         RuleErrorNoError,
@@ -62,11 +60,13 @@ public:
         RuleErrorNoExitActions,
         RuleErrorInterfaceNotFound
     };
+    Q_ENUM(RuleError)
 
     enum RemovePolicy {
         RemovePolicyCascade,
         RemovePolicyUpdate
     };
+    Q_ENUM(RemovePolicy)
 
     explicit RuleEngine(QObject *parent = nullptr);
     ~RuleEngine();

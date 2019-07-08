@@ -31,7 +31,6 @@ namespace nymeaserver {
 class RepeatingOption
 {
     Q_GADGET
-    Q_ENUMS(RepeatingMode)
 
 public:
     enum RepeatingMode {
@@ -42,6 +41,7 @@ public:
         RepeatingModeMonthly,
         RepeatingModeYearly
     };
+    Q_ENUM(RepeatingMode)
 
     RepeatingOption();
     RepeatingOption(const RepeatingMode &mode, const QList<int> &weekDays = QList<int>(), const QList<int> &monthDays = QList<int>());

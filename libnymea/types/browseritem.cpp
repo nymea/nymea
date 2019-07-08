@@ -19,6 +19,11 @@ QString BrowserItem::displayName() const
     return m_displayName;
 }
 
+void BrowserItem::setDisplayName(const QString &displayName)
+{
+    m_displayName = displayName;
+}
+
 QString BrowserItem::description() const
 {
     return m_description;
@@ -49,6 +54,16 @@ void BrowserItem::setBrowsable(bool browsable)
     m_browsable = browsable;
 }
 
+BrowserItem::BrowserIcon BrowserItem::icon() const
+{
+    return m_icon;
+}
+
+void BrowserItem::setIcon(BrowserIcon icon)
+{
+    m_icon = icon;
+}
+
 QString BrowserItem::thumbnail() const
 {
     return m_thumbnail;
@@ -57,6 +72,16 @@ QString BrowserItem::thumbnail() const
 void BrowserItem::setThumbnail(const QString &thumbnail)
 {
     m_thumbnail = thumbnail;
+}
+
+BrowserItem::ExtendedPropertiesFlags BrowserItem::extendedPropertiesFlags() const
+{
+    return m_extendedPropertiesFlags;
+}
+
+QVariant BrowserItem::extendedProperty(const QString &propertyName) const
+{
+    return m_extendedProperties[propertyName];
 }
 
 BrowserItems::BrowserItems()

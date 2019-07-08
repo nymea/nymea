@@ -37,6 +37,7 @@
 #include "types/paramtype.h"
 #include "types/paramdescriptor.h"
 #include "types/ruleactionparam.h"
+#include "types/mediabrowseritem.h"
 
 #include "logging/logging.h"
 #include "logging/logentry.h"
@@ -90,10 +91,8 @@ namespace nymeaserver {
         return s_##typeName; \
     } \
     static QString typeName##ToString(className::enumName value) { \
-        const QMetaObject &metaObject = className::staticMetaObject; \
-        int enumIndex = metaObject.indexOfEnumerator(enumString); \
-        QMetaEnum metaEnum = metaObject.enumerator(enumIndex); \
-        return metaEnum.valueToKey(metaEnum.value(value)); \
+        QMetaEnum metaEnum = QMetaEnum::fromType<className::enumName>(); \
+        return metaEnum.valueToKey(value); \
     } \
     private: \
     static QVariantList s_##typeName; \
@@ -102,7 +101,6 @@ namespace nymeaserver {
 class JsonTypes
 {
     Q_GADGET
-    Q_ENUMS(BasicType)
 
 public:
     enum BasicType {
@@ -118,6 +116,7 @@ public:
         Time,
         Object
     };
+    Q_ENUM(BasicType)
 
     static QVariantMap allTypes();
 
@@ -143,6 +142,8 @@ public:
     DECLARE_TYPE(userError, "UserError", UserManager, UserError)
     DECLARE_TYPE(tagError, "TagError", TagsStorage, TagError)
     DECLARE_TYPE(cloudConnectionState, "CloudConnectionState", CloudManager, CloudConnectionState)
+    DECLARE_TYPE(browserIcon, "BrowserIcon", BrowserItem, BrowserIcon)
+    DECLARE_TYPE(mediaBrowserIcon, "MediaBrowserIcon", MediaBrowserItem, MediaBrowserIcon)
 
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")

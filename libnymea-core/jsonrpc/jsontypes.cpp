@@ -58,6 +58,8 @@
 #include "loggingcategories.h"
 #include "logging/logvaluetool.h"
 
+#include "types/mediabrowseritem.h"
+
 #include <QStringList>
 #include <QJsonDocument>
 #include <QDebug>
@@ -90,6 +92,8 @@ QVariantList JsonTypes::s_networkDeviceState;
 QVariantList JsonTypes::s_userError;
 QVariantList JsonTypes::s_tagError;
 QVariantList JsonTypes::s_cloudConnectionState;
+QVariantList JsonTypes::s_browserIcon;
+QVariantList JsonTypes::s_mediaBrowserIcon;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -154,6 +158,8 @@ void JsonTypes::init()
     s_userError = enumToStrings(UserManager::staticMetaObject, "UserError");
     s_tagError = enumToStrings(TagsStorage::staticMetaObject, "TagError");
     s_cloudConnectionState = enumToStrings(CloudManager::staticMetaObject, "CloudConnectionState");
+    s_browserIcon = enumToStrings(BrowserItem::staticMetaObject, "BrowserIcon");
+    s_mediaBrowserIcon = enumToStrings(MediaBrowserItem::staticMetaObject, "MediaBrowserIcon");
 
     // ParamType
     s_paramType.insert("id", basicTypeToString(Uuid));
@@ -425,9 +431,11 @@ void JsonTypes::init()
     s_browserItem.insert("id", basicTypeToString(QVariant::String));
     s_browserItem.insert("displayName", basicTypeToString(QVariant::String));
     s_browserItem.insert("description", basicTypeToString(QVariant::String));
+    s_browserItem.insert("icon", browserIconRef());
     s_browserItem.insert("thumbnail", basicTypeToString(QVariant::String));
     s_browserItem.insert("executable", basicTypeToString(QVariant::Bool));
     s_browserItem.insert("browsable", basicTypeToString(QVariant::Bool));
+    s_browserItem.insert("o:mediaIcon", mediaBrowserIconRef());
 
     s_initialized = true;
 }
@@ -477,6 +485,8 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("UserError", userError());
     allTypes.insert("TagError", tagError());
     allTypes.insert("CloudConnectionState", cloudConnectionState());
+    allTypes.insert("BrowserIcon", browserIconRef());
+    allTypes.insert("MediaBrowserIcon", mediaBrowserIconRef());
 
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
@@ -513,6 +523,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("MqttPolicy", mqttPolicyDescription());
     allTypes.insert("Package", packageDescription());
     allTypes.insert("Repository", repositoryDescription());
+    allTypes.insert("BrowserItem", browserItemDescription());
 
     return allTypes;
 }
@@ -724,6 +735,10 @@ QVariantMap JsonTypes::packBrowserItem(const BrowserItem &item)
     ret.insert("id", item.id());
     ret.insert("displayName", item.displayName());
     ret.insert("description", item.description());
+    ret.insert("icon", browserIconToString(item.icon()));
+    if (item.extendedPropertiesFlags().testFlag(BrowserItem::ExtendedPropertiesMedia)) {
+        ret.insert("mediaIcon", mediaBrowserIconToString(static_cast<MediaBrowserItem::MediaBrowserIcon>(item.extendedProperty("mediaIcon").toInt())));
+    }
     ret.insert("thumbnail", item.thumbnail());
     ret.insert("executable", item.executable());
     ret.insert("browsable", item.browsable());
@@ -2250,6 +2265,18 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateEnum(s_cloudConnectionState, variant);
                 if (!result.first) {
                     qCWarning(dcJsonRpc()) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(cloudConnectionStateRef());
+                    return result;
+                }
+            } else if (refName == browserIconRef()) {
+                QPair<bool, QString> result = validateEnum(s_browserIcon, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc()) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(browserIconRef());
+                    return result;
+                }
+            } else if (refName == mediaBrowserIconRef()) {
+                QPair<bool, QString> result = validateEnum(s_mediaBrowserIcon, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc()) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(mediaBrowserIconRef());
                     return result;
                 }
             } else {

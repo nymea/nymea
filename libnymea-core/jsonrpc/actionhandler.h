@@ -38,8 +38,11 @@ public:
     Q_INVOKABLE JsonReply *ExecuteAction(const QVariantMap &params);
     Q_INVOKABLE JsonReply *GetActionType(const QVariantMap &params) const;
 
+    Q_INVOKABLE JsonReply *ExecuteBrowserItem(const QVariantMap &params);
+
 private slots:
     void actionExecuted(const ActionId &id, Device::DeviceError status);
+    void browserItemExecuted(const ActionId &id, Device::DeviceError status);
 
 private:
     QHash<ActionId, JsonReply *> m_asyncActionExecutions;

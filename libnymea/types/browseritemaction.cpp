@@ -20,99 +20,47 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "browseritem.h"
+#include "browseritemaction.h"
 
-
-BrowserItem::BrowserItem(const QString &id, const QString &displayName, bool browsable, bool executable):
-    m_id(id),
-    m_displayName(displayName),
-    m_browsable(browsable),
-  m_executable(executable)
+BrowserItemAction::BrowserItemAction(const DeviceId &deviceId, const QString &itemId):
+    m_id(ActionId::createActionId()),
+    m_deviceId(deviceId),
+    m_itemId(itemId)
 {
 
 }
 
-QString BrowserItem::id() const
+BrowserItemAction::BrowserItemAction(const BrowserItemAction &other):
+    m_id(other.id()),
+    m_deviceId(other.deviceId()),
+    m_itemId(other.itemId())
+{
+
+}
+
+ActionId BrowserItemAction::id() const
 {
     return m_id;
 }
 
-QString BrowserItem::displayName() const
+bool BrowserItemAction::isValid() const
 {
-    return m_displayName;
+    return !m_id.isNull() && !m_deviceId.isNull() && !m_itemId.isNull();
 }
 
-void BrowserItem::setDisplayName(const QString &displayName)
+DeviceId BrowserItemAction::deviceId() const
 {
-    m_displayName = displayName;
+    return m_deviceId;
 }
 
-QString BrowserItem::description() const
+QString BrowserItemAction::itemId() const
 {
-    return m_description;
+    return m_itemId;
 }
 
-void BrowserItem::setDescription(const QString &description)
+void BrowserItemAction::operator=(const BrowserItemAction &other)
 {
-    m_description = description;
-}
-
-bool BrowserItem::executable() const
-{
-    return m_executable;
-}
-
-void BrowserItem::setExecutable(bool executable)
-{
-    m_executable = executable;
-}
-
-bool BrowserItem::browsable() const
-{
-    return m_browsable;
-}
-
-void BrowserItem::setBrowsable(bool browsable)
-{
-    m_browsable = browsable;
-}
-
-BrowserItem::BrowserIcon BrowserItem::icon() const
-{
-    return m_icon;
-}
-
-void BrowserItem::setIcon(BrowserIcon icon)
-{
-    m_icon = icon;
-}
-
-QString BrowserItem::thumbnail() const
-{
-    return m_thumbnail;
-}
-
-void BrowserItem::setThumbnail(const QString &thumbnail)
-{
-    m_thumbnail = thumbnail;
-}
-
-BrowserItem::ExtendedPropertiesFlags BrowserItem::extendedPropertiesFlags() const
-{
-    return m_extendedPropertiesFlags;
-}
-
-QVariant BrowserItem::extendedProperty(const QString &propertyName) const
-{
-    return m_extendedProperties[propertyName];
-}
-
-BrowserItems::BrowserItems()
-{
-
-}
-
-BrowserItems::BrowserItems(const QList<BrowserItem> &other): QList<BrowserItem>(other)
-{
-
+    m_id = other.id();
+    m_deviceId = other.deviceId();
+    m_itemId = other.itemId();
 }

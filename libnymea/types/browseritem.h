@@ -56,7 +56,7 @@ public:
     Q_DECLARE_FLAGS(ExtendedPropertiesFlags, ExtendedProperties)
 
 
-    BrowserItem(const QString &id = QString(), const QString &displayName = QString(), bool browsable = false);
+    BrowserItem(const QString &id = QString(), const QString &displayName = QString(), bool browsable = false, bool executable = false);
 
     QString id() const;
     void setId(const QString &id);
@@ -86,8 +86,8 @@ private:
     QString m_id;
     QString m_displayName;
     QString m_description;
-    bool m_executable = false;
     bool m_browsable = false;
+    bool m_executable = false;
     BrowserIcon m_icon = BrowserIconNone;
     QString m_thumbnail;
 

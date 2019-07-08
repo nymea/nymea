@@ -56,6 +56,7 @@ public:
 
 public slots:
     Device::DeviceError executeAction(Device *device, const Action &action) override;
+    Device::DeviceError executeBrowserItem(Device *device, const BrowserItemAction &browserItemAction) override;
 
 private slots:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);
@@ -75,7 +76,7 @@ private slots:
     void onPluginConfigChanged();
 
 private:
-    Device::BrowseResult generateBrowseItems(const QString &nodeId, Device::BrowseResult result);
+    Device::BrowseResult generateBrowseItems(const QString &itemId, Device::BrowseResult result);
 
 private:
     QHash<Device*, HttpDaemon*> m_daemons;

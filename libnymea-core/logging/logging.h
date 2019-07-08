@@ -42,7 +42,8 @@ public:
         LoggingSourceEvents,
         LoggingSourceActions,
         LoggingSourceStates,
-        LoggingSourceRules
+        LoggingSourceRules,
+        LoggingSourceBrowserActions,
     };
     Q_ENUM(LoggingSource)
     Q_FLAGS(LoggingSources)

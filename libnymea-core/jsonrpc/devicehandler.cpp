@@ -286,19 +286,11 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.clear(); returns.clear();
     setDescription("BrowseDevice", "Browse a device. If a DeviceClass indicates a device is browsable, this method will return the BrowserItems. If no parameter besides the deviceId is used, the root node of this device will be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.");
     params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("o:nodeId", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("o:itemId", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("BrowseDevice", params);
     returns.insert("deviceError", JsonTypes::deviceErrorRef());
     returns.insert("items", QVariantList() << JsonTypes::browserItemRef());
     setReturns("BrowseDevice", returns);
-
-    params.clear(); returns.clear();
-    setDescription("ExecuteBrowserItem", "Execute the item identified by nodeId on the given device.");
-    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("o:nodeId", JsonTypes::basicTypeToString(JsonTypes::String));
-    setParams("ExecuteBrowserItem", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    setReturns("ExecuteBrowserItem", returns);
 
     // Notifications
     params.clear(); returns.clear();
@@ -687,9 +679,9 @@ JsonReply *DeviceHandler::BrowseDevice(const QVariantMap &params) const
 {
     QVariantMap returns;
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
-    QString nodeId = params.value("nodeId").toString();
+    QString itemId = params.value("itemId").toString();
 
-    Device::BrowseResult result = NymeaCore::instance()->deviceManager()->browseDevice(deviceId, nodeId);
+    Device::BrowseResult result = NymeaCore::instance()->deviceManager()->browseDevice(deviceId, itemId);
 
     if (result.status == Device::DeviceErrorAsync ) {
         JsonReply *reply = createAsyncReply("BrowseDevice");
@@ -702,16 +694,6 @@ JsonReply *DeviceHandler::BrowseDevice(const QVariantMap &params) const
 
     returns.insert("deviceError", JsonTypes::deviceErrorToString(result.status));
     returns.insert("items", JsonTypes::packBrowserItems(result.items));
-    return createReply(returns);
-}
-
-JsonReply *DeviceHandler::ExecuteBrowserItem(const QVariantMap &params)
-{
-    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
-    QString nodeId = params.value("nodeId").toString();
-    Device::DeviceError status = NymeaCore::instance()->deviceManager()->executeBrowserItem(deviceId, nodeId);
-    QVariantMap returns;
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
     return createReply(returns);
 }
 

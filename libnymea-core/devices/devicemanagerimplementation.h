@@ -97,8 +97,10 @@ public:
 
     Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId) override;
 
-    Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &nodeId = QString()) override;
-    Device::DeviceError executeBrowserItem(const DeviceId &deviceId, const QString &nodeId) override;
+    Device::DeviceError executeAction(const Action &action) override;
+
+    Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &itemId = QString()) override;
+    Device::DeviceError executeBrowserItem(const BrowserItemAction &browserItemAction) override;
 
     QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) override;
 
@@ -106,7 +108,6 @@ signals:
     void loaded();
 
 public slots:
-    Device::DeviceError executeAction(const Action &action);
     void timeTick();
 
 private slots:

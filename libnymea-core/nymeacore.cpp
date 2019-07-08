@@ -201,6 +201,7 @@ void NymeaCore::init() {
     connect(m_deviceManager, &DeviceManagerImplementation::deviceRemoved, this, &NymeaCore::deviceRemoved);
     connect(m_deviceManager, &DeviceManagerImplementation::deviceDisappeared, this, &NymeaCore::onDeviceDisappeared);
     connect(m_deviceManager, &DeviceManagerImplementation::actionExecutionFinished, this, &NymeaCore::actionExecutionFinished);
+    connect(m_deviceManager, &DeviceManagerImplementation::browserItemExecutionFinished, this, &NymeaCore::browserItemExecutionFinished);
     connect(m_deviceManager, &DeviceManagerImplementation::devicesDiscovered, this, &NymeaCore::devicesDiscovered);
     connect(m_deviceManager, &DeviceManagerImplementation::deviceSetupFinished, this, &NymeaCore::deviceSetupFinished);
     connect(m_deviceManager, &DeviceManagerImplementation::deviceReconfigurationFinished, this, &NymeaCore::deviceReconfigurationFinished);
@@ -443,6 +444,19 @@ Device::DeviceError NymeaCore::executeAction(const Action &action)
         m_pendingActions.insert(action.id(), action);
     } else {
         m_logger->logAction(action, Logging::LoggingLevelAlert, ret);
+    }
+    return ret;
+}
+
+Device::DeviceError NymeaCore::executeBrowserItem(const BrowserItemAction &browserItemAction)
+{
+    Device::DeviceError ret = m_deviceManager->executeBrowserItem(browserItemAction);
+    if (ret == Device::DeviceErrorNoError) {
+        m_logger->logBrowserAction(browserItemAction);
+    } else if (ret == Device::DeviceErrorAsync) {
+        m_pendingBrowserItemActions.insert(browserItemAction.id(), browserItemAction);
+    } else {
+        m_logger->logBrowserAction(browserItemAction, Logging::LoggingLevelAlert, ret);
     }
     return ret;
 }
@@ -793,6 +807,13 @@ RestServer *NymeaCore::restServer() const
 void NymeaCore::actionExecutionFinished(const ActionId &id, Device::DeviceError status)
 {
     emit actionExecuted(id, status);
+    Action action = m_pendingActions.take(id);
+    m_logger->logAction(action, status == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+}
+
+void NymeaCore::browserItemExecutionFinished(const ActionId &id, Device::DeviceError status)
+{
+    emit browserItemExecuted(id, status);
     Action action = m_pendingActions.take(id);
     m_logger->logAction(action, status == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
 }

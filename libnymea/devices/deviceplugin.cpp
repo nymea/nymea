@@ -257,10 +257,10 @@ Device::BrowseResult DevicePlugin::browseDevice(Device *device, Device::BrowseRe
     return result;
 }
 
-Device::DeviceError DevicePlugin::executeBrowserItem(Device *device, const QString &nodeId)
+Device::DeviceError DevicePlugin::executeBrowserItem(Device *device, const BrowserItemAction &browserItemAction)
 {
     Q_UNUSED(device)
-    Q_UNUSED(nodeId)
+    Q_UNUSED(browserItemAction)
     return Device::DeviceErrorUnsupportedFeature;
 }
 

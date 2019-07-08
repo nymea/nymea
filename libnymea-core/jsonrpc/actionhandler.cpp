@@ -62,7 +62,16 @@ ActionHandler::ActionHandler(QObject *parent) :
     returns.insert("o:actionType", JsonTypes::actionTypeDescription());
     setReturns("GetActionType", returns);
 
+    params.clear(); returns.clear();
+    setDescription("ExecuteBrowserItem", "Execute the item identified by itemId on the given device.");
+    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("o:itemId", JsonTypes::basicTypeToString(JsonTypes::String));
+    setParams("ExecuteBrowserItem", params);
+    returns.insert("deviceError", JsonTypes::deviceErrorRef());
+    setReturns("ExecuteBrowserItem", returns);
+
     connect(NymeaCore::instance(), &NymeaCore::actionExecuted, this, &ActionHandler::actionExecuted);
+    connect(NymeaCore::instance(), &NymeaCore::browserItemExecuted, this, &ActionHandler::browserItemExecuted);
 }
 
 /*! Returns the name of the \l{ActionHandler}. In this case \b Actions.*/
@@ -118,5 +127,33 @@ void ActionHandler::actionExecuted(const ActionId &id, Device::DeviceError statu
     reply->setData(statusToReply(status));
     reply->finished();
 }
+
+JsonReply *ActionHandler::ExecuteBrowserItem(const QVariantMap &params)
+{
+    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+    QString itemId = params.value("itemId").toString();
+    BrowserItemAction action(deviceId, itemId);
+    Device::DeviceError status = NymeaCore::instance()->executeBrowserItem(action);
+    if (status == Device::DeviceErrorAsync) {
+        JsonReply *reply = createAsyncReply("ExecuteBrowserItem");
+        ActionId id = action.id();
+        connect(reply, &JsonReply::finished, [this, id](){ m_asyncActionExecutions.remove(id); });
+        m_asyncActionExecutions.insert(id, reply);
+        return reply;
+    }
+    return createReply(statusToReply(status));
+}
+
+void ActionHandler::browserItemExecuted(const ActionId &id, Device::DeviceError status)
+{
+    if (!m_asyncActionExecutions.contains(id)) {
+        return; // Not the action we are waiting for.
+    }
+
+    JsonReply *reply = m_asyncActionExecutions.take(id);
+    reply->setData(statusToReply(status));
+    reply->finished();
+}
+
 
 }

@@ -335,6 +335,7 @@ void JsonTypes::init()
     s_logEntry.insert("source", loggingSourceRef());
     s_logEntry.insert("o:typeId", basicTypeToString(Uuid));
     s_logEntry.insert("o:deviceId", basicTypeToString(Uuid));
+    s_logEntry.insert("o:itemId", basicTypeToString(String));
     s_logEntry.insert("o:value", basicTypeToString(String));
     s_logEntry.insert("o:active", basicTypeToString(Bool));
     s_logEntry.insert("o:eventType", loggingEventTypeRef());
@@ -993,6 +994,7 @@ QVariantMap JsonTypes::packLogEntry(const LogEntry &logEntry)
         case Logging::LoggingSourceActions:
         case Logging::LoggingSourceEvents:
         case Logging::LoggingSourceStates:
+        case Logging::LoggingSourceBrowserActions:
             logEntryMap.insert("errorCode", s_deviceError.at(logEntry.errorCode()));
             break;
         case Logging::LoggingSourceSystem:
@@ -1015,6 +1017,9 @@ QVariantMap JsonTypes::packLogEntry(const LogEntry &logEntry)
         break;
     case Logging::LoggingSourceRules:
         logEntryMap.insert("typeId", logEntry.typeId().toString());
+        break;
+    case Logging::LoggingSourceBrowserActions:
+        logEntryMap.insert("itemId", logEntry.value());
         break;
     }
 

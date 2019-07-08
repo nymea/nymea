@@ -16,6 +16,7 @@ HEADERS += \
         platform/package.h \
         platform/repository.h \
         types/browseritem.h \
+    types/browseritemaction.h \
         types/mediabrowseritem.h \
         typeutils.h \
         loggingcategories.h \
@@ -113,6 +114,7 @@ SOURCES += \
         coap/corelink.cpp \
         coap/coapobserveresource.cpp \
         types/browseritem.cpp \
+    types/browseritemaction.cpp \
         types/mediabrowseritem.cpp \
         types/deviceclass.cpp \
         types/action.cpp \

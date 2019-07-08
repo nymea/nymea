@@ -20,99 +20,31 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "browseritem.h"
+#ifndef BROWSERITEMACTION_H
+#define BROWSERITEMACTION_H
 
+#include "typeutils.h"
 
-BrowserItem::BrowserItem(const QString &id, const QString &displayName, bool browsable, bool executable):
-    m_id(id),
-    m_displayName(displayName),
-    m_browsable(browsable),
-  m_executable(executable)
+class BrowserItemAction
 {
+public:
+    BrowserItemAction();
 
-}
+    explicit BrowserItemAction(const DeviceId &deviceId = DeviceId(), const QString &itemId = QString());
+    BrowserItemAction(const BrowserItemAction &other);
 
-QString BrowserItem::id() const
-{
-    return m_id;
-}
+    ActionId id() const;
 
-QString BrowserItem::displayName() const
-{
-    return m_displayName;
-}
+    bool isValid() const;
 
-void BrowserItem::setDisplayName(const QString &displayName)
-{
-    m_displayName = displayName;
-}
+    DeviceId deviceId() const;
+    QString itemId() const;
 
-QString BrowserItem::description() const
-{
-    return m_description;
-}
+    void operator=(const BrowserItemAction &other);
+private:
+    ActionId m_id;
+    DeviceId m_deviceId;
+    QString m_itemId;
+};
 
-void BrowserItem::setDescription(const QString &description)
-{
-    m_description = description;
-}
-
-bool BrowserItem::executable() const
-{
-    return m_executable;
-}
-
-void BrowserItem::setExecutable(bool executable)
-{
-    m_executable = executable;
-}
-
-bool BrowserItem::browsable() const
-{
-    return m_browsable;
-}
-
-void BrowserItem::setBrowsable(bool browsable)
-{
-    m_browsable = browsable;
-}
-
-BrowserItem::BrowserIcon BrowserItem::icon() const
-{
-    return m_icon;
-}
-
-void BrowserItem::setIcon(BrowserIcon icon)
-{
-    m_icon = icon;
-}
-
-QString BrowserItem::thumbnail() const
-{
-    return m_thumbnail;
-}
-
-void BrowserItem::setThumbnail(const QString &thumbnail)
-{
-    m_thumbnail = thumbnail;
-}
-
-BrowserItem::ExtendedPropertiesFlags BrowserItem::extendedPropertiesFlags() const
-{
-    return m_extendedPropertiesFlags;
-}
-
-QVariant BrowserItem::extendedProperty(const QString &propertyName) const
-{
-    return m_extendedProperties[propertyName];
-}
-
-BrowserItems::BrowserItems()
-{
-
-}
-
-BrowserItems::BrowserItems(const QList<BrowserItem> &other): QList<BrowserItem>(other)
-{
-
-}
+#endif // BROWSERITEMACTION_H

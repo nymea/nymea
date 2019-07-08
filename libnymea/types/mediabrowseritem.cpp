@@ -29,7 +29,7 @@ MediaBrowserItem::MediaBrowserItem(const QString &id, const QString &displayName
     m_extendedProperties["mediaIcon"] = static_cast<int>(MediaBrowserIconNone);
     m_extendedProperties["playCount"] = 0;
 
-    m_extendedPropertiesFlags.setFlag(BrowserItem::ExtendedPropertiesMedia);
+    m_extendedPropertiesFlags = BrowserItem::ExtendedPropertiesMedia;
 }
 
 MediaBrowserItem::MediaBrowserIcon MediaBrowserItem::mediaIcon() const

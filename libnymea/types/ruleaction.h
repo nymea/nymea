@@ -27,16 +27,19 @@
 #include "libnymea.h"
 #include "action.h"
 #include "ruleactionparam.h"
+#include "browseritemaction.h"
 
 class LIBNYMEA_EXPORT RuleAction
 {
 public:
     enum Type {
         TypeDevice,
-        TypeInterface
+        TypeInterface,
+        TypeBrowser
     };
     explicit RuleAction(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId(), const RuleActionParamList &params = RuleActionParamList());
     explicit RuleAction(const QString &interface, const QString &interfaceAction, const RuleActionParamList &params = RuleActionParamList());
+    explicit RuleAction(const DeviceId &deviceId, const QString &browserItemId);
     RuleAction(const RuleAction &other);
 
     ActionId id() const;
@@ -48,9 +51,11 @@ public:
     bool isStateBased() const;
 
     Action toAction() const;
+    BrowserItemAction toBrowserItemAction() const;
 
-    ActionTypeId actionTypeId() const;
     DeviceId deviceId() const;
+    ActionTypeId actionTypeId() const;
+    QString browserItemId() const;
 
     QString interface() const;
     QString interfaceAction() const;
@@ -64,8 +69,9 @@ public:
 
 private:
     ActionId m_id;
-    ActionTypeId m_actionTypeId;
     DeviceId m_deviceId;
+    ActionTypeId m_actionTypeId;
+    QString m_browserItemId;
     QString m_interface;
     QString m_interfaceAction;
     RuleActionParamList m_ruleActionParams;

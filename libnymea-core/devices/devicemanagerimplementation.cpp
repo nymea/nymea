@@ -849,18 +849,23 @@ void DeviceManagerImplementation::loadPlugins()
 
             // Check plugin API version compatibility
             QLibrary lib(fi.absoluteFilePath());
-            QString *version = reinterpret_cast<QString*>(lib.resolve("libnymea_api_version"));
-            if (!version) {
+            QFunctionPointer versionFunc = lib.resolve("libnymea_api_version");
+            if (!versionFunc) {
                 qCWarning(dcDeviceManager()).nospace() << "Unable to resolve version in plugin " << entry << ". Not loading plugin.";
                 loader.unload();
                 lib.unload();
                 continue;
+
             }
+            QString version = reinterpret_cast<QString(*)()>(versionFunc)();
+//            QString *version = reinterpret_cast<QString*>(lib.resolve("libnymea_api_version"));
+//            if (!version) {
+//            }
             lib.unload();
-            QStringList parts = version->split('.');
+            QStringList parts = version.split('.');
             QStringList coreParts = QString(LIBNYMEA_API_VERSION).split('.');
             if (parts.length() != 3 || parts.at(0).toInt() != coreParts.at(0).toInt() || parts.at(1).toInt() > coreParts.at(1).toInt()) {
-                qCWarning(dcDeviceManager()).nospace() << "Libnymea API mismatch for " << entry << ". Core API: " << LIBNYMEA_API_VERSION << ", Plugin API: " << *version;
+                qCWarning(dcDeviceManager()).nospace() << "Libnymea API mismatch for " << entry << ". Core API: " << LIBNYMEA_API_VERSION << ", Plugin API: " << version;
                 loader.unload();
                 continue;
             }

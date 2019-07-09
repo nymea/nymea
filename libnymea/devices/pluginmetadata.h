@@ -52,6 +52,8 @@ private:
     QPair<bool, Types::Unit> loadAndVerifyUnit(const QString &unitString);
     QPair<bool, Types::InputType> loadAndVerifyInputType(const QString &inputType);
 
+    bool verifyDuplicateUuid(const QUuid &uuid);
+
 private:
     bool m_isValid = false;
     bool m_isBuiltIn = false;
@@ -61,6 +63,8 @@ private:
     ParamTypes m_pluginSettings;
     Vendors m_vendors;
     DeviceClasses m_deviceClasses;
+
+    QList<QUuid> m_allUuids;
 };
 
 #endif // PLUGINMETADATA_H

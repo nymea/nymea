@@ -224,13 +224,13 @@ Device::DeviceError DevicePluginMock::executeAction(Device *device, const Action
         return Device::DeviceErrorDeviceNotFound;
 
     if (device->deviceClassId() == mockDeviceClassId) {
-        if (action.actionTypeId() == mockMockAsyncActionTypeId || action.actionTypeId() == mockMockAsyncFailingActionTypeId) {
+        if (action.actionTypeId() == mockAsyncActionTypeId || action.actionTypeId() == mockAsyncFailingActionTypeId) {
             m_asyncActions.append(qMakePair<Action, Device*>(action, device));
             QTimer::singleShot(1000, this, SLOT(emitActionExecuted()));
             return Device::DeviceErrorAsync;
         }
 
-        if (action.actionTypeId() == mockMockFailingActionTypeId)
+        if (action.actionTypeId() == mockFailingActionTypeId)
             return Device::DeviceErrorSetupFailed;
 
         if (action.actionTypeId() == mockPowerActionTypeId) {
@@ -514,10 +514,10 @@ void DevicePluginMock::emitDeviceSetupFinished()
 void DevicePluginMock::emitActionExecuted()
 {
     QPair<Action, Device*> action = m_asyncActions.takeFirst();
-    if (action.first.actionTypeId() == mockMockAsyncActionTypeId) {
+    if (action.first.actionTypeId() == mockAsyncActionTypeId) {
         m_daemons.value(action.second)->actionExecuted(action.first.actionTypeId());
         emit actionExecutionFinished(action.first.id(), Device::DeviceErrorNoError);
-    } else if (action.first.actionTypeId() == mockMockAsyncFailingActionTypeId) {
+    } else if (action.first.actionTypeId() == mockAsyncFailingActionTypeId) {
         emit actionExecutionFinished(action.first.id(), Device::DeviceErrorSetupFailed);
     }
 }

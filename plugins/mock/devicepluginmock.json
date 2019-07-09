@@ -30,7 +30,7 @@
                     "id": "753f0d32-0468-4d08-82ed-1964aab03298",
                     "name": "mock",
                     "displayName": "Mock Device",
-                    "interfaces": ["system", "light", "gateway", "battery"],
+                    "interfaces": ["system", "light", "battery"],
                     "createMethods": ["user", "discovery"],
                     "discoveryParamTypes": [
                         {
@@ -135,17 +135,17 @@
                     "eventTypes": [
                         {
                             "id": "45bf3752-0fc6-46b9-89fd-ffd878b5b22b",
-                            "name": "mockEvent1",
+                            "name": "event1",
                             "displayName": "Mock Event 1"
                         },
                         {
                             "id": "863d5920-b1cf-4eb9-88bd-8f7b8583b1cf",
-                            "name": "mockEvent2",
+                            "name": "event2",
                             "displayName": "Mock Event 2",
                             "paramTypes": [
                                 {
                                     "id": "0550e16d-60b9-4ba5-83f4-4d3cee656121",
-                                    "name": "mockParamInt",
+                                    "name": "intParam",
                                     "displayName": "mockParamInt",
                                     "type": "int",
                                     "defaultValue": 10
@@ -161,13 +161,13 @@
                             "paramTypes": [
                                 {
                                     "id": "a2d3a256-a551-4712-a65b-ecd5a436a1cb",
-                                    "name": "mockActionParam1",
+                                    "name": "param1",
                                     "displayName": "mockActionParam1",
                                     "type": "int"
                                 },
                                 {
                                     "id": "304a4899-18be-4e3b-94f4-d03be52f3233",
-                                    "name": "mockActionParam2",
+                                    "name": "param2",
                                     "displayName": "mockActionParam2",
                                     "type": "bool"
                                 }
@@ -180,17 +180,17 @@
                         },
                         {
                             "id": "fbae06d3-7666-483e-a39e-ec50fe89054e",
-                            "name": "mockAsync",
+                            "name": "async",
                             "displayName": "Mock Action 3 (async)"
                         },
                         {
                             "id": "df3cf33d-26d5-4577-9132-9823bd33fad0",
-                            "name": "mockFailing",
+                            "name": "failing",
                             "displayName": "Mock Action 4 (broken)"
                         },
                         {
                             "id": "bfe89a1d-3497-4121-8318-e77c37537219",
-                            "name": "mockAsyncFailing",
+                            "name": "asyncFailing",
                             "displayName": "Mock Action 5 (async, broken)"
                         }
                     ]
@@ -203,13 +203,13 @@
                     "createMethods": ["auto"],
                     "paramTypes": [
                         {
-                            "id": "d4f06047-125e-4479-9810-b54c189917f5",
+                            "id": "bfeb0613-dab6-408c-aa27-c362c921d0d1",
                             "name": "httpport",
                             "displayName": "http port",
                             "type": "int"
                         },
                         {
-                            "id": "f2977061-4dd0-4ef5-85aa-3b7134743be3",
+                            "id": "a5c4315f-0624-4971-87c1-4bbfbfdbd16e",
                             "name": "async",
                             "displayName": "async",
                             "type": "bool",
@@ -217,7 +217,7 @@
                             "readOnly": true
                         },
                         {
-                            "id": "ae8f8901-f2c1-42a5-8111-6d2fc8e4c1e4",
+                            "id": "66179395-ef7a-4013-9fc6-2084104eea09",
                             "name": "broken",
                             "displayName": "broken",
                             "type": "bool",
@@ -226,7 +226,7 @@
                     ],
                     "stateTypes": [
                         {
-                            "id": "80baec19-54de-4948-ac46-31eabfaceb83",
+                            "id": "74b24296-ba0b-4fbd-87f3-1b09a8bc3e8c",
                             "name": "int",
                             "displayName": "Dummy int state",
                             "displayNameEvent": "Dummy int state changed",
@@ -234,7 +234,7 @@
                             "type": "int"
                         },
                         {
-                            "id": "9dd6a97c-dfd1-43dc-acbd-367932742310",
+                            "id": "978b0ba5-d008-41bd-b63d-a3bd23cb6469",
                             "name": "boolValue",
                             "displayName": "Dummy bool state",
                             "displayNameEvent": "Dummy bool state changed",
@@ -245,18 +245,18 @@
                     ],
                     "eventTypes": [
                         {
-                            "id": "45bf3752-0fc6-46b9-89fd-ffd878b5b22b",
+                            "id": "00f81fca-26f1-4a84-aa2b-4c6a3d953ec6",
                             "name": "event1",
                             "displayName": "Mock Event 1"
                         },
                         {
-                            "id": "863d5920-b1cf-4eb9-88bd-8f7b8583b1cf",
+                            "id": "6e27922d-aa9d-44d1-b9b4-9faf31b6bd97",
                             "name": "event2",
                             "displayName": "Mock Event 2",
                             "paramTypes": [
                                 {
-                                    "id": "0550e16d-60b9-4ba5-83f4-4d3cee656121",
-                                    "name": "mockParamInt",
+                                    "id": "12ed5a15-96b4-4381-9d9c-a24875283d4f",
+                                    "name": "intParam",
                                     "displayName": "mockParamInt",
                                     "type": "int",
                                     "defaultValue": 10
@@ -266,18 +266,18 @@
                     ],
                     "actionTypes": [
                         {
-                            "id": "dea0f4e1-65e3-4981-8eaa-2701c53a9185",
+                            "id": "e6a22f52-1818-46a7-9d15-5ca08b0612c",
                             "name": "withParams",
                             "displayName": "Mock Action 1 (with params)",
                             "paramTypes": [
                                 {
-                                    "id": "a2d3a256-a551-4712-a65b-ecd5a436a1cb",
+                                    "id": "b8126ba6-3a54-45a3-be4d-63feb0ddb77b",
                                     "name": "mockActionParam1",
                                     "displayName": "mockActionParam1",
                                     "type": "int"
                                 },
                                 {
-                                    "id": "304a4899-18be-4e3b-94f4-d03be52f3233",
+                                    "id": "df41ba71-e43b-4854-91d1-b19d8066d4f9",
                                     "name": "mockActionParam2",
                                     "displayName": "mockActionParam2",
                                     "type": "bool"
@@ -285,22 +285,22 @@
                             ]
                         },
                         {
-                            "id": "defd3ed6-1a0d-400b-8879-a0202cf39935",
+                            "id": "ef518d53-50e2-4ca5-a4b1-e9a8b9309d44",
                             "name": "mockActionNoParms",
                             "displayName": "Mock Action 2 (without params)"
                         },
                         {
-                            "id": "fbae06d3-7666-483e-a39e-ec50fe89054e",
+                            "id": "5f27a9f2-59cd-4a15-98bd-6ed6e10bc6ed",
                             "name": "mockActionAsync",
                             "displayName": "Mock Action 3 (async)"
                         },
                         {
-                            "id": "df3cf33d-26d5-4577-9132-9823bd33fad0",
+                            "id": "58a61de4-472c-4775-8fe8-583a9c83fcf1",
                             "name": "mockActionBroken",
                             "displayName": "Mock Action 4 (broken)"
                         },
                         {
-                            "id": "bfe89a1d-3497-4121-8318-e77c37537219",
+                            "id": "17ad52dd-ef2f-4947-9b73-5bf6e172a9d0",
                             "name": "mockActionAsyncBroken",
                             "displayName": "Mock Action 5 (async, broken)"
                         }
@@ -317,7 +317,7 @@
                     "paramTypes": [ ],
                     "discoveryParamTypes": [
                         {
-                            "id": "d222adb4-2f9c-4c3f-8655-76400d0fb6ce",
+                            "id": "c40dbc59-4bba-4871-9b8e-bbd8d5d9193b",
                             "name": "resultCount",
                             "displayName": "resultCount",
                             "type": "int",
@@ -406,7 +406,7 @@
                     "pairingInfo": "Please enter the secret which normaly will be displayed on the device. For the mockdevice the pin is 243681.",
                     "discoveryParamTypes": [
                         {
-                            "id": "d222adb4-2f9c-4c3f-8655-76400d0fb6ce",
+                            "id": "35f6e4ba-28ad-4152-a58d-ec2600667bcf",
                             "name": "resultCount",
                             "displayName": "resultCount",
                             "type": "int",
@@ -427,7 +427,7 @@
                     ],
                     "stateTypes": [
                         {
-                            "id": "20dc7c22-c50e-42db-837c-2bbced939f8e",
+                            "id": "3e161294-8a0d-4384-9676-6959e08cc2fa",
                             "name": "color",
                             "displayName": "color",
                             "displayNameEvent": "color changed",
@@ -437,7 +437,7 @@
                             "writable": true
                         },
                         {
-                            "id": "72981c04-267a-4ba0-a59e-9921d2f3af9c",
+                            "id": "527f0687-0b28-4c26-852c-25b8f83e4797",
                             "name": "percentage",
                             "displayName": "percentage",
                             "displayNameEvent": "percentage changed",
@@ -450,7 +450,7 @@
                             "writable": true
                         },
                         {
-                            "id": "05f63f9c-f61e-4dcf-ad55-3f13fde2765b",
+                            "id": "b463c5ae-4d55-402f-8480-a5cdb485c143",
                             "name": "allowedValues",
                             "displayName": "allowed values",
                             "displayNameEvent": "allowed values changed",
@@ -466,7 +466,7 @@
                             "writable": true
                         },
                         {
-                            "id": "53cd7c55-49b7-441b-b970-9048f20f0e2c",
+                            "id": "17635624-7c19-4bae-8429-2f7aa5d2f843",
                             "name": "double",
                             "displayName": "double value",
                             "displayNameEvent": "double value changed",
@@ -478,7 +478,7 @@
                             "writable": true
                         },
                         {
-                            "id": "e680f7a4-b39e-46da-be41-fa3170fe3768",
+                            "id": "7ffe514f-7999-4998-8350-0e73e222a8c4",
                             "name": "bool",
                             "displayName": "bool value",
                             "displayNameEvent": "bool value changed",
@@ -490,7 +490,7 @@
                     ],
                     "actionTypes": [
                         {
-                            "id": "54646e7c-bc54-4895-81a2-590d72d120f9",
+                            "id": "854a0a4a-803f-4b7f-9dce-b07794f9011b",
                             "name": "timeout",
                             "displayName": "Timeout action"
                         }
@@ -524,7 +524,7 @@
                     "paramTypes": [],
                     "stateTypes": [
                         {
-                            "id": "d24ede5f-4064-4898-bb84-cfb533b1fbc0",
+                            "id": "80ba1449-b485-47d4-a067-6bf306e2a568",
                             "name": "boolValue",
                             "displayName": "bool value",
                             "displayNameEvent": "bool value changed",

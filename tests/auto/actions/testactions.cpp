@@ -45,21 +45,21 @@ void TestActions::executeAction_data()
 
     QVariantList params;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", 5);
     params.append(param1);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     params.append(param2);
 
-    QTest::newRow("valid action") << m_mockDeviceId << mockActionIdWithParams << params << Device::DeviceErrorNoError;
-    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockActionIdWithParams << params << Device::DeviceErrorDeviceNotFound;
+    QTest::newRow("valid action") << m_mockDeviceId << mockWithParamsActionTypeId << params << Device::DeviceErrorNoError;
+    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockWithParamsActionTypeId << params << Device::DeviceErrorDeviceNotFound;
     QTest::newRow("invalid actionTypeId") << m_mockDeviceId << ActionTypeId::createActionTypeId() << params << Device::DeviceErrorActionTypeNotFound;
-    QTest::newRow("missing params") << m_mockDeviceId << mockActionIdWithParams << QVariantList() << Device::DeviceErrorMissingParameter;
-    QTest::newRow("async action") << m_mockDeviceId << mockActionIdAsync << QVariantList() << Device::DeviceErrorNoError;
-    QTest::newRow("broken action") << m_mockDeviceId << mockActionIdFailing << QVariantList() << Device::DeviceErrorSetupFailed;
-    QTest::newRow("async broken action") << m_mockDeviceId << mockActionIdAsyncFailing << QVariantList() << Device::DeviceErrorSetupFailed;
+    QTest::newRow("missing params") << m_mockDeviceId << mockWithParamsActionTypeId << QVariantList() << Device::DeviceErrorMissingParameter;
+    QTest::newRow("async action") << m_mockDeviceId << mockAsyncActionTypeId << QVariantList() << Device::DeviceErrorNoError;
+    QTest::newRow("broken action") << m_mockDeviceId << mockFailingActionTypeId << QVariantList() << Device::DeviceErrorSetupFailed;
+    QTest::newRow("async broken action") << m_mockDeviceId << mockAsyncFailingActionTypeId << QVariantList() << Device::DeviceErrorSetupFailed;
 }
 
 void TestActions::executeAction()
@@ -119,7 +119,7 @@ void TestActions::getActionType_data()
     QTest::addColumn<ActionTypeId>("actionTypeId");
     QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("valid actiontypeid") << mockActionIdWithParams << Device::DeviceErrorNoError;
+    QTest::newRow("valid actiontypeid") << mockWithParamsActionTypeId << Device::DeviceErrorNoError;
     QTest::newRow("invalid actiontypeid") << ActionTypeId::createActionTypeId() << Device::DeviceErrorActionTypeNotFound;
 }
 

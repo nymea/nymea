@@ -31,64 +31,7 @@
 
 Q_DECLARE_LOGGING_CATEGORY(dcTests)
 
-extern DeviceClassId mockDeviceClassId;
-extern DeviceClassId mockDeviceAutoClassId;
-extern DeviceClassId mockPushButtonDeviceClassId;
-extern DeviceClassId mockDisplayPinDeviceClassId;
-extern DeviceClassId mockParentDeviceClassId;
-extern DeviceClassId mockChildDeviceClassId;
-extern DeviceClassId mockDeviceDiscoveryClassId;
-extern DeviceClassId mockDeviceAsyncSetupClassId;
-extern DeviceClassId mockDeviceBrokenClassId;
-extern DeviceClassId mockDeviceBrokenAsyncSetupClassId;
-extern ActionTypeId mockActionIdPower;
-extern ActionTypeId mockActionIdWithParams;
-extern ActionTypeId mockActionIdNoParams;
-extern ActionTypeId mockActionIdAsync;
-extern ActionTypeId mockActionIdFailing;
-extern ActionTypeId mockActionIdAsyncFailing;
-extern EventTypeId mockEvent1Id;
-extern EventTypeId mockEvent2Id;
-extern StateTypeId mockIntStateId;
-extern StateTypeId mockDoubleStateId;
-extern StateTypeId mockBatteryCriticalStateId;
-extern StateTypeId mockBoolStateId;
-extern StateTypeId mockPowerStateTypeId;
-
-// ParamTypes from mock devices
-extern ParamTypeId configParamIntParamTypeId;
-extern ParamTypeId configParamBoolParamTypeId;
-extern ParamTypeId httpportParamTypeId;
-extern ParamTypeId asyncParamTypeId;
-extern ParamTypeId brokenParamTypeId;
-extern ParamTypeId resultCountParamTypeId;
-extern ParamTypeId mockActionParam1ParamTypeId;
-extern ParamTypeId mockActionParam2ParamTypeId;
-extern ParamTypeId mockParamIntParamTypeId;
-extern ParamTypeId colorStateParamTypeId;
-extern ParamTypeId percentageStateParamTypeId;
-extern ParamTypeId allowedValuesStateParamTypeId;
-extern ParamTypeId doubleStateParamTypeId;
-extern ParamTypeId boolStateParamTypeId;
-extern ParamTypeId pinParamTypeId;
-extern ParamTypeId boolValueStateParamTypeId;
-extern ParamTypeId parentUuidParamTypeId;
-extern ParamTypeId textLineParamTypeId;
-extern ParamTypeId textAreaParamTypeId;
-extern ParamTypeId passwordParamTypeId;
-extern ParamTypeId searchParamTypeId;
-extern ParamTypeId mailParamTypeId;
-extern ParamTypeId ip4ParamTypeId;
-extern ParamTypeId ip6ParamTypeId;
-extern ParamTypeId urlParamTypeId;
-extern ParamTypeId macParamTypeId;
-extern ParamTypeId mockSetting1ParamTypeId;
-
-// Parent / Child device
-extern EventTypeId mockParentChildEventId;
-extern ActionTypeId mockParentChildActionId;
-extern StateTypeId mockParentChildStateId;
-
+#include "../plugins/mock/extern-plugininfo.h"
 
 namespace nymeaserver {
 class MockTcpServer;

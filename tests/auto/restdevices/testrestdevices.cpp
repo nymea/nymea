@@ -104,19 +104,19 @@ void TestRestDevices::addConfiguredDevice_data()
     QTest::addColumn<int>("expectedStatusCode");
 
     QVariantMap httpportParam;
-    httpportParam.insert("paramTypeId", httpportParamTypeId);
+    httpportParam.insert("paramTypeId", mockDeviceHttpportParamTypeId);
     httpportParam.insert("value", m_mockDevice1Port - 1);
     QVariantMap asyncParam;
-    asyncParam.insert("paramTypeId", asyncParamTypeId);
+    asyncParam.insert("paramTypeId", mockDeviceAsyncParamTypeId);
     asyncParam.insert("value", true);
     QVariantMap notAsyncParam;
-    notAsyncParam.insert("paramTypeId", asyncParamTypeId);
+    notAsyncParam.insert("paramTypeId", mockDeviceAsyncParamTypeId);
     notAsyncParam.insert("value", false);
     QVariantMap notBrokenParam;
-    notBrokenParam.insert("paramTypeId", brokenParamTypeId);
+    notBrokenParam.insert("paramTypeId", mockDeviceBrokenParamTypeId);
     notBrokenParam.insert("value", false);
     QVariantMap brokenParam;
-    brokenParam.insert("paramTypeId", brokenParamTypeId);
+    brokenParam.insert("paramTypeId", mockDeviceBrokenParamTypeId);
     brokenParam.insert("value", true);
 
     QVariantList deviceParams;
@@ -198,7 +198,7 @@ void TestRestDevices::addPushButtonDevices()
     // Discover device
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
-    resultCountParam.insert("paramTypeId", resultCountParamTypeId);
+    resultCountParam.insert("paramTypeId", mockPushButtonDiscoveryResultCountParamTypeId);
     resultCountParam.insert("value", 1);
     discoveryParams.append(resultCountParam);
 
@@ -279,7 +279,7 @@ void TestRestDevices::addDisplayPinDevices()
     // Discover device
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
-    resultCountParam.insert("paramTypeId", resultCountParamTypeId);
+    resultCountParam.insert("paramTypeId", mockDisplayPinDiscoveryResultCountParamTypeId);
     resultCountParam.insert("value", 1);
     discoveryParams.append(resultCountParam);
 
@@ -419,21 +419,21 @@ void TestRestDevices::executeAction_data()
 
     QVariantList params;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", 5);
     params.append(param1);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     params.append(param2);
 
-    QTest::newRow("valid action") << m_mockDeviceId << mockActionIdWithParams << params << 200 << Device::DeviceErrorNoError;
-    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockActionIdWithParams << params << 404 << Device::DeviceErrorDeviceNotFound;
+    QTest::newRow("valid action") << m_mockDeviceId << mockWithParamsActionTypeId << params << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockWithParamsActionTypeId << params << 404 << Device::DeviceErrorDeviceNotFound;
     QTest::newRow("invalid actionTypeId") << m_mockDeviceId << ActionTypeId::createActionTypeId() << params << 404 << Device::DeviceErrorActionTypeNotFound;
-    QTest::newRow("missing params") << m_mockDeviceId << mockActionIdWithParams << QVariantList() << 500 << Device::DeviceErrorMissingParameter;
-    QTest::newRow("async action") << m_mockDeviceId << mockActionIdAsync << QVariantList() << 200 << Device::DeviceErrorNoError;
-    QTest::newRow("broken action") << m_mockDeviceId << mockActionIdFailing << QVariantList() << 500 << Device::DeviceErrorSetupFailed;
-    QTest::newRow("async broken action") << m_mockDeviceId << mockActionIdAsyncFailing << QVariantList() << 500 << Device::DeviceErrorSetupFailed;
+    QTest::newRow("missing params") << m_mockDeviceId << mockWithParamsActionTypeId << QVariantList() << 500 << Device::DeviceErrorMissingParameter;
+    QTest::newRow("async action") << m_mockDeviceId << mockAsyncActionTypeId << QVariantList() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("broken action") << m_mockDeviceId << mockFailingActionTypeId << QVariantList() << 500 << Device::DeviceErrorSetupFailed;
+    QTest::newRow("async broken action") << m_mockDeviceId << mockAsyncFailingActionTypeId << QVariantList() << 500 << Device::DeviceErrorSetupFailed;
 }
 
 void TestRestDevices::executeAction()
@@ -501,9 +501,9 @@ void TestRestDevices::getStateValue_data()
     QTest::addColumn<int>("expectedStatusCode");
     QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("existing state") << device->id().toString() << mockIntStateId.toString() << 200 << Device::DeviceErrorNoError;
+    QTest::newRow("existing state") << device->id().toString() << mockIntStateTypeId.toString() << 200 << Device::DeviceErrorNoError;
     QTest::newRow("all states") << device->id().toString() << QString() << 200 << Device::DeviceErrorNoError;
-    QTest::newRow("invalid device") << DeviceId::createDeviceId().toString() << mockIntStateId.toString() << 404 << Device::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid device") << DeviceId::createDeviceId().toString() << mockIntStateTypeId.toString() << 404 << Device::DeviceErrorDeviceNotFound;
     QTest::newRow("invalid device id format") << "uuid" << StateTypeId::createStateTypeId().toString() << 400 << Device::DeviceErrorDeviceNotFound;
     QTest::newRow("invalid statetype") << device->id().toString() << StateTypeId::createStateTypeId().toString() << 404 << Device::DeviceErrorStateTypeNotFound;
     QTest::newRow("invalid statetype format") << device->id().toString() << "uuid" << 400 << Device::DeviceErrorStateTypeNotFound;
@@ -548,7 +548,7 @@ void TestRestDevices::editDevices()
 
     QVariantList deviceParams;
     QVariantMap httpportParam;
-    httpportParam.insert("paramTypeId", httpportParamTypeId);
+    httpportParam.insert("paramTypeId", mockDeviceHttpportParamTypeId);
     httpportParam.insert("value", m_mockDevice1Port - 2);
     deviceParams.append(httpportParam);
 
@@ -587,19 +587,19 @@ void TestRestDevices::reconfigureDevices_data()
 {
     QVariantList asyncChangeDeviceParams;
     QVariantMap asyncParamDifferent;
-    asyncParamDifferent.insert("paramTypeId", asyncParamTypeId);
+    asyncParamDifferent.insert("paramTypeId", mockDeviceAsyncParamTypeId);
     asyncParamDifferent.insert("value", true);
     asyncChangeDeviceParams.append(asyncParamDifferent);
 
     QVariantList httpportChangeDeviceParams;
     QVariantMap httpportParamDifferent;
-    httpportParamDifferent.insert("paramTypeId", httpportParamTypeId);
+    httpportParamDifferent.insert("paramTypeId", mockDeviceHttpportParamTypeId);
     httpportParamDifferent.insert("value", 8895); // if change -> change also newPort in reconfigureDevices()
     httpportChangeDeviceParams.append(httpportParamDifferent);
 
     QVariantList brokenChangedDeviceParams;
     QVariantMap brokenParamDifferent;
-    brokenParamDifferent.insert("paramTypeId", brokenParamTypeId);
+    brokenParamDifferent.insert("paramTypeId", mockDeviceBrokenParamTypeId);
     brokenParamDifferent.insert("value", true);
     brokenChangedDeviceParams.append(brokenParamDifferent);
 
@@ -635,15 +635,15 @@ void TestRestDevices::reconfigureDevices()
     params.insert("name", "Edit mock device");
     QVariantList deviceParams;
     QVariantMap asyncParam;
-    asyncParam.insert("paramTypeId", asyncParamTypeId);
+    asyncParam.insert("paramTypeId", mockDeviceAsyncParamTypeId);
     asyncParam.insert("value", false);
     deviceParams.append(asyncParam);
     QVariantMap brokenParam;
-    brokenParam.insert("paramTypeId", brokenParamTypeId);
+    brokenParam.insert("paramTypeId", mockDeviceBrokenParamTypeId);
     brokenParam.insert("value", broken);
     deviceParams.append(brokenParam);
     QVariantMap httpportParam;
-    httpportParam.insert("paramTypeId", httpportParamTypeId);
+    httpportParam.insert("paramTypeId", mockDeviceHttpportParamTypeId);
     httpportParam.insert("value", 8896);
     deviceParams.append(httpportParam);
     params.insert("deviceParams", deviceParams);
@@ -695,7 +695,7 @@ void TestRestDevices::reconfigureByDiscovery_data()
 
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
-    resultCountParam.insert("paramTypeId", resultCountParamTypeId);
+    resultCountParam.insert("paramTypeId", mockDiscoveryResultCountParamTypeId);
     resultCountParam.insert("value", 2);
     discoveryParams.append(resultCountParam);
 

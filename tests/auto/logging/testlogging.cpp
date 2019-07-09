@@ -213,8 +213,8 @@ void TestLogging::eventLogs()
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     // trigger event in mock device
-    int port = device->paramValue(httpportParamTypeId).toInt();
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(port).arg(mockEvent1Id.toString())));
+    int port = device->paramValue(mockDeviceHttpportParamTypeId).toInt();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(port).arg(mockEvent1EventTypeId.toString())));
     QNetworkReply *reply = nam.get(request);
 
     // Lets wait for the notification
@@ -233,7 +233,7 @@ void TestLogging::eventLogs()
         if (logEntry.value("deviceId").toString() == device->id().toString()) {
             found = true;
             // Make sure the notification contains all the stuff we expect
-            QCOMPARE(logEntry.value("typeId").toString(), mockEvent1Id.toString());
+            QCOMPARE(logEntry.value("typeId").toString(), mockEvent1EventTypeId.toString());
             QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
             QCOMPARE(logEntry.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceEvents));
             QCOMPARE(logEntry.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
@@ -250,7 +250,7 @@ void TestLogging::eventLogs()
     params.insert("deviceIds", QVariantList() << device->id());
     params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceEvents));
     params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
-    params.insert("typeIds", QVariantList() << mockEvent1Id);
+    params.insert("typeIds", QVariantList() << mockEvent1EventTypeId);
 
     QVariant response = injectAndWait("Logging.GetLogEntries", params);
     verifyLoggingError(response);
@@ -268,16 +268,16 @@ void TestLogging::actionLog()
 
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", 7);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
 
     QVariantMap params;
-    params.insert("actionTypeId", mockActionIdWithParams);
+    params.insert("actionTypeId", mockWithParamsActionTypeId);
     params.insert("deviceId", m_mockDeviceId);
     params.insert("params", actionParams);
 
@@ -304,7 +304,7 @@ void TestLogging::actionLog()
         if (logEntry.value("deviceId").toString() == m_mockDeviceId.toString()) {
             found = true;
             // Make sure the notification contains all the stuff we expect
-            QCOMPARE(logEntry.value("typeId").toString(), mockActionIdWithParams.toString());
+            QCOMPARE(logEntry.value("typeId").toString(), mockWithParamsActionTypeId.toString());
             QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
             QCOMPARE(logEntry.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
             QCOMPARE(logEntry.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
@@ -318,7 +318,7 @@ void TestLogging::actionLog()
 
     // EXECUTE without params
     params.clear(); clientSpy.clear();
-    params.insert("actionTypeId", mockActionIdNoParams);
+    params.insert("actionTypeId", mockWithoutParamsActionTypeId);
     params.insert("deviceId", m_mockDeviceId);
     response = injectAndWait("Actions.ExecuteAction", params);
     verifyDeviceError(response);
@@ -345,7 +345,7 @@ void TestLogging::actionLog()
 
     // EXECUTE broken action
     params.clear(); clientSpy.clear();
-    params.insert("actionTypeId", mockActionIdFailing);
+    params.insert("actionTypeId", mockFailingActionTypeId);
     params.insert("deviceId", m_mockDeviceId);
     response = injectAndWait("Actions.ExecuteAction", params);
     verifyDeviceError(response, Device::DeviceErrorSetupFailed);
@@ -363,7 +363,7 @@ void TestLogging::actionLog()
         if (logEntry.value("deviceId").toString() == m_mockDeviceId.toString()) {
             found = true;
             // Make sure the notification contains all the stuff we expect
-            QCOMPARE(logEntry.value("typeId").toString(), mockActionIdFailing.toString());
+            QCOMPARE(logEntry.value("typeId").toString(), mockFailingActionTypeId.toString());
             QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
             QCOMPARE(logEntry.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
             QCOMPARE(logEntry.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelAlert));
@@ -396,7 +396,7 @@ void TestLogging::actionLog()
     params.insert("deviceIds", QVariantList() << m_mockDeviceId);
     params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
     params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
-    params.insert("typeIds", QVariantList() << mockActionIdNoParams);
+    params.insert("typeIds", QVariantList() << mockWithoutParamsActionTypeId);
 
     response = injectAndWait("Logging.GetLogEntries", params);
     verifyLoggingError(response);
@@ -408,7 +408,7 @@ void TestLogging::actionLog()
     params.insert("deviceIds", QVariantList() << m_mockDeviceId);
     params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
     params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
-    params.insert("typeIds", QVariantList() << mockActionIdNoParams << mockActionIdWithParams << mockActionIdFailing);
+    params.insert("typeIds", QVariantList() << mockWithoutParamsActionTypeId << mockWithParamsActionTypeId << mockFailingActionTypeId);
 
     response = injectAndWait("Logging.GetLogEntries", params);
     verifyLoggingError(response);
@@ -465,7 +465,7 @@ void TestLogging::testDoubleValues()
     // Discover device
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
-    resultCountParam.insert("paramTypeId", resultCountParamTypeId);
+    resultCountParam.insert("paramTypeId", mockDisplayPinDiscoveryResultCountParamTypeId);
     resultCountParam.insert("value", 1);
     discoveryParams.append(resultCountParam);
 
@@ -505,12 +505,12 @@ void TestLogging::testDoubleValues()
     // Set the double state value and sniff for LogEntryAdded notification
     double value = 23.80;
     QVariantMap actionParam;
-    actionParam.insert("paramTypeId", doubleStateParamTypeId.toString());
+    actionParam.insert("paramTypeId", mockDisplayPinDoubleActionDoubleParamTypeId.toString());
     actionParam.insert("value", value);
 
     params.clear(); response.clear();
     params.insert("deviceId", deviceId);
-    params.insert("actionTypeId", doubleStateParamTypeId.toString());
+    params.insert("actionTypeId", mockDisplayPinDoubleActionTypeId.toString());
     params.insert("params", QVariantList() << actionParam);
 
     response = injectAndWait("Actions.ExecuteAction", params);
@@ -523,8 +523,8 @@ void TestLogging::testDoubleValues()
     foreach (const QVariant &logNotificationVariant, logNotificationsList) {
         QVariantMap logNotification = logNotificationVariant.toMap().value("params").toMap().value("logEntry").toMap();
 
-        if (logNotification.value("typeId").toString() == doubleStateParamTypeId.toString()) {
-            if (logNotification.value("typeId").toString() == doubleStateParamTypeId.toString()) {
+        if (logNotification.value("typeId").toString() == mockDisplayPinDoubleActionDoubleParamTypeId.toString()) {
+            if (logNotification.value("typeId").toString() == mockDisplayPinDoubleActionDoubleParamTypeId.toString()) {
 
                 // If state source
                 if (logNotification.value("source").toString() == JsonTypes::loggingSourceToString(Logging::LoggingSourceStates)) {
@@ -558,7 +558,7 @@ void TestLogging::testHouseKeeping()
     params.insert("name", "TestDeviceToBeRemoved");
     QVariantList deviceParams;
     QVariantMap httpParam;
-    httpParam.insert("paramTypeId", httpportParamTypeId);
+    httpParam.insert("paramTypeId", mockDeviceHttpportParamTypeId);
     httpParam.insert("value", 6667);
     deviceParams.append(httpParam);
     params.insert("deviceParams", deviceParams);
@@ -569,7 +569,7 @@ void TestLogging::testHouseKeeping()
     // Trigger something that creates a logging entry
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(6667).arg(mockIntStateId.toString()).arg(4321)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(6667).arg(mockIntStateTypeId.toString()).arg(4321)));
     QNetworkReply *reply = nam.get(request);
     connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
     spy.wait();
@@ -598,16 +598,16 @@ void TestLogging::testLimits()
     for (int i = 0; i < 50; i++) {
         QVariantList actionParams;
         QVariantMap param1;
-        param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+        param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
         param1.insert("value", i);
         actionParams.append(param1);
         QVariantMap param2;
-        param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+        param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
         param2.insert("value", true);
         actionParams.append(param2);
 
         QVariantMap params;
-        params.insert("actionTypeId", mockActionIdWithParams);
+        params.insert("actionTypeId", mockWithParamsActionTypeId);
         params.insert("deviceId", m_mockDeviceId);
         params.insert("params", actionParams);
 

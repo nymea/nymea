@@ -97,6 +97,16 @@ void BrowserItem::setThumbnail(const QString &thumbnail)
     m_thumbnail = thumbnail;
 }
 
+QList<ActionTypeId> BrowserItem::actionTypeIds() const
+{
+    return m_actionTypeIds;
+}
+
+void BrowserItem::setActionTypeIs(const QList<ActionTypeId> &actionTypeIds)
+{
+    m_actionTypeIds = actionTypeIds;
+}
+
 BrowserItem::ExtendedPropertiesFlags BrowserItem::extendedPropertiesFlags() const
 {
     return m_extendedPropertiesFlags;

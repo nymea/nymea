@@ -147,7 +147,7 @@ StateType DeviceClass::getStateType(const StateTypeId &stateTypeId)
 
 /*! Set the \a stateTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their states matching to this template. */
-void DeviceClass::setStateTypes(const QList<StateType> &stateTypes)
+void DeviceClass::setStateTypes(const StateTypes &stateTypes)
 {
     m_stateTypes = stateTypes;
 }
@@ -172,7 +172,7 @@ EventTypes DeviceClass::eventTypes() const
 
 /*! Set the \a eventTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their events matching to this template. */
-void DeviceClass::setEventTypes(const QList<EventType> &eventTypes)
+void DeviceClass::setEventTypes(const EventTypes &eventTypes)
 {
     m_eventTypes = eventTypes;
 }
@@ -197,13 +197,38 @@ ActionTypes DeviceClass::actionTypes() const
 
 /*! Set the \a actionTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their actions matching to this template. */
-void DeviceClass::setActionTypes(const QList<ActionType> &actionTypes)
+void DeviceClass::setActionTypes(const ActionTypes &actionTypes)
 {
     m_actionTypes = actionTypes;
 }
 
 /*! Returns true if this DeviceClass has a \l{ActionType} with the given \a actionTypeId. */
 bool DeviceClass::hasActionType(const ActionTypeId &actionTypeId)
+{
+    foreach (const ActionType &actionType, m_actionTypes) {
+        if (actionType.id() == actionTypeId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/*! Returns the browserActionTypes of this DeviceClass. \{Device}{Devices} created
+    from this \l{DeviceClass} may set those actions to their browser items. */
+ActionTypes DeviceClass::browserActionTypes() const
+{
+    return m_browserActionTypes;
+}
+
+/*! Set the \a browserActionTypes of this DeviceClass. \{Device}{Devices} created
+    from this \l{DeviceClass} may set those actions to their browser items. */
+void DeviceClass::setBrowserActionTypes(const ActionTypes &browserActionTypes)
+{
+    m_browserActionTypes = browserActionTypes;
+}
+
+/*! Returns true if this DeviceClass has a \l{ActionType} with the given \a actionTypeId. */
+bool DeviceClass::hasBrowserActionType(const ActionTypeId &actionTypeId)
 {
     foreach (const ActionType &actionType, m_actionTypes) {
         if (actionType.id() == actionTypeId) {

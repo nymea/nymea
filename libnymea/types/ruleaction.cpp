@@ -169,6 +169,12 @@ ActionTypeId RuleAction::actionTypeId() const
     return m_actionTypeId;
 }
 
+/*! Returns the browserItemId of this RuleAction. */
+QString RuleAction::browserItemId() const
+{
+    return m_browserItemId;
+}
+
 /*! Returns the deviceId of this RuleAction. */
 DeviceId RuleAction::deviceId() const
 {

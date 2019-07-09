@@ -194,6 +194,13 @@
                             "name": "asyncFailing",
                             "displayName": "Mock Action 5 (async, broken)"
                         }
+                    ],
+                    "brwserItemActionTypes": [
+                        {
+                            "id": "00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3",
+                            "name": "addToFolder",
+                            "displayName": "Add to Favorites"
+                        }
                     ]
                 },
                 {

@@ -71,16 +71,20 @@ public:
 
     StateTypes stateTypes() const;
     StateType getStateType(const StateTypeId &stateTypeId);
-    void setStateTypes(const QList<StateType> &stateTypes);
+    void setStateTypes(const StateTypes &stateTypes);
     bool hasStateType(const StateTypeId &stateTypeId);
 
     EventTypes eventTypes() const;
-    void setEventTypes(const QList<EventType> &eventTypes);
+    void setEventTypes(const EventTypes &eventTypes);
     bool hasEventType(const EventTypeId &eventTypeId);
 
     ActionTypes actionTypes() const;
-    void setActionTypes(const QList<ActionType> &actionTypes);
+    void setActionTypes(const ActionTypes &actionTypes);
     bool hasActionType(const ActionTypeId &actionTypeId);
+
+    ActionTypes browserActionTypes() const;
+    void setBrowserActionTypes(const ActionTypes &browserActionTypes);
+    bool hasBrowserActionType(const ActionTypeId &actionTypeId);
 
     ParamTypes paramTypes() const;
     void setParamTypes(const ParamTypes &paramTypes);
@@ -118,6 +122,7 @@ private:
     StateTypes m_stateTypes;
     EventTypes m_eventTypes;
     ActionTypes m_actionTypes;
+    ActionTypes m_browserActionTypes;
     ParamTypes m_paramTypes;
     ParamTypes m_settingsTypes;
     ParamTypes m_discoveryParamTypes;

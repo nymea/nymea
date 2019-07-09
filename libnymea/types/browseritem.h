@@ -79,6 +79,9 @@ public:
     QString thumbnail() const;
     void setThumbnail(const QString &thumbnail);
 
+    QList<ActionTypeId> actionTypeIds() const;
+    void setActionTypeIs(const QList<ActionTypeId> &actionTypeIds);
+
     ExtendedPropertiesFlags extendedPropertiesFlags() const;
     QVariant extendedProperty(const QString &propertyName) const;
 
@@ -94,6 +97,7 @@ private:
 protected:
     ExtendedPropertiesFlags m_extendedPropertiesFlags = ExtendedPropertiesNone;
     QHash<QString, QVariant> m_extendedProperties;
+    QList<ActionTypeId> m_actionTypeIds;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(BrowserItem::ExtendedPropertiesFlags)

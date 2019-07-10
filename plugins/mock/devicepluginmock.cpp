@@ -434,7 +434,7 @@ Device::DeviceError DevicePluginMock::executeBrowserItemAction(Device *device, c
             return Device::DeviceErrorDeviceInUse;
         }
         BrowserItem newItem = node->item;
-        newItem.setActionTypeIs({mockRemoveFromFavoritesBrowserItemActionTypeId});
+        newItem.setActionTypeIds({mockRemoveFromFavoritesBrowserItemActionTypeId});
         VirtualFsNode *newNode = new VirtualFsNode(newItem);
         favoritesNode->addChild(newNode);
         return Device::DeviceErrorNoError;
@@ -664,20 +664,20 @@ void DevicePluginMock::generateBrowseItems()
     item = BrowserItem(QUuid::createUuid().toString(), "Item 1", false, true);
     item.setDescription("I'm executable");
     item.setIcon(BrowserItem::BrowserIconApplication);
-    item.setActionTypeIs({mockAddToFavoritesBrowserItemActionTypeId});
+    item.setActionTypeIds({mockAddToFavoritesBrowserItemActionTypeId});
     m_virtualFs->addChild(new VirtualFsNode(item));
 
     item = BrowserItem(QUuid::createUuid().toString(), "Item 2", false, true);
     item.setDescription("I'm a file");
     item.setIcon(BrowserItem::BrowserIconFile);
-    item.setActionTypeIs({mockAddToFavoritesBrowserItemActionTypeId});
+    item.setActionTypeIds({mockAddToFavoritesBrowserItemActionTypeId});
     m_virtualFs->addChild(new VirtualFsNode(item));
 
     item = BrowserItem(QUuid::createUuid().toString(), "Item 3", false, true);
     item.setDescription("I have a nice thumbnail");
     item.setIcon(BrowserItem::BrowserIconFile);
     item.setThumbnail("https://github.com/guh/nymea/raw/master/icons/nymea-logo-256x256.png");
-    item.setActionTypeIs({mockAddToFavoritesBrowserItemActionTypeId});
+    item.setActionTypeIds({mockAddToFavoritesBrowserItemActionTypeId});
     m_virtualFs->addChild(new VirtualFsNode(item));
 
     item = BrowserItem(QUuid::createUuid().toString(), "Item 4", false, false);

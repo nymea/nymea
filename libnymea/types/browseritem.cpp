@@ -112,7 +112,7 @@ QList<ActionTypeId> BrowserItem::actionTypeIds() const
     return m_actionTypeIds;
 }
 
-void BrowserItem::setActionTypeIs(const QList<ActionTypeId> &actionTypeIds)
+void BrowserItem::setActionTypeIds(const QList<ActionTypeId> &actionTypeIds)
 {
     m_actionTypeIds = actionTypeIds;
 }

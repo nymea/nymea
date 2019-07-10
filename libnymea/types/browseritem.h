@@ -83,7 +83,7 @@ public:
     void setThumbnail(const QString &thumbnail);
 
     QList<ActionTypeId> actionTypeIds() const;
-    void setActionTypeIs(const QList<ActionTypeId> &actionTypeIds);
+    void setActionTypeIds(const QList<ActionTypeId> &actionTypeIds);
 
     ExtendedPropertiesFlags extendedPropertiesFlags() const;
     QVariant extendedProperty(const QString &propertyName) const;

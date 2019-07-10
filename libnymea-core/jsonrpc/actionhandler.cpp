@@ -65,10 +65,20 @@ ActionHandler::ActionHandler(QObject *parent) :
     params.clear(); returns.clear();
     setDescription("ExecuteBrowserItem", "Execute the item identified by itemId on the given device.");
     params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("o:itemId", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("itemId", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("ExecuteBrowserItem", params);
     returns.insert("deviceError", JsonTypes::deviceErrorRef());
     setReturns("ExecuteBrowserItem", returns);
+
+    params.clear(); returns.clear();
+    setDescription("ExecuteBrowserItemAction", "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.");
+    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("itemId", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("actionTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("o:params", QVariantList() << JsonTypes::paramRef());
+    setParams("ExecuteBrowserItemAction", params);
+    returns.insert("deviceError", JsonTypes::deviceErrorRef());
+    setReturns("ExecuteBrowserItemAction", returns);
 
     connect(NymeaCore::instance(), &NymeaCore::actionExecuted, this, &ActionHandler::actionExecuted);
     connect(NymeaCore::instance(), &NymeaCore::browserItemExecuted, this, &ActionHandler::browserItemExecuted);
@@ -132,7 +142,7 @@ JsonReply *ActionHandler::ExecuteBrowserItem(const QVariantMap &params)
 {
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
     QString itemId = params.value("itemId").toString();
-    BrowserItemAction action(deviceId, itemId);
+    BrowserAction action(deviceId, itemId);
     Device::DeviceError status = NymeaCore::instance()->executeBrowserItem(action);
     if (status == Device::DeviceErrorAsync) {
         JsonReply *reply = createAsyncReply("ExecuteBrowserItem");
@@ -144,7 +154,37 @@ JsonReply *ActionHandler::ExecuteBrowserItem(const QVariantMap &params)
     return createReply(statusToReply(status));
 }
 
+JsonReply *ActionHandler::ExecuteBrowserItemAction(const QVariantMap &params)
+{
+    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+    QString itemId = params.value("itemId").toString();
+    ActionTypeId actionTypeId = ActionTypeId(params.value("actionTypeId").toString());
+    ParamList paramList = JsonTypes::unpackParams(params.value("params").toList());
+    BrowserItemAction browserItemAction(deviceId, itemId, actionTypeId, paramList);
+    Device::DeviceError status = NymeaCore::instance()->executeBrowserItemAction(browserItemAction);
+    if (status == Device::DeviceErrorAsync) {
+        JsonReply *reply = createAsyncReply("ExecuteBrowserItemAction");
+        ActionId id = browserItemAction.id();
+        connect(reply, &JsonReply::finished, [this, id](){ m_asyncActionExecutions.remove(id); });
+        m_asyncActionExecutions.insert(id, reply);
+        return reply;
+    }
+    return createReply(statusToReply(status));
+
+}
+
 void ActionHandler::browserItemExecuted(const ActionId &id, Device::DeviceError status)
+{
+    if (!m_asyncActionExecutions.contains(id)) {
+        return; // Not the action we are waiting for.
+    }
+
+    JsonReply *reply = m_asyncActionExecutions.take(id);
+    reply->setData(statusToReply(status));
+    reply->finished();
+}
+
+void ActionHandler::browserItemActionExecuted(const ActionId &id, Device::DeviceError status)
 {
     if (!m_asyncActionExecutions.contains(id)) {
         return; // Not the action we are waiting for.

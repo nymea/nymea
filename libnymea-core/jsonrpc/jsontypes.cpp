@@ -286,6 +286,7 @@ void JsonTypes::init()
     s_deviceClass.insert("stateTypes", QVariantList() << stateTypeRef());
     s_deviceClass.insert("eventTypes", QVariantList() << eventTypeRef());
     s_deviceClass.insert("actionTypes", QVariantList() << actionTypeRef());
+    s_deviceClass.insert("browserItemActionTypes", QVariantList() << actionTypeRef());
     s_deviceClass.insert("paramTypes", QVariantList() << paramTypeRef());
     s_deviceClass.insert("settingsTypes", QVariantList() << paramTypeRef());
     s_deviceClass.insert("discoveryParamTypes", QVariantList() << paramTypeRef());
@@ -436,6 +437,8 @@ void JsonTypes::init()
     s_browserItem.insert("thumbnail", basicTypeToString(QVariant::String));
     s_browserItem.insert("executable", basicTypeToString(QVariant::Bool));
     s_browserItem.insert("browsable", basicTypeToString(QVariant::Bool));
+    s_browserItem.insert("disabled", basicTypeToString(QVariant::Bool));
+    s_browserItem.insert("actionTypeIds", QVariantList() << basicTypeToString(QVariant::Uuid));
     s_browserItem.insert("o:mediaIcon", mediaBrowserIconRef());
 
     s_initialized = true;
@@ -743,6 +746,12 @@ QVariantMap JsonTypes::packBrowserItem(const BrowserItem &item)
     ret.insert("thumbnail", item.thumbnail());
     ret.insert("executable", item.executable());
     ret.insert("browsable", item.browsable());
+    ret.insert("disabled", item.disabled());
+    QVariantList actionTypeIds;
+    foreach (const ActionTypeId &id, item.actionTypeIds()) {
+        actionTypeIds.append(id.toString());
+    }
+    ret.insert("actionTypeIds", actionTypeIds);
     return ret;
 }
 
@@ -844,6 +853,10 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass, const QLo
     foreach (const ActionType &actionType, deviceClass.actionTypes())
         actionTypes.append(packActionType(actionType, deviceClass.pluginId(), locale));
 
+    QVariantList browserItemActionTypes;
+    foreach (const ActionType &actionType, deviceClass.browserItemActionTypes())
+        browserItemActionTypes.append(packActionType(actionType, deviceClass.pluginId(), locale));
+
     QVariantList paramTypes;
     foreach (const ParamType &paramType, deviceClass.paramTypes())
         paramTypes.append(packParamType(paramType, deviceClass.pluginId(), locale));
@@ -862,6 +875,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass, const QLo
     variant.insert("stateTypes", stateTypes);
     variant.insert("eventTypes", eventTypes);
     variant.insert("actionTypes", actionTypes);
+    variant.insert("browserItemActionTypes", browserItemActionTypes);
     variant.insert("createMethods", packCreateMethods(deviceClass.createMethods()));
     variant.insert("setupMethod", s_setupMethod.at(deviceClass.setupMethod()));
     return variant;

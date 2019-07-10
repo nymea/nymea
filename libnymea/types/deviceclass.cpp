@@ -213,24 +213,24 @@ bool DeviceClass::hasActionType(const ActionTypeId &actionTypeId)
     return false;
 }
 
-/*! Returns the browserActionTypes of this DeviceClass. \{Device}{Devices} created
+/*! Returns the browserItemActionTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} may set those actions to their browser items. */
-ActionTypes DeviceClass::browserActionTypes() const
+ActionTypes DeviceClass::browserItemActionTypes() const
 {
-    return m_browserActionTypes;
+    return m_browserItemActionTypes;
 }
 
 /*! Set the \a browserActionTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} may set those actions to their browser items. */
-void DeviceClass::setBrowserActionTypes(const ActionTypes &browserActionTypes)
+void DeviceClass::setBrowserItemActionTypes(const ActionTypes &browserItemActionTypes)
 {
-    m_browserActionTypes = browserActionTypes;
+    m_browserItemActionTypes = browserItemActionTypes;
 }
 
 /*! Returns true if this DeviceClass has a \l{ActionType} with the given \a actionTypeId. */
-bool DeviceClass::hasBrowserActionType(const ActionTypeId &actionTypeId)
+bool DeviceClass::hasBrowserItemActionType(const ActionTypeId &actionTypeId)
 {
-    foreach (const ActionType &actionType, m_actionTypes) {
+    foreach (const ActionType &actionType, m_browserItemActionTypes) {
         if (actionType.id() == actionTypeId) {
             return true;
         }
@@ -333,11 +333,13 @@ void DeviceClass::setInterfaces(const QStringList &interfaces)
     m_interfaces = interfaces;
 }
 
+/*! Returns whether \l{Device}{Devices} created from this \l{DeviceClass} are browsable */
 bool DeviceClass::browsable() const
 {
     return m_browsable;
 }
 
+/*! Sets whether \l{Device}{Devices} created from this \l{DeviceClass} are browsable */
 void DeviceClass::setBrowsable(bool browsable)
 {
     m_browsable = browsable;

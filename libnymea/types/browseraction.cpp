@@ -20,64 +20,47 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "browseritemaction.h"
+#include "browseraction.h"
 
-
-BrowserItemAction::BrowserItemAction(const DeviceId &deviceId, const QString &itemId, const ActionTypeId &actionTypeId, const ParamList &params):
+BrowserAction::BrowserAction(const DeviceId &deviceId, const QString &itemId):
     m_id(ActionId::createActionId()),
     m_deviceId(deviceId),
-    m_itemId(itemId),
-    m_actionTypeId(actionTypeId),
-    m_params(params)
+    m_itemId(itemId)
 {
 
 }
 
-BrowserItemAction::BrowserItemAction(const BrowserItemAction &other):
+BrowserAction::BrowserAction(const BrowserAction &other):
     m_id(other.id()),
     m_deviceId(other.deviceId()),
-    m_itemId(other.itemId()),
-    m_actionTypeId(other.actionTypeId()),
-    m_params(other.params())
+    m_itemId(other.itemId())
 {
 
 }
 
-ActionId BrowserItemAction::id() const
+ActionId BrowserAction::id() const
 {
     return m_id;
 }
 
-bool BrowserItemAction::isValid() const
+bool BrowserAction::isValid() const
 {
     return !m_id.isNull() && !m_deviceId.isNull() && !m_itemId.isNull();
 }
 
-DeviceId BrowserItemAction::deviceId() const
+DeviceId BrowserAction::deviceId() const
 {
     return m_deviceId;
 }
 
-QString BrowserItemAction::itemId() const
+QString BrowserAction::itemId() const
 {
     return m_itemId;
 }
 
-ActionTypeId BrowserItemAction::actionTypeId() const
-{
-    return m_actionTypeId;
-}
-
-ParamList BrowserItemAction::params() const
-{
-    return m_params;
-}
-
-void BrowserItemAction::operator=(const BrowserItemAction &other)
+void BrowserAction::operator=(const BrowserAction &other)
 {
     m_id = other.id();
     m_deviceId = other.deviceId();
     m_itemId = other.itemId();
-    m_actionTypeId = other.actionTypeId();
-    m_params = other.params();
 }

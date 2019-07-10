@@ -71,6 +71,7 @@ public:
         DeviceErrorDeviceIsChild,
         DeviceErrorPairingTransactionIdNotFound,
         DeviceErrorParameterNotWritable,
+        DeviceErrorItemNotFound,
         DeviceErrorUnsupportedFeature,
     };
     Q_ENUM(DeviceError)

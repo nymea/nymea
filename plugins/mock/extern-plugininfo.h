@@ -50,6 +50,8 @@ extern ActionTypeId mockWithoutParamsActionTypeId;
 extern ActionTypeId mockAsyncActionTypeId;
 extern ActionTypeId mockFailingActionTypeId;
 extern ActionTypeId mockAsyncFailingActionTypeId;
+extern ActionTypeId mockAddToFavoritesBrowserItemActionTypeId;
+extern ActionTypeId mockRemoveFromFavoritesBrowserItemActionTypeId;
 extern DeviceClassId mockDeviceAutoDeviceClassId;
 extern ParamTypeId mockDeviceAutoDeviceHttpportParamTypeId;
 extern ParamTypeId mockDeviceAutoDeviceAsyncParamTypeId;

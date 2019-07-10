@@ -60,6 +60,8 @@ private:
     ParamTypes m_paramTypes;
 };
 
+QDebug operator<<(QDebug dbg, const ActionType &actionType);
+
 class ActionTypes: public QList<ActionType>
 {
 public:

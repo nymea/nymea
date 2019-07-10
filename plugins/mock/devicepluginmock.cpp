@@ -51,7 +51,7 @@
 
 DevicePluginMock::DevicePluginMock()
 {
-
+    generateBrowseItems();
 }
 
 DevicePluginMock::~DevicePluginMock()
@@ -239,17 +239,21 @@ Device::DeviceError DevicePluginMock::displayPin(const PairingTransactionId &pai
     return Device::DeviceErrorNoError;
 }
 
-Device::BrowseResult DevicePluginMock::browseDevice(Device *device, Device::BrowseResult result, const QString &nodeId)
+Device::BrowseResult DevicePluginMock::browseDevice(Device *device, Device::BrowseResult result, const QString &itemId)
 {
     qCDebug(dcMockDevice()) << "Browse device called" << device;
     if (device->deviceClassId() == mockDeviceClassId) {
         if (device->paramValue(mockDeviceAsyncParamTypeId).toBool()) {
             result.status = Device::DeviceErrorAsync;
-            QTimer::singleShot(1000, device, [this, device, result, nodeId]() mutable {
+            QTimer::singleShot(1000, device, [this, device, result, itemId]() mutable {
                 if (device->paramValue(mockDeviceBrokenParamTypeId).toBool()) {
                     result.status = Device::DeviceErrorHardwareFailure;
                 } else {
-                    result = generateBrowseItems(nodeId, result);
+                    VirtualFsNode *node = m_virtualFs->findNode(itemId);
+                    foreach (VirtualFsNode *child, node->childs) {
+                        result.items.append(child->item);
+                    }
+                    result.status = Device::DeviceErrorNoError;
                 }
                 emit browseRequestFinished(result);
             });
@@ -257,7 +261,11 @@ Device::BrowseResult DevicePluginMock::browseDevice(Device *device, Device::Brow
         else if (device->paramValue(mockDeviceBrokenParamTypeId).toBool()) {
             result.status = Device::DeviceErrorHardwareFailure;
         } else {
-            result = generateBrowseItems(nodeId, result);
+            VirtualFsNode *node = m_virtualFs->findNode(itemId);
+            foreach (VirtualFsNode *child, node->childs) {
+                result.items.append(child->item);
+            }
+            result.status = Device::DeviceErrorNoError;
         }
     }
     return result;
@@ -393,8 +401,9 @@ Device::DeviceError DevicePluginMock::executeAction(Device *device, const Action
     return Device::DeviceErrorDeviceClassNotFound;
 }
 
-Device::DeviceError DevicePluginMock::executeBrowserItem(Device *device, const BrowserItemAction &browserItemAction)
+Device::DeviceError DevicePluginMock::executeBrowserItem(Device *device, const BrowserAction &browserAction)
 {
+    qCDebug(dcMockDevice()) << "ExecuteBrowserItem called";
     bool broken = device->paramValue(mockDeviceBrokenParamTypeId).toBool();
     bool async = device->paramValue(mockDeviceAsyncParamTypeId).toBool();
 
@@ -405,10 +414,44 @@ Device::DeviceError DevicePluginMock::executeBrowserItem(Device *device, const B
         return Device::DeviceErrorNoError;
     }
 
-    QTimer::singleShot(2000, device, [this, broken, browserItemAction](){
-        emit this->browserItemExecutionFinished(browserItemAction.id(), broken ? Device::DeviceErrorHardwareFailure : Device::DeviceErrorNoError);
+    QTimer::singleShot(2000, device, [this, broken, browserAction](){
+        emit this->browserItemExecutionFinished(browserAction.id(), broken ? Device::DeviceErrorHardwareFailure : Device::DeviceErrorNoError);
     });
     return Device::DeviceErrorAsync;
+}
+
+Device::DeviceError DevicePluginMock::executeBrowserItemAction(Device *device, const BrowserItemAction &browserItemAction)
+{
+    qCDebug(dcMockDevice()) << "TODO" << device << browserItemAction.id();
+    if (browserItemAction.actionTypeId() == mockAddToFavoritesBrowserItemActionTypeId) {
+
+        VirtualFsNode *node = m_virtualFs->findNode(browserItemAction.itemId());
+        if (!node) {
+            return Device::DeviceErrorInvalidParameter;
+        }
+        VirtualFsNode *favoritesNode = m_virtualFs->findNode("favorites");
+        if (favoritesNode->findNode(browserItemAction.itemId())) {
+            return Device::DeviceErrorDeviceInUse;
+        }
+        BrowserItem newItem = node->item;
+        newItem.setActionTypeIs({mockRemoveFromFavoritesBrowserItemActionTypeId});
+        VirtualFsNode *newNode = new VirtualFsNode(newItem);
+        favoritesNode->addChild(newNode);
+        return Device::DeviceErrorNoError;
+    }
+
+    if (browserItemAction.actionTypeId() == mockRemoveFromFavoritesBrowserItemActionTypeId) {
+        VirtualFsNode *favoritesNode = m_virtualFs->findNode("favorites");
+        VirtualFsNode *nodeToRemove = favoritesNode->findNode(browserItemAction.itemId());
+        if (!nodeToRemove) {
+            return Device::DeviceErrorItemNotFound;
+        }
+        int idx = favoritesNode->childs.indexOf(nodeToRemove);
+        delete favoritesNode->childs.takeAt(idx);
+        return Device::DeviceErrorNoError;
+    }
+
+    return Device::DeviceErrorActionTypeNotFound;
 }
 
 void DevicePluginMock::setState(const StateTypeId &stateTypeId, const QVariant &value)
@@ -609,58 +652,42 @@ void DevicePluginMock::onPluginConfigChanged()
 
 }
 
-Device::BrowseResult DevicePluginMock::generateBrowseItems(const QString &itemId, Device::BrowseResult result)
+void DevicePluginMock::generateBrowseItems()
 {
-    result.status = Device::DeviceErrorNoError;
+    m_virtualFs = new VirtualFsNode(BrowserItem());
 
-    if (itemId.isEmpty()) {
-        BrowserItem item = BrowserItem("0", "Item 0", true);
-        item.setDescription("I'm a folder");
-        item.setIcon(BrowserItem::BrowserIconFolder);
-        result.items.append(item);
+    BrowserItem item = BrowserItem(QUuid::createUuid().toString(), "Item 0", true);
+    item.setDescription("I'm a folder");
+    item.setIcon(BrowserItem::BrowserIconFolder);
+    m_virtualFs->addChild(new VirtualFsNode(item));
 
-        item = BrowserItem("1", "Item 1", false, true);
-        item.setDescription("I'm executable");
-        item.setIcon(BrowserItem::BrowserIconApplication);
-        result.items.append(item);
+    item = BrowserItem(QUuid::createUuid().toString(), "Item 1", false, true);
+    item.setDescription("I'm executable");
+    item.setIcon(BrowserItem::BrowserIconApplication);
+    item.setActionTypeIs({mockAddToFavoritesBrowserItemActionTypeId});
+    m_virtualFs->addChild(new VirtualFsNode(item));
 
-        item = BrowserItem("2", "Item 2", false, true);
-        item.setDescription("I'm a file");
-        item.setIcon(BrowserItem::BrowserIconFile);
-        result.items.append(item);
+    item = BrowserItem(QUuid::createUuid().toString(), "Item 2", false, true);
+    item.setDescription("I'm a file");
+    item.setIcon(BrowserItem::BrowserIconFile);
+    item.setActionTypeIs({mockAddToFavoritesBrowserItemActionTypeId});
+    m_virtualFs->addChild(new VirtualFsNode(item));
 
-        item = BrowserItem("3", "Item 3", false, true);
-        item.setDescription("I have a nice thumbnail");
-        item.setIcon(BrowserItem::BrowserIconFile);
-        item.setThumbnail("https://github.com/guh/nymea/raw/master/icons/nymea-logo-256x256.png");
-        result.items.append(item);
+    item = BrowserItem(QUuid::createUuid().toString(), "Item 3", false, true);
+    item.setDescription("I have a nice thumbnail");
+    item.setIcon(BrowserItem::BrowserIconFile);
+    item.setThumbnail("https://github.com/guh/nymea/raw/master/icons/nymea-logo-256x256.png");
+    item.setActionTypeIs({mockAddToFavoritesBrowserItemActionTypeId});
+    m_virtualFs->addChild(new VirtualFsNode(item));
 
-        item = BrowserItem("4", "Item 4", false, false);
-        item.setDescription("I'm disabled");
-        item.setIcon(BrowserItem::BrowserIconFile);
-        result.items.append(item);
+    item = BrowserItem(QUuid::createUuid().toString(), "Item 4", false, false);
+    item.setDescription("I'm disabled");
+    item.setDisabled(true);
+    item.setIcon(BrowserItem::BrowserIconFile);
+    m_virtualFs->addChild(new VirtualFsNode(item));
 
-    }
-    else if (itemId == "0") {
-        result.items.append(BrowserItem("5", "Item 5"));
-        result.items.append(BrowserItem("6", "Item 6"));
-        result.items.append(BrowserItem("7", "Item 7"));
-        result.items.append(BrowserItem("8", "Item 8"));
-        result.items.append(BrowserItem("9", "Item 9"));
-    }
-    else if (itemId == "2") {
-        result.items.append(BrowserItem("10", "Item 10", true));
-        result.items.append(BrowserItem("11", "Item 11"));
-        result.items.append(BrowserItem("12", "Item 12"));
-        result.items.append(BrowserItem("13", "Item 13"));
-        result.items.append(BrowserItem("14", "Item 14"));
-    }
-    else if (itemId == "10") {
-        result.items.append(BrowserItem("15", "Item 15"));
-        result.items.append(BrowserItem("16", "Item 16"));
-    } else {
-        result.status = Device::DeviceErrorInvalidParameter;
-    }
-
-    return result;
+    item = BrowserItem("favorites", "Favorites", true, false);
+    item.setDescription("Yay! I'm the best!");
+    item.setIcon(BrowserItem::BrowserIconFavorites);
+    m_virtualFs->addChild(new VirtualFsNode(item));
 }

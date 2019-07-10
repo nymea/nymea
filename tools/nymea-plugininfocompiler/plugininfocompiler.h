@@ -45,6 +45,7 @@ private:
     void writeStateTypes(const StateTypes &stateTypes, const QString &deviceClassName);
     void writeEventTypes(const EventTypes &eventTypes, const QString &deviceClassName);
     void writeActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
+    void writeBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
 
     void write(const QString &line = QString());
     void writeExtern(const QString &line = QString());

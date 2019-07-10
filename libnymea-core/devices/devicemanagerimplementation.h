@@ -100,7 +100,8 @@ public:
     Device::DeviceError executeAction(const Action &action) override;
 
     Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &itemId = QString()) override;
-    Device::DeviceError executeBrowserItem(const BrowserItemAction &browserItemAction) override;
+    Device::DeviceError executeBrowserItem(const BrowserAction &browserAction) override;
+    Device::DeviceError executeBrowserItemAction(const BrowserItemAction &browserItemAction) override;
 
     QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) override;
 

@@ -314,10 +314,19 @@ void LogEngine::logAction(const Action &action, Logging::LoggingLevel level, int
     appendLogEntry(entry);
 }
 
-void LogEngine::logBrowserAction(const BrowserItemAction &browserItemAction, Logging::LoggingLevel level, int errorCode)
+void LogEngine::logBrowserAction(const BrowserAction &browserAction, Logging::LoggingLevel level, int errorCode)
+{
+    LogEntry entry(level, Logging::LoggingSourceBrowserActions, errorCode);
+    entry.setDeviceId(browserAction.deviceId());
+    entry.setValue(browserAction.itemId());
+    appendLogEntry(entry);
+}
+
+void LogEngine::logBrowserItemAction(const BrowserItemAction &browserItemAction, Logging::LoggingLevel level, int errorCode)
 {
     LogEntry entry(level, Logging::LoggingSourceBrowserActions, errorCode);
     entry.setDeviceId(browserItemAction.deviceId());
+    entry.setTypeId(browserItemAction.actionTypeId());
     entry.setValue(browserItemAction.itemId());
     appendLogEntry(entry);
 }

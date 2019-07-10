@@ -20,64 +20,29 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "browseritemaction.h"
+#ifndef BROWSERACTION_H
+#define BROWSERACTION_H
 
+#include "typeutils.h"
 
-BrowserItemAction::BrowserItemAction(const DeviceId &deviceId, const QString &itemId, const ActionTypeId &actionTypeId, const ParamList &params):
-    m_id(ActionId::createActionId()),
-    m_deviceId(deviceId),
-    m_itemId(itemId),
-    m_actionTypeId(actionTypeId),
-    m_params(params)
+class BrowserAction
 {
+public:
+    explicit BrowserAction(const DeviceId &deviceId = DeviceId(), const QString &itemId = QString());
+    BrowserAction(const BrowserAction &other);
 
-}
+    ActionId id() const;
 
-BrowserItemAction::BrowserItemAction(const BrowserItemAction &other):
-    m_id(other.id()),
-    m_deviceId(other.deviceId()),
-    m_itemId(other.itemId()),
-    m_actionTypeId(other.actionTypeId()),
-    m_params(other.params())
-{
+    bool isValid() const;
 
-}
+    DeviceId deviceId() const;
+    QString itemId() const;
 
-ActionId BrowserItemAction::id() const
-{
-    return m_id;
-}
+    void operator=(const BrowserAction &other);
+private:
+    ActionId m_id;
+    DeviceId m_deviceId;
+    QString m_itemId;
+};
 
-bool BrowserItemAction::isValid() const
-{
-    return !m_id.isNull() && !m_deviceId.isNull() && !m_itemId.isNull();
-}
-
-DeviceId BrowserItemAction::deviceId() const
-{
-    return m_deviceId;
-}
-
-QString BrowserItemAction::itemId() const
-{
-    return m_itemId;
-}
-
-ActionTypeId BrowserItemAction::actionTypeId() const
-{
-    return m_actionTypeId;
-}
-
-ParamList BrowserItemAction::params() const
-{
-    return m_params;
-}
-
-void BrowserItemAction::operator=(const BrowserItemAction &other)
-{
-    m_id = other.id();
-    m_deviceId = other.deviceId();
-    m_itemId = other.itemId();
-    m_actionTypeId = other.actionTypeId();
-    m_params = other.params();
-}
+#endif // BROWSERACTION_H

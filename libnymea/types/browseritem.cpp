@@ -77,6 +77,16 @@ void BrowserItem::setBrowsable(bool browsable)
     m_browsable = browsable;
 }
 
+bool BrowserItem::disabled() const
+{
+    return m_disabled;
+}
+
+void BrowserItem::setDisabled(bool disabled)
+{
+    m_disabled = disabled;
+}
+
 BrowserItem::BrowserIcon BrowserItem::icon() const
 {
     return m_icon;

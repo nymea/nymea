@@ -73,6 +73,9 @@ public:
     bool browsable() const;
     void setBrowsable(bool browsable);
 
+    bool disabled() const;
+    void setDisabled(bool disabled);
+
     BrowserIcon icon() const;
     void setIcon(BrowserIcon icon);
 
@@ -91,6 +94,7 @@ private:
     QString m_description;
     bool m_browsable = false;
     bool m_executable = false;
+    bool m_disabled = false;
     BrowserIcon m_icon = BrowserIconNone;
     QString m_thumbnail;
 

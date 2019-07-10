@@ -195,11 +195,16 @@
                             "displayName": "Mock Action 5 (async, broken)"
                         }
                     ],
-                    "brwserItemActionTypes": [
+                    "browserItemActionTypes": [
                         {
                             "id": "00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3",
-                            "name": "addToFolder",
-                            "displayName": "Add to Favorites"
+                            "name": "addToFavorites",
+                            "displayName": "Add to favorites"
+                        },
+                        {
+                            "id": "da6faef8-2816-430e-93bb-57e8f9582d29",
+                            "name": "removeFromFavorites",
+                            "displayName": "Remove from favorites"
                         }
                     ]
                 },

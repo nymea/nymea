@@ -82,9 +82,12 @@ public:
     void setActionTypes(const ActionTypes &actionTypes);
     bool hasActionType(const ActionTypeId &actionTypeId);
 
-    ActionTypes browserActionTypes() const;
-    void setBrowserActionTypes(const ActionTypes &browserActionTypes);
-    bool hasBrowserActionType(const ActionTypeId &actionTypeId);
+    bool browsable() const;
+    void setBrowsable(bool browsable);
+
+    ActionTypes browserItemActionTypes() const;
+    void setBrowserItemActionTypes(const ActionTypes &browserItemActionTypes);
+    bool hasBrowserItemActionType(const ActionTypeId &actionTypeId);
 
     ParamTypes paramTypes() const;
     void setParamTypes(const ParamTypes &paramTypes);
@@ -107,9 +110,6 @@ public:
     QStringList interfaces() const;
     void setInterfaces(const QStringList &interfaces);
 
-    bool browsable() const;
-    void setBrowsable(bool browsable);
-
     bool operator==(const DeviceClass &device) const;
 
 private:
@@ -122,7 +122,7 @@ private:
     StateTypes m_stateTypes;
     EventTypes m_eventTypes;
     ActionTypes m_actionTypes;
-    ActionTypes m_browserActionTypes;
+    ActionTypes m_browserItemActionTypes;
     ParamTypes m_paramTypes;
     ParamTypes m_settingsTypes;
     ParamTypes m_discoveryParamTypes;

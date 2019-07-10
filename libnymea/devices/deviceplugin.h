@@ -37,6 +37,7 @@
 #include "types/vendor.h"
 #include "types/param.h"
 #include "types/interface.h"
+#include "types/browseraction.h"
 #include "types/browseritemaction.h"
 
 #include "hardwaremanager.h"
@@ -80,7 +81,8 @@ public:
     virtual Device::DeviceError executeAction(Device *device, const Action &action);
 
     virtual Device::BrowseResult browseDevice(Device *device, Device::BrowseResult result, const QString &nodeId = QString());
-    virtual Device::DeviceError executeBrowserItem(Device *device, const BrowserItemAction &browserItemAction);
+    virtual Device::DeviceError executeBrowserItem(Device *device, const BrowserAction &browserAction);
+    virtual Device::DeviceError executeBrowserItemAction(Device *device, const BrowserItemAction &browserItemAction);
 
     // Configuration
     ParamTypes configurationDescription() const;
@@ -102,6 +104,7 @@ signals:
     void autoDeviceDisappeared(const DeviceId &deviceId);
     void browseRequestFinished(const Device::BrowseResult &result);
     void browserItemExecutionFinished(const ActionId &actionid, Device::DeviceError status);
+    void browserItemActionExecutionFinished(const ActionId &actionid, Device::DeviceError status);
 
 protected:
     Devices myDevices() const;

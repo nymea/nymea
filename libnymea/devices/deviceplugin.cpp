@@ -248,16 +248,43 @@ Device::DeviceError DevicePlugin::executeAction(Device *device, const Action &ac
     return Device::DeviceErrorNoError;
 }
 
-Device::BrowseResult DevicePlugin::browseDevice(Device *device, Device::BrowseResult result, const QString &nodeId)
+/*! Implement this if your devices support browsing. When the system calls this method,
+ *  fill the \a result object's items list with entries from the browser. If \a itemId is empty
+ *  it means that the root node of the file system should be returned. Each item in the result set
+ *  shall be uniquely identifiable using its \l{BrowserItem::id}{id} property.
+ *  The system might call this method again, with an \a itemId returned in a previous query, provided
+ *  that item's \l{BrowserItem::browsable} property is true. In this case all children of the given
+ *  item shall be returned.
+ *  When done, set the \l{BrowserResult::status}{result's status} field approprietly. Set the result's
+ *  status to Device::DeviceErrorAsync if this operation requires async behavior and emit
+ *  \l{browseRequestFinished} when done.
+ */
+Device::BrowseResult DevicePlugin::browseDevice(Device *device, Device::BrowseResult result, const QString &itemId)
 {
     Q_UNUSED(device)
-    Q_UNUSED(nodeId)
+    Q_UNUSED(itemId)
 
     result.status = Device::DeviceErrorUnsupportedFeature;
     return result;
 }
 
-Device::DeviceError DevicePlugin::executeBrowserItem(Device *device, const BrowserItemAction &browserItemAction)
+/*! Implement this if your devices support browsing and execute the itemId defined in \a browserAction.
+ *  Return Device::DeviceErrorAsync if this operation requires async behavior and emit
+ *  \l{browserItemExecutionFinished} when done.
+ */
+Device::DeviceError DevicePlugin::executeBrowserItem(Device *device, const BrowserAction &browserAction)
+{
+    Q_UNUSED(device)
+    Q_UNUSED(browserAction)
+    return Device::DeviceErrorUnsupportedFeature;
+}
+
+/*! Implement this if your devices support browsing and execute the item's action for the itemId defined
+ *  in \a browserItemAction.
+ *  Return Device::DeviceErrorAsync if this operation requires async behavior and emit
+ *  \l{browserItemActionExecutionFinished} when done.
+ */
+Device::DeviceError DevicePlugin::executeBrowserItemAction(Device *device, const BrowserItemAction &browserItemAction)
 {
     Q_UNUSED(device)
     Q_UNUSED(browserItemAction)

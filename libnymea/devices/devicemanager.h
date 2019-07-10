@@ -30,6 +30,7 @@
 #include "types/interface.h"
 #include "types/vendor.h"
 #include "types/browseritem.h"
+#include "types/browseraction.h"
 #include "types/browseritemaction.h"
 
 class DeviceManager : public QObject
@@ -74,7 +75,8 @@ public:
     virtual Device::DeviceError executeAction(const Action &action) = 0;
 
     virtual Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &itemId = QString()) = 0;
-    virtual Device::DeviceError executeBrowserItem(const BrowserItemAction &browserItemAction) = 0;
+    virtual Device::DeviceError executeBrowserItem(const BrowserAction &browserAction) = 0;
+    virtual Device::DeviceError executeBrowserItemAction(const BrowserItemAction &browserItemAction) = 0;
 
     virtual QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) = 0;
 
@@ -94,6 +96,7 @@ signals:
     void actionExecutionFinished(const ActionId &actionId, Device::DeviceError status);
     void browseRequestFinished(const Device::BrowseResult &result);
     void browserItemExecutionFinished(const ActionId &actionId, Device::DeviceError status);
+    void browserItemActionExecutionFinished(const ActionId &actionId, Device::DeviceError status);
 
 protected:
     Device::BrowseResult createBrowseResult();

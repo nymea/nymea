@@ -24,13 +24,12 @@
 #define BROWSERITEMACTION_H
 
 #include "typeutils.h"
+#include "types/param.h"
 
 class BrowserItemAction
 {
 public:
-    BrowserItemAction();
-
-    explicit BrowserItemAction(const DeviceId &deviceId = DeviceId(), const QString &itemId = QString());
+    explicit BrowserItemAction(const DeviceId &deviceId = DeviceId(), const QString &itemId = QString(), const ActionTypeId &actionTypeId = ActionTypeId(), const ParamList &params = ParamList());
     BrowserItemAction(const BrowserItemAction &other);
 
     ActionId id() const;
@@ -39,12 +38,19 @@ public:
 
     DeviceId deviceId() const;
     QString itemId() const;
+    ActionTypeId actionTypeId() const;
+
+    ParamList params() const;
+    void setParams(const ParamList &params);
+    Param param(const ParamTypeId &paramTypeId) const;
 
     void operator=(const BrowserItemAction &other);
 private:
     ActionId m_id;
     DeviceId m_deviceId;
     QString m_itemId;
+    ActionTypeId m_actionTypeId;
+    ParamList m_params;
 };
 
 #endif // BROWSERITEMACTION_H

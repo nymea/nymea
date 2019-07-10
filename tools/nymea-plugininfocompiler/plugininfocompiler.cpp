@@ -228,6 +228,7 @@ void PluginInfoCompiler::writeDeviceClass(const DeviceClass &deviceClass)
     writeStateTypes(deviceClass.stateTypes(), deviceClass.name());
     writeEventTypes(deviceClass.eventTypes(), deviceClass.name());
     writeActionTypes(deviceClass.actionTypes(), deviceClass.name());
+    writeBrowserItemActionTypes(deviceClass.browserItemActionTypes(), deviceClass.name());
 }
 
 void PluginInfoCompiler::writeStateTypes(const StateTypes &stateTypes, const QString &deviceClassName)
@@ -276,8 +277,24 @@ void PluginInfoCompiler::writeActionTypes(const ActionTypes &actionTypes, const 
         writeExtern(QString("extern ActionTypeId %1;").arg(variableName));
 
         writeParams(actionType.paramTypes(), deviceClassName, "Action", actionType.name());
-    }
+    }    
+}
 
+void PluginInfoCompiler::writeBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName)
+{
+    foreach (const ActionType &actionType, actionTypes) {
+        QString variableName = QString("%1%2BrowserItemActionTypeId").arg(deviceClassName, actionType.name()[0].toUpper() + actionType.name().right(actionType.name().length() - 1));
+        if (m_variableNames.contains(variableName)) {
+            qWarning().nospace() << "Error: Duplicate name " << variableName << " for Browser Item ActionType " << actionType.name() << " in DeviceClass " << deviceClassName << ". Skipping entry.";
+            return;
+        }
+        m_variableNames.append(variableName);
+        write(QString("ActionTypeId %1 = ActionTypeId(\"%2\");").arg(variableName).arg(actionType.id().toString()));
+        m_translationStrings.insert(actionType.displayName(), QString("The name of the Browser Item ActionType (%1) of DeviceClass %2").arg(actionType.id().toString()).arg(deviceClassName));
+        writeExtern(QString("extern ActionTypeId %1;").arg(variableName));
+
+        writeParams(actionType.paramTypes(), deviceClassName, "BrowserItemAction", actionType.name());
+    }
 }
 
 void PluginInfoCompiler::write(const QString &line)

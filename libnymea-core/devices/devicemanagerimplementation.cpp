@@ -734,7 +734,19 @@ Device::BrowseResult DeviceManagerImplementation::browseDevice(const DeviceId &d
     return result;
 }
 
-Device::DeviceError DeviceManagerImplementation::executeBrowserItem(const BrowserItemAction &browserItemAction)
+Device::DeviceError DeviceManagerImplementation::executeBrowserItem(const BrowserAction &browserAction)
+{
+    Device *device = m_configuredDevices.value(browserAction.deviceId());
+    if (!device) {
+        return Device::DeviceErrorDeviceNotFound;
+    }
+    if (!device->deviceClass().browsable()) {
+        return Device::DeviceErrorUnsupportedFeature;
+    }
+    return device->plugin()->executeBrowserItem(device, browserAction);
+}
+
+Device::DeviceError DeviceManagerImplementation::executeBrowserItemAction(const BrowserItemAction &browserItemAction)
 {
     Device *device = m_configuredDevices.value(browserItemAction.deviceId());
     if (!device) {
@@ -743,7 +755,9 @@ Device::DeviceError DeviceManagerImplementation::executeBrowserItem(const Browse
     if (!device->deviceClass().browsable()) {
         return Device::DeviceErrorUnsupportedFeature;
     }
-    return device->plugin()->executeBrowserItem(device, browserItemAction);
+    // TODO: check browserItemAction.params with deviceClass
+
+    return device->plugin()->executeBrowserItemAction(device, browserItemAction);
 }
 
 QString DeviceManagerImplementation::translate(const PluginId &pluginId, const QString &string, const QLocale &locale)
@@ -879,6 +893,7 @@ void DeviceManagerImplementation::loadPlugins()
             loader.setFileName(fi.absoluteFilePath());
             loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
 
+            qCDebug(dcDeviceManager()) << "Loading plugin from:" << fi.absoluteFilePath();
             if (!loader.load()) {
                 qCWarning(dcDeviceManager) << "Could not load plugin data of" << entry << "\n" << loader.errorString();
                 continue;

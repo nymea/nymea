@@ -14,6 +14,30 @@
                 "deviceError": "$ref:DeviceError"
             }
         },
+        "Actions.ExecuteBrowserItem": {
+            "description": "Execute the item identified by itemId on the given device.",
+            "params": {
+                "deviceId": "Uuid",
+                "itemId": "String"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError"
+            }
+        },
+        "Actions.ExecuteBrowserItemAction": {
+            "description": "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.",
+            "params": {
+                "actionTypeId": "Uuid",
+                "deviceId": "Uuid",
+                "itemId": "String",
+                "o:params": [
+                    "$ref:Param"
+                ]
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError"
+            }
+        },
         "Actions.GetActionType": {
             "description": "Get the ActionType for the given ActionTypeId",
             "params": {
@@ -253,7 +277,7 @@
             "description": "Browse a device. If a DeviceClass indicates a device is browsable, this method will return the BrowserItems. If no parameter besides the deviceId is used, the root node of this device will be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.",
             "params": {
                 "deviceId": "Uuid",
-                "o:nodeId": "String"
+                "o:itemId": "String"
             },
             "returns": {
                 "deviceError": "$ref:DeviceError",
@@ -278,16 +302,6 @@
             "params": {
                 "deviceId": "Uuid",
                 "name": "String"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError"
-            }
-        },
-        "Devices.ExecuteBrowserItem": {
-            "description": "Execute the item identified by nodeId on the given device.",
-            "params": {
-                "deviceId": "Uuid",
-                "o:nodeId": "String"
             },
             "returns": {
                 "deviceError": "$ref:DeviceError"
@@ -1376,8 +1390,12 @@
         ],
         "BrowserIcon": "$ref:BrowserIcon",
         "BrowserItem": {
+            "actionTypeIds": [
+                "Uuid"
+            ],
             "browsable": "Bool",
             "description": "String",
+            "disabled": "Bool",
             "displayName": "String",
             "executable": "Bool",
             "icon": "$ref:BrowserIcon",
@@ -1436,6 +1454,9 @@
                 "$ref:ActionType"
             ],
             "browsable": "Bool",
+            "browserItemActionTypes": [
+                "$ref:ActionType"
+            ],
             "createMethods": [
                 "$ref:CreateMethod"
             ],
@@ -1498,6 +1519,7 @@
             "DeviceErrorDeviceIsChild",
             "DeviceErrorPairingTransactionIdNotFound",
             "DeviceErrorParameterNotWritable",
+            "DeviceErrorItemNotFound",
             "DeviceErrorUnsupportedFeature"
         ],
         "Event": {
@@ -1543,6 +1565,7 @@
             "o:deviceId": "Uuid",
             "o:errorCode": "String",
             "o:eventType": "$ref:LoggingEventType",
+            "o:itemId": "String",
             "o:typeId": "Uuid",
             "o:value": "String",
             "source": "$ref:LoggingSource",
@@ -1569,7 +1592,8 @@
             "LoggingSourceEvents",
             "LoggingSourceActions",
             "LoggingSourceStates",
-            "LoggingSourceRules"
+            "LoggingSourceRules",
+            "LoggingSourceBrowserActions"
         ],
         "MediaBrowserIcon": "$ref:MediaBrowserIcon",
         "MqttPolicy": {

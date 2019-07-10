@@ -34,8 +34,8 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
     parser.setApplicationDescription("The nymea plugin info compiler. Compiles a plugininfo.json into a plugininfo.h/plugininfo-extern.h.");
     parser.addHelpOption();
-    parser.addOption({{"o", "output"}, "Write generated output header to <file>.", "file", "-"});
-    parser.addOption({{"e", "extern"}, "Write generated output header (extern definitions) to <file>.", "file", "-"});
+    parser.addOption({{"o", "output"}, "Write generated output header to <file>.", "file"});
+    parser.addOption({{"e", "extern"}, "Write generated output header (extern definitions) to <file>.", "file"});
     parser.addPositionalArgument("input", "The input json file");
 
     parser.process(a);

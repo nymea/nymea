@@ -60,29 +60,33 @@ int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputF
 
     // OK. Json parsed fine. Let's open files for writing
 
-    if (outputFile == "-") {
-        if (!m_outputFile.open(stdout, QFile::WriteOnly | QFile::Text)) {
-            qWarning() << "Error opening stdout for writing. Aborting.";
-            return 1;
-        }
-    } else {
-        m_outputFile.setFileName(outputFile);
-        if (!m_outputFile.open(QFile::WriteOnly | QFile::Text)) {
-            qWarning() << "Error opening output file for writing. Aborting.";
-            return 1;
+    if (!outputFile.isEmpty()) {
+        if (outputFile == "-") {
+            if (!m_outputFile.open(stdout, QFile::WriteOnly | QFile::Text)) {
+                qWarning() << "Error opening stdout for writing. Aborting.";
+                return 1;
+            }
+        } else {
+            m_outputFile.setFileName(outputFile);
+            if (!m_outputFile.open(QFile::WriteOnly | QFile::Text)) {
+                qWarning() << "Error opening output file for writing. Aborting.";
+                return 1;
+            }
         }
     }
 
-    if (outputFileExtern == "-") {
-        if (!m_outputFileExtern.open(stdout, QFile::WriteOnly | QFile::Text)) {
-            qWarning() << "Error opening stdout for writing. Aborting.";
-            return 1;
-        }
-    } else {
-        m_outputFileExtern.setFileName(outputFileExtern);
-        if (!m_outputFileExtern.open(QFile::WriteOnly | QFile::Text)) {
-            qWarning() << "Error opening output file for writing. Aborting.";
-            return 1;
+    if (!outputFileExtern.isEmpty()) {
+        if (outputFileExtern == "-") {
+            if (!m_outputFileExtern.open(stdout, QFile::WriteOnly | QFile::Text)) {
+                qWarning() << "Error opening stdout for writing. Aborting.";
+                return 1;
+            }
+        } else {
+            m_outputFileExtern.setFileName(outputFileExtern);
+            if (!m_outputFileExtern.open(QFile::WriteOnly | QFile::Text)) {
+                qWarning() << "Error opening output file for writing. Aborting.";
+                return 1;
+            }
         }
     }
 
@@ -278,10 +282,14 @@ void PluginInfoCompiler::writeActionTypes(const ActionTypes &actionTypes, const 
 
 void PluginInfoCompiler::write(const QString &line)
 {
-    m_outputFile.write(QString("%1\n").arg(line).toUtf8());
+    if (m_outputFile.isOpen()) {
+        m_outputFile.write(QString("%1\n").arg(line).toUtf8());
+    }
 }
 
 void PluginInfoCompiler::writeExtern(const QString &line)
 {
-    m_outputFileExtern.write(QString("%1\n").arg(line).toUtf8());
+    if (m_outputFileExtern.isOpen()) {
+        m_outputFileExtern.write(QString("%1\n").arg(line).toUtf8());
+    }
 }

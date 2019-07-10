@@ -65,6 +65,12 @@ private:
     DeviceClasses m_deviceClasses;
 
     QList<QUuid> m_allUuids;
+
+    // FIXME: Due to the fact that we have duplicate UUIDs in use in plugins out there in
+    // products, we can't just break those plugins now. For now, let's make the check
+    // As strict as possible without breaking them, but this should be removed ASAP
+    // and only m_allUuids should be used to check for dupes
+    QList<QUuid> m_currentScopUuids;
 };
 
 #endif // PLUGINMETADATA_H

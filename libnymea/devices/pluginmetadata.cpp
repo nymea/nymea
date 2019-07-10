@@ -155,6 +155,10 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
         // Load deviceclasses of this vendor
         foreach (const QJsonValue &deviceClassJson, vendorJson.toObject().value("deviceClasses").toArray()) {
+
+            // FIXME: Drop this when possible, see .h for context
+            m_currentScopUuids.clear();
+
             QJsonObject deviceClassObject = deviceClassJson.toObject();
             /*! Returns a list of all valid JSON properties a DeviceClass JSON definition can have. */
             QStringList deviceClassProperties = QStringList() << "id" << "name" << "displayName" << "createMethods" << "setupMethod"
@@ -720,6 +724,11 @@ QPair<bool, Types::InputType> PluginMetadata::loadAndVerifyInputType(const QStri
 bool PluginMetadata::verifyDuplicateUuid(const QUuid &uuid)
 {
     if (m_allUuids.contains(uuid)) {
+        // FIXME: Drop debug, activate return! (see .h for more context)
+        qCWarning(dcPluginMetadata()) << "THIS PLUGIN USES DUPLICATE UUID" << uuid.toString() << "! THIS WILL STOP WORKING SOON.";
+//        return false;
+    }
+    if (m_currentScopUuids.contains(uuid)) {
         return false;
     }
     m_allUuids.append(uuid);

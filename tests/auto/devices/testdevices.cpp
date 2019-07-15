@@ -29,6 +29,9 @@ class TestDevices : public NymeaTestBase
 {
     Q_OBJECT
 
+protected slots:
+    void initTestCase();
+
 private slots:
     void getPlugins();
 
@@ -99,7 +102,19 @@ private slots:
     void removeDevice();
 
     void removeAutoDevice();
+
+    void discoverDeviceParenting();
 };
+
+void TestDevices::initTestCase()
+{
+    NymeaTestBase::initTestCase();
+    QLoggingCategory::setFilterRules("*.debug=false\n"
+                                     "Tests.debug=true\n"
+                                     "MockDevice.debug=true\n"
+                                     );
+
+}
 
 void TestDevices::getPlugins()
 {
@@ -1464,6 +1479,67 @@ void TestDevices::removeAutoDevice()
     reply->deleteLater();
 
     QVERIFY2(NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceAutoDeviceClassId).count() == 0, "Mock device has not disappeared even though it should have.");
+}
+
+void TestDevices::discoverDeviceParenting()
+{
+    // Try to discover a mock child device. We don't have a mockParent yet, so it should fail
+    QSignalSpy spy(NymeaCore::instance()->deviceManager(), &DeviceManager::devicesDiscovered);
+    Device::DeviceError status = NymeaCore::instance()->deviceManager()->discoverDevices(mockChildDeviceClassId, ParamList());
+    QCOMPARE(status, Device::DeviceErrorAsync);
+    spy.wait();
+    QCOMPARE(spy.first().at(0).value<DeviceClassId>().toString(), mockChildDeviceClassId.toString());
+    QList<DeviceDescriptor> descriptors = spy.first().at(1).value<QList<DeviceDescriptor> >();
+    QVERIFY(descriptors.count() == 0);
+
+
+    // Now create a mock parent by discovering...
+    spy.clear();
+    status = NymeaCore::instance()->deviceManager()->discoverDevices(mockParentDeviceClassId, ParamList());
+    QCOMPARE(status, Device::DeviceErrorAsync);
+    spy.wait();
+    QVERIFY(spy.count() == 1);
+    QCOMPARE(spy.first().at(0).value<DeviceClassId>().toString(), mockParentDeviceClassId.toString());
+    descriptors = spy.first().at(1).value<QList<DeviceDescriptor> >();
+    QVERIFY(descriptors.count() == 1);
+    DeviceDescriptorId descriptorId = descriptors.first().id();
+
+    QSignalSpy addSpy(NymeaCore::instance()->deviceManager(), &DeviceManager::deviceAdded);
+    status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(mockParentDeviceClassId, "Mock Parent (Discovered)", descriptorId);
+    QCOMPARE(status, Device::DeviceErrorNoError);
+    QCOMPARE(addSpy.count(), 2); // Mock device parent will also auto-create a child instantly
+
+    Device *parentDevice = addSpy.at(1).first().value<Device*>();
+    qCDebug(dcTests()) << "Added device:" << parentDevice->name();
+    QVERIFY(parentDevice->deviceClassId() == mockParentDeviceClassId);
+
+
+    // Ok we have our parent device, let's discover for childs again
+    spy.clear();
+    status = NymeaCore::instance()->deviceManager()->discoverDevices(mockChildDeviceClassId, ParamList());
+    QCOMPARE(status, Device::DeviceErrorAsync);
+    spy.wait();
+    QCOMPARE(spy.first().at(0).value<DeviceClassId>().toString(), mockChildDeviceClassId.toString());
+    descriptors = spy.first().at(1).value<QList<DeviceDescriptor> >();
+    QVERIFY(descriptors.count() == 1);
+    descriptorId = descriptors.first().id();
+
+    // Found one! Adding it...
+    addSpy.clear();
+    status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(mockChildDeviceClassId, "Mock Child (Discovered)", descriptorId);
+    QCOMPARE(status, Device::DeviceErrorNoError);
+    QCOMPARE(addSpy.count(), 1);
+
+    Device *childDevice = addSpy.at(0).first().value<Device*>();
+    qCDebug(dcTests()) << "Added device:" << childDevice->name();
+    QVERIFY(childDevice->deviceClassId() == mockChildDeviceClassId);
+
+    // Now delete the parent and make sure the child will be deleted too
+    QSignalSpy removeSpy(NymeaCore::instance(), &NymeaCore::deviceRemoved);
+    QPair<Device::DeviceError, QList<RuleId> > ret = NymeaCore::instance()->removeConfiguredDevice(parentDevice->id(), QHash<RuleId, RuleEngine::RemovePolicy>());
+    QCOMPARE(ret.first, Device::DeviceErrorNoError);
+    QCOMPARE(removeSpy.count(), 3); // The parent, the auto-mock and the discovered mock
+
 }
 
 #include "testdevices.moc"

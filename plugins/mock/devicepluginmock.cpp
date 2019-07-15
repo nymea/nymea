@@ -75,7 +75,28 @@ Device::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId &devic
         m_discoveredDeviceCount = params.paramValue(mockDisplayPinDiscoveryResultCountParamTypeId).toInt();
         QTimer::singleShot(1000, this, SLOT(emitDisplayPinDevicesDiscovered()));
         return Device::DeviceErrorAsync;
+    } else if (deviceClassId == mockParentDeviceClassId) {
+        qCDebug(dcMockDevice()) << "Starting discovery for mock device parent";
+        QTimer::singleShot(1000, this, [this](){
+            DeviceDescriptor descriptor(mockParentDeviceClassId, "Mock Parent (Discovered)");
+            emit devicesDiscovered(mockParentDeviceClassId, {descriptor});
+
+        });
+        return Device::DeviceErrorAsync;
+    } else if (deviceClassId == mockChildDeviceClassId) {
+        QTimer::singleShot(1000, this, [this](){
+            QList<DeviceDescriptor> descriptors;
+            if (!myDevices().filterByDeviceClassId(mockParentDeviceClassId).isEmpty()) {
+                Device *parent = myDevices().filterByDeviceClassId(mockParentDeviceClassId).first();
+                DeviceDescriptor descriptor(mockChildDeviceClassId, "Mock Child (Discovered)", QString(), parent->id());
+                descriptors.append(descriptor);
+            }
+            emit devicesDiscovered(mockChildDeviceClassId, descriptors);
+        });
+        return Device::DeviceErrorAsync;
     }
+
+    qCWarning(dcMockDevice()) << "Cannot discover for deviceClassId" << deviceClassId;
     return Device::DeviceErrorDeviceClassNotFound;
 }
 

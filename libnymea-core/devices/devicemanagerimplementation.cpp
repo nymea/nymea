@@ -361,7 +361,7 @@ Device::DeviceError DeviceManagerImplementation::addConfiguredDevice(const Devic
         }
     }
 
-    return addConfiguredDeviceInternal(deviceClassId, name, finalParams, deviceId);
+    return addConfiguredDeviceInternal(deviceClassId, name, finalParams, deviceId, descriptor.parentDeviceId());
 }
 
 
@@ -619,7 +619,7 @@ Device::DeviceError DeviceManagerImplementation::confirmPairing(const PairingTra
 
 /*! This method will only be used from the DeviceManagerImplementation in order to add a \l{Device} with the given \a deviceClassId, \a name, \a params and \ id.
  *  Returns \l{DeviceError} to inform about the result. */
-Device::DeviceError DeviceManagerImplementation::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id)
+Device::DeviceError DeviceManagerImplementation::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id, const DeviceId &parentDeviceId)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (deviceClass.id().isNull()) {
@@ -648,6 +648,7 @@ Device::DeviceError DeviceManagerImplementation::addConfiguredDeviceInternal(con
     }
 
     Device *device = new Device(plugin, deviceClass, id, this);
+    device->setParentId(parentDeviceId);
     if (name.isEmpty()) {
         device->setName(deviceClass.name());
     } else {

@@ -80,7 +80,7 @@ public:
 
     virtual Device::DeviceError executeAction(Device *device, const Action &action);
 
-    virtual Device::BrowseResult browseDevice(Device *device, Device::BrowseResult result, const QString &nodeId = QString());
+    virtual Device::BrowseResult browseDevice(Device *device, Device::BrowseResult result, const QString &nodeId, const QLocale &locale);
     virtual Device::DeviceError executeBrowserItem(Device *device, const BrowserAction &browserAction);
     virtual Device::DeviceError executeBrowserItemAction(Device *device, const BrowserItemAction &browserItemAction);
 

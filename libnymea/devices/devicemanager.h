@@ -74,7 +74,7 @@ public:
 
     virtual Device::DeviceError executeAction(const Action &action) = 0;
 
-    virtual Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &itemId = QString()) = 0;
+    virtual Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) = 0;
     virtual Device::DeviceError executeBrowserItem(const BrowserAction &browserAction) = 0;
     virtual Device::DeviceError executeBrowserItemAction(const BrowserItemAction &browserItemAction) = 0;
 

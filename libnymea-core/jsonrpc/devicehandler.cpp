@@ -681,7 +681,7 @@ JsonReply *DeviceHandler::BrowseDevice(const QVariantMap &params) const
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
     QString itemId = params.value("itemId").toString();
 
-    Device::BrowseResult result = NymeaCore::instance()->deviceManager()->browseDevice(deviceId, itemId);
+    Device::BrowseResult result = NymeaCore::instance()->deviceManager()->browseDevice(deviceId, itemId, params.value("locale").toLocale());
 
     if (result.status == Device::DeviceErrorAsync ) {
         JsonReply *reply = createAsyncReply("BrowseDevice");

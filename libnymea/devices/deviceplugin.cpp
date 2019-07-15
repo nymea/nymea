@@ -248,21 +248,23 @@ Device::DeviceError DevicePlugin::executeAction(Device *device, const Action &ac
     return Device::DeviceErrorNoError;
 }
 
-/*! Implement this if your devices support browsing. When the system calls this method,
- *  fill the \a result object's items list with entries from the browser. If \a itemId is empty
- *  it means that the root node of the file system should be returned. Each item in the result set
- *  shall be uniquely identifiable using its \l{BrowserItem::id}{id} property.
+/*! Implement this if your devices support browsing (besides settings browsable to true in the metadata).
+ *  When the system calls this method, fill the \a result object's items list with entries from the browser.
+ *  If \a itemId is empty it means that the root node of the file system should be returned. Each item in
+ *  the result set shall be uniquely identifiable using its \l{BrowserItem::id}{id} property.
  *  The system might call this method again, with an \a itemId returned in a previous query, provided
  *  that item's \l{BrowserItem::browsable} property is true. In this case all children of the given
- *  item shall be returned.
+ *  item shall be returned. All browser \l {BrowserItem::displayName} properties shall be localized
+ *  using the given \a locale.
  *  When done, set the \l{BrowserResult::status}{result's status} field approprietly. Set the result's
  *  status to Device::DeviceErrorAsync if this operation requires async behavior and emit
  *  \l{browseRequestFinished} when done.
  */
-Device::BrowseResult DevicePlugin::browseDevice(Device *device, Device::BrowseResult result, const QString &itemId)
+Device::BrowseResult DevicePlugin::browseDevice(Device *device, Device::BrowseResult result, const QString &itemId, const QLocale &locale)
 {
     Q_UNUSED(device)
     Q_UNUSED(itemId)
+    Q_UNUSED(locale)
 
     result.status = Device::DeviceErrorUnsupportedFeature;
     return result;

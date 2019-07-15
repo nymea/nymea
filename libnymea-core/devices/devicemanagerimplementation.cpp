@@ -710,7 +710,7 @@ Device::DeviceError DeviceManagerImplementation::removeConfiguredDevice(const De
     return Device::DeviceErrorNoError;
 }
 
-Device::BrowseResult DeviceManagerImplementation::browseDevice(const DeviceId &deviceId, const QString &itemId)
+Device::BrowseResult DeviceManagerImplementation::browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale)
 {
     Q_UNUSED(deviceId)
     Q_UNUSED(itemId)
@@ -730,7 +730,7 @@ Device::BrowseResult DeviceManagerImplementation::browseDevice(const DeviceId &d
         return result;
     }
 
-    result = device->plugin()->browseDevice(device, result, itemId);
+    result = device->plugin()->browseDevice(device, result, itemId, locale);
     return result;
 }
 

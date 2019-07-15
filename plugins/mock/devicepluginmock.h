@@ -52,7 +52,7 @@ public:
     Device::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret) override;
     Device::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor) override;
 
-    Device::BrowseResult browseDevice(Device *device, Device::BrowseResult result, const QString &itemId = QString()) override;
+    Device::BrowseResult browseDevice(Device *device, Device::BrowseResult result, const QString &itemId, const QLocale &locale) override;
 
 public slots:
     Device::DeviceError executeAction(Device *device, const Action &action) override;

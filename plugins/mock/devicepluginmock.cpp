@@ -239,8 +239,9 @@ Device::DeviceError DevicePluginMock::displayPin(const PairingTransactionId &pai
     return Device::DeviceErrorNoError;
 }
 
-Device::BrowseResult DevicePluginMock::browseDevice(Device *device, Device::BrowseResult result, const QString &itemId)
+Device::BrowseResult DevicePluginMock::browseDevice(Device *device, Device::BrowseResult result, const QString &itemId, const QLocale &locale)
 {
+    Q_UNUSED(locale)
     qCDebug(dcMockDevice()) << "Browse device called" << device;
     if (device->deviceClassId() == mockDeviceClassId) {
         if (device->paramValue(mockDeviceAsyncParamTypeId).toBool()) {

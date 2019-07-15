@@ -1008,9 +1008,10 @@ void DeviceManagerImplementation::loadConfiguredDevices()
             foreach (const QString &paramTypeIdString, settings.childGroups()) {
                 ParamTypeId paramTypeId(paramTypeIdString);
                 ParamType paramType = deviceClass.paramTypes().findById(paramTypeId);
+                QVariant defaultValue;
                 if (!paramType.isValid()) {
-                    qCWarning(dcDeviceManager()) << "Not loading Param for device" << device << "because the ParamType for the saved Param" << ParamTypeId(paramTypeIdString).toString() << "could not be found.";
-                    continue;
+                    // NOTE: We're not skipping unknown parameters to give plugins a chance to still access old values if they change their config and migrate things over.
+                    qCWarning(dcDeviceManager()) << "Unknown param" << paramTypeIdString << "for" << device << ". ParamType could not be found in device class.";
                 }
 
                 // Note: since nymea 0.12.2

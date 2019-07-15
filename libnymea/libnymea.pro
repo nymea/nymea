@@ -4,6 +4,7 @@ TARGET = nymea
 TEMPLATE = lib
 
 QT += network bluetooth
+QT -= gui
 DEFINES += LIBNYMEA_LIBRARY
 
 QMAKE_LFLAGS += -fPIC

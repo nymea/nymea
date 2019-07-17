@@ -169,6 +169,7 @@ public:
     Device* findByParams(const ParamList &params) const;
     Devices filterByParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
     Devices filterByDeviceClassId(const DeviceClassId &deviceClassId);
+    Devices filterByParentDeviceId(const DeviceId &deviceId);
 };
 
 Q_DECLARE_METATYPE(Device::DeviceError)

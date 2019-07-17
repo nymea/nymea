@@ -449,3 +449,14 @@ Devices Devices::filterByDeviceClassId(const DeviceClassId &deviceClassId)
     }
     return ret;
 }
+
+Devices Devices::filterByParentDeviceId(const DeviceId &deviceId)
+{
+    Devices ret;
+    foreach (Device *device, *this) {
+        if (device->parentId() == deviceId) {
+            ret << device;
+        }
+    }
+    return ret;
+}

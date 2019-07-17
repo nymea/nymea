@@ -80,7 +80,8 @@ public:
 
     virtual Device::DeviceError executeAction(Device *device, const Action &action);
 
-    virtual Device::BrowseResult browseDevice(Device *device, Device::BrowseResult result, const QString &nodeId, const QLocale &locale);
+    virtual Device::BrowseResult browseDevice(Device *device, Device::BrowseResult result, const QString &itemId, const QLocale &locale);
+    virtual Device::BrowserItemResult browserItem(Device *device, Device::BrowserItemResult result, const QString &itemId, const QLocale &locale);
     virtual Device::DeviceError executeBrowserItem(Device *device, const BrowserAction &browserAction);
     virtual Device::DeviceError executeBrowserItemAction(Device *device, const BrowserItemAction &browserItemAction);
 
@@ -103,6 +104,7 @@ signals:
     void autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
     void autoDeviceDisappeared(const DeviceId &deviceId);
     void browseRequestFinished(const Device::BrowseResult &result);
+    void browserItemRequestFinished(const Device::BrowserItemResult &result);
     void browserItemExecutionFinished(const ActionId &actionid, Device::DeviceError status);
     void browserItemActionExecutionFinished(const ActionId &actionid, Device::DeviceError status);
 

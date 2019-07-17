@@ -75,6 +75,7 @@ public:
     virtual Device::DeviceError executeAction(const Action &action) = 0;
 
     virtual Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) = 0;
+    virtual Device::BrowserItemResult browserItemDetails(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) = 0;
     virtual Device::DeviceError executeBrowserItem(const BrowserAction &browserAction) = 0;
     virtual Device::DeviceError executeBrowserItemAction(const BrowserItemAction &browserItemAction) = 0;
 
@@ -95,12 +96,15 @@ signals:
     void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId = DeviceId());
     void actionExecutionFinished(const ActionId &actionId, Device::DeviceError status);
     void browseRequestFinished(const Device::BrowseResult &result);
+    void browserItemRequestFinished(const Device::BrowserItemResult &result);
     void browserItemExecutionFinished(const ActionId &actionId, Device::DeviceError status);
     void browserItemActionExecutionFinished(const ActionId &actionId, Device::DeviceError status);
 
 protected:
+    // BrowseResult/BrowserItemResult have private Ctors to make sure a plugin dev can not mess up the request ids.
+    // DeviceManager is a friend, but the implementation is not, expose this to the DeviceManager implementation.
     Device::BrowseResult createBrowseResult();
-    QUuid browseResultId(const Device::BrowseResult &result);
+    Device::BrowserItemResult createBrowserItemResult();
 };
 
 #endif // DEVICEMANAGER_H

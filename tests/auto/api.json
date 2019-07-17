@@ -318,6 +318,17 @@
                 ]
             }
         },
+        "Devices.GetBrowserItem": {
+            "description": "Get a single item from the browser. This won't give any more info on an item than a regular browseDevice call, but it allows to fetch details of an item if only the ID is known.",
+            "params": {
+                "deviceId": "Uuid",
+                "o:itemId": "String"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError",
+                "o:item": "$ref:BrowserItem"
+            }
+        },
         "Devices.GetConfiguredDevices": {
             "description": "Returns a list of configured devices, optionally filtered by deviceId.",
             "params": {
@@ -1731,6 +1742,7 @@
         },
         "RuleAction": {
             "o:actionTypeId": "Uuid",
+            "o:browserItemId": "String",
             "o:deviceId": "Uuid",
             "o:interface": "String",
             "o:interfaceAction": "String",

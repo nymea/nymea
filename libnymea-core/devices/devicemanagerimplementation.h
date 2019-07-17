@@ -100,6 +100,7 @@ public:
     Device::DeviceError executeAction(const Action &action) override;
 
     Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) override;
+    Device::BrowserItemResult browserItemDetails(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) override;
     Device::DeviceError executeBrowserItem(const BrowserAction &browserAction) override;
     Device::DeviceError executeBrowserItemAction(const BrowserItemAction &browserItemAction) override;
 

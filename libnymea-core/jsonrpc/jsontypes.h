@@ -27,6 +27,7 @@
 #include "devices/devicemanager.h"
 #include "ruleengine/rule.h"
 #include "ruleengine/ruleengine.h"
+#include "ruleengine/ruleactionparam.h"
 #include "nymeaconfiguration.h"
 #include "usermanager/usermanager.h"
 
@@ -36,7 +37,6 @@
 #include "types/actiontype.h"
 #include "types/paramtype.h"
 #include "types/paramdescriptor.h"
-#include "types/ruleactionparam.h"
 #include "types/mediabrowseritem.h"
 
 #include "logging/logging.h"

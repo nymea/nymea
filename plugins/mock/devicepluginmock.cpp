@@ -272,6 +272,20 @@ Device::BrowseResult DevicePluginMock::browseDevice(Device *device, Device::Brow
     return result;
 }
 
+Device::BrowserItemResult DevicePluginMock::browserItem(Device *device, Device::BrowserItemResult result, const QString &itemId, const QLocale &locale)
+{
+    Q_UNUSED(device)
+    Q_UNUSED(locale)
+    VirtualFsNode *node = m_virtualFs->findNode(itemId);
+    if (!node) {
+        result.status = Device::DeviceErrorItemNotFound;
+        return result;
+    }
+    result.item = node->item;
+    result.status = Device::DeviceErrorNoError;
+    return result;
+}
+
 Device::DeviceError DevicePluginMock::executeAction(Device *device, const Action &action)
 {
     if (!myDevices().contains(device))
@@ -404,7 +418,7 @@ Device::DeviceError DevicePluginMock::executeAction(Device *device, const Action
 
 Device::DeviceError DevicePluginMock::executeBrowserItem(Device *device, const BrowserAction &browserAction)
 {
-    qCDebug(dcMockDevice()) << "ExecuteBrowserItem called";
+    qCDebug(dcMockDevice()) << "ExecuteBrowserItem called" << browserAction.itemId();
     bool broken = device->paramValue(mockDeviceBrokenParamTypeId).toBool();
     bool async = device->paramValue(mockDeviceAsyncParamTypeId).toBool();
 
@@ -657,31 +671,31 @@ void DevicePluginMock::generateBrowseItems()
 {
     m_virtualFs = new VirtualFsNode(BrowserItem());
 
-    BrowserItem item = BrowserItem(QUuid::createUuid().toString(), "Item 0", true);
+    BrowserItem item = BrowserItem("001", "Item 0", true);
     item.setDescription("I'm a folder");
     item.setIcon(BrowserItem::BrowserIconFolder);
     m_virtualFs->addChild(new VirtualFsNode(item));
 
-    item = BrowserItem(QUuid::createUuid().toString(), "Item 1", false, true);
+    item = BrowserItem("002", "Item 1", false, true);
     item.setDescription("I'm executable");
     item.setIcon(BrowserItem::BrowserIconApplication);
     item.setActionTypeIds({mockAddToFavoritesBrowserItemActionTypeId});
     m_virtualFs->addChild(new VirtualFsNode(item));
 
-    item = BrowserItem(QUuid::createUuid().toString(), "Item 2", false, true);
+    item = BrowserItem("003", "Item 2", false, true);
     item.setDescription("I'm a file");
     item.setIcon(BrowserItem::BrowserIconFile);
     item.setActionTypeIds({mockAddToFavoritesBrowserItemActionTypeId});
     m_virtualFs->addChild(new VirtualFsNode(item));
 
-    item = BrowserItem(QUuid::createUuid().toString(), "Item 3", false, true);
+    item = BrowserItem("004", "Item 3", false, true);
     item.setDescription("I have a nice thumbnail");
     item.setIcon(BrowserItem::BrowserIconFile);
     item.setThumbnail("https://github.com/guh/nymea/raw/master/icons/nymea-logo-256x256.png");
     item.setActionTypeIds({mockAddToFavoritesBrowserItemActionTypeId});
     m_virtualFs->addChild(new VirtualFsNode(item));
 
-    item = BrowserItem(QUuid::createUuid().toString(), "Item 4", false, false);
+    item = BrowserItem("005", "Item 4", false, false);
     item.setDescription("I'm disabled");
     item.setDisabled(true);
     item.setIcon(BrowserItem::BrowserIconFile);

@@ -85,11 +85,23 @@ public:
 
     class BrowseResult {
     public:
-        QUuid id;
         Device::DeviceError status = Device::DeviceErrorNoError;
         BrowserItems items;
+        QUuid id() const { return m_id; }
     private:
-        BrowseResult(): id(QUuid::createUuid()) {}
+        QUuid m_id;
+        BrowseResult(): m_id(QUuid::createUuid()) {}
+        friend class DeviceManager;
+    };
+
+    class BrowserItemResult {
+    public:
+        Device::DeviceError status = Device::DeviceErrorNoError;
+        BrowserItem item;
+        QUuid id() const { return m_id; }
+    private:
+        QUuid m_id;
+        BrowserItemResult(): m_id(QUuid::createUuid()) {}
         friend class DeviceManager;
     };
 

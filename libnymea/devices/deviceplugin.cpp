@@ -248,7 +248,7 @@ Device::DeviceError DevicePlugin::executeAction(Device *device, const Action &ac
     return Device::DeviceErrorNoError;
 }
 
-/*! Implement this if your devices support browsing (besides settings browsable to true in the metadata).
+/*! Implement this if your devices support browsing (set "browsable" to true in the metadata).
  *  When the system calls this method, fill the \a result object's items list with entries from the browser.
  *  If \a itemId is empty it means that the root node of the file system should be returned. Each item in
  *  the result set shall be uniquely identifiable using its \l{BrowserItem::id}{id} property.
@@ -261,6 +261,23 @@ Device::DeviceError DevicePlugin::executeAction(Device *device, const Action &ac
  *  \l{browseRequestFinished} when done.
  */
 Device::BrowseResult DevicePlugin::browseDevice(Device *device, Device::BrowseResult result, const QString &itemId, const QLocale &locale)
+{
+    Q_UNUSED(device)
+    Q_UNUSED(itemId)
+    Q_UNUSED(locale)
+
+    result.status = Device::DeviceErrorUnsupportedFeature;
+    return result;
+}
+
+/*! Implement this if your devices support browsing (set "browsable" to true in the metadata).
+ *  When the system calls this method, fetch the item details required to create a BrowserItem
+ *  for the item with the given \a id and append that one item to the \a result.
+ *  When done, set the \l{BrowserResult::status}{result's status} field approprietly. Set the result's
+ *  status to Device::DeviceErrorAsync if this operation requires async behavior and emit
+ *  \l{browserItemRequestFinished} when done.
+ */
+Device::BrowserItemResult DevicePlugin::browserItem(Device *device, Device::BrowserItemResult result, const QString &itemId, const QLocale &locale)
 {
     Q_UNUSED(device)
     Q_UNUSED(itemId)

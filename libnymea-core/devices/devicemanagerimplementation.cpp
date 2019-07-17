@@ -712,9 +712,6 @@ Device::DeviceError DeviceManagerImplementation::removeConfiguredDevice(const De
 
 Device::BrowseResult DeviceManagerImplementation::browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale)
 {
-    Q_UNUSED(deviceId)
-    Q_UNUSED(itemId)
-
     Device::BrowseResult result = createBrowseResult();
 
     Device *device = m_configuredDevices.value(deviceId);
@@ -731,6 +728,35 @@ Device::BrowseResult DeviceManagerImplementation::browseDevice(const DeviceId &d
     }
 
     result = device->plugin()->browseDevice(device, result, itemId, locale);
+    return result;
+}
+
+Device::BrowserItemResult DeviceManagerImplementation::browserItemDetails(const DeviceId &deviceId, const QString &itemId, const QLocale &locale)
+{
+    Device::BrowserItemResult result = createBrowserItemResult();
+
+    Device *device = m_configuredDevices.value(deviceId);
+    if (!device) {
+        qCWarning(dcDeviceManager()) << "Cannot browse device. No such device:" << deviceId.toString();
+        result.status = Device::DeviceErrorDeviceNotFound;
+        return result;
+    }
+
+    if (!device->deviceClass().browsable()) {
+        qCWarning(dcDeviceManager()) << "Cannot browse device. DeviceClass" << device->deviceClass().name() << "is not browsable.";
+        result.status = Device::DeviceErrorUnsupportedFeature;
+        return result;
+    }
+
+    result = device->plugin()->browserItem(device, result, itemId, locale);
+    if (result.status == Device::DeviceErrorAsync) {
+        // Error or Async
+        return result;
+    }
+    if (result.status != Device::DeviceErrorNoError) {
+        qCWarning(dcDeviceManager()) << "Browse device failed:" << result.status;
+        return result;
+    }
     return result;
 }
 
@@ -1024,6 +1050,7 @@ void DeviceManagerImplementation::loadPlugin(DevicePlugin *pluginIface, const Pl
     connect(pluginIface, &DevicePlugin::autoDevicesAppeared, this, &DeviceManagerImplementation::onAutoDevicesAppeared);
     connect(pluginIface, &DevicePlugin::autoDeviceDisappeared, this, &DeviceManagerImplementation::onAutoDeviceDisappeared);
     connect(pluginIface, &DevicePlugin::browseRequestFinished, this, &DeviceManagerImplementation::browseRequestFinished);
+    connect(pluginIface, &DevicePlugin::browserItemRequestFinished, this, &DeviceManagerImplementation::browserItemRequestFinished);
     connect(pluginIface, &DevicePlugin::browserItemExecutionFinished, this, &DeviceManagerImplementation::browserItemExecutionFinished);
 
 }

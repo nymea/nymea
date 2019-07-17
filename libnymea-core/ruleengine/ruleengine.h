@@ -23,9 +23,9 @@
 #define RULEENGINE_H
 
 #include "rule.h"
+#include "stateevaluator.h"
 #include "types/event.h"
 #include "types/deviceclass.h"
-#include "devices/stateevaluator.h"
 
 #include <QObject>
 #include <QList>
@@ -114,6 +114,7 @@ private:
     void appendRule(const Rule &rule);
     void saveRule(const Rule &rule);
     void saveRuleActions(NymeaSettings *settings, const QList<RuleAction> &ruleActions);
+    QList<RuleAction> loadRuleActions(NymeaSettings *settings);
 
 private:
     QList<RuleId> m_ruleIds; // Keeping a list of RuleIds to keep sorting order...

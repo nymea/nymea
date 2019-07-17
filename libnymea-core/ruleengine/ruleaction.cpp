@@ -112,7 +112,7 @@ RuleAction::Type RuleAction::type() const
     if (!m_deviceId.isNull() && !m_actionTypeId.isNull()) {
         return TypeDevice;
     }
-    if (!m_deviceId.isNull() && m_browserItemId.isEmpty()) {
+    if (!m_deviceId.isNull() && !m_browserItemId.isEmpty()) {
         return TypeBrowser;
     }
     if (!m_interface.isEmpty() && !m_interfaceAction.isEmpty()) {

@@ -30,6 +30,7 @@
 #include <QObject>
 #include <QList>
 #include <QUuid>
+#include <QSettings>
 
 namespace nymeaserver {
 
@@ -112,6 +113,7 @@ private:
 
     void appendRule(const Rule &rule);
     void saveRule(const Rule &rule);
+    void saveRuleActions(NymeaSettings *settings, const QList<RuleAction> &ruleActions);
 
 private:
     QList<RuleId> m_ruleIds; // Keeping a list of RuleIds to keep sorting order...

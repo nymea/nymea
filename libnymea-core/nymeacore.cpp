@@ -478,9 +478,14 @@ Device::DeviceError NymeaCore::executeBrowserItemAction(const BrowserItemAction 
 void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
 {
     QList<Action> actions;
+    QList<BrowserAction> browserActions;
     foreach (const RuleAction &ruleAction, ruleActions) {
         if (ruleAction.type() == RuleAction::TypeDevice) {
             Device *device = m_deviceManager->findConfiguredDevice(ruleAction.deviceId());
+            if (!device) {
+                qCWarning(dcRuleEngine()) << "Unable to find device" << ruleAction.deviceId() << "for rule action" << ruleAction;
+                continue;
+            }
             ActionTypeId actionTypeId = ruleAction.actionTypeId();
             ParamList params;
             bool ok = true;
@@ -510,6 +515,14 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
             Action action(actionTypeId, device->id());
             action.setParams(params);
             actions.append(action);
+        } else if (ruleAction.type() == RuleAction::TypeBrowser) {
+            Device *device = m_deviceManager->findConfiguredDevice(ruleAction.deviceId());
+            if (!device) {
+                qCWarning(dcRuleEngine()) << "Unable to find device" << ruleAction.deviceId() << "for rule action" << ruleAction;
+                continue;
+            }
+            BrowserAction browserAction(ruleAction.deviceId(), ruleAction.browserItemId());
+            browserActions.append(browserAction);
         } else {
             QList<Device*> devices = m_deviceManager->findConfiguredDevices(ruleAction.interface());
             foreach (Device* device, devices) {
@@ -580,6 +593,25 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
 
         //        if (status != Device::DeviceErrorAsync)
         //            m_logger->logAction(action, status == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+    }
+
+    foreach (const BrowserAction &browserAction, browserActions) {
+        Device::DeviceError status = executeBrowserItem(browserAction);
+        switch(status) {
+        case Device::DeviceErrorNoError:
+            break;
+        case Device::DeviceErrorSetupFailed:
+            qCWarning(dcRuleEngine) << "Error executing action. Device setup failed.";
+            break;
+        case Device::DeviceErrorAsync:
+            qCDebug(dcRuleEngine) << "Executing asynchronous action.";
+            break;
+        case Device::DeviceErrorInvalidParameter:
+            qCWarning(dcRuleEngine) << "Error executing action. Invalid action parameter.";
+            break;
+        default:
+            qCWarning(dcRuleEngine) << "Error executing action:" << status;
+        }
     }
 }
 

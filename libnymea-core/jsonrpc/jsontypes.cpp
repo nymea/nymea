@@ -184,6 +184,7 @@ void JsonTypes::init()
     s_ruleAction.insert("o:actionTypeId", basicTypeToString(Uuid));
     s_ruleAction.insert("o:interface", basicTypeToString(String));
     s_ruleAction.insert("o:interfaceAction", basicTypeToString(String));
+    s_ruleAction.insert("o:browserItemId", basicTypeToString(String));
     s_ruleAction.insert("o:ruleActionParams", QVariantList() << ruleActionParamRef());
 
     // RuleActionParam
@@ -617,8 +618,11 @@ QVariantMap JsonTypes::packRuleAction(const RuleAction &ruleAction)
 {
     QVariantMap variant;
     if (ruleAction.type() == RuleAction::TypeDevice) {
-        variant.insert("actionTypeId", ruleAction.actionTypeId().toString());
         variant.insert("deviceId", ruleAction.deviceId().toString());
+        variant.insert("actionTypeId", ruleAction.actionTypeId().toString());
+    } else if (ruleAction.type() == RuleAction::TypeBrowser) {
+        variant.insert("deviceId", ruleAction.deviceId().toString());
+        variant.insert("browserItemId", ruleAction.browserItemId());
     } else {
         variant.insert("interface", ruleAction.interface());
         variant.insert("interfaceAction", ruleAction.interfaceAction());
@@ -1500,10 +1504,13 @@ RuleAction JsonTypes::unpackRuleAction(const QVariantMap &ruleActionMap)
     DeviceId actionDeviceId(ruleActionMap.value("deviceId").toString());
     QString interface = ruleActionMap.value("interface").toString();
     QString interfaceAction = ruleActionMap.value("interfaceAction").toString();
+    QString browserItemId = ruleActionMap.value("browserItemId").toString();
     RuleActionParamList actionParamList = JsonTypes::unpackRuleActionParams(ruleActionMap.value("ruleActionParams").toList());
 
-    if (!actionTypeId.isNull() && !actionDeviceId.isNull()) {
+    if (!actionDeviceId.isNull() && !actionTypeId.isNull()) {
         return RuleAction(actionTypeId, actionDeviceId, actionParamList);
+    } else if (!actionDeviceId.isNull() && !browserItemId.isNull()) {
+        return RuleAction(actionDeviceId, browserItemId);
     }
     return RuleAction(interface, interfaceAction, actionParamList);
 }

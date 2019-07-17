@@ -63,8 +63,6 @@ HEADERS += \
         types/paramtype.h \
         types/param.h \
         types/paramdescriptor.h \
-        types/ruleaction.h \
-        types/ruleactionparam.h \
         types/statedescriptor.h \
         types/interface.h \
         hardwareresource.h \
@@ -130,8 +128,6 @@ SOURCES += \
         types/paramtype.cpp \
         types/param.cpp \
         types/paramdescriptor.cpp \
-        types/ruleaction.cpp \
-        types/ruleactionparam.cpp \
         types/statedescriptor.cpp \
         types/interface.cpp \
         hardwareresource.cpp \

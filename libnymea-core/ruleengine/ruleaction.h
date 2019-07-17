@@ -25,9 +25,9 @@
 #define RULEACTION_H
 
 #include "libnymea.h"
-#include "action.h"
+#include "types/action.h"
+#include "types/browseritemaction.h"
 #include "ruleactionparam.h"
-#include "browseritemaction.h"
 
 class LIBNYMEA_EXPORT RuleAction
 {

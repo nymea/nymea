@@ -37,6 +37,11 @@ QString BrowserItem::id() const
     return m_id;
 }
 
+void BrowserItem::setId(const QString &id)
+{
+    m_id = id;
+}
+
 QString BrowserItem::displayName() const
 {
     return m_displayName;

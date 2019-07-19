@@ -6,7 +6,6 @@ TEMPLATE = lib
 QT += network bluetooth
 DEFINES += LIBNYMEA_LIBRARY
 
-QMAKE_CXXFLAGS += -Og
 QMAKE_LFLAGS += -fPIC
 
 HEADERS += \

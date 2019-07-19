@@ -100,11 +100,6 @@ signals:
     void browserItemExecutionFinished(const ActionId &actionId, Device::DeviceError status);
     void browserItemActionExecutionFinished(const ActionId &actionId, Device::DeviceError status);
 
-protected:
-    // BrowseResult/BrowserItemResult have private Ctors to make sure a plugin dev can not mess up the request ids.
-    // DeviceManager is a friend, but the implementation is not, expose this to the DeviceManager implementation.
-    Device::BrowseResult createBrowseResult();
-    Device::BrowserItemResult createBrowserItemResult();
 };
 
 #endif // DEVICEMANAGER_H

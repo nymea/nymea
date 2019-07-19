@@ -712,7 +712,7 @@ Device::DeviceError DeviceManagerImplementation::removeConfiguredDevice(const De
 
 Device::BrowseResult DeviceManagerImplementation::browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale)
 {
-    Device::BrowseResult result = createBrowseResult();
+    Device::BrowseResult result;
 
     Device *device = m_configuredDevices.value(deviceId);
     if (!device) {
@@ -733,7 +733,7 @@ Device::BrowseResult DeviceManagerImplementation::browseDevice(const DeviceId &d
 
 Device::BrowserItemResult DeviceManagerImplementation::browserItemDetails(const DeviceId &deviceId, const QString &itemId, const QLocale &locale)
 {
-    Device::BrowserItemResult result = createBrowserItemResult();
+    Device::BrowserItemResult result;
 
     Device *device = m_configuredDevices.value(deviceId);
     if (!device) {

@@ -39,13 +39,3 @@ DeviceManager::DeviceManager(QObject *parent) : QObject(parent)
 {
 
 }
-
-Device::BrowseResult DeviceManager::createBrowseResult()
-{
-    return Device::BrowseResult();
-}
-
-Device::BrowserItemResult DeviceManager::createBrowserItemResult()
-{
-    return Device::BrowserItemResult();
-}

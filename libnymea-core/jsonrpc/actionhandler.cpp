@@ -82,6 +82,7 @@ ActionHandler::ActionHandler(QObject *parent) :
 
     connect(NymeaCore::instance(), &NymeaCore::actionExecuted, this, &ActionHandler::actionExecuted);
     connect(NymeaCore::instance(), &NymeaCore::browserItemExecuted, this, &ActionHandler::browserItemExecuted);
+    connect(NymeaCore::instance(), &NymeaCore::browserItemActionExecuted, this, &ActionHandler::browserItemActionExecuted);
 }
 
 /*! Returns the name of the \l{ActionHandler}. In this case \b Actions.*/

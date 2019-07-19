@@ -1052,6 +1052,7 @@ void DeviceManagerImplementation::loadPlugin(DevicePlugin *pluginIface, const Pl
     connect(pluginIface, &DevicePlugin::browseRequestFinished, this, &DeviceManagerImplementation::browseRequestFinished);
     connect(pluginIface, &DevicePlugin::browserItemRequestFinished, this, &DeviceManagerImplementation::browserItemRequestFinished);
     connect(pluginIface, &DevicePlugin::browserItemExecutionFinished, this, &DeviceManagerImplementation::browserItemExecutionFinished);
+    connect(pluginIface, &DevicePlugin::browserItemActionExecutionFinished, this, &DeviceManagerImplementation::browserItemActionExecutionFinished);
 
 }
 
@@ -1106,6 +1107,12 @@ void DeviceManagerImplementation::loadConfiguredDevices()
         } else {
             foreach (const QString &paramTypeIdString, settings.allKeys()) {
                 params.append(Param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString)));
+            }
+        }
+        // Make sure all params are around. if they aren't initialize with default values
+        foreach (const ParamType &paramType, deviceClass.paramTypes()) {
+            if (!params.hasParam(paramType.id())) {
+                params.append(Param(paramType.id(), paramType.defaultValue()));
             }
         }
         device->setParams(params);

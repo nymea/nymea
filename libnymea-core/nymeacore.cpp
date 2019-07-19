@@ -202,6 +202,7 @@ void NymeaCore::init() {
     connect(m_deviceManager, &DeviceManagerImplementation::deviceDisappeared, this, &NymeaCore::onDeviceDisappeared);
     connect(m_deviceManager, &DeviceManagerImplementation::actionExecutionFinished, this, &NymeaCore::actionExecutionFinished);
     connect(m_deviceManager, &DeviceManagerImplementation::browserItemExecutionFinished, this, &NymeaCore::browserItemExecutionFinished);
+    connect(m_deviceManager, &DeviceManagerImplementation::browserItemActionExecutionFinished, this, &NymeaCore::browserItemActionExecutionFinished);
     connect(m_deviceManager, &DeviceManagerImplementation::devicesDiscovered, this, &NymeaCore::devicesDiscovered);
     connect(m_deviceManager, &DeviceManagerImplementation::deviceSetupFinished, this, &NymeaCore::deviceSetupFinished);
     connect(m_deviceManager, &DeviceManagerImplementation::deviceReconfigurationFinished, this, &NymeaCore::deviceReconfigurationFinished);

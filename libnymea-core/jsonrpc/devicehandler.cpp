@@ -717,9 +717,9 @@ JsonReply *DeviceHandler::GetBrowserItem(const QVariantMap &params) const
 
     if (result.status == Device::DeviceErrorAsync ) {
         JsonReply *reply = createAsyncReply("GetBrowserItem");
-        m_asyncBrowseRequests.insert(result.id(), reply);
+        m_asyncBrowseDetailsRequests.insert(result.id(), reply);
         connect(reply, &JsonReply::finished, this, [this, result](){
-            m_asyncBrowseRequests.remove(result.id());
+            m_asyncBrowseDetailsRequests.remove(result.id());
         });
         return reply;
     }
@@ -873,8 +873,8 @@ void DeviceHandler::browseRequestFinished(const Device::BrowseResult &result)
 
 void DeviceHandler::browserItemRequestFinished(const Device::BrowserItemResult &result)
 {
-    if (m_asyncBrowseDetailsRequests.contains(result.id())) {
-        qCWarning(dcJsonRpc()) << "No pending JsonRpc reply. Did it time out?";
+    if (!m_asyncBrowseDetailsRequests.contains(result.id())) {
+        qCWarning(dcJsonRpc()) << "No pending JsonRpc reply for result" << result.id() << ". Did it time out?";
         return;
     }
     JsonReply *reply = m_asyncBrowseDetailsRequests.take(result.id());

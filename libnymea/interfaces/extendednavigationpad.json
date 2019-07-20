@@ -3,10 +3,24 @@
     "extends": "navigationpad",
     "actions": [
         {
-            "name": "navigateMenu"
-        },
-        {
-            "name": "navigateInfo"
+            "name": "navigate",
+            "params": [
+                {
+                    "name": "to",
+                    "type": "QString",
+                    "allowedValues": [
+                        "up",
+                        "down",
+                        "left",
+                        "right",
+                        "enter",
+                        "back",
+                        "menu",
+                        "info",
+                        "home"
+                    ]
+                }
+            ]
         }
     ]
 }

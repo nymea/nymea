@@ -3,22 +3,21 @@
     "extends": "media",
     "actions": [
         {
-            "name": "navigateUp"
-        },
-        {
-            "name": "navigateDown"
-        },
-        {
-            "name": "navigateLeft"
-        },
-        {
-            "name": "navigateRight"
-        },
-        {
-            "name": "navigateOk"
-        },
-        {
-            "name": "navigateBack"
+            "name": "navigate",
+            "params": [
+                {
+                    "name": "to",
+                    "type": "QString",
+                    "allowedValues": [
+                        "up",
+                        "down",
+                        "left",
+                        "right",
+                        "enter",
+                        "back"
+                    ]
+                }
+            ]
         }
     ]
 }

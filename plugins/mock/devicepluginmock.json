@@ -65,6 +65,15 @@
                             "defaultValue": false
                         }
                     ],
+                    "settingsTypes": [
+                        {
+                            "id": "367f7ba4-5039-47be-abd8-59cc8eaf4b9a",
+                            "name": "setting1",
+                            "displayName": "Setting 1",
+                            "type": "int",
+                            "defaultValue": 5
+                        }
+                    ],
                     "stateTypes": [
                         {
                             "id": "80baec19-54de-4948-ac46-31eabfaceb83",

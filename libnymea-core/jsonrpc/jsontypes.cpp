@@ -280,6 +280,7 @@ void JsonTypes::init()
     s_deviceClass.insert("eventTypes", QVariantList() << eventTypeRef());
     s_deviceClass.insert("actionTypes", QVariantList() << actionTypeRef());
     s_deviceClass.insert("paramTypes", QVariantList() << paramTypeRef());
+    s_deviceClass.insert("settingsTypes", QVariantList() << paramTypeRef());
     s_deviceClass.insert("discoveryParamTypes", QVariantList() << paramTypeRef());
 
     // Device
@@ -287,6 +288,7 @@ void JsonTypes::init()
     s_device.insert("deviceClassId", basicTypeToString(Uuid));
     s_device.insert("name", basicTypeToString(String));
     s_device.insert("params", QVariantList() << paramRef());
+    s_device.insert("settings", QVariantList() << paramRef());
     QVariantMap stateValues;
     stateValues.insert("stateTypeId", basicTypeToString(Uuid));
     stateValues.insert("value", basicTypeToString(Variant));
@@ -705,6 +707,15 @@ QVariantMap JsonTypes::packParam(const Param &param)
     return variantMap;
 }
 
+QVariantList JsonTypes::packParams(const ParamList &paramList)
+{
+    QVariantList ret;
+    foreach (const Param &param, paramList) {
+        ret << packParam(param);
+    }
+    return ret;
+}
+
 /*! Returns a variant map of the given \a paramDescriptor. */
 QVariantMap JsonTypes::packParamDescriptor(const ParamDescriptor &paramDescriptor)
 {
@@ -797,11 +808,16 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass, const QLo
     foreach (const ParamType &paramType, deviceClass.paramTypes())
         paramTypes.append(packParamType(paramType, deviceClass.pluginId(), locale));
 
+    QVariantList settingsTypes;
+    foreach (const ParamType &settingsType, deviceClass.settingsTypes())
+        settingsTypes.append(packParamType(settingsType, deviceClass.pluginId(), locale));
+
     QVariantList discoveryParamTypes;
     foreach (const ParamType &paramType, deviceClass.discoveryParamTypes())
         discoveryParamTypes.append(packParamType(paramType, deviceClass.pluginId(), locale));
 
     variant.insert("paramTypes", paramTypes);
+    variant.insert("settingsTypes", settingsTypes);
     variant.insert("discoveryParamTypes", discoveryParamTypes);
     variant.insert("stateTypes", stateTypes);
     variant.insert("eventTypes", eventTypes);
@@ -834,14 +850,12 @@ QVariantMap JsonTypes::packDevice(Device *device)
     variant.insert("id", device->id().toString());
     variant.insert("deviceClassId", device->deviceClassId().toString());
     variant.insert("name", device->name());
-    QVariantList params;
-    foreach (const Param &param, device->params())
-        params.append(packParam(param));
+    variant.insert("params", packParams(device->params()));
+    variant.insert("settings", packParams(device->settings()));
 
     if (!device->parentId().isNull())
         variant.insert("parentId", device->parentId().toString());
 
-    variant.insert("params", params);
     variant.insert("states", packDeviceStates(device));
     variant.insert("setupComplete", device->setupComplete());
     return variant;

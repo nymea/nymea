@@ -84,6 +84,8 @@ private slots:
     void editDevices_data();
     void editDevices();
 
+    void testDeviceSettings();
+
     void reconfigureDevices_data();
     void reconfigureDevices();
 
@@ -865,6 +867,86 @@ void TestDevices::editDevices()
     params.insert("deviceId", deviceId.toString());
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
     verifyDeviceError(response);
+}
+
+void TestDevices::testDeviceSettings()
+{
+    // add device
+    QVariantList deviceParams;
+    QVariantMap httpportParam;
+    httpportParam.insert("paramTypeId", httpportParamTypeId);
+    httpportParam.insert("value", 8889);
+    deviceParams.append(httpportParam);
+
+    QVariantMap params;
+    params.insert("deviceClassId", mockDeviceClassId);
+    params.insert("name", "Mock");
+    params.insert("deviceParams", deviceParams);
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+    verifyDeviceError(response);
+    DeviceId deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+
+    // check if default settings are loaded
+    params.clear();
+    params.insert("deviceId", deviceId);
+    response = injectAndWait("Devices.GetConfiguredDevices", params);
+    QVariantList devices = response.toMap().value("params").toMap().value("devices").toList();
+    QVERIFY2(devices.count() == 1, "Error creating device");
+
+    QVariantMap device = devices.first().toMap();
+    QVERIFY2(DeviceId(device.value("id").toString()) == deviceId, "DeviceId not matching");
+
+    QVariantList settings = device.value("settings").toList();
+    QCOMPARE(settings.count(), 1);
+
+    QCOMPARE(settings.first().toMap().value("paramTypeId").toString(), mockSetting1ParamTypeId.toString());
+    QVERIFY2(settings.first().toMap().value("value").toInt() == 5, "Setting 1 default value not matching");
+
+    // change a setting
+    params.clear();
+    params.insert("deviceId", deviceId);
+    settings.clear();
+    QVariantMap setting;
+    setting.insert("paramTypeId", mockSetting1ParamTypeId);
+    setting.insert("value", 7);
+    settings.append(setting);
+    params.insert("settings", settings);
+    response = injectAndWait("Devices.SetDeviceSettings", params);
+
+    // Check if the change happened
+    params.clear();
+    params.insert("deviceId", deviceId);
+    response = injectAndWait("Devices.GetConfiguredDevices", params);
+    devices = response.toMap().value("params").toMap().value("devices").toList();
+    QVERIFY2(devices.count() == 1, "Error creating device");
+
+    device = devices.first().toMap();
+    QVERIFY2(DeviceId(device.value("id").toString()) == deviceId, "DeviceId not matching");
+
+    settings = device.value("settings").toList();
+    QCOMPARE(settings.count(), 1);
+
+    QCOMPARE(settings.first().toMap().value("paramTypeId").toString(), mockSetting1ParamTypeId.toString());
+    QVERIFY2(settings.first().toMap().value("value").toInt() == 7, "Setting 1 changed value not matching");
+
+    restartServer();
+
+    // Check if the change persisted
+    params.clear();
+    params.insert("deviceId", deviceId);
+    response = injectAndWait("Devices.GetConfiguredDevices", params);
+    devices = response.toMap().value("params").toMap().value("devices").toList();
+    QVERIFY2(devices.count() == 1, "Error creating device");
+
+    device = devices.first().toMap();
+    QVERIFY2(DeviceId(device.value("id").toString()) == deviceId, "DeviceId not matching");
+
+    settings = device.value("settings").toList();
+    QCOMPARE(settings.count(), 1);
+
+    QCOMPARE(settings.first().toMap().value("paramTypeId").toString(), mockSetting1ParamTypeId.toString());
+    QVERIFY2(settings.first().toMap().value("value").toInt() == 7, "Setting 1 changed value not persisting restart");
+
 }
 
 void TestDevices::reconfigureDevices_data()

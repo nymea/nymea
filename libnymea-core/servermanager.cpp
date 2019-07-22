@@ -298,7 +298,6 @@ void ServerManager::mqttServerConfigurationChanged(const QString &id)
     if (m_mqttBroker->startServer(config, m_sslConfiguration)) {
         registerZeroConfService(config, "mqtt", "_mqtt._tcp");
     }
-
 }
 
 void ServerManager::mqttServerConfigurationRemoved(const QString &id)
@@ -369,15 +368,26 @@ void ServerManager::setServerName(const QString &serverName)
     qCDebug(dcServerManager()) << "Server name changed" << serverName;
 
     foreach (WebSocketServer *websocketServer, m_webSocketServers.values()) {
+        unregisterZeroConfService(websocketServer->configuration().id, "ws");
         websocketServer->setServerName(serverName);
+        registerZeroConfService(websocketServer->configuration(), "ws", "_ws._tcp");
     }
 
     foreach (WebServer *webServer, m_webServers.values()) {
+        unregisterZeroConfService(webServer->configuration().id, "http");
         webServer->setServerName(serverName);
+        registerZeroConfService(webServer->configuration(), "http", "_http._tcp");
     }
 
     foreach (TcpServer *tcpServer, m_tcpServers.values()) {
+        unregisterZeroConfService(tcpServer->configuration().id, "tcp");
         tcpServer->setServerName(serverName);
+        registerZeroConfService(tcpServer->configuration(), "tcp", "_jsonrpc._tcp");
+    }
+
+    foreach (const ServerConfiguration &config, m_mqttBroker->configurations()) {
+        unregisterZeroConfService(config.id, "mqtt");
+        registerZeroConfService(config, "mqtt", "_mqtt._tcp");
     }
 }
 

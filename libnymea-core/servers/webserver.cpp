@@ -602,6 +602,11 @@ bool WebServer::stopServer()
     return true;
 }
 
+WebServerConfiguration WebServer::configuration() const
+{
+    return m_configuration;
+}
+
 
 QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 {

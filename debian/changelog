@@ -1,6 +1,13 @@
-nymea (0.14.0) UNRELEASED; urgency=medium
+nymea (0.14.0) xenial; urgency=medium
+  [ Michael Zanetti ]
+  * Bump minimum required TLS version to 1.2
+  * Add support for device settings
+  * Move devicemanager's implementation out of libnymea into libnymea-
+    core
+  * Add nymea-plugininfocompiler to replace nymea-generateplugininfo
+  * Update ZeroConf names when the server is renamed
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Thu, 04 Jul 2019 13:34:59 +0200
+ -- Jenkins <jenkins@nymea.io>  Mon, 22 Jul 2019 12:17:00 +0200
 
 nymea (0.13.1) xenial; urgency=medium
 

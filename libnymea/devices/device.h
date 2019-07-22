@@ -35,16 +35,57 @@
 #include <QUuid>
 #include <QVariant>
 
+class DevicePlugin;
+
 class LIBNYMEA_EXPORT Device: public QObject
 {
     Q_OBJECT
 
     friend class DeviceManager;
+    friend class DeviceManagerImplementation;
 
 public:
+    enum DeviceError {
+        DeviceErrorNoError,
+        DeviceErrorPluginNotFound,
+        DeviceErrorVendorNotFound,
+        DeviceErrorDeviceNotFound,
+        DeviceErrorDeviceClassNotFound,
+        DeviceErrorActionTypeNotFound,
+        DeviceErrorStateTypeNotFound,
+        DeviceErrorEventTypeNotFound,
+        DeviceErrorDeviceDescriptorNotFound,
+        DeviceErrorMissingParameter,
+        DeviceErrorInvalidParameter,
+        DeviceErrorSetupFailed,
+        DeviceErrorDuplicateUuid,
+        DeviceErrorCreationMethodNotSupported,
+        DeviceErrorSetupMethodNotSupported,
+        DeviceErrorHardwareNotAvailable,
+        DeviceErrorHardwareFailure,
+        DeviceErrorAuthentificationFailure,
+        DeviceErrorAsync,
+        DeviceErrorDeviceInUse,
+        DeviceErrorDeviceInRule,
+        DeviceErrorDeviceIsChild,
+        DeviceErrorPairingTransactionIdNotFound,
+        DeviceErrorParameterNotWritable
+    };
+    Q_ENUM(DeviceError)
+
+    enum DeviceSetupStatus {
+        DeviceSetupStatusSuccess,
+        DeviceSetupStatusFailure,
+        DeviceSetupStatusAsync
+    };
+    Q_ENUM(DeviceSetupStatus)
+
     DeviceId id() const;
     DeviceClassId deviceClassId() const;
     PluginId pluginId() const;
+
+    DeviceClass deviceClass() const;
+    DevicePlugin* plugin();
 
     QString name() const;
     void setName(const QString &name);
@@ -84,17 +125,18 @@ signals:
     void nameChanged();
 
 private:
-    Device(const PluginId &pluginId, const DeviceId &id, const DeviceClassId &deviceClassId, QObject *parent = nullptr);
-    Device(const PluginId &pluginId, const DeviceClassId &deviceClassId, QObject *parent = nullptr);
+    Device(DevicePlugin *plugin, const DeviceClass &deviceClass, const DeviceId &id, QObject *parent = nullptr);
+    Device(DevicePlugin *plugin, const DeviceClass &deviceClass, QObject *parent = nullptr);
 
     void setupCompleted();
     void setSetupComplete(const bool &complete);
 
 private:
+    DeviceClass m_deviceClass;
+    DevicePlugin* m_plugin = nullptr;
+
     DeviceId m_id;
     DeviceId m_parentId;
-    DeviceClassId m_deviceClassId;
-    PluginId m_pluginId;
     QString m_name;
     ParamList m_params;
     ParamList m_settings;
@@ -111,8 +153,12 @@ public:
     Devices() = default;
     Devices(const QList<Device *> &other);
     Device* findById(const DeviceId &id);
+    Device* findByParams(const ParamList &params) const;
     Devices filterByParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
     Devices filterByDeviceClassId(const DeviceClassId &deviceClassId);
 };
+
+Q_DECLARE_METATYPE(Device::DeviceError)
+Q_DECLARE_METATYPE(Device::DeviceSetupStatus)
 
 #endif

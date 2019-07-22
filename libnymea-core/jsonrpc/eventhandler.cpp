@@ -87,13 +87,13 @@ JsonReply* EventHandler::GetEventType(const QVariantMap &params) const
     foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
             if (eventType.id() == eventTypeId) {
-                QVariantMap data = statusToReply(DeviceManager::DeviceErrorNoError);
+                QVariantMap data = statusToReply(Device::DeviceErrorNoError);
                 data.insert("eventType", JsonTypes::packEventType(eventType, deviceClass.pluginId(), params.value("locale").toLocale()));
                 return createReply(data);
             }
         }
     }
-    return createReply(statusToReply(DeviceManager::DeviceErrorEventTypeNotFound));
+    return createReply(statusToReply(Device::DeviceErrorEventTypeNotFound));
 }
 
 }

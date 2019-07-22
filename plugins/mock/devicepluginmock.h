@@ -24,7 +24,7 @@
 #ifndef DEVICEPLUGINMOCK_H
 #define DEVICEPLUGINMOCK_H
 
-#include "plugin/deviceplugin.h"
+#include "devices/deviceplugin.h"
 
 #include <QProcess>
 
@@ -41,19 +41,19 @@ public:
     explicit DevicePluginMock();
     ~DevicePluginMock();
 
-    DeviceManager::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    Device::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
-    DeviceManager::DeviceSetupStatus setupDevice(Device *device) override;
+    Device::DeviceSetupStatus setupDevice(Device *device) override;
     void postSetupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
     void startMonitoringAutoDevices() override;
 
-    DeviceManager::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret) override;
-    DeviceManager::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor) override;
+    Device::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret) override;
+    Device::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor) override;
 
 public slots:
-    DeviceManager::DeviceError executeAction(Device *device, const Action &action) override;
+    Device::DeviceError executeAction(Device *device, const Action &action) override;
 
 private slots:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);

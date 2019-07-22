@@ -25,7 +25,7 @@
 #include "rule.h"
 #include "types/event.h"
 #include "types/deviceclass.h"
-#include "stateevaluator.h"
+#include "devices/stateevaluator.h"
 
 #include <QObject>
 #include <QList>

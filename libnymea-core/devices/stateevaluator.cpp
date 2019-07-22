@@ -36,7 +36,7 @@
 
 #include "stateevaluator.h"
 #include "nymeacore.h"
-#include "devicemanager.h"
+#include "devices/devicemanager.h"
 #include "loggingcategories.h"
 #include "nymeasettings.h"
 

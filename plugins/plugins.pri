@@ -14,7 +14,7 @@ JSONFILE=$$PWD/$$TARGET/deviceplugin"$$TARGET".json
 plugininfo.input = JSONFILE
 plugininfo.output = plugininfo.h
 plugininfo.CONFIG = no_link target_predeps
-plugininfo.commands = $$top_srcdir/libnymea/plugin/nymea-generateplugininfo \
+plugininfo.commands = $$top_srcdir/libnymea/devices/nymea-generateplugininfo \
                             --filetype i \
                             --jsonfile $$PWD/$$TARGET/deviceplugin"$$TARGET".json \
                             --output plugininfo.h \
@@ -22,7 +22,7 @@ plugininfo.commands = $$top_srcdir/libnymea/plugin/nymea-generateplugininfo \
 extern-plugininfo.input = JSONFILE
 extern-plugininfo.output = extern-plugininfo.h
 extern-plugininfo.CONFIG = no_link target_predeps
-extern-plugininfo.commands = $$top_srcdir/libnymea/plugin/nymea-generateplugininfo \
+extern-plugininfo.commands = $$top_srcdir/libnymea/devices/nymea-generateplugininfo \
                             --filetype e \
                             --jsonfile $$PWD/$$TARGET/deviceplugin"$$TARGET".json \
                             --output extern-plugininfo.h \

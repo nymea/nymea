@@ -978,19 +978,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("td", NymeaSettings(NymeaSettings::SettingsRoleGlobal).translationsPath());
     writer.writeEndElement(); // tr
 
-    for (int i = 0; i < NymeaCore::instance()->deviceManager()->pluginSearchDirs().count(); i++) {
-        writer.writeStartElement("tr");
-        writer.writeEndElement(); // tr
-
-        if (i == 0) {
-            //: The plugins path description in the server infromation section of the debug interface
-            writer.writeTextElement("th", tr("Plugin paths"));
-        } else {
-            writer.writeTextElement("th", "");
-        }
-        writer.writeTextElement("td", QFileInfo(NymeaCore::instance()->deviceManager()->pluginSearchDirs().at(i)).absoluteFilePath());
-    }
-
     writer.writeEndElement(); // table
 
     // Generate report

@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -21,50 +20,36 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PARAM_H
-#define PARAM_H
+#ifndef TRANSLATOR_H
+#define TRANSLATOR_H
 
-#include "libnymea.h"
 #include "typeutils.h"
+#include "types/deviceclass.h"
 
-#include <QString>
-#include <QVariant>
+#include <QTranslator>
 
-class LIBNYMEA_EXPORT Param
+class DevicePlugin;
+class DeviceManagerImplementation;
+
+class Translator
 {
 public:
-    Param(const ParamTypeId &paramTypeId = ParamTypeId(), const QVariant &value = QVariant());
+    Translator(DeviceManagerImplementation *deviceManager);
+    ~Translator();
 
-    ParamTypeId paramTypeId() const;
-
-    QVariant value() const;
-    void setValue(const QVariant &value);
-
-    bool isValid() const;
+    QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale);
 
 private:
-    ParamTypeId m_paramTypeId;
-    QVariant m_value;
-};
-
-Q_DECLARE_METATYPE(Param)
-QDebug operator<<(QDebug dbg, const Param &param);
-
-class LIBNYMEA_EXPORT ParamList: public QList<Param>
-{
-public:
-    ParamList();
-    ParamList(const QList<Param> &other);
-    bool hasParam(const ParamTypeId &paramTypeId) const;
-    QVariant paramValue(const ParamTypeId &paramTypeId) const;
-    bool setParamValue(const ParamTypeId &paramTypeId, const QVariant &value);
-    ParamList operator<<(const Param &param);
+    void loadTranslator(DevicePlugin *plugin, const QLocale &locale);
 
 private:
-    QList<ParamTypeId> m_ids;
+    DeviceManagerImplementation *m_deviceManager = nullptr;
 
+    struct TranslatorContext {
+        PluginId pluginId;
+        QHash<QString, QTranslator*> translators;
+    };
+    QHash<PluginId, TranslatorContext> m_translatorContexts;
 };
 
-QDebug operator<<(QDebug dbg, const ParamList &params);
-
-#endif // PARAM_H
+#endif // TRANSLATOR_H

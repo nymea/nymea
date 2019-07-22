@@ -131,7 +131,7 @@
     In order to implement this simple action and emit the Event once the button will be pressed, you need to implement following code:
 
     \quotefromfile simplebutton/devicepluginsimplebutton.cpp
-    \skipto DeviceManager::DeviceError DevicePluginSimpleButton::executeAction
+    \skipto Device::DeviceError DevicePluginSimpleButton::executeAction
     \printuntil }\n
 
     In this code section you can see the implementation of the \tt executeAction method for this example tutorial. The method

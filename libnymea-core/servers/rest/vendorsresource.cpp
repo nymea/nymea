@@ -72,7 +72,7 @@ HttpReply *VendorsResource::proccessRequest(const HttpRequest &request, const QS
         m_vendorId = VendorId(urlTokens.at(3));
         if (m_vendorId.isNull()) {
             qCWarning(dcRest) << "Could not parse VendorId:" << urlTokens.at(3);
-            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorVendorNotFound);
+            return createDeviceErrorReply(HttpReply::BadRequest, Device::DeviceErrorVendorNotFound);
         }
     }
 
@@ -129,7 +129,7 @@ HttpReply *VendorsResource::getVendor(const VendorId &vendorId) const
             return reply;
         }
     }
-    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorVendorNotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, Device::DeviceErrorVendorNotFound);
 }
 
 }

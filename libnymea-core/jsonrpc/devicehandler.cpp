@@ -55,12 +55,12 @@
 
 #include "devicehandler.h"
 #include "nymeacore.h"
-#include "devicemanager.h"
+#include "devices/devicemanager.h"
+#include "devices/device.h"
+#include "devices/deviceplugin.h"
 #include "loggingcategories.h"
 #include "types/deviceclass.h"
-#include "plugin/device.h"
-#include "plugin/deviceplugin.h"
-#include "translator.h"
+#include "devices/translator.h"
 
 #include <QDebug>
 
@@ -361,8 +361,8 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
 
     ParamList discoveryParams = JsonTypes::unpackParams(params.value("discoveryParams").toList());
 
-    DeviceManager::DeviceError status = NymeaCore::instance()->deviceManager()->discoverDevices(deviceClassId, discoveryParams);
-    if (status == DeviceManager::DeviceErrorAsync ) {
+    Device::DeviceError status = NymeaCore::instance()->deviceManager()->discoverDevices(deviceClassId, discoveryParams);
+    if (status == Device::DeviceErrorAsync ) {
         JsonReply *reply = createAsyncReply("GetDiscoveredDevices");
         connect(reply, &JsonReply::finished, this, [this, deviceClassId](){ m_discoverRequests.remove(deviceClassId); });
         m_discoverRequests.insert(deviceClassId, reply);
@@ -385,9 +385,9 @@ JsonReply *DeviceHandler::GetPluginConfiguration(const QVariantMap &params) cons
 {
     QVariantMap returns;
 
-    DevicePlugin *plugin = NymeaCore::instance()->deviceManager()->plugin(PluginId(params.value("pluginId").toString()));
+    DevicePlugin *plugin = NymeaCore::instance()->deviceManager()->plugins().findById(PluginId(params.value("pluginId").toString()));
     if (!plugin) {
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorPluginNotFound));
+        returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorPluginNotFound));
         return createReply(returns);
     }
 
@@ -396,7 +396,7 @@ JsonReply *DeviceHandler::GetPluginConfiguration(const QVariantMap &params) cons
         paramVariantList.append(JsonTypes::packParam(param));
     }
     returns.insert("configuration", paramVariantList);
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError));
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorNoError));
     return createReply(returns);
 }
 
@@ -405,7 +405,7 @@ JsonReply* DeviceHandler::SetPluginConfiguration(const QVariantMap &params)
     QVariantMap returns;
     PluginId pluginId = PluginId(params.value("pluginId").toString());
     ParamList pluginParams = JsonTypes::unpackParams(params.value("configuration").toList());
-    DeviceManager::DeviceError result = NymeaCore::instance()->deviceManager()->setPluginConfig(pluginId, pluginParams);
+    Device::DeviceError result = NymeaCore::instance()->deviceManager()->setPluginConfig(pluginId, pluginParams);
     returns.insert("deviceError", JsonTypes::deviceErrorToString(result));
     return createReply(returns);
 }
@@ -417,7 +417,7 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
     ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     DeviceId newDeviceId = DeviceId::createDeviceId();
-    DeviceManager::DeviceError status;
+    Device::DeviceError status;
     if (deviceDescriptorId.isNull()) {
         status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceName, deviceParams, newDeviceId);
     } else {
@@ -425,13 +425,13 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
     }
     QVariantMap returns;
     switch (status) {
-    case DeviceManager::DeviceErrorAsync: {
+    case Device::DeviceErrorAsync: {
         JsonReply *asyncReply = createAsyncReply("AddConfiguredDevice");
         connect(asyncReply, &JsonReply::finished, [this, newDeviceId](){ m_asynDeviceAdditions.remove(newDeviceId); });
         m_asynDeviceAdditions.insert(newDeviceId, asyncReply);
         return asyncReply;
     }
-    case DeviceManager::DeviceErrorNoError:
+    case Device::DeviceErrorNoError:
         returns.insert("deviceId", newDeviceId);
         returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
         break;
@@ -447,7 +447,7 @@ JsonReply *DeviceHandler::PairDevice(const QVariantMap &params)
     QString deviceName = params.value("name").toString();
     DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(deviceClassId);
 
-    DeviceManager::DeviceError status;
+    Device::DeviceError status;
     PairingTransactionId pairingTransactionId = PairingTransactionId::createPairingTransactionId();
     if (params.contains("deviceDescriptorId")) {
         DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
@@ -459,8 +459,8 @@ JsonReply *DeviceHandler::PairDevice(const QVariantMap &params)
 
     QVariantMap returns;
     returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
-    if (status == DeviceManager::DeviceErrorNoError) {
-        returns.insert("displayMessage", NymeaCore::instance()->deviceManager()->translator()->translate(deviceClass.pluginId(), deviceClass.pairingInfo(), params.value("locale").toLocale()));
+    if (status == Device::DeviceErrorNoError) {
+        returns.insert("displayMessage", NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), deviceClass.pairingInfo(), params.value("locale").toLocale()));
         returns.insert("pairingTransactionId", pairingTransactionId.toString());
         returns.insert("setupMethod", JsonTypes::setupMethod().at(deviceClass.setupMethod()));
     }
@@ -471,10 +471,10 @@ JsonReply *DeviceHandler::ConfirmPairing(const QVariantMap &params)
 {
     PairingTransactionId pairingTransactionId = PairingTransactionId(params.value("pairingTransactionId").toString());
     QString secret = params.value("secret").toString();
-    DeviceManager::DeviceError status = NymeaCore::instance()->deviceManager()->confirmPairing(pairingTransactionId, secret);
+    Device::DeviceError status = NymeaCore::instance()->deviceManager()->confirmPairing(pairingTransactionId, secret);
 
     JsonReply *reply = nullptr;
-    if (status == DeviceManager::DeviceErrorAsync) {
+    if (status == Device::DeviceErrorAsync) {
         reply = createAsyncReply("ConfirmPairing");
         connect(reply, &JsonReply::finished, [this, pairingTransactionId](){ m_asyncPairingRequests.remove(pairingTransactionId); });
         m_asyncPairingRequests.insert(pairingTransactionId, reply);
@@ -493,7 +493,7 @@ JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
     if (params.contains("deviceId")) {
         Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(DeviceId(params.value("deviceId").toString()));
         if (!device) {
-            returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorDeviceNotFound));
+            returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorDeviceNotFound));
             return createReply(returns);
         } else {
             configuredDeviceList.append(JsonTypes::packDevice(device));
@@ -513,7 +513,7 @@ JsonReply *DeviceHandler::ReconfigureDevice(const QVariantMap &params)
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
     ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
 
-    DeviceManager::DeviceError status;
+    Device::DeviceError status;
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     if (deviceDescriptorId.isNull()) {
         status = NymeaCore::instance()->deviceManager()->reconfigureDevice(deviceId, deviceParams);
@@ -521,7 +521,7 @@ JsonReply *DeviceHandler::ReconfigureDevice(const QVariantMap &params)
         status = NymeaCore::instance()->deviceManager()->reconfigureDevice(deviceId, deviceDescriptorId);
     }
 
-    if (status == DeviceManager::DeviceErrorAsync) {
+    if (status == Device::DeviceErrorAsync) {
         JsonReply *asyncReply = createAsyncReply("ReconfigureDevice");
         connect(asyncReply, &JsonReply::finished, [this, deviceId](){ m_asynDeviceEditAdditions.remove(deviceId); });
         m_asynDeviceEditAdditions.insert(deviceId, asyncReply);
@@ -540,7 +540,7 @@ JsonReply *DeviceHandler::EditDevice(const QVariantMap &params)
 
     qCDebug(dcJsonRpc()) << "Edit device" << deviceId << name;
 
-    DeviceManager::DeviceError status = NymeaCore::instance()->deviceManager()->editDevice(deviceId, name);
+    Device::DeviceError status = NymeaCore::instance()->deviceManager()->editDevice(deviceId, name);
 
     QVariantMap returns;
     returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
@@ -555,7 +555,7 @@ JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
     // global removePolicy has priority
     if (params.contains("removePolicy")) {
         RuleEngine::RemovePolicy removePolicy = params.value("removePolicy").toString() == "RemovePolicyCascade" ? RuleEngine::RemovePolicyCascade : RuleEngine::RemovePolicyUpdate;
-        DeviceManager::DeviceError status = NymeaCore::instance()->removeConfiguredDevice(deviceId, removePolicy);
+        Device::DeviceError status = NymeaCore::instance()->removeConfiguredDevice(deviceId, removePolicy);
         returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
         return createReply(returns);
     }
@@ -567,7 +567,7 @@ JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
         removePolicyList.insert(ruleId, policy);
     }
 
-    QPair<DeviceManager::DeviceError, QList<RuleId> > status = NymeaCore::instance()->removeConfiguredDevice(deviceId, removePolicyList);
+    QPair<Device::DeviceError, QList<RuleId> > status = NymeaCore::instance()->removeConfiguredDevice(deviceId, removePolicyList);
     returns.insert("deviceError", JsonTypes::deviceErrorToString(status.first));
 
     if (!status.second.isEmpty()) {
@@ -586,7 +586,7 @@ JsonReply *DeviceHandler::SetDeviceSettings(const QVariantMap &params)
     QVariantMap returns;
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
     ParamList settings = JsonTypes::unpackParams(params.value("settings").toList());
-    DeviceManager::DeviceError status = NymeaCore::instance()->deviceManager()->setDeviceSettings(deviceId, settings);
+    Device::DeviceError status = NymeaCore::instance()->deviceManager()->setDeviceSettings(deviceId, settings);
     returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
     return createReply(returns);
 }
@@ -636,16 +636,16 @@ JsonReply* DeviceHandler::GetStateValue(const QVariantMap &params) const
 
     Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(DeviceId(params.value("deviceId").toString()));
     if (!device) {
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorDeviceNotFound));
+        returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorDeviceNotFound));
         return createReply(returns);
     }
     StateTypeId stateTypeId = StateTypeId(params.value("stateTypeId").toString());
     if (!device->hasState(stateTypeId)) {
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorStateTypeNotFound));
+        returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorStateTypeNotFound));
         return createReply(returns);
     }
 
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError));
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorNoError));
     returns.insert("value", device->state(stateTypeId).value());
     return createReply(returns);
 }
@@ -656,11 +656,11 @@ JsonReply *DeviceHandler::GetStateValues(const QVariantMap &params) const
 
     Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(DeviceId(params.value("deviceId").toString()));
     if (!device) {
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorDeviceNotFound));
+        returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorDeviceNotFound));
         return createReply(returns);
     }
 
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError));
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorNoError));
     returns.insert("values", JsonTypes::packDeviceStates(device));
     return createReply(returns);
 }
@@ -733,13 +733,13 @@ void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const 
 
     QVariantMap returns;
     returns.insert("deviceDescriptors", JsonTypes::packDeviceDescriptors(deviceDescriptors));
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorNoError));
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorNoError));
 
     reply->setData(returns);
     reply->finished();
 }
 
-void DeviceHandler::deviceSetupFinished(Device *device, DeviceManager::DeviceError status)
+void DeviceHandler::deviceSetupFinished(Device *device, Device::DeviceError status)
 {
     qCDebug(dcJsonRpc) << "Got a device setup finished" << device->name() << device->id();
     if (!m_asynDeviceAdditions.contains(device->id())) {
@@ -751,14 +751,14 @@ void DeviceHandler::deviceSetupFinished(Device *device, DeviceManager::DeviceErr
     QVariantMap returns;
     returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
 
-    if(status == DeviceManager::DeviceErrorNoError) {
+    if(status == Device::DeviceErrorNoError) {
         returns.insert("deviceId", device->id());
     }
     reply->setData(returns);
     reply->finished();
 }
 
-void DeviceHandler::deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status)
+void DeviceHandler::deviceReconfigurationFinished(Device *device, Device::DeviceError status)
 {
     qCDebug(dcJsonRpc) << "Got async device reconfiguration finished";
     if (!m_asynDeviceEditAdditions.contains(device->id())) {
@@ -772,7 +772,7 @@ void DeviceHandler::deviceReconfigurationFinished(Device *device, DeviceManager:
     reply->finished();
 }
 
-void DeviceHandler::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId)
+void DeviceHandler::pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId)
 {
     qCDebug(dcJsonRpc) << "Got pairing finished";
     JsonReply *reply = m_asyncPairingRequests.take(pairingTransactionId);
@@ -780,7 +780,7 @@ void DeviceHandler::pairingFinished(const PairingTransactionId &pairingTransacti
         return;
     }
 
-    if (status != DeviceManager::DeviceErrorNoError) {
+    if (status != Device::DeviceErrorNoError) {
         QVariantMap returns;
         returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
         reply->setData(returns);

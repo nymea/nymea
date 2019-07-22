@@ -41,7 +41,6 @@
 #include "servers/httprequest.h"
 #include "jsonrpc/jsontypes.h"
 #include "nymeacore.h"
-#include "translator.h"
 
 #include <QJsonDocument>
 
@@ -80,12 +79,12 @@ HttpReply *DevicesResource::proccessRequest(const HttpRequest &request, const QS
         DeviceId deviceId = DeviceId(urlTokens.at(3));
         if (deviceId.isNull()) {
             qCWarning(dcRest) << "Could not parse DeviceId:" << urlTokens.at(3);
-            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorDeviceNotFound);
+            return createDeviceErrorReply(HttpReply::BadRequest, Device::DeviceErrorDeviceNotFound);
         }
         m_device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(deviceId);
         if (!m_device) {
             qCWarning(dcRest) << "Could find any device with DeviceId:" << urlTokens.at(3);
-            return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorDeviceNotFound);
+            return createDeviceErrorReply(HttpReply::NotFound, Device::DeviceErrorDeviceNotFound);
         }
     }
 
@@ -135,12 +134,12 @@ HttpReply *DevicesResource::proccessGetRequest(const HttpRequest &request, const
         StateTypeId stateTypeId = StateTypeId(urlTokens.at(5));
         if (stateTypeId.isNull()) {
             qCWarning(dcRest) << "Could not parse StateTypeId:" << urlTokens.at(5);
-            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorStateTypeNotFound);
+            return createDeviceErrorReply(HttpReply::BadRequest, Device::DeviceErrorStateTypeNotFound);
         }
 
         if (!m_device->hasState(stateTypeId)){
             qCWarning(dcRest) << "This device has no StateTypeId:" << urlTokens.at(5);
-             return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorStateTypeNotFound);
+             return createDeviceErrorReply(HttpReply::NotFound, Device::DeviceErrorStateTypeNotFound);
         }
         return getDeviceStateValue(m_device, stateTypeId);
     }
@@ -210,7 +209,7 @@ HttpReply *DevicesResource::proccessPostRequest(const HttpRequest &request, cons
         ActionTypeId actionTypeId = ActionTypeId(urlTokens.at(5));
         if (actionTypeId.isNull()) {
             qCWarning(dcRest) << "Could not parse ActionTypeId:" << urlTokens.at(5);
-            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorActionTypeNotFound);
+            return createDeviceErrorReply(HttpReply::BadRequest, Device::DeviceErrorActionTypeNotFound);
         }
         bool found = false;
         DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(m_device->deviceClassId());
@@ -222,7 +221,7 @@ HttpReply *DevicesResource::proccessPostRequest(const HttpRequest &request, cons
         }
         if (!found) {
             qCWarning(dcRest) << "Could not find ActionTypeId:" << actionTypeId.toString();
-            return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorActionTypeNotFound);
+            return createDeviceErrorReply(HttpReply::NotFound, Device::DeviceErrorActionTypeNotFound);
         }
 
         return executeAction(m_device, actionTypeId, request.payload());
@@ -284,7 +283,7 @@ HttpReply *DevicesResource::removeDevice(Device *device, const QVariantMap &para
     // global removePolicy has priority
     if (params.contains("removePolicy")) {
         RuleEngine::RemovePolicy removePolicy = params.value("removePolicy").toString() == "RemovePolicyCascade" ? RuleEngine::RemovePolicyCascade : RuleEngine::RemovePolicyUpdate;
-        DeviceManager::DeviceError result = NymeaCore::instance()->removeConfiguredDevice(device->id(), removePolicy);
+        Device::DeviceError result = NymeaCore::instance()->removeConfiguredDevice(device->id(), removePolicy);
         return createDeviceErrorReply(HttpReply::Ok, result);
     }
 
@@ -295,7 +294,7 @@ HttpReply *DevicesResource::removeDevice(Device *device, const QVariantMap &para
         removePolicyList.insert(ruleId, policy);
     }
 
-    QPair<DeviceManager::DeviceError, QList<RuleId> > status = NymeaCore::instance()->removeConfiguredDevice(device->id(), removePolicyList);
+    QPair<Device::DeviceError, QList<RuleId> > status = NymeaCore::instance()->removeConfiguredDevice(device->id(), removePolicyList);
 
     // if there are offending rules
     if (!status.second.isEmpty()) {
@@ -314,7 +313,7 @@ HttpReply *DevicesResource::removeDevice(Device *device, const QVariantMap &para
         return reply;
     }
 
-    if (status.first == DeviceManager::DeviceErrorNoError)
+    if (status.first == Device::DeviceErrorNoError)
         return createDeviceErrorReply(HttpReply::Ok, status.first);
 
     return createDeviceErrorReply(HttpReply::BadRequest, status.first);
@@ -338,14 +337,14 @@ HttpReply *DevicesResource::executeAction(Device *device, const ActionTypeId &ac
     Action action(actionTypeId, device->id());
     action.setParams(actionParams);
 
-    DeviceManager::DeviceError status = NymeaCore::instance()->executeAction(action);
-    if (status == DeviceManager::DeviceErrorAsync) {
+    Device::DeviceError status = NymeaCore::instance()->executeAction(action);
+    if (status == Device::DeviceErrorAsync) {
         HttpReply *reply = createAsyncReply();
         m_asyncActionExecutions.insert(action.id(), reply);
         return reply;
     }
 
-    if (status != DeviceManager::DeviceErrorNoError)
+    if (status != Device::DeviceErrorNoError)
         return createDeviceErrorReply(HttpReply::InternalServerError, status);
 
     return createDeviceErrorReply(HttpReply::Ok, status);
@@ -361,14 +360,14 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
 
     DeviceClassId deviceClassId(params.value("deviceClassId").toString());
     if (deviceClassId.isNull())
-        return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorDeviceClassNotFound);
+        return createDeviceErrorReply(HttpReply::BadRequest, Device::DeviceErrorDeviceClassNotFound);
 
     QString deviceName = params.value("name").toString();
     DeviceId newDeviceId = DeviceId::createDeviceId();
     ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
 
-    DeviceManager::DeviceError status;
+    Device::DeviceError status;
     if (deviceDescriptorId.isNull()) {
         qCDebug(dcRest) << "Adding device" << deviceName << "with" << deviceParams;
         status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceParams, newDeviceId);
@@ -376,14 +375,14 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
         qCDebug(dcRest) << "Adding discovered device" << deviceName << "with DeviceDescriptorId" << deviceDescriptorId.toString();
         status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceDescriptorId, deviceParams, newDeviceId);
     }
-    if (status == DeviceManager::DeviceErrorAsync) {
+    if (status == Device::DeviceErrorAsync) {
         HttpReply *reply = createAsyncReply();
         qCDebug(dcRest) << "Device setup async reply";
         m_asyncDeviceAdditions.insert(newDeviceId, reply);
         return reply;
     }
 
-    if (status != DeviceManager::DeviceErrorNoError)
+    if (status != Device::DeviceErrorNoError)
         return createDeviceErrorReply(HttpReply::InternalServerError, status);
 
     QVariant result = JsonTypes::packDevice(NymeaCore::instance()->deviceManager()->findConfiguredDevice(newDeviceId));
@@ -401,9 +400,9 @@ HttpReply *DevicesResource::editDevice(const QByteArray &payload) const
 
     QVariantMap params = verification.second.toMap();
     QString name = params.value("name").toString();
-    DeviceManager::DeviceError status = NymeaCore::instance()->deviceManager()->editDevice(m_device->id(), name);
+    Device::DeviceError status = NymeaCore::instance()->deviceManager()->editDevice(m_device->id(), name);
 
-    if (status != DeviceManager::DeviceErrorNoError)
+    if (status != Device::DeviceErrorNoError)
         return createDeviceErrorReply(HttpReply::BadRequest, status);
 
     return createDeviceErrorReply(HttpReply::Ok, status);
@@ -422,14 +421,14 @@ HttpReply *DevicesResource::pairDevice(const QByteArray &payload) const
 
     if (deviceClassId.isNull()) {
         qCWarning(dcRest) << "Could not find deviceClassId" << params.value("deviceClassId").toString();
-        return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorDeviceClassNotFound);
+        return createDeviceErrorReply(HttpReply::BadRequest, Device::DeviceErrorDeviceClassNotFound);
     }
 
     QString deviceName = params.value("name").toString();
 
     qCDebug(dcRest) << "Pair device" << deviceName << "with deviceClassId" << deviceClassId.toString();
 
-    DeviceManager::DeviceError status;
+    Device::DeviceError status;
     PairingTransactionId pairingTransactionId = PairingTransactionId::createPairingTransactionId();
     if (params.contains("deviceDescriptorId")) {
         DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
@@ -439,11 +438,11 @@ HttpReply *DevicesResource::pairDevice(const QByteArray &payload) const
         status = NymeaCore::instance()->deviceManager()->pairDevice(pairingTransactionId, deviceClassId, deviceName, deviceParams);
     }
 
-    if (status != DeviceManager::DeviceErrorNoError)
+    if (status != Device::DeviceErrorNoError)
         return createDeviceErrorReply(HttpReply::BadRequest, status);
 
     QVariantMap returns;
-    returns.insert("displayMessage", NymeaCore::instance()->deviceManager()->translator()->translate(deviceClass.pluginId(), deviceClass.pairingInfo(), NymeaCore::instance()->configuration()->locale()));
+    returns.insert("displayMessage", NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), deviceClass.pairingInfo(), NymeaCore::instance()->configuration()->locale()));
     returns.insert("pairingTransactionId", pairingTransactionId.toString());
     returns.insert("setupMethod", JsonTypes::setupMethod().at(deviceClass.setupMethod()));
     HttpReply *reply = createSuccessReply();
@@ -462,19 +461,19 @@ HttpReply *DevicesResource::confirmPairDevice(const QByteArray &payload) const
 
     PairingTransactionId pairingTransactionId = PairingTransactionId(params.value("pairingTransactionId").toString());
     QString secret = params.value("secret").toString();
-    DeviceManager::DeviceError status = NymeaCore::instance()->deviceManager()->confirmPairing(pairingTransactionId, secret);
+    Device::DeviceError status = NymeaCore::instance()->deviceManager()->confirmPairing(pairingTransactionId, secret);
 
-    if (status == DeviceManager::DeviceErrorAsync) {
+    if (status == Device::DeviceErrorAsync) {
         HttpReply *reply = createAsyncReply();
         qCDebug(dcRest) << "Confirm pairing async reply";
         m_asyncPairingRequests.insert(pairingTransactionId, reply);
         return reply;
     }
 
-    if (status != DeviceManager::DeviceErrorNoError)
+    if (status != Device::DeviceErrorNoError)
         return createDeviceErrorReply(HttpReply::InternalServerError, status);
 
-    return createDeviceErrorReply(HttpReply::Ok, DeviceManager::DeviceErrorNoError);
+    return createDeviceErrorReply(HttpReply::Ok, Device::DeviceErrorNoError);
 }
 
 HttpReply *DevicesResource::reconfigureDevice(Device *device, const QByteArray &payload) const
@@ -487,7 +486,7 @@ HttpReply *DevicesResource::reconfigureDevice(Device *device, const QByteArray &
     QVariantMap params = verification.second.toMap();
     ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
 
-    DeviceManager::DeviceError status;
+    Device::DeviceError status;
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     if (deviceDescriptorId.isNull()) {
         qCDebug(dcRest) << "Reconfigure device with params:" << deviceParams;
@@ -497,20 +496,20 @@ HttpReply *DevicesResource::reconfigureDevice(Device *device, const QByteArray &
         status = NymeaCore::instance()->deviceManager()->reconfigureDevice(device->id(), deviceDescriptorId);
     }
 
-    if (status == DeviceManager::DeviceErrorAsync) {
+    if (status == Device::DeviceErrorAsync) {
         HttpReply *reply = createAsyncReply();
         qCDebug(dcRest) << "Device reconfiguration async reply";
         m_asyncReconfigureDevice.insert(device, reply);
         return reply;
     }
 
-    if (status != DeviceManager::DeviceErrorNoError)
+    if (status != Device::DeviceErrorNoError)
         return createDeviceErrorReply(HttpReply::InternalServerError, status);
 
-    return createDeviceErrorReply(HttpReply::Ok, DeviceManager::DeviceErrorNoError);
+    return createDeviceErrorReply(HttpReply::Ok, Device::DeviceErrorNoError);
 }
 
-void DevicesResource::actionExecuted(const ActionId &actionId, DeviceManager::DeviceError status)
+void DevicesResource::actionExecuted(const ActionId &actionId, Device::DeviceError status)
 {
     if (!m_asyncActionExecutions.contains(actionId))
         return; // Not the action we are waiting for.
@@ -525,7 +524,7 @@ void DevicesResource::actionExecuted(const ActionId &actionId, DeviceManager::De
 
     HttpReply *reply = m_asyncActionExecutions.take(actionId);
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    if (status == DeviceManager::DeviceErrorNoError) {
+    if (status == Device::DeviceErrorNoError) {
         qCDebug(dcRest) << "Action execution finished successfully";
         reply->setHttpStatusCode(HttpReply::Ok);
         reply->setPayload(QJsonDocument::fromVariant(response).toJson());
@@ -540,7 +539,7 @@ void DevicesResource::actionExecuted(const ActionId &actionId, DeviceManager::De
     reply->finished();
 }
 
-void DevicesResource::deviceSetupFinished(Device *device, DeviceManager::DeviceError status)
+void DevicesResource::deviceSetupFinished(Device *device, Device::DeviceError status)
 {
     if (!m_asyncDeviceAdditions.contains(device->id()))
         return; // Not the device we are waiting for.
@@ -555,7 +554,7 @@ void DevicesResource::deviceSetupFinished(Device *device, DeviceManager::DeviceE
 
     HttpReply *reply = m_asyncDeviceAdditions.take(device->id());
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    if (status == DeviceManager::DeviceErrorNoError) {
+    if (status == Device::DeviceErrorNoError) {
         qCDebug(dcRest) << "Device setup finished successfully";
         reply->setHttpStatusCode(HttpReply::Ok);
         reply->setPayload(QJsonDocument::fromVariant(response).toJson());
@@ -571,7 +570,7 @@ void DevicesResource::deviceSetupFinished(Device *device, DeviceManager::DeviceE
     reply->finished();
 }
 
-void DevicesResource::deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status)
+void DevicesResource::deviceReconfigurationFinished(Device *device, Device::DeviceError status)
 {
     if (!m_asyncReconfigureDevice.contains(device))
         return; // Not the device we are waiting for.
@@ -586,7 +585,7 @@ void DevicesResource::deviceReconfigurationFinished(Device *device, DeviceManage
 
     HttpReply *reply = m_asyncReconfigureDevice.take(device);
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    if (status == DeviceManager::DeviceErrorNoError) {
+    if (status == Device::DeviceErrorNoError) {
         qCDebug(dcRest) << "Device reconfiguration finished successfully";
         reply->setHttpStatusCode(HttpReply::Ok);
         reply->setPayload(QJsonDocument::fromVariant(response).toJson());
@@ -599,7 +598,7 @@ void DevicesResource::deviceReconfigurationFinished(Device *device, DeviceManage
     reply->finished();
 }
 
-void DevicesResource::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId)
+void DevicesResource::pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId)
 {
     if (!m_asyncPairingRequests.contains(pairingTransactionId))
         return; // Not the device pairing we are waiting for.
@@ -613,7 +612,7 @@ void DevicesResource::pairingFinished(const PairingTransactionId &pairingTransac
     }
 
     HttpReply *reply = m_asyncPairingRequests.take(pairingTransactionId);
-    if (status != DeviceManager::DeviceErrorNoError) {
+    if (status != Device::DeviceErrorNoError) {
         qCDebug(dcRest) << "Pairing device finished with error.";
         reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
         reply->setHttpStatusCode(HttpReply::InternalServerError);

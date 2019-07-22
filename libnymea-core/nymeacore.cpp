@@ -50,9 +50,9 @@
     This signal is emitted when the \l{ParamList}{Params} of a \a device have been changed.
 */
 
-/*! \fn void nymeaserver::NymeaCore::actionExecuted(const ActionId &id, DeviceManager::DeviceError status);
+/*! \fn void nymeaserver::NymeaCore::actionExecuted(const ActionId &id, Device::DeviceError status);
     This signal is emitted when the \l{Action} with the given \a id is finished.
-    The \a status of the \l{Action} execution will be described as \l{DeviceManager::DeviceError}{DeviceError}.
+    The \a status of the \l{Action} execution will be described as \l{Device::DeviceError}{DeviceError}.
 */
 
 /*! \fn void nymeaserver::NymeaCore::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
@@ -61,19 +61,19 @@
     \sa DeviceManager::discoverDevices()
 */
 
-/*! \fn void nymeaserver::NymeaCore::deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
+/*! \fn void nymeaserver::NymeaCore::deviceSetupFinished(Device *device, Device::DeviceError status);
     This signal is emitted when the setup of a \a device is finished. The \a status parameter describes the
-    \l{DeviceManager::DeviceError}{DeviceError} that occurred.
+    \l{Device::DeviceError}{DeviceError} that occurred.
 */
 
-/*! \fn void nymeaserver::NymeaCore::deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status);
+/*! \fn void nymeaserver::NymeaCore::deviceReconfigurationFinished(Device *device, Device::DeviceError status);
     This signal is emitted when the edit request of a \a device is finished. The \a status of the edit request will be
-    described as \l{DeviceManager::DeviceError}{DeviceError}.
+    described as \l{Device::DeviceError}{DeviceError}.
 */
 
-/*! \fn void nymeaserver::NymeaCore::pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
+/*! \fn void nymeaserver::NymeaCore::pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId);
     The DeviceManager will emit a this Signal when the pairing of a \l{Device} with the \a deviceId and \a pairingTransactionId is finished.
-    The \a status of the pairing will be described as \l{DeviceManager::DeviceError}{DeviceError}.
+    The \a status of the pairing will be described as \l{Device::DeviceError}{DeviceError}.
 */
 
 /*! \fn void nymeaserver::NymeaCore::ruleRemoved(const RuleId &ruleId);
@@ -108,14 +108,14 @@
 #include "loggingcategories.h"
 #include "platform/platform.h"
 #include "jsonrpc/jsonrpcserver.h"
-#include "ruleengine.h"
+#include "ruleengine/ruleengine.h"
 #include "networkmanager/networkmanager.h"
 #include "nymeasettings.h"
 #include "tagging/tagsstorage.h"
 #include "platform/platform.h"
 
-#include "devicemanager.h"
-#include "plugin/device.h"
+#include "devices/devicemanagerimplementation.h"
+#include "devices/device.h"
 #include "cloud/cloudnotifications.h"
 #include "cloud/cloudtransport.h"
 
@@ -167,7 +167,7 @@ void NymeaCore::init() {
     m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), this);
 
     qCDebug(dcApplication) << "Creating Device Manager (locale:" << m_configuration->locale() << ")";
-    m_deviceManager = new DeviceManager(m_hardwareManager, m_configuration->locale(), this);
+    m_deviceManager = new DeviceManagerImplementation(m_hardwareManager, m_configuration->locale(), this);
 
     qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);
@@ -192,27 +192,27 @@ void NymeaCore::init() {
 
     connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
 
-    connect(m_deviceManager, &DeviceManager::pluginConfigChanged, this, &NymeaCore::pluginConfigChanged);
-    connect(m_deviceManager, &DeviceManager::eventTriggered, this, &NymeaCore::gotEvent);
-    connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &NymeaCore::deviceStateChanged);
-    connect(m_deviceManager, &DeviceManager::deviceAdded, this, &NymeaCore::deviceAdded);
-    connect(m_deviceManager, &DeviceManager::deviceChanged, this, &NymeaCore::deviceChanged);
-    connect(m_deviceManager, &DeviceManager::deviceSettingChanged, this, &NymeaCore::deviceSettingChanged);
-    connect(m_deviceManager, &DeviceManager::deviceRemoved, this, &NymeaCore::deviceRemoved);
-    connect(m_deviceManager, &DeviceManager::deviceDisappeared, this, &NymeaCore::onDeviceDisappeared);
-    connect(m_deviceManager, &DeviceManager::actionExecutionFinished, this, &NymeaCore::actionExecutionFinished);
-    connect(m_deviceManager, &DeviceManager::devicesDiscovered, this, &NymeaCore::devicesDiscovered);
-    connect(m_deviceManager, &DeviceManager::deviceSetupFinished, this, &NymeaCore::deviceSetupFinished);
-    connect(m_deviceManager, &DeviceManager::deviceReconfigurationFinished, this, &NymeaCore::deviceReconfigurationFinished);
-    connect(m_deviceManager, &DeviceManager::pairingFinished, this, &NymeaCore::pairingFinished);
-    connect(m_deviceManager, &DeviceManager::loaded, this, &NymeaCore::deviceManagerLoaded);
+    connect(m_deviceManager, &DeviceManagerImplementation::pluginConfigChanged, this, &NymeaCore::pluginConfigChanged);
+    connect(m_deviceManager, &DeviceManagerImplementation::eventTriggered, this, &NymeaCore::gotEvent);
+    connect(m_deviceManager, &DeviceManagerImplementation::deviceStateChanged, this, &NymeaCore::deviceStateChanged);
+    connect(m_deviceManager, &DeviceManagerImplementation::deviceAdded, this, &NymeaCore::deviceAdded);
+    connect(m_deviceManager, &DeviceManagerImplementation::deviceChanged, this, &NymeaCore::deviceChanged);
+    connect(m_deviceManager, &DeviceManagerImplementation::deviceSettingChanged, this, &NymeaCore::deviceSettingChanged);
+    connect(m_deviceManager, &DeviceManagerImplementation::deviceRemoved, this, &NymeaCore::deviceRemoved);
+    connect(m_deviceManager, &DeviceManagerImplementation::deviceDisappeared, this, &NymeaCore::onDeviceDisappeared);
+    connect(m_deviceManager, &DeviceManagerImplementation::actionExecutionFinished, this, &NymeaCore::actionExecutionFinished);
+    connect(m_deviceManager, &DeviceManagerImplementation::devicesDiscovered, this, &NymeaCore::devicesDiscovered);
+    connect(m_deviceManager, &DeviceManagerImplementation::deviceSetupFinished, this, &NymeaCore::deviceSetupFinished);
+    connect(m_deviceManager, &DeviceManagerImplementation::deviceReconfigurationFinished, this, &NymeaCore::deviceReconfigurationFinished);
+    connect(m_deviceManager, &DeviceManagerImplementation::pairingFinished, this, &NymeaCore::pairingFinished);
+    connect(m_deviceManager, &DeviceManagerImplementation::loaded, this, &NymeaCore::deviceManagerLoaded);
 
     connect(m_ruleEngine, &RuleEngine::ruleAdded, this, &NymeaCore::ruleAdded);
     connect(m_ruleEngine, &RuleEngine::ruleRemoved, this, &NymeaCore::ruleRemoved);
     connect(m_ruleEngine, &RuleEngine::ruleConfigurationChanged, this, &NymeaCore::ruleConfigurationChanged);
 
     connect(m_timeManager, &TimeManager::dateTimeChanged, this, &NymeaCore::onDateTimeChanged);
-    connect(m_timeManager, &TimeManager::tick, m_deviceManager, &DeviceManager::timeTick);
+    connect(m_timeManager, &TimeManager::tick, m_deviceManager, &DeviceManagerImplementation::timeTick);
 
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), true);
 }
@@ -262,24 +262,24 @@ void NymeaCore::destroy()
 }
 
 /*! Removes a configured \l{Device} with the given \a deviceId and \a removePolicyList. */
-QPair<DeviceManager::DeviceError, QList<RuleId> > NymeaCore::removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList)
+QPair<Device::DeviceError, QList<RuleId> > NymeaCore::removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList)
 {
     Device *device = m_deviceManager->findConfiguredDevice(deviceId);
 
     if (!device) {
-        return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorDeviceNotFound, QList<RuleId>());
+        return QPair<Device::DeviceError, QList<RuleId> > (Device::DeviceErrorDeviceNotFound, QList<RuleId>());
     }
 
     // Check if this is a child device
     if (!device->parentId().isNull()) {
         qCWarning(dcDeviceManager) << "The device is a child of" << device->parentId().toString() << ". Please remove the parent device.";
-        return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorDeviceIsChild, QList<RuleId>());
+        return QPair<Device::DeviceError, QList<RuleId> > (Device::DeviceErrorDeviceIsChild, QList<RuleId>());
     }
 
     // FIXME: Let's remove this for now. It will come back with more fine grained control, presumably introducing a RemoveMethod flag in the DeviceClass
 //    if (device->autoCreated()) {
 //        qCWarning(dcDeviceManager) << "This device has been auto-created and cannot be deleted manually.";
-//        return QPair<DeviceManager::DeviceError, QList<RuleId> >(DeviceManager::DeviceErrorCreationMethodNotSupported, {});
+//        return QPair<Device::DeviceError, QList<RuleId> >(Device::DeviceErrorCreationMethodNotSupported, {});
 //    }
 
     // Check if this device has child devices
@@ -326,7 +326,7 @@ QPair<DeviceManager::DeviceError, QList<RuleId> > NymeaCore::removeConfiguredDev
 
     if (!unhandledRules.isEmpty()) {
         qCWarning(dcDeviceManager) << "There are unhandled rules which depend on this device:\n" << unhandledRules;
-        return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorDeviceInRule, unhandledRules);
+        return QPair<Device::DeviceError, QList<RuleId> > (Device::DeviceErrorDeviceInRule, unhandledRules);
     }
 
     // Update the rules...
@@ -342,41 +342,41 @@ QPair<DeviceManager::DeviceError, QList<RuleId> > NymeaCore::removeConfiguredDev
 
     // remove the child devices
     foreach (Device *d, childDevices) {
-        DeviceManager::DeviceError removeError = m_deviceManager->removeConfiguredDevice(d->id());
-        if (removeError == DeviceManager::DeviceErrorNoError) {
+        Device::DeviceError removeError = m_deviceManager->removeConfiguredDevice(d->id());
+        if (removeError == Device::DeviceErrorNoError) {
             m_logger->removeDeviceLogs(d->id());
         }
     }
 
     // delete the devices
-    DeviceManager::DeviceError removeError = m_deviceManager->removeConfiguredDevice(deviceId);
-    if (removeError == DeviceManager::DeviceErrorNoError) {
+    Device::DeviceError removeError = m_deviceManager->removeConfiguredDevice(deviceId);
+    if (removeError == Device::DeviceErrorNoError) {
         m_logger->removeDeviceLogs(deviceId);
     }
 
-    return QPair<DeviceManager::DeviceError, QList<RuleId> > (DeviceManager::DeviceErrorNoError, QList<RuleId>());
+    return QPair<Device::DeviceError, QList<RuleId> > (Device::DeviceErrorNoError, QList<RuleId>());
 }
 
 
 /*! Removes a configured \l{Device} with the given \a deviceId and \a removePolicy. */
-DeviceManager::DeviceError NymeaCore::removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy)
+Device::DeviceError NymeaCore::removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy)
 {
     Device *device = m_deviceManager->findConfiguredDevice(deviceId);
 
     if (!device) {
-        return DeviceManager::DeviceErrorDeviceNotFound;
+        return Device::DeviceErrorDeviceNotFound;
     }
 
     // Check if this is a child device
     if (!device->parentId().isNull()) {
         qCWarning(dcDeviceManager) << "The device is a child of" << device->parentId().toString() << ". Please remove the parent device.";
-        return DeviceManager::DeviceErrorDeviceIsChild;
+        return Device::DeviceErrorDeviceIsChild;
     }
 
     // FIXME: Let's remove this for now. It will come back with more fine grained control, presumably introducing a RemoveMethod flag in the DeviceClass
 //    if (device->autoCreated()) {
 //        qCWarning(dcDeviceManager) << "This device has been auto-created and cannot be deleted manually.";
-//        return DeviceManager::DeviceErrorCreationMethodNotSupported;
+//        return Device::DeviceErrorCreationMethodNotSupported;
 //    }
 
     // Check if this device has child devices
@@ -417,15 +417,15 @@ DeviceManager::DeviceError NymeaCore::removeConfiguredDevice(const DeviceId &dev
 
     // remove the child devices
     foreach (Device *d, childDevices) {
-        DeviceManager::DeviceError removeError = m_deviceManager->removeConfiguredDevice(d->id());
-        if (removeError == DeviceManager::DeviceErrorNoError) {
+        Device::DeviceError removeError = m_deviceManager->removeConfiguredDevice(d->id());
+        if (removeError == Device::DeviceErrorNoError) {
             m_logger->removeDeviceLogs(d->id());
         }
     }
 
     // delete the devices
-    DeviceManager::DeviceError removeError = m_deviceManager->removeConfiguredDevice(deviceId);
-    if (removeError == DeviceManager::DeviceErrorNoError) {
+    Device::DeviceError removeError = m_deviceManager->removeConfiguredDevice(deviceId);
+    if (removeError == Device::DeviceErrorNoError) {
         m_logger->removeDeviceLogs(deviceId);
     }
 
@@ -434,12 +434,12 @@ DeviceManager::DeviceError NymeaCore::removeConfiguredDevice(const DeviceId &dev
 
 /*! Calls the metheod DeviceManager::executeAction(\a action).
  *  \sa DeviceManager::executeAction(), */
-DeviceManager::DeviceError NymeaCore::executeAction(const Action &action)
+Device::DeviceError NymeaCore::executeAction(const Action &action)
 {
-    DeviceManager::DeviceError ret = m_deviceManager->executeAction(action);
-    if (ret == DeviceManager::DeviceErrorNoError) {
+    Device::DeviceError ret = m_deviceManager->executeAction(action);
+    if (ret == Device::DeviceErrorNoError) {
         m_logger->logAction(action);
-    } else if (ret == DeviceManager::DeviceErrorAsync) {
+    } else if (ret == Device::DeviceErrorAsync) {
         m_pendingActions.insert(action.id(), action);
     } else {
         m_logger->logAction(action, Logging::LoggingLevelAlert, ret);
@@ -534,25 +534,25 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
 
     foreach (const Action &action, actions) {
         qCDebug(dcRuleEngine) << "Executing action" << action.actionTypeId() << action.params();
-        DeviceManager::DeviceError status = executeAction(action);
+        Device::DeviceError status = executeAction(action);
         switch(status) {
-        case DeviceManager::DeviceErrorNoError:
+        case Device::DeviceErrorNoError:
             break;
-        case DeviceManager::DeviceErrorSetupFailed:
+        case Device::DeviceErrorSetupFailed:
             qCWarning(dcRuleEngine) << "Error executing action. Device setup failed.";
             break;
-        case DeviceManager::DeviceErrorAsync:
+        case Device::DeviceErrorAsync:
             qCDebug(dcRuleEngine) << "Executing asynchronous action.";
             break;
-        case DeviceManager::DeviceErrorInvalidParameter:
+        case Device::DeviceErrorInvalidParameter:
             qCWarning(dcRuleEngine) << "Error executing action. Invalid action parameter.";
             break;
         default:
             qCWarning(dcRuleEngine) << "Error executing action:" << status;
         }
 
-        //        if (status != DeviceManager::DeviceErrorAsync)
-        //            m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+        //        if (status != Device::DeviceErrorAsync)
+        //            m_logger->logAction(action, status == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
     }
 }
 
@@ -790,11 +790,11 @@ RestServer *NymeaCore::restServer() const
     return m_serverManager->restServer();
 }
 
-void NymeaCore::actionExecutionFinished(const ActionId &id, DeviceManager::DeviceError status)
+void NymeaCore::actionExecutionFinished(const ActionId &id, Device::DeviceError status)
 {
     emit actionExecuted(id, status);
     Action action = m_pendingActions.take(id);
-    m_logger->logAction(action, status == DeviceManager::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+    m_logger->logAction(action, status == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
 }
 
 void NymeaCore::onDeviceDisappeared(const DeviceId &deviceId)
@@ -838,15 +838,15 @@ void NymeaCore::onDeviceDisappeared(const DeviceId &deviceId)
 
     // remove the child devices
     foreach (Device *d, childDevices) {
-        DeviceManager::DeviceError removeError = m_deviceManager->removeConfiguredDevice(d->id());
-        if (removeError == DeviceManager::DeviceErrorNoError) {
+        Device::DeviceError removeError = m_deviceManager->removeConfiguredDevice(d->id());
+        if (removeError == Device::DeviceErrorNoError) {
             m_logger->removeDeviceLogs(d->id());
         }
     }
 
     // delete the device
-    DeviceManager::DeviceError removeError = m_deviceManager->removeConfiguredDevice(deviceId);
-    if (removeError == DeviceManager::DeviceErrorNoError) {
+    Device::DeviceError removeError = m_deviceManager->removeConfiguredDevice(deviceId);
+    if (removeError == Device::DeviceErrorNoError) {
         m_logger->removeDeviceLogs(deviceId);
     }
 }

@@ -41,7 +41,7 @@ void TestActions::executeAction_data()
     QTest::addColumn<DeviceId>("deviceId");
     QTest::addColumn<ActionTypeId>("actionTypeId");
     QTest::addColumn<QVariantList>("actionParams");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
 
     QVariantList params;
     QVariantMap param1;
@@ -53,13 +53,13 @@ void TestActions::executeAction_data()
     param2.insert("value", true);
     params.append(param2);
 
-    QTest::newRow("valid action") << m_mockDeviceId << mockActionIdWithParams << params << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockActionIdWithParams << params << DeviceManager::DeviceErrorDeviceNotFound;
-    QTest::newRow("invalid actionTypeId") << m_mockDeviceId << ActionTypeId::createActionTypeId() << params << DeviceManager::DeviceErrorActionTypeNotFound;
-    QTest::newRow("missing params") << m_mockDeviceId << mockActionIdWithParams << QVariantList() << DeviceManager::DeviceErrorMissingParameter;
-    QTest::newRow("async action") << m_mockDeviceId << mockActionIdAsync << QVariantList() << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("broken action") << m_mockDeviceId << mockActionIdFailing << QVariantList() << DeviceManager::DeviceErrorSetupFailed;
-    QTest::newRow("async broken action") << m_mockDeviceId << mockActionIdAsyncFailing << QVariantList() << DeviceManager::DeviceErrorSetupFailed;
+    QTest::newRow("valid action") << m_mockDeviceId << mockActionIdWithParams << params << Device::DeviceErrorNoError;
+    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockActionIdWithParams << params << Device::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid actionTypeId") << m_mockDeviceId << ActionTypeId::createActionTypeId() << params << Device::DeviceErrorActionTypeNotFound;
+    QTest::newRow("missing params") << m_mockDeviceId << mockActionIdWithParams << QVariantList() << Device::DeviceErrorMissingParameter;
+    QTest::newRow("async action") << m_mockDeviceId << mockActionIdAsync << QVariantList() << Device::DeviceErrorNoError;
+    QTest::newRow("broken action") << m_mockDeviceId << mockActionIdFailing << QVariantList() << Device::DeviceErrorSetupFailed;
+    QTest::newRow("async broken action") << m_mockDeviceId << mockActionIdAsyncFailing << QVariantList() << Device::DeviceErrorSetupFailed;
 }
 
 void TestActions::executeAction()
@@ -67,7 +67,7 @@ void TestActions::executeAction()
     QFETCH(DeviceId, deviceId);
     QFETCH(ActionTypeId, actionTypeId);
     QFETCH(QVariantList, actionParams);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
 
     QVariantMap params;
     params.insert("actionTypeId", actionTypeId);
@@ -88,7 +88,7 @@ void TestActions::executeAction()
     reply->deleteLater();
     QByteArray data = reply->readAll();
 
-    if (error == DeviceManager::DeviceErrorNoError) {
+    if (error == Device::DeviceErrorNoError) {
         QVERIFY2(actionTypeId == ActionTypeId(data), QString("ActionTypeId mismatch. Got %1, Expected: %2")
                  .arg(ActionTypeId(data).toString()).arg(actionTypeId.toString()).toLatin1().data());
     } else {
@@ -117,16 +117,16 @@ void TestActions::executeAction()
 void TestActions::getActionType_data()
 {
     QTest::addColumn<ActionTypeId>("actionTypeId");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("valid actiontypeid") << mockActionIdWithParams << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid actiontypeid") << ActionTypeId::createActionTypeId() << DeviceManager::DeviceErrorActionTypeNotFound;
+    QTest::newRow("valid actiontypeid") << mockActionIdWithParams << Device::DeviceErrorNoError;
+    QTest::newRow("invalid actiontypeid") << ActionTypeId::createActionTypeId() << Device::DeviceErrorActionTypeNotFound;
 }
 
 void TestActions::getActionType()
 {
     QFETCH(ActionTypeId, actionTypeId);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
 
     QVariantMap params;
     params.insert("actionTypeId", actionTypeId.toString());
@@ -134,7 +134,7 @@ void TestActions::getActionType()
 
     verifyDeviceError(response, error);
 
-    if (error == DeviceManager::DeviceErrorNoError) {
+    if (error == Device::DeviceErrorNoError) {
         QVERIFY2(ActionTypeId(response.toMap().value("params").toMap().value("actionType").toMap().value("id").toString()) == actionTypeId, "Didn't get a reply for the same actionTypeId as requested.");
     }
 }

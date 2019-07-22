@@ -23,7 +23,7 @@
 #define DEVICEHANDLER_H
 
 #include "jsonhandler.h"
-#include "devicemanager.h"
+#include "devices/devicemanager.h"
 
 namespace nymeaserver {
 
@@ -80,11 +80,11 @@ private slots:
 
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
 
-    void deviceSetupFinished(Device *device, DeviceManager::DeviceError status);
+    void deviceSetupFinished(Device *device, Device::DeviceError status);
 
-    void deviceReconfigurationFinished(Device *device, DeviceManager::DeviceError status);
+    void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
 
-    void pairingFinished(const PairingTransactionId &pairingTransactionId, DeviceManager::DeviceError status, const DeviceId &deviceId);
+    void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId);
 
 private:
     // A cache for async replies

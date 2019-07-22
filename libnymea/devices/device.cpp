@@ -34,32 +34,99 @@
   \sa DeviceClass, DeviceDescriptor
 */
 
+/*! \enum Device::DeviceError
+
+    This enum type specifies the errors that can happen when working with \l{Device}{Devices}.
+
+    \value DeviceErrorNoError
+        No Error. Everything went fine.
+    \value DeviceErrorPluginNotFound
+        Couldn't find the Plugin for the given id.
+    \value DeviceErrorVendorNotFound
+        Couldn't find the Vendor for the given id.
+    \value DeviceErrorDeviceNotFound
+        Couldn't find a \l{Device} for the given id.
+    \value DeviceErrorDeviceClassNotFound
+        Couldn't find a \l{DeviceClass} for the given id.
+    \value DeviceErrorActionTypeNotFound
+        Couldn't find the \l{ActionType} for the given id.
+    \value DeviceErrorStateTypeNotFound
+        Couldn't find the \l{StateType} for the given id.
+    \value DeviceErrorEventTypeNotFound
+        Couldn't find the \l{EventType} for the given id.
+    \value DeviceErrorDeviceDescriptorNotFound
+        Couldn't find the \l{DeviceDescriptor} for the given id.
+    \value DeviceErrorMissingParameter
+        Parameters do not comply to the template.
+    \value DeviceErrorInvalidParameter
+        One of the given parameter is not valid.
+    \value DeviceErrorSetupFailed
+        Error setting up the \l{Device}. It will not be functional.
+    \value DeviceErrorDuplicateUuid
+        Error setting up the \l{Device}. The given DeviceId already exists.
+    \value DeviceErrorCreationMethodNotSupported
+        Error setting up the \l{Device}. This \l{DeviceClass}{CreateMethod} is not supported for this \l{Device}.
+    \value DeviceErrorSetupMethodNotSupported
+        Error setting up the \l{Device}. This \l{DeviceClass}{SetupMethod} is not supported for this \l{Device}.
+    \value DeviceErrorHardwareNotAvailable
+        The Hardware of the \l{Device} is not available.
+    \value DeviceErrorHardwareFailure
+        The Hardware of the \l{Device} has an error.
+    \value DeviceErrorAsync
+        The response of the \l{Device} will be asynchronously.
+    \value DeviceErrorDeviceInUse
+        The \l{Device} is currently bussy.
+    \value DeviceErrorPairingTransactionIdNotFound
+        Couldn't find the PairingTransactionId for the given id.
+    \value DeviceErrorAuthentificationFailure
+        The device could not authentificate with something.
+    \value DeviceErrorDeviceIsChild
+        The device is a child device and can not be deleted directly.
+    \value DeviceErrorDeviceInRule
+        The device is in a rule and can not be deleted withou \l{nymeaserver::RuleEngine::RemovePolicy}.
+    \value DeviceErrorParameterNotWritable
+        One of the given device params is not writable.
+*/
+
+/*! \enum Device::DeviceSetupStatus
+
+    This enum type specifies the setup status of a \l{Device}.
+
+    \value DeviceSetupStatusSuccess
+        No Error. Everything went fine.
+    \value DeviceSetupStatusFailure
+        Something went wrong during the setup.
+    \value DeviceSetupStatusAsync
+        The status of the \l{Device} setup will be emitted asynchronous.
+*/
+
 /*! \fn void Device::stateValueChanged(const StateTypeId &stateTypeId, const QVariant &value)
     This signal is emitted when the \l{State} with the given \a stateTypeId changed.
     The \a value parameter describes the new value of the State.
 */
 #include "device.h"
+#include "deviceplugin.h"
 #include "types/event.h"
 #include "loggingcategories.h"
 
 #include <QDebug>
 
 /*! Construct an Device with the given \a pluginId, \a id, \a deviceClassId and \a parent. */
-Device::Device(const PluginId &pluginId, const DeviceId &id, const DeviceClassId &deviceClassId, QObject *parent):
+Device::Device(DevicePlugin *plugin, const DeviceClass &deviceClass, const DeviceId &id, QObject *parent):
     QObject(parent),
-    m_id(id),
-    m_deviceClassId(deviceClassId),
-    m_pluginId(pluginId)
+    m_deviceClass(deviceClass),
+    m_plugin(plugin),
+    m_id(id)
 {
 
 }
 
 /*! Construct an Device with the given \a pluginId, \a deviceClassId and \a parent. A new DeviceId will be created for this Device. */
-Device::Device(const PluginId &pluginId, const DeviceClassId &deviceClassId, QObject *parent):
+Device::Device(DevicePlugin *plugin, const DeviceClass &deviceClass, QObject *parent):
     QObject(parent),
-    m_id(DeviceId::createDeviceId()),
-    m_deviceClassId(deviceClassId),
-    m_pluginId(pluginId)
+    m_deviceClass(deviceClass),
+    m_plugin(plugin),
+    m_id(DeviceId::createDeviceId())
 {
 
 }
@@ -78,13 +145,13 @@ DeviceId Device::id() const
 /*! Returns the deviceClassId of the associated \l{DeviceClass}. */
 DeviceClassId Device::deviceClassId() const
 {
-    return m_deviceClassId;
+    return m_deviceClass.id();
 }
 
 /*! Returns the id of the \l{DevicePlugin} this Device is managed by. */
 PluginId Device::pluginId() const
 {
-    return m_pluginId;
+    return m_plugin->pluginId();
 }
 
 /*! Returns the name of this Device. This is visible to the user. */
@@ -308,6 +375,25 @@ Device *Devices::findById(const DeviceId &id)
 {
     foreach (Device *device, *this) {
         if (device->id() == id) {
+            return device;
+        }
+    }
+    return nullptr;
+}
+
+/*! Find a certain device by its \a params. All parameters must
+    match or the device will not be found. Be prepared for nullptrs.
+*/
+Device *Devices::findByParams(const ParamList &params) const
+{
+    foreach (Device *device, *this) {
+        bool matching = true;
+        foreach (const Param &param, params) {
+            if (device->paramValue(param.paramTypeId()) != param.value()) {
+                matching = false;
+            }
+        }
+        if (matching) {
             return device;
         }
     }

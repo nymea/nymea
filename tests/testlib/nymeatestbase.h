@@ -139,7 +139,7 @@ protected:
         verifyError(response, "ruleError", JsonTypes::ruleErrorToString(error));
     }
 
-    inline void verifyDeviceError(const QVariant &response, DeviceManager::DeviceError error = DeviceManager::DeviceErrorNoError) {
+    inline void verifyDeviceError(const QVariant &response, Device::DeviceError error = Device::DeviceErrorNoError) {
         verifyError(response, "deviceError", JsonTypes::deviceErrorToString(error));
     }
 

@@ -60,7 +60,7 @@
 #include "restresource.h"
 #include "servers/httprequest.h"
 #include "loggingcategories.h"
-#include "devicemanager.h"
+#include "devices/devicemanager.h"
 
 #include <QJsonDocument>
 #include <QVariant>
@@ -107,7 +107,7 @@ HttpReply *RestResource::createErrorReply(const HttpReply::HttpStatusCode &statu
 }
 
 /*! Returns the pointer to a new created error \l{HttpReply} initialized with the given \a statusCode, \l{HttpReply::TypeSync} and the \a deviceError. */
-HttpReply *RestResource::createDeviceErrorReply(const HttpReply::HttpStatusCode &statusCode, const DeviceManager::DeviceError &deviceError)
+HttpReply *RestResource::createDeviceErrorReply(const HttpReply::HttpStatusCode &statusCode, const Device::DeviceError &deviceError)
 {
     HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);
     QVariantMap response;

@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -21,50 +20,22 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PARAM_H
-#define PARAM_H
+#include "devicemanager.h"
 
-#include "libnymea.h"
-#include "typeutils.h"
+/*!
+    \class DeviceManager
+    \brief The main entry point when interacting with \l{Device}{Devices}
 
-#include <QString>
-#include <QVariant>
+    \ingroup devices
+    \inmodule libnymea
 
-class LIBNYMEA_EXPORT Param
+    The DeviceManager hold  s all information about supported and configured Devices in the system.
+
+    It is also responsible for loading Plugins and managing common hardware resources between
+    \l{DevicePlugin}{device plugins}.
+*/
+
+DeviceManager::DeviceManager(QObject *parent) : QObject(parent)
 {
-public:
-    Param(const ParamTypeId &paramTypeId = ParamTypeId(), const QVariant &value = QVariant());
 
-    ParamTypeId paramTypeId() const;
-
-    QVariant value() const;
-    void setValue(const QVariant &value);
-
-    bool isValid() const;
-
-private:
-    ParamTypeId m_paramTypeId;
-    QVariant m_value;
-};
-
-Q_DECLARE_METATYPE(Param)
-QDebug operator<<(QDebug dbg, const Param &param);
-
-class LIBNYMEA_EXPORT ParamList: public QList<Param>
-{
-public:
-    ParamList();
-    ParamList(const QList<Param> &other);
-    bool hasParam(const ParamTypeId &paramTypeId) const;
-    QVariant paramValue(const ParamTypeId &paramTypeId) const;
-    bool setParamValue(const ParamTypeId &paramTypeId, const QVariant &value);
-    ParamList operator<<(const Param &param);
-
-private:
-    QList<ParamTypeId> m_ids;
-
-};
-
-QDebug operator<<(QDebug dbg, const ParamList &params);
-
-#endif // PARAM_H
+}

@@ -314,22 +314,27 @@ bool DeviceClass::operator==(const DeviceClass &deviceClass) const
     return m_id == deviceClass.id();
 }
 
-/*! Returns a list of all valid JSON properties a DeviceClass JSON definition can have. */
-QStringList DeviceClass::typeProperties()
-{
-    return QStringList() << "id" << "name" << "displayName" << "createMethods" << "setupMethod"
-                         << "interfaces" << "pairingInfo" << "discoveryParamTypes" << "discoveryParamTypes"
-                         << "paramTypes" << "settingsTypes" << "stateTypes" << "actionTypes" << "eventTypes";
-}
-
-/*! Returns a list of mandatory JSON properties a DeviceClass JSON definition must have. */
-QStringList DeviceClass::mandatoryTypeProperties()
-{
-    return QStringList() << "id" << "name" << "displayName";
-}
-
 QDebug operator<<(QDebug &dbg, const DeviceClass &deviceClass)
 {
     dbg << "DeviceClass ID:" << deviceClass.id() << "Name:" << deviceClass.name();
     return dbg;
+}
+
+DeviceClasses::DeviceClasses()
+{
+
+}
+
+DeviceClasses::DeviceClasses(const QList<DeviceClass> &other): QList<DeviceClass> (other)
+{
+}
+
+DeviceClass DeviceClasses::findById(const DeviceClassId &id) const
+{
+    foreach (const DeviceClass &deviceClass, *this) {
+        if (deviceClass.id() == id) {
+            return deviceClass;
+        }
+    }
+    return DeviceClass();
 }

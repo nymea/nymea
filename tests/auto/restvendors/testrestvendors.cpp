@@ -139,7 +139,7 @@ void TestRestVendors::invalidVendor()
 
     QNetworkRequest request(QUrl("https://localhost:3333/api/v1/vendors/" + path));
     QVariant response = getAndWait(request, expectedStatusCode);
-    QCOMPARE(JsonTypes::deviceErrorToString(DeviceManager::DeviceErrorVendorNotFound), response.toMap().value("error").toString());
+    QCOMPARE(JsonTypes::deviceErrorToString(Device::DeviceErrorVendorNotFound), response.toMap().value("error").toString());
 }
 
 #include "testrestvendors.moc"

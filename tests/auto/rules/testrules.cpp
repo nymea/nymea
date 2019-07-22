@@ -154,7 +154,7 @@ DeviceId TestRules::addDisplayPinDevice()
     params.insert("discoveryParams", discoveryParams);
     QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
 
-    verifyDeviceError(response, DeviceManager::DeviceErrorNoError);
+    verifyDeviceError(response, Device::DeviceErrorNoError);
 
     // Pair device
     DeviceDescriptorId descriptorId = DeviceDescriptorId(response.toMap().value("params").toMap().value("deviceDescriptors").toList().first().toMap().value("id").toString());
@@ -2362,13 +2362,13 @@ void TestRules::removePolicyUpdate()
     params.clear(); response.clear();
     params.insert("deviceId", childDeviceId);
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-    verifyDeviceError(response, DeviceManager::DeviceErrorDeviceIsChild);
+    verifyDeviceError(response, Device::DeviceErrorDeviceIsChild);
 
     // Try to remove child device
     params.clear(); response.clear();
     params.insert("deviceId", parentDeviceId);
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-    verifyDeviceError(response, DeviceManager::DeviceErrorDeviceInRule);
+    verifyDeviceError(response, Device::DeviceErrorDeviceInRule);
 
     // Remove policy
     params.clear(); response.clear();
@@ -2445,13 +2445,13 @@ void TestRules::removePolicyCascade()
     params.clear(); response.clear();
     params.insert("deviceId", childDeviceId);
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-    verifyDeviceError(response, DeviceManager::DeviceErrorDeviceIsChild);
+    verifyDeviceError(response, Device::DeviceErrorDeviceIsChild);
 
     // Try to remove child device
     params.clear(); response.clear();
     params.insert("deviceId", parentDeviceId);
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-    verifyDeviceError(response, DeviceManager::DeviceErrorDeviceInRule);
+    verifyDeviceError(response, Device::DeviceErrorDeviceInRule);
 
     // Remove policy
     params.clear(); response.clear();
@@ -2530,14 +2530,14 @@ void TestRules::removePolicyUpdateRendersUselessRule()
     params.clear(); response.clear();
     params.insert("deviceId", childDeviceId);
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-    verifyDeviceError(response, DeviceManager::DeviceErrorDeviceIsChild);
+    verifyDeviceError(response, Device::DeviceErrorDeviceIsChild);
 
     // Try to remove child device
     qCDebug(dcTests()) << "Removing device (expeciting failure - device in use)";
     params.clear(); response.clear();
     params.insert("deviceId", parentDeviceId);
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-    verifyDeviceError(response, DeviceManager::DeviceErrorDeviceInRule);
+    verifyDeviceError(response, Device::DeviceErrorDeviceInRule);
 
     // Remove policy
     qCDebug(dcTests()) << "Removing device with update policy";

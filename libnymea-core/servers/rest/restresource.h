@@ -46,7 +46,7 @@ public:
     static HttpReply *createSuccessReply();
     static HttpReply *createCorsSuccessReply();
     static HttpReply *createErrorReply(const HttpReply::HttpStatusCode &statusCode);
-    static HttpReply *createDeviceErrorReply(const HttpReply::HttpStatusCode &statusCode, const DeviceManager::DeviceError &deviceError);
+    static HttpReply *createDeviceErrorReply(const HttpReply::HttpStatusCode &statusCode, const Device::DeviceError &deviceError);
     static HttpReply *createRuleErrorReply(const HttpReply::HttpStatusCode &statusCode, const RuleEngine::RuleError &ruleError);
     static HttpReply *createLoggingErrorReply(const HttpReply::HttpStatusCode &statusCode, const Logging::LoggingError &loggingError);
     static HttpReply *createAsyncReply();

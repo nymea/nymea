@@ -23,12 +23,12 @@
 #ifndef JSONTYPES_H
 #define JSONTYPES_H
 
-#include "plugin/devicedescriptor.h"
-#include "rule.h"
-#include "devicemanager.h"
-#include "ruleengine.h"
+#include "devices/devicedescriptor.h"
+#include "devices/devicemanager.h"
+#include "ruleengine/rule.h"
+#include "ruleengine/ruleengine.h"
 #include "nymeaconfiguration.h"
-#include "usermanager.h"
+#include "usermanager/usermanager.h"
 
 #include "types/deviceclass.h"
 #include "types/event.h"
@@ -128,7 +128,7 @@ public:
     DECLARE_TYPE(unit, "Unit", Types, Unit)
     DECLARE_TYPE(createMethod, "CreateMethod", DeviceClass, CreateMethod)
     DECLARE_TYPE(setupMethod, "SetupMethod", DeviceClass, SetupMethod)
-    DECLARE_TYPE(deviceError, "DeviceError", DeviceManager, DeviceError)
+    DECLARE_TYPE(deviceError, "DeviceError", Device, DeviceError)
     DECLARE_TYPE(removePolicy, "RemovePolicy", RuleEngine, RemovePolicy)
     DECLARE_TYPE(ruleError, "RuleError", RuleEngine, RuleError)
     DECLARE_TYPE(loggingError, "LoggingError", Logging, LoggingError)

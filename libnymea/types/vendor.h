@@ -28,6 +28,7 @@
 #include "typeutils.h"
 
 #include <QString>
+#include <QList>
 
 class LIBNYMEA_EXPORT Vendor
 {
@@ -49,6 +50,15 @@ private:
     VendorId m_id;
     QString m_name;
     QString m_displayName;
+};
+
+class LIBNYMEA_EXPORT Vendors: public QList<Vendor>
+{
+public:
+    Vendors();
+    Vendors(const QList<Vendor> &other);
+
+    Vendor findById(const VendorId &vendorId) const;
 };
 
 #endif // VENDOR_H

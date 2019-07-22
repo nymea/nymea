@@ -251,11 +251,8 @@ QDebug operator<<(QDebug dbg, const QList<ParamType> &paramTypes)
     return dbg.space();
 }
 
-ParamTypes::ParamTypes(const QList<ParamType> &other)
+ParamTypes::ParamTypes(const QList<ParamType> &other): QList<ParamType>(other)
 {
-    foreach (const ParamType &pt, other) {
-        append(pt);
-    }
 }
 
 ParamType ParamTypes::findByName(const QString &name)

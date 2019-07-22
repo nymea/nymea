@@ -54,18 +54,18 @@ void TestStates::getStateValue_data()
 
     QTest::addColumn<DeviceId>("deviceId");
     QTest::addColumn<StateTypeId>("stateTypeId");
-    QTest::addColumn<DeviceManager::DeviceError>("error");
+    QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("existing state") << device->id() << mockIntStateId << DeviceManager::DeviceErrorNoError;
-    QTest::newRow("invalid device") << DeviceId::createDeviceId() << mockIntStateId << DeviceManager::DeviceErrorDeviceNotFound;
-    QTest::newRow("invalid statetype") << device->id() << StateTypeId::createStateTypeId() << DeviceManager::DeviceErrorStateTypeNotFound;
+    QTest::newRow("existing state") << device->id() << mockIntStateId << Device::DeviceErrorNoError;
+    QTest::newRow("invalid device") << DeviceId::createDeviceId() << mockIntStateId << Device::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid statetype") << device->id() << StateTypeId::createStateTypeId() << Device::DeviceErrorStateTypeNotFound;
 }
 
 void TestStates::getStateValue()
 {
     QFETCH(DeviceId, deviceId);
     QFETCH(StateTypeId, stateTypeId);
-    QFETCH(DeviceManager::DeviceError, error);
+    QFETCH(Device::DeviceError, error);
 
     QVariantMap params;
     params.insert("deviceId", deviceId.toString());

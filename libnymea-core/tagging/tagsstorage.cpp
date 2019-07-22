@@ -19,8 +19,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "tagsstorage.h"
-#include "devicemanager.h"
-#include "ruleengine.h"
+#include "devices/devicemanager.h"
+#include "ruleengine/ruleengine.h"
 #include "nymeasettings.h"
 
 namespace nymeaserver {

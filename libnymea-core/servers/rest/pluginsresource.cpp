@@ -74,7 +74,7 @@ HttpReply *PluginsResource::proccessRequest(const HttpRequest &request, const QS
         m_pluginId = PluginId(urlTokens.at(3));
         if (m_pluginId.isNull()) {
             qCWarning(dcRest) << "Could not parse PluginId:" << urlTokens.at(3);
-            return createDeviceErrorReply(HttpReply::BadRequest, DeviceManager::DeviceErrorPluginNotFound);
+            return createDeviceErrorReply(HttpReply::BadRequest, Device::DeviceErrorPluginNotFound);
         }
     }
 
@@ -154,7 +154,7 @@ HttpReply *PluginsResource::getPlugin(const PluginId &pluginId) const
             return reply;
         }
     }
-    return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorPluginNotFound);
+    return createDeviceErrorReply(HttpReply::NotFound, Device::DeviceErrorPluginNotFound);
 }
 
 HttpReply *PluginsResource::getPluginConfiguration(const PluginId &pluginId) const
@@ -164,7 +164,7 @@ HttpReply *PluginsResource::getPluginConfiguration(const PluginId &pluginId) con
     DevicePlugin *plugin = 0;
     plugin = findPlugin(pluginId);
     if (!plugin)
-        return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorPluginNotFound);
+        return createDeviceErrorReply(HttpReply::NotFound, Device::DeviceErrorPluginNotFound);
 
     QVariantList configurationParamsList;
     foreach (const Param &param, plugin->configuration()) {
@@ -182,7 +182,7 @@ HttpReply *PluginsResource::setPluginConfiguration(const PluginId &pluginId, con
     DevicePlugin *plugin = 0;
     plugin = findPlugin(pluginId);
     if (!plugin)
-        return createDeviceErrorReply(HttpReply::NotFound, DeviceManager::DeviceErrorPluginNotFound);
+        return createDeviceErrorReply(HttpReply::NotFound, Device::DeviceErrorPluginNotFound);
 
     qCDebug(dcRest) << "Set configuration of plugin with id" << pluginId.toString();
 
@@ -193,9 +193,9 @@ HttpReply *PluginsResource::setPluginConfiguration(const PluginId &pluginId, con
     QVariantList configuration = verification.second.toList();
     ParamList pluginParams = JsonTypes::unpackParams(configuration);
     qCDebug(dcRest) << pluginParams;
-    DeviceManager::DeviceError result = NymeaCore::instance()->deviceManager()->setPluginConfig(pluginId, pluginParams);
+    Device::DeviceError result = NymeaCore::instance()->deviceManager()->setPluginConfig(pluginId, pluginParams);
 
-    if (result != DeviceManager::DeviceErrorNoError)
+    if (result != Device::DeviceErrorNoError)
         return createDeviceErrorReply(HttpReply::BadRequest, result);
 
     return createDeviceErrorReply(HttpReply::Ok, result);

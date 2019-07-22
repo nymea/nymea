@@ -41,14 +41,13 @@
 #include "devicepluginmock.h"
 #include "httpdaemon.h"
 
-#include "plugin/device.h"
-#include "devicemanager.h"
+#include "devices/device.h"
 #include "plugininfo.h"
 
 #include <QDebug>
 #include <QColor>
 #include <QStringList>
-
+#include <QTimer>
 
 DevicePluginMock::DevicePluginMock()
 {
@@ -59,28 +58,28 @@ DevicePluginMock::~DevicePluginMock()
 {
 }
 
-DeviceManager::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+Device::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     if (deviceClassId == mockDeviceClassId) {
         qCDebug(dcMockDevice) << "starting mock discovery:" << params;
         m_discoveredDeviceCount = params.paramValue(mockDiscoveryResultCountParamTypeId).toInt();
         QTimer::singleShot(1000, this, SLOT(emitDevicesDiscovered()));
-        return DeviceManager::DeviceErrorAsync;
+        return Device::DeviceErrorAsync;
     } else if (deviceClassId == mockPushButtonDeviceClassId) {
         qCDebug(dcMockDevice) << "starting mock push button discovery:" << params;
         m_discoveredDeviceCount = params.paramValue(mockPushButtonDiscoveryResultCountParamTypeId).toInt();
         QTimer::singleShot(1000, this, SLOT(emitPushButtonDevicesDiscovered()));
-        return DeviceManager::DeviceErrorAsync;
+        return Device::DeviceErrorAsync;
     } else if (deviceClassId == mockDisplayPinDeviceClassId) {
         qCDebug(dcMockDevice) << "starting mock display pin discovery:" << params;
         m_discoveredDeviceCount = params.paramValue(mockDisplayPinDiscoveryResultCountParamTypeId).toInt();
         QTimer::singleShot(1000, this, SLOT(emitDisplayPinDevicesDiscovered()));
-        return DeviceManager::DeviceErrorAsync;
+        return Device::DeviceErrorAsync;
     }
-    return DeviceManager::DeviceErrorDeviceClassNotFound;
+    return Device::DeviceErrorDeviceClassNotFound;
 }
 
-DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
+Device::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
 {
     if (device->deviceClassId() == mockDeviceClassId || device->deviceClassId() == mockDeviceAutoDeviceClassId) {
         bool async = false;
@@ -95,7 +94,7 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
 
         if (broken) {
             qCWarning(dcMockDevice) << "This device is intentionally broken.";
-            return DeviceManager::DeviceSetupStatusFailure;
+            return Device::DeviceSetupStatusFailure;
         }
 
         HttpDaemon *daemon = new HttpDaemon(device, this);
@@ -103,7 +102,7 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
 
         if (!daemon->isListening()) {
             qCWarning(dcMockDevice) << "HTTP port opening failed:" << device->paramValue(mockDeviceHttpportParamTypeId).toInt();
-            return DeviceManager::DeviceSetupStatusFailure;
+            return Device::DeviceSetupStatusFailure;
         }
 
         connect(daemon, &HttpDaemon::triggerEvent, this, &DevicePluginMock::triggerEvent);
@@ -115,27 +114,27 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
         if (async) {
             m_asyncSetupDevices.append(device);
             QTimer::singleShot(1000, this, SLOT(emitDeviceSetupFinished()));
-            return DeviceManager::DeviceSetupStatusAsync;
+            return Device::DeviceSetupStatusAsync;
         }
-        return DeviceManager::DeviceSetupStatusSuccess;
+        return Device::DeviceSetupStatusSuccess;
     } else if (device->deviceClassId() == mockPushButtonDeviceClassId) {
         qCDebug(dcMockDevice) << "Setup PushButton mock device" << device->params();
-        return DeviceManager::DeviceSetupStatusSuccess;
+        return Device::DeviceSetupStatusSuccess;
     } else if (device->deviceClassId() == mockDisplayPinDeviceClassId) {
         qCDebug(dcMockDevice) << "Setup DisplayPin mock device" << device->params();
-        return DeviceManager::DeviceSetupStatusSuccess;
+        return Device::DeviceSetupStatusSuccess;
     } else if (device->deviceClassId() == mockParentDeviceClassId) {
         qCDebug(dcMockDevice) << "Setup Parent mock device" << device->params();
-        return DeviceManager::DeviceSetupStatusSuccess;
+        return Device::DeviceSetupStatusSuccess;
     } else if (device->deviceClassId() == mockChildDeviceClassId) {
         qCDebug(dcMockDevice) << "Setup Child mock device" << device->params();
-        return DeviceManager::DeviceSetupStatusSuccess;
+        return Device::DeviceSetupStatusSuccess;
     } else if (device->deviceClassId() == mockInputTypeDeviceClassId) {
         qCDebug(dcMockDevice) << "Setup InputType mock device" << device->params();
-        return DeviceManager::DeviceSetupStatusSuccess;
+        return Device::DeviceSetupStatusSuccess;
     }
 
-    return DeviceManager::DeviceSetupStatusFailure;
+    return Device::DeviceSetupStatusFailure;
 }
 
 void DevicePluginMock::postSetupDevice(Device *device)
@@ -179,7 +178,7 @@ void DevicePluginMock::startMonitoringAutoDevices()
     emit autoDevicesAppeared(mockDeviceAutoDeviceClassId, deviceDescriptorList);
 }
 
-DeviceManager::DeviceSetupStatus DevicePluginMock::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret)
+Device::DeviceSetupStatus DevicePluginMock::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret)
 {
     Q_UNUSED(params)
     Q_UNUSED(secret)
@@ -189,133 +188,133 @@ DeviceManager::DeviceSetupStatus DevicePluginMock::confirmPairing(const PairingT
     if (deviceClassId == mockPushButtonDeviceClassId) {
         if (!m_pushbuttonPressed) {
             qCDebug(dcMockDevice) << "PushButton not pressed yet!";
-            return DeviceManager::DeviceSetupStatusFailure;
+            return Device::DeviceSetupStatusFailure;
         }
 
         m_pairingId = pairingTransactionId;
         QTimer::singleShot(1000, this, SLOT(onPushButtonPairingFinished()));
-        return DeviceManager::DeviceSetupStatusAsync;
+        return Device::DeviceSetupStatusAsync;
     } else if (deviceClassId == mockDisplayPinDeviceClassId) {
         if (secret != "243681") {
             qCWarning(dcMockDevice) << "Invalid pin:" << secret;
-            return DeviceManager::DeviceSetupStatusFailure;
+            return Device::DeviceSetupStatusFailure;
         }
         m_pairingId = pairingTransactionId;
         QTimer::singleShot(500, this, SLOT(onDisplayPinPairingFinished()));
-        return DeviceManager::DeviceSetupStatusAsync;
+        return Device::DeviceSetupStatusAsync;
     }
 
     qCWarning(dcMockDevice) << "Invalid deviceclassId -> no pairing possible with this device";
-    return DeviceManager::DeviceSetupStatusFailure;
+    return Device::DeviceSetupStatusFailure;
 }
 
-DeviceManager::DeviceError DevicePluginMock::displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor)
+Device::DeviceError DevicePluginMock::displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor)
 {
     Q_UNUSED(pairingTransactionId)
     Q_UNUSED(deviceDescriptor)
 
     qCDebug(dcMockDevice) << QString(tr("Display pin!! The pin is 243681"));
 
-    return DeviceManager::DeviceErrorNoError;
+    return Device::DeviceErrorNoError;
 }
 
-DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const Action &action)
+Device::DeviceError DevicePluginMock::executeAction(Device *device, const Action &action)
 {
     if (!myDevices().contains(device))
-        return DeviceManager::DeviceErrorDeviceNotFound;
+        return Device::DeviceErrorDeviceNotFound;
 
     if (device->deviceClassId() == mockDeviceClassId) {
         if (action.actionTypeId() == mockMockAsyncActionTypeId || action.actionTypeId() == mockMockAsyncFailingActionTypeId) {
             m_asyncActions.append(qMakePair<Action, Device*>(action, device));
             QTimer::singleShot(1000, this, SLOT(emitActionExecuted()));
-            return DeviceManager::DeviceErrorAsync;
+            return Device::DeviceErrorAsync;
         }
 
         if (action.actionTypeId() == mockMockFailingActionTypeId)
-            return DeviceManager::DeviceErrorSetupFailed;
+            return Device::DeviceErrorSetupFailed;
 
         if (action.actionTypeId() == mockPowerActionTypeId) {
             qCDebug(dcMockDevice()) << "Setting power to" << action.param(mockPowerActionPowerParamTypeId).value().toBool();
             device->setStateValue(mockPowerStateTypeId, action.param(mockPowerActionPowerParamTypeId).value().toBool());
         }
         m_daemons.value(device)->actionExecuted(action.actionTypeId());
-        return DeviceManager::DeviceErrorNoError;
+        return Device::DeviceErrorNoError;
     } else if (device->deviceClassId() == mockDeviceAutoDeviceClassId) {
         if (action.actionTypeId() == mockDeviceAutoMockActionAsyncActionTypeId || action.actionTypeId() == mockDeviceAutoMockActionAsyncBrokenActionTypeId) {
             m_asyncActions.append(qMakePair<Action, Device*>(action, device));
             QTimer::singleShot(1000, this, SLOT(emitActionExecuted()));
-            return DeviceManager::DeviceErrorAsync;
+            return Device::DeviceErrorAsync;
         }
 
         if (action.actionTypeId() == mockDeviceAutoMockActionBrokenActionTypeId)
-            return DeviceManager::DeviceErrorSetupFailed;
+            return Device::DeviceErrorSetupFailed;
 
         m_daemons.value(device)->actionExecuted(action.actionTypeId());
-        return DeviceManager::DeviceErrorNoError;
+        return Device::DeviceErrorNoError;
     } else if (device->deviceClassId() == mockPushButtonDeviceClassId) {
         if (action.actionTypeId() == mockPushButtonColorActionTypeId) {
             QString colorString = action.param(mockPushButtonColorActionColorParamTypeId).value().toString();
             QColor color(colorString);
             if (!color.isValid()) {
                 qCWarning(dcMockDevice) << "Invalid color parameter";
-                return DeviceManager::DeviceErrorInvalidParameter;
+                return Device::DeviceErrorInvalidParameter;
             }
             device->setStateValue(mockPushButtonColorStateTypeId, colorString);
-            return DeviceManager::DeviceErrorNoError;
+            return Device::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockPushButtonPercentageActionTypeId) {
             device->setStateValue(mockPushButtonPercentageStateTypeId, action.param(mockPushButtonPercentageActionPercentageParamTypeId).value().toInt());
-            return DeviceManager::DeviceErrorNoError;
+            return Device::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockPushButtonAllowedValuesActionTypeId) {
             device->setStateValue(mockPushButtonAllowedValuesStateTypeId, action.param(mockPushButtonAllowedValuesActionAllowedValuesParamTypeId).value().toString());
-            return DeviceManager::DeviceErrorNoError;
+            return Device::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockPushButtonDoubleActionTypeId) {
             device->setStateValue(mockPushButtonDoubleStateTypeId, action.param(mockPushButtonDoubleActionDoubleParamTypeId).value().toDouble());
-            return DeviceManager::DeviceErrorNoError;
+            return Device::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockPushButtonBoolActionTypeId) {
             device->setStateValue(mockPushButtonBoolStateTypeId, action.param(mockPushButtonBoolActionBoolParamTypeId).value().toBool());
-            return DeviceManager::DeviceErrorNoError;
+            return Device::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockPushButtonTimeoutActionTypeId) {
-            return DeviceManager::DeviceErrorAsync;
+            return Device::DeviceErrorAsync;
         }
-        return DeviceManager::DeviceErrorActionTypeNotFound;
+        return Device::DeviceErrorActionTypeNotFound;
     } else if (device->deviceClassId() == mockDisplayPinDeviceClassId) {
         if (action.actionTypeId() == mockDisplayPinColorActionTypeId) {
             QString colorString = action.param(mockDisplayPinColorActionColorParamTypeId).value().toString();
             QColor color(colorString);
             if (!color.isValid()) {
                 qCWarning(dcMockDevice) << "Invalid color parameter";
-                return DeviceManager::DeviceErrorInvalidParameter;
+                return Device::DeviceErrorInvalidParameter;
             }
             device->setStateValue(mockDisplayPinColorStateTypeId, colorString);
-            return DeviceManager::DeviceErrorNoError;
+            return Device::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockDisplayPinPercentageActionTypeId) {
             device->setStateValue(mockDisplayPinPercentageStateTypeId, action.param(mockDisplayPinPercentageActionPercentageParamTypeId).value().toInt());
-            return DeviceManager::DeviceErrorNoError;
+            return Device::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockDisplayPinAllowedValuesActionTypeId) {
             device->setStateValue(mockDisplayPinAllowedValuesStateTypeId, action.param(mockDisplayPinAllowedValuesActionAllowedValuesParamTypeId).value().toString());
-            return DeviceManager::DeviceErrorNoError;
+            return Device::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockDisplayPinDoubleActionTypeId) {
             device->setStateValue(mockDisplayPinDoubleStateTypeId, action.param(mockDisplayPinDoubleActionDoubleParamTypeId).value().toDouble());
-            return DeviceManager::DeviceErrorNoError;
+            return Device::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockDisplayPinBoolActionTypeId) {
             device->setStateValue(mockDisplayPinBoolStateTypeId, action.param(mockDisplayPinBoolActionBoolParamTypeId).value().toBool());
-            return DeviceManager::DeviceErrorNoError;
+            return Device::DeviceErrorNoError;
         } else if (action.actionTypeId() == mockDisplayPinTimeoutActionTypeId) {
-            return DeviceManager::DeviceErrorAsync;
+            return Device::DeviceErrorAsync;
         }
-        return DeviceManager::DeviceErrorActionTypeNotFound;
+        return Device::DeviceErrorActionTypeNotFound;
     } else if (device->deviceClassId() == mockParentDeviceClassId) {
         if (action.actionTypeId() == mockParentBoolValueActionTypeId) {
             device->setStateValue(mockParentBoolValueStateTypeId, action.param(mockParentBoolValueActionBoolValueParamTypeId).value().toBool());
-            return DeviceManager::DeviceErrorNoError;
+            return Device::DeviceErrorNoError;
         }
-        return DeviceManager::DeviceErrorActionTypeNotFound;
+        return Device::DeviceErrorActionTypeNotFound;
     } else if (device->deviceClassId() == mockChildDeviceClassId) {
         if (action.actionTypeId() == mockChildBoolValueActionTypeId) {
             device->setStateValue(mockChildBoolValueStateTypeId, action.param(mockChildBoolValueActionBoolValueParamTypeId).value().toBool());
-            return DeviceManager::DeviceErrorNoError;
+            return Device::DeviceErrorNoError;
         }
-        return DeviceManager::DeviceErrorActionTypeNotFound;
+        return Device::DeviceErrorActionTypeNotFound;
     } else if (device->deviceClassId() == mockInputTypeDeviceClassId) {
         if (action.actionTypeId() == mockInputTypeWritableBoolActionTypeId) {
             device->setStateValue(mockInputTypeWritableBoolStateTypeId, action.param(mockInputTypeWritableBoolActionWritableBoolParamTypeId).value().toULongLong());
@@ -346,7 +345,7 @@ DeviceManager::DeviceError DevicePluginMock::executeAction(Device *device, const
         }
 
     }
-    return DeviceManager::DeviceErrorDeviceClassNotFound;
+    return Device::DeviceErrorDeviceClassNotFound;
 }
 
 void DevicePluginMock::setState(const StateTypeId &stateTypeId, const QVariant &value)
@@ -506,9 +505,9 @@ void DevicePluginMock::emitDeviceSetupFinished()
     qCDebug(dcMockDevice) << "Emitting setup finised";
     Device *device = m_asyncSetupDevices.takeFirst();
     if (device->paramValue(mockDeviceBrokenParamTypeId).toBool()) {
-        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusFailure);
+        emit deviceSetupFinished(device, Device::DeviceSetupStatusFailure);
     } else {
-        emit deviceSetupFinished(device, DeviceManager::DeviceSetupStatusSuccess);
+        emit deviceSetupFinished(device, Device::DeviceSetupStatusSuccess);
     }
 }
 
@@ -517,22 +516,22 @@ void DevicePluginMock::emitActionExecuted()
     QPair<Action, Device*> action = m_asyncActions.takeFirst();
     if (action.first.actionTypeId() == mockMockAsyncActionTypeId) {
         m_daemons.value(action.second)->actionExecuted(action.first.actionTypeId());
-        emit actionExecutionFinished(action.first.id(), DeviceManager::DeviceErrorNoError);
+        emit actionExecutionFinished(action.first.id(), Device::DeviceErrorNoError);
     } else if (action.first.actionTypeId() == mockMockAsyncFailingActionTypeId) {
-        emit actionExecutionFinished(action.first.id(), DeviceManager::DeviceErrorSetupFailed);
+        emit actionExecutionFinished(action.first.id(), Device::DeviceErrorSetupFailed);
     }
 }
 
 void DevicePluginMock::onPushButtonPairingFinished()
 {
     qCDebug(dcMockDevice) << "Pairing PushButton Device finished";
-    emit pairingFinished(m_pairingId, DeviceManager::DeviceSetupStatusSuccess);
+    emit pairingFinished(m_pairingId, Device::DeviceSetupStatusSuccess);
 }
 
 void DevicePluginMock::onDisplayPinPairingFinished()
 {
     qCDebug(dcMockDevice) << "Pairing DisplayPin Device finished";
-    emit pairingFinished(m_pairingId, DeviceManager::DeviceSetupStatusSuccess);
+    emit pairingFinished(m_pairingId, Device::DeviceSetupStatusSuccess);
 }
 
 void DevicePluginMock::onChildDeviceDiscovered(const DeviceId &parentId)

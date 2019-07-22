@@ -5,9 +5,9 @@
     
     Each \l{DevicePlugin}{Plugin} in nymea will be defined in the corresponding JSON file. You can find information how to read JSON \l{http://json.org/}{here}. This file will be loaded from the \l{DeviceManager} to define the plugin and the corresponding DeviceClasses internal. 
 
-    \section1 The nymea-generateplugininfo precompiler
+    \section1 The nymea-plugininfocompiler precompiler
     
-    The \tt {\b nymea-generateplugininfo} precompiler will parse this file and generates a \tt plugininfo.h and a \tt extern-plugininfo.h file containing the definitions of:
+    The \tt {\b nymea-plugininfocompiler} precompiler will parse this file and generates a \tt plugininfo.h and a \tt extern-plugininfo.h file containing the definitions of:
     \list
         \li \l{PluginId}: <\e pluginId \unicode{0x2192} the defined UUID for the \l{DevicePlugin}.     
         \li \l{VendorId}: <\e name>VendorId \unicode{0x2192} the defined UUID for the corresponding \l{Vendor}. 

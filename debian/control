@@ -7,7 +7,6 @@ Homepage: https://nymea.io
 Vcs-Git: https://github.com/guh/guh.git
 Build-Depends: debhelper (>= 9.0.0),
                dpkg-dev (>= 1.16.1~),
-               python:any,
                rsync,
                qtchooser,
                qt5-default,
@@ -154,7 +153,6 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         libqt5bluetooth5,
 Replaces: libguh1
 Description: An open source IoT server - core library
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
@@ -173,12 +171,7 @@ Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          libnymea1 (= ${binary:Version}),
-         libqt5websockets5-dev,
          pkg-config,
-         python:any,
-         qtconnectivity5-dev,
-         qttools5-dev-tools,
-         rsync,
 Replaces: libguh1-dev
 Description: An open source IoT server - development files
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
@@ -187,4 +180,21 @@ Description: An open source IoT server - development files
  With the powerful rule engine you are able to connect any device available
  in the system and create individual scenes and behaviors for your environment.
  .
- This package will install the development files and compilers for nymea.
+ This package will install the development files for nymea.
+
+Package: nymea-dev-tools
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libnymea1 (= ${binary:Version}),
+         qttools5-dev-tools,
+Description: An open source IoT server - development files
+ The nymea daemon is a plugin based IoT (Internet of Things) server. The
+ server works like a translator for devices, things and services and
+ allows them to interact.
+ With the powerful rule engine you are able to connect any device available
+ in the system and create individual scenes and behaviors for your environment.
+ .
+ This package will install the development tools for nymea.

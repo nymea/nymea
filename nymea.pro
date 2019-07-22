@@ -2,11 +2,12 @@ include(nymea.pri)
 
 TEMPLATE=subdirs
 
-SUBDIRS += libnymea libnymea-core server plugins
+SUBDIRS += libnymea libnymea-core server plugins tools
 
 libnymea-core.depends = libnymea
 server.depends = libnymea libnymea-core plugins
-plugins.depends = libnymea
+tools.depends = libnymea
+plugins.depends = libnymea tools
 tests.depends = libnymea libnymea-core
 
 doc.depends = FORCE

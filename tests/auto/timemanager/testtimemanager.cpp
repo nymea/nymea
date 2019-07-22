@@ -201,7 +201,7 @@ void TestTimeManager::loadSaveTimeDescriptor()
 
     // Action (without params)
     QVariantMap ruleMap; QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
@@ -355,7 +355,7 @@ void TestTimeManager::addTimeDescriptor()
 
     // ADD the rule
     QVariantMap ruleMap; QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
     ruleMap.insert("name", "TimeBased rule");
@@ -395,21 +395,21 @@ void TestTimeManager::testCalendarDateTime()
 
     // Action (without params)
     QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
     // Exit action (with params)
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", 12);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
-    exitAction.insert("actionTypeId", mockActionIdWithParams);
+    exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
     exitAction.insert("deviceId", m_mockDeviceId);
     exitAction.insert("ruleActionParams", actionParams);
 
@@ -435,14 +435,14 @@ void TestTimeManager::testCalendarDateTime()
     verifyRuleNotExecuted();
     // active
     NymeaCore::instance()->timeManager()->setTime(dateTime);
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
     cleanupMockHistory();
     // active unchanged
     NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 30));
     verifyRuleNotExecuted();
     // inactive
     NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
-    verifyRuleExecuted(mockActionIdWithParams);
+    verifyRuleExecuted(mockWithParamsActionTypeId);
     cleanupMockHistory();
     // inactive unchanged
     NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs((duration + 1) * 60));
@@ -471,17 +471,17 @@ void TestTimeManager::testCalendarItemHourly()
 
     QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction; QVariantMap repeatingOptionHourly;
     repeatingOptionHourly.insert("mode", "RepeatingModeHourly");
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
-    exitAction.insert("actionTypeId", mockActionIdWithParams);
+    exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", 7);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
     exitAction.insert("deviceId", m_mockDeviceId);
@@ -507,7 +507,7 @@ void TestTimeManager::testCalendarItemHourly()
     if (duration == 60) {
         NymeaCore::instance()->timeManager()->setTime(future);
         // Should be active since adding
-        verifyRuleExecuted(mockActionIdNoParams);
+        verifyRuleExecuted(mockWithoutParamsActionTypeId);
     } else {
         // check the next 24 hours in 8h steps
         for (int i = 0; i < 24; i+=8) {
@@ -516,14 +516,14 @@ void TestTimeManager::testCalendarItemHourly()
             verifyRuleNotExecuted();
             // active
             NymeaCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 5)));
-            verifyRuleExecuted(mockActionIdNoParams);
+            verifyRuleExecuted(mockWithoutParamsActionTypeId);
             cleanupMockHistory();
             // active unchanged
             NymeaCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 7)));
             verifyRuleNotExecuted();
             // inactive
             NymeaCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 10)));
-            verifyRuleExecuted(mockActionIdWithParams);
+            verifyRuleExecuted(mockWithParamsActionTypeId);
             cleanupMockHistory();
             // inactive unchanged
             NymeaCore::instance()->timeManager()->setTime(QDateTime(currentDateTime.date(), QTime(future.time().hour(), 11)));
@@ -564,17 +564,17 @@ void TestTimeManager::testCalendarItemDaily()
     initTimeManager();
 
     QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
-    exitAction.insert("actionTypeId", mockActionIdWithParams);
+    exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", 12);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
     exitAction.insert("deviceId", m_mockDeviceId);
@@ -597,7 +597,7 @@ void TestTimeManager::testCalendarItemDaily()
     if (time == "08:00") {
         NymeaCore::instance()->timeManager()->setTime(future);
         // Should be active since adding
-        verifyRuleExecuted(mockActionIdNoParams);
+        verifyRuleExecuted(mockWithoutParamsActionTypeId);
     } else {
         // check the next 7 days
         for (int i = 0; i < 7; i++) {
@@ -606,14 +606,14 @@ void TestTimeManager::testCalendarItemDaily()
             verifyRuleNotExecuted();
             // active
             NymeaCore::instance()->timeManager()->setTime(future.addSecs(60));
-            verifyRuleExecuted(mockActionIdNoParams);
+            verifyRuleExecuted(mockWithoutParamsActionTypeId);
             cleanupMockHistory();
             // active unchanged
             NymeaCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
             verifyRuleNotExecuted();
             // inactive
             NymeaCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
-            verifyRuleExecuted(mockActionIdWithParams);
+            verifyRuleExecuted(mockWithParamsActionTypeId);
             cleanupMockHistory();
             // inactive unchanged
             NymeaCore::instance()->timeManager()->setTime(future.addSecs(12 * 60));
@@ -663,21 +663,21 @@ void TestTimeManager::testCalendarItemWeekly()
 
     // Action (without params)
     QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
     // Exit action (with params)
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", 12);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
-    exitAction.insert("actionTypeId", mockActionIdWithParams);
+    exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
     exitAction.insert("deviceId", m_mockDeviceId);
     exitAction.insert("ruleActionParams", actionParams);
 
@@ -707,7 +707,7 @@ void TestTimeManager::testCalendarItemWeekly()
     if (repeatingOption.isEmpty()) {
         NymeaCore::instance()->timeManager()->setTime(future);
         // Should be active since adding
-        verifyRuleExecuted(mockActionIdNoParams);
+        verifyRuleExecuted(mockWithoutParamsActionTypeId);
     } else {
         if (!overlapping) {
             // check the next 7 days (because not overlapping the week)
@@ -722,14 +722,14 @@ void TestTimeManager::testCalendarItemWeekly()
                     // should trigger today
                     // active
                     NymeaCore::instance()->timeManager()->setTime(future.addSecs(60));
-                    verifyRuleExecuted(mockActionIdNoParams);
+                    verifyRuleExecuted(mockWithoutParamsActionTypeId);
                     cleanupMockHistory();
                     // active unchanged
                     NymeaCore::instance()->timeManager()->setTime(future.addSecs(6* 60));
                     verifyRuleNotExecuted();
                     // inactive
                     NymeaCore::instance()->timeManager()->setTime(future.addSecs(11 * 60));
-                    verifyRuleExecuted(mockActionIdWithParams);
+                    verifyRuleExecuted(mockWithParamsActionTypeId);
                     cleanupMockHistory();
                     // inactive unchanged
                     NymeaCore::instance()->timeManager()->setTime(future.addSecs(12 * 60));
@@ -762,7 +762,7 @@ void TestTimeManager::testCalendarItemWeekly()
 
             // active
             NymeaCore::instance()->timeManager()->setTime(startDate.addSecs(60));
-            verifyRuleExecuted(mockActionIdNoParams);
+            verifyRuleExecuted(mockWithoutParamsActionTypeId);
             cleanupMockHistory();
 
             // still active
@@ -775,7 +775,7 @@ void TestTimeManager::testCalendarItemWeekly()
 
             // inactive
             NymeaCore::instance()->timeManager()->setTime(startDate.addDays(2).addSecs(60));
-            verifyRuleExecuted(mockActionIdWithParams);
+            verifyRuleExecuted(mockWithParamsActionTypeId);
         }
     }
 
@@ -818,21 +818,21 @@ void TestTimeManager::testCalendarItemMonthly()
 
     // Action (without params)
     QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
     // Exit action (with params)
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", 12);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
-    exitAction.insert("actionTypeId", mockActionIdWithParams);
+    exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
     exitAction.insert("deviceId", m_mockDeviceId);
     exitAction.insert("ruleActionParams", actionParams);
 
@@ -871,14 +871,14 @@ void TestTimeManager::testCalendarItemMonthly()
                 verifyRuleNotExecuted();
                 // active
                 NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
-                verifyRuleExecuted(mockActionIdNoParams);
+                verifyRuleExecuted(mockWithoutParamsActionTypeId);
                 cleanupMockHistory();
                 // active unchanged
                 NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(6* 60));
                 verifyRuleNotExecuted();
                 // inactive
                 NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(11 * 60));
-                verifyRuleExecuted(mockActionIdWithParams);
+                verifyRuleExecuted(mockWithParamsActionTypeId);
                 cleanupMockHistory();
                 // inactive unchanged
                 NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(12 * 60));
@@ -906,7 +906,7 @@ void TestTimeManager::testCalendarItemMonthly()
 
         // active
         NymeaCore::instance()->timeManager()->setTime(startDate.addSecs(60));
-        verifyRuleExecuted(mockActionIdNoParams);
+        verifyRuleExecuted(mockWithoutParamsActionTypeId);
         cleanupMockHistory();
 
         // still active
@@ -915,7 +915,7 @@ void TestTimeManager::testCalendarItemMonthly()
 
         // inactive
         NymeaCore::instance()->timeManager()->setTime(startDate.addDays(3).addSecs(60));
-        verifyRuleExecuted(mockActionIdWithParams);
+        verifyRuleExecuted(mockWithParamsActionTypeId);
     }
 
     cleanupMockHistory();
@@ -946,21 +946,21 @@ void TestTimeManager::testCalendarYearlyDateTime()
 
     // Action (without params)
     QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
     // Exit action (with params)
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", 12);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
-    exitAction.insert("actionTypeId", mockActionIdWithParams);
+    exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
     exitAction.insert("deviceId", m_mockDeviceId);
     exitAction.insert("ruleActionParams", actionParams);
 
@@ -991,7 +991,7 @@ void TestTimeManager::testCalendarYearlyDateTime()
     verifyRuleNotExecuted();
     // active
     NymeaCore::instance()->timeManager()->setTime(dateTime);
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
     cleanupMockHistory();
     cleanupMockHistory();
     // active unchanged
@@ -999,7 +999,7 @@ void TestTimeManager::testCalendarYearlyDateTime()
     verifyRuleNotExecuted();
     // inactive
     NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
-    verifyRuleExecuted(mockActionIdWithParams);
+    verifyRuleExecuted(mockWithParamsActionTypeId);
     cleanupMockHistory();
     cleanupMockHistory();
     // inactive unchanged
@@ -1015,7 +1015,7 @@ void TestTimeManager::testCalendarYearlyDateTime()
     verifyRuleNotExecuted();
     // active
     NymeaCore::instance()->timeManager()->setTime(dateTime);
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
     cleanupMockHistory();
     cleanupMockHistory();
     // active unchanged
@@ -1023,7 +1023,7 @@ void TestTimeManager::testCalendarYearlyDateTime()
     verifyRuleNotExecuted();
     // inactive
     NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(duration * 60));
-    verifyRuleExecuted(mockActionIdWithParams);
+    verifyRuleExecuted(mockWithParamsActionTypeId);
     cleanupMockHistory();
 
     // inactive unchanged
@@ -1049,7 +1049,7 @@ void TestTimeManager::testCalendarItemStates_data()
 
     // Action
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
@@ -1057,14 +1057,14 @@ void TestTimeManager::testCalendarItemStates_data()
     QVariantMap exitAction;
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", 12);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
-    exitAction.insert("actionTypeId", mockActionIdWithParams);
+    exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
     exitAction.insert("deviceId", m_mockDeviceId);
     exitAction.insert("ruleActionParams", actionParams);
 
@@ -1073,12 +1073,12 @@ void TestTimeManager::testCalendarItemStates_data()
     QVariantMap stateDescriptorInt;
     stateDescriptorInt.insert("deviceId", m_mockDeviceId);
     stateDescriptorInt.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorGreaterOrEqual));
-    stateDescriptorInt.insert("stateTypeId", mockIntStateId);
+    stateDescriptorInt.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptorInt.insert("value", 65);
     QVariantMap stateDescriptorBool;
     stateDescriptorBool.insert("deviceId", m_mockDeviceId);
     stateDescriptorBool.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
-    stateDescriptorBool.insert("stateTypeId", mockBoolStateId);
+    stateDescriptorBool.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptorBool.insert("value", true);
     QVariantMap stateEvaluatorInt;
     stateEvaluatorInt.insert("stateDescriptor", stateDescriptorInt);
@@ -1141,13 +1141,13 @@ void TestTimeManager::testCalendarItemStates()
 
     // Actions
     if (trigger && active) {
-        verifyRuleExecuted(mockActionIdNoParams);
+        verifyRuleExecuted(mockWithoutParamsActionTypeId);
         cleanupMockHistory();
     }
 
     // Exit actions
     if (trigger && !active) {
-        verifyRuleExecuted(mockActionIdWithParams);
+        verifyRuleExecuted(mockWithParamsActionTypeId);
         cleanupMockHistory();
     }
 
@@ -1164,12 +1164,12 @@ void TestTimeManager::testCalendarItemEvent_data()
 
     // Action (without params)
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
     QVariantMap eventDescriptor;
-    eventDescriptor.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor.insert("deviceId", m_mockDeviceId);
 
     // The rule
@@ -1214,7 +1214,7 @@ void TestTimeManager::testCalendarItemEvent()
     triggerMockEvent1();
 
     if (trigger) {
-        verifyRuleExecuted(mockActionIdNoParams);
+        verifyRuleExecuted(mockWithoutParamsActionTypeId);
     } else {
         verifyRuleNotExecuted();
     }
@@ -1228,20 +1228,20 @@ void TestTimeManager::testCalendarItemStatesEvent_data()
 
     // Action (without params)
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
     // Event descriptor
     QVariantMap eventDescriptor;
-    eventDescriptor.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor.insert("deviceId", m_mockDeviceId);
 
     // State evaluator
     QVariantMap stateDescriptorBool;
     stateDescriptorBool.insert("deviceId", m_mockDeviceId);
     stateDescriptorBool.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
-    stateDescriptorBool.insert("stateTypeId", mockBoolStateId);
+    stateDescriptorBool.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptorBool.insert("value", true);
 
     QVariantMap stateEvaluator;
@@ -1287,7 +1287,7 @@ void TestTimeManager::testCalendarItemStatesEvent()
     triggerMockEvent1();
 
     if (trigger) {
-        verifyRuleExecuted(mockActionIdNoParams);
+        verifyRuleExecuted(mockWithoutParamsActionTypeId);
         cleanupMockHistory();
     } else {
         verifyRuleNotExecuted();
@@ -1302,7 +1302,7 @@ void TestTimeManager::testCalendarItemCrossesMidnight()
 
     // Action
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
@@ -1370,12 +1370,12 @@ void TestTimeManager::testEventBasedWithCalendarItemCrossingMidnight()
 
     // Event descriptor
     QVariantMap eventDescriptor;
-    eventDescriptor.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor.insert("deviceId", m_mockDeviceId);
 
     // Action
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
@@ -1407,17 +1407,17 @@ void TestTimeManager::testEventBasedWithCalendarItemCrossingMidnight()
     cleanupMockHistory();
     NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(23, 00)));
     triggerMockEvent1();
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
 
     cleanupMockHistory();
     NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(23, 50)));
     triggerMockEvent1();
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
 
     cleanupMockHistory();
     NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(00, 00)));
     triggerMockEvent1();
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
 
     cleanupMockHistory();
     NymeaCore::instance()->timeManager()->setTime(QDateTime(QDate::currentDate(), QTime(01, 00)));
@@ -1442,7 +1442,7 @@ void TestTimeManager::testEventItemDateTime()
 
     // Action (without params)
     QVariantMap ruleMap; QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
@@ -1463,7 +1463,7 @@ void TestTimeManager::testEventItemDateTime()
 
     // trigger
     NymeaCore::instance()->timeManager()->setTime(dateTime);
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
     cleanupMockHistory();
 
     // not triggering
@@ -1499,7 +1499,7 @@ void TestTimeManager::testEventItemHourly()
 
     // Action
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
@@ -1529,7 +1529,7 @@ void TestTimeManager::testEventItemHourly()
         verifyRuleNotExecuted();
         // trigger
         NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
-        verifyRuleExecuted(mockActionIdNoParams);
+        verifyRuleExecuted(mockWithoutParamsActionTypeId);
         cleanupMockHistory();
         // not triggering
         NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(120));
@@ -1568,7 +1568,7 @@ void TestTimeManager::testEventItemDaily()
 
     // Action
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
@@ -1599,7 +1599,7 @@ void TestTimeManager::testEventItemDaily()
         verifyRuleNotExecuted();
         // trigger
         NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
-        verifyRuleExecuted(mockActionIdNoParams);
+        verifyRuleExecuted(mockWithoutParamsActionTypeId);
         cleanupMockHistory();
         // not triggering
         NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(120));
@@ -1641,7 +1641,7 @@ void TestTimeManager::testEventItemWeekly()
 
     // Action
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
@@ -1675,7 +1675,7 @@ void TestTimeManager::testEventItemWeekly()
             verifyRuleNotExecuted();
             // trigger
             NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
-            verifyRuleExecuted(mockActionIdNoParams);
+            verifyRuleExecuted(mockWithoutParamsActionTypeId);
             cleanupMockHistory();
             // not triggering
             NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(120));
@@ -1723,7 +1723,7 @@ void TestTimeManager::testEventItemMonthly()
 
     // Action
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
@@ -1757,7 +1757,7 @@ void TestTimeManager::testEventItemMonthly()
             verifyRuleNotExecuted();
             // trigger
             NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(60));
-            verifyRuleExecuted(mockActionIdNoParams);
+            verifyRuleExecuted(mockWithoutParamsActionTypeId);
             cleanupMockHistory();
             // not triggering
             NymeaCore::instance()->timeManager()->setTime(beforeEventDateTime.addSecs(120));
@@ -1802,7 +1802,7 @@ void TestTimeManager::testEventItemYearly()
 
     // Action (without params)
     QVariantMap ruleMap; QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
@@ -1823,7 +1823,7 @@ void TestTimeManager::testEventItemYearly()
     verifyRuleNotExecuted();
     // trigger
     NymeaCore::instance()->timeManager()->setTime(dateTime);
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
     cleanupMockHistory();
     // not triggering
     NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(60));
@@ -1837,7 +1837,7 @@ void TestTimeManager::testEventItemYearly()
     verifyRuleNotExecuted();
     // trigger
     NymeaCore::instance()->timeManager()->setTime(nextYear);
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
     cleanupMockHistory();
     // not triggering
     NymeaCore::instance()->timeManager()->setTime(nextYear.addSecs(60));
@@ -1861,7 +1861,7 @@ void TestTimeManager::testEventItemStates_data()
 
     // Action (without params)
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
@@ -1875,7 +1875,7 @@ void TestTimeManager::testEventItemStates_data()
     QVariantMap stateDescriptorBool;
     stateDescriptorBool.insert("deviceId", m_mockDeviceId);
     stateDescriptorBool.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
-    stateDescriptorBool.insert("stateTypeId", mockBoolStateId);
+    stateDescriptorBool.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptorBool.insert("value", true);
 
     QVariantMap stateEvaluator;
@@ -1925,7 +1925,7 @@ void TestTimeManager::testEventItemStates()
     NymeaCore::instance()->timeManager()->setTime(dateTime);
 
     if (trigger) {
-        verifyRuleExecuted(mockActionIdNoParams);
+        verifyRuleExecuted(mockWithoutParamsActionTypeId);
         cleanupMockHistory();
     } else {
         verifyRuleNotExecuted();
@@ -1944,7 +1944,7 @@ void TestTimeManager::testEnableDisableTimeRule()
 
     // Action
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
@@ -1964,7 +1964,7 @@ void TestTimeManager::testEnableDisableTimeRule()
     verifyRuleNotExecuted();
     // trigger
     NymeaCore::instance()->timeManager()->setTime(dateTime);
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
     cleanupMockHistory();
     // not triggering
     NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(1));
@@ -1991,7 +1991,7 @@ void TestTimeManager::testEnableDisableTimeRule()
     // trigger
     NymeaCore::instance()->timeManager()->setTime(dateTime.addSecs(-1));
     NymeaCore::instance()->timeManager()->setTime(dateTime);
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
     cleanupMockHistory();
 
     // REMOVE rule
@@ -2070,7 +2070,7 @@ void TestTimeManager::setIntState(const int &value)
 
     QVariantMap params;
     params.insert("deviceId", m_mockDeviceId);
-    params.insert("stateTypeId", mockIntStateId);
+    params.insert("stateTypeId", mockIntStateTypeId);
     QVariant response = injectAndWait("Devices.GetStateValue", params);
     verifyDeviceError(response);
 
@@ -2082,7 +2082,7 @@ void TestTimeManager::setIntState(const int &value)
     QSignalSpy stateSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     spy.clear();
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(value)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(value)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2098,7 +2098,7 @@ void TestTimeManager::setIntState(const int &value)
         QVERIFY2(notification.contains("deviceId"), "Devices.StateChanged notification does not contain deviceId");
         QVERIFY2(DeviceId(notification.value("deviceId").toString()) == m_mockDeviceId, "Devices.StateChanged notification does not contain the correct deviceId");
         QVERIFY2(notification.contains("stateTypeId"), "Devices.StateChanged notification does not contain stateTypeId");
-        QVERIFY2(StateTypeId(notification.value("stateTypeId").toString()) == mockIntStateId, "Devices.StateChanged notification does not contain the correct stateTypeId");
+        QVERIFY2(StateTypeId(notification.value("stateTypeId").toString()) == mockIntStateTypeId, "Devices.StateChanged notification does not contain the correct stateTypeId");
         QVERIFY2(notification.contains("value"), "Devices.StateChanged notification does not contain new state value");
         QVERIFY2(notification.value("value").toInt() == value, "Devices.StateChanged notification does not contain the new value");
     }
@@ -2111,7 +2111,7 @@ void TestTimeManager::setBoolState(const bool &value)
     // Get the current state value to check if we have to wait for state changed notfication
     QVariantMap params;
     params.insert("deviceId", m_mockDeviceId);
-    params.insert("stateTypeId", mockBoolStateId);
+    params.insert("stateTypeId", mockBoolStateTypeId);
     QVariant response = injectAndWait("Devices.GetStateValue", params);
     verifyDeviceError(response);
 
@@ -2122,7 +2122,7 @@ void TestTimeManager::setBoolState(const bool &value)
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
     QSignalSpy stateSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg(value)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg(value)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2138,7 +2138,7 @@ void TestTimeManager::setBoolState(const bool &value)
         QVERIFY2(notification.contains("deviceId"), "Devices.StateChanged notification does not contain deviceId");
         QVERIFY2(DeviceId(notification.value("deviceId").toString()) == m_mockDeviceId, "Devices.StateChanged notification does not contain the correct deviceId");
         QVERIFY2(notification.contains("stateTypeId"), "Devices.StateChanged notification does not contain stateTypeId");
-        QVERIFY2(StateTypeId(notification.value("stateTypeId").toString()) == mockBoolStateId, "Devices.StateChanged notification does not contain the correct stateTypeId");
+        QVERIFY2(StateTypeId(notification.value("stateTypeId").toString()) == mockBoolStateTypeId, "Devices.StateChanged notification does not contain the correct stateTypeId");
         QVERIFY2(notification.contains("value"), "Devices.StateChanged notification does not contain new state value");
         QVERIFY2(notification.value("value").toBool() == value, "Devices.StateChanged notification does not contain the new value");
     }
@@ -2153,7 +2153,7 @@ void TestTimeManager::triggerMockEvent1()
 
     QSignalSpy eventSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2168,7 +2168,7 @@ void TestTimeManager::triggerMockEvent1()
     QVERIFY2(eventMap.contains("deviceId"), "Events.EventTriggered notification does not contain deviceId");
     QVERIFY2(DeviceId(eventMap.value("deviceId").toString()) == m_mockDeviceId, "Events.EventTriggered notification does not contain the correct deviceId");
     QVERIFY2(eventMap.contains("eventTypeId"), "Events.EventTriggered notification does not contain eventTypeId");
-    QVERIFY2(EventTypeId(eventMap.value("eventTypeId").toString()) == mockEvent1Id, "Events.EventTriggered notification does not contain the correct eventTypeId");
+    QVERIFY2(EventTypeId(eventMap.value("eventTypeId").toString()) == mockEvent1EventTypeId, "Events.EventTriggered notification does not contain the correct eventTypeId");
 }
 
 QVariantMap TestTimeManager::createTimeEventItem(const QString &time, const QVariantMap &repeatingOption) const

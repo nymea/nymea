@@ -142,11 +142,6 @@ RESOURCES += \
 
 ## Install instructions
 
-# install plugininfo python script for libnymea-dev
-generateplugininfo.files = devices/nymea-generateplugininfo
-generateplugininfo.path = $$[QT_INSTALL_PREFIX]/bin
-INSTALLS += generateplugininfo
-
 # install plugin.pri for external plugins
 pluginpri.files = devices/plugin.pri
 pluginpri.path = $$[QT_INSTALL_PREFIX]/include/nymea/

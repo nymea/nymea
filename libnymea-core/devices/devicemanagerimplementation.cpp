@@ -847,15 +847,40 @@ void DeviceManagerImplementation::loadPlugins()
                 continue;
             }
 
+            // Check plugin API version compatibility
+            QLibrary lib(fi.absoluteFilePath());
+            QFunctionPointer versionFunc = lib.resolve("libnymea_api_version");
+            if (!versionFunc) {
+                qCWarning(dcDeviceManager()).nospace() << "Unable to resolve version in plugin " << entry << ". Not loading plugin.";
+                loader.unload();
+                lib.unload();
+                continue;
+
+            }
+            QString version = reinterpret_cast<QString(*)()>(versionFunc)();
+//            QString *version = reinterpret_cast<QString*>(lib.resolve("libnymea_api_version"));
+//            if (!version) {
+//            }
+            lib.unload();
+            QStringList parts = version.split('.');
+            QStringList coreParts = QString(LIBNYMEA_API_VERSION).split('.');
+            if (parts.length() != 3 || parts.at(0).toInt() != coreParts.at(0).toInt() || parts.at(1).toInt() > coreParts.at(1).toInt()) {
+                qCWarning(dcDeviceManager()).nospace() << "Libnymea API mismatch for " << entry << ". Core API: " << LIBNYMEA_API_VERSION << ", Plugin API: " << version;
+                loader.unload();
+                continue;
+            }
+
             PluginMetadata metaData(loader.metaData().value("MetaData").toObject());
             if (!metaData.isValid()) {
                 qCWarning(dcDeviceManager()) << "Plugin metadata not valid for" << entry;
+                loader.unload();
                 continue;
             }
 
             DevicePlugin *pluginIface = qobject_cast<DevicePlugin *>(loader.instance());
             if (!pluginIface) {
                 qCWarning(dcDeviceManager) << "Could not get plugin instance of" << entry;
+                loader.unload();
                 continue;
             }
             loadPlugin(pluginIface, metaData);
@@ -983,9 +1008,10 @@ void DeviceManagerImplementation::loadConfiguredDevices()
             foreach (const QString &paramTypeIdString, settings.childGroups()) {
                 ParamTypeId paramTypeId(paramTypeIdString);
                 ParamType paramType = deviceClass.paramTypes().findById(paramTypeId);
+                QVariant defaultValue;
                 if (!paramType.isValid()) {
-                    qCWarning(dcDeviceManager()) << "Not loading Param for device" << device << "because the ParamType for the saved Param" << ParamTypeId(paramTypeIdString).toString() << "could not be found.";
-                    continue;
+                    // NOTE: We're not skipping unknown parameters to give plugins a chance to still access old values if they change their config and migrate things over.
+                    qCWarning(dcDeviceManager()) << "Unknown param" << paramTypeIdString << "for" << device << ". ParamType could not be found in device class.";
                 }
 
                 // Note: since nymea 0.12.2

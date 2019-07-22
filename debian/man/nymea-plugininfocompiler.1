@@ -1,38 +1,29 @@
-.\" Manpage for nymea-generateplugininfo.
+.\" Manpage for nymea-plugininfo.
 .\" Contact simon.stuerz@guh.io to correct errors or typos.
-.TH man 1 "March 2017" "1.0.1" "nymea-generateplugininfo man page"
+.TH man 1 "Jun 2019" "1.0.0" "nymea-plugininfocompiler man page"
 .SH NAME
-nymea-generateplugininfo \- A precompiler for building nymea plugins.
+nymea-plugininfocompiler \- A precompiler for building nymea plugins.
 .SH SYNOPSIS
-.B nymea-generateplugininfo
+.B nymea-plugininfocompiler
 [\fIOPTION\fR]
 .SH DESCRIPTION
-The nymea-generateplugininfo is a precompiler for building plugins. This
+The nymea-plugininfocompiler is a precompiler for building plugins. This
 precompiler will create a plugininfo.h containing the uuid definitions from
 the plugin json file and creates the translations for the plugin.
+.SH USAGE
+nymea-plugininfocompiler [options] inputfile
 .SH OPTIONS
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Displays this help.
 .TP
-\fB\-v\fR, \fB\-\-version\fR
-Displays version information.
-.TP
-\fB\-f\fR, \fB\-\-filetype\fR, \fB{e, i}\fR
-The file type to generate: e = extern infofile, i = infofile.
-.TP
-\fB\-j\fR, \fB\-\-jsonfile\fR, \fB\<jsonfile>\fR
 The JSON input file name with the plugin description.
 .TP
-\fB\-b\fR, \fB\-\-builddir\fR, \fB\<build directory>\fR
-The path to the build directory of the plugin where the plugininfo.h 
-file can be found..
-.TP
 \fB\-o\fR, \fB\-\-output\fR, \fB\<outputfile>\fR
-The plugininfo.h outputFile with the uuid declarations.
+The plugininfo.h outputFile with the uuid definitions.
 .TP
-\fB\-t\fR, \fB\-\-translations\fR, \fB[<*.ts>]\fR
-The translation files for the plugin.
+\fB\-e\fR, \fB\-\-extern\fR, \fB[<extern-outputfile>]\fR
+The extern-plugininfo.h output file with the uuid forward declarations.
 
 .SH SEE ALSO
 Full developer documentation at: <https://doc.nymea.io>

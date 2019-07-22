@@ -50,8 +50,8 @@ void TestEvents::triggerEvent()
     QNetworkAccessManager nam;
 
     // trigger event in mock device
-    int port = device->paramValue(httpportParamTypeId).toInt();
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(port).arg(mockEvent1Id.toString())));
+    int port = device->paramValue(mockDeviceHttpportParamTypeId).toInt();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(port).arg(mockEvent1EventTypeId.toString())));
     QNetworkReply *reply = nam.get(request);
     connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
 
@@ -62,7 +62,7 @@ void TestEvents::triggerEvent()
         Event event = spy.at(i).at(0).value<Event>();
         if (event.deviceId() == device->id()) {
             // Make sure the event contains all the stuff we expect
-            QCOMPARE(event.eventTypeId(), mockEvent1Id);
+            QCOMPARE(event.eventTypeId(), mockEvent1EventTypeId);
         }
     }
 }
@@ -79,8 +79,8 @@ void TestEvents::triggerStateChangeEvent()
     QNetworkAccessManager nam;
 
     // trigger state changed event in mock device
-    int port = device->paramValue(httpportParamTypeId).toInt();
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockIntStateId.toString()).arg(11)));
+    int port = device->paramValue(mockDeviceHttpportParamTypeId).toInt();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockIntStateTypeId.toString()).arg(11)));
     QNetworkReply *reply = nam.get(request);
     connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
 
@@ -91,8 +91,8 @@ void TestEvents::triggerStateChangeEvent()
         Event event = spy.at(i).at(0).value<Event>();
         if (event.deviceId() == device->id()) {
             // Make sure the event contains all the stuff we expect
-            QCOMPARE(event.eventTypeId().toString(), mockIntStateId.toString());
-            QCOMPARE(event.param(ParamTypeId(mockIntStateId.toString())).value().toInt(), 11);
+            QCOMPARE(event.eventTypeId().toString(), mockIntStateTypeId.toString());
+            QCOMPARE(event.param(ParamTypeId(mockIntStateTypeId.toString())).value().toInt(), 11);
         }
     }
 }
@@ -115,7 +115,7 @@ void TestEvents::getEventType_data()
     QTest::addColumn<EventTypeId>("eventTypeId");
     QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("valid eventypeid") << mockEvent1Id << Device::DeviceErrorNoError;
+    QTest::newRow("valid eventypeid") << mockEvent1EventTypeId << Device::DeviceErrorNoError;
     QTest::newRow("invalid eventypeid") << EventTypeId::createEventTypeId() << Device::DeviceErrorEventTypeNotFound;
 }
 

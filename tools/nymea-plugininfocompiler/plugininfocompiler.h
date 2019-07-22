@@ -20,57 +20,41 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PLUGINMETADATA_H
-#define PLUGINMETADATA_H
+#ifndef PLUGININFOCOMPILER_H
+#define PLUGININFOCOMPILER_H
+
+#include <QString>
+#include <QFile>
 
 #include "types/paramtype.h"
-#include "types/deviceclass.h"
+#include "devices/pluginmetadata.h"
 
-class PluginMetadata
+class PluginInfoCompiler
 {
 public:
-    PluginMetadata();
-    PluginMetadata(const QJsonObject &jsonObject, bool isBuiltIn = false);
+    PluginInfoCompiler();
 
-    bool isValid() const;
-
-    PluginId pluginId() const;
-    QString pluginName() const;
-    QString pluginDisplayName() const;
-    bool isBuiltIn() const;
-
-    ParamTypes pluginSettings() const;
-
-    Vendors vendors() const;
-    DeviceClasses deviceClasses() const;
+    int compile(const QString &inputFile, const QString &outputFile, const QString outputFileExtern);
 
 
 private:
-    void parse(const QJsonObject &jsonObject);
-    QPair<bool, ParamTypes> parseParamTypes(const QJsonArray &array);
-    QPair<QStringList, QStringList> verifyFields(const QStringList &possibleFields, const QStringList &mandatoryFields, const QJsonObject &value);
-    QPair<bool, Types::Unit> loadAndVerifyUnit(const QString &unitString);
-    QPair<bool, Types::InputType> loadAndVerifyInputType(const QString &inputType);
+    void writePlugin(const PluginMetadata &metadata);
+    void writeParams(const ParamTypes &paramTypes, const QString &deviceClassName, const QString &typeClass, const QString &typeName);
+    void writeVendor(const Vendor &vendor);
+    void writeDeviceClass(const DeviceClass &deviceClass);
+    void writeStateTypes(const StateTypes &stateTypes, const QString &deviceClassName);
+    void writeEventTypes(const EventTypes &eventTypes, const QString &deviceClassName);
+    void writeActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
 
-    bool verifyDuplicateUuid(const QUuid &uuid);
+    void write(const QString &line = QString());
+    void writeExtern(const QString &line = QString());
 
-private:
-    bool m_isValid = false;
-    bool m_isBuiltIn = false;
-    PluginId m_pluginId;
-    QString m_pluginName;
-    QString m_pluginDisplayName;
-    ParamTypes m_pluginSettings;
-    Vendors m_vendors;
-    DeviceClasses m_deviceClasses;
+    QMultiMap<QString, QString> m_translationStrings;
 
-    QList<QUuid> m_allUuids;
+    QStringList m_variableNames;
 
-    // FIXME: Due to the fact that we have duplicate UUIDs in use in plugins out there in
-    // products, we can't just break those plugins now. For now, let's make the check
-    // As strict as possible without breaking them, but this should be removed ASAP
-    // and only m_allUuids should be used to check for dupes
-    QList<QUuid> m_currentScopUuids;
+    QFile m_outputFile;
+    QFile m_outputFileExtern;
 };
 
-#endif // PLUGINMETADATA_H
+#endif // PLUGININFOCOMPILER_H

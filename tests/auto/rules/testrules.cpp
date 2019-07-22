@@ -145,7 +145,7 @@ DeviceId TestRules::addDisplayPinDevice()
     // Discover device
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
-    resultCountParam.insert("paramTypeId", resultCountParamTypeId);
+    resultCountParam.insert("paramTypeId", mockDisplayPinDiscoveryResultCountParamTypeId);
     resultCountParam.insert("value", 1);
     discoveryParams.append(resultCountParam);
 
@@ -194,15 +194,15 @@ QVariantMap TestRules::createActionWithParams(const DeviceId &deviceId)
     QVariantMap action;
     QVariantList ruleActionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", 4);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     ruleActionParams.append(param1);
     ruleActionParams.append(param2);
     action.insert("deviceId", deviceId);
-    action.insert("actionTypeId", mockActionIdWithParams);
+    action.insert("actionTypeId", mockWithParamsActionTypeId);
     action.insert("ruleActionParams", ruleActionParams);
     return action;
 }
@@ -327,7 +327,7 @@ QVariant TestRules::validIntStateBasedRule(const QString &name, const bool &exec
 
     // StateDescriptor
     QVariantMap stateDescriptor;
-    stateDescriptor.insert("stateTypeId", mockIntStateId);
+    stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("deviceId", m_mockDeviceId);
     stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorLess));
     stateDescriptor.insert("value", 25);
@@ -339,14 +339,14 @@ QVariant TestRules::validIntStateBasedRule(const QString &name, const bool &exec
 
     // RuleAction
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdWithParams);
+    action.insert("actionTypeId", mockWithParamsActionTypeId);
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", 5);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
     action.insert("deviceId", m_mockDeviceId);
@@ -354,7 +354,7 @@ QVariant TestRules::validIntStateBasedRule(const QString &name, const bool &exec
 
     // RuleExitAction
     QVariantMap exitAction;
-    exitAction.insert("actionTypeId", mockActionIdNoParams);
+    exitAction.insert("actionTypeId", mockWithoutParamsActionTypeId);
     exitAction.insert("deviceId", m_mockDeviceId);
     exitAction.insert("ruleActionParams", QVariantList());
 
@@ -393,7 +393,7 @@ void TestRules::addRemoveRules_data()
 {
     // RuleAction
     QVariantMap validActionNoParams;
-    validActionNoParams.insert("actionTypeId", mockActionIdNoParams);
+    validActionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     validActionNoParams.insert("deviceId", m_mockDeviceId);
     validActionNoParams.insert("ruleActionParams", QVariantList());
 
@@ -404,7 +404,7 @@ void TestRules::addRemoveRules_data()
 
     // RuleExitAction
     QVariantMap validExitActionNoParams;
-    validExitActionNoParams.insert("actionTypeId", mockActionIdNoParams);
+    validExitActionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     validExitActionNoParams.insert("deviceId", m_mockDeviceId);
     validExitActionNoParams.insert("ruleActionParams", QVariantList());
 
@@ -415,7 +415,7 @@ void TestRules::addRemoveRules_data()
 
     // StateDescriptor
     QVariantMap stateDescriptor;
-    stateDescriptor.insert("stateTypeId", mockIntStateId);
+    stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("deviceId", m_mockDeviceId);
     stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorLess));
     stateDescriptor.insert("value", 20);
@@ -431,23 +431,23 @@ void TestRules::addRemoveRules_data()
 
     // EventDescriptor
     QVariantMap validEventDescriptor1;
-    validEventDescriptor1.insert("eventTypeId", mockEvent1Id);
+    validEventDescriptor1.insert("eventTypeId", mockEvent1EventTypeId);
     validEventDescriptor1.insert("deviceId", m_mockDeviceId);
     validEventDescriptor1.insert("paramDescriptors", QVariantList());
 
     QVariantMap validEventDescriptor2;
-    validEventDescriptor2.insert("eventTypeId", mockEvent2Id);
+    validEventDescriptor2.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor2.insert("deviceId", m_mockDeviceId);
     QVariantList params;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockParamIntParamTypeId);
+    param1.insert("paramTypeId", mockEvent2EventIntParamParamTypeId);
     param1.insert("value", 3);
     param1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
     params.append(param1);
     validEventDescriptor2.insert("paramDescriptors", params);
 
     QVariantMap validEventDescriptor3;
-    validEventDescriptor3.insert("eventTypeId", mockEvent2Id);
+    validEventDescriptor3.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor3.insert("deviceId", m_mockDeviceId);
     validEventDescriptor3.insert("paramDescriptors", QVariantList());
 
@@ -457,48 +457,49 @@ void TestRules::addRemoveRules_data()
     eventDescriptorList.append(validEventDescriptor2);
 
     QVariantMap invalidEventDescriptor;
-    invalidEventDescriptor.insert("eventTypeId", mockEvent1Id);
+    invalidEventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
     invalidEventDescriptor.insert("deviceId", DeviceId());
     invalidEventDescriptor.insert("paramDescriptors", QVariantList());
 
     // RuleAction event based
     QVariantMap validActionEventBased;
-    validActionEventBased.insert("actionTypeId", mockActionIdWithParams);
+    validActionEventBased.insert("actionTypeId", mockWithParamsActionTypeId);
     validActionEventBased.insert("deviceId", m_mockDeviceId);
     QVariantMap validActionEventBasedParam1;
-    validActionEventBasedParam1.insert("paramTypeId", mockActionParam1ParamTypeId);
-    validActionEventBasedParam1.insert("eventTypeId", mockEvent2Id);
-    validActionEventBasedParam1.insert("eventParamTypeId", mockParamIntParamTypeId);
+    validActionEventBasedParam1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
+    validActionEventBasedParam1.insert("eventTypeId", mockEvent2EventTypeId);
+    validActionEventBasedParam1.insert("eventParamTypeId", mockEvent2EventIntParamParamTypeId);
+
     QVariantMap validActionEventBasedParam2;
-    validActionEventBasedParam2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    validActionEventBasedParam2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     validActionEventBasedParam2.insert("value", false);
     validActionEventBased.insert("ruleActionParams", QVariantList() << validActionEventBasedParam1 << validActionEventBasedParam2);
 
     QVariantMap invalidActionEventBased;
-    invalidActionEventBased.insert("actionTypeId", mockActionIdNoParams);
+    invalidActionEventBased.insert("actionTypeId", mockWithoutParamsActionTypeId);
     invalidActionEventBased.insert("deviceId", m_mockDeviceId);
     validActionEventBasedParam1.insert("value", 10);
     invalidActionEventBased.insert("ruleActionParams", QVariantList() << validActionEventBasedParam1);
 
     QVariantMap invalidActionEventBased2;
-    invalidActionEventBased2.insert("actionTypeId", mockActionIdWithParams);
+    invalidActionEventBased2.insert("actionTypeId", mockWithParamsActionTypeId);
     invalidActionEventBased2.insert("deviceId", m_mockDeviceId);
     QVariantMap invalidActionEventBasedParam2;
-    invalidActionEventBasedParam2.insert("paramTypeId", mockActionParam1ParamTypeId);
-    invalidActionEventBasedParam2.insert("eventTypeId", mockEvent1Id);
+    invalidActionEventBasedParam2.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
+    invalidActionEventBasedParam2.insert("eventTypeId", mockEvent1EventTypeId);
     invalidActionEventBasedParam2.insert("eventParamTypeId", "value");
     QVariantMap invalidActionEventBasedParam3;
-    invalidActionEventBasedParam3.insert("paramTypeId", mockActionParam2ParamTypeId);
+    invalidActionEventBasedParam3.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     invalidActionEventBasedParam3.insert("value", 2);
     invalidActionEventBased2.insert("ruleActionParams", QVariantList() << invalidActionEventBasedParam2 << invalidActionEventBasedParam3);
 
     QVariantMap invalidActionEventBased3;
-    invalidActionEventBased3.insert("actionTypeId", mockActionIdWithParams);
+    invalidActionEventBased3.insert("actionTypeId", mockWithParamsActionTypeId);
     invalidActionEventBased3.insert("deviceId", m_mockDeviceId);
     QVariantMap invalidActionEventBasedParam4;
-    invalidActionEventBasedParam4.insert("paramTypeId", mockActionParam1ParamTypeId);
-    invalidActionEventBasedParam4.insert("eventTypeId", mockEvent1Id);
-    invalidActionEventBasedParam4.insert("eventParamTypeId", mockParamIntParamTypeId);
+    invalidActionEventBasedParam4.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
+    invalidActionEventBasedParam4.insert("eventTypeId", mockEvent1EventTypeId);
+    invalidActionEventBasedParam4.insert("eventParamTypeId", mockEvent2EventIntParamParamTypeId);
     invalidActionEventBased3.insert("ruleActionParams", QVariantList() << invalidActionEventBasedParam4);
 
     QTest::addColumn<bool>("enabled");
@@ -636,7 +637,7 @@ void TestRules::editRules_data()
 {
     // RuleAction
     QVariantMap validActionNoParams;
-    validActionNoParams.insert("actionTypeId", mockActionIdNoParams);
+    validActionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     validActionNoParams.insert("deviceId", m_mockDeviceId);
     validActionNoParams.insert("ruleActionParams", QVariantList());
 
@@ -647,7 +648,7 @@ void TestRules::editRules_data()
 
     // RuleExitAction
     QVariantMap validExitActionNoParams;
-    validExitActionNoParams.insert("actionTypeId", mockActionIdNoParams);
+    validExitActionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     validExitActionNoParams.insert("deviceId", m_mockDeviceId);
     validExitActionNoParams.insert("ruleActionParams", QVariantList());
 
@@ -658,7 +659,7 @@ void TestRules::editRules_data()
 
     // StateDescriptor
     QVariantMap stateDescriptor;
-    stateDescriptor.insert("stateTypeId", mockIntStateId);
+    stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("deviceId", m_mockDeviceId);
     stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorLess));
     stateDescriptor.insert("value", 20);
@@ -674,23 +675,23 @@ void TestRules::editRules_data()
 
     // EventDescriptor
     QVariantMap validEventDescriptor1;
-    validEventDescriptor1.insert("eventTypeId", mockEvent1Id);
+    validEventDescriptor1.insert("eventTypeId", mockEvent1EventTypeId);
     validEventDescriptor1.insert("deviceId", m_mockDeviceId);
     validEventDescriptor1.insert("paramDescriptors", QVariantList());
 
     QVariantMap validEventDescriptor2;
-    validEventDescriptor2.insert("eventTypeId", mockEvent2Id);
+    validEventDescriptor2.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor2.insert("deviceId", m_mockDeviceId);
     QVariantList params;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockParamIntParamTypeId);
+    param1.insert("paramTypeId", mockEvent2EventIntParamParamTypeId);
     param1.insert("value", 3);
     param1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
     params.append(param1);
     validEventDescriptor2.insert("paramDescriptors", params);
 
     QVariantMap validEventDescriptor3;
-    validEventDescriptor3.insert("eventTypeId", mockEvent2Id);
+    validEventDescriptor3.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor3.insert("deviceId", m_mockDeviceId);
     validEventDescriptor3.insert("paramDescriptors", QVariantList());
 
@@ -700,48 +701,48 @@ void TestRules::editRules_data()
     eventDescriptorList.append(validEventDescriptor2);
 
     QVariantMap invalidEventDescriptor;
-    invalidEventDescriptor.insert("eventTypeId", mockEvent1Id);
+    invalidEventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
     invalidEventDescriptor.insert("deviceId", DeviceId());
     invalidEventDescriptor.insert("paramDescriptors", QVariantList());
 
     // RuleAction event based
     QVariantMap validActionEventBased;
-    validActionEventBased.insert("actionTypeId", mockActionIdWithParams);
+    validActionEventBased.insert("actionTypeId", mockWithParamsActionTypeId);
     validActionEventBased.insert("deviceId", m_mockDeviceId);
     QVariantMap validActionEventBasedParam1;
-    validActionEventBasedParam1.insert("paramTypeId", mockActionParam1ParamTypeId);
-    validActionEventBasedParam1.insert("eventTypeId", mockEvent2Id);
-    validActionEventBasedParam1.insert("eventParamTypeId", mockParamIntParamTypeId);
+    validActionEventBasedParam1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
+    validActionEventBasedParam1.insert("eventTypeId", mockEvent2EventTypeId);
+    validActionEventBasedParam1.insert("eventParamTypeId", mockEvent2EventIntParamParamTypeId);
     QVariantMap validActionEventBasedParam2;
-    validActionEventBasedParam2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    validActionEventBasedParam2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     validActionEventBasedParam2.insert("value", false);
     validActionEventBased.insert("ruleActionParams", QVariantList() << validActionEventBasedParam1 << validActionEventBasedParam2);
 
     QVariantMap invalidActionEventBased;
-    invalidActionEventBased.insert("actionTypeId", mockActionIdNoParams);
+    invalidActionEventBased.insert("actionTypeId", mockWithoutParamsActionTypeId);
     invalidActionEventBased.insert("deviceId", m_mockDeviceId);
     validActionEventBasedParam1.insert("value", 10);
     invalidActionEventBased.insert("ruleActionParams", QVariantList() << validActionEventBasedParam1);
 
     QVariantMap invalidActionEventBased2;
-    invalidActionEventBased2.insert("actionTypeId", mockActionIdWithParams);
+    invalidActionEventBased2.insert("actionTypeId", mockWithParamsActionTypeId);
     invalidActionEventBased2.insert("deviceId", m_mockDeviceId);
     QVariantMap invalidActionEventBasedParam2;
-    invalidActionEventBasedParam2.insert("paramTypeId", mockActionParam1ParamTypeId);
-    invalidActionEventBasedParam2.insert("eventTypeId", mockEvent1Id);
+    invalidActionEventBasedParam2.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
+    invalidActionEventBasedParam2.insert("eventTypeId", mockEvent1EventTypeId);
     invalidActionEventBasedParam2.insert("eventParamTypeId", "value");
     QVariantMap invalidActionEventBasedParam3;
-    invalidActionEventBasedParam3.insert("paramTypeId", mockActionParam2ParamTypeId);
+    invalidActionEventBasedParam3.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     invalidActionEventBasedParam3.insert("value", 2);
     invalidActionEventBased2.insert("ruleActionParams", QVariantList() << invalidActionEventBasedParam2 << invalidActionEventBasedParam3);
 
     QVariantMap invalidActionEventBased3;
-    invalidActionEventBased3.insert("actionTypeId", mockActionIdWithParams);
+    invalidActionEventBased3.insert("actionTypeId", mockWithParamsActionTypeId);
     invalidActionEventBased3.insert("deviceId", m_mockDeviceId);
     QVariantMap invalidActionEventBasedParam4;
-    invalidActionEventBasedParam4.insert("paramTypeId", mockActionParam1ParamTypeId);
-    invalidActionEventBasedParam4.insert("eventTypeId", mockEvent1Id);
-    invalidActionEventBasedParam4.insert("eventParamTypeId", mockParamIntParamTypeId);
+    invalidActionEventBasedParam4.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
+    invalidActionEventBasedParam4.insert("eventTypeId", mockEvent1EventTypeId);
+    invalidActionEventBasedParam4.insert("eventParamTypeId", mockEvent2EventIntParamParamTypeId);
     invalidActionEventBased3.insert("ruleActionParams", QVariantList() << invalidActionEventBasedParam4);
 
     QTest::addColumn<bool>("enabled");
@@ -790,15 +791,15 @@ void TestRules::editRules()
     // Add the rule we want to edit
     QVariantList eventParamDescriptors;
     QVariantMap eventDescriptor1;
-    eventDescriptor1.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor1.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor1.insert("deviceId", m_mockDeviceId);
     eventDescriptor1.insert("paramDescriptors", QVariantList());
     QVariantMap eventDescriptor2;
-    eventDescriptor2.insert("eventTypeId", mockEvent2Id);
+    eventDescriptor2.insert("eventTypeId", mockEvent2EventTypeId);
     eventDescriptor2.insert("deviceId", m_mockDeviceId);
     eventDescriptor2.insert("paramDescriptors", QVariantList());
     QVariantMap eventParam1;
-    eventParam1.insert("paramTypeId", mockParamIntParamTypeId);
+    eventParam1.insert("paramTypeId", mockEvent2EventIntParamParamTypeId);
     eventParam1.insert("value", 3);
     eventParam1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
     eventParamDescriptors.append(eventParam1);
@@ -812,12 +813,12 @@ void TestRules::editRules()
     QVariantMap stateDescriptor1;
     stateDescriptor1.insert("deviceId", m_mockDeviceId);
     stateDescriptor1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
-    stateDescriptor1.insert("stateTypeId", mockIntStateId);
+    stateDescriptor1.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor1.insert("value", 1);
     QVariantMap stateDescriptor2;
     stateDescriptor2.insert("deviceId", m_mockDeviceId);
     stateDescriptor2.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
-    stateDescriptor2.insert("stateTypeId", mockBoolStateId);
+    stateDescriptor2.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptor2.insert("value", true);
     QVariantMap stateEvaluator1;
     stateEvaluator1.insert("stateDescriptor", stateDescriptor1);
@@ -832,40 +833,40 @@ void TestRules::editRules()
     stateEvaluator0.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
 
     QVariantMap action1;
-    action1.insert("actionTypeId", mockActionIdNoParams);
+    action1.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action1.insert("deviceId", m_mockDeviceId);
     action1.insert("ruleActionParams", QVariantList());
     QVariantMap action2;
-    action2.insert("actionTypeId", mockActionIdWithParams);
-    qDebug() << "got action id" << mockActionIdWithParams;
+    action2.insert("actionTypeId", mockWithParamsActionTypeId);
+    qDebug() << "got action id" << mockWithParamsActionTypeId;
     action2.insert("deviceId", m_mockDeviceId);
     QVariantList action2Params;
     QVariantMap action2Param1;
-    action2Param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    action2Param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     action2Param1.insert("value", 5);
     action2Params.append(action2Param1);
     QVariantMap action2Param2;
-    action2Param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    action2Param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     action2Param2.insert("value", true);
     action2Params.append(action2Param2);
     action2.insert("ruleActionParams", action2Params);
 
     // RuleAction event based
     QVariantMap validActionEventBased;
-    validActionEventBased.insert("actionTypeId", mockActionIdWithParams);
+    validActionEventBased.insert("actionTypeId", mockWithParamsActionTypeId);
     validActionEventBased.insert("deviceId", m_mockDeviceId);
     QVariantMap validActionEventBasedParam1;
-    validActionEventBasedParam1.insert("paramTypeId", mockActionParam1ParamTypeId);
-    validActionEventBasedParam1.insert("eventTypeId", mockEvent2Id);
-    validActionEventBasedParam1.insert("eventParamTypeId", mockParamIntParamTypeId);
+    validActionEventBasedParam1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
+    validActionEventBasedParam1.insert("eventTypeId", mockEvent2EventTypeId);
+    validActionEventBasedParam1.insert("eventParamTypeId", mockEvent2EventIntParamParamTypeId);
     QVariantMap validActionEventBasedParam2;
-    validActionEventBasedParam2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    validActionEventBasedParam2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     validActionEventBasedParam2.insert("value", false);
     validActionEventBased.insert("ruleActionParams", QVariantList() << validActionEventBasedParam1 << validActionEventBasedParam2);
 
     QVariantList validEventDescriptors3;
     QVariantMap validEventDescriptor3;
-    validEventDescriptor3.insert("eventTypeId", mockEvent2Id);
+    validEventDescriptor3.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor3.insert("deviceId", m_mockDeviceId);
     validEventDescriptor3.insert("paramDescriptors", QVariantList());
     validEventDescriptors3.append(validEventDescriptor3);
@@ -1009,7 +1010,7 @@ void TestRules::executeRuleActions()
     QTest::qWait(1000);
 
     if (ruleError == RuleEngine::RuleErrorNoError) {
-        verifyRuleExecuted(mockActionIdWithParams);
+        verifyRuleExecuted(mockWithParamsActionTypeId);
     } else {
         verifyRuleNotExecuted();
     }
@@ -1034,7 +1035,7 @@ void TestRules::executeRuleActions()
     QTest::qWait(1000);
 
     if (ruleError == RuleEngine::RuleErrorNoError) {
-        verifyRuleExecuted(mockActionIdNoParams);
+        verifyRuleExecuted(mockWithoutParamsActionTypeId);
     } else {
         verifyRuleNotExecuted();
     }
@@ -1084,17 +1085,17 @@ void TestRules::removeInvalidRule()
 void TestRules::loadStoreConfig()
 {
     QVariantMap eventDescriptor1;
-    eventDescriptor1.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor1.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor1.insert("deviceId", m_mockDeviceId);
     eventDescriptor1.insert("paramDescriptors", QVariantList());
 
     QVariantMap eventDescriptor2;
-    eventDescriptor2.insert("eventTypeId", mockEvent2Id);
+    eventDescriptor2.insert("eventTypeId", mockEvent2EventTypeId);
     eventDescriptor2.insert("deviceId", m_mockDeviceId);
     eventDescriptor2.insert("paramDescriptors", QVariantList());
     QVariantList eventParamDescriptors;
     QVariantMap eventParam1;
-    eventParam1.insert("paramTypeId", mockParamIntParamTypeId);
+    eventParam1.insert("paramTypeId", mockEvent2EventIntParamParamTypeId);
     eventParam1.insert("value", 3);
     eventParam1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
     eventParamDescriptors.append(eventParam1);
@@ -1110,7 +1111,7 @@ void TestRules::loadStoreConfig()
     QVariantMap stateDescriptor2;
     stateDescriptor2.insert("deviceId", m_mockDeviceId);
     stateDescriptor2.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
-    stateDescriptor2.insert("stateTypeId", mockIntStateId);
+    stateDescriptor2.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor2.insert("value", 1);
     QVariantMap stateEvaluator2;
     stateEvaluator2.insert("stateDescriptor", stateDescriptor2);
@@ -1119,7 +1120,7 @@ void TestRules::loadStoreConfig()
     QVariantMap stateDescriptor3;
     stateDescriptor3.insert("deviceId", m_mockDeviceId);
     stateDescriptor3.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
-    stateDescriptor3.insert("stateTypeId", mockBoolStateId);
+    stateDescriptor3.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptor3.insert("value", true);
 
     QVariantMap stateEvaluator3;
@@ -1143,40 +1144,40 @@ void TestRules::loadStoreConfig()
     stateEvaluator1.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
 
     QVariantMap action1;
-    action1.insert("actionTypeId", mockActionIdNoParams);
+    action1.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action1.insert("deviceId", m_mockDeviceId);
     action1.insert("ruleActionParams", QVariantList());
 
     QVariantMap action2;
-    action2.insert("actionTypeId", mockActionIdWithParams);
+    action2.insert("actionTypeId", mockWithParamsActionTypeId);
     action2.insert("deviceId", m_mockDeviceId);
     QVariantList action2Params;
     QVariantMap action2Param1;
-    action2Param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    action2Param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     action2Param1.insert("value", 5);
     action2Params.append(action2Param1);
     QVariantMap action2Param2;
-    action2Param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    action2Param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     action2Param2.insert("value", true);
     action2Params.append(action2Param2);
     action2.insert("ruleActionParams", action2Params);
 
     // RuleAction event based
     QVariantMap validActionEventBased;
-    validActionEventBased.insert("actionTypeId", mockActionIdWithParams);
+    validActionEventBased.insert("actionTypeId", mockWithParamsActionTypeId);
     validActionEventBased.insert("deviceId", m_mockDeviceId);
     QVariantMap validActionEventBasedParam1;
-    validActionEventBasedParam1.insert("paramTypeId", mockActionParam1ParamTypeId);
-    validActionEventBasedParam1.insert("eventTypeId", mockEvent2Id);
-    validActionEventBasedParam1.insert("eventParamTypeId", mockParamIntParamTypeId);
+    validActionEventBasedParam1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
+    validActionEventBasedParam1.insert("eventTypeId", mockEvent2EventTypeId);
+    validActionEventBasedParam1.insert("eventParamTypeId", mockEvent2EventIntParamParamTypeId);
     QVariantMap validActionEventBasedParam2;
-    validActionEventBasedParam2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    validActionEventBasedParam2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     validActionEventBasedParam2.insert("value", false);
     validActionEventBased.insert("ruleActionParams", QVariantList() << validActionEventBasedParam1 << validActionEventBasedParam2);
 
     QVariantList validEventDescriptors3;
     QVariantMap validEventDescriptor3;
-    validEventDescriptor3.insert("eventTypeId", mockEvent2Id);
+    validEventDescriptor3.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor3.insert("deviceId", m_mockDeviceId);
     validEventDescriptor3.insert("paramDescriptors", QVariantList());
     validEventDescriptors3.append(validEventDescriptor3);
@@ -1334,7 +1335,7 @@ void TestRules::loadStoreConfig()
         QVariantMap stateDescriptor = childEvaluator.toMap().value("stateDescriptor").toMap();
         if (stateDescriptor.contains("deviceId") && stateDescriptor.contains("stateTypeId")) {
             QVERIFY2(stateDescriptor.value("deviceId") == m_mockDeviceId, "DeviceId of stateDescriptor does not match");
-            QVERIFY2(stateDescriptor.value("stateTypeId") == mockIntStateId || stateDescriptor.value("stateTypeId") == mockBoolStateId, "StateTypeId of stateDescriptor doesn't match");
+            QVERIFY2(stateDescriptor.value("stateTypeId") == mockIntStateTypeId || stateDescriptor.value("stateTypeId") == mockBoolStateTypeId, "StateTypeId of stateDescriptor doesn't match");
         } else if (stateDescriptor.contains("interface") && stateDescriptor.contains("interfaceState")) {
             QVERIFY2(stateDescriptor.value("interface") == "battery", "Interface of stateDescriptor does not match");
             QVERIFY2(stateDescriptor.value("interfaceState") == "batteryCritical", "InterfaceState of stateDescriptor doesn't match");
@@ -1381,7 +1382,7 @@ void TestRules::loadStoreConfig()
         QVariantMap stateDescriptor = childEvaluator.toMap().value("stateDescriptor").toMap();
         if (stateDescriptor.contains("deviceId") && stateDescriptor.contains("stateTypeId")) {
             QVERIFY2(stateDescriptor.value("deviceId") == m_mockDeviceId, "DeviceId of stateDescriptor does not match");
-            QVERIFY2(stateDescriptor.value("stateTypeId") == mockIntStateId || stateDescriptor.value("stateTypeId") == mockBoolStateId, "StateTypeId of stateDescriptor doesn't match");
+            QVERIFY2(stateDescriptor.value("stateTypeId") == mockIntStateTypeId || stateDescriptor.value("stateTypeId") == mockBoolStateTypeId, "StateTypeId of stateDescriptor doesn't match");
         } else if (stateDescriptor.contains("interface") && stateDescriptor.contains("interfaceState")) {
             QVERIFY2(stateDescriptor.value("interface") == "battery", "Interface of stateDescriptor does not match");
             QVERIFY2(stateDescriptor.value("interfaceState") == "batteryCritical", "InterfaceState of stateDescriptor doesn't match");
@@ -1443,7 +1444,7 @@ void TestRules::loadStoreConfig()
     QVariantList eventDescriptors3 = rule3.value("eventDescriptors").toList();
     QVERIFY2(eventDescriptors3.count() == 1, "There should be exactly 1 eventDescriptor");
     QVariantMap eventDescriptor = eventDescriptors3.first().toMap();
-    QVERIFY2(eventDescriptor.value("eventTypeId").toString() == mockEvent2Id.toString(), "Loaded the wrong eventTypeId in rule 3");
+    QVERIFY2(eventDescriptor.value("eventTypeId").toString() == mockEvent2EventTypeId.toString(), "Loaded the wrong eventTypeId in rule 3");
     QVERIFY2(eventDescriptor.value("deviceId").toString() == m_mockDeviceId.toString(), "Loaded the wrong deviceId from eventDescriptor in rule 3");
 
     QVariantList replyExitActions3 = rule3.value("exitActions").toList();
@@ -1544,14 +1545,14 @@ void TestRules::evaluateEvent()
 
     QVariantList events;
     QVariantMap event1;
-    event1.insert("eventTypeId", mockEvent1Id);
+    event1.insert("eventTypeId", mockEvent1EventTypeId);
     event1.insert("deviceId", m_mockDeviceId);
     events.append(event1);
     addRuleParams.insert("eventDescriptors", events);
 
     QVariantList actions;
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     actions.append(action);
     addRuleParams.insert("actions", actions);
@@ -1563,13 +1564,13 @@ void TestRules::evaluateEvent()
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     // trigger event in mock device
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
 }
 
 void TestRules::evaluateEventParams()
@@ -1577,7 +1578,7 @@ void TestRules::evaluateEventParams()
     // Init bool state to  true
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg("true")));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg("true")));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1590,13 +1591,13 @@ void TestRules::evaluateEventParams()
 
     QVariantList params;
     QVariantMap boolParam;
-    boolParam.insert("paramTypeId", mockBoolStateId);
+    boolParam.insert("paramTypeId", mockBoolStateTypeId);
     boolParam.insert("operator", "ValueOperatorEquals");
     boolParam.insert("value", true);
     params.append(boolParam);
 
     QVariantMap event1;
-    event1.insert("eventTypeId", mockBoolStateId);
+    event1.insert("eventTypeId", mockBoolStateTypeId);
     event1.insert("deviceId", m_mockDeviceId);
     event1.insert("paramDescriptors", params);
 
@@ -1606,7 +1607,7 @@ void TestRules::evaluateEventParams()
 
     QVariantList actions;
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     actions.append(action);
     addRuleParams.insert("actions", actions);
@@ -1616,7 +1617,7 @@ void TestRules::evaluateEventParams()
 
     // Trigger a non matching param
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg("false")));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg("false")));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1626,17 +1627,17 @@ void TestRules::evaluateEventParams()
 
     // Trigger a matching param
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg("true")));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg("true")));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
 
     // Reset back to false to not mess with other tests
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg("false")));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg("false")));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1651,7 +1652,7 @@ void TestRules::testStateChange() {
     QVariantMap stateDescriptor;
     stateDescriptor.insert("deviceId", m_mockDeviceId);
     stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorGreaterOrEqual));
-    stateDescriptor.insert("stateTypeId", mockIntStateId);
+    stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("value", 42);
     stateEvaluator.insert("stateDescriptor", stateDescriptor);
     addRuleParams.insert("stateEvaluator", stateEvaluator);
@@ -1659,7 +1660,7 @@ void TestRules::testStateChange() {
 
     QVariantList actions;
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     actions.append(action);
     addRuleParams.insert("actions", actions);
@@ -1673,20 +1674,20 @@ void TestRules::testStateChange() {
 
     // state state to 42
     qDebug() << "setting mock int state to 42";
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(42)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(42)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
 
     cleanupMockHistory();
 
     // set state to 45
     qDebug() << "setting mock int state to 45";
     spy.clear();
-    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(45)));
+    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(45)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1699,7 +1700,7 @@ void TestRules::testStateChange() {
     // set state to 30
     qDebug() << "setting mock int state to 30";
     spy.clear();
-    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(30)));
+    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(30)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1712,12 +1713,12 @@ void TestRules::testStateChange() {
     // set state to 100
     qDebug() << "setting mock int state to 100";
     spy.clear();
-    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(100)));
+    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(100)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
 
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
     reply->deleteLater();
 }
 
@@ -1730,29 +1731,29 @@ void TestRules::testStateEvaluator_data()
     QTest::addColumn<bool>("shouldMatch");
 
     QTest::newRow("invalid stateId") << m_mockDeviceId << StateTypeId::createStateTypeId() << QVariant(10) << Types::ValueOperatorEquals << false;
-    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockIntStateId << QVariant(10) << Types::ValueOperatorEquals << false;
+    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockIntStateTypeId << QVariant(10) << Types::ValueOperatorEquals << false;
 
-    QTest::newRow("equals, not matching") << m_mockDeviceId << mockIntStateId << QVariant(7777) << Types::ValueOperatorEquals << false;
-    QTest::newRow("equals, matching") << m_mockDeviceId << mockIntStateId << QVariant(10) << Types::ValueOperatorEquals << true;
+    QTest::newRow("equals, not matching") << m_mockDeviceId << mockIntStateTypeId << QVariant(7777) << Types::ValueOperatorEquals << false;
+    QTest::newRow("equals, matching") << m_mockDeviceId << mockIntStateTypeId << QVariant(10) << Types::ValueOperatorEquals << true;
 
-    QTest::newRow("not equal, not matching") << m_mockDeviceId << mockIntStateId << QVariant(10) << Types::ValueOperatorNotEquals << false;
-    QTest::newRow("not equal, matching") << m_mockDeviceId << mockIntStateId << QVariant(7777) << Types::ValueOperatorNotEquals << true;
+    QTest::newRow("not equal, not matching") << m_mockDeviceId << mockIntStateTypeId << QVariant(10) << Types::ValueOperatorNotEquals << false;
+    QTest::newRow("not equal, matching") << m_mockDeviceId << mockIntStateTypeId << QVariant(7777) << Types::ValueOperatorNotEquals << true;
 
-    QTest::newRow("Greater, not matching") << m_mockDeviceId << mockIntStateId << QVariant(7777) << Types::ValueOperatorGreater << false;
-    QTest::newRow("Greater, matching") << m_mockDeviceId << mockIntStateId << QVariant(2) << Types::ValueOperatorGreater << true;
-    QTest::newRow("GreaterOrEqual, not matching") << m_mockDeviceId << mockIntStateId << QVariant(7777) << Types::ValueOperatorGreaterOrEqual << false;
-    QTest::newRow("GreaterOrEqual, matching (greater)") << m_mockDeviceId << mockIntStateId << QVariant(2) << Types::ValueOperatorGreaterOrEqual << true;
-    QTest::newRow("GreaterOrEqual, matching (equals)") << m_mockDeviceId << mockIntStateId << QVariant(10) << Types::ValueOperatorGreaterOrEqual << true;
+    QTest::newRow("Greater, not matching") << m_mockDeviceId << mockIntStateTypeId << QVariant(7777) << Types::ValueOperatorGreater << false;
+    QTest::newRow("Greater, matching") << m_mockDeviceId << mockIntStateTypeId << QVariant(2) << Types::ValueOperatorGreater << true;
+    QTest::newRow("GreaterOrEqual, not matching") << m_mockDeviceId << mockIntStateTypeId << QVariant(7777) << Types::ValueOperatorGreaterOrEqual << false;
+    QTest::newRow("GreaterOrEqual, matching (greater)") << m_mockDeviceId << mockIntStateTypeId << QVariant(2) << Types::ValueOperatorGreaterOrEqual << true;
+    QTest::newRow("GreaterOrEqual, matching (equals)") << m_mockDeviceId << mockIntStateTypeId << QVariant(10) << Types::ValueOperatorGreaterOrEqual << true;
 
-    QTest::newRow("Less, not matching") << m_mockDeviceId << mockIntStateId << QVariant(2) << Types::ValueOperatorLess << false;
-    QTest::newRow("Less, matching") << m_mockDeviceId << mockIntStateId << QVariant(7777) << Types::ValueOperatorLess << true;
-    QTest::newRow("LessOrEqual, not matching") << m_mockDeviceId << mockIntStateId << QVariant(2) << Types::ValueOperatorLessOrEqual << false;
-    QTest::newRow("LessOrEqual, matching (less)") << m_mockDeviceId << mockIntStateId << QVariant(777) << Types::ValueOperatorLessOrEqual << true;
-    QTest::newRow("LessOrEqual, matching (equals)") << m_mockDeviceId << mockIntStateId << QVariant(10) << Types::ValueOperatorLessOrEqual << true;
-    QTest::newRow("Less, not matching, double") << m_mockDeviceId << mockDoubleStateId << QVariant(2.1) << Types::ValueOperatorLess << false;
-    QTest::newRow("Less, not matching, double as string") << m_mockDeviceId << mockDoubleStateId << QVariant("2.1") << Types::ValueOperatorLess << false;
-    QTest::newRow("Less, matching, double") << m_mockDeviceId << mockDoubleStateId << QVariant(4.2) << Types::ValueOperatorLess << true;
-    QTest::newRow("Less, matching, double as string") << m_mockDeviceId << mockDoubleStateId << QVariant("4.2") << Types::ValueOperatorLess << true;
+    QTest::newRow("Less, not matching") << m_mockDeviceId << mockIntStateTypeId << QVariant(2) << Types::ValueOperatorLess << false;
+    QTest::newRow("Less, matching") << m_mockDeviceId << mockIntStateTypeId << QVariant(7777) << Types::ValueOperatorLess << true;
+    QTest::newRow("LessOrEqual, not matching") << m_mockDeviceId << mockIntStateTypeId << QVariant(2) << Types::ValueOperatorLessOrEqual << false;
+    QTest::newRow("LessOrEqual, matching (less)") << m_mockDeviceId << mockIntStateTypeId << QVariant(777) << Types::ValueOperatorLessOrEqual << true;
+    QTest::newRow("LessOrEqual, matching (equals)") << m_mockDeviceId << mockIntStateTypeId << QVariant(10) << Types::ValueOperatorLessOrEqual << true;
+    QTest::newRow("Less, not matching, double") << m_mockDeviceId << mockDoubleStateTypeId << QVariant(2.1) << Types::ValueOperatorLess << false;
+    QTest::newRow("Less, not matching, double as string") << m_mockDeviceId << mockDoubleStateTypeId << QVariant("2.1") << Types::ValueOperatorLess << false;
+    QTest::newRow("Less, matching, double") << m_mockDeviceId << mockDoubleStateTypeId << QVariant(4.2) << Types::ValueOperatorLess << true;
+    QTest::newRow("Less, matching, double as string") << m_mockDeviceId << mockDoubleStateTypeId << QVariant("4.2") << Types::ValueOperatorLess << true;
 }
 
 void TestRules::testStateEvaluator()
@@ -1799,10 +1800,10 @@ void TestRules::testStateEvaluator2()
     QFETCH(Types::StateOperator, stateOperator);
     QFETCH(bool, shouldMatch);
 
-    StateDescriptor descriptor1(mockIntStateId, m_mockDeviceId, intValue, intOperator);
+    StateDescriptor descriptor1(mockIntStateTypeId, m_mockDeviceId, intValue, intOperator);
     StateEvaluator evaluator1(descriptor1);
 
-    StateDescriptor descriptor2(mockBoolStateId, m_mockDeviceId, boolValue, boolOperator);
+    StateDescriptor descriptor2(mockBoolStateTypeId, m_mockDeviceId, boolValue, boolOperator);
     StateEvaluator evaluator2(descriptor2);
 
     QList<StateEvaluator> childEvaluators;
@@ -1829,13 +1830,13 @@ void TestRules::testStateEvaluator3()
     QFETCH(Types::StateOperator, stateOperator);
     QFETCH(bool, shouldMatch);
 
-    StateDescriptor descriptor1(mockIntStateId, m_mockDeviceId, intValue, intOperator);
+    StateDescriptor descriptor1(mockIntStateTypeId, m_mockDeviceId, intValue, intOperator);
     StateEvaluator childEvaluator(descriptor1);
 
     QList<StateEvaluator> childEvaluators;
     childEvaluators.append(childEvaluator);
 
-    StateDescriptor descriptor2(mockBoolStateId, m_mockDeviceId, boolValue, boolOperator);
+    StateDescriptor descriptor2(mockBoolStateTypeId, m_mockDeviceId, boolValue, boolOperator);
     StateEvaluator mainEvaluator(descriptor2);
     mainEvaluator.setChildEvaluators(childEvaluators);
     mainEvaluator.setOperatorType(stateOperator);
@@ -1855,7 +1856,7 @@ void TestRules::testChildEvaluator_data()
     // Create child evaluators
     // Action
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", QVariantList());
 
@@ -1863,14 +1864,14 @@ void TestRules::testChildEvaluator_data()
     QVariantMap exitAction;
     QVariantList actionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", 12);
     actionParams.append(param1);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
-    exitAction.insert("actionTypeId", mockActionIdWithParams);
+    exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
     exitAction.insert("deviceId", m_mockDeviceId);
     exitAction.insert("ruleActionParams", actionParams);
 
@@ -1878,25 +1879,25 @@ void TestRules::testChildEvaluator_data()
     QVariantMap stateDescriptorPercentage;
     stateDescriptorPercentage.insert("deviceId", testDeviceId);
     stateDescriptorPercentage.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorGreaterOrEqual));
-    stateDescriptorPercentage.insert("stateTypeId", percentageStateParamTypeId);
+    stateDescriptorPercentage.insert("stateTypeId", mockDisplayPinPercentageStateTypeId);
     stateDescriptorPercentage.insert("value", 50);
 
     QVariantMap stateDescriptorDouble;
     stateDescriptorDouble.insert("deviceId", testDeviceId);
     stateDescriptorDouble.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
-    stateDescriptorDouble.insert("stateTypeId", doubleStateParamTypeId);
+    stateDescriptorDouble.insert("stateTypeId", mockDisplayPinDoubleActionDoubleParamTypeId);
     stateDescriptorDouble.insert("value", 20.5);
 
     QVariantMap stateDescriptorAllowedValues;
     stateDescriptorAllowedValues.insert("deviceId", testDeviceId);
     stateDescriptorAllowedValues.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
-    stateDescriptorAllowedValues.insert("stateTypeId", allowedValuesStateParamTypeId);
+    stateDescriptorAllowedValues.insert("stateTypeId", mockDisplayPinAllowedValuesStateTypeId);
     stateDescriptorAllowedValues.insert("value", "String value 2");
 
     QVariantMap stateDescriptorColor;
     stateDescriptorColor.insert("deviceId", testDeviceId);
     stateDescriptorColor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
-    stateDescriptorColor.insert("stateTypeId", colorStateParamTypeId);
+    stateDescriptorColor.insert("stateTypeId", mockDisplayPinColorStateTypeId);
     stateDescriptorColor.insert("value", "#00FF00");
 
     QVariantMap firstStateEvaluator;
@@ -1951,10 +1952,10 @@ void TestRules::testChildEvaluator()
     QFETCH(bool, active);
 
     // Init the states
-    setWritableStateValue(deviceId, StateTypeId(percentageStateParamTypeId.toString()), QVariant(0));
-    setWritableStateValue(deviceId, StateTypeId(doubleStateParamTypeId.toString()), QVariant(0));
-    setWritableStateValue(deviceId, StateTypeId(allowedValuesStateParamTypeId.toString()), QVariant("String value 1"));
-    setWritableStateValue(deviceId, StateTypeId(colorStateParamTypeId.toString()), QVariant("#000000"));
+    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinPercentageStateTypeId.toString()), QVariant(0));
+    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinDoubleActionDoubleParamTypeId.toString()), QVariant(0));
+    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinAllowedValuesStateTypeId.toString()), QVariant("String value 1"));
+    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinColorStateTypeId.toString()), QVariant("#000000"));
 
     // Add rule
     QVariant response = injectAndWait("Rules.AddRule", ruleMap);
@@ -1963,21 +1964,21 @@ void TestRules::testChildEvaluator()
     RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
 
     // Set the states
-    setWritableStateValue(deviceId, StateTypeId(percentageStateParamTypeId.toString()), QVariant::fromValue(percentageValue));
-    setWritableStateValue(deviceId, StateTypeId(doubleStateParamTypeId.toString()), QVariant::fromValue(doubleValue));
-    setWritableStateValue(deviceId, StateTypeId(allowedValuesStateParamTypeId.toString()), QVariant::fromValue(allowedValue));
-    setWritableStateValue(deviceId, StateTypeId(colorStateParamTypeId.toString()), QVariant::fromValue(colorValue));
+    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinPercentageStateTypeId.toString()), QVariant::fromValue(percentageValue));
+    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinDoubleActionDoubleParamTypeId.toString()), QVariant::fromValue(doubleValue));
+    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinAllowedValuesStateTypeId.toString()), QVariant::fromValue(allowedValue));
+    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinColorStateTypeId.toString()), QVariant::fromValue(colorValue));
 
     // Verfiy if the rule executed successfully
     // Actions
     if (trigger && active) {
-        verifyRuleExecuted(mockActionIdNoParams);
+        verifyRuleExecuted(mockWithoutParamsActionTypeId);
         cleanupMockHistory();
     }
 
     // Exit actions
     if (trigger && !active) {
-        verifyRuleExecuted(mockActionIdWithParams);
+        verifyRuleExecuted(mockWithParamsActionTypeId);
         cleanupMockHistory();
     }
 
@@ -1999,7 +2000,7 @@ void TestRules::enableDisableRule()
     QVariantMap addRuleParams;
     QVariantList events;
     QVariantMap event1;
-    event1.insert("eventTypeId", mockEvent1Id);
+    event1.insert("eventTypeId", mockEvent1EventTypeId);
     event1.insert("deviceId", m_mockDeviceId);
     events.append(event1);
     addRuleParams.insert("eventDescriptors", events);
@@ -2007,7 +2008,7 @@ void TestRules::enableDisableRule()
 
     QVariantList actions;
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     actions.append(action);
     addRuleParams.insert("actions", actions);
@@ -2020,13 +2021,13 @@ void TestRules::enableDisableRule()
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     // trigger event in mock device
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
 
     cleanupMockHistory();
 
@@ -2044,7 +2045,7 @@ void TestRules::enableDisableRule()
 
     // trigger event in mock device
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2068,13 +2069,13 @@ void TestRules::enableDisableRule()
 
     // trigger event in mock device
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
 }
 
 void TestRules::testEventBasedAction()
@@ -2082,7 +2083,7 @@ void TestRules::testEventBasedAction()
     // Add a rule
     QVariantMap addRuleParams;
     QVariantMap eventDescriptor;
-    eventDescriptor.insert("eventTypeId", mockIntStateId);
+    eventDescriptor.insert("eventTypeId", mockIntStateTypeId);
     eventDescriptor.insert("deviceId", m_mockDeviceId);
     addRuleParams.insert("eventDescriptors", QVariantList() << eventDescriptor);
     addRuleParams.insert("name", "TestRule");
@@ -2092,15 +2093,15 @@ void TestRules::testEventBasedAction()
     QVariantMap action;
     QVariantList ruleActionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
-    param1.insert("eventTypeId", mockIntStateId);
-    param1.insert("eventParamTypeId", mockIntStateId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
+    param1.insert("eventTypeId", mockIntStateTypeId);
+    param1.insert("eventParamTypeId", mockIntStateTypeId);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     ruleActionParams.append(param1);
     ruleActionParams.append(param2);
-    action.insert("actionTypeId", mockActionIdWithParams);
+    action.insert("actionTypeId", mockWithParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", ruleActionParams);
     actions.append(action);
@@ -2117,13 +2118,13 @@ void TestRules::testEventBasedAction()
 
     // state state to 42
     qDebug() << "setting mock int state to 42";
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(42)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(42)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    verifyRuleExecuted(mockActionIdWithParams);
+    verifyRuleExecuted(mockWithParamsActionTypeId);
     // TODO: check if this action was really executed with the int state value 42
 }
 
@@ -2134,7 +2135,7 @@ void TestRules::testEventBasedRuleWithExitAction()
 
     // Init bool state to true
     spy.clear();
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg(true)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg(true)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2143,7 +2144,7 @@ void TestRules::testEventBasedRuleWithExitAction()
     // Add a rule
     QVariantMap addRuleParams;
     QVariantMap eventDescriptor;
-    eventDescriptor.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor.insert("deviceId", m_mockDeviceId);
     addRuleParams.insert("eventDescriptors", QVariantList() << eventDescriptor);
     addRuleParams.insert("name", "TestRule");
@@ -2152,7 +2153,7 @@ void TestRules::testEventBasedRuleWithExitAction()
     QVariantMap stateEvaluator;
     QVariantMap stateDescriptor;
     stateDescriptor.insert("deviceId", m_mockDeviceId);
-    stateDescriptor.insert("stateTypeId", mockBoolStateId);
+    stateDescriptor.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptor.insert("operator", "ValueOperatorEquals");
     stateDescriptor.insert("value", true);
     stateEvaluator.insert("stateDescriptor", stateDescriptor);
@@ -2163,21 +2164,21 @@ void TestRules::testEventBasedRuleWithExitAction()
     QVariantMap action;
     QVariantList ruleActionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", true);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     ruleActionParams.append(param1);
     ruleActionParams.append(param2);
 
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     actions.append(action);
     addRuleParams.insert("actions", actions);
 
     actions.clear();
-    action.insert("actionTypeId", mockActionIdWithParams);
+    action.insert("actionTypeId", mockWithParamsActionTypeId);
     action.insert("ruleActionParams", ruleActionParams);
     actions.append(action);
     addRuleParams.insert("exitActions", actions);
@@ -2189,18 +2190,18 @@ void TestRules::testEventBasedRuleWithExitAction()
 
     // trigger event
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
     // Verify the actions got executed
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
 
     // set bool state to false
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg(false)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg(false)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2208,14 +2209,14 @@ void TestRules::testEventBasedRuleWithExitAction()
 
     // trigger event
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
     // Verify the exit actions got executed
-    verifyRuleExecuted(mockActionIdNoParams);
+    verifyRuleExecuted(mockWithoutParamsActionTypeId);
 
 }
 
@@ -2226,7 +2227,7 @@ void TestRules::testStateBasedAction()
 
     // Init bool state to true
     spy.clear();
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg(true)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg(true)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2234,7 +2235,7 @@ void TestRules::testStateBasedAction()
 
     // Init int state to 11
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateId.toString()).arg(11)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(11)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2243,7 +2244,7 @@ void TestRules::testStateBasedAction()
     // Add a rule
     QVariantMap addRuleParams;
     QVariantMap eventDescriptor;
-    eventDescriptor.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor.insert("deviceId", m_mockDeviceId);
     addRuleParams.insert("eventDescriptors", QVariantList() << eventDescriptor);
     addRuleParams.insert("name", "TestRule");
@@ -2253,19 +2254,19 @@ void TestRules::testStateBasedAction()
     QVariantMap action;
     QVariantList ruleActionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("stateDeviceId", m_mockDeviceId);
-    param1.insert("stateTypeId", mockIntStateId);
+    param1.insert("stateTypeId", mockIntStateTypeId);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("stateDeviceId", m_mockDeviceId);
-    param2.insert("stateTypeId", mockBoolStateId);
+    param2.insert("stateTypeId", mockBoolStateTypeId);
     ruleActionParams.append(param1);
     ruleActionParams.append(param2);
 
     actions.clear();
     action.insert("deviceId", m_mockDeviceId);
-    action.insert("actionTypeId", mockActionIdWithParams);
+    action.insert("actionTypeId", mockWithParamsActionTypeId);
     action.insert("ruleActionParams", ruleActionParams);
     actions.append(action);
     addRuleParams.insert("actions", actions);
@@ -2277,7 +2278,7 @@ void TestRules::testStateBasedAction()
 
     // trigger event
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2285,13 +2286,13 @@ void TestRules::testStateBasedAction()
 
     LogFilter filter;
     filter.addDeviceId(m_mockDeviceId);
-    filter.addTypeId(mockActionIdWithParams);
+    filter.addTypeId(mockWithParamsActionTypeId);
     QList<LogEntry> entries = NymeaCore::instance()->logEngine()->logEntries(filter);
     qCDebug(dcTests()) << "Log entries:" << entries;
 
     // set bool state to false
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateId.toString()).arg(false)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg(false)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2299,7 +2300,7 @@ void TestRules::testStateBasedAction()
 
     // trigger event
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1Id.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2344,9 +2345,9 @@ void TestRules::removePolicyUpdate()
 
     // Add rule with child device
     QVariantList eventDescriptors;
-    eventDescriptors.append(createEventDescriptor(childDeviceId, mockParentChildEventId));
-    eventDescriptors.append(createEventDescriptor(parentDeviceId, mockParentChildEventId));
-    eventDescriptors.append(createEventDescriptor(m_mockDeviceId, mockEvent1Id));
+    eventDescriptors.append(createEventDescriptor(childDeviceId, mockChildBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(parentDeviceId, mockParentBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(m_mockDeviceId, mockEvent1EventTypeId));
 
     params.clear(); response.clear();
     params.insert("name", "RemovePolicy");
@@ -2427,9 +2428,9 @@ void TestRules::removePolicyCascade()
 
     // Add rule with child device
     QVariantList eventDescriptors;
-    eventDescriptors.append(createEventDescriptor(childDeviceId, mockParentChildEventId));
-    eventDescriptors.append(createEventDescriptor(parentDeviceId, mockParentChildEventId));
-    eventDescriptors.append(createEventDescriptor(m_mockDeviceId, mockEvent1Id));
+    eventDescriptors.append(createEventDescriptor(childDeviceId, mockChildBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(parentDeviceId, mockParentBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(m_mockDeviceId, mockEvent1EventTypeId));
 
     params.clear(); response.clear();
     params.insert("name", "RemovePolicy");
@@ -2502,9 +2503,9 @@ void TestRules::removePolicyUpdateRendersUselessRule()
 
     // Add rule with child device
     QVariantList eventDescriptors;
-    eventDescriptors.append(createEventDescriptor(childDeviceId, mockParentChildEventId));
-    eventDescriptors.append(createEventDescriptor(parentDeviceId, mockParentChildEventId));
-    eventDescriptors.append(createEventDescriptor(m_mockDeviceId, mockEvent1Id));
+    eventDescriptors.append(createEventDescriptor(childDeviceId, mockChildBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(parentDeviceId, mockParentBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(m_mockDeviceId, mockEvent1EventTypeId));
 
     params.clear(); response.clear();
     params.insert("name", "RemovePolicy");
@@ -2512,9 +2513,9 @@ void TestRules::removePolicyUpdateRendersUselessRule()
 
     QVariantMap action;
     action.insert("deviceId", childDeviceId);
-    action.insert("actionTypeId", mockParentChildActionId);
+    action.insert("actionTypeId", mockChildBoolValueActionTypeId);
     QVariantMap ruleActionParam;
-    ruleActionParam.insert("paramTypeId", mockParentChildActionId);
+    ruleActionParam.insert("paramTypeId", mockChildBoolValueActionBoolValueParamTypeId);
     ruleActionParam.insert("value", true);
     action.insert("ruleActionParams", QVariantList() << ruleActionParam);
     params.insert("actions", QVariantList() << action);
@@ -2560,24 +2561,24 @@ void TestRules::testRuleActionParams_data()
     QVariantMap action;
     QVariantList ruleActionParams;
     QVariantMap param1;
-    param1.insert("paramTypeId", mockActionParam1ParamTypeId);
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     param1.insert("value", 4);
     QVariantMap param2;
-    param2.insert("paramTypeId", mockActionParam2ParamTypeId);
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     ruleActionParams.append(param1);
     ruleActionParams.append(param2);
-    action.insert("actionTypeId", mockActionIdWithParams);
+    action.insert("actionTypeId", mockWithParamsActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     action.insert("ruleActionParams", ruleActionParams);
 
     QVariantMap invalidAction1;
-    invalidAction1.insert("actionTypeId", mockActionIdWithParams);
+    invalidAction1.insert("actionTypeId", mockWithParamsActionTypeId);
     invalidAction1.insert("deviceId", m_mockDeviceId);
     invalidAction1.insert("ruleActionParams", QVariantList() << param2);
 
     QVariantMap invalidAction2;
-    invalidAction2.insert("actionTypeId", mockActionIdWithParams);
+    invalidAction2.insert("actionTypeId", mockWithParamsActionTypeId);
     invalidAction2.insert("deviceId", m_mockDeviceId);
     invalidAction2.insert("ruleActionParams", QVariantList() << param1);
 
@@ -2619,36 +2620,36 @@ void TestRules::testRuleActionPAramsFromEventParameter_data() {
     QTest::addColumn<RuleEngine::RuleError>("error");
 
     QVariantMap intEvent;
-    intEvent.insert("eventTypeId", mockIntStateId);
+    intEvent.insert("eventTypeId", mockIntStateTypeId);
     intEvent.insert("deviceId", m_mockDeviceId);
 
     QVariantMap intAction;
-    intAction.insert("actionTypeId", mockActionIdWithParams);
+    intAction.insert("actionTypeId", mockWithParamsActionTypeId);
     intAction.insert("deviceId", m_mockDeviceId);
     QVariantList ruleActionParams;
     QVariantMap intParam;
-    intParam.insert("paramTypeId", mockActionParam1ParamTypeId);
-    intParam.insert("eventTypeId", mockIntStateId);
-    intParam.insert("eventParamTypeId", mockIntStateId);
+    intParam.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
+    intParam.insert("eventTypeId", mockIntStateTypeId);
+    intParam.insert("eventParamTypeId", mockIntStateTypeId);
     ruleActionParams.append(intParam);
     QVariantMap boolParam;
-    boolParam.insert("paramTypeId", mockActionParam2ParamTypeId);
+    boolParam.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     boolParam.insert("value", true);
     ruleActionParams.append(boolParam);
     intAction.insert("ruleActionParams", ruleActionParams);
 
     QVariantMap boolAction;
-    boolAction.insert("actionTypeId", mockActionIdWithParams);
+    boolAction.insert("actionTypeId", mockWithParamsActionTypeId);
     boolAction.insert("deviceId", m_mockDeviceId);
     ruleActionParams.clear();
     intParam.clear();
-    intParam.insert("paramTypeId", mockActionParam1ParamTypeId);
+    intParam.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     intParam.insert("value", 5);
     ruleActionParams.append(intParam);
     boolParam.clear();
-    boolParam.insert("paramTypeId", mockActionParam2ParamTypeId);
-    boolParam.insert("eventTypeId", mockIntStateId);
-    boolParam.insert("eventParamTypeId", mockIntStateId);
+    boolParam.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
+    boolParam.insert("eventTypeId", mockIntStateTypeId);
+    boolParam.insert("eventParamTypeId", mockIntStateTypeId);
     ruleActionParams.append(boolParam);
     boolAction.insert("ruleActionParams", ruleActionParams);
 
@@ -2682,7 +2683,7 @@ void TestRules::testInitStatesActive()
 
     QVariantMap eventDescriptor;
     eventDescriptor.insert("deviceId", m_mockDeviceId);
-    eventDescriptor.insert("eventTypeId", mockEvent1Id);
+    eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
     QVariantList eventDescriptors;
     eventDescriptors.append(eventDescriptor);
     params.insert("eventDescriptors", eventDescriptors);
@@ -2698,11 +2699,11 @@ void TestRules::testInitStatesActive()
 
     QVariantList actions;
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdPower);
+    action.insert("actionTypeId", mockPowerActionTypeId);
     action.insert("deviceId", m_mockDeviceId);
     QVariantList actionParams;
     QVariantMap actionParam;
-    actionParam.insert("paramTypeId", mockActionIdPower);
+    actionParam.insert("paramTypeId", mockPowerActionPowerParamTypeId);
     actionParam.insert("value", true);
     actionParams.append(actionParam);
     action.insert("ruleActionParams", actionParams);
@@ -2711,11 +2712,11 @@ void TestRules::testInitStatesActive()
 
     QVariantList exitActions;
     QVariantMap exitAction;
-    exitAction.insert("actionTypeId", mockActionIdPower);
+    exitAction.insert("actionTypeId", mockPowerActionTypeId);
     exitAction.insert("deviceId", m_mockDeviceId);
     QVariantList exitActionParams;
     QVariantMap exitActionParam;
-    exitActionParam.insert("paramTypeId", mockActionIdPower);
+    exitActionParam.insert("paramTypeId", mockPowerActionPowerParamTypeId);
     exitActionParam.insert("value", false);
     exitActionParams.append(exitActionParam);
     exitAction.insert("ruleActionParams", exitActionParams);
@@ -2736,7 +2737,7 @@ void TestRules::testInitStatesActive()
 
 
     // Trigger the event
-    generateEvent(mockEvent1Id);
+    generateEvent(mockEvent1EventTypeId);
 
 
     // Make sure the value changed after the event has triggered
@@ -2745,7 +2746,7 @@ void TestRules::testInitStatesActive()
 
 
     // Trigger the event again...
-    generateEvent(mockEvent1Id);
+    generateEvent(mockEvent1EventTypeId);
 
 
     // ... and make sure the value changed back to false
@@ -2759,7 +2760,7 @@ void TestRules::testInitStatesActive()
     QVERIFY2(response.toMap().value("params").toMap().value("value").toBool() == false, "State is true while it should have changed to false");
 
     // Trigger the event
-    generateEvent(mockEvent1Id);
+    generateEvent(mockEvent1EventTypeId);
 
 
     // Make sure the value changed after the event has triggered
@@ -2774,7 +2775,7 @@ void TestRules::testInterfaceBasedEventRule()
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     // state battery critical state to false initially
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(false)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2836,13 +2837,13 @@ void TestRules::testInterfaceBasedEventRule()
     qDebug(dcTests) << "Changing battery state -> true";
 
     spy.wait(); spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(true)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(true)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    verifyRuleExecuted(mockActionIdPower);
+    verifyRuleExecuted(mockPowerActionTypeId);
 
     qDebug(dcTests) << "Clearing action history";
 
@@ -2854,7 +2855,7 @@ void TestRules::testInterfaceBasedEventRule()
     qDebug(dcTests) << "Changing battery state -> false";
 
     spy.wait(); spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(false)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2868,7 +2869,7 @@ void TestRules::testInterfaceBasedStateRule()
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     // state battery critical state to false initially
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(false)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2922,13 +2923,13 @@ void TestRules::testInterfaceBasedStateRule()
 
     // Change the state
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(true)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(true)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    verifyRuleExecuted(mockActionIdPower);
+    verifyRuleExecuted(mockPowerActionTypeId);
 }
 
 void TestRules::testLoopingRules()
@@ -2991,7 +2992,7 @@ void TestRules::testLoopingRules()
     params.insert("actionTypeId", mockPowerStateTypeId);
     params.insert("params", QVariantList() << powerOffActionParam);
     response = injectAndWait("Actions.ExecuteAction", params);
-    verifyRuleExecuted(mockActionIdPower);
+    verifyRuleExecuted(mockPowerActionTypeId);
 
     cleanupMockHistory();
 
@@ -3000,7 +3001,7 @@ void TestRules::testLoopingRules()
     params.insert("actionTypeId", mockPowerStateTypeId);
     params.insert("params", QVariantList() << powerOnActionParam);
     response = injectAndWait("Actions.ExecuteAction", params);
-    verifyRuleExecuted(mockActionIdPower);
+    verifyRuleExecuted(mockPowerActionTypeId);
 
     // No need to check anything else. This test sets up a binding loop and if the core doesn't catch it it'll crash here.
 }
@@ -3027,7 +3028,7 @@ void TestRules::testScene()
 
     // state battery critical state to false initially
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(false)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -3054,7 +3055,7 @@ void TestRules::testScene()
 
     // trigger state change on battery critical
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateId.toString()).arg(true)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(true)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -3093,7 +3094,7 @@ void TestRules::testHousekeeping()
     params.insert("name", "TestDeviceToBeRemoved");
     QVariantList deviceParams;
     QVariantMap httpParam;
-    httpParam.insert("paramTypeId", httpportParamTypeId);
+    httpParam.insert("paramTypeId", mockDeviceHttpportParamTypeId);
     httpParam.insert("value", 6667);
     deviceParams.append(httpParam);
     params.insert("deviceParams", deviceParams);
@@ -3107,7 +3108,7 @@ void TestRules::testHousekeeping()
     if (testEventDescriptor) {
         QVariantList eventDescriptors;
         QVariantMap eventDescriptor;
-        eventDescriptor.insert("eventTypeId", mockEvent1Id);
+        eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
         eventDescriptor.insert("deviceId", testEventDescriptor ? deviceId : m_mockDeviceId);
         eventDescriptors.append(eventDescriptor);
         params.insert("eventDescriptors", eventDescriptors);
@@ -3115,7 +3116,7 @@ void TestRules::testHousekeeping()
 
     QVariantMap stateEvaluator;
     QVariantMap stateDescriptor;
-    stateDescriptor.insert("stateTypeId", mockIntStateId);
+    stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("operator", "ValueOperatorGreater");
     stateDescriptor.insert("value", 555);
     stateDescriptor.insert("deviceId", testStateEvaluator ? deviceId : m_mockDeviceId);
@@ -3124,7 +3125,7 @@ void TestRules::testHousekeeping()
 
     QVariantList actions;
     QVariantMap action;
-    action.insert("actionTypeId", mockActionIdNoParams);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action.insert("deviceId", testAction ? deviceId : m_mockDeviceId);
     actions.append(action);
     params.insert("actions", actions);
@@ -3132,7 +3133,7 @@ void TestRules::testHousekeeping()
     if (!testEventDescriptor) {
         QVariantList exitActions;
         QVariantMap exitAction;
-        exitAction.insert("actionTypeId", mockActionIdNoParams);
+        exitAction.insert("actionTypeId", mockWithoutParamsActionTypeId);
         exitAction.insert("deviceId", testExitAction ? deviceId : m_mockDeviceId);
         exitActions.append(exitAction);
         params.insert("exitActions", exitActions);

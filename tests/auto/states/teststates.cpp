@@ -56,8 +56,8 @@ void TestStates::getStateValue_data()
     QTest::addColumn<StateTypeId>("stateTypeId");
     QTest::addColumn<Device::DeviceError>("error");
 
-    QTest::newRow("existing state") << device->id() << mockIntStateId << Device::DeviceErrorNoError;
-    QTest::newRow("invalid device") << DeviceId::createDeviceId() << mockIntStateId << Device::DeviceErrorDeviceNotFound;
+    QTest::newRow("existing state") << device->id() << mockIntStateTypeId << Device::DeviceErrorNoError;
+    QTest::newRow("invalid device") << DeviceId::createDeviceId() << mockIntStateTypeId << Device::DeviceErrorDeviceNotFound;
     QTest::newRow("invalid statetype") << device->id() << StateTypeId::createStateTypeId() << Device::DeviceErrorStateTypeNotFound;
 }
 
@@ -80,26 +80,26 @@ void TestStates::save_load_states()
 {
     DeviceClass mockDeviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(mockDeviceClassId);
 
-    QVERIFY2(mockDeviceClass.getStateType(mockIntStateId).cached(), "Mock int state is not cached (required to be true for this test)");
-    QVERIFY2(!mockDeviceClass.getStateType(mockBoolStateId).cached(), "Mock bool state is cached (required to be false for this test)");
+    QVERIFY2(mockDeviceClass.getStateType(mockIntStateTypeId).cached(), "Mock int state is not cached (required to be true for this test)");
+    QVERIFY2(!mockDeviceClass.getStateType(mockBoolStateTypeId).cached(), "Mock bool state is cached (required to be false for this test)");
 
     Device* device = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId).first();
-    int port = device->paramValue(httpportParamTypeId).toInt();
+    int port = device->paramValue(mockDeviceHttpportParamTypeId).toInt();
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
 
     // First set the state values to something that is *not* the default
-    int newIntValue = mockDeviceClass.getStateType(mockIntStateId).defaultValue().toInt() + 1;
-    bool newBoolValue = !mockDeviceClass.getStateType(mockBoolStateId).defaultValue().toBool();
+    int newIntValue = mockDeviceClass.getStateType(mockIntStateTypeId).defaultValue().toInt() + 1;
+    bool newBoolValue = !mockDeviceClass.getStateType(mockBoolStateTypeId).defaultValue().toBool();
 
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockIntStateId.toString()).arg(newIntValue)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockIntStateTypeId.toString()).arg(newIntValue)));
     QNetworkReply *reply = nam.get(request);
     connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
     spy.wait();
 
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockBoolStateId.toString()).arg(newBoolValue)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockBoolStateTypeId.toString()).arg(newBoolValue)));
     reply = nam.get(request);
     connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
     spy.wait();
@@ -108,11 +108,11 @@ void TestStates::save_load_states()
     QVariantMap params;
     params.insert("deviceId", device->id());
 
-    params["stateTypeId"] = mockIntStateId;
+    params["stateTypeId"] = mockIntStateTypeId;
     QVariant response = injectAndWait("Devices.GetStateValue", params);
     QCOMPARE(response.toMap().value("params").toMap().value("value").toInt(), newIntValue);
 
-    params["stateTypeId"] = mockBoolStateId;
+    params["stateTypeId"] = mockBoolStateTypeId;
     response = injectAndWait("Devices.GetStateValue", params);
     QCOMPARE(response.toMap().value("params").toMap().value("value").toBool(), newBoolValue);
 
@@ -120,14 +120,14 @@ void TestStates::save_load_states()
     restartServer();
 
     // And check if the cached int state has successfully been restored
-    params["stateTypeId"] = mockIntStateId;
+    params["stateTypeId"] = mockIntStateTypeId;
     response = injectAndWait("Devices.GetStateValue", params);
     QCOMPARE(response.toMap().value("params").toMap().value("value").toInt(), newIntValue);
 
     // and that the non-cached bool state is back to its default
-    params["stateTypeId"] = mockBoolStateId;
+    params["stateTypeId"] = mockBoolStateTypeId;
     response = injectAndWait("Devices.GetStateValue", params);
-    QCOMPARE(response.toMap().value("params").toMap().value("value").toBool(), mockDeviceClass.getStateType(mockBoolStateId).defaultValue().toBool());
+    QCOMPARE(response.toMap().value("params").toMap().value("value").toBool(), mockDeviceClass.getStateType(mockBoolStateTypeId).defaultValue().toBool());
 }
 
 #include "teststates.moc"

@@ -29,10 +29,13 @@ class TestDevices : public NymeaTestBase
 {
     Q_OBJECT
 
-protected slots:
-    void initTestCase();
+private:
+    DeviceId m_mockDeviceAsyncId;
 
 private slots:
+
+    void initTestCase();
+
     void getPlugins();
 
     void getPluginConfig_data();
@@ -98,6 +101,16 @@ private slots:
     void reconfigureByDiscoveryAndPair();
     void reconfigureAutodevice();
 
+    void testBrowsing_data();
+    void testBrowsing();
+
+    void testExecuteBrowserItem_data();
+    void testExecuteBrowserItem();
+
+    void testExecuteBrowserItemAction_data();
+    void testExecuteBrowserItemAction();
+
+    // Keep those at last as they will remove devices
     void removeDevice_data();
     void removeDevice();
 
@@ -114,6 +127,31 @@ void TestDevices::initTestCase()
                                      "MockDevice.debug=true\n"
                                      );
 
+    // Adding an async mock device to be used in tests below
+    QVariantMap params;
+    params.insert("deviceClassId", mockDeviceClassId);
+    params.insert("name", "Mock Device (Async)");
+
+    QVariantList deviceParams;
+
+    QVariantMap asyncParam;
+    asyncParam.insert("paramTypeId", mockDeviceAsyncParamTypeId);
+    asyncParam.insert("value", true);
+    deviceParams.append(asyncParam);
+
+    QVariantMap httpParam;
+    httpParam.insert("paramTypeId", mockDeviceHttpportParamTypeId);
+    httpParam.insert("value", 8765);
+    deviceParams.append(httpParam);
+
+    params.insert("deviceParams", deviceParams);
+
+    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+
+    m_mockDeviceAsyncId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY2(!m_mockDeviceAsyncId.isNull(), "Creating an async mock device failed");
+
+    qCDebug(dcTests()) << "Created Async mock device with ID" << m_mockDeviceAsyncId;
 }
 
 void TestDevices::getPlugins()
@@ -335,7 +373,7 @@ void TestDevices::getConfiguredDevices()
     QVariant response = injectAndWait("Devices.GetConfiguredDevices");
 
     QVariantList devices = response.toMap().value("params").toMap().value("devices").toList();
-    QCOMPARE(devices.count(), 2); // There should be one auto created mock device and one created in initTestcase()
+    QCOMPARE(devices.count(), 3); // There should be: one auto created mock device, one created in NymeaTestBase::initTestcase() and one created in TestDevices::initTestCase()
 }
 
 void TestDevices::storedDevices()
@@ -422,7 +460,7 @@ void TestDevices::discoverDevices()
     }
 
     // If we found something, lets try to add it
-    if (Device::DeviceErrorNoError) {
+    if (error == Device::DeviceErrorNoError) {
         DeviceDescriptorId descriptorId = DeviceDescriptorId(response.toMap().value("params").toMap().value("deviceDescriptors").toList().first().toMap().value("id").toString());
 
         params.clear();
@@ -1448,7 +1486,8 @@ void TestDevices::removeAutoDevice()
     // First try to make a manually created device disappear. It must not go away
 
     QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
-    QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
+    int oldCount = devices.count();
+    QVERIFY2(oldCount > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 
     // trigger disappear signal in mock device
@@ -1458,12 +1497,13 @@ void TestDevices::removeAutoDevice()
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
-    QVERIFY2(NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId).count() == 1, "Mock device has disappeared even though it shouldn't");
+    QVERIFY2(NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId).count() == oldCount, "Mock device has disappeared even though it shouldn't");
 
     // Ok, now do the same with an autocreated one. It should go away
 
     devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceAutoDeviceClassId);
-    QVERIFY2(devices.count() > 0, "There needs to be at least one auto-created Mock Device for this test");
+    oldCount = devices.count();
+    QVERIFY2(oldCount > 0, "There needs to be at least one auto-created Mock Device for this test");
     device = devices.first();
 
     DeviceClass dc = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
@@ -1478,7 +1518,59 @@ void TestDevices::removeAutoDevice()
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    QVERIFY2(NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceAutoDeviceClassId).count() == 0, "Mock device has not disappeared even though it should have.");
+    // Make sure one mock device has disappeared
+    QCOMPARE(NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceAutoDeviceClassId).count(), oldCount - 1);
+}
+
+void TestDevices::testBrowsing_data()
+{
+    QTest::addColumn<DeviceId>("deviceId");
+
+    QTest::newRow("regular mock device") << m_mockDeviceId;
+    QTest::newRow("async mock device") << m_mockDeviceAsyncId;
+}
+
+void TestDevices::testBrowsing()
+{
+    QFETCH(DeviceId, deviceId);
+
+    // Check if mockdevice is browsable
+    QVariant response = injectAndWait("Devices.GetSupportedDevices");
+
+    QVariantMap mockDeviceClass;
+    foreach (const QVariant &deviceClassVariant, response.toMap().value("params").toMap().value("deviceClasses").toList()) {
+        if (DeviceClassId(deviceClassVariant.toMap().value("id").toString()) == mockDeviceClassId) {
+            mockDeviceClass = deviceClassVariant.toMap();
+        }
+    }
+
+    QVERIFY2(DeviceClassId(mockDeviceClass.value("id").toString()) == mockDeviceClassId, "Could not find mock device");
+    QCOMPARE(mockDeviceClass.value("browsable").toBool(), true);
+
+
+    // Browse it
+    QVariantMap params;
+    params.insert("deviceId", deviceId);
+    response = injectAndWait("Devices.BrowseDevice", params);
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), QString("DeviceErrorNoError"));
+    QVariantList browserEntries = response.toMap().value("params").toMap().value("items").toList();
+    QVERIFY2(browserEntries.count() > 0, "BrowseDevice did not return any items.");
+
+    // Browse item 001, it should be a folder with 2 items
+    params.insert("itemId", "001");
+    response = injectAndWait("Devices.BrowseDevice", params);
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), QString("DeviceErrorNoError"));
+    browserEntries = response.toMap().value("params").toMap().value("items").toList();
+    QVERIFY2(browserEntries.count() == 2, "BrowseDevice did not return 2 items as childs in folder with id 001.");
+
+    // Browse a non-existent item
+    params["itemId"] = "this-does-not-exist";
+    response = injectAndWait("Devices.BrowseDevice", params);
+    browserEntries = response.toMap().value("params").toMap().value("items").toList();
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), QString("DeviceErrorItemNotFound"));
+    QCOMPARE(browserEntries.count(), 0);
+
+
 }
 
 void TestDevices::discoverDeviceParenting()
@@ -1539,6 +1631,113 @@ void TestDevices::discoverDeviceParenting()
     QPair<Device::DeviceError, QList<RuleId> > ret = NymeaCore::instance()->removeConfiguredDevice(parentDevice->id(), QHash<RuleId, RuleEngine::RemovePolicy>());
     QCOMPARE(ret.first, Device::DeviceErrorNoError);
     QCOMPARE(removeSpy.count(), 3); // The parent, the auto-mock and the discovered mock
+
+}
+
+void TestDevices::testExecuteBrowserItem_data()
+{
+    QTest::addColumn<DeviceId>("deviceId");
+    QTest::addColumn<QString>("itemId");
+    QTest::addColumn<QString>("deviceError");
+
+    QTest::newRow("regular mock device") << m_mockDeviceId << "002" << "DeviceErrorNoError";
+    QTest::newRow("regular mock device") << m_mockDeviceId << "001" << "DeviceErrorItemNotExecutable";
+    QTest::newRow("async mock device") << m_mockDeviceAsyncId << "002" << "DeviceErrorNoError";
+}
+
+void TestDevices::testExecuteBrowserItem()
+{
+    QFETCH(DeviceId, deviceId);
+    QFETCH(QString, itemId);
+    QFETCH(QString, deviceError);
+
+    QVariantMap params;
+    params.insert("deviceId", deviceId);
+    params.insert("itemId", itemId);
+    QVariant response = injectAndWait("Actions.ExecuteBrowserItem", params);
+    qCDebug(dcTests()) << "resp" << response;
+
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), deviceError);
+}
+
+void TestDevices::testExecuteBrowserItemAction_data()
+{
+    QTest::addColumn<DeviceId>("deviceId");
+
+    QTest::newRow("regular mock device") << m_mockDeviceId;
+    QTest::newRow("async mock device") << m_mockDeviceAsyncId;
+}
+
+void TestDevices::testExecuteBrowserItemAction()
+{
+    QFETCH(DeviceId, deviceId);
+
+    QVariantMap getItemsParams;
+    getItemsParams.insert("deviceId", deviceId);
+    QVariant response = injectAndWait("Devices.BrowseDevice", getItemsParams);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    QVariantList browserEntries = response.toMap().value("params").toMap().value("items").toList();
+    QVERIFY(browserEntries.count() > 2);
+
+    QVariantMap item002; // Find the item we need for this test
+    foreach (const QVariant &item, browserEntries) {
+        if (item.toMap().value("id").toString() == "002") {
+            item002 = item.toMap();
+            break;
+        }
+    }
+    QVERIFY2(item002.value("id").toString() == QString("002"), "Item with context actions not found");
+    QVERIFY2(item002.value("actionTypeIds").toList().count() > 0, "Item doesn't have actionTypeIds");
+    QVERIFY2(ActionTypeId(item002.value("actionTypeIds").toList().first().toString()) == mockAddToFavoritesBrowserItemActionTypeId, "AddToFavorites action type id not found in item");
+
+
+    // Browse favorites
+    // ID is "favorites" in mockDevice
+    // It should be ampty at this point
+    getItemsParams.insert("itemId", "favorites");
+    response = injectAndWait("Devices.BrowseDevice", getItemsParams);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    browserEntries = response.toMap().value("params").toMap().value("items").toList();
+    QVERIFY2(browserEntries.count() == 0, "Favorites should be empty at this point");
+
+    // Now add an item to the favorites
+    QVariantMap actionParams;
+    actionParams.insert("deviceId", deviceId);
+    actionParams.insert("itemId", "002");
+    actionParams.insert("actionTypeId", mockAddToFavoritesBrowserItemActionTypeId);
+    response = injectAndWait("Actions.ExecuteBrowserItemAction", actionParams);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), QString("DeviceErrorNoError"));
+
+    qCDebug(dcTests()) << "res" << response;
+
+    // Fetch the list again
+    response = injectAndWait("Devices.BrowseDevice", getItemsParams);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    browserEntries = response.toMap().value("params").toMap().value("items").toList();
+    QCOMPARE(browserEntries.count(), 1);
+
+    QString favoriteItemId = browserEntries.first().toMap().value("id").toString();
+    QVERIFY2(!favoriteItemId.isEmpty(), "ItemId is empty in favorites list");
+
+    // Now remove the again from favorites
+    actionParams.clear();
+    actionParams.insert("deviceId", deviceId);
+    actionParams.insert("itemId", favoriteItemId);
+    actionParams.insert("actionTypeId", mockRemoveFromFavoritesBrowserItemActionTypeId);
+    response = injectAndWait("Actions.ExecuteBrowserItemAction", actionParams);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), QString("DeviceErrorNoError"));
+
+    // Fetch the list again
+    response = injectAndWait("Devices.BrowseDevice", getItemsParams);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    browserEntries = response.toMap().value("params").toMap().value("items").toList();
+    QCOMPARE(browserEntries.count(), 0);
 
 }
 

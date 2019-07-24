@@ -251,6 +251,11 @@ Device::BrowseResult DevicePluginMock::browseDevice(Device *device, Device::Brow
                     result.status = Device::DeviceErrorHardwareFailure;
                 } else {
                     VirtualFsNode *node = m_virtualFs->findNode(itemId);
+                    if (!node) {
+                        result.status = Device::DeviceErrorItemNotFound;
+                        emit browseRequestFinished(result);
+                        return;
+                    }
                     foreach (VirtualFsNode *child, node->childs) {
                         result.items.append(child->item);
                     }
@@ -263,6 +268,10 @@ Device::BrowseResult DevicePluginMock::browseDevice(Device *device, Device::Brow
             result.status = Device::DeviceErrorHardwareFailure;
         } else {
             VirtualFsNode *node = m_virtualFs->findNode(itemId);
+            if (!node) {
+                result.status = Device::DeviceErrorItemNotFound;
+                return result;
+            }
             foreach (VirtualFsNode *child, node->childs) {
                 result.items.append(child->item);
             }
@@ -421,6 +430,15 @@ Device::DeviceError DevicePluginMock::executeBrowserItem(Device *device, const B
     qCDebug(dcMockDevice()) << "ExecuteBrowserItem called" << browserAction.itemId();
     bool broken = device->paramValue(mockDeviceBrokenParamTypeId).toBool();
     bool async = device->paramValue(mockDeviceAsyncParamTypeId).toBool();
+
+    VirtualFsNode *node = m_virtualFs->findNode(browserAction.itemId());
+    if (!node) {
+        return Device::DeviceErrorItemNotFound;
+    }
+
+    if (!node->item.executable()) {
+        return Device::DeviceErrorItemNotExecutable;
+    }
 
     if (!async){
         if (broken) {
@@ -674,7 +692,8 @@ void DevicePluginMock::generateBrowseItems()
     BrowserItem item = BrowserItem("001", "Item 0", true);
     item.setDescription("I'm a folder");
     item.setIcon(BrowserItem::BrowserIconFolder);
-    m_virtualFs->addChild(new VirtualFsNode(item));
+    VirtualFsNode *folderNode = new VirtualFsNode(item);
+    m_virtualFs->addChild(folderNode);
 
     item = BrowserItem("002", "Item 1", false, true);
     item.setDescription("I'm executable");
@@ -705,4 +724,15 @@ void DevicePluginMock::generateBrowseItems()
     item.setDescription("Yay! I'm the best!");
     item.setIcon(BrowserItem::BrowserIconFavorites);
     m_virtualFs->addChild(new VirtualFsNode(item));
+
+    item = BrowserItem("sub-001", "Item Subdir 1", false, true);
+    item.setDescription("I'm an item in a subdir");
+    item.setIcon(BrowserItem::BrowserIconFile);
+    folderNode->addChild(new VirtualFsNode(item));
+
+    item = BrowserItem("sub-002", "Item Subdir 2", true, false);
+    item.setDescription("I'm a folder in a subdir");
+    item.setIcon(BrowserItem::BrowserIconFile);
+    folderNode->addChild(new VirtualFsNode(item));
+
 }

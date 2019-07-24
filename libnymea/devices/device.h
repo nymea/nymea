@@ -72,6 +72,7 @@ public:
         DeviceErrorPairingTransactionIdNotFound,
         DeviceErrorParameterNotWritable,
         DeviceErrorItemNotFound,
+        DeviceErrorItemNotExecutable,
         DeviceErrorUnsupportedFeature,
     };
     Q_ENUM(DeviceError)

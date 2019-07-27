@@ -63,8 +63,9 @@ QMAKE_EXTRA_TARGETS += clean plugininfo_clean
 # Install translation files
 TRANSLATIONS *= $$files($${_PRO_FILE_PWD_}/translations/*ts, true)
 lupdate.depends = FORCE
-lupdate.depends += plugininfo
-lupdate.commands = lupdate -recursive -no-obsolete $${_PRO_FILE_PWD_}/"$$TARGET".pro;
+lupdate.depends += qmake_all
+lupdate.commands = nymea-plugininfocompiler $${JSONFILE} --translation $${_PRO_FILE_PWD_}/translations/; \
+                   lupdate -recursive -no-obsolete $${_PRO_FILE_PWD_}/"$$TARGET".pro;
 QMAKE_EXTRA_TARGETS += lupdate
 
 # make lrelease to build .qm from .ts

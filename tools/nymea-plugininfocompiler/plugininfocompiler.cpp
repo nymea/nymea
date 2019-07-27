@@ -27,13 +27,14 @@
 #include <QJsonParseError>
 #include <QDataStream>
 #include <QDebug>
+#include <QDir>
 
 PluginInfoCompiler::PluginInfoCompiler()
 {
 
 }
 
-int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputFile, const QString outputFileExtern)
+int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputFile, const QString outputFileExtern, const QString &translationsPath)
 {
     // First, process the input json...
     QFile jsonFile(inputFile);
@@ -89,6 +90,33 @@ int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputF
             }
         }
     }
+
+    if (!translationsPath.isEmpty()) {
+        QDir dir;
+        if (!dir.exists(translationsPath)) {
+            if(!dir.mkpath(translationsPath)) {
+                qWarning() << "Error creating translation file directory" << translationsPath;
+                return 1;
+            }
+            qDebug() << "Created translations dir";
+        }
+
+        QFile f(translationsPath + '/' + metadata.pluginId().toString().remove(QRegExp("[{}]")) + "-en_US.ts");
+        QByteArray translationsStub = "<?xml version=\"1.0\" encoding=\"utf-8\"?><!DOCTYPE TS><TS version=\"2.1\"></TS>";
+        if (!f.exists()) {
+            if (!f.open(QFile::WriteOnly | QFile::Text)) {
+                qWarning() << "Error creating translation file";
+                return 1;
+            }
+            if (f.write(translationsStub) == -1) {
+                qWarning() << "Error writing translation file";
+                return 1;
+            }
+            f.close();
+            qDebug() << "Created translations stub";
+        }
+    }
+
 
     // Files are open. Ready to write content.
 

@@ -49,8 +49,8 @@ public:
 
     void startMonitoringAutoDevices() override;
 
-    Device::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret) override;
-    Device::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor) override;
+    DevicePairingInfo pairDevice(DevicePairingInfo &devicePairingInfo) override;
+    DevicePairingInfo confirmPairing(DevicePairingInfo &devicePairingInfo, const QString &username, const QString &secret) override;
 
     Device::BrowseResult browseDevice(Device *device, Device::BrowseResult result, const QString &itemId, const QLocale &locale) override;
     Device::BrowserItemResult browserItem(Device *device, Device::BrowserItemResult result, const QString &itemId, const QLocale &locale) override;
@@ -101,7 +101,7 @@ private:
     QList<Device*> m_asyncSetupDevices;
     QList<QPair<Action, Device*> > m_asyncActions;
 
-    PairingTransactionId m_pairingId;
+    DevicePairingInfo m_pairingInfo;
 
     int m_discoveredDeviceCount;
     bool m_pushbuttonPressed;

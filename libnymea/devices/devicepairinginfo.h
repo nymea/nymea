@@ -25,28 +25,45 @@
 
 #include "libnymea.h"
 #include "typeutils.h"
+#include "device.h"
 #include "types/param.h"
+#include <QUrl>
 
 class LIBNYMEA_EXPORT DevicePairingInfo
 {
 public:
     DevicePairingInfo();
-    DevicePairingInfo(const DeviceClassId &deviceClassId, const QString &deviceName, const ParamList &params);
-    DevicePairingInfo(const DeviceClassId &deviceClassId, const QString &deviceName, const DeviceDescriptorId &deviceDescriptorId);
+    DevicePairingInfo(const DeviceClassId &deviceClassId, const QString &deviceName, const ParamList &params, const DeviceId &deviceId = DeviceId());
+
+    PairingTransactionId transactionId() const;
 
     DeviceClassId deviceClassId() const;
+
+    DeviceId deviceId() const;
 
     QString deviceName() const;
 
     ParamList params() const;
 
-    DeviceDescriptorId deviceDescriptorId() const;
+    Device::DeviceError status() const;
+    void setStatus(Device::DeviceError status);
+
+    QString message() const;
+    void setMessage(const QString &message);
+
+    QUrl oAuthUrl() const;
+    void setOAuthUrl(const QUrl &url);
 
 private:
+    PairingTransactionId m_transactionId;
     DeviceClassId m_deviceClassId;
+    DeviceId m_deviceId;
     QString m_deviceName;
     ParamList m_params;
-    DeviceDescriptorId m_deviceDescriptorId;
+
+    Device::DeviceError m_status = Device::DeviceErrorNoError;
+    QString m_message;
+    QUrl m_oAuthUrl;
 };
 
 #endif // DEVICEPAIRINGINFO_H

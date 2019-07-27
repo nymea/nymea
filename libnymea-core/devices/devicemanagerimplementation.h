@@ -91,9 +91,9 @@ public:
     Device::DeviceError editDevice(const DeviceId &deviceId, const QString &name) override;
     Device::DeviceError setDeviceSettings(const DeviceId &deviceId, const ParamList &settings) override;
 
-    Device::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const ParamList &params) override;
-    Device::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId) override;
-    Device::DeviceError confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString()) override;
+    DevicePairingInfo pairDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params) override;
+    DevicePairingInfo pairDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId) override;
+    DevicePairingInfo confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString(), const QString &username = QString()) override;
 
     Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId) override;
 
@@ -120,7 +120,7 @@ private slots:
     void startMonitoringAutoDevices();
     void slotDevicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
     void slotDeviceSetupFinished(Device *device, Device::DeviceSetupStatus status);
-    void slotPairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceSetupStatus status);
+    void slotPairingFinished(DevicePairingInfo &pairingInfo);
     void onAutoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
     void onAutoDeviceDisappeared(const DeviceId &deviceId);
     void onLoaded();
@@ -133,6 +133,7 @@ private slots:
 
 private:
     Device::DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId(), const DeviceId &parentDeviceId = DeviceId());
+    DevicePairingInfo pairDeviceInternal(DevicePairingInfo &pairingInfo);
     Device::DeviceSetupStatus setupDevice(Device *device);
     void postSetupDevice(Device *device);
     void storeDeviceStates(Device *device);
@@ -152,8 +153,7 @@ private:
 
     QHash<PluginId, DevicePlugin*> m_devicePlugins;
 
-    QHash<QUuid, DevicePairingInfo> m_pairingsJustAdd;
-    QHash<QUuid, DevicePairingInfo> m_pairingsDiscovery;
+    QHash<QUuid, DevicePairingInfo> m_pairings;
 
     QList<Device *> m_asyncDeviceReconfiguration;
     QList<DevicePlugin *> m_discoveringPlugins;

@@ -27,25 +27,29 @@ DevicePairingInfo::DevicePairingInfo()
 
 }
 
-DevicePairingInfo::DevicePairingInfo(const DeviceClassId &deviceClassId, const QString &deviceName, const ParamList &params) :
+DevicePairingInfo::DevicePairingInfo(const DeviceClassId &deviceClassId, const QString &deviceName, const ParamList &params, const DeviceId &deviceId) :
+    m_transactionId(PairingTransactionId::createPairingTransactionId()),
     m_deviceClassId(deviceClassId),
+    m_deviceId(deviceId),
     m_deviceName(deviceName),
     m_params(params)
 {
 
 }
 
-DevicePairingInfo::DevicePairingInfo(const DeviceClassId &deviceClassId, const QString &deviceName, const DeviceDescriptorId &deviceDescriptorId) :
-    m_deviceClassId(deviceClassId),
-    m_deviceName(deviceName),
-    m_deviceDescriptorId(deviceDescriptorId)
+PairingTransactionId DevicePairingInfo::transactionId() const
 {
-
+    return m_transactionId;
 }
 
 DeviceClassId DevicePairingInfo::deviceClassId() const
 {
     return m_deviceClassId;
+}
+
+DeviceId DevicePairingInfo::deviceId() const
+{
+    return m_deviceId;
 }
 
 QString DevicePairingInfo::deviceName() const
@@ -58,8 +62,32 @@ ParamList DevicePairingInfo::params() const
     return m_params;
 }
 
-DeviceDescriptorId DevicePairingInfo::deviceDescriptorId() const
+Device::DeviceError DevicePairingInfo::status() const
 {
-    return m_deviceDescriptorId;
+    return m_status;
 }
 
+void DevicePairingInfo::setStatus(Device::DeviceError status)
+{
+    m_status = status;
+}
+
+QString DevicePairingInfo::message() const
+{
+    return m_message;
+}
+
+void DevicePairingInfo::setMessage(const QString &message)
+{
+    m_message = message;
+}
+
+QUrl DevicePairingInfo::oAuthUrl() const
+{
+    return m_oAuthUrl;
+}
+
+void DevicePairingInfo::setOAuthUrl(const QUrl &url)
+{
+    m_oAuthUrl = url;
+}

@@ -513,109 +513,103 @@ Device::DeviceError DeviceManagerImplementation::setDeviceSettings(const DeviceI
 
 /*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId, \a name and \a params.
  *  Returns \l{Device::DeviceError}{DeviceError} to inform about the result. */
-Device::DeviceError DeviceManagerImplementation::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const ParamList &params)
+DevicePairingInfo DeviceManagerImplementation::pairDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params)
 {
-    DeviceClass deviceClass = findDeviceClass(deviceClassId);
-    if (deviceClass.id().isNull()) {
-        qCWarning(dcDeviceManager) << "Cannot find a device class with id" << deviceClassId;
-        return Device::DeviceErrorDeviceClassNotFound;
-    }
+    DevicePairingInfo pairingInfo(deviceClassId, name, params, DeviceId::createDeviceId());
 
-    Q_UNUSED(pairingTransactionId)
-    Q_UNUSED(params)
-    Q_UNUSED(name)
-    switch (deviceClass.setupMethod()) {
-    case DeviceClass::SetupMethodJustAdd:
-        qCWarning(dcDeviceManager) << "Cannot setup this device this way. No need to pair this device.";
-        return Device::DeviceErrorSetupMethodNotSupported;
-    case DeviceClass::SetupMethodDisplayPin:
-        qCWarning(dcDeviceManager) << "SetupMethodDisplayPin not implemented yet for this CreateMethod";
-        return Device::DeviceErrorSetupFailed;
-    case DeviceClass::SetupMethodEnterPin:
-        qCWarning(dcDeviceManager) << "SetupMethodEnterPin not implemented yet for this CreateMethod";
-        return Device::DeviceErrorSetupFailed;
-    case DeviceClass::SetupMethodPushButton:
-        qCWarning(dcDeviceManager) << "SetupMethodPushButton not implemented yet for this CreateMethod";
-        return Device::DeviceErrorSetupFailed;
-    }
-
-    return Device::DeviceErrorNoError;
+    return pairDeviceInternal(pairingInfo);
 }
 
 /*! Initiates a pairing with a \l{DeviceClass}{Device} with the given \a pairingTransactionId, \a deviceClassId, \a name and \a deviceDescriptorId.
  *  Returns \l{Device::DeviceError}{DeviceError} to inform about the result. */
-Device::DeviceError DeviceManagerImplementation::pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId)
+DevicePairingInfo DeviceManagerImplementation::pairDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId)
 {
-    DeviceClass deviceClass = findDeviceClass(deviceClassId);
-    if (deviceClass.id().isNull()) {
-        qCWarning(dcDeviceManager) << "Cannot find a device class with id" << deviceClassId;
-        return Device::DeviceErrorDeviceClassNotFound;
-    }
-
-    if (deviceClass.setupMethod() == DeviceClass::SetupMethodJustAdd) {
-        qCWarning(dcDeviceManager) << "Cannot setup this device this way. No need to pair this device.";
-        return Device::DeviceErrorCreationMethodNotSupported;
-    }
-
     if (!m_discoveredDevices.contains(deviceDescriptorId)) {
         qCWarning(dcDeviceManager) << "Cannot find a DeviceDescriptor with ID" << deviceClassId.toString();
-        return Device::DeviceErrorDeviceDescriptorNotFound;
+        DevicePairingInfo errorInfo;
+        errorInfo.setStatus(Device::DeviceErrorDeviceDescriptorNotFound);
+        return errorInfo;
     }
 
-    m_pairingsDiscovery.insert(pairingTransactionId, DevicePairingInfo(deviceClassId, name, deviceDescriptorId));
-
-    if (deviceClass.setupMethod() == DeviceClass::SetupMethodDisplayPin) {
-        DeviceDescriptor deviceDescriptor = m_discoveredDevices.value(deviceDescriptorId);
-
-        DevicePlugin *plugin = m_devicePlugins.value(m_supportedDevices.value(deviceClassId).pluginId());
-        if (!plugin) {
-            qCWarning(dcDeviceManager()) << "Can't find a plugin for this device class";
-            return Device::DeviceErrorPluginNotFound;
-        }
-
-        return plugin->displayPin(pairingTransactionId, deviceDescriptor);
+    DeviceDescriptor deviceDescriptor = m_discoveredDevices.take(deviceDescriptorId);
+    if (deviceDescriptor.deviceId().isNull()) {
+        // We're pairing a new device. Set the ID now so that it's known and stable throughout the pairing process
+        deviceDescriptor.setDeviceId(DeviceId::createDeviceId());
     }
-
-    return Device::DeviceErrorNoError;
+    DevicePairingInfo pairingInfo(deviceClassId, name, deviceDescriptor.params(), deviceDescriptor.deviceId());
+    return pairDeviceInternal(pairingInfo);
 }
 
-/*! Confirms the pairing of a \l{Device} with the given \a pairingTransactionId and \a secret.
- *  Returns \l{Device::DeviceError}{DeviceError} to inform about the result. */
-Device::DeviceError DeviceManagerImplementation::confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret)
+DevicePairingInfo DeviceManagerImplementation::pairDeviceInternal(DevicePairingInfo &pairingInfo)
 {
-    if (m_pairingsJustAdd.contains(pairingTransactionId)) {
-        qCWarning(dcDeviceManager) << "This SetupMethod is not implemented yet";
-        m_pairingsJustAdd.remove(pairingTransactionId);
-        return Device::DeviceErrorSetupFailed;
+    DeviceClass deviceClass = findDeviceClass(pairingInfo.deviceClassId());
+    if (deviceClass.id().isNull()) {
+        qCWarning(dcDeviceManager) << "Cannot find a device class with id" << pairingInfo.deviceClassId();
+        pairingInfo.setStatus(Device::DeviceErrorDeviceClassNotFound);
+        return pairingInfo;
     }
 
-    if (m_pairingsDiscovery.contains(pairingTransactionId)) {
-        DevicePairingInfo pairingInfo = m_pairingsDiscovery.value(pairingTransactionId);
-        DeviceClassId deviceClassId = pairingInfo.deviceClassId();
-        DeviceDescriptor deviceDescriptor = m_discoveredDevices.value(pairingInfo.deviceDescriptorId());
+    DevicePlugin *plugin = m_devicePlugins.value(m_supportedDevices.value(pairingInfo.deviceClassId()).pluginId());
+    if (!plugin) {
+        qCWarning(dcDeviceManager()) << "Can't find a plugin for this device class";
+        pairingInfo.setStatus(Device::DeviceErrorPluginNotFound);
+    }
+    m_pairings.insert(pairingInfo.transactionId(), pairingInfo);
 
+    switch (deviceClass.setupMethod()) {
+    case DeviceClass::SetupMethodJustAdd:
+        qCWarning(dcDeviceManager) << "SetupMethod" << deviceClass.setupMethod() << "does not require two-step pairing. Just use ConfirmPairing.";
+        pairingInfo.setStatus(Device::DeviceErrorCreationMethodNotSupported);
+        return pairingInfo;
+    case DeviceClass::SetupMethodDisplayPin:
+    case DeviceClass::SetupMethodOAuth:
+    case DeviceClass::SetupMethodPushButton:
+    case DeviceClass::SetupMethodEnterPin:
+    case DeviceClass::SetupMethodUserAndPassword:
+        return plugin->pairDevice(pairingInfo);
+    }
+
+    pairingInfo.setStatus(Device::DeviceErrorSetupFailed);
+    return pairingInfo;
+}
+
+/*! Confirms the pairing of a \l{Device} with the given \a pairingTransactionId, \a username and \a secret.
+ *  Depending on the setupMethod, username might be empty for authentication mechanisms that only have a secret/token, e.g. OAuth.
+ *  Returns \l{DevicePairingInfo} to inform about the result. */
+DevicePairingInfo DeviceManagerImplementation::confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret, const QString &username)
+{
+    if (m_pairings.contains(pairingTransactionId)) {
+        DevicePairingInfo pairingInfo = m_pairings.value(pairingTransactionId);
+        DeviceClassId deviceClassId = pairingInfo.deviceClassId();
+        ParamList params = pairingInfo.params();
         DevicePlugin *plugin = m_devicePlugins.value(m_supportedDevices.value(deviceClassId).pluginId());
 
         if (!plugin) {
             qCWarning(dcDeviceManager) << "Can't find a plugin for this device class";
-            return Device::DeviceErrorPluginNotFound;
+            pairingInfo.setStatus(Device::DeviceErrorPluginNotFound);
+            return pairingInfo;
         }
 
-        Device::DeviceSetupStatus status = plugin->confirmPairing(pairingTransactionId, deviceClassId, deviceDescriptor.params(), secret);
-        switch (status) {
-        case Device::DeviceSetupStatusSuccess:
-            m_pairingsDiscovery.remove(pairingTransactionId);
+        DevicePairingInfo info = plugin->confirmPairing(pairingInfo, username, secret);
+        switch (info.status()) {
+        case Device::DeviceErrorNoError:
+            m_pairings.remove(pairingTransactionId);
             // TODO: setup the device if the pairing status can be fetched directly
-            return Device::DeviceErrorNoError;
-        case Device::DeviceSetupStatusFailure:
-            m_pairingsDiscovery.remove(pairingTransactionId);
-            return Device::DeviceErrorSetupFailed;
-        case Device::DeviceSetupStatusAsync:
-            return Device::DeviceErrorAsync;
+            pairingInfo.setStatus(Device::DeviceErrorNoError);
+            return pairingInfo;
+        case Device::DeviceErrorAsync:
+            pairingInfo.setStatus(Device::DeviceErrorAsync);
+            return pairingInfo;
+        default:
+            qCWarning(dcDeviceManager()) << "Pairing failed:" << info.status() << info.message();
+            m_pairings.remove(pairingTransactionId);
+            return info;
         }
     }
 
-    return Device::DeviceErrorPairingTransactionIdNotFound;
+    DevicePairingInfo errorInfo;
+    errorInfo.setStatus(Device::DeviceErrorPairingTransactionIdNotFound);
+    return errorInfo;
 }
 
 /*! This method will only be used from the DeviceManagerImplementation in order to add a \l{Device} with the given \a deviceClassId, \a name, \a params and \ id.
@@ -628,6 +622,7 @@ Device::DeviceError DeviceManagerImplementation::addConfiguredDeviceInternal(con
     }
 
     if (deviceClass.setupMethod() != DeviceClass::SetupMethodJustAdd) {
+        qCWarning(dcDeviceManager) << "Cannot add deviceClass" << deviceClass.name() << "with setup method JustAdd.";
         return Device::DeviceErrorCreationMethodNotSupported;
     }
 
@@ -1290,6 +1285,8 @@ void DeviceManagerImplementation::slotDeviceSetupFinished(Device *device, Device
         storeConfiguredDevices();
     }
 
+    device->plugin()->postSetupDevice(device);
+
     // if this is a async device edit result
     if (m_asyncDeviceReconfiguration.contains(device)) {
         m_asyncDeviceReconfiguration.removeAll(device);
@@ -1307,9 +1304,9 @@ void DeviceManagerImplementation::slotDeviceSetupFinished(Device *device, Device
     emit deviceSetupFinished(device, Device::DeviceErrorNoError);
 }
 
-void DeviceManagerImplementation::slotPairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceSetupStatus status)
+void DeviceManagerImplementation::slotPairingFinished(DevicePairingInfo &pairingInfo)
 {
-    if (!m_pairingsJustAdd.contains(pairingTransactionId) && !m_pairingsDiscovery.contains(pairingTransactionId)) {
+    if (!m_pairings.contains(pairingInfo.transactionId())) {
         DevicePlugin *plugin = dynamic_cast<DevicePlugin*>(sender());
         if (plugin) {
             qCWarning(dcDeviceManager) << "Received a pairing finished without waiting for it from plugin:" << plugin->metaObject()->className();
@@ -1319,72 +1316,40 @@ void DeviceManagerImplementation::slotPairingFinished(const PairingTransactionId
         return;
     }
 
-    DeviceClassId deviceClassId;
-    ParamList params;
-    QString deviceName;
+    m_pairings.remove(pairingInfo.transactionId());
 
-    DeviceId deviceId;
-
-    // Do this before checking status to make sure we clean up our hashes properly
-    if (m_pairingsJustAdd.contains(pairingTransactionId)) {
-        DevicePairingInfo pairingInfo = m_pairingsJustAdd.take(pairingTransactionId);
-
-        deviceClassId = pairingInfo.deviceClassId();
-        params = pairingInfo.params();
-        deviceName = pairingInfo.deviceName();
-    }
-
-    if (m_pairingsDiscovery.contains(pairingTransactionId)) {
-        DevicePairingInfo pairingInfo = m_pairingsDiscovery.take(pairingTransactionId);
-        DeviceDescriptor descriptor = m_discoveredDevices.take(pairingInfo.deviceDescriptorId());
-
-        deviceClassId = pairingInfo.deviceClassId();
-        deviceName = pairingInfo.deviceName();
-        params = descriptor.params();
-        deviceId = descriptor.deviceId();
-    }
-
-    if (status != Device::DeviceSetupStatusSuccess) {
-        emit pairingFinished(pairingTransactionId, Device::DeviceErrorSetupFailed);
+    if (pairingInfo.status() != Device::DeviceErrorNoError) {
+        emit pairingFinished(pairingInfo);
         return;
     }
 
-    DeviceClass deviceClass = findDeviceClass(deviceClassId);
+    DeviceClass deviceClass = findDeviceClass(pairingInfo.deviceClassId());
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
     if (!plugin) {
         qCWarning(dcDeviceManager) << "Cannot find a plugin for this device class!";
-        emit pairingFinished(pairingTransactionId, Device::DeviceErrorPluginNotFound, deviceClass.pluginId().toString());
+        pairingInfo.setStatus(Device::DeviceErrorPluginNotFound);
+        emit pairingFinished(pairingInfo);
         return;
     }
 
-    // If we already have a deviceId, we're reconfiguring an existing device
-    bool addNewDevice = deviceId.isNull();
+    // If we already have a device with the given deviceId, we're reconfiguring an existing device
+    Device *device = findConfiguredDevice(pairingInfo.deviceId());
+    bool addNewDevice = device == nullptr;
 
-    if (!addNewDevice && !m_configuredDevices.contains(deviceId)) {
-        qCWarning(dcDeviceManager) << "The device to be reconfigured has disappeared!";
-        emit pairingFinished(pairingTransactionId, Device::DeviceErrorDeviceNotFound, deviceId);
-        return;
-    }
-
-    // Ok... pairing went fine... Let consumers know about it and inform them about the ongoing setup with a deviceId.
-    Device *device = nullptr;
-
-    if (addNewDevice) {
-        deviceId = DeviceId::createDeviceId();
-        qCDebug(dcDeviceManager()) << "Creating new device with ID" << deviceId;
-        device = new Device(plugin, deviceClass, deviceId, this);
-        if (deviceName.isEmpty()) {
+    if (!device) {
+        qCDebug(dcDeviceManager()) << "Creating new device with ID" << pairingInfo.deviceId();
+        device = new Device(plugin, deviceClass, pairingInfo.deviceId(), this);
+        if (pairingInfo.deviceName().isEmpty()) {
             device->setName(deviceClass.name());
         } else {
-            device->setName(deviceName);
+            device->setName(pairingInfo.deviceName());
         }
     } else {
-        device = m_configuredDevices.value(deviceId);
         qCDebug(dcDeviceManager()) << "Reconfiguring device" << device;
     }
-    emit pairingFinished(pairingTransactionId, Device::DeviceErrorNoError, deviceId);
+    emit pairingFinished(pairingInfo);
 
-    device->setParams(params);
+    device->setParams(pairingInfo.params());
     ParamList settings;
     // Use verifyParams to populate it with defaults
     DeviceUtils::verifyParams(deviceClass.settingsTypes(), settings);
@@ -1396,7 +1361,7 @@ void DeviceManagerImplementation::slotPairingFinished(const PairingTransactionId
         qCWarning(dcDeviceManager) << "Device setup failed. Not adding device to system.";
         emit deviceSetupFinished(device, Device::DeviceErrorSetupFailed);
         delete device;
-        break;
+        return;
     case Device::DeviceSetupStatusAsync:
         return;
     case Device::DeviceSetupStatusSuccess:

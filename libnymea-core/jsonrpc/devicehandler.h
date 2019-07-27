@@ -87,7 +87,7 @@ private slots:
 
     void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
 
-    void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId);
+    void pairingFinished(const DevicePairingInfo &devicePairingInfo);
 
     void browseRequestFinished(const Device::BrowseResult &result);
 

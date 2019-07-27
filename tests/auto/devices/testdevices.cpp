@@ -125,6 +125,7 @@ void TestDevices::initTestCase()
     QLoggingCategory::setFilterRules("*.debug=false\n"
                                      "Tests.debug=true\n"
                                      "MockDevice.debug=true\n"
+                                     "DeviceManager.debug=true\n"
                                      );
 
     // Adding an async mock device to be used in tests below
@@ -486,7 +487,7 @@ void TestDevices::addPushButtonDevices_data()
     QTest::addColumn<bool>("waitForButtonPressed");
 
     QTest::newRow("Valid: Add PushButton device") << mockPushButtonDeviceClassId << Device::DeviceErrorNoError << true;
-    QTest::newRow("Invalid: Add PushButton device (press to early)") << mockPushButtonDeviceClassId << Device::DeviceErrorSetupFailed << false;
+    QTest::newRow("Invalid: Add PushButton device (press to early)") << mockPushButtonDeviceClassId << Device::DeviceErrorAuthenticationFailure << false;
 }
 
 void TestDevices::addPushButtonDevices()
@@ -552,7 +553,7 @@ void TestDevices::addDisplayPinDevices_data()
     QTest::addColumn<QString>("secret");
 
     QTest::newRow("Valid: Add DisplayPin device") << mockDisplayPinDeviceClassId << Device::DeviceErrorNoError << "243681";
-    QTest::newRow("Invalid: Add DisplayPin device (wrong pin)") << mockDisplayPinDeviceClassId << Device::DeviceErrorSetupFailed << "243682";
+    QTest::newRow("Invalid: Add DisplayPin device (wrong pin)") << mockDisplayPinDeviceClassId << Device::DeviceErrorAuthenticationFailure << "243682";
 }
 
 void TestDevices::addDisplayPinDevices()

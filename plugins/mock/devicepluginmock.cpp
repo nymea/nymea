@@ -44,10 +44,15 @@
 #include "devices/device.h"
 #include "plugininfo.h"
 
+#include "network/networkaccessmanager.h"
+
 #include <QDebug>
 #include <QColor>
 #include <QStringList>
 #include <QTimer>
+#include <QUrlQuery>
+#include <QNetworkRequest>
+#include <QJsonDocument>
 
 DevicePluginMock::DevicePluginMock()
 {
@@ -153,6 +158,12 @@ Device::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
     } else if (device->deviceClassId() == mockInputTypeDeviceClassId) {
         qCDebug(dcMockDevice) << "Setup InputType mock device" << device->params();
         return Device::DeviceSetupStatusSuccess;
+    } else if (device->deviceClassId() == mockOAuthGoogleDeviceClassId) {
+        qCDebug(dcMockDevice()) << "Google OAuth setup complete";
+        return Device::DeviceSetupStatusSuccess;
+    } else if (device->deviceClassId() == mockOAuthSonosDeviceClassId) {
+        qCDebug(dcMockDevice()) << "Sonos OAuth setup complete";
+        return Device::DeviceSetupStatusSuccess;
     }
 
     return Device::DeviceSetupStatusFailure;
@@ -199,44 +210,210 @@ void DevicePluginMock::startMonitoringAutoDevices()
     emit autoDevicesAppeared(mockDeviceAutoDeviceClassId, deviceDescriptorList);
 }
 
-Device::DeviceSetupStatus DevicePluginMock::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret)
+DevicePairingInfo DevicePluginMock::pairDevice(DevicePairingInfo &devicePairingInfo)
 {
-    Q_UNUSED(params)
-    Q_UNUSED(secret)
+    if (devicePairingInfo.deviceClassId() == mockPushButtonDeviceClassId) {
+        qCDebug(dcMockDevice) << QString(tr("Pushbutton pairing request"));
+        devicePairingInfo.setMessage(tr("Wait 3 second before you continue, the push button will be pressed automatically."));
+        devicePairingInfo.setStatus(Device::DeviceErrorNoError);
+        return devicePairingInfo;
+    }
+    if (devicePairingInfo.deviceClassId() == mockDisplayPinDeviceClassId) {
+        qCDebug(dcMockDevice) << QString(tr("Display pin!! The pin is 243681"));
+        devicePairingInfo.setStatus(Device::DeviceErrorNoError);
+        devicePairingInfo.setMessage(tr("Please enter the secret which normaly will be displayed on the device. For the mockdevice the pin is 243681."));
+        return devicePairingInfo;
+    }
 
+    if (devicePairingInfo.deviceClassId() == mockOAuthGoogleDeviceClassId) {
+        QString clientId= "937667874529-pr6s5ciu6sfnnqmt2sppvb6rokbkjjta.apps.googleusercontent.com";
+        QString clientSecret = "1ByBRmNqaK08VC54eEVcnGf1";
+
+//        QString code_verifier = QUuid::createUuid().toString().remove(QRegExp("[{}]")) + QUuid::createUuid().toString().remove(QRegExp("[{}]"));
+//        qCDebug(dcMockDevice()) << "Code verifier:" << code_verifier;
+
+//        // plain
+//        QString code_challenge_plain = code_verifier;
+//        QString code_challenge_s256 = QByteArray(QCryptographicHash::hash(code_verifier.toLatin1(), QCryptographicHash::Sha256)).toBase64().toPercentEncoding();
+
+        QUrl url("https://accounts.google.com/o/oauth2/v2/auth");
+        QUrlQuery queryParams;
+        queryParams.addQueryItem("client_id", clientId);
+        queryParams.addQueryItem("redirect_uri", "https://127.0.0.1:8888");
+        queryParams.addQueryItem("response_type", "code");
+        queryParams.addQueryItem("scope", "profile email");
+        queryParams.addQueryItem("state", "ya-ya");
+        url.setQuery(queryParams);
+
+        devicePairingInfo.setOAuthUrl(url);
+        devicePairingInfo.setStatus(Device::DeviceErrorNoError);
+        return devicePairingInfo;
+    }
+
+    if (devicePairingInfo.deviceClassId() == mockOAuthSonosDeviceClassId) {
+        QString clientId = "b15cbf8c-a39c-47aa-bd93-635a96e9696c";
+        QString clientSecret = "c086ba71-e562-430b-a52f-867c6482fd11";
+
+        QUrl url("https://api.sonos.com/login/v3/oauth");
+        QUrlQuery queryParams;
+        queryParams.addQueryItem("client_id", clientId);
+        queryParams.addQueryItem("redirect_uri", "https://127.0.0.1:8888");
+        queryParams.addQueryItem("response_type", "code");
+        queryParams.addQueryItem("scope", "playback-control-all");
+        queryParams.addQueryItem("state", "ya-ya");
+        url.setQuery(queryParams);
+
+        qCDebug(dcMockDevice()) << "Sonos url:" << url;
+
+        devicePairingInfo.setOAuthUrl(url);
+        devicePairingInfo.setStatus(Device::DeviceErrorNoError);
+        return devicePairingInfo;
+    }
+
+    if (devicePairingInfo.deviceClassId() == mockUserAndPassDeviceClassId) {
+        devicePairingInfo.setMessage(tr("Please enter login credentials"));
+        devicePairingInfo.setStatus(Device::DeviceErrorNoError);
+        return devicePairingInfo;
+    }
+
+    qCWarning(dcMockDevice()) << "Unhandled pairing metod!";
+    devicePairingInfo.setStatus(Device::DeviceErrorCreationMethodNotSupported);
+    return devicePairingInfo;
+}
+
+DevicePairingInfo DevicePluginMock::confirmPairing(DevicePairingInfo &devicePairingInfo, const QString &username, const QString &secret)
+{
     qCDebug(dcMockDevice) << "Confirm pairing";
 
-    if (deviceClassId == mockPushButtonDeviceClassId) {
+    if (devicePairingInfo.deviceClassId() == mockPushButtonDeviceClassId) {
         if (!m_pushbuttonPressed) {
             qCDebug(dcMockDevice) << "PushButton not pressed yet!";
-            return Device::DeviceSetupStatusFailure;
+            devicePairingInfo.setMessage(tr("The push button does not have been pressed."));
+            devicePairingInfo.setStatus(Device::DeviceErrorAuthenticationFailure);
+            return devicePairingInfo;
         }
 
-        m_pairingId = pairingTransactionId;
+        m_pairingInfo = devicePairingInfo;
         QTimer::singleShot(1000, this, SLOT(onPushButtonPairingFinished()));
-        return Device::DeviceSetupStatusAsync;
-    } else if (deviceClassId == mockDisplayPinDeviceClassId) {
+        devicePairingInfo.setStatus(Device::DeviceErrorAsync);
+        return devicePairingInfo;
+    }
+
+    if (devicePairingInfo.deviceClassId() == mockDisplayPinDeviceClassId) {
         if (secret != "243681") {
             qCWarning(dcMockDevice) << "Invalid pin:" << secret;
-            return Device::DeviceSetupStatusFailure;
+            devicePairingInfo.setMessage(tr("Invalid PIN"));
+            devicePairingInfo.setStatus(Device::DeviceErrorAuthenticationFailure);
+            return devicePairingInfo;
         }
-        m_pairingId = pairingTransactionId;
+        m_pairingInfo = devicePairingInfo;
         QTimer::singleShot(500, this, SLOT(onDisplayPinPairingFinished()));
-        return Device::DeviceSetupStatusAsync;
+        devicePairingInfo.setStatus(Device::DeviceErrorAsync);
+        return devicePairingInfo;
+    }
+
+    if (devicePairingInfo.deviceClassId() == mockOAuthGoogleDeviceClassId) {
+        qCDebug(dcMockDevice()) << "Secret is" << secret;
+        QUrl url(secret);
+        QUrlQuery query(url);
+        qCDebug(dcMockDevice()) << "Acess code is:" << query.queryItemValue("code");
+
+        QString accessCode = query.queryItemValue("code");
+
+        // Obtaining access token
+        QString clientId= "937667874529-pr6s5ciu6sfnnqmt2sppvb6rokbkjjta.apps.googleusercontent.com";
+        QString clientSecret = "1ByBRmNqaK08VC54eEVcnGf1";
+
+        url = QUrl("https://www.googleapis.com/oauth2/v4/token");
+        query.clear();
+        query.addQueryItem("code", accessCode);
+        query.addQueryItem("client_id", clientId);
+        query.addQueryItem("client_secret", clientSecret);
+        query.addQueryItem("grant_type", "authorization_code");
+        query.addQueryItem("redirect_uri", "https%3A%2F%2F127.0.0.1%3A8888");
+//        query.addQueryItem("code_verifier", codeVerifier);
+        url.setQuery(query);
+
+        QNetworkRequest request(url);
+
+        QNetworkReply *reply = hardwareManager()->networkManager()->post(request, QByteArray());
+        connect(reply, &QNetworkReply::finished, this, [this, reply, devicePairingInfo](){
+            reply->deleteLater();
+
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll());
+            qCDebug(dcMockDevice()) << "Sonos accessToken reply:" << this << reply->error() << reply->errorString() << jsonDoc.toJson();
+            qCDebug(dcMockDevice()) << "Access token:" << jsonDoc.toVariant().toMap().value("access_token").toString();
+            qCDebug(dcMockDevice()) << "expires at" << QDateTime::currentDateTime().addSecs(jsonDoc.toVariant().toMap().value("expires_in").toInt()).toString();
+            qCDebug(dcMockDevice()) << "Refresh token:" << jsonDoc.toVariant().toMap().value("refresh_token").toString();
+            qCDebug(dcMockDevice()) << "ID token:" << jsonDoc.toVariant().toMap().value("id_token").toString();
+            DevicePairingInfo info(devicePairingInfo);
+            info.setStatus(Device::DeviceErrorNoError);
+            emit pairingFinished(info);
+        });
+
+
+        devicePairingInfo.setStatus(Device::DeviceErrorAsync);
+        return devicePairingInfo;
+    }
+
+    if (devicePairingInfo.deviceClassId() == mockOAuthSonosDeviceClassId) {
+        qCDebug(dcMockDevice()) << "Secret is" << secret;
+        QUrl url(secret);
+        QUrlQuery query(url);
+        qCDebug(dcMockDevice()) << "Acess code is:" << query.queryItemValue("code");
+
+        QString accessCode = query.queryItemValue("code");
+
+        // Obtaining access token
+        url = QUrl("https://api.sonos.com/login/v3/oauth/access");
+        query.clear();
+        query.addQueryItem("grant_type", "authorization_code");
+        query.addQueryItem("code", accessCode);
+        query.addQueryItem("redirect_uri", "https%3A%2F%2F127.0.0.1%3A8888");
+        url.setQuery(query);
+
+        QNetworkRequest request(url);
+        request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded;charset=utf-8");
+
+        QByteArray clientId = "b15cbf8c-a39c-47aa-bd93-635a96e9696c";
+        QByteArray clientSecret = "c086ba71-e562-430b-a52f-867c6482fd11";
+
+        QByteArray auth = QByteArray(clientId + ':' + clientSecret).toBase64(QByteArray::Base64Encoding | QByteArray::KeepTrailingEquals);
+        request.setRawHeader("Authorization", QString("Basic %1").arg(QString(auth)).toUtf8());
+
+        QNetworkReply *reply = hardwareManager()->networkManager()->post(request, QByteArray());
+        connect(reply, &QNetworkReply::finished, this, [this, reply, devicePairingInfo](){
+            reply->deleteLater();
+
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll());
+            qCDebug(dcMockDevice()) << "Sonos accessToken reply:" << this << reply->error() << reply->errorString() << jsonDoc.toJson();
+            qCDebug(dcMockDevice()) << "Access token:" << jsonDoc.toVariant().toMap().value("access_token").toString();
+            qCDebug(dcMockDevice()) << "expires at" << QDateTime::currentDateTime().addSecs(jsonDoc.toVariant().toMap().value("expires_in").toInt()).toString();
+            qCDebug(dcMockDevice()) << "Refresh token:" << jsonDoc.toVariant().toMap().value("refresh_token").toString();
+            DevicePairingInfo info(devicePairingInfo);
+            info.setStatus(Device::DeviceErrorNoError);
+            emit pairingFinished(info);
+        });
+
+        devicePairingInfo.setStatus(Device::DeviceErrorAsync);
+        return devicePairingInfo;
+    }
+
+    if (devicePairingInfo.deviceClassId() == mockUserAndPassDeviceClassId) {
+        qCDebug(dcMockDevice()) << "Credentials received:" << username << secret;
+        if (username == "user" && secret == "password") {
+            devicePairingInfo.setStatus(Device::DeviceErrorNoError);
+            return devicePairingInfo;
+        } else {
+            devicePairingInfo.setMessage(tr("Wrong username or password"));
+            devicePairingInfo.setStatus(Device::DeviceErrorAuthenticationFailure);
+            return devicePairingInfo;
+        }
     }
 
     qCWarning(dcMockDevice) << "Invalid deviceclassId -> no pairing possible with this device";
-    return Device::DeviceSetupStatusFailure;
-}
-
-Device::DeviceError DevicePluginMock::displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor)
-{
-    Q_UNUSED(pairingTransactionId)
-    Q_UNUSED(deviceDescriptor)
-
-    qCDebug(dcMockDevice) << QString(tr("Display pin!! The pin is 243681"));
-
-    return Device::DeviceErrorNoError;
+    devicePairingInfo.setStatus(Device::DeviceErrorHardwareFailure);
+    return devicePairingInfo;
 }
 
 Device::BrowseResult DevicePluginMock::browseDevice(Device *device, Device::BrowseResult result, const QString &itemId, const QLocale &locale)
@@ -664,13 +841,15 @@ void DevicePluginMock::emitActionExecuted()
 void DevicePluginMock::onPushButtonPairingFinished()
 {
     qCDebug(dcMockDevice) << "Pairing PushButton Device finished";
-    emit pairingFinished(m_pairingId, Device::DeviceSetupStatusSuccess);
+    m_pairingInfo.setStatus(Device::DeviceErrorNoError);
+    emit pairingFinished(m_pairingInfo);
 }
 
 void DevicePluginMock::onDisplayPinPairingFinished()
 {
     qCDebug(dcMockDevice) << "Pairing DisplayPin Device finished";
-    emit pairingFinished(m_pairingId, Device::DeviceSetupStatusSuccess);
+    m_pairingInfo.setStatus(Device::DeviceErrorNoError);
+    emit pairingFinished(m_pairingInfo);
 }
 
 void DevicePluginMock::onChildDeviceDiscovered(const DeviceId &parentId)

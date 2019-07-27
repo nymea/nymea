@@ -1,4 +1,4 @@
-2.3
+2.4
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -287,14 +287,16 @@
             }
         },
         "Devices.ConfirmPairing": {
-            "description": "Confirm an ongoing pairing. In case of SetupMethodEnterPin also provide the pin in the params.",
+            "description": "Confirm an ongoing pairing. For SetupMethodUserAndPassword, provide the username in the \"username\" field and the password in the \"secret\" field. For SetupMethodEnterPin and provide the PIN in the \"secret\" field. For SetupMethodOAuth, return the entire unmodified callback URL containing the code parameter back in the secret field.",
             "params": {
                 "o:secret": "String",
+                "o:username": "String",
                 "pairingTransactionId": "Uuid"
             },
             "returns": {
                 "deviceError": "$ref:DeviceError",
-                "o:deviceId": "Uuid"
+                "o:deviceId": "Uuid",
+                "o:displayMessage": "String"
             }
         },
         "Devices.EditDevice": {
@@ -459,6 +461,7 @@
             "returns": {
                 "deviceError": "$ref:DeviceError",
                 "o:displayMessage": "String",
+                "o:oAuthUrl": "String",
                 "o:pairingTransactionId": "Uuid",
                 "o:setupMethod": "$ref:SetupMethod"
             }
@@ -1523,7 +1526,7 @@
             "DeviceErrorSetupMethodNotSupported",
             "DeviceErrorHardwareNotAvailable",
             "DeviceErrorHardwareFailure",
-            "DeviceErrorAuthentificationFailure",
+            "DeviceErrorAuthenticationFailure",
             "DeviceErrorAsync",
             "DeviceErrorDeviceInUse",
             "DeviceErrorDeviceInRule",
@@ -1801,7 +1804,9 @@
             "SetupMethodJustAdd",
             "SetupMethodDisplayPin",
             "SetupMethodEnterPin",
-            "SetupMethodPushButton"
+            "SetupMethodPushButton",
+            "SetupMethodOAuth",
+            "SetupMethodUserAndPassword"
         ],
         "State": {
             "deviceId": "Uuid",

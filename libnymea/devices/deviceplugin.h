@@ -30,6 +30,7 @@
 #include "device.h"
 #include "devicedescriptor.h"
 #include "pluginmetadata.h"
+#include "devicepairinginfo.h"
 
 #include "types/deviceclass.h"
 #include "types/event.h"
@@ -45,6 +46,7 @@
 #include <QObject>
 #include <QTranslator>
 #include <QPair>
+#include <QSettings>
 
 class Device;
 class DeviceManager;
@@ -75,8 +77,8 @@ public:
     virtual void postSetupDevice(Device *device);
     virtual void deviceRemoved(Device *device);
 
-    virtual Device::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor);
-    virtual Device::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret);
+    virtual DevicePairingInfo pairDevice(DevicePairingInfo &devicePairingInfo);
+    virtual DevicePairingInfo confirmPairing(DevicePairingInfo &devicePairingInfo, const QString &username, const QString &secret);
 
     virtual Device::DeviceError executeAction(Device *device, const Action &action);
 
@@ -98,7 +100,8 @@ signals:
     void emitEvent(const Event &event);
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
     void deviceSetupFinished(Device *device, Device::DeviceSetupStatus status);
-    void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceSetupStatus status);
+    void pairingStarted(const DevicePairingInfo &devicePairingInfo);
+    void pairingFinished(DevicePairingInfo &devicePairingInfo);
     void actionExecutionFinished(const ActionId &id, Device::DeviceError status);
     void configValueChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     void autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
@@ -111,6 +114,7 @@ signals:
 protected:
     Devices myDevices() const;
     HardwareManager *hardwareManager() const;
+    QSettings *pluginStorage() const;
 
 private:
     void setMetaData(const PluginMetadata &metaData);
@@ -130,6 +134,7 @@ private:
 
     PluginMetadata m_metaData;
     ParamList m_config;
+    QSettings *m_storage;
 };
 
 Q_DECLARE_INTERFACE(DevicePlugin, "io.nymea.DevicePlugin")

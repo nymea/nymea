@@ -243,5 +243,8 @@ extern ActionTypeId mockInputTypeWritableTimestampIntActionTypeId;
 extern ParamTypeId mockInputTypeWritableTimestampIntActionWritableTimestampIntParamTypeId;
 extern ActionTypeId mockInputTypeWritableTimestampUIntActionTypeId;
 extern ParamTypeId mockInputTypeWritableTimestampUIntActionWritableTimestampUIntParamTypeId;
+extern DeviceClassId mockOAuthGoogleDeviceClassId;
+extern DeviceClassId mockOAuthSonosDeviceClassId;
+extern DeviceClassId mockUserAndPassDeviceClassId;
 
 #endif // EXTERNPLUGININFO_H

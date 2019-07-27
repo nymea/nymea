@@ -27,6 +27,7 @@
 
 #include "device.h"
 #include "deviceplugin.h"
+#include "devicepairinginfo.h"
 #include "types/interface.h"
 #include "types/vendor.h"
 #include "types/browseritem.h"
@@ -66,9 +67,9 @@ public:
     virtual Device::DeviceError editDevice(const DeviceId &deviceId, const QString &name) = 0;
     virtual Device::DeviceError setDeviceSettings(const DeviceId &deviceId, const ParamList &settings) = 0;
 
-    virtual Device::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const ParamList &params) = 0;
-    virtual Device::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId) = 0;
-    virtual Device::DeviceError confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString()) = 0;
+    virtual DevicePairingInfo pairDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params) = 0;
+    virtual DevicePairingInfo pairDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId) = 0;
+    virtual DevicePairingInfo confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString(), const QString &username = QString()) = 0;
 
     virtual Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId) = 0;
 
@@ -93,7 +94,7 @@ signals:
     void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
     void deviceSetupFinished(Device *device, Device::DeviceError status);
     void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
-    void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId = DeviceId());
+    void pairingFinished(const DevicePairingInfo &devicePairingInfo);
     void actionExecutionFinished(const ActionId &actionId, Device::DeviceError status);
     void browseRequestFinished(const Device::BrowseResult &result);
     void browserItemRequestFinished(const Device::BrowserItemResult &result);

@@ -150,14 +150,19 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     returns.insert("o:pairingTransactionId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     returns.insert("o:displayMessage", JsonTypes::basicTypeToString(JsonTypes::String));
     returns.insert("o:setupMethod", JsonTypes::setupMethodRef());
+    returns.insert("o:oAuthUrl", JsonTypes::basicTypeToString(JsonTypes::String));
     setReturns("PairDevice", returns);
 
     params.clear(); returns.clear();
-    setDescription("ConfirmPairing", "Confirm an ongoing pairing. In case of SetupMethodEnterPin also provide the pin in the params.");
+    setDescription("ConfirmPairing", "Confirm an ongoing pairing. For SetupMethodUserAndPassword, provide the username in the \"username\" field "
+                                     "and the password in the \"secret\" field. For SetupMethodEnterPin and provide the PIN in the \"secret\" "
+                                     "field. For SetupMethodOAuth, return the entire unmodified callback URL containing the code parameter back in the secret field.");
     params.insert("pairingTransactionId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("o:username", JsonTypes::basicTypeToString(JsonTypes::String));
     params.insert("o:secret", JsonTypes::basicTypeToString(JsonTypes::String));
     setParams("ConfirmPairing", params);
     returns.insert("deviceError", JsonTypes::deviceErrorRef());
+    returns.insert("o:displayMessage", JsonTypes::basicTypeToString(JsonTypes::String));
     returns.insert("o:deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setReturns("ConfirmPairing", returns);
 
@@ -467,22 +472,24 @@ JsonReply *DeviceHandler::PairDevice(const QVariantMap &params)
     QString deviceName = params.value("name").toString();
     DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(deviceClassId);
 
-    Device::DeviceError status;
-    PairingTransactionId pairingTransactionId = PairingTransactionId::createPairingTransactionId();
+    DevicePairingInfo pairingInfo;
     if (params.contains("deviceDescriptorId")) {
         DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
-        status = NymeaCore::instance()->deviceManager()->pairDevice(pairingTransactionId, deviceClassId, deviceName, deviceDescriptorId);
+        pairingInfo = NymeaCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceName, deviceDescriptorId);
     } else {
         ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
-        status = NymeaCore::instance()->deviceManager()->pairDevice(pairingTransactionId, deviceClassId, deviceName, deviceParams);
+        pairingInfo = NymeaCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceName, deviceParams);
     }
 
     QVariantMap returns;
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
-    if (status == Device::DeviceErrorNoError) {
-        returns.insert("displayMessage", NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), deviceClass.pairingInfo(), params.value("locale").toLocale()));
-        returns.insert("pairingTransactionId", pairingTransactionId.toString());
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(pairingInfo.status()));
+    if (pairingInfo.status() == Device::DeviceErrorNoError) {
+        returns.insert("displayMessage", NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), pairingInfo.message(), params.value("locale").toLocale()));
+        returns.insert("pairingTransactionId", pairingInfo.transactionId().toString());
         returns.insert("setupMethod", JsonTypes::setupMethod().at(deviceClass.setupMethod()));
+        if (deviceClass.setupMethod() == DeviceClass::SetupMethodOAuth) {
+            returns.insert("oAuthUrl", pairingInfo.oAuthUrl());
+        }
     }
     return createReply(returns);
 }
@@ -490,18 +497,20 @@ JsonReply *DeviceHandler::PairDevice(const QVariantMap &params)
 JsonReply *DeviceHandler::ConfirmPairing(const QVariantMap &params)
 {
     PairingTransactionId pairingTransactionId = PairingTransactionId(params.value("pairingTransactionId").toString());
+    QString username = params.value("username").toString();
     QString secret = params.value("secret").toString();
-    Device::DeviceError status = NymeaCore::instance()->deviceManager()->confirmPairing(pairingTransactionId, secret);
+    DevicePairingInfo devicePairingInfo = NymeaCore::instance()->deviceManager()->confirmPairing(pairingTransactionId, secret, username);
 
     JsonReply *reply = nullptr;
-    if (status == Device::DeviceErrorAsync) {
+    if (devicePairingInfo.status() == Device::DeviceErrorAsync) {
         reply = createAsyncReply("ConfirmPairing");
         connect(reply, &JsonReply::finished, [this, pairingTransactionId](){ m_asyncPairingRequests.remove(pairingTransactionId); });
         m_asyncPairingRequests.insert(pairingTransactionId, reply);
         return reply;
     }
     QVariantMap returns;
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(devicePairingInfo.status()));
+    returns.insert("displayMessage", devicePairingInfo.message());
     reply = createReply(returns);
     return reply;
 }
@@ -838,22 +847,23 @@ void DeviceHandler::deviceReconfigurationFinished(Device *device, Device::Device
     reply->finished();
 }
 
-void DeviceHandler::pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId)
+void DeviceHandler::pairingFinished(const DevicePairingInfo &devicePairingInfo)
 {
     qCDebug(dcJsonRpc) << "Got pairing finished";
-    JsonReply *reply = m_asyncPairingRequests.take(pairingTransactionId);
+    JsonReply *reply = m_asyncPairingRequests.take(devicePairingInfo.transactionId());
     if (!reply) {
         return;
     }
 
-    if (status != Device::DeviceErrorNoError) {
+    if (devicePairingInfo.status() != Device::DeviceErrorNoError) {
         QVariantMap returns;
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
+        returns.insert("deviceError", JsonTypes::deviceErrorToString(devicePairingInfo.status()));
+        returns.insert("displayMessage", devicePairingInfo.message());
         reply->setData(returns);
         reply->finished();
         return;
     }
-    m_asynDeviceAdditions.insert(deviceId, reply);
+    m_asynDeviceAdditions.insert(devicePairingInfo.deviceId(), reply);
 }
 
 void DeviceHandler::browseRequestFinished(const Device::BrowseResult &result)

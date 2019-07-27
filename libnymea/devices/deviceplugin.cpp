@@ -102,11 +102,13 @@
 #include <QCoreApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QSettings>
+#include <QStandardPaths>
 
 /*! DevicePlugin constructor. DevicePlugins will be instantiated by the DeviceManager, its \a parent. */
 DevicePlugin::DevicePlugin(QObject *parent):
     QObject(parent)
-{
+{    
 }
 
 /*! Virtual destructor... */
@@ -202,32 +204,36 @@ void DevicePlugin::deviceRemoved(Device *device)
     Q_UNUSED(device)
 }
 
-/*! This method will be called for \l{Device}{Devices} with the \l{DeviceClass::SetupMethodDisplayPin} right after the paring request
-    with the given \a pairingTransactionId for the given \a deviceDescriptor.
+/*! This will be called to initiate a pairing procedure. The \a {devicePairingInfo} object
+    will contain all the required info to proceed the pairing. Depending on the \l {DeviceClass::setupMethod}
+    different values of the devicePairingInfo will be used.
+
+    Start the pairing (e.g. Request a device to show a pin to be entered, or create the OAuth URL that needs
+    to be shown to the user to log in) in this method. For some setup methods, for instance common cases
+    of \l {DeviceClass::SetupMethodUserAndPassword} might not require anything to do in here. This method
+    can still be overridden in case some preparation on the device needs to be performed or if an informational
+    message should be shown to the user.
 */
-Device::DeviceError DevicePlugin::displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor)
+DevicePairingInfo DevicePlugin::pairDevice(DevicePairingInfo &devicePairingInfo)
 {
-    Q_UNUSED(pairingTransactionId)
-    Q_UNUSED(deviceDescriptor)
-
-    qCWarning(dcDeviceManager) << "Plugin does not implement the display pin setup method.";
-
-    return Device::DeviceErrorNoError;
+    qCWarning(dcDeviceManager) << "Plugin does not implement pairDevice. Defaults will be used.";
+    devicePairingInfo.setStatus(Device::DeviceErrorNoError);
+    return devicePairingInfo;
 }
 
 /*! Confirms the pairing of a \a deviceClassId with the given \a pairingTransactionId and \a params.
     Returns \l{Device::DeviceError}{DeviceError} to inform about the result. The optional paramerter
     \a secret contains for example the pin for \l{Device}{Devices} with the setup method \l{DeviceClass::SetupMethodDisplayPin}.
 */
-Device::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret = QString())
+DevicePairingInfo DevicePlugin::confirmPairing(DevicePairingInfo &devicePairingInfo, const QString &username, const QString &secret)
 {
-    Q_UNUSED(pairingTransactionId)
-    Q_UNUSED(deviceClassId)
-    Q_UNUSED(params)
+    Q_UNUSED(devicePairingInfo)
+    Q_UNUSED(username)
     Q_UNUSED(secret)
 
     qCWarning(dcDeviceManager) << "Plugin does not implement pairing.";
-    return Device::DeviceSetupStatusFailure;
+    devicePairingInfo.setStatus(Device::DeviceErrorNoError);
+    return devicePairingInfo;
 }
 
 /*! This will be called to actually execute actions on the hardware. The \{Device} and
@@ -324,7 +330,7 @@ void DevicePlugin::initPlugin(const PluginMetadata &metadata, DeviceManager *dev
     m_metaData = metadata;
     m_deviceManager = deviceManager;
     m_hardwareManager = hardwareManager;
-
+    m_storage = new QSettings(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/pluginconfig-" + pluginId().toString().remove(QRegExp("[{}]")) + ".conf", QSettings::IniFormat, this);
 }
 
 /*! Returns a map containing the plugin configuration.
@@ -414,6 +420,14 @@ Devices DevicePlugin::myDevices() const
 HardwareManager *DevicePlugin::hardwareManager() const
 {
     return m_hardwareManager;
+}
+
+/*! Returns a pointer to a QSettings object which is reserved for this plugin.
+    The plugin can store arbitrary data in this.
+    */
+QSettings* DevicePlugin::pluginStorage() const
+{
+    return m_storage;
 }
 
 void DevicePlugin::setMetaData(const PluginMetadata &metaData)

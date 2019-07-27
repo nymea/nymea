@@ -64,7 +64,7 @@ public:
         DeviceErrorSetupMethodNotSupported,
         DeviceErrorHardwareNotAvailable,
         DeviceErrorHardwareFailure,
-        DeviceErrorAuthentificationFailure,
+        DeviceErrorAuthenticationFailure,
         DeviceErrorAsync,
         DeviceErrorDeviceInUse,
         DeviceErrorDeviceInRule,
@@ -73,10 +73,11 @@ public:
         DeviceErrorParameterNotWritable,
         DeviceErrorItemNotFound,
         DeviceErrorItemNotExecutable,
-        DeviceErrorUnsupportedFeature,
+        DeviceErrorUnsupportedFeature
     };
     Q_ENUM(DeviceError)
 
+    // DEPRECATED, just here for JSON
     enum DeviceSetupStatus {
         DeviceSetupStatusSuccess,
         DeviceSetupStatusFailure,

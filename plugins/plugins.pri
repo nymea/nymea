@@ -19,7 +19,6 @@ plugininfo.commands = LD_LIBRARY_PATH=$$top_builddir/libnymea \
                       --extern $$PWD/$${TARGET}/extern-plugininfo.h
 QMAKE_EXTRA_TARGETS += plugininfo
 
-
 # Install plugin
 target.path = $$[QT_INSTALL_LIBS]/nymea/plugins/
 INSTALLS += target

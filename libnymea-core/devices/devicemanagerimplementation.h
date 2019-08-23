@@ -125,6 +125,7 @@ private slots:
     void onAutoDeviceDisappeared(const DeviceId &deviceId);
     void onLoaded();
     void cleanupDeviceStateCache();
+    void onEventTriggered(const Event &event);
 
     // Only connect this to Devices. It will query the sender()
     void slotDeviceStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value);

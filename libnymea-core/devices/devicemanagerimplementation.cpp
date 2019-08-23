@@ -1042,7 +1042,7 @@ void DeviceManagerImplementation::loadPlugin(DevicePlugin *pluginIface, const Pl
 
     m_devicePlugins.insert(pluginIface->pluginId(), pluginIface);
 
-    connect(pluginIface, &DevicePlugin::emitEvent, this, &DeviceManagerImplementation::eventTriggered);
+    connect(pluginIface, &DevicePlugin::emitEvent, this, &DeviceManagerImplementation::onEventTriggered);
     connect(pluginIface, &DevicePlugin::devicesDiscovered, this, &DeviceManagerImplementation::slotDevicesDiscovered, Qt::QueuedConnection);
     connect(pluginIface, &DevicePlugin::deviceSetupFinished, this, &DeviceManagerImplementation::slotDeviceSetupFinished);
     connect(pluginIface, &DevicePlugin::actionExecutionFinished, this, &DeviceManagerImplementation::actionExecutionFinished);
@@ -1519,6 +1519,23 @@ void DeviceManagerImplementation::cleanupDeviceStateCache()
             settings.remove(entry);
         }
     }
+}
+
+void DeviceManagerImplementation::onEventTriggered(const Event &event)
+{
+    // Doing some sanity checks here...
+    Device *device = m_configuredDevices.value(event.deviceId());
+    if (!device) {
+        qCWarning(dcDeviceManager()) << "Invalid device id in emitted event. Not forwarding event.";
+        return;
+    }
+    EventType eventType = device->deviceClass().eventTypes().findById(event.eventTypeId());
+    if (!eventType.isValid()) {
+        qCWarning(dcDeviceManager()) << "The given device does not have an event type of id " + event.eventTypeId().toString() + ". Not forwarding event.";
+        return;
+    }
+    // All good, forward the event
+    emit eventTriggered(event);
 }
 
 void DeviceManagerImplementation::slotDeviceStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value)

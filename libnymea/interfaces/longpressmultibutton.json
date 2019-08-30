@@ -1,5 +1,6 @@
 {
-    "extends": "longpressbutton",
+    "description": "A remote control with multiple buttons that can distinguish between short and long presses. Note that the button should only emit one of them at a time. I.e. don't emit pressed on botton down and later longPressed if the user keeps on holding the button. Such a longpress should only emit longPressed. Common practice is to emit pressed if a release event is received before a timeout expires, else emit longpress when the timeout expires.",
+    "extends": "simplemultibutton",
     "events": [
         {
             "name": "longPressed",

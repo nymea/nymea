@@ -1,5 +1,6 @@
 {
-    "extends": "simplebutton",
+    "description": "A button that emits different events, pressed and longpressed, depending on how long the user presses it. Note that the button should only emit one of them at a time. I.e. don't emit pressed on botton down and later longPressed if the user keeps on holding the button. Such a longpress should only emit longPressed. Common practice is to emit pressed if a release event is received before a timeout expires, else emit longpress when the timeout expires.",
+    "extends": "button",
     "events": [
         {
             "name": "longPressed"

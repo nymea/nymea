@@ -1,0 +1,15 @@
+{
+    "description": "A remote control with multiple buttons. Emits pressed(buttonName) on button presses.",
+    "extends": "button",
+    "events": [
+        {
+            "name": "pressed",
+            "params": [
+                {
+                    "name": "buttonName",
+                    "type": "QString"
+                }
+            ]
+        }
+    ]
+}

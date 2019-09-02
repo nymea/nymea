@@ -1,7 +1,21 @@
-nymea (0.15.0) UNRELEASED; urgency=medium
+nymea (0.15.0) xenial; urgency=medium
 
+  [ Michael Zanetti ]
+  * Add support for browsing things
+  * Fix parenting mechanism for discovered devices
+  * Allow building the plugininfocompiler alone
+  * Export QT_LOGGING_CONF to /etc/nymea/logging.conf by default...
+  * Update navigationpad interface
+  * Write plugins doc update
+  * Autogenerate the ts file
+  * Prevent plugins from being loaded twice
+  * Verify events coming from plugins
+  * Rework button interface inheritance
+  * Require native qmake
+  * Remove build artefacts from gitignore.
+  * Fix dependencies
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Tue, 09 Jul 2019 02:08:05 +0200
+ -- Jenkins <jenkins@nymea.io>  Mon, 02 Sep 2019 18:01:54 +0200
 
 nymea (0.14.0) xenial; urgency=medium
   [ Michael Zanetti ]

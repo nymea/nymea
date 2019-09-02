@@ -1,14 +1,4 @@
 {
-    "extends": "button",
-    "events": [
-        {
-            "name": "pressed",
-            "params": [
-                {
-                    "name": "buttonName",
-                    "type": "QString"
-                }
-            ]
-        }
-    ]
+    "description": "Deprecated - Use multibutton instead",
+    "extends": "multibutton"
 }

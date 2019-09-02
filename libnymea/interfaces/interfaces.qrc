@@ -20,6 +20,7 @@
         <file>battery.json</file>
         <file>batterylevel.json</file>
         <file>button.json</file>
+        <file>multibutton.json</file>
         <file>simplebutton.json</file>
         <file>longpressbutton.json</file>
         <file>simplemultibutton.json</file>

@@ -142,6 +142,10 @@ RuleEngine::~RuleEngine()
 QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 {
     Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
+    if (!device) {
+        qCWarning(dcRuleEngine()) << "Invalid event. DeviceID does not reference a valid device";
+        return QList<Rule>();
+    }
     DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
     EventType eventType = deviceClass.eventTypes().findById(event.eventTypeId());
 

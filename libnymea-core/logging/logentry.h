@@ -56,7 +56,7 @@ public:
     DeviceId deviceId() const;
     void setDeviceId(const DeviceId &deviceId);
 
-    // Valid for LoggingSourceStates
+    // Valid for LoggingSourceStates, LoggingSourceBrowserActions
     QVariant value() const;
     void setValue(const QVariant &value);
 

@@ -28,11 +28,6 @@ namespace nymeaserver {
 class Logging
 {
     Q_GADGET
-    Q_ENUMS(LoggingError)
-    Q_ENUMS(LoggingSource)
-    Q_FLAGS(LoggingSources)
-    Q_ENUMS(LoggingLevel)
-    Q_ENUMS(LoggingEventType)
 
 public:
     enum LoggingError {
@@ -40,20 +35,25 @@ public:
         LoggingErrorLogEntryNotFound,
         LoggingErrorInvalidFilterParameter
     };
+    Q_ENUM(LoggingError)
 
     enum LoggingSource {
         LoggingSourceSystem,
         LoggingSourceEvents,
         LoggingSourceActions,
         LoggingSourceStates,
-        LoggingSourceRules
+        LoggingSourceRules,
+        LoggingSourceBrowserActions,
     };
+    Q_ENUM(LoggingSource)
+    Q_FLAGS(LoggingSources)
     Q_DECLARE_FLAGS(LoggingSources, LoggingSource)
 
     enum LoggingLevel {
         LoggingLevelInfo,
         LoggingLevelAlert
     };
+    Q_ENUM(LoggingLevel)
 
     enum LoggingEventType {
         LoggingEventTypeTrigger,
@@ -62,8 +62,9 @@ public:
         LoggingEventTypeActionsExecuted,
         LoggingEventTypeExitActionsExecuted
     };
+    Q_ENUM(LoggingEventType)
 
-    Logging(QObject *parent = 0);
+    Logging(QObject *parent = nullptr);
 };
 
 }

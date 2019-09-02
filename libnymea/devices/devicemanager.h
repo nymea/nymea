@@ -29,6 +29,9 @@
 #include "deviceplugin.h"
 #include "types/interface.h"
 #include "types/vendor.h"
+#include "types/browseritem.h"
+#include "types/browseraction.h"
+#include "types/browseritemaction.h"
 
 class DeviceManager : public QObject
 {
@@ -69,6 +72,13 @@ public:
 
     virtual Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId) = 0;
 
+    virtual Device::DeviceError executeAction(const Action &action) = 0;
+
+    virtual Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) = 0;
+    virtual Device::BrowserItemResult browserItemDetails(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) = 0;
+    virtual Device::DeviceError executeBrowserItem(const BrowserAction &browserAction) = 0;
+    virtual Device::DeviceError executeBrowserItemAction(const BrowserItemAction &browserItemAction) = 0;
+
     virtual QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) = 0;
 
 signals:
@@ -85,6 +95,10 @@ signals:
     void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
     void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId = DeviceId());
     void actionExecutionFinished(const ActionId &actionId, Device::DeviceError status);
+    void browseRequestFinished(const Device::BrowseResult &result);
+    void browserItemRequestFinished(const Device::BrowserItemResult &result);
+    void browserItemExecutionFinished(const ActionId &actionId, Device::DeviceError status);
+    void browserItemActionExecutionFinished(const ActionId &actionId, Device::DeviceError status);
 
 };
 

@@ -147,7 +147,7 @@ StateType DeviceClass::getStateType(const StateTypeId &stateTypeId)
 
 /*! Set the \a stateTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their states matching to this template. */
-void DeviceClass::setStateTypes(const QList<StateType> &stateTypes)
+void DeviceClass::setStateTypes(const StateTypes &stateTypes)
 {
     m_stateTypes = stateTypes;
 }
@@ -172,7 +172,7 @@ EventTypes DeviceClass::eventTypes() const
 
 /*! Set the \a eventTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their events matching to this template. */
-void DeviceClass::setEventTypes(const QList<EventType> &eventTypes)
+void DeviceClass::setEventTypes(const EventTypes &eventTypes)
 {
     m_eventTypes = eventTypes;
 }
@@ -197,7 +197,7 @@ ActionTypes DeviceClass::actionTypes() const
 
 /*! Set the \a actionTypes of this DeviceClass. \{Device}{Devices} created
     from this \l{DeviceClass} must have their actions matching to this template. */
-void DeviceClass::setActionTypes(const QList<ActionType> &actionTypes)
+void DeviceClass::setActionTypes(const ActionTypes &actionTypes)
 {
     m_actionTypes = actionTypes;
 }
@@ -206,6 +206,31 @@ void DeviceClass::setActionTypes(const QList<ActionType> &actionTypes)
 bool DeviceClass::hasActionType(const ActionTypeId &actionTypeId)
 {
     foreach (const ActionType &actionType, m_actionTypes) {
+        if (actionType.id() == actionTypeId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/*! Returns the browserItemActionTypes of this DeviceClass. \{Device}{Devices} created
+    from this \l{DeviceClass} may set those actions to their browser items. */
+ActionTypes DeviceClass::browserItemActionTypes() const
+{
+    return m_browserItemActionTypes;
+}
+
+/*! Set the \a browserActionTypes of this DeviceClass. \{Device}{Devices} created
+    from this \l{DeviceClass} may set those actions to their browser items. */
+void DeviceClass::setBrowserItemActionTypes(const ActionTypes &browserItemActionTypes)
+{
+    m_browserItemActionTypes = browserItemActionTypes;
+}
+
+/*! Returns true if this DeviceClass has a \l{ActionType} with the given \a actionTypeId. */
+bool DeviceClass::hasBrowserItemActionType(const ActionTypeId &actionTypeId)
+{
+    foreach (const ActionType &actionType, m_browserItemActionTypes) {
         if (actionType.id() == actionTypeId) {
             return true;
         }
@@ -306,6 +331,18 @@ QStringList DeviceClass::interfaces() const
 void DeviceClass::setInterfaces(const QStringList &interfaces)
 {
     m_interfaces = interfaces;
+}
+
+/*! Returns whether \l{Device}{Devices} created from this \l{DeviceClass} are browsable */
+bool DeviceClass::browsable() const
+{
+    return m_browsable;
+}
+
+/*! Sets whether \l{Device}{Devices} created from this \l{DeviceClass} are browsable */
+void DeviceClass::setBrowsable(bool browsable)
+{
+    m_browsable = browsable;
 }
 
 /*! Compare this \a deviceClass to another. This is effectively the same as calling a.id() == b.id(). Returns true if the ids match.*/

@@ -32,6 +32,7 @@
                     "displayName": "Mock Device",
                     "interfaces": ["system", "light", "battery"],
                     "createMethods": ["user", "discovery"],
+                    "browsable": true,
                     "discoveryParamTypes": [
                         {
                             "id": "d222adb4-2f9c-4c3f-8655-76400d0fb6ce",
@@ -192,6 +193,18 @@
                             "id": "bfe89a1d-3497-4121-8318-e77c37537219",
                             "name": "asyncFailing",
                             "displayName": "Mock Action 5 (async, broken)"
+                        }
+                    ],
+                    "browserItemActionTypes": [
+                        {
+                            "id": "00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3",
+                            "name": "addToFavorites",
+                            "displayName": "Add to favorites"
+                        },
+                        {
+                            "id": "da6faef8-2816-430e-93bb-57e8f9582d29",
+                            "name": "removeFromFavorites",
+                            "displayName": "Remove from favorites"
                         }
                     ]
                 },
@@ -501,7 +514,7 @@
                     "name": "mockParent",
                     "displayName": "Mock Device (Parent)",
                     "interfaces": ["system"],
-                    "createMethods": ["user"],
+                    "createMethods": ["user", "discovery"],
                     "paramTypes": [ ],
                     "stateTypes": [
                         {
@@ -520,7 +533,7 @@
                     "id": "40893c9f-bc47-40c1-8bf7-b390c7c1b4fc",
                     "name": "mockChild",
                     "displayName": "Mock Device (Child)",
-                    "createMethods": ["auto"],
+                    "createMethods": ["auto", "discovery"],
                     "paramTypes": [],
                     "stateTypes": [
                         {

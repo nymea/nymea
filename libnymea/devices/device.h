@@ -30,6 +30,7 @@
 #include "types/deviceclass.h"
 #include "types/state.h"
 #include "types/param.h"
+#include "types/browseritem.h"
 
 #include <QObject>
 #include <QUuid>
@@ -69,7 +70,10 @@ public:
         DeviceErrorDeviceInRule,
         DeviceErrorDeviceIsChild,
         DeviceErrorPairingTransactionIdNotFound,
-        DeviceErrorParameterNotWritable
+        DeviceErrorParameterNotWritable,
+        DeviceErrorItemNotFound,
+        DeviceErrorItemNotExecutable,
+        DeviceErrorUnsupportedFeature,
     };
     Q_ENUM(DeviceError)
 
@@ -80,12 +84,32 @@ public:
     };
     Q_ENUM(DeviceSetupStatus)
 
+    class BrowseResult {
+    public:
+        BrowseResult(): m_id(QUuid::createUuid()) {}
+        Device::DeviceError status = Device::DeviceErrorNoError;
+        BrowserItems items;
+        QUuid id() const { return m_id; }
+    private:
+        QUuid m_id;
+    };
+
+    class BrowserItemResult {
+    public:
+        BrowserItemResult(): m_id(QUuid::createUuid()) {}
+        Device::DeviceError status = Device::DeviceErrorNoError;
+        BrowserItem item;
+        QUuid id() const { return m_id; }
+    private:
+        QUuid m_id;
+    };
+
     DeviceId id() const;
     DeviceClassId deviceClassId() const;
     PluginId pluginId() const;
 
     DeviceClass deviceClass() const;
-    DevicePlugin* plugin();
+    DevicePlugin* plugin() const;
 
     QString name() const;
     void setName(const QString &name);
@@ -156,6 +180,7 @@ public:
     Device* findByParams(const ParamList &params) const;
     Devices filterByParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
     Devices filterByDeviceClassId(const DeviceClassId &deviceClassId);
+    Devices filterByParentDeviceId(const DeviceId &deviceId);
 };
 
 Q_DECLARE_METATYPE(Device::DeviceError)

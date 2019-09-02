@@ -69,7 +69,6 @@ typedef QList<MqttPolicy> MqttPolicies;
 class NymeaConfiguration : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(ConfigurationError)
 
 public:
     enum ConfigurationError {
@@ -82,6 +81,7 @@ public:
         ConfigurationErrorBluetoothHardwareNotAvailable,
         ConfigurationErrorInvalidCertificate
     };
+    Q_ENUM(ConfigurationError)
 
     explicit NymeaConfiguration(QObject *parent = nullptr);
 

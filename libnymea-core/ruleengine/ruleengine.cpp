@@ -912,7 +912,7 @@ bool RuleEngine::containsState(const StateEvaluator &stateEvaluator, const Event
 RuleEngine::RuleError RuleEngine::checkRuleAction(const RuleAction &ruleAction, const Rule &rule)
 {
     if (!ruleAction.isValid()) {
-        qWarning(dcRuleEngine()) << "Action is incomplete. It must have either actionTypeId and deviceId, or interface and interfaceAction";
+        qWarning(dcRuleEngine()) << "Action is incomplete. It must have either deviceId and actionTypeId/browserItemId, or interface and interfaceAction:" << ruleAction;
         return RuleErrorActionTypeNotFound;
     }
 
@@ -920,7 +920,7 @@ RuleEngine::RuleError RuleEngine::checkRuleAction(const RuleAction &ruleAction, 
     if (ruleAction.type() == RuleAction::TypeDevice) {
         Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(ruleAction.deviceId());
         if (!device) {
-            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for action with actionTypeId" << ruleAction.actionTypeId();
+            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device with ID" << ruleAction.deviceId();
             return RuleErrorDeviceNotFound;
         }
 
@@ -942,30 +942,44 @@ RuleEngine::RuleError RuleEngine::checkRuleAction(const RuleAction &ruleAction, 
             qCWarning(dcRuleEngine()) << "Cannot create rule. Interface" << iface.name() << "does not implement action" << ruleAction.interfaceAction();
             return RuleError::RuleErrorActionTypeNotFound;
         }
+    } else if (ruleAction.type() == RuleAction::TypeBrowser) {
+        Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(ruleAction.deviceId());
+        if (!device) {
+            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device with ID" << ruleAction.deviceId();
+            return RuleErrorDeviceNotFound;
+        }
+        if (ruleAction.browserItemId().isEmpty()) {
+            qCWarning(dcRuleEngine()) << "Cannot create rule with empty browserItemId";
+            return RuleErrorInvalidRuleActionParameter;
+        }
+
     } else {
         return RuleErrorActionTypeNotFound;
     }
 
-    // Verify given params
-    foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
-        RuleError ruleActionParamError = checkRuleActionParam(ruleActionParam, actionType, rule);
-        if (ruleActionParamError != RuleErrorNoError) {
-            return ruleActionParamError;
-        }
-    }
-
-    // Verify all required params are given
-    foreach (const ParamType &paramType, actionType.paramTypes()) {
-        bool found = false;
+    // Not all rule actions might have an actiontype (e.g. browser item executions)
+    if (!actionType.id().isNull()) {
+        // Verify given params
         foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
-            if (ruleActionParam.paramTypeId() == paramType.id()
-                    || ruleActionParam.paramName() == paramType.name()) {
-                found = true;
-                break;
+            RuleError ruleActionParamError = checkRuleActionParam(ruleActionParam, actionType, rule);
+            if (ruleActionParamError != RuleErrorNoError) {
+                return ruleActionParamError;
             }
         }
-        if (!found) {
-            return RuleErrorMissingParameter;
+
+        // Verify all required params are given
+        foreach (const ParamType &paramType, actionType.paramTypes()) {
+            bool found = false;
+            foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
+                if (ruleActionParam.paramTypeId() == paramType.id()
+                        || ruleActionParam.paramName() == paramType.name()) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return RuleErrorMissingParameter;
+            }
         }
     }
 
@@ -1190,66 +1204,117 @@ void RuleEngine::saveRule(const Rule &rule)
     rule.stateEvaluator().dumpToSettings(settings, "stateEvaluator");
 
     // Save ruleActions
-    int i = 0;
     settings.beginGroup("ruleActions");
-    foreach (const RuleAction &action, rule.actions()) {
-        settings.beginGroup(QString::number(i));
-        if (!action.deviceId().isNull() && !action.actionTypeId().isNull()) {
-            settings.setValue("deviceId", action.deviceId().toString());
-            settings.setValue("actionTypeId", action.actionTypeId().toString());
-        } else {
-            settings.setValue("interface", action.interface());
-            settings.setValue("interfaceAction", action.interfaceAction());
-        }
-        foreach (const RuleActionParam &param, action.ruleActionParams()) {
-            if (!param.paramTypeId().isNull()) {
-                settings.beginGroup("RuleActionParam-" + param.paramTypeId().toString());
-            } else {
-                settings.beginGroup("RuleActionParam-" + param.paramName());
-            }
-            settings.setValue("valueType", static_cast<int>(param.value().type()));
-            settings.setValue("value", param.value());
-            if (param.isEventBased()) {
-                settings.setValue("eventTypeId", param.eventTypeId().toString());
-                settings.setValue("eventParamTypeId", param.eventParamTypeId());
-            } else if (param.isStateBased()) {
-                settings.setValue("stateDeviceId", param.stateDeviceId().toString());
-                settings.setValue("stateTypeId", param.stateTypeId());
-            }
-            settings.endGroup();
-        }
-        i++;
-        settings.endGroup();
-    }
+    saveRuleActions(&settings, rule.actions());
     settings.endGroup();
 
     // Save ruleExitActions
     settings.beginGroup("ruleExitActions");
-    i = 0;
-    foreach (const RuleAction &action, rule.exitActions()) {
-        settings.beginGroup(QString::number(i));
-        if (!action.deviceId().isNull() && !action.actionTypeId().isNull()) {
-            settings.setValue("deviceId", action.deviceId().toString());
-            settings.setValue("actionTypeId", action.actionTypeId().toString());
+    saveRuleActions(&settings, rule.exitActions());
+    settings.endGroup();
+    qCDebug(dcRuleEngineDebug()) << "Saved rule to config:" << rule;
+}
+
+void RuleEngine::saveRuleActions(NymeaSettings *settings, const QList<RuleAction> &ruleActions)
+{
+    int i = 0;
+    foreach (const RuleAction &action, ruleActions) {
+        settings->beginGroup(QString::number(i));
+        if (action.type() == RuleAction::TypeDevice) {
+            settings->setValue("deviceId", action.deviceId().toString());
+            settings->setValue("actionTypeId", action.actionTypeId().toString());
+        } else if (action.type() == RuleAction::TypeBrowser) {
+            settings->setValue("deviceId", action.deviceId().toString());
+            settings->setValue("browserItemId", action.browserItemId());
+        } else if (action.type() == RuleAction::TypeInterface){
+            settings->setValue("interface", action.interface());
+            settings->setValue("interfaceAction", action.interfaceAction());
         } else {
-            settings.setValue("interface", action.interface());
-            settings.setValue("interfaceAction", action.interfaceAction());
+            Q_ASSERT_X(false, "RuleEngine::saveRule", "Unhandled rule action type.");
         }
         foreach (const RuleActionParam &param, action.ruleActionParams()) {
             if (!param.paramTypeId().isNull()) {
-                settings.beginGroup("RuleActionParam-" + param.paramTypeId().toString());
+                settings->beginGroup("RuleActionParam-" + param.paramTypeId().toString());
             } else {
-                settings.beginGroup("RuleActionParam-" + param.paramName());
+                settings->beginGroup("RuleActionParam-" + param.paramName());
             }
-            settings.setValue("valueType", static_cast<int>(param.value().type()));
-            settings.setValue("value", param.value());
-            settings.endGroup();
+            settings->setValue("valueType", static_cast<int>(param.value().type()));
+            settings->setValue("value", param.value());
+            if (param.isEventBased()) {
+                settings->setValue("eventTypeId", param.eventTypeId().toString());
+                settings->setValue("eventParamTypeId", param.eventParamTypeId());
+            } else if (param.isStateBased()) {
+                settings->setValue("stateDeviceId", param.stateDeviceId().toString());
+                settings->setValue("stateTypeId", param.stateTypeId());
+            }
+            settings->endGroup();
         }
         i++;
-        settings.endGroup();
+        settings->endGroup();
     }
-    settings.endGroup();
-    qCDebug(dcRuleEngineDebug()) << "Saved rule to config:" << rule;
+}
+
+QList<RuleAction> RuleEngine::loadRuleActions(NymeaSettings *settings)
+{
+    QList<RuleAction> actions;
+    foreach (const QString &actionNumber, settings->childGroups()) {
+        settings->beginGroup(actionNumber);
+
+        RuleActionParamList params;
+        foreach (QString paramTypeIdString, settings->childGroups()) {
+            if (paramTypeIdString.startsWith("RuleActionParam-")) {
+                settings->beginGroup(paramTypeIdString);
+                QString strippedParamTypeIdString = paramTypeIdString.remove(QRegExp("^RuleActionParam-"));
+                EventTypeId eventTypeId = EventTypeId(settings->value("eventTypeId", EventTypeId()).toString());
+                ParamTypeId eventParamTypeId = ParamTypeId(settings->value("eventParamTypeId", ParamTypeId()).toString());
+                DeviceId stateDeviceId = DeviceId(settings->value("stateDeviceId", DeviceId()).toString());
+                StateTypeId stateTypeId = StateTypeId(settings->value("stateTypeId", StateTypeId()).toString());
+                QVariant value = settings->value("value");
+                if (settings->contains("valueType")) {
+                    QVariant::Type valueType = static_cast<QVariant::Type>(settings->value("valueType").toInt());
+                    // Note: only warn, and continue with the QVariant guessed type
+                    if (valueType == QVariant::Invalid) {
+                        qCWarning(dcRuleEngine()) << "Could not load the value type of the rule action param " << strippedParamTypeIdString << ". The value type will be guessed by QVariant.";
+                    } else if (!value.canConvert(static_cast<int>(valueType))) {
+                        qCWarning(dcRuleEngine()) << "Error loading rule action. Could not convert the rule action param value" << value << "to the stored type" << valueType;
+                    } else {
+                        value.convert(static_cast<int>(valueType));
+                    }
+                }
+
+                RuleActionParam param;
+                if (!ParamTypeId(strippedParamTypeIdString).isNull()) {
+                    // By ParamTypeId
+                    param = RuleActionParam(ParamTypeId(strippedParamTypeIdString), value);
+                } else {
+                    // By param name
+                    param = RuleActionParam(strippedParamTypeIdString, value);
+                }
+                param.setEventTypeId(eventTypeId);
+                param.setEventParamTypeId(eventParamTypeId);
+                param.setStateDeviceId(stateDeviceId);
+                param.setStateTypeId(stateTypeId);
+                params.append(param);
+                settings->endGroup();
+            }
+        }
+
+        if (settings->contains("actionTypeId") && settings->contains("deviceId")) {
+            RuleAction action = RuleAction(ActionTypeId(settings->value("actionTypeId").toString()), DeviceId(settings->value("deviceId").toString()));
+            action.setRuleActionParams(params);
+            actions.append(action);
+        } else if (settings->contains("deviceId") && settings->contains("browserItemId")) {
+            RuleAction action = RuleAction(DeviceId(settings->value("deviceId").toString()), settings->value("browserItemId").toString());
+            actions.append(action);
+        } else if (settings->contains("interface") && settings->contains("interfaceAction")){
+            RuleAction action = RuleAction(settings->value("interface").toString(), settings->value("interfaceAction").toString());
+            action.setRuleActionParams(params);
+            actions.append(action);
+        }
+
+        settings->endGroup();
+    }
+    return actions;
 }
 
 void RuleEngine::init()
@@ -1411,109 +1476,13 @@ void RuleEngine::init()
         // Load actions
         QList<RuleAction> actions;
         settings.beginGroup("ruleActions");
-        foreach (const QString &actionNumber, settings.childGroups()) {
-            settings.beginGroup(actionNumber);
-
-            RuleActionParamList params;
-            foreach (QString paramTypeIdString, settings.childGroups()) {
-                if (paramTypeIdString.startsWith("RuleActionParam-")) {
-                    settings.beginGroup(paramTypeIdString);
-                    QString strippedParamTypeIdString = paramTypeIdString.remove(QRegExp("^RuleActionParam-"));
-                    EventTypeId eventTypeId = EventTypeId(settings.value("eventTypeId", EventTypeId()).toString());
-                    ParamTypeId eventParamTypeId = ParamTypeId(settings.value("eventParamTypeId", ParamTypeId()).toString());
-                    DeviceId stateDeviceId = DeviceId(settings.value("stateDeviceId", DeviceId()).toString());
-                    StateTypeId stateTypeId = StateTypeId(settings.value("stateTypeId", StateTypeId()).toString());
-                    QVariant value = settings.value("value");
-                    if (settings.contains("valueType")) {
-                        QVariant::Type valueType = static_cast<QVariant::Type>(settings.value("valueType").toInt());
-                        // Note: only warn, and continue with the QVariant guessed type
-                        if (valueType == QVariant::Invalid) {
-                            qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the rule action param " << strippedParamTypeIdString << ". The value type will be guessed by QVariant.";
-                        } else if (!value.canConvert(static_cast<int>(valueType))) {
-                            qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the rule action param value" << value << "to the stored type" << valueType;
-                        } else {
-                            value.convert(static_cast<int>(valueType));
-                        }
-                    }
-
-                    RuleActionParam param;
-                    if (!ParamTypeId(strippedParamTypeIdString).isNull()) {
-                        // By ParamTypeId
-                        param = RuleActionParam(ParamTypeId(strippedParamTypeIdString), value);
-                    } else {
-                        // By param name
-                        param = RuleActionParam(strippedParamTypeIdString, value);
-                    }
-                    param.setEventTypeId(eventTypeId);
-                    param.setEventParamTypeId(eventParamTypeId);
-                    param.setStateDeviceId(stateDeviceId);
-                    param.setStateTypeId(stateTypeId);
-                    params.append(param);
-                    settings.endGroup();
-                }
-            }
-
-            if (settings.contains("actionTypeId") && settings.contains("deviceId")) {
-                RuleAction action = RuleAction(ActionTypeId(settings.value("actionTypeId").toString()), DeviceId(settings.value("deviceId").toString()));
-                action.setRuleActionParams(params);
-                actions.append(action);
-            } else if (settings.contains("interface") && settings.contains("interfaceAction")){
-                RuleAction action = RuleAction(settings.value("interface").toString(), settings.value("interfaceAction").toString());
-                action.setRuleActionParams(params);
-                actions.append(action);
-            }
-
-            settings.endGroup();
-        }
+        actions = loadRuleActions(&settings);
         settings.endGroup();
 
         // Load exit actions
         QList<RuleAction> exitActions;
         settings.beginGroup("ruleExitActions");
-        foreach (const QString &actionNumber, settings.childGroups()) {
-            settings.beginGroup(actionNumber);
-
-            RuleActionParamList params;
-            foreach (QString paramTypeIdString, settings.childGroups()) {
-                if (paramTypeIdString.startsWith("RuleActionParam-")) {
-                    settings.beginGroup(paramTypeIdString);
-                    QString strippedParamTypeIdString = paramTypeIdString.remove(QRegExp("^RuleActionParam-"));
-                    QVariant value = settings.value("value");
-                    if (settings.contains("valueType")) {
-                        QVariant::Type valueType = static_cast<QVariant::Type>(settings.value("valueType").toInt());
-                        // Note: only warn, and continue with the QVariant guessed type
-                        if (valueType == QVariant::Invalid) {
-                            qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the rule action param " << strippedParamTypeIdString << ". The value type will be guessed by QVariant.";
-                        } else if (!value.canConvert(static_cast<int>(valueType))) {
-                            qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the rule action param value" << value << "to the stored type" << valueType;
-                        } else {
-                            value.convert(static_cast<int>(valueType));
-                        }
-                    }
-
-                    if (!ParamTypeId(strippedParamTypeIdString).isNull()) {
-                        RuleActionParam param(ParamTypeId(strippedParamTypeIdString), value);
-                        params.append(param);
-                    } else {
-                        RuleActionParam param(strippedParamTypeIdString, value);
-                        params.append(param);
-                    }
-                    settings.endGroup();
-                }
-            }
-
-            if (settings.contains("actionTypeId") && settings.contains("deviceId")) {
-                RuleAction action = RuleAction(ActionTypeId(settings.value("actionTypeId").toString()), DeviceId(settings.value("deviceId").toString()));
-                action.setRuleActionParams(params);
-                exitActions.append(action);
-            } else if (settings.contains("interface") && settings.contains("interfaceAction")) {
-                RuleAction action = RuleAction(settings.value("interface").toString(),settings.value("interfaceAction").toString());
-                action.setRuleActionParams(params);
-                exitActions.append(action);
-            }
-
-            settings.endGroup();
-        }
+        exitActions = loadRuleActions(&settings);
         settings.endGroup();
 
         Rule rule;

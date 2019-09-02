@@ -15,6 +15,10 @@ HEADERS += \
         libnymea.h \
         platform/package.h \
         platform/repository.h \
+        types/browseritem.h \
+        types/browseritemaction.h \
+        types/browseraction.h \
+        types/mediabrowseritem.h \
         typeutils.h \
         loggingcategories.h \
         nymeasettings.h \
@@ -59,8 +63,6 @@ HEADERS += \
         types/paramtype.h \
         types/param.h \
         types/paramdescriptor.h \
-        types/ruleaction.h \
-        types/ruleactionparam.h \
         types/statedescriptor.h \
         types/interface.h \
         hardwareresource.h \
@@ -110,6 +112,10 @@ SOURCES += \
         coap/corelinkparser.cpp \
         coap/corelink.cpp \
         coap/coapobserveresource.cpp \
+        types/browseritem.cpp \
+        types/browseritemaction.cpp \
+        types/browseraction.cpp \
+        types/mediabrowseritem.cpp \
         types/deviceclass.cpp \
         types/action.cpp \
         types/actiontype.cpp \
@@ -122,8 +128,6 @@ SOURCES += \
         types/paramtype.cpp \
         types/param.cpp \
         types/paramdescriptor.cpp \
-        types/ruleaction.cpp \
-        types/ruleactionparam.cpp \
         types/statedescriptor.cpp \
         types/interface.cpp \
         hardwareresource.cpp \

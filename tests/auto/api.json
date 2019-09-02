@@ -1,4 +1,4 @@
-2.2
+2.3
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -6,6 +6,30 @@
             "params": {
                 "actionTypeId": "Uuid",
                 "deviceId": "Uuid",
+                "o:params": [
+                    "$ref:Param"
+                ]
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError"
+            }
+        },
+        "Actions.ExecuteBrowserItem": {
+            "description": "Execute the item identified by itemId on the given device.",
+            "params": {
+                "deviceId": "Uuid",
+                "itemId": "String"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError"
+            }
+        },
+        "Actions.ExecuteBrowserItemAction": {
+            "description": "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.",
+            "params": {
+                "actionTypeId": "Uuid",
+                "deviceId": "Uuid",
+                "itemId": "String",
                 "o:params": [
                     "$ref:Param"
                 ]
@@ -249,6 +273,19 @@
                 "o:deviceId": "Uuid"
             }
         },
+        "Devices.BrowseDevice": {
+            "description": "Browse a device. If a DeviceClass indicates a device is browsable, this method will return the BrowserItems. If no parameter besides the deviceId is used, the root node of this device will be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.",
+            "params": {
+                "deviceId": "Uuid",
+                "o:itemId": "String"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError",
+                "items": [
+                    "$ref:BrowserItem"
+                ]
+            }
+        },
         "Devices.ConfirmPairing": {
             "description": "Confirm an ongoing pairing. In case of SetupMethodEnterPin also provide the pin in the params.",
             "params": {
@@ -279,6 +316,17 @@
                 "actionTypes": [
                     "$ref:ActionType"
                 ]
+            }
+        },
+        "Devices.GetBrowserItem": {
+            "description": "Get a single item from the browser. This won't give any more info on an item than a regular browseDevice call, but it allows to fetch details of an item if only the ID is known.",
+            "params": {
+                "deviceId": "Uuid",
+                "o:itemId": "String"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError",
+                "o:item": "$ref:BrowserItem"
             }
         },
         "Devices.GetConfiguredDevices": {
@@ -1351,6 +1399,21 @@
             "Time",
             "Object"
         ],
+        "BrowserIcon": "$ref:BrowserIcon",
+        "BrowserItem": {
+            "actionTypeIds": [
+                "Uuid"
+            ],
+            "browsable": "Bool",
+            "description": "String",
+            "disabled": "Bool",
+            "displayName": "String",
+            "executable": "Bool",
+            "icon": "$ref:BrowserIcon",
+            "id": "String",
+            "o:mediaIcon": "$ref:MediaBrowserIcon",
+            "thumbnail": "String"
+        },
         "CalendarItem": {
             "duration": "Uint",
             "o:datetime": "Uint",
@@ -1399,6 +1462,10 @@
         },
         "DeviceClass": {
             "actionTypes": [
+                "$ref:ActionType"
+            ],
+            "browsable": "Bool",
+            "browserItemActionTypes": [
                 "$ref:ActionType"
             ],
             "createMethods": [
@@ -1462,7 +1529,10 @@
             "DeviceErrorDeviceInRule",
             "DeviceErrorDeviceIsChild",
             "DeviceErrorPairingTransactionIdNotFound",
-            "DeviceErrorParameterNotWritable"
+            "DeviceErrorParameterNotWritable",
+            "DeviceErrorItemNotFound",
+            "DeviceErrorItemNotExecutable",
+            "DeviceErrorUnsupportedFeature"
         ],
         "Event": {
             "deviceId": "Uuid",
@@ -1507,6 +1577,7 @@
             "o:deviceId": "Uuid",
             "o:errorCode": "String",
             "o:eventType": "$ref:LoggingEventType",
+            "o:itemId": "String",
             "o:typeId": "Uuid",
             "o:value": "String",
             "source": "$ref:LoggingSource",
@@ -1533,8 +1604,10 @@
             "LoggingSourceEvents",
             "LoggingSourceActions",
             "LoggingSourceStates",
-            "LoggingSourceRules"
+            "LoggingSourceRules",
+            "LoggingSourceBrowserActions"
         ],
+        "MediaBrowserIcon": "$ref:MediaBrowserIcon",
         "MqttPolicy": {
             "allowedPublishTopicFilters": "StringList",
             "allowedSubscribeTopicFilters": "StringList",
@@ -1670,6 +1743,7 @@
         },
         "RuleAction": {
             "o:actionTypeId": "Uuid",
+            "o:browserItemId": "String",
             "o:deviceId": "Uuid",
             "o:interface": "String",
             "o:interfaceAction": "String",

@@ -54,6 +54,8 @@ ActionTypeId mockWithoutParamsActionTypeId = ActionTypeId("{defd3ed6-1a0d-400b-8
 ActionTypeId mockAsyncActionTypeId = ActionTypeId("{fbae06d3-7666-483e-a39e-ec50fe89054e}");
 ActionTypeId mockFailingActionTypeId = ActionTypeId("{df3cf33d-26d5-4577-9132-9823bd33fad0}");
 ActionTypeId mockAsyncFailingActionTypeId = ActionTypeId("{bfe89a1d-3497-4121-8318-e77c37537219}");
+ActionTypeId mockAddToFavoritesBrowserItemActionTypeId = ActionTypeId("{00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3}");
+ActionTypeId mockRemoveFromFavoritesBrowserItemActionTypeId = ActionTypeId("{da6faef8-2816-430e-93bb-57e8f9582d29}");
 DeviceClassId mockDeviceAutoDeviceClassId = DeviceClassId("{ab4257b3-7548-47ee-9bd4-7dc3004fd197}");
 ParamTypeId mockDeviceAutoDeviceHttpportParamTypeId = ParamTypeId("{bfeb0613-dab6-408c-aa27-c362c921d0d1}");
 ParamTypeId mockDeviceAutoDeviceAsyncParamTypeId = ParamTypeId("{a5c4315f-0624-4971-87c1-4bbfbfdbd16e}");
@@ -247,6 +249,9 @@ ActionTypeId mockInputTypeWritableTimestampUIntActionTypeId = ActionTypeId("{45d
 ParamTypeId mockInputTypeWritableTimestampUIntActionWritableTimestampUIntParamTypeId = ParamTypeId("{45d0069a-63ac-4265-8170-8152778608ee}");
 
 const QString translations[] {
+    //: The name of the Browser Item ActionType ({00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3}) of DeviceClass mock
+    QT_TRANSLATE_NOOP("mockDevice", "Add to favorites"),
+
     //: The name of the ParamType (DeviceClass: mockInputType, EventType: bool, ID: {3bad3a09-5826-4ed7-a832-10e3e2ee2a7d})
     QT_TRANSLATE_NOOP("mockDevice", "Bool"),
 
@@ -411,6 +416,9 @@ const QString translations[] {
 
     //: The pairing info of deviceClass mockDisplayPin
     QT_TRANSLATE_NOOP("mockDevice", "Please enter the secret which normaly will be displayed on the device. For the mockdevice the pin is 243681."),
+
+    //: The name of the Browser Item ActionType ({da6faef8-2816-430e-93bb-57e8f9582d29}) of DeviceClass mock
+    QT_TRANSLATE_NOOP("mockDevice", "Remove from favorites"),
 
     //: The name of the ParamType (DeviceClass: mockInputType, Type: device, ID: {22add8c9-ee4f-43ad-8931-58e999313ac3})
     QT_TRANSLATE_NOOP("mockDevice", "Search text"),

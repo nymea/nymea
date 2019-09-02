@@ -18,9 +18,11 @@ RESOURCES += $$top_srcdir/icons.qrc \
 HEADERS += nymeacore.h \
     devices/devicemanagerimplementation.h \
     devices/translator.h \
-    devices/stateevaluator.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
+    ruleengine/stateevaluator.h \
+    ruleengine/ruleaction.h \
+    ruleengine/ruleactionparam.h \
     transportinterface.h \
     nymeaconfiguration.h \
     servermanager.h \
@@ -102,9 +104,11 @@ HEADERS += nymeacore.h \
 SOURCES += nymeacore.cpp \
     devices/devicemanagerimplementation.cpp \
     devices/translator.cpp \
-    devices/stateevaluator.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \
+    ruleengine/stateevaluator.cpp \
+    ruleengine/ruleaction.cpp \
+    ruleengine/ruleactionparam.cpp \
     transportinterface.cpp \
     nymeaconfiguration.cpp \
     servermanager.cpp \

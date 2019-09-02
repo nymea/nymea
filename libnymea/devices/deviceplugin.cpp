@@ -248,6 +248,68 @@ Device::DeviceError DevicePlugin::executeAction(Device *device, const Action &ac
     return Device::DeviceErrorNoError;
 }
 
+/*! Implement this if your devices support browsing (set "browsable" to true in the metadata).
+ *  When the system calls this method, fill the \a result object's items list with entries from the browser.
+ *  If \a itemId is empty it means that the root node of the file system should be returned. Each item in
+ *  the result set shall be uniquely identifiable using its \l{BrowserItem::id}{id} property.
+ *  The system might call this method again, with an \a itemId returned in a previous query, provided
+ *  that item's \l{BrowserItem::browsable} property is true. In this case all children of the given
+ *  item shall be returned. All browser \l {BrowserItem::displayName} properties shall be localized
+ *  using the given \a locale.
+ *  When done, set the \l{BrowserResult::status}{result's status} field approprietly. Set the result's
+ *  status to Device::DeviceErrorAsync if this operation requires async behavior and emit
+ *  \l{browseRequestFinished} when done.
+ */
+Device::BrowseResult DevicePlugin::browseDevice(Device *device, Device::BrowseResult result, const QString &itemId, const QLocale &locale)
+{
+    Q_UNUSED(device)
+    Q_UNUSED(itemId)
+    Q_UNUSED(locale)
+
+    result.status = Device::DeviceErrorUnsupportedFeature;
+    return result;
+}
+
+/*! Implement this if your devices support browsing (set "browsable" to true in the metadata).
+ *  When the system calls this method, fetch the item details required to create a BrowserItem
+ *  for the item with the given \a id and append that one item to the \a result.
+ *  When done, set the \l{BrowserResult::status}{result's status} field approprietly. Set the result's
+ *  status to Device::DeviceErrorAsync if this operation requires async behavior and emit
+ *  \l{browserItemRequestFinished} when done.
+ */
+Device::BrowserItemResult DevicePlugin::browserItem(Device *device, Device::BrowserItemResult result, const QString &itemId, const QLocale &locale)
+{
+    Q_UNUSED(device)
+    Q_UNUSED(itemId)
+    Q_UNUSED(locale)
+
+    result.status = Device::DeviceErrorUnsupportedFeature;
+    return result;
+}
+
+/*! Implement this if your devices support browsing and execute the itemId defined in \a browserAction.
+ *  Return Device::DeviceErrorAsync if this operation requires async behavior and emit
+ *  \l{browserItemExecutionFinished} when done.
+ */
+Device::DeviceError DevicePlugin::executeBrowserItem(Device *device, const BrowserAction &browserAction)
+{
+    Q_UNUSED(device)
+    Q_UNUSED(browserAction)
+    return Device::DeviceErrorUnsupportedFeature;
+}
+
+/*! Implement this if your devices support browsing and execute the item's action for the itemId defined
+ *  in \a browserItemAction.
+ *  Return Device::DeviceErrorAsync if this operation requires async behavior and emit
+ *  \l{browserItemActionExecutionFinished} when done.
+ */
+Device::DeviceError DevicePlugin::executeBrowserItemAction(Device *device, const BrowserItemAction &browserItemAction)
+{
+    Q_UNUSED(device)
+    Q_UNUSED(browserItemAction)
+    return Device::DeviceErrorUnsupportedFeature;
+}
+
 /*! Returns the configuration description of this DevicePlugin as a list of \l{ParamType}{ParamTypes}. */
 ParamTypes DevicePlugin::configurationDescription() const
 {

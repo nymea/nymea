@@ -38,10 +38,6 @@
 class LIBNYMEA_EXPORT DeviceClass
 {
     Q_GADGET
-    Q_ENUMS(CreateMethod)
-    Q_ENUMS(SetupMethod)
-    Q_ENUMS(BasicTag)
-    Q_ENUMS(CreateMethods)
 
 public:
     enum CreateMethod {
@@ -49,6 +45,7 @@ public:
         CreateMethodAuto = 0x02,
         CreateMethodDiscovery = 0x04
     };
+    Q_ENUM(CreateMethod)
     Q_DECLARE_FLAGS(CreateMethods, CreateMethod)
 
     enum SetupMethod {
@@ -57,6 +54,7 @@ public:
         SetupMethodEnterPin,
         SetupMethodPushButton
     };
+    Q_ENUM(SetupMethod)
 
     DeviceClass(const PluginId &pluginId = PluginId(), const VendorId &vendorId = VendorId(), const DeviceClassId &id = DeviceClassId());
 
@@ -73,16 +71,23 @@ public:
 
     StateTypes stateTypes() const;
     StateType getStateType(const StateTypeId &stateTypeId);
-    void setStateTypes(const QList<StateType> &stateTypes);
+    void setStateTypes(const StateTypes &stateTypes);
     bool hasStateType(const StateTypeId &stateTypeId);
 
     EventTypes eventTypes() const;
-    void setEventTypes(const QList<EventType> &eventTypes);
+    void setEventTypes(const EventTypes &eventTypes);
     bool hasEventType(const EventTypeId &eventTypeId);
 
     ActionTypes actionTypes() const;
-    void setActionTypes(const QList<ActionType> &actionTypes);
+    void setActionTypes(const ActionTypes &actionTypes);
     bool hasActionType(const ActionTypeId &actionTypeId);
+
+    bool browsable() const;
+    void setBrowsable(bool browsable);
+
+    ActionTypes browserItemActionTypes() const;
+    void setBrowserItemActionTypes(const ActionTypes &browserItemActionTypes);
+    bool hasBrowserItemActionType(const ActionTypeId &actionTypeId);
 
     ParamTypes paramTypes() const;
     void setParamTypes(const ParamTypes &paramTypes);
@@ -113,9 +118,11 @@ private:
     PluginId m_pluginId;
     QString m_name;
     QString m_displayName;
+    bool m_browsable = false;
     StateTypes m_stateTypes;
     EventTypes m_eventTypes;
     ActionTypes m_actionTypes;
+    ActionTypes m_browserItemActionTypes;
     ParamTypes m_paramTypes;
     ParamTypes m_settingsTypes;
     ParamTypes m_discoveryParamTypes;

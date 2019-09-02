@@ -108,6 +108,8 @@
         This \l{LogEntry} was created from an \l{State} which hase changed.
     \value LoggingSourceRules
         This \l{LogEntry} represents the enable/disable event from an \l{Rule}.
+    \value LoggingSourceBrowserActions
+        This \l{LogEntry} was created from a \l{BrowserItemAction}.
 */
 
 #include "nymeasettings.h"
@@ -309,6 +311,23 @@ void LogEngine::logAction(const Action &action, Logging::LoggingLevel level, int
         }
         entry.setValue(valueList);
     }
+    appendLogEntry(entry);
+}
+
+void LogEngine::logBrowserAction(const BrowserAction &browserAction, Logging::LoggingLevel level, int errorCode)
+{
+    LogEntry entry(level, Logging::LoggingSourceBrowserActions, errorCode);
+    entry.setDeviceId(browserAction.deviceId());
+    entry.setValue(browserAction.itemId());
+    appendLogEntry(entry);
+}
+
+void LogEngine::logBrowserItemAction(const BrowserItemAction &browserItemAction, Logging::LoggingLevel level, int errorCode)
+{
+    LogEntry entry(level, Logging::LoggingSourceBrowserActions, errorCode);
+    entry.setDeviceId(browserItemAction.deviceId());
+    entry.setTypeId(browserItemAction.actionTypeId());
+    entry.setValue(browserItemAction.itemId());
     appendLogEntry(entry);
 }
 

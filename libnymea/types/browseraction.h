@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -21,57 +20,29 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef RULEACTION_H
-#define RULEACTION_H
+#ifndef BROWSERACTION_H
+#define BROWSERACTION_H
 
-#include "libnymea.h"
-#include "action.h"
-#include "ruleactionparam.h"
+#include "typeutils.h"
 
-class LIBNYMEA_EXPORT RuleAction
+class BrowserAction
 {
 public:
-    enum Type {
-        TypeDevice,
-        TypeInterface
-    };
-    explicit RuleAction(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId(), const RuleActionParamList &params = RuleActionParamList());
-    explicit RuleAction(const QString &interface, const QString &interfaceAction, const RuleActionParamList &params = RuleActionParamList());
-    RuleAction(const RuleAction &other);
+    explicit BrowserAction(const DeviceId &deviceId = DeviceId(), const QString &itemId = QString());
+    BrowserAction(const BrowserAction &other);
 
     ActionId id() const;
+
     bool isValid() const;
 
-    Type type() const;
-
-    bool isEventBased() const;
-    bool isStateBased() const;
-
-    Action toAction() const;
-
-    ActionTypeId actionTypeId() const;
     DeviceId deviceId() const;
+    QString itemId() const;
 
-    QString interface() const;
-    QString interfaceAction() const;
-
-    RuleActionParamList ruleActionParams() const;
-    void setRuleActionParams(const RuleActionParamList &ruleActionParams);
-    RuleActionParam ruleActionParam(const ParamTypeId &ruleActionParamTypeId) const;
-    RuleActionParam ruleActionParam(const QString &ruleActionParamName) const;
-
-    void operator=(const RuleAction &other);
-
+    void operator=(const BrowserAction &other);
 private:
     ActionId m_id;
-    ActionTypeId m_actionTypeId;
     DeviceId m_deviceId;
-    QString m_interface;
-    QString m_interfaceAction;
-    RuleActionParamList m_ruleActionParams;
+    QString m_itemId;
 };
 
-QDebug operator<<(QDebug dbg, const RuleAction &ruleAction);
-QDebug operator<<(QDebug dbg, const QList<RuleAction> &ruleActionList);
-
-#endif // RULEACTION_H
+#endif // BROWSERACTION_H

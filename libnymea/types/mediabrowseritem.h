@@ -20,42 +20,46 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PLUGININFOCOMPILER_H
-#define PLUGININFOCOMPILER_H
+#ifndef MEDIABROWSERITEM_H
+#define MEDIABROWSERITEM_H
 
-#include <QString>
-#include <QFile>
+#include "browseritem.h"
 
-#include "types/paramtype.h"
-#include "devices/pluginmetadata.h"
-
-class PluginInfoCompiler
+class MediaBrowserItem: public BrowserItem
 {
+    Q_GADGET
 public:
-    PluginInfoCompiler();
+    enum MediaBrowserIcon {
+        MediaBrowserIconNone = 1,
+        MediaBrowserIconPlaylist = 2,
+        MediaBrowserIconRecentlyPlayed = 3,
+        MediaBrowserIconLibrary = 4,
+        MediaBrowserIconMusicLibrary = 5,
+        MediaBrowserIconVideoLibrary = 6,
+        MediaBrowserIconPictureLibrary = 7,
 
-    int compile(const QString &inputFile, const QString &outputFile, const QString outputFileExtern);
+        MediaBrowserIconDisk = 100,
+        MediaBrowserIconUSB = 101,
+        MediaBrowserIconNetwork = 102,
+        MediaBrowserIconAux = 103,
 
+        MediaBrowserIconSpotify = 200,
+        MediaBrowserIconAmazon = 201,
+        MediaBrowserIconTuneIn = 202,
+        MediaBrowserIconSiriusXM = 203,
+        MediaBrowserIconVTuner = 204,
+        MediaBrowserIconTidal = 205,
+        MediaBrowserIconAirable = 206,
+    };
+    Q_ENUM(MediaBrowserIcon)
 
-private:
-    void writePlugin(const PluginMetadata &metadata);
-    void writeParams(const ParamTypes &paramTypes, const QString &deviceClassName, const QString &typeClass, const QString &typeName);
-    void writeVendor(const Vendor &vendor);
-    void writeDeviceClass(const DeviceClass &deviceClass);
-    void writeStateTypes(const StateTypes &stateTypes, const QString &deviceClassName);
-    void writeEventTypes(const EventTypes &eventTypes, const QString &deviceClassName);
-    void writeActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
-    void writeBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
+    MediaBrowserItem(const QString &id = QString(), const QString &displayName = QString(), bool browsable = false);
 
-    void write(const QString &line = QString());
-    void writeExtern(const QString &line = QString());
+    MediaBrowserIcon mediaIcon() const;
+    void setMediaIcon(MediaBrowserIcon mediaIcon);
 
-    QMultiMap<QString, QString> m_translationStrings;
-
-    QStringList m_variableNames;
-
-    QFile m_outputFile;
-    QFile m_outputFileExtern;
+    int playCount() const;
+    void setPlayCount(int playCount);
 };
 
-#endif // PLUGININFOCOMPILER_H
+#endif // MEDIABROWSERITEM_H

@@ -162,8 +162,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             QJsonObject deviceClassObject = deviceClassJson.toObject();
             /*! Returns a list of all valid JSON properties a DeviceClass JSON definition can have. */
             QStringList deviceClassProperties = QStringList() << "id" << "name" << "displayName" << "createMethods" << "setupMethod"
-                                     << "interfaces" << "pairingInfo" << "discoveryParamTypes" << "discoveryParamTypes"
-                                     << "paramTypes" << "settingsTypes" << "stateTypes" << "actionTypes" << "eventTypes";
+                                     << "interfaces" << "browsable" << "pairingInfo" << "discoveryParamTypes" << "discoveryParamTypes"
+                                     << "paramTypes" << "settingsTypes" << "stateTypes" << "actionTypes" << "eventTypes" << "browserItemActionTypes";
             QStringList mandatoryDeviceClassProperties = QStringList() << "id" << "name" << "displayName";
 
             QPair<QStringList, QStringList> verificationResult = verifyFields(deviceClassProperties, mandatoryDeviceClassProperties, deviceClassObject);
@@ -192,6 +192,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             DeviceClass deviceClass(pluginId(), vendorId, deviceClassId);
             deviceClass.setName(deviceClassName);
             deviceClass.setDisplayName(deviceClassObject.value("displayName").toString());
+            deviceClass.setBrowsable(deviceClassObject.value("browsable").toBool());
 
             // Read create methods
             DeviceClass::CreateMethods createMethods;
@@ -260,9 +261,10 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             // Read pairing info
             deviceClass.setPairingInfo(deviceClassObject.value("pairingInfo").toString());
 
-            QList<ActionType> actionTypes;
-            QList<StateType> stateTypes;
-            QList<EventType> eventTypes;
+            ActionTypes actionTypes;
+            StateTypes stateTypes;
+            EventTypes eventTypes;
+            ActionTypes browserItemActionTypes;
 
             // Read StateTypes
             int index = 0;
@@ -457,6 +459,48 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             }
             deviceClass.setEventTypes(eventTypes);
 
+            // BrowserItemActionTypes
+            index = 0;
+            foreach (const QJsonValue &browserItemActionTypesJson, deviceClassObject.value("browserItemActionTypes").toArray()) {
+                QJsonObject at = browserItemActionTypesJson.toObject();
+                QPair<QStringList, QStringList> verificationResult = verifyFields(ActionType::typeProperties(), ActionType::mandatoryTypeProperties(), at);
+
+                // Check mandatory fields
+                if (!verificationResult.first.isEmpty()) {
+                    qCWarning(dcPluginMetadata()) << "Device class" << deviceClass.name() << " has missing fields" << verificationResult.first.join(", ") << "in browser item action type:" << endl << at;
+                    hasError = true;
+                    continue;
+                }
+
+                // Check if there are any unknown fields
+                if (!verificationResult.second.isEmpty()) {
+                    qCWarning(dcPluginMetadata()) << pluginName() << "Device class" << deviceClass.name() << "has unknown fields:" << verificationResult.second.join(", ") << "in browser item action type:" << endl << at;
+                    hasError = true;
+                }
+
+                ActionTypeId actionTypeId = ActionTypeId(at.value("id").toString());
+                QString actionTypeName = at.value("name").toString();
+                if (!verifyDuplicateUuid(actionTypeId)) {
+                    qCWarning(dcPluginMetadata()) << "Browser Action Type" << actionTypeName << "has duplicate UUID:" << actionTypeId.toString();
+                    hasError = true;
+                }
+                ActionType actionType(actionTypeId);
+                actionType.setName(actionTypeName);
+                actionType.setDisplayName(at.value("displayName").toString());
+                actionType.setIndex(index++);
+
+                QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(at.value("paramTypes").toArray());
+                if (!paramVerification.first) {
+                    hasError = true;
+                    break;
+                } else {
+                    actionType.setParamTypes(paramVerification.second);
+                }
+
+                browserItemActionTypes.append(actionType);
+            }
+            deviceClass.setBrowserItemActionTypes(browserItemActionTypes);
+
             // Read interfaces
             QStringList interfaces;
             foreach (const QJsonValue &value, deviceClassObject.value("interfaces").toArray()) {
@@ -616,6 +660,7 @@ QPair<QStringList, QStringList> PluginMetadata::verifyFields(const QStringList &
 
 QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
 {
+    bool hasErrors = false;
     int index = 0;
     QList<ParamType> paramTypes;
     foreach (const QJsonValue &paramTypesJson, array) {
@@ -626,13 +671,14 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
         // Check mandatory fields
         if (!verificationResult.first.isEmpty()) {
             qCWarning(dcPluginMetadata()) << pluginName() << "Error parsing ParamType: missing fields:" << verificationResult.first.join(", ") << endl << pt;
-            return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
+            hasErrors = true;
+            continue;
         }
 
         // Check if there are any unknown fields
         if (!verificationResult.second.isEmpty()) {
             qCWarning(dcPluginMetadata()) << pluginName() << "Error parsing ParamType: unknown fields:" << verificationResult.second.join(", ") << endl << pt;
-            return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
+            hasErrors = true;
         }
 
         // Check type
@@ -641,14 +687,14 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
             qCWarning(dcPluginMetadata()) << pluginName() << QString("Invalid type %1 for param %2 in json file.")
                                             .arg(pt.value("type").toString())
                                             .arg(pt.value("name").toString()).toLatin1().data();
-            return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
+            hasErrors = true;
         }
 
         ParamTypeId paramTypeId = ParamTypeId(pt.value("id").toString());
         QString paramName = pt.value("name").toString();
         if (!verifyDuplicateUuid(paramTypeId)) {
             qCWarning(dcPluginMetadata()) << "Param" << paramName << "has duplicate UUID:" << paramTypeId.toString();
-            return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
+            hasErrors = true;
         }
         ParamType paramType(paramTypeId, paramName, t, pt.value("defaultValue").toVariant());
         paramType.setDisplayName(pt.value("displayName").toString());
@@ -665,7 +711,7 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
             QPair<bool, Types::InputType> inputTypeVerification = loadAndVerifyInputType(pt.value("inputType").toString());
             if (!inputTypeVerification.first) {
                 qCWarning(dcPluginMetadata()) << pluginName() << QString("Invalid inputType for paramType") << pt;
-                return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
+                hasErrors = true;
             } else {
                 paramType.setInputType(inputTypeVerification.second);
             }
@@ -676,7 +722,7 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
             QPair<bool, Types::Unit> unitVerification = loadAndVerifyUnit(pt.value("unit").toString());
             if (!unitVerification.first) {
                 qCWarning(dcPluginMetadata()) << pluginName() << QString("Invalid unit type for paramType") << pt;
-                return QPair<bool, QList<ParamType> >(false, QList<ParamType>());
+                hasErrors = true;
             } else {
                 paramType.setUnit(unitVerification.second);
             }
@@ -692,7 +738,7 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
         paramTypes.append(paramType);
     }
 
-    return QPair<bool, QList<ParamType> >(true, paramTypes);
+    return QPair<bool, QList<ParamType> >(!hasErrors, paramTypes);
 }
 
 QPair<bool, Types::InputType> PluginMetadata::loadAndVerifyInputType(const QString &inputType)

@@ -97,13 +97,19 @@ public:
 
     Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId) override;
 
+    Device::DeviceError executeAction(const Action &action) override;
+
+    Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) override;
+    Device::BrowserItemResult browserItemDetails(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) override;
+    Device::DeviceError executeBrowserItem(const BrowserAction &browserAction) override;
+    Device::DeviceError executeBrowserItemAction(const BrowserItemAction &browserItemAction) override;
+
     QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) override;
 
 signals:
     void loaded();
 
 public slots:
-    Device::DeviceError executeAction(const Action &action);
     void timeTick();
 
 private slots:
@@ -125,7 +131,7 @@ private slots:
     void slotDeviceSettingChanged(const ParamTypeId &paramTypeId, const QVariant &value);
 
 private:
-    Device::DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId());
+    Device::DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId(), const DeviceId &parentDeviceId = DeviceId());
     Device::DeviceSetupStatus setupDevice(Device *device);
     void postSetupDevice(Device *device);
     void storeDeviceStates(Device *device);

@@ -57,6 +57,7 @@ DECLARE_TYPE_ID(ActionType)
 DECLARE_TYPE_ID(Action)
 DECLARE_TYPE_ID(Plugin)
 DECLARE_TYPE_ID(Rule)
+DECLARE_TYPE_ID(Browser)
 
 DECLARE_TYPE_ID(PairingTransaction)
 
@@ -151,6 +152,10 @@ public:
     };
     Q_ENUM(StateOperator)
 
+    enum BrowserType {
+        BrowserTypeGeneric,
+    };
+    Q_ENUM(BrowserType)
 };
 
 Q_DECLARE_METATYPE(Types::InputType)

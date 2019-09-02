@@ -23,21 +23,20 @@
 #define RULEENGINE_H
 
 #include "rule.h"
+#include "stateevaluator.h"
 #include "types/event.h"
 #include "types/deviceclass.h"
-#include "devices/stateevaluator.h"
 
 #include <QObject>
 #include <QList>
 #include <QUuid>
+#include <QSettings>
 
 namespace nymeaserver {
 
 class RuleEngine : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(RuleError)
-    Q_ENUMS(RemovePolicy)
 public:
     enum RuleError {
         RuleErrorNoError,
@@ -62,11 +61,13 @@ public:
         RuleErrorNoExitActions,
         RuleErrorInterfaceNotFound
     };
+    Q_ENUM(RuleError)
 
     enum RemovePolicy {
         RemovePolicyCascade,
         RemovePolicyUpdate
     };
+    Q_ENUM(RemovePolicy)
 
     explicit RuleEngine(QObject *parent = nullptr);
     ~RuleEngine();
@@ -112,6 +113,8 @@ private:
 
     void appendRule(const Rule &rule);
     void saveRule(const Rule &rule);
+    void saveRuleActions(NymeaSettings *settings, const QList<RuleAction> &ruleActions);
+    QList<RuleAction> loadRuleActions(NymeaSettings *settings);
 
 private:
     QList<RuleId> m_ruleIds; // Keeping a list of RuleIds to keep sorting order...

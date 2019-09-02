@@ -20,42 +20,47 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PLUGININFOCOMPILER_H
-#define PLUGININFOCOMPILER_H
+#include "browseraction.h"
 
-#include <QString>
-#include <QFile>
-
-#include "types/paramtype.h"
-#include "devices/pluginmetadata.h"
-
-class PluginInfoCompiler
+BrowserAction::BrowserAction(const DeviceId &deviceId, const QString &itemId):
+    m_id(ActionId::createActionId()),
+    m_deviceId(deviceId),
+    m_itemId(itemId)
 {
-public:
-    PluginInfoCompiler();
 
-    int compile(const QString &inputFile, const QString &outputFile, const QString outputFileExtern);
+}
 
+BrowserAction::BrowserAction(const BrowserAction &other):
+    m_id(other.id()),
+    m_deviceId(other.deviceId()),
+    m_itemId(other.itemId())
+{
 
-private:
-    void writePlugin(const PluginMetadata &metadata);
-    void writeParams(const ParamTypes &paramTypes, const QString &deviceClassName, const QString &typeClass, const QString &typeName);
-    void writeVendor(const Vendor &vendor);
-    void writeDeviceClass(const DeviceClass &deviceClass);
-    void writeStateTypes(const StateTypes &stateTypes, const QString &deviceClassName);
-    void writeEventTypes(const EventTypes &eventTypes, const QString &deviceClassName);
-    void writeActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
-    void writeBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
+}
 
-    void write(const QString &line = QString());
-    void writeExtern(const QString &line = QString());
+ActionId BrowserAction::id() const
+{
+    return m_id;
+}
 
-    QMultiMap<QString, QString> m_translationStrings;
+bool BrowserAction::isValid() const
+{
+    return !m_id.isNull() && !m_deviceId.isNull() && !m_itemId.isNull();
+}
 
-    QStringList m_variableNames;
+DeviceId BrowserAction::deviceId() const
+{
+    return m_deviceId;
+}
 
-    QFile m_outputFile;
-    QFile m_outputFileExtern;
-};
+QString BrowserAction::itemId() const
+{
+    return m_itemId;
+}
 
-#endif // PLUGININFOCOMPILER_H
+void BrowserAction::operator=(const BrowserAction &other)
+{
+    m_id = other.id();
+    m_deviceId = other.deviceId();
+    m_itemId = other.itemId();
+}

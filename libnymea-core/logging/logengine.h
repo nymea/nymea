@@ -26,6 +26,8 @@
 #include "logfilter.h"
 #include "types/event.h"
 #include "types/action.h"
+#include "types/browseritemaction.h"
+#include "types/browseraction.h"
 #include "ruleengine/rule.h"
 
 #include <QObject>
@@ -49,6 +51,8 @@ public:
     void logSystemEvent(const QDateTime &dateTime, bool active, Logging::LoggingLevel level = Logging::LoggingLevelInfo);
     void logEvent(const Event &event);
     void logAction(const Action &action, Logging::LoggingLevel level = Logging::LoggingLevelInfo, int errorCode = 0);
+    void logBrowserAction(const BrowserAction &browserAction, Logging::LoggingLevel level = Logging::LoggingLevelInfo, int errorCode = 0);
+    void logBrowserItemAction(const BrowserItemAction &browserItemAction, Logging::LoggingLevel level = Logging::LoggingLevelInfo, int errorCode = 0);
     void logRuleTriggered(const Rule &rule);
     void logRuleActiveChanged(const Rule &rule);
     void logRuleEnabledChanged(const Rule &rule, const bool &enabled);

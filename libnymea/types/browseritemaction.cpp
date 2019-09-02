@@ -20,42 +20,64 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PLUGININFOCOMPILER_H
-#define PLUGININFOCOMPILER_H
+#include "browseritemaction.h"
 
-#include <QString>
-#include <QFile>
 
-#include "types/paramtype.h"
-#include "devices/pluginmetadata.h"
-
-class PluginInfoCompiler
+BrowserItemAction::BrowserItemAction(const DeviceId &deviceId, const QString &itemId, const ActionTypeId &actionTypeId, const ParamList &params):
+    m_id(ActionId::createActionId()),
+    m_deviceId(deviceId),
+    m_itemId(itemId),
+    m_actionTypeId(actionTypeId),
+    m_params(params)
 {
-public:
-    PluginInfoCompiler();
 
-    int compile(const QString &inputFile, const QString &outputFile, const QString outputFileExtern);
+}
 
+BrowserItemAction::BrowserItemAction(const BrowserItemAction &other):
+    m_id(other.id()),
+    m_deviceId(other.deviceId()),
+    m_itemId(other.itemId()),
+    m_actionTypeId(other.actionTypeId()),
+    m_params(other.params())
+{
 
-private:
-    void writePlugin(const PluginMetadata &metadata);
-    void writeParams(const ParamTypes &paramTypes, const QString &deviceClassName, const QString &typeClass, const QString &typeName);
-    void writeVendor(const Vendor &vendor);
-    void writeDeviceClass(const DeviceClass &deviceClass);
-    void writeStateTypes(const StateTypes &stateTypes, const QString &deviceClassName);
-    void writeEventTypes(const EventTypes &eventTypes, const QString &deviceClassName);
-    void writeActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
-    void writeBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
+}
 
-    void write(const QString &line = QString());
-    void writeExtern(const QString &line = QString());
+ActionId BrowserItemAction::id() const
+{
+    return m_id;
+}
 
-    QMultiMap<QString, QString> m_translationStrings;
+bool BrowserItemAction::isValid() const
+{
+    return !m_id.isNull() && !m_deviceId.isNull() && !m_itemId.isNull();
+}
 
-    QStringList m_variableNames;
+DeviceId BrowserItemAction::deviceId() const
+{
+    return m_deviceId;
+}
 
-    QFile m_outputFile;
-    QFile m_outputFileExtern;
-};
+QString BrowserItemAction::itemId() const
+{
+    return m_itemId;
+}
 
-#endif // PLUGININFOCOMPILER_H
+ActionTypeId BrowserItemAction::actionTypeId() const
+{
+    return m_actionTypeId;
+}
+
+ParamList BrowserItemAction::params() const
+{
+    return m_params;
+}
+
+void BrowserItemAction::operator=(const BrowserItemAction &other)
+{
+    m_id = other.id();
+    m_deviceId = other.deviceId();
+    m_itemId = other.itemId();
+    m_actionTypeId = other.actionTypeId();
+    m_params = other.params();
+}

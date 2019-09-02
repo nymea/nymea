@@ -142,3 +142,9 @@ ActionType ActionTypes::findById(const ActionTypeId &id)
     }
     return ActionType(ActionTypeId());
 }
+
+QDebug operator<<(QDebug dbg, const ActionType &actionType)
+{
+    dbg.nospace().noquote() << "ActionType: " << actionType.name() << actionType.displayName() << actionType.id();
+    return dbg;
+}

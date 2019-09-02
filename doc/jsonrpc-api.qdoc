@@ -3523,8 +3523,9 @@ See also: \l{Tag}
             "LoggingSourceEvents", 
             "LoggingSourceActions", 
             "LoggingSourceStates", 
-            "LoggingSourceRules"
-        ], 
+            "LoggingSourceRules",
+            "LoggingSourceBrowserActions"
+        ],
         "NetworkDeviceState": [
             "NetworkDeviceStateUnknown", 
             "NetworkDeviceStateUnmanaged", 

@@ -57,6 +57,9 @@ public:
     Q_INVOKABLE JsonReply *GetStateValue(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetStateValues(const QVariantMap &params) const;
 
+    Q_INVOKABLE JsonReply *BrowseDevice(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetBrowserItem(const QVariantMap &params) const;
+
 signals:
     void PluginConfigurationChanged(const QVariantMap &params);
     void StateChanged(const QVariantMap &params);
@@ -86,12 +89,18 @@ private slots:
 
     void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId);
 
+    void browseRequestFinished(const Device::BrowseResult &result);
+
+    void browserItemRequestFinished(const Device::BrowserItemResult &result);
+
 private:
     // A cache for async replies
     mutable QHash<DeviceClassId, JsonReply*> m_discoverRequests;
     mutable QHash<DeviceId, JsonReply*> m_asynDeviceAdditions;
     mutable QHash<DeviceId, JsonReply*> m_asynDeviceEditAdditions;
     mutable QHash<QUuid, JsonReply*> m_asyncPairingRequests;
+    mutable QHash<QUuid, JsonReply*> m_asyncBrowseRequests;
+    mutable QHash<QUuid, JsonReply*> m_asyncBrowseDetailsRequests;
 };
 
 }

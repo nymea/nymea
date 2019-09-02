@@ -23,10 +23,10 @@
 #define RULE_H
 
 #include "types/state.h"
-#include "types/ruleaction.h"
 #include "types/eventdescriptor.h"
-#include "devices/stateevaluator.h"
 #include "time/timedescriptor.h"
+#include "ruleaction.h"
+#include "stateevaluator.h"
 
 #include <QUuid>
 

@@ -361,7 +361,7 @@ Device::DeviceError DeviceManagerImplementation::addConfiguredDevice(const Devic
         }
     }
 
-    return addConfiguredDeviceInternal(deviceClassId, name, finalParams, deviceId);
+    return addConfiguredDeviceInternal(deviceClassId, name, finalParams, deviceId, descriptor.parentDeviceId());
 }
 
 
@@ -619,7 +619,7 @@ Device::DeviceError DeviceManagerImplementation::confirmPairing(const PairingTra
 
 /*! This method will only be used from the DeviceManagerImplementation in order to add a \l{Device} with the given \a deviceClassId, \a name, \a params and \ id.
  *  Returns \l{DeviceError} to inform about the result. */
-Device::DeviceError DeviceManagerImplementation::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id)
+Device::DeviceError DeviceManagerImplementation::addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id, const DeviceId &parentDeviceId)
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (deviceClass.id().isNull()) {
@@ -648,6 +648,7 @@ Device::DeviceError DeviceManagerImplementation::addConfiguredDeviceInternal(con
     }
 
     Device *device = new Device(plugin, deviceClass, id, this);
+    device->setParentId(parentDeviceId);
     if (name.isEmpty()) {
         device->setName(deviceClass.name());
     } else {
@@ -707,6 +708,82 @@ Device::DeviceError DeviceManagerImplementation::removeConfiguredDevice(const De
     emit deviceRemoved(deviceId);
 
     return Device::DeviceErrorNoError;
+}
+
+Device::BrowseResult DeviceManagerImplementation::browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale)
+{
+    Device::BrowseResult result;
+
+    Device *device = m_configuredDevices.value(deviceId);
+    if (!device) {
+        qCWarning(dcDeviceManager()) << "Cannot browse device. No such device:" << deviceId.toString();
+        result.status = Device::DeviceErrorDeviceNotFound;
+        return result;
+    }
+
+    if (!device->deviceClass().browsable()) {
+        qCWarning(dcDeviceManager()) << "Cannot browse device. DeviceClass" << device->deviceClass().name() << "is not browsable.";
+        result.status = Device::DeviceErrorUnsupportedFeature;
+        return result;
+    }
+
+    result = device->plugin()->browseDevice(device, result, itemId, locale);
+    return result;
+}
+
+Device::BrowserItemResult DeviceManagerImplementation::browserItemDetails(const DeviceId &deviceId, const QString &itemId, const QLocale &locale)
+{
+    Device::BrowserItemResult result;
+
+    Device *device = m_configuredDevices.value(deviceId);
+    if (!device) {
+        qCWarning(dcDeviceManager()) << "Cannot browse device. No such device:" << deviceId.toString();
+        result.status = Device::DeviceErrorDeviceNotFound;
+        return result;
+    }
+
+    if (!device->deviceClass().browsable()) {
+        qCWarning(dcDeviceManager()) << "Cannot browse device. DeviceClass" << device->deviceClass().name() << "is not browsable.";
+        result.status = Device::DeviceErrorUnsupportedFeature;
+        return result;
+    }
+
+    result = device->plugin()->browserItem(device, result, itemId, locale);
+    if (result.status == Device::DeviceErrorAsync) {
+        // Error or Async
+        return result;
+    }
+    if (result.status != Device::DeviceErrorNoError) {
+        qCWarning(dcDeviceManager()) << "Browse device failed:" << result.status;
+        return result;
+    }
+    return result;
+}
+
+Device::DeviceError DeviceManagerImplementation::executeBrowserItem(const BrowserAction &browserAction)
+{
+    Device *device = m_configuredDevices.value(browserAction.deviceId());
+    if (!device) {
+        return Device::DeviceErrorDeviceNotFound;
+    }
+    if (!device->deviceClass().browsable()) {
+        return Device::DeviceErrorUnsupportedFeature;
+    }
+    return device->plugin()->executeBrowserItem(device, browserAction);
+}
+
+Device::DeviceError DeviceManagerImplementation::executeBrowserItemAction(const BrowserItemAction &browserItemAction)
+{
+    Device *device = m_configuredDevices.value(browserItemAction.deviceId());
+    if (!device) {
+        return Device::DeviceErrorDeviceNotFound;
+    }
+    if (!device->deviceClass().browsable()) {
+        return Device::DeviceErrorUnsupportedFeature;
+    }
+    // TODO: check browserItemAction.params with deviceClass
+
+    return device->plugin()->executeBrowserItemAction(device, browserItemAction);
 }
 
 QString DeviceManagerImplementation::translate(const PluginId &pluginId, const QString &string, const QLocale &locale)
@@ -842,6 +919,7 @@ void DeviceManagerImplementation::loadPlugins()
             loader.setFileName(fi.absoluteFilePath());
             loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
 
+            qCDebug(dcDeviceManager()) << "Loading plugin from:" << fi.absoluteFilePath();
             if (!loader.load()) {
                 qCWarning(dcDeviceManager) << "Could not load plugin data of" << entry << "\n" << loader.errorString();
                 continue;
@@ -971,6 +1049,10 @@ void DeviceManagerImplementation::loadPlugin(DevicePlugin *pluginIface, const Pl
     connect(pluginIface, &DevicePlugin::pairingFinished, this, &DeviceManagerImplementation::slotPairingFinished);
     connect(pluginIface, &DevicePlugin::autoDevicesAppeared, this, &DeviceManagerImplementation::onAutoDevicesAppeared);
     connect(pluginIface, &DevicePlugin::autoDeviceDisappeared, this, &DeviceManagerImplementation::onAutoDeviceDisappeared);
+    connect(pluginIface, &DevicePlugin::browseRequestFinished, this, &DeviceManagerImplementation::browseRequestFinished);
+    connect(pluginIface, &DevicePlugin::browserItemRequestFinished, this, &DeviceManagerImplementation::browserItemRequestFinished);
+    connect(pluginIface, &DevicePlugin::browserItemExecutionFinished, this, &DeviceManagerImplementation::browserItemExecutionFinished);
+    connect(pluginIface, &DevicePlugin::browserItemActionExecutionFinished, this, &DeviceManagerImplementation::browserItemActionExecutionFinished);
 
 }
 
@@ -1025,6 +1107,12 @@ void DeviceManagerImplementation::loadConfiguredDevices()
         } else {
             foreach (const QString &paramTypeIdString, settings.allKeys()) {
                 params.append(Param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString)));
+            }
+        }
+        // Make sure all params are around. if they aren't initialize with default values
+        foreach (const ParamType &paramType, deviceClass.paramTypes()) {
+            if (!params.hasParam(paramType.id())) {
+                params.append(Param(paramType.id(), paramType.defaultValue()));
             }
         }
         device->setParams(params);

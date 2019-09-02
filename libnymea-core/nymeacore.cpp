@@ -201,6 +201,8 @@ void NymeaCore::init() {
     connect(m_deviceManager, &DeviceManagerImplementation::deviceRemoved, this, &NymeaCore::deviceRemoved);
     connect(m_deviceManager, &DeviceManagerImplementation::deviceDisappeared, this, &NymeaCore::onDeviceDisappeared);
     connect(m_deviceManager, &DeviceManagerImplementation::actionExecutionFinished, this, &NymeaCore::actionExecutionFinished);
+    connect(m_deviceManager, &DeviceManagerImplementation::browserItemExecutionFinished, this, &NymeaCore::browserItemExecutionFinished);
+    connect(m_deviceManager, &DeviceManagerImplementation::browserItemActionExecutionFinished, this, &NymeaCore::browserItemActionExecutionFinished);
     connect(m_deviceManager, &DeviceManagerImplementation::devicesDiscovered, this, &NymeaCore::devicesDiscovered);
     connect(m_deviceManager, &DeviceManagerImplementation::deviceSetupFinished, this, &NymeaCore::deviceSetupFinished);
     connect(m_deviceManager, &DeviceManagerImplementation::deviceReconfigurationFinished, this, &NymeaCore::deviceReconfigurationFinished);
@@ -447,13 +449,44 @@ Device::DeviceError NymeaCore::executeAction(const Action &action)
     return ret;
 }
 
+Device::DeviceError NymeaCore::executeBrowserItem(const BrowserAction &browserAction)
+{
+    Device::DeviceError ret = m_deviceManager->executeBrowserItem(browserAction);
+    if (ret == Device::DeviceErrorNoError) {
+        m_logger->logBrowserAction(browserAction);
+    } else if (ret == Device::DeviceErrorAsync) {
+        m_pendingBrowserActions.insert(browserAction.id(), browserAction);
+    } else {
+        m_logger->logBrowserAction(browserAction, Logging::LoggingLevelAlert, ret);
+    }
+    return ret;
+}
+
+Device::DeviceError NymeaCore::executeBrowserItemAction(const BrowserItemAction &browserItemAction)
+{
+    Device::DeviceError ret = m_deviceManager->executeBrowserItemAction(browserItemAction);
+    if (ret == Device::DeviceErrorNoError) {
+        m_logger->logBrowserItemAction(browserItemAction);
+    } else if (ret == Device::DeviceErrorAsync) {
+        m_pendingBrowserItemActions.insert(browserItemAction.id(), browserItemAction);
+    } else {
+        m_logger->logBrowserItemAction(browserItemAction, Logging::LoggingLevelAlert, ret);
+    }
+    return ret;
+}
+
 /*! Execute the given \a ruleActions. */
 void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
 {
     QList<Action> actions;
+    QList<BrowserAction> browserActions;
     foreach (const RuleAction &ruleAction, ruleActions) {
         if (ruleAction.type() == RuleAction::TypeDevice) {
             Device *device = m_deviceManager->findConfiguredDevice(ruleAction.deviceId());
+            if (!device) {
+                qCWarning(dcRuleEngine()) << "Unable to find device" << ruleAction.deviceId() << "for rule action" << ruleAction;
+                continue;
+            }
             ActionTypeId actionTypeId = ruleAction.actionTypeId();
             ParamList params;
             bool ok = true;
@@ -483,6 +516,14 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
             Action action(actionTypeId, device->id());
             action.setParams(params);
             actions.append(action);
+        } else if (ruleAction.type() == RuleAction::TypeBrowser) {
+            Device *device = m_deviceManager->findConfiguredDevice(ruleAction.deviceId());
+            if (!device) {
+                qCWarning(dcRuleEngine()) << "Unable to find device" << ruleAction.deviceId() << "for rule action" << ruleAction;
+                continue;
+            }
+            BrowserAction browserAction(ruleAction.deviceId(), ruleAction.browserItemId());
+            browserActions.append(browserAction);
         } else {
             QList<Device*> devices = m_deviceManager->findConfiguredDevices(ruleAction.interface());
             foreach (Device* device, devices) {
@@ -553,6 +594,25 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
 
         //        if (status != Device::DeviceErrorAsync)
         //            m_logger->logAction(action, status == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+    }
+
+    foreach (const BrowserAction &browserAction, browserActions) {
+        Device::DeviceError status = executeBrowserItem(browserAction);
+        switch(status) {
+        case Device::DeviceErrorNoError:
+            break;
+        case Device::DeviceErrorSetupFailed:
+            qCWarning(dcRuleEngine) << "Error executing action. Device setup failed.";
+            break;
+        case Device::DeviceErrorAsync:
+            qCDebug(dcRuleEngine) << "Executing asynchronous action.";
+            break;
+        case Device::DeviceErrorInvalidParameter:
+            qCWarning(dcRuleEngine) << "Error executing action. Invalid action parameter.";
+            break;
+        default:
+            qCWarning(dcRuleEngine) << "Error executing action:" << status;
+        }
     }
 }
 
@@ -795,6 +855,20 @@ void NymeaCore::actionExecutionFinished(const ActionId &id, Device::DeviceError 
     emit actionExecuted(id, status);
     Action action = m_pendingActions.take(id);
     m_logger->logAction(action, status == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+}
+
+void NymeaCore::browserItemExecutionFinished(const ActionId &id, Device::DeviceError status)
+{
+    emit browserItemExecuted(id, status);
+    BrowserAction action = m_pendingBrowserActions.take(id);
+    m_logger->logBrowserAction(action, status == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+}
+
+void NymeaCore::browserItemActionExecutionFinished(const ActionId &id, Device::DeviceError status)
+{
+    emit browserItemActionExecuted(id, status);
+    BrowserItemAction action = m_pendingBrowserItemActions.take(id);
+    m_logger->logBrowserItemAction(action, status == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
 }
 
 void NymeaCore::onDeviceDisappeared(const DeviceId &deviceId)

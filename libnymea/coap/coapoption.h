@@ -30,7 +30,6 @@
 class LIBNYMEA_EXPORT CoapOption
 {
     Q_GADGET
-    Q_ENUMS(Option)
 
 public:
     // Options format: https://tools.ietf.org/html/rfc7252#section-3.1
@@ -54,6 +53,7 @@ public:
         ProxyScheme   = 39,
         Size1         = 60
     };
+    Q_ENUM(Option)
 
     CoapOption();
 

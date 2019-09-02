@@ -20,42 +20,37 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PLUGININFOCOMPILER_H
-#define PLUGININFOCOMPILER_H
+#ifndef BROWSERITEMACTION_H
+#define BROWSERITEMACTION_H
 
-#include <QString>
-#include <QFile>
+#include "typeutils.h"
+#include "types/param.h"
 
-#include "types/paramtype.h"
-#include "devices/pluginmetadata.h"
-
-class PluginInfoCompiler
+class BrowserItemAction
 {
 public:
-    PluginInfoCompiler();
+    explicit BrowserItemAction(const DeviceId &deviceId = DeviceId(), const QString &itemId = QString(), const ActionTypeId &actionTypeId = ActionTypeId(), const ParamList &params = ParamList());
+    BrowserItemAction(const BrowserItemAction &other);
 
-    int compile(const QString &inputFile, const QString &outputFile, const QString outputFileExtern);
+    ActionId id() const;
 
+    bool isValid() const;
 
+    DeviceId deviceId() const;
+    QString itemId() const;
+    ActionTypeId actionTypeId() const;
+
+    ParamList params() const;
+    void setParams(const ParamList &params);
+    Param param(const ParamTypeId &paramTypeId) const;
+
+    void operator=(const BrowserItemAction &other);
 private:
-    void writePlugin(const PluginMetadata &metadata);
-    void writeParams(const ParamTypes &paramTypes, const QString &deviceClassName, const QString &typeClass, const QString &typeName);
-    void writeVendor(const Vendor &vendor);
-    void writeDeviceClass(const DeviceClass &deviceClass);
-    void writeStateTypes(const StateTypes &stateTypes, const QString &deviceClassName);
-    void writeEventTypes(const EventTypes &eventTypes, const QString &deviceClassName);
-    void writeActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
-    void writeBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
-
-    void write(const QString &line = QString());
-    void writeExtern(const QString &line = QString());
-
-    QMultiMap<QString, QString> m_translationStrings;
-
-    QStringList m_variableNames;
-
-    QFile m_outputFile;
-    QFile m_outputFileExtern;
+    ActionId m_id;
+    DeviceId m_deviceId;
+    QString m_itemId;
+    ActionTypeId m_actionTypeId;
+    ParamList m_params;
 };
 
-#endif // PLUGININFOCOMPILER_H
+#endif // BROWSERITEMACTION_H

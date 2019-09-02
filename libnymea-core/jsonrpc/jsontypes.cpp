@@ -58,6 +58,8 @@
 #include "loggingcategories.h"
 #include "logging/logvaluetool.h"
 
+#include "types/mediabrowseritem.h"
+
 #include <QStringList>
 #include <QJsonDocument>
 #include <QDebug>
@@ -90,6 +92,8 @@ QVariantList JsonTypes::s_networkDeviceState;
 QVariantList JsonTypes::s_userError;
 QVariantList JsonTypes::s_tagError;
 QVariantList JsonTypes::s_cloudConnectionState;
+QVariantList JsonTypes::s_browserIcon;
+QVariantList JsonTypes::s_mediaBrowserIcon;
 
 QVariantMap JsonTypes::s_paramType;
 QVariantMap JsonTypes::s_param;
@@ -127,6 +131,7 @@ QVariantMap JsonTypes::s_tag;
 QVariantMap JsonTypes::s_mqttPolicy;
 QVariantMap JsonTypes::s_package;
 QVariantMap JsonTypes::s_repository;
+QVariantMap JsonTypes::s_browserItem;
 
 void JsonTypes::init()
 {
@@ -153,6 +158,8 @@ void JsonTypes::init()
     s_userError = enumToStrings(UserManager::staticMetaObject, "UserError");
     s_tagError = enumToStrings(TagsStorage::staticMetaObject, "TagError");
     s_cloudConnectionState = enumToStrings(CloudManager::staticMetaObject, "CloudConnectionState");
+    s_browserIcon = enumToStrings(BrowserItem::staticMetaObject, "BrowserIcon");
+    s_mediaBrowserIcon = enumToStrings(MediaBrowserItem::staticMetaObject, "MediaBrowserIcon");
 
     // ParamType
     s_paramType.insert("id", basicTypeToString(Uuid));
@@ -177,6 +184,7 @@ void JsonTypes::init()
     s_ruleAction.insert("o:actionTypeId", basicTypeToString(Uuid));
     s_ruleAction.insert("o:interface", basicTypeToString(String));
     s_ruleAction.insert("o:interfaceAction", basicTypeToString(String));
+    s_ruleAction.insert("o:browserItemId", basicTypeToString(String));
     s_ruleAction.insert("o:ruleActionParams", QVariantList() << ruleActionParamRef());
 
     // RuleActionParam
@@ -273,11 +281,13 @@ void JsonTypes::init()
     s_deviceClass.insert("name", basicTypeToString(String));
     s_deviceClass.insert("displayName", basicTypeToString(String));
     s_deviceClass.insert("interfaces", QVariantList() << basicTypeToString(String));
+    s_deviceClass.insert("browsable", basicTypeToString(Bool));
     s_deviceClass.insert("setupMethod", setupMethodRef());
     s_deviceClass.insert("createMethods", QVariantList() << createMethodRef());
     s_deviceClass.insert("stateTypes", QVariantList() << stateTypeRef());
     s_deviceClass.insert("eventTypes", QVariantList() << eventTypeRef());
     s_deviceClass.insert("actionTypes", QVariantList() << actionTypeRef());
+    s_deviceClass.insert("browserItemActionTypes", QVariantList() << actionTypeRef());
     s_deviceClass.insert("paramTypes", QVariantList() << paramTypeRef());
     s_deviceClass.insert("settingsTypes", QVariantList() << paramTypeRef());
     s_deviceClass.insert("discoveryParamTypes", QVariantList() << paramTypeRef());
@@ -327,6 +337,7 @@ void JsonTypes::init()
     s_logEntry.insert("source", loggingSourceRef());
     s_logEntry.insert("o:typeId", basicTypeToString(Uuid));
     s_logEntry.insert("o:deviceId", basicTypeToString(Uuid));
+    s_logEntry.insert("o:itemId", basicTypeToString(String));
     s_logEntry.insert("o:value", basicTypeToString(String));
     s_logEntry.insert("o:active", basicTypeToString(Bool));
     s_logEntry.insert("o:eventType", loggingEventTypeRef());
@@ -403,6 +414,7 @@ void JsonTypes::init()
     s_tag.insert("tagId", basicTypeToString(QVariant::String));
     s_tag.insert("o:value", basicTypeToString(QVariant::String));
 
+    // Package
     s_package.insert("id", basicTypeToString(QVariant::String));
     s_package.insert("displayName", basicTypeToString(QVariant::String));
     s_package.insert("summary", basicTypeToString(QVariant::String));
@@ -413,9 +425,22 @@ void JsonTypes::init()
     s_package.insert("rollbackAvailable", basicTypeToString(QVariant::Bool));
     s_package.insert("canRemove", basicTypeToString(QVariant::Bool));
 
+    // Repository
     s_repository.insert("id", basicTypeToString(QVariant::String));
     s_repository.insert("displayName", basicTypeToString(QVariant::String));
     s_repository.insert("enabled", basicTypeToString(QVariant::Bool));
+
+    // BrowserItem
+    s_browserItem.insert("id", basicTypeToString(QVariant::String));
+    s_browserItem.insert("displayName", basicTypeToString(QVariant::String));
+    s_browserItem.insert("description", basicTypeToString(QVariant::String));
+    s_browserItem.insert("icon", browserIconRef());
+    s_browserItem.insert("thumbnail", basicTypeToString(QVariant::String));
+    s_browserItem.insert("executable", basicTypeToString(QVariant::Bool));
+    s_browserItem.insert("browsable", basicTypeToString(QVariant::Bool));
+    s_browserItem.insert("disabled", basicTypeToString(QVariant::Bool));
+    s_browserItem.insert("actionTypeIds", QVariantList() << basicTypeToString(QVariant::Uuid));
+    s_browserItem.insert("o:mediaIcon", mediaBrowserIconRef());
 
     s_initialized = true;
 }
@@ -465,6 +490,8 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("UserError", userError());
     allTypes.insert("TagError", tagError());
     allTypes.insert("CloudConnectionState", cloudConnectionState());
+    allTypes.insert("BrowserIcon", browserIconRef());
+    allTypes.insert("MediaBrowserIcon", mediaBrowserIconRef());
 
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());
@@ -501,6 +528,7 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("MqttPolicy", mqttPolicyDescription());
     allTypes.insert("Package", packageDescription());
     allTypes.insert("Repository", repositoryDescription());
+    allTypes.insert("BrowserItem", browserItemDescription());
 
     return allTypes;
 }
@@ -590,8 +618,11 @@ QVariantMap JsonTypes::packRuleAction(const RuleAction &ruleAction)
 {
     QVariantMap variant;
     if (ruleAction.type() == RuleAction::TypeDevice) {
-        variant.insert("actionTypeId", ruleAction.actionTypeId().toString());
         variant.insert("deviceId", ruleAction.deviceId().toString());
+        variant.insert("actionTypeId", ruleAction.actionTypeId().toString());
+    } else if (ruleAction.type() == RuleAction::TypeBrowser) {
+        variant.insert("deviceId", ruleAction.deviceId().toString());
+        variant.insert("browserItemId", ruleAction.browserItemId());
     } else {
         variant.insert("interface", ruleAction.interface());
         variant.insert("interfaceAction", ruleAction.interfaceAction());
@@ -706,6 +737,28 @@ QVariantMap JsonTypes::packParam(const Param &param)
     return variantMap;
 }
 
+QVariantMap JsonTypes::packBrowserItem(const BrowserItem &item)
+{
+    QVariantMap ret;
+    ret.insert("id", item.id());
+    ret.insert("displayName", item.displayName());
+    ret.insert("description", item.description());
+    ret.insert("icon", browserIconToString(item.icon()));
+    if (item.extendedPropertiesFlags().testFlag(BrowserItem::ExtendedPropertiesMedia)) {
+        ret.insert("mediaIcon", mediaBrowserIconToString(static_cast<MediaBrowserItem::MediaBrowserIcon>(item.extendedProperty("mediaIcon").toInt())));
+    }
+    ret.insert("thumbnail", item.thumbnail());
+    ret.insert("executable", item.executable());
+    ret.insert("browsable", item.browsable());
+    ret.insert("disabled", item.disabled());
+    QVariantList actionTypeIds;
+    foreach (const ActionTypeId &id, item.actionTypeIds()) {
+        actionTypeIds.append(id.toString());
+    }
+    ret.insert("actionTypeIds", actionTypeIds);
+    return ret;
+}
+
 QVariantList JsonTypes::packParams(const ParamList &paramList)
 {
     QVariantList ret;
@@ -790,6 +843,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass, const QLo
     variant.insert("vendorId", deviceClass.vendorId().toString());
     variant.insert("pluginId", deviceClass.pluginId().toString());
     variant.insert("interfaces", deviceClass.interfaces());
+    variant.insert("browsable", deviceClass.browsable());
 
     QVariantList stateTypes;
     foreach (const StateType &stateType, deviceClass.stateTypes())
@@ -802,6 +856,10 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass, const QLo
     QVariantList actionTypes;
     foreach (const ActionType &actionType, deviceClass.actionTypes())
         actionTypes.append(packActionType(actionType, deviceClass.pluginId(), locale));
+
+    QVariantList browserItemActionTypes;
+    foreach (const ActionType &actionType, deviceClass.browserItemActionTypes())
+        browserItemActionTypes.append(packActionType(actionType, deviceClass.pluginId(), locale));
 
     QVariantList paramTypes;
     foreach (const ParamType &paramType, deviceClass.paramTypes())
@@ -821,6 +879,7 @@ QVariantMap JsonTypes::packDeviceClass(const DeviceClass &deviceClass, const QLo
     variant.insert("stateTypes", stateTypes);
     variant.insert("eventTypes", eventTypes);
     variant.insert("actionTypes", actionTypes);
+    variant.insert("browserItemActionTypes", browserItemActionTypes);
     variant.insert("createMethods", packCreateMethods(deviceClass.createMethods()));
     variant.insert("setupMethod", s_setupMethod.at(deviceClass.setupMethod()));
     return variant;
@@ -953,6 +1012,7 @@ QVariantMap JsonTypes::packLogEntry(const LogEntry &logEntry)
         case Logging::LoggingSourceActions:
         case Logging::LoggingSourceEvents:
         case Logging::LoggingSourceStates:
+        case Logging::LoggingSourceBrowserActions:
             logEntryMap.insert("errorCode", s_deviceError.at(logEntry.errorCode()));
             break;
         case Logging::LoggingSourceSystem:
@@ -975,6 +1035,9 @@ QVariantMap JsonTypes::packLogEntry(const LogEntry &logEntry)
         break;
     case Logging::LoggingSourceRules:
         logEntryMap.insert("typeId", logEntry.typeId().toString());
+        break;
+    case Logging::LoggingSourceBrowserActions:
+        logEntryMap.insert("itemId", logEntry.value());
         break;
     }
 
@@ -1184,6 +1247,15 @@ QVariantList JsonTypes::packDeviceDescriptors(const QList<DeviceDescriptor> devi
         deviceDescriptorList.append(JsonTypes::packDeviceDescriptor(deviceDescriptor));
 
     return deviceDescriptorList;
+}
+
+QVariantList JsonTypes::packBrowserItems(const BrowserItems &items)
+{
+    QVariantList ret;
+    foreach (const BrowserItem &item, items) {
+        ret.append(packBrowserItem(item));
+    }
+    return ret;
 }
 
 /*! Returns a variant map with the current basic configuration of the server. */
@@ -1432,10 +1504,13 @@ RuleAction JsonTypes::unpackRuleAction(const QVariantMap &ruleActionMap)
     DeviceId actionDeviceId(ruleActionMap.value("deviceId").toString());
     QString interface = ruleActionMap.value("interface").toString();
     QString interfaceAction = ruleActionMap.value("interfaceAction").toString();
+    QString browserItemId = ruleActionMap.value("browserItemId").toString();
     RuleActionParamList actionParamList = JsonTypes::unpackRuleActionParams(ruleActionMap.value("ruleActionParams").toList());
 
-    if (!actionTypeId.isNull() && !actionDeviceId.isNull()) {
+    if (!actionDeviceId.isNull() && !actionTypeId.isNull()) {
         return RuleAction(actionTypeId, actionDeviceId, actionParamList);
+    } else if (!actionDeviceId.isNull() && !browserItemId.isNull()) {
+        return RuleAction(actionDeviceId, browserItemId);
     }
     return RuleAction(interface, interfaceAction, actionParamList);
 }
@@ -2080,6 +2155,12 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qCWarning(dcJsonRpc) << "Repository not matching";
                     return result;
                 }
+            } else if (refName == browserItemRef()) {
+                QPair<bool, QString> result = validateMap(browserItemDescription(), variant.toMap());
+                if (!result.first) {
+                    qCWarning(dcJsonRpc) << "BrowserItem not matching";
+                    return result;
+                }
             } else if (refName == basicTypeRef()) {
                 QPair<bool, QString> result = validateBasicType(variant);
                 if (!result.first) {
@@ -2210,6 +2291,18 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                 QPair<bool, QString> result = validateEnum(s_cloudConnectionState, variant);
                 if (!result.first) {
                     qCWarning(dcJsonRpc()) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(cloudConnectionStateRef());
+                    return result;
+                }
+            } else if (refName == browserIconRef()) {
+                QPair<bool, QString> result = validateEnum(s_browserIcon, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc()) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(browserIconRef());
+                    return result;
+                }
+            } else if (refName == mediaBrowserIconRef()) {
+                QPair<bool, QString> result = validateEnum(s_mediaBrowserIcon, variant);
+                if (!result.first) {
+                    qCWarning(dcJsonRpc()) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(mediaBrowserIconRef());
                     return result;
                 }
             } else {

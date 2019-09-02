@@ -28,7 +28,7 @@
 #include <QString>
 #include <QVariant>
 
-#include "param.h"
+#include "types/param.h"
 #include "libnymea.h"
 #include "typeutils.h"
 

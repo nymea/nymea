@@ -20,42 +20,34 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PLUGININFOCOMPILER_H
-#define PLUGININFOCOMPILER_H
+#include "mediabrowseritem.h"
 
-#include <QString>
-#include <QFile>
-
-#include "types/paramtype.h"
-#include "devices/pluginmetadata.h"
-
-class PluginInfoCompiler
+MediaBrowserItem::MediaBrowserItem(const QString &id, const QString &displayName, bool browsable):
+    BrowserItem(id, displayName, browsable)
 {
-public:
-    PluginInfoCompiler();
+    // Init defaults
+    m_extendedProperties["mediaIcon"] = static_cast<int>(MediaBrowserIconNone);
+    m_extendedProperties["playCount"] = 0;
 
-    int compile(const QString &inputFile, const QString &outputFile, const QString outputFileExtern);
+    m_extendedPropertiesFlags = BrowserItem::ExtendedPropertiesMedia;
+}
 
+MediaBrowserItem::MediaBrowserIcon MediaBrowserItem::mediaIcon() const
+{
+    return static_cast<MediaBrowserIcon>(m_extendedProperties.value("mediaIcon").toInt());
+}
 
-private:
-    void writePlugin(const PluginMetadata &metadata);
-    void writeParams(const ParamTypes &paramTypes, const QString &deviceClassName, const QString &typeClass, const QString &typeName);
-    void writeVendor(const Vendor &vendor);
-    void writeDeviceClass(const DeviceClass &deviceClass);
-    void writeStateTypes(const StateTypes &stateTypes, const QString &deviceClassName);
-    void writeEventTypes(const EventTypes &eventTypes, const QString &deviceClassName);
-    void writeActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
-    void writeBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
+void MediaBrowserItem::setMediaIcon(MediaBrowserIcon mediaIcon)
+{
+    m_extendedProperties["mediaIcon"] = static_cast<int>(mediaIcon);
+}
 
-    void write(const QString &line = QString());
-    void writeExtern(const QString &line = QString());
+int MediaBrowserItem::playCount() const
+{
+    return m_extendedProperties.value("playCount").toInt();
+}
 
-    QMultiMap<QString, QString> m_translationStrings;
-
-    QStringList m_variableNames;
-
-    QFile m_outputFile;
-    QFile m_outputFileExtern;
-};
-
-#endif // PLUGININFOCOMPILER_H
+void MediaBrowserItem::setPlayCount(int playCount)
+{
+    m_extendedProperties["playCount"] = playCount;
+}

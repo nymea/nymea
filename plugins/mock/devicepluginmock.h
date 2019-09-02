@@ -52,8 +52,13 @@ public:
     Device::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret) override;
     Device::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor) override;
 
+    Device::BrowseResult browseDevice(Device *device, Device::BrowseResult result, const QString &itemId, const QLocale &locale) override;
+    Device::BrowserItemResult browserItem(Device *device, Device::BrowserItemResult result, const QString &itemId, const QLocale &locale) override;
+
 public slots:
     Device::DeviceError executeAction(Device *device, const Action &action) override;
+    Device::DeviceError executeBrowserItem(Device *device, const BrowserAction &browserAction) override;
+    Device::DeviceError executeBrowserItemAction(Device *device, const BrowserItemAction &browserItemAction) override;
 
 private slots:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);
@@ -73,6 +78,25 @@ private slots:
     void onPluginConfigChanged();
 
 private:
+    void generateBrowseItems();
+
+private:
+    class VirtualFsNode {
+    public:
+        VirtualFsNode(const BrowserItem &item):item(item) {}
+        BrowserItem item;
+        QList<VirtualFsNode*> childs;
+        void addChild(VirtualFsNode* child) {childs.append(child); }
+        VirtualFsNode *findNode(const QString &id) {
+            if (item.id() == id) return this;
+            foreach (VirtualFsNode *child, childs) {
+                VirtualFsNode *node = child->findNode(id);
+                if (node) return node;
+            }
+            return nullptr;
+        }
+    };
+
     QHash<Device*, HttpDaemon*> m_daemons;
     QList<Device*> m_asyncSetupDevices;
     QList<QPair<Action, Device*> > m_asyncActions;
@@ -81,6 +105,8 @@ private:
 
     int m_discoveredDeviceCount;
     bool m_pushbuttonPressed;
+
+    VirtualFsNode* m_virtualFs = nullptr;
 };
 
 #endif // DEVICEPLUGINMOCK_H

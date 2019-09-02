@@ -4,6 +4,8 @@ QT+= network
 
 TARGET = $$qtLibraryTarget(nymea_devicepluginmock)
 
+OTHER_FILES += devicepluginmock.json
+
 SOURCES += \
     devicepluginmock.cpp \
     httpdaemon.cpp

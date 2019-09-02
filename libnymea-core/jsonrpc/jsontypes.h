@@ -27,6 +27,7 @@
 #include "devices/devicemanager.h"
 #include "ruleengine/rule.h"
 #include "ruleengine/ruleengine.h"
+#include "ruleengine/ruleactionparam.h"
 #include "nymeaconfiguration.h"
 #include "usermanager/usermanager.h"
 
@@ -36,7 +37,7 @@
 #include "types/actiontype.h"
 #include "types/paramtype.h"
 #include "types/paramdescriptor.h"
-#include "types/ruleactionparam.h"
+#include "types/mediabrowseritem.h"
 
 #include "logging/logging.h"
 #include "logging/logentry.h"
@@ -90,10 +91,8 @@ namespace nymeaserver {
         return s_##typeName; \
     } \
     static QString typeName##ToString(className::enumName value) { \
-        const QMetaObject &metaObject = className::staticMetaObject; \
-        int enumIndex = metaObject.indexOfEnumerator(enumString); \
-        QMetaEnum metaEnum = metaObject.enumerator(enumIndex); \
-        return metaEnum.valueToKey(metaEnum.value(value)); \
+        QMetaEnum metaEnum = QMetaEnum::fromType<className::enumName>(); \
+        return metaEnum.valueToKey(value); \
     } \
     private: \
     static QVariantList s_##typeName; \
@@ -102,7 +101,6 @@ namespace nymeaserver {
 class JsonTypes
 {
     Q_GADGET
-    Q_ENUMS(BasicType)
 
 public:
     enum BasicType {
@@ -118,6 +116,7 @@ public:
         Time,
         Object
     };
+    Q_ENUM(BasicType)
 
     static QVariantMap allTypes();
 
@@ -143,6 +142,8 @@ public:
     DECLARE_TYPE(userError, "UserError", UserManager, UserError)
     DECLARE_TYPE(tagError, "TagError", TagsStorage, TagError)
     DECLARE_TYPE(cloudConnectionState, "CloudConnectionState", CloudManager, CloudConnectionState)
+    DECLARE_TYPE(browserIcon, "BrowserIcon", BrowserItem, BrowserIcon)
+    DECLARE_TYPE(mediaBrowserIcon, "MediaBrowserIcon", MediaBrowserItem, MediaBrowserIcon)
 
     DECLARE_OBJECT(paramType, "ParamType")
     DECLARE_OBJECT(param, "Param")
@@ -180,6 +181,7 @@ public:
     DECLARE_OBJECT(mqttPolicy, "MqttPolicy")
     DECLARE_OBJECT(package, "Package")
     DECLARE_OBJECT(repository, "Repository")
+    DECLARE_OBJECT(browserItem, "BrowserItem")
 
     // pack types
     static QVariantMap packEventType(const EventType &eventType, const PluginId &pluginId, const QLocale &locale);
@@ -194,7 +196,7 @@ public:
     static QVariantMap packStateDescriptor(const StateDescriptor &stateDescriptor);
     static QVariantMap packStateEvaluator(const StateEvaluator &stateEvaluator);
     static QVariantMap packParam(const Param &param);
-    static QVariantList packParams(const ParamList &paramList);
+    static QVariantMap packBrowserItem(const BrowserItem &item);
     static QVariantMap packParamType(const ParamType &paramType, const PluginId &pluginId, const QLocale &locale);
     static QVariantMap packParamDescriptor(const ParamDescriptor &paramDescriptor);
     static QVariantMap packVendor(const Vendor &vendor, const QLocale &locale);
@@ -214,6 +216,8 @@ public:
     static QVariantMap packWiredNetworkDevice(WiredNetworkDevice *networkDevice);
     static QVariantMap packWirelessNetworkDevice(WirelessNetworkDevice *networkDevice);
 
+    static QVariantList packParams(const ParamList &paramList);
+    static QVariantList packBrowserItems(const BrowserItems &items);
     static QVariantList packRules(const QList<Rule> rules);
     static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
     static QVariantList packSupportedVendors(const QLocale &locale);

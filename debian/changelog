@@ -1,3 +1,8 @@
+nymea (0.15.0) UNRELEASED; urgency=medium
+
+
+ -- Michael Zanetti <michael.zanetti@guh.io>  Tue, 09 Jul 2019 02:08:05 +0200
+
 nymea (0.14.0) xenial; urgency=medium
   [ Michael Zanetti ]
   * Bump minimum required TLS version to 1.2

@@ -2,13 +2,26 @@ include(nymea.pri)
 
 TEMPLATE=subdirs
 
-SUBDIRS += libnymea libnymea-core server plugins tools
-
-libnymea-core.depends = libnymea
-server.depends = libnymea libnymea-core plugins
+SUBDIRS += libnymea tools
 tools.depends = libnymea
-plugins.depends = libnymea tools
-tests.depends = libnymea libnymea-core
+
+minimal {
+    message("Minimal build. Only libraries required to build nymea-plugins will be built.")
+} else {
+    SUBDIRS += server libnymea-core plugins
+    libnymea-core.depends = libnymea
+    plugins.depends = libnymea tools
+    server.depends = libnymea libnymea-core plugins
+
+    # Build tests
+    disabletesting {
+        message("Building nymea without tests")
+    } else {
+        message("Building nymea with tests")
+        SUBDIRS += tests
+        tests.depends = libnymea libnymea-core
+    }
+}
 
 doc.depends = FORCE
 # Note: some how extraimages in qdocconf did not the trick
@@ -79,12 +92,4 @@ coverage {
 # Build using ccache
 ccache {
     message("Using ccache.")
-}
-
-# Build tests
-disabletesting {
-    message("Building nymea without tests")
-} else {
-    message("Building nymea with tests")
-    SUBDIRS += tests
 }

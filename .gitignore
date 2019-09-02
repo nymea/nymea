@@ -13,16 +13,6 @@ doc/interfacelist.qdoc
 debs*.tar
 
 # in source build artifaces
-*.o
-moc_*.cpp
-*.moc
-Makefile
-*.so*
-qrc_*.cpp
-*debhelper.log
-*.dirs
-*.install
-*.substvars
 tests/auto/actions/testactions
 tests/auto/configurations/testconfigurations
 tests/auto/devices/testdevices
@@ -43,19 +33,5 @@ tests/auto/timemanager/testtimemanager
 tests/auto/versioning/testversioning
 tests/auto/webserver/webserver
 tests/auto/websocketserver/websocketserver
-
-# debian package generated stuff
-debian/.debhelper/
-debian/debhelper-build-stamp
-debian/files
-debian/guh-dbg/
-debian/guh-tests/
-debian/guh-translations/
-debian/guh/
-debian/guhd/
-debian/libguh1-dev/
-debian/libguh1/
-debian/tmp/
-server/guhd
 
 .idea/

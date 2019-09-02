@@ -5,6 +5,7 @@ After=network.target
 Wants=network-online.target
 
 [Service]
+Environment=QT_LOGGING_CONF=/etc/nymea/logging.conf
 ExecStart=/usr/bin/nymead -n --print-all
 StandardOutput=journal
 StandardError=journal

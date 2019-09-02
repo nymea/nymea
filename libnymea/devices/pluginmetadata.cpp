@@ -571,6 +571,12 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                                 qCWarning(dcPluginMetadata()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but param" << paramType.name() << "is of wrong type:" << QVariant::typeToName(paramType.type()) << "expected:" << QVariant::typeToName(ifaceActionParamType.type());
                                 hasError = true;
                             }
+                            foreach (const QVariant &allowedValue, ifaceActionParamType.allowedValues()) {
+                                if (!paramType.allowedValues().contains(allowedValue)) {
+                                    qCWarning(dcPluginMetadata()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but param" << paramType.name() << "is missing allowed value" << allowedValue;
+                                    hasError = true;
+                                }
+                            }
                         }
                     }
                 }

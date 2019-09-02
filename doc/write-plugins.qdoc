@@ -10,10 +10,11 @@
     about the client management and any other functionality which should make the development straight forward and you can
     concentrate on your plugin and the content is should cover.
 
-    If you are a beginner, and want to start from scratch with the plugin development check out the \l{Plugin tutorials} and
-    start with the very first tutotial.
+    If you are a beginner and want to start from scratch with the plugin development, check out the \l{Plugin tutorials}.
 
     If you need to interact with a HardwareResource, you can check out the \l{Hardware Resources} documentation.
+
+    Additional help can be found at the \l {https://forum.nymea.io} {nymea forum}.
 
     \section1 Overview
 

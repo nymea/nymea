@@ -173,9 +173,10 @@ QStringList DeviceManagerImplementation::pluginSearchDirs()
     foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
         searchDirs << libraryPath.replace("qt5", "nymea");
     }
-    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/nymea/plugins";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../plugins/";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../../../plugins/";
+    searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../lib/nymea/plugins").absolutePath();
+    searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../plugins/").absolutePath();
+    searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../../../plugins/").absolutePath();
+    searchDirs.removeDuplicates();
     return searchDirs;
 }
 
@@ -961,6 +962,10 @@ void DeviceManagerImplementation::loadPlugins()
                 loader.unload();
                 continue;
             }
+            if (m_devicePlugins.contains(pluginIface->pluginId())) {
+                qCWarning(dcDeviceManager()) << "A plugin with this ID is already loaded. Not loading" << entry;
+                continue;
+            }
             loadPlugin(pluginIface, metaData);
         }
     }
@@ -1395,7 +1400,7 @@ void DeviceManagerImplementation::slotPairingFinished(const PairingTransactionId
     case Device::DeviceSetupStatusAsync:
         return;
     case Device::DeviceSetupStatusSuccess:
-        qCDebug(dcDeviceManager) << "Device setup complete.";
+        qCDebug(dcDeviceManager) << "Paired Device setup complete.";
         break;
     }
 
@@ -1464,7 +1469,7 @@ void DeviceManagerImplementation::onAutoDevicesAppeared(const DeviceClassId &dev
         case Device::DeviceSetupStatusAsync:
             break;
         case Device::DeviceSetupStatusSuccess:
-            qCDebug(dcDeviceManager) << "Device setup complete.";
+            qCDebug(dcDeviceManager) << "Auto Device setup complete.";
             m_configuredDevices.insert(device->id(), device);
             storeConfiguredDevices();
             emit deviceSetupFinished(device, Device::DeviceErrorNoError);

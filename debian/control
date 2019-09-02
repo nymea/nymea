@@ -190,6 +190,7 @@ Depends: ${shlibs:Depends},
          ${misc:Depends},
          libnymea1 (= ${binary:Version}),
          qttools5-dev-tools,
+         rsync,
 Description: An open source IoT server - development files
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and

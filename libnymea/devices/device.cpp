@@ -151,7 +151,7 @@ DeviceClassId Device::deviceClassId() const
 /*! Returns the id of the \l{DevicePlugin} this Device is managed by. */
 PluginId Device::pluginId() const
 {
-    return m_plugin->pluginId();
+    return m_plugin ? m_plugin->pluginId() : PluginId();
 }
 
 /*! Returns the name of this Device. This is visible to the user. */

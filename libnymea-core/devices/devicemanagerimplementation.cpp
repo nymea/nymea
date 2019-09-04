@@ -986,14 +986,14 @@ void DeviceManagerImplementation::loadConfiguredDevices()
         DevicePlugin *plugin = m_devicePlugins.value(PluginId(settings.value("pluginid").toString()));
         if (!plugin) {
             qCWarning(dcDeviceManager()) << "Not loading device" << deviceName << idString << "because the plugin for this device could not be found.";
-            settings.endGroup(); // DeviceId
-            continue;
+//            settings.endGroup(); // DeviceId
+//            continue;
         }
         DeviceClass deviceClass = findDeviceClass(DeviceClassId(settings.value("deviceClassId").toString()));
         if (!deviceClass.isValid()) {
             qCWarning(dcDeviceManager()) << "Not loading device" << deviceName << idString << "because the device class for this device could not be found.";
-            settings.endGroup(); // DeviceId
-            continue;
+//            settings.endGroup(); // DeviceId
+//            continue;
         }
 
         Device *device = new Device(plugin, deviceClass, DeviceId(idString), this);

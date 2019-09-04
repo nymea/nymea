@@ -725,7 +725,7 @@ bool PluginMetadata::verifyDuplicateUuid(const QUuid &uuid)
 {
     if (m_allUuids.contains(uuid)) {
         // FIXME: Drop debug, activate return! (see .h for more context)
-        qCWarning(dcPluginMetadata()) << "THIS PLUGIN USES DUPLICATE UUID" << uuid.toString() << "! THIS WILL STOP WORKING SOON.";
+        qCWarning(dcPluginMetadata()) << m_pluginName << "THIS PLUGIN USES DUPLICATE UUID" << uuid.toString() << "! THIS WILL STOP WORKING SOON.";
 //        return false;
     }
     if (m_currentScopUuids.contains(uuid)) {

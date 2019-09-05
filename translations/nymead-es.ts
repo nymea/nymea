@@ -48,7 +48,7 @@
 <context>
     <name>DevicePluginMock</name>
     <message>
-        <location filename="../plugins/mock/devicepluginmock.cpp" line="216"/>
+        <location filename="../plugins/mock/devicepluginmock.cpp" line="237"/>
         <source>Display pin!! The pin is 243681</source>
         <translation>Mostrar pin El pin es 243681</translation>
     </message>
@@ -94,8 +94,14 @@ The name of the DeviceClass (c16ba02d-c982-4b45-8ca2-1945d94d8e66)</extracomment
 <context>
     <name>mockDevice</name>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="251"/>
-        <location filename="../plugins/mock/plugininfo.h" line="254"/>
+        <location filename="../plugins/mock/plugininfo.h" line="253"/>
+        <source>Add to favorites</source>
+        <extracomment>The name of the Browser Item ActionType ({00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3}) of DeviceClass mock</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../plugins/mock/plugininfo.h" line="256"/>
+        <location filename="../plugins/mock/plugininfo.h" line="259"/>
         <source>Bool</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, EventType: bool, ID: {3bad3a09-5826-4ed7-a832-10e3e2ee2a7d})
 ----------
@@ -103,14 +109,14 @@ The name of the StateType ({3bad3a09-5826-4ed7-a832-10e3e2ee2a7d}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="257"/>
+        <location filename="../plugins/mock/plugininfo.h" line="262"/>
         <source>Bool changed</source>
         <extracomment>The name of the EventType ({3bad3a09-5826-4ed7-a832-10e3e2ee2a7d}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="260"/>
-        <location filename="../plugins/mock/plugininfo.h" line="263"/>
+        <location filename="../plugins/mock/plugininfo.h" line="265"/>
+        <location filename="../plugins/mock/plugininfo.h" line="268"/>
         <source>Color</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, EventType: color, ID: {4507d5c6-b692-4bd6-87f2-00364bc0cb4d})
 ----------
@@ -118,14 +124,14 @@ The name of the StateType ({4507d5c6-b692-4bd6-87f2-00364bc0cb4d}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="266"/>
+        <location filename="../plugins/mock/plugininfo.h" line="271"/>
         <source>Color changed</source>
         <extracomment>The name of the EventType ({4507d5c6-b692-4bd6-87f2-00364bc0cb4d}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="269"/>
-        <location filename="../plugins/mock/plugininfo.h" line="272"/>
+        <location filename="../plugins/mock/plugininfo.h" line="274"/>
+        <location filename="../plugins/mock/plugininfo.h" line="277"/>
         <source>Double</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, EventType: double, ID: {f7d2063d-959e-46ac-8568-8b99722d3b22})
 ----------
@@ -133,16 +139,16 @@ The name of the StateType ({f7d2063d-959e-46ac-8568-8b99722d3b22}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="275"/>
+        <location filename="../plugins/mock/plugininfo.h" line="280"/>
         <source>Double changed</source>
         <extracomment>The name of the EventType ({f7d2063d-959e-46ac-8568-8b99722d3b22}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="278"/>
-        <location filename="../plugins/mock/plugininfo.h" line="281"/>
-        <location filename="../plugins/mock/plugininfo.h" line="284"/>
-        <location filename="../plugins/mock/plugininfo.h" line="287"/>
+        <location filename="../plugins/mock/plugininfo.h" line="283"/>
+        <location filename="../plugins/mock/plugininfo.h" line="286"/>
+        <location filename="../plugins/mock/plugininfo.h" line="289"/>
+        <location filename="../plugins/mock/plugininfo.h" line="292"/>
         <source>Dummy bool state</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDeviceAuto, EventType: boolValue, ID: {978b0ba5-d008-41bd-b63d-a3bd23cb6469})
 ----------
@@ -154,8 +160,8 @@ The name of the StateType ({9dd6a97c-dfd1-43dc-acbd-367932742310}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="290"/>
-        <location filename="../plugins/mock/plugininfo.h" line="293"/>
+        <location filename="../plugins/mock/plugininfo.h" line="295"/>
+        <location filename="../plugins/mock/plugininfo.h" line="298"/>
         <source>Dummy bool state changed</source>
         <extracomment>The name of the EventType ({978b0ba5-d008-41bd-b63d-a3bd23cb6469}) of DeviceClass mockDeviceAuto
 ----------
@@ -163,8 +169,8 @@ The name of the EventType ({9dd6a97c-dfd1-43dc-acbd-367932742310}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="296"/>
-        <location filename="../plugins/mock/plugininfo.h" line="299"/>
+        <location filename="../plugins/mock/plugininfo.h" line="301"/>
+        <location filename="../plugins/mock/plugininfo.h" line="304"/>
         <source>Dummy double state</source>
         <extracomment>The name of the ParamType (DeviceClass: mock, EventType: double, ID: {7cac53ee-7048-4dc9-b000-7b585390f34c})
 ----------
@@ -172,16 +178,16 @@ The name of the StateType ({7cac53ee-7048-4dc9-b000-7b585390f34c}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="302"/>
+        <location filename="../plugins/mock/plugininfo.h" line="307"/>
         <source>Dummy double state changed</source>
         <extracomment>The name of the EventType ({7cac53ee-7048-4dc9-b000-7b585390f34c}) of DeviceClass mock</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="305"/>
-        <location filename="../plugins/mock/plugininfo.h" line="308"/>
-        <location filename="../plugins/mock/plugininfo.h" line="311"/>
-        <location filename="../plugins/mock/plugininfo.h" line="314"/>
+        <location filename="../plugins/mock/plugininfo.h" line="310"/>
+        <location filename="../plugins/mock/plugininfo.h" line="313"/>
+        <location filename="../plugins/mock/plugininfo.h" line="316"/>
+        <location filename="../plugins/mock/plugininfo.h" line="319"/>
         <source>Dummy int state</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDeviceAuto, EventType: int, ID: {74b24296-ba0b-4fbd-87f3-1b09a8bc3e8c})
 ----------
@@ -193,8 +199,8 @@ The name of the StateType ({80baec19-54de-4948-ac46-31eabfaceb83}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="317"/>
-        <location filename="../plugins/mock/plugininfo.h" line="320"/>
+        <location filename="../plugins/mock/plugininfo.h" line="322"/>
+        <location filename="../plugins/mock/plugininfo.h" line="325"/>
         <source>Dummy int state changed</source>
         <extracomment>The name of the EventType ({74b24296-ba0b-4fbd-87f3-1b09a8bc3e8c}) of DeviceClass mockDeviceAuto
 ----------
@@ -202,20 +208,20 @@ The name of the EventType ({80baec19-54de-4948-ac46-31eabfaceb83}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="323"/>
+        <location filename="../plugins/mock/plugininfo.h" line="328"/>
         <source>IPv4 address</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, Type: device, ID: {9e5f86a0-4bb3-4892-bff8-3fc4032af6e2})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="326"/>
+        <location filename="../plugins/mock/plugininfo.h" line="331"/>
         <source>IPv6 address</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, Type: device, ID: {43bf3832-dd48-4090-a836-656e8b60216e})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="329"/>
-        <location filename="../plugins/mock/plugininfo.h" line="332"/>
+        <location filename="../plugins/mock/plugininfo.h" line="334"/>
+        <location filename="../plugins/mock/plugininfo.h" line="337"/>
         <source>Int</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, EventType: int, ID: {d0fc56ae-5791-4e91-b76c-dadfbc7e7dbb})
 ----------
@@ -223,26 +229,26 @@ The name of the StateType ({d0fc56ae-5791-4e91-b76c-dadfbc7e7dbb}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="335"/>
+        <location filename="../plugins/mock/plugininfo.h" line="340"/>
         <source>Int changed</source>
         <extracomment>The name of the EventType ({d0fc56ae-5791-4e91-b76c-dadfbc7e7dbb}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="338"/>
+        <location filename="../plugins/mock/plugininfo.h" line="343"/>
         <source>Mac address</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, Type: device, ID: {e93db587-7919-48f3-8c88-1651de63c765})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="341"/>
+        <location filename="../plugins/mock/plugininfo.h" line="346"/>
         <source>Mail address</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, Type: device, ID: {a8494faf-3a0f-4cf3-84b7-4b39148a838d})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="344"/>
-        <location filename="../plugins/mock/plugininfo.h" line="347"/>
+        <location filename="../plugins/mock/plugininfo.h" line="349"/>
+        <location filename="../plugins/mock/plugininfo.h" line="352"/>
         <source>Mock Action 1 (with params)</source>
         <extracomment>The name of the ActionType ({00000000-0000-0000-0000-000000000000}) of DeviceClass mockDeviceAuto
 ----------
@@ -250,8 +256,8 @@ The name of the ActionType ({dea0f4e1-65e3-4981-8eaa-2701c53a9185}) of DeviceCla
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="350"/>
-        <location filename="../plugins/mock/plugininfo.h" line="353"/>
+        <location filename="../plugins/mock/plugininfo.h" line="355"/>
+        <location filename="../plugins/mock/plugininfo.h" line="358"/>
         <source>Mock Action 2 (without params)</source>
         <extracomment>The name of the ActionType ({ef518d53-50e2-4ca5-a4b1-e9a8b9309d44}) of DeviceClass mockDeviceAuto
 ----------
@@ -259,8 +265,8 @@ The name of the ActionType ({defd3ed6-1a0d-400b-8879-a0202cf39935}) of DeviceCla
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="356"/>
-        <location filename="../plugins/mock/plugininfo.h" line="359"/>
+        <location filename="../plugins/mock/plugininfo.h" line="361"/>
+        <location filename="../plugins/mock/plugininfo.h" line="364"/>
         <source>Mock Action 3 (async)</source>
         <extracomment>The name of the ActionType ({5f27a9f2-59cd-4a15-98bd-6ed6e10bc6ed}) of DeviceClass mockDeviceAuto
 ----------
@@ -268,8 +274,8 @@ The name of the ActionType ({fbae06d3-7666-483e-a39e-ec50fe89054e}) of DeviceCla
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="362"/>
-        <location filename="../plugins/mock/plugininfo.h" line="365"/>
+        <location filename="../plugins/mock/plugininfo.h" line="367"/>
+        <location filename="../plugins/mock/plugininfo.h" line="370"/>
         <source>Mock Action 4 (broken)</source>
         <extracomment>The name of the ActionType ({58a61de4-472c-4775-8fe8-583a9c83fcf1}) of DeviceClass mockDeviceAuto
 ----------
@@ -277,8 +283,8 @@ The name of the ActionType ({df3cf33d-26d5-4577-9132-9823bd33fad0}) of DeviceCla
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="368"/>
-        <location filename="../plugins/mock/plugininfo.h" line="371"/>
+        <location filename="../plugins/mock/plugininfo.h" line="373"/>
+        <location filename="../plugins/mock/plugininfo.h" line="376"/>
         <source>Mock Action 5 (async, broken)</source>
         <extracomment>The name of the ActionType ({17ad52dd-ef2f-4947-9b73-5bf6e172a9d0}) of DeviceClass mockDeviceAuto
 ----------
@@ -286,56 +292,56 @@ The name of the ActionType ({bfe89a1d-3497-4121-8318-e77c37537219}) of DeviceCla
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="374"/>
+        <location filename="../plugins/mock/plugininfo.h" line="379"/>
         <source>Mock Device</source>
         <extracomment>The name of the DeviceClass ({753f0d32-0468-4d08-82ed-1964aab03298})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="377"/>
+        <location filename="../plugins/mock/plugininfo.h" line="382"/>
         <source>Mock Device (Auto created)</source>
         <extracomment>The name of the DeviceClass ({ab4257b3-7548-47ee-9bd4-7dc3004fd197})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="380"/>
+        <location filename="../plugins/mock/plugininfo.h" line="385"/>
         <source>Mock Device (Child)</source>
         <extracomment>The name of the DeviceClass ({40893c9f-bc47-40c1-8bf7-b390c7c1b4fc})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="383"/>
+        <location filename="../plugins/mock/plugininfo.h" line="388"/>
         <source>Mock Device (Display Pin)</source>
         <extracomment>The name of the DeviceClass ({296f1fd4-e893-46b2-8a42-50d1bceb8730})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="386"/>
+        <location filename="../plugins/mock/plugininfo.h" line="391"/>
         <source>Mock Device (InputTypes)</source>
         <extracomment>The name of the DeviceClass ({515ffdf1-55e5-498d-9abc-4e2fe768f3a9})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="389"/>
+        <location filename="../plugins/mock/plugininfo.h" line="394"/>
         <source>Mock Device (Parent)</source>
         <extracomment>The name of the DeviceClass ({a71fbde9-9a38-4bf8-beab-c8aade2608ba})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="392"/>
+        <location filename="../plugins/mock/plugininfo.h" line="397"/>
         <source>Mock Device (Push Button)</source>
         <extracomment>The name of the DeviceClass ({9e03144c-e436-4eea-82d9-ccb33ef778db})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="395"/>
+        <location filename="../plugins/mock/plugininfo.h" line="400"/>
         <source>Mock Devices</source>
         <extracomment>The name of the plugin mockDevice ({727a4a9a-c187-446f-aadf-f1b2220607d1})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="398"/>
-        <location filename="../plugins/mock/plugininfo.h" line="401"/>
+        <location filename="../plugins/mock/plugininfo.h" line="403"/>
+        <location filename="../plugins/mock/plugininfo.h" line="406"/>
         <source>Mock Event 1</source>
         <extracomment>The name of the EventType ({00f81fca-26f1-4a84-aa2b-4c6a3d953ec6}) of DeviceClass mockDeviceAuto
 ----------
@@ -343,8 +349,8 @@ The name of the EventType ({45bf3752-0fc6-46b9-89fd-ffd878b5b22b}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="404"/>
-        <location filename="../plugins/mock/plugininfo.h" line="407"/>
+        <location filename="../plugins/mock/plugininfo.h" line="409"/>
+        <location filename="../plugins/mock/plugininfo.h" line="412"/>
         <source>Mock Event 2</source>
         <extracomment>The name of the EventType ({6e27922d-aa9d-44d1-b9b4-9faf31b6bd97}) of DeviceClass mockDeviceAuto
 ----------
@@ -352,104 +358,110 @@ The name of the EventType ({863d5920-b1cf-4eb9-88bd-8f7b8583b1cf}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="410"/>
+        <location filename="../plugins/mock/plugininfo.h" line="415"/>
         <source>Password text</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, Type: device, ID: {e5c0d14b-c9f1-4aca-a56e-85bfa6977150})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="413"/>
+        <location filename="../plugins/mock/plugininfo.h" line="418"/>
         <source>Please enter the secret which normaly will be displayed on the device. For the mockdevice the pin is 243681.</source>
         <extracomment>The pairing info of deviceClass mockDisplayPin</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="416"/>
+        <location filename="../plugins/mock/plugininfo.h" line="421"/>
+        <source>Remove from favorites</source>
+        <extracomment>The name of the Browser Item ActionType ({da6faef8-2816-430e-93bb-57e8f9582d29}) of DeviceClass mock</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../plugins/mock/plugininfo.h" line="424"/>
         <source>Search text</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, Type: device, ID: {22add8c9-ee4f-43ad-8931-58e999313ac3})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="419"/>
+        <location filename="../plugins/mock/plugininfo.h" line="427"/>
         <source>Set Writable Bool</source>
         <extracomment>The name of the ActionType ({a7c11774-f31f-4d64-99d1-e0ae5fb35a5c}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="422"/>
+        <location filename="../plugins/mock/plugininfo.h" line="430"/>
         <source>Set Writable Color</source>
         <extracomment>The name of the ActionType ({455f4f68-3cb0-4e8a-a707-62e4a2a8035c}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="425"/>
+        <location filename="../plugins/mock/plugininfo.h" line="433"/>
         <source>Set Writable Double</source>
         <extracomment>The name of the ActionType ({8e2eb91b-d60b-4461-9a50-d7b8ad263170}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="428"/>
+        <location filename="../plugins/mock/plugininfo.h" line="436"/>
         <source>Set Writable Double (min/max)</source>
         <extracomment>The name of the ActionType ({00d3425e-1da6-4748-8906-4555ceefb136}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="431"/>
+        <location filename="../plugins/mock/plugininfo.h" line="439"/>
         <source>Set Writable Int</source>
         <extracomment>The name of the ActionType ({857a8422-983c-47d6-a15f-d8450b3162f7}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="434"/>
+        <location filename="../plugins/mock/plugininfo.h" line="442"/>
         <source>Set Writable Int (min/max)</source>
         <extracomment>The name of the ActionType ({86a107bc-510a-4d38-bfeb-0a9c2b6d8d87}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="437"/>
+        <location filename="../plugins/mock/plugininfo.h" line="445"/>
         <source>Set Writable String</source>
         <extracomment>The name of the ActionType ({ef511043-bd1a-4a5f-984c-222b7da43f38}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="440"/>
+        <location filename="../plugins/mock/plugininfo.h" line="448"/>
         <source>Set Writable String (selection)</source>
         <extracomment>The name of the ActionType ({209d7afc-6fe9-4fe9-939b-e472ea0ad639}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="443"/>
+        <location filename="../plugins/mock/plugininfo.h" line="451"/>
         <source>Set Writable Time</source>
         <extracomment>The name of the ActionType ({d64c8b3f-ca7d-47f6-b271-867ffd80a4d4}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="446"/>
+        <location filename="../plugins/mock/plugininfo.h" line="454"/>
         <source>Set Writable Timestamp (Int)</source>
         <extracomment>The name of the ActionType ({88b6746a-b009-4df6-8986-d7884ffd94b2}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="449"/>
+        <location filename="../plugins/mock/plugininfo.h" line="457"/>
         <source>Set Writable Timestamp (UInt)</source>
         <extracomment>The name of the ActionType ({45d0069a-63ac-4265-8170-8152778608ee}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="452"/>
+        <location filename="../plugins/mock/plugininfo.h" line="460"/>
         <source>Set Writable UInt</source>
         <extracomment>The name of the ActionType ({563e9c4c-5198-400a-9f6c-358f4752af58}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="455"/>
+        <location filename="../plugins/mock/plugininfo.h" line="463"/>
         <source>Set Writable UInt (min/max)</source>
         <extracomment>The name of the ActionType ({79238998-eaab-4d71-b406-5d78f1749751}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="458"/>
-        <location filename="../plugins/mock/plugininfo.h" line="461"/>
+        <location filename="../plugins/mock/plugininfo.h" line="466"/>
+        <location filename="../plugins/mock/plugininfo.h" line="469"/>
         <source>Set allowed values</source>
         <extracomment>The name of the ActionType ({b463c5ae-4d55-402f-8480-a5cdb485c143}) of DeviceClass mockDisplayPin
 ----------
@@ -457,10 +469,10 @@ The name of the ActionType ({05f63f9c-f61e-4dcf-ad55-3f13fde2765b}) of DeviceCla
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="464"/>
-        <location filename="../plugins/mock/plugininfo.h" line="467"/>
-        <location filename="../plugins/mock/plugininfo.h" line="470"/>
-        <location filename="../plugins/mock/plugininfo.h" line="473"/>
+        <location filename="../plugins/mock/plugininfo.h" line="472"/>
+        <location filename="../plugins/mock/plugininfo.h" line="475"/>
+        <location filename="../plugins/mock/plugininfo.h" line="478"/>
+        <location filename="../plugins/mock/plugininfo.h" line="481"/>
         <source>Set bool value</source>
         <extracomment>The name of the ActionType ({80ba1449-b485-47d4-a067-6bf306e2a568}) of DeviceClass mockChild
 ----------
@@ -472,8 +484,8 @@ The name of the ActionType ({e680f7a4-b39e-46da-be41-fa3170fe3768}) of DeviceCla
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="476"/>
-        <location filename="../plugins/mock/plugininfo.h" line="479"/>
+        <location filename="../plugins/mock/plugininfo.h" line="484"/>
+        <location filename="../plugins/mock/plugininfo.h" line="487"/>
         <source>Set color</source>
         <extracomment>The name of the ActionType ({3e161294-8a0d-4384-9676-6959e08cc2fa}) of DeviceClass mockDisplayPin
 ----------
@@ -481,8 +493,8 @@ The name of the ActionType ({20dc7c22-c50e-42db-837c-2bbced939f8e}) of DeviceCla
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="482"/>
-        <location filename="../plugins/mock/plugininfo.h" line="485"/>
+        <location filename="../plugins/mock/plugininfo.h" line="490"/>
+        <location filename="../plugins/mock/plugininfo.h" line="493"/>
         <source>Set double value</source>
         <extracomment>The name of the ActionType ({17635624-7c19-4bae-8429-2f7aa5d2f843}) of DeviceClass mockDisplayPin
 ----------
@@ -490,8 +502,8 @@ The name of the ActionType ({53cd7c55-49b7-441b-b970-9048f20f0e2c}) of DeviceCla
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="488"/>
-        <location filename="../plugins/mock/plugininfo.h" line="491"/>
+        <location filename="../plugins/mock/plugininfo.h" line="496"/>
+        <location filename="../plugins/mock/plugininfo.h" line="499"/>
         <source>Set percentage</source>
         <extracomment>The name of the ActionType ({527f0687-0b28-4c26-852c-25b8f83e4797}) of DeviceClass mockDisplayPin
 ----------
@@ -499,14 +511,14 @@ The name of the ActionType ({72981c04-267a-4ba0-a59e-9921d2f3af9c}) of DeviceCla
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="494"/>
+        <location filename="../plugins/mock/plugininfo.h" line="502"/>
         <source>Setting 1</source>
         <extracomment>The name of the ParamType (DeviceClass: mock, Type: settings, ID: {367f7ba4-5039-47be-abd8-59cc8eaf4b9a})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="497"/>
-        <location filename="../plugins/mock/plugininfo.h" line="500"/>
+        <location filename="../plugins/mock/plugininfo.h" line="505"/>
+        <location filename="../plugins/mock/plugininfo.h" line="508"/>
         <source>String</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, EventType: string, ID: {27f69ca9-a321-40ff-bfee-4b0272a671b4})
 ----------
@@ -514,26 +526,26 @@ The name of the StateType ({27f69ca9-a321-40ff-bfee-4b0272a671b4}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="503"/>
+        <location filename="../plugins/mock/plugininfo.h" line="511"/>
         <source>String changed</source>
         <extracomment>The name of the EventType ({27f69ca9-a321-40ff-bfee-4b0272a671b4}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="506"/>
+        <location filename="../plugins/mock/plugininfo.h" line="514"/>
         <source>Text area</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, Type: device, ID: {716f0994-bc01-42b0-b64d-59236f7320d2})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="509"/>
+        <location filename="../plugins/mock/plugininfo.h" line="517"/>
         <source>Text line</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, Type: device, ID: {e6acf0c7-4b8e-4296-ac62-855d20deb816})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="512"/>
-        <location filename="../plugins/mock/plugininfo.h" line="515"/>
+        <location filename="../plugins/mock/plugininfo.h" line="520"/>
+        <location filename="../plugins/mock/plugininfo.h" line="523"/>
         <source>Time</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, EventType: time, ID: {8250c71e-59bc-41ab-b576-99fcfc34e8d1})
 ----------
@@ -541,14 +553,14 @@ The name of the StateType ({8250c71e-59bc-41ab-b576-99fcfc34e8d1}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="518"/>
+        <location filename="../plugins/mock/plugininfo.h" line="526"/>
         <source>Time changed</source>
         <extracomment>The name of the EventType ({8250c71e-59bc-41ab-b576-99fcfc34e8d1}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="521"/>
-        <location filename="../plugins/mock/plugininfo.h" line="524"/>
+        <location filename="../plugins/mock/plugininfo.h" line="529"/>
+        <location filename="../plugins/mock/plugininfo.h" line="532"/>
         <source>Timeout action</source>
         <extracomment>The name of the ActionType ({854a0a4a-803f-4b7f-9dce-b07794f9011b}) of DeviceClass mockDisplayPin
 ----------
@@ -556,8 +568,8 @@ The name of the ActionType ({54646e7c-bc54-4895-81a2-590d72d120f9}) of DeviceCla
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="527"/>
-        <location filename="../plugins/mock/plugininfo.h" line="530"/>
+        <location filename="../plugins/mock/plugininfo.h" line="535"/>
+        <location filename="../plugins/mock/plugininfo.h" line="538"/>
         <source>Timestamp (Int)</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, EventType: timestampInt, ID: {2c91b5ef-c2d1-4367-bc65-5a13abf69641})
 ----------
@@ -565,14 +577,14 @@ The name of the StateType ({2c91b5ef-c2d1-4367-bc65-5a13abf69641}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="533"/>
+        <location filename="../plugins/mock/plugininfo.h" line="541"/>
         <source>Timestamp (Int) changed</source>
         <extracomment>The name of the EventType ({2c91b5ef-c2d1-4367-bc65-5a13abf69641}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="536"/>
-        <location filename="../plugins/mock/plugininfo.h" line="539"/>
+        <location filename="../plugins/mock/plugininfo.h" line="544"/>
+        <location filename="../plugins/mock/plugininfo.h" line="547"/>
         <source>Timestamp (UInt)</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, EventType: timestampUInt, ID: {6c9a96e8-0d48-4f42-8967-848358fd7f79})
 ----------
@@ -580,14 +592,14 @@ The name of the StateType ({6c9a96e8-0d48-4f42-8967-848358fd7f79}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="542"/>
+        <location filename="../plugins/mock/plugininfo.h" line="550"/>
         <source>Timestamp (UInt) changed</source>
         <extracomment>The name of the EventType ({6c9a96e8-0d48-4f42-8967-848358fd7f79}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="545"/>
-        <location filename="../plugins/mock/plugininfo.h" line="548"/>
+        <location filename="../plugins/mock/plugininfo.h" line="553"/>
+        <location filename="../plugins/mock/plugininfo.h" line="556"/>
         <source>UInt</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, EventType: uint, ID: {19e74fcc-bfd5-491f-8eb6-af128e8f1162})
 ----------
@@ -595,27 +607,27 @@ The name of the StateType ({19e74fcc-bfd5-491f-8eb6-af128e8f1162}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="551"/>
+        <location filename="../plugins/mock/plugininfo.h" line="559"/>
         <source>UInt changed</source>
         <extracomment>The name of the EventType ({19e74fcc-bfd5-491f-8eb6-af128e8f1162}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="554"/>
+        <location filename="../plugins/mock/plugininfo.h" line="562"/>
         <source>URL</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, Type: device, ID: {fa67229f-fcef-496f-b671-59a4b48f3ab5})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="557"/>
+        <location filename="../plugins/mock/plugininfo.h" line="565"/>
         <source>Wait 3 second before you continue, the push button will be pressed automatically.</source>
         <extracomment>The pairing info of deviceClass mockPushButton</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="560"/>
-        <location filename="../plugins/mock/plugininfo.h" line="563"/>
-        <location filename="../plugins/mock/plugininfo.h" line="566"/>
+        <location filename="../plugins/mock/plugininfo.h" line="568"/>
+        <location filename="../plugins/mock/plugininfo.h" line="571"/>
+        <location filename="../plugins/mock/plugininfo.h" line="574"/>
         <source>Writable Bool</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, ActionType: writableBool, ID: {a7c11774-f31f-4d64-99d1-e0ae5fb35a5c})
 ----------
@@ -625,15 +637,15 @@ The name of the StateType ({a7c11774-f31f-4d64-99d1-e0ae5fb35a5c}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="569"/>
+        <location filename="../plugins/mock/plugininfo.h" line="577"/>
         <source>Writable Bool changed</source>
         <extracomment>The name of the EventType ({a7c11774-f31f-4d64-99d1-e0ae5fb35a5c}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="572"/>
-        <location filename="../plugins/mock/plugininfo.h" line="575"/>
-        <location filename="../plugins/mock/plugininfo.h" line="578"/>
+        <location filename="../plugins/mock/plugininfo.h" line="580"/>
+        <location filename="../plugins/mock/plugininfo.h" line="583"/>
+        <location filename="../plugins/mock/plugininfo.h" line="586"/>
         <source>Writable Color</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, ActionType: writableColor, ID: {455f4f68-3cb0-4e8a-a707-62e4a2a8035c})
 ----------
@@ -643,15 +655,15 @@ The name of the StateType ({455f4f68-3cb0-4e8a-a707-62e4a2a8035c}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="581"/>
+        <location filename="../plugins/mock/plugininfo.h" line="589"/>
         <source>Writable Color changed</source>
         <extracomment>The name of the EventType ({455f4f68-3cb0-4e8a-a707-62e4a2a8035c}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="584"/>
-        <location filename="../plugins/mock/plugininfo.h" line="587"/>
-        <location filename="../plugins/mock/plugininfo.h" line="590"/>
+        <location filename="../plugins/mock/plugininfo.h" line="592"/>
+        <location filename="../plugins/mock/plugininfo.h" line="595"/>
+        <location filename="../plugins/mock/plugininfo.h" line="598"/>
         <source>Writable Double</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, ActionType: writableDouble, ID: {8e2eb91b-d60b-4461-9a50-d7b8ad263170})
 ----------
@@ -661,9 +673,9 @@ The name of the StateType ({8e2eb91b-d60b-4461-9a50-d7b8ad263170}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="593"/>
-        <location filename="../plugins/mock/plugininfo.h" line="596"/>
-        <location filename="../plugins/mock/plugininfo.h" line="599"/>
+        <location filename="../plugins/mock/plugininfo.h" line="601"/>
+        <location filename="../plugins/mock/plugininfo.h" line="604"/>
+        <location filename="../plugins/mock/plugininfo.h" line="607"/>
         <source>Writable Double (min/max)</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, ActionType: writableDoubleMinMax, ID: {00d3425e-1da6-4748-8906-4555ceefb136})
 ----------
@@ -673,21 +685,21 @@ The name of the StateType ({00d3425e-1da6-4748-8906-4555ceefb136}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="602"/>
+        <location filename="../plugins/mock/plugininfo.h" line="610"/>
         <source>Writable Double (min/max) changed</source>
         <extracomment>The name of the EventType ({00d3425e-1da6-4748-8906-4555ceefb136}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="605"/>
+        <location filename="../plugins/mock/plugininfo.h" line="613"/>
         <source>Writable Double changed</source>
         <extracomment>The name of the EventType ({8e2eb91b-d60b-4461-9a50-d7b8ad263170}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="608"/>
-        <location filename="../plugins/mock/plugininfo.h" line="611"/>
-        <location filename="../plugins/mock/plugininfo.h" line="614"/>
+        <location filename="../plugins/mock/plugininfo.h" line="616"/>
+        <location filename="../plugins/mock/plugininfo.h" line="619"/>
+        <location filename="../plugins/mock/plugininfo.h" line="622"/>
         <source>Writable Int</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, ActionType: writableInt, ID: {857a8422-983c-47d6-a15f-d8450b3162f7})
 ----------
@@ -697,9 +709,9 @@ The name of the StateType ({857a8422-983c-47d6-a15f-d8450b3162f7}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="617"/>
-        <location filename="../plugins/mock/plugininfo.h" line="620"/>
-        <location filename="../plugins/mock/plugininfo.h" line="623"/>
+        <location filename="../plugins/mock/plugininfo.h" line="625"/>
+        <location filename="../plugins/mock/plugininfo.h" line="628"/>
+        <location filename="../plugins/mock/plugininfo.h" line="631"/>
         <source>Writable Int (min/max)</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, ActionType: writableIntMinMax, ID: {86a107bc-510a-4d38-bfeb-0a9c2b6d8d87})
 ----------
@@ -709,21 +721,21 @@ The name of the StateType ({86a107bc-510a-4d38-bfeb-0a9c2b6d8d87}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="626"/>
+        <location filename="../plugins/mock/plugininfo.h" line="634"/>
         <source>Writable Int (min/max) changed</source>
         <extracomment>The name of the EventType ({86a107bc-510a-4d38-bfeb-0a9c2b6d8d87}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="629"/>
+        <location filename="../plugins/mock/plugininfo.h" line="637"/>
         <source>Writable Int changed</source>
         <extracomment>The name of the EventType ({857a8422-983c-47d6-a15f-d8450b3162f7}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="632"/>
-        <location filename="../plugins/mock/plugininfo.h" line="635"/>
-        <location filename="../plugins/mock/plugininfo.h" line="638"/>
+        <location filename="../plugins/mock/plugininfo.h" line="640"/>
+        <location filename="../plugins/mock/plugininfo.h" line="643"/>
+        <location filename="../plugins/mock/plugininfo.h" line="646"/>
         <source>Writable String</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, ActionType: writableString, ID: {ef511043-bd1a-4a5f-984c-222b7da43f38})
 ----------
@@ -733,9 +745,9 @@ The name of the StateType ({ef511043-bd1a-4a5f-984c-222b7da43f38}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="641"/>
-        <location filename="../plugins/mock/plugininfo.h" line="644"/>
-        <location filename="../plugins/mock/plugininfo.h" line="647"/>
+        <location filename="../plugins/mock/plugininfo.h" line="649"/>
+        <location filename="../plugins/mock/plugininfo.h" line="652"/>
+        <location filename="../plugins/mock/plugininfo.h" line="655"/>
         <source>Writable String (selection)</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, ActionType: writableStringSelection, ID: {209d7afc-6fe9-4fe9-939b-e472ea0ad639})
 ----------
@@ -745,21 +757,21 @@ The name of the StateType ({209d7afc-6fe9-4fe9-939b-e472ea0ad639}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="650"/>
+        <location filename="../plugins/mock/plugininfo.h" line="658"/>
         <source>Writable String (selection) changed</source>
         <extracomment>The name of the EventType ({209d7afc-6fe9-4fe9-939b-e472ea0ad639}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="653"/>
+        <location filename="../plugins/mock/plugininfo.h" line="661"/>
         <source>Writable String changed</source>
         <extracomment>The name of the EventType ({ef511043-bd1a-4a5f-984c-222b7da43f38}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="656"/>
-        <location filename="../plugins/mock/plugininfo.h" line="659"/>
-        <location filename="../plugins/mock/plugininfo.h" line="662"/>
+        <location filename="../plugins/mock/plugininfo.h" line="664"/>
+        <location filename="../plugins/mock/plugininfo.h" line="667"/>
+        <location filename="../plugins/mock/plugininfo.h" line="670"/>
         <source>Writable Time</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, ActionType: writableTime, ID: {d64c8b3f-ca7d-47f6-b271-867ffd80a4d4})
 ----------
@@ -769,15 +781,15 @@ The name of the StateType ({d64c8b3f-ca7d-47f6-b271-867ffd80a4d4}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="665"/>
+        <location filename="../plugins/mock/plugininfo.h" line="673"/>
         <source>Writable Time changed</source>
         <extracomment>The name of the EventType ({d64c8b3f-ca7d-47f6-b271-867ffd80a4d4}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="668"/>
-        <location filename="../plugins/mock/plugininfo.h" line="671"/>
-        <location filename="../plugins/mock/plugininfo.h" line="674"/>
+        <location filename="../plugins/mock/plugininfo.h" line="676"/>
+        <location filename="../plugins/mock/plugininfo.h" line="679"/>
+        <location filename="../plugins/mock/plugininfo.h" line="682"/>
         <source>Writable Timestamp (Int)</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, ActionType: writableTimestampInt, ID: {88b6746a-b009-4df6-8986-d7884ffd94b2})
 ----------
@@ -787,15 +799,15 @@ The name of the StateType ({88b6746a-b009-4df6-8986-d7884ffd94b2}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="677"/>
+        <location filename="../plugins/mock/plugininfo.h" line="685"/>
         <source>Writable Timestamp (Int) changed</source>
         <extracomment>The name of the EventType ({88b6746a-b009-4df6-8986-d7884ffd94b2}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="680"/>
-        <location filename="../plugins/mock/plugininfo.h" line="683"/>
-        <location filename="../plugins/mock/plugininfo.h" line="686"/>
+        <location filename="../plugins/mock/plugininfo.h" line="688"/>
+        <location filename="../plugins/mock/plugininfo.h" line="691"/>
+        <location filename="../plugins/mock/plugininfo.h" line="694"/>
         <source>Writable Timestamp (UInt)</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, ActionType: writableTimestampUInt, ID: {45d0069a-63ac-4265-8170-8152778608ee})
 ----------
@@ -805,15 +817,15 @@ The name of the StateType ({45d0069a-63ac-4265-8170-8152778608ee}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="689"/>
+        <location filename="../plugins/mock/plugininfo.h" line="697"/>
         <source>Writable Timestamp (UInt) changed</source>
         <extracomment>The name of the EventType ({45d0069a-63ac-4265-8170-8152778608ee}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="692"/>
-        <location filename="../plugins/mock/plugininfo.h" line="695"/>
-        <location filename="../plugins/mock/plugininfo.h" line="698"/>
+        <location filename="../plugins/mock/plugininfo.h" line="700"/>
+        <location filename="../plugins/mock/plugininfo.h" line="703"/>
+        <location filename="../plugins/mock/plugininfo.h" line="706"/>
         <source>Writable UInt</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, ActionType: writableUInt, ID: {563e9c4c-5198-400a-9f6c-358f4752af58})
 ----------
@@ -823,9 +835,9 @@ The name of the StateType ({563e9c4c-5198-400a-9f6c-358f4752af58}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="701"/>
-        <location filename="../plugins/mock/plugininfo.h" line="704"/>
-        <location filename="../plugins/mock/plugininfo.h" line="707"/>
+        <location filename="../plugins/mock/plugininfo.h" line="709"/>
+        <location filename="../plugins/mock/plugininfo.h" line="712"/>
+        <location filename="../plugins/mock/plugininfo.h" line="715"/>
         <source>Writable UInt (min/max)</source>
         <extracomment>The name of the ParamType (DeviceClass: mockInputType, ActionType: writableUIntMinMax, ID: {79238998-eaab-4d71-b406-5d78f1749751})
 ----------
@@ -835,24 +847,24 @@ The name of the StateType ({79238998-eaab-4d71-b406-5d78f1749751}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="710"/>
+        <location filename="../plugins/mock/plugininfo.h" line="718"/>
         <source>Writable UInt (min/max) changed</source>
         <extracomment>The name of the EventType ({79238998-eaab-4d71-b406-5d78f1749751}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="713"/>
+        <location filename="../plugins/mock/plugininfo.h" line="721"/>
         <source>Writable UInt changed</source>
         <extracomment>The name of the EventType ({563e9c4c-5198-400a-9f6c-358f4752af58}) of DeviceClass mockInputType</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="716"/>
-        <location filename="../plugins/mock/plugininfo.h" line="719"/>
-        <location filename="../plugins/mock/plugininfo.h" line="722"/>
-        <location filename="../plugins/mock/plugininfo.h" line="725"/>
-        <location filename="../plugins/mock/plugininfo.h" line="728"/>
-        <location filename="../plugins/mock/plugininfo.h" line="731"/>
+        <location filename="../plugins/mock/plugininfo.h" line="724"/>
+        <location filename="../plugins/mock/plugininfo.h" line="727"/>
+        <location filename="../plugins/mock/plugininfo.h" line="730"/>
+        <location filename="../plugins/mock/plugininfo.h" line="733"/>
+        <location filename="../plugins/mock/plugininfo.h" line="736"/>
+        <location filename="../plugins/mock/plugininfo.h" line="739"/>
         <source>allowed values</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDisplayPin, ActionType: allowedValues, ID: {b463c5ae-4d55-402f-8480-a5cdb485c143})
 ----------
@@ -868,8 +880,8 @@ The name of the StateType ({05f63f9c-f61e-4dcf-ad55-3f13fde2765b}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="734"/>
-        <location filename="../plugins/mock/plugininfo.h" line="737"/>
+        <location filename="../plugins/mock/plugininfo.h" line="742"/>
+        <location filename="../plugins/mock/plugininfo.h" line="745"/>
         <source>allowed values changed</source>
         <extracomment>The name of the EventType ({b463c5ae-4d55-402f-8480-a5cdb485c143}) of DeviceClass mockDisplayPin
 ----------
@@ -877,8 +889,8 @@ The name of the EventType ({05f63f9c-f61e-4dcf-ad55-3f13fde2765b}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="740"/>
-        <location filename="../plugins/mock/plugininfo.h" line="743"/>
+        <location filename="../plugins/mock/plugininfo.h" line="748"/>
+        <location filename="../plugins/mock/plugininfo.h" line="751"/>
         <source>async</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDeviceAuto, Type: device, ID: {a5c4315f-0624-4971-87c1-4bbfbfdbd16e})
 ----------
@@ -886,9 +898,9 @@ The name of the ParamType (DeviceClass: mock, Type: device, ID: {f2977061-4dd0-4
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="746"/>
-        <location filename="../plugins/mock/plugininfo.h" line="749"/>
-        <location filename="../plugins/mock/plugininfo.h" line="752"/>
+        <location filename="../plugins/mock/plugininfo.h" line="754"/>
+        <location filename="../plugins/mock/plugininfo.h" line="757"/>
+        <location filename="../plugins/mock/plugininfo.h" line="760"/>
         <source>battery level</source>
         <extracomment>The name of the ParamType (DeviceClass: mock, EventType: batteryLevel, ID: {6c8ab9a6-0164-4795-b829-f4394fe4edc4})
 ----------
@@ -898,9 +910,9 @@ The name of the StateType ({6c8ab9a6-0164-4795-b829-f4394fe4edc4}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="755"/>
-        <location filename="../plugins/mock/plugininfo.h" line="758"/>
-        <location filename="../plugins/mock/plugininfo.h" line="761"/>
+        <location filename="../plugins/mock/plugininfo.h" line="763"/>
+        <location filename="../plugins/mock/plugininfo.h" line="766"/>
+        <location filename="../plugins/mock/plugininfo.h" line="769"/>
         <source>battery level critical</source>
         <extracomment>The name of the ParamType (DeviceClass: mock, EventType: batteryCritical, ID: {580bc611-1a55-41f3-996f-8d3ccf543db3})
 ----------
@@ -910,18 +922,18 @@ The name of the StateType ({580bc611-1a55-41f3-996f-8d3ccf543db3}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="764"/>
-        <location filename="../plugins/mock/plugininfo.h" line="767"/>
-        <location filename="../plugins/mock/plugininfo.h" line="770"/>
-        <location filename="../plugins/mock/plugininfo.h" line="773"/>
-        <location filename="../plugins/mock/plugininfo.h" line="776"/>
-        <location filename="../plugins/mock/plugininfo.h" line="779"/>
-        <location filename="../plugins/mock/plugininfo.h" line="782"/>
-        <location filename="../plugins/mock/plugininfo.h" line="785"/>
-        <location filename="../plugins/mock/plugininfo.h" line="788"/>
-        <location filename="../plugins/mock/plugininfo.h" line="791"/>
-        <location filename="../plugins/mock/plugininfo.h" line="794"/>
-        <location filename="../plugins/mock/plugininfo.h" line="797"/>
+        <location filename="../plugins/mock/plugininfo.h" line="772"/>
+        <location filename="../plugins/mock/plugininfo.h" line="775"/>
+        <location filename="../plugins/mock/plugininfo.h" line="778"/>
+        <location filename="../plugins/mock/plugininfo.h" line="781"/>
+        <location filename="../plugins/mock/plugininfo.h" line="784"/>
+        <location filename="../plugins/mock/plugininfo.h" line="787"/>
+        <location filename="../plugins/mock/plugininfo.h" line="790"/>
+        <location filename="../plugins/mock/plugininfo.h" line="793"/>
+        <location filename="../plugins/mock/plugininfo.h" line="796"/>
+        <location filename="../plugins/mock/plugininfo.h" line="799"/>
+        <location filename="../plugins/mock/plugininfo.h" line="802"/>
+        <location filename="../plugins/mock/plugininfo.h" line="805"/>
         <source>bool value</source>
         <extracomment>The name of the ParamType (DeviceClass: mockChild, ActionType: boolValue, ID: {80ba1449-b485-47d4-a067-6bf306e2a568})
 ----------
@@ -949,10 +961,10 @@ The name of the StateType ({e680f7a4-b39e-46da-be41-fa3170fe3768}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="800"/>
-        <location filename="../plugins/mock/plugininfo.h" line="803"/>
-        <location filename="../plugins/mock/plugininfo.h" line="806"/>
-        <location filename="../plugins/mock/plugininfo.h" line="809"/>
+        <location filename="../plugins/mock/plugininfo.h" line="808"/>
+        <location filename="../plugins/mock/plugininfo.h" line="811"/>
+        <location filename="../plugins/mock/plugininfo.h" line="814"/>
+        <location filename="../plugins/mock/plugininfo.h" line="817"/>
         <source>bool value changed</source>
         <extracomment>The name of the EventType ({80ba1449-b485-47d4-a067-6bf306e2a568}) of DeviceClass mockChild
 ----------
@@ -964,8 +976,8 @@ The name of the EventType ({e680f7a4-b39e-46da-be41-fa3170fe3768}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="812"/>
-        <location filename="../plugins/mock/plugininfo.h" line="815"/>
+        <location filename="../plugins/mock/plugininfo.h" line="820"/>
+        <location filename="../plugins/mock/plugininfo.h" line="823"/>
         <source>broken</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDeviceAuto, Type: device, ID: {66179395-ef7a-4013-9fc6-2084104eea09})
 ----------
@@ -973,12 +985,12 @@ The name of the ParamType (DeviceClass: mock, Type: device, ID: {ae8f8901-f2c1-4
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="818"/>
-        <location filename="../plugins/mock/plugininfo.h" line="821"/>
-        <location filename="../plugins/mock/plugininfo.h" line="824"/>
-        <location filename="../plugins/mock/plugininfo.h" line="827"/>
-        <location filename="../plugins/mock/plugininfo.h" line="830"/>
-        <location filename="../plugins/mock/plugininfo.h" line="833"/>
+        <location filename="../plugins/mock/plugininfo.h" line="826"/>
+        <location filename="../plugins/mock/plugininfo.h" line="829"/>
+        <location filename="../plugins/mock/plugininfo.h" line="832"/>
+        <location filename="../plugins/mock/plugininfo.h" line="835"/>
+        <location filename="../plugins/mock/plugininfo.h" line="838"/>
+        <location filename="../plugins/mock/plugininfo.h" line="841"/>
         <source>color</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDisplayPin, ActionType: color, ID: {3e161294-8a0d-4384-9676-6959e08cc2fa})
 ----------
@@ -994,8 +1006,8 @@ The name of the StateType ({20dc7c22-c50e-42db-837c-2bbced939f8e}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="836"/>
-        <location filename="../plugins/mock/plugininfo.h" line="839"/>
+        <location filename="../plugins/mock/plugininfo.h" line="844"/>
+        <location filename="../plugins/mock/plugininfo.h" line="847"/>
         <source>color changed</source>
         <extracomment>The name of the EventType ({3e161294-8a0d-4384-9676-6959e08cc2fa}) of DeviceClass mockDisplayPin
 ----------
@@ -1003,24 +1015,24 @@ The name of the EventType ({20dc7c22-c50e-42db-837c-2bbced939f8e}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="842"/>
+        <location filename="../plugins/mock/plugininfo.h" line="850"/>
         <source>configParamBool</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDevice, Type: plugin, ID: {c75723b6-ea4f-4982-9751-6c5e39c88145})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="845"/>
+        <location filename="../plugins/mock/plugininfo.h" line="853"/>
         <source>configParamInt</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDevice, Type: plugin, ID: {e1f72121-a426-45e2-b475-8262b5cdf103})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="848"/>
-        <location filename="../plugins/mock/plugininfo.h" line="851"/>
-        <location filename="../plugins/mock/plugininfo.h" line="854"/>
-        <location filename="../plugins/mock/plugininfo.h" line="857"/>
-        <location filename="../plugins/mock/plugininfo.h" line="860"/>
-        <location filename="../plugins/mock/plugininfo.h" line="863"/>
+        <location filename="../plugins/mock/plugininfo.h" line="856"/>
+        <location filename="../plugins/mock/plugininfo.h" line="859"/>
+        <location filename="../plugins/mock/plugininfo.h" line="862"/>
+        <location filename="../plugins/mock/plugininfo.h" line="865"/>
+        <location filename="../plugins/mock/plugininfo.h" line="868"/>
+        <location filename="../plugins/mock/plugininfo.h" line="871"/>
         <source>double value</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDisplayPin, ActionType: double, ID: {17635624-7c19-4bae-8429-2f7aa5d2f843})
 ----------
@@ -1036,8 +1048,8 @@ The name of the StateType ({53cd7c55-49b7-441b-b970-9048f20f0e2c}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="866"/>
-        <location filename="../plugins/mock/plugininfo.h" line="869"/>
+        <location filename="../plugins/mock/plugininfo.h" line="874"/>
+        <location filename="../plugins/mock/plugininfo.h" line="877"/>
         <source>double value changed</source>
         <extracomment>The name of the EventType ({17635624-7c19-4bae-8429-2f7aa5d2f843}) of DeviceClass mockDisplayPin
 ----------
@@ -1045,8 +1057,8 @@ The name of the EventType ({53cd7c55-49b7-441b-b970-9048f20f0e2c}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="872"/>
-        <location filename="../plugins/mock/plugininfo.h" line="875"/>
+        <location filename="../plugins/mock/plugininfo.h" line="880"/>
+        <location filename="../plugins/mock/plugininfo.h" line="883"/>
         <source>http port</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDeviceAuto, Type: device, ID: {bfeb0613-dab6-408c-aa27-c362c921d0d1})
 ----------
@@ -1054,8 +1066,8 @@ The name of the ParamType (DeviceClass: mock, Type: device, ID: {d4f06047-125e-4
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="878"/>
-        <location filename="../plugins/mock/plugininfo.h" line="881"/>
+        <location filename="../plugins/mock/plugininfo.h" line="886"/>
+        <location filename="../plugins/mock/plugininfo.h" line="889"/>
         <source>mockActionParam1</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDeviceAuto, ActionType: withParams, ID: {b8126ba6-3a54-45a3-be4d-63feb0ddb77b})
 ----------
@@ -1063,8 +1075,8 @@ The name of the ParamType (DeviceClass: mock, ActionType: withParams, ID: {a2d3a
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="884"/>
-        <location filename="../plugins/mock/plugininfo.h" line="887"/>
+        <location filename="../plugins/mock/plugininfo.h" line="892"/>
+        <location filename="../plugins/mock/plugininfo.h" line="895"/>
         <source>mockActionParam2</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDeviceAuto, ActionType: withParams, ID: {df41ba71-e43b-4854-91d1-b19d8066d4f9})
 ----------
@@ -1072,8 +1084,8 @@ The name of the ParamType (DeviceClass: mock, ActionType: withParams, ID: {304a4
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="890"/>
-        <location filename="../plugins/mock/plugininfo.h" line="893"/>
+        <location filename="../plugins/mock/plugininfo.h" line="898"/>
+        <location filename="../plugins/mock/plugininfo.h" line="901"/>
         <source>mockParamInt</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDeviceAuto, EventType: event2, ID: {12ed5a15-96b4-4381-9d9c-a24875283d4f})
 ----------
@@ -1081,18 +1093,18 @@ The name of the ParamType (DeviceClass: mock, EventType: event2, ID: {0550e16d-6
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="896"/>
+        <location filename="../plugins/mock/plugininfo.h" line="904"/>
         <source>nymea</source>
         <extracomment>The name of the vendor ({2062d64d-3232-433c-88bc-0d33c0ba2ba6})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="899"/>
-        <location filename="../plugins/mock/plugininfo.h" line="902"/>
-        <location filename="../plugins/mock/plugininfo.h" line="905"/>
-        <location filename="../plugins/mock/plugininfo.h" line="908"/>
-        <location filename="../plugins/mock/plugininfo.h" line="911"/>
-        <location filename="../plugins/mock/plugininfo.h" line="914"/>
+        <location filename="../plugins/mock/plugininfo.h" line="907"/>
+        <location filename="../plugins/mock/plugininfo.h" line="910"/>
+        <location filename="../plugins/mock/plugininfo.h" line="913"/>
+        <location filename="../plugins/mock/plugininfo.h" line="916"/>
+        <location filename="../plugins/mock/plugininfo.h" line="919"/>
+        <location filename="../plugins/mock/plugininfo.h" line="922"/>
         <source>percentage</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDisplayPin, ActionType: percentage, ID: {527f0687-0b28-4c26-852c-25b8f83e4797})
 ----------
@@ -1108,8 +1120,8 @@ The name of the StateType ({72981c04-267a-4ba0-a59e-9921d2f3af9c}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="917"/>
-        <location filename="../plugins/mock/plugininfo.h" line="920"/>
+        <location filename="../plugins/mock/plugininfo.h" line="925"/>
+        <location filename="../plugins/mock/plugininfo.h" line="928"/>
         <source>percentage changed</source>
         <extracomment>The name of the EventType ({527f0687-0b28-4c26-852c-25b8f83e4797}) of DeviceClass mockDisplayPin
 ----------
@@ -1117,15 +1129,15 @@ The name of the EventType ({72981c04-267a-4ba0-a59e-9921d2f3af9c}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="923"/>
+        <location filename="../plugins/mock/plugininfo.h" line="931"/>
         <source>pin</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDisplayPin, Type: device, ID: {da820e07-22dc-4173-9c07-2f49a4e265f9})</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="926"/>
-        <location filename="../plugins/mock/plugininfo.h" line="929"/>
-        <location filename="../plugins/mock/plugininfo.h" line="932"/>
+        <location filename="../plugins/mock/plugininfo.h" line="934"/>
+        <location filename="../plugins/mock/plugininfo.h" line="937"/>
+        <location filename="../plugins/mock/plugininfo.h" line="940"/>
         <source>powered</source>
         <extracomment>The name of the ParamType (DeviceClass: mock, ActionType: power, ID: {064aed0d-da4c-49d4-b236-60f97e98ff84})
 ----------
@@ -1135,15 +1147,15 @@ The name of the StateType ({064aed0d-da4c-49d4-b236-60f97e98ff84}) of DeviceClas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="935"/>
+        <location filename="../plugins/mock/plugininfo.h" line="943"/>
         <source>powered changed</source>
         <extracomment>The name of the EventType ({064aed0d-da4c-49d4-b236-60f97e98ff84}) of DeviceClass mock</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="938"/>
-        <location filename="../plugins/mock/plugininfo.h" line="941"/>
-        <location filename="../plugins/mock/plugininfo.h" line="944"/>
+        <location filename="../plugins/mock/plugininfo.h" line="946"/>
+        <location filename="../plugins/mock/plugininfo.h" line="949"/>
+        <location filename="../plugins/mock/plugininfo.h" line="952"/>
         <source>resultCount</source>
         <extracomment>The name of the ParamType (DeviceClass: mockDisplayPin, Type: discovery, ID: {35f6e4ba-28ad-4152-a58d-ec2600667bcf})
 ----------
@@ -1153,7 +1165,7 @@ The name of the ParamType (DeviceClass: mock, Type: discovery, ID: {d222adb4-2f9
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugins/mock/plugininfo.h" line="947"/>
+        <location filename="../plugins/mock/plugininfo.h" line="955"/>
         <source>set power</source>
         <extracomment>The name of the ActionType ({064aed0d-da4c-49d4-b236-60f97e98ff84}) of DeviceClass mock</extracomment>
         <translation type="unfinished"></translation>

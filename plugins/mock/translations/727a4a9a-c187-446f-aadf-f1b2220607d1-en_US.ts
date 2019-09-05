@@ -842,5 +842,15 @@ The name of the StateType ({45d0069a-63ac-4265-8170-8152778608ee}) of DeviceClas
         <extracomment>The name of the ParamType (DeviceClass: mock, Type: settings, ID: {367f7ba4-5039-47be-abd8-59cc8eaf4b9a})</extracomment>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Add to favorites</source>
+        <extracomment>The name of the Browser Item ActionType ({00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3}) of DeviceClass mock</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove from favorites</source>
+        <extracomment>The name of the Browser Item ActionType ({da6faef8-2816-430e-93bb-57e8f9582d29}) of DeviceClass mock</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 </TS>

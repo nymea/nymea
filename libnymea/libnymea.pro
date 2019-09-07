@@ -13,6 +13,7 @@ HEADERS += \
         devices/devicemanager.h \
         devices/deviceutils.h \
         devices/pluginmetadata.h \
+        devices/devicediscoveryinfo.h \
         libnymea.h \
         platform/package.h \
         platform/repository.h \
@@ -80,6 +81,7 @@ SOURCES += \
         devices/devicemanager.cpp \
         devices/deviceutils.cpp \
         devices/pluginmetadata.cpp \
+        devices/devicediscoveryinfo.cpp \
         loggingcategories.cpp \
         nymeasettings.cpp \
         platform/package.cpp \

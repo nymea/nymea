@@ -111,7 +111,7 @@ signals:
     void browserItemExecuted(const ActionId &id, Device::DeviceError status);
     void browserItemActionExecuted(const ActionId &id, Device::DeviceError status);
 
-    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+    void devicesDiscovered(const DeviceDiscoveryInfo &deviceDiscoveryInfo);
     void deviceSetupFinished(Device *device, Device::DeviceError status);
     void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
     void pairingFinished(const DevicePairingInfo &devicePairingInfo);

@@ -36,7 +36,6 @@
 
 #include "devicedescriptor.h"
 
-
 /*! Construct a DeviceDescriptor. */
 DeviceDescriptor::DeviceDescriptor():
     m_id(DeviceDescriptorId::createDeviceDescriptorId())
@@ -142,4 +141,16 @@ ParamList DeviceDescriptor::params() const
 void DeviceDescriptor::setParams(const ParamList &params)
 {
     m_params = params;
+}
+
+/*! Constructs an empty DeviceDescriptors list. */
+DeviceDescriptors::DeviceDescriptors()
+{
+
+}
+
+/*! Constructs a DeviceDescriptors list from a QList<DeviceDescriptor>. */
+DeviceDescriptors::DeviceDescriptors(const QList<DeviceDescriptor> &other):
+    QList<DeviceDescriptor>(other)
+{
 }

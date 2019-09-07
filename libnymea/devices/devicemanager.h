@@ -28,6 +28,7 @@
 #include "device.h"
 #include "deviceplugin.h"
 #include "devicepairinginfo.h"
+#include "devicediscoveryinfo.h"
 #include "types/interface.h"
 #include "types/vendor.h"
 #include "types/browseritem.h"
@@ -56,7 +57,7 @@ public:
     virtual Devices findConfiguredDevices(const QString &interface) const = 0;
     virtual Devices findChildDevices(const DeviceId &id) const = 0;
 
-    virtual Device::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) = 0;
+    virtual DeviceDiscoveryInfo discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) = 0;
 
     virtual Device::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId()) = 0;
     virtual Device::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const DeviceId &deviceId = DeviceId::createDeviceId()) = 0;
@@ -91,7 +92,7 @@ signals:
     void deviceAdded(Device *device);
     void deviceChanged(Device *device);
     void deviceSettingChanged(const DeviceId deviceId, const ParamTypeId &settingParamTypeId, const QVariant &value);
-    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
+    void devicesDiscovered(const DeviceDiscoveryInfo &deviceDiscoveryInfo);
     void deviceSetupFinished(Device *device, Device::DeviceError status);
     void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
     void pairingFinished(const DevicePairingInfo &devicePairingInfo);

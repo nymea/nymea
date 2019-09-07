@@ -208,7 +208,7 @@ void CloudNotifications::pushNotificationEndpointsUpdated(const QList<AWSConnect
             devicesToAdd.append(descriptor);
         }
     }
-    emit autoDevicesAppeared(cloudNotificationsDeviceClassId, devicesToAdd);
+    emit autoDevicesAppeared(devicesToAdd);
 
 }
 
@@ -229,7 +229,7 @@ void CloudNotifications::pushNotificationEndpointAdded(const AWSConnector::PushN
     Param endpointIdParam(cloudNotificationsDeviceClassEndpointParamId, endpoint.endpointId);
     params.append(endpointIdParam);
     descriptor.setParams(params);
-    emit autoDevicesAppeared(cloudNotificationsDeviceClassId, {descriptor});
+    emit autoDevicesAppeared({descriptor});
 }
 
 void CloudNotifications::pushNotificationSent(int id, int status)

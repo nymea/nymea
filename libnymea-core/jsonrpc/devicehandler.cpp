@@ -386,14 +386,17 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
 
     ParamList discoveryParams = JsonTypes::unpackParams(params.value("discoveryParams").toList());
 
-    Device::DeviceError status = NymeaCore::instance()->deviceManager()->discoverDevices(deviceClassId, discoveryParams);
-    if (status == Device::DeviceErrorAsync ) {
+    DeviceDiscoveryInfo ret = NymeaCore::instance()->deviceManager()->discoverDevices(deviceClassId, discoveryParams);
+    if (ret.status() == Device::DeviceErrorAsync ) {
         JsonReply *reply = createAsyncReply("GetDiscoveredDevices");
-        connect(reply, &JsonReply::finished, this, [this, deviceClassId](){ m_discoverRequests.remove(deviceClassId); });
-        m_discoverRequests.insert(deviceClassId, reply);
+        connect(reply, &JsonReply::finished, this, [this, ret](){ m_discoverRequests.remove(ret.id()); });
+        m_discoverRequests.insert(ret.id(), reply);
         return reply;
     }
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
+    if (ret.status() == Device::DeviceErrorNoError) {
+        returns.insert("deviceDescriptors", JsonTypes::packDeviceDescriptors(ret.deviceDescriptors()));
+    }
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(ret.status()));
     return createReply(returns);
 }
 
@@ -795,19 +798,21 @@ void DeviceHandler::deviceSettingChangedNotification(const DeviceId deviceId, co
     emit DeviceSettingChanged(params);
 }
 
-void DeviceHandler::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)
+void DeviceHandler::devicesDiscovered(const DeviceDiscoveryInfo &deviceDiscoveryInfo)
 {
-    if (!m_discoverRequests.contains(deviceClassId)) {
+    if (!m_discoverRequests.contains(deviceDiscoveryInfo.id())) {
         return; // We didn't start this discovery... Ignore it.
     }
 
     JsonReply *reply = nullptr;
-    reply = m_discoverRequests.take(deviceClassId);
+    reply = m_discoverRequests.take(deviceDiscoveryInfo.id());
     if (!reply)
         return;
 
     QVariantMap returns;
-    returns.insert("deviceDescriptors", JsonTypes::packDeviceDescriptors(deviceDescriptors));
+    if (deviceDiscoveryInfo.status() == Device::DeviceErrorNoError) {
+        returns.insert("deviceDescriptors", JsonTypes::packDeviceDescriptors(deviceDiscoveryInfo.deviceDescriptors()));
+    }
     returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorNoError));
 
     reply->setData(returns);

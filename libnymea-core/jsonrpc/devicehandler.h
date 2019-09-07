@@ -81,7 +81,7 @@ private slots:
 
     void deviceSettingChangedNotification(const DeviceId deviceId, const ParamTypeId &paramTypeId, const QVariant &value);
 
-    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+    void devicesDiscovered(const DeviceDiscoveryInfo &deviceDiscoveryInfo);
 
     void deviceSetupFinished(Device *device, Device::DeviceError status);
 
@@ -95,7 +95,7 @@ private slots:
 
 private:
     // A cache for async replies
-    mutable QHash<DeviceClassId, JsonReply*> m_discoverRequests;
+    mutable QHash<DiscoveryTransactionId, JsonReply*> m_discoverRequests;
     mutable QHash<DeviceId, JsonReply*> m_asynDeviceAdditions;
     mutable QHash<DeviceId, JsonReply*> m_asynDeviceEditAdditions;
     mutable QHash<QUuid, JsonReply*> m_asyncPairingRequests;

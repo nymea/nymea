@@ -41,7 +41,7 @@ public:
     explicit DevicePluginMock();
     ~DevicePluginMock();
 
-    Device::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    DeviceDiscoveryInfo discoverDevices(DeviceDiscoveryInfo deviceDiscoveryInfo, const ParamList &params) override;
 
     Device::DeviceSetupStatus setupDevice(Device *device) override;
     void postSetupDevice(Device *device) override;
@@ -65,9 +65,9 @@ private slots:
     void triggerEvent(const EventTypeId &id);
     void onDisappear();
     void onReconfigureAutoDevice();
-    void emitDevicesDiscovered();
-    void emitPushButtonDevicesDiscovered();
-    void emitDisplayPinDevicesDiscovered();
+    void emitDevicesDiscovered(DeviceDiscoveryInfo info);
+    void emitPushButtonDevicesDiscovered(DeviceDiscoveryInfo deviceDiscoveryInfo);
+    void emitDisplayPinDevicesDiscovered(DeviceDiscoveryInfo deviceDiscoveryInfo);
     void emitDeviceSetupFinished();
     void emitActionExecuted();
 

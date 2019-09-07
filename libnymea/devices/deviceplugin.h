@@ -31,6 +31,7 @@
 #include "devicedescriptor.h"
 #include "pluginmetadata.h"
 #include "devicepairinginfo.h"
+#include "devicediscoveryinfo.h"
 
 #include "types/deviceclass.h"
 #include "types/event.h"
@@ -71,7 +72,7 @@ public:
     DeviceClasses supportedDevices() const;
 
     virtual void startMonitoringAutoDevices();
-    virtual Device::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params);
+    virtual DeviceDiscoveryInfo discoverDevices(DeviceDiscoveryInfo deviceDiscoveryInfo, const ParamList &params);
 
     virtual Device::DeviceSetupStatus setupDevice(Device *device);
     virtual void postSetupDevice(Device *device);
@@ -98,13 +99,13 @@ public:
 
 signals:
     void emitEvent(const Event &event);
-    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
+    void devicesDiscovered(const DeviceDiscoveryInfo &deviceDiscoveryInfo);
     void deviceSetupFinished(Device *device, Device::DeviceSetupStatus status);
     void pairingStarted(const DevicePairingInfo &devicePairingInfo);
     void pairingFinished(DevicePairingInfo &devicePairingInfo);
     void actionExecutionFinished(const ActionId &id, Device::DeviceError status);
     void configValueChanged(const ParamTypeId &paramTypeId, const QVariant &value);
-    void autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
+    void autoDevicesAppeared(const QList<DeviceDescriptor> &deviceDescriptors);
     void autoDeviceDisappeared(const DeviceId &deviceId);
     void browseRequestFinished(const Device::BrowseResult &result);
     void browserItemRequestFinished(const Device::BrowserItemResult &result);

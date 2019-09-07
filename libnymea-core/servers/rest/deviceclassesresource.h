@@ -45,7 +45,7 @@ public:
     HttpReply *proccessRequest(const HttpRequest &request, const QStringList &urlTokens) override;
 
 private:
-    mutable QHash<DeviceClassId, QPointer<HttpReply>> m_discoverRequests;
+    mutable QHash<DiscoveryTransactionId, QPointer<HttpReply>> m_discoverRequests;
 
     DeviceClass m_deviceClass;
 
@@ -68,7 +68,7 @@ private:
     HttpReply *getDiscoverdDevices(const ParamList &discoveryParams);
 
 private slots:
-    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+    void devicesDiscovered(const DeviceDiscoveryInfo &deviceDiscoveryInfo);
 
 };
 

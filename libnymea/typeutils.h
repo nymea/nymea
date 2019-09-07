@@ -60,6 +60,7 @@ DECLARE_TYPE_ID(Rule)
 DECLARE_TYPE_ID(Browser)
 
 DECLARE_TYPE_ID(PairingTransaction)
+DECLARE_TYPE_ID(DiscoveryTransaction)
 
 class LIBNYMEA_EXPORT Types
 {

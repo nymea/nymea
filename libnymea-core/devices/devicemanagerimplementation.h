@@ -80,7 +80,7 @@ public:
     Devices findChildDevices(const DeviceId &id) const override;
     DeviceClass findDeviceClass(const DeviceClassId &deviceClassId) const override;
 
-    Device::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    DeviceDiscoveryInfo discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
     Device::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId()) override;
     Device::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const DeviceId &deviceId = DeviceId::createDeviceId()) override;
@@ -118,10 +118,10 @@ private slots:
     void loadConfiguredDevices();
     void storeConfiguredDevices();
     void startMonitoringAutoDevices();
-    void slotDevicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
+    void slotDevicesDiscovered(DeviceDiscoveryInfo deviceDiscoveryInfo);
     void slotDeviceSetupFinished(Device *device, Device::DeviceSetupStatus status);
     void slotPairingFinished(DevicePairingInfo &pairingInfo);
-    void onAutoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
+    void onAutoDevicesAppeared(const DeviceDescriptors &deviceDescriptors);
     void onAutoDeviceDisappeared(const DeviceId &deviceId);
     void onLoaded();
     void cleanupDeviceStateCache();

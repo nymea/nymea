@@ -164,16 +164,17 @@ void DevicePlugin::startMonitoringAutoDevices()
 }
 
 /*! Reimplement this if you support a DeviceClass with createMethod \l{DeviceManager}{CreateMethodDiscovery}.
-    This will be called to discover Devices for the given \a deviceClassId with the given \a params. This will always
-    be an async operation. Return \l{DeviceManager}{DeviceErrorAsync} or \l{DeviceManager}{DeviceErrorNoError}
-    if the discovery has been started successfully. Return an appropriate error otherwise.
-    Once devices are discovered, emit devicesDiscovered().
+    This will be called to discover Devices for the given \a deviceDiscoveryInfo and with the given \a params.
+    Fill in the \a deviceDiscoveryInfo with the deviceDescriptors of all the found devices. Set the status
+    to \l{Device}{DeviceErrorAsync} in case of an async operation, \l{Device}{DeviceErrorNoError} in case of
+    no error or any other value in case of a failure. Async discoveries should emit devicesDiscovered with the same
+    info, but have the deviceDescriptors filled in and correcting the status value.
 */
-Device::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceDiscoveryInfo DevicePlugin::discoverDevices(DeviceDiscoveryInfo deviceDiscoveryInfo, const ParamList &params)
 {
-    Q_UNUSED(deviceClassId)
     Q_UNUSED(params)
-    return Device::DeviceErrorCreationMethodNotSupported;
+    deviceDiscoveryInfo.setStatus(Device::DeviceErrorCreationMethodNotSupported);
+    return deviceDiscoveryInfo;
 }
 
 /*! This will be called when a new device is created. The plugin has the chance to do some setup.

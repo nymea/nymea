@@ -286,31 +286,36 @@ DeviceClasses DeviceManagerImplementation::supportedDevices(const VendorId &vend
 }
 /*! Returns a certain \l{DeviceError} and starts the discovering process of the \l{Device} with the given \a deviceClassId
  *  and the given \a params.*/
-Device::DeviceError DeviceManagerImplementation::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceDiscoveryInfo DeviceManagerImplementation::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
 {
     qCDebug(dcDeviceManager) << "discover devices" << params;
     // Create a copy of the parameter list because we might modify it (fillig in default values etc)
     ParamList effectiveParams = params;
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
+    DeviceDiscoveryInfo info(deviceClassId);
     if (!deviceClass.isValid()) {
-        return Device::DeviceErrorDeviceClassNotFound;
+        info.setStatus(Device::DeviceErrorDeviceClassNotFound);
+        return info;
     }
     if (!deviceClass.createMethods().testFlag(DeviceClass::CreateMethodDiscovery)) {
-        return  Device::DeviceErrorCreationMethodNotSupported;
+        info.setStatus(Device::DeviceErrorCreationMethodNotSupported);
+        return info;
     }
     Device::DeviceError result = DeviceUtils::verifyParams(deviceClass.discoveryParamTypes(), effectiveParams);
     if (result != Device::DeviceErrorNoError) {
-        return result;
+        info.setStatus(result);
+        return info;
     }
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
     if (!plugin) {
-        return Device::DeviceErrorPluginNotFound;
+        info.setStatus(Device::DeviceErrorPluginNotFound);
+        return info;
     }
-    m_discoveringPlugins.append(plugin);
-    Device::DeviceError ret = plugin->discoverDevices(deviceClassId, effectiveParams);
-    if (ret != Device::DeviceErrorAsync) {
-        m_discoveringPlugins.removeOne(plugin);
+    DeviceDiscoveryInfo ret = plugin->discoverDevices(info, effectiveParams);
+    if (ret.status() == Device::DeviceErrorAsync) {
+        m_discoveringPlugins.append(plugin);
     }
+
     return ret;
 }
 
@@ -1220,7 +1225,7 @@ void DeviceManagerImplementation::startMonitoringAutoDevices()
     }
 }
 
-void DeviceManagerImplementation::slotDevicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)
+void DeviceManagerImplementation::slotDevicesDiscovered(DeviceDiscoveryInfo deviceDiscoveryInfo)
 {
     DevicePlugin *plugin = static_cast<DevicePlugin*>(sender());
     if (!m_discoveringPlugins.contains(plugin)) {
@@ -1229,10 +1234,10 @@ void DeviceManagerImplementation::slotDevicesDiscovered(const DeviceClassId &dev
     }
     m_discoveringPlugins.removeOne(plugin);
 
-    foreach (const DeviceDescriptor &descriptor, deviceDescriptors) {
+    foreach (const DeviceDescriptor &descriptor, deviceDiscoveryInfo.deviceDescriptors()) {
         m_discoveredDevices.insert(descriptor.id(), descriptor);
     }
-    emit devicesDiscovered(deviceClassId, deviceDescriptors);
+    emit devicesDiscovered(deviceDiscoveryInfo);
 }
 
 void DeviceManagerImplementation::slotDeviceSetupFinished(Device *device, Device::DeviceSetupStatus status)
@@ -1382,20 +1387,20 @@ void DeviceManagerImplementation::slotPairingFinished(DevicePairingInfo &pairing
     postSetupDevice(device);
 }
 
-void DeviceManagerImplementation::onAutoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors)
+void DeviceManagerImplementation::onAutoDevicesAppeared(const DeviceDescriptors &deviceDescriptors)
 {
-    DeviceClass deviceClass = findDeviceClass(deviceClassId);
-    if (!deviceClass.isValid()) {
-        qCWarning(dcDeviceManager()) << "Ignoring auto device appeared for an unknown DeviceClass" << deviceClassId;
-        return;
-    }
-
-    DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
-    if (!plugin) {
-        return;
-    }
-
     foreach (const DeviceDescriptor &deviceDescriptor, deviceDescriptors) {
+        DeviceClass deviceClass = findDeviceClass(deviceDescriptor.deviceClassId());
+        if (!deviceClass.isValid()) {
+            qCWarning(dcDeviceManager()) << "Ignoring auto device appeared for an unknown DeviceClass" << deviceDescriptor.deviceClassId();
+            return;
+        }
+
+        DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
+        if (!plugin) {
+            return;
+        }
+
         if (!deviceDescriptor.parentDeviceId().isNull() && !m_configuredDevices.contains(deviceDescriptor.parentDeviceId())) {
             qCWarning(dcDeviceManager()) << "Invalid parent device id. Not adding device to the system.";
             continue;

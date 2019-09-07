@@ -265,35 +265,35 @@ HttpReply *DeviceClassesResource::getDiscoverdDevices(const ParamList &discovery
     qCDebug(dcRest) << "Discover devices for DeviceClass" << m_deviceClass.id();
     qCDebug(dcRest) << discoveryParams;
 
-    Device::DeviceError status = NymeaCore::instance()->deviceManager()->discoverDevices(m_deviceClass.id(), discoveryParams);
+    DeviceDiscoveryInfo discoveryInfo = NymeaCore::instance()->deviceManager()->discoverDevices(m_deviceClass.id(), discoveryParams);
 
-    if (status == Device::DeviceErrorAsync) {
+    if (discoveryInfo.status() == Device::DeviceErrorAsync) {
         HttpReply *reply = createAsyncReply();
-        m_discoverRequests.insert(m_deviceClass.id(), reply);
+        m_discoverRequests.insert(discoveryInfo.id(), reply);
         return reply;
     }
 
-    if (status != Device::DeviceErrorNoError)
-        return createDeviceErrorReply(HttpReply::InternalServerError, status);
+    if (discoveryInfo.status() != Device::DeviceErrorNoError)
+        return createDeviceErrorReply(HttpReply::InternalServerError, discoveryInfo.status());
 
     return createSuccessReply();
 }
 
-void DeviceClassesResource::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)
+void DeviceClassesResource::devicesDiscovered(const DeviceDiscoveryInfo &deviceDiscoveryInfo)
 {
-    if (!m_discoverRequests.contains(deviceClassId))
+    if (!m_discoverRequests.contains(deviceDiscoveryInfo.id()))
         return; // Not the discovery we are waiting for.
 
-    qCDebug(dcRest) << "Discovery finished. Found" << deviceDescriptors.count() << "devices.";
+    qCDebug(dcRest) << "Discovery finished. Found" << deviceDiscoveryInfo.deviceDescriptors().count() << "devices.";
 
-    if (m_discoverRequests.value(deviceClassId).isNull()) {
+    if (m_discoverRequests.value(deviceDiscoveryInfo.id()).isNull()) {
         qCWarning(dcRest) << "Async reply for discovery does not exist any more (timeout).";
         return;
     }
 
-    HttpReply *reply = m_discoverRequests.take(deviceClassId);
+    HttpReply *reply = m_discoverRequests.take(deviceDiscoveryInfo.id());
     reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packDeviceDescriptors(deviceDescriptors)).toJson());
+    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packDeviceDescriptors(deviceDiscoveryInfo.deviceDescriptors())).toJson());
     reply->finished();
 }
 

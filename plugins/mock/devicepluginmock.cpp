@@ -63,46 +63,63 @@ DevicePluginMock::~DevicePluginMock()
 {
 }
 
-Device::DeviceError DevicePluginMock::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+DeviceDiscoveryInfo DevicePluginMock::discoverDevices(DeviceDiscoveryInfo deviceDiscoveryInfo, const ParamList &params)
 {
-    if (deviceClassId == mockDeviceClassId) {
+    if (deviceDiscoveryInfo.deviceClassId() == mockDeviceClassId) {
         qCDebug(dcMockDevice) << "starting mock discovery:" << params;
         m_discoveredDeviceCount = params.paramValue(mockDiscoveryResultCountParamTypeId).toInt();
-        QTimer::singleShot(1000, this, SLOT(emitDevicesDiscovered()));
-        return Device::DeviceErrorAsync;
-    } else if (deviceClassId == mockPushButtonDeviceClassId) {
+        QTimer::singleShot(1000, this, [this, deviceDiscoveryInfo](){
+            emitDevicesDiscovered(deviceDiscoveryInfo);
+        });
+        deviceDiscoveryInfo.setStatus(Device::DeviceErrorAsync);
+        return deviceDiscoveryInfo;
+    } else if (deviceDiscoveryInfo.deviceClassId() == mockPushButtonDeviceClassId) {
         qCDebug(dcMockDevice) << "starting mock push button discovery:" << params;
         m_discoveredDeviceCount = params.paramValue(mockPushButtonDiscoveryResultCountParamTypeId).toInt();
-        QTimer::singleShot(1000, this, SLOT(emitPushButtonDevicesDiscovered()));
-        return Device::DeviceErrorAsync;
-    } else if (deviceClassId == mockDisplayPinDeviceClassId) {
+        QTimer::singleShot(1000, this, [this, deviceDiscoveryInfo](){
+            emitPushButtonDevicesDiscovered(deviceDiscoveryInfo);
+        });
+        deviceDiscoveryInfo.setStatus(Device::DeviceErrorAsync);
+        return deviceDiscoveryInfo;
+    } else if (deviceDiscoveryInfo.deviceClassId() == mockDisplayPinDeviceClassId) {
         qCDebug(dcMockDevice) << "starting mock display pin discovery:" << params;
         m_discoveredDeviceCount = params.paramValue(mockDisplayPinDiscoveryResultCountParamTypeId).toInt();
-        QTimer::singleShot(1000, this, SLOT(emitDisplayPinDevicesDiscovered()));
-        return Device::DeviceErrorAsync;
-    } else if (deviceClassId == mockParentDeviceClassId) {
-        qCDebug(dcMockDevice()) << "Starting discovery for mock device parent";
-        QTimer::singleShot(1000, this, [this](){
-            DeviceDescriptor descriptor(mockParentDeviceClassId, "Mock Parent (Discovered)");
-            emit devicesDiscovered(mockParentDeviceClassId, {descriptor});
-
+        QTimer::singleShot(1000, this, [this, deviceDiscoveryInfo](){
+            emitDisplayPinDevicesDiscovered(deviceDiscoveryInfo);
         });
-        return Device::DeviceErrorAsync;
-    } else if (deviceClassId == mockChildDeviceClassId) {
-        QTimer::singleShot(1000, this, [this](){
+        deviceDiscoveryInfo.setStatus(Device::DeviceErrorAsync);
+        return deviceDiscoveryInfo;
+    } else if (deviceDiscoveryInfo.deviceClassId() == mockParentDeviceClassId) {
+        qCDebug(dcMockDevice()) << "Starting discovery for mock device parent";
+        QTimer::singleShot(1000, this, [this, deviceDiscoveryInfo](){
+            DeviceDescriptor descriptor(mockParentDeviceClassId, "Mock Parent (Discovered)");
+            DeviceDiscoveryInfo ret(deviceDiscoveryInfo);
+            ret.setDeviceDescriptors(DeviceDescriptors() << descriptor);
+            ret.setStatus(Device::DeviceErrorNoError);
+            emit devicesDiscovered(ret);
+        });
+        deviceDiscoveryInfo.setStatus(Device::DeviceErrorAsync);
+        return deviceDiscoveryInfo;
+    } else if (deviceDiscoveryInfo.deviceClassId() == mockChildDeviceClassId) {
+        QTimer::singleShot(1000, this, [this, deviceDiscoveryInfo](){
             QList<DeviceDescriptor> descriptors;
             if (!myDevices().filterByDeviceClassId(mockParentDeviceClassId).isEmpty()) {
                 Device *parent = myDevices().filterByDeviceClassId(mockParentDeviceClassId).first();
                 DeviceDescriptor descriptor(mockChildDeviceClassId, "Mock Child (Discovered)", QString(), parent->id());
                 descriptors.append(descriptor);
             }
-            emit devicesDiscovered(mockChildDeviceClassId, descriptors);
+            DeviceDiscoveryInfo ret(deviceDiscoveryInfo);
+            ret.setDeviceDescriptors(descriptors);
+            ret.setStatus(Device::DeviceErrorNoError);
+            emit devicesDiscovered(ret);
         });
-        return Device::DeviceErrorAsync;
+        deviceDiscoveryInfo.setStatus(Device::DeviceErrorAsync);
+        return deviceDiscoveryInfo;
     }
 
-    qCWarning(dcMockDevice()) << "Cannot discover for deviceClassId" << deviceClassId;
-    return Device::DeviceErrorDeviceClassNotFound;
+    qCWarning(dcMockDevice()) << "Cannot discover for deviceClassId" << deviceDiscoveryInfo.deviceClassId();
+    deviceDiscoveryInfo.setStatus(Device::DeviceErrorDeviceClassNotFound);
+    return deviceDiscoveryInfo;
 }
 
 Device::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
@@ -207,7 +224,7 @@ void DevicePluginMock::startMonitoringAutoDevices()
     QList<DeviceDescriptor> deviceDescriptorList;
     deviceDescriptorList.append(mockDescriptor);
 
-    emit autoDevicesAppeared(mockDeviceAutoDeviceClassId, deviceDescriptorList);
+    emit autoDevicesAppeared(deviceDescriptorList);
 }
 
 DevicePairingInfo DevicePluginMock::pairDevice(DevicePairingInfo &devicePairingInfo)
@@ -720,10 +737,10 @@ void DevicePluginMock::onReconfigureAutoDevice()
     deviceDescriptor.setDeviceId(device->id());
     deviceDescriptor.setParams(params);
 
-    emit autoDevicesAppeared(mockDeviceAutoDeviceClassId, { deviceDescriptor });
+    emit autoDevicesAppeared({ deviceDescriptor });
 }
 
-void DevicePluginMock::emitDevicesDiscovered()
+void DevicePluginMock::emitDevicesDiscovered(DeviceDiscoveryInfo info)
 {
     QList<DeviceDescriptor> deviceDescriptors;
 
@@ -757,10 +774,12 @@ void DevicePluginMock::emitDevicesDiscovered()
         deviceDescriptors.append(d2);
     }
 
-    emit devicesDiscovered(mockDeviceClassId, deviceDescriptors);
+    info.setStatus(Device::DeviceErrorNoError);
+    info.setDeviceDescriptors(deviceDescriptors);
+    emit devicesDiscovered(info);
 }
 
-void DevicePluginMock::emitPushButtonDevicesDiscovered()
+void DevicePluginMock::emitPushButtonDevicesDiscovered(DeviceDiscoveryInfo deviceDiscoveryInfo)
 {
     QList<DeviceDescriptor> deviceDescriptors;
 
@@ -773,14 +792,16 @@ void DevicePluginMock::emitPushButtonDevicesDiscovered()
         DeviceDescriptor d2(mockPushButtonDeviceClassId, "Mock Device (Push Button)", "2");
         deviceDescriptors.append(d2);
     }
-    emit devicesDiscovered(mockPushButtonDeviceClassId, deviceDescriptors);
+    deviceDiscoveryInfo.setDeviceDescriptors(deviceDescriptors);
+    deviceDiscoveryInfo.setStatus(Device::DeviceErrorNoError);
+    emit devicesDiscovered(deviceDiscoveryInfo);
 
     m_pushbuttonPressed = false;
     QTimer::singleShot(3000, this, SLOT(onPushButtonPressed()));
     qCDebug(dcMockDevice) << "Start PushButton timer (will be pressed in 3 second)";
 }
 
-void DevicePluginMock::emitDisplayPinDevicesDiscovered()
+void DevicePluginMock::emitDisplayPinDevicesDiscovered(DeviceDiscoveryInfo deviceDiscoveryInfo)
 {
     QList<DeviceDescriptor> deviceDescriptors;
 
@@ -807,7 +828,9 @@ void DevicePluginMock::emitDisplayPinDevicesDiscovered()
         deviceDescriptors.append(d2);
     }
 
-    emit devicesDiscovered(mockDisplayPinDeviceClassId, deviceDescriptors);
+    deviceDiscoveryInfo.setDeviceDescriptors(deviceDescriptors);
+    deviceDiscoveryInfo.setStatus(Device::DeviceErrorNoError);
+    emit devicesDiscovered(deviceDiscoveryInfo);
 }
 
 void DevicePluginMock::onPushButtonPressed()
@@ -856,7 +879,7 @@ void DevicePluginMock::onChildDeviceDiscovered(const DeviceId &parentId)
 {
     qCDebug(dcMockDevice) << "Child device discovered for parent" << parentId.toString();
     DeviceDescriptor mockDescriptor(mockChildDeviceClassId, "Child Mock Device (Auto created)", "Child Mock Device (Auto created)", parentId);
-    emit autoDevicesAppeared(mockChildDeviceClassId, QList<DeviceDescriptor>() << mockDescriptor);
+    emit autoDevicesAppeared({mockDescriptor});
 }
 
 void DevicePluginMock::onPluginConfigChanged()

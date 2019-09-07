@@ -67,6 +67,13 @@ private:
     ParamList m_params;
 };
 
+class LIBNYMEA_EXPORT DeviceDescriptors: public QList<DeviceDescriptor>
+{
+public:
+    DeviceDescriptors();
+    DeviceDescriptors(const QList<DeviceDescriptor> &other);
+};
+
 Q_DECLARE_METATYPE(DeviceDescriptor)
 
 #endif // DEVICEDESCRIPTION_H

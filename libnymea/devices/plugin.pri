@@ -83,3 +83,9 @@ TARGET = $$qtLibraryTarget(nymea_deviceplugin"$$TARGET")
 # Install plugin
 target.path = $$[QT_INSTALL_LIBS]/nymea/plugins/
 INSTALLS += target translations
+
+HEADERS += \
+    $$PWD/devicesetupinfo.h
+
+SOURCES += \
+    $$PWD/devicesetupinfo.cpp

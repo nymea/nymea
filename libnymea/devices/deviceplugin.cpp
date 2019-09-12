@@ -177,17 +177,31 @@ DeviceDiscoveryInfo DevicePlugin::discoverDevices(DeviceDiscoveryInfo deviceDisc
     return deviceDiscoveryInfo;
 }
 
-/*! This will be called when a new device is created. The plugin has the chance to do some setup.
-    Return \l{DeviceManager}{DeviceSetupStatusFailure} if something bad happened during the setup in which case the \a device
-    will be disabled. Return \l{DeviceManager}{DeviceSetupStatusSuccess} if everything went well. If you can't tell yet and
-    need more time to set up the \a device (note: you should never block in this method) you can
-    return \l{DeviceManager}{DeviceSetupStatusAsync}. In that case the \l{DeviceManager} will wait for you to emit
-    \l{DevicePlugin}{deviceSetupFinished} to report the status.
+/*! This will be called when a new device is created. The plugin must do all the code to initialize, set up or connect the device
+    for usage in the system. When done, the plugin implementation must return a DeviceSetupInfo. At the very least, the
+    \l{DeviceSetupInfo}{status} property must be set, indicating success or an appropriate \l{Device}{DeviceError} code in case of
+    failure of the setup.
+
+    Code in this metod must never be blocking to the main event loop. If long lasting operations are required, such as fetching
+    data from the network, set \l{DeviceSetupInfo}s status to \l{DeviceManager}{DeviceSetupStatusAsync} and use asynchronous
+    operations. In that case blocking calls must be used, those need to be made asnyc, for example using QtConcurrent or QThread.
+    Such async operations must emit the \l{DevicePlugin}{deviceSetupFinished}, reporting the \l{DeviceSetupInfo} containing the
+    result.
+
+    Optionally, a displayMessage might be included in the DeviceSetupInfo to be presented to the user. Typically, the message will
+    be set in the case of failure, holding a message with information that could be useful to the user to solve the problem.
+    IMPORTANT: It is up to the client implementation whether to make use of this message or not, so it should be made sure the
+    status enum is set properly even when including a message.
+    Because this message is shown to the user it needs to be translatable. Use the \a{locale} parameter if the message is fetched
+    from a remote api. For hardcoded strings inside the plugin code, it is enough to wrap strings inside Q_TRANSLATE_NOOP. The
+    system will take care of translating it to the client's language.
+
 */
-Device::DeviceSetupStatus DevicePlugin::setupDevice(Device *device)
+DeviceSetupInfo DevicePlugin::setupDevice(Device *device, const QLocale &locale)
 {
     Q_UNUSED(device)
-    return Device::DeviceSetupStatusSuccess;
+    Q_UNUSED(locale)
+    return DeviceSetupInfo();
 }
 
 /*! This will be called when a new \a device was added successfully and the device setup is finished.*/

@@ -32,6 +32,7 @@
 #include "pluginmetadata.h"
 #include "devicepairinginfo.h"
 #include "devicediscoveryinfo.h"
+#include "devicesetupinfo.h"
 
 #include "types/deviceclass.h"
 #include "types/event.h"
@@ -74,7 +75,7 @@ public:
     virtual void startMonitoringAutoDevices();
     virtual DeviceDiscoveryInfo discoverDevices(DeviceDiscoveryInfo deviceDiscoveryInfo, const ParamList &params);
 
-    virtual Device::DeviceSetupStatus setupDevice(Device *device);
+    virtual DeviceSetupInfo setupDevice(Device *device, const QLocale &locale);
     virtual void postSetupDevice(Device *device);
     virtual void deviceRemoved(Device *device);
 

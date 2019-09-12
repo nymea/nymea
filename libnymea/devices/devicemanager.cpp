@@ -21,6 +21,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "devicemanager.h"
+#include "devicediscoveryinfo.h"
 
 /*!
     \class DeviceManager
@@ -37,5 +38,7 @@
 
 DeviceManager::DeviceManager(QObject *parent) : QObject(parent)
 {
-
+    qRegisterMetaType<DeviceClassId>();
+    qRegisterMetaType<DeviceDescriptor>();
+    qRegisterMetaType<DeviceDiscoveryInfo>();
 }

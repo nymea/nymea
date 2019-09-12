@@ -126,9 +126,6 @@ DeviceManagerImplementation::DeviceManagerImplementation(HardwareManager *hardwa
     m_locale(locale),
     m_translator(new Translator(this))
 {
-    qRegisterMetaType<DeviceClassId>();
-    qRegisterMetaType<DeviceDescriptor>();
-
     foreach (const Interface &interface, DeviceUtils::allInterfaces()) {
         m_supportedInterfaces.insert(interface.name(), interface);
     }

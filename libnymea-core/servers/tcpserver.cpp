@@ -117,7 +117,7 @@ void TcpServer::sendData(const QUuid &clientId, const QByteArray &data)
     QTcpSocket *client = nullptr;
     client = m_clientList.value(clientId);
     if (client) {
-        qCDebug(dcTcpServer()) << "Sending to client" << clientId.toString() << data;
+        qCDebug(dcTcpServerTraffic()) << "Sending to client" << clientId.toString() << data;
         client->write(data + '\n');
     } else {
         qCWarning(dcTcpServer()) << "Client" << clientId << "unknown to this transport";

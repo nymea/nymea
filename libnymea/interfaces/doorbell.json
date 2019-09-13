@@ -1,0 +1,8 @@
+{
+    "description": "An interface for doorbells. Emits \"doorbellPressed\" when the doorbell is pressed.",
+    "events": [
+        {
+            "name": "doorbellPressed"
+        }
+    ]
+}

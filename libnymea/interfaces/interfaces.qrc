@@ -4,6 +4,7 @@
         <file>dimmablelight.json</file>
         <file>daylightsensor.json</file>
         <file>colortemperaturelight.json</file>
+        <file>doorbell.json</file>
         <file>colorlight.json</file>
         <file>garagegate.json</file>
         <file>gateway.json</file>

@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/interfaces">
+	<file>alert.json</file>
         <file>light.json</file>
         <file>dimmablelight.json</file>
         <file>daylightsensor.json</file>
@@ -72,5 +73,4 @@
         <file>closablesensor.json</file>
         <file>powerswitch.json</file>
     </qresource>
-    <qresource prefix="/"/>
 </RCC>

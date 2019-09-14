@@ -359,10 +359,24 @@ void Device::setParentId(const DeviceId &parentId)
     m_parentId = parentId;
 }
 
-/*! Returns true, if setup of this Device is already completed. */
+/*! Returns true, if setup of this Device is already completed.
+    This method is deprecated. \sa{setupStatus} \sa{setupStatusMessage}. */
 bool Device::setupComplete() const
 {
     return m_setupComplete;
+}
+
+/*! Returns the setup status of this device. Only devices which have this set to Device::DeviceErrorNoError should
+    be considered functional. Otherwise this status code gives an indication on what failed in the setup. */
+Device::DeviceError Device::setupStatus() const
+{
+    return m_setupStatus;
+}
+
+/*! Returns user displayable information about the setup status of this device if there is any. */
+QString Device::setupStatusMessage() const
+{
+    return m_setupStatusMessage;
 }
 
 /*! Returns true if this device has been auto-created (not created by the user) */
@@ -374,6 +388,12 @@ bool Device::autoCreated() const
 void Device::setSetupComplete(const bool &complete)
 {
     m_setupComplete = complete;
+}
+
+void Device::setSetupStatus(Device::DeviceError status, const QString &displayMessage)
+{
+    m_setupStatus = status;
+    m_setupStatusMessage = displayMessage;
 }
 
 Devices::Devices(const QList<Device*> &other)

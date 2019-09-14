@@ -23,7 +23,40 @@
 
 #include "devicesetupinfo.h"
 
-DeviceSetupInfo::DeviceSetupInfo(Device::DeviceError status, const QString &displayMessage)
+DeviceSetupInfo::DeviceSetupInfo()
 {
 
+}
+
+DeviceSetupInfo::DeviceSetupInfo(const DeviceId &deviceId, Device::DeviceError status, const QString &displayMessage):
+    m_deviceId(deviceId),
+    m_status(status),
+    m_displayMessage(displayMessage)
+{
+
+}
+
+DeviceId DeviceSetupInfo::deviceId() const
+{
+    return m_deviceId;
+}
+
+Device::DeviceError DeviceSetupInfo::status() const
+{
+    return m_status;
+}
+
+void DeviceSetupInfo::setStatus(Device::DeviceError status)
+{
+    m_status = status;
+}
+
+QString DeviceSetupInfo::displayMessage() const
+{
+    return m_displayMessage;
+}
+
+void DeviceSetupInfo::setDisplayMessage(const QString &displayMessage)
+{
+    m_displayMessage = displayMessage;
 }

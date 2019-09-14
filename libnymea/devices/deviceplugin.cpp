@@ -178,13 +178,12 @@ DeviceDiscoveryInfo DevicePlugin::discoverDevices(DeviceDiscoveryInfo deviceDisc
 }
 
 /*! This will be called when a new device is created. The plugin must do all the code to initialize, set up or connect the device
-    for usage in the system. When done, the plugin implementation must return a DeviceSetupInfo. At the very least, the
-    \l{DeviceSetupInfo}{status} property must be set, indicating success or an appropriate \l{Device}{DeviceError} code in case of
-    failure of the setup.
+    for usage in the system. When done, the plugin implementation must return a DeviceSetupInfo initialized with the device's id and
+    the status field indicating success or an appropriate \l{Device}{DeviceError} code in case of failure of the setup.
 
     Code in this metod must never be blocking to the main event loop. If long lasting operations are required, such as fetching
     data from the network, set \l{DeviceSetupInfo}s status to \l{DeviceManager}{DeviceSetupStatusAsync} and use asynchronous
-    operations. In that case blocking calls must be used, those need to be made asnyc, for example using QtConcurrent or QThread.
+    operations. In the case blocking calls must be used, those need to be made asnyc, for example using QtConcurrent or QThread.
     Such async operations must emit the \l{DevicePlugin}{deviceSetupFinished}, reporting the \l{DeviceSetupInfo} containing the
     result.
 
@@ -192,16 +191,46 @@ DeviceDiscoveryInfo DevicePlugin::discoverDevices(DeviceDiscoveryInfo deviceDisc
     be set in the case of failure, holding a message with information that could be useful to the user to solve the problem.
     IMPORTANT: It is up to the client implementation whether to make use of this message or not, so it should be made sure the
     status enum is set properly even when including a message.
-    Because this message is shown to the user it needs to be translatable. Use the \a{locale} parameter if the message is fetched
-    from a remote api. For hardcoded strings inside the plugin code, it is enough to wrap strings inside Q_TRANSLATE_NOOP. The
-    system will take care of translating it to the client's language.
+    Because this message is shown to the user it needs to be translatable. Strings used in \l{DeviceError}{setDisplayMessage}
+    must be wrapped in Q_TRANSLATE_NOOP(). The system will take care of translating it to the client's language.
+
+    Example setup flow of setting up a device using a file synchronously:
+
+    \code
+        DeviceSetupInfo MyPlugin::setupDevice(Device *device)
+        {
+            QString filename = device->paramValue(myThingDeviceFileNameParamType).toString();
+            QFile file(fileName);
+            if (!file.open(QFile::ReadWrite)) {
+                return DeviceSetupInfo(device->id(), Device::DeviceErrorHardwareFailure, Q_TRANSLATE_NOOP("Error opening file"));
+            }
+            return DeviceSetupInfo(device->id());
+        }
+    \ endcode
+
+    Example of an async device setup:
+
+    \code
+        DeviceSetupInfo MyPlugin::setupDevice(Device *device)
+        {
+            QString ip = device->paramValue(myThingDeviceIpParamType).toString();
+
+            // Start async network operation
+            QNetworkReply *reply = hardwareManager()->get(QNetworkRequest("http://" + ip + "/api);
+            connect(reply, &QNetworkReply::finished, device, [this, device, reply]() {
+                // Process reply
+                emit deviceSetupFinished(DeviceSetupInfo(device->id(), Device::DeviceErrorNoError);
+            });
+
+            // Return DeviceErrorAsync to indicate the async operation
+            return DeviceSetupInfo(device->id(), Device::DeviceErorrAsync);
+        }
+    \ endcode
 
 */
-DeviceSetupInfo DevicePlugin::setupDevice(Device *device, const QLocale &locale)
+DeviceSetupInfo DevicePlugin::setupDevice(Device *device)
 {
-    Q_UNUSED(device)
-    Q_UNUSED(locale)
-    return DeviceSetupInfo();
+    return DeviceSetupInfo(device->id(), Device::DeviceErrorSetupFailed);
 }
 
 /*! This will be called when a new \a device was added successfully and the device setup is finished.*/

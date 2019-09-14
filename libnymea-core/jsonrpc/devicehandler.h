@@ -83,7 +83,7 @@ private slots:
 
     void devicesDiscovered(const DeviceDiscoveryInfo &deviceDiscoveryInfo);
 
-    void deviceSetupFinished(Device *device, Device::DeviceError status);
+    void deviceSetupFinished(const DeviceSetupInfo &info);
 
     void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
 

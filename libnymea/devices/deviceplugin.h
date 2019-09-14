@@ -75,7 +75,7 @@ public:
     virtual void startMonitoringAutoDevices();
     virtual DeviceDiscoveryInfo discoverDevices(DeviceDiscoveryInfo deviceDiscoveryInfo, const ParamList &params);
 
-    virtual DeviceSetupInfo setupDevice(Device *device, const QLocale &locale);
+    virtual DeviceSetupInfo setupDevice(Device *device);
     virtual void postSetupDevice(Device *device);
     virtual void deviceRemoved(Device *device);
 
@@ -101,7 +101,7 @@ public:
 signals:
     void emitEvent(const Event &event);
     void devicesDiscovered(const DeviceDiscoveryInfo &deviceDiscoveryInfo);
-    void deviceSetupFinished(Device *device, Device::DeviceSetupStatus status);
+    void deviceSetupFinished(const DeviceSetupInfo &deviceSetupUnfo);
     void pairingStarted(const DevicePairingInfo &devicePairingInfo);
     void pairingFinished(DevicePairingInfo &devicePairingInfo);
     void actionExecutionFinished(const ActionId &id, Device::DeviceError status);

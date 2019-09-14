@@ -79,7 +79,7 @@ private:
 
 private slots:
     void actionExecuted(const ActionId &actionId, Device::DeviceError status);
-    void deviceSetupFinished(Device *device, Device::DeviceError status);
+    void deviceSetupFinished(const DeviceSetupInfo &info);
     void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
     void pairingFinished(const DevicePairingInfo &devicePairingInfo);
 };

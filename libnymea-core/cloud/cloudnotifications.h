@@ -36,7 +36,7 @@ public:
 
     PluginMetadata metaData() const;
 
-    Device::DeviceSetupStatus setupDevice(Device *device) override;
+    DeviceSetupInfo setupDevice(Device *device) override;
     void startMonitoringAutoDevices() override;
     Device::DeviceError executeAction(Device *device, const Action &action) override;
 

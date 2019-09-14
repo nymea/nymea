@@ -122,7 +122,10 @@ DeviceHandler::DeviceHandler(QObject *parent) :
                                           "Devices with CreateMethodJustAdd require all parameters to be supplied here. "
                                           "Devices with CreateMethodDiscovery require the use of a deviceDescriptorId. For discovered "
                                           "devices params are not required and will be taken from the DeviceDescriptor, however, they "
-                                          "may be overridden by supplying parameters here."
+                                          "may be overridden by supplying parameters here. Calling this method will return a devieError "
+                                          "indicating success or an error code. In case of success a deviceId will be returned informing "
+                                          "about the id of the newly created device. A displayMessage might be returned by the plugin "
+                                          "which can be shown to the user for additional information regarding this device."
                    );
     params.insert("deviceClassId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
@@ -132,6 +135,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.insert("o:deviceParams", deviceParams);
     setParams("AddConfiguredDevice", params);
     returns.insert("deviceError", JsonTypes::deviceErrorRef());
+    returns.insert("o:displayMessage", JsonTypes::basicTypeToString(JsonTypes::String));
     returns.insert("o:deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setReturns("AddConfiguredDevice", returns);
 
@@ -440,32 +444,38 @@ JsonReply* DeviceHandler::SetPluginConfiguration(const QVariantMap &params)
 
 JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
 {
-    DeviceClassId deviceClass(params.value("deviceClassId").toString());
+    DeviceClassId deviceClassId(params.value("deviceClassId").toString());
     QString deviceName = params.value("name").toString();
     ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     DeviceId newDeviceId = DeviceId::createDeviceId();
-    Device::DeviceError status;
+    DeviceSetupInfo info;
     if (deviceDescriptorId.isNull()) {
-        status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceName, deviceParams, newDeviceId);
+        info = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceParams, newDeviceId);
     } else {
-        status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceName, deviceDescriptorId, deviceParams, newDeviceId);
+        info = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceDescriptorId, deviceParams, newDeviceId);
     }
+    QLocale locale = params.value("locale").toLocale();
     QVariantMap returns;
-    switch (status) {
-    case Device::DeviceErrorAsync: {
+    if (info.status() == Device::DeviceErrorAsync) {
         JsonReply *asyncReply = createAsyncReply("AddConfiguredDevice");
+        asyncReply->setProperty("locale", locale);
         connect(asyncReply, &JsonReply::finished, [this, newDeviceId](){ m_asynDeviceAdditions.remove(newDeviceId); });
         m_asynDeviceAdditions.insert(newDeviceId, asyncReply);
         return asyncReply;
     }
-    case Device::DeviceErrorNoError:
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(info.status()));
+
+    if (info.status() == Device::DeviceErrorNoError) {
         returns.insert("deviceId", newDeviceId);
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
-        break;
-    default:
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
     }
+
+    if (!info.displayMessage().isEmpty()) {
+        DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(deviceClassId);
+        QString translatedMessage = NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), info.displayMessage(), locale);
+        returns.insert("displayMessage", translatedMessage);
+    }
+
     return createReply(returns);
 }
 
@@ -482,6 +492,13 @@ JsonReply *DeviceHandler::PairDevice(const QVariantMap &params)
     } else {
         ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
         pairingInfo = NymeaCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceName, deviceParams);
+    }
+
+    if (pairingInfo.status() == Device::DeviceErrorAsync) {
+        JsonReply *asyncReply = createAsyncReply("PairDevice");
+        asyncReply->setProperty("locale", params.value("locale").toLocale());
+        m_asyncPairingRequests.insert(pairingInfo.transactionId(), asyncReply);
+        return asyncReply;
     }
 
     QVariantMap returns;
@@ -513,7 +530,11 @@ JsonReply *DeviceHandler::ConfirmPairing(const QVariantMap &params)
     }
     QVariantMap returns;
     returns.insert("deviceError", JsonTypes::deviceErrorToString(devicePairingInfo.status()));
-    returns.insert("displayMessage", devicePairingInfo.message());
+    DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(devicePairingInfo.deviceClassId());
+    if (!devicePairingInfo.message().isEmpty()) {
+        QString translatedMessage = NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), devicePairingInfo.message(), params.value("locale").toLocale());
+        returns.insert("displayMessage", translatedMessage);
+    }
     reply = createReply(returns);
     return reply;
 }
@@ -545,23 +566,28 @@ JsonReply *DeviceHandler::ReconfigureDevice(const QVariantMap &params)
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
     ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
 
-    Device::DeviceError status;
+    DeviceSetupInfo info;
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     if (deviceDescriptorId.isNull()) {
-        status = NymeaCore::instance()->deviceManager()->reconfigureDevice(deviceId, deviceParams);
+        info = NymeaCore::instance()->deviceManager()->reconfigureDevice(deviceId, deviceParams);
     } else {
-        status = NymeaCore::instance()->deviceManager()->reconfigureDevice(deviceId, deviceDescriptorId);
+        info = NymeaCore::instance()->deviceManager()->reconfigureDevice(deviceId, deviceDescriptorId);
     }
 
-    if (status == Device::DeviceErrorAsync) {
+    if (info.status() == Device::DeviceErrorAsync) {
         JsonReply *asyncReply = createAsyncReply("ReconfigureDevice");
-        connect(asyncReply, &JsonReply::finished, [this, deviceId](){ m_asynDeviceEditAdditions.remove(deviceId); });
-        m_asynDeviceEditAdditions.insert(deviceId, asyncReply);
+        connect(asyncReply, &JsonReply::finished, [this, info](){ m_asynDeviceEditAdditions.remove(info.deviceId()); });
+        m_asynDeviceEditAdditions.insert(info.deviceId(), asyncReply);
         return asyncReply;
     }
 
     QVariantMap returns;
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(info.status()));
+    if (!info.displayMessage().isEmpty()) {
+        Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(deviceId);
+        QString translatedMessage = NymeaCore::instance()->deviceManager()->translate(device->pluginId(), info.displayMessage(), params.value("locale").toLocale());
+        returns.insert("displayMessage", translatedMessage);
+    }
     return createReply(returns);
 }
 
@@ -819,21 +845,28 @@ void DeviceHandler::devicesDiscovered(const DeviceDiscoveryInfo &deviceDiscovery
     reply->finished();
 }
 
-void DeviceHandler::deviceSetupFinished(Device *device, Device::DeviceError status)
+void DeviceHandler::deviceSetupFinished(const DeviceSetupInfo &info)
 {
-    qCDebug(dcJsonRpc) << "Got a device setup finished" << device->name() << device->id();
-    if (!m_asynDeviceAdditions.contains(device->id())) {
+    if (!m_asynDeviceAdditions.contains(info.deviceId())) {
         return; // Not the device we're waiting for...
     }
 
-    JsonReply *reply = m_asynDeviceAdditions.take(device->id());
+    JsonReply *reply = m_asynDeviceAdditions.take(info.deviceId());
 
     QVariantMap returns;
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
+    returns.insert("deviceError", JsonTypes::deviceErrorToString(info.status()));
 
-    if(status == Device::DeviceErrorNoError) {
-        returns.insert("deviceId", device->id());
+    if(info.status() == Device::DeviceErrorNoError) {
+        returns.insert("deviceId", info.deviceId());
     }
+
+    if (!info.displayMessage().isEmpty()) {
+        Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(info.deviceId());
+        QLocale locale = reply->property("locale").toLocale();
+        QString translatedMessage = NymeaCore::instance()->deviceManager()->translate(device->pluginId(), info.displayMessage(), locale);
+        returns.insert("displayMessage", info.displayMessage());
+    }
+
     reply->setData(returns);
     reply->finished();
 }
@@ -863,7 +896,13 @@ void DeviceHandler::pairingFinished(const DevicePairingInfo &devicePairingInfo)
     if (devicePairingInfo.status() != Device::DeviceErrorNoError) {
         QVariantMap returns;
         returns.insert("deviceError", JsonTypes::deviceErrorToString(devicePairingInfo.status()));
-        returns.insert("displayMessage", devicePairingInfo.message());
+
+        if (!devicePairingInfo.message().isEmpty()) {
+            QLocale locale = reply->property("locale").toLocale();
+            DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(devicePairingInfo.deviceClassId());
+            QString translatedMessage = NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), devicePairingInfo.message(), locale);
+            returns.insert("displayMessage", devicePairingInfo.message());
+        }
         reply->setData(returns);
         reply->finished();
         return;

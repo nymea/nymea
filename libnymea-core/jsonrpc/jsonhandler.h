@@ -60,6 +60,8 @@ public:
 
     bool timedOut() const;
 
+    QLocale locale() const;
+
 public slots:
     void startWait();
 
@@ -81,7 +83,6 @@ private:
     bool m_timedOut;
 
     QTimer m_timeout;
-
 };
 
 class JsonHandler : public QObject

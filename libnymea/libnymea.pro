@@ -14,6 +14,7 @@ HEADERS += \
         devices/deviceutils.h \
         devices/pluginmetadata.h \
         devices/devicediscoveryinfo.h \
+        devices/devicesetupinfo.h \
         libnymea.h \
         platform/package.h \
         platform/repository.h \
@@ -82,6 +83,7 @@ SOURCES += \
         devices/deviceutils.cpp \
         devices/pluginmetadata.cpp \
         devices/devicediscoveryinfo.cpp \
+        devices/devicesetupinfo.cpp \
         loggingcategories.cpp \
         nymeasettings.cpp \
         platform/package.cpp \
@@ -142,7 +144,6 @@ SOURCES += \
         platform/platformsystemcontroller.cpp \
         platform/platformupdatecontroller.cpp \
         platform/platformzeroconfcontroller.cpp \
-
 
 RESOURCES += \
         interfaces/interfaces.qrc

@@ -77,14 +77,6 @@ public:
     };
     Q_ENUM(DeviceError)
 
-    // DEPRECATED, just here for JSON
-    enum DeviceSetupStatus {
-        DeviceSetupStatusSuccess,
-        DeviceSetupStatusFailure,
-        DeviceSetupStatusAsync
-    };
-    Q_ENUM(DeviceSetupStatus)
-
     class BrowseResult {
     public:
         BrowseResult(): m_id(QUuid::createUuid()) {}
@@ -141,7 +133,11 @@ public:
     DeviceId parentId() const;
     void setParentId(const DeviceId &parentId);
 
+    // Deprecated, use setupStatus() instead
     bool setupComplete() const;
+    Device::DeviceError setupStatus() const;
+    QString setupStatusMessage() const;
+
     bool autoCreated() const;
 
 signals:
@@ -153,8 +149,10 @@ private:
     Device(DevicePlugin *plugin, const DeviceClass &deviceClass, const DeviceId &id, QObject *parent = nullptr);
     Device(DevicePlugin *plugin, const DeviceClass &deviceClass, QObject *parent = nullptr);
 
+    // Deprecated, use setSetupStatus() instead
     void setupCompleted();
     void setSetupComplete(const bool &complete);
+    void setSetupStatus(Device::DeviceError status, const QString &displayMessage = QString());
 
 private:
     DeviceClass m_deviceClass;
@@ -167,6 +165,8 @@ private:
     ParamList m_settings;
     QList<State> m_states;
     bool m_setupComplete = false;
+    Device::DeviceError m_setupStatus = Device::DeviceErrorNoError;
+    QString m_setupStatusMessage;
     bool m_autoCreated = false;
 };
 
@@ -185,6 +185,5 @@ public:
 };
 
 Q_DECLARE_METATYPE(Device::DeviceError)
-Q_DECLARE_METATYPE(Device::DeviceSetupStatus)
 
 #endif

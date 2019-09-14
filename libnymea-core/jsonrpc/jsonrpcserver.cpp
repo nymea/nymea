@@ -394,6 +394,7 @@ JsonReply *JsonRPCServer::SetupRemoteAccess(const QVariantMap &params)
     QString userId = params.value("userId").toString();
     NymeaCore::instance()->cloudManager()->pairDevice(idToken, userId);
     JsonReply *reply = createAsyncReply("SetupRemoteAccess");
+    reply->setProperty("locale", params.value("locale").toLocale());
     m_pairingRequests.insert(userId, reply);
     connect(reply, &JsonReply::finished, [this, userId](){
         m_pairingRequests.remove(userId);

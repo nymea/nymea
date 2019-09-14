@@ -30,13 +30,20 @@ class DeviceSetupInfo
 {
 public:
     DeviceSetupInfo();
-    DeviceSetupInfo(Device::DeviceError status, const QString &displayMessage = QString());
+    DeviceSetupInfo(const DeviceId &deviceId, Device::DeviceError status = Device::DeviceErrorNoError, const QString &displayMessage = QString());
+
+    DeviceId deviceId() const;
 
     Device::DeviceError status() const;
     void setStatus(Device::DeviceError status);
 
+    QString displayMessage() const;
+    void setDisplayMessage(const QString &displayMessage);
+
 private:
+    DeviceId m_deviceId;
     Device::DeviceError m_status = Device::DeviceErrorSetupFailed;
+    QString m_displayMessage;
 };
 
 #endif // DEVICESETUPINFO_H

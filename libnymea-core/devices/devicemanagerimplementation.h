@@ -82,11 +82,11 @@ public:
 
     DeviceDiscoveryInfo discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
-    Device::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId()) override;
-    Device::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const DeviceId &deviceId = DeviceId::createDeviceId()) override;
+    DeviceSetupInfo addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId()) override;
+    DeviceSetupInfo addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const DeviceId &deviceId = DeviceId::createDeviceId()) override;
 
-    Device::DeviceError reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscoveryOrAuto = false) override;
-    Device::DeviceError reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId) override;
+    DeviceSetupInfo reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscoveryOrAuto = false) override;
+    DeviceSetupInfo reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId) override;
 
     Device::DeviceError editDevice(const DeviceId &deviceId, const QString &name) override;
     Device::DeviceError setDeviceSettings(const DeviceId &deviceId, const ParamList &settings) override;
@@ -119,7 +119,7 @@ private slots:
     void storeConfiguredDevices();
     void startMonitoringAutoDevices();
     void slotDevicesDiscovered(DeviceDiscoveryInfo deviceDiscoveryInfo);
-    void slotDeviceSetupFinished(Device *device, Device::DeviceSetupStatus status);
+    void slotDeviceSetupFinished(const DeviceSetupInfo &deviceSetupInfo);
     void slotPairingFinished(DevicePairingInfo &pairingInfo);
     void onAutoDevicesAppeared(const DeviceDescriptors &deviceDescriptors);
     void onAutoDeviceDisappeared(const DeviceId &deviceId);
@@ -132,9 +132,9 @@ private slots:
     void slotDeviceSettingChanged(const ParamTypeId &paramTypeId, const QVariant &value);
 
 private:
-    Device::DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId(), const DeviceId &parentDeviceId = DeviceId());
+    DeviceSetupInfo addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId(), const DeviceId &parentDeviceId = DeviceId());
     DevicePairingInfo pairDeviceInternal(DevicePairingInfo &pairingInfo);
-    Device::DeviceSetupStatus setupDevice(Device *device);
+    DeviceSetupInfo setupDevice(Device *device);
     void postSetupDevice(Device *device);
     void storeDeviceStates(Device *device);
     void loadDeviceStates(Device *device);
@@ -155,7 +155,8 @@ private:
 
     QHash<QUuid, DevicePairingInfo> m_pairings;
 
-    QList<Device *> m_asyncDeviceReconfiguration;
+    QHash<DeviceId, Device *> m_asyncDeviceSetups;
+    QHash<DeviceId, Device *> m_asyncDeviceReconfigurations;
     QList<DevicePlugin *> m_discoveringPlugins;
 };
 

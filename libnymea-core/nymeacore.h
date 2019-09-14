@@ -112,7 +112,7 @@ signals:
     void browserItemActionExecuted(const ActionId &id, Device::DeviceError status);
 
     void devicesDiscovered(const DeviceDiscoveryInfo &deviceDiscoveryInfo);
-    void deviceSetupFinished(Device *device, Device::DeviceError status);
+    void deviceSetupFinished(const DeviceSetupInfo &deviceSetupInfo);
     void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
     void pairingFinished(const DevicePairingInfo &devicePairingInfo);
 

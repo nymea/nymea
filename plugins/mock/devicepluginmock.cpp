@@ -122,7 +122,7 @@ DeviceDiscoveryInfo DevicePluginMock::discoverDevices(DeviceDiscoveryInfo device
     return deviceDiscoveryInfo;
 }
 
-Device::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
+DeviceSetupInfo DevicePluginMock::setupDevice(Device *device)
 {
     if (device->deviceClassId() == mockDeviceClassId || device->deviceClassId() == mockDeviceAutoDeviceClassId) {
         bool async = false;
@@ -137,7 +137,7 @@ Device::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
 
         if (broken) {
             qCWarning(dcMockDevice) << "This device is intentionally broken.";
-            return Device::DeviceSetupStatusFailure;
+            return DeviceSetupInfo(device->id(), Device::DeviceErrorHardwareFailure, QT_TR_NOOP("This mock device is intentionally broken."));
         }
 
         HttpDaemon *daemon = new HttpDaemon(device, this);
@@ -145,7 +145,7 @@ Device::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
 
         if (!daemon->isListening()) {
             qCWarning(dcMockDevice) << "HTTP port opening failed:" << device->paramValue(mockDeviceHttpportParamTypeId).toInt();
-            return Device::DeviceSetupStatusFailure;
+            return DeviceSetupInfo(device->id(), Device::DeviceErrorHardwareNotAvailable, QT_TR_NOOP("Failed to bind HTTP port. Port in use?"));
         }
 
         connect(daemon, &HttpDaemon::triggerEvent, this, &DevicePluginMock::triggerEvent);
@@ -157,33 +157,33 @@ Device::DeviceSetupStatus DevicePluginMock::setupDevice(Device *device)
         if (async) {
             m_asyncSetupDevices.append(device);
             QTimer::singleShot(1000, this, SLOT(emitDeviceSetupFinished()));
-            return Device::DeviceSetupStatusAsync;
+            return DeviceSetupInfo(device->id(), Device::DeviceErrorAsync);
         }
-        return Device::DeviceSetupStatusSuccess;
+        return DeviceSetupInfo(device->id(), Device::DeviceErrorNoError, QT_TR_NOOP("All good."));
     } else if (device->deviceClassId() == mockPushButtonDeviceClassId) {
         qCDebug(dcMockDevice) << "Setup PushButton mock device" << device->params();
-        return Device::DeviceSetupStatusSuccess;
+        return DeviceSetupInfo(device->id(), Device::DeviceErrorNoError, QT_TR_NOOP("All good."));
     } else if (device->deviceClassId() == mockDisplayPinDeviceClassId) {
         qCDebug(dcMockDevice) << "Setup DisplayPin mock device" << device->params();
-        return Device::DeviceSetupStatusSuccess;
+        return DeviceSetupInfo(device->id(), Device::DeviceErrorNoError, QT_TR_NOOP("All good."));
     } else if (device->deviceClassId() == mockParentDeviceClassId) {
         qCDebug(dcMockDevice) << "Setup Parent mock device" << device->params();
-        return Device::DeviceSetupStatusSuccess;
+        return DeviceSetupInfo(device->id(), Device::DeviceErrorNoError, QT_TR_NOOP("All good."));
     } else if (device->deviceClassId() == mockChildDeviceClassId) {
         qCDebug(dcMockDevice) << "Setup Child mock device" << device->params();
-        return Device::DeviceSetupStatusSuccess;
+        return DeviceSetupInfo(device->id(), Device::DeviceErrorNoError, QT_TR_NOOP("All good."));
     } else if (device->deviceClassId() == mockInputTypeDeviceClassId) {
         qCDebug(dcMockDevice) << "Setup InputType mock device" << device->params();
-        return Device::DeviceSetupStatusSuccess;
+        return DeviceSetupInfo(device->id(), Device::DeviceErrorNoError, QT_TR_NOOP("All good."));
     } else if (device->deviceClassId() == mockOAuthGoogleDeviceClassId) {
         qCDebug(dcMockDevice()) << "Google OAuth setup complete";
-        return Device::DeviceSetupStatusSuccess;
+        return DeviceSetupInfo(device->id(), Device::DeviceErrorNoError, QT_TR_NOOP("All good."));
     } else if (device->deviceClassId() == mockOAuthSonosDeviceClassId) {
         qCDebug(dcMockDevice()) << "Sonos OAuth setup complete";
-        return Device::DeviceSetupStatusSuccess;
+        return DeviceSetupInfo(device->id(), Device::DeviceErrorNoError, QT_TR_NOOP("All good."));
     }
 
-    return Device::DeviceSetupStatusFailure;
+    return DeviceSetupInfo(device->id(), Device::DeviceErrorDeviceClassNotFound);
 }
 
 void DevicePluginMock::postSetupDevice(Device *device)
@@ -844,9 +844,9 @@ void DevicePluginMock::emitDeviceSetupFinished()
     qCDebug(dcMockDevice) << "Emitting setup finised";
     Device *device = m_asyncSetupDevices.takeFirst();
     if (device->paramValue(mockDeviceBrokenParamTypeId).toBool()) {
-        emit deviceSetupFinished(device, Device::DeviceSetupStatusFailure);
+        emit deviceSetupFinished(DeviceSetupInfo(device->id(), Device::DeviceErrorHardwareFailure, QT_TR_NOOP("Hardware is broken!")));
     } else {
-        emit deviceSetupFinished(device, Device::DeviceSetupStatusSuccess);
+        emit deviceSetupFinished(DeviceSetupInfo(device->id(), Device::DeviceErrorNoError, QT_TR_NOOP("All good.")));
     }
 }
 

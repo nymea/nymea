@@ -136,7 +136,7 @@ PluginMetadata CloudNotifications::metaData() const
     return PluginMetadata(QJsonObject::fromVariantMap(pluginMetaData), true);
 }
 
-Device::DeviceSetupStatus CloudNotifications::setupDevice(Device *device)
+DeviceSetupInfo CloudNotifications::setupDevice(Device *device)
 {
     device->setStateValue(connectedStateTypeId, m_awsConnector->isConnected());
     qCDebug(dcCloud) << "Cloud Notifications Device setup:" << device->name() << "Connected:" << m_awsConnector->isConnected();
@@ -146,7 +146,7 @@ Device::DeviceSetupStatus CloudNotifications::setupDevice(Device *device)
     connect(m_awsConnector, &AWSConnector::disconnected, device, [device]() {
         device->setStateValue(connectedStateTypeId, false);
     });
-    return Device::DeviceSetupStatusSuccess;
+    return DeviceSetupInfo(device->id());
 }
 
 void CloudNotifications::startMonitoringAutoDevices()

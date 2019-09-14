@@ -59,11 +59,11 @@ public:
 
     virtual DeviceDiscoveryInfo discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) = 0;
 
-    virtual Device::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId()) = 0;
-    virtual Device::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const DeviceId &deviceId = DeviceId::createDeviceId()) = 0;
+    virtual DeviceSetupInfo addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId()) = 0;
+    virtual DeviceSetupInfo addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const DeviceId &deviceId = DeviceId::createDeviceId()) = 0;
 
-    virtual Device::DeviceError reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscoveryOrAuto = false) = 0;
-    virtual Device::DeviceError reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId) = 0;
+    virtual DeviceSetupInfo reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscoveryOrAuto = false) = 0;
+    virtual DeviceSetupInfo reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId) = 0;
 
     virtual Device::DeviceError editDevice(const DeviceId &deviceId, const QString &name) = 0;
     virtual Device::DeviceError setDeviceSettings(const DeviceId &deviceId, const ParamList &settings) = 0;
@@ -93,7 +93,7 @@ signals:
     void deviceChanged(Device *device);
     void deviceSettingChanged(const DeviceId deviceId, const ParamTypeId &settingParamTypeId, const QVariant &value);
     void devicesDiscovered(const DeviceDiscoveryInfo &deviceDiscoveryInfo);
-    void deviceSetupFinished(Device *device, Device::DeviceError status);
+    void deviceSetupFinished(const DeviceSetupInfo &deviceSetupInfo);
     void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
     void pairingFinished(const DevicePairingInfo &devicePairingInfo);
     void actionExecutionFinished(const ActionId &actionId, Device::DeviceError status);

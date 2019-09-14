@@ -43,7 +43,7 @@ public:
 
     DeviceDiscoveryInfo discoverDevices(DeviceDiscoveryInfo deviceDiscoveryInfo, const ParamList &params) override;
 
-    Device::DeviceSetupStatus setupDevice(Device *device) override;
+    DeviceSetupInfo setupDevice(Device *device) override;
     void postSetupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 

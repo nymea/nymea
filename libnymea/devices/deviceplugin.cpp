@@ -89,6 +89,14 @@
 #include "devicemanager.h"
 #include "deviceutils.h"
 #include "loggingcategories.h"
+#include "devicediscoveryinfo.h"
+#include "devicesetupinfo.h"
+#include "devicepairinginfo.h"
+#include "deviceactioninfo.h"
+#include "browseresult.h"
+#include "browseritemresult.h"
+#include "browseractioninfo.h"
+#include "browseritemactioninfo.h"
 
 #include "nymeasettings.h"
 
@@ -167,11 +175,9 @@ void DevicePlugin::startMonitoringAutoDevices()
     if the discovery has been started successfully. Return an appropriate error otherwise.
     Once devices are discovered, emit devicesDiscovered().
 */
-Device::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params)
+void DevicePlugin::discoverDevices(DeviceDiscoveryInfo *info)
 {
-    Q_UNUSED(deviceClassId)
-    Q_UNUSED(params)
-    return Device::DeviceErrorCreationMethodNotSupported;
+    info->finish(Device::DeviceErrorUnsupportedFeature);
 }
 
 /*! This will be called when a new device is created. The plugin has the chance to do some setup.
@@ -181,10 +187,9 @@ Device::DeviceError DevicePlugin::discoverDevices(const DeviceClassId &deviceCla
     return \l{DeviceManager}{DeviceSetupStatusAsync}. In that case the \l{DeviceManager} will wait for you to emit
     \l{DevicePlugin}{deviceSetupFinished} to report the status.
 */
-Device::DeviceSetupStatus DevicePlugin::setupDevice(Device *device)
+void DevicePlugin::setupDevice(DeviceSetupInfo *info)
 {
-    Q_UNUSED(device)
-    return Device::DeviceSetupStatusSuccess;
+    info->finish(Device::DeviceErrorUnsupportedFeature);
 }
 
 /*! This will be called when a new \a device was added successfully and the device setup is finished.*/
@@ -202,32 +207,55 @@ void DevicePlugin::deviceRemoved(Device *device)
     Q_UNUSED(device)
 }
 
-/*! This method will be called for \l{Device}{Devices} with the \l{DeviceClass::SetupMethodDisplayPin} right after the paring request
-    with the given \a pairingTransactionId for the given \a deviceDescriptor.
+/*! This method will be called to initiate a pairing. The plugin can do a initialisation for an upcoming pairing process.
+    Depending on the setupMethod of a device class, different actions may be required here.
+    SetupMethodDisplayPin should trigger the device to display a pin that will be entered in the client.
+    SetupMethodOAuth should generate the OAuthUrl which will be opened on the client to allow the user logging in and obtain
+    the OAuth code.
+    SetupMethodEnterPin, SetupMethodPushButton and SetupMethodUserAndPassword will typically not require to do anything here.
+    It is not required to reimplement this method for those setup methods, however, a Plugin reimplementing it should call
+    \l{DevicePairingInfo::finish}{finish()} on the \l{DevicePairingInfo} object and can provide an optional displayMessage which
+    might be presented to the user. Those strings need to be wrapped in QT_TR_NOOP() in order to be translatable for the client's
+    locale.
 */
-Device::DeviceError DevicePlugin::displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor)
+void DevicePlugin::startPairing(DevicePairingInfo *info)
 {
-    Q_UNUSED(pairingTransactionId)
-    Q_UNUSED(deviceDescriptor)
-
-    qCWarning(dcDeviceManager) << "Plugin does not implement the display pin setup method.";
-
-    return Device::DeviceErrorNoError;
+    DeviceClass deviceClass = m_metaData.deviceClasses().findById(info->deviceClassId());
+    if (!deviceClass.isValid()) {
+        info->finish(Device::DeviceErrorDeviceClassNotFound);
+        return;
+    }
+    switch (deviceClass.setupMethod()) {
+    case DeviceClass::SetupMethodJustAdd:
+        info->finish(Device::DeviceErrorSetupMethodNotSupported);
+        return;
+    case DeviceClass::SetupMethodEnterPin:
+    case DeviceClass::SetupMethodPushButton:
+    case DeviceClass::SetupMethodUserAndPassword:
+        info->finish(Device::DeviceErrorNoError);
+        return;
+    case DeviceClass::SetupMethodDisplayPin:
+    case DeviceClass::SetupMethodOAuth:
+        // Those need to be handled by the plugin or it'll fail anyways.
+        qCWarning(dcDevice()) << "StartPairing called but Plugin does not reimplement it.";
+        info->finish(Device::DeviceErrorUnsupportedFeature);
+    }
 }
 
-/*! Confirms the pairing of a \a deviceClassId with the given \a pairingTransactionId and \a params.
-    Returns \l{Device::DeviceError}{DeviceError} to inform about the result. The optional paramerter
-    \a secret contains for example the pin for \l{Device}{Devices} with the setup method \l{DeviceClass::SetupMethodDisplayPin}.
+/*! Confirms the pairing of the given \a info. \a username and \a secret are filled in depending on the setupmethod of the device class.
+    \a username will be used for SetupMethodUserAndPassword. \a secret will be used for SetupMethodUserAndPassword, SetupMethodDisplayPin
+    and SetupMethodOAuth.
+    Once the pairing is completed, the plugin implementation should call the info's finish() method reporting about the status of
+    the pairing operation. The optional displayMessage needs to be wrapped in QT_TR_NOOP in order to be translatable to the client's
+    locale.
 */
-Device::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret = QString())
+void DevicePlugin::confirmPairing(DevicePairingInfo *info, const QString &username, const QString &secret)
 {
-    Q_UNUSED(pairingTransactionId)
-    Q_UNUSED(deviceClassId)
-    Q_UNUSED(params)
+    Q_UNUSED(username)
     Q_UNUSED(secret)
 
     qCWarning(dcDeviceManager) << "Plugin does not implement pairing.";
-    return Device::DeviceSetupStatusFailure;
+    info->finish(Device::DeviceErrorUnsupportedFeature);
 }
 
 /*! This will be called to actually execute actions on the hardware. The \{Device} and
@@ -241,11 +269,9 @@ Device::DeviceSetupStatus DevicePlugin::confirmPairing(const PairingTransactionI
 
     \sa actionExecutionFinished()
 */
-Device::DeviceError DevicePlugin::executeAction(Device *device, const Action &action)
+void DevicePlugin::executeAction(DeviceActionInfo *info)
 {
-    Q_UNUSED(device)
-    Q_UNUSED(action)
-    return Device::DeviceErrorNoError;
+    info->finish(Device::DeviceErrorUnsupportedFeature);
 }
 
 /*! Implement this if your devices support browsing (set "browsable" to true in the metadata).
@@ -260,14 +286,10 @@ Device::DeviceError DevicePlugin::executeAction(Device *device, const Action &ac
  *  status to Device::DeviceErrorAsync if this operation requires async behavior and emit
  *  \l{browseRequestFinished} when done.
  */
-Device::BrowseResult DevicePlugin::browseDevice(Device *device, Device::BrowseResult result, const QString &itemId, const QLocale &locale)
+void DevicePlugin::browseDevice(BrowseResult *result)
 {
-    Q_UNUSED(device)
-    Q_UNUSED(itemId)
-    Q_UNUSED(locale)
-
-    result.status = Device::DeviceErrorUnsupportedFeature;
-    return result;
+    qCWarning(dcDevice()) << "Device claims" << result->device()->deviceClass().name() << "to be browsable but plugin does not reimplement browseDevice!";
+    result->finish(Device::DeviceErrorUnsupportedFeature);
 }
 
 /*! Implement this if your devices support browsing (set "browsable" to true in the metadata).
@@ -277,25 +299,20 @@ Device::BrowseResult DevicePlugin::browseDevice(Device *device, Device::BrowseRe
  *  status to Device::DeviceErrorAsync if this operation requires async behavior and emit
  *  \l{browserItemRequestFinished} when done.
  */
-Device::BrowserItemResult DevicePlugin::browserItem(Device *device, Device::BrowserItemResult result, const QString &itemId, const QLocale &locale)
+void DevicePlugin::browserItem(BrowserItemResult *result)
 {
-    Q_UNUSED(device)
-    Q_UNUSED(itemId)
-    Q_UNUSED(locale)
-
-    result.status = Device::DeviceErrorUnsupportedFeature;
-    return result;
+    qCWarning(dcDevice()) << "Device claims" << result->device()->deviceClass().name() << "to be browsable but plugin does not reimplement browserItem!";
+    result->finish(Device::DeviceErrorUnsupportedFeature);
 }
 
 /*! Implement this if your devices support browsing and execute the itemId defined in \a browserAction.
  *  Return Device::DeviceErrorAsync if this operation requires async behavior and emit
  *  \l{browserItemExecutionFinished} when done.
  */
-Device::DeviceError DevicePlugin::executeBrowserItem(Device *device, const BrowserAction &browserAction)
+void DevicePlugin::executeBrowserItem(BrowserActionInfo *info)
 {
-    Q_UNUSED(device)
-    Q_UNUSED(browserAction)
-    return Device::DeviceErrorUnsupportedFeature;
+    qCWarning(dcDevice()) << "Device claims" << info->device()->deviceClass().name() << "to be browsable but plugin does not reimplement browserItem!";
+    info->finish(Device::DeviceErrorUnsupportedFeature);
 }
 
 /*! Implement this if your devices support browsing and execute the item's action for the itemId defined
@@ -303,11 +320,10 @@ Device::DeviceError DevicePlugin::executeBrowserItem(Device *device, const Brows
  *  Return Device::DeviceErrorAsync if this operation requires async behavior and emit
  *  \l{browserItemActionExecutionFinished} when done.
  */
-Device::DeviceError DevicePlugin::executeBrowserItemAction(Device *device, const BrowserItemAction &browserItemAction)
+void DevicePlugin::executeBrowserItemAction(BrowserItemActionInfo *info)
 {
-    Q_UNUSED(device)
-    Q_UNUSED(browserItemAction)
-    return Device::DeviceErrorUnsupportedFeature;
+    qCWarning(dcDevice()) << "Device claims" << info->device()->deviceClass().name() << "to be browsable but plugin does not reimplement browserItemAction!";
+    info->finish(Device::DeviceErrorUnsupportedFeature);
 }
 
 /*! Returns the configuration description of this DevicePlugin as a list of \l{ParamType}{ParamTypes}. */

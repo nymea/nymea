@@ -63,14 +63,17 @@ private slots:
 void TestRestDevices::initTestCase()
 {
     NymeaTestBase::initTestCase();
+
+    QLoggingCategory::setFilterRules("*.debug=false\nTests.debug=true\nMockDevice.debug=true\nRest.debug=true");
+
     foreach (const WebServerConfiguration &config, NymeaCore::instance()->configuration()->webServerConfigurations()) {
         if (config.port == 3333 && (config.address == QHostAddress("127.0.0.1") || config.address == QHostAddress("0.0.0.0"))) {
-            qDebug() << "Already have a webserver listening on 127.0.0.1:3333";
+            qCWarning(dcTests()) << "Already have a webserver listening on 127.0.0.1:3333";
             return;
         }
     }
 
-    qDebug() << "Creating new webserver instance on 127.0.0.1:3333";
+    qCDebug(dcTests()) << "Creating new webserver instance on 127.0.0.1:3333";
     WebServerConfiguration config;
     config.address = QHostAddress("127.0.0.1");
     config.port = 3333;
@@ -78,6 +81,7 @@ void TestRestDevices::initTestCase()
     config.restServerEnabled = true;
     NymeaCore::instance()->configuration()->setWebServerConfiguration(config);
     qApp->processEvents();
+
 }
 
 void TestRestDevices::getConfiguredDevices()

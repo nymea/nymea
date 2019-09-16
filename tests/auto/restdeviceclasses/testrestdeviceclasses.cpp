@@ -54,6 +54,12 @@ void TestRestDeviceClasses::initTestCase()
 {
     NymeaTestBase::initTestCase();
 
+    QLoggingCategory::setFilterRules("*.debug=false\n"
+                                     "Tests.debug=true\n"
+                                     "Rest.debug=true\n"
+                                     "WebServer.debug=true\n"
+                                     "MockDevice.debug=true");
+
     foreach (const WebServerConfiguration &config, NymeaCore::instance()->configuration()->webServerConfigurations()) {
         if (config.port == 3333 && (config.address == QHostAddress("127.0.0.1") || config.address == QHostAddress("0.0.0.0"))) {
             qDebug() << "Already have a webserver listening on 127.0.0.1:3333";

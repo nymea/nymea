@@ -124,29 +124,36 @@ QVariant NymeaTestBase::injectAndWait(const QString &method, const QVariantMap &
 
     m_mockTcpServer->injectData(clientId.isNull() ? m_clientId : clientId, jsonDoc.toJson(QJsonDocument::Compact) + "\n");
 
-    if (spy.count() == 0) {
-        spy.wait();
+    int loop = 0;
+
+    while (loop < 5) {
+
+        if (spy.count() == 0 || loop > 0) {
+            spy.wait();
+        }
+
+        for (int i = 0; i < spy.count(); i++) {
+            // Make sure the response it a valid JSON string
+            QJsonParseError error;
+            jsonDoc = QJsonDocument::fromJson(spy.at(i).last().toByteArray(), &error);
+            if (error.error != QJsonParseError::NoError) {
+                qWarning() << "JSON parser error" << error.errorString() << spy.at(i).last().toByteArray();
+                return QVariant();
+            }
+            QVariantMap response = jsonDoc.toVariant().toMap();
+
+            // skip notifications
+            if (response.contains("notification"))
+                continue;
+
+            if (response.value("id").toInt() == m_commandId) {
+                m_commandId++;
+                return jsonDoc.toVariant();
+            }
+        }
+        loop++;
     }
 
-    for (int i = 0; i < spy.count(); i++) {
-        // Make sure the response it a valid JSON string
-        QJsonParseError error;
-        jsonDoc = QJsonDocument::fromJson(spy.at(i).last().toByteArray(), &error);
-        if (error.error != QJsonParseError::NoError) {
-            qWarning() << "JSON parser error" << error.errorString() << spy.at(i).last().toByteArray();
-            return QVariant();
-        }
-        QVariantMap response = jsonDoc.toVariant().toMap();
-
-        // skip notifications
-        if (response.contains("notification"))
-            continue;
-
-        if (response.value("id").toInt() == m_commandId) {
-            m_commandId++;
-            return jsonDoc.toVariant();
-        }
-    }
     m_commandId++;
     return QVariant();
 }
@@ -205,16 +212,18 @@ QVariant NymeaTestBase::getAndWait(const QNetworkRequest &request, const int &ex
     if (clientSpy.count() == 0) {
         clientSpy.wait();
     }
-    qDebug() << "*** finished" << reply->isFinished() << reply->error() << reply->errorString();
+    qCDebug(dcTests()) << "*** finished" << reply->isFinished() << reply->error() << reply->errorString();
 
     if (clientSpy.count() == 0) {
-        qWarning() << "Got no response for get request";
+        qCWarning(dcTests()) << "Got no response for get request";
         reply->deleteLater();
         return QVariant();
     }
 
     QByteArray data = reply->readAll();
     verifyReply(reply, data, expectedStatus);
+
+    qCDebug(dcTests()) << "Data is:" << data;
 
     reply->deleteLater();
 
@@ -295,7 +304,7 @@ QVariant NymeaTestBase::postAndWait(const QNetworkRequest &request, const QVaria
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
     if (error.error != QJsonParseError::NoError) {
-        qWarning() << "JSON parser error" << error.errorString();
+        qWarning() << "JSON parser error" << error.errorString() << qUtf8Printable(data);
         return QVariant();
     }
 

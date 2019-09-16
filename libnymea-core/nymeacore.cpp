@@ -55,22 +55,6 @@
     The \a status of the \l{Action} execution will be described as \l{Device::DeviceError}{DeviceError}.
 */
 
-/*! \fn void nymeaserver::NymeaCore::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
-    This signal is emitted when the discovery of a \a deviceClassId is finished. The \a deviceDescriptors parameter describes the
-    list of \l{DeviceDescriptor}{DeviceDescriptors} of all discovered \l{Device}{Devices}.
-    \sa DeviceManager::discoverDevices()
-*/
-
-/*! \fn void nymeaserver::NymeaCore::deviceSetupFinished(Device *device, Device::DeviceError status);
-    This signal is emitted when the setup of a \a device is finished. The \a status parameter describes the
-    \l{Device::DeviceError}{DeviceError} that occurred.
-*/
-
-/*! \fn void nymeaserver::NymeaCore::deviceReconfigurationFinished(Device *device, Device::DeviceError status);
-    This signal is emitted when the edit request of a \a device is finished. The \a status of the edit request will be
-    described as \l{Device::DeviceError}{DeviceError}.
-*/
-
 /*! \fn void nymeaserver::NymeaCore::pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId);
     The DeviceManager will emit a this Signal when the pairing of a \l{Device} with the \a deviceId and \a pairingTransactionId is finished.
     The \a status of the pairing will be described as \l{Device::DeviceError}{DeviceError}.
@@ -116,6 +100,9 @@
 
 #include "devices/devicemanagerimplementation.h"
 #include "devices/device.h"
+#include "devices/deviceactioninfo.h"
+#include "devices/browseractioninfo.h"
+#include "devices/browseritemactioninfo.h"
 #include "cloud/cloudnotifications.h"
 #include "cloud/cloudtransport.h"
 
@@ -200,13 +187,6 @@ void NymeaCore::init() {
     connect(m_deviceManager, &DeviceManagerImplementation::deviceSettingChanged, this, &NymeaCore::deviceSettingChanged);
     connect(m_deviceManager, &DeviceManagerImplementation::deviceRemoved, this, &NymeaCore::deviceRemoved);
     connect(m_deviceManager, &DeviceManagerImplementation::deviceDisappeared, this, &NymeaCore::onDeviceDisappeared);
-    connect(m_deviceManager, &DeviceManagerImplementation::actionExecutionFinished, this, &NymeaCore::actionExecutionFinished);
-    connect(m_deviceManager, &DeviceManagerImplementation::browserItemExecutionFinished, this, &NymeaCore::browserItemExecutionFinished);
-    connect(m_deviceManager, &DeviceManagerImplementation::browserItemActionExecutionFinished, this, &NymeaCore::browserItemActionExecutionFinished);
-    connect(m_deviceManager, &DeviceManagerImplementation::devicesDiscovered, this, &NymeaCore::devicesDiscovered);
-    connect(m_deviceManager, &DeviceManagerImplementation::deviceSetupFinished, this, &NymeaCore::deviceSetupFinished);
-    connect(m_deviceManager, &DeviceManagerImplementation::deviceReconfigurationFinished, this, &NymeaCore::deviceReconfigurationFinished);
-    connect(m_deviceManager, &DeviceManagerImplementation::pairingFinished, this, &NymeaCore::pairingFinished);
     connect(m_deviceManager, &DeviceManagerImplementation::loaded, this, &NymeaCore::deviceManagerLoaded);
 
     connect(m_ruleEngine, &RuleEngine::ruleAdded, this, &NymeaCore::ruleAdded);
@@ -436,43 +416,36 @@ Device::DeviceError NymeaCore::removeConfiguredDevice(const DeviceId &deviceId, 
 
 /*! Calls the metheod DeviceManager::executeAction(\a action).
  *  \sa DeviceManager::executeAction(), */
-Device::DeviceError NymeaCore::executeAction(const Action &action)
+DeviceActionInfo* NymeaCore::executeAction(const Action &action)
 {
-    Device::DeviceError ret = m_deviceManager->executeAction(action);
-    if (ret == Device::DeviceErrorNoError) {
-        m_logger->logAction(action);
-    } else if (ret == Device::DeviceErrorAsync) {
-        m_pendingActions.insert(action.id(), action);
-    } else {
-        m_logger->logAction(action, Logging::LoggingLevelAlert, ret);
-    }
-    return ret;
+    DeviceActionInfo *info = m_deviceManager->executeAction(action);
+    connect(info, &DeviceActionInfo::finished, this, [this, info](){
+        if (info->status() == Device::DeviceErrorNoError) {
+            m_logger->logAction(info->action());
+        } else {
+            m_logger->logAction(info->action(), Logging::LoggingLevelAlert, info->status());
+        }
+    });
+
+    return info;
 }
 
-Device::DeviceError NymeaCore::executeBrowserItem(const BrowserAction &browserAction)
+BrowserActionInfo* NymeaCore::executeBrowserItem(const BrowserAction &browserAction)
 {
-    Device::DeviceError ret = m_deviceManager->executeBrowserItem(browserAction);
-    if (ret == Device::DeviceErrorNoError) {
-        m_logger->logBrowserAction(browserAction);
-    } else if (ret == Device::DeviceErrorAsync) {
-        m_pendingBrowserActions.insert(browserAction.id(), browserAction);
-    } else {
-        m_logger->logBrowserAction(browserAction, Logging::LoggingLevelAlert, ret);
-    }
-    return ret;
+    BrowserActionInfo *info = m_deviceManager->executeBrowserItem(browserAction);
+    connect(info, &BrowserActionInfo::finished, info->device(), [this, info](){
+        m_logger->logBrowserAction(info->browserAction(), info->status() == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, info->status());
+    });
+    return info;
 }
 
-Device::DeviceError NymeaCore::executeBrowserItemAction(const BrowserItemAction &browserItemAction)
+BrowserItemActionInfo *NymeaCore::executeBrowserItemAction(const BrowserItemAction &browserItemAction)
 {
-    Device::DeviceError ret = m_deviceManager->executeBrowserItemAction(browserItemAction);
-    if (ret == Device::DeviceErrorNoError) {
-        m_logger->logBrowserItemAction(browserItemAction);
-    } else if (ret == Device::DeviceErrorAsync) {
-        m_pendingBrowserItemActions.insert(browserItemAction.id(), browserItemAction);
-    } else {
-        m_logger->logBrowserItemAction(browserItemAction, Logging::LoggingLevelAlert, ret);
-    }
-    return ret;
+    BrowserItemActionInfo *info = m_deviceManager->executeBrowserItemAction(browserItemAction);
+    connect(info, &BrowserItemActionInfo::finished, info->device(), [this, info](){
+        m_logger->logBrowserItemAction(info->browserItemAction(), info->status() == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, info->status());
+    });
+    return info;
 }
 
 /*! Execute the given \a ruleActions. */
@@ -575,44 +548,21 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
 
     foreach (const Action &action, actions) {
         qCDebug(dcRuleEngine) << "Executing action" << action.actionTypeId() << action.params();
-        Device::DeviceError status = executeAction(action);
-        switch(status) {
-        case Device::DeviceErrorNoError:
-            break;
-        case Device::DeviceErrorSetupFailed:
-            qCWarning(dcRuleEngine) << "Error executing action. Device setup failed.";
-            break;
-        case Device::DeviceErrorAsync:
-            qCDebug(dcRuleEngine) << "Executing asynchronous action.";
-            break;
-        case Device::DeviceErrorInvalidParameter:
-            qCWarning(dcRuleEngine) << "Error executing action. Invalid action parameter.";
-            break;
-        default:
-            qCWarning(dcRuleEngine) << "Error executing action:" << status;
-        }
-
-        //        if (status != Device::DeviceErrorAsync)
-        //            m_logger->logAction(action, status == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
+        DeviceActionInfo *info = executeAction(action);
+        connect(info, &DeviceActionInfo::finished, this, [info](){
+            if (info->status() != Device::DeviceErrorNoError) {
+                qCWarning(dcRuleEngine) << "Error executing action:" << info->status() << info->displayMessage();
+            }
+        });
     }
 
     foreach (const BrowserAction &browserAction, browserActions) {
-        Device::DeviceError status = executeBrowserItem(browserAction);
-        switch(status) {
-        case Device::DeviceErrorNoError:
-            break;
-        case Device::DeviceErrorSetupFailed:
-            qCWarning(dcRuleEngine) << "Error executing action. Device setup failed.";
-            break;
-        case Device::DeviceErrorAsync:
-            qCDebug(dcRuleEngine) << "Executing asynchronous action.";
-            break;
-        case Device::DeviceErrorInvalidParameter:
-            qCWarning(dcRuleEngine) << "Error executing action. Invalid action parameter.";
-            break;
-        default:
-            qCWarning(dcRuleEngine) << "Error executing action:" << status;
-        }
+        BrowserActionInfo *info = executeBrowserItem(browserAction);
+        connect(info, &BrowserActionInfo::finished, this, [info](){
+            if (info->status() != Device::DeviceErrorNoError) {
+                qCWarning(dcRuleEngine) << "Error executing browser action:" << info->status();
+            }
+        });
     }
 }
 
@@ -848,27 +798,6 @@ JsonRPCServer *NymeaCore::jsonRPCServer() const
 RestServer *NymeaCore::restServer() const
 {
     return m_serverManager->restServer();
-}
-
-void NymeaCore::actionExecutionFinished(const ActionId &id, Device::DeviceError status)
-{
-    emit actionExecuted(id, status);
-    Action action = m_pendingActions.take(id);
-    m_logger->logAction(action, status == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
-}
-
-void NymeaCore::browserItemExecutionFinished(const ActionId &id, Device::DeviceError status)
-{
-    emit browserItemExecuted(id, status);
-    BrowserAction action = m_pendingBrowserActions.take(id);
-    m_logger->logBrowserAction(action, status == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
-}
-
-void NymeaCore::browserItemActionExecutionFinished(const ActionId &id, Device::DeviceError status)
-{
-    emit browserItemActionExecuted(id, status);
-    BrowserItemAction action = m_pendingBrowserItemActions.take(id);
-    m_logger->logBrowserItemAction(action, status == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, status);
 }
 
 void NymeaCore::onDeviceDisappeared(const DeviceId &deviceId)

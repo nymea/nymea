@@ -218,6 +218,7 @@ void TestLogging::eventLogs()
     QNetworkReply *reply = nam.get(request);
 
     // Lets wait for the notification
+    QTest::qWait(200);
     clientSpy.wait(1000);
     reply->deleteLater();
 

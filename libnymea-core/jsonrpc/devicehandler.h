@@ -80,27 +80,6 @@ private slots:
     void deviceChangedNotification(Device *device);
 
     void deviceSettingChangedNotification(const DeviceId deviceId, const ParamTypeId &paramTypeId, const QVariant &value);
-
-    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
-
-    void deviceSetupFinished(Device *device, Device::DeviceError status);
-
-    void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
-
-    void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId);
-
-    void browseRequestFinished(const Device::BrowseResult &result);
-
-    void browserItemRequestFinished(const Device::BrowserItemResult &result);
-
-private:
-    // A cache for async replies
-    mutable QHash<DeviceClassId, JsonReply*> m_discoverRequests;
-    mutable QHash<DeviceId, JsonReply*> m_asynDeviceAdditions;
-    mutable QHash<DeviceId, JsonReply*> m_asynDeviceEditAdditions;
-    mutable QHash<QUuid, JsonReply*> m_asyncPairingRequests;
-    mutable QHash<QUuid, JsonReply*> m_asyncBrowseRequests;
-    mutable QHash<QUuid, JsonReply*> m_asyncBrowseDetailsRequests;
 };
 
 }

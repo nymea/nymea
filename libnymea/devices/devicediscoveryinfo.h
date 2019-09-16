@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,57 +20,55 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPAIRINGINFO_H
-#define DEVICEPAIRINGINFO_H
+#ifndef DEVICEDISCOVERYINFO_H
+#define DEVICEDISCOVERYINFO_H
 
 #include <QObject>
-#include <QUrl>
 
+#include "types/deviceclass.h"
+#include "types/param.h"
 #include "device.h"
+#include "devicedescriptor.h"
 
 class DeviceManager;
 
-class LIBNYMEA_EXPORT DevicePairingInfo: public QObject
+class LIBNYMEA_EXPORT DeviceDiscoveryInfo : public QObject
 {
     Q_OBJECT
 public:
-    DevicePairingInfo(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceId &deviceId, const QString &deviceName, const ParamList &params, const DeviceId &parentDeviceId, DeviceManager *parent);
-
-    PairingTransactionId transactionId() const;
+    explicit DeviceDiscoveryInfo(const DeviceClassId &deviceClassId, const ParamList &params, DeviceManager *deviceManager);
 
     DeviceClassId deviceClassId() const;
-    DeviceId deviceId() const;
-    QString deviceName() const;
     ParamList params() const;
-    DeviceId parentDeviceId() const;
 
-    QUrl oAuthUrl() const;
-    void setOAuthUrl(const QUrl &oAuthUrl);
+    bool isFinished() const;
 
     Device::DeviceError status() const;
+
+    void addDeviceDescriptor(const DeviceDescriptor &deviceDescriptor);
+    void addDeviceDescriptors(const DeviceDescriptors &deviceDescriptors);
+
+    DeviceDescriptors deviceDescriptors() const;
+
     QString displayMessage() const;
-    QString translatedDisplayMessage(const QLocale &locale) const;
+    QString translatedDisplayMessage(const QLocale &locale);
 
 public slots:
-    void finish(Device::DeviceError status, const QString &displayMessage = QString());
+    void finish(Device::DeviceError status,  const QString &displayMessage = QString());
 
 signals:
     void finished();
 
 private:
-    PairingTransactionId m_transactionId;
     DeviceClassId m_deviceClassId;
-    DeviceId m_deviceId;
-    QString m_deviceName;
     ParamList m_params;
-    DeviceId m_parentDeviceId;
-
-    QUrl m_oAuthUrl;
 
     bool m_finished = false;
-    Device::DeviceError m_status = Device::DeviceErrorNoError;
+    Device::DeviceError m_status;
     QString m_displayMessage;
+    DeviceDescriptors m_deviceDescriptors;
+
     DeviceManager *m_deviceManager = nullptr;
 };
 
-#endif // DEVICEPAIRINGINFO_H
+#endif // DEVICEDISCOVERYINFO_H

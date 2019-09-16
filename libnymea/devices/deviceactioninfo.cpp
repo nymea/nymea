@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,85 +20,56 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "devicepairinginfo.h"
+#include "deviceactioninfo.h"
+
 #include "devicemanager.h"
 
-DevicePairingInfo::DevicePairingInfo(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceId &deviceId, const QString &deviceName, const ParamList &params, const DeviceId &parentDeviceId, DeviceManager *parent):
+DeviceActionInfo::DeviceActionInfo(Device *device, const Action &action, DeviceManager *parent):
     QObject(parent),
-    m_transactionId(pairingTransactionId),
-    m_deviceClassId(deviceClassId),
-    m_deviceId(deviceId),
-    m_deviceName(deviceName),
-    m_params(params),
-    m_parentDeviceId(parentDeviceId)
+    m_device(device),
+    m_action(action),
+    m_deviceManager(parent)
 {
-    connect(this, &DevicePairingInfo::finished, this, &DevicePairingInfo::deleteLater, Qt::QueuedConnection);
+    connect(this, &DeviceActionInfo::finished, this, &DeviceActionInfo::deleteLater, Qt::QueuedConnection);
 }
 
-PairingTransactionId DevicePairingInfo::transactionId() const
+Device *DeviceActionInfo::device() const
 {
-    return m_transactionId;
+    return m_device;
 }
 
-DeviceClassId DevicePairingInfo::deviceClassId() const
+Action DeviceActionInfo::action() const
 {
-    return m_deviceClassId;
+    return m_action;
 }
 
-DeviceId DevicePairingInfo::deviceId() const
+bool DeviceActionInfo::isFinished() const
 {
-    return m_deviceId;
+    return m_finished;
 }
 
-QString DevicePairingInfo::deviceName() const
-{
-    return m_deviceName;
-}
-
-ParamList DevicePairingInfo::params() const
-{
-    return m_params;
-}
-
-DeviceId DevicePairingInfo::parentDeviceId() const
-{
-    return m_parentDeviceId;
-}
-
-QUrl DevicePairingInfo::oAuthUrl() const
-{
-    return m_oAuthUrl;
-}
-
-void DevicePairingInfo::setOAuthUrl(const QUrl &oAuthUrl)
-{
-    m_oAuthUrl = oAuthUrl;
-}
-
-Device::DeviceError DevicePairingInfo::status() const
+Device::DeviceError DeviceActionInfo::status() const
 {
     return m_status;
 }
 
-QString DevicePairingInfo::displayMessage() const
+QString DeviceActionInfo::displayMessage() const
 {
     return m_displayMessage;
 }
 
-QString DevicePairingInfo::translatedDisplayMessage(const QLocale &locale) const
+QString DeviceActionInfo::translatedDisplayMessage(const QLocale &locale)
 {
     if (!m_deviceManager) {
         return m_displayMessage;
     }
-    DeviceClass deviceClass = m_deviceManager->findDeviceClass(m_deviceClassId);
-    return m_deviceManager->translate(deviceClass.pluginId(), m_displayMessage.toUtf8(), locale);
+    return m_deviceManager->translate(m_device->pluginId(), m_displayMessage.toUtf8(), locale);
 }
 
-void DevicePairingInfo::finish(Device::DeviceError status, const QString &displayMessage)
+void DeviceActionInfo::finish(Device::DeviceError status, const QString &displayMessage)
 {
     m_finished = true;
     m_status = status;
     m_displayMessage = displayMessage;
-    staticMetaObject.invokeMethod(this, "finished", Qt::QueuedConnection);
+    staticQtMetaObject.invokeMethod(this, "finished", Qt::QueuedConnection);
 }
-

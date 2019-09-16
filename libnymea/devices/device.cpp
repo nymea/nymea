@@ -371,7 +371,7 @@ bool Device::autoCreated() const
     return m_autoCreated;
 }
 
-void Device::setSetupComplete(const bool &complete)
+void Device::setSetupComplete(bool complete)
 {
     m_setupComplete = complete;
 }

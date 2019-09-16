@@ -64,6 +64,7 @@ protected:
 
     inline void verifyError(const QVariant &response, const QString &fieldName, const QString &error)
     {
+        qCDebug(dcTests()) << "******* response 2" << response;
         QJsonDocument jsonDoc = QJsonDocument::fromVariant(response);
         QVERIFY2(response.toMap().value("status").toString() == QString("success"),
                  QString("\nExpected status: \"success\"\nGot: %2\nFull message: %3")
@@ -79,6 +80,7 @@ protected:
     }
 
     inline void verifyRuleError(const QVariant &response, RuleEngine::RuleError error = RuleEngine::RuleErrorNoError) {
+        qCDebug(dcTests()) << "******* response" << response;
         verifyError(response, "ruleError", JsonTypes::ruleErrorToString(error));
     }
 

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,57 +20,52 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPAIRINGINFO_H
-#define DEVICEPAIRINGINFO_H
+#include "devicesetupinfo.h"
 
-#include <QObject>
-#include <QUrl>
+#include "deviceplugin.h"
+#include "devicemanager.h"
 
-#include "device.h"
-
-class DeviceManager;
-
-class LIBNYMEA_EXPORT DevicePairingInfo: public QObject
+DeviceSetupInfo::DeviceSetupInfo(Device *device, DeviceManager *deviceManager):
+    QObject(deviceManager),
+    m_device(device),
+    m_deviecManager(deviceManager)
 {
-    Q_OBJECT
-public:
-    DevicePairingInfo(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceId &deviceId, const QString &deviceName, const ParamList &params, const DeviceId &parentDeviceId, DeviceManager *parent);
+    connect(this, &DeviceSetupInfo::finished, this, &DeviceSetupInfo::deleteLater, Qt::QueuedConnection);
+}
 
-    PairingTransactionId transactionId() const;
+Device *DeviceSetupInfo::device() const
+{
+    return m_device;
+}
 
-    DeviceClassId deviceClassId() const;
-    DeviceId deviceId() const;
-    QString deviceName() const;
-    ParamList params() const;
-    DeviceId parentDeviceId() const;
+bool DeviceSetupInfo::isFinished() const
+{
+    return m_finished;
+}
 
-    QUrl oAuthUrl() const;
-    void setOAuthUrl(const QUrl &oAuthUrl);
+Device::DeviceError DeviceSetupInfo::status() const
+{
+    return m_status;
+}
 
-    Device::DeviceError status() const;
-    QString displayMessage() const;
-    QString translatedDisplayMessage(const QLocale &locale) const;
+QString DeviceSetupInfo::displayMessage() const
+{
+    return m_displayMessage;
+}
 
-public slots:
-    void finish(Device::DeviceError status, const QString &displayMessage = QString());
+QString DeviceSetupInfo::translatedDisplayMessage(const QLocale &locale)
+{
+    if (!m_deviecManager || !m_device) {
+        return m_displayMessage;
+    }
 
-signals:
-    void finished();
+    return m_deviecManager->translate(m_device->pluginId(), m_displayMessage.toUtf8(), locale);
+}
 
-private:
-    PairingTransactionId m_transactionId;
-    DeviceClassId m_deviceClassId;
-    DeviceId m_deviceId;
-    QString m_deviceName;
-    ParamList m_params;
-    DeviceId m_parentDeviceId;
-
-    QUrl m_oAuthUrl;
-
-    bool m_finished = false;
-    Device::DeviceError m_status = Device::DeviceErrorNoError;
-    QString m_displayMessage;
-    DeviceManager *m_deviceManager = nullptr;
-};
-
-#endif // DEVICEPAIRINGINFO_H
+void DeviceSetupInfo::finish(Device::DeviceError status, const QString &displayMessage)
+{
+    m_finished = true;
+    m_status = status;
+    m_displayMessage = displayMessage;
+    staticMetaObject.invokeMethod(this, "finished", Qt::QueuedConnection);
+}

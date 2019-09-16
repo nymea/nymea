@@ -60,13 +60,14 @@ class DeviceManagerImplementation: public DeviceManager
 
 public:
     explicit DeviceManagerImplementation(HardwareManager *hardwareManager, const QLocale &locale, QObject *parent = nullptr);
-    ~DeviceManagerImplementation();
+    ~DeviceManagerImplementation() override;
 
     static QStringList pluginSearchDirs();
     static QList<QJsonObject> pluginsMetadata();
     void registerStaticPlugin(DevicePlugin* plugin, const PluginMetadata &metaData);
 
     DevicePlugins plugins() const override;
+    DevicePlugin *plugin(const PluginId &pluginId) const override;
     Device::DeviceError setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig) override;
 
     Vendors supportedVendors() const override;
@@ -80,29 +81,29 @@ public:
     Devices findChildDevices(const DeviceId &id) const override;
     DeviceClass findDeviceClass(const DeviceClassId &deviceClassId) const override;
 
-    Device::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    DeviceDiscoveryInfo* discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
-    Device::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId()) override;
-    Device::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const DeviceId &deviceId = DeviceId::createDeviceId()) override;
+    DeviceSetupInfo* addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId()) override;
+    DeviceSetupInfo* addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const DeviceId &deviceId = DeviceId::createDeviceId()) override;
 
-    Device::DeviceError reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscoveryOrAuto = false) override;
-    Device::DeviceError reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId) override;
+    DeviceSetupInfo* reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscoveryOrAuto = false) override;
+    DeviceSetupInfo* reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId) override;
 
     Device::DeviceError editDevice(const DeviceId &deviceId, const QString &name) override;
     Device::DeviceError setDeviceSettings(const DeviceId &deviceId, const ParamList &settings) override;
 
-    Device::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const ParamList &params) override;
-    Device::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId) override;
-    Device::DeviceError confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString()) override;
+    DevicePairingInfo* pairDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params) override;
+    DevicePairingInfo* pairDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId) override;
+    DevicePairingInfo* confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &username, const QString &secret) override;
 
     Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId) override;
 
-    Device::DeviceError executeAction(const Action &action) override;
+    DeviceActionInfo* executeAction(const Action &action) override;
 
-    Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) override;
-    Device::BrowserItemResult browserItemDetails(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) override;
-    Device::DeviceError executeBrowserItem(const BrowserAction &browserAction) override;
-    Device::DeviceError executeBrowserItemAction(const BrowserItemAction &browserItemAction) override;
+    BrowseResult* browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) override;
+    BrowserItemResult* browserItemDetails(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) override;
+    BrowserActionInfo *executeBrowserItem(const BrowserAction &browserAction) override;
+    BrowserItemActionInfo *executeBrowserItemAction(const BrowserItemAction &browserItemAction) override;
 
     QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) override;
 
@@ -118,10 +119,7 @@ private slots:
     void loadConfiguredDevices();
     void storeConfiguredDevices();
     void startMonitoringAutoDevices();
-    void slotDevicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
-    void slotDeviceSetupFinished(Device *device, Device::DeviceSetupStatus status);
-    void slotPairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceSetupStatus status);
-    void onAutoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors);
+    void onAutoDevicesAppeared(const DeviceDescriptors &deviceDescriptors);
     void onAutoDeviceDisappeared(const DeviceId &deviceId);
     void onLoaded();
     void cleanupDeviceStateCache();
@@ -132,8 +130,9 @@ private slots:
     void slotDeviceSettingChanged(const ParamTypeId &paramTypeId, const QVariant &value);
 
 private:
-    Device::DeviceError addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId(), const DeviceId &parentDeviceId = DeviceId());
-    Device::DeviceSetupStatus setupDevice(Device *device);
+    void pairDeviceInternal(DevicePairingInfo *info);
+    DeviceSetupInfo *addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId &deviceId = DeviceId::createDeviceId(), const DeviceId &parentDeviceId = DeviceId());
+    DeviceSetupInfo *setupDevice(Device *device);
     void postSetupDevice(Device *device);
     void storeDeviceStates(Device *device);
     void loadDeviceStates(Device *device);
@@ -148,15 +147,19 @@ private:
     QHash<VendorId, QList<DeviceClassId> > m_vendorDeviceMap;
     QHash<DeviceClassId, DeviceClass> m_supportedDevices;
     QHash<DeviceId, Device*> m_configuredDevices;
-    QHash<DeviceDescriptorId, DeviceDescriptor> m_discoveredDevices;
+    QHash<DeviceClassId, QHash<DeviceDescriptorId, DeviceDescriptor> > m_discoveredDevices;
 
     QHash<PluginId, DevicePlugin*> m_devicePlugins;
 
-    QHash<QUuid, DevicePairingInfo> m_pairingsJustAdd;
-    QHash<QUuid, DevicePairingInfo> m_pairingsDiscovery;
-
-    QList<Device *> m_asyncDeviceReconfiguration;
-    QList<DevicePlugin *> m_discoveringPlugins;
+    class PairingContext {
+    public:
+        DeviceId deviceId;
+        DeviceClassId deviceClassId;
+        DeviceId parentDeviceId;
+        ParamList params;
+        QString deviceName;
+    };
+    QHash<PairingTransactionId, PairingContext> m_pendingPairings;
 };
 
 #endif // DEVICEMANAGERIMPLEMENTATION_H

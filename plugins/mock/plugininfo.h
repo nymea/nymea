@@ -247,6 +247,9 @@ ActionTypeId mockInputTypeWritableTimestampIntActionTypeId = ActionTypeId("{88b6
 ParamTypeId mockInputTypeWritableTimestampIntActionWritableTimestampIntParamTypeId = ParamTypeId("{88b6746a-b009-4df6-8986-d7884ffd94b2}");
 ActionTypeId mockInputTypeWritableTimestampUIntActionTypeId = ActionTypeId("{45d0069a-63ac-4265-8170-8152778608ee}");
 ParamTypeId mockInputTypeWritableTimestampUIntActionWritableTimestampUIntParamTypeId = ParamTypeId("{45d0069a-63ac-4265-8170-8152778608ee}");
+DeviceClassId mockOAuthGoogleDeviceClassId = DeviceClassId("{805d1692-7bd0-449a-9d5c-43a332ff58f4}");
+DeviceClassId mockOAuthSonosDeviceClassId = DeviceClassId("{783c615b-7bd6-49a4-98b0-8d1deb3c7156}");
+DeviceClassId mockUserAndPassDeviceClassId = DeviceClassId("{6fe07a77-9c07-4736-81e2-d504314bbcb9}");
 
 const QString translations[] {
     //: The name of the Browser Item ActionType ({00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3}) of DeviceClass mock
@@ -387,6 +390,9 @@ const QString translations[] {
     //: The name of the DeviceClass ({296f1fd4-e893-46b2-8a42-50d1bceb8730})
     QT_TRANSLATE_NOOP("mockDevice", "Mock Device (Display Pin)"),
 
+    //: The name of the DeviceClass ({805d1692-7bd0-449a-9d5c-43a332ff58f4})
+    QT_TRANSLATE_NOOP("mockDevice", "Mock Device (Google OAuth)"),
+
     //: The name of the DeviceClass ({515ffdf1-55e5-498d-9abc-4e2fe768f3a9})
     QT_TRANSLATE_NOOP("mockDevice", "Mock Device (InputTypes)"),
 
@@ -395,6 +401,12 @@ const QString translations[] {
 
     //: The name of the DeviceClass ({9e03144c-e436-4eea-82d9-ccb33ef778db})
     QT_TRANSLATE_NOOP("mockDevice", "Mock Device (Push Button)"),
+
+    //: The name of the DeviceClass ({783c615b-7bd6-49a4-98b0-8d1deb3c7156})
+    QT_TRANSLATE_NOOP("mockDevice", "Mock Device (Sonos OAuth)"),
+
+    //: The name of the DeviceClass ({6fe07a77-9c07-4736-81e2-d504314bbcb9})
+    QT_TRANSLATE_NOOP("mockDevice", "Mock Device (User & Password)"),
 
     //: The name of the plugin mockDevice ({727a4a9a-c187-446f-aadf-f1b2220607d1})
     QT_TRANSLATE_NOOP("mockDevice", "Mock Devices"),
@@ -413,9 +425,6 @@ const QString translations[] {
 
     //: The name of the ParamType (DeviceClass: mockInputType, Type: device, ID: {e5c0d14b-c9f1-4aca-a56e-85bfa6977150})
     QT_TRANSLATE_NOOP("mockDevice", "Password text"),
-
-    //: The pairing info of deviceClass mockDisplayPin
-    QT_TRANSLATE_NOOP("mockDevice", "Please enter the secret which normaly will be displayed on the device. For the mockdevice the pin is 243681."),
 
     //: The name of the Browser Item ActionType ({da6faef8-2816-430e-93bb-57e8f9582d29}) of DeviceClass mock
     QT_TRANSLATE_NOOP("mockDevice", "Remove from favorites"),
@@ -560,9 +569,6 @@ const QString translations[] {
 
     //: The name of the ParamType (DeviceClass: mockInputType, Type: device, ID: {fa67229f-fcef-496f-b671-59a4b48f3ab5})
     QT_TRANSLATE_NOOP("mockDevice", "URL"),
-
-    //: The pairing info of deviceClass mockPushButton
-    QT_TRANSLATE_NOOP("mockDevice", "Wait 3 second before you continue, the push button will be pressed automatically."),
 
     //: The name of the ParamType (DeviceClass: mockInputType, ActionType: writableBool, ID: {a7c11774-f31f-4d64-99d1-e0ae5fb35a5c})
     QT_TRANSLATE_NOOP("mockDevice", "Writable Bool"),

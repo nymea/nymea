@@ -41,6 +41,7 @@ public:
     virtual ~DeviceManager() = default;
 
     virtual DevicePlugins plugins() const = 0;
+    virtual DevicePlugin* plugin(const PluginId &pluginId) const = 0;
     virtual Device::DeviceError setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig) = 0;
 
     virtual Vendors supportedVendors() const = 0;
@@ -55,29 +56,29 @@ public:
     virtual Devices findConfiguredDevices(const QString &interface) const = 0;
     virtual Devices findChildDevices(const DeviceId &id) const = 0;
 
-    virtual Device::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) = 0;
+    virtual DeviceDiscoveryInfo* discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) = 0;
 
-    virtual Device::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId()) = 0;
-    virtual Device::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const DeviceId &deviceId = DeviceId::createDeviceId()) = 0;
+    virtual DeviceSetupInfo* addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId()) = 0;
+    virtual DeviceSetupInfo* addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const DeviceId &deviceId = DeviceId::createDeviceId()) = 0;
 
-    virtual Device::DeviceError reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscoveryOrAuto = false) = 0;
-    virtual Device::DeviceError reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId) = 0;
+    virtual DeviceSetupInfo* reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscoveryOrAuto = false) = 0;
+    virtual DeviceSetupInfo* reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId) = 0;
 
     virtual Device::DeviceError editDevice(const DeviceId &deviceId, const QString &name) = 0;
     virtual Device::DeviceError setDeviceSettings(const DeviceId &deviceId, const ParamList &settings) = 0;
 
-    virtual Device::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const ParamList &params) = 0;
-    virtual Device::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId) = 0;
-    virtual Device::DeviceError confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString()) = 0;
+    virtual DevicePairingInfo* pairDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params) = 0;
+    virtual DevicePairingInfo* pairDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId) = 0;
+    virtual DevicePairingInfo* confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &username = QString(), const QString &secret = QString()) = 0;
 
     virtual Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId) = 0;
 
-    virtual Device::DeviceError executeAction(const Action &action) = 0;
+    virtual DeviceActionInfo* executeAction(const Action &action) = 0;
 
-    virtual Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) = 0;
-    virtual Device::BrowserItemResult browserItemDetails(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) = 0;
-    virtual Device::DeviceError executeBrowserItem(const BrowserAction &browserAction) = 0;
-    virtual Device::DeviceError executeBrowserItemAction(const BrowserItemAction &browserItemAction) = 0;
+    virtual BrowseResult* browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) = 0;
+    virtual BrowserItemResult* browserItemDetails(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) = 0;
+    virtual BrowserActionInfo* executeBrowserItem(const BrowserAction &browserAction) = 0;
+    virtual BrowserItemActionInfo* executeBrowserItemAction(const BrowserItemAction &browserItemAction) = 0;
 
     virtual QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) = 0;
 
@@ -90,16 +91,6 @@ signals:
     void deviceAdded(Device *device);
     void deviceChanged(Device *device);
     void deviceSettingChanged(const DeviceId deviceId, const ParamTypeId &settingParamTypeId, const QVariant &value);
-    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
-    void deviceSetupFinished(Device *device, Device::DeviceError status);
-    void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
-    void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId = DeviceId());
-    void actionExecutionFinished(const ActionId &actionId, Device::DeviceError status);
-    void browseRequestFinished(const Device::BrowseResult &result);
-    void browserItemRequestFinished(const Device::BrowserItemResult &result);
-    void browserItemExecutionFinished(const ActionId &actionId, Device::DeviceError status);
-    void browserItemActionExecutionFinished(const ActionId &actionId, Device::DeviceError status);
-
 };
 
 #endif // DEVICEMANAGER_H

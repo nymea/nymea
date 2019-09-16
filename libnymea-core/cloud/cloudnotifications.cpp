@@ -20,6 +20,8 @@
 
 #include "cloudnotifications.h"
 #include "loggingcategories.h"
+#include "devices/devicesetupinfo.h"
+#include "devices/deviceactioninfo.h"
 
 #include <QDebug>
 #include <QJsonObject>
@@ -136,31 +138,31 @@ PluginMetadata CloudNotifications::metaData() const
     return PluginMetadata(QJsonObject::fromVariantMap(pluginMetaData), true);
 }
 
-Device::DeviceSetupStatus CloudNotifications::setupDevice(Device *device)
+void CloudNotifications::setupDevice(DeviceSetupInfo *info)
 {
+    Device *device = info->device();
     device->setStateValue(connectedStateTypeId, m_awsConnector->isConnected());
     qCDebug(dcCloud) << "Cloud Notifications Device setup:" << device->name() << "Connected:" << m_awsConnector->isConnected();
-    connect(m_awsConnector, &AWSConnector::connected, device, [device]() {
+    connect(m_awsConnector, &AWSConnector::connected, info->device(), [device]() {
         device->setStateValue(connectedStateTypeId, true);
     });
     connect(m_awsConnector, &AWSConnector::disconnected, device, [device]() {
         device->setStateValue(connectedStateTypeId, false);
     });
-    return Device::DeviceSetupStatusSuccess;
+    info->finish(Device::DeviceErrorNoError);
 }
 
 void CloudNotifications::startMonitoringAutoDevices()
 {
 }
 
-Device::DeviceError CloudNotifications::executeAction(Device *device, const Action &action)
+void CloudNotifications::executeAction(DeviceActionInfo *info)
 {
-    qCDebug(dcCloud()) << "executeAction" << device << action.id() << action.params();
-    QString userId = device->paramValue(cloudNotificationsDeviceClassUserParamId).toString();
-    QString endpointId = device->paramValue(cloudNotificationsDeviceClassEndpointParamId).toString();
-    int id = m_awsConnector->sendPushNotification(userId, endpointId, action.param(notifyActionParamTitleId).value().toString(), action.param(notifyActionParamBodyId).value().toString());
-    m_pendingPushNotifications.insert(id, action.id());
-    return Device::DeviceErrorAsync;
+    qCDebug(dcCloud()) << "executeAction" << info->device() << info->action().id() << info->action().params();
+    QString userId = info->device()->paramValue(cloudNotificationsDeviceClassUserParamId).toString();
+    QString endpointId = info->device()->paramValue(cloudNotificationsDeviceClassEndpointParamId).toString();
+    int id = m_awsConnector->sendPushNotification(userId, endpointId, info->action().param(notifyActionParamTitleId).value().toString(), info->action().param(notifyActionParamBodyId).value().toString());
+    m_pendingPushNotifications.insert(id, info);
 }
 
 void CloudNotifications::pushNotificationEndpointsUpdated(const QList<AWSConnector::PushNotificationsEndpoint> &endpoints)
@@ -184,7 +186,7 @@ void CloudNotifications::pushNotificationEndpointsUpdated(const QList<AWSConnect
         emit autoDeviceDisappeared(d->id());
     }
 
-    QList<DeviceDescriptor> devicesToAdd;
+    DeviceDescriptors devicesToAdd;
     foreach (const AWSConnector::PushNotificationsEndpoint &ep, endpoints) {
         bool found = false;
         qCDebug(dcCloud) << "Checking endoint:" << ep.endpointId;
@@ -208,7 +210,7 @@ void CloudNotifications::pushNotificationEndpointsUpdated(const QList<AWSConnect
             devicesToAdd.append(descriptor);
         }
     }
-    emit autoDevicesAppeared(cloudNotificationsDeviceClassId, devicesToAdd);
+    emit autoDevicesAppeared(devicesToAdd);
 
 }
 
@@ -229,12 +231,16 @@ void CloudNotifications::pushNotificationEndpointAdded(const AWSConnector::PushN
     Param endpointIdParam(cloudNotificationsDeviceClassEndpointParamId, endpoint.endpointId);
     params.append(endpointIdParam);
     descriptor.setParams(params);
-    emit autoDevicesAppeared(cloudNotificationsDeviceClassId, {descriptor});
+    emit autoDevicesAppeared({descriptor});
 }
 
 void CloudNotifications::pushNotificationSent(int id, int status)
 {
     qCDebug(dcCloud()) << "Push notification sent" << id << status;
-    ActionId actionId = m_pendingPushNotifications.value(id);
-    emit actionExecutionFinished(actionId, status == 200 ? Device::DeviceErrorNoError : Device::DeviceErrorHardwareNotAvailable);
+    DeviceActionInfo *info = m_pendingPushNotifications.take(id);
+    if (!info) {
+        qCWarning(dcCloud()) << "Received a push notification send reponse for a request we're not waiting for.";
+        return;
+    }
+    info->finish(status == 200 ? Device::DeviceErrorNoError : Device::DeviceErrorHardwareNotAvailable);
 }

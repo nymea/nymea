@@ -278,19 +278,21 @@ void DevicePluginMock::startMonitoringAutoDevices()
 void DevicePluginMock::startPairing(DevicePairingInfo *info)
 {
     if (info->deviceClassId() == mockPushButtonDeviceClassId) {
-        qCDebug(dcMockDevice) << QString(tr("Push button. Pressing the button in 3 seconds."));
+        qCDebug(dcMockDevice) << "Push button. Pressing the button in 3 seconds.";
         info->finish(Device::DeviceErrorNoError, QT_TR_NOOP("Wait 3 second before you continue, the push button will be pressed automatically."));
+        m_pushbuttonPressed = false;
+        QTimer::singleShot(3000, this, SLOT(onPushButtonPressed()));
         return;
     }
 
     if (info->deviceClassId() == mockDisplayPinDeviceClassId) {
-        qCDebug(dcMockDevice) << QString(tr("Display pin!! The pin is 243681"));
+        qCDebug(dcMockDevice) << "Display pin!! The pin is 243681";
         info->finish(Device::DeviceErrorNoError, QT_TR_NOOP("Please enter the secret which normaly will be displayed on the device. For the mockdevice the pin is 243681."));
         return;
     }
 
     if (info->deviceClassId() == mockUserAndPassDeviceClassId) {
-        qCDebug(dcMockDevice) << QString(tr("User and password. Login is \"user\" and \"password\"."));
+        qCDebug(dcMockDevice) << "User and password. Login is \"user\" and \"password\".";
         info->finish(Device::DeviceErrorNoError, QT_TR_NOOP("Please enter login credentials for the mock device (\"user\" and \"password\")."));
         return;
     }
@@ -865,10 +867,6 @@ void DevicePluginMock::generateDiscoveredPushButtonDevices(DeviceDiscoveryInfo *
         info->addDeviceDescriptor(d2);
     }
     info->finish(Device::DeviceErrorNoError, QT_TR_NOOP("This device will simulate a push button press in 3 seconds."));
-
-    m_pushbuttonPressed = false;
-    QTimer::singleShot(3000, this, SLOT(onPushButtonPressed()));
-    qCDebug(dcMockDevice) << "Start PushButton timer (will be pressed in 3 second)";
 }
 
 void DevicePluginMock::generateDiscoveredDisplayPinDevices(DeviceDiscoveryInfo *info)

@@ -55,6 +55,9 @@ QString Translator::translate(const PluginId &pluginId, const QString &string, c
 
     QTranslator* translator = m_translatorContexts.value(plugin->pluginId()).translators.value(locale.name());
     QString translatedString = translator->translate(plugin->pluginName().toUtf8(), string.toUtf8());
+    if (translatedString.isEmpty()) {
+        translatedString = translator->translate(plugin->metaObject()->className(), string.toUtf8());
+    }
     return translatedString.isEmpty() ? string : translatedString;
 }
 

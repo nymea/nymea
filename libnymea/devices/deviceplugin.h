@@ -54,6 +54,7 @@
 #include <QObject>
 #include <QTranslator>
 #include <QPair>
+#include <QSettings>
 
 class DeviceManager;
 
@@ -111,6 +112,7 @@ signals:
 protected:
     Devices myDevices() const;
     HardwareManager *hardwareManager() const;
+    QSettings *pluginStorage() const;
 
 private:
     void setMetaData(const PluginMetadata &metaData);
@@ -127,6 +129,7 @@ private:
 
     DeviceManager *m_deviceManager = nullptr;
     HardwareManager *m_hardwareManager = nullptr;
+    QSettings *m_storage = nullptr;
 
     PluginMetadata m_metaData;
     ParamList m_config;

@@ -110,6 +110,7 @@
 #include <QCoreApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QStandardPaths>
 
 /*! DevicePlugin constructor. DevicePlugins will be instantiated by the DeviceManager, its \a parent. */
 DevicePlugin::DevicePlugin(QObject *parent):
@@ -340,7 +341,7 @@ void DevicePlugin::initPlugin(const PluginMetadata &metadata, DeviceManager *dev
     m_metaData = metadata;
     m_deviceManager = deviceManager;
     m_hardwareManager = hardwareManager;
-
+    m_storage = new QSettings(NymeaSettings::settingsPath() + "/pluginconfig-" + pluginId().toString().remove(QRegExp("[{}]")) + ".conf", QSettings::IniFormat, this);
 }
 
 /*! Returns a map containing the plugin configuration.
@@ -430,6 +431,14 @@ Devices DevicePlugin::myDevices() const
 HardwareManager *DevicePlugin::hardwareManager() const
 {
     return m_hardwareManager;
+}
+
+/*! Returns a pointer to a QSettings object which is reserved for this plugin.
+    The plugin can store arbitrary data in this.
+    */
+QSettings* DevicePlugin::pluginStorage() const
+{
+    return m_storage;
 }
 
 void DevicePlugin::setMetaData(const PluginMetadata &metaData)

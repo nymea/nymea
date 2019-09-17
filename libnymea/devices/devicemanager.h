@@ -33,6 +33,49 @@
 #include "types/browseraction.h"
 #include "types/browseritemaction.h"
 
+// Signals
+
+/*! \fn void DeviceManager::loaded();
+    The DeviceManager will emit this signal when all \l{Device}{Devices} are loaded.
+*/
+
+/*! \fn void DeviceManager::pluginConfigChanged(const PluginId &id, const ParamList &config);
+    The DeviceManager will emit this signal when the \a config \l{ParamList}{Params} of the \l{DevicePlugin}{plugin} with the given \a id has changed.
+*/
+
+/*! \fn void DeviceManager::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
+    This signal is emitted when the \l{State} of a \a device changed. The \a stateTypeId parameter describes the
+    \l{StateType} and the \a value parameter holds the new value.
+*/
+
+/*! \fn void DeviceManager::deviceDisappeared(const DeviceId &deviceId);
+    This signal is emitted when the automatically created \l{Device} with the given \a deviceId dissapeard. This signal will
+    create the Devices.DeviceRemoved notification.
+*/
+
+/*! \fn void DeviceManager::deviceRemoved(const DeviceId &deviceId);
+    This signal is emitted when the \l{Device} with the given \a deviceId was removed from the system. This signal will
+    create the Devices.DeviceRemoved notification.
+*/
+
+/*! \fn void DeviceManager::deviceAdded(Device *device);
+    This signal is emitted when a \a \device  was added to the system. This signal will
+    create the Devices.DeviceAdded notification.
+*/
+
+/*! \fn void DeviceManager::deviceChanged(Device *device);
+    This signal is emitted when a \a \device  was changed in the system (by edit or rediscover). This signal will
+    create the Devices.DeviceParamsChanged notification.
+*/
+
+/*! \fn void DeviceManager::eventTriggered(const Event &event)
+    The DeviceManager will emit a \l{Event} described in \a event whenever a Device
+    creates one. Normally only \l{nymeaserver::NymeaCore} should connect to this and execute actions
+    after checking back with the \{nymeaserver::RulesEngine}. Exceptions might be monitoring interfaces
+    or similar, but you should never directly react to this in a \l{DevicePlugin}.
+*/
+
+
 class DeviceManager : public QObject
 {
     Q_OBJECT

@@ -270,7 +270,7 @@
             \li 40
             \li The value of the \l{Param} has unit \tt {[\$]} \unicode{0x2192} dollar.
         \row
-            \li Types::UnitHerz
+            \li Types::UnitHertz
             \li 41
             \li The value of the \l{Param} has unit \tt {[Hz]} \unicode{0x2192} herz.
         \row

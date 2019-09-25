@@ -74,7 +74,10 @@ int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputF
 
     PluginMetadata metadata(jsonObject);
     if (!metadata.isValid()) {
-        qWarning().nospace().noquote() << inputFile << ": error: Plugin JSON failed validation. Aborting.";
+        foreach (const QString &error, metadata.validationErrors()) {
+            QDebug dbg = qWarning().noquote().nospace();
+            dbg << inputFile << ": error: Plugin JSON failed validation: " << error;
+        }
         return 2;
     }
 

@@ -60,6 +60,9 @@ plugininfo_clean.commands = rm -fv $$OUT_PWD/plugininfo.h $$OUT_PWD/extern-plugi
 clean.depends = plugininfo_clean
 QMAKE_EXTRA_TARGETS += clean plugininfo_clean
 
+# Make sure the plugininfo.h is found in HEADERS for extracting translations
+HEADERS += $$OUT_PWD/plugininfo.h
+
 # Install translation files
 TRANSLATIONS *= $$files($${_PRO_FILE_PWD_}/translations/*ts, true)
 lupdate.depends = FORCE

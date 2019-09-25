@@ -25,12 +25,21 @@
 #include "deviceplugin.h"
 #include "devicemanager.h"
 
-DeviceSetupInfo::DeviceSetupInfo(Device *device, DeviceManager *deviceManager):
+#include <QTimer>
+
+DeviceSetupInfo::DeviceSetupInfo(Device *device, DeviceManager *deviceManager, quint32 timeout):
     QObject(deviceManager),
     m_device(device),
     m_deviecManager(deviceManager)
 {
     connect(this, &DeviceSetupInfo::finished, this, &DeviceSetupInfo::deleteLater, Qt::QueuedConnection);
+
+    if (timeout > 0) {
+        QTimer::singleShot(timeout, this, [this] {
+            emit aborted();
+            finish(Device::DeviceErrorTimeout);
+        });
+    }
 }
 
 Device *DeviceSetupInfo::device() const

@@ -36,7 +36,7 @@ class LIBNYMEA_EXPORT DeviceDiscoveryInfo : public QObject
 {
     Q_OBJECT
 public:
-    explicit DeviceDiscoveryInfo(const DeviceClassId &deviceClassId, const ParamList &params, DeviceManager *deviceManager);
+    explicit DeviceDiscoveryInfo(const DeviceClassId &deviceClassId, const ParamList &params, DeviceManager *deviceManager, quint32 timeout = 0);
 
     DeviceClassId deviceClassId() const;
     ParamList params() const;
@@ -58,6 +58,7 @@ public slots:
 
 signals:
     void finished();
+    void aborted();
 
 private:
     DeviceClassId m_deviceClassId;

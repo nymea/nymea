@@ -35,7 +35,7 @@ class DeviceActionInfo : public QObject
 {
     Q_OBJECT
 public:
-    explicit DeviceActionInfo(Device *device, const Action &action, DeviceManager *parent);
+    explicit DeviceActionInfo(Device *device, const Action &action, DeviceManager *parent, quint32 timeout = 0);
 
     Device* device() const;
     Action action() const;
@@ -49,6 +49,7 @@ public:
 
 signals:
     void finished();
+    void aborted();
 
 public slots:
     void finish(Device::DeviceError status, const QString &displayMessage = QString());

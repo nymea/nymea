@@ -73,6 +73,7 @@ public:
         DeviceErrorItemNotFound,
         DeviceErrorItemNotExecutable,
         DeviceErrorUnsupportedFeature,
+        DeviceErrorTimeout,
     };
     Q_ENUM(DeviceError)
 

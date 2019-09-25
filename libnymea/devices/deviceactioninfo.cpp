@@ -24,13 +24,22 @@
 
 #include "devicemanager.h"
 
-DeviceActionInfo::DeviceActionInfo(Device *device, const Action &action, DeviceManager *parent):
+#include <QTimer>
+
+DeviceActionInfo::DeviceActionInfo(Device *device, const Action &action, DeviceManager *parent, quint32 timeout):
     QObject(parent),
     m_device(device),
     m_action(action),
     m_deviceManager(parent)
 {
     connect(this, &DeviceActionInfo::finished, this, &DeviceActionInfo::deleteLater, Qt::QueuedConnection);
+
+    if (timeout > 0) {
+        QTimer::singleShot(timeout, this, [this] {
+            emit aborted();
+            finish(Device::DeviceErrorTimeout);
+        });
+    }
 }
 
 Device *DeviceActionInfo::device() const

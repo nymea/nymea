@@ -258,8 +258,13 @@ DeviceDiscoveryInfo* DeviceManagerImplementation::discoverDevices(const DeviceCl
         return discoveryInfo;
     }
 
-    DeviceDiscoveryInfo *discoveryInfo = new DeviceDiscoveryInfo(deviceClassId, effectiveParams, this);
+    DeviceDiscoveryInfo *discoveryInfo = new DeviceDiscoveryInfo(deviceClassId, effectiveParams, this, 30000);
     connect(discoveryInfo, &DeviceDiscoveryInfo::finished, this, [this, discoveryInfo](){
+        if (discoveryInfo->status() != Device::DeviceErrorNoError) {
+            qCWarning(dcDeviceManager()) << "Discovery failed:" << discoveryInfo->status() << discoveryInfo->displayMessage();
+            return;
+        }
+        qCDebug(dcDeviceManager()) << "Discovery finished. Found devices:" << discoveryInfo->deviceDescriptors().count();
         foreach (const DeviceDescriptor &descriptor, discoveryInfo->deviceDescriptors()) {
             m_discoveredDevices[descriptor.deviceClassId()].insert(descriptor.id(), descriptor);
         }
@@ -390,7 +395,7 @@ DeviceSetupInfo* DeviceManagerImplementation::reconfigureDevice(const DeviceId &
     }
 
     // try to setup the device with the new params
-    DeviceSetupInfo *info = new DeviceSetupInfo(device, this);
+    DeviceSetupInfo *info = new DeviceSetupInfo(device, this, 30000);
     plugin->setupDevice(info);
     connect(info, &DeviceSetupInfo::finished, this, [this, info](){
 
@@ -490,7 +495,7 @@ Device::DeviceError DeviceManagerImplementation::setDeviceSettings(const DeviceI
 DevicePairingInfo* DeviceManagerImplementation::pairDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params)
 {
     PairingTransactionId transactionId = PairingTransactionId::createPairingTransactionId();
-    DevicePairingInfo *info = new DevicePairingInfo(transactionId, deviceClassId, DeviceId(), name, params, DeviceId(), this);
+    DevicePairingInfo *info = new DevicePairingInfo(transactionId, deviceClassId, DeviceId(), name, params, DeviceId(), this, 30000);
     pairDeviceInternal(info);
     return info;
 }
@@ -516,7 +521,7 @@ DevicePairingInfo* DeviceManagerImplementation::pairDevice(const DeviceClassId &
         return info;
     }
 
-    DevicePairingInfo *info = new DevicePairingInfo(pairingTransactionId, deviceClassId, deviceDescriptor.deviceId(), name, deviceDescriptor.params(), deviceDescriptor.parentDeviceId(), this);
+    DevicePairingInfo *info = new DevicePairingInfo(pairingTransactionId, deviceClassId, deviceDescriptor.deviceId(), name, deviceDescriptor.params(), deviceDescriptor.parentDeviceId(), this, 30000);
     pairDeviceInternal(info);
     return info;
 }
@@ -735,7 +740,7 @@ BrowseResult *DeviceManagerImplementation::browseDevice(const DeviceId &deviceId
 {
     Device *device = m_configuredDevices.value(deviceId);
 
-    BrowseResult *result = new BrowseResult(device, itemId, locale, this);
+    BrowseResult *result = new BrowseResult(device, itemId, locale, this, 30000);
 
     if (!device) {
         qCWarning(dcDeviceManager()) << "Cannot browse device. No such device:" << deviceId.toString();
@@ -762,7 +767,7 @@ BrowserItemResult *DeviceManagerImplementation::browserItemDetails(const DeviceI
 {
     Device *device = m_configuredDevices.value(deviceId);
 
-    BrowserItemResult *result = new BrowserItemResult(device, itemId, locale, this);
+    BrowserItemResult *result = new BrowserItemResult(device, itemId, locale, this, 30000);
 
     if (!device) {
         qCWarning(dcDeviceManager()) << "Cannot browse device. No such device:" << deviceId.toString();
@@ -789,7 +794,7 @@ BrowserActionInfo* DeviceManagerImplementation::executeBrowserItem(const Browser
 {
     Device *device = m_configuredDevices.value(browserAction.deviceId());
 
-    BrowserActionInfo *info = new BrowserActionInfo(device, browserAction, this);
+    BrowserActionInfo *info = new BrowserActionInfo(device, browserAction, this, 30000);
 
     if (!device) {
         info->finish(Device::DeviceErrorDeviceNotFound);
@@ -808,7 +813,7 @@ BrowserItemActionInfo* DeviceManagerImplementation::executeBrowserItemAction(con
 {
     Device *device = m_configuredDevices.value(browserItemAction.deviceId());
 
-    BrowserItemActionInfo *info = new BrowserItemActionInfo(device, browserItemAction, this);
+    BrowserItemActionInfo *info = new BrowserItemActionInfo(device, browserItemAction, this, 30000);
 
     if (!device) {
         info->finish(Device::DeviceErrorDeviceNotFound);
@@ -927,7 +932,7 @@ DeviceActionInfo *DeviceManagerImplementation::executeAction(const Action &actio
     }
     finalAction.setParams(finalParams);
 
-    DeviceActionInfo *info = new DeviceActionInfo(device, finalAction, this);
+    DeviceActionInfo *info = new DeviceActionInfo(device, finalAction, this, 30000);
 
     DevicePlugin *plugin = m_devicePlugins.value(device->pluginId());
     if (!plugin) {
@@ -1490,7 +1495,7 @@ DeviceSetupInfo* DeviceManagerImplementation::setupDevice(Device *device)
     connect(device, &Device::settingChanged, this, &DeviceManagerImplementation::slotDeviceSettingChanged);
 
 
-    DeviceSetupInfo *info = new DeviceSetupInfo(device, this);
+    DeviceSetupInfo *info = new DeviceSetupInfo(device, this, 30000);
     plugin->setupDevice(info);
 
     return info;

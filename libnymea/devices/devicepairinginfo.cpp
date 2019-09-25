@@ -23,7 +23,9 @@
 #include "devicepairinginfo.h"
 #include "devicemanager.h"
 
-DevicePairingInfo::DevicePairingInfo(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceId &deviceId, const QString &deviceName, const ParamList &params, const DeviceId &parentDeviceId, DeviceManager *parent):
+#include <QTimer>
+
+DevicePairingInfo::DevicePairingInfo(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceId &deviceId, const QString &deviceName, const ParamList &params, const DeviceId &parentDeviceId, DeviceManager *parent, quint32 timeout):
     QObject(parent),
     m_transactionId(pairingTransactionId),
     m_deviceClassId(deviceClassId),
@@ -33,6 +35,13 @@ DevicePairingInfo::DevicePairingInfo(const PairingTransactionId &pairingTransact
     m_parentDeviceId(parentDeviceId)
 {
     connect(this, &DevicePairingInfo::finished, this, &DevicePairingInfo::deleteLater, Qt::QueuedConnection);
+
+    if (timeout > 0) {
+        QTimer::singleShot(timeout, this, [this] {
+            emit aborted();
+            finish(Device::DeviceErrorTimeout);
+        });
+    }
 }
 
 PairingTransactionId DevicePairingInfo::transactionId() const

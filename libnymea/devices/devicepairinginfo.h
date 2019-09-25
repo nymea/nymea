@@ -34,7 +34,7 @@ class LIBNYMEA_EXPORT DevicePairingInfo: public QObject
 {
     Q_OBJECT
 public:
-    DevicePairingInfo(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceId &deviceId, const QString &deviceName, const ParamList &params, const DeviceId &parentDeviceId, DeviceManager *parent);
+    DevicePairingInfo(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceId &deviceId, const QString &deviceName, const ParamList &params, const DeviceId &parentDeviceId, DeviceManager *parent, quint32 timeout = 0);
 
     PairingTransactionId transactionId() const;
 
@@ -56,6 +56,7 @@ public slots:
 
 signals:
     void finished();
+    void aborted();
 
 private:
     PairingTransactionId m_transactionId;

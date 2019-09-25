@@ -22,13 +22,22 @@
 
 #include "browseritemresult.h"
 
-BrowserItemResult::BrowserItemResult(Device *device, const QString &itemId, const QLocale &locale, QObject *parent):
+#include <QTimer>
+
+BrowserItemResult::BrowserItemResult(Device *device, const QString &itemId, const QLocale &locale, QObject *parent, quint32 timeout):
     QObject(parent),
     m_device(device),
     m_itemId(itemId),
     m_locale(locale)
 {
     connect(this, &BrowserItemResult::finished, this, &BrowserItemResult::deleteLater, Qt::QueuedConnection);
+
+    if (timeout > 0) {
+        QTimer::singleShot(timeout, this, [this] {
+            emit aborted();
+            finish(Device::DeviceErrorTimeout);
+        });
+    }
 }
 
 Device *BrowserItemResult::device() const

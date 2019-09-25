@@ -33,7 +33,7 @@ class LIBNYMEA_EXPORT DeviceSetupInfo : public QObject
 {
     Q_OBJECT
 public:
-    explicit DeviceSetupInfo(Device *device, DeviceManager *deviceManager);
+    explicit DeviceSetupInfo(Device *device, DeviceManager *deviceManager, quint32 timeout = 0);
 
     Device *device() const;
 
@@ -48,6 +48,7 @@ public slots:
 
 signals:
     void finished();
+    void aborted();
 
 private:
     Device *m_device = nullptr;

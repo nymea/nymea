@@ -23,13 +23,22 @@
 #include "devicediscoveryinfo.h"
 #include "devicemanager.h"
 
-DeviceDiscoveryInfo::DeviceDiscoveryInfo(const DeviceClassId &deviceClassId, const ParamList &params, DeviceManager *deviceManager):
+#include <QTimer>
+
+DeviceDiscoveryInfo::DeviceDiscoveryInfo(const DeviceClassId &deviceClassId, const ParamList &params, DeviceManager *deviceManager, quint32 timeout):
     QObject(deviceManager),
     m_deviceClassId(deviceClassId),
     m_params(params),
     m_deviceManager(deviceManager)
 {
     connect(this, &DeviceDiscoveryInfo::finished, this, &DeviceDiscoveryInfo::deleteLater, Qt::QueuedConnection);
+
+    if (timeout > 0) {
+        QTimer::singleShot(timeout, this, [this] {
+            emit aborted();
+            finish(Device::DeviceErrorTimeout);
+        });
+    }
 }
 
 DeviceClassId DeviceDiscoveryInfo::deviceClassId() const

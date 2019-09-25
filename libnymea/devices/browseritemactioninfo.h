@@ -32,7 +32,7 @@ class BrowserItemActionInfo : public QObject
 {
     Q_OBJECT
 public:
-    explicit BrowserItemActionInfo(Device *device, const BrowserItemAction &browserItemAction, QObject *parent = nullptr);
+    explicit BrowserItemActionInfo(Device *device, const BrowserItemAction &browserItemAction, QObject *parent, quint32 timeout = 0);
 
     Device *device() const;
     BrowserItemAction browserItemAction() const;
@@ -43,6 +43,7 @@ public:
 
 signals:
     void finished();
+    void aborted();
 
 public slots:
     void finish(Device::DeviceError status);

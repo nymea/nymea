@@ -22,12 +22,21 @@
 
 #include "browseritemactioninfo.h"
 
-BrowserItemActionInfo::BrowserItemActionInfo(Device *device, const BrowserItemAction &browserItemAction, QObject *parent):
+#include <QTimer>
+
+BrowserItemActionInfo::BrowserItemActionInfo(Device *device, const BrowserItemAction &browserItemAction, QObject *parent, quint32 timeout):
     QObject(parent),
     m_device(device),
     m_browserItemAction(browserItemAction)
 {
     connect(this, &BrowserItemActionInfo::finished, this, &BrowserItemActionInfo::deleteLater, Qt::QueuedConnection);
+
+    if (timeout > 0) {
+        QTimer::singleShot(timeout, this, [this] {
+            emit aborted();
+            finish(Device::DeviceErrorTimeout);
+        });
+    }
 }
 
 Device *BrowserItemActionInfo::device() const

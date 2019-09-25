@@ -1538,7 +1538,8 @@
             "DeviceErrorParameterNotWritable",
             "DeviceErrorItemNotFound",
             "DeviceErrorItemNotExecutable",
-            "DeviceErrorUnsupportedFeature"
+            "DeviceErrorUnsupportedFeature",
+            "DeviceErrorTimeout"
         ],
         "Event": {
             "deviceId": "Uuid",

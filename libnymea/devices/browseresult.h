@@ -31,7 +31,7 @@ class BrowseResult : public QObject
 {
     Q_OBJECT
 public:
-    explicit BrowseResult(Device *device, const QString &itemId, const QLocale &locale, QObject *parent = nullptr);
+    explicit BrowseResult(Device *device, const QString &itemId, const QLocale &locale, QObject *parent, quint32 timeout = 0);
 
     Device* device() const;
     QString itemId() const;
@@ -50,6 +50,7 @@ public slots:
 
 signals:
     void finished();
+    void aborted();
 
 private:
     Device *m_device = nullptr;

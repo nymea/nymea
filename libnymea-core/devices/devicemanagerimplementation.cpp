@@ -1148,6 +1148,13 @@ void DeviceManagerImplementation::loadConfiguredDevices()
             }
         }
         DeviceUtils::verifyParams(deviceClass.settingsTypes(), deviceSettings);
+        // Make sure all settings are around. if they aren't initialize with default values
+        foreach (const ParamType &settingsType, deviceClass.settingsTypes()) {
+            if (!deviceSettings.hasParam(settingsType.id())) {
+                deviceSettings.append(Param(settingsType.id(), settingsType.defaultValue().isValid() ? settingsType.defaultValue() : ""));
+            }
+        }
+
         device->setSettings(deviceSettings);
 
         settings.endGroup(); // Settings

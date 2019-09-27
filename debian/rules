@@ -58,6 +58,4 @@ override_dh_auto_clean:
 	rm -rf $(PREPROCESS_FILES:.in=)
 
 %:
-	dh $@ --buildsystem=qmake --parallel
-
-
+	dh $@ --buildsystem=qmake --parallel --with systemd

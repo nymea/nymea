@@ -28,7 +28,9 @@
 #include <QFile>
 #include <QTimer>
 #include <QDateTime>
+#include <QSysInfo>
 #include <QStandardPaths>
+#include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QProcessEnvironment>
 
@@ -41,6 +43,7 @@ DebugReportGenerator::DebugReportGenerator(QObject *parent) : QObject(parent)
 
 DebugReportGenerator::~DebugReportGenerator()
 {
+    // Clean up any leftover files
     cleanupReport();
 }
 
@@ -57,6 +60,16 @@ QString DebugReportGenerator::reportFileName()
 QString DebugReportGenerator::md5Sum() const
 {
     return m_md5Sum;
+}
+
+bool DebugReportGenerator::isReady() const
+{
+    return m_isReady;
+}
+
+bool DebugReportGenerator::isValid() const
+{
+    return m_isValid;
 }
 
 void DebugReportGenerator::generateReport()
@@ -83,6 +96,7 @@ void DebugReportGenerator::generateReport()
     saveConfigs();
     saveLogFiles();
     saveEnv();
+    saveSystemInformation();
 
     QProcess *pingProcess = new QProcess(this);
     pingProcess->setProcessChannelMode(QProcess::MergedChannels);
@@ -129,6 +143,37 @@ void DebugReportGenerator::verifyRunningProcessesFinished()
         m_compressProcess->start("tar", { "-zcf", m_reportFileName, "-C", QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/", m_reportDirectory.dirName() } );
         qCDebug(dcDebugServer()) << "Execut command" << m_compressProcess->program() << m_compressProcess->arguments();
     }
+}
+
+void DebugReportGenerator::saveSystemInformation()
+{
+    QFile outputFile(m_reportDirectory.path() + "/sysinfo.txt");
+    if (!outputFile.open(QIODevice::ReadWrite)) {
+        qCWarning(dcDebugServer()) << "Could not open sysinfo file" << outputFile.fileName();
+        return;
+    }
+
+    qCDebug(dcDebugServer()) << "Write system information file" << outputFile.fileName();
+    QTextStream stream(&outputFile);
+    stream << "Server name: " << NymeaCore::instance()->configuration()->serverName() << endl;
+    stream << "Server version: " << NYMEA_VERSION_STRING << endl;
+    stream << "JSON-RPC version: " << JSON_PROTOCOL_VERSION << endl;
+    stream << "Language: " << NymeaCore::instance()->configuration()->locale().name() << " (" << NymeaCore::instance()->configuration()->locale().nativeCountryName() << " - " << NymeaCore::instance()->configuration()->locale().nativeLanguageName() << ")" << endl;
+    stream << "Timezone: " << QString::fromUtf8(NymeaCore::instance()->configuration()->timeZone()) << endl;
+    stream << "Server UUID: " << NymeaCore::instance()->configuration()->serverUuid().toString() << endl;
+    stream << "Settings path: " << NymeaSettings::settingsPath() << endl;
+    stream << "Translations path: " << NymeaSettings(NymeaSettings::SettingsRoleGlobal).translationsPath() << endl;
+    stream << "User: " << qgetenv("USER") << endl;
+    stream << "Command: " << QCoreApplication::arguments().join(' ') << endl;
+    stream << "Qt runtime version: " << qVersion() << endl;
+    stream << "" << endl;
+    stream << "Hostname: " << QSysInfo::machineHostName() << endl;
+    stream << "Architecture: " << QSysInfo::currentCpuArchitecture() << endl;
+    stream << "Kernel type: " << QSysInfo::kernelType() << endl;
+    stream << "Kernel version: " << QSysInfo::kernelVersion() << endl;
+    stream << "Product type: " << QSysInfo::productType() << endl;
+    stream << "Product version: " << QSysInfo::productVersion() << endl;
+    outputFile.close();
 }
 
 void DebugReportGenerator::saveLogFiles()
@@ -269,18 +314,22 @@ void DebugReportGenerator::onCompressProcessFinished(int exitCode, QProcess::Exi
     QFile reportFile(QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/" + m_reportFileName);
     if (!reportFile.open(QIODevice::ReadOnly)) {
         qCWarning(dcDebugServer()) << "Could not open report file name for reading" << reportFile.fileName();
+        m_isReady = true;
+        m_isValid = false;
         emit finished(false);
     } else {
         m_reportFileData = reportFile.readAll();
         m_md5Sum =  QString::fromUtf8(QCryptographicHash::hash(m_reportFileData, QCryptographicHash::Md5).toHex());
         qCDebug(dcDebugServer()) << "File generated successfully" << reportFile.fileName() << m_reportFileData.size() << "B" << m_md5Sum;
+        m_isReady = true;
+        m_isValid = true;
         emit finished(true);
     }
 
     reportFile.close();
 
-    // Todo: start expire timer
-    QTimer::singleShot(30000, this, &DebugReportGenerator::timeout);
+    // When this timer expires, the debug report is not valid any more and will be deleted
+    QTimer::singleShot(120000, this, &DebugReportGenerator::timeout);
 
     process->deleteLater();
     process = nullptr;

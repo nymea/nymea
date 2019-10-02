@@ -34,15 +34,21 @@ public:
     explicit DebugReportGenerator(QObject *parent = nullptr);
     ~DebugReportGenerator();
 
+
     QByteArray reportFileData() const;
     QString reportFileName();
     QString md5Sum() const;
+
+    bool isReady() const;
+    bool isValid() const;
 
     void generateReport();
 
 private:
     QDir m_reportDirectory;
     QString m_reportFileName;
+    bool m_isReady = false;
+    bool m_isValid = false;
 
     QProcess *m_compressProcess = nullptr;
     QList<QProcess *> m_runningProcesses;
@@ -53,6 +59,7 @@ private:
     void copyFileToReportDirectory(const QString &fileName, const QString &subDirectory = QString());
     void verifyRunningProcessesFinished();
 
+    void saveSystemInformation();
     void saveLogFiles();
     void saveConfigs();
     void saveEnv();

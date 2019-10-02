@@ -378,35 +378,70 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
     }
 
     if (requestPath.startsWith("/debug/report")) {
+
+        // The client can poll this url in order to get information about the current report generating process.
+        // If there is currently no report generated, start generating it and inform client that there is a report on the way (204)
+        // If there is already a report generation in progress, inform the client that it's not ready yet (204)
+        // If the report is ready, return information of the file and the client will start downloading it (202 and file informations).
+
         // Check if download request or generate request
         if (requestQuery.hasQueryItem("filename")) {
             QString fileName = requestQuery.queryItemValue("filename");
             qCDebug(dcDebugServer()) << "Report download request for" << fileName;
 
-            if (m_finishedReportGenerators.contains(fileName)) {
-                HttpReply *downloadReportReply = RestResource::createSuccessReply();
-                DebugReportGenerator *generator = m_finishedReportGenerators.take(fileName);
-                downloadReportReply->setPayload(generator->reportFileData());
-                downloadReportReply->setHeader(HttpReply::ContentTypeHeader, "application/tar+gzip;");
-                generator->deleteLater();
-
-                return downloadReportReply;
-            } else {
-                qCWarning(dcDebugServer()) << "The requested file does not exist any more" << fileName;
-                HttpReply *downloadReportReply = RestResource::createErrorReply(HttpReply::NotFound);
-                return downloadReportReply;
+            if (!m_debugReportGenerator) {
+                qCWarning(dcDebugServer()) << "There is currently no debug report generator. The requested file does not exist.";
+                return RestResource::createErrorReply(HttpReply::NotFound);
             }
 
+            if (m_debugReportGenerator->reportFileName() != fileName) {
+                qCWarning(dcDebugServer()) << "The requested file is not the file from the current debug report generator" << m_debugReportGenerator->reportFileName() << "!=" << fileName;
+                return RestResource::createErrorReply(HttpReply::NotFound);
+
+            }
+
+            // Everything looks good, send the requested debug report
+            HttpReply *downloadReportReply = RestResource::createSuccessReply();
+            downloadReportReply->setPayload(m_debugReportGenerator->reportFileData());
+            downloadReportReply->setHeader(HttpReply::ContentTypeHeader, "application/tar+gzip;");
+            return downloadReportReply;
         } else {
-            DebugReportGenerator *debugReportGenerator = new DebugReportGenerator(this);
-            connect(debugReportGenerator, &DebugReportGenerator::finished, this, &DebugServerHandler::onDebugReportGeneratorFinished);
-            connect(debugReportGenerator, &DebugReportGenerator::timeout, this, &DebugServerHandler::onDebugReportGeneratorTimeout);
-            debugReportGenerator->generateReport();
+            // Generate or poll request
+            if (!m_debugReportGenerator) {
+                qCDebug(dcDebugServer()) << "Create new debug report generator and start generating report...";
+                m_debugReportGenerator = new DebugReportGenerator(this);
+                connect(m_debugReportGenerator, &DebugReportGenerator::finished, this, &DebugServerHandler::onDebugReportGeneratorFinished);
+                connect(m_debugReportGenerator, &DebugReportGenerator::timeout, this, &DebugServerHandler::onDebugReportGeneratorTimeout);
+                m_debugReportGenerator->generateReport();
+                // Note: no content will bring the client to poll this report
+                return RestResource::createErrorReply(HttpReply::NoContent);
+            } else {
+                // There is a running generator, check if the report is ready
+                if (!m_debugReportGenerator->isReady()) {
+                    qCDebug(dcDebugServer()) << "Report is not ready yet";
+                    // Note: no content tells the client the report is not ready yet
+                    return RestResource::createErrorReply(HttpReply::NoContent);
+                } else {
+                    if (m_debugReportGenerator->isValid()) {
+                        // Success, the debug report is ready and valid
+                        QVariantMap reportInformation;
+                        reportInformation.insert("fileName", m_debugReportGenerator->reportFileName());
+                        reportInformation.insert("fileSize", m_debugReportGenerator->reportFileData().size());
+                        reportInformation.insert("md5sum", m_debugReportGenerator->md5Sum());
 
-            HttpReply *debugReportReply = RestResource::createAsyncReply();
-            m_runningReportGenerators.insert(debugReportGenerator, debugReportReply);
-
-            return debugReportReply;
+                        HttpReply * httpReply = RestResource::createSuccessReply();
+                        httpReply->setHttpStatusCode(HttpReply::Ok);
+                        httpReply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+                        httpReply->setPayload(QJsonDocument::fromVariant(reportInformation).toJson(QJsonDocument::Indented));
+                        return httpReply;
+                    } else {
+                        qCWarning(dcDebugServer()) << "The debug report generator finished with error.";
+                        m_debugReportGenerator->deleteLater();
+                        m_debugReportGenerator = nullptr;
+                        return RestResource::createErrorReply(HttpReply::InternalServerError);
+                    }
+                }
+            }
         }
     }
 
@@ -495,7 +530,6 @@ HttpReply *DebugServerHandler::processDebugFileRequest(const QString &requestPat
 
     return reply;
 }
-
 
 void DebugServerHandler::onDebugServerEnabledChanged(bool enabled)
 {
@@ -605,32 +639,14 @@ void DebugServerHandler::onDebugReportGeneratorFinished(bool success)
 {
     DebugReportGenerator *debugReportGenerator = static_cast<DebugReportGenerator *>(sender());
     qCDebug(dcDebugServer()) << "Report generation finished" << (success ? "successfully" : "with error") << debugReportGenerator->reportFileName();
-    HttpReply *httpReply = m_runningReportGenerators.take(debugReportGenerator);
-
-    if (success) {
-        QVariantMap reportInformation;
-        reportInformation.insert("fileName", debugReportGenerator->reportFileName());
-        reportInformation.insert("fileSize", debugReportGenerator->reportFileData().size());
-        reportInformation.insert("md5sum", debugReportGenerator->md5Sum());
-        httpReply->setHttpStatusCode(HttpReply::Ok);
-        httpReply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-        httpReply->setPayload(QJsonDocument::fromVariant(reportInformation).toJson(QJsonDocument::Indented));
-
-        m_finishedReportGenerators.insert(debugReportGenerator->reportFileName(), debugReportGenerator);
-    } else {
-        httpReply->setHttpStatusCode(HttpReply::InternalServerError);
-    }
-
-    httpReply->finished();
 }
 
 void DebugServerHandler::onDebugReportGeneratorTimeout()
 {
-    DebugReportGenerator *debugReportGenerator = static_cast<DebugReportGenerator *>(sender());
-    qCWarning(dcDebugServer()) << "Report generation timeouted. Cleaning up" << debugReportGenerator->reportFileName();
-    if (m_finishedReportGenerators.values().contains(debugReportGenerator)) {
-        m_finishedReportGenerators.remove(debugReportGenerator->reportFileName());
-        debugReportGenerator->deleteLater();
+    qCWarning(dcDebugServer()) << "Debug report expired.";
+    if (m_debugReportGenerator) {
+        m_debugReportGenerator->deleteLater();
+        m_debugReportGenerator = nullptr;
     }
 }
 
@@ -857,78 +873,13 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // div warning
 
 
-    // System information section
+    // Server information section
     writer.writeEmptyElement("hr");
     //: The server information section of the debug interface
     writer.writeTextElement("h2", tr("Server information"));
     writer.writeEmptyElement("hr");
 
     writer.writeStartElement("table");
-
-    writer.writeStartElement("tr");
-    //: The user name in the server infromation section of the debug interface
-    writer.writeTextElement("th", tr("User"));
-    writer.writeTextElement("td", qgetenv("USER"));
-    writer.writeEndElement(); // tr
-
-    writer.writeStartElement("tr");
-    //: The Qt build version description in the server infromation section of the debug interface
-    writer.writeTextElement("th", tr("Compiled with Qt version"));
-    writer.writeTextElement("td", QT_VERSION_STR);
-    writer.writeEndElement(); // tr
-
-    writer.writeStartElement("tr");
-    //: The Qt runtime version description in the server infromation section of the debug interface
-    writer.writeTextElement("th", tr("Qt runtime version"));
-    writer.writeTextElement("td", qVersion());
-    writer.writeEndElement(); // tr
-
-    writer.writeStartElement("tr");
-    //: The command description in the server infromation section of the debug interface
-    writer.writeTextElement("th", tr("Command"));
-    writer.writeTextElement("td", QCoreApplication::arguments().join(' '));
-    writer.writeEndElement(); // tr
-
-    if (!qgetenv("SNAP").isEmpty()) {
-        // Note: http://snapcraft.io/docs/reference/env
-
-        writer.writeStartElement("tr");
-        //: The snap name description in the server infromation section of the debug interface
-        writer.writeTextElement("th", tr("Snap name"));
-        writer.writeTextElement("td", qgetenv("SNAP_NAME"));
-        writer.writeEndElement(); // tr
-
-        writer.writeStartElement("tr");
-        //: The snap version description in the server infromation section of the debug interface
-        writer.writeTextElement("th", tr("Snap version"));
-        writer.writeTextElement("td", qgetenv("SNAP_VERSION"));
-        writer.writeEndElement(); // tr
-
-        writer.writeStartElement("tr");
-        //: The snap directory description in the server infromation section of the debug interface
-        writer.writeTextElement("th", tr("Snap directory"));
-        writer.writeTextElement("td", qgetenv("SNAP"));
-        writer.writeEndElement(); // tr
-
-        writer.writeStartElement("tr");
-        //: The snap application data description in the server infromation section of the debug interface
-        writer.writeTextElement("th", tr("Snap application data"));
-        writer.writeTextElement("td", qgetenv("SNAP_DATA"));
-        writer.writeEndElement(); // tr
-
-        writer.writeStartElement("tr");
-        //: The snap user data description in the server infromation section of the debug interface
-        writer.writeTextElement("th", tr("Snap user data"));
-        writer.writeTextElement("td", qgetenv("SNAP_USER_DATA"));
-        writer.writeEndElement(); // tr
-
-        writer.writeStartElement("tr");
-        //: The snap common data description in the server infromation section of the debug interface
-        writer.writeTextElement("th", tr("Snap common data"));
-        writer.writeTextElement("td", qgetenv("SNAP_COMMON"));
-        writer.writeEndElement(); // tr
-    }
-
 
     writer.writeStartElement("tr");
     //: The server name description in the server infromation section of the debug interface
@@ -976,6 +927,117 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     //: The translation path description in the server infromation section of the debug interface
     writer.writeTextElement("th", tr("Translations path"));
     writer.writeTextElement("td", NymeaSettings(NymeaSettings::SettingsRoleGlobal).translationsPath());
+    writer.writeEndElement(); // tr
+
+    writer.writeStartElement("tr");
+    //: The user name in the server infromation section of the debug interface
+    writer.writeTextElement("th", tr("User"));
+    writer.writeTextElement("td", qgetenv("USER"));
+    writer.writeEndElement(); // tr
+
+    writer.writeStartElement("tr");
+    //: The command description in the server infromation section of the debug interface
+    writer.writeTextElement("th", tr("Command"));
+    writer.writeTextElement("td", QCoreApplication::arguments().join(' '));
+    writer.writeEndElement(); // tr
+
+    writer.writeStartElement("tr");
+    //: The Qt build version description in the server infromation section of the debug interface
+    writer.writeTextElement("th", tr("Compiled with Qt version"));
+    writer.writeTextElement("td", QT_VERSION_STR);
+    writer.writeEndElement(); // tr
+
+    writer.writeStartElement("tr");
+    //: The Qt runtime version description in the server infromation section of the debug interface
+    writer.writeTextElement("th", tr("Qt runtime version"));
+    writer.writeTextElement("td", qVersion());
+    writer.writeEndElement(); // tr
+
+    if (!qgetenv("SNAP").isEmpty()) {
+        // Note: http://snapcraft.io/docs/reference/env
+
+        writer.writeStartElement("tr");
+        //: The snap name description in the server infromation section of the debug interface
+        writer.writeTextElement("th", tr("Snap name"));
+        writer.writeTextElement("td", qgetenv("SNAP_NAME"));
+        writer.writeEndElement(); // tr
+
+        writer.writeStartElement("tr");
+        //: The snap version description in the server infromation section of the debug interface
+        writer.writeTextElement("th", tr("Snap version"));
+        writer.writeTextElement("td", qgetenv("SNAP_VERSION"));
+        writer.writeEndElement(); // tr
+
+        writer.writeStartElement("tr");
+        //: The snap directory description in the server infromation section of the debug interface
+        writer.writeTextElement("th", tr("Snap directory"));
+        writer.writeTextElement("td", qgetenv("SNAP"));
+        writer.writeEndElement(); // tr
+
+        writer.writeStartElement("tr");
+        //: The snap application data description in the server infromation section of the debug interface
+        writer.writeTextElement("th", tr("Snap application data"));
+        writer.writeTextElement("td", qgetenv("SNAP_DATA"));
+        writer.writeEndElement(); // tr
+
+        writer.writeStartElement("tr");
+        //: The snap user data description in the server infromation section of the debug interface
+        writer.writeTextElement("th", tr("Snap user data"));
+        writer.writeTextElement("td", qgetenv("SNAP_USER_DATA"));
+        writer.writeEndElement(); // tr
+
+        writer.writeStartElement("tr");
+        //: The snap common data description in the server infromation section of the debug interface
+        writer.writeTextElement("th", tr("Snap common data"));
+        writer.writeTextElement("td", qgetenv("SNAP_COMMON"));
+        writer.writeEndElement(); // tr
+    }
+
+    writer.writeEndElement(); // table
+
+
+    // System information section
+    writer.writeEmptyElement("hr");
+    //: The system information section of the debug interface
+    writer.writeTextElement("h2", tr("System information"));
+    writer.writeEmptyElement("hr");
+
+    writer.writeStartElement("table");
+
+    writer.writeStartElement("tr");
+    //: The command description in the server infromation section of the debug interface
+    writer.writeTextElement("th", tr("Hostname"));
+    writer.writeTextElement("td", QSysInfo::machineHostName());
+    writer.writeEndElement(); // tr
+
+    writer.writeStartElement("tr");
+    //: The command description in the server infromation section of the debug interface
+    writer.writeTextElement("th", tr("Architecture"));
+    writer.writeTextElement("td", QSysInfo::currentCpuArchitecture());
+    writer.writeEndElement(); // tr
+
+    writer.writeStartElement("tr");
+    //: The command description in the server infromation section of the debug interface
+    writer.writeTextElement("th", tr("Kernel type"));
+    writer.writeTextElement("td", QSysInfo::kernelType());
+    writer.writeEndElement(); // tr
+
+    writer.writeStartElement("tr");
+    //: The command description in the server infromation section of the debug interface
+    writer.writeTextElement("th", tr("Kernel version"));
+    writer.writeTextElement("td", QSysInfo::kernelVersion());
+    writer.writeEndElement(); // tr
+
+    writer.writeStartElement("tr");
+    //: The command description in the server infromation section of the debug interface
+    writer.writeTextElement("th", tr("Product type"));
+    writer.writeTextElement("td", QSysInfo::productType());
+    writer.writeEndElement(); // tr
+
+    writer.writeStartElement("tr");
+    //: The command description in the server infromation section of the debug interface
+    writer.writeTextElement("th", tr("Product version"));
+    writer.writeTextElement("td", QSysInfo::productVersion());
     writer.writeEndElement(); // tr
 
     writer.writeEndElement(); // table
@@ -1627,7 +1689,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     // Footer
     writer.writeStartElement("div");
     writer.writeAttribute("class", "footer");
-    writer.writeTextElement("p", QString("Copyright %1 2018 guh GmbH.").arg(QChar(0xA9)));
+    writer.writeTextElement("p", QString("Copyright %1 %2 guh GmbH.").arg(QChar(0xA9)).arg(COPYRIGHT_YEAR_STRING));
     //: The footer license note of the debug interface
     writer.writeTextElement("p", tr("Released under the GNU GENERAL PUBLIC LICENSE Version 2."));
     writer.writeEndElement(); // div footer

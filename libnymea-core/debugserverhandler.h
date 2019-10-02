@@ -56,8 +56,7 @@ private:
     QProcess *m_tracePathProcess = nullptr;
     HttpReply *m_tracePathReply = nullptr;
 
-    QHash<DebugReportGenerator *, HttpReply *> m_runningReportGenerators;
-    QHash<QString, DebugReportGenerator *> m_finishedReportGenerators;
+    DebugReportGenerator *m_debugReportGenerator = nullptr;
 
     QByteArray loadResourceData(const QString &resourceFileName);
     QString getResourceFileName(const QString &requestPath);

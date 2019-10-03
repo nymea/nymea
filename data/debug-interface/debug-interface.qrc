@@ -24,5 +24,7 @@
         <file>favicons/apple-touch-icon-76x76.png</file>
         <file>favicons/apple-touch-icon-114x114.png</file>
         <file>favicons/apple-touch-icon-120x120.png</file>
+        <file>edit-copy.svg</file>
+        <file>delete.svg</file>
     </qresource>
 </RCC>

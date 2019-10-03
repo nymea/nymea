@@ -1670,6 +1670,9 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeTextElement("p", tr("This section allows you to see the live logs of the nymea server."));
 
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "log-buttons");
+
     // Toggle log button
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
@@ -1679,6 +1682,31 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     //: The connect button for the log stream of the debug interface
     writer.writeCharacters(tr("Start logs"));
     writer.writeEndElement(); // button
+
+    // Copy log content button
+    writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
+    writer.writeAttribute("type", "button");
+    writer.writeAttribute("id", "copyLogsButton");
+    writer.writeAttribute("onClick", "copyLogsContent()");
+    writer.writeEmptyElement("img");
+    writer.writeAttribute("class", "tool-image");
+    writer.writeAttribute("src", "/debug/edit-copy.svg");
+    writer.writeEndElement(); // button
+
+    // Copy log content button
+    writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
+    writer.writeAttribute("type", "button");
+    writer.writeAttribute("id", "clearLogsButton");
+    writer.writeAttribute("onClick", "clearLogsContent()");
+    writer.writeEmptyElement("img");
+    writer.writeAttribute("class", "tool-image");
+    writer.writeAttribute("src", "/debug/delete.svg");
+    writer.writeEndElement(); // button
+
+    writer.writeEndElement(); // div log-buttons
+
 
     // Logs output
     writer.writeStartElement("textarea");

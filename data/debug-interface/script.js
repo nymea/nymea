@@ -104,6 +104,28 @@ function disconnectWebsocket() {
 }
 
 
+function clearLogsContent() {
+    console.log("Clear live log content");
+    var logTextArea = document.getElementById("logsTextArea")
+    logTextArea.value = "";
+}
+
+
+
+function copyLogsContent() {
+    console.log("Copy live log content");
+    var logTextArea = document.getElementById("logsTextArea")
+    
+    logTextArea.select();
+    logTextArea.setSelectionRange(0, 99999); /*For mobile devices*/
+    document.execCommand("copy");
+    
+    console.log("Copied text:");
+    console.log(logTextArea.value);
+}
+
+
+
 /* ========================================================================*/
 /* File download / show functions
 /* ========================================================================*/

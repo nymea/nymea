@@ -565,6 +565,9 @@ void DebugServerHandler::onWebsocketClientConnected()
         s_oldLogMessageHandler = qInstallMessageHandler(&logMessageHandler);
     }
 
+    // Enable the log categories depending on the current debug configuration
+
+
     s_websocketClients.append(client);
     qCDebug(dcDebugServer()) << "New websocket client connected:" << client->peerAddress().toString();
 

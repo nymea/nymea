@@ -227,41 +227,49 @@ button::-moz-focus-inner { border: 0; }
 }
 
 .log-buttons {
-    width: 100%;
-    float: left;
+    display: -webkit-flex; /* Safari */
+    display: flex;
+    flex-flow: row nowrap;
 }
 
 .log-buttons button {
-    float: left;
+    display: -webkit-flex; /* Safari */
+    display: flex;
+    margin: 10px;
+    width: auto;
+}
+
+.tool-image {
+    width: 30px;
+    height: 30px;
 }
 
 #toggleLogsButton {
-    width: 80%;
-    margin-right: 10px;
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
 }
 
 #copyLogsButton {
     width: 20px;
-    margin-left: 10px;
-    margin-right: 10px;
-}
-
-.tool-image {
-    width: 25px;
-    height: 25px;
+    justify-content: center;
+    align-items: center;
 }
 
 #clearLogsButton {
     width: 20px;
-    margin-left: 10px;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Clear floats (clearfix hack) */
+/*
 .log-buttons:after {
   content: "";
   clear: both;
   display: table;
 }
+*/
 
 .container {
     min-height: 100%;

@@ -111,17 +111,19 @@ function clearLogsContent() {
 }
 
 
-
 function copyLogsContent() {
     console.log("Copy live log content");
     var logTextArea = document.getElementById("logsTextArea")
     
     logTextArea.select();
-    logTextArea.setSelectionRange(0, 99999); /*For mobile devices*/
+    //logTextArea.setSelectionRange(0, 99999); /*For mobile devices*/
     document.execCommand("copy");
     
     console.log("Copied text:");
     console.log(logTextArea.value);
+    
+    /* Clear selection */
+    document.select();
 }
 
 

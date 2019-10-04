@@ -1720,6 +1720,45 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeCharacters("");
     writer.writeEndElement(); // textarea
 
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "categories-area");
+
+    // Application debug category
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "debug-category");
+    writer.writeTextElement("p", "Application");
+    writer.writeStartElement("label");
+    writer.writeAttribute("class", "switch");
+    writer.writeStartElement("input");
+    writer.writeAttribute("type", "checkbox");
+    writer.writeEndElement(); // input
+    writer.writeStartElement("span");
+    writer.writeAttribute("class", "slider round");
+    writer.writeCharacters("");
+    writer.writeEndElement(); // span
+    writer.writeEndElement(); // label
+    writer.writeEndElement(); // div debug-category
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "debug-category");
+    writer.writeTextElement("p", "DeviceManager");
+    writer.writeStartElement("label");
+    writer.writeAttribute("class", "switch");
+    writer.writeStartElement("input");
+    writer.writeAttribute("type", "checkbox");
+    writer.writeEndElement(); // input
+    writer.writeStartElement("span");
+    writer.writeAttribute("class", "slider round");
+    writer.writeCharacters("");
+    writer.writeEndElement(); // span
+    writer.writeEndElement(); // label
+    writer.writeEndElement(); // div debug-category
+
+
+    // Provide options for debug categories
+
+    writer.writeEndElement(); // div categories-area
+
     writer.writeEndElement(); // logs-section
 
     writer.writeEndElement(); // div body

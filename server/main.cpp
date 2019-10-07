@@ -97,55 +97,9 @@ int main(int argc, char *argv[])
     application.setApplicationName("nymead");
     application.setApplicationVersion(NYMEA_VERSION_STRING);
 
-    // logging filers for core and libnymea
-    QStringList loggingFilters = {
-        "Warnings",
-        "Application",
-        "System",
-        "Platform",
-        "PlatformUpdate",
-        "PlatformZeroConf",
-        "Device",
-        "DeviceManager",
-        "RuleEngine",
-        "RuleEngineDebug",
-        "Hardware",
-        "Bluetooth",
-        "LogEngine",
-        "ServerManager",
-        "TcpServer",
-        "TcpServerTraffic",
-        "WebServer",
-        "WebServerTraffic",
-        "DebugServer",
-        "WebSocketServer",
-        "WebSocketServerTraffic",
-        "JsonRpc",
-        "JsonRpcTraffic",
-        "Rest",
-        "OAuth2",
-        "TimeManager",
-        "Coap",
-        "Avahi",
-        "AvahiDebug",
-        "UPnP",
-        "Cloud",
-        "CloudTraffic",
-        "NetworkManager",
-        "UserManager",
-        "AWS",
-        "AWSTraffic",
-        "BluetoothServer",
-        "BluetoothServerTraffic",
-        "Mqtt",
-        "Translations"
-    };
-
-    QStringList loggingFiltersPlugins;
-    foreach (const QJsonObject &pluginMetadata, DeviceManagerImplementation::pluginsMetadata()) {
-        QString pluginName = pluginMetadata.value("name").toString();
-        loggingFiltersPlugins << pluginName.left(1).toUpper() + pluginName.mid(1);
-    }
+    // Logging filers for core + libnymea and plugins
+    QStringList loggingFilters = NymeaCore::loggingFilters();
+    QStringList loggingFiltersPlugins = NymeaCore::loggingFiltersPlugins();
 
     // Translator for the server application
     QTranslator translator;

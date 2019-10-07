@@ -263,7 +263,7 @@ button::-moz-focus-inner { border: 0; }
 .categories-area {
     display: -webkit-flex;
     display: flex;
-    flex-flow: row nowrap;
+    flex-flow: row wrap;
 }
 
 .debug-category {
@@ -335,11 +335,11 @@ button::-moz-focus-inner { border: 0; }
 }
 
 input:checked + .slider {
-  background-color: #2196F3;
+  background-color: #57baae;
 }
 
 input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
+  box-shadow: 0 0 1px #57baae;
 }
 
 input:checked + .slider:before {

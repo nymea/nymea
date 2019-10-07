@@ -690,6 +690,65 @@ QStringList NymeaCore::getAvailableLanguages()
     return availableLanguages;
 }
 
+/*! Returns the list of logging categories from the core and the libnymea. */
+QStringList NymeaCore::loggingFilters()
+{
+    QStringList loggingFilters = {
+        "Warnings",
+        "Application",
+        "System",
+        "Platform",
+        "PlatformUpdate",
+        "PlatformZeroConf",
+        "Device",
+        "DeviceManager",
+        "RuleEngine",
+        "RuleEngineDebug",
+        "Hardware",
+        "Bluetooth",
+        "LogEngine",
+        "ServerManager",
+        "TcpServer",
+        "TcpServerTraffic",
+        "WebServer",
+        "WebServerTraffic",
+        "DebugServer",
+        "WebSocketServer",
+        "WebSocketServerTraffic",
+        "JsonRpc",
+        "JsonRpcTraffic",
+        "Rest",
+        "OAuth2",
+        "TimeManager",
+        "Coap",
+        "Avahi",
+        "AvahiDebug",
+        "UPnP",
+        "Cloud",
+        "CloudTraffic",
+        "NetworkManager",
+        "UserManager",
+        "AWS",
+        "AWSTraffic",
+        "BluetoothServer",
+        "BluetoothServerTraffic",
+        "Mqtt",
+        "Translations"
+    };
+
+    return loggingFilters;
+}
+
+QStringList NymeaCore::loggingFiltersPlugins()
+{
+    QStringList loggingFiltersPlugins;
+    foreach (const QJsonObject &pluginMetadata, DeviceManagerImplementation::pluginsMetadata()) {
+        QString pluginName = pluginMetadata.value("name").toString();
+        loggingFiltersPlugins << pluginName.left(1).toUpper() + pluginName.mid(1);
+    }
+    return loggingFiltersPlugins;
+}
+
 /*! Returns a pointer to the \l{BluetoothServer} instance owned by NymeaCore. */
 BluetoothServer *NymeaCore::bluetoothServer() const
 {

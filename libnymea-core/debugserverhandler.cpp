@@ -1720,42 +1720,62 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeCharacters("");
     writer.writeEndElement(); // textarea
 
+    writer.writeEmptyElement("hr");
+    //: The network section of the debug interface
+    writer.writeTextElement("h2", tr("Logging filters"));
+    writer.writeEmptyElement("hr");
+
     writer.writeStartElement("div");
     writer.writeAttribute("class", "categories-area");
 
-    // Application debug category
-    writer.writeStartElement("div");
-    writer.writeAttribute("class", "debug-category");
-    writer.writeTextElement("p", "Application");
-    writer.writeStartElement("label");
-    writer.writeAttribute("class", "switch");
-    writer.writeStartElement("input");
-    writer.writeAttribute("type", "checkbox");
-    writer.writeEndElement(); // input
-    writer.writeStartElement("span");
-    writer.writeAttribute("class", "slider round");
-    writer.writeCharacters("");
-    writer.writeEndElement(); // span
-    writer.writeEndElement(); // label
-    writer.writeEndElement(); // div debug-category
+    QStringList loggingCategories = NymeaCore::loggingFilters();
+    loggingCategories.sort();
+
+    foreach (const QString &loggingCategory, loggingCategories) {
+        writer.writeStartElement("div");
+        writer.writeAttribute("class", "debug-category");
+        writer.writeTextElement("p", loggingCategory);
+        writer.writeStartElement("label");
+        writer.writeAttribute("class", "switch");
+        writer.writeStartElement("input");
+        writer.writeAttribute("type", "checkbox");
+        writer.writeEndElement(); // input
+        writer.writeStartElement("span");
+        writer.writeAttribute("class", "slider round");
+        writer.writeCharacters("");
+        writer.writeEndElement(); // span
+        writer.writeEndElement(); // label
+        writer.writeEndElement(); // div debug-category
+    }
+
+    writer.writeEndElement(); // div categories-area
+
+    writer.writeEmptyElement("hr");
+    //: The network section of the debug interface
+    writer.writeTextElement("h2", tr("Logging filters plugins"));
+    writer.writeEmptyElement("hr");
 
     writer.writeStartElement("div");
-    writer.writeAttribute("class", "debug-category");
-    writer.writeTextElement("p", "DeviceManager");
-    writer.writeStartElement("label");
-    writer.writeAttribute("class", "switch");
-    writer.writeStartElement("input");
-    writer.writeAttribute("type", "checkbox");
-    writer.writeEndElement(); // input
-    writer.writeStartElement("span");
-    writer.writeAttribute("class", "slider round");
-    writer.writeCharacters("");
-    writer.writeEndElement(); // span
-    writer.writeEndElement(); // label
-    writer.writeEndElement(); // div debug-category
+    writer.writeAttribute("class", "categories-area");
 
-
-    // Provide options for debug categories
+    QStringList loggingCategoriesPlugins = NymeaCore::loggingFiltersPlugins();
+    loggingCategoriesPlugins.sort();
+    foreach (const QString &loggingCategory, loggingCategoriesPlugins) {
+        writer.writeStartElement("div");
+        writer.writeAttribute("class", "debug-category");
+        writer.writeTextElement("p", loggingCategory);
+        writer.writeStartElement("label");
+        writer.writeAttribute("class", "switch");
+        writer.writeStartElement("input");
+        writer.writeAttribute("type", "checkbox");
+        writer.writeEndElement(); // input
+        writer.writeStartElement("span");
+        writer.writeAttribute("class", "slider round");
+        writer.writeCharacters("");
+        writer.writeEndElement(); // span
+        writer.writeEndElement(); // label
+        writer.writeEndElement(); // div debug-category
+    }
 
     writer.writeEndElement(); // div categories-area
 

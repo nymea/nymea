@@ -379,6 +379,61 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         return m_tracePathReply;
     }
 
+    if (requestPath.startsWith("/debug/logging-categories")) {
+
+        if (requestQuery.isEmpty()) {
+            // Return the list of debug category settings
+            NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+            settings.beginGroup("LoggingRules");
+
+            qCDebug(dcDebugServer()) << "Request logging categories list";
+            QVariantMap dataMap;
+            QVariantMap loggingCategories;
+            foreach (const QString &loggingCategory, NymeaCore::loggingFilters()) {
+                loggingCategories.insert(loggingCategory, settings.value(QString("%1.debug").arg(loggingCategory), false).toBool());
+            }
+            dataMap.insert("loggingCategories", loggingCategories);
+            QVariantMap loggingCategoriesPlugins;
+            foreach (const QString &loggingCategory, NymeaCore::loggingFiltersPlugins()) {
+                loggingCategoriesPlugins.insert(loggingCategory, settings.value(QString("%1.debug").arg(loggingCategory), false).toBool());
+            }
+            dataMap.insert("loggingCategoriesPlugins", loggingCategoriesPlugins);
+
+            settings.endGroup();
+
+            HttpReply *reply = RestResource::createSuccessReply();
+            reply->setPayload(QJsonDocument::fromVariant(dataMap).toJson(QJsonDocument::Indented));
+            return reply;
+        } else {
+            NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+            settings.beginGroup("LoggingRules");
+            for (int i = 0; i < requestQuery.queryItems().count(); i++) {
+                QString category = requestQuery.queryItems().at(i).first;
+                if (!NymeaCore::loggingFilters().contains(category) && !NymeaCore::loggingFiltersPlugins().contains(category)) {
+                    qCWarning(dcDebugServer()) << "Invalid logging category in request query" << requestQuery.toString() << category;
+                    continue;
+                }
+
+                bool enabled = QVariant(requestQuery.queryItems().at(i).second).toBool();
+                qCDebug(dcDebugServer()) << "Category" << category << enabled;
+                settings.setValue(QString("%1.debug").arg(category), (enabled ? "true" : "false"));
+            }
+
+            // Update logging filter rules according to the nw settings
+            QStringList loggingRules;
+            loggingRules << "*.debug=false";
+            // Load the rules from nymead.conf file and append them to the rules
+            foreach (const QString &category, settings.childKeys()) {
+                loggingRules << QString("%1=%2").arg(category).arg(settings.value(category, "false").toString());
+            }
+            settings.endGroup();
+            QLoggingCategory::setFilterRules(loggingRules.join('\n'));
+
+            return RestResource::createSuccessReply();
+        }
+    }
+
+
     if (requestPath.startsWith("/debug/report")) {
 
         // The client can poll this url in order to get information about the current report generating process.
@@ -562,11 +617,9 @@ void DebugServerHandler::onWebsocketClientConnected()
 
     if (s_websocketClients.isEmpty()) {
         qCDebug(dcDebugServer()) << "Install debug message handler for live logs.";
+        //QLoggingCategory::setFilterRules("*.debug=true");
         s_oldLogMessageHandler = qInstallMessageHandler(&logMessageHandler);
     }
-
-    // Enable the log categories depending on the current debug configuration
-
 
     s_websocketClients.append(client);
     qCDebug(dcDebugServer()) << "New websocket client connected:" << client->peerAddress().toString();
@@ -1738,7 +1791,9 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
         writer.writeStartElement("label");
         writer.writeAttribute("class", "switch");
         writer.writeStartElement("input");
+        writer.writeAttribute("id", QString("debug-category-%1").arg(loggingCategory));
         writer.writeAttribute("type", "checkbox");
+        writer.writeAttribute("onclick", QString("toggleLoggingCategory('%1')").arg(loggingCategory));
         writer.writeEndElement(); // input
         writer.writeStartElement("span");
         writer.writeAttribute("class", "slider round");
@@ -1767,7 +1822,9 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
         writer.writeStartElement("label");
         writer.writeAttribute("class", "switch");
         writer.writeStartElement("input");
+        writer.writeAttribute("id", QString("debug-category-%1").arg(loggingCategory));
         writer.writeAttribute("type", "checkbox");
+        writer.writeAttribute("onclick", QString("toggleLoggingCategory('%1')").arg(loggingCategory));
         writer.writeEndElement(); // input
         writer.writeStartElement("span");
         writer.writeAttribute("class", "slider round");

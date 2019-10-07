@@ -171,29 +171,50 @@ int main(int argc, char *argv[])
         }
     }
 
-    QStringList filterRules;
+
+    /* The logging rules will be evaluated sequentially
+     *  1. All debug categories off
+     *  2. The stored categories from the nymead.conf will be appended
+     *  3. The Command line parameters will be added (-p and -d)
+     *  4. QT_LOGGING_CONF
+     *  5. QT_LOGGING_RULES
+     *
+     * The final filter rules will be set.
+     */
+
+    QStringList loggingRules;
+    loggingRules << "*.debug=false";
+    // Load the rules from nymead.conf file and append them to the rules
+    NymeaSettings nymeaSettings(NymeaSettings::SettingsRoleGlobal);
+    nymeaSettings.beginGroup("LoggingRules");
+    foreach (const QString &category, nymeaSettings.childKeys()) {
+        loggingRules << QString("%1=%2").arg(category).arg(nymeaSettings.value(category, "false").toString());
+    }
+    nymeaSettings.endGroup();
+
+    // Append the rules depending on the application parameter
     if (parser.isSet(allOption)) {
-        filterRules << "*.debug=true";
-        filterRules << "*Traffic.debug=false";
-        filterRules << "*Debug.debug=false";
-    } else {
-        filterRules << "*.debug=false";
+        loggingRules << "*.debug=true";
+        loggingRules << "*Traffic.debug=false";
+        loggingRules << "*Debug.debug=false";
     }
 
-    // And allow overriding individual values
+    // And allow overriding individual values with application parameter
     foreach (QString debugArea, parser.values(debugOption)) {
         bool enable = !debugArea.startsWith("No");
         bool isWarning = debugArea.endsWith("Warnings");
         debugArea.remove(QRegExp("^No"));
         debugArea.remove(QRegExp("Warnings$"));
         if (loggingFilters.contains(debugArea) || loggingFiltersPlugins.contains(debugArea)) {
-            filterRules.append(QString("%1.%2=%3").arg(debugArea).arg(isWarning ? "warning" : "debug").arg(enable ? "true": "false"));
+            loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg(isWarning ? "warning" : "debug").arg(enable ? "true": "false"));
         } else {
             qCWarning(dcApplication) << QCoreApplication::translate("nymea", "No such debug category:") << debugArea;
         }
     }
-    QLoggingCategory::setFilterRules(filterRules.join('\n'));
 
+    QLoggingCategory::setFilterRules(loggingRules.join('\n'));
+
+    // Parse DBus option
     if (parser.isSet(dbusOption)) {
         NymeaDBusService::setBusType(QDBusConnection::SessionBus);
     }
@@ -208,13 +229,13 @@ int main(int argc, char *argv[])
                 fprintf(stdout, "Could not create nymea settings directory %s", qPrintable(NymeaSettings::settingsPath()));
                 exit(EXIT_FAILURE);
             }
-            qCInfo(dcApplication) << "=====================================";
-            qCInfo(dcApplication) << "nymead" << NYMEA_VERSION_STRING << "started with user ID" << userId;
-            qCInfo(dcApplication) << "=====================================";
+            qCInfo(dcApplication()) << "=====================================";
+            qCInfo(dcApplication()) << "nymead" << NYMEA_VERSION_STRING << "started with user ID" << userId;
+            qCInfo(dcApplication()) << "=====================================";
         } else {
-            qCInfo(dcApplication) << "=====================================";
-            qCInfo(dcApplication) << "nymead" << NYMEA_VERSION_STRING << "started as root.";
-            qCInfo(dcApplication) << "=====================================";
+            qCInfo(dcApplication()) << "=====================================";
+            qCInfo(dcApplication()) << "nymead" << NYMEA_VERSION_STRING << "started as root.";
+            qCInfo(dcApplication()) << "=====================================";
         }
 
         // If running in a snappy environment, print out some details about it.

@@ -71,6 +71,7 @@ textarea {
     min-height: 100px;
     text-align: left;
     border-radius: 10px;
+    outline: none;
 }
 
 .tab {
@@ -273,12 +274,12 @@ button::-moz-focus-inner { border: 0; }
     justify-content: center;
     align-items: center;
     margin: 10px;
-    width: 25%;
+    width: 30%;
 }
 
 .debug-category p {
     margin: 10px;
-    text-align: left;
+    text-align: right;
     flex-grow: 1;
 }
 
@@ -356,8 +357,6 @@ input:checked + .slider:before {
 .slider.round:before {
   border-radius: 50%;
 }
-
-
 
 .container {
     min-height: 100%;

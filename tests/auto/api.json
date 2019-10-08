@@ -1636,7 +1636,10 @@
             "MediaBrowserIconSiriusXM",
             "MediaBrowserIconVTuner",
             "MediaBrowserIconTidal",
-            "MediaBrowserIconAirable"
+            "MediaBrowserIconAirable",
+            "MediaBrowserIconDeezer",
+            "MediaBrowserIconNapster",
+            "MediaBrowserIconSoundCloud"
         ],
         "MqttPolicy": {
             "allowedPublishTopicFilters": "StringList",

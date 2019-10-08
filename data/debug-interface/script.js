@@ -67,13 +67,13 @@ function connectWebsocket() {
         webSocket = new WebSocket(urlString);
         
         webSocket.onopen = function(openEvent) {
-            console.log("WebSocket connected: " + JSON.stringify(openEvent, null, 4));
+            console.log("WebSocket connected");
             webSocketConnected = true;
             document.getElementById("toggleLogsButton").innerHTML = "Stop logs";
         };
         
         webSocket.onclose = function(closeEvent) {
-            console.log("WebSocket disconnected: " + JSON.stringify(closeEvent, null, 4));
+            console.log("WebSocket disconnected");
             webSocketConnected = false;
             document.getElementById("toggleLogsButton").innerHTML = "Start logs";
         };
@@ -84,7 +84,6 @@ function connectWebsocket() {
         
         webSocket.onmessage = function (messageEvent) {
             var message = messageEvent.data;
-            console.log("WebSocket data received: " + message);
             document.getElementById("logsTextArea").value += message;
             document.getElementById("logsTextArea").scrollTop = document.getElementById("logsTextArea").scrollHeight;
         };
@@ -142,17 +141,14 @@ function loadLoggingCategorySettings() {
                 return;
             }
             
-            console.log(request.responseText);
             var responseMap = JSON.parse(request.responseText);
             
             for (var loggingCategory in responseMap['loggingCategories']) {
-                console.warn(loggingCategory, responseMap['loggingCategories'][loggingCategory])                
                 var loggingCategoryElement = document.getElementById("debug-category-" + loggingCategory)
                 loggingCategoryElement.checked = responseMap['loggingCategories'][loggingCategory]
             }   
             
             for (var loggingCategory in responseMap['loggingCategoriesPlugins']) {
-                console.warn(loggingCategory, responseMap['loggingCategoriesPlugins'][loggingCategory])                
                 var loggingCategoryElement = document.getElementById("debug-category-" + loggingCategory)
                 loggingCategoryElement.checked = responseMap['loggingCategoriesPlugins'][loggingCategory]
             }   

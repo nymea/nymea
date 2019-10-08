@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2018-2019 Simon Stürz <simon.stuerz@nymea.io>            *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -415,7 +415,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                 }
 
                 bool enabled = QVariant(requestQuery.queryItems().at(i).second).toBool();
-                qCDebug(dcDebugServer()) << "Category" << category << enabled;
+                qCDebug(dcDebugServer()) << "Logging category" << category << (enabled ? "enabled" : "disabled");
                 settings.setValue(QString("%1.debug").arg(category), (enabled ? "true" : "false"));
             }
 
@@ -432,7 +432,6 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             return RestResource::createSuccessReply();
         }
     }
-
 
     if (requestPath.startsWith("/debug/report")) {
 
@@ -901,7 +900,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     // Body
     writer.writeStartElement("div");
     writer.writeAttribute("class", "body");
-
 
     // ---------------------------------------------------------------------------
     writer.writeStartElement("div");

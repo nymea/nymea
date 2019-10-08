@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2018-2019 Simon Stürz <simon.stuerz@nymea.io>            *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -39,6 +39,14 @@ h1, h2, h3, h4, h5, h6 {
     text-align: center;
 }
 
+table {
+    display: table;
+    border-collapse: colapse;
+    border-color: #efefef;
+    min-height: 100px;
+    width: 100%;
+}
+
 th, td {
     padding: 3px;
     padding-left: 10px;
@@ -52,26 +60,8 @@ hr {
     color: #efefef;
 }
 
-table {
-    display: table;
-    border-collapse: colapse;
-    border-color: #efefef;
-    min-height: 100px;
-    width: 100%;
-}
-
 button {
     width: 100%;
-}
-
-textarea {
-    background-color: #3a4055;
-    width: 100%;
-    padding: 15px;
-    min-height: 100px;
-    text-align: left;
-    border-radius: 10px;
-    outline: none;
 }
 
 .tab {
@@ -107,8 +97,18 @@ textarea {
 }
 
 @keyframes fadeEffect {
-    from {opacity: 0;}
-    to {opacity: 1;}
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+textarea {
+    background-color: #3a4055;
+    width: 100%;
+    padding: 15px;
+    min-height: 100px;
+    text-align: left;
+    border-radius: 10px;
+    outline: none;
 }
 
 .console-textarea {
@@ -349,7 +349,6 @@ input:checked + .slider:before {
   transform: translateX(26px);
 }
 
-/* Rounded sliders */
 .slider.round {
   border-radius: 34px;
 }

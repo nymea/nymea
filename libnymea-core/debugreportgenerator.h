@@ -34,7 +34,6 @@ public:
     explicit DebugReportGenerator(QObject *parent = nullptr);
     ~DebugReportGenerator();
 
-
     QByteArray reportFileData() const;
     QString reportFileName();
     QString md5Sum() const;

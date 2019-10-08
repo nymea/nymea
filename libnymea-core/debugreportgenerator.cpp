@@ -33,6 +33,7 @@
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QProcessEnvironment>
+#include <QHostInfo>
 
 namespace nymeaserver {
 
@@ -167,7 +168,11 @@ void DebugReportGenerator::saveSystemInformation()
     stream << "Command: " << QCoreApplication::arguments().join(' ') << endl;
     stream << "Qt runtime version: " << qVersion() << endl;
     stream << "" << endl;
+#if (QT_VERSION < QT_VERSION_CHECK(5, 6, 0))
+    stream << "Hostname: " << QHostInfo::localHostName() << endl;
+#else
     stream << "Hostname: " << QSysInfo::machineHostName() << endl;
+#endif
     stream << "Architecture: " << QSysInfo::currentCpuArchitecture() << endl;
     stream << "Kernel type: " << QSysInfo::kernelType() << endl;
     stream << "Kernel version: " << QSysInfo::kernelVersion() << endl;

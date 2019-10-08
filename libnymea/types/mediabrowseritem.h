@@ -50,6 +50,9 @@ public:
         MediaBrowserIconVTuner = 204,
         MediaBrowserIconTidal = 205,
         MediaBrowserIconAirable = 206,
+        MediaBrowserIconDeezer = 207,
+        MediaBrowserIconNapster = 208,
+        MediaBrowserIconSoundCloud = 209,
     };
     Q_ENUM(MediaBrowserIcon)
 

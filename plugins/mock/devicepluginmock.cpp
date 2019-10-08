@@ -41,6 +41,7 @@
 #include "devicepluginmock.h"
 #include "httpdaemon.h"
 
+#include "types/mediabrowseritem.h"
 #include "devices/device.h"
 #include "plugininfo.h"
 
@@ -735,4 +736,90 @@ void DevicePluginMock::generateBrowseItems()
     item.setIcon(BrowserItem::BrowserIconFile);
     folderNode->addChild(new VirtualFsNode(item));
 
+    item = BrowserItem("mediaservices", "Media services", true, false);
+    item.setDescription("I list media icons");
+    item.setIcon(BrowserItem::BrowserIconMusic);
+    VirtualFsNode *mediaNode = new VirtualFsNode(item);
+    m_virtualFs->addChild(mediaNode);
+
+    MediaBrowserItem mediaItem = MediaBrowserItem("playlist", "Playlists", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconPlaylist);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("recent", "Recently played", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconRecentlyPlayed);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("library", "Library", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconLibrary);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("musiclibrary", "Music Library", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconMusicLibrary);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("videolibrary", "Video library", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconVideoLibrary);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("picturelibrary", "picture library", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconPictureLibrary);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+
+    mediaItem = MediaBrowserItem("disk", "CD", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconDisk);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("usb", "USB", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconUSB);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("network", "Network", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconNetwork);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("aux", "AUX", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconAux);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("spotify", "Spotify", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconSpotify);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("amazon", "Amazon Music", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconAmazon);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("tunein", "TuneIn", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconTuneIn);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("siriusxm", "Sirius XM", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconSiriusXM);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("vTuner", "vTuner", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconVTuner);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("tidal", "Tidal", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconTidal);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("airable", "airable", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconAirable);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("deezer", "Deezer", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconDeezer);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("napster", "Napster", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconNapster);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
+
+    mediaItem = MediaBrowserItem("soundcloud", "SoundCloud", false, false);
+    mediaItem.setMediaIcon(MediaBrowserItem::MediaBrowserIconSoundCloud);
+    mediaNode->addChild(new VirtualFsNode(mediaItem));
 }

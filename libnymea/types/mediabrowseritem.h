@@ -56,7 +56,7 @@ public:
     };
     Q_ENUM(MediaBrowserIcon)
 
-    MediaBrowserItem(const QString &id = QString(), const QString &displayName = QString(), bool browsable = false);
+    MediaBrowserItem(const QString &id = QString(), const QString &displayName = QString(), bool browsable = false, bool executable = false);
 
     MediaBrowserIcon mediaIcon() const;
     void setMediaIcon(MediaBrowserIcon mediaIcon);

@@ -36,6 +36,8 @@
 #include <QCoreApplication>
 #include <QFileInfo>
 #include <QWebSocket>
+#include <QPair>
+#include <QHostInfo>
 
 
 namespace nymeaserver {
@@ -1007,7 +1009,12 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("tr");
     //: The command description in the server infromation section of the debug interface
     writer.writeTextElement("th", tr("Hostname"));
+#if (QT_VERSION < QT_VERSION_CHECK(5, 6, 0))
+    writer.writeTextElement("td", QHostInfo::localHostName());
+#else
     writer.writeTextElement("td", QSysInfo::machineHostName());
+#endif
+
     writer.writeEndElement(); // tr
 
     writer.writeStartElement("tr");

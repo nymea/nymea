@@ -177,8 +177,8 @@ int main(int argc, char *argv[])
      *  2. Enable all debug categories if requested from command line (-p)
      *  3. The stored categories from the nymead.conf will be appended
      *  4. Add the individual command line params will be added (-d)
-     *  4. QT_LOGGING_CONF
-     *  5. QT_LOGGING_RULES
+     *  5. QT_LOGGING_CONF
+     *  6. QT_LOGGING_RULES
      *
      * The final filter rules will be set.
      */
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
     }
     nymeaSettings.endGroup();
 
-    // Add the individual command line params will be added (-d)
+    // 4. Add the individual command line params will be added (-d)
     foreach (QString debugArea, parser.values(debugOption)) {
         bool enable = !debugArea.startsWith("No");
         bool isWarning = debugArea.endsWith("Warnings");

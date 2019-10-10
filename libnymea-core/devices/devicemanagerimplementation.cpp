@@ -495,7 +495,9 @@ Device::DeviceError DeviceManagerImplementation::setDeviceSettings(const DeviceI
 DevicePairingInfo* DeviceManagerImplementation::pairDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params)
 {
     PairingTransactionId transactionId = PairingTransactionId::createPairingTransactionId();
-    DevicePairingInfo *info = new DevicePairingInfo(transactionId, deviceClassId, DeviceId(), name, params, DeviceId(), this, 30000);
+    // Create new device id
+    DeviceId newDeviceId = DeviceId::createDeviceId();
+    DevicePairingInfo *info = new DevicePairingInfo(transactionId, deviceClassId, newDeviceId, name, params, DeviceId(), this, 30000);
     pairDeviceInternal(info);
     return info;
 }
@@ -521,7 +523,12 @@ DevicePairingInfo* DeviceManagerImplementation::pairDevice(const DeviceClassId &
         return info;
     }
 
-    DevicePairingInfo *info = new DevicePairingInfo(pairingTransactionId, deviceClassId, deviceDescriptor.deviceId(), name, deviceDescriptor.params(), deviceDescriptor.parentDeviceId(), this, 30000);
+    DeviceId deviceId = deviceDescriptor.deviceId();
+    // If it's a new device (not a reconfiguration), create a new DeviceId now.
+    if (deviceId.isNull()) {
+        deviceId = DeviceId::createDeviceId();
+    }
+    DevicePairingInfo *info = new DevicePairingInfo(pairingTransactionId, deviceClassId, deviceId, name, deviceDescriptor.params(), deviceDescriptor.parentDeviceId(), this, 30000);
     pairDeviceInternal(info);
     return info;
 }
@@ -548,13 +555,9 @@ DevicePairingInfo *DeviceManagerImplementation::confirmPairing(const PairingTran
         return info;
     }
 
-    // If we already have a deviceId, we're reconfiguring an existing device, else we're adding a new one.
-    bool addNewDevice = false;
     DeviceId deviceId = context.deviceId;
-    if (deviceId.isNull()) {
-        deviceId = DeviceId::createDeviceId();
-        addNewDevice = true;
-    }
+    // If we already have a device for this ID, we're reconfiguring an existing device, else we're adding a new one.
+    bool addNewDevice = !m_configuredDevices.contains(context.deviceId);
 
     // We're using two different info objects here, one to hand over to the plugin for the pairing, the other we give out
     // to the user. After the internal one has finished, we'll start a setupDevice job and finish the external pairingInfo only after

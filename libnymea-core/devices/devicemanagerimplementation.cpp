@@ -588,7 +588,7 @@ DevicePairingInfo *DeviceManagerImplementation::confirmPairing(const PairingTran
         if (addNewDevice) {
             device = new Device(plugin, deviceClass, internalInfo->deviceId(), this);
             if (internalInfo->deviceName().isEmpty()) {
-                device->setName(deviceClass.name());
+                device->setName(deviceClass.displayName());
             } else {
                 device->setName(internalInfo->deviceName());
             }

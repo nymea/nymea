@@ -114,7 +114,7 @@ function copyLogsContent() {
     var logTextArea = document.getElementById("logsTextArea")
     
     logTextArea.select();
-    //logTextArea.setSelectionRange(0, 99999); /*For mobile devices*/
+    logTextArea.setSelectionRange(0, 99999); /*For mobile devices*/
     document.execCommand("copy");
     
     console.log("Copied text:");

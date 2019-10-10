@@ -174,17 +174,27 @@ int main(int argc, char *argv[])
 
     /* The logging rules will be evaluated sequentially
      *  1. All debug categories off
-     *  2. The stored categories from the nymead.conf will be appended
-     *  3. The Command line parameters will be added (-p and -d)
+     *  2. Enable all debug categories if requested from command line (-p)
+     *  3. The stored categories from the nymead.conf will be appended
+     *  4. Add the individual command line params will be added (-d)
      *  4. QT_LOGGING_CONF
      *  5. QT_LOGGING_RULES
      *
      * The final filter rules will be set.
      */
 
+    // 1. All debug categories off
     QStringList loggingRules;
     loggingRules << "*.debug=false";
-    // Load the rules from nymead.conf file and append them to the rules
+
+    // 2. Enable all debug categories making sense if requested from command line (-p)
+    if (parser.isSet(allOption)) {
+        loggingRules << "*.debug=true";
+        loggingRules << "*Traffic.debug=false";
+        loggingRules << "*Debug.debug=false";
+    }
+
+    // 3. The stored categories from the nymead.conf will be appended
     NymeaSettings nymeaSettings(NymeaSettings::SettingsRoleGlobal);
     nymeaSettings.beginGroup("LoggingRules");
     foreach (const QString &category, nymeaSettings.childKeys()) {
@@ -192,14 +202,7 @@ int main(int argc, char *argv[])
     }
     nymeaSettings.endGroup();
 
-    // Append the rules depending on the application parameter
-    if (parser.isSet(allOption)) {
-        loggingRules << "*.debug=true";
-        loggingRules << "*Traffic.debug=false";
-        loggingRules << "*Debug.debug=false";
-    }
-
-    // And allow overriding individual values with application parameter
+    // Add the individual command line params will be added (-d)
     foreach (QString debugArea, parser.values(debugOption)) {
         bool enable = !debugArea.startsWith("No");
         bool isWarning = debugArea.endsWith("Warnings");
@@ -212,6 +215,7 @@ int main(int argc, char *argv[])
         }
     }
 
+    // Finally set the rules for the logging
     QLoggingCategory::setFilterRules(loggingRules.join('\n'));
 
     // Parse DBus option

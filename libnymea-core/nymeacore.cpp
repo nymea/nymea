@@ -171,6 +171,9 @@ void NymeaCore::init() {
     qCDebug(dcApplication) << "Creating Cloud Manager";
     m_cloudManager = new CloudManager(m_configuration, m_networkManager, this);
 
+    qCDebug(dcApplication()) << "Loading experiences";
+
+
     CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
     m_deviceManager->registerStaticPlugin(cloudNotifications, cloudNotifications->metaData());
 

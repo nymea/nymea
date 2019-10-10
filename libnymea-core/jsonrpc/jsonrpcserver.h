@@ -71,6 +71,8 @@ public:
     void registerTransportInterface(TransportInterface *interface, bool authenticationRequired);
     void unregisterTransportInterface(TransportInterface *interface);
 
+    void registerHandler(JsonHandler *handler);
+
 private:
     QHash<QString, JsonHandler *> handlers() const;
 
@@ -116,8 +118,6 @@ private:
     QHash<QString, JsonReply*> m_pairingRequests;
 
     int m_notificationId;
-
-    void registerHandler(JsonHandler *handler);
 
     QString formatAssertion(const QString &targetNamespace, const QString &method, QMetaMethod::MethodType methodType, JsonHandler *handler, const QVariantMap &data) const;
 };

@@ -31,50 +31,25 @@
 */
 
 
-/*! \fn void DevicePlugin::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
-    Emit this signal when the discovery of a \a deviceClassId of this DevicePlugin is finished. The \a devices parameter describes the
-    list of \l{DeviceDescriptor}{DeviceDescriptors} of all discovered \l{Device}{Devices}.
-    Note: During a discovery a plugin should always return the full result set. So even if a device is already known to the system and
-    a later discovery finds the device again, it should be included in the result set but the DeviceDescriptor's deviceId should be set
-    to the device ID.
-    \sa discoverDevices()
-*/
-
-/*! \fn void DevicePlugin::pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceSetupStatus status);
-    This signal is emitted when the pairing of a \a pairingTransactionId is finished.
-    The \a status of the  will be described as \l{Device::DeviceError}{DeviceError}.
-    \sa confirmPairing()
-*/
-
-/*! \fn void DevicePlugin::deviceSetupFinished(Device *device, Device::DeviceSetupStatus status);
-    This signal is emitted when the setup of a \a device in this DevicePlugin is finished. The \a status parameter describes the
-    \l{Device::DeviceError}{DeviceError} that occurred.
-*/
-
 /*! \fn void DevicePlugin::configValueChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     This signal is emitted when the \l{Param} with a certain \a paramTypeId of a \l{Device} configuration changed the \a value.
 */
 
-/*! \fn void DevicePlugin::actionExecutionFinished(const ActionId &id, Device::DeviceError status)
-    This signal is to be emitted when you previously have returned \l{DeviceManager}{DeviceErrorAsync}
-    in a call of executeAction(). The \a id refers to the executed \l{Action}. The \a status of the \l{Action}
-    execution will be described as \l{Device::DeviceError}{DeviceError}.
-*/
-
-/*! \fn void DevicePlugin::autoDevicesAppeared(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &deviceDescriptors)
-    This signal is emitted when a new \l{Device} of certain \a deviceClassId appeared. The description of the \l{Device}{Devices}
-    will be in \a deviceDescriptors. This signal can only emitted from devices with the \l{DeviceClass}{CreateMethodAuto}.
+/*! \fn void DevicePlugin::autoDevicesAppeared(const DeviceDescriptors &deviceDescriptors)
+    A plugin emits this signal when new \l{Device} appeared. For instance a plugin connected to a bridge might detect
+    that new devices have been connected to the bridge. Emitting this signal will cause those devices to be added
+    to the nymea system and setupDevice will be called for them.
 */
 
 /*! \fn void DevicePlugin::autoDeviceDisappeared(const DeviceId &id)
-    Emit this signal when a device with the given \a id and which was created by \l{DevicePlugin::autoDevicesAppeared} has been removed from the system.
-    Be careful with this, as this will completely remove the device from the system and with it all the associated rules. Only
-    emit this if you are sure that a device will never come back. This signal should not be emitted for child auto devices
-    when the parent who created them is removed. The system will automatically remove all child devices in such a case.
+    A plugin emits this signal when a device with the given \a id and which was created by \l{DevicePlugin::autoDevicesAppeared}
+    has been removed from the system. When emitting this signal, nymea will remove the device from the system and with it all the
+    associated rules and child devices. Because of this, this signal should only be emitted when it's certain that the given device
+    will never return to be available any more.
 */
 
 /*! \fn void DevicePlugin::emitEvent(const Event &event)
-    To produce a new event in the system, create a new \l{Event} and emit it with \a event.
+    To produce a new event in the system, a plugin creates a new \l{Event} and emits this signal it with that \a event.
     Usually events are emitted in response to incoming data or other other events happening. Find a configured
     \l{Device} from the \l{DeviceManager} and get its \l{EventType}{EventTypes}, then
     create a \l{Event} complying to that \l{EventType} and emit it here.
@@ -170,30 +145,40 @@ void DevicePlugin::startMonitoringAutoDevices()
 
 }
 
-/*! Reimplement this if you support a DeviceClass with createMethod \l{DeviceManager}{CreateMethodDiscovery}.
-    This will be called to discover Devices for the given \a deviceClassId with the given \a params. This will always
-    be an async operation. Return \l{DeviceManager}{DeviceErrorAsync} or \l{DeviceManager}{DeviceErrorNoError}
-    if the discovery has been started successfully. Return an appropriate error otherwise.
-    Once devices are discovered, emit devicesDiscovered().
+/*! A plugin must reimplement this if it supports a DeviceClass with createMethod \l{DeviceManager}{CreateMethodDiscovery}.
+    When the nymea system needs to discover available devices, this will be called on the plugin. The plugin implementation
+    is set to discover devices for the \l{DeviceClassId} given in the \a info object.
+    When devices are discovered, they should be added to the info object by calling \l{DeviceDiscoveryInfo::addDeviceDescriptor}.
+    Once the discovery is complete a plugin must finish it by calling \l{DeviceDiscoveryInfo::finish} using \l{Device::DeviceErrorNoError}
+    in case of success, or a matching error code otherwise. An optional display message can be passed optionally which might be shown
+    to the user, indicating more details about the error. The displayMessage must be made translatable by wrapping it in a QT_TR_NOOP()
+    statement.
+
+    A discovery might be cancelled by nymea. In which case the \l{DeviceDiscoveryInfo::aborted} signal will be emitted.
+    The info object must not be accessed after \l{DeviceDiscoveryInfo::destroyed} is emitted.
 */
 void DevicePlugin::discoverDevices(DeviceDiscoveryInfo *info)
 {
     info->finish(Device::DeviceErrorUnsupportedFeature);
 }
 
-/*! This will be called when a new device is created. The plugin has the chance to do some setup.
-    Return \l{DeviceManager}{DeviceSetupStatusFailure} if something bad happened during the setup in which case the \a device
-    will be disabled. Return \l{DeviceManager}{DeviceSetupStatusSuccess} if everything went well. If you can't tell yet and
-    need more time to set up the \a device (note: you should never block in this method) you can
-    return \l{DeviceManager}{DeviceSetupStatusAsync}. In that case the \l{DeviceManager} will wait for you to emit
-    \l{DevicePlugin}{deviceSetupFinished} to report the status.
+/*! This will be called when a new device is created. The plugin can do a setup of the device by reimplementing this method.
+    The passed \a info object will contain the information about the new \l{Device}. When the setup is completed, a plugin
+    must finish it by calling \l{DeviceSetupInfo::finish} on the \a info object. In case of success, \{Device::DeviceErrorNoError}
+    must be used, or an appropriate \l{Device::DeviceError} in case of failure. An optional display message can be passed optionally which might be shown
+    to the user, indicating more details about the error. The displayMessage must be made translatable by wrapping it in a QT_TR_NOOP()
+    statement.
+
+    A setup might be cancelled by nymea. In which case the \{DeviceSetupInfo::aborted} signal will be emitted.
+    The info object must not be accessed after \l{DeviceSetupInfo::destroyed} is emitted.
 */
 void DevicePlugin::setupDevice(DeviceSetupInfo *info)
 {
-    info->finish(Device::DeviceErrorUnsupportedFeature);
+    info->finish(Device::DeviceErrorNoError);
 }
 
-/*! This will be called when a new \a device was added successfully and the device setup is finished.*/
+/*! This will be called when a new \a device was added successfully and the device setup is finished. A plugin can optionally
+    trigger additional code to operate on the device by reimplementing this method.*/
 void DevicePlugin::postSetupDevice(Device *device)
 {
     Q_UNUSED(device)
@@ -214,7 +199,7 @@ void DevicePlugin::deviceRemoved(Device *device)
     SetupMethodOAuth should generate the OAuthUrl which will be opened on the client to allow the user logging in and obtain
     the OAuth code.
     SetupMethodEnterPin, SetupMethodPushButton and SetupMethodUserAndPassword will typically not require to do anything here.
-    It is not required to reimplement this method for those setup methods, however, a Plugin reimplementing it should call
+    It is not required to reimplement this method for those setup methods, however, a Plugin reimplementing it must call
     \l{DevicePairingInfo::finish}{finish()} on the \l{DevicePairingInfo} object and can provide an optional displayMessage which
     might be presented to the user. Those strings need to be wrapped in QT_TR_NOOP() in order to be translatable for the client's
     locale.
@@ -259,33 +244,48 @@ void DevicePlugin::confirmPairing(DevicePairingInfo *info, const QString &userna
     info->finish(Device::DeviceErrorUnsupportedFeature);
 }
 
-/*! This will be called to actually execute actions on the hardware. The \{Device} and
-    the \{Action} are contained in the \a device and \a action parameters.
-    Return the appropriate \l{Device::DeviceError}{DeviceError}.
+/*! This will be called to execute actions on the device. The given \a info object contains
+    information about the target \l{Device} and the \l{Action} to be executed.
 
-    It is possible to execute actions asynchronously. You never should do anything blocking for
-    a long time (e.g. wait on a network reply from the internet) but instead return
-    Device::DeviceErrorAsync and continue processing in an async manner. Once
-    you have the reply ready, emit actionExecutionFinished() with the appropriate parameters.
+    When the execution is completed, a plugin must finish it by calling \l{DeviceActionInfo::finish} on the \a info
+    object. In case of success, \l{Device::DeviceErrorNoError} must be used, or an appropriate \l{Device::DeviceError}
+    in case of failure. An optional display message can be passed which might be shown
+    to the user, indicating more details about the error. The displayMessage must be made translatable by wrapping it in a QT_TR_NOOP()
+    statement.
 
-    \sa actionExecutionFinished()
+    An action execution might be cancelled by nymea. In which case the \l{DeviceActionInfo::aborted} signal will be emitted.
+    The info object must not be accessed after \l{DeviceActionInfo::destroyed} is emitted.
 */
 void DevicePlugin::executeAction(DeviceActionInfo *info)
 {
     info->finish(Device::DeviceErrorUnsupportedFeature);
 }
 
-/*! Implement this if your devices support browsing (set "browsable" to true in the metadata).
- *  When the system calls this method, fill the \a result object's items list with entries from the browser.
- *  If \a itemId is empty it means that the root node of the file system should be returned. Each item in
- *  the result set shall be uniquely identifiable using its \l{BrowserItem::id}{id} property.
- *  The system might call this method again, with an \a itemId returned in a previous query, provided
- *  that item's \l{BrowserItem::browsable} property is true. In this case all children of the given
- *  item shall be returned. All browser \l {BrowserItem::displayName} properties shall be localized
- *  using the given \a locale.
- *  When done, set the \l{BrowserResult::status}{result's status} field approprietly. Set the result's
- *  status to Device::DeviceErrorAsync if this operation requires async behavior and emit
- *  \l{browseRequestFinished} when done.
+/*! A plugin must implement this if devices support browsing ("browsable" being true in the metadata JSON).
+    When the system calls this method, the \a result must be filled with entries from the browser using
+    \l{BrowseResult::addItems}. The \a info object will contain information about which device and which item/node
+    should be browsed. If the itemId is empty it means that the root node of the file system should be returned otherwise
+    all the children of the given item/node should be returned.
+
+
+    Each item in the result set shall be uniquely identifiable using its \l{BrowserItem::id}{id} property.
+    The system might call this method again, with an itemId returned in a previous query, provided
+    that item's \l{BrowserItem::browsable} property is true. In this case all children of the given
+    item shall be returned. All browser \l{BrowserItem::displayName} properties shall be localized
+    using the given locale in the  \a info object.
+
+    If a returned item's \l{BrowserItem::executable} property is set to true, the system might call \l{DevicePlugin::executeBrowserAction}
+    for this itemId.
+
+
+    An item might have additional actions which must be defined in the plugin metadata JSON as "browserItemActionTypes". Such actions
+    might be context actions to items in a browser. For instance, a file browser might add copy/cut/paste actions to an item. The
+    system might call \l{DevicePlugin::executeBrowserItemAction} on such items.
+
+    When done, the browse result must be completed by calling \l{BrowserResult::finish} with \l{Device::DeviceErrorNoError}
+    in case of success or an appropriate \l{Device::DeviceError} otherwise. An optional display message can be passed which might be shown
+    to the user, indicating more details about the error. The displayMessage must be made translatable by wrapping it in a QT_TR_NOOP()
+    statement.
  */
 void DevicePlugin::browseDevice(BrowseResult *result)
 {
@@ -293,12 +293,21 @@ void DevicePlugin::browseDevice(BrowseResult *result)
     result->finish(Device::DeviceErrorUnsupportedFeature);
 }
 
-/*! Implement this if your devices support browsing (set "browsable" to true in the metadata).
- *  When the system calls this method, fetch the item details required to create a BrowserItem
- *  for the item with the given \a id and append that one item to the \a result.
- *  When done, set the \l{BrowserResult::status}{result's status} field approprietly. Set the result's
- *  status to Device::DeviceErrorAsync if this operation requires async behavior and emit
- *  \l{browserItemRequestFinished} when done.
+/*! A plugin must implement this if devices support browsing ("browsable" being true in the metadata JSON).
+    When the system calls this method, the \a result must be filled with a single item identified by the \l{DeviceItemResult::itemId}
+    using \l{BrowseResult::addItem}. The \a result object will contain information about which device and which item/node
+    should be browsed. If the itemId is empty it means that the root node of the file system should be returned.
+
+    Each item in the result set shall be uniquely identifiable using its \l{BrowserItem::id}{id} property. The system might
+    call this method again, with an itemId returned in a previous query, provided that item's \l{BrowserItem::browsable}
+    property is true. In this case all children of the given item shall be returned. All browser \l{BrowserItem::displayName} properties shall be localized
+    using the given locale in the \a info object.
+
+
+    When done, the browse result must be completed by calling \l{BrowserItemResult::finish} with \l{Device::DeviceErrorNoError}
+    in case of success or an appropriate \l{Device::DeviceError} otherwise. An optional display message can be passed which might be shown
+    to the user, indicating more details about the error. The displayMessage must be made translatable by wrapping it in a QT_TR_NOOP()
+    statement.
  */
 void DevicePlugin::browserItem(BrowserItemResult *result)
 {
@@ -306,21 +315,37 @@ void DevicePlugin::browserItem(BrowserItemResult *result)
     result->finish(Device::DeviceErrorUnsupportedFeature);
 }
 
-/*! Implement this if your devices support browsing and execute the itemId defined in \a browserAction.
- *  Return Device::DeviceErrorAsync if this operation requires async behavior and emit
- *  \l{browserItemExecutionFinished} when done.
- */
+/*! This will be called to execute browser items on the device. For instance, a file browser might execute a file here.
+    The given \a info object contains information about the target \l{Device} and the \l{BrowserAction} to be executed.
+
+    When the execution is completed, a plugin must finish it by calling \l{BrowserActionInfo::finish} on the \a info
+    object. In case of success, \{Device::DeviceErrorNoError} must be used, or an appropriate \l{Device::DeviceError}
+    in case of failure. An optional display message can be passed which might be shown
+    to the user, indicating more details about the error. The displayMessage must be made translatable by wrapping it in a QT_TR_NOOP()
+    statement.
+
+    An action execution might be cancelled by nymea. In which case the \{BrowserActionInfo::aborted} signal will be emitted.
+    The info object must not be accessed after \l{BrowsereActionInfo::destroyed} is emitted.
+*/
 void DevicePlugin::executeBrowserItem(BrowserActionInfo *info)
 {
     qCWarning(dcDevice()) << "Device claims" << info->device()->deviceClass().name() << "to be browsable but plugin does not reimplement browserItem!";
     info->finish(Device::DeviceErrorUnsupportedFeature);
 }
 
-/*! Implement this if your devices support browsing and execute the item's action for the itemId defined
- *  in \a browserItemAction.
- *  Return Device::DeviceErrorAsync if this operation requires async behavior and emit
- *  \l{browserItemActionExecutionFinished} when done.
- */
+/*! This will be called to execute browser item actions on the device. For instance a file browser might have
+    "browserItemActionTypes" defined in the JSON in order to support context options like copy/cut/paste.
+    The given \a info object contains information about the target \l{Device} and the \l{BrowserItemAction} to be executed.
+
+    When the execution is completed, a plugin must finish it by calling \l{BrowserItemActionInfo::finish} on the \a info
+    object. In case of success, \l{Device::DeviceErrorNoError} must be used, or an appropriate \l{Device::DeviceError}
+    in case of failure. An optional display message can be passed which might be shown
+    to the user, indicating more details about the error. The displayMessage must be made translatable by wrapping it in a QT_TR_NOOP()
+    statement.
+
+    An action execution might be cancelled by nymea. In which case the \{BrowserItemActionInfo::aborted} signal will be emitted.
+    The info object must not be accessed after \l{BrowserItemActionInfo::destroyed} is emitted.
+*/
 void DevicePlugin::executeBrowserItemAction(BrowserItemActionInfo *info)
 {
     qCWarning(dcDevice()) << "Device claims" << info->device()->deviceClass().name() << "to be browsable but plugin does not reimplement browserItemAction!";
@@ -333,9 +358,6 @@ ParamTypes DevicePlugin::configurationDescription() const
     return m_metaData.pluginSettings();
 }
 
-/*! This will be called when the DeviceManager initializes the plugin and set up the things behind the scenes.
-    When implementing a new plugin, use \l{DevicePlugin::init()} instead in order to do initialisation work.
-    The \l{DevicePlugin::init()} method will be called once the plugin configuration has been loaded. */
 void DevicePlugin::initPlugin(const PluginMetadata &metadata, DeviceManager *deviceManager, HardwareManager *hardwareManager)
 {
     m_metaData = metadata;

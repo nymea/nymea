@@ -202,7 +202,7 @@ QVariantList NymeaTestBase::checkNotifications(const QSignalSpy &spy, const QStr
 QVariant NymeaTestBase::getAndWait(const QNetworkRequest &request, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
+    connect(&nam, &QNetworkAccessManager::sslErrors, [&nam](QNetworkReply *reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
@@ -363,16 +363,16 @@ void NymeaTestBase::verifyReply(QNetworkReply *reply, const QByteArray &data, co
 //    }
 }
 
-bool NymeaTestBase::enableNotifications()
+void NymeaTestBase::enableNotifications(const QStringList &namespaces)
 {
-    QVariantMap notificationParams;
-    notificationParams.insert("enabled", true);
-    QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", notificationParams);
-    if (response.toMap().value("params").toMap().value("enabled").toBool() != true) {
-        return false;
+    QVariantList variantList;
+    foreach (const QString &ns, namespaces) {
+        variantList << ns;
     }
-    qDebug() << "Notifications enabled.";
-    return true;
+    QVariantMap notificationParams;
+    notificationParams.insert("namespaces", variantList);
+    QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", notificationParams);
+    QCOMPARE(response.toMap().value("params").toMap().value("namespaces").toList(), variantList);
 }
 
 bool NymeaTestBase::disableNotifications()

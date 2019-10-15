@@ -59,7 +59,7 @@ protected:
 
     void verifyReply(QNetworkReply *reply, const QByteArray &data, const int &expectedStatus);
 
-    bool enableNotifications();
+    void enableNotifications(const QStringList &namespaces);
     bool disableNotifications();
 
     inline void verifyError(const QVariant &response, const QString &fieldName, const QString &error)

@@ -890,7 +890,7 @@ void TestRules::editRules()
     verifyRuleError(response);
 
     // enable notifications
-    QCOMPARE(enableNotifications(), true);
+    enableNotifications({"Rules"});
 
     // now create the new rule and edit the original one
     params.clear();
@@ -1856,7 +1856,7 @@ void TestRules::testChildEvaluator_data()
     DeviceId testDeviceId = addDisplayPinDevice();
     QVERIFY2(!testDeviceId.isNull(), "Could not add push button device for child evaluators");
 
-    enableNotifications();
+    enableNotifications({"Rules"});
 
     // Create child evaluators
     // Action

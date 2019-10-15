@@ -78,7 +78,7 @@ void TestConfigurations::getConfigurations()
 
 void TestConfigurations::testTimeZones()
 {
-    enableNotifications();
+    enableNotifications({"Configuration"});
 
     QVariantMap params; QVariant response; QVariantMap configurations; QVariantList configurationChangedNotifications;
 
@@ -173,7 +173,7 @@ void TestConfigurations::testTimeZones()
 
 void TestConfigurations::testServerName()
 {
-    enableNotifications();
+    enableNotifications({"Configuration"});
 
     // Get current configurations
     QVariantMap basicConfigurationMap = loadBasicConfiguration();
@@ -234,7 +234,7 @@ void TestConfigurations::testServerName()
 
 void TestConfigurations::testLanguages()
 {
-    enableNotifications();
+    enableNotifications({"Configuration"});
 
     // Get current configurations
     QVariantMap basicConfigurationMap = loadBasicConfiguration();
@@ -287,7 +287,7 @@ void TestConfigurations::testLanguages()
 
             // Restart the server and check if the language will be loaded correctly
             restartServer();
-            enableNotifications();
+            enableNotifications({"Configuration"});
 
 
             // Get configuration
@@ -310,7 +310,7 @@ void TestConfigurations::testLanguages()
 
 void TestConfigurations::testDebugServerConfiguration()
 {
-    enableNotifications();
+    enableNotifications({"Configuration"});
 
     // Get current configurations
     QVariantMap basicConfigurationMap = loadBasicConfiguration();

@@ -3,5 +3,10 @@
 if [ -z $1 ]; then
   echo "usage: $0 host"
 else
-  (echo '{"id":1, "method": "JSONRPC.Introspect"}'; sleep 1) | nc $1 2222
+
+cat <<EOD | nc $1 2222
+{"id":1, "method": "JSONRPC.Hello"}
+{"id":2, "method": "JSONRPC.Introspect"}
+EOD
+
 fi

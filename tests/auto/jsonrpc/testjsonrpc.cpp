@@ -46,8 +46,8 @@ private slots:
 
     void introspect();
 
-    void enableDisableNotifications_data();
-    void enableDisableNotifications();
+    void enableDisableNotifications_legacy_data();
+    void enableDisableNotifications_legacy();
 
     void deviceAddedRemovedNotifications();
     void ruleAddedRemovedNotifications();
@@ -621,7 +621,7 @@ void TestJSONRPC::introspect()
     }
 }
 
-void TestJSONRPC::enableDisableNotifications_data()
+void TestJSONRPC::enableDisableNotifications_legacy_data()
 {
     QTest::addColumn<QString>("enabled");
 
@@ -629,7 +629,7 @@ void TestJSONRPC::enableDisableNotifications_data()
     QTest::newRow("disabled") << "false";
 }
 
-void TestJSONRPC::enableDisableNotifications()
+void TestJSONRPC::enableDisableNotifications_legacy()
 {
     QFETCH(QString, enabled);
 
@@ -638,12 +638,27 @@ void TestJSONRPC::enableDisableNotifications()
     QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", params);
 
     QCOMPARE(response.toMap().value("params").toMap().value("enabled").toString(), enabled);
+
+    qCDebug(dcTests()) << "Enabled notifications:" << response.toMap().value("params").toMap().value("namespaces").toList();
+
+    QStringList expectedNamespaces;
+    if (enabled == "true") {
+        expectedNamespaces << "Actions" << "NetworkManager" << "Devices" << "System" << "Rules" << "States" << "Logging" << "Tags" << "JSONRPC" << "Configuration" << "Events";
+    }
+    std::sort(expectedNamespaces.begin(), expectedNamespaces.end());
+
+    QStringList actualNamespaces;
+    foreach (const QVariant &ns, response.toMap().value("params").toMap().value("namespaces").toList()) {
+        actualNamespaces << ns.toString();
+    }
+    std::sort(actualNamespaces.begin(), actualNamespaces.end());
+
+    QCOMPARE(expectedNamespaces, actualNamespaces);
 }
 
 void TestJSONRPC::deviceAddedRemovedNotifications()
 {
-    // enable notificartions
-    QCOMPARE(enableNotifications(), true);
+    enableNotifications({"Devices"});
 
     // Setup connection to mock client
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
@@ -689,8 +704,7 @@ void TestJSONRPC::deviceAddedRemovedNotifications()
 
 void TestJSONRPC::ruleAddedRemovedNotifications()
 {
-    // enable notificartions
-    QCOMPARE(enableNotifications(), true);
+    enableNotifications({"Rules"});
 
     // Setup connection to mock client
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
@@ -934,7 +948,7 @@ void TestJSONRPC::deviceChangedNotifications()
 
 void TestJSONRPC::stateChangeEmitsNotifications()
 {
-    QCOMPARE(enableNotifications(), true);
+    enableNotifications({"Devices"});
     bool found = false;
 
     // Setup connection to mock client

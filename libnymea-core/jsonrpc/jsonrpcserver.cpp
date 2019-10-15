@@ -116,9 +116,18 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     setReturns("Version", returns);
 
     params.clear(); returns.clear();
-    setDescription("SetNotificationStatus", "Enable/Disable notifications for this connections.");
-    params.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    setDescription("SetNotificationStatus", "Enable/Disable notifications for this connections. Either \"enabled\" or or """
+                                            "\"namespaces\" needs to be given but not both of them. The boolean based "
+                                            "\"enabled\" parameter will enable/disable all notifications at once. If "
+                                            "instead the list-based \"namespaces\" parameter is provided, all given namespaces"
+                                            "will be enabled, the others will be disabled. The return value of \"success\" will "
+                                            "indicate success of the operation. The \"enabled\" property in the return value is "
+                                            "deprecated and used for legacy compatibilty only. It will be set to true if at least "
+                                            "one namespace has been enabled.");
+    params.insert("o:enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
+    params.insert("o:namespaces", QVariantList() << QStringLiteral("$ref:Namespace"));
     setParams("SetNotificationStatus", params);
+    returns.insert("namespaces", QVariantList() << QStringLiteral("$ref:Namespace"));
     returns.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
     setReturns("SetNotificationStatus", returns);
 
@@ -261,8 +270,18 @@ JsonReply* JsonRPCServer::Introspect(const QVariantMap &params) const
 {
     Q_UNUSED(params)
 
+    // We need to add dynamic stuff ourselves
+    QVariantMap allTypes = JsonTypes::allTypes();
+    QStringList namespaces;
+    foreach (const QString &namespaceString, m_handlers.keys()) {
+        namespaces.append(namespaceString);
+    }
+    // We need to sort them to have a predictable ordering
+    std::sort(namespaces.begin(), namespaces.end());
+    allTypes.insert("Namespace", namespaces);
+
     QVariantMap data;
-    data.insert("types", JsonTypes::allTypes());
+    data.insert("types", allTypes);
     QVariantMap methods;
     foreach (JsonHandler *handler, m_handlers)
         methods.unite(handler->introspect(QMetaMethod::Method));
@@ -291,10 +310,27 @@ JsonReply* JsonRPCServer::Version(const QVariantMap &params) const
 JsonReply* JsonRPCServer::SetNotificationStatus(const QVariantMap &params)
 {
     QUuid clientId = this->property("clientId").toUuid();
-    Q_ASSERT_X(m_clientNotifications.contains(clientId), "JsonRPCServer", "SetNotificationStatus for an unknown client called");
-    m_clientNotifications[clientId] = params.value("enabled").toBool();
+    Q_ASSERT_X(m_clientTransports.contains(clientId), "JsonRPCServer", "Invalid client ID.");
+
+    QStringList enabledNamespaces;
+    foreach (const QString &namespaceName, m_handlers.keys()) {
+        if (params.contains("enabled")) {
+            if (params.value("enabled").toBool()) {
+                enabledNamespaces.append(namespaceName);
+            }
+        } else {
+            if (params.value("namespaces").toList().contains(namespaceName)) {
+                enabledNamespaces.append(namespaceName);
+            }
+        }
+    }
+    qCDebug(dcJsonRpc()) << "Notification settings for client" << clientId << ":" << enabledNamespaces;
+    m_clientNotifications[clientId] = enabledNamespaces;
+
     QVariantMap returns;
-    returns.insert("enabled", m_clientNotifications[clientId]);
+    returns.insert("namespaces", m_clientNotifications[clientId]);
+    // legacy, deprecated
+    returns.insert("enabled", m_clientNotifications[clientId].count() > 0);
     return createReply(returns);
 }
 
@@ -690,8 +726,10 @@ void JsonRPCServer::sendNotification(const QVariantMap &params)
     qCDebug(dcJsonRpc()) << "Sending notification:" << handler->name() + "." + method.name();
     qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
 
-    foreach (const QUuid &clientId, m_clientNotifications.keys(true)) {
-        m_clientTransports.value(clientId)->sendData(clientId, data);
+    foreach (const QUuid &clientId, m_clientNotifications.keys()) {
+        if (m_clientNotifications.value(clientId).contains(handler->name())) {
+            m_clientTransports.value(clientId)->sendData(clientId, data);
+        }
     }
 }
 
@@ -783,9 +821,6 @@ void JsonRPCServer::clientConnected(const QUuid &clientId)
     TransportInterface *interface = qobject_cast<TransportInterface *>(sender());
 
     m_clientTransports.insert(clientId, interface);
-
-    // If authentication is required, notifications are disabled by default. Clients must enable them with a valid token
-    m_clientNotifications.insert(clientId, !interface->configuration().authenticationEnabled);
 
     // Initialize the connection locale to the settings default
     m_clientLocales.insert(clientId, NymeaCore::instance()->configuration()->locale());

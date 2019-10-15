@@ -58,7 +58,7 @@ void TestMqttBroker::initTestCase()
 void TestMqttBroker::testServerConfigurationAPI()
 {
     // Set up notifications spy
-    enableNotifications();
+    enableNotifications({"Configuration"});
     QSignalSpy notificationsSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Get server instances
@@ -168,7 +168,7 @@ void TestMqttBroker::testServerConfigurationAPI()
 void TestMqttBroker::testPolicyConfigurationAPI()
 {
     // Set up notifications spy
-    enableNotifications();
+    enableNotifications({"Configuration"});
     QSignalSpy notificationsSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Get polcies

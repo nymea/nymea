@@ -217,8 +217,7 @@ void TestLogging::eventLogs()
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 
-    // enable notifications
-    QCOMPARE(enableNotifications(), true);
+    enableNotifications({"Events"});
 
     // Setup connection to mock client
     QNetworkAccessManager nam;
@@ -295,8 +294,7 @@ void TestLogging::actionLog()
     params.insert("deviceId", m_mockDeviceId);
     params.insert("params", actionParams);
 
-    // enable notifications
-    QCOMPARE(enableNotifications(), true);
+    enableNotifications({"Logging"});
 
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
@@ -472,7 +470,7 @@ void TestLogging::deviceLogs()
 
 void TestLogging::testDoubleValues()
 {
-    QCOMPARE(enableNotifications(), true);
+    enableNotifications({"Logging"});
 
     // Add display pin device which contains a double value
 
@@ -666,7 +664,7 @@ void TestLogging::testLimits()
 void TestLogging::removeDevice()
 {
     // enable notifications
-    QCOMPARE(enableNotifications(), true);
+    enableNotifications({"Logging"});
 
     // get this logentry with filter
     QVariantMap params;

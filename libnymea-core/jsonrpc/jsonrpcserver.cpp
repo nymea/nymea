@@ -116,7 +116,7 @@ JsonRPCServer::JsonRPCServer(const QSslConfiguration &sslConfiguration, QObject 
     setReturns("Version", returns);
 
     params.clear(); returns.clear();
-    setDescription("SetNotificationStatus", "Enable/Disable notifications for this connections. Either \"enabled\" or or """
+    setDescription("SetNotificationStatus", "Enable/Disable notifications for this connections. Either \"enabled\" or """
                                             "\"namespaces\" needs to be given but not both of them. The boolean based "
                                             "\"enabled\" parameter will enable/disable all notifications at once. If "
                                             "instead the list-based \"namespaces\" parameter is provided, all given namespaces"

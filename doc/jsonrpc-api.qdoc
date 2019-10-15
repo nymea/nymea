@@ -372,16 +372,16 @@ See also: \l{LoggingSource}, \l{LoggingEventType}, \l{LoggingLevel}
 \code
 [
     "Actions", 
-    "States", 
-    "Tags", 
     "Configuration", 
-    "JSONRPC", 
-    "Rules", 
-    "Logging", 
-    "Events", 
     "Devices", 
+    "Events", 
+    "JSONRPC", 
+    "Logging", 
     "NetworkManager", 
-    "System"
+    "Rules", 
+    "States", 
+    "System", 
+    "Tags"
 ]
 \endcode
 \section2 NetworkDeviceState
@@ -1824,7 +1824,7 @@ Returns
 \endcode
 
 \section2 JSONRPC.SetNotificationStatus
-Enable/Disable notifications for this connections. Either "enabled" or or "namespaces" needs to be given but not both of them. The boolean based "enabled" parameter will enable/disable all notifications at once. If instead the list-based "namespaces" parameter is provided, all given namespaceswill be enabled, the others will be disabled. The return value of "success" will indicate success of the operation. The "enabled" property in the return value is deprecated and used for legacy compatibilty only. It will be set to true if at least one namespace has been enabled.
+Enable/Disable notifications for this connections. Either "enabled" or "namespaces" needs to be given but not both of them. The boolean based "enabled" parameter will enable/disable all notifications at once. If instead the list-based "namespaces" parameter is provided, all given namespaceswill be enabled, the others will be disabled. The return value of "success" will indicate success of the operation. The "enabled" property in the return value is deprecated and used for legacy compatibilty only. It will be set to true if at least one namespace has been enabled.
 Params
 \code
 {
@@ -3565,7 +3565,7 @@ See also: \l{Tag}
             }
         }, 
         "JSONRPC.SetNotificationStatus": {
-            "description": "Enable/Disable notifications for this connections. Either \"enabled\" or or \"namespaces\" needs to be given but not both of them. The boolean based \"enabled\" parameter will enable/disable all notifications at once. If instead the list-based \"namespaces\" parameter is provided, all given namespaceswill be enabled, the others will be disabled. The return value of \"success\" will indicate success of the operation. The \"enabled\" property in the return value is deprecated and used for legacy compatibilty only. It will be set to true if at least one namespace has been enabled.", 
+            "description": "Enable/Disable notifications for this connections. Either \"enabled\" or \"namespaces\" needs to be given but not both of them. The boolean based \"enabled\" parameter will enable/disable all notifications at once. If instead the list-based \"namespaces\" parameter is provided, all given namespaceswill be enabled, the others will be disabled. The return value of \"success\" will indicate success of the operation. The \"enabled\" property in the return value is deprecated and used for legacy compatibilty only. It will be set to true if at least one namespace has been enabled.", 
             "params": {
                 "o:enabled": "Bool", 
                 "o:namespaces": [
@@ -4590,16 +4590,16 @@ See also: \l{Tag}
         }, 
         "Namespace": [
             "Actions", 
-            "States", 
-            "Tags", 
             "Configuration", 
-            "JSONRPC", 
-            "Rules", 
-            "Logging", 
-            "Events", 
             "Devices", 
+            "Events", 
+            "JSONRPC", 
+            "Logging", 
             "NetworkManager", 
-            "System"
+            "Rules", 
+            "States", 
+            "System", 
+            "Tags"
         ], 
         "NetworkDeviceState": [
             "NetworkDeviceStateUnknown", 

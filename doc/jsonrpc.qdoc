@@ -257,8 +257,7 @@
     \section1 Getting notifications
 
     In order to enable/disable notifications on your socket, the methods \l{JSONRPC.SetNotificationStatus} can be used. By default,
-    the notifications on a new created connection are disabled. If you get disconnected, the notification have to
-    be enabled again on the next connection.
+    the notifications on a new created connection are disabled. If you get disconnected, the notification must be enabled again for the next connection.
 
     Once the notifications are enabled, the server will start notifying you with all different notifications described in section \l{Notifications}.
 

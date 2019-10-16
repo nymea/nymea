@@ -912,8 +912,16 @@ DeviceActionInfo *DeviceManagerImplementation::executeAction(const Action &actio
     Action finalAction = action;
     Device *device = m_configuredDevices.value(action.deviceId());
     if (!device) {
+        qCWarning(dcDeviceManager()) << "Cannot execute action. No such device:" << action.deviceId();
         DeviceActionInfo *info = new DeviceActionInfo(nullptr, action, this);
         info->finish(Device::DeviceErrorDeviceNotFound);
+        return info;
+    }
+
+    if (!device->setupComplete()) {
+        qCWarning(dcDeviceManager()) << "Cannot execute action. Device" << device->name() << "hasn't completed setup.";
+        DeviceActionInfo *info = new DeviceActionInfo(nullptr, action, this);
+        info->finish(Device::DeviceErrorSetupFailed);
         return info;
     }
 
@@ -921,6 +929,7 @@ DeviceActionInfo *DeviceManagerImplementation::executeAction(const Action &actio
     DeviceClass deviceClass = findDeviceClass(device->deviceClassId());
     ActionType actionType = deviceClass.actionTypes().findById(action.actionTypeId());
     if (actionType.id().isNull()) {
+        qCWarning(dcDeviceManager()) << "Cannot execute action. No such action type" << action.actionTypeId();
         DeviceActionInfo *info = new DeviceActionInfo(device, action, this);
         info->finish(Device::DeviceErrorActionTypeNotFound);
         return info;
@@ -929,6 +938,7 @@ DeviceActionInfo *DeviceManagerImplementation::executeAction(const Action &actio
     ParamList finalParams = action.params();
     Device::DeviceError paramCheck = DeviceUtils::verifyParams(actionType.paramTypes(), finalParams);
     if (paramCheck != Device::DeviceErrorNoError) {
+        qCWarning(dcDeviceManager()) << "Cannot execute action. Parameter verification failed.";
         DeviceActionInfo *info = new DeviceActionInfo(device, action, this);
         info->finish(paramCheck);
         return info;
@@ -939,6 +949,7 @@ DeviceActionInfo *DeviceManagerImplementation::executeAction(const Action &actio
 
     DevicePlugin *plugin = m_devicePlugins.value(device->pluginId());
     if (!plugin) {
+        qCWarning(dcDeviceManager()) << "Cannot execute action. Plugin not found for device" << device->name();
         info->finish(Device::DeviceErrorPluginNotFound);
         return info;
     }

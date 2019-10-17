@@ -620,6 +620,7 @@ DevicePairingInfo *DeviceManagerImplementation::confirmPairing(const PairingTran
                 return;
             }
 
+            qCDebug(dcDeviceManager()) << "Setup complete for device" << info->device();
             info->device()->setupCompleted();
 
             if (addNewDevice) {
@@ -1239,6 +1240,7 @@ void DeviceManagerImplementation::loadConfiguredDevices()
                 return;
             }
 
+            qCDebug(dcDeviceManager()) << "Setup complete for device" << info->device();
             info->device()->setupCompleted();
             postSetupDevice(info->device());
         });

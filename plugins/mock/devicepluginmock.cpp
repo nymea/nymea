@@ -139,6 +139,7 @@ void DevicePluginMock::setupDevice(DeviceSetupInfo *info)
             async = info->device()->paramValue(mockDeviceAutoDeviceAsyncParamTypeId).toBool();
             broken = info->device()->paramValue(mockDeviceAutoDeviceBrokenParamTypeId).toBool();
         }
+        qCDebug(dcMockDevice()) << "SetupDevice for" << info->device()->name() << "Async:" << async << "Broken:" << broken;
 
         if (!async && broken) {
             qCWarning(dcMockDevice) << "This device is intentionally broken.";
@@ -176,6 +177,7 @@ void DevicePluginMock::setupDevice(DeviceSetupInfo *info)
             });
             return;
         }
+        qCDebug(dcMockDevice()) << "Setup complete" << info->device()->name();
         info->finish(Device::DeviceErrorNoError);
         return;
     }

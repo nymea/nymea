@@ -67,13 +67,13 @@ function connectWebsocket() {
         webSocket = new WebSocket(urlString);
         
         webSocket.onopen = function(openEvent) {
-            console.log("WebSocket connected: " + JSON.stringify(openEvent, null, 4));
+            console.log("WebSocket connected");
             webSocketConnected = true;
             document.getElementById("toggleLogsButton").innerHTML = "Stop logs";
         };
         
         webSocket.onclose = function(closeEvent) {
-            console.log("WebSocket disconnected: " + JSON.stringify(closeEvent, null, 4));
+            console.log("WebSocket disconnected");
             webSocketConnected = false;
             document.getElementById("toggleLogsButton").innerHTML = "Start logs";
         };
@@ -84,7 +84,6 @@ function connectWebsocket() {
         
         webSocket.onmessage = function (messageEvent) {
             var message = messageEvent.data;
-            console.log("WebSocket data received: " + message);
             document.getElementById("logsTextArea").value += message;
             document.getElementById("logsTextArea").scrollTop = document.getElementById("logsTextArea").scrollHeight;
         };
@@ -92,7 +91,6 @@ function connectWebsocket() {
     } catch (exception) {
         console.error(exception);
     }
-    
 }
 
 
@@ -101,6 +99,86 @@ function disconnectWebsocket() {
     webSocket.close();
     webSocketConnected = false;
     document.getElementById("toggleLogsButton").innerHTML = "Start logs";
+}
+
+
+function clearLogsContent() {
+    console.log("Clear live log content");
+    var logTextArea = document.getElementById("logsTextArea")
+    logTextArea.value = "";
+}
+
+
+function copyLogsContent() {
+    console.log("Copy live log content");
+    var logTextArea = document.getElementById("logsTextArea")
+    
+    logTextArea.select();
+    logTextArea.setSelectionRange(0, 99999); /*For mobile devices*/
+    document.execCommand("copy");
+    
+    console.log("Copied text:");
+    console.log(logTextArea.value);
+    
+    /* Clear selection */
+    document.select();
+}
+
+
+function loadLoggingCategorySettings() {
+    // Request report file generation
+    var request = new XMLHttpRequest();
+    request.open("GET", "/debug/logging-categories", true);
+    request.send(null);
+    
+    request.onreadystatechange = function() {
+        if (request.readyState == 4) {
+            console.log("Load logging category settings finished", request.status);
+
+            /* Check if the generation went fine */
+            if (request.status != 200) {
+                console.warn("Could not load logging category settings", request.status);
+                return;
+            }
+            
+            var responseMap = JSON.parse(request.responseText);
+            
+            for (var loggingCategory in responseMap['loggingCategories']) {
+                var loggingCategoryElement = document.getElementById("debug-category-" + loggingCategory)
+                loggingCategoryElement.checked = responseMap['loggingCategories'][loggingCategory]
+            }   
+            
+            for (var loggingCategory in responseMap['loggingCategoriesPlugins']) {
+                var loggingCategoryElement = document.getElementById("debug-category-" + loggingCategory)
+                loggingCategoryElement.checked = responseMap['loggingCategoriesPlugins'][loggingCategory]
+            }   
+        }
+    }
+}
+
+
+function toggleLoggingCategory(categoryName) {
+    var switchElement = document.getElementById("debug-category-" + categoryName)
+    console.log("Toggle logging category", categoryName, switchElement.checked)
+    
+    var fileRequestUrl = "/debug/logging-categories?" + categoryName + "=" + (switchElement.checked ? "true" : "false");
+    
+        // Request report file generation
+    var request = new XMLHttpRequest();
+    request.open("GET", fileRequestUrl, true);
+    request.send(null);
+    
+    request.onreadystatechange = function() {
+        if (request.readyState == 4) {
+            console.log("Set logging category settings finished", request.status);
+
+            /* Check if the generation went fine */
+            if (request.status != 200) {
+                console.warn("Could not set logging category settings", request.status);
+                return;
+            }
+        }
+    }
 }
 
 
@@ -151,7 +229,7 @@ function pollReportResult() {
             
             /* Check if the generation went fine */
             if (reportGenerateRequest.status != 200) {
-                console.log("Report generation finished with error.");
+                console.warn("Report generation finished with error.");
                 clearTimeout(generateReportTimer);        
                 textArea.value = "Something went wrong :(" + reportGenerateRequest.status;
                 button.disabled = false;
@@ -342,5 +420,6 @@ function tracePathTimerTimeout() {
 window.onload = function() {
     console.log("Window loading finished.");
     document.getElementById("informationTabButton").click();
+    loadLoggingCategorySettings();
 };
 

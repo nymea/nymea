@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2018-2019 Simon Stürz <simon.stuerz@nymea.io>            *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -379,6 +379,60 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         return m_tracePathReply;
     }
 
+    if (requestPath.startsWith("/debug/logging-categories")) {
+
+        if (requestQuery.isEmpty()) {
+            // Return the list of debug category settings
+            NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+            settings.beginGroup("LoggingRules");
+
+            qCDebug(dcDebugServer()) << "Request logging categories list";
+            QVariantMap dataMap;
+            QVariantMap loggingCategories;
+            foreach (const QString &loggingCategory, NymeaCore::loggingFilters()) {
+                loggingCategories.insert(loggingCategory, settings.value(QString("%1.debug").arg(loggingCategory), false).toBool());
+            }
+            dataMap.insert("loggingCategories", loggingCategories);
+            QVariantMap loggingCategoriesPlugins;
+            foreach (const QString &loggingCategory, NymeaCore::loggingFiltersPlugins()) {
+                loggingCategoriesPlugins.insert(loggingCategory, settings.value(QString("%1.debug").arg(loggingCategory), false).toBool());
+            }
+            dataMap.insert("loggingCategoriesPlugins", loggingCategoriesPlugins);
+
+            settings.endGroup();
+
+            HttpReply *reply = RestResource::createSuccessReply();
+            reply->setPayload(QJsonDocument::fromVariant(dataMap).toJson(QJsonDocument::Indented));
+            return reply;
+        } else {
+            NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+            settings.beginGroup("LoggingRules");
+            for (int i = 0; i < requestQuery.queryItems().count(); i++) {
+                QString category = requestQuery.queryItems().at(i).first;
+                if (!NymeaCore::loggingFilters().contains(category) && !NymeaCore::loggingFiltersPlugins().contains(category)) {
+                    qCWarning(dcDebugServer()) << "Invalid logging category in request query" << requestQuery.toString() << category;
+                    continue;
+                }
+
+                bool enabled = QVariant(requestQuery.queryItems().at(i).second).toBool();
+                qCDebug(dcDebugServer()) << "Logging category" << category << (enabled ? "enabled" : "disabled");
+                settings.setValue(QString("%1.debug").arg(category), (enabled ? "true" : "false"));
+            }
+
+            // Update logging filter rules according to the nw settings
+            QStringList loggingRules;
+            loggingRules << "*.debug=false";
+            // Load the rules from nymead.conf file and append them to the rules
+            foreach (const QString &category, settings.childKeys()) {
+                loggingRules << QString("%1=%2").arg(category).arg(settings.value(category, "false").toString());
+            }
+            settings.endGroup();
+            QLoggingCategory::setFilterRules(loggingRules.join('\n'));
+
+            return RestResource::createSuccessReply();
+        }
+    }
+
     if (requestPath.startsWith("/debug/report")) {
 
         // The client can poll this url in order to get information about the current report generating process.
@@ -562,6 +616,7 @@ void DebugServerHandler::onWebsocketClientConnected()
 
     if (s_websocketClients.isEmpty()) {
         qCDebug(dcDebugServer()) << "Install debug message handler for live logs.";
+        //QLoggingCategory::setFilterRules("*.debug=true");
         s_oldLogMessageHandler = qInstallMessageHandler(&logMessageHandler);
     }
 
@@ -845,7 +900,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     // Body
     writer.writeStartElement("div");
     writer.writeAttribute("class", "body");
-
 
     // ---------------------------------------------------------------------------
     writer.writeStartElement("div");
@@ -1670,6 +1724,9 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
 
     writer.writeTextElement("p", tr("This section allows you to see the live logs of the nymea server."));
 
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "log-buttons");
+
     // Toggle log button
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
@@ -1680,6 +1737,31 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeCharacters(tr("Start logs"));
     writer.writeEndElement(); // button
 
+    // Copy log content button
+    writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
+    writer.writeAttribute("type", "button");
+    writer.writeAttribute("id", "copyLogsButton");
+    writer.writeAttribute("onClick", "copyLogsContent()");
+    writer.writeEmptyElement("img");
+    writer.writeAttribute("class", "tool-image");
+    writer.writeAttribute("src", "/debug/edit-copy.svg");
+    writer.writeEndElement(); // button
+
+    // Copy log content button
+    writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
+    writer.writeAttribute("type", "button");
+    writer.writeAttribute("id", "clearLogsButton");
+    writer.writeAttribute("onClick", "clearLogsContent()");
+    writer.writeEmptyElement("img");
+    writer.writeAttribute("class", "tool-image");
+    writer.writeAttribute("src", "/debug/delete.svg");
+    writer.writeEndElement(); // button
+
+    writer.writeEndElement(); // div log-buttons
+
+
     // Logs output
     writer.writeStartElement("textarea");
     writer.writeAttribute("class", "console-textarea");
@@ -1688,6 +1770,69 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("rows", "30");
     writer.writeCharacters("");
     writer.writeEndElement(); // textarea
+
+    writer.writeEmptyElement("hr");
+    //: The network section of the debug interface
+    writer.writeTextElement("h2", tr("Logging filters"));
+    writer.writeEmptyElement("hr");
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "categories-area");
+
+    QStringList loggingCategories = NymeaCore::loggingFilters();
+    loggingCategories.sort();
+
+    foreach (const QString &loggingCategory, loggingCategories) {
+        writer.writeStartElement("div");
+        writer.writeAttribute("class", "debug-category");
+        writer.writeTextElement("p", loggingCategory);
+        writer.writeStartElement("label");
+        writer.writeAttribute("class", "switch");
+        writer.writeStartElement("input");
+        writer.writeAttribute("id", QString("debug-category-%1").arg(loggingCategory));
+        writer.writeAttribute("type", "checkbox");
+        writer.writeAttribute("onclick", QString("toggleLoggingCategory('%1')").arg(loggingCategory));
+        writer.writeEndElement(); // input
+        writer.writeStartElement("span");
+        writer.writeAttribute("class", "slider round");
+        writer.writeCharacters("");
+        writer.writeEndElement(); // span
+        writer.writeEndElement(); // label
+        writer.writeEndElement(); // div debug-category
+    }
+
+    writer.writeEndElement(); // div categories-area
+
+    writer.writeEmptyElement("hr");
+    //: The network section of the debug interface
+    writer.writeTextElement("h2", tr("Logging filters plugins"));
+    writer.writeEmptyElement("hr");
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "categories-area");
+
+    QStringList loggingCategoriesPlugins = NymeaCore::loggingFiltersPlugins();
+    loggingCategoriesPlugins.sort();
+    foreach (const QString &loggingCategory, loggingCategoriesPlugins) {
+        writer.writeStartElement("div");
+        writer.writeAttribute("class", "debug-category");
+        writer.writeTextElement("p", loggingCategory);
+        writer.writeStartElement("label");
+        writer.writeAttribute("class", "switch");
+        writer.writeStartElement("input");
+        writer.writeAttribute("id", QString("debug-category-%1").arg(loggingCategory));
+        writer.writeAttribute("type", "checkbox");
+        writer.writeAttribute("onclick", QString("toggleLoggingCategory('%1')").arg(loggingCategory));
+        writer.writeEndElement(); // input
+        writer.writeStartElement("span");
+        writer.writeAttribute("class", "slider round");
+        writer.writeCharacters("");
+        writer.writeEndElement(); // span
+        writer.writeEndElement(); // label
+        writer.writeEndElement(); // div debug-category
+    }
+
+    writer.writeEndElement(); // div categories-area
 
     writer.writeEndElement(); // logs-section
 

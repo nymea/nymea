@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2018-2019 Simon Stürz <simon.stuerz@nymea.io>            *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -39,6 +39,14 @@ h1, h2, h3, h4, h5, h6 {
     text-align: center;
 }
 
+table {
+    display: table;
+    border-collapse: colapse;
+    border-color: #efefef;
+    min-height: 100px;
+    width: 100%;
+}
+
 th, td {
     padding: 3px;
     padding-left: 10px;
@@ -52,25 +60,8 @@ hr {
     color: #efefef;
 }
 
-table {
-    display: table;
-    border-collapse: colapse;
-    border-color: #efefef;
-    min-height: 100px;
-    width: 100%;
-}
-
 button {
     width: 100%;
-}
-
-textarea {
-    background-color: #3a4055;
-    width: 100%;
-    padding: 15px;
-    min-height: 100px;
-    text-align: left;
-    border-radius: 10px;
 }
 
 .tab {
@@ -106,8 +97,18 @@ textarea {
 }
 
 @keyframes fadeEffect {
-    from {opacity: 0;}
-    to {opacity: 1;}
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+textarea {
+    background-color: #3a4055;
+    width: 100%;
+    padding: 15px;
+    min-height: 100px;
+    text-align: left;
+    border-radius: 10px;
+    outline: none;
 }
 
 .console-textarea {
@@ -212,7 +213,11 @@ textarea {
     border-radius: 10px;
     opacity: 0.8;
     transition: 0.3s;
+    cursor: pointer;
+    outline: none;
 }
+
+button::-moz-focus-inner { border: 0; }
 
 .button:hover {
     opacity: 1
@@ -224,8 +229,136 @@ textarea {
     color: #676767;
 }
 
+.log-buttons {
+    display: -webkit-flex; /* Safari */
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+.log-buttons button {
+    display: -webkit-flex; /* Safari */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px;
+    width: auto;
+}
+
+.tool-image {
+    width: 25px;
+    height: 25px;
+}
+
+#toggleLogsButton {
+    flex-grow: 1;
+}
+
+#copyLogsButton {
+    width: 20px;
+}
+
+#clearLogsButton {
+    width: 20px;
+}
+
+.categories-area {
+    display: -webkit-flex;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.debug-category {
+    display: -webkit-flex;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    width: 33%;
+}
+
+.debug-category p {
+    margin: 10px;
+    text-align: right;
+    flex-grow: 1;
+}
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #57baae;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #57baae;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
 .container {
-    min-height:100%;
+    min-height: 100%;
     position:relative;
 }
 

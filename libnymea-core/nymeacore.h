@@ -96,6 +96,8 @@ public:
     Platform *platform() const;
 
     static QStringList getAvailableLanguages();
+    static QStringList loggingFilters();
+    static QStringList loggingFiltersPlugins();
 
 signals:
     void initialized();

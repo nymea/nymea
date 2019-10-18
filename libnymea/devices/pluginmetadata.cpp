@@ -48,6 +48,11 @@ bool PluginMetadata::isValid() const
     return m_isValid;
 }
 
+QStringList PluginMetadata::validationErrors() const
+{
+    return m_validationErrors;
+}
+
 PluginId PluginMetadata::pluginId() const
 {
     return m_pluginId;
@@ -92,21 +97,23 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
     QStringList pluginJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors" << "paramTypes" << "builtIn";
     QPair<QStringList, QStringList> verificationResult = verifyFields(pluginJsonProperties, pluginMandatoryJsonProperties, jsonObject);
     if (!verificationResult.first.isEmpty()) {
-        qCWarning(dcPluginMetadata()) << "Plugin has missing fields:" << verificationResult.first.join(", ") << endl << jsonObject;
+        m_validationErrors.append("Plugin metadata has missing fields: " + verificationResult.first.join(", "));
         hasError = true;
         // Not gonna continue parsing as we rely on mandatory fields being available
         return;
-    }
-    if (!verificationResult.second.isEmpty()) {
-        qCWarning(dcPluginMetadata()) << "Plugin has unknown fields:" << verificationResult.second.join(", ") << endl << qUtf8Printable(QJsonDocument::fromVariant(jsonObject.toVariantMap()).toJson(QJsonDocument::Indented));
-        hasError = true;
     }
 
     m_pluginId = jsonObject.value("id").toString();
     m_pluginName = jsonObject.value("name").toString();
     m_pluginDisplayName = jsonObject.value("displayName").toString();
+
+    if (!verificationResult.second.isEmpty()) {
+        m_validationErrors.append("Plugin \"" + m_pluginName + "\" has unknown fields: \"" + verificationResult.second.join("\", \"") + "\"");
+        hasError = true;
+    }
+
     if (!verifyDuplicateUuid(m_pluginId)) {
-        qCWarning(dcPluginMetadata()) << "Plugin" << m_pluginName << "has duplicate UUID:" << m_pluginId.toString();
+        m_validationErrors.append("Plugin \"" + m_pluginName + "\" has duplicate UUID: " + m_pluginId.toString());
         hasError = true;
     }
 
@@ -131,22 +138,23 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
         // Check mandatory fields
         if (!verificationResult.first.isEmpty()) {
-            qCWarning(dcPluginMetadata()) << "Vendor has missing fields:" << verificationResult.first.join(", ") << endl << vendorObject;
+            m_validationErrors.append("Vendor metadata has missing fields: " + verificationResult.first.join(", ") + "\n" + qUtf8Printable(QJsonDocument::fromVariant(vendorObject.toVariantMap()).toJson(QJsonDocument::Indented)));
             hasError = true;
             // Not continuing parsing vendor as we rely on mandatory fields being around.
             break;
         }
 
+        VendorId vendorId = VendorId(vendorObject.value("id").toString());
+        QString vendorName = vendorObject.value("name").toString();
+
         // Check if there are any unknown fields
         if (!verificationResult.second.isEmpty()) {
-            qCWarning(dcPluginMetadata()) << pluginName() << "Vendor has unknown fields:" << verificationResult.second.join(", ") << endl << qUtf8Printable(QJsonDocument::fromVariant(vendorObject.toVariantMap()).toJson(QJsonDocument::Indented));
+            m_validationErrors.append("Vendor \"" + vendorName + "\" has unknown fields: \"" + verificationResult.second.join("\", \"") + "\"\n" + qUtf8Printable(QJsonDocument::fromVariant(vendorObject.toVariantMap()).toJson(QJsonDocument::Indented)));
             hasError = true;
         }
 
-        VendorId vendorId = VendorId(vendorObject.value("id").toString());
-        QString vendorName = vendorObject.value("name").toString();
         if (!verifyDuplicateUuid(vendorId)) {
-            qCWarning(dcPluginMetadata()) << "Vendor" << vendorName << "has duplicate UUID:" << vendorId.toString();
+            m_validationErrors.append("Vendor \"" + vendorName + "\" has duplicate UUID: " + vendorId.toString());
             hasError = true;
         }
         Vendor vendor(vendorId, vendorName);
@@ -170,22 +178,23 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
             // Check mandatory fields
             if (!verificationResult.first.isEmpty()) {
-                qCWarning(dcPluginMetadata()) << "Device class has missing fields:" << verificationResult.first.join(", ") << endl << deviceClassObject;
+                m_validationErrors.append("Device class has missing fields: \"" + verificationResult.first.join("\", \"") + "\"\n" + qUtf8Printable(QJsonDocument::fromVariant(deviceClassObject.toVariantMap()).toJson(QJsonDocument::Indented)));
                 hasError = true;
                 // Stop parsing this deviceClass as we rely on mandatory fields being around.
                 continue;
             }
 
+            DeviceClassId deviceClassId = deviceClassObject.value("id").toString();
+            QString deviceClassName = deviceClassObject.value("name").toString();
+
             // Check if there are any unknown fields
             if (!verificationResult.second.isEmpty()) {
-                qCWarning(dcPluginMetadata()) << "Device class has unknown fields:" << verificationResult.second.join(", ") << endl << qUtf8Printable(QJsonDocument::fromVariant(deviceClassObject.toVariantMap()).toJson(QJsonDocument::Indented));
+                m_validationErrors.append("Device class \"" + deviceClassName + "\" has unknown fields: \"" + verificationResult.second.join("\", \"") + "\"\n" + qUtf8Printable(QJsonDocument::fromVariant(deviceClassObject.toVariantMap()).toJson(QJsonDocument::Indented)));
                 hasError = true;
             }
 
-            DeviceClassId deviceClassId = deviceClassObject.value("id").toString();
-            QString deviceClassName = deviceClassObject.value("name").toString();
             if (!verifyDuplicateUuid(deviceClassId)) {
-                qCWarning(dcPluginMetadata()) << "Device class" << deviceClassName << "has duplicate UUID:" << deviceClassName;
+                m_validationErrors.append("Device class \"" + deviceClassName + "\" has duplicate UUID: " + deviceClassName);
                 hasError = true;
             }
 
@@ -208,7 +217,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     } else if (createMethodValue.toString().toLower() == "user") {
                         createMethods |= DeviceClass::CreateMethodUser;
                     } else {
-                        qCWarning(dcPluginMetadata()) << "Unknown createMehtod" << createMethodValue.toString() << "in deviceClass " << deviceClass.name() << ".";
+                        m_validationErrors.append("Unknown createMehtod \"" + createMethodValue.toString() + "\" in deviceClass \"" + deviceClass.name() +  "\".");
                         hasError = true;
                     }
                 }
@@ -256,7 +265,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 } else if (setupMethodString.toLower() == "oauth") {
                     setupMethod = DeviceClass::SetupMethodOAuth;
                 } else {
-                    qCWarning(dcPluginMetadata()) << "Unknown setupMethod" << setupMethod << "in deviceClass" << deviceClass.name() << ".";
+                    m_validationErrors.append("Unknown setupMethod \"" + setupMethodString + "\" in deviceClass \"" + deviceClass.name() + "\".");
                     hasError = true;
                 }
             }
@@ -277,15 +286,18 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
-                    qCWarning(dcPluginMetadata()) << "Device class stateType" << deviceClass.name() << "has missing properties" << verificationResult.first.join(", ") << "in stateType" << st;
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" has missing properties \"" + verificationResult.first.join("\", \"") + "\" in stateType definition\n" + qUtf8Printable(QJsonDocument::fromVariant(st.toVariantMap()).toJson(QJsonDocument::Indented)));
                     hasError = true;
                     // Not processing further as mandatory fields are expected to be here
                     continue;
                 }
 
+                StateTypeId stateTypeId = st.value("id").toString();
+                QString stateTypeName = st.value("name").toString();
+
                 // Check if there are any unknown fields
                 if (!verificationResult.second.isEmpty()) {
-                    qCWarning(dcPluginMetadata()) << "Device class stateType" << deviceClass.name() << "has unknown properties" << verificationResult.second.join(", ") << "in stateType" << st;
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" state type \"" + stateTypeName + "\" has unknown properties \"" + verificationResult.second.join("\", \"") + "\"");
                     hasError = true;
                 }
 
@@ -293,21 +305,19 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 if (st.contains("writable") && st.value("writable").toBool()) {
                     writableState = true;
                     if (!st.contains("displayNameAction")) {
-                        qCWarning(dcPluginMetadata()) << "Device class" << deviceClass.name() << " has writable state but does not define the displayNameAction property" << st;
+                        m_validationErrors.append("Device class \"" + deviceClass.name() + "\" state type \"" + stateTypeName + "\" has writable state but does not define the displayNameAction property");
                         hasError = true;
                     }
                 }
 
                 QVariant::Type t = QVariant::nameToType(st.value("type").toString().toLatin1().data());
                 if (t == QVariant::Invalid) {
-                    qCWarning(dcPluginMetadata()) << "Invalid StateType type:" << st.value("type").toString();
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" state type \"" + stateTypeName + "\" has invalid type: \"" + st.value("type").toString() + "\"");
                     hasError = true;
                 }
 
-                StateTypeId stateTypeId = st.value("id").toString();
-                QString stateTypeName = st.value("name").toString();
                 if (!verifyDuplicateUuid(stateTypeId)) {
-                    qCWarning(dcPluginMetadata()) << "StateType" << stateTypeName << "has duplicate UUID" << stateTypeId.toString();
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" state type \"" + stateTypeName + "\" has duplicate UUID: " + stateTypeId.toString());
                     hasError = true;
                 }
 
@@ -338,8 +348,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     stateType.setPossibleValues(possibleValues);
 
                     if (!stateType.possibleValues().contains(stateType.defaultValue())) {
-                        qCWarning(dcPluginMetadata()) << QString("\"%1\" plugin:").arg(pluginName()).toLatin1().data() << QString("The given default value \"%1\" is not in the possible values of the stateType \"%2\".")
-                                                        .arg(stateType.defaultValue().toString()).arg(stateType.name()).toLatin1().data();
+                        m_validationErrors.append("Device class \"" + deviceClass.name() + "\" state type \"" + stateTypeName + "\" has invalid default value \"" + stateType.defaultValue().toString() + "\" which is not in the list of possible values.");
                         hasError = true;
                         break;
                     }
@@ -385,21 +394,22 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
-                    qCWarning(dcPluginMetadata()) << "Device class" << deviceClass.name() << " has missing fields" << verificationResult.first.join(", ") << "in action type:" << endl << at;
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" has missing fields \"" + verificationResult.first.join("\", \"") + "\" in action type definition.");
                     hasError = true;
                     continue;
                 }
 
+                ActionTypeId actionTypeId = ActionTypeId(at.value("id").toString());
+                QString actionTypeName = at.value("name").toString();
+
                 // Check if there are any unknown fields
                 if (!verificationResult.second.isEmpty()) {
-                    qCWarning(dcPluginMetadata()) << pluginName() << "Device class" << deviceClass.name() << "has unknown fields:" << verificationResult.second.join(", ") << "in action type:" << endl << at;
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" action type \"" + actionTypeName + "\" has unknown fields \"" + verificationResult.second.join("\", \"") + "\"");
                     hasError = true;
                 }
 
-                ActionTypeId actionTypeId = ActionTypeId(at.value("id").toString());
-                QString actionTypeName = at.value("name").toString();
                 if (!verifyDuplicateUuid(actionTypeId)) {
-                    qCWarning(dcPluginMetadata()) << "Action Type" << actionTypeName << "has duplicate UUID:" << actionTypeId.toString();
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" action type \"" + actionTypeName + "\" has duplicate UUID: " + actionTypeId.toString());
                     hasError = true;
                 }
                 ActionType actionType(actionTypeId);
@@ -428,21 +438,22 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
-                    qCWarning(dcPluginMetadata()) << "Device class" << deviceClass.name() << "has missing fields" << verificationResult.first.join(", ") << "in event type:" << endl << et;
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" has missing fields \"" + verificationResult.first.join("\", \"") + "\" in event type defintion");
                     hasError = true;
                     continue;
                 }
 
+                EventTypeId eventTypeId = EventTypeId(et.value("id").toString());
+                QString eventTypeName = et.value("name").toString();
+
                 // Check if there are any unknown fields
                 if (!verificationResult.second.isEmpty()) {
-                    qCWarning(dcPluginMetadata()) << "Device class" << deviceClass.name() << "has unknown fields:" << verificationResult.second.join(", ") << "in event type:" << endl << et;
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" event type \"" + eventTypeName + "\" has unknown fields \"" + verificationResult.second.join("\", \"") + "\"");
                     hasError = true;
                 }
 
-                EventTypeId eventTypeId = EventTypeId(et.value("id").toString());
-                QString eventTypeName = et.value("name").toString();
                 if (!verifyDuplicateUuid(eventTypeId)) {
-                    qCWarning(dcPluginMetadata()) << "Event type" << eventTypeName << "has duplicate UUID:" << eventTypeId.toString();
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" event type \"" + eventTypeName + "\" has duplicate UUID: " + eventTypeId.toString());
                     hasError = true;
                 }
                 EventType eventType(eventTypeId);
@@ -468,21 +479,22 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
-                    qCWarning(dcPluginMetadata()) << "Device class" << deviceClass.name() << " has missing fields" << verificationResult.first.join(", ") << "in browser item action type:" << endl << at;
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" has missing fields \"" + verificationResult.first.join("\", \"") + "\" in browser item action type definition");
                     hasError = true;
                     continue;
                 }
 
+                ActionTypeId actionTypeId = ActionTypeId(at.value("id").toString());
+                QString actionTypeName = at.value("name").toString();
+
                 // Check if there are any unknown fields
                 if (!verificationResult.second.isEmpty()) {
-                    qCWarning(dcPluginMetadata()) << pluginName() << "Device class" << deviceClass.name() << "has unknown fields:" << verificationResult.second.join(", ") << "in browser item action type:" << endl << at;
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" browser action type \"" + actionTypeName + "\" has unknown fields \"" + verificationResult.first.join("\", \"") + "\"");
                     hasError = true;
                 }
 
-                ActionTypeId actionTypeId = ActionTypeId(at.value("id").toString());
-                QString actionTypeName = at.value("name").toString();
                 if (!verifyDuplicateUuid(actionTypeId)) {
-                    qCWarning(dcPluginMetadata()) << "Browser Action Type" << actionTypeName << "has duplicate UUID:" << actionTypeId.toString();
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" browser action type \"" + actionTypeName + "\" has duplicate UUID: " + actionTypeId.toString());
                     hasError = true;
                 }
                 ActionType actionType(actionTypeId);
@@ -514,24 +526,24 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 foreach (const StateType &ifaceStateType, iface.stateTypes()) {
                     StateType stateType = stateTypes.findByName(ifaceStateType.name());
                     if (stateType.id().isNull()) {
-                        qCWarning(dcPluginMetadata()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement state" << ifaceStateType.name();
+                        m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement state \"" + ifaceStateType.name() + "\"");
                         hasError = true;
                         continue;
                     }
                     if (ifaceStateType.type() != stateType.type()) {
-                        qCWarning(dcPluginMetadata()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has not matching type" << stateType.type() << "!=" << ifaceStateType.type();
+                        m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching type: \"" + QVariant::typeToName(stateType.type()) + "\" != \"" + QVariant::typeToName(ifaceStateType.type()) + "\"");
                         hasError = true;
                         continue;
                     }
                     if (ifaceStateType.minValue().isValid() && !ifaceStateType.minValue().isNull()) {
                         if (ifaceStateType.minValue().toString() == "any") {
                             if (stateType.minValue().isNull()) {
-                                qCWarning(dcPluginMetadata()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has no minimum value defined.";
+                                m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has no minimum value defined.");
                                 hasError = true;
                                 continue;
                             }
                         } else if (ifaceStateType.minValue() != stateType.minValue()) {
-                            qCWarning(dcPluginMetadata()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has not matching minimum value:" << ifaceStateType.minValue() << "!=" << stateType.minValue();
+                            m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching minimum value: \"" + ifaceStateType.minValue().toString() + "\" != \"" + stateType.minValue().toString() + "\"");
                             hasError = true;
                             continue;
                         }
@@ -539,18 +551,18 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     if (ifaceStateType.maxValue().isValid() && !ifaceStateType.maxValue().isNull()) {
                         if (ifaceStateType.maxValue().toString() == "any") {
                             if (stateType.maxValue().isNull()) {
-                                qCWarning(dcPluginMetadata()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has no maximum value defined.";
+                                m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has no maximum value defined.");
                                 hasError = true;
                                 continue;
                             }
                         } else if (ifaceStateType.maxValue() != stateType.maxValue()) {
-                            qCWarning(dcPluginMetadata()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has not matching maximum value:" << ifaceStateType.maxValue() << "!=" << stateType.minValue();
+                            m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching maximum value: \"" + ifaceStateType.maxValue().toString() + "\" != \"" + stateType.minValue().toString() + "\"");
                             hasError = true;
                             continue;
                         }
                     }
                     if (!ifaceStateType.possibleValues().isEmpty() && ifaceStateType.possibleValues() != stateType.possibleValues()) {
-                        qCWarning(dcPluginMetadata()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but state" << stateType.name() << "has not matching allowed values" << ifaceStateType.possibleValues() << "!=" << stateType.possibleValues();
+                        m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching allowed values.");
                         hasError = true;
                         continue;
                     }
@@ -559,22 +571,22 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 foreach (const ActionType &ifaceActionType, iface.actionTypes()) {
                     ActionType actionType = actionTypes.findByName(ifaceActionType.name());
                     if (actionType.id().isNull()) {
-                        qCWarning(dcPluginMetadata) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement action" << ifaceActionType.name();
+                        m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement action \"" + ifaceActionType.name() + "\"");
                         hasError = true;
                     }
                     foreach (const ParamType &ifaceActionParamType, ifaceActionType.paramTypes()) {
                         ParamType paramType = actionType.paramTypes().findByName(ifaceActionParamType.name());
                         if (!paramType.isValid()) {
-                            qCWarning(dcPluginMetadata) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement action param" << ifaceActionType.name() << ":" << ifaceActionParamType.name();
+                            m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" doesn't implement action param \"" + ifaceActionParamType.name() + "\"");
                             hasError = true;
                         } else {
                             if (paramType.type() != ifaceActionParamType.type()) {
-                                qCWarning(dcPluginMetadata()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but param" << paramType.name() << "is of wrong type:" << QVariant::typeToName(paramType.type()) << "expected:" << QVariant::typeToName(ifaceActionParamType.type());
+                                m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" is of wrong type: \"" + QVariant::typeToName(paramType.type()) + "\" expected: \"" + QVariant::typeToName(ifaceActionParamType.type()) + "\"");
                                 hasError = true;
                             }
                             foreach (const QVariant &allowedValue, ifaceActionParamType.allowedValues()) {
                                 if (!paramType.allowedValues().contains(allowedValue)) {
-                                    qCWarning(dcPluginMetadata()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but param" << paramType.name() << "is missing allowed value" << allowedValue;
+                                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" is missing allowed value \"" + allowedValue.toString() + "\"");
                                     hasError = true;
                                 }
                             }
@@ -585,17 +597,17 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 foreach (const EventType &ifaceEventType, iface.eventTypes()) {
                     EventType eventType = eventTypes.findByName(ifaceEventType.name());
                     if (!eventType.isValid()) {
-                        qCWarning(dcPluginMetadata) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement event" << ifaceEventType.name();
+                        m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement event \"" + ifaceEventType.name() + "\"");
                         hasError = true;
                     }
                     foreach (const ParamType &ifaceEventParamType, ifaceEventType.paramTypes()) {
                         ParamType paramType = eventType.paramTypes().findByName(ifaceEventParamType.name());
                         if (!paramType.isValid()) {
-                            qCWarning(dcPluginMetadata) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but doesn't implement event param" << ifaceEventType.name() << ":" << ifaceEventParamType.name();
+                            m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" doesn't implement event param \"" + ifaceEventParamType.name() + "\"");
                             hasError = true;
                         } else {
                             if (paramType.type() != ifaceEventParamType.type()) {
-                                qCWarning(dcPluginMetadata()) << "DeviceClass" << deviceClass.name() << "claims to implement interface" << value.toString() << "but param" << paramType.name() << "is of wrong type:" << QVariant::typeToName(paramType.type()) << "expected:" << QVariant::typeToName(ifaceEventParamType.type());
+                                m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" is of wrong type: \"" + QVariant::typeToName(paramType.type()) + "\" expected: \"" + QVariant::typeToName(ifaceEventParamType.type()) + "\"");
                                 hasError = true;
                             }
                         }
@@ -677,30 +689,29 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
 
         // Check mandatory fields
         if (!verificationResult.first.isEmpty()) {
-            qCWarning(dcPluginMetadata()) << pluginName() << "Error parsing ParamType: missing fields:" << verificationResult.first.join(", ") << endl << pt;
+            m_validationErrors.append("Error parsing ParamType. Missing fields: \"" + verificationResult.first.join("\", \"") + "\"");
             hasErrors = true;
             continue;
         }
 
+        ParamTypeId paramTypeId = ParamTypeId(pt.value("id").toString());
+        QString paramName = pt.value("name").toString();
+
         // Check if there are any unknown fields
         if (!verificationResult.second.isEmpty()) {
-            qCWarning(dcPluginMetadata()) << pluginName() << "Error parsing ParamType: unknown fields:" << verificationResult.second.join(", ") << endl << pt;
+            m_validationErrors.append("Param type \"" + paramName + "\" has unknown fields: \"" + verificationResult.second.join("\", \"") + "\"");
             hasErrors = true;
         }
 
         // Check type
         QVariant::Type t = QVariant::nameToType(pt.value("type").toString().toLatin1().data());
         if (t == QVariant::Invalid) {
-            qCWarning(dcPluginMetadata()) << pluginName() << QString("Invalid type %1 for param %2 in json file.")
-                                            .arg(pt.value("type").toString())
-                                            .arg(pt.value("name").toString()).toLatin1().data();
+            m_validationErrors.append("Param type \"" + paramName + "\" has unknown invalid type \"" + pt.value("type").toString() + "\"");
             hasErrors = true;
         }
 
-        ParamTypeId paramTypeId = ParamTypeId(pt.value("id").toString());
-        QString paramName = pt.value("name").toString();
         if (!verifyDuplicateUuid(paramTypeId)) {
-            qCWarning(dcPluginMetadata()) << "Param" << paramName << "has duplicate UUID:" << paramTypeId.toString();
+            m_validationErrors.append("Param type \"" + paramName + "\" has duplicate UUID: " + paramTypeId.toString());
             hasErrors = true;
         }
         ParamType paramType(paramTypeId, paramName, t, pt.value("defaultValue").toVariant());

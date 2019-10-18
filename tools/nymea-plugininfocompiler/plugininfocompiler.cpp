@@ -43,19 +43,41 @@ int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputF
         return 1;
     }
     QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonFile.readAll(), &error);
+    QByteArray data = jsonFile.readAll();
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &error);
     jsonFile.close();
 
     if (error.error != QJsonParseError::NoError) {
-        qWarning() << "Error parsing input JSON. Aborting.";
-        qWarning() << "Parser details:" << error.errorString();
+        int errorOffset = error.offset;
+        int newLineIndex = data.indexOf("\n");
+        int lineIndex = 1;
+        while (newLineIndex > 0 && errorOffset > newLineIndex) {
+            data.remove(0, newLineIndex + 2);
+            errorOffset -= (newLineIndex + 2);
+            newLineIndex = data.indexOf("\n");
+            lineIndex++;
+        }
+        if (newLineIndex >= 0) {
+            data = data.left(newLineIndex);
+        }
+        QString spacer;
+        for (int i = 0; i < errorOffset; i++) {
+            spacer += ' ';
+        }
+        QDebug dbg = qWarning().nospace().noquote();
+        dbg << inputFile << ":" << lineIndex << ":" << errorOffset + 2 << ": error: JSON parsing failed: " << error.errorString() << ": " << data.trimmed() << endl;
+        dbg << data << endl;
+        dbg << spacer << "^";
         return 1;
     }
     QJsonObject jsonObject = QJsonObject::fromVariantMap(jsonDoc.toVariant().toMap());
 
     PluginMetadata metadata(jsonObject);
     if (!metadata.isValid()) {
-        qWarning() << "Plugin JSON failed validation. Aborting.";
+        foreach (const QString &error, metadata.validationErrors()) {
+            QDebug dbg = qWarning().noquote().nospace();
+            dbg << inputFile << ": error: Plugin JSON failed validation: " << error;
+        }
         return 2;
     }
 

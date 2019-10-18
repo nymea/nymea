@@ -1018,7 +1018,9 @@ void DeviceManagerImplementation::loadPlugins()
 
             PluginMetadata metaData(loader.metaData().value("MetaData").toObject());
             if (!metaData.isValid()) {
-                qCWarning(dcDeviceManager()) << "Plugin metadata not valid for" << entry;
+                foreach (const QString &error, metaData.validationErrors()) {
+                    qCWarning(dcDeviceManager()) << error;
+                }
                 loader.unload();
                 continue;
             }

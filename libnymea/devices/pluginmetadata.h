@@ -33,6 +33,7 @@ public:
     PluginMetadata(const QJsonObject &jsonObject, bool isBuiltIn = false);
 
     bool isValid() const;
+    QStringList validationErrors() const;
 
     PluginId pluginId() const;
     QString pluginName() const;
@@ -71,6 +72,8 @@ private:
     // As strict as possible without breaking them, but this should be removed ASAP
     // and only m_allUuids should be used to check for dupes
     QList<QUuid> m_currentScopUuids;
+
+    QStringList m_validationErrors;
 };
 
 #endif // PLUGINMETADATA_H

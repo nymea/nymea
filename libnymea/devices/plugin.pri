@@ -67,7 +67,7 @@ HEADERS += $$OUT_PWD/plugininfo.h
 TRANSLATIONS *= $$files($${_PRO_FILE_PWD_}/translations/*ts, true)
 lupdate.depends = FORCE
 lupdate.depends += qmake_all
-lupdate.commands = nymea-plugininfocompiler $${JSONFILE} --translation $${_PRO_FILE_PWD_}/translations/; \
+lupdate.commands = nymea-plugininfocompiler $${JSONFILE} --translations $${_PRO_FILE_PWD_}/translations/; \
                    lupdate -recursive -no-obsolete $${_PRO_FILE_PWD_}/"$$TARGET".pro;
 QMAKE_EXTRA_TARGETS += lupdate
 

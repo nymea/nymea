@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     parser.addOption({{"o", "output"}, "Write generated output header to <file>.", "file"});
     parser.addOption({{"e", "extern"}, "Write generated output header (extern definitions) to <file>.", "file"});
-    parser.addOption({{"t", "translations"}, "Write generated output header (extern definitions) to <directory>.", "directory"});
+    parser.addOption({{"t", "translations"}, "Write generated translations file stub to <directory>.", "directory"});
     parser.addPositionalArgument("input", "The input json file");
 
     parser.process(a);

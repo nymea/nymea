@@ -3,6 +3,8 @@
 
 #include <QObject>
 
+class ExperiencePlugin;
+
 namespace nymeaserver {
 
 class JsonRPCServer;
@@ -16,6 +18,14 @@ public:
 signals:
 
 public slots:
+
+private:
+    QStringList pluginSearchDirs() const;
+
+    void loadExperiencePlugin(const QString &file);
+
+private:
+    QList<ExperiencePlugin*> m_plugins;
 };
 
 }

@@ -97,6 +97,7 @@
 #include "nymeasettings.h"
 #include "tagging/tagsstorage.h"
 #include "platform/platform.h"
+#include "experiences/experiencemanager.h"
 
 #include "devices/devicemanagerimplementation.h"
 #include "devices/device.h"
@@ -172,6 +173,7 @@ void NymeaCore::init() {
     m_cloudManager = new CloudManager(m_configuration, m_networkManager, this);
 
     qCDebug(dcApplication()) << "Loading experiences";
+    new ExperienceManager(m_serverManager->jsonServer(), this);
 
 
     CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();

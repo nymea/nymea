@@ -616,6 +616,7 @@ void TestJSONRPC::introspect()
             QString typeId = ref;
             typeId.remove("$ref:");
             QVERIFY2(types.contains(typeId), QString("Undefined ref: %1. Did you forget to add it to JsonTypes::allTypes()?").arg(ref).toLatin1().data());
+            QVERIFY2(!types.value(typeId).toString().startsWith("$ref:"), QString("Definition for %1 must not be a reference itself").arg(ref).toLatin1().data());
         }
     }
 }

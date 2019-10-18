@@ -490,8 +490,8 @@ QVariantMap JsonTypes::allTypes()
     allTypes.insert("UserError", userError());
     allTypes.insert("TagError", tagError());
     allTypes.insert("CloudConnectionState", cloudConnectionState());
-    allTypes.insert("BrowserIcon", browserIconRef());
-    allTypes.insert("MediaBrowserIcon", mediaBrowserIconRef());
+    allTypes.insert("BrowserIcon", browserIcon());
+    allTypes.insert("MediaBrowserIcon", mediaBrowserIcon());
 
     allTypes.insert("StateType", stateTypeDescription());
     allTypes.insert("StateDescriptor", stateDescriptorDescription());

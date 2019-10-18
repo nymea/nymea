@@ -1406,7 +1406,18 @@
             "Time",
             "Object"
         ],
-        "BrowserIcon": "$ref:BrowserIcon",
+        "BrowserIcon": [
+            "BrowserIconNone",
+            "BrowserIconFolder",
+            "BrowserIconFile",
+            "BrowserIconMusic",
+            "BrowserIconVideo",
+            "BrowserIconPictures",
+            "BrowserIconApplication",
+            "BrowserIconDocument",
+            "BrowserIconPackage",
+            "BrowserIconFavorites"
+        ],
         "BrowserItem": {
             "actionTypeIds": [
                 "Uuid"
@@ -1614,7 +1625,29 @@
             "LoggingSourceRules",
             "LoggingSourceBrowserActions"
         ],
-        "MediaBrowserIcon": "$ref:MediaBrowserIcon",
+        "MediaBrowserIcon": [
+            "MediaBrowserIconNone",
+            "MediaBrowserIconPlaylist",
+            "MediaBrowserIconRecentlyPlayed",
+            "MediaBrowserIconLibrary",
+            "MediaBrowserIconMusicLibrary",
+            "MediaBrowserIconVideoLibrary",
+            "MediaBrowserIconPictureLibrary",
+            "MediaBrowserIconDisk",
+            "MediaBrowserIconUSB",
+            "MediaBrowserIconNetwork",
+            "MediaBrowserIconAux",
+            "MediaBrowserIconSpotify",
+            "MediaBrowserIconAmazon",
+            "MediaBrowserIconTuneIn",
+            "MediaBrowserIconSiriusXM",
+            "MediaBrowserIconVTuner",
+            "MediaBrowserIconTidal",
+            "MediaBrowserIconAirable",
+            "MediaBrowserIconDeezer",
+            "MediaBrowserIconNapster",
+            "MediaBrowserIconSoundCloud"
+        ],
         "MqttPolicy": {
             "allowedPublishTopicFilters": "StringList",
             "allowedSubscribeTopicFilters": "StringList",

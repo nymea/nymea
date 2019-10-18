@@ -101,18 +101,19 @@ public:
 
     virtual DeviceDiscoveryInfo* discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) = 0;
 
-    virtual DeviceSetupInfo* addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId()) = 0;
-    virtual DeviceSetupInfo* addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const DeviceId &deviceId = DeviceId::createDeviceId()) = 0;
+    virtual DeviceSetupInfo* addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const QString &name = QString()) = 0;
+    virtual DeviceSetupInfo* addConfiguredDevice(const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) = 0;
 
-    virtual DeviceSetupInfo* reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscoveryOrAuto = false) = 0;
-    virtual DeviceSetupInfo* reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId) = 0;
+    virtual DeviceSetupInfo* reconfigureDevice(const DeviceId &deviceId, const ParamList &params, const QString &name = QString()) = 0;
+    virtual DeviceSetupInfo* reconfigureDevice(const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) = 0;
+
+    virtual DevicePairingInfo* pairDevice(const DeviceClassId &deviceClassId, const ParamList &params, const QString &name = QString()) = 0;
+    virtual DevicePairingInfo* pairDevice(const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) = 0;
+    virtual DevicePairingInfo* pairDevice(const DeviceId &deviceId, const ParamList &params, const QString &name = QString()) = 0;
+    virtual DevicePairingInfo* confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &username = QString(), const QString &secret = QString()) = 0;
 
     virtual Device::DeviceError editDevice(const DeviceId &deviceId, const QString &name) = 0;
     virtual Device::DeviceError setDeviceSettings(const DeviceId &deviceId, const ParamList &settings) = 0;
-
-    virtual DevicePairingInfo* pairDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params) = 0;
-    virtual DevicePairingInfo* pairDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId) = 0;
-    virtual DevicePairingInfo* confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &username = QString(), const QString &secret = QString()) = 0;
 
     virtual Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId) = 0;
 

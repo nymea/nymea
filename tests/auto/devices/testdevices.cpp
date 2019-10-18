@@ -338,12 +338,17 @@ void TestDevices::addConfiguredDevice_data()
     QVariantMap fakeparam;
     fakeparam.insert("paramTypeId", ParamTypeId::createParamTypeId());
     invalidDeviceParams.append(fakeparam);
-    QTest::newRow("User, JustAdd, invalid param") << mockDeviceClassId << invalidDeviceParams << Device::DeviceErrorInvalidParameter;
+    QTest::newRow("User, JustAdd, invalid param") << mockDeviceClassId << invalidDeviceParams << Device::DeviceErrorMissingParameter;
 
-    fakeparam.insert("value", "buhuu");
+    QVariantMap fakeparam2;
+    fakeparam2.insert("paramTypeId", mockDeviceHttpportParamTypeId.toString());
+    fakeparam2.insert("value", "blabla");
     invalidDeviceParams.clear();
-    invalidDeviceParams.append(fakeparam);
+    invalidDeviceParams.append(fakeparam2);
     QTest::newRow("User, JustAdd, wrong param") << mockDeviceClassId << invalidDeviceParams << Device::DeviceErrorInvalidParameter;
+
+    deviceParams.clear(); deviceParams << httpportParam << fakeparam;
+    QTest::newRow("USer, JustAdd, additional invalid param") << mockDeviceClassId << deviceParams << Device::DeviceErrorNoError;
 
 }
 
@@ -1198,6 +1203,7 @@ void TestDevices::reconfigureByDiscovery()
     QFETCH(Device::DeviceError, error);
     QFETCH(QVariantList, discoveryParams);
 
+    qCDebug(dcTests()) << "Discovering...";
     QVariantMap params;
     params.insert("deviceClassId", deviceClassId);
     params.insert("discoveryParams", discoveryParams);
@@ -1211,31 +1217,33 @@ void TestDevices::reconfigureByDiscovery()
     // add Discovered Device 1 port 55555
     QVariantList deviceDescriptors = response.toMap().value("params").toMap().value("deviceDescriptors").toList();
 
-    DeviceDescriptorId descriptorId1;
+    DeviceDescriptorId descriptorId;
     foreach (const QVariant &descriptor, deviceDescriptors) {
         // find the device with port 55555
         if (descriptor.toMap().value("description").toString() == "55555") {
-            descriptorId1 = DeviceDescriptorId(descriptor.toMap().value("id").toString());
-            qDebug() << descriptorId1.toString();
+            descriptorId = DeviceDescriptorId(descriptor.toMap().value("id").toString());
+            qDebug() << descriptorId.toString();
             break;
         }
     }
 
-    qDebug() << "adding descriptorId 1" << descriptorId1;
+    QVERIFY(!descriptorId.isNull());
 
-    QVERIFY(!descriptorId1.isNull());
+    qCDebug(dcTests()) << "Adding...";
 
     params.clear();
     response.clear();
     params.insert("deviceClassId", deviceClassId);
     params.insert("name", "Discoverd mock device");
-    params.insert("deviceDescriptorId", descriptorId1);
+    params.insert("deviceDescriptorId", descriptorId);
     response = injectAndWait("Devices.AddConfiguredDevice", params);
 
     DeviceId deviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY(!deviceId.isNull());
 
-    // and now rediscover, and edit the first device with the second
+    // and now rediscover and find the existing device in the discovery results
+    qCDebug(dcTests()) << "Re-Discovering...";
+
     params.clear();
     response.clear();
     params.insert("deviceClassId", deviceClassId);
@@ -1247,24 +1255,28 @@ void TestDevices::reconfigureByDiscovery()
         QCOMPARE(response.toMap().value("params").toMap().value("deviceDescriptors").toList().count(), resultCount);
     }
 
-    // get the second device
-    DeviceDescriptorId descriptorId2;
+    deviceDescriptors = response.toMap().value("params").toMap().value("deviceDescriptors").toList();
+
+    // find the already added device
+    descriptorId = DeviceDescriptorId(); // reset it first
     foreach (const QVariant &descriptor, deviceDescriptors) {
-        // find the device with port 55556
-        if (descriptor.toMap().value("description").toString() == "55556") {
-            descriptorId2 = DeviceDescriptorId(descriptor.toMap().value("id").toString());
+        if (descriptor.toMap().value("deviceId").toUuid().toString() == deviceId.toString()) {
+            descriptorId = DeviceDescriptorId(descriptor.toMap().value("id").toString());
             break;
         }
     }
-    QVERIFY(!descriptorId2.isNull());
+    QVERIFY2(!descriptorId.isNull(), QString("Device %1 not found in discovery results: %2").arg(deviceId.toString()).arg(qUtf8Printable(QJsonDocument::fromVariant(response).toJson())).toUtf8());
 
-    qDebug() << "edit device 1 (55555) with descriptor 2 (55556) " << descriptorId2;
+    qCDebug(dcTests()) << "Reconfiguring...";
 
-    // EDIT
     response.clear();
     params.clear();
-    params.insert("deviceId", deviceId.toString());
-    params.insert("deviceDescriptorId", descriptorId2);
+    params.insert("deviceDescriptorId", descriptorId);
+    // override port param
+    QVariantMap portParam;
+    portParam.insert("paramTypeId", mockDeviceHttpportParamTypeId);
+    portParam.insert("value", "55556");
+    params.insert("deviceParams", QVariantList() << portParam);
     response = injectAndWait("Devices.ReconfigureDevice", params);
     verifyDeviceError(response, error);
 
@@ -1601,7 +1613,7 @@ void TestDevices::discoverDeviceParenting()
     DeviceDescriptorId descriptorId = discoveryInfo->deviceDescriptors().first().id();
 
     QSignalSpy addSpy(NymeaCore::instance()->deviceManager(), &DeviceManager::deviceAdded);
-    DeviceSetupInfo *setupInfo = NymeaCore::instance()->deviceManager()->addConfiguredDevice(mockParentDeviceClassId, "Mock Parent (Discovered)", descriptorId);
+    DeviceSetupInfo *setupInfo = NymeaCore::instance()->deviceManager()->addConfiguredDevice(descriptorId, ParamList(), "Mock Parent (Discovered)");
     {
         QSignalSpy spy(setupInfo, &DeviceSetupInfo::finished);
         spy.wait();
@@ -1627,7 +1639,7 @@ void TestDevices::discoverDeviceParenting()
 
     // Found one! Adding it...
     addSpy.clear();
-    setupInfo = NymeaCore::instance()->deviceManager()->addConfiguredDevice(mockChildDeviceClassId, "Mock Child (Discovered)", descriptorId);
+    setupInfo = NymeaCore::instance()->deviceManager()->addConfiguredDevice(descriptorId, ParamList(), "Mock Child (Discovered)");
     {
         QSignalSpy spy(setupInfo, &DeviceSetupInfo::finished);
         spy.wait();

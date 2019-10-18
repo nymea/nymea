@@ -127,7 +127,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
                                           "Devices with CreateMethodJustAdd require all parameters to be supplied here. "
                                           "Devices with CreateMethodDiscovery require the use of a deviceDescriptorId. For discovered "
                                           "devices params are not required and will be taken from the DeviceDescriptor, however, they "
-                                          "may be overridden by supplying parameters here."
+                                          "may be overridden by supplying deviceParams."
                    );
     params.insert("deviceClassId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
@@ -141,28 +141,44 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     returns.insert("o:displayMessage", JsonTypes::basicTypeToString(JsonTypes::String));
     setReturns("AddConfiguredDevice", returns);
 
-    returns.clear(); // Reused params from above!
+    params.clear(); returns.clear();
     setDescription("PairDevice", "Pair a device. "
-                                 "Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd. "
-                                 "Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. "
-                                 "CreateMethodJustAdd takes the parameters you want to have with that device. "
-                                 "CreateMethodDiscovery requires the use of a deviceDescriptorId, optionally, parameters can be overridden here. "
+                                 "Use this to set up or reconfigure devices for DeviceClasses with a setupMethod different than SetupMethodJustAdd. "
+                                 "Depending on the CreateMethod and whether a new devices is set up or an existing one is reconfigured, different parameters "
+                                 "are required:\n"
+                                 "CreateMethodJustAdd takes the deviceClassId and the parameters you want to have with that device.\n"
+                                 "CreateMethodDiscovery requires the use of a deviceDescriptorId, previously obtained with DiscoverDevices. Optionally, "
+                                 "parameters can be overridden with the give deviceParams.\n"
+                                 "If an existing device should be reconfigured, the deviceId of said device should be given additionally.\n"
                                  "If success is true, the return values will contain a pairingTransactionId, a displayMessage and "
-                                 "the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice "
-                                 "or PairDevice."
+                                 "the setupMethod. Depending on the setupMethod, the application should present the use an appropriate login mask, "
+                                 "that is, For SetupMethodDisplayPin the user should enter a pin that is displayed on the device, for SetupMethodEnterPin the "
+                                 "application should present the given PIN so the user can enter it on the device. For SetupMethodPushButton, the displayMessage "
+                                 "shall be presented to the user as informational hints to press a button on the device. For SetupMethodUserAndPassword a login "
+                                 "mask for a user and password login should be presented to the user. In case of SetupMethodOAuth, an OAuth URL will be returned "
+                                 "which shall be opened in a web view to allow the user logging in.\n"
+                                 "Once the login procedure has completed, the application shall proceed with ConfirmPairing, providing the results of the pairing "
+                                 "procedure."
                    );
+    params.insert("o:deviceClassId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("o:name", JsonTypes::basicTypeToString(JsonTypes::String));
+    params.insert("o:deviceDescriptorId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    params.insert("o:deviceParams", deviceParams);
+    params.insert("o:deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     setParams("PairDevice", params);
     returns.insert("deviceError", JsonTypes::deviceErrorRef());
     returns.insert("o:setupMethod", JsonTypes::setupMethodRef());
     returns.insert("o:pairingTransactionId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     returns.insert("o:displayMessage", JsonTypes::basicTypeToString(JsonTypes::String));
     returns.insert("o:oAuthUrl", JsonTypes::basicTypeToString(JsonTypes::String));
+    returns.insert("o:pin", JsonTypes::basicTypeToString(JsonTypes::String));
     setReturns("PairDevice", returns);
 
     params.clear(); returns.clear();
     setDescription("ConfirmPairing", "Confirm an ongoing pairing. For SetupMethodUserAndPassword, provide the username in the \"username\" field "
                                      "and the password in the \"secret\" field. For SetupMethodEnterPin and provide the PIN in the \"secret\" "
-                                     "field. For SetupMethodOAuth, return the entire unmodified callback URL containing the code parameter back in the secret field.");
+                                     "field. In case of SetupMethodOAuth, the previously opened web view will eventually be redirected to http://128.0.0.1:8888 "
+                                     "and the OAuth code as query parameters to this url. Provide the entire unmodified URL in the secret field.");
     params.insert("pairingTransactionId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     params.insert("o:username", JsonTypes::basicTypeToString(JsonTypes::String));
     params.insert("o:secret", JsonTypes::basicTypeToString(JsonTypes::String));
@@ -200,12 +216,14 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     setReturns("GetDiscoveredDevices", returns);
 
     params.clear(); returns.clear();
-    setDescription("ReconfigureDevice", "Edit the parameter configuration of the device. The device params will be set to the "
-                                        "passed parameters and the setup device will be called. If the device is discoverable, "
-                                        "you can perform a GetDiscoveredDevices before calling this method and pass "
-                                        "the new DeviceDescriptor (rediscover). Only writable parameters can be changed. By default, "
-                                        "every Param is writable.");
-    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
+    setDescription("ReconfigureDevice", "Reconfigure a device. This comes down to removing and recreating a device with new parameters "
+                                        "but keeping its device id the same (and with that keeping rules, tags etc). For devices with "
+                                        "create method CreateMethodDiscovery, a discovery (GetDiscoveredDevices) shall be performed first "
+                                        "and this method is to be called with a deviceDescriptorId of the re-discovered device instead of "
+                                        "the deviceId directly. Device parameters will be taken from the discovery, but can be overridden "
+                                        "individually here by providing them in the deviceParams parameter. Only writable parameters can "
+                                        "be changed.");
+    params.insert("o:deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     params.insert("o:deviceDescriptorId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
     QVariantList newDeviceParams;
     newDeviceParams.append(JsonTypes::paramRef());
@@ -451,20 +469,19 @@ JsonReply* DeviceHandler::SetPluginConfiguration(const QVariantMap &params)
 
 JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
 {
-    DeviceClassId deviceClass(params.value("deviceClassId").toString());
+    DeviceClassId deviceClassId(params.value("deviceClassId").toString());
     QString deviceName = params.value("name").toString();
     ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
-    DeviceId newDeviceId = DeviceId::createDeviceId();
     QLocale locale = params.value("locale").toLocale();
 
     JsonReply *jsonReply = createAsyncReply("AddConfiguredDevice");
 
     DeviceSetupInfo *info;
     if (deviceDescriptorId.isNull()) {
-        info = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceName, deviceParams, newDeviceId);
+        info = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceParams, deviceName);
     } else {
-        info = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClass, deviceName, deviceDescriptorId, deviceParams, newDeviceId);
+        info = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceDescriptorId, deviceParams, deviceName);
     }
     connect(info, &DeviceSetupInfo::finished, jsonReply, [info, jsonReply, locale](){
         QVariantMap returns;
@@ -486,28 +503,31 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
 
 JsonReply *DeviceHandler::PairDevice(const QVariantMap &params)
 {
-    DeviceClassId deviceClassId(params.value("deviceClassId").toString());
     QString deviceName = params.value("name").toString();
-    DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(deviceClassId);
+    ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
     QLocale locale = params.value("locale").toLocale();
 
     DevicePairingInfo *info;
     if (params.contains("deviceDescriptorId")) {
-        DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
-        info = NymeaCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceName, deviceDescriptorId);
+        DeviceDescriptorId deviceDescriptorId = DeviceDescriptorId(params.value("deviceDescriptorId").toString());
+        info = NymeaCore::instance()->deviceManager()->pairDevice(deviceDescriptorId, deviceParams, deviceName);
+    } else if (params.contains("deviceId")) {
+        DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+        info = NymeaCore::instance()->deviceManager()->pairDevice(deviceId, deviceParams, deviceName);
     } else {
-        ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
-        info = NymeaCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceName, deviceParams);
+        DeviceClassId deviceClassId(params.value("deviceClassId").toString());
+        info = NymeaCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceParams, deviceName);
     }
 
     JsonReply *jsonReply = createAsyncReply("PairDevice");
 
-    connect(info, &DevicePairingInfo::finished, jsonReply, [jsonReply, info, locale, deviceClass](){
+    connect(info, &DevicePairingInfo::finished, jsonReply, [jsonReply, info, locale](){
         QVariantMap returns;
         returns.insert("deviceError", JsonTypes::deviceErrorToString(info->status()));
         returns.insert("pairingTransactionId", info->transactionId().toString());
 
         if (info->status() == Device::DeviceErrorNoError) {
+            DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(info->deviceClassId());
             returns.insert("setupMethod", JsonTypes::setupMethodToString(deviceClass.setupMethod()));
         }
 
@@ -584,10 +604,15 @@ JsonReply *DeviceHandler::ReconfigureDevice(const QVariantMap &params)
     JsonReply *jsonReply = createAsyncReply("ReconfigureDevice");
 
     DeviceSetupInfo *info;
-    if (deviceDescriptorId.isNull()) {
+    if (!deviceDescriptorId.isNull()) {
+        info = NymeaCore::instance()->deviceManager()->reconfigureDevice(deviceDescriptorId, deviceParams);
+    } else if (!deviceId.isNull()){
         info = NymeaCore::instance()->deviceManager()->reconfigureDevice(deviceId, deviceParams);
     } else {
-        info = NymeaCore::instance()->deviceManager()->reconfigureDevice(deviceId, deviceDescriptorId);
+        qCWarning(dcJsonRpc()) << "Either deviceId or deviceDescriptorId are required";
+        QVariantMap ret;
+        ret.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorMissingParameter));
+        return createReply(ret);
     }
 
     connect(info, &DeviceSetupInfo::finished, jsonReply, [info, jsonReply, locale](){
@@ -597,6 +622,7 @@ JsonReply *DeviceHandler::ReconfigureDevice(const QVariantMap &params)
         returns.insert("displayMessage", info->translatedDisplayMessage(locale));
         jsonReply->setData(returns);
         jsonReply->finished();
+
     });
 
     return jsonReply;

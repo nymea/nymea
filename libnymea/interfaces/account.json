@@ -1,0 +1,15 @@
+{
+    "description": "This is used to flag a thing that manages user a user account. It is similar to the gateway interface. For example, if there is a remote API that requires logging in but doesn't really offer any more functionality than that, this account shall be used. It inherits \"connectable\" which is used to flag if the remote server is unreachable. In addition, the \"loggedIn\" state indicates if the login fails. While logged in, the \"userDisplayName\" state should give the user's name in a pretty printed form. A client may reconfigure the device then to login again. Such device classes usually will cause auto-devices implementing the actual features as child devices.",
+    "extends": "connectable",
+    "states": [
+        {
+            "name": "loggedIn",
+            "type": "bool"
+        },
+        {
+            "name": "userDisplayName",
+            "type": "QString"
+        }
+
+    ]
+}

@@ -3,6 +3,7 @@
 	<file>alert.json</file>
         <file>light.json</file>
         <file>dimmablelight.json</file>
+        <file>account.json</file>
         <file>daylightsensor.json</file>
         <file>colortemperaturelight.json</file>
         <file>doorbell.json</file>

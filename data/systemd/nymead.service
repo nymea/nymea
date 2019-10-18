@@ -1,6 +1,6 @@
 [Unit]
 Description=nymead - IoT server
-Documentation=https://github.com/guh/nymea/wiki
+Documentation=https://wiki.nymea.io
 After=network.target
 Wants=network-online.target
 

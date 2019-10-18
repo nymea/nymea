@@ -1,6 +1,23 @@
-nymea (0.16.0) UNRELEASED; urgency=medium
+nymea (0.16.0) xenial; urgency=medium
+  [ Michael Zanetti ]
+  * Add account interface
+  * Rework devicemanager and plugin api
+  * Fix wrong wording of Hertz
+  * Improve json parse errors
+  * MQTT hardware resource api updates
+  * Always initialize device settings params
+  * Automatically enable nymead service in dpkg
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Fri, 20 Sep 2019 12:39:23 +0200
+  [ Simon Stürz ]
+  * Improve debug report and report download mechanism
+  * Improve live logs in debug interface and rework logging rules
+
+  [ Michael Zanetti ]
+  * Add support for more media service icons
+  * Fix Browser icon definition in introspect
+  * Fix generating translation stubs
+
+ -- Jenkins <jenkins@nymea.io>  Fri, 18 Oct 2019 14:57:25 +0200
 
 nymea (0.15.1) xenial; urgency=medium
 

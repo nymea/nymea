@@ -36,7 +36,7 @@ public:
     QString password() const override;
     QHostAddress serverAddress() const override;
     quint16 serverPort() const override;
-    QString topicPrefix() const override;
+    QStringList topicPrefixList() const override;
 
     void publish(const QString &topic, const QByteArray &payload) override;
 
@@ -49,7 +49,7 @@ private:
     QString m_password;
     QHostAddress m_serverAddress;
     quint16 m_serverPort;
-    QString m_topicPrefix;
+    QStringList m_topicPrefixList;
 
     friend class MqttProviderImplementation;
 };

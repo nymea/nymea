@@ -52,9 +52,9 @@ quint16 MqttChannelImplementation::serverPort() const
     return m_serverPort;
 }
 
-QString MqttChannelImplementation::topicPrefix() const
+QStringList MqttChannelImplementation::topicPrefixList() const
 {
-    return m_topicPrefix;
+    return m_topicPrefixList;
 }
 
 void MqttChannelImplementation::publish(const QString &topic, const QByteArray &payload)

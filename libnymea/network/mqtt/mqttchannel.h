@@ -38,7 +38,7 @@ public:
     virtual QString password() const = 0;
     virtual QHostAddress serverAddress() const = 0;
     virtual quint16 serverPort() const = 0;
-    virtual QString topicPrefix() const = 0;
+    virtual QStringList topicPrefixList() const = 0;
 
     virtual void publish(const QString &topic, const QByteArray &payload) = 0;
 

@@ -38,10 +38,10 @@ class MqttProvider : public HardwareResource
 public:
     explicit MqttProvider(QObject *parent = nullptr);
 
-    virtual MqttChannel* createChannel(const DeviceId &deviceId, const QHostAddress &clientAddress) = 0;
+    virtual MqttChannel* createChannel(const QString &clientId, const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) = 0;
     virtual void releaseChannel(MqttChannel *channel) = 0;
 
-    virtual MqttClient* createInternalClient(const DeviceId &deviceId) = 0;
+    virtual MqttClient* createInternalClient(const QString &clientId) = 0;
 };
 
 #endif // MQTTPROVIDER_H

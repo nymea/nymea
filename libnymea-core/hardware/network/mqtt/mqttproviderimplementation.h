@@ -34,10 +34,10 @@ class MqttProviderImplementation : public MqttProvider
 public:
     explicit MqttProviderImplementation(MqttBroker *broker, QObject *parent = nullptr);
 
-    MqttChannel* createChannel(const DeviceId &deviceId, const QHostAddress &clientAddress) override;
+    MqttChannel* createChannel(const QString &clientId, const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) override;
     void releaseChannel(MqttChannel* channel) override;
 
-    MqttClient* createInternalClient(const DeviceId &deviceId) override;
+    MqttClient* createInternalClient(const QString &clientId) override;
 
     bool available() const override;
     bool enabled() const override;

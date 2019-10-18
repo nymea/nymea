@@ -146,11 +146,20 @@
     \sa HardwareResource, HardwareManager::mqttProvider()
 */
 
-/*! \fn MqttChannel *MqttProvider::createChannel(const DeviceId &deviceId, const QHostAddress &clientAddress);
+/*! \fn MqttChannel *MqttProvider::createChannel(const QString &clientId, const QHostAddress &clientAddress, const QString &topicPrefix);
     Creates a new MQTT channel on the internal broker. The returned channel will have the required details for the
-    client device to connect to the broker. A temporaray clientId/user/password combination will be created and
+    client device to connect to the broker. A temporaray user/password combination will be created and
     clients connecting to the broker with those credentials will have access to subscribe and post to # within the
-    given topic prefix.
+    given \a topicPrefixList.
+
+    \a clientId must be unique within the system or the channel creation will fail. If a mqtt client allows to configure the
+    clientId, using it's deviceId is likely a good idea.
+
+    \a topicPrefixList will be used to generate the policy for this MQTT client by appending "/#" to it. This will allow the
+    client to publish and subscribe to topics within "<topicPrefix>/#". See The MQTT specification on topic filters for more details.
+    It is good practice to isolate clients as much as possible the topics should be as restrictive as possible to avoid devices
+    snooping in on other things on the MQTT broker. If no topicPrefix is provided, a default of "<clientId>" Id is generated,
+    resulting in a policy of "<clientId>/#". At this point it is not allowed for plugins to publish/subscribe to # or $ topics.
 
     \sa releaseChannel(MqttChannel *channel)
 */

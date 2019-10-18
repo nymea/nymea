@@ -37,18 +37,23 @@ MqttProviderImplementation::MqttProviderImplementation(MqttBroker *broker, QObje
     connect(broker, &MqttBroker::publishReceived, this, &MqttProviderImplementation::onPublishReceived);
 }
 
-MqttChannel *MqttProviderImplementation::createChannel(const DeviceId &deviceId, const QHostAddress &clientAddress)
+MqttChannel *MqttProviderImplementation::createChannel(const QString &clientId, const QHostAddress &clientAddress, const QStringList &topicPrefixList)
 {
     if (m_broker->configurations().isEmpty()) {
-        qCWarning(dcMqtt) << "MQTT broker not running. Cannot create a channel for device" << deviceId;
+        qCWarning(dcMqtt) << "MQTT broker not running. Cannot create a channel for device" << clientId;
         return nullptr;
     }
 
     MqttChannelImplementation* channel = new MqttChannelImplementation();
-    channel->m_clientId = deviceId.toString().remove(QRegExp("[{}-]"));
+    channel->m_clientId = clientId;
     channel->m_username = QUuid::createUuid().toString().remove(QRegExp("[{}-]"));
     channel->m_password = QUuid::createUuid().toString().remove(QRegExp("[{}-]"));
-    channel->m_topicPrefix = channel->m_clientId;
+    if (!topicPrefixList.isEmpty()) {
+        channel->m_topicPrefixList = topicPrefixList;
+    } else {
+        QString defaultTopicPrefix = channel->m_clientId;
+        channel->m_topicPrefixList.append(defaultTopicPrefix);
+    }
 
 
     foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
@@ -80,8 +85,10 @@ MqttChannel *MqttProviderImplementation::createChannel(const DeviceId &deviceId,
     policy.clientId = channel->clientId();
     policy.username = channel->username();
     policy.password = channel->password();
-    policy.allowedPublishTopicFilters.append(QString("%1/#").arg(channel->m_topicPrefix));
-    policy.allowedSubscribeTopicFilters.append(QString("%1/#").arg(channel->m_topicPrefix));
+    foreach (const QString &topicPrefix, channel->m_topicPrefixList) {
+        policy.allowedPublishTopicFilters.append(QString("%1/#").arg(topicPrefix));
+        policy.allowedSubscribeTopicFilters.append(QString("%1/#").arg(topicPrefix));
+    }
     m_broker->updatePolicy(policy);
 
     return channel;
@@ -99,7 +106,7 @@ void MqttProviderImplementation::releaseChannel(MqttChannel *channel)
     delete channel;
 }
 
-MqttClient *MqttProviderImplementation::createInternalClient(const DeviceId &deviceId)
+MqttClient *MqttProviderImplementation::createInternalClient(const QString &clientId)
 {
 
     ServerConfiguration preferredConfig;
@@ -117,7 +124,6 @@ MqttClient *MqttProviderImplementation::createInternalClient(const DeviceId &dev
         return nullptr;
     }
 
-    QString clientId = deviceId.toString().remove(QRegExp("[{}-]"));
     MqttPolicy policy;
     policy.clientId = clientId;
     policy.username = QUuid::createUuid().toString().remove(QRegExp("[{}-]"));
@@ -189,9 +195,16 @@ void MqttProviderImplementation::onPublishReceived(const QString &clientId, cons
 void MqttProviderImplementation::onPluginPublished(const QString &topic, const QByteArray &payload)
 {
     MqttChannelImplementation *channel = static_cast<MqttChannelImplementation*>(sender());
-    if (!topic.startsWith(channel->topicPrefix())) {
+    bool found = false;
+    foreach (const QString &topicPrefix, channel->topicPrefixList()) {
+        if (topicPrefix.startsWith(topicPrefix)) {
+            found = true;
+            break;
+        }
+
+    }
+    if (!found) {
         qCWarning(dcMqtt) << "Attempt to publish to MQTT channel for client" << channel->clientId() << "but topic is not within allowed topic prefix. Discarding message.";
-        return;
     }
     m_broker->publish(topic, payload);
 }

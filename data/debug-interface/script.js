@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2018 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2018-2019 Simon Stürz <simon.stuerz@nymea.io>            *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -44,7 +44,7 @@ function selectSection(event, section) {
 
 
 /* ========================================================================*/
-/* Websocket connection
+/* Websocket connection for log live view
 /* ========================================================================*/
 
 var webSocket = null;
@@ -126,39 +126,45 @@ function downloadFile(filePath, fileName) {
 }
 
 
+/* ========================================================================*/
+/* Generate report
+/* ========================================================================*/
+
 var generateReportTimer = null;
 
-function generateReport() {
-    console.log("Requesting to generate report file " + "/debug/report");
-    
-    var textArea = document.getElementById("generateReportTextArea");
-    var button = document.getElementById("generateReportButton");
-
+function pollReportResult() {
     // Request report file generation
     var reportGenerateRequest = new XMLHttpRequest();
     reportGenerateRequest.open("GET", "/debug/report", true);
     reportGenerateRequest.send(null);
     
-    button.disabled = true;
-    textArea.value = ".";
-    
-       // Start the timer
-    generateReportTimer = setTimeout(generateReportTimerTimeout, 1000);
-    
     reportGenerateRequest.onreadystatechange = function() {
         if (reportGenerateRequest.readyState == 4) {
             console.log("Report generation finished with " + reportGenerateRequest.status);
 
+            /* 204: the report is not ready yet. */
+            if (reportGenerateRequest.status == 204) {
+                // Restart poll timer
+                generateReportTimer = setTimeout(generateReportTimerTimeout, 1000);
+                return;
+            }
+            
+            /* Check if the generation went fine */
             if (reportGenerateRequest.status != 200) {
                 console.log("Report generation finished with error.");
                 clearTimeout(generateReportTimer);        
-                textArea.value = "Something went wrong :(";
+                textArea.value = "Something went wrong :(" + reportGenerateRequest.status;
                 button.disabled = false;
                 return;
             }
             
-            // Stop the timer
+            /* The report is finished! Show information and start downloading it. */
+            
+            /* Stop the timer */
             clearTimeout(generateReportTimer);
+            var textArea = document.getElementById("generateReportTextArea");
+            var button = document.getElementById("generateReportButton");
+
         
             console.log(reportGenerateRequest.responseText);
             var responseMap = JSON.parse(reportGenerateRequest.responseText);
@@ -190,10 +196,24 @@ function generateReport() {
     };
 }
 
-function generateReportTimerTimeout() {
+function generateReport() {
+    console.log("Requesting to generate report file " + "/debug/report");
+    
+    var textArea = document.getElementById("generateReportTextArea");
+    var button = document.getElementById("generateReportButton");
+
+    button.disabled = true;
+    textArea.value = ".";
+    
+    pollReportResult();
+
+}
+
+function generateReportTimerTimeout() {                    
     var textArea = document.getElementById("generateReportTextArea");
     textArea.value += ".";
-    generateReportTimer = setTimeout(generateReportTimerTimeout, 1000);
+    
+    pollReportResult();
 }
 
 /* ========================================================================*/

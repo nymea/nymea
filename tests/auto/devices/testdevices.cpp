@@ -23,6 +23,9 @@
 #include "nymeacore.h"
 #include "nymeasettings.h"
 
+#include "devices/devicediscoveryinfo.h"
+#include "devices/devicesetupinfo.h"
+
 using namespace nymeaserver;
 
 class TestDevices : public NymeaTestBase
@@ -486,7 +489,7 @@ void TestDevices::addPushButtonDevices_data()
     QTest::addColumn<bool>("waitForButtonPressed");
 
     QTest::newRow("Valid: Add PushButton device") << mockPushButtonDeviceClassId << Device::DeviceErrorNoError << true;
-    QTest::newRow("Invalid: Add PushButton device (press to early)") << mockPushButtonDeviceClassId << Device::DeviceErrorSetupFailed << false;
+    QTest::newRow("Invalid: Add PushButton device (press to early)") << mockPushButtonDeviceClassId << Device::DeviceErrorAuthenticationFailure << false;
 }
 
 void TestDevices::addPushButtonDevices()
@@ -552,7 +555,7 @@ void TestDevices::addDisplayPinDevices_data()
     QTest::addColumn<QString>("secret");
 
     QTest::newRow("Valid: Add DisplayPin device") << mockDisplayPinDeviceClassId << Device::DeviceErrorNoError << "243681";
-    QTest::newRow("Invalid: Add DisplayPin device (wrong pin)") << mockDisplayPinDeviceClassId << Device::DeviceErrorSetupFailed << "243682";
+    QTest::newRow("Invalid: Add DisplayPin device (wrong pin)") << mockDisplayPinDeviceClassId << Device::DeviceErrorAuthenticationFailure << "243682";
 }
 
 void TestDevices::addDisplayPinDevices()
@@ -616,11 +619,16 @@ void TestDevices::parentChildDevices()
     params.insert("deviceClassId", mockParentDeviceClassId);
     params.insert("name", "Parent device");
 
+    QSignalSpy deviceAddedSpy(NymeaCore::instance()->deviceManager(), &DeviceManager::deviceAdded);
+
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
     verifyDeviceError(response);
 
     DeviceId parentDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY(!parentDeviceId.isNull());
+
+    deviceAddedSpy.wait();
+    QCOMPARE(deviceAddedSpy.count(), 2);
 
     // find child device
     response = injectAndWait("Devices.GetConfiguredDevices");
@@ -1430,7 +1438,6 @@ void TestDevices::reconfigureAutodevice()
     QNetworkReply *reply = nam->get(QNetworkRequest(QUrl(QString("http://localhost:%1/reconfigureautodevice").arg(currentPort))));
     spy.wait();
     QCOMPARE(spy.count(), 1);
-    qCDebug(dcTests()) << "Reconfigure reply:" << reply->error() << reply->readAll();
     reply->deleteLater();
 
     Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(deviceId);
@@ -1576,50 +1583,57 @@ void TestDevices::testBrowsing()
 void TestDevices::discoverDeviceParenting()
 {
     // Try to discover a mock child device. We don't have a mockParent yet, so it should fail
-    QSignalSpy spy(NymeaCore::instance()->deviceManager(), &DeviceManager::devicesDiscovered);
-    Device::DeviceError status = NymeaCore::instance()->deviceManager()->discoverDevices(mockChildDeviceClassId, ParamList());
-    QCOMPARE(status, Device::DeviceErrorAsync);
-    spy.wait();
-    QCOMPARE(spy.first().at(0).value<DeviceClassId>().toString(), mockChildDeviceClassId.toString());
-    QList<DeviceDescriptor> descriptors = spy.first().at(1).value<QList<DeviceDescriptor> >();
-    QVERIFY(descriptors.count() == 0);
+    DeviceDiscoveryInfo *discoveryInfo = NymeaCore::instance()->deviceManager()->discoverDevices(mockChildDeviceClassId, ParamList());
+    {
+        QSignalSpy spy(discoveryInfo, &DeviceDiscoveryInfo::finished);
+        spy.wait();
+    }
+    QVERIFY(discoveryInfo->deviceDescriptors().count() == 0);
 
 
     // Now create a mock parent by discovering...
-    spy.clear();
-    status = NymeaCore::instance()->deviceManager()->discoverDevices(mockParentDeviceClassId, ParamList());
-    QCOMPARE(status, Device::DeviceErrorAsync);
-    spy.wait();
-    QVERIFY(spy.count() == 1);
-    QCOMPARE(spy.first().at(0).value<DeviceClassId>().toString(), mockParentDeviceClassId.toString());
-    descriptors = spy.first().at(1).value<QList<DeviceDescriptor> >();
-    QVERIFY(descriptors.count() == 1);
-    DeviceDescriptorId descriptorId = descriptors.first().id();
+    discoveryInfo = NymeaCore::instance()->deviceManager()->discoverDevices(mockParentDeviceClassId, ParamList());
+    {
+        QSignalSpy spy(discoveryInfo, &DeviceDiscoveryInfo::finished);
+        spy.wait();
+    }
+    QVERIFY(discoveryInfo->deviceDescriptors().count() == 1);
+    DeviceDescriptorId descriptorId = discoveryInfo->deviceDescriptors().first().id();
 
     QSignalSpy addSpy(NymeaCore::instance()->deviceManager(), &DeviceManager::deviceAdded);
-    status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(mockParentDeviceClassId, "Mock Parent (Discovered)", descriptorId);
-    QCOMPARE(status, Device::DeviceErrorNoError);
+    DeviceSetupInfo *setupInfo = NymeaCore::instance()->deviceManager()->addConfiguredDevice(mockParentDeviceClassId, "Mock Parent (Discovered)", descriptorId);
+    {
+        QSignalSpy spy(setupInfo, &DeviceSetupInfo::finished);
+        spy.wait();
+    }
+    QCOMPARE(setupInfo->status(), Device::DeviceErrorNoError);
+
+    addSpy.wait();
     QCOMPARE(addSpy.count(), 2); // Mock device parent will also auto-create a child instantly
 
-    Device *parentDevice = addSpy.at(1).first().value<Device*>();
+    Device *parentDevice = addSpy.at(0).first().value<Device*>();
     qCDebug(dcTests()) << "Added device:" << parentDevice->name();
     QVERIFY(parentDevice->deviceClassId() == mockParentDeviceClassId);
 
 
     // Ok we have our parent device, let's discover for childs again
-    spy.clear();
-    status = NymeaCore::instance()->deviceManager()->discoverDevices(mockChildDeviceClassId, ParamList());
-    QCOMPARE(status, Device::DeviceErrorAsync);
-    spy.wait();
-    QCOMPARE(spy.first().at(0).value<DeviceClassId>().toString(), mockChildDeviceClassId.toString());
-    descriptors = spy.first().at(1).value<QList<DeviceDescriptor> >();
-    QVERIFY(descriptors.count() == 1);
-    descriptorId = descriptors.first().id();
+    discoveryInfo = NymeaCore::instance()->deviceManager()->discoverDevices(mockChildDeviceClassId, ParamList());
+    {
+        QSignalSpy spy(discoveryInfo, &DeviceDiscoveryInfo::finished);
+        spy.wait();
+    }
+    QVERIFY(discoveryInfo->deviceDescriptors().count() == 1);
+    descriptorId = discoveryInfo->deviceDescriptors().first().id();
 
     // Found one! Adding it...
     addSpy.clear();
-    status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(mockChildDeviceClassId, "Mock Child (Discovered)", descriptorId);
-    QCOMPARE(status, Device::DeviceErrorNoError);
+    setupInfo = NymeaCore::instance()->deviceManager()->addConfiguredDevice(mockChildDeviceClassId, "Mock Child (Discovered)", descriptorId);
+    {
+        QSignalSpy spy(setupInfo, &DeviceSetupInfo::finished);
+        spy.wait();
+    }
+    QCOMPARE(setupInfo->status(), Device::DeviceErrorNoError);
+
     QCOMPARE(addSpy.count(), 1);
 
     Device *childDevice = addSpy.at(0).first().value<Device*>();

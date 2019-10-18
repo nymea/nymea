@@ -67,9 +67,6 @@ private:
 
     HttpReply *getDiscoverdDevices(const ParamList &discoveryParams);
 
-private slots:
-    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
-
 };
 
 }

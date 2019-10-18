@@ -245,10 +245,6 @@ void PluginInfoCompiler::writeDeviceClass(const DeviceClass &deviceClass)
     m_translationStrings.insert(deviceClass.displayName(), QString("The name of the DeviceClass (%1)").arg(deviceClass.id().toString()));
     writeExtern(QString("extern DeviceClassId %1;").arg(variableName));
 
-    if (!deviceClass.pairingInfo().isEmpty()) {
-        m_translationStrings.insert(deviceClass.pairingInfo(), QString("The pairing info of deviceClass %1").arg(deviceClass.name()));
-    }
-
     writeParams(deviceClass.paramTypes(), deviceClass.name(), "", "device");
     writeParams(deviceClass.settingsTypes(), deviceClass.name(), "", "settings");
     writeParams(deviceClass.discoveryParamTypes(), deviceClass.name(), "", "discovery");

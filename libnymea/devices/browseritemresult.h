@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,58 +20,46 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPAIRINGINFO_H
-#define DEVICEPAIRINGINFO_H
+#ifndef BROWSERITEMRESULT_H
+#define BROWSERITEMRESULT_H
 
 #include <QObject>
-#include <QUrl>
 
 #include "device.h"
 
-class DeviceManager;
-
-class LIBNYMEA_EXPORT DevicePairingInfo: public QObject
+class BrowserItemResult : public QObject
 {
     Q_OBJECT
+
 public:
-    DevicePairingInfo(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceId &deviceId, const QString &deviceName, const ParamList &params, const DeviceId &parentDeviceId, DeviceManager *parent, quint32 timeout = 0);
+    explicit BrowserItemResult(Device *device, const QString &itemId, const QLocale &locale, QObject *parent, quint32 timeout = 0);
 
-    PairingTransactionId transactionId() const;
+    Device* device() const;
+    QString itemId() const;
+    QLocale locale() const;
 
-    DeviceClassId deviceClassId() const;
-    DeviceId deviceId() const;
-    QString deviceName() const;
-    ParamList params() const;
-    DeviceId parentDeviceId() const;
+    BrowserItem item() const;
 
-    QUrl oAuthUrl() const;
-    void setOAuthUrl(const QUrl &oAuthUrl);
-
+    bool isFinished() const;
     Device::DeviceError status() const;
-    QString displayMessage() const;
-    QString translatedDisplayMessage(const QLocale &locale) const;
 
 public slots:
-    void finish(Device::DeviceError status, const QString &displayMessage = QString());
+    void finish(const BrowserItem &item);
+    void finish(Device::DeviceError status);
 
 signals:
     void finished();
     void aborted();
 
 private:
-    PairingTransactionId m_transactionId;
-    DeviceClassId m_deviceClassId;
-    DeviceId m_deviceId;
-    QString m_deviceName;
-    ParamList m_params;
-    DeviceId m_parentDeviceId;
+    Device *m_device = nullptr;
+    QString m_itemId;
+    QLocale m_locale;
 
-    QUrl m_oAuthUrl;
+    BrowserItem m_item;
 
     bool m_finished = false;
     Device::DeviceError m_status = Device::DeviceErrorNoError;
-    QString m_displayMessage;
-    DeviceManager *m_deviceManager = nullptr;
 };
 
-#endif // DEVICEPAIRINGINFO_H
+#endif // BROWSERITEMRESULT_H

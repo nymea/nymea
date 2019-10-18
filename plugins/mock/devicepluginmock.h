@@ -39,42 +39,37 @@ class DevicePluginMock : public DevicePlugin
 
 public:
     explicit DevicePluginMock();
-    ~DevicePluginMock();
+    ~DevicePluginMock() override;
 
-    Device::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
+    void discoverDevices(DeviceDiscoveryInfo *info) override;
 
-    Device::DeviceSetupStatus setupDevice(Device *device) override;
+    void setupDevice(DeviceSetupInfo *info) override;
     void postSetupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
 
     void startMonitoringAutoDevices() override;
 
-    Device::DeviceSetupStatus confirmPairing(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const ParamList &params, const QString &secret) override;
-    Device::DeviceError displayPin(const PairingTransactionId &pairingTransactionId, const DeviceDescriptor &deviceDescriptor) override;
+    void startPairing(DevicePairingInfo *info) override;
+    void confirmPairing(DevicePairingInfo *info, const QString &username, const QString &secret) override;
 
-    Device::BrowseResult browseDevice(Device *device, Device::BrowseResult result, const QString &itemId, const QLocale &locale) override;
-    Device::BrowserItemResult browserItem(Device *device, Device::BrowserItemResult result, const QString &itemId, const QLocale &locale) override;
+    void browseDevice(BrowseResult *result) override;
+    void browserItem(BrowserItemResult *result) override;
 
 public slots:
-    Device::DeviceError executeAction(Device *device, const Action &action) override;
-    Device::DeviceError executeBrowserItem(Device *device, const BrowserAction &browserAction) override;
-    Device::DeviceError executeBrowserItemAction(Device *device, const BrowserItemAction &browserItemAction) override;
+    void executeAction(DeviceActionInfo *info) override;
+    void executeBrowserItem(BrowserActionInfo *info) override;
+    void executeBrowserItemAction(BrowserItemActionInfo *info) override;
 
 private slots:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);
     void triggerEvent(const EventTypeId &id);
     void onDisappear();
     void onReconfigureAutoDevice();
-    void emitDevicesDiscovered();
-    void emitPushButtonDevicesDiscovered();
-    void emitDisplayPinDevicesDiscovered();
-    void emitDeviceSetupFinished();
-    void emitActionExecuted();
+    void generateDiscoveredDevices(DeviceDiscoveryInfo *info);
+    void generateDiscoveredPushButtonDevices(DeviceDiscoveryInfo *info);
+    void generateDiscoveredDisplayPinDevices(DeviceDiscoveryInfo *info);
 
     void onPushButtonPressed();
-    void onPushButtonPairingFinished();
-    void onDisplayPinPairingFinished();
-    void onChildDeviceDiscovered(const DeviceId &parentId);
     void onPluginConfigChanged();
 
 private:
@@ -98,10 +93,7 @@ private:
     };
 
     QHash<Device*, HttpDaemon*> m_daemons;
-    QList<Device*> m_asyncSetupDevices;
     QList<QPair<Action, Device*> > m_asyncActions;
-
-    PairingTransactionId m_pairingId;
 
     int m_discoveredDeviceCount;
     bool m_pushbuttonPressed;

@@ -125,7 +125,13 @@ private:
 void TestTimeManager::initTestCase()
 {
     NymeaTestBase::initTestCase();
-    QLoggingCategory::setFilterRules("*.debug=false\nTests.debug=true\nRuleEngine.debug=true\nRuleEngineDebug.debug=true\nMockDevice.*=true\nTimeManager.debug=true");
+    QLoggingCategory::setFilterRules("*.debug=false\n"
+                                     "Tests.debug=true\n"
+                                     "RuleEngine.debug=true\n"
+//                                     "RuleEngineDebug.debug=true\n"
+                                     "MockDevice.debug=true\n"
+                                     "JsonRpc.debug=true\n"
+                                     "TimeManager.debug=true");
 }
 
 void TestTimeManager::changeTimeZone_data()
@@ -2106,7 +2112,7 @@ void TestTimeManager::setIntState(const int &value)
 
 void TestTimeManager::setBoolState(const bool &value)
 {
-    qDebug() << "Setting mock bool state to" << value;
+    qCDebug(dcTests()) << "Setting mock bool state to" << value;
 
     // Get the current state value to check if we have to wait for state changed notfication
     QVariantMap params;
@@ -2131,10 +2137,10 @@ void TestTimeManager::setBoolState(const bool &value)
     if (shouldGetNotification) {
         stateSpy.wait(100);
         // Wait for state changed notification
-        QVariantList stateChangedVariants = checkNotifications(stateSpy, "Devices.StateChanged");
-        QVERIFY2(stateChangedVariants.count() == 1, "Did not get Devices.StateChanged notification.");
+        QVariantList stateChangedSignals = checkNotifications(stateSpy, "Devices.StateChanged");
+        QCOMPARE(stateChangedSignals.count(), 1);
 
-        QVariantMap notification = stateChangedVariants.first().toMap().value("params").toMap();
+        QVariantMap notification = stateChangedSignals.first().toMap().value("params").toMap();
         QVERIFY2(notification.contains("deviceId"), "Devices.StateChanged notification does not contain deviceId");
         QVERIFY2(DeviceId(notification.value("deviceId").toString()) == m_mockDeviceId, "Devices.StateChanged notification does not contain the correct deviceId");
         QVERIFY2(notification.contains("stateTypeId"), "Devices.StateChanged notification does not contain stateTypeId");

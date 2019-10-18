@@ -64,8 +64,7 @@ public:
         DeviceErrorSetupMethodNotSupported,
         DeviceErrorHardwareNotAvailable,
         DeviceErrorHardwareFailure,
-        DeviceErrorAuthentificationFailure,
-        DeviceErrorAsync,
+        DeviceErrorAuthenticationFailure,
         DeviceErrorDeviceInUse,
         DeviceErrorDeviceInRule,
         DeviceErrorDeviceIsChild,
@@ -74,35 +73,9 @@ public:
         DeviceErrorItemNotFound,
         DeviceErrorItemNotExecutable,
         DeviceErrorUnsupportedFeature,
+        DeviceErrorTimeout,
     };
     Q_ENUM(DeviceError)
-
-    enum DeviceSetupStatus {
-        DeviceSetupStatusSuccess,
-        DeviceSetupStatusFailure,
-        DeviceSetupStatusAsync
-    };
-    Q_ENUM(DeviceSetupStatus)
-
-    class BrowseResult {
-    public:
-        BrowseResult(): m_id(QUuid::createUuid()) {}
-        Device::DeviceError status = Device::DeviceErrorNoError;
-        BrowserItems items;
-        QUuid id() const { return m_id; }
-    private:
-        QUuid m_id;
-    };
-
-    class BrowserItemResult {
-    public:
-        BrowserItemResult(): m_id(QUuid::createUuid()) {}
-        Device::DeviceError status = Device::DeviceErrorNoError;
-        BrowserItem item;
-        QUuid id() const { return m_id; }
-    private:
-        QUuid m_id;
-    };
 
     DeviceId id() const;
     DeviceClassId deviceClassId() const;
@@ -153,7 +126,7 @@ private:
     Device(DevicePlugin *plugin, const DeviceClass &deviceClass, QObject *parent = nullptr);
 
     void setupCompleted();
-    void setSetupComplete(const bool &complete);
+    void setSetupComplete(bool complete);
 
 private:
     DeviceClass m_deviceClass;
@@ -184,6 +157,5 @@ public:
 };
 
 Q_DECLARE_METATYPE(Device::DeviceError)
-Q_DECLARE_METATYPE(Device::DeviceSetupStatus)
 
 #endif

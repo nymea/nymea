@@ -38,6 +38,7 @@
 #include "deviceclassesresource.h"
 #include "servers/httprequest.h"
 #include "nymeacore.h"
+#include "devices/devicediscoveryinfo.h"
 
 #include <QJsonDocument>
 
@@ -47,7 +48,6 @@ namespace nymeaserver {
 DeviceClassesResource::DeviceClassesResource(QObject *parent) :
     RestResource(parent)
 {
-    connect(NymeaCore::instance(), &NymeaCore::devicesDiscovered, this, &DeviceClassesResource::devicesDiscovered, Qt::QueuedConnection);
 }
 
 /*! Returns the name of the \l{RestResource}. In this case \b deviceclasses.
@@ -265,36 +265,24 @@ HttpReply *DeviceClassesResource::getDiscoverdDevices(const ParamList &discovery
     qCDebug(dcRest) << "Discover devices for DeviceClass" << m_deviceClass.id();
     qCDebug(dcRest) << discoveryParams;
 
-    Device::DeviceError status = NymeaCore::instance()->deviceManager()->discoverDevices(m_deviceClass.id(), discoveryParams);
+    DeviceDiscoveryInfo *info = NymeaCore::instance()->deviceManager()->discoverDevices(m_deviceClass.id(), discoveryParams);
+    HttpReply *reply = createAsyncReply();
+    connect(info, &DeviceDiscoveryInfo::finished, reply, [info, reply](){
+        reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+        QVariantMap response;
+        if (info->status() != Device::DeviceErrorNoError) {
+            reply->setHttpStatusCode(HttpReply::InternalServerError);
+            response.insert("error", JsonTypes::deviceErrorToString(info->status()));
+            reply->setPayload(QJsonDocument::fromVariant(response).toJson());
+        } else {
+            reply->setHttpStatusCode(HttpReply::Ok);
+            reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packDeviceDescriptors(info->deviceDescriptors())).toJson());
+        }
+        reply->finished();
+    });
 
-    if (status == Device::DeviceErrorAsync) {
-        HttpReply *reply = createAsyncReply();
-        m_discoverRequests.insert(m_deviceClass.id(), reply);
-        return reply;
-    }
 
-    if (status != Device::DeviceErrorNoError)
-        return createDeviceErrorReply(HttpReply::InternalServerError, status);
-
-    return createSuccessReply();
-}
-
-void DeviceClassesResource::devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors)
-{
-    if (!m_discoverRequests.contains(deviceClassId))
-        return; // Not the discovery we are waiting for.
-
-    qCDebug(dcRest) << "Discovery finished. Found" << deviceDescriptors.count() << "devices.";
-
-    if (m_discoverRequests.value(deviceClassId).isNull()) {
-        qCWarning(dcRest) << "Async reply for discovery does not exist any more (timeout).";
-        return;
-    }
-
-    HttpReply *reply = m_discoverRequests.take(deviceClassId);
-    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    reply->setPayload(QJsonDocument::fromVariant(JsonTypes::packDeviceDescriptors(deviceDescriptors)).toJson());
-    reply->finished();
+    return reply;
 }
 
 HttpReply *DeviceClassesResource::getDeviceClasses(const VendorId &vendorId)

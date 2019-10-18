@@ -36,6 +36,9 @@
 
 #include "nymeacore.h"
 #include "devices/devicemanager.h"
+#include "devices/deviceactioninfo.h"
+#include "devices/browseractioninfo.h"
+#include "devices/browseritemactioninfo.h"
 #include "types/action.h"
 #include "loggingcategories.h"
 
@@ -52,6 +55,7 @@ ActionHandler::ActionHandler(QObject *parent) :
     setDescription("ExecuteAction", "Execute a single action.");
     setParams("ExecuteAction", JsonTypes::actionDescription());
     returns.insert("deviceError", JsonTypes::deviceErrorRef());
+    returns.insert("o:displayMessage", JsonTypes::basicTypeToString(JsonTypes::String));
     setReturns("ExecuteAction", returns);
 
     params.clear(); returns.clear();
@@ -80,9 +84,6 @@ ActionHandler::ActionHandler(QObject *parent) :
     returns.insert("deviceError", JsonTypes::deviceErrorRef());
     setReturns("ExecuteBrowserItemAction", returns);
 
-    connect(NymeaCore::instance(), &NymeaCore::actionExecuted, this, &ActionHandler::actionExecuted);
-    connect(NymeaCore::instance(), &NymeaCore::browserItemExecuted, this, &ActionHandler::browserItemExecuted);
-    connect(NymeaCore::instance(), &NymeaCore::browserItemActionExecuted, this, &ActionHandler::browserItemActionExecuted);
 }
 
 /*! Returns the name of the \l{ActionHandler}. In this case \b Actions.*/
@@ -96,20 +97,24 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
     DeviceId deviceId(params.value("deviceId").toString());
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     ParamList actionParams = JsonTypes::unpackParams(params.value("params").toList());
+    QLocale locale = params.value("locale").toLocale();
 
     Action action(actionTypeId, deviceId);
     action.setParams(actionParams);
 
-    Device::DeviceError status = NymeaCore::instance()->executeAction(action);
-    if (status == Device::DeviceErrorAsync) {
-        JsonReply *reply = createAsyncReply("ExecuteAction");
-        ActionId id = action.id();
-        connect(reply, &JsonReply::finished, [this, id](){ m_asyncActionExecutions.remove(id); });
-        m_asyncActionExecutions.insert(id, reply);
-        return reply;
-    }
+    JsonReply *jsonReply = createAsyncReply("ExecuteAction");
 
-    return createReply(statusToReply(status));
+    DeviceActionInfo *info = NymeaCore::instance()->executeAction(action);
+    connect(info, &DeviceActionInfo::finished, jsonReply, [this, info, jsonReply, locale](){
+        QVariantMap data = statusToReply(info->status());
+        if (!info->displayMessage().isEmpty()) {
+            data.insert("displayMessage", info->translatedDisplayMessage(locale));
+        }
+        jsonReply->setData(data);
+        jsonReply->finished();
+    });
+
+    return jsonReply;
 }
 
 JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
@@ -128,31 +133,21 @@ JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
     return createReply(statusToReply(Device::DeviceErrorActionTypeNotFound));
 }
 
-void ActionHandler::actionExecuted(const ActionId &id, Device::DeviceError status)
-{
-    if (!m_asyncActionExecutions.contains(id)) {
-        return; // Not the action we are waiting for.
-    }
-
-    JsonReply *reply = m_asyncActionExecutions.take(id);
-    reply->setData(statusToReply(status));
-    reply->finished();
-}
-
 JsonReply *ActionHandler::ExecuteBrowserItem(const QVariantMap &params)
 {
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
     QString itemId = params.value("itemId").toString();
     BrowserAction action(deviceId, itemId);
-    Device::DeviceError status = NymeaCore::instance()->executeBrowserItem(action);
-    if (status == Device::DeviceErrorAsync) {
-        JsonReply *reply = createAsyncReply("ExecuteBrowserItem");
-        ActionId id = action.id();
-        connect(reply, &JsonReply::finished, [this, id](){ m_asyncActionExecutions.remove(id); });
-        m_asyncActionExecutions.insert(id, reply);
-        return reply;
-    }
-    return createReply(statusToReply(status));
+
+    JsonReply *jsonReply = createAsyncReply("ExecuteBrowserItem");
+
+    BrowserActionInfo *info = NymeaCore::instance()->executeBrowserItem(action);
+    connect(info, &BrowserActionInfo::finished, jsonReply, [this, info, jsonReply](){
+        jsonReply->setData(statusToReply(info->status()));
+        jsonReply->finished();
+    });
+
+    return jsonReply;
 }
 
 JsonReply *ActionHandler::ExecuteBrowserItemAction(const QVariantMap &params)
@@ -162,39 +157,16 @@ JsonReply *ActionHandler::ExecuteBrowserItemAction(const QVariantMap &params)
     ActionTypeId actionTypeId = ActionTypeId(params.value("actionTypeId").toString());
     ParamList paramList = JsonTypes::unpackParams(params.value("params").toList());
     BrowserItemAction browserItemAction(deviceId, itemId, actionTypeId, paramList);
-    Device::DeviceError status = NymeaCore::instance()->executeBrowserItemAction(browserItemAction);
-    if (status == Device::DeviceErrorAsync) {
-        JsonReply *reply = createAsyncReply("ExecuteBrowserItemAction");
-        ActionId id = browserItemAction.id();
-        connect(reply, &JsonReply::finished, [this, id](){ m_asyncActionExecutions.remove(id); });
-        m_asyncActionExecutions.insert(id, reply);
-        return reply;
-    }
-    return createReply(statusToReply(status));
 
+    JsonReply *jsonReply = createAsyncReply("ExecuteBrowserItemAction");
+
+    BrowserItemActionInfo *info = NymeaCore::instance()->executeBrowserItemAction(browserItemAction);
+    connect(info, &BrowserItemActionInfo::finished, jsonReply, [this, info, jsonReply](){
+        jsonReply->setData(statusToReply(info->status()));
+        jsonReply->finished();
+    });
+
+    return jsonReply;
 }
-
-void ActionHandler::browserItemExecuted(const ActionId &id, Device::DeviceError status)
-{
-    if (!m_asyncActionExecutions.contains(id)) {
-        return; // Not the action we are waiting for.
-    }
-
-    JsonReply *reply = m_asyncActionExecutions.take(id);
-    reply->setData(statusToReply(status));
-    reply->finished();
-}
-
-void ActionHandler::browserItemActionExecuted(const ActionId &id, Device::DeviceError status)
-{
-    if (!m_asyncActionExecutions.contains(id)) {
-        return; // Not the action we are waiting for.
-    }
-
-    JsonReply *reply = m_asyncActionExecutions.take(id);
-    reply->setData(statusToReply(status));
-    reply->finished();
-}
-
 
 }

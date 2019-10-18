@@ -33,6 +33,49 @@
 #include "types/browseraction.h"
 #include "types/browseritemaction.h"
 
+// Signals
+
+/*! \fn void DeviceManager::loaded();
+    The DeviceManager will emit this signal when all \l{Device}{Devices} are loaded.
+*/
+
+/*! \fn void DeviceManager::pluginConfigChanged(const PluginId &id, const ParamList &config);
+    The DeviceManager will emit this signal when the \a config \l{ParamList}{Params} of the \l{DevicePlugin}{plugin} with the given \a id has changed.
+*/
+
+/*! \fn void DeviceManager::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
+    This signal is emitted when the \l{State} of a \a device changed. The \a stateTypeId parameter describes the
+    \l{StateType} and the \a value parameter holds the new value.
+*/
+
+/*! \fn void DeviceManager::deviceDisappeared(const DeviceId &deviceId);
+    This signal is emitted when the automatically created \l{Device} with the given \a deviceId dissapeard. This signal will
+    create the Devices.DeviceRemoved notification.
+*/
+
+/*! \fn void DeviceManager::deviceRemoved(const DeviceId &deviceId);
+    This signal is emitted when the \l{Device} with the given \a deviceId was removed from the system. This signal will
+    create the Devices.DeviceRemoved notification.
+*/
+
+/*! \fn void DeviceManager::deviceAdded(Device *device);
+    This signal is emitted when a \a \device  was added to the system. This signal will
+    create the Devices.DeviceAdded notification.
+*/
+
+/*! \fn void DeviceManager::deviceChanged(Device *device);
+    This signal is emitted when a \a \device  was changed in the system (by edit or rediscover). This signal will
+    create the Devices.DeviceParamsChanged notification.
+*/
+
+/*! \fn void DeviceManager::eventTriggered(const Event &event)
+    The DeviceManager will emit a \l{Event} described in \a event whenever a Device
+    creates one. Normally only \l{nymeaserver::NymeaCore} should connect to this and execute actions
+    after checking back with the \{nymeaserver::RulesEngine}. Exceptions might be monitoring interfaces
+    or similar, but you should never directly react to this in a \l{DevicePlugin}.
+*/
+
+
 class DeviceManager : public QObject
 {
     Q_OBJECT
@@ -41,6 +84,7 @@ public:
     virtual ~DeviceManager() = default;
 
     virtual DevicePlugins plugins() const = 0;
+    virtual DevicePlugin* plugin(const PluginId &pluginId) const = 0;
     virtual Device::DeviceError setPluginConfig(const PluginId &pluginId, const ParamList &pluginConfig) = 0;
 
     virtual Vendors supportedVendors() const = 0;
@@ -55,29 +99,29 @@ public:
     virtual Devices findConfiguredDevices(const QString &interface) const = 0;
     virtual Devices findChildDevices(const DeviceId &id) const = 0;
 
-    virtual Device::DeviceError discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) = 0;
+    virtual DeviceDiscoveryInfo* discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) = 0;
 
-    virtual Device::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId()) = 0;
-    virtual Device::DeviceError addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const DeviceId &deviceId = DeviceId::createDeviceId()) = 0;
+    virtual DeviceSetupInfo* addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId()) = 0;
+    virtual DeviceSetupInfo* addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const DeviceId &deviceId = DeviceId::createDeviceId()) = 0;
 
-    virtual Device::DeviceError reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscoveryOrAuto = false) = 0;
-    virtual Device::DeviceError reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId) = 0;
+    virtual DeviceSetupInfo* reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscoveryOrAuto = false) = 0;
+    virtual DeviceSetupInfo* reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId) = 0;
 
     virtual Device::DeviceError editDevice(const DeviceId &deviceId, const QString &name) = 0;
     virtual Device::DeviceError setDeviceSettings(const DeviceId &deviceId, const ParamList &settings) = 0;
 
-    virtual Device::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const ParamList &params) = 0;
-    virtual Device::DeviceError pairDevice(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId) = 0;
-    virtual Device::DeviceError confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &secret = QString()) = 0;
+    virtual DevicePairingInfo* pairDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params) = 0;
+    virtual DevicePairingInfo* pairDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId) = 0;
+    virtual DevicePairingInfo* confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &username = QString(), const QString &secret = QString()) = 0;
 
     virtual Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId) = 0;
 
-    virtual Device::DeviceError executeAction(const Action &action) = 0;
+    virtual DeviceActionInfo* executeAction(const Action &action) = 0;
 
-    virtual Device::BrowseResult browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) = 0;
-    virtual Device::BrowserItemResult browserItemDetails(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) = 0;
-    virtual Device::DeviceError executeBrowserItem(const BrowserAction &browserAction) = 0;
-    virtual Device::DeviceError executeBrowserItemAction(const BrowserItemAction &browserItemAction) = 0;
+    virtual BrowseResult* browseDevice(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) = 0;
+    virtual BrowserItemResult* browserItemDetails(const DeviceId &deviceId, const QString &itemId, const QLocale &locale) = 0;
+    virtual BrowserActionInfo* executeBrowserItem(const BrowserAction &browserAction) = 0;
+    virtual BrowserItemActionInfo* executeBrowserItemAction(const BrowserItemAction &browserItemAction) = 0;
 
     virtual QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) = 0;
 
@@ -90,16 +134,6 @@ signals:
     void deviceAdded(Device *device);
     void deviceChanged(Device *device);
     void deviceSettingChanged(const DeviceId deviceId, const ParamTypeId &settingParamTypeId, const QVariant &value);
-    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> &devices);
-    void deviceSetupFinished(Device *device, Device::DeviceError status);
-    void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
-    void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId = DeviceId());
-    void actionExecutionFinished(const ActionId &actionId, Device::DeviceError status);
-    void browseRequestFinished(const Device::BrowseResult &result);
-    void browserItemRequestFinished(const Device::BrowserItemResult &result);
-    void browserItemExecutionFinished(const ActionId &actionId, Device::DeviceError status);
-    void browserItemActionExecutionFinished(const ActionId &actionId, Device::DeviceError status);
-
 };
 
 #endif // DEVICEMANAGER_H

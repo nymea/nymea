@@ -67,6 +67,15 @@ private:
     ParamList m_params;
 };
 
+class DeviceDescriptors: public QList<DeviceDescriptor>
+{
+public:
+    DeviceDescriptors() {}
+    inline DeviceDescriptors(std::initializer_list<DeviceDescriptor> args): QList(args) {}
+    DeviceDescriptors(const QList<DeviceDescriptor> &other): QList<DeviceDescriptor>(other) {}
+};
+
 Q_DECLARE_METATYPE(DeviceDescriptor)
+Q_DECLARE_METATYPE(DeviceDescriptors)
 
 #endif // DEVICEDESCRIPTION_H

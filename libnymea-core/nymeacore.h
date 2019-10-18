@@ -71,9 +71,9 @@ public:
     QPair<Device::DeviceError, QList<RuleId> >removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
     Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy);
 
-    Device::DeviceError executeAction(const Action &action);
-    Device::DeviceError executeBrowserItem(const BrowserAction &browserAction);
-    Device::DeviceError executeBrowserItemAction(const BrowserItemAction &browserItemAction);
+    DeviceActionInfo *executeAction(const Action &action);
+    BrowserActionInfo* executeBrowserItem(const BrowserAction &browserAction);
+    BrowserItemActionInfo* executeBrowserItemAction(const BrowserItemAction &browserItemAction);
 
     void executeRuleActions(const QList<RuleAction> ruleActions);
 
@@ -107,14 +107,6 @@ signals:
     void deviceAdded(Device *device);
     void deviceChanged(Device *device);
     void deviceSettingChanged(const DeviceId deviceId, const ParamTypeId &settingParamTypeId, const QVariant &value);
-    void actionExecuted(const ActionId &id, Device::DeviceError status);
-    void browserItemExecuted(const ActionId &id, Device::DeviceError status);
-    void browserItemActionExecuted(const ActionId &id, Device::DeviceError status);
-
-    void devicesDiscovered(const DeviceClassId &deviceClassId, const QList<DeviceDescriptor> deviceDescriptors);
-    void deviceSetupFinished(Device *device, Device::DeviceError status);
-    void deviceReconfigurationFinished(Device *device, Device::DeviceError status);
-    void pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId);
 
     void ruleRemoved(const RuleId &ruleId);
     void ruleAdded(const Rule &rule);
@@ -142,17 +134,11 @@ private:
     UserManager *m_userManager;
     System *m_system;
 
-    QHash<ActionId, Action> m_pendingActions;
-    QHash<ActionId, BrowserAction> m_pendingBrowserActions;
-    QHash<ActionId, BrowserItemAction> m_pendingBrowserItemActions;
     QList<RuleId> m_executingRules;
 
 private slots:
     void gotEvent(const Event &event);
     void onDateTimeChanged(const QDateTime &dateTime);
-    void actionExecutionFinished(const ActionId &id, Device::DeviceError status);
-    void browserItemExecutionFinished(const ActionId &id, Device::DeviceError status);
-    void browserItemActionExecutionFinished(const ActionId &id, Device::DeviceError status);
     void onDeviceDisappeared(const DeviceId &deviceId);
     void deviceManagerLoaded();
 

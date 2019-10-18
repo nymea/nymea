@@ -25,6 +25,8 @@
 #include "logging/logvaluetool.h"
 #include "servers/mocktcpserver.h"
 
+#include <qglobal.h>
+
 using namespace nymeaserver;
 
 class TestLogging : public NymeaTestBase
@@ -34,6 +36,8 @@ class TestLogging : public NymeaTestBase
 private:
 
 private slots:
+    void initTestCase();
+
     void initLogs();
 
     void databaseSerializationTest_data();
@@ -61,6 +65,15 @@ private slots:
     // this has to be the last test
     void removeDevice();
 };
+
+void TestLogging::initTestCase()
+{
+    NymeaTestBase::initTestCase();
+    QLoggingCategory::setFilterRules("*.debug=false\n"
+                                     "Tests.debug=true\n"
+                                     "MockDevice.debug=true\n"
+                                     "DeviceManager.debug=true\n");
+}
 
 void TestLogging::initLogs()
 {
@@ -218,6 +231,7 @@ void TestLogging::eventLogs()
     QNetworkReply *reply = nam.get(request);
 
     // Lets wait for the notification
+    QTest::qWait(200);
     clientSpy.wait(1000);
     reply->deleteLater();
 
@@ -586,6 +600,14 @@ void TestLogging::testHouseKeeping()
     settings.endGroup();
 
     restartServer();
+
+    // Wait for the mock device to complete the setup
+    do {
+        qApp->processEvents();
+        params.clear();
+        params.insert("deviceId", m_mockDeviceId);
+        response = injectAndWait("Devices.GetConfiguredDevices", params);
+    } while (!response.toMap().value("params").toMap().value("devices").toList().first().toMap().value("setupComplete").toBool());
 
     response = injectAndWait("Logging.GetLogEntries", params);
     QVERIFY2(response.toMap().value("params").toMap().value("logEntries").toList().count() == 0, "Device state change event still in log. Should've been cleaned by housekeeping.");

@@ -41,6 +41,9 @@
 #include "servers/httprequest.h"
 #include "jsonrpc/jsontypes.h"
 #include "nymeacore.h"
+#include "devices/devicesetupinfo.h"
+#include "devices/devicepairinginfo.h"
+#include "devices/deviceactioninfo.h"
 
 #include <QJsonDocument>
 
@@ -50,10 +53,6 @@ namespace nymeaserver {
 DevicesResource::DevicesResource(QObject *parent) :
     RestResource(parent)
 {
-    connect(NymeaCore::instance(), &NymeaCore::actionExecuted, this, &DevicesResource::actionExecuted);
-    connect(NymeaCore::instance(), &NymeaCore::deviceSetupFinished, this, &DevicesResource::deviceSetupFinished);
-    connect(NymeaCore::instance(), &NymeaCore::deviceReconfigurationFinished, this, &DevicesResource::deviceReconfigurationFinished);
-    connect(NymeaCore::instance(), &NymeaCore::pairingFinished, this, &DevicesResource::pairingFinished);
 }
 
 /*! Returns the name of the \l{RestResource}. In this case \b devices.
@@ -337,17 +336,30 @@ HttpReply *DevicesResource::executeAction(Device *device, const ActionTypeId &ac
     Action action(actionTypeId, device->id());
     action.setParams(actionParams);
 
-    Device::DeviceError status = NymeaCore::instance()->executeAction(action);
-    if (status == Device::DeviceErrorAsync) {
-        HttpReply *reply = createAsyncReply();
-        m_asyncActionExecutions.insert(action.id(), reply);
-        return reply;
-    }
+    HttpReply *httpReply = createAsyncReply();
 
-    if (status != Device::DeviceErrorNoError)
-        return createDeviceErrorReply(HttpReply::InternalServerError, status);
+    DeviceActionInfo *info = NymeaCore::instance()->executeAction(action);
+    connect(info, &DeviceActionInfo::finished, this, [info, httpReply](){
+        QVariantMap response;
+        response.insert("error", JsonTypes::deviceErrorToString(info->status()));
 
-    return createDeviceErrorReply(HttpReply::Ok, status);
+        httpReply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+        if (info->status() == Device::DeviceErrorNoError) {
+            qCDebug(dcRest) << "Action execution finished successfully";
+            httpReply->setHttpStatusCode(HttpReply::Ok);
+            httpReply->setPayload(QJsonDocument::fromVariant(response).toJson());
+        } else {
+            qCDebug(dcRest) << "Action execution finished with error" << info->status();
+            QVariantMap response;
+            response.insert("error", JsonTypes::deviceErrorToString(info->status()));
+            httpReply->setHttpStatusCode(HttpReply::InternalServerError);
+            httpReply->setPayload(QJsonDocument::fromVariant(response).toJson());
+        }
+
+        httpReply->finished();
+    });
+
+    return httpReply;
 }
 
 HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
@@ -367,29 +379,35 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
     ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
 
-    Device::DeviceError status;
+    HttpReply *httpReply = createAsyncReply();
+
+    DeviceSetupInfo *info;
     if (deviceDescriptorId.isNull()) {
         qCDebug(dcRest) << "Adding device" << deviceName << "with" << deviceParams;
-        status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceParams, newDeviceId);
+        info = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceParams, newDeviceId);
     } else {
         qCDebug(dcRest) << "Adding discovered device" << deviceName << "with DeviceDescriptorId" << deviceDescriptorId.toString();
-        status = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceDescriptorId, deviceParams, newDeviceId);
-    }
-    if (status == Device::DeviceErrorAsync) {
-        HttpReply *reply = createAsyncReply();
-        qCDebug(dcRest) << "Device setup async reply";
-        m_asyncDeviceAdditions.insert(newDeviceId, reply);
-        return reply;
+        info = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceDescriptorId, deviceParams, newDeviceId);
     }
 
-    if (status != Device::DeviceErrorNoError)
-        return createDeviceErrorReply(HttpReply::InternalServerError, status);
+    connect(info, &DeviceSetupInfo::finished, httpReply, [info, httpReply](){
+        httpReply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+        if (info->status() != Device::DeviceErrorNoError) {
+            qCDebug(dcRest) << "Device setup finished with error" << info->status();
+            QVariantMap response;
+            response.insert("error", JsonTypes::deviceErrorToString(info->status()));
+            httpReply->setHttpStatusCode(HttpReply::InternalServerError);
+            httpReply->setPayload(QJsonDocument::fromVariant(response).toJson());
+        } else {
+            httpReply->setHttpStatusCode(HttpReply::Ok);
+            QVariant result = JsonTypes::packDevice(info->device());
+            httpReply->setPayload(QJsonDocument::fromVariant(result).toJson());
+        }
+        qCDebug(dcRest) << "Device setup finished successfully";
+        httpReply->finished();
+    });
 
-    QVariant result = JsonTypes::packDevice(NymeaCore::instance()->deviceManager()->findConfiguredDevice(newDeviceId));
-    HttpReply *reply = createSuccessReply();
-    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    reply->setPayload(QJsonDocument::fromVariant(result).toJson());
-    return reply;
+    return httpReply;
 }
 
 HttpReply *DevicesResource::editDevice(const QByteArray &payload) const
@@ -428,27 +446,38 @@ HttpReply *DevicesResource::pairDevice(const QByteArray &payload) const
 
     qCDebug(dcRest) << "Pair device" << deviceName << "with deviceClassId" << deviceClassId.toString();
 
-    Device::DeviceError status;
-    PairingTransactionId pairingTransactionId = PairingTransactionId::createPairingTransactionId();
+    HttpReply *httpReply = createAsyncReply();
+
+    DevicePairingInfo *info;
     if (params.contains("deviceDescriptorId")) {
         DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
-        status = NymeaCore::instance()->deviceManager()->pairDevice(pairingTransactionId, deviceClassId, deviceName, deviceDescriptorId);
+        info = NymeaCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceName, deviceDescriptorId);
     } else {
         ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
-        status = NymeaCore::instance()->deviceManager()->pairDevice(pairingTransactionId, deviceClassId, deviceName, deviceParams);
+        info = NymeaCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceName, deviceParams);
     }
 
-    if (status != Device::DeviceErrorNoError)
-        return createDeviceErrorReply(HttpReply::BadRequest, status);
+    connect(info, &DevicePairingInfo::finished, httpReply, [info, httpReply](){
+        httpReply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+        if (info->status() != Device::DeviceErrorNoError) {
+            qCDebug(dcRest) << "Device setup finished with error" << info->status();
+            QVariantMap response;
+            response.insert("error", JsonTypes::deviceErrorToString(info->status()));
+            httpReply->setHttpStatusCode(HttpReply::InternalServerError);
+            httpReply->setPayload(QJsonDocument::fromVariant(response).toJson());
+        } else {
+            httpReply->setHttpStatusCode(HttpReply::Ok);
+            QVariantMap returns;
+            returns.insert("error", JsonTypes::deviceErrorToString(info->status()));
+            returns.insert("pairingTransactionId", info->transactionId().toString());
+            returns.insert("displayMessage", info->displayMessage());
+            httpReply->setPayload(QJsonDocument::fromVariant(returns).toJson());
+        }
+        qCDebug(dcRest) << "Device pairing initiated successfully";
+        httpReply->finished();
+    });
 
-    QVariantMap returns;
-    returns.insert("displayMessage", NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), deviceClass.pairingInfo(), NymeaCore::instance()->configuration()->locale()));
-    returns.insert("pairingTransactionId", pairingTransactionId.toString());
-    returns.insert("setupMethod", JsonTypes::setupMethod().at(deviceClass.setupMethod()));
-    HttpReply *reply = createSuccessReply();
-    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    reply->setPayload(QJsonDocument::fromVariant(returns).toJson());
-    return reply;
+    return httpReply;
 }
 
 HttpReply *DevicesResource::confirmPairDevice(const QByteArray &payload) const
@@ -460,20 +489,29 @@ HttpReply *DevicesResource::confirmPairDevice(const QByteArray &payload) const
     QVariantMap params = verification.second.toMap();
 
     PairingTransactionId pairingTransactionId = PairingTransactionId(params.value("pairingTransactionId").toString());
+    QString username = params.value("username").toString();
     QString secret = params.value("secret").toString();
-    Device::DeviceError status = NymeaCore::instance()->deviceManager()->confirmPairing(pairingTransactionId, secret);
 
-    if (status == Device::DeviceErrorAsync) {
-        HttpReply *reply = createAsyncReply();
-        qCDebug(dcRest) << "Confirm pairing async reply";
-        m_asyncPairingRequests.insert(pairingTransactionId, reply);
-        return reply;
-    }
+    HttpReply *httpReply = createAsyncReply();
 
-    if (status != Device::DeviceErrorNoError)
-        return createDeviceErrorReply(HttpReply::InternalServerError, status);
+    DevicePairingInfo *info = NymeaCore::instance()->deviceManager()->confirmPairing(pairingTransactionId, username, secret);
+    connect(info, &DevicePairingInfo::finished, httpReply, [info, httpReply](){
+        qCDebug(dcRest()) << "Confirm pairing finished:" << info->status();
+        QVariantMap response;
+        response.insert("error", JsonTypes::deviceErrorToString(info->status()));
+        if (info->status() != Device::DeviceErrorNoError) {
+            qCDebug(dcRest) << "Pairing device finished with error.";
+            httpReply->setHttpStatusCode(HttpReply::InternalServerError);
+        } else {
+            httpReply->setHttpStatusCode(HttpReply::Ok);
+            response.insert("id", info->deviceId().toString());
+        }
+        httpReply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+        httpReply->setPayload(QJsonDocument::fromVariant(response).toJson());
+        httpReply->finished();
+    });
 
-    return createDeviceErrorReply(HttpReply::Ok, Device::DeviceErrorNoError);
+    return httpReply;
 }
 
 HttpReply *DevicesResource::reconfigureDevice(Device *device, const QByteArray &payload) const
@@ -486,145 +524,35 @@ HttpReply *DevicesResource::reconfigureDevice(Device *device, const QByteArray &
     QVariantMap params = verification.second.toMap();
     ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
 
-    Device::DeviceError status;
+    HttpReply *httpReply = createAsyncReply();
+
+    DeviceSetupInfo *info;
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     if (deviceDescriptorId.isNull()) {
         qCDebug(dcRest) << "Reconfigure device with params:" << deviceParams;
-        status = NymeaCore::instance()->deviceManager()->reconfigureDevice(device->id(), deviceParams);
+        info = NymeaCore::instance()->deviceManager()->reconfigureDevice(device->id(), deviceParams);
     } else {
         qCDebug(dcRest) << "Reconfigure device using the new discovered device with descriptorId:" << deviceDescriptorId.toString();
-        status = NymeaCore::instance()->deviceManager()->reconfigureDevice(device->id(), deviceDescriptorId);
+        info = NymeaCore::instance()->deviceManager()->reconfigureDevice(device->id(), deviceDescriptorId);
     }
 
-    if (status == Device::DeviceErrorAsync) {
-        HttpReply *reply = createAsyncReply();
-        qCDebug(dcRest) << "Device reconfiguration async reply";
-        m_asyncReconfigureDevice.insert(device, reply);
-        return reply;
-    }
+    connect(info, &DeviceSetupInfo::finished, httpReply, [httpReply, info](){
+        httpReply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
+        if (info->status() != Device::DeviceErrorNoError) {
+            qCDebug(dcRest) << "Device reconfiguration finished with error" << info->status();
+            QVariantMap response;
+            response.insert("error", JsonTypes::deviceErrorToString(info->status()));
+            httpReply->setHttpStatusCode(HttpReply::InternalServerError);
+            httpReply->setPayload(QJsonDocument::fromVariant(response).toJson());
+        } else {
+            qCDebug(dcRest) << "Device reconfiguration finished successfully";
+            httpReply->setHttpStatusCode(HttpReply::Ok);
+            QVariant result = JsonTypes::packDevice(info->device());
+            httpReply->setPayload(QJsonDocument::fromVariant(result).toJson());
+        }
+        httpReply->finished();
+    });
 
-    if (status != Device::DeviceErrorNoError)
-        return createDeviceErrorReply(HttpReply::InternalServerError, status);
-
-    return createDeviceErrorReply(HttpReply::Ok, Device::DeviceErrorNoError);
+    return httpReply;
 }
-
-void DevicesResource::actionExecuted(const ActionId &actionId, Device::DeviceError status)
-{
-    if (!m_asyncActionExecutions.contains(actionId))
-        return; // Not the action we are waiting for.
-
-    QVariantMap response;
-    response.insert("error", JsonTypes::deviceErrorToString(status));
-
-    if (m_asyncActionExecutions.value(actionId).isNull()) {
-        qCWarning(dcRest) << "Async reply for execute action does not exist any more (timeout).";
-        return;
-    }
-
-    HttpReply *reply = m_asyncActionExecutions.take(actionId);
-    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    if (status == Device::DeviceErrorNoError) {
-        qCDebug(dcRest) << "Action execution finished successfully";
-        reply->setHttpStatusCode(HttpReply::Ok);
-        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
-    } else {
-        qCDebug(dcRest) << "Action execution finished with error" << status;
-        QVariantMap response;
-        response.insert("error", JsonTypes::deviceErrorToString(status));
-        reply->setHttpStatusCode(HttpReply::InternalServerError);
-        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
-    }
-
-    reply->finished();
-}
-
-void DevicesResource::deviceSetupFinished(Device *device, Device::DeviceError status)
-{
-    if (!m_asyncDeviceAdditions.contains(device->id()))
-        return; // Not the device we are waiting for.
-
-    QVariantMap response;
-    response.insert("error", JsonTypes::deviceErrorToString(status));
-
-    if (m_asyncDeviceAdditions.value(device->id()).isNull()) {
-        qCWarning(dcRest) << "Async reply for device setup does not exist any more (timeout).";
-        return;
-    }
-
-    HttpReply *reply = m_asyncDeviceAdditions.take(device->id());
-    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    if (status == Device::DeviceErrorNoError) {
-        qCDebug(dcRest) << "Device setup finished successfully";
-        reply->setHttpStatusCode(HttpReply::Ok);
-        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
-    } else {
-        qCDebug(dcRest) << "Device setup finished with error" << status;
-        reply->setHttpStatusCode(HttpReply::InternalServerError);
-        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
-    }
-
-    QVariant result = JsonTypes::packDevice(device);
-    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    reply->setPayload(QJsonDocument::fromVariant(result).toJson());
-    reply->finished();
-}
-
-void DevicesResource::deviceReconfigurationFinished(Device *device, Device::DeviceError status)
-{
-    if (!m_asyncReconfigureDevice.contains(device))
-        return; // Not the device we are waiting for.
-
-    QVariantMap response;
-    response.insert("error", JsonTypes::deviceErrorToString(status));
-
-    if (m_asyncReconfigureDevice.value(device).isNull()) {
-        qCWarning(dcRest) << "Async reply for device reconfiguration does not exist any more (timeout).";
-        return;
-    }
-
-    HttpReply *reply = m_asyncReconfigureDevice.take(device);
-    reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-    if (status == Device::DeviceErrorNoError) {
-        qCDebug(dcRest) << "Device reconfiguration finished successfully";
-        reply->setHttpStatusCode(HttpReply::Ok);
-        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
-    } else {
-        qCDebug(dcRest) << "Device reconfiguration finished with error" << status;
-        reply->setHttpStatusCode(HttpReply::InternalServerError);
-        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
-    }
-
-    reply->finished();
-}
-
-void DevicesResource::pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId)
-{
-    if (!m_asyncPairingRequests.contains(pairingTransactionId))
-        return; // Not the device pairing we are waiting for.
-
-    QVariantMap response;
-    response.insert("error", JsonTypes::deviceErrorToString(status));
-
-    if (m_asyncPairingRequests.value(pairingTransactionId).isNull()) {
-        qCWarning(dcRest) << "Async reply for device pairing does not exist any more.";
-        return;
-    }
-
-    HttpReply *reply = m_asyncPairingRequests.take(pairingTransactionId);
-    if (status != Device::DeviceErrorNoError) {
-        qCDebug(dcRest) << "Pairing device finished with error.";
-        reply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
-        reply->setHttpStatusCode(HttpReply::InternalServerError);
-        reply->setPayload(QJsonDocument::fromVariant(response).toJson());
-        reply->finished();
-        return;
-    }
-
-    qCDebug(dcRest) << "Pairing device finished successfully";
-
-    // Add device to async device addtions
-    m_asyncDeviceAdditions.insert(deviceId, reply);
-}
-
 }

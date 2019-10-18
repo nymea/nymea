@@ -1,4 +1,4 @@
-2.3
+3.0
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -11,7 +11,8 @@
                 ]
             },
             "returns": {
-                "deviceError": "$ref:DeviceError"
+                "deviceError": "$ref:DeviceError",
+                "o:displayMessage": "String"
             }
         },
         "Actions.ExecuteBrowserItem": {
@@ -270,7 +271,8 @@
             },
             "returns": {
                 "deviceError": "$ref:DeviceError",
-                "o:deviceId": "Uuid"
+                "o:deviceId": "Uuid",
+                "o:displayMessage": "String"
             }
         },
         "Devices.BrowseDevice": {
@@ -287,14 +289,16 @@
             }
         },
         "Devices.ConfirmPairing": {
-            "description": "Confirm an ongoing pairing. In case of SetupMethodEnterPin also provide the pin in the params.",
+            "description": "Confirm an ongoing pairing. For SetupMethodUserAndPassword, provide the username in the \"username\" field and the password in the \"secret\" field. For SetupMethodEnterPin and provide the PIN in the \"secret\" field. For SetupMethodOAuth, return the entire unmodified callback URL containing the code parameter back in the secret field.",
             "params": {
                 "o:secret": "String",
+                "o:username": "String",
                 "pairingTransactionId": "Uuid"
             },
             "returns": {
                 "deviceError": "$ref:DeviceError",
-                "o:deviceId": "Uuid"
+                "o:deviceId": "Uuid",
+                "o:displayMessage": "String"
             }
         },
         "Devices.EditDevice": {
@@ -352,7 +356,8 @@
                 "deviceError": "$ref:DeviceError",
                 "o:deviceDescriptors": [
                     "$ref:DeviceDescriptor"
-                ]
+                ],
+                "o:displayMessage": "String"
             }
         },
         "Devices.GetEventTypes": {
@@ -459,6 +464,7 @@
             "returns": {
                 "deviceError": "$ref:DeviceError",
                 "o:displayMessage": "String",
+                "o:oAuthUrl": "String",
                 "o:pairingTransactionId": "Uuid",
                 "o:setupMethod": "$ref:SetupMethod"
             }
@@ -473,7 +479,8 @@
                 ]
             },
             "returns": {
-                "deviceError": "$ref:DeviceError"
+                "deviceError": "$ref:DeviceError",
+                "o:displayMessage": "String"
             }
         },
         "Devices.RemoveConfiguredDevice": {
@@ -1523,8 +1530,7 @@
             "DeviceErrorSetupMethodNotSupported",
             "DeviceErrorHardwareNotAvailable",
             "DeviceErrorHardwareFailure",
-            "DeviceErrorAuthentificationFailure",
-            "DeviceErrorAsync",
+            "DeviceErrorAuthenticationFailure",
             "DeviceErrorDeviceInUse",
             "DeviceErrorDeviceInRule",
             "DeviceErrorDeviceIsChild",
@@ -1532,7 +1538,8 @@
             "DeviceErrorParameterNotWritable",
             "DeviceErrorItemNotFound",
             "DeviceErrorItemNotExecutable",
-            "DeviceErrorUnsupportedFeature"
+            "DeviceErrorUnsupportedFeature",
+            "DeviceErrorTimeout"
         ],
         "Event": {
             "deviceId": "Uuid",
@@ -1801,7 +1808,9 @@
             "SetupMethodJustAdd",
             "SetupMethodDisplayPin",
             "SetupMethodEnterPin",
-            "SetupMethodPushButton"
+            "SetupMethodPushButton",
+            "SetupMethodUserAndPassword",
+            "SetupMethodOAuth"
         ],
         "State": {
             "deviceId": "Uuid",

@@ -326,7 +326,6 @@
                     "interfaces": ["system"],
                     "createMethods": ["discovery"],
                     "setupMethod": "pushButton",
-                    "pairingInfo": "Wait 3 second before you continue, the push button will be pressed automatically.",
                     "paramTypes": [ ],
                     "discoveryParamTypes": [
                         {
@@ -416,7 +415,6 @@
                     "interfaces": ["system"],
                     "createMethods": ["discovery"],
                     "setupMethod": "displayPin",
-                    "pairingInfo": "Please enter the secret which normaly will be displayed on the device. For the mockdevice the pin is 243681.",
                     "discoveryParamTypes": [
                         {
                             "id": "35f6e4ba-28ad-4152-a58d-ec2600667bcf",
@@ -849,6 +847,27 @@
                             "writable": true
                         }
                     ]
+                },
+                {
+                    "id": "805d1692-7bd0-449a-9d5c-43a332ff58f4",
+                    "name": "mockOAuthGoogle",
+                    "displayName": "Mock Device (Google OAuth)",
+                    "createMethods": ["user"],
+                    "setupMethod": "oauth"
+                },
+                {
+                    "id": "783c615b-7bd6-49a4-98b0-8d1deb3c7156",
+                    "name": "mockOAuthSonos",
+                    "displayName": "Mock Device (Sonos OAuth)",
+                    "createMethods": ["user"],
+                    "setupMethod": "oauth"
+                },
+                {
+                    "id": "6fe07a77-9c07-4736-81e2-d504314bbcb9",
+                    "name": "mockUserAndPass",
+                    "displayName": "Mock Device (User & Password)",
+                    "createMethods": ["user"],
+                    "setupMethod": "userandpassword"
                 }
             ]
         }

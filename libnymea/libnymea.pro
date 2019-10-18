@@ -10,9 +10,20 @@ DEFINES += LIBNYMEA_LIBRARY
 QMAKE_LFLAGS += -fPIC
 
 HEADERS += \
+        devices/browseractioninfo.h \
+        devices/browseritemactioninfo.h \
+        devices/browseritemresult.h \
         devices/devicemanager.h \
         devices/deviceutils.h \
         devices/pluginmetadata.h \
+        devices/device.h \
+        devices/deviceplugin.h \
+        devices/devicedescriptor.h \
+        devices/devicediscoveryinfo.h \
+        devices/devicesetupinfo.h \
+        devices/devicepairinginfo.h \
+        devices/deviceactioninfo.h \
+        devices/browseresult.h \
         libnymea.h \
         platform/package.h \
         platform/repository.h \
@@ -23,10 +34,6 @@ HEADERS += \
         typeutils.h \
         loggingcategories.h \
         nymeasettings.h \
-        devices/device.h \
-        devices/deviceplugin.h \
-        devices/devicedescriptor.h \
-        devices/devicepairinginfo.h \
         hardware/gpio.h \
         hardware/gpiomonitor.h \
         hardware/pwm.h \
@@ -77,17 +84,24 @@ HEADERS += \
         platform/platformzeroconfcontroller.h \
 
 SOURCES += \
+        devices/browseractioninfo.cpp \
+        devices/browseritemactioninfo.cpp \
+        devices/browseritemresult.cpp \
         devices/devicemanager.cpp \
         devices/deviceutils.cpp \
         devices/pluginmetadata.cpp \
+        devices/device.cpp \
+        devices/deviceplugin.cpp \
+        devices/devicedescriptor.cpp \
+        devices/devicediscoveryinfo.cpp \
+        devices/devicesetupinfo.cpp \
+        devices/devicepairinginfo.cpp \
+        devices/deviceactioninfo.cpp \
+        devices/browseresult.cpp \
         loggingcategories.cpp \
         nymeasettings.cpp \
         platform/package.cpp \
         platform/repository.cpp \
-        devices/device.cpp \
-        devices/deviceplugin.cpp \
-        devices/devicedescriptor.cpp \
-        devices/devicepairinginfo.cpp \
         hardware/gpio.cpp \
         hardware/gpiomonitor.cpp \
         hardware/pwm.cpp \

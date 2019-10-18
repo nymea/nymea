@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,36 +20,28 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPAIRINGINFO_H
-#define DEVICEPAIRINGINFO_H
-
-#include <QObject>
-#include <QUrl>
+#ifndef DEVICESETUPINFO_H
+#define DEVICESETUPINFO_H
 
 #include "device.h"
 
+#include <QObject>
+
 class DeviceManager;
 
-class LIBNYMEA_EXPORT DevicePairingInfo: public QObject
+class LIBNYMEA_EXPORT DeviceSetupInfo : public QObject
 {
     Q_OBJECT
 public:
-    DevicePairingInfo(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceId &deviceId, const QString &deviceName, const ParamList &params, const DeviceId &parentDeviceId, DeviceManager *parent, quint32 timeout = 0);
+    explicit DeviceSetupInfo(Device *device, DeviceManager *deviceManager, quint32 timeout = 0);
 
-    PairingTransactionId transactionId() const;
+    Device *device() const;
 
-    DeviceClassId deviceClassId() const;
-    DeviceId deviceId() const;
-    QString deviceName() const;
-    ParamList params() const;
-    DeviceId parentDeviceId() const;
-
-    QUrl oAuthUrl() const;
-    void setOAuthUrl(const QUrl &oAuthUrl);
+    bool isFinished() const;
 
     Device::DeviceError status() const;
     QString displayMessage() const;
-    QString translatedDisplayMessage(const QLocale &locale) const;
+    QString translatedDisplayMessage(const QLocale &locale);
 
 public slots:
     void finish(Device::DeviceError status, const QString &displayMessage = QString());
@@ -59,19 +51,13 @@ signals:
     void aborted();
 
 private:
-    PairingTransactionId m_transactionId;
-    DeviceClassId m_deviceClassId;
-    DeviceId m_deviceId;
-    QString m_deviceName;
-    ParamList m_params;
-    DeviceId m_parentDeviceId;
-
-    QUrl m_oAuthUrl;
+    Device *m_device = nullptr;
 
     bool m_finished = false;
     Device::DeviceError m_status = Device::DeviceErrorNoError;
     QString m_displayMessage;
-    DeviceManager *m_deviceManager = nullptr;
+
+    DeviceManager *m_deviecManager = nullptr;
 };
 
-#endif // DEVICEPAIRINGINFO_H
+#endif // DEVICESETUPINFO_H

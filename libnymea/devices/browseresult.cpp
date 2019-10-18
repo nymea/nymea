@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -20,21 +20,17 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "devicepairinginfo.h"
-#include "devicemanager.h"
+#include "browseresult.h"
 
 #include <QTimer>
 
-DevicePairingInfo::DevicePairingInfo(const PairingTransactionId &pairingTransactionId, const DeviceClassId &deviceClassId, const DeviceId &deviceId, const QString &deviceName, const ParamList &params, const DeviceId &parentDeviceId, DeviceManager *parent, quint32 timeout):
+BrowseResult::BrowseResult(Device *device, const QString &itemId, const QLocale &locale, QObject *parent, quint32 timeout):
     QObject(parent),
-    m_transactionId(pairingTransactionId),
-    m_deviceClassId(deviceClassId),
-    m_deviceId(deviceId),
-    m_deviceName(deviceName),
-    m_params(params),
-    m_parentDeviceId(parentDeviceId)
+    m_device(device),
+    m_itemId(itemId),
+    m_locale(locale)
 {
-    connect(this, &DevicePairingInfo::finished, this, &DevicePairingInfo::deleteLater, Qt::QueuedConnection);
+    connect(this, &BrowseResult::finished, this, &BrowseResult::deleteLater, Qt::QueuedConnection);
 
     if (timeout > 0) {
         QTimer::singleShot(timeout, this, [this] {
@@ -44,70 +40,49 @@ DevicePairingInfo::DevicePairingInfo(const PairingTransactionId &pairingTransact
     }
 }
 
-PairingTransactionId DevicePairingInfo::transactionId() const
+Device *BrowseResult::device() const
 {
-    return m_transactionId;
+    return m_device;
 }
 
-DeviceClassId DevicePairingInfo::deviceClassId() const
+QString BrowseResult::itemId() const
 {
-    return m_deviceClassId;
+    return m_itemId;
 }
 
-DeviceId DevicePairingInfo::deviceId() const
+QLocale BrowseResult::locale() const
 {
-    return m_deviceId;
+    return m_locale;
 }
 
-QString DevicePairingInfo::deviceName() const
+BrowserItems BrowseResult::items() const
 {
-    return m_deviceName;
+    return m_items;
 }
 
-ParamList DevicePairingInfo::params() const
+bool BrowseResult::isFinished() const
 {
-    return m_params;
+    return m_finished;
 }
 
-DeviceId DevicePairingInfo::parentDeviceId() const
-{
-    return m_parentDeviceId;
-}
-
-QUrl DevicePairingInfo::oAuthUrl() const
-{
-    return m_oAuthUrl;
-}
-
-void DevicePairingInfo::setOAuthUrl(const QUrl &oAuthUrl)
-{
-    m_oAuthUrl = oAuthUrl;
-}
-
-Device::DeviceError DevicePairingInfo::status() const
+Device::DeviceError BrowseResult::status() const
 {
     return m_status;
 }
 
-QString DevicePairingInfo::displayMessage() const
+void BrowseResult::addItem(const BrowserItem &item)
 {
-    return m_displayMessage;
+    m_items.append(item);
 }
 
-QString DevicePairingInfo::translatedDisplayMessage(const QLocale &locale) const
+void BrowseResult::addItems(const BrowserItems &items)
 {
-    if (!m_deviceManager) {
-        return m_displayMessage;
-    }
-    DeviceClass deviceClass = m_deviceManager->findDeviceClass(m_deviceClassId);
-    return m_deviceManager->translate(deviceClass.pluginId(), m_displayMessage.toUtf8(), locale);
+    m_items.append(items);
 }
 
-void DevicePairingInfo::finish(Device::DeviceError status, const QString &displayMessage)
+void BrowseResult::finish(Device::DeviceError status)
 {
     m_finished = true;
     m_status = status;
-    m_displayMessage = displayMessage;
     staticMetaObject.invokeMethod(this, "finished", Qt::QueuedConnection);
 }
-

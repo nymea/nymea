@@ -36,9 +36,9 @@ public:
 
     PluginMetadata metaData() const;
 
-    Device::DeviceSetupStatus setupDevice(Device *device) override;
+    void setupDevice(DeviceSetupInfo *info) override;
     void startMonitoringAutoDevices() override;
-    Device::DeviceError executeAction(Device *device, const Action &action) override;
+    void executeAction(DeviceActionInfo *info) override;
 
 private slots:
     void pushNotificationEndpointsUpdated(const QList<AWSConnector::PushNotificationsEndpoint> &endpoints);
@@ -47,7 +47,7 @@ private slots:
 
 private:
     AWSConnector *m_awsConnector = nullptr;
-    QHash<int, ActionId> m_pendingPushNotifications;
+    QHash<int, DeviceActionInfo*> m_pendingPushNotifications;
 };
 
 #endif // CLOUDNOTIFICATIONS_H

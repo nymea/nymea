@@ -395,7 +395,7 @@ void DevicePluginMock::confirmPairing(DevicePairingInfo *info, const QString &us
         query.clear();
         query.addQueryItem("grant_type", "authorization_code");
         query.addQueryItem("code", accessCode);
-        query.addQueryItem("redirect_uri", "https%3A%2F%2F127.0.0.1%3A8888");
+        query.addQueryItem("redirect_uri", QByteArray("https://127.0.0.1:8888").toPercentEncoding());
         url.setQuery(query);
 
         QNetworkRequest request(url);
@@ -441,7 +441,7 @@ void DevicePluginMock::confirmPairing(DevicePairingInfo *info, const QString &us
         query.addQueryItem("client_id", clientId);
         query.addQueryItem("client_secret", clientSecret);
         query.addQueryItem("grant_type", "authorization_code");
-        query.addQueryItem("redirect_uri", "https%3A%2F%2F127.0.0.1%3A8888");
+        query.addQueryItem("redirect_uri", QByteArray("https://127.0.0.1:8888").toPercentEncoding());
 //        query.addQueryItem("code_verifier", codeVerifier);
         url.setQuery(query);
 

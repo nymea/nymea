@@ -10,9 +10,9 @@ DEFINES += LIBNYMEA_LIBRARY
 QMAKE_LFLAGS += -fPIC
 
 HEADERS += \
-    devices/browseractioninfo.h \
-    devices/browseritemactioninfo.h \
-    devices/browseritemresult.h \
+        devices/browseractioninfo.h \
+        devices/browseritemactioninfo.h \
+        devices/browseritemresult.h \
         devices/devicemanager.h \
         devices/deviceutils.h \
         devices/pluginmetadata.h \
@@ -84,9 +84,9 @@ HEADERS += \
         platform/platformzeroconfcontroller.h \
 
 SOURCES += \
-    devices/browseractioninfo.cpp \
-    devices/browseritemactioninfo.cpp \
-    devices/browseritemresult.cpp \
+        devices/browseractioninfo.cpp \
+        devices/browseritemactioninfo.cpp \
+        devices/browseritemresult.cpp \
         devices/devicemanager.cpp \
         devices/deviceutils.cpp \
         devices/pluginmetadata.cpp \

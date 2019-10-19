@@ -655,6 +655,7 @@ QStringList NymeaCore::loggingFilters()
         "Platform",
         "PlatformUpdate",
         "PlatformZeroConf",
+        "Experiences",
         "Device",
         "DeviceManager",
         "RuleEngine",

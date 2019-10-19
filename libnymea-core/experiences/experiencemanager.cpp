@@ -17,7 +17,7 @@ ExperienceManager::ExperienceManager(JsonRPCServer *jsonRpcServer, QObject *pare
 
     foreach (const QString &path, pluginSearchDirs()) {
         QDir dir(path);
-        qCDebug(dcExperiences) << "Loading platform plugins from:" << dir.absolutePath();
+        qCDebug(dcExperiences) << "Loading experience plugins from:" << dir.absolutePath();
         foreach (const QString &entry, dir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
             QFileInfo fi(path + "/" + entry);
             if (fi.isFile()) {

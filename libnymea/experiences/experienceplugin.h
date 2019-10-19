@@ -2,7 +2,6 @@
 #define EXPERIENCEPLUGIN_H
 
 #include <QObject>
-#include "jsonrpc/jsonhandler.h"
 
 class ExperiencePlugin : public JsonHandler
 {
@@ -14,5 +13,8 @@ signals:
 
 public slots:
 };
+
+Q_DECLARE_INTERFACE(ExperiencePlugin, "io.nymea.ExperiencePlugin")
+
 
 #endif // EXPERIENCEPLUGIN_H

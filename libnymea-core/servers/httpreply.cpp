@@ -188,6 +188,27 @@ HttpReply::HttpReply(const HttpReply::HttpStatusCode &statusCode, const HttpRepl
     packReply();
 }
 
+HttpReply *HttpReply::createSuccessReply()
+{
+    HttpReply *reply = new HttpReply(HttpReply::Ok, HttpReply::TypeSync);
+    reply->setPayload("200 Ok");
+    return reply;
+}
+
+HttpReply *HttpReply::createErrorReply(const HttpReply::HttpStatusCode &statusCode)
+{
+    HttpReply *reply = new HttpReply(statusCode, HttpReply::TypeSync);
+    reply->setPayload(QByteArray::number(reply->httpStatusCode()) + " " + reply->httpReasonPhrase());
+    return reply;
+}
+
+HttpReply *HttpReply::createAsyncReply()
+{
+    HttpReply *reply = new HttpReply(HttpReply::Ok, HttpReply::TypeAsync);
+    reply->setPayload(QByteArray::number(reply->httpStatusCode()) + " " + reply->httpReasonPhrase());
+    return reply;
+}
+
 void HttpReply::setHttpStatusCode(const HttpReply::HttpStatusCode &statusCode)
 {
     m_statusCode = statusCode;

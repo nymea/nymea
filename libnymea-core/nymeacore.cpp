@@ -853,12 +853,6 @@ JsonRPCServer *NymeaCore::jsonRPCServer() const
     return m_serverManager->jsonServer();
 }
 
-/*! Returns the pointer to the \l{RestServer} of this instance. */
-RestServer *NymeaCore::restServer() const
-{
-    return m_serverManager->restServer();
-}
-
 void NymeaCore::onDeviceDisappeared(const DeviceId &deviceId)
 {
     Device *device = m_deviceManager->findConfiguredDevice(deviceId);

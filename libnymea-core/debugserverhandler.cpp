@@ -21,7 +21,6 @@
 #include "nymeacore.h"
 #include "servers/httprequest.h"
 #include "servers/httpreply.h"
-#include "servers/rest/restresource.h"
 #include "nymeasettings.h"
 #include "loggingcategories.h"
 #include "debugserverhandler.h"
@@ -60,7 +59,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
     if (requestPath == "/debug" || requestPath == "/debug/") {
         qCDebug(dcDebugServer()) << "Create debug interface page";
         // Fallback default debug page
-        HttpReply *reply = RestResource::createSuccessReply();
+        HttpReply *reply = HttpReply::createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
         reply->setPayload(createDebugXmlDocument());
         return reply;
@@ -72,7 +71,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         QFile logDatabaseFile(NymeaCore::instance()->configuration()->logDBName());
         if (!logDatabaseFile.exists()) {
             qCWarning(dcDebugServer()) << "Could not read log database file for debug download" << NymeaCore::instance()->configuration()->logDBName() << "file does not exist.";
-            HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+            HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             //: The HTTP error message of the debug interface. The %1 represents the file name.
             reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(logDatabaseFile.fileName())));
@@ -81,7 +80,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
         if (!logDatabaseFile.open(QFile::ReadOnly)) {
             qCWarning(dcDebugServer()) << "Could not read log database file for debug download" << NymeaCore::instance()->configuration()->logDBName();
-            HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+            HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             //: The HTTP error message of the debug interface. The %1 represents the file name.
             reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(logDatabaseFile.fileName())));
@@ -91,7 +90,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         QByteArray logDatabaseRawData = logDatabaseFile.readAll();
         logDatabaseFile.close();
 
-        HttpReply *reply = RestResource::createSuccessReply();
+        HttpReply *reply = HttpReply::createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "application/sql");
         reply->setPayload(logDatabaseRawData);
         return reply;
@@ -105,7 +104,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         QFile syslogFile(syslogFileName);
         if (!syslogFile.exists()) {
             qCWarning(dcDebugServer()) << "Could not read log database file for debug download" << syslogFileName << "file does not exist.";
-            HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+            HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(syslogFileName)));
             return reply;
@@ -113,7 +112,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
         if (!syslogFile.open(QFile::ReadOnly)) {
             qCWarning(dcDebugServer()) << "Could not read syslog file for debug download" << syslogFileName;
-            HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+            HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(syslogFileName)));
             return reply;
@@ -122,7 +121,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         QByteArray syslogFileData = syslogFile.readAll();
         syslogFile.close();
 
-        HttpReply *reply = RestResource::createSuccessReply();
+        HttpReply *reply = HttpReply::createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
         reply->setPayload(syslogFileData);
         return reply;
@@ -136,7 +135,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
-                HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
@@ -144,7 +143,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
             if (!settingsFile.open(QFile::ReadOnly)) {
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
-                HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
@@ -153,7 +152,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             QByteArray settingsFileData = settingsFile.readAll();
             settingsFile.close();
 
-            HttpReply *reply = RestResource::createSuccessReply();
+            HttpReply *reply = HttpReply::createSuccessReply();
             reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
             reply->setPayload(settingsFileData);
             return reply;
@@ -165,7 +164,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
-                HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
@@ -173,7 +172,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
             if (!settingsFile.open(QFile::ReadOnly)) {
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
-                HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
@@ -182,7 +181,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             QByteArray settingsFileData = settingsFile.readAll();
             settingsFile.close();
 
-            HttpReply *reply = RestResource::createSuccessReply();
+            HttpReply *reply = HttpReply::createSuccessReply();
             reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
             reply->setPayload(settingsFileData);
             return reply;
@@ -194,7 +193,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
-                HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
@@ -202,7 +201,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
             if (!settingsFile.open(QFile::ReadOnly)) {
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
-                HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
@@ -211,7 +210,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             QByteArray settingsFileData = settingsFile.readAll();
             settingsFile.close();
 
-            HttpReply *reply = RestResource::createSuccessReply();
+            HttpReply *reply = HttpReply::createSuccessReply();
             reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
             reply->setPayload(settingsFileData);
             return reply;
@@ -223,7 +222,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
-                HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
@@ -231,7 +230,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
             if (!settingsFile.open(QFile::ReadOnly)) {
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
-                HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
@@ -240,7 +239,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             QByteArray settingsFileData = settingsFile.readAll();
             settingsFile.close();
 
-            HttpReply *reply = RestResource::createSuccessReply();
+            HttpReply *reply = HttpReply::createSuccessReply();
             reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
             reply->setPayload(settingsFileData);
             return reply;
@@ -252,7 +251,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
-                HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
@@ -260,7 +259,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
             if (!settingsFile.open(QFile::ReadOnly)) {
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
-                HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
@@ -269,7 +268,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             QByteArray settingsFileData = settingsFile.readAll();
             settingsFile.close();
 
-            HttpReply *reply = RestResource::createSuccessReply();
+            HttpReply *reply = HttpReply::createSuccessReply();
             reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
             reply->setPayload(settingsFileData);
             return reply;
@@ -281,7 +280,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
-                HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
                 return reply;
@@ -289,7 +288,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
             if (!settingsFile.open(QFile::ReadOnly)) {
                 qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
-                HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
                 reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
                 reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
                 return reply;
@@ -298,7 +297,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             QByteArray settingsFileData = settingsFile.readAll();
             settingsFile.close();
 
-            HttpReply *reply = RestResource::createSuccessReply();
+            HttpReply *reply = HttpReply::createSuccessReply();
             reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
             reply->setPayload(settingsFileData);
             return reply;
@@ -311,7 +310,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         QFile settingsFile(settingsFileName);
         if (!settingsFile.exists()) {
             qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
-            HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+            HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
             return reply;
@@ -319,7 +318,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
         if (!settingsFile.open(QFile::ReadOnly)) {
             qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
-            HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+            HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
             reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
             reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
             return reply;
@@ -328,7 +327,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         QByteArray settingsFileData = settingsFile.readAll();
         settingsFile.close();
 
-        HttpReply *reply = RestResource::createSuccessReply();
+        HttpReply *reply = HttpReply::createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
         reply->setPayload(settingsFileData);
         return reply;
@@ -337,7 +336,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
     if (requestPath.startsWith("/debug/ping")) {
         // Only one ping process should run
         if (m_pingProcess || m_pingReply)
-            return RestResource::createErrorReply(HttpReply::InternalServerError);
+            return HttpReply::createErrorReply(HttpReply::InternalServerError);
 
         qCDebug(dcDebugServer()) << "Start ping nymea.io process";
         m_pingProcess = new QProcess(this);
@@ -345,14 +344,14 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         connect(m_pingProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onPingProcessFinished(int,QProcess::ExitStatus)));
         m_pingProcess->start("ping", { "-c", "4", "nymea.io" } );
 
-        m_pingReply = RestResource::createAsyncReply();
+        m_pingReply = HttpReply::createAsyncReply();
         return m_pingReply;
     }
 
     if (requestPath.startsWith("/debug/dig")) {
         // Only one dig process should run
         if (m_digProcess || m_digReply)
-            return RestResource::createErrorReply(HttpReply::InternalServerError);
+            return HttpReply::createErrorReply(HttpReply::InternalServerError);
 
         qCDebug(dcDebugServer()) << "Start dig nymea.io process";
         m_digProcess = new QProcess(this);
@@ -360,14 +359,14 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         connect(m_digProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onDigProcessFinished(int,QProcess::ExitStatus)));
         m_digProcess->start("dig", { "nymea.io" } );
 
-        m_digReply = RestResource::createAsyncReply();
+        m_digReply = HttpReply::createAsyncReply();
         return m_digReply;
     }
 
     if (requestPath.startsWith("/debug/tracepath")) {
         // Only one tracepath process should run
         if (m_tracePathProcess || m_tracePathReply)
-            return RestResource::createErrorReply(HttpReply::InternalServerError);
+            return HttpReply::createErrorReply(HttpReply::InternalServerError);
 
         qCDebug(dcDebugServer()) << "Start tracepath nymea.io process";
         m_tracePathProcess = new QProcess(this);
@@ -375,7 +374,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         connect(m_tracePathProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onTracePathProcessFinished(int,QProcess::ExitStatus)));
         m_tracePathProcess->start("tracepath", { "nymea.io" } );
 
-        m_tracePathReply = RestResource::createAsyncReply();
+        m_tracePathReply = HttpReply::createAsyncReply();
         return m_tracePathReply;
     }
 
@@ -401,7 +400,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
             settings.endGroup();
 
-            HttpReply *reply = RestResource::createSuccessReply();
+            HttpReply *reply = HttpReply::createSuccessReply();
             reply->setPayload(QJsonDocument::fromVariant(dataMap).toJson(QJsonDocument::Indented));
             return reply;
         } else {
@@ -429,7 +428,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             settings.endGroup();
             QLoggingCategory::setFilterRules(loggingRules.join('\n'));
 
-            return RestResource::createSuccessReply();
+            return HttpReply::createSuccessReply();
         }
     }
 
@@ -447,17 +446,17 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
             if (!m_debugReportGenerator) {
                 qCWarning(dcDebugServer()) << "There is currently no debug report generator. The requested file does not exist.";
-                return RestResource::createErrorReply(HttpReply::NotFound);
+                return HttpReply::createErrorReply(HttpReply::NotFound);
             }
 
             if (m_debugReportGenerator->reportFileName() != fileName) {
                 qCWarning(dcDebugServer()) << "The requested file is not the file from the current debug report generator" << m_debugReportGenerator->reportFileName() << "!=" << fileName;
-                return RestResource::createErrorReply(HttpReply::NotFound);
+                return HttpReply::createErrorReply(HttpReply::NotFound);
 
             }
 
             // Everything looks good, send the requested debug report
-            HttpReply *downloadReportReply = RestResource::createSuccessReply();
+            HttpReply *downloadReportReply = HttpReply::createSuccessReply();
             downloadReportReply->setPayload(m_debugReportGenerator->reportFileData());
             downloadReportReply->setHeader(HttpReply::ContentTypeHeader, "application/tar+gzip;");
             return downloadReportReply;
@@ -470,13 +469,13 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                 connect(m_debugReportGenerator, &DebugReportGenerator::timeout, this, &DebugServerHandler::onDebugReportGeneratorTimeout);
                 m_debugReportGenerator->generateReport();
                 // Note: no content will bring the client to poll this report
-                return RestResource::createErrorReply(HttpReply::NoContent);
+                return HttpReply::createErrorReply(HttpReply::NoContent);
             } else {
                 // There is a running generator, check if the report is ready
                 if (!m_debugReportGenerator->isReady()) {
                     qCDebug(dcDebugServer()) << "Report is not ready yet";
                     // Note: no content tells the client the report is not ready yet
-                    return RestResource::createErrorReply(HttpReply::NoContent);
+                    return HttpReply::createErrorReply(HttpReply::NoContent);
                 } else {
                     if (m_debugReportGenerator->isValid()) {
                         // Success, the debug report is ready and valid
@@ -485,7 +484,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                         reportInformation.insert("fileSize", m_debugReportGenerator->reportFileData().size());
                         reportInformation.insert("md5sum", m_debugReportGenerator->md5Sum());
 
-                        HttpReply * httpReply = RestResource::createSuccessReply();
+                        HttpReply * httpReply = HttpReply::createSuccessReply();
                         httpReply->setHttpStatusCode(HttpReply::Ok);
                         httpReply->setHeader(HttpReply::ContentTypeHeader, "application/json; charset=\"utf-8\";");
                         httpReply->setPayload(QJsonDocument::fromVariant(reportInformation).toJson(QJsonDocument::Indented));
@@ -494,7 +493,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                         qCWarning(dcDebugServer()) << "The debug report generator finished with error.";
                         m_debugReportGenerator->deleteLater();
                         m_debugReportGenerator = nullptr;
-                        return RestResource::createErrorReply(HttpReply::InternalServerError);
+                        return HttpReply::createErrorReply(HttpReply::InternalServerError);
                     }
                 }
             }
@@ -508,7 +507,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
     // If nothing matches, redirect to /debug page
     qCWarning(dcDebugServer()) << "Resource for debug interface not found. Redirecting to /debug";
-    HttpReply *reply = RestResource::createErrorReply(HttpReply::PermanentRedirect);
+    HttpReply *reply = HttpReply::createErrorReply(HttpReply::PermanentRedirect);
     reply->setHeader(HttpReply::LocationHeader, "/debug");
     return reply;
 }
@@ -570,7 +569,7 @@ HttpReply *DebugServerHandler::processDebugFileRequest(const QString &requestPat
     QByteArray data = loadResourceData(resourceFileName);
 
     // Create reply for resource file
-    HttpReply *reply = RestResource::createSuccessReply();
+    HttpReply *reply = HttpReply::createSuccessReply();
     reply->setPayload(data);
 
     // Check content type

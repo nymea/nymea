@@ -43,7 +43,6 @@
 #include "jsonrpc/jsonrpcserver.h"
 #include "servers/mocktcpserver.h"
 #include "servers/tcpserver.h"
-#include "servers/rest/restserver.h"
 #include "servers/websocketserver.h"
 #include "servers/webserver.h"
 #include "servers/bluetoothserver.h"
@@ -101,8 +100,6 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 
     // Interfaces
     m_jsonServer = new JsonRPCServer(m_sslConfiguration, this);
-    m_restServer = new RestServer(m_sslConfiguration, this);
-
 
     // Transports
     MockTcpServer *tcpServer = new MockTcpServer(this);
@@ -134,7 +131,6 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 
     foreach (const WebServerConfiguration &config, configuration->webServerConfigurations()) {
         WebServer *webServer = new WebServer(config, m_sslConfiguration, this);
-        m_restServer->registerWebserver(webServer);
         m_webServers.insert(config.id, webServer);
         if (webServer->startServer()) {
             registerZeroConfService(config, "http", "_http._tcp");
@@ -165,12 +161,6 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 JsonRPCServer *ServerManager::jsonServer() const
 {
     return m_jsonServer;
-}
-
-/*! Returns the pointer to the created \l{RestServer} in this \l{ServerManager}. */
-RestServer *ServerManager::restServer() const
-{
-    return m_restServer;
 }
 
 /*! Returns the pointer to the created \l{BluetoothServer} in this \l{ServerManager}. */
@@ -268,7 +258,6 @@ void ServerManager::webServerConfigurationChanged(const QString &id)
     } else {
         qDebug(dcServerManager()) << "Received a Web Server config change event but don't have a Web Server instance for it. Creating new WebServer instance on" << config.address.toString() << config.port << "(SSL:" << config.sslEnabled << ")";
         server = new WebServer(config, m_sslConfiguration, this);
-        m_restServer->registerWebserver(server);
         m_webServers.insert(config.id, server);
     }
     if (server->startServer()) {

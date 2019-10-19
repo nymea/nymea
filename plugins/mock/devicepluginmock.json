@@ -279,7 +279,7 @@
                     ],
                     "actionTypes": [
                         {
-                            "id": "e6a22f52-1818-46a7-9d15-5ca08b0612c",
+                            "id": "07cd8d5f-2f65-4955-b1f9-05d7f4da488a",
                             "name": "withParams",
                             "displayName": "Mock Action 1 (with params)",
                             "paramTypes": [

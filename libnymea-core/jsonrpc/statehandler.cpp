@@ -33,6 +33,7 @@
 */
 
 #include "statehandler.h"
+#include "devicehandler.h"
 #include "nymeacore.h"
 #include "loggingcategories.h"
 
@@ -42,16 +43,19 @@ namespace nymeaserver {
 StateHandler::StateHandler(QObject *parent) :
     JsonHandler(parent)
 {
-    QVariantMap params;
-    QVariantMap returns;
+    QVariantMap state;
+    state.insert("stateTypeId", enumValueName(Uuid));
+    state.insert("deviceId", enumValueName(Uuid));
+    state.insert("value", enumValueName(Variant));
+    registerObject("State", state);
 
-    params.clear(); returns.clear();
-    setDescription("GetStateType", "Get the StateType for the given stateTypeId.");
-    params.insert("stateTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("GetStateType", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("o:stateType", JsonTypes::stateTypeRef());
-    setReturns("GetStateType", returns);
+    // Methods
+    QString description; QVariantMap params; QVariantMap returns;
+    description = "Get the StateType for the given stateTypeId.";
+    params.insert("stateTypeId", enumValueName(Uuid));
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:stateType", objectRef("StateType"));
+    registerMethod("GetStateType", description, params, returns, true);
 }
 
 /*! Returns the name of the \l{StateHandler}. In this case \b States.*/
@@ -67,13 +71,16 @@ JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
     foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const StateType &stateType, deviceClass.stateTypes()) {
             if (stateType.id() == stateTypeId) {
-                QVariantMap data = statusToReply(Device::DeviceErrorNoError);
-                data.insert("stateType", JsonTypes::packStateType(stateType, deviceClass.pluginId(), params.value("locale").toLocale()));
+                QVariantMap data;
+                data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorNoError));
+                data.insert("stateType", DeviceHandler::packStateType(stateType, deviceClass.pluginId(), params.value("locale").toLocale()));
                 return createReply(data);
             }
         }
     }
-    return createReply(statusToReply(Device::DeviceErrorStateTypeNotFound));
+    QVariantMap data;
+    data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorStateTypeNotFound));
+    return createReply(data);
 }
 
 }

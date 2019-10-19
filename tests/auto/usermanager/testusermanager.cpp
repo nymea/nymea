@@ -23,6 +23,7 @@
 #include "logging/logengine.h"
 #include "nymeacore.h"
 #include "nymeatestbase.h"
+#include "usermanager/usermanager.h"
 
 using namespace nymeaserver;
 

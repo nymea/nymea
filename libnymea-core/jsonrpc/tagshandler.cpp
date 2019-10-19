@@ -27,51 +27,58 @@ namespace nymeaserver {
 
 TagsHandler::TagsHandler(QObject *parent) : JsonHandler(parent)
 {
-    QVariantMap params;
-    QVariantMap returns;
+    // Enums
+    registerEnum<TagsStorage::TagError>();
+
+    // Objects
+    QVariantMap tag;
+    tag.insert("o:deviceId", enumValueName(Uuid));
+    tag.insert("o:ruleId", enumValueName(Uuid));
+    tag.insert("appId", enumValueName(String));
+    tag.insert("tagId", enumValueName(String));
+    tag.insert("o:value", enumValueName(String));
+    registerObject("Tag", tag);
+
+    // Methods
+    QString description; QVariantMap params; QVariantMap returns;
+    description = "Get the Tags matching the given filter. Tags can be filtered by a deviceID, a ruleId, an appId, a tagId or a combination of any (however, combining deviceId and ruleId will return an empty result set).";
+    params.insert("o:deviceId", enumValueName(Uuid));
+    params.insert("o:ruleId", enumValueName(Uuid));
+    params.insert("o:appId", enumValueName(String));
+    params.insert("o:tagId", enumValueName(String));
+    returns.insert("tagError", enumRef<TagsStorage::TagError>());
+    returns.insert("o:tags", QVariantList() << objectRef("Tag"));
+    registerMethod("GetTags", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetTags", "Get the Tags matching the given filter. Tags can be filtered by a deviceID, a ruleId, an appId, a tagId or a combination of any (however, combining deviceId and ruleId will return an empty result set).");
-    params.insert("o:deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("o:ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("o:appId", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("o:tagId", JsonTypes::basicTypeToString(JsonTypes::String));
-    setParams("GetTags", params);
-    returns.insert("tagError", JsonTypes::tagErrorRef());
-    returns.insert("o:tags", QVariantList() << JsonTypes::tagRef());
-    setReturns("GetTags", returns);
+    description = "Add a Tag. A Tag must have a deviceId OR a ruleId (call this method twice if you want to attach the same tag to a device and a rule), an appId (Use the appId of your app), a tagId (e.g. \"favorites\") and a value. Upon success, a TagAdded notification will be emitted. Calling this method twice for the same ids (device/rule, appId and tagId) but with a different value will update the tag's value and the TagValueChanged notification will be emitted.";
+    params.insert("tag", objectRef("Tag"));
+    returns.insert("tagError", enumRef<TagsStorage::TagError>());
+    registerMethod("AddTag", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("AddTag", "Add a Tag. A Tag must have a deviceId OR a ruleId (call this method twice if you want to attach the same tag to a device and a rule), an appId (Use the appId of your app), a tagId (e.g. \"favorites\") and a value. Upon success, a TagAdded notification will be emitted. Calling this method twice for the same ids (device/rule, appId and tagId) but with a different value will update the tag's value and the TagValueChanged notification will be emitted.");
-    params.insert("tag", JsonTypes::tagRef());
-    setParams("AddTag", params);
-    returns.insert("tagError", JsonTypes::tagErrorRef());
-    setReturns("AddTag", returns);
-
-    params.clear(); returns.clear();
-    setDescription("RemoveTag", "Remove a Tag. Tag value is optional and will be disregarded. If the ids match, the tag will be deleted and a TagRemoved notification will be emitted.");
-    params.insert("tag", JsonTypes::tagRef());
-    setParams("RemoveTag", params);
-    returns.insert("tagError", JsonTypes::tagErrorRef());
-    setReturns("RemoveTag", returns);
+    description = "Remove a Tag. Tag value is optional and will be disregarded. If the ids match, the tag will be deleted and a TagRemoved notification will be emitted.";
+    params.insert("tag", objectRef("Tag"));
+    returns.insert("tagError", enumRef<TagsStorage::TagError>());
+    registerMethod("RemoveTag", description, params, returns);
 
     // Notifications
     params.clear();
-    setDescription("TagAdded", "Emitted whenever a tag is added to the system. ");
-    params.insert("tag", JsonTypes::tagRef());
-    setParams("TagAdded", params);
+    description = "Emitted whenever a tag is added to the system. ";
+    params.insert("tag", objectRef("Tag"));
+    registerNotification("TagAdded", description, params);
     connect(NymeaCore::instance()->tagsStorage(), &TagsStorage::tagAdded, this, &TagsHandler::onTagAdded);
 
     params.clear();
-    setDescription("TagRemoved", "Emitted whenever a tag is removed from the system. ");
-    params.insert("tag", JsonTypes::tagRef());
-    setParams("TagRemoved", params);
+    description = "Emitted whenever a tag is removed from the system. ";
+    params.insert("tag", objectRef("Tag"));
+    registerNotification("TagRemoved", description, params);
     connect(NymeaCore::instance()->tagsStorage(), &TagsStorage::tagRemoved, this, &TagsHandler::onTagRemoved);
 
     params.clear();
-    setDescription("TagValueChanged", "Emitted whenever a tag's value is changed in the system. ");
-    params.insert("tag", JsonTypes::tagRef());
-    setParams("TagValueChanged", params);
+    description = "Emitted whenever a tag's value is changed in the system. ";
+    params.insert("tag", objectRef("Tag"));
+    registerNotification("TagValueChanged", description, params);
     connect(NymeaCore::instance()->tagsStorage(), &TagsStorage::tagValueChanged, this, &TagsHandler::onTagValueChanged);
 }
 
@@ -96,7 +103,7 @@ JsonReply *TagsHandler::GetTags(const QVariantMap &params) const
         if (params.contains("tagId") && params.value("tagId").toString() != tag.tagId()) {
             continue;
         }
-        ret.append(JsonTypes::packTag(tag));
+        ret.append(packTag(tag));
     }
     QVariantMap returns = statusToReply(TagsStorage::TagErrorNoError);
     returns.insert("tags", ret);
@@ -106,7 +113,7 @@ JsonReply *TagsHandler::GetTags(const QVariantMap &params) const
 
 JsonReply *TagsHandler::AddTag(const QVariantMap &params) const
 {
-    Tag tag = JsonTypes::unpackTag(params.value("tag").toMap());
+    Tag tag = unpackTag(params.value("tag").toMap());
     TagsStorage::TagError error = NymeaCore::instance()->tagsStorage()->addTag(tag);
     QVariantMap returns = statusToReply(error);
     return createReply(returns);
@@ -114,7 +121,7 @@ JsonReply *TagsHandler::AddTag(const QVariantMap &params) const
 
 JsonReply *TagsHandler::RemoveTag(const QVariantMap &params) const
 {
-    Tag tag = JsonTypes::unpackTag(params.value("tag").toMap());
+    Tag tag = unpackTag(params.value("tag").toMap());
     TagsStorage::TagError error = NymeaCore::instance()->tagsStorage()->removeTag(tag);
     QVariantMap returns = statusToReply(error);
     return createReply(returns);
@@ -124,7 +131,7 @@ void TagsHandler::onTagAdded(const Tag &tag)
 {
     qCDebug(dcJsonRpc) << "Notify \"Tags.TagAdded\"";
     QVariantMap params;
-    params.insert("tag", JsonTypes::packTag(tag));
+    params.insert("tag", packTag(tag));
     emit TagAdded(params);
 }
 
@@ -132,7 +139,7 @@ void TagsHandler::onTagRemoved(const Tag &tag)
 {
     qCDebug(dcJsonRpc) << "Notify \"Tags.TagRemoved\"";
     QVariantMap params;
-    params.insert("tag", JsonTypes::packTag(tag));
+    params.insert("tag", packTag(tag));
     emit TagRemoved(params);
 }
 
@@ -140,8 +147,42 @@ void TagsHandler::onTagValueChanged(const Tag &tag)
 {
     qCDebug(dcJsonRpc) << "Notify \"Tags.TagValueChanged\"";
     QVariantMap params;
-    params.insert("tag", JsonTypes::packTag(tag));
+    params.insert("tag", packTag(tag));
     emit TagValueChanged(params);
+}
+
+QVariantMap TagsHandler::packTag(const Tag &tag)
+{
+    QVariantMap ret;
+    if (!tag.deviceId().isNull()){
+        ret.insert("deviceId", tag.deviceId().toString());
+    } else {
+        ret.insert("ruleId", tag.ruleId().toString());
+    }
+    ret.insert("appId", tag.appId());
+    ret.insert("tagId", tag.tagId());
+    ret.insert("value", tag.value());
+    return ret;
+}
+
+Tag TagsHandler::unpackTag(const QVariantMap &tagMap)
+{
+    DeviceId deviceId = DeviceId(tagMap.value("deviceId").toString());
+    RuleId ruleId = RuleId(tagMap.value("ruleId").toString());
+    QString appId = tagMap.value("appId").toString();
+    QString tagId = tagMap.value("tagId").toString();
+    QString value = tagMap.value("value").toString();
+    if (!deviceId.isNull()) {
+        return Tag(deviceId, appId, tagId, value);
+    }
+    return Tag(ruleId, appId, tagId, value);
+}
+
+QVariantMap TagsHandler::statusToReply(TagsStorage::TagError status) const
+{
+    QVariantMap returns;
+    returns.insert("tagError", enumValueName<TagsStorage::TagError>(status));
+    return returns;
 }
 
 }

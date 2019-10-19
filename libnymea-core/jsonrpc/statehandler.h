@@ -22,7 +22,7 @@
 #ifndef STATEHANDLER_H
 #define STATEHANDLER_H
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
 
 namespace nymeaserver {
 
@@ -30,7 +30,7 @@ class StateHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit StateHandler(QObject *parent = 0);
+    explicit StateHandler(QObject *parent = nullptr);
     QString name() const override;
 
     Q_INVOKABLE JsonReply *GetStateType(const QVariantMap &params) const;

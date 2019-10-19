@@ -22,8 +22,9 @@
 #ifndef LOGGINGHANDLER_H
 #define LOGGINGHANDLER_H
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
 #include "logging/logentry.h"
+#include "logging/logfilter.h"
 
 namespace nymeaserver {
 
@@ -39,6 +40,11 @@ public:
 signals:
     void LogEntryAdded(const QVariantMap &params);
     void LogDatabaseUpdated(const QVariantMap &params);
+
+private:
+    static QVariantMap packLogEntry(const LogEntry &logEntry);
+
+    static LogFilter unpackLogFilter(const QVariantMap &logFilterMap);
 
 private slots:
     void logEntryAdded(const LogEntry &entry);

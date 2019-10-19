@@ -45,6 +45,7 @@
 #include "logginghandler.h"
 #include "logging/logengine.h"
 #include "logging/logfilter.h"
+#include "logging/logvaluetool.h"
 #include "loggingcategories.h"
 #include "nymeacore.h"
 
@@ -54,12 +55,29 @@ namespace nymeaserver {
 LoggingHandler::LoggingHandler(QObject *parent) :
     JsonHandler(parent)
 {
-    QVariantMap params;
-    QVariantMap returns;
+    // Enums
+    registerEnum<Logging::LoggingSource>();
+    registerEnum<Logging::LoggingLevel>();
+    registerEnum<Logging::LoggingEventType>();
+    registerEnum<Logging::LoggingError>();
 
-    QVariantMap timeFilter;
-    params.clear(); returns.clear();
-    setDescription("GetLogEntries", "Get the LogEntries matching the given filter. "
+    // Objects
+    QVariantMap logEntry;
+    logEntry.insert("timestamp", enumValueName(Int));
+    logEntry.insert("loggingLevel", enumRef<Logging::LoggingLevel>());
+    logEntry.insert("source", enumRef<Logging::LoggingSource>());
+    logEntry.insert("o:typeId", enumValueName(Uuid));
+    logEntry.insert("o:deviceId", enumValueName(Uuid));
+    logEntry.insert("o:itemId", enumValueName(String));
+    logEntry.insert("o:value", enumValueName(String));
+    logEntry.insert("o:active", enumValueName(Bool));
+    logEntry.insert("o:eventType", enumRef<Logging::LoggingEventType>());
+    logEntry.insert("o:errorCode", enumValueName(String));
+    registerObject("LogEntry", logEntry);
+
+    // Methods
+    QString description; QVariantMap params; QVariantMap returns;
+    description = "Get the LogEntries matching the given filter. "
                    "The result set will contain entries matching all filter rules combined. "
                    "If multiple options are given for a single filter type, the result set will "
                    "contain entries matching any of those. The offset starts at the newest entry "
@@ -73,38 +91,38 @@ LoggingHandler::LoggingHandler(QObject *parent) :
                    "1) offset 0, maxCount 1000: Entries 0 to 9999\n"
                    "2) offset 10000, maxCount 1000: Entries 10000 - 19999\n"
                    "3) offset 20000, maxCount 1000: Entries 20000 - 29999\n"
-                   "...");
-    timeFilter.insert("o:startDate", JsonTypes::basicTypeToString(JsonTypes::Int));
-    timeFilter.insert("o:endDate", JsonTypes::basicTypeToString(JsonTypes::Int));
+                   "...";
+    QVariantMap timeFilter;
+    timeFilter.insert("o:startDate", enumValueName(Int));
+    timeFilter.insert("o:endDate", enumValueName(Int));
     params.insert("o:timeFilters", QVariantList() << timeFilter);
-    params.insert("o:loggingSources", QVariantList() << JsonTypes::loggingSourceRef());
-    params.insert("o:loggingLevels", QVariantList() << JsonTypes::loggingLevelRef());
-    params.insert("o:eventTypes", QVariantList() << JsonTypes::loggingEventTypeRef());
-    params.insert("o:typeIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("o:deviceIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("o:values", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Variant));
-    params.insert("o:limit", JsonTypes::basicTypeToString(JsonTypes::Int));
-    params.insert("o:offset", JsonTypes::basicTypeToString(JsonTypes::Int));
-    setParams("GetLogEntries", params);
-    returns.insert("loggingError", JsonTypes::loggingErrorRef());
-    returns.insert("o:logEntries", QVariantList() << JsonTypes::logEntryRef());
-    returns.insert("count", JsonTypes::basicTypeToString(JsonTypes::Int));
-    returns.insert("offset", JsonTypes::basicTypeToString(JsonTypes::Int));
-    setReturns("GetLogEntries", returns);
+    params.insert("o:loggingSources", QVariantList() << enumRef<Logging::LoggingSource>());
+    params.insert("o:loggingLevels", QVariantList() << enumRef<Logging::LoggingLevel>());
+    params.insert("o:eventTypes", QVariantList() << enumRef<Logging::LoggingEventType>());
+    params.insert("o:typeIds", QVariantList() << enumValueName(Uuid));
+    params.insert("o:deviceIds", QVariantList() << enumValueName(Uuid));
+    params.insert("o:values", QVariantList() << enumValueName(Variant));
+    params.insert("o:limit", enumValueName(Int));
+    params.insert("o:offset", enumValueName(Int));
+    returns.insert("loggingError", enumRef<Logging::LoggingError>());
+    returns.insert("o:logEntries", QVariantList() << objectRef("LogEntry"));
+    returns.insert("count", enumValueName(Int));
+    returns.insert("offset", enumValueName(Int));
+    registerMethod("GetLogEntries", description, params, returns);
 
     // Notifications
     params.clear();
-    setDescription("LogEntryAdded", "Emitted whenever an entry is appended to the logging system. ");
-    params.insert("logEntry", JsonTypes::logEntryRef());
-    setParams("LogEntryAdded", params);
+    description = "Emitted whenever an entry is appended to the logging system. ";
+    params.insert("logEntry", objectRef("LogEntry"));
+    registerNotification("LogEntryAdded", description, params);
 
     params.clear();
-    setDescription("LogDatabaseUpdated", "Emitted whenever the database was updated. "
+    description = "Emitted whenever the database was updated. "
                    "The database will be updated when a log entry was deleted. A log "
                    "entry will be deleted when the corresponding device or a rule will "
                    "be removed, or when the oldest entry of the database was deleted to "
-                   "keep to database in the size limits.");
-    setParams("LogDatabaseUpdated", params);
+                   "keep to database in the size limits.";
+    registerNotification("LogDatabaseUpdated", description, params);
 
     connect(NymeaCore::instance()->logEngine(), &LogEngine::logEntryAdded, this, &LoggingHandler::logEntryAdded);
     connect(NymeaCore::instance()->logEngine(), &LogEngine::logDatabaseUpdated, this, &LoggingHandler::logDatabaseUpdated);
@@ -119,7 +137,7 @@ QString LoggingHandler::name() const
 void LoggingHandler::logEntryAdded(const LogEntry &logEntry)
 {
     QVariantMap params;
-    params.insert("logEntry", JsonTypes::packLogEntry(logEntry));
+    params.insert("logEntry", packLogEntry(logEntry));
     emit LogEntryAdded(params);
 }
 
@@ -130,18 +148,136 @@ void LoggingHandler::logDatabaseUpdated()
 
 JsonReply* LoggingHandler::GetLogEntries(const QVariantMap &params) const
 {
-    LogFilter filter = JsonTypes::unpackLogFilter(params);
+    LogFilter filter = unpackLogFilter(params);
 
     QVariantList entries;
     foreach (const LogEntry &entry, NymeaCore::instance()->logEngine()->logEntries(filter)) {
-        entries.append(JsonTypes::packLogEntry(entry));
+        entries.append(packLogEntry(entry));
     }
-    QVariantMap returns = statusToReply(Logging::LoggingErrorNoError);
-
+    QVariantMap returns;
+    returns.insert("loggingError", enumValueName<Logging::LoggingError>(Logging::LoggingErrorNoError));
     returns.insert("logEntries", entries);
     returns.insert("offset", filter.offset());
     returns.insert("count", entries.count());
     return createReply(returns);
+}
+
+QVariantMap LoggingHandler::packLogEntry(const LogEntry &logEntry)
+{
+    QVariantMap logEntryMap;
+    logEntryMap.insert("timestamp", logEntry.timestamp().toMSecsSinceEpoch());
+    logEntryMap.insert("loggingLevel", enumValueName<Logging::LoggingLevel>(logEntry.level()));
+    logEntryMap.insert("source", enumValueName<Logging::LoggingSource>(logEntry.source()));
+    logEntryMap.insert("eventType", enumValueName<Logging::LoggingEventType>(logEntry.eventType()));
+
+    if (logEntry.eventType() == Logging::LoggingEventTypeActiveChange)
+        logEntryMap.insert("active", logEntry.active());
+
+    if (logEntry.eventType() == Logging::LoggingEventTypeEnabledChange)
+        logEntryMap.insert("active", logEntry.active());
+
+    if (logEntry.level() == Logging::LoggingLevelAlert) {
+        switch (logEntry.source()) {
+        case Logging::LoggingSourceRules:
+            logEntryMap.insert("errorCode", enumValueName<RuleEngine::RuleError>(static_cast<RuleEngine::RuleError>(logEntry.errorCode())));
+            break;
+        case Logging::LoggingSourceActions:
+        case Logging::LoggingSourceEvents:
+        case Logging::LoggingSourceStates:
+        case Logging::LoggingSourceBrowserActions:
+            logEntryMap.insert("errorCode", enumValueName<Device::DeviceError>(static_cast<Device::DeviceError>(logEntry.errorCode())));
+            break;
+        case Logging::LoggingSourceSystem:
+            // FIXME: Update this once we support error codes for the general system
+            //            logEntryMap.insert("errorCode", "");
+            break;
+        }
+    }
+
+    switch (logEntry.source()) {
+    case Logging::LoggingSourceActions:
+    case Logging::LoggingSourceEvents:
+    case Logging::LoggingSourceStates:
+        logEntryMap.insert("typeId", logEntry.typeId().toString());
+        logEntryMap.insert("deviceId", logEntry.deviceId().toString());
+        logEntryMap.insert("value", LogValueTool::convertVariantToString(logEntry.value()));
+        break;
+    case Logging::LoggingSourceSystem:
+        logEntryMap.insert("active", logEntry.active());
+        break;
+    case Logging::LoggingSourceRules:
+        logEntryMap.insert("typeId", logEntry.typeId().toString());
+        break;
+    case Logging::LoggingSourceBrowserActions:
+        logEntryMap.insert("itemId", logEntry.value());
+        break;
+    }
+
+    return logEntryMap;
+}
+
+LogFilter LoggingHandler::unpackLogFilter(const QVariantMap &logFilterMap)
+{
+    LogFilter filter;
+    if (logFilterMap.contains("timeFilters")) {
+        QVariantList timeFilters = logFilterMap.value("timeFilters").toList();
+        foreach (const QVariant &timeFilter, timeFilters) {
+            QVariantMap timeFilterMap = timeFilter.toMap();
+            QDateTime startDate; QDateTime endDate;
+            if (timeFilterMap.contains("startDate"))
+                startDate = QDateTime::fromTime_t(timeFilterMap.value("startDate").toUInt());
+
+            if (timeFilterMap.contains("endDate"))
+                endDate = QDateTime::fromTime_t(timeFilterMap.value("endDate").toUInt());
+
+            filter.addTimeFilter(startDate, endDate);
+        }
+    }
+
+    if (logFilterMap.contains("loggingSources")) {
+        QVariantList loggingSources = logFilterMap.value("loggingSources").toList();
+        foreach (const QVariant &source, loggingSources) {
+            filter.addLoggingSource(enumNameToValue<Logging::LoggingSource>(source.toString()));
+        }
+    }
+    if (logFilterMap.contains("loggingLevels")) {
+        QVariantList loggingLevels = logFilterMap.value("loggingLevels").toList();
+        foreach (const QVariant &level, loggingLevels) {
+            filter.addLoggingLevel(enumNameToValue<Logging::LoggingLevel>(level.toString()));
+        }
+    }
+    if (logFilterMap.contains("eventTypes")) {
+        QVariantList eventTypes = logFilterMap.value("eventTypes").toList();
+        foreach (const QVariant &eventType, eventTypes) {
+            filter.addLoggingEventType(enumNameToValue<Logging::LoggingEventType>(eventType.toString()));
+        }
+    }
+    if (logFilterMap.contains("typeIds")) {
+        QVariantList typeIds = logFilterMap.value("typeIds").toList();
+        foreach (const QVariant &typeId, typeIds) {
+            filter.addTypeId(typeId.toUuid());
+        }
+    }
+    if (logFilterMap.contains("deviceIds")) {
+        QVariantList deviceIds = logFilterMap.value("deviceIds").toList();
+        foreach (const QVariant &deviceId, deviceIds) {
+            filter.addDeviceId(DeviceId(deviceId.toString()));
+        }
+    }
+    if (logFilterMap.contains("values")) {
+        QVariantList values = logFilterMap.value("values").toList();
+        foreach (const QVariant &value, values) {
+            filter.addValue(value.toString());
+        }
+    }
+    if (logFilterMap.contains("limit")) {
+        filter.setLimit(logFilterMap.value("limit", -1).toInt());
+    }
+    if (logFilterMap.contains("offset")) {
+        filter.setOffset(logFilterMap.value("offset").toInt());
+    }
+
+    return filter;
 }
 
 }

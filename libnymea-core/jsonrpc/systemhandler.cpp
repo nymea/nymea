@@ -32,146 +32,148 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     JsonHandler(parent),
     m_platform(platform)
 {
+    // Objects
+    QVariantMap package;
+    package.insert("id", enumValueName(String));
+    package.insert("displayName", enumValueName(String));
+    package.insert("summary", enumValueName(String));
+    package.insert("installedVersion", enumValueName(String));
+    package.insert("candidateVersion", enumValueName(String));
+    package.insert("changelog", enumValueName(String));
+    package.insert("updateAvailable", enumValueName(Bool));
+    package.insert("rollbackAvailable", enumValueName(Bool));
+    package.insert("canRemove", enumValueName(Bool));
+    registerObject("Package", package);
+
+    QVariantMap repository;
+    repository.insert("id", enumValueName(String));
+    repository.insert("displayName", enumValueName(String));
+    repository.insert("enabled", enumValueName(Bool));
+    registerObject("Repository", repository);
+
     // Methods
-    QVariantMap params; QVariantMap returns;
-    setDescription("GetCapabilities", "Get the list of capabilites on this system. This allows reading whether things like rebooting or shutting down the system running nymea:core is supported on this host.");
-    setParams("GetCapabilities", params);
-    returns.insert("powerManagement", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    returns.insert("updateManagement", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setReturns("GetCapabilities", returns);
+    QString description; QVariantMap params; QVariantMap returns;
+    description = "Get the list of capabilites on this system. This allows reading whether things like rebooting or shutting down the system running nymea:core is supported on this host.";
+    returns.insert("powerManagement", enumValueName(Bool));
+    returns.insert("updateManagement", enumValueName(Bool));
+    registerMethod("GetCapabilities", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("Reboot", "Initiate a reboot of the system. The return value will indicate whether the procedure has been initiated successfully.");
-    setParams("Reboot", params);
-    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setReturns("Reboot", returns);
+    description = "Initiate a reboot of the system. The return value will indicate whether the procedure has been initiated successfully.";
+    returns.insert("success", enumValueName(Bool));
+    registerMethod("Reboot", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("Shutdown", "Initiate a shutdown of the system. The return value will indicate whether the procedure has been initiated successfully.");
-    setParams("Shutdown", params);
-    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setReturns("Shutdown", returns);
+    description = "Initiate a shutdown of the system. The return value will indicate whether the procedure has been initiated successfully.";
+    returns.insert("success", enumValueName(Bool));
+    registerMethod("Shutdown", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetUpdateStatus",
-                   "Get the current status of the update system. \"busy\" indicates that the system is current busy with "
+    description = "Get the current status of the update system. \"busy\" indicates that the system is current busy with "
                    "an operation regarding updates. This does not necessarily mean an actual update is running. When this "
                    "is true, update related functions on the client should be marked as busy and no interaction with update "
                    "components shall be allowed. An example for such a state is when the system queries the server if there "
                    "are updates available, typically after a call to CheckForUpdates. \"updateRunning\" on the other hand "
                    "indicates an actual update process is ongoing. The user should be informed about it, the system also "
-                   "might restart at any point while an update is running.");
-    setParams("GetUpdateStatus", params);
-    returns.insert("busy", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    returns.insert("updateRunning", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setReturns("GetUpdateStatus", returns);
+                   "might restart at any point while an update is running.";
+    returns.insert("busy", enumValueName(Bool));
+    returns.insert("updateRunning", enumValueName(Bool));
+    registerMethod("GetUpdateStatus", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("CheckForUpdates",
-                   "Instruct the system to poll the server for updates. Normally the system should automatically do this "
+    description = "Instruct the system to poll the server for updates. Normally the system should automatically do this "
                    "in regular intervals, however, if the client wants to allow the user to manually check for new updates "
                    "now, this can be called. Returns true if the operation has been started successfully and the update "
                    "manager will become busy. In order to know whether there are updates available, clients should walk through "
                    "the list of packages retrieved from GetPackages and check whether there are packages with the updateAvailable "
-                   "flag set to true.");
-    setParams("CheckForUpdates", params);
-    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setReturns("CheckForUpdates", returns);
+                   "flag set to true.";
+    returns.insert("success", enumValueName(Bool));
+    registerMethod("CheckForUpdates", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetPackages",
-                   "Get the list of packages currently available to the system. This might include installed available but "
-                   "not installed packages. Installed packages will have the installedVersion set to a non-empty value.");
-    setParams("GetPackages", params);
-    returns.insert("packages", QVariantList() << JsonTypes::packageRef());
-    setReturns("GetPackages", returns);
+    description = "Get the list of packages currently available to the system. This might include installed available but "
+                   "not installed packages. Installed packages will have the installedVersion set to a non-empty value.";
+    returns.insert("packages", QVariantList() << objectRef("Package"));
+    registerMethod("GetPackages", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("UpdatePackages",
-                   "Starts updating/installing packages with the given ids. Returns true if the upgrade has been started "
+    description = "Starts updating/installing packages with the given ids. Returns true if the upgrade has been started "
                    "successfully. Note that it might still fail later. Before calling this method, clients should "
                    "check the packages whether they are in a state where they can either be installed (no installedVersion "
-                   "set) or upgraded (updateAvailable set to true).");
-    params.insert("o:packageIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::String));
-    setParams("UpdatePackages", params);
-    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setReturns("UpdatePackages", returns);
+                   "set) or upgraded (updateAvailable set to true).";
+    params.insert("o:packageIds", QVariantList() << enumValueName(String));
+    returns.insert("success", enumValueName(Bool));
+    registerMethod("UpdatePackages", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("RollbackPackages",
-                   "Starts a rollback. Returns true if the rollback has been started successfully. Before calling this "
-                   "method, clients should check whether the package can be rolled back (canRollback set to true).");
-    params.insert("packageIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::String));
-    setParams("RollbackPackages", params);
-    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setReturns("RollbackPackages", returns);
+    description = "Starts a rollback. Returns true if the rollback has been started successfully. Before calling this "
+                   "method, clients should check whether the package can be rolled back (canRollback set to true).";
+    params.insert("packageIds", QVariantList() << enumValueName(String));
+    returns.insert("success", enumValueName(Bool));
+    registerMethod("RollbackPackages", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("RemovePackages",
-                   "Starts removing a package. Returns true if the removal has been started successfully. Before calling "
-                   "this method, clients should check whether the package can be removed (canRemove set to true).");
-    params.insert("packageIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::String));
-    setParams("RemovePackages", params);
-    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setReturns("RemovePackages", returns);
+    description = "Starts removing a package. Returns true if the removal has been started successfully. Before calling "
+                   "this method, clients should check whether the package can be removed (canRemove set to true).";
+    params.insert("packageIds", QVariantList() << enumValueName(String));
+    returns.insert("success", enumValueName(Bool));
+    registerMethod("RemovePackages", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetRepositories", "Get the list of repositories currently available to the system.");
-    setParams("GetRepositories", params);
-    returns.insert("repositories", QVariantList() << JsonTypes::repositoryRef());
-    setReturns("GetRepositories", returns);
+    description = "Get the list of repositories currently available to the system.";
+    returns.insert("repositories", QVariantList() << objectRef("Repository"));
+    registerMethod("GetRepositories", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("EnableRepository", "Enable or disable a repository.");
-    params.insert("repositoryId", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setParams("EnableRepository", params);
-    returns.insert("success", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setReturns("EnableRepository", returns);
+    description = "Enable or disable a repository.";
+    params.insert("repositoryId", enumValueName(String));
+    params.insert("enabled", enumValueName(Bool));
+    returns.insert("success", enumValueName(Bool));
+    registerMethod("EnableRepository", description, params, returns);
 
 
     // Notifications
     params.clear();
-    setDescription("CapabilitiesChanged", "Emitted whenever the system capabilities change.");
-    params.insert("powerManagement", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    params.insert("updateManagement", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setParams("CapabilitiesChanged", params);
+    description = "Emitted whenever the system capabilities change.";
+    params.insert("powerManagement", enumValueName(Bool));
+    params.insert("updateManagement", enumValueName(Bool));
+    registerNotification("CapabilitiesChanged", description, params);
 
     params.clear();
-    setDescription("UpdateStatusChanged", "Emitted whenever the update status changes.");
-    params.insert("busy", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    params.insert("updateRunning", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setParams("UpdateStatusChanged", params);
+    description = "Emitted whenever the update status changes.";
+    params.insert("busy", enumValueName(Bool));
+    params.insert("updateRunning", enumValueName(Bool));
+    registerNotification("UpdateStatusChanged", description, params);
 
     params.clear();
-    setDescription("PackageAdded", "Emitted whenever a package is added to the list of packages.");
-    params.insert("package", JsonTypes::packageRef());
-    setParams("PackageAdded", params);
+    description = "Emitted whenever a package is added to the list of packages.";
+    params.insert("package", objectRef("Package"));
+    registerNotification("PackageAdded", description, params);
 
     params.clear();
-    setDescription("PackageChanged", "Emitted whenever a package in the list of packages changes.");
-    params.insert("package", JsonTypes::packageRef());
-    setParams("PackageChanged", params);
+    description = "Emitted whenever a package in the list of packages changes.";
+    params.insert("package", objectRef("Package"));
+    registerNotification("PackageChanged", description, params);
 
     params.clear();
-    setDescription("PackageRemoved", "Emitted whenever a package is removed from the list of packages.");
-    params.insert("packageId", JsonTypes::basicTypeToString(JsonTypes::String));
-    setParams("PackageRemoved", params);
+    description = "Emitted whenever a package is removed from the list of packages.";
+    params.insert("packageId", enumValueName(String));
+    registerNotification("PackageRemoved", description, params);
 
     params.clear();
-    setDescription("RepositoryAdded", "Emitted whenever a repository is added to the list of repositories.");
-    params.insert("repository", JsonTypes::repositoryRef());
-    setParams("RepositoryAdded", params);
+    description = "Emitted whenever a repository is added to the list of repositories.";
+    params.insert("repository", objectRef("Repository"));
+    registerNotification("RepositoryAdded", description, params);
 
     params.clear();
-    setDescription("RepositoryChanged", "Emitted whenever a repository in the list of repositories changes.");
-    params.insert("repository", JsonTypes::repositoryRef());
-    setParams("RepositoryChanged", params);
+    description = "Emitted whenever a repository in the list of repositories changes.";
+    params.insert("repository", objectRef("Repository"));
+    registerNotification("RepositoryChanged", description, params);
 
     params.clear();
-    setDescription("RepositoryRemoved", "Emitted whenever a repository is removed from the list of repositories.");
-    params.insert("repositoryId", JsonTypes::basicTypeToString(JsonTypes::String));
-    setParams("RepositoryRemoved", params);
+    description = "Emitted whenever a repository is removed from the list of repositories.";
+    params.insert("repositoryId", enumValueName(String));
+    registerNotification("RepositoryRemoved", description, params);
 
 
     connect(m_platform->systemController(), &PlatformSystemController::availableChanged, this, &SystemHandler::onCapabilitiesChanged);
@@ -190,12 +192,12 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     });
     connect(m_platform->updateController(), &PlatformUpdateController::packageAdded, this, [this](const Package &package){
         QVariantMap params;
-        params.insert("package", JsonTypes::packPackage(package));
+        params.insert("package", packPackage(package));
         emit PackageAdded(params);
     });
     connect(m_platform->updateController(), &PlatformUpdateController::packageChanged, this, [this](const Package &package){
         QVariantMap params;
-        params.insert("package", JsonTypes::packPackage(package));
+        params.insert("package", packPackage(package));
         emit PackageChanged(params);
     });
     connect(m_platform->updateController(), &PlatformUpdateController::packageRemoved, this, [this](const QString &packageId){
@@ -205,12 +207,12 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     });
     connect(m_platform->updateController(), &PlatformUpdateController::repositoryAdded, this, [this](const Repository &repository){
         QVariantMap params;
-        params.insert("repository", JsonTypes::packRepository(repository));
+        params.insert("repository", packRepository(repository));
         emit RepositoryAdded(params);
     });
     connect(m_platform->updateController(), &PlatformUpdateController::repositoryChanged, this, [this](const Repository &repository){
         QVariantMap params;
-        params.insert("repository", JsonTypes::packRepository(repository));
+        params.insert("repository", packRepository(repository));
         emit RepositoryChanged(params);
     });
     connect(m_platform->updateController(), &PlatformUpdateController::repositoryRemoved, this, [this](const QString &repositoryId){
@@ -236,7 +238,7 @@ JsonReply *SystemHandler::GetCapabilities(const QVariantMap &params)
 
 JsonReply *SystemHandler::Reboot(const QVariantMap &params) const
 {
-    Q_UNUSED(params);
+    Q_UNUSED(params)
     bool status = m_platform->systemController()->reboot();
     QVariantMap returns;
     returns.insert("success", status);
@@ -245,7 +247,7 @@ JsonReply *SystemHandler::Reboot(const QVariantMap &params) const
 
 JsonReply *SystemHandler::Shutdown(const QVariantMap &params) const
 {
-    Q_UNUSED(params);
+    Q_UNUSED(params)
     bool status = m_platform->systemController()->shutdown();
     QVariantMap returns;
     returns.insert("success", status);
@@ -275,7 +277,7 @@ JsonReply *SystemHandler::GetPackages(const QVariantMap &params) const
     Q_UNUSED(params)
     QVariantList packagelist;
     foreach (const Package &package, m_platform->updateController()->packages()) {
-        packagelist.append(JsonTypes::packPackage(package));
+        packagelist.append(packPackage(package));
     }
     QVariantMap returns;
     returns.insert("packages", packagelist);
@@ -308,10 +310,10 @@ JsonReply *SystemHandler::RemovePackages(const QVariantMap &params) const
 
 JsonReply *SystemHandler::GetRepositories(const QVariantMap &params) const
 {
-    Q_UNUSED(params);
+    Q_UNUSED(params)
     QVariantList repos;
     foreach (const Repository &repository, m_platform->updateController()->repositories()) {
-        repos.append(JsonTypes::packRepository(repository));
+        repos.append(packRepository(repository));
     }
     QVariantMap returns;
     returns.insert("repositories", repos);
@@ -333,6 +335,30 @@ void SystemHandler::onCapabilitiesChanged()
     caps.insert("powerManagement", m_platform->systemController()->powerManagementAvailable());
     caps.insert("updateManagement", m_platform->updateController()->updateManagementAvailable());
     emit CapabilitiesChanged(caps);
+}
+
+QVariantMap SystemHandler::packPackage(const Package &package)
+{
+    QVariantMap ret;
+    ret.insert("id", package.packageId());
+    ret.insert("displayName", package.displayName());
+    ret.insert("summary", package.summary());
+    ret.insert("installedVersion", package.installedVersion());
+    ret.insert("candidateVersion", package.candidateVersion());
+    ret.insert("changelog", package.changelog());
+    ret.insert("updateAvailable", package.updateAvailable());
+    ret.insert("rollbackAvailable", package.rollbackAvailable());
+    ret.insert("canRemove", package.canRemove());
+    return ret;
+}
+
+QVariantMap SystemHandler::packRepository(const Repository &repository)
+{
+    QVariantMap ret;
+    ret.insert("id", repository.id());
+    ret.insert("displayName", repository.displayName());
+    ret.insert("enabled", repository.enabled());
+    return ret;
 }
 
 }

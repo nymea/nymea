@@ -23,7 +23,8 @@
 
 #include <QObject>
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
+#include "tagging/tagsstorage.h"
 
 namespace nymeaserver {
 
@@ -47,6 +48,13 @@ private slots:
     void onTagAdded(const Tag &tag);
     void onTagRemoved(const Tag &tag);
     void onTagValueChanged(const Tag &tag);
+
+private:
+    static QVariantMap packTag(const Tag &tag);
+    static Tag unpackTag(const QVariantMap &tagMap);
+
+    QVariantMap statusToReply(TagsStorage::TagError status) const;
+
 };
 
 }

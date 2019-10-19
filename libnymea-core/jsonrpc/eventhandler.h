@@ -22,7 +22,9 @@
 #ifndef EVENTHANDLER_H
 #define EVENTHANDLER_H
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
+
+#include "types/event.h"
 
 namespace nymeaserver {
 
@@ -30,7 +32,7 @@ class EventHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit EventHandler(QObject *parent = 0);
+    explicit EventHandler(QObject *parent = nullptr);
     QString name() const override;
 
     Q_INVOKABLE JsonReply *GetEventType(const QVariantMap &params) const;

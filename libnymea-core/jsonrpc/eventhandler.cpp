@@ -38,6 +38,7 @@
 */
 
 #include "eventhandler.h"
+#include "devicehandler.h"
 #include "nymeacore.h"
 #include "loggingcategories.h"
 
@@ -47,23 +48,26 @@ namespace nymeaserver {
 EventHandler::EventHandler(QObject *parent) :
     JsonHandler(parent)
 {
-    QVariantMap params;
-    QVariantMap returns;
+    // Objects
+    QVariantMap event;
+    event.insert("eventTypeId", enumValueName(Uuid));
+    event.insert("deviceId", enumValueName(Uuid));
+    event.insert("o:params", QVariantList() << objectRef("Param"));
+    registerObject("Event", event);
+
+    // Methods
+    QString description; QVariantMap params; QVariantMap returns;
+    description = "Get the EventType for the given eventTypeId.";
+    params.insert("eventTypeId", enumValueName(Uuid));
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:eventType", objectRef("EventType"));
+    registerMethod("GetEventType", description, params, returns);
 
     // Notifications
     params.clear(); returns.clear();
-    setDescription("EventTriggered", "Emitted whenever an Event is triggered.");
-    params.insert("event", JsonTypes::eventRef());
-    setParams("EventTriggered", params);
-
-    params.clear(); returns.clear();
-    setDescription("GetEventType", "Get the EventType for the given eventTypeId.");
-    params.insert("eventTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("GetEventType", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("o:eventType", JsonTypes::eventTypeRef());
-    setReturns("GetEventType", returns);
-
+    description = "Emitted whenever an Event is triggered.";
+    params.insert("event", objectRef("Event"));
+    registerNotification("EventTriggered", description, params);
     connect(NymeaCore::instance(), &NymeaCore::eventTriggered, this, &EventHandler::eventTriggered);
 }
 
@@ -76,7 +80,17 @@ QString EventHandler::name() const
 void EventHandler::eventTriggered(const Event &event)
 {
     QVariantMap params;
-    params.insert("event", JsonTypes::packEvent(event));
+
+    QVariantMap variant;
+    variant.insert("eventTypeId", event.eventTypeId().toString());
+    variant.insert("deviceId", event.deviceId().toString());
+    QVariantList eventParams;
+    foreach (const Param &param, event.params()) {
+        eventParams.append(DeviceHandler::packParam(param));
+    }
+    variant.insert("params", eventParams);
+
+    params.insert("event", variant);
     emit EventTriggered(params);
 }
 
@@ -87,13 +101,16 @@ JsonReply* EventHandler::GetEventType(const QVariantMap &params) const
     foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
             if (eventType.id() == eventTypeId) {
-                QVariantMap data = statusToReply(Device::DeviceErrorNoError);
-                data.insert("eventType", JsonTypes::packEventType(eventType, deviceClass.pluginId(), params.value("locale").toLocale()));
+                QVariantMap data;
+                data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorNoError));
+                data.insert("eventType", DeviceHandler::packEventType(eventType, deviceClass.pluginId(), params.value("locale").toLocale()));
                 return createReply(data);
             }
         }
     }
-    return createReply(statusToReply(Device::DeviceErrorEventTypeNotFound));
+    QVariantMap data;
+    data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorEventTypeNotFound));
+    return createReply(data);
 }
 
 }

@@ -20,6 +20,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "nymeatestbase.h"
+#include "devices/device.h"
 
 using namespace nymeaserver;
 
@@ -75,7 +76,7 @@ void TestActions::executeAction()
     params.insert("params", actionParams);
     QVariant response = injectAndWait("Actions.ExecuteAction", params);
     qDebug() << "executeActionresponse" << response;
-    verifyDeviceError(response, error);
+    verifyError(response, "deviceError", enumValueName(error));
 
     // Fetch action execution history from mock device
     QNetworkAccessManager nam;
@@ -132,7 +133,7 @@ void TestActions::getActionType()
     params.insert("actionTypeId", actionTypeId.toString());
     QVariant response = injectAndWait("Actions.GetActionType", params);
 
-    verifyDeviceError(response, error);
+    verifyError(response, "deviceError", enumValueName(error));
 
     if (error == Device::DeviceErrorNoError) {
         QVERIFY2(ActionTypeId(response.toMap().value("params").toMap().value("actionType").toMap().value("id").toString()) == actionTypeId, "Didn't get a reply for the same actionTypeId as requested.");

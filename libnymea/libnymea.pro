@@ -24,6 +24,8 @@ HEADERS += \
         devices/devicepairinginfo.h \
         devices/deviceactioninfo.h \
         devices/browseresult.h \
+        jsonrpc/jsonhandler.h \
+        jsonrpc/jsonreply.h \
         libnymea.h \
         platform/package.h \
         platform/repository.h \
@@ -98,6 +100,8 @@ SOURCES += \
         devices/devicepairinginfo.cpp \
         devices/deviceactioninfo.cpp \
         devices/browseresult.cpp \
+        jsonrpc/jsonhandler.cpp \
+        jsonrpc/jsonreply.cpp \
         loggingcategories.cpp \
         nymeasettings.cpp \
         platform/package.cpp \

@@ -22,7 +22,9 @@
 #ifndef RULESHANDLER_H
 #define RULESHANDLER_H
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
+
+#include "ruleengine/rule.h"
 
 namespace nymeaserver {
 
@@ -30,7 +32,7 @@ class RulesHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit RulesHandler(QObject *parent = 0);
+    explicit RulesHandler(QObject *parent = nullptr);
 
     QString name() const override;
 
@@ -59,6 +61,37 @@ private slots:
     void ruleAddedNotification(const Rule &rule);
     void ruleActiveChangedNotification(const Rule &rule);
     void ruleConfigurationChangedNotification(const Rule &rule);
+
+private:
+    static QVariantMap packRuleDescription(const Rule &rule);
+    static QVariantMap packParamDescriptor(const ParamDescriptor &paramDescriptor);
+    static QVariantMap packEventDescriptor(const EventDescriptor &eventDescriptor);
+    static QVariantMap packStateEvaluator(const StateEvaluator &stateEvaluator);
+    static QVariantMap packStateDescriptor(const StateDescriptor &stateDescriptor);
+    static QVariantMap packTimeDescriptor(const TimeDescriptor &timeDescriptor);
+    static QVariantMap packCalendarItem(const CalendarItem &calendarItem);
+    static QVariantMap packRepeatingOption(const RepeatingOption &option);
+    static QVariantMap packTimeEventItem(const TimeEventItem &timeEventItem);
+    static QVariantMap packRuleActionParam(const RuleActionParam &ruleActionParam);
+    static QVariantMap packRuleAction(const RuleAction &ruleAction);
+
+    static QVariantMap packRule(const Rule &rule);
+
+    static QList<ParamDescriptor> unpackParamDescriptors(const QVariantList &paramList);
+    static ParamDescriptor unpackParamDescriptor(const QVariantMap &paramMap);
+    static EventDescriptor unpackEventDescriptor(const QVariantMap &eventDescriptorMap);
+    static RepeatingOption unpackRepeatingOption(const QVariantMap &repeatingOptionMap);
+    static CalendarItem unpackCalendarItem(const QVariantMap &calendarItemMap);
+    static TimeDescriptor unpackTimeDescriptor(const QVariantMap &timeDescriptorMap);
+    static TimeEventItem unpackTimeEventItem(const QVariantMap &timeEventItemMap);
+    static StateDescriptor unpackStateDescriptor(const QVariantMap &stateDescriptorMap);
+    static StateEvaluator unpackStateEvaluator(const QVariantMap &stateEvaluatorMap);
+    static RuleActionParam unpackRuleActionParam(const QVariantMap &ruleActionParamMap);
+    static RuleActionParamList unpackRuleActionParams(const QVariantList &ruleActionParamList);
+    static RuleAction unpackRuleAction(const QVariantMap &ruleActionMap);
+
+    static Rule unpackRule(const QVariantMap &ruleMap);
+
 
 };
 

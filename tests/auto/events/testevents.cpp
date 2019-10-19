@@ -128,7 +128,7 @@ void TestEvents::getEventType()
     params.insert("eventTypeId", eventTypeId.toString());
     QVariant response = injectAndWait("Events.GetEventType", params);
 
-    verifyDeviceError(response, error);
+    verifyError(response, "deviceError", enumValueName(error));
 
     if (error == Device::DeviceErrorNoError) {
         QVERIFY2(EventTypeId(response.toMap().value("params").toMap().value("eventType").toMap().value("id").toString()) == eventTypeId, "Didn't get a reply for the same actionTypeId as requested.");

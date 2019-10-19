@@ -35,9 +35,8 @@ HEADERS += nymeacore.h \
     servers/websocketserver.h \
     servers/mqttbroker.h \
     jsonrpc/jsonrpcserver.h \
-    jsonrpc/jsonhandler.h \
+    jsonrpc/jsonvalidator.h \
     jsonrpc/devicehandler.h \
-    jsonrpc/jsontypes.h \
     jsonrpc/ruleshandler.h \
     jsonrpc/actionhandler.h \
     jsonrpc/eventhandler.h \
@@ -113,9 +112,8 @@ SOURCES += nymeacore.cpp \
     servers/bluetoothserver.cpp \
     servers/mqttbroker.cpp \
     jsonrpc/jsonrpcserver.cpp \
-    jsonrpc/jsonhandler.cpp \
+    jsonrpc/jsonvalidator.cpp \
     jsonrpc/devicehandler.cpp \
-    jsonrpc/jsontypes.cpp \
     jsonrpc/ruleshandler.cpp \
     jsonrpc/actionhandler.cpp \
     jsonrpc/eventhandler.cpp \

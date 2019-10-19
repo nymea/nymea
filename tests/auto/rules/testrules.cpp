@@ -23,6 +23,7 @@
 #include "nymeasettings.h"
 #include "servers/mocktcpserver.h"
 #include "nymeacore.h"
+#include "jsonrpc/jsonhandler.h"
 
 using namespace nymeaserver;
 
@@ -48,6 +49,13 @@ private:
     QVariant validIntStateBasedRule(const QString &name, const bool &executable, const bool &enabled);
 
     void generateEvent(const EventTypeId &eventTypeId);
+
+    inline void verifyRuleError(const QVariant &response, RuleEngine::RuleError error = RuleEngine::RuleErrorNoError) {
+        verifyError(response, "ruleError", enumValueName(error));
+    }
+    inline void verifyDeviceError(const QVariant &response, Device::DeviceError error = Device::DeviceErrorNoError) {
+        verifyError(response, "deviceError", enumValueName(error));
+    }
 
 private slots:
 
@@ -331,13 +339,13 @@ QVariant TestRules::validIntStateBasedRule(const QString &name, const bool &exec
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("deviceId", m_mockDeviceId);
-    stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorLess));
+    stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorLess));
     stateDescriptor.insert("value", 25);
 
     // StateEvaluator
     QVariantMap stateEvaluator;
     stateEvaluator.insert("stateDescriptor", stateDescriptor);
-    stateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluator.insert("operator", enumValueName(Types::StateOperatorAnd));
 
     // RuleAction
     QVariantMap action;
@@ -423,13 +431,13 @@ void TestRules::addRemoveRules_data()
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("deviceId", m_mockDeviceId);
-    stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorLess));
+    stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorLess));
     stateDescriptor.insert("value", 20);
 
     // StateEvaluator
     QVariantMap validStateEvaluator;
     validStateEvaluator.insert("stateDescriptor", stateDescriptor);
-    validStateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    validStateEvaluator.insert("operator", enumValueName(Types::StateOperatorAnd));
 
     QVariantMap invalidStateEvaluator;
     stateDescriptor.remove("deviceId");
@@ -448,7 +456,7 @@ void TestRules::addRemoveRules_data()
     QVariantMap param1;
     param1.insert("paramTypeId", mockEvent2EventIntParamParamTypeId);
     param1.insert("value", 3);
-    param1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    param1.insert("operator", enumValueName(Types::ValueOperatorEquals));
     params.append(param1);
     validEventDescriptor2.insert("paramDescriptors", params);
 
@@ -667,13 +675,13 @@ void TestRules::editRules_data()
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("deviceId", m_mockDeviceId);
-    stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorLess));
+    stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorLess));
     stateDescriptor.insert("value", 20);
 
     // StateEvaluator
     QVariantMap validStateEvaluator;
     validStateEvaluator.insert("stateDescriptor", stateDescriptor);
-    validStateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    validStateEvaluator.insert("operator", enumValueName(Types::StateOperatorAnd));
 
     QVariantMap invalidStateEvaluator;
     stateDescriptor.remove("deviceId");
@@ -692,7 +700,7 @@ void TestRules::editRules_data()
     QVariantMap param1;
     param1.insert("paramTypeId", mockEvent2EventIntParamParamTypeId);
     param1.insert("value", 3);
-    param1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    param1.insert("operator", enumValueName(Types::ValueOperatorEquals));
     params.append(param1);
     validEventDescriptor2.insert("paramDescriptors", params);
 
@@ -807,7 +815,7 @@ void TestRules::editRules()
     QVariantMap eventParam1;
     eventParam1.insert("paramTypeId", mockEvent2EventIntParamParamTypeId);
     eventParam1.insert("value", 3);
-    eventParam1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    eventParam1.insert("operator", enumValueName(Types::ValueOperatorEquals));
     eventParamDescriptors.append(eventParam1);
     eventDescriptor2.insert("paramDescriptors", eventParamDescriptors);
 
@@ -818,25 +826,25 @@ void TestRules::editRules()
     QVariantMap stateEvaluator0;
     QVariantMap stateDescriptor1;
     stateDescriptor1.insert("deviceId", m_mockDeviceId);
-    stateDescriptor1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptor1.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptor1.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor1.insert("value", 1);
     QVariantMap stateDescriptor2;
     stateDescriptor2.insert("deviceId", m_mockDeviceId);
-    stateDescriptor2.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptor2.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptor2.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptor2.insert("value", true);
     QVariantMap stateEvaluator1;
     stateEvaluator1.insert("stateDescriptor", stateDescriptor1);
-    stateEvaluator1.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluator1.insert("operator", enumValueName(Types::StateOperatorAnd));
     QVariantMap stateEvaluator2;
     stateEvaluator2.insert("stateDescriptor", stateDescriptor2);
-    stateEvaluator2.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluator2.insert("operator", enumValueName(Types::StateOperatorAnd));
     QVariantList childEvaluators;
     childEvaluators.append(stateEvaluator1);
     childEvaluators.append(stateEvaluator2);
     stateEvaluator0.insert("childEvaluators", childEvaluators);
-    stateEvaluator0.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluator0.insert("operator", enumValueName(Types::StateOperatorAnd));
 
     QVariantMap action1;
     action1.insert("actionTypeId", mockWithoutParamsActionTypeId);
@@ -1103,7 +1111,7 @@ void TestRules::loadStoreConfig()
     QVariantMap eventParam1;
     eventParam1.insert("paramTypeId", mockEvent2EventIntParamParamTypeId);
     eventParam1.insert("value", 3);
-    eventParam1.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    eventParam1.insert("operator", enumValueName(Types::ValueOperatorEquals));
     eventParamDescriptors.append(eventParam1);
     eventDescriptor2.insert("paramDescriptors", eventParamDescriptors);
 
@@ -1116,38 +1124,38 @@ void TestRules::loadStoreConfig()
 
     QVariantMap stateDescriptor2;
     stateDescriptor2.insert("deviceId", m_mockDeviceId);
-    stateDescriptor2.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptor2.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptor2.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor2.insert("value", 1);
     QVariantMap stateEvaluator2;
     stateEvaluator2.insert("stateDescriptor", stateDescriptor2);
-    stateEvaluator2.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluator2.insert("operator", enumValueName(Types::StateOperatorAnd));
 
     QVariantMap stateDescriptor3;
     stateDescriptor3.insert("deviceId", m_mockDeviceId);
-    stateDescriptor3.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptor3.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptor3.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptor3.insert("value", true);
 
     QVariantMap stateEvaluator3;
     stateEvaluator3.insert("stateDescriptor", stateDescriptor3);
-    stateEvaluator3.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluator3.insert("operator", enumValueName(Types::StateOperatorAnd));
 
     QVariantMap stateDescriptor4;
     stateDescriptor4.insert("interface", "battery");
     stateDescriptor4.insert("interfaceState", "batteryCritical");
-    stateDescriptor4.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptor4.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptor4.insert("value", true);
 
     QVariantMap stateEvaluator4;
     stateEvaluator4.insert("stateDescriptor", stateDescriptor4);
-    stateEvaluator4.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluator4.insert("operator", enumValueName(Types::StateOperatorAnd));
 
     childEvaluators.append(stateEvaluator2);
     childEvaluators.append(stateEvaluator3);
     childEvaluators.append(stateEvaluator4);
     stateEvaluator1.insert("childEvaluators", childEvaluators);
-    stateEvaluator1.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluator1.insert("operator", enumValueName(Types::StateOperatorAnd));
 
     QVariantMap action1;
     action1.insert("actionTypeId", mockWithoutParamsActionTypeId);
@@ -1657,7 +1665,7 @@ void TestRules::testStateChange() {
     QVariantMap stateEvaluator;
     QVariantMap stateDescriptor;
     stateDescriptor.insert("deviceId", m_mockDeviceId);
-    stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorGreaterOrEqual));
+    stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorGreaterOrEqual));
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("value", 42);
     stateEvaluator.insert("stateDescriptor", stateDescriptor);
@@ -1884,38 +1892,38 @@ void TestRules::testChildEvaluator_data()
     // Stateevaluators
     QVariantMap stateDescriptorPercentage;
     stateDescriptorPercentage.insert("deviceId", testDeviceId);
-    stateDescriptorPercentage.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorGreaterOrEqual));
+    stateDescriptorPercentage.insert("operator", enumValueName(Types::ValueOperatorGreaterOrEqual));
     stateDescriptorPercentage.insert("stateTypeId", mockDisplayPinPercentageStateTypeId);
     stateDescriptorPercentage.insert("value", 50);
 
     QVariantMap stateDescriptorDouble;
     stateDescriptorDouble.insert("deviceId", testDeviceId);
-    stateDescriptorDouble.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptorDouble.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptorDouble.insert("stateTypeId", mockDisplayPinDoubleActionDoubleParamTypeId);
     stateDescriptorDouble.insert("value", 20.5);
 
     QVariantMap stateDescriptorAllowedValues;
     stateDescriptorAllowedValues.insert("deviceId", testDeviceId);
-    stateDescriptorAllowedValues.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptorAllowedValues.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptorAllowedValues.insert("stateTypeId", mockDisplayPinAllowedValuesStateTypeId);
     stateDescriptorAllowedValues.insert("value", "String value 2");
 
     QVariantMap stateDescriptorColor;
     stateDescriptorColor.insert("deviceId", testDeviceId);
-    stateDescriptorColor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptorColor.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptorColor.insert("stateTypeId", mockDisplayPinColorStateTypeId);
     stateDescriptorColor.insert("value", "#00FF00");
 
     QVariantMap firstStateEvaluator;
-    firstStateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorOr));
+    firstStateEvaluator.insert("operator", enumValueName(Types::StateOperatorOr));
     firstStateEvaluator.insert("childEvaluators", QVariantList() << createStateEvaluatorFromSingleDescriptor(stateDescriptorPercentage) << createStateEvaluatorFromSingleDescriptor(stateDescriptorDouble));
 
     QVariantMap secondStateEvaluator;
-    secondStateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    secondStateEvaluator.insert("operator", enumValueName(Types::StateOperatorAnd));
     secondStateEvaluator.insert("childEvaluators", QVariantList() << createStateEvaluatorFromSingleDescriptor(stateDescriptorAllowedValues) << createStateEvaluatorFromSingleDescriptor(stateDescriptorColor));
 
     QVariantMap stateEvaluator;
-    stateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluator.insert("operator", enumValueName(Types::StateOperatorAnd));
     stateEvaluator.insert("childEvaluators", QVariantList() << firstStateEvaluator << secondStateEvaluator);
 
     // The rule

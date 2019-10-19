@@ -38,9 +38,9 @@
 
 #include "logentry.h"
 #include "nymeacore.h"
-#include "jsonrpc/jsontypes.h"
 
 #include <QDebug>
+#include <QMetaEnum>
 
 namespace nymeaserver {
 
@@ -156,13 +156,17 @@ int LogEntry::errorCode() const
 
 QDebug operator<<(QDebug dbg, const LogEntry &entry)
 {
+    QMetaEnum metaEnum;
     dbg.nospace() << "LogEntry (" << entry.timestamp().toString() << ")" << endl;
     dbg.nospace() << " time stamp: " << entry.timestamp().toTime_t() << endl;
     dbg.nospace() << "   DeviceId: " << entry.deviceId().toString() << endl;
     dbg.nospace() << "    type id: " << entry.typeId().toString() << endl;
-    dbg.nospace() << "     source: " << JsonTypes::loggingSourceToString(entry.source()) << endl;
-    dbg.nospace() << "      level: " << JsonTypes::loggingLevelToString(entry.level()) << endl;
-    dbg.nospace() << "  eventType: " << JsonTypes::loggingEventTypeToString(entry.eventType()) << endl;
+    metaEnum = QMetaEnum::fromType<Logging::LoggingSource>();
+    dbg.nospace() << "     source: " << metaEnum.valueToKey(entry.source()) << endl;
+    metaEnum = QMetaEnum::fromType<Logging::LoggingLevel>();
+    dbg.nospace() << "      level: " << metaEnum.valueToKey(entry.level()) << endl;
+    metaEnum = QMetaEnum::fromType<Logging::LoggingEventType>();
+    dbg.nospace() << "  eventType: " << metaEnum.valueToKey(entry.eventType()) << endl;
     dbg.nospace() << " error code: " << entry.errorCode() << endl;
     dbg.nospace() << "     active: " << entry.active() << endl;
     dbg.nospace() << "      value: " << entry.value() << endl;

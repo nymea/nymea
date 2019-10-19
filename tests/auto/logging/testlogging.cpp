@@ -35,6 +35,13 @@ class TestLogging : public NymeaTestBase
 
 private:
 
+    inline void verifyLoggingError(const QVariant &response, Logging::LoggingError error = Logging::LoggingErrorNoError) {
+        verifyError(response, "loggingError", enumValueName(error));
+    }
+    inline void verifyDeviceError(const QVariant &response, Device::DeviceError error = Device::DeviceErrorNoError) {
+        verifyError(response, "deviceError", enumValueName(error));
+    }
+
 private slots:
     void initTestCase();
 
@@ -148,8 +155,8 @@ void TestLogging::systemLogs()
 {
     // check the active system log at boot
     QVariantMap params;
-    params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceSystem));
-    params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeActiveChange));
+    params.insert("loggingSources", QVariantList() << enumValueName(Logging::LoggingSourceSystem));
+    params.insert("eventTypes", QVariantList() << enumValueName(Logging::LoggingEventTypeActiveChange));
 
     // there should be 2 logs, one for shutdown, one for startup (from server restart)
     QVariant response = injectAndWait("Logging.GetLogEntries", params);
@@ -166,15 +173,15 @@ void TestLogging::systemLogs()
     }
 
     QCOMPARE(logEntryShutdown.value("active").toBool(), false);
-    QCOMPARE(logEntryShutdown.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeActiveChange));
-    QCOMPARE(logEntryShutdown.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceSystem));
-    QCOMPARE(logEntryShutdown.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
+    QCOMPARE(logEntryShutdown.value("eventType").toString(), enumValueName(Logging::LoggingEventTypeActiveChange));
+    QCOMPARE(logEntryShutdown.value("source").toString(), enumValueName(Logging::LoggingSourceSystem));
+    QCOMPARE(logEntryShutdown.value("loggingLevel").toString(), enumValueName(Logging::LoggingLevelInfo));
 
 
     QCOMPARE(logEntryStartup.value("active").toBool(), true);
-    QCOMPARE(logEntryStartup.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeActiveChange));
-    QCOMPARE(logEntryStartup.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceSystem));
-    QCOMPARE(logEntryStartup.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
+    QCOMPARE(logEntryStartup.value("eventType").toString(), enumValueName(Logging::LoggingEventTypeActiveChange));
+    QCOMPARE(logEntryStartup.value("source").toString(), enumValueName(Logging::LoggingSourceSystem));
+    QCOMPARE(logEntryStartup.value("loggingLevel").toString(), enumValueName(Logging::LoggingLevelInfo));
 }
 
 void TestLogging::invalidFilter_data()
@@ -189,7 +196,7 @@ void TestLogging::invalidFilter_data()
     invalidTypeIds.insert("typeId", QVariantList() << "bla" << "blub");
 
     QVariantMap invalidEventTypes;
-    invalidEventTypes.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger) << "blub");
+    invalidEventTypes.insert("eventTypes", QVariantList() << enumValueName(Logging::LoggingEventTypeTrigger) << "blub");
 
     QTest::addColumn<QVariantMap>("filter");
 
@@ -247,9 +254,9 @@ void TestLogging::eventLogs()
             found = true;
             // Make sure the notification contains all the stuff we expect
             QCOMPARE(logEntry.value("typeId").toString(), mockEvent1EventTypeId.toString());
-            QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
-            QCOMPARE(logEntry.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceEvents));
-            QCOMPARE(logEntry.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
+            QCOMPARE(logEntry.value("eventType").toString(), enumValueName(Logging::LoggingEventTypeTrigger));
+            QCOMPARE(logEntry.value("source").toString(), enumValueName(Logging::LoggingSourceEvents));
+            QCOMPARE(logEntry.value("loggingLevel").toString(), enumValueName(Logging::LoggingLevelInfo));
             break;
         }
     }
@@ -261,8 +268,8 @@ void TestLogging::eventLogs()
     // get this logentry with filter
     QVariantMap params;
     params.insert("deviceIds", QVariantList() << device->id());
-    params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceEvents));
-    params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
+    params.insert("loggingSources", QVariantList() << enumValueName(Logging::LoggingSourceEvents));
+    params.insert("eventTypes", QVariantList() << enumValueName(Logging::LoggingEventTypeTrigger));
     params.insert("typeIds", QVariantList() << mockEvent1EventTypeId);
 
     QVariant response = injectAndWait("Logging.GetLogEntries", params);
@@ -317,9 +324,9 @@ void TestLogging::actionLog()
             found = true;
             // Make sure the notification contains all the stuff we expect
             QCOMPARE(logEntry.value("typeId").toString(), mockWithParamsActionTypeId.toString());
-            QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
-            QCOMPARE(logEntry.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
-            QCOMPARE(logEntry.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo));
+            QCOMPARE(logEntry.value("eventType").toString(), enumValueName(Logging::LoggingEventTypeTrigger));
+            QCOMPARE(logEntry.value("source").toString(), enumValueName(Logging::LoggingSourceActions));
+            QCOMPARE(logEntry.value("loggingLevel").toString(), enumValueName(Logging::LoggingLevelInfo));
             break;
         }
     }
@@ -343,8 +350,8 @@ void TestLogging::actionLog()
     // get this logentry with filter
     params.clear();
     params.insert("deviceIds", QVariantList() << m_mockDeviceId);
-    params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
-    params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
+    params.insert("loggingSources", QVariantList() << enumValueName(Logging::LoggingSourceActions));
+    params.insert("eventTypes", QVariantList() << enumValueName(Logging::LoggingEventTypeTrigger));
 
     // FIXME: currently is filtering for values not supported
     //params.insert("values", QVariantList() << "7, true");
@@ -376,10 +383,10 @@ void TestLogging::actionLog()
             found = true;
             // Make sure the notification contains all the stuff we expect
             QCOMPARE(logEntry.value("typeId").toString(), mockFailingActionTypeId.toString());
-            QCOMPARE(logEntry.value("eventType").toString(), JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
-            QCOMPARE(logEntry.value("source").toString(), JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
-            QCOMPARE(logEntry.value("loggingLevel").toString(), JsonTypes::loggingLevelToString(Logging::LoggingLevelAlert));
-            QCOMPARE(logEntry.value("errorCode").toString(), JsonTypes::deviceErrorToString(Device::DeviceErrorSetupFailed));
+            QCOMPARE(logEntry.value("eventType").toString(), enumValueName(Logging::LoggingEventTypeTrigger));
+            QCOMPARE(logEntry.value("source").toString(), enumValueName(Logging::LoggingSourceActions));
+            QCOMPARE(logEntry.value("loggingLevel").toString(), enumValueName(Logging::LoggingLevelAlert));
+            QCOMPARE(logEntry.value("errorCode").toString(), enumValueName(Device::DeviceErrorSetupFailed));
             break;
         }
     }
@@ -391,8 +398,8 @@ void TestLogging::actionLog()
     // get this logentry with filter
     params.clear();
     params.insert("deviceIds", QVariantList() << m_mockDeviceId);
-    params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
-    params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
+    params.insert("loggingSources", QVariantList() << enumValueName(Logging::LoggingSourceActions));
+    params.insert("eventTypes", QVariantList() << enumValueName(Logging::LoggingEventTypeTrigger));
 
     // FIXME: filter for values currently not working
     //params.insert("values", QVariantList() << "7, true");
@@ -406,8 +413,8 @@ void TestLogging::actionLog()
     // check different filters
     params.clear();
     params.insert("deviceIds", QVariantList() << m_mockDeviceId);
-    params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
-    params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
+    params.insert("loggingSources", QVariantList() << enumValueName(Logging::LoggingSourceActions));
+    params.insert("eventTypes", QVariantList() << enumValueName(Logging::LoggingEventTypeTrigger));
     params.insert("typeIds", QVariantList() << mockWithoutParamsActionTypeId);
 
     response = injectAndWait("Logging.GetLogEntries", params);
@@ -418,8 +425,8 @@ void TestLogging::actionLog()
 
     params.clear();
     params.insert("deviceIds", QVariantList() << m_mockDeviceId);
-    params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions));
-    params.insert("eventTypes", QVariantList() << JsonTypes::loggingEventTypeToString(Logging::LoggingEventTypeTrigger));
+    params.insert("loggingSources", QVariantList() << enumValueName(Logging::LoggingSourceActions));
+    params.insert("eventTypes", QVariantList() << enumValueName(Logging::LoggingEventTypeTrigger));
     params.insert("typeIds", QVariantList() << mockWithoutParamsActionTypeId << mockWithParamsActionTypeId << mockFailingActionTypeId);
 
     response = injectAndWait("Logging.GetLogEntries", params);
@@ -447,11 +454,11 @@ void TestLogging::deviceLogs()
     // get this logentry with filter
     params.clear();
     params.insert("deviceIds", QVariantList() << m_mockDeviceId << deviceId);
-    params.insert("loggingSources", QVariantList() << JsonTypes::loggingSourceToString(Logging::LoggingSourceActions)
-                  << JsonTypes::loggingSourceToString(Logging::LoggingSourceEvents)
-                  << JsonTypes::loggingSourceToString(Logging::LoggingSourceStates));
-    params.insert("loggingLevels", QVariantList() << JsonTypes::loggingLevelToString(Logging::LoggingLevelInfo)
-                  << JsonTypes::loggingLevelToString(Logging::LoggingLevelAlert));
+    params.insert("loggingSources", QVariantList() << enumValueName(Logging::LoggingSourceActions)
+                  << enumValueName(Logging::LoggingSourceEvents)
+                  << enumValueName(Logging::LoggingSourceStates));
+    params.insert("loggingLevels", QVariantList() << enumValueName(Logging::LoggingLevelInfo)
+                  << enumValueName(Logging::LoggingLevelAlert));
     params.insert("values", QVariantList() << "7, true" << "9, false");
 
     QVariantMap timeFilter;
@@ -539,14 +546,14 @@ void TestLogging::testDoubleValues()
             if (logNotification.value("typeId").toString() == mockDisplayPinDoubleActionDoubleParamTypeId.toString()) {
 
                 // If state source
-                if (logNotification.value("source").toString() == JsonTypes::loggingSourceToString(Logging::LoggingSourceStates)) {
+                if (logNotification.value("source").toString() == enumValueName(Logging::LoggingSourceStates)) {
                     QString logValue = logNotification.value("value").toString();
                     qDebug() << QString::number(value) << logValue;
                     QCOMPARE(logValue, QString::number(value));
                 }
 
                 // If action source notification
-                if (logNotification.value("source").toString() == JsonTypes::loggingSourceToString(Logging::LoggingSourceActions)) {
+                if (logNotification.value("source").toString() == enumValueName(Logging::LoggingSourceActions)) {
                     QString logValue = logNotification.value("value").toString();
                     qDebug() << QString::number(value) << logValue;
                     QCOMPARE(logValue, QString::number(value));

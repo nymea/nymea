@@ -112,6 +112,10 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
         hasError = true;
     }
 
+    if (m_pluginId.isNull()) {
+        m_validationErrors.append("Plugin \"" + m_pluginName + "\" has invalid UUID: " + jsonObject.value("id").toString());
+        hasError = true;
+    }
     if (!verifyDuplicateUuid(m_pluginId)) {
         m_validationErrors.append("Plugin \"" + m_pluginName + "\" has duplicate UUID: " + m_pluginId.toString());
         hasError = true;
@@ -153,6 +157,10 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             hasError = true;
         }
 
+        if (vendorId.isNull()) {
+            m_validationErrors.append("Vendor \"" + vendorName + "\" has invalid UUID: " + vendorObject.value("id").toString());
+            hasError = true;
+        }
         if (!verifyDuplicateUuid(vendorId)) {
             m_validationErrors.append("Vendor \"" + vendorName + "\" has duplicate UUID: " + vendorId.toString());
             hasError = true;
@@ -193,6 +201,10 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 hasError = true;
             }
 
+            if (deviceClassId.isNull()) {
+                m_validationErrors.append("Device class \"" + deviceClassName + "\" has invalid UUID: " + deviceClassObject.value("id").toString());
+                hasError = true;
+            }
             if (!verifyDuplicateUuid(deviceClassId)) {
                 m_validationErrors.append("Device class \"" + deviceClassName + "\" has duplicate UUID: " + deviceClassName);
                 hasError = true;
@@ -316,6 +328,10 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     hasError = true;
                 }
 
+                if (stateTypeId.isNull()) {
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" state type \"" + stateTypeName + "\" has invalid UUID: " + st.value("id").toString());
+                    hasError = true;
+                }
                 if (!verifyDuplicateUuid(stateTypeId)) {
                     m_validationErrors.append("Device class \"" + deviceClass.name() + "\" state type \"" + stateTypeName + "\" has duplicate UUID: " + stateTypeId.toString());
                     hasError = true;
@@ -408,6 +424,10 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     hasError = true;
                 }
 
+                if (actionTypeId.isNull()) {
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" action type \"" + actionTypeName + "\" has invalid UUID: " + at.value("id").toString());
+                    hasError = true;
+                }
                 if (!verifyDuplicateUuid(actionTypeId)) {
                     m_validationErrors.append("Device class \"" + deviceClass.name() + "\" action type \"" + actionTypeName + "\" has duplicate UUID: " + actionTypeId.toString());
                     hasError = true;
@@ -452,6 +472,10 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     hasError = true;
                 }
 
+                if (eventTypeId.isNull()) {
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" event type \"" + eventTypeName + "\" has invalid UUID: " + et.value("id").toString());
+                    hasError = true;
+                }
                 if (!verifyDuplicateUuid(eventTypeId)) {
                     m_validationErrors.append("Device class \"" + deviceClass.name() + "\" event type \"" + eventTypeName + "\" has duplicate UUID: " + eventTypeId.toString());
                     hasError = true;
@@ -493,6 +517,10 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     hasError = true;
                 }
 
+                if (actionTypeId.isNull()) {
+                    m_validationErrors.append("Device class \"" + deviceClass.name() + "\" browser action type \"" + actionTypeName + "\" has invalid UUID: " + at.value("id").toString());
+                    hasError = true;
+                }
                 if (!verifyDuplicateUuid(actionTypeId)) {
                     m_validationErrors.append("Device class \"" + deviceClass.name() + "\" browser action type \"" + actionTypeName + "\" has duplicate UUID: " + actionTypeId.toString());
                     hasError = true;
@@ -710,6 +738,10 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
             hasErrors = true;
         }
 
+        if (paramTypeId.isNull()) {
+            m_validationErrors.append("Param type \"" + paramName + "\" has invalid UUID: " + pt.value("id").toString());
+            hasErrors = true;
+        }
         if (!verifyDuplicateUuid(paramTypeId)) {
             m_validationErrors.append("Param type \"" + paramName + "\" has duplicate UUID: " + paramTypeId.toString());
             hasErrors = true;

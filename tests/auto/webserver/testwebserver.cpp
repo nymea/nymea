@@ -586,7 +586,7 @@ void TestWebserver::getDebugServer()
     QVariantMap params; QVariant response;
     params.insert("enabled", serverEnabled);
     response = injectAndWait("Configuration.SetDebugServerEnabled", params);
-    verifyConfigurationError(response);
+    verifyError(response, "configurationError", "ConfigurationErrorNoError");
 
     QNetworkAccessManager nam;
     bool ok = false;

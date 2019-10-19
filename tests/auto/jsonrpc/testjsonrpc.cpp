@@ -23,12 +23,21 @@
 #include "../../utils/pushbuttonagent.h"
 #include "nymeacore.h"
 #include "servers/mocktcpserver.h"
+#include "usermanager/usermanager.h"
 
 using namespace nymeaserver;
 
 class TestJSONRPC: public NymeaTestBase
 {
     Q_OBJECT
+
+private:
+    inline void verifyDeviceError(const QVariant &response, Device::DeviceError error = Device::DeviceErrorNoError) {
+        verifyError(response, "deviceError", enumValueName(error));
+    }
+    inline void verifyRuleError(const QVariant &response, RuleEngine::RuleError error = RuleEngine::RuleErrorNoError) {
+        verifyError(response, "ruleError", enumValueName(error));
+    }
 
 private slots:
     void initTestCase();
@@ -714,7 +723,7 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("deviceId", m_mockDeviceId);
-    stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorLess));
+    stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorLess));
     stateDescriptor.insert("value", "20");
 
     QVariantMap stateEvaluator;
@@ -778,7 +787,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("deviceId", m_mockDeviceId);
-    stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptor.insert("value", "20");
 
     QVariantMap stateEvaluator;

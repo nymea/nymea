@@ -22,7 +22,7 @@
 #ifndef DEVICEHANDLER_H
 #define DEVICEHANDLER_H
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
 #include "devices/devicemanager.h"
 
 namespace nymeaserver {
@@ -60,6 +60,28 @@ public:
     Q_INVOKABLE JsonReply *BrowseDevice(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetBrowserItem(const QVariantMap &params) const;
 
+    static QVariantMap packParamType(const ParamType &paramType, const PluginId &pluginId, const QLocale &locale);
+    static QVariantMap packPlugin(DevicePlugin *plugin, const QLocale &locale);
+    static QVariantMap packVendor(const Vendor &vendor, const QLocale &locale);
+    static QVariantMap packEventType(const EventType &eventType, const PluginId &pluginId, const QLocale &locale);
+    static QVariantMap packStateType(const StateType &stateType, const PluginId &pluginId, const QLocale &locale);
+    static QVariantMap packActionType(const ActionType &actionType, const PluginId &pluginId, const QLocale &locale);
+    static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
+    static QVariantMap packDeviceClass(const DeviceClass &deviceClass, const QLocale &locale);
+    static QVariantMap packDeviceDescriptor(const DeviceDescriptor &descriptor);
+
+    static QVariantMap packParam(const Param &param);
+    static QVariantList packParams(const ParamList &paramList);
+
+    static QVariantMap packDevice(Device *device);
+    static QVariantList packDeviceStates(Device *device);
+
+    static QVariantMap packBrowserItem(const BrowserItem &item);
+
+    static Param unpackParam(const QVariantMap &param);
+    static ParamList unpackParams(const QVariantList &params);
+
+
 signals:
     void PluginConfigurationChanged(const QVariantMap &params);
     void StateChanged(const QVariantMap &params);
@@ -80,6 +102,9 @@ private slots:
     void deviceChangedNotification(Device *device);
 
     void deviceSettingChangedNotification(const DeviceId deviceId, const ParamTypeId &paramTypeId, const QVariant &value);
+
+private:
+    QVariantMap statusToReply(Device::DeviceError status) const;
 };
 
 }

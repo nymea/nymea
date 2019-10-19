@@ -22,7 +22,7 @@
 #ifndef JSONRPCSERVER_H
 #define JSONRPCSERVER_H
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
 #include "transportinterface.h"
 #include "usermanager/usermanager.h"
 
@@ -81,6 +81,9 @@ private:
 
     void processJsonPacket(TransportInterface *interface, const QUuid &clientId, const QByteArray &data);
 
+
+    static QVariantMap packTokenInfo(const TokenInfo &tokenInfo);
+
 private slots:
     void setup();
 
@@ -98,6 +101,7 @@ private slots:
     void onPushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
 
 private:
+    QVariantMap m_api;
     QMap<TransportInterface*, bool> m_interfaces; // Interface, authenticationRequired
     QHash<QString, JsonHandler *> m_handlers;
     QHash<JsonReply *, TransportInterface *> m_asyncReplies;
@@ -114,6 +118,7 @@ private:
     int m_notificationId;
 
     void registerHandler(JsonHandler *handler);
+
     QString formatAssertion(const QString &targetNamespace, const QString &method, QMetaMethod::MethodType methodType, JsonHandler *handler, const QVariantMap &data) const;
 };
 

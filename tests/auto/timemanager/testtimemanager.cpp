@@ -29,6 +29,11 @@ class TestTimeManager: public NymeaTestBase
 {
     Q_OBJECT
 
+private:
+    inline void verifyRuleError(const QVariant &response, RuleEngine::RuleError error = RuleEngine::RuleErrorNoError) {
+        verifyError(response, "ruleError", enumValueName(error));
+    }
+
 private slots:
     void initTestCase();
 
@@ -1078,25 +1083,25 @@ void TestTimeManager::testCalendarItemStates_data()
     QVariantMap stateEvaluator;
     QVariantMap stateDescriptorInt;
     stateDescriptorInt.insert("deviceId", m_mockDeviceId);
-    stateDescriptorInt.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorGreaterOrEqual));
+    stateDescriptorInt.insert("operator", enumValueName(Types::ValueOperatorGreaterOrEqual));
     stateDescriptorInt.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptorInt.insert("value", 65);
     QVariantMap stateDescriptorBool;
     stateDescriptorBool.insert("deviceId", m_mockDeviceId);
-    stateDescriptorBool.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptorBool.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptorBool.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptorBool.insert("value", true);
     QVariantMap stateEvaluatorInt;
     stateEvaluatorInt.insert("stateDescriptor", stateDescriptorInt);
-    stateEvaluatorInt.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluatorInt.insert("operator", enumValueName(Types::StateOperatorAnd));
     QVariantMap stateEvaluatorBool;
     stateEvaluatorBool.insert("stateDescriptor", stateDescriptorBool);
-    stateEvaluatorBool.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluatorBool.insert("operator", enumValueName(Types::StateOperatorAnd));
     QVariantList childEvaluators;
     childEvaluators.append(stateEvaluatorInt);
     childEvaluators.append(stateEvaluatorBool);
     stateEvaluator.insert("childEvaluators", childEvaluators);
-    stateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluator.insert("operator", enumValueName(Types::StateOperatorAnd));
 
 
     // The rule
@@ -1246,7 +1251,7 @@ void TestTimeManager::testCalendarItemStatesEvent_data()
     // State evaluator
     QVariantMap stateDescriptorBool;
     stateDescriptorBool.insert("deviceId", m_mockDeviceId);
-    stateDescriptorBool.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptorBool.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptorBool.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptorBool.insert("value", true);
 
@@ -1880,7 +1885,7 @@ void TestTimeManager::testEventItemStates_data()
     // State evaluator
     QVariantMap stateDescriptorBool;
     stateDescriptorBool.insert("deviceId", m_mockDeviceId);
-    stateDescriptorBool.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptorBool.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptorBool.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptorBool.insert("value", true);
 
@@ -2078,7 +2083,7 @@ void TestTimeManager::setIntState(const int &value)
     params.insert("deviceId", m_mockDeviceId);
     params.insert("stateTypeId", mockIntStateTypeId);
     QVariant response = injectAndWait("Devices.GetStateValue", params);
-    verifyDeviceError(response);
+    verifyError(response, "deviceError", "DeviceErrorNoError");
 
     int currentStateValue = response.toMap().value("params").toMap().value("value").toInt();
     bool shouldGetNotification = currentStateValue != value;
@@ -2119,7 +2124,7 @@ void TestTimeManager::setBoolState(const bool &value)
     params.insert("deviceId", m_mockDeviceId);
     params.insert("stateTypeId", mockBoolStateTypeId);
     QVariant response = injectAndWait("Devices.GetStateValue", params);
-    verifyDeviceError(response);
+    verifyError(response, "deviceError", "DeviceErrorNoError");
 
     bool currentStateValue = response.toMap().value("params").toMap().value("value").toBool();
     bool shouldGetNotification = currentStateValue != value;

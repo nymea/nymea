@@ -30,6 +30,11 @@ class TestConfigurations: public NymeaTestBase
 {
     Q_OBJECT
 
+private:
+    inline void verifyConfigurationError(const QVariant &response, NymeaConfiguration::ConfigurationError error = NymeaConfiguration::ConfigurationErrorNoError) {
+        verifyError(response, "configurationError", enumValueName(error));
+    }
+
 protected slots:
     void initTestCase();
 

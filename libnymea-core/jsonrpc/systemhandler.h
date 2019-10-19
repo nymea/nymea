@@ -23,9 +23,11 @@
 
 #include <QObject>
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
 
 #include "platform/platform.h"
+#include "platform/package.h"
+#include "platform/repository.h"
 
 namespace nymeaserver {
 
@@ -63,6 +65,10 @@ signals:
 
 private slots:
     void onCapabilitiesChanged();
+
+private:
+    static QVariantMap packPackage(const Package &package);
+    static QVariantMap packRepository(const Repository &repository);
 
 private:
     Platform *m_platform = nullptr;

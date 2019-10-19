@@ -23,6 +23,7 @@
 #include "nymeacore.h"
 #include "nymeasettings.h"
 #include "servers/mocktcpserver.h"
+#include "usermanager/usermanager.h"
 
 using namespace nymeaserver;
 
@@ -423,7 +424,7 @@ void NymeaTestBase::createMockDevice()
 
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
 
-    verifyDeviceError(response);
+    verifyError(response, "deviceError", "DeviceErrorNoError");
 
     m_mockDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY2(!m_mockDeviceId.isNull(), "Newly created mock device must not be null.");

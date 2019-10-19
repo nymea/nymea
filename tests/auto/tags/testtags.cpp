@@ -20,12 +20,18 @@
 
 #include "nymeatestbase.h"
 #include "servers/mocktcpserver.h"
+#include "tagging/tagsstorage.h"
 
 using namespace nymeaserver;
 
 class TestTags: public NymeaTestBase
 {
     Q_OBJECT
+
+private:
+    inline void verifyTagError(const QVariant &response, TagsStorage::TagError error = TagsStorage::TagErrorNoError) {
+        verifyError(response, "tagError", enumValueName(error));
+    }
 
 private slots:
     void addTag_data();

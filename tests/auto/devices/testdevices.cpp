@@ -35,6 +35,10 @@ class TestDevices : public NymeaTestBase
 private:
     DeviceId m_mockDeviceAsyncId;
 
+    inline void verifyDeviceError(const QVariant &response, Device::DeviceError error = Device::DeviceErrorNoError) {
+        verifyError(response, "deviceError", enumValueName(error));
+    }
+
 private slots:
 
     void initTestCase();
@@ -832,7 +836,7 @@ void TestDevices::getStateValue()
     params.insert("stateTypeId", stateTypeId);
     QVariant response = injectAndWait("Devices.GetStateValue", params);
 
-    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), JsonTypes::deviceErrorToString(statusCode));
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), enumValueName(statusCode));
     if (statusCode == Device::DeviceErrorNoError) {
         QVariant value = response.toMap().value("params").toMap().value("value");
         QCOMPARE(value.toInt(), 10); // Mock device has value 10 by default...
@@ -857,7 +861,7 @@ void TestDevices::getStateValues()
     params.insert("deviceId", deviceId);
     QVariant response = injectAndWait("Devices.GetStateValues", params);
 
-    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), JsonTypes::deviceErrorToString(statusCode));
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), enumValueName(statusCode));
     if (statusCode == Device::DeviceErrorNoError) {
         QVariantList values = response.toMap().value("params").toMap().value("values").toList();
         QCOMPARE(values.count(), 6); // Mock device has 6 states...

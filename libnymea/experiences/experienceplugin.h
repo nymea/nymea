@@ -3,15 +3,21 @@
 
 #include <QObject>
 
-class ExperiencePlugin : public JsonHandler
+class JsonHandler;
+
+class ExperiencePlugin : public QObject
 {
     Q_OBJECT
 public:
     explicit ExperiencePlugin(QObject *parent = nullptr);
 
-signals:
+    QList<JsonHandler*> jsonHandlers() const;
 
-public slots:
+protected:
+    void registerJsonHandler(JsonHandler *handler);
+
+private:
+    QList<JsonHandler*> m_jsonHandlers;
 };
 
 Q_DECLARE_INTERFACE(ExperiencePlugin, "io.nymea.ExperiencePlugin")

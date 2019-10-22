@@ -11,10 +11,14 @@
 
 namespace nymeaserver {
 
-ExperienceManager::ExperienceManager(JsonRPCServer *jsonRpcServer, QObject *parent) : QObject(parent)
+ExperienceManager::ExperienceManager(JsonRPCServer *jsonRpcServer, QObject *parent) : QObject(parent),
+    m_jsonRpcServer(jsonRpcServer)
 {
-//    jsonRpcServer->registerHandler();
+    staticMetaObject.invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
+}
 
+void ExperienceManager::loadPlugins()
+{
     foreach (const QString &path, pluginSearchDirs()) {
         QDir dir(path);
         qCDebug(dcExperiences) << "Loading experience plugins from:" << dir.absolutePath();
@@ -69,6 +73,10 @@ void ExperienceManager::loadExperiencePlugin(const QString &file)
     plugin->setParent(this);
 
     m_plugins.append(plugin);
+
+    foreach (JsonHandler *handler, plugin->jsonHandlers()) {
+        m_jsonRpcServer->registerHandler(handler);
+    }
 }
 
 }

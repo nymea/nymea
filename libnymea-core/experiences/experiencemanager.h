@@ -19,8 +19,14 @@ signals:
 
 public slots:
 
+private slots:
+    void loadPlugins();
+
 private:
     QStringList pluginSearchDirs() const;
+
+private:
+    JsonRPCServer *m_jsonRpcServer = nullptr;
 
     void loadExperiencePlugin(const QString &file);
 

@@ -1,7 +1,7 @@
 #include "experiencemanager.h"
 #include "experiences/experienceplugin.h"
 
-#include "jsonrpc/jsonrpcserver.h"
+#include "jsonrpc/jsonrpcserverimplementation.h"
 #include "loggingcategories.h"
 
 #include <QCoreApplication>
@@ -11,7 +11,8 @@
 
 namespace nymeaserver {
 
-ExperienceManager::ExperienceManager(JsonRPCServer *jsonRpcServer, QObject *parent) : QObject(parent),
+ExperienceManager::ExperienceManager(DeviceManager *deviceManager, JsonRPCServer *jsonRpcServer, QObject *parent) : QObject(parent),
+    m_deviceManager(deviceManager),
     m_jsonRpcServer(jsonRpcServer)
 {
     staticMetaObject.invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
@@ -70,13 +71,10 @@ void ExperienceManager::loadExperiencePlugin(const QString &file)
         return;
     }
     qCDebug(dcExperiences()) << "Loaded experience plugin:" << loader.fileName();
-    plugin->setParent(this);
-
     m_plugins.append(plugin);
+    plugin->setParent(this);
+    plugin->initPlugin(m_deviceManager, m_jsonRpcServer);
 
-    foreach (JsonHandler *handler, plugin->jsonHandlers()) {
-        m_jsonRpcServer->registerHandler(handler);
-    }
 }
 
 }

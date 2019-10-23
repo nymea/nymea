@@ -91,7 +91,7 @@
 #include "nymeacore.h"
 #include "loggingcategories.h"
 #include "platform/platform.h"
-#include "jsonrpc/jsonrpcserver.h"
+#include "jsonrpc/jsonrpcserverimplementation.h"
 #include "ruleengine/ruleengine.h"
 #include "networkmanager/networkmanager.h"
 #include "nymeasettings.h"
@@ -173,7 +173,7 @@ void NymeaCore::init() {
     m_cloudManager = new CloudManager(m_configuration, m_networkManager, this);
 
     qCDebug(dcApplication()) << "Loading experiences";
-    new ExperienceManager(m_serverManager->jsonServer(), this);
+    new ExperienceManager(m_deviceManager, m_serverManager->jsonServer(), this);
 
 
     CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
@@ -854,7 +854,7 @@ LogEngine* NymeaCore::logEngine() const
 }
 
 /*! Returns the pointer to the \l{JsonRPCServer} of this instance. */
-JsonRPCServer *NymeaCore::jsonRPCServer() const
+JsonRPCServerImplementation *NymeaCore::jsonRPCServer() const
 {
     return m_serverManager->jsonServer();
 }

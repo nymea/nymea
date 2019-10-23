@@ -46,7 +46,7 @@ class Device;
 
 namespace nymeaserver {
 
-class JsonRPCServer;
+class JsonRPCServerImplementation;
 class LogEngine;
 class NetworkManager;
 class NymeaConfiguration;
@@ -81,7 +81,7 @@ public:
 
     NymeaConfiguration *configuration() const;
     LogEngine* logEngine() const;
-    JsonRPCServer *jsonRPCServer() const;
+    JsonRPCServerImplementation *jsonRPCServer() const;
     DeviceManager *deviceManager() const;
     RuleEngine *ruleEngine() const;
     TimeManager *timeManager() const;

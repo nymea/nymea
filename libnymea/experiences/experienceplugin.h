@@ -3,21 +3,31 @@
 
 #include <QObject>
 
-class JsonHandler;
+class DeviceManager;
+class JsonRPCServer;
 
+namespace nymeaserver {
+class ExperienceManager;
+}
 class ExperiencePlugin : public QObject
 {
     Q_OBJECT
 public:
     explicit ExperiencePlugin(QObject *parent = nullptr);
 
-    QList<JsonHandler*> jsonHandlers() const;
+    virtual void init() = 0;
 
 protected:
-    void registerJsonHandler(JsonHandler *handler);
+    DeviceManager* deviceManager();
+    JsonRPCServer* jsonRpcServer();
 
 private:
-    QList<JsonHandler*> m_jsonHandlers;
+    friend class nymeaserver::ExperienceManager;
+    void initPlugin(DeviceManager *deviceManager, JsonRPCServer *jsonRPCServer);
+
+    DeviceManager *m_deviceManager = nullptr;
+    JsonRPCServer *m_jsonRpcServer = nullptr;
+
 };
 
 Q_DECLARE_INTERFACE(ExperiencePlugin, "io.nymea.ExperiencePlugin")

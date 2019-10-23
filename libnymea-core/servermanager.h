@@ -34,7 +34,7 @@ namespace nymeaserver {
 
 class Platform;
 class NymeaConfiguration;
-class JsonRPCServer;
+class JsonRPCServerImplementation;
 class TcpServer;
 class WebSocketServer;
 class WebServer;
@@ -50,7 +50,7 @@ public:
     explicit ServerManager(Platform *platform, NymeaConfiguration *configuration, QObject *parent = nullptr);
 
     // Interfaces
-    JsonRPCServer *jsonServer() const;
+    JsonRPCServerImplementation *jsonServer() const;
 
     BluetoothServer* bluetoothServer() const;
 
@@ -78,7 +78,7 @@ private:
     Platform *m_platform = nullptr;
 
     // Interfaces
-    JsonRPCServer *m_jsonServer;
+    JsonRPCServerImplementation *m_jsonServer;
 
     BluetoothServer *m_bluetoothServer;
     QHash<QString, TcpServer*> m_tcpServers;

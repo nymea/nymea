@@ -19,9 +19,10 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef JSONRPCSERVER_H
-#define JSONRPCSERVER_H
+#ifndef JSONRPCSERVERIMPLEMENTATION_H
+#define JSONRPCSERVERIMPLEMENTATION_H
 
+#include "jsonrpc/jsonrpcserver.h"
 #include "jsonrpc/jsonhandler.h"
 #include "transportinterface.h"
 #include "usermanager/usermanager.h"
@@ -39,11 +40,11 @@ class Device;
 
 namespace nymeaserver {
 
-class JsonRPCServer: public JsonHandler
+class JsonRPCServerImplementation: public JsonHandler, public JsonRPCServer
 {
     Q_OBJECT
 public:
-    JsonRPCServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = nullptr);
+    JsonRPCServerImplementation(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = nullptr);
 
     // JsonHandler API implementation
     QString name() const;
@@ -71,7 +72,7 @@ public:
     void registerTransportInterface(TransportInterface *interface, bool authenticationRequired);
     void unregisterTransportInterface(TransportInterface *interface);
 
-    void registerHandler(JsonHandler *handler);
+    bool registerHandler(JsonHandler *handler) override;
 
 private:
     QHash<QString, JsonHandler *> handlers() const;
@@ -124,4 +125,5 @@ private:
 
 }
 
-#endif // JSONRPCSERVER_H
+#endif // JSONRPCSERVERIMPLEMENTATION_H
+

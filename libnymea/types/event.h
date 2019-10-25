@@ -34,6 +34,10 @@
 
 class LIBNYMEA_EXPORT Event
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid eventTypeId READ eventTypeId)
+    Q_PROPERTY(QUuid deviceId READ deviceId)
+    Q_PROPERTY(ParamList params READ params)
 public:
     Event();
     Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const ParamList &params = ParamList(), bool isStateChangeEvent = false);

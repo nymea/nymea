@@ -32,6 +32,13 @@
 
 class LIBNYMEA_EXPORT DeviceDescriptor
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid id READ id)
+    Q_PROPERTY(QUuid deviceId READ deviceId USER true)
+    Q_PROPERTY(QString title READ title)
+    Q_PROPERTY(QString description READ description)
+    Q_PROPERTY(ParamList deviceParams READ params)
+
 public:
     DeviceDescriptor();
     DeviceDescriptor(const DeviceClassId &deviceClassId, const QString &title = QString(), const QString &description = QString(), const DeviceId &parentDeviceId = DeviceId());

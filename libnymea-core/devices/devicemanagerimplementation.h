@@ -107,6 +107,9 @@ public:
     BrowserItemActionInfo *executeBrowserItemAction(const BrowserItemAction &browserItemAction) override;
 
     QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) override;
+    ParamType translateParamType(const PluginId &pluginId, const ParamType &paramType, const QLocale &locale) override;
+    DeviceClass translateDeviceClass(const DeviceClass &deviceClass, const QLocale &locale) override;
+    Vendor translateVendor(const Vendor &vendor, const QLocale &locale) override;
 
 signals:
     void loaded();

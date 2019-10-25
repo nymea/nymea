@@ -62,18 +62,7 @@ LoggingHandler::LoggingHandler(QObject *parent) :
     registerEnum<Logging::LoggingError>();
 
     // Objects
-    QVariantMap logEntry;
-    logEntry.insert("timestamp", enumValueName(Int));
-    logEntry.insert("loggingLevel", enumRef<Logging::LoggingLevel>());
-    logEntry.insert("source", enumRef<Logging::LoggingSource>());
-    logEntry.insert("o:typeId", enumValueName(Uuid));
-    logEntry.insert("o:deviceId", enumValueName(Uuid));
-    logEntry.insert("o:itemId", enumValueName(String));
-    logEntry.insert("o:value", enumValueName(String));
-    logEntry.insert("o:active", enumValueName(Bool));
-    logEntry.insert("o:eventType", enumRef<Logging::LoggingEventType>());
-    logEntry.insert("o:errorCode", enumValueName(String));
-    registerObject("LogEntry", logEntry);
+    registerObject<LogEntry>();
 
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
@@ -198,8 +187,8 @@ QVariantMap LoggingHandler::packLogEntry(const LogEntry &logEntry)
     case Logging::LoggingSourceActions:
     case Logging::LoggingSourceEvents:
     case Logging::LoggingSourceStates:
-        logEntryMap.insert("typeId", logEntry.typeId().toString());
-        logEntryMap.insert("deviceId", logEntry.deviceId().toString());
+        logEntryMap.insert("typeId", logEntry.typeId());
+        logEntryMap.insert("deviceId", logEntry.deviceId());
         logEntryMap.insert("value", LogValueTool::convertVariantToString(logEntry.value()));
         break;
     case Logging::LoggingSourceSystem:

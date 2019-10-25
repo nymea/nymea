@@ -19,8 +19,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class nymeaserver::CalendarItem
-    \brief Describes a clendar item for a time based \l{nymeaserver::Rule}{Rule}.
+    \class CalendarItem
+    \brief Describes a clendar item.
 
     \ingroup rules
     \inmodule core
@@ -32,8 +32,6 @@
 #include "loggingcategories.h"
 
 #include <QDebug>
-
-namespace nymeaserver {
 
 /*! Construct a invalid \l{CalendarItem}. */
 CalendarItem::CalendarItem():
@@ -275,5 +273,4 @@ QDebug operator<<(QDebug dbg, const CalendarItem &calendarItem)
     return dbg;
 }
 
-}
 

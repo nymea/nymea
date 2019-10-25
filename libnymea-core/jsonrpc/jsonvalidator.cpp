@@ -9,18 +9,23 @@
 
 namespace nymeaserver {
 
-bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &types)
+bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &api)
 {
+    QVariantMap enums = api.value("enums").toMap();
+    QVariantMap flags = api.value("flags").toMap();
+    QVariantMap types = api.value("types").toMap();
+//    qWarning() << "checkrefs enums" << enums.keys();
     foreach (const QString &key, map.keys()) {
+//        qWarning() << "checking prop" << key;
         if (map.value(key).toString().startsWith("$ref:")) {
             QString refName = map.value(key).toString().remove("$ref:");
-            if (!types.contains(refName)) {
+            if (!enums.contains(refName) && !flags.contains(refName) && !types.contains(refName)) {
                 qCWarning(dcJsonRpc()) << "Invalid reference to" << refName;
                 return false;
             }
         }
         if (map.value(key).type() == QVariant::Map) {
-            bool ret = checkRefs(map.value(key).toMap(), types);
+            bool ret = checkRefs(map.value(key).toMap(), api);
             if (!ret) {
                 return false;
             }
@@ -29,13 +34,13 @@ bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &types)
             foreach (const QVariant &entry, map.value(key).toList()) {
                 if (entry.toString().startsWith("$ref:")) {
                     QString refName = entry.toString().remove("$ref:");
-                    if (!types.contains(refName)) {
+                    if (!enums.contains(refName) && !flags.contains(refName) && !types.contains(refName)) {
                         qCWarning(dcJsonRpc()) << "Invalid reference to" << refName;
                         return false;
                     }
                 }
                 if (entry.type() == QVariant::Map) {
-                    bool ret = checkRefs(map.value(key).toMap(), types);
+                    bool ret = checkRefs(map.value(key).toMap(), api);
                     if (!ret) {
                         return false;
                     }
@@ -50,7 +55,7 @@ bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &types)
 JsonValidator::Result JsonValidator::validateParams(const QVariantMap &params, const QString &method, const QVariantMap &api)
 {
     QVariantMap paramDefinition = api.value("methods").toMap().value(method).toMap().value("params").toMap();
-    m_result = validateMap(params, paramDefinition, api.value("types").toMap());
+    m_result = validateMap(params, paramDefinition, api);
     m_result.setWhere(method + ", param " + m_result.where());
     return m_result;
 }
@@ -58,7 +63,7 @@ JsonValidator::Result JsonValidator::validateParams(const QVariantMap &params, c
 JsonValidator::Result JsonValidator::validateReturns(const QVariantMap &returns, const QString &method, const QVariantMap &api)
 {
     QVariantMap returnsDefinition = api.value("methods").toMap().value(method).toMap().value("returns").toMap();
-    m_result = validateMap(returns, returnsDefinition, api.value("types").toMap());
+    m_result = validateMap(returns, returnsDefinition, api);
     m_result.setWhere(method + ", returns " + m_result.where());
     return m_result;
 }
@@ -66,7 +71,7 @@ JsonValidator::Result JsonValidator::validateReturns(const QVariantMap &returns,
 JsonValidator::Result JsonValidator::validateNotificationParams(const QVariantMap &params, const QString &notification, const QVariantMap &api)
 {
     QVariantMap paramDefinition = api.value("notifications").toMap().value(notification).toMap().value("params").toMap();
-    m_result = validateMap(params, paramDefinition, api.value("types").toMap());
+    m_result = validateMap(params, paramDefinition, api);
     m_result.setWhere(notification + ", param " + m_result.where());
     return m_result;
 }
@@ -76,7 +81,7 @@ JsonValidator::Result JsonValidator::result() const
     return m_result;
 }
 
-JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const QVariantMap &definition, const QVariantMap &types)
+JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const QVariantMap &definition, const QVariantMap &api)
 {
     // Make sure all required values are available
     foreach (const QString &key, definition.keys()) {
@@ -102,7 +107,7 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
         // Validate content
         QVariant value = map.value(key);
 
-        Result result = validateEntry(value, expectedValue, types);
+        Result result = validateEntry(value, expectedValue, api);
         if (!result.success()) {
             result.setWhere(key + '.' + result.where());
             result.setErrorString(result.errorString());
@@ -114,8 +119,11 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
     return Result(true);
 }
 
-JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const QVariant &definition, const QVariantMap &types)
+JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const QVariant &definition, const QVariantMap &api)
 {
+//    qWarning() << "validating" << definition;
+//    qWarning() << "** enums:" << api.value("enums").toMap().keys();
+//    qWarning() << "** types:" << api.value("types").toMap().keys();
     if (definition.type() == QVariant::String) {
         QString expectedTypeName = definition.toString();
 
@@ -123,20 +131,39 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
             QString refName = expectedTypeName;
             refName.remove("$ref:");
 
-            QVariant refDefinition = types.value(refName);
             // Refs might be enums
-            if (refDefinition.type() == QVariant::List) {
-                if (value.type() != QVariant::String) {
-                    return Result(false, "Expected enum " + refName + " but got " + value.toString());
-                }
+            QVariantMap enums = api.value("enums").toMap();
+            if (enums.contains(refName)) {
+                QVariant refDefinition = enums.value(refName);
+
                 QVariantList enumList = refDefinition.toList();
                 if (!enumList.contains(value.toString())) {
-                    return Result(false, "Expected enum " + refName + " but got " + value.toString());
+                    return Result(false, "Expected enum " + refName + " but got " + value.toJsonDocument().toJson());
+                }
+                return Result(true);
+            }
+            // Or flags
+            QVariantMap flags = api.value("flags").toMap();
+            if (flags.contains(refName)) {
+                QVariant refDefinition = flags.value(refName);
+                qWarning() << "Flag:" << value.type();
+                if (value.type() != QVariant::StringList) {
+                    return Result(false, "Expected flags " + refName + " but got " + value.toString());
+                }
+                QString flagEnum = refDefinition.toList().first().toString();
+                qWarning() << "Flag enum:" << flagEnum;
+                foreach (const QVariant &flagsEntry, value.toList()) {
+                    Result result = validateEntry(flagsEntry, flagEnum, api);
+                    if (!result.success()) {
+                        return result;
+                    }
                 }
                 return Result(true);
             }
 
-            return validateEntry(value, refDefinition, types);
+            QVariantMap types = api.value("types").toMap();
+            QVariant refDefinition = types.value(refName);
+            return validateEntry(value, refDefinition, api);
         }
 
         JsonHandler::BasicType expectedBasicType = JsonHandler::enumNameToValue<JsonHandler::BasicType>(expectedTypeName);
@@ -199,7 +226,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
         if (value.type() != QVariant::Map) {
             return Result(false, "Invalud value. Expected a map bug received: " + value.toString());
         }
-        return validateMap(value.toMap(), definition.toMap(), types);
+        return validateMap(value.toMap(), definition.toMap(), api);
     }
 
     if (definition.type() == QVariant::List) {
@@ -209,7 +236,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
             return Result(false, "Expected list of " + entryDefinition.toString() + " but got value of type " + value.typeName() + "\n" + QJsonDocument::fromVariant(value).toJson());
         }
         foreach (const QVariant &entry, value.toList()) {
-            Result result = validateEntry(entry, entryDefinition, types);
+            Result result = validateEntry(entry, entryDefinition, api);
             if (!result.success()) {
                 return result;
             }

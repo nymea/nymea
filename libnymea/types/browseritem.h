@@ -33,6 +33,16 @@
 class LIBNYMEA_EXPORT BrowserItem
 {
     Q_GADGET
+    Q_PROPERTY(QString id READ id)
+    Q_PROPERTY(QString displayName READ displayName)
+    Q_PROPERTY(QString description READ description)
+    Q_PROPERTY(BrowserIcon icon READ icon)
+    Q_PROPERTY(QString thumbnail READ thumbnail)
+    Q_PROPERTY(bool executable READ executable)
+    Q_PROPERTY(bool browsable READ browsable)
+    Q_PROPERTY(bool disabled READ disabled)
+    Q_PROPERTY(QList<ActionTypeId> actionTypeIds READ actionTypeIds)
+
 public:
     enum BrowserIcon {
         BrowserIconNone,

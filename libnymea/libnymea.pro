@@ -26,8 +26,7 @@ HEADERS += \
         devices/browseresult.h \
         jsonrpc/jsonhandler.h \
         jsonrpc/jsonreply.h \
-        experiences/experienceplugin.h \
-    jsonrpc/jsonrpcserver.h \
+        jsonrpc/jsonrpcserver.h \
         libnymea.h \
         platform/package.h \
         platform/repository.h \
@@ -109,8 +108,7 @@ SOURCES += \
         devices/browseresult.cpp \
         jsonrpc/jsonhandler.cpp \
         jsonrpc/jsonreply.cpp \
-        experiences/experienceplugin.cpp \
-    jsonrpc/jsonrpcserver.cpp \
+        jsonrpc/jsonrpcserver.cpp \
         loggingcategories.cpp \
         nymeasettings.cpp \
         platform/package.cpp \

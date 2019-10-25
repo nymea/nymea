@@ -33,6 +33,11 @@
 
 #include "eventtype.h"
 
+EventType::EventType()
+{
+
+}
+
 /*! Constructs a EventType object with the given \a id. */
 EventType::EventType(const EventTypeId &id):
     m_id(id),
@@ -121,6 +126,11 @@ EventTypes::EventTypes(const QList<EventType> &other)
     foreach (const EventType &at, other) {
         append(at);
     }
+}
+
+QVariant EventTypes::get(int index)
+{
+    return QVariant::fromValue(at(index));
 }
 
 EventType EventTypes::findByName(const QString &name)

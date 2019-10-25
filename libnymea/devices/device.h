@@ -41,9 +41,14 @@ class DevicePlugin;
 class LIBNYMEA_EXPORT Device: public QObject
 {
     Q_OBJECT
-
-    friend class DeviceManager;
-    friend class DeviceManagerImplementation;
+    Q_PROPERTY(QUuid id READ id)
+    Q_PROPERTY(QUuid deviceClassId READ deviceClassId)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(ParamList params READ params WRITE setParams)
+    Q_PROPERTY(ParamList settings READ settings WRITE setSettings)
+    Q_PROPERTY(States states READ states WRITE setStates)
+    Q_PROPERTY(bool setupComplete READ setupComplete WRITE setSetupComplete)
+    Q_PROPERTY(QUuid parentId READ parentId WRITE setParentId USER true)
 
 public:
     enum DeviceError {
@@ -122,6 +127,8 @@ signals:
     void nameChanged();
 
 private:
+    friend class DeviceManager;
+    friend class DeviceManagerImplementation;
     Device(DevicePlugin *plugin, const DeviceClass &deviceClass, const DeviceId &id, QObject *parent = nullptr);
     Device(DevicePlugin *plugin, const DeviceClass &deviceClass, QObject *parent = nullptr);
 

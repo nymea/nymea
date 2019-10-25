@@ -24,8 +24,6 @@
 #include "timeeventitem.h"
 #include "calendaritem.h"
 
-namespace nymeaserver {
-
 class TimeDescriptor
 {
 public:
@@ -54,6 +52,5 @@ private:
 
 QDebug operator<<(QDebug dbg, const TimeDescriptor &timeDescriptor);
 
-}
 
 #endif // TIMEDESCRIPTOR_H

@@ -60,15 +60,14 @@ public:
     Q_INVOKABLE JsonReply *BrowseDevice(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetBrowserItem(const QVariantMap &params) const;
 
-    static QVariantMap packParamType(const ParamType &paramType, const PluginId &pluginId, const QLocale &locale);
-    static QVariantMap packPlugin(DevicePlugin *plugin, const QLocale &locale);
-    static QVariantMap packVendor(const Vendor &vendor, const QLocale &locale);
-    static QVariantMap packEventType(const EventType &eventType, const PluginId &pluginId, const QLocale &locale);
-    static QVariantMap packStateType(const StateType &stateType, const PluginId &pluginId, const QLocale &locale);
-    static QVariantMap packActionType(const ActionType &actionType, const PluginId &pluginId, const QLocale &locale);
-    static QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods);
-    static QVariantMap packDeviceClass(const DeviceClass &deviceClass, const QLocale &locale);
-    static QVariantMap packDeviceDescriptor(const DeviceDescriptor &descriptor);
+    QVariantMap packParamType(const ParamType &paramType, const PluginId &pluginId, const QLocale &locale) const;
+//    QVariantMap packPlugin(DevicePlugin *plugin, const QLocale &locale) const;
+    QVariantMap packEventType(const EventType &eventType, const PluginId &pluginId, const QLocale &locale) const;
+//    QVariantMap packStateType(const StateType &stateType, const PluginId &pluginId, const QLocale &locale) const;
+    QVariantMap packActionType(const ActionType &actionType, const PluginId &pluginId, const QLocale &locale) const;
+    QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods) const;
+//    QVariantMap packDeviceClass(const DeviceClass &deviceClass, const QLocale &locale) const;
+    QVariantMap packDeviceDescriptor(const DeviceDescriptor &descriptor) const;
 
     static QVariantMap packParam(const Param &param);
     static QVariantList packParams(const ParamList &paramList);

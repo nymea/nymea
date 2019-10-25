@@ -26,8 +26,6 @@
 
 class QDateTime;
 
-namespace nymeaserver {
-
 class RepeatingOption
 {
     Q_GADGET
@@ -66,6 +64,5 @@ private:
 };
 
 QDebug operator<<(QDebug dbg, const RepeatingOption &RepeatingOption);
-}
 
 #endif // REPEATINGOPTION_H

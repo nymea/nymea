@@ -34,6 +34,11 @@
 
 #include "statetype.h"
 
+StateType::StateType()
+{
+
+}
+
 /*! Constructs a StateType with the given \a id.
  *  When creating a \l{DevicePlugin} generate a new uuid for each StateType you define and
  *  hardcode it into the plugin json file. */
@@ -191,6 +196,11 @@ StateTypes::StateTypes(const QList<StateType> &other)
     foreach (const StateType &st, other) {
         append(st);
     }
+}
+
+QVariant StateTypes::get(int index)
+{
+    return QVariant::fromValue(at(index));
 }
 
 StateType StateTypes::findByName(const QString &name)

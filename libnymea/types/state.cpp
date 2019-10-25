@@ -36,6 +36,11 @@
 
 #include "state.h"
 
+State::State()
+{
+
+}
+
 /*! Constructs a State reflecting the \l{StateType} given by \a stateTypeId
  *  and associated with the \l{Device} given by \a deviceId */
 State::State(const StateTypeId &stateTypeId, const DeviceId &deviceId):
@@ -91,4 +96,19 @@ QDebug operator<<(QDebug dbg, const QList<State> &states)
     }
 
     return dbg.space();
+}
+
+States::States()
+{
+
+}
+
+States::States(const QList<State> &other): QList<State>(other)
+{
+
+}
+
+QVariant States::get(int index)
+{
+    return QVariant::fromValue(at(index));
 }

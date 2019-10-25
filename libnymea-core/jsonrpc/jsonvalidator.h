@@ -30,7 +30,7 @@ public:
 
     JsonValidator() {}
 
-    static bool checkRefs(const QVariantMap &map, const QVariantMap &types);
+    static bool checkRefs(const QVariantMap &map, const QVariantMap &api);
 
     Result validateParams(const QVariantMap &params, const QString &method, const QVariantMap &api);
     Result validateReturns(const QVariantMap &returns, const QString &method, const QVariantMap &api);
@@ -38,8 +38,8 @@ public:
 
     Result result() const;
 private:
-    Result validateMap(const QVariantMap &map, const QVariantMap &definition, const QVariantMap &types);
-    Result validateEntry(const QVariant &value, const QVariant &definition, const QVariantMap &types);
+    Result validateMap(const QVariantMap &map, const QVariantMap &definition, const QVariantMap &api);
+    Result validateEntry(const QVariant &value, const QVariant &definition, const QVariantMap &api);
 
     Result m_result;
 };

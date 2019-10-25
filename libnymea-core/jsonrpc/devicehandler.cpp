@@ -80,7 +80,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     // Enums
     registerEnum<Device::DeviceError>();
     registerEnum<DeviceClass::SetupMethod>();
-    registerEnum<DeviceClass::CreateMethod>();
+    registerEnum<DeviceClass::CreateMethod, DeviceClass::CreateMethods>();
     registerEnum<Types::Unit>();
     registerEnum<Types::InputType>();
     registerEnum<RuleEngine::RemovePolicy>();
@@ -88,109 +88,20 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     registerEnum<MediaBrowserItem::MediaBrowserIcon>();
 
     // Objects
-    QVariantMap paramType;
-    paramType.insert("id", enumValueName(Uuid));
-    paramType.insert("name", enumValueName(String));
-    paramType.insert("displayName", enumValueName(String));
-    paramType.insert("type", enumRef<BasicType>());
-    paramType.insert("index", enumValueName(Int));
-    paramType.insert("o:defaultValue", enumValueName(Variant));
-    paramType.insert("o:minValue", enumValueName(Variant));
-    paramType.insert("o:maxValue", enumValueName(Variant));
-    paramType.insert("o:allowedValues", QVariantList() << enumValueName(Variant));
-    paramType.insert("o:inputType", enumRef<Types::InputType>());
-    paramType.insert("o:unit", enumRef<Types::Unit>());
-    paramType.insert("o:readOnly", enumValueName(Bool));
-    registerObject("ParamType", paramType);
+    registerObject<ParamType, ParamTypes>();
+    registerObject<Param, ParamList>();
+    registerObject<DevicePlugin>();
+    registerObject<Vendor>();
+    registerObject<EventType, EventTypes>();
+    registerObject<StateType, StateTypes>();
+    registerObject<ActionType, ActionTypes>();
+    registerObject<DeviceClass>();
+    registerObject<DeviceDescriptor>();
+    registerObject<State, States>();
+    registerObject<Device>();
 
-    QVariantMap param;
-    param.insert("paramTypeId", enumValueName(Uuid));
-    param.insert("value", enumValueName(Variant));
-    registerObject("Param", param);
-
-    QVariantMap plugin;
-    plugin.insert("id", enumValueName(Uuid));
-    plugin.insert("name", enumValueName(String));
-    plugin.insert("displayName", enumValueName(String));
-    plugin.insert("paramTypes", QVariantList() << objectRef("ParamType"));
-    registerObject("Plugin", plugin);
-
-    QVariantMap vendor;
-    vendor.insert("id", enumValueName(Uuid));
-    vendor.insert("name", enumValueName(String));
-    vendor.insert("displayName", enumValueName(String));
-    registerObject("Vendor", vendor);
-
-    QVariantMap eventType;
-    eventType.insert("id", enumValueName(Uuid));
-    eventType.insert("name", enumValueName(String));
-    eventType.insert("displayName", enumValueName(String));
-    eventType.insert("index", enumValueName(Int));
-    eventType.insert("paramTypes", QVariantList() << objectRef("ParamType"));
-    registerObject("EventType", eventType);
-
-    QVariantMap stateType;
-    stateType.insert("id", enumValueName(Uuid));
-    stateType.insert("name", enumValueName(String));
-    stateType.insert("displayName", enumValueName(String));
-    stateType.insert("type", enumRef<BasicType>());
-    stateType.insert("index", enumValueName(Int));
-    stateType.insert("defaultValue", enumValueName(Variant));
-    stateType.insert("o:unit", enumRef<Types::Unit>());
-    stateType.insert("o:minValue", enumValueName(Variant));
-    stateType.insert("o:maxValue", enumValueName(Variant));
-    stateType.insert("o:possibleValues", QVariantList() << enumValueName(Variant));
-    registerObject("StateType", stateType);
-
-    QVariantMap actionType;
-    actionType.insert("id", enumValueName(Uuid));
-    actionType.insert("name", enumValueName(String));
-    actionType.insert("displayName", enumValueName(String));
-    actionType.insert("index", enumValueName(Int));
-    actionType.insert("paramTypes", QVariantList() << objectRef("ParamType"));
-    registerObject("ActionType", actionType);
-
-    QVariantMap deviceClass;
-    deviceClass.insert("id", enumValueName(Uuid));
-    deviceClass.insert("vendorId", enumValueName(Uuid));
-    deviceClass.insert("pluginId", enumValueName(Uuid));
-    deviceClass.insert("name", enumValueName(String));
-    deviceClass.insert("displayName", enumValueName(String));
-    deviceClass.insert("interfaces", QVariantList() << enumValueName(String));
-    deviceClass.insert("browsable", enumValueName(Bool));
-    deviceClass.insert("setupMethod", enumRef<DeviceClass::SetupMethod>());
-    deviceClass.insert("createMethods", QVariantList() << enumRef<DeviceClass::CreateMethod>());
-    deviceClass.insert("stateTypes", QVariantList() << objectRef("StateType"));
-    deviceClass.insert("eventTypes", QVariantList() << objectRef("EventType"));
-    deviceClass.insert("actionTypes", QVariantList() << objectRef("ActionType"));
-    deviceClass.insert("browserItemActionTypes", QVariantList() << objectRef("ActionType"));
-    deviceClass.insert("paramTypes", QVariantList() << objectRef("ParamType"));
-    deviceClass.insert("settingsTypes", QVariantList() << objectRef("ParamType"));
-    deviceClass.insert("discoveryParamTypes", QVariantList() << objectRef("ParamType"));
-    registerObject("DeviceClass", deviceClass);
-
-    QVariantMap deviceDescriptor;
-    deviceDescriptor.insert("id", enumValueName(Uuid));
-    deviceDescriptor.insert("deviceId", enumValueName(Uuid));
-    deviceDescriptor.insert("title", enumValueName(String));
-    deviceDescriptor.insert("description", enumValueName(String));
-    deviceDescriptor.insert("deviceParams", QVariantList() << objectRef("Param"));
-    registerObject("DeviceDescriptor", deviceDescriptor);
-
-    QVariantMap device;
-    device.insert("id", enumValueName(Uuid));
-    device.insert("deviceClassId", enumValueName(Uuid));
-    device.insert("name", enumValueName(String));
-    device.insert("params", QVariantList() << objectRef("Param"));
-    device.insert("settings", QVariantList() << objectRef("Param"));
-    QVariantMap stateValues;
-    stateValues.insert("stateTypeId", enumValueName(Uuid));
-    stateValues.insert("value", enumValueName(Variant));
-    device.insert("states", QVariantList() << stateValues);
-    device.insert("setupComplete", enumValueName(Bool));
-    device.insert("o:parentId", enumValueName(Uuid));
-    registerObject("Device", device);
-
+    // Regsitering browseritem manually for now. Not sure how to deal with the
+    // polymorphism in int (e.g MediaBrowserItem)
     QVariantMap browserItem;
     browserItem.insert("id", enumValueName(String));
     browserItem.insert("displayName", enumValueName(String));
@@ -219,7 +130,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     description = "Returns a list of loaded plugins.";
-    returns.insert("plugins", QVariantList() << objectRef("Plugin"));
+    returns.insert("plugins", QVariantList() << objectRef("DevicePlugin"));
     registerMethod("GetPlugins", description, params, returns);
 
     params.clear(); returns.clear();
@@ -467,18 +378,8 @@ JsonReply* DeviceHandler::GetSupportedVendors(const QVariantMap &params) const
 
     QVariantList vendors;
     foreach (const Vendor &vendor, NymeaCore::instance()->deviceManager()->supportedVendors()) {
-
-        DevicePlugin *plugin = nullptr;
-        foreach (DevicePlugin *p, NymeaCore::instance()->deviceManager()->plugins()) {
-            if (p->supportedVendors().contains(vendor)) {
-                plugin = p;
-            }
-        }
-        QVariantMap variantMap;
-        variantMap.insert("id", vendor.id().toString());
-        variantMap.insert("name", vendor.name());
-        variantMap.insert("displayName", NymeaCore::instance()->deviceManager()->translate(plugin->pluginId(), vendor.displayName(), locale));
-        vendors.append(variantMap);
+        Vendor translatedVendor = NymeaCore::instance()->deviceManager()->translateVendor(vendor, locale);
+        vendors.append(pack(translatedVendor));
     }
 
     QVariantMap returns;
@@ -492,8 +393,10 @@ JsonReply* DeviceHandler::GetSupportedDevices(const QVariantMap &params) const
     VendorId vendorId = VendorId(params.value("vendorId").toString());
     QVariantMap returns;
     QVariantList deviceClasses;
-    foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices(vendorId))
-        deviceClasses.append(packDeviceClass(deviceClass, locale));
+    foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices(vendorId)) {
+        DeviceClass translatedDeviceClass = NymeaCore::instance()->deviceManager()->translateDeviceClass(deviceClass, locale);
+        deviceClasses.append(pack(translatedDeviceClass));
+    }
 
     returns.insert("deviceClasses", deviceClasses);
     return createReply(returns);
@@ -511,14 +414,14 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
 
     JsonReply *reply = createAsyncReply("GetDiscoveredDevices");
     DeviceDiscoveryInfo *info = NymeaCore::instance()->deviceManager()->discoverDevices(deviceClassId, discoveryParams);
-    connect(info, &DeviceDiscoveryInfo::finished, reply, [reply, info, locale](){
+    connect(info, &DeviceDiscoveryInfo::finished, reply, [this, reply, info, locale](){
         QVariantMap returns;
         returns.insert("deviceError", enumValueName<Device::DeviceError>(info->status()));
 
         if (info->status() == Device::DeviceErrorNoError) {
             QVariantList deviceDescriptorList;
             foreach (const DeviceDescriptor &deviceDescriptor, info->deviceDescriptors()) {
-                deviceDescriptorList.append(packDeviceDescriptor(deviceDescriptor));
+                deviceDescriptorList.append(pack(deviceDescriptor));
             }
             returns.insert("deviceDescriptors", deviceDescriptorList);
         }
@@ -540,7 +443,9 @@ JsonReply* DeviceHandler::GetPlugins(const QVariantMap &params) const
 
     QVariantList plugins;
     foreach (DevicePlugin* plugin, NymeaCore::instance()->deviceManager()->plugins()) {
-        plugins.append(packPlugin(plugin, locale));
+        QVariantMap packedPlugin = pack(*plugin);
+        packedPlugin["displayName"] = NymeaCore::instance()->deviceManager()->translate(plugin->pluginId(), plugin->pluginDisplayName(), locale);
+        plugins.append(packedPlugin);
     }
 
     QVariantMap returns;
@@ -560,7 +465,7 @@ JsonReply *DeviceHandler::GetPluginConfiguration(const QVariantMap &params) cons
 
     QVariantList paramVariantList;
     foreach (const Param &param, plugin->configuration()) {
-        paramVariantList.append(packParam(param));
+        paramVariantList.append(pack(param));
     }
     returns.insert("configuration", paramVariantList);
     returns.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorNoError));
@@ -820,12 +725,15 @@ JsonReply* DeviceHandler::GetActionTypes(const QVariantMap &params) const
 
 JsonReply* DeviceHandler::GetStateTypes(const QVariantMap &params) const
 {
+    QLocale locale = params.value("locale").toLocale();
+
     QVariantMap returns;
 
     QVariantList stateList;
     DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
-    foreach (const StateType &stateType, deviceClass.stateTypes()) {
-        stateList.append(packStateType(stateType, deviceClass.pluginId(), NymeaCore::instance()->configuration()->locale()));
+    foreach (StateType stateType, deviceClass.stateTypes()) {
+        stateType.setDisplayName(NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), stateType.displayName(), locale));
+        stateList.append(pack(stateType));
     }
     returns.insert("stateTypes", stateList);
     return createReply(returns);
@@ -908,7 +816,7 @@ Param DeviceHandler::unpackParam(const QVariantMap &param)
     if (param.keys().count() == 0)
         return Param();
 
-    ParamTypeId paramTypeId = param.value("paramTypeId").toString();
+    ParamTypeId paramTypeId = param.value("paramTypeId").toUuid();
     QVariant value = param.value("value");
     return Param(paramTypeId, value);
 }
@@ -992,56 +900,14 @@ QVariantMap DeviceHandler::packBrowserItem(const BrowserItem &item)
     return ret;
 }
 
-QVariantMap DeviceHandler::packParamType(const ParamType &paramType, const PluginId &pluginId, const QLocale &locale)
+QVariantMap DeviceHandler::packParamType(const ParamType &paramType, const PluginId &pluginId, const QLocale &locale) const
 {
-    QVariantMap variantMap;
-    variantMap.insert("id", paramType.id().toString());
-    variantMap.insert("name", paramType.name());
-    variantMap.insert("displayName", NymeaCore::instance()->deviceManager()->translate(pluginId, paramType.displayName(), locale));
-    variantMap.insert("type", enumValueName<BasicType>(variantTypeToBasicType(paramType.type())));
-    variantMap.insert("index", paramType.index());
-
-    // Optional values
-    if (paramType.defaultValue().isValid())
-        variantMap.insert("defaultValue", paramType.defaultValue());
-
-    if (paramType.minValue().isValid())
-        variantMap.insert("minValue", paramType.minValue());
-
-    if (paramType.maxValue().isValid())
-        variantMap.insert("maxValue", paramType.maxValue());
-
-    if (!paramType.allowedValues().isEmpty())
-        variantMap.insert("allowedValues", paramType.allowedValues());
-
-    if (paramType.inputType() != Types::InputTypeNone)
-        variantMap.insert("inputType", enumValueName<Types::InputType>(paramType.inputType()));
-
-    if (paramType.unit() != Types::UnitNone)
-        variantMap.insert("unit", enumValueName<Types::Unit>(paramType.unit()));
-
-    if (paramType.readOnly())
-        variantMap.insert("readOnly", paramType.readOnly());
-
-    return variantMap;
+    ParamType translatedParamType = paramType;
+    translatedParamType.setDisplayName(NymeaCore::instance()->deviceManager()->translate(pluginId, paramType.displayName(), locale));
+    return pack(translatedParamType);
 }
 
-QVariantMap DeviceHandler::packPlugin(DevicePlugin *plugin, const QLocale &locale)
-{
-    QVariantMap pluginMap;
-    pluginMap.insert("id", plugin->pluginId().toString());
-    pluginMap.insert("name", plugin->pluginName());
-    pluginMap.insert("displayName", NymeaCore::instance()->deviceManager()->translate(plugin->pluginId(), plugin->pluginDisplayName(), locale));
-
-    QVariantList params;
-    foreach (const ParamType &param, plugin->configurationDescription())
-        params.append(packParamType(param, plugin->pluginId(), locale));
-
-    pluginMap.insert("paramTypes", params);
-    return pluginMap;
-}
-
-QVariantMap DeviceHandler::packEventType(const EventType &eventType, const PluginId &pluginId, const QLocale &locale)
+QVariantMap DeviceHandler::packEventType(const EventType &eventType, const PluginId &pluginId, const QLocale &locale) const
 {
     QVariantMap variant;
     variant.insert("id", eventType.id().toString());
@@ -1057,23 +923,7 @@ QVariantMap DeviceHandler::packEventType(const EventType &eventType, const Plugi
     return variant;
 }
 
-QVariantMap DeviceHandler::packVendor(const Vendor &vendor, const QLocale &locale)
-{
-    DevicePlugin *plugin = nullptr;
-    foreach (DevicePlugin *p, NymeaCore::instance()->deviceManager()->plugins()) {
-        if (p->supportedVendors().contains(vendor)) {
-            plugin = p;
-        }
-    }
-    QVariantMap variantMap;
-    variantMap.insert("id", vendor.id().toString());
-    variantMap.insert("name", vendor.name());
-    variantMap.insert("displayName", NymeaCore::instance()->deviceManager()->translate(plugin->pluginId(), vendor.displayName(), locale));
-    return variantMap;
-
-}
-
-QVariantMap DeviceHandler::packActionType(const ActionType &actionType, const PluginId &pluginId, const QLocale &locale)
+QVariantMap DeviceHandler::packActionType(const ActionType &actionType, const PluginId &pluginId, const QLocale &locale) const
 {
     QVariantMap variantMap;
     variantMap.insert("id", actionType.id().toString());
@@ -1088,7 +938,7 @@ QVariantMap DeviceHandler::packActionType(const ActionType &actionType, const Pl
     return variantMap;
 }
 
-QVariantList DeviceHandler::packCreateMethods(DeviceClass::CreateMethods createMethods)
+QVariantList DeviceHandler::packCreateMethods(DeviceClass::CreateMethods createMethods) const
 {
     QVariantList ret;
     if (createMethods.testFlag(DeviceClass::CreateMethodUser))
@@ -1103,96 +953,6 @@ QVariantList DeviceHandler::packCreateMethods(DeviceClass::CreateMethods createM
     return ret;
 }
 
-QVariantMap DeviceHandler::packDeviceClass(const DeviceClass &deviceClass, const QLocale &locale)
-{
-    QVariantMap variant;
-    variant.insert("id", deviceClass.id().toString());
-    variant.insert("name", deviceClass.name());
-    variant.insert("displayName", NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), deviceClass.displayName(), locale));
-    variant.insert("vendorId", deviceClass.vendorId().toString());
-    variant.insert("pluginId", deviceClass.pluginId().toString());
-    variant.insert("interfaces", deviceClass.interfaces());
-    variant.insert("browsable", deviceClass.browsable());
-
-    QVariantList stateTypes;
-    foreach (const StateType &stateType, deviceClass.stateTypes())
-        stateTypes.append(packStateType(stateType, deviceClass.pluginId(), locale));
-
-    QVariantList eventTypes;
-    foreach (const EventType &eventType, deviceClass.eventTypes())
-        eventTypes.append(packEventType(eventType, deviceClass.pluginId(), locale));
-
-    QVariantList actionTypes;
-    foreach (const ActionType &actionType, deviceClass.actionTypes())
-        actionTypes.append(packActionType(actionType, deviceClass.pluginId(), locale));
-
-    QVariantList browserItemActionTypes;
-    foreach (const ActionType &actionType, deviceClass.browserItemActionTypes())
-        browserItemActionTypes.append(packActionType(actionType, deviceClass.pluginId(), locale));
-
-    QVariantList paramTypes;
-    foreach (const ParamType &paramType, deviceClass.paramTypes())
-        paramTypes.append(packParamType(paramType, deviceClass.pluginId(), locale));
-
-    QVariantList settingsTypes;
-    foreach (const ParamType &settingsType, deviceClass.settingsTypes())
-        settingsTypes.append(packParamType(settingsType, deviceClass.pluginId(), locale));
-
-    QVariantList discoveryParamTypes;
-    foreach (const ParamType &paramType, deviceClass.discoveryParamTypes())
-        discoveryParamTypes.append(packParamType(paramType, deviceClass.pluginId(), locale));
-
-    variant.insert("paramTypes", paramTypes);
-    variant.insert("settingsTypes", settingsTypes);
-    variant.insert("discoveryParamTypes", discoveryParamTypes);
-    variant.insert("stateTypes", stateTypes);
-    variant.insert("eventTypes", eventTypes);
-    variant.insert("actionTypes", actionTypes);
-    variant.insert("browserItemActionTypes", browserItemActionTypes);
-    variant.insert("createMethods", packCreateMethods(deviceClass.createMethods()));
-    variant.insert("setupMethod", enumValueName<DeviceClass::SetupMethod>(deviceClass.setupMethod()));
-    return variant;
-}
-
-QVariantMap DeviceHandler::packDeviceDescriptor(const DeviceDescriptor &descriptor)
-{
-    QVariantMap variant;
-    variant.insert("id", descriptor.id().toString());
-    variant.insert("deviceId", descriptor.deviceId().toString());
-    variant.insert("title", descriptor.title());
-    variant.insert("description", descriptor.description());
-    QVariantList params;
-    foreach (const Param &param, descriptor.params()) {
-        params.append(packParam(param));
-    }
-    variant.insert("deviceParams", params);
-    return variant;
-}
-
-QVariantMap DeviceHandler::packStateType(const StateType &stateType, const PluginId &pluginId, const QLocale &locale)
-{
-    QVariantMap variantMap;
-    variantMap.insert("id", stateType.id().toString());
-    variantMap.insert("name", stateType.name());
-    variantMap.insert("displayName", NymeaCore::instance()->deviceManager()->translate(pluginId, stateType.displayName(), locale));
-    variantMap.insert("index", stateType.index());
-    variantMap.insert("type", enumValueName(variantTypeToBasicType(stateType.type())));
-    variantMap.insert("defaultValue", stateType.defaultValue());
-
-    if (stateType.maxValue().isValid())
-        variantMap.insert("maxValue", stateType.maxValue());
-
-    if (stateType.minValue().isValid())
-        variantMap.insert("minValue", stateType.minValue());
-
-    if (!stateType.possibleValues().isEmpty())
-        variantMap.insert("possibleValues", stateType.possibleValues());
-
-    if(stateType.unit() != Types::UnitNone)
-        variantMap.insert("unit", enumValueName<Types::Unit>(stateType.unit()));
-
-    return variantMap;
-}
 
 void DeviceHandler::pluginConfigChanged(const PluginId &id, const ParamList &config)
 {

@@ -28,6 +28,8 @@
 class MediaBrowserItem: public BrowserItem
 {
     Q_GADGET
+    Q_PROPERTY(MediaBrowserIcon mediaIcon READ mediaIcon)
+
 public:
     enum MediaBrowserIcon {
         MediaBrowserIconNone = 1,

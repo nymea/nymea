@@ -84,9 +84,6 @@ private:
 
     void processJsonPacket(TransportInterface *interface, const QUuid &clientId, const QByteArray &data);
 
-
-    static QVariantMap packTokenInfo(const TokenInfo &tokenInfo);
-
 private slots:
     void setup();
 

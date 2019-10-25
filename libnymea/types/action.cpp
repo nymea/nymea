@@ -73,10 +73,20 @@ ActionTypeId Action::actionTypeId() const
     return m_actionTypeId;
 }
 
+void Action::setActionTypeId(const ActionTypeId &actionTypeId)
+{
+    m_actionTypeId = actionTypeId;
+}
+
 /*! Returns the deviceId this Action is associated with. */
 DeviceId Action::deviceId() const
 {
     return m_deviceId;
+}
+
+void Action::setDeviceId(const DeviceId &deviceId)
+{
+    m_deviceId = deviceId;
 }
 
 /*! Returns the parameters for this Action. */

@@ -109,6 +109,11 @@ ParamList::ParamList(const QList<Param> &other): QList<Param>(other)
 
 }
 
+QVariant ParamList::get(int index)
+{
+    return QVariant::fromValue(at(index));
+}
+
 /*! Returns true if this ParamList contains a Param with the given \a paramTypeId. */
 bool ParamList::hasParam(const ParamTypeId &paramTypeId) const
 {

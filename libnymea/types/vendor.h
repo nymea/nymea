@@ -32,6 +32,11 @@
 
 class LIBNYMEA_EXPORT Vendor
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid id READ id WRITE setId)
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString displayName READ displayName WRITE setDisplayName)
+
 public:
     Vendor(const VendorId &id, const QString &name = QString());
 

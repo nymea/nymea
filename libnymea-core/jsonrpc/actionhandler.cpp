@@ -41,6 +41,7 @@
 #include "devices/browseractioninfo.h"
 #include "devices/browseritemactioninfo.h"
 #include "types/action.h"
+#include "types/actiontype.h"
 #include "loggingcategories.h"
 
 namespace nymeaserver {
@@ -49,12 +50,15 @@ namespace nymeaserver {
 ActionHandler::ActionHandler(QObject *parent) :
     JsonHandler(parent)
 {
+    // Enums
+    registerEnum<Types::InputType>();
+    registerEnum<Types::Unit>();
+
     // Objects
-    QVariantMap action;
-    action.insert("actionTypeId", enumValueName(Uuid));
-    action.insert("deviceId", enumValueName(Uuid));
-    action.insert("o:params", QVariantList() << objectRef("Param"));
-    registerObject("Action", action);
+    registerObject<ParamType, ParamTypes>();
+    registerObject<Param, ParamList>();
+    registerObject<ActionType>();
+    registerObject<Action>();
 
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
@@ -125,14 +129,18 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
 
 JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
 {
+    QLocale locale = params.value("locale").toLocale();
     qCDebug(dcJsonRpc) << "asked for action type" << params;
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {
             if (actionType.id() == actionTypeId) {
+                ActionType translatedActionType = actionType;
+                translatedActionType.setDisplayName(NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), actionType.displayName(), locale));
+
                 QVariantMap data;
                 data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorNoError));
-                data.insert("actionType", DeviceHandler::packActionType(actionType, deviceClass.pluginId(), params.value("locale").toLocale()));
+                data.insert("actionType", pack(translatedActionType));
                 return createReply(data);
             }
         }

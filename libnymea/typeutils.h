@@ -32,7 +32,7 @@
 #define DECLARE_TYPE_ID(type) class type##Id: public QUuid \
 { \
 public: \
-    type##Id(const QString &uuid): QUuid(uuid) {} \
+    type##Id(const QUuid &uuid): QUuid(uuid) {} \
     type##Id(): QUuid() {} \
     static type##Id create##type##Id() { return type##Id(QUuid::createUuid().toString()); } \
     static type##Id fromUuid(const QUuid &uuid) { return type##Id(uuid.toString()); } \

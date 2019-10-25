@@ -32,7 +32,20 @@
 
 class LIBNYMEA_EXPORT StateType
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid id READ id)
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString displayName READ displayName WRITE setDisplayName)
+    Q_PROPERTY(QVariant::Type type READ type WRITE setType)
+    Q_PROPERTY(int index READ index WRITE setIndex)
+    Q_PROPERTY(QVariant defaultValue READ defaultValue WRITE setDefaultValue)
+    Q_PROPERTY(Types::Unit unit READ unit WRITE setUnit USER true)
+    Q_PROPERTY(QVariant minValue READ minValue WRITE setMinValue USER true)
+    Q_PROPERTY(QVariant maxValue READ maxValue WRITE setMaxValue USER true)
+    Q_PROPERTY(QVariantList possibleValues READ possibleValues WRITE setPossibleValues USER true)
+
 public:
+    StateType();
     StateType(const StateTypeId &id);
 
     StateTypeId id() const;
@@ -83,14 +96,19 @@ private:
     Types::Unit m_unit = Types::UnitNone;
     bool m_cached = true;
 };
+Q_DECLARE_METATYPE(StateType)
 
 class StateTypes: public QList<StateType>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
 public:
     StateTypes() = default;
     StateTypes(const QList<StateType> &other);
+    Q_INVOKABLE QVariant get(int index);
     StateType findByName(const QString &name);
     StateType findById(const StateTypeId &id);
 };
+Q_DECLARE_METATYPE(StateTypes)
 
 #endif // STATETYPE_H

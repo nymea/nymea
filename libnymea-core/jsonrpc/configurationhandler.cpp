@@ -72,25 +72,9 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     registerEnum<NymeaConfiguration::ConfigurationError>();
 
     // Objects
-    QVariantMap serverConfiguration;
-    serverConfiguration.insert("id", enumValueName(String));
-    serverConfiguration.insert("address", enumValueName(String));
-    serverConfiguration.insert("port", enumValueName(Uint));
-    serverConfiguration.insert("sslEnabled", enumValueName(Bool));
-    serverConfiguration.insert("authenticationEnabled", enumValueName(Bool));
-    registerObject("ServerConfiguration", serverConfiguration);
-
-    QVariantMap webServerConfiguration = serverConfiguration;
-    webServerConfiguration.insert("publicFolder", enumValueName(String));
-    registerObject("WebServerConfiguration", webServerConfiguration);
-
-    QVariantMap mqttPolicy;
-    mqttPolicy.insert("clientId", enumValueName(String));
-    mqttPolicy.insert("username", enumValueName(String));
-    mqttPolicy.insert("password", enumValueName(String));
-    mqttPolicy.insert("allowedPublishTopicFilters", enumValueName(StringList));
-    mqttPolicy.insert("allowedSubscribeTopicFilters", enumValueName(StringList));
-    registerObject("MqttPolicy", mqttPolicy);
+    registerObject<ServerConfiguration>();
+    registerObject<WebServerConfiguration>();
+    registerObject<MqttPolicy>();
 
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
@@ -327,20 +311,20 @@ JsonReply *ConfigurationHandler::GetConfigurations(const QVariantMap &params) co
     returns.insert("basicConfiguration", packBasicConfiguration());
     QVariantList tcpServerConfigs;
     foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->tcpServerConfigurations()) {
-        tcpServerConfigs.append(packServerConfiguration(config));
+        tcpServerConfigs.append(pack(config));
     }
     returns.insert("tcpServerConfigurations", tcpServerConfigs);
 
     QVariantList webServerConfigs;
     foreach (const WebServerConfiguration &config, NymeaCore::instance()->configuration()->webServerConfigurations()) {
-        webServerConfigs.append(packWebServerConfiguration(config));
+        webServerConfigs.append(pack(config));
 
     }
     returns.insert("webServerConfigurations", webServerConfigs);
 
     QVariantList webSocketServerConfigs;
     foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {
-        webSocketServerConfigs.append(packServerConfiguration(config));
+        webSocketServerConfigs.append(pack(config));
     }
     returns.insert("webSocketServerConfigurations", webSocketServerConfigs);
 
@@ -503,7 +487,7 @@ JsonReply *ConfigurationHandler::GetMqttServerConfigurations(const QVariantMap &
     QVariantMap ret;
     QVariantList mqttServerConfigs;
     foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->mqttServerConfigurations()) {
-        mqttServerConfigs << packServerConfiguration(config);
+        mqttServerConfigs << pack(config);
     }
     ret.insert("mqttServerConfigurations", mqttServerConfigs);
     return createReply(ret);
@@ -545,7 +529,7 @@ JsonReply *ConfigurationHandler::GetMqttPolicies(const QVariantMap &params) cons
     Q_UNUSED(params)
     QVariantList mqttPolicies;
     foreach (const MqttPolicy &policy, NymeaCore::instance()->configuration()->mqttPolicies()) {
-        mqttPolicies << packMqttPolicy(policy);
+        mqttPolicies << pack(policy);
     }
     QVariantMap ret;
     ret.insert("mqttPolicies", mqttPolicies);
@@ -592,7 +576,7 @@ void ConfigurationHandler::onTcpServerConfigurationChanged(const QString &id)
 {
     qCDebug(dcJsonRpc()) << "Notification: TCP server configuration changed";
     QVariantMap params;
-    params.insert("tcpServerConfiguration", packServerConfiguration(NymeaCore::instance()->configuration()->tcpServerConfigurations().value(id)));
+    params.insert("tcpServerConfiguration", pack(NymeaCore::instance()->configuration()->tcpServerConfigurations().value(id)));
     emit TcpServerConfigurationChanged(params);
 }
 
@@ -608,7 +592,7 @@ void ConfigurationHandler::onWebServerConfigurationChanged(const QString &id)
 {
     qCDebug(dcJsonRpc()) << "Notification: web server configuration changed";
     QVariantMap params;
-    params.insert("webServerConfiguration", packWebServerConfiguration(NymeaCore::instance()->configuration()->webServerConfigurations().value(id)));
+    params.insert("webServerConfiguration", pack(NymeaCore::instance()->configuration()->webServerConfigurations().value(id)));
     emit WebServerConfigurationChanged(params);
 }
 
@@ -624,7 +608,7 @@ void ConfigurationHandler::onWebSocketServerConfigurationChanged(const QString &
 {
     qCDebug(dcJsonRpc()) << "Notification: web socket server configuration changed";
     QVariantMap params;
-    params.insert("webSocketServerConfiguration", packServerConfiguration(NymeaCore::instance()->configuration()->webSocketServerConfigurations().value(id)));
+    params.insert("webSocketServerConfiguration", pack(NymeaCore::instance()->configuration()->webSocketServerConfigurations().value(id)));
     emit WebSocketServerConfigurationChanged(params);
 }
 
@@ -640,7 +624,7 @@ void ConfigurationHandler::onMqttServerConfigurationChanged(const QString &id)
 {
     qCDebug(dcJsonRpc()) << "Notification: MQTT server configuration changed";
     QVariantMap params;
-    params.insert("mqttServerConfiguration", packServerConfiguration(NymeaCore::instance()->configuration()->mqttServerConfigurations().value(id)));
+    params.insert("mqttServerConfiguration", pack(NymeaCore::instance()->configuration()->mqttServerConfigurations().value(id)));
     emit MqttServerConfigurationChanged(params);
 }
 
@@ -656,7 +640,7 @@ void ConfigurationHandler::onMqttPolicyChanged(const QString &clientId)
 {
     qCDebug(dcJsonRpc()) << "Notification: MQTT policy changed";
     QVariantMap params;
-    params.insert("policy", packMqttPolicy(NymeaCore::instance()->configuration()->mqttPolicies().value(clientId)));
+    params.insert("policy", pack(NymeaCore::instance()->configuration()->mqttPolicies().value(clientId)));
     emit MqttPolicyChanged(params);
 }
 
@@ -680,34 +664,6 @@ QVariantMap ConfigurationHandler::packBasicConfiguration()
     return basicConfiguration;
 }
 
-QVariantMap ConfigurationHandler::packServerConfiguration(const ServerConfiguration &config)
-{
-    QVariantMap serverConfiguration;
-    serverConfiguration.insert("id", config.id);
-    serverConfiguration.insert("address", config.address.toString());
-    serverConfiguration.insert("port", config.port);
-    serverConfiguration.insert("sslEnabled", config.sslEnabled);
-    serverConfiguration.insert("authenticationEnabled", config.authenticationEnabled);
-    return serverConfiguration;
-}
-
-QVariantMap ConfigurationHandler::packWebServerConfiguration(const WebServerConfiguration &config)
-{
-    QVariantMap webServerConfiguration = packServerConfiguration(config);
-    webServerConfiguration.insert("publicFolder", config.publicFolder);
-    return webServerConfiguration;
-}
-
-QVariantMap ConfigurationHandler::packMqttPolicy(const MqttPolicy &policy)
-{
-    QVariantMap policyMap;
-    policyMap.insert("clientId", policy.clientId);
-    policyMap.insert("username", policy.username);
-    policyMap.insert("password", policy.password);
-    policyMap.insert("allowedPublishTopicFilters", policy.allowedPublishTopicFilters);
-    policyMap.insert("allowedSubscribeTopicFilters", policy.allowedSubscribeTopicFilters);
-    return policyMap;
-}
 
 MqttPolicy ConfigurationHandler::unpackMqttPolicy(const QVariantMap &mqttPolicyMap)
 {
@@ -741,6 +697,7 @@ WebServerConfiguration ConfigurationHandler::unpackWebServerConfiguration(const 
     webServerConfiguration.sslEnabled = tmp.sslEnabled;
     webServerConfiguration.authenticationEnabled = tmp.authenticationEnabled;
     webServerConfiguration.publicFolder = webServerConfigurationMap.value("publicFolder").toString();
+    qWarning() << "Unpacking web server config:" << webServerConfigurationMap;
     return webServerConfiguration;
 }
 

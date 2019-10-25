@@ -33,8 +33,6 @@
 
 #include <QDebug>
 
-namespace nymeaserver {
-
 /*! Constructs an invalid \l{TimeEventItem}. */
 TimeEventItem::TimeEventItem()
 {
@@ -141,4 +139,3 @@ QDebug operator<<(QDebug dbg, const TimeEventItem &timeEventItem)
     return dbg;
 }
 
-}

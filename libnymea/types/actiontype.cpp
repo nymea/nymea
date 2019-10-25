@@ -123,6 +123,11 @@ ActionTypes::ActionTypes(const QList<ActionType> &other)
     }
 }
 
+QVariant ActionTypes::get(int index)
+{
+    return QVariant::fromValue(at(index));
+}
+
 ActionType ActionTypes::findByName(const QString &name)
 {
     foreach (const ActionType &actionType, *this) {

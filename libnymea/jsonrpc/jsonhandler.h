@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QVariantMap>
 #include <QMetaMethod>
+#include <QDebug>
+#include <QVariant>
 
 #include "jsonreply.h"
 
@@ -32,6 +34,7 @@ public:
     virtual QString name() const = 0;
 
     QVariantMap jsonEnums() const;
+    QVariantMap jsonFlags() const;
     QVariantMap jsonObjects() const;
     QVariantMap jsonMethods() const;
     QVariantMap jsonNotifications() const;
@@ -46,8 +49,13 @@ public:
     static BasicType variantTypeToBasicType(QVariant::Type variantType);
     static QVariant::Type basicTypeToVariantType(BasicType basicType);
 
+    template<typename T> QVariantMap pack(const T &value) const;
+
 protected:
-    template <typename T> void registerEnum();
+    template <typename Enum> void registerEnum();
+    template <typename Enum, typename Flags> void registerEnum();
+    template <typename ObjectType> void registerObject();
+    template <typename ObjectType, typename ListType> void registerObject();
     void registerObject(const QString &name, const QVariantMap &object);
     void registerMethod(const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, bool deprecated = false);
     void registerNotification(const QString &name, const QString &description, const QVariantMap &params, bool deprecated = false);
@@ -55,13 +63,23 @@ protected:
     JsonReply *createReply(const QVariantMap &data) const;
     JsonReply *createAsyncReply(const QString &method) const;
 
+private:
+    QVariantMap pack(const QMetaObject &metaObject, const void *gadget) const;
 
 private:
     QVariantMap m_enums;
+    QHash<QString, QMetaEnum> m_metaEnums;
+    QVariantMap m_flags;
+    QHash<QString, QMetaEnum> m_metaFlags;
+    QHash<QString, QString> m_flagsEnums;
     QVariantMap m_objects;
+    QHash<QString, QMetaObject> m_metaObjects;
+    QHash<QString, QMetaObject> m_listMetaObjects;
+    QHash<QString, QString> m_listEntryTypes;
     QVariantMap m_methods;
     QVariantMap m_notifications;
 };
+Q_DECLARE_METATYPE(QVariant::Type)
 
 template<typename T>
 void JsonHandler::registerEnum()
@@ -72,8 +90,82 @@ void JsonHandler::registerEnum()
         values << metaEnum.key(i);
     }
     m_enums.insert(metaEnum.name(), values);
-
+    m_metaEnums.insert(metaEnum.name(), metaEnum);
 }
+
+template<typename Enum, typename Flags>
+void JsonHandler::registerEnum()
+{
+    registerEnum<Enum>();
+    QMetaEnum metaEnum = QMetaEnum::fromType<Enum>();
+    QMetaEnum metaFlags = QMetaEnum::fromType<Flags>();
+    m_metaFlags.insert(metaFlags.name(), metaFlags);
+    m_flagsEnums.insert(metaFlags.name(), metaEnum.name());
+    m_flags.insert(metaFlags.name(), QVariantList() << QString("$ref:%1").arg(metaEnum.name()));
+}
+
+template<typename ObjectType>
+void JsonHandler::registerObject()
+{
+    qRegisterMetaType<QVariant::Type>();
+    QMetaObject metaObject = ObjectType::staticMetaObject;
+    QString className = QString(metaObject.className()).split("::").last();
+    QVariantMap description;
+    for (int i = 0; i < metaObject.propertyCount(); i++) {
+        QMetaProperty metaProperty = metaObject.property(i);
+        QString name = metaProperty.name();
+        if (name == "objectName") {
+            continue; // Skip QObject's objectName property
+        }
+        if (metaProperty.isUser()) {
+            name.prepend("o:");
+        }
+        QVariant typeName;
+//        qWarning() << ".-.-.-.-.-" << metaProperty.name() << metaProperty.type() << metaProperty.typeName();
+        if (metaProperty.type() == QVariant::UserType) {
+            if (metaProperty.typeName() == QStringLiteral("QVariant::Type")) {
+                typeName = QString("$ref:BasicType");
+            } else if (QString(metaProperty.typeName()).startsWith("QList")) {
+                typeName = QVariantList() << "$ref:" + QString(metaProperty.typeName()).remove("QList<").remove(">");
+            } else {
+                typeName = QString("$ref:%1").arg(QString(metaProperty.typeName()).split("::").last());
+            }
+        } else if (metaProperty.isEnumType()) {
+            typeName = QString("$ref:%1").arg(QString(metaProperty.typeName()).split("::").last());
+        } else if (metaProperty.isFlagType()) {
+            typeName = QVariantList() << "$ref:" + m_flagsEnums.value(metaProperty.name());
+        } else if (metaProperty.type() == QVariant::List) {
+            typeName = QVariantList() << enumValueName(Variant);
+        } else {
+            typeName = enumValueName(variantTypeToBasicType(metaProperty.type()));
+        }
+        description.insert(name, typeName);
+    }
+    m_objects.insert(className, description);
+    m_metaObjects.insert(className, metaObject);
+}
+
+template<typename ObjectType, typename ListType>
+void JsonHandler::registerObject()
+{
+    registerObject<ObjectType>();
+    QMetaObject metaObject = ObjectType::staticMetaObject;
+    QMetaObject listMetaObject = ListType::staticMetaObject;
+    m_objects.insert(listMetaObject.className(), QVariantList() << QVariant(QString("$ref:%1").arg(metaObject.className())));
+    m_metaObjects.insert(listMetaObject.className(), listMetaObject);
+    m_listMetaObjects.insert(listMetaObject.className(), listMetaObject);
+    m_listEntryTypes.insert(listMetaObject.className(), metaObject.className());
+    Q_ASSERT_X(listMetaObject.indexOfProperty("count") >= 0, "JsonHandler", "List type does not implement \"count\" property!");
+    Q_ASSERT_X(listMetaObject.indexOfMethod("get(int)") >= 0, "JsonHandler", "List type does not implement \"Q_INVOKABLE QVariant get(int index)\" method!");
+}
+
+//template<typename T>
+//void JsonHandler::registerList()
+//{
+//    QMetaObject metaObject = T::staticMetaObject;
+//    m_lists.insert(metaObject.className(), metaObject);
+//    m_objects.insert(metaObject.classInfo(), QVariantList() << )
+//}
 
 template<typename T>
 QString JsonHandler::enumRef()
@@ -95,5 +187,13 @@ T JsonHandler::enumNameToValue(const QString &name)
     QMetaEnum metaEnum = QMetaEnum::fromType<T>();
     return static_cast<T>(metaEnum.keyToValue(name.toUtf8()));
 }
+
+template<typename T>
+QVariantMap JsonHandler::pack(const T &value) const
+{
+    QMetaObject metaObject = T::staticMetaObject;
+    return pack(metaObject, static_cast<const void*>(&value));
+}
+
 
 #endif // JSONHANDLER_H

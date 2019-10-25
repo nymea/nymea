@@ -1,7 +1,21 @@
 #!/bin/bash
 
 if [ -z $1 ]; then
-  echo "usage: $0 host"
-else
-  (echo '{"id":1, "token": "'$2'", "method":"Devices.GetConfiguredDevices"}'; sleep 1) | nc $1 2222
+  echo "usage: $0 host <token>"
+  exit 1
 fi
+
+if [ -z $2 ]; then
+cat <<EOD | nc $1 2222
+{"id":0, "method":"JSONRPC.Hello"}
+{"id":1, "method":"Devices.GetConfiguredDevices"}
+EOD
+exit 0
+fi
+
+cat <<EOD | nc $1 2222
+{"id":0, "method":"JSONRPC.Hello"}
+{"id":1, "token": "$2", "method":"Devices.GetConfiguredDevices"}
+EOD
+
+

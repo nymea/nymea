@@ -255,6 +255,11 @@ ParamTypes::ParamTypes(const QList<ParamType> &other): QList<ParamType>(other)
 {
 }
 
+QVariant ParamTypes::get(int index)
+{
+    return QVariant::fromValue(at(index));
+}
+
 ParamType ParamTypes::findByName(const QString &name)
 {
     foreach (const ParamType &paramType, *this) {

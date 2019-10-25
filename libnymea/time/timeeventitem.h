@@ -25,8 +25,6 @@
 
 #include "repeatingoption.h"
 
-namespace nymeaserver {
-
 class TimeEventItem
 {
 public:
@@ -56,6 +54,5 @@ private:
 
 QDebug operator<<(QDebug dbg, const TimeEventItem &timeEventItem);
 
-}
 
 #endif // TIMEEVENTITEM_H

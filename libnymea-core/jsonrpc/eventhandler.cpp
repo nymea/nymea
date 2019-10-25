@@ -48,12 +48,12 @@ namespace nymeaserver {
 EventHandler::EventHandler(QObject *parent) :
     JsonHandler(parent)
 {
+    registerEnum<Types::InputType>();
+    registerEnum<Types::Unit>();
     // Objects
-    QVariantMap event;
-    event.insert("eventTypeId", enumValueName(Uuid));
-    event.insert("deviceId", enumValueName(Uuid));
-    event.insert("o:params", QVariantList() << objectRef("Param"));
-    registerObject("Event", event);
+    registerObject<Param, ParamList>();
+    registerObject<Event>();
+    registerObject<ParamType, ParamTypes>();
 
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
@@ -80,30 +80,23 @@ QString EventHandler::name() const
 void EventHandler::eventTriggered(const Event &event)
 {
     QVariantMap params;
-
-    QVariantMap variant;
-    variant.insert("eventTypeId", event.eventTypeId().toString());
-    variant.insert("deviceId", event.deviceId().toString());
-    QVariantList eventParams;
-    foreach (const Param &param, event.params()) {
-        eventParams.append(DeviceHandler::packParam(param));
-    }
-    variant.insert("params", eventParams);
-
-    params.insert("event", variant);
+    params.insert("event", pack(event));
     emit EventTriggered(params);
 }
 
 JsonReply* EventHandler::GetEventType(const QVariantMap &params) const
 {
+    QLocale locale = params.value("locale").toLocale();
     qCDebug(dcJsonRpc) << "asked for event type" << params;
     EventTypeId eventTypeId(params.value("eventTypeId").toString());
     foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
             if (eventType.id() == eventTypeId) {
+                EventType translatedEventType = eventType;
+                translatedEventType.setDisplayName(NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), eventType.displayName(), locale));
                 QVariantMap data;
                 data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorNoError));
-                data.insert("eventType", DeviceHandler::packEventType(eventType, deviceClass.pluginId(), params.value("locale").toLocale()));
+                data.insert("eventType", pack(translatedEventType));
                 return createReply(data);
             }
         }

@@ -62,8 +62,10 @@ class LIBNYMEA_EXPORT DevicePlugin: public QObject
 {
     Q_OBJECT
 
-    friend class DeviceManager;
-    friend class DeviceManagerImplementation;
+    Q_PROPERTY(QUuid id READ pluginId)
+    Q_PROPERTY(QString name READ pluginName)
+    Q_PROPERTY(QString displayName READ pluginDisplayName)
+    Q_PROPERTY(ParamTypes paramTypes READ configurationDescription)
 
 public:
     DevicePlugin(QObject *parent = nullptr);
@@ -115,6 +117,10 @@ protected:
     QSettings *pluginStorage() const;
 
 private:
+    friend class DeviceManager;
+    friend class DeviceManagerImplementation;
+
+
     void setMetaData(const PluginMetadata &metaData);
     void initPlugin(const PluginMetadata &metadata, DeviceManager *deviceManager, HardwareManager *hardwareManager);
 

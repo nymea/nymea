@@ -116,12 +116,7 @@ RulesHandler::RulesHandler(QObject *parent) :
     repeatingOption.insert("o:monthDays", QVariantList() << enumValueName(Int));
     registerObject("RepeatingOption", repeatingOption);
 
-    QVariantMap calendarItem;
-    calendarItem.insert("o:datetime", enumValueName(Uint));
-    calendarItem.insert("o:startTime", enumValueName(Time));
-    calendarItem.insert("duration", enumValueName(Uint));
-    calendarItem.insert("o:repeating", objectRef("RepeatingOption"));
-    registerObject("CalendarItem", calendarItem);
+    registerObject<CalendarItem>();
 
     QVariantMap timeEventItem;
     timeEventItem.insert("o:datetime", enumValueName(Uint));

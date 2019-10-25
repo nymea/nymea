@@ -92,9 +92,6 @@ private slots:
 
 private:
     static QVariantMap packBasicConfiguration();
-    static QVariantMap packServerConfiguration(const ServerConfiguration &config);
-    static QVariantMap packWebServerConfiguration(const WebServerConfiguration &config);
-    static QVariantMap packMqttPolicy(const MqttPolicy &policy);
 
     static ServerConfiguration unpackServerConfiguration(const QVariantMap &serverConfigurationMap);
     static WebServerConfiguration unpackWebServerConfiguration(const QVariantMap &webServerConfigurationMap);

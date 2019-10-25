@@ -103,7 +103,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
         return;
     }
 
-    m_pluginId = jsonObject.value("id").toString();
+    m_pluginId = PluginId(jsonObject.value("id").toString());
     m_pluginName = jsonObject.value("name").toString();
     m_pluginDisplayName = jsonObject.value("displayName").toString();
 
@@ -192,7 +192,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 continue;
             }
 
-            DeviceClassId deviceClassId = deviceClassObject.value("id").toString();
+            DeviceClassId deviceClassId = DeviceClassId(deviceClassObject.value("id").toString());
             QString deviceClassName = deviceClassObject.value("name").toString();
 
             // Check if there are any unknown fields
@@ -304,7 +304,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     continue;
                 }
 
-                StateTypeId stateTypeId = st.value("id").toString();
+                StateTypeId stateTypeId = StateTypeId(st.value("id").toString());
                 QString stateTypeName = st.value("name").toString();
 
                 // Check if there are any unknown fields

@@ -25,10 +25,13 @@
 
 #include "repeatingoption.h"
 
-namespace nymeaserver {
-
 class CalendarItem
 {
+    Q_GADGET
+    Q_PROPERTY(uint duration READ duration WRITE setDuration)
+    Q_PROPERTY(QDateTime datetime READ dateTime WRITE setDateTime USER true)
+    Q_PROPERTY(QTime startTime READ startTime WRITE setStartTime USER true)
+    Q_PROPERTY(RepeatingOption repeating READ repeatingOption WRITE setRepeatingOption USER true)
 public:
     CalendarItem();
 
@@ -64,6 +67,5 @@ private:
 };
 
 QDebug operator<<(QDebug dbg, const CalendarItem &calendarItem);
-}
 
 #endif // CALENDARITEM_H

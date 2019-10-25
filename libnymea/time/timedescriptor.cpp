@@ -36,8 +36,6 @@
 
 #include <QDebug>
 
-namespace nymeaserver {
-
 /*! Constructs an invalid \l{TimeDescriptor}.*/
 TimeDescriptor::TimeDescriptor()
 {
@@ -118,6 +116,4 @@ QDebug operator<<(QDebug dbg, const TimeDescriptor &timeDescriptor)
         dbg.nospace() << "  " << i << ": " << timeDescriptor.calendarItems().at(i);
     }
     return dbg;
-}
-
 }

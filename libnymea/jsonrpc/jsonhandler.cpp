@@ -140,73 +140,162 @@ JsonReply *JsonHandler::createAsyncReply(const QString &method) const
     return JsonReply::createAsyncReply(const_cast<JsonHandler*>(this), method);
 }
 
-QVariantMap JsonHandler::pack(const QMetaObject &metaObject, const void *value) const
+QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) const
 {
-    QVariantMap ret;
-//    qWarning() << "+ Packing" << metaObject.className();
-    for (int i = 0; i < metaObject.propertyCount(); i++) {
-        QMetaProperty metaProperty = metaObject.property(i);
-        if (metaProperty.name() == QStringLiteral("objectName")) {
-            continue; // Skip QObject's objectName property
+    QString className = QString(metaObject.className()).split("::").last();
+    if (m_listMetaObjects.contains(className)) {
+        QVariantList ret;
+        QMetaProperty countProperty = metaObject.property(metaObject.indexOfProperty("count"));
+        QMetaObject entryMetaObject = m_metaObjects.value(m_listEntryTypes.value(metaObject.className()));
+        int count = countProperty.readOnGadget(value).toInt();
+        QMetaMethod getMethod = metaObject.method(metaObject.indexOfMethod("get(int)"));
+        for (int i = 0; i < count; i++) {
+            QVariant entry;
+            getMethod.invokeOnGadget(const_cast<void*>(value), Q_RETURN_ARG(QVariant, entry), Q_ARG(int, i));
+            ret.append(pack(entryMetaObject, entry.data()));
         }
+        return ret;
+    }
 
-        QVariant val = metaProperty.readOnGadget(value);
-//        qWarning() << "|- Property:" << metaProperty.name() << metaProperty.readOnGadget(value) << metaProperty.type() << metaProperty.typeName();
-//        qWarning() << "|-- All list types:" << m_listMetaObjects.keys();
-        if (metaProperty.type() == QVariant::UserType) {
+    if (m_metaObjects.contains(className)) {
+        QVariantMap ret;
+        for (int i = 0; i < metaObject.propertyCount(); i++) {
+            QMetaProperty metaProperty = metaObject.property(i);
+
+            // Skip QObject's objectName property
+            if (metaProperty.name() == QStringLiteral("objectName")) {
+                continue;
+            }
+
+            // Pack flags
+            if (metaProperty.isFlagType()) {
+                QString flagName = QString(metaProperty.typeName()).split("::").last();
+                Q_ASSERT_X(m_metaFlags.contains(flagName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(flagName).toUtf8());
+                QMetaEnum metaFlag = m_metaFlags.value(flagName);
+                int flagValue = metaProperty.readOnGadget(value).toInt();
+                QStringList flags;
+                for (int i = 0; i < metaFlag.keyCount(); i++) {
+                    if ((metaFlag.value(i) & flagValue) > 0) {
+                        flags.append(metaFlag.key(i));
+                    }
+                }
+                ret.insert(metaProperty.name(), flags);
+                continue;
+            }
+
+            // Pack enums
+            if (metaProperty.isEnumType()) {
+                QString enumName = QString(metaProperty.typeName()).split("::").last();
+                Q_ASSERT_X(m_metaEnums.contains(enumName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(metaProperty.typeName()).toUtf8());
+                QMetaEnum metaEnum = m_metaEnums.value(enumName);
+                ret.insert(metaProperty.name(), metaEnum.key(metaProperty.readOnGadget(value).toInt()));
+                continue;
+            }
+
+            // Basic type/Variant type
             if (metaProperty.typeName() == QStringLiteral("QVariant::Type")) {
                 QMetaEnum metaEnum = QMetaEnum::fromType<BasicType>();
-//                qWarning() << "|--" << metaProperty.readOnGadget(value).toInt() << metaEnum.key(metaProperty.readOnGadget(value).toInt());
                 ret.insert(metaProperty.name(), metaEnum.key(variantTypeToBasicType(metaProperty.readOnGadget(value).template value<QVariant::Type>())));
-            } else if (m_listMetaObjects.contains(metaProperty.typeName())) {
-                QVariant listObject = metaProperty.readOnGadget(value);
-                QMetaObject listMetaObject = m_listMetaObjects.value(metaProperty.typeName());
-                QMetaProperty countProperty = listMetaObject.property(listMetaObject.indexOfProperty("count"));
-                int listCount = countProperty.readOnGadget(listObject.constData()).toInt();
-//                qWarning() << "Packing list type" << listObject << "count is" << listCount;
-                QMetaMethod metaMethod = listMetaObject.method(listMetaObject.indexOfMethod("get(int)"));
-//                qWarning() << "get method" << listMetaObject.indexOfMethod("get(int)") << listMetaObject.method(0).name() << QMetaObject::normalizedSignature("QVariant get(int)");
+                continue;
+            }
 
-                QMetaObject entryMetaObject = m_metaObjects.value(m_listEntryTypes.value(listMetaObject.className()));
-                QVariantList list;
-                for (int i = 0; i < listCount; i++) {
-                    QVariant entry;
-                    metaMethod.invokeOnGadget(listObject.data(), Q_RETURN_ARG(QVariant, entry), Q_ARG(int, i));
-//                    qWarning() << "|---Feckin hell" << entry;
-
-                    list.append(pack(entryMetaObject, entry.data()));
+            // Our own objects
+            if (metaProperty.type() == QVariant::UserType) {
+                if (m_listMetaObjects.contains(metaProperty.typeName())) {
+                    QMetaObject entryMetaObject = m_listMetaObjects.value(metaProperty.typeName());
+                    ret.insert(metaProperty.name(), pack(entryMetaObject, metaProperty.readOnGadget(value).data()));
+                    continue;
                 }
 
-                ret.insert(metaProperty.name(), list);
-
-
-            } else {
-                Q_ASSERT_X(false, this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(metaObject.className()).arg(metaProperty.typeName()).toUtf8());
-            }
-        } else if (metaProperty.isFlagType()) {
-            QMetaEnum metaFlag = m_metaFlags.value(QString(metaProperty.typeName()).split("::").last());
-//            QMetaEnum metaEnum = m_metaEnums.value(m_flagsEnums.value(metaFlag.name()));
-            int flagValue = metaProperty.readOnGadget(value).toInt();
-//            qWarning() << "|-- Flag" << flagValue << metaFlag.name() << metaFlag.keyCount() << metaProperty.type();
-            QStringList flags;
-            for (int i = 0; i < metaFlag.keyCount(); i++) {
-//                qWarning() << "|--- flag key:" << metaFlag.key(i) << metaFlag.value(i);
-                if ((metaFlag.value(i) & flagValue) > 0) {
-                    flags.append(metaFlag.key(i));
+                if (m_metaObjects.contains(metaProperty.typeName())) {
+                    QMetaObject entryMetaObject = m_metaObjects.value(metaProperty.typeName());
+                    ret.insert(metaProperty.name(), pack(entryMetaObject, metaProperty.readOnGadget(value).data()));
+                    continue;
                 }
+
+                Q_ASSERT_X(false, this->metaObject()->className(), QString("Unregistered property type: %1").arg(metaProperty.typeName()).toUtf8());
+                qCWarning(dcJsonRpc()) << "Cannot pack property of unregistered object type" << metaProperty.typeName();
+                continue;
             }
-            ret.insert(metaProperty.name(), flags);
-        } else if (metaProperty.isEnumType()) {
-            QString enumName = QString(metaProperty.typeName()).split("::").last();
-            Q_ASSERT_X(m_metaEnums.contains(enumName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered int this handler.").arg(metaObject.className()).arg(metaProperty.typeName()).toUtf8());
-            QMetaEnum metaEnum = m_metaEnums.value(enumName);
-//            qWarning() << "|-- Enum: Name:" <<  metaEnum.name() << "as int:" << metaEnum.key(metaProperty.readOnGadget(value).toInt()) << "All enums:" << m_metaEnums.keys();
-            ret.insert(metaProperty.name(), metaEnum.key(metaProperty.readOnGadget(value).toInt()));
-        } else if (!metaProperty.isUser() || !metaProperty.readOnGadget(value).isNull()) {
-//            qWarning() << "|-- property" << metaProperty.name() << metaProperty.readOnGadget(value);
-            ret.insert(metaProperty.name(), metaProperty.readOnGadget(value));
+
+            // Standard properties, QString, int etc... If it's not optional, or if it's not empty, pack it up
+            if (!metaProperty.isUser() || !metaProperty.readOnGadget(value).isNull()) {
+                ret.insert(metaProperty.name(), metaProperty.readOnGadget(value));
+            }
+
         }
+        return ret;
     }
-    return ret;
+
+    Q_ASSERT_X(false, this->metaObject()->className(), QString("Unregistered object type: %1").arg(className).toUtf8());
+    qCWarning(dcJsonRpc()) << "Cannot pack object of unregistered type" << className;
+    return QVariant();
+//    QVariantMap ret;
+////    qWarning() << "+ Packing" << metaObject.className();
+//    for (int i = 0; i < metaObject.propertyCount(); i++) {
+//        QMetaProperty metaProperty = metaObject.property(i);
+//        if (metaProperty.name() == QStringLiteral("objectName")) {
+//            continue; // Skip QObject's objectName property
+//        }
+
+//        QVariant val = metaProperty.readOnGadget(value);
+////        qWarning() << "|- Property:" << metaProperty.name() << metaProperty.readOnGadget(value) << metaProperty.type() << metaProperty.typeName();
+////        qWarning() << "|-- All list types:" << m_listMetaObjects.keys();
+//        if (metaProperty.type() == QVariant::UserType) {
+//            if (metaProperty.typeName() == QStringLiteral("QVariant::Type")) {
+//                QMetaEnum metaEnum = QMetaEnum::fromType<BasicType>();
+////                qWarning() << "|--" << metaProperty.readOnGadget(value).toInt() << metaEnum.key(metaProperty.readOnGadget(value).toInt());
+//                ret.insert(metaProperty.name(), metaEnum.key(variantTypeToBasicType(metaProperty.readOnGadget(value).template value<QVariant::Type>())));
+//            } else if (m_listMetaObjects.contains(metaProperty.typeName())) {
+//                QVariant listObject = metaProperty.readOnGadget(value);
+//                QMetaObject listMetaObject = m_listMetaObjects.value(metaProperty.typeName());
+//                QMetaProperty countProperty = listMetaObject.property(listMetaObject.indexOfProperty("count"));
+//                int listCount = countProperty.readOnGadget(listObject.constData()).toInt();
+////                qWarning() << "Packing list type" << listObject << "count is" << listCount;
+//                QMetaMethod metaMethod = listMetaObject.method(listMetaObject.indexOfMethod("get(int)"));
+////                qWarning() << "get method" << listMetaObject.indexOfMethod("get(int)") << listMetaObject.method(0).name() << QMetaObject::normalizedSignature("QVariant get(int)");
+
+//                QMetaObject entryMetaObject = m_metaObjects.value(m_listEntryTypes.value(listMetaObject.className()));
+//                QVariantList list;
+//                for (int i = 0; i < listCount; i++) {
+//                    QVariant entry;
+//                    metaMethod.invokeOnGadget(listObject.data(), Q_RETURN_ARG(QVariant, entry), Q_ARG(int, i));
+////                    qWarning() << "|---Feckin hell" << entry;
+
+//                    list.append(pack(entryMetaObject, entry.data()));
+//                }
+
+//                ret.insert(metaProperty.name(), list);
+
+
+//            } else {
+//                Q_ASSERT_X(false, this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(metaObject.className()).arg(metaProperty.typeName()).toUtf8());
+//            }
+//        } else if (metaProperty.isFlagType()) {
+//            QMetaEnum metaFlag = m_metaFlags.value(QString(metaProperty.typeName()).split("::").last());
+////            QMetaEnum metaEnum = m_metaEnums.value(m_flagsEnums.value(metaFlag.name()));
+//            int flagValue = metaProperty.readOnGadget(value).toInt();
+////            qWarning() << "|-- Flag" << flagValue << metaFlag.name() << metaFlag.keyCount() << metaProperty.type();
+//            QStringList flags;
+//            for (int i = 0; i < metaFlag.keyCount(); i++) {
+////                qWarning() << "|--- flag key:" << metaFlag.key(i) << metaFlag.value(i);
+//                if ((metaFlag.value(i) & flagValue) > 0) {
+//                    flags.append(metaFlag.key(i));
+//                }
+//            }
+//            ret.insert(metaProperty.name(), flags);
+//        } else if (metaProperty.isEnumType()) {
+//            QString enumName = QString(metaProperty.typeName()).split("::").last();
+//            Q_ASSERT_X(m_metaEnums.contains(enumName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered int this handler.").arg(metaObject.className()).arg(metaProperty.typeName()).toUtf8());
+//            QMetaEnum metaEnum = m_metaEnums.value(enumName);
+////            qWarning() << "|-- Enum: Name:" <<  metaEnum.name() << "as int:" << metaEnum.key(metaProperty.readOnGadget(value).toInt()) << "All enums:" << m_metaEnums.keys();
+//            ret.insert(metaProperty.name(), metaEnum.key(metaProperty.readOnGadget(value).toInt()));
+//        } else if (!metaProperty.isUser() || !metaProperty.readOnGadget(value).isNull()) {
+////            qWarning() << "|-- property" << metaProperty.name() << metaProperty.readOnGadget(value);
+//            ret.insert(metaProperty.name(), metaProperty.readOnGadget(value));
+//        }
+//    }
+//    return ret;
+
 }
 

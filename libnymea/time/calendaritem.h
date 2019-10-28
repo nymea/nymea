@@ -24,6 +24,7 @@
 #include <QTime>
 
 #include "repeatingoption.h"
+#include <QVariant>
 
 class CalendarItem
 {
@@ -65,6 +66,17 @@ private:
     bool evaluateYearly(const QDateTime &dateTime) const;
 
 };
+
+class CalendarItems: public QList<CalendarItem>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    CalendarItems();
+    CalendarItems(const QList<CalendarItem> &other);
+    Q_INVOKABLE QVariant get(int index);
+};
+Q_DECLARE_METATYPE(CalendarItems)
 
 QDebug operator<<(QDebug dbg, const CalendarItem &calendarItem);
 

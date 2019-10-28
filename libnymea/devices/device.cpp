@@ -460,3 +460,14 @@ Devices Devices::filterByParentDeviceId(const DeviceId &deviceId)
     }
     return ret;
 }
+
+Devices Devices::filterByInterface(const QString &interface)
+{
+    Devices ret;
+    foreach (Device *device, *this) {
+        if (device->deviceClass().interfaces().indexOf(interface) >= 0) {
+            ret.append(device);
+        }
+    }
+    return ret;
+}

@@ -274,3 +274,18 @@ QDebug operator<<(QDebug dbg, const CalendarItem &calendarItem)
 }
 
 
+
+CalendarItems::CalendarItems()
+{
+
+}
+
+CalendarItems::CalendarItems(const QList<CalendarItem> &other): QList<CalendarItem>(other)
+{
+
+}
+
+QVariant CalendarItems::get(int index)
+{
+    return QVariant::fromValue(at(index));
+}

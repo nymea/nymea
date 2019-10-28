@@ -49,7 +49,8 @@ public:
     static BasicType variantTypeToBasicType(QVariant::Type variantType);
     static QVariant::Type basicTypeToVariantType(BasicType basicType);
 
-    template<typename T> QVariantMap pack(const T &value) const;
+    template<typename T> QVariant pack(const T &value) const;
+    template <typename T> T unpack(const QVariantMap &map) const;
 
 protected:
     template <typename Enum> void registerEnum();
@@ -64,7 +65,7 @@ protected:
     JsonReply *createAsyncReply(const QString &method) const;
 
 private:
-    QVariantMap pack(const QMetaObject &metaObject, const void *gadget) const;
+    QVariant pack(const QMetaObject &metaObject, const void *gadget) const;
 
 private:
     QVariantMap m_enums;
@@ -189,11 +190,35 @@ T JsonHandler::enumNameToValue(const QString &name)
 }
 
 template<typename T>
-QVariantMap JsonHandler::pack(const T &value) const
+QVariant JsonHandler::pack(const T &value) const
 {
     QMetaObject metaObject = T::staticMetaObject;
     return pack(metaObject, static_cast<const void*>(&value));
 }
+
+template<typename T>
+T JsonHandler::unpack(const QVariantMap &map) const
+{
+    T ret;
+    QMetaObject metaObject = T::staticMetaObject;
+    for (int i = 0; i < metaObject.propertyCount(); i++) {
+        QMetaProperty metaProperty = metaObject.property(i);
+        if (metaProperty.name() == QStringLiteral("objectName")) {
+            continue;
+        }
+        if (!metaProperty.isWritable()) {
+            continue;
+        }
+        if (!metaProperty.isUser()) {
+            Q_ASSERT_X(map.contains(metaProperty.name()), this->metaObject()->className(), QString("Missing property %1 in map.").arg(metaProperty.name()).toUtf8());
+        }
+        if (map.contains(metaProperty.name())) {
+            metaProperty.writeOnGadget(&ret, map.value(metaProperty.name()));
+        }
+    }
+    return ret;
+}
+
 
 
 #endif // JSONHANDLER_H

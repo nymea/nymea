@@ -443,7 +443,7 @@ JsonReply* DeviceHandler::GetPlugins(const QVariantMap &params) const
 
     QVariantList plugins;
     foreach (DevicePlugin* plugin, NymeaCore::instance()->deviceManager()->plugins()) {
-        QVariantMap packedPlugin = pack(*plugin);
+        QVariantMap packedPlugin = pack(*plugin).toMap();
         packedPlugin["displayName"] = NymeaCore::instance()->deviceManager()->translate(plugin->pluginId(), plugin->pluginDisplayName(), locale);
         plugins.append(packedPlugin);
     }
@@ -904,7 +904,7 @@ QVariantMap DeviceHandler::packParamType(const ParamType &paramType, const Plugi
 {
     ParamType translatedParamType = paramType;
     translatedParamType.setDisplayName(NymeaCore::instance()->deviceManager()->translate(pluginId, paramType.displayName(), locale));
-    return pack(translatedParamType);
+    return pack(translatedParamType).toMap();
 }
 
 QVariantMap DeviceHandler::packEventType(const EventType &eventType, const PluginId &pluginId, const QLocale &locale) const

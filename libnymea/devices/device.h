@@ -161,6 +161,7 @@ public:
     Devices filterByParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
     Devices filterByDeviceClassId(const DeviceClassId &deviceClassId);
     Devices filterByParentDeviceId(const DeviceId &deviceId);
+    Devices filterByInterface(const QString &interface);
 };
 
 Q_DECLARE_METATYPE(Device::DeviceError)

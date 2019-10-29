@@ -799,7 +799,7 @@ void NymeaCore::gotEvent(const Event &event)
 
     // Set action params, depending on the event value
     foreach (RuleAction ruleAction, eventBasedActions) {
-        RuleActionParamList newParams;
+        RuleActionParams newParams;
         foreach (RuleActionParam ruleActionParam, ruleAction.ruleActionParams()) {
             // if this event param should be taken over in this action
             if (event.eventTypeId() == ruleActionParam.eventTypeId()) {

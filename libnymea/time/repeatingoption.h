@@ -29,7 +29,9 @@ class QDateTime;
 class RepeatingOption
 {
     Q_GADGET
-
+    Q_PROPERTY(RepeatingMode mode READ mode WRITE setMode)
+    Q_PROPERTY(QList<int> weekDays READ weekDays WRITE setWeekDays USER true)
+    Q_PROPERTY(QList<int> monthDays READ monthDays WRITE setMonthDays USER true)
 public:
     enum RepeatingMode {
         RepeatingModeNone,
@@ -45,9 +47,13 @@ public:
     RepeatingOption(const RepeatingMode &mode, const QList<int> &weekDays = QList<int>(), const QList<int> &monthDays = QList<int>());
 
     RepeatingMode mode() const;
+    void setMode(RepeatingMode mode);
 
     QList<int> weekDays() const;
+    void setWeekDays(const QList<int> &weekDays);
+
     QList<int> monthDays() const;
+    void setMonthDays(const QList<int> &monthDays);
 
     bool isEmtpy() const;
     bool isValid() const;

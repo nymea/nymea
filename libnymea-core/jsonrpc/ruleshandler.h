@@ -87,7 +87,7 @@ private:
     static StateDescriptor unpackStateDescriptor(const QVariantMap &stateDescriptorMap);
     static StateEvaluator unpackStateEvaluator(const QVariantMap &stateEvaluatorMap);
     static RuleActionParam unpackRuleActionParam(const QVariantMap &ruleActionParamMap);
-    static RuleActionParamList unpackRuleActionParams(const QVariantList &ruleActionParamList);
+    static RuleActionParams unpackRuleActionParams(const QVariantList &ruleActionParamList);
     static RuleAction unpackRuleAction(const QVariantMap &ruleActionMap);
 
     static Rule unpackRule(const QVariantMap &ruleMap);

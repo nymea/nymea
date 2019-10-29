@@ -3,6 +3,7 @@
 #include "loggingcategories.h"
 
 #include <QDebug>
+#include <QDateTime>
 
 JsonHandler::JsonHandler(QObject *parent) : QObject(parent)
 {
@@ -33,12 +34,6 @@ QVariantMap JsonHandler::jsonNotifications() const
 {
     return m_notifications;
 }
-
-//QString JsonHandler::basicTypeName(JsonHandler::BasicType type)
-//{
-//    QMetaEnum metaEnum = QMetaEnum::fromType<BasicType>();
-//    return metaEnum.valueToKey(type);
-//}
 
 QString JsonHandler::objectRef(const QString &objectName)
 {
@@ -220,9 +215,13 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
 
             // Standard properties, QString, int etc... If it's not optional, or if it's not empty, pack it up
             if (!metaProperty.isUser() || !metaProperty.readOnGadget(value).isNull()) {
-                ret.insert(metaProperty.name(), metaProperty.readOnGadget(value));
+                QVariant variant = metaProperty.readOnGadget(value);
+                // Special treatment for QDateTime (converting to time_t)
+                if (metaProperty.type() == QVariant::DateTime) {
+                    variant = variant.toDateTime().toTime_t();
+                }
+                ret.insert(metaProperty.name(), variant);
             }
-
         }
         return ret;
     }

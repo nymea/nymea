@@ -35,6 +35,12 @@
 
 class LIBNYMEA_EXPORT EventDescriptor
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid deviceId READ deviceId WRITE setDeviceId USER true)
+    Q_PROPERTY(QUuid eventTypeId READ eventTypeId WRITE setEventTypeId USER true)
+    Q_PROPERTY(QString interface READ interface WRITE setInterface USER true)
+    Q_PROPERTY(QString interfaceEvent READ interfaceEvent WRITE setInterfaceEvent USER true)
+    Q_PROPERTY(ParamDescriptors paramDescriptors READ paramDescriptors WRITE setParamDescriptors USER true)
 public:
     enum Type {
         TypeDevice,
@@ -49,10 +55,16 @@ public:
     bool isValid() const;
 
     EventTypeId eventTypeId() const;
+    void setEventTypeId(const EventTypeId &eventTypeId);
+
     DeviceId deviceId() const;
+    void setDeviceId(const DeviceId &deviceId);
 
     QString interface() const;
+    void setInterface(const QString &interface);
+
     QString interfaceEvent() const;
+    void setInterfaceEvent(const QString &interfaceEvent);
 
     QList<ParamDescriptor> paramDescriptors() const;
     void setParamDescriptors(const QList<ParamDescriptor> &paramDescriptors);
@@ -67,6 +79,19 @@ private:
     QString m_interfaceEvent;
     QList<ParamDescriptor> m_paramDescriptors;
 };
+Q_DECLARE_METATYPE(EventDescriptor)
+
+class EventDescriptors: public QList<EventDescriptor>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    EventDescriptors();
+    EventDescriptors(const QList<EventDescriptor> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+};
+Q_DECLARE_METATYPE(EventDescriptors)
+
 
 QDebug operator<<(QDebug dbg, const EventDescriptor &eventDescriptor);
 QDebug operator<<(QDebug dbg, const QList<EventDescriptor> &eventDescriptors);

@@ -92,11 +92,6 @@ private slots:
 
 private:
     static QVariantMap packBasicConfiguration();
-
-    static ServerConfiguration unpackServerConfiguration(const QVariantMap &serverConfigurationMap);
-    static WebServerConfiguration unpackWebServerConfiguration(const QVariantMap &webServerConfigurationMap);
-    static MqttPolicy unpackMqttPolicy(const QVariantMap &mqttPolicyMap);
-
     QVariantMap statusToReply(NymeaConfiguration::ConfigurationError status) const;
 
 };

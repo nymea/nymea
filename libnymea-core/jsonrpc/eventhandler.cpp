@@ -54,19 +54,20 @@ EventHandler::EventHandler(QObject *parent) :
     registerObject<Param, ParamList>();
     registerObject<Event>();
     registerObject<ParamType, ParamTypes>();
+    registerObject<EventType>();
 
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
     description = "Get the EventType for the given eventTypeId.";
     params.insert("eventTypeId", enumValueName(Uuid));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
-    returns.insert("o:eventType", objectRef("EventType"));
+    returns.insert("o:eventType", objectRef<EventType>());
     registerMethod("GetEventType", description, params, returns);
 
     // Notifications
     params.clear(); returns.clear();
     description = "Emitted whenever an Event is triggered.";
-    params.insert("event", objectRef("Event"));
+    params.insert("event", objectRef<Event>());
     registerNotification("EventTriggered", description, params);
     connect(NymeaCore::instance(), &NymeaCore::eventTriggered, this, &EventHandler::eventTriggered);
 }

@@ -62,6 +62,12 @@ QString ParamDescriptor::paramName() const
     return m_paramName;
 }
 
+/*! Sets the param name of this ParamDescriptor. */
+void ParamDescriptor::setParamName(const QString &paramName)
+{
+    m_paramName = paramName;
+}
+
 /*! Returns the ValueOperator of this ParamDescriptor. */
 Types::ValueOperator ParamDescriptor::operatorType() const
 {
@@ -79,4 +85,19 @@ QDebug operator<<(QDebug dbg, const ParamDescriptor &paramDescriptor)
 {
     dbg.nospace() << "ParamDescriptor(ParamTypeId: " << paramDescriptor.paramTypeId().toString() << ", Name:" << paramDescriptor.paramName() << ", Value:" << paramDescriptor.value() << ")" << endl;
     return dbg;
+}
+
+ParamDescriptors::ParamDescriptors()
+{
+
+}
+
+ParamDescriptors::ParamDescriptors(const QList<ParamDescriptor> &other): QList<ParamDescriptor>(other)
+{
+
+}
+
+QVariant ParamDescriptors::get(int index) const
+{
+    return QVariant::fromValue(at(index));
 }

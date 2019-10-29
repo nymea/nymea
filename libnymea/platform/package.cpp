@@ -129,3 +129,18 @@ bool Package::operator!=(const Package &other) const
 {
     return !operator==(other);
 }
+
+Packages::Packages()
+{
+
+}
+
+Packages::Packages(const QList<Package> &other): QList<Package>(other)
+{
+
+}
+
+QVariant Packages::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}

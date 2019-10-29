@@ -44,6 +44,11 @@
 
 namespace nymeaserver {
 
+LogEntry::LogEntry()
+{
+
+}
+
 /*! Constructs a \l{LogEntry} with the given \a timestamp, \a level, \a source and \a errorCode.*/
 LogEntry::LogEntry(QDateTime timestamp, Logging::LoggingLevel level, Logging::LoggingSource source, int errorCode):
     m_timestamp(timestamp),
@@ -171,6 +176,21 @@ QDebug operator<<(QDebug dbg, const LogEntry &entry)
     dbg.nospace() << "     active: " << entry.active() << endl;
     dbg.nospace() << "      value: " << entry.value() << endl;
     return dbg.space();
+}
+
+LogEntries::LogEntries()
+{
+
+}
+
+LogEntries::LogEntries(const QList<LogEntry> &other): QList<LogEntry>(other)
+{
+
+}
+
+QVariant LogEntries::get(int index) const
+{
+    return QVariant::fromValue(at(index));
 }
 
 }

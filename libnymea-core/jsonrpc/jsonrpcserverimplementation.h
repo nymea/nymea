@@ -72,9 +72,10 @@ public:
     void registerTransportInterface(TransportInterface *interface, bool authenticationRequired);
     void unregisterTransportInterface(TransportInterface *interface);
 
-    bool registerHandler(JsonHandler *handler) override;
+    bool registerExperienceHandler(JsonHandler *handler, int majorVersion, int minorVersion) override;
 
 private:
+    bool registerHandler(JsonHandler *handler);
     QHash<QString, JsonHandler *> handlers() const;
 
     void sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
@@ -102,6 +103,7 @@ private slots:
 
 private:
     QVariantMap m_api;
+    QHash<JsonHandler*, QString> m_experiences;
     QMap<TransportInterface*, bool> m_interfaces; // Interface, authenticationRequired
     QHash<QString, JsonHandler *> m_handlers;
     QHash<JsonReply *, TransportInterface *> m_asyncReplies;

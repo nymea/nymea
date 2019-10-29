@@ -26,6 +26,9 @@
 
 class TimeDescriptor
 {
+    Q_GADGET
+    Q_PROPERTY(TimeEventItems timeEventItems READ timeEventItems WRITE setTimeEventItems USER true)
+    Q_PROPERTY(CalendarItems calendarItems READ calendarItems WRITE setCalendarItems USER true)
 public:
     explicit TimeDescriptor();
 

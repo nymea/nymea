@@ -6,6 +6,7 @@
 #include <QMetaMethod>
 #include <QDebug>
 #include <QVariant>
+#include <QDateTime>
 
 #include "jsonreply.h"
 
@@ -41,6 +42,7 @@ public:
 
 
     template<typename T> static QString enumRef();
+    template<typename T> static QString objectRef();
     static QString objectRef(const QString &objectName);
 
     template<typename T> static QString enumValueName(T value);
@@ -127,7 +129,9 @@ void JsonHandler::registerObject()
             if (metaProperty.typeName() == QStringLiteral("QVariant::Type")) {
                 typeName = QString("$ref:BasicType");
             } else if (QString(metaProperty.typeName()).startsWith("QList")) {
-                typeName = QVariantList() << "$ref:" + QString(metaProperty.typeName()).remove("QList<").remove(">");
+                QString elementType = QString(metaProperty.typeName()).remove("QList<").remove(">");
+                QVariant::Type variantType = QVariant::nameToType(elementType.toUtf8());
+                typeName = QVariantList() << enumValueName(variantTypeToBasicType(variantType));
             } else {
                 typeName = QString("$ref:%1").arg(QString(metaProperty.typeName()).split("::").last());
             }
@@ -152,27 +156,28 @@ void JsonHandler::registerObject()
     registerObject<ObjectType>();
     QMetaObject metaObject = ObjectType::staticMetaObject;
     QMetaObject listMetaObject = ListType::staticMetaObject;
-    m_objects.insert(listMetaObject.className(), QVariantList() << QVariant(QString("$ref:%1").arg(metaObject.className())));
-    m_metaObjects.insert(listMetaObject.className(), listMetaObject);
-    m_listMetaObjects.insert(listMetaObject.className(), listMetaObject);
-    m_listEntryTypes.insert(listMetaObject.className(), metaObject.className());
-    Q_ASSERT_X(listMetaObject.indexOfProperty("count") >= 0, "JsonHandler", "List type does not implement \"count\" property!");
-    Q_ASSERT_X(listMetaObject.indexOfMethod("get(int)") >= 0, "JsonHandler", "List type does not implement \"Q_INVOKABLE QVariant get(int index)\" method!");
+    QString listTypeName = QString(listMetaObject.className()).split("::").last();
+    QString objectTypeName = QString(metaObject.className()).split("::").last();
+    m_objects.insert(listTypeName, QVariantList() << QVariant(QString("$ref:%1").arg(objectTypeName)));
+    m_metaObjects.insert(listTypeName, listMetaObject);
+    m_listMetaObjects.insert(listTypeName, listMetaObject);
+    m_listEntryTypes.insert(listTypeName, objectTypeName);
+    Q_ASSERT_X(listMetaObject.indexOfProperty("count") >= 0, "JsonHandler", QString("List type %1 does not implement \"count\" property!").arg(listTypeName).toUtf8());
+    Q_ASSERT_X(listMetaObject.indexOfMethod("get(int)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE QVariant get(int index)\" method!").arg(listTypeName).toUtf8());
 }
-
-//template<typename T>
-//void JsonHandler::registerList()
-//{
-//    QMetaObject metaObject = T::staticMetaObject;
-//    m_lists.insert(metaObject.className(), metaObject);
-//    m_objects.insert(metaObject.classInfo(), QVariantList() << )
-//}
 
 template<typename T>
 QString JsonHandler::enumRef()
 {
     QMetaEnum metaEnum = QMetaEnum::fromType<T>();
     return QString("$ref:%1").arg(metaEnum.name());
+}
+
+template<typename T>
+QString JsonHandler::objectRef()
+{
+    QMetaObject metaObject = T::staticMetaObject;
+    return QString("$ref:%1").arg(QString(metaObject.className()).split("::").last());
 }
 
 template<typename T>
@@ -213,7 +218,12 @@ T JsonHandler::unpack(const QVariantMap &map) const
             Q_ASSERT_X(map.contains(metaProperty.name()), this->metaObject()->className(), QString("Missing property %1 in map.").arg(metaProperty.name()).toUtf8());
         }
         if (map.contains(metaProperty.name())) {
-            metaProperty.writeOnGadget(&ret, map.value(metaProperty.name()));
+            // Special treatment for QDateTime (convert from time_t)
+            QVariant variant = map.value(metaProperty.name());
+            if (metaProperty.type() == QVariant::DateTime) {
+                variant = QDateTime::fromTime_t(variant.toUInt());
+            }
+            metaProperty.writeOnGadget(&ret, variant);
         }
     }
     return ret;

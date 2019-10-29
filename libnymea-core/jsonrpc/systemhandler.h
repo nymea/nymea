@@ -67,10 +67,6 @@ private slots:
     void onCapabilitiesChanged();
 
 private:
-    static QVariantMap packPackage(const Package &package);
-    static QVariantMap packRepository(const Repository &repository);
-
-private:
     Platform *m_platform = nullptr;
 };
 

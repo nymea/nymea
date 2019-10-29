@@ -33,11 +33,16 @@ namespace nymeaserver {
 
 class StateEvaluator
 {
+    Q_GADGET
+    Q_PROPERTY(StateDescriptor stateDescriptor READ stateDescriptor WRITE setStateDescriptor USER true)
+    Q_PROPERTY(StateEvaluators childEvaluators READ childEvaluators WRITE setChildEvaluators USER true)
+    Q_PROPERTY(Types::StateOperator operator READ operatorType WRITE setOperatorType USER true)
 public:
     StateEvaluator(const StateDescriptor &stateDescriptor);
     StateEvaluator(QList<StateEvaluator> childEvaluators = QList<StateEvaluator>(), Types::StateOperator stateOperator = Types::StateOperatorAnd);
 
     StateDescriptor stateDescriptor() const;
+    void setStateDescriptor(const StateDescriptor &stateDescriptor);
 
     QList<StateEvaluator> childEvaluators() const;
     void setChildEvaluators(const QList<StateEvaluator> &childEvaluators);
@@ -65,8 +70,19 @@ private:
     Types::StateOperator m_operatorType;
 };
 
+class StateEvaluators: public QList<StateEvaluator>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    StateEvaluators();
+    StateEvaluators(const QList<StateEvaluator> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+};
+
 QDebug operator<<(QDebug dbg, const StateEvaluator &stateEvaluator);
 
 }
+Q_DECLARE_METATYPE(nymeaserver::StateEvaluators)
 
 #endif // STATEEVALUATOR_H

@@ -50,9 +50,6 @@ private slots:
     void onTagValueChanged(const Tag &tag);
 
 private:
-    static QVariantMap packTag(const Tag &tag);
-    static Tag unpackTag(const QVariantMap &tagMap);
-
     QVariantMap statusToReply(TagsStorage::TagError status) const;
 
 };

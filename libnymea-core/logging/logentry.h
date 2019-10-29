@@ -39,13 +39,13 @@ class LogEntry
     Q_PROPERTY(Logging::LoggingSource source READ source)
     Q_PROPERTY(QUuid typeId READ typeId USER true)
     Q_PROPERTY(QUuid deviceId READ deviceId USER true)
-//    Q_PROPERTY(QString itemId READ itemId USER true)
     Q_PROPERTY(QVariant value READ value USER true)
     Q_PROPERTY(bool active READ active USER true)
     Q_PROPERTY(Logging::LoggingEventType eventType READ eventType USER true)
     Q_PROPERTY(QString errorCode READ errorCode USER true)
 
 public:
+    LogEntry();
     LogEntry(QDateTime timestamp, Logging::LoggingLevel level, Logging::LoggingSource source, int errorCode = 0);
     LogEntry(Logging::LoggingLevel level, Logging::LoggingSource source, int errorCode = 0);
     LogEntry(Logging::LoggingSource source);
@@ -92,8 +92,20 @@ private:
     int m_errorCode;
 };
 
+class LogEntries: QList<LogEntry>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    LogEntries();
+    LogEntries(const QList<LogEntry> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+};
+
 QDebug operator<<(QDebug dbg, const LogEntry &entry);
 
 }
+Q_DECLARE_METATYPE(nymeaserver::LogEntry)
+Q_DECLARE_METATYPE(nymeaserver::LogEntries)
 
 #endif

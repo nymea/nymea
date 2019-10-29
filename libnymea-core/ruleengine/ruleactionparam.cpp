@@ -124,10 +124,20 @@ ParamTypeId RuleActionParam::paramTypeId() const
     return m_paramTypeId;
 }
 
+void RuleActionParam::setParamTypeId(const ParamTypeId &paramTypeId)
+{
+    m_paramTypeId = paramTypeId;
+}
+
 /*! Returns the name of this RuleActionParam. */
 QString RuleActionParam::paramName() const
 {
     return m_paramName;
+}
+
+void RuleActionParam::setParamName(const QString &paramName)
+{
+    m_paramName = paramName;
 }
 
 /*! Returns the value of this RuleActionParam. */
@@ -238,13 +248,13 @@ QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam)
 */
 
 /*! Returns true if this \l{RuleActionParamList} contains a \l{RuleActionParam} with the given \a ruleActionParamTypeId. */
-bool RuleActionParamList::hasParam(const ParamTypeId &ruleActionParamTypeId) const
+bool RuleActionParams::hasParam(const ParamTypeId &ruleActionParamTypeId) const
 {
     return m_ids.contains(ruleActionParamTypeId);
 }
 
 /*! Returns true if this \l{RuleActionParamList} contains a \l{RuleActionParam} with the given \a ruleActionParamName. */
-bool RuleActionParamList::hasParam(const QString &ruleActionParamName) const
+bool RuleActionParams::hasParam(const QString &ruleActionParamName) const
 {
     foreach (const RuleActionParam &param, *this) {
         if (param.paramName() == ruleActionParamName) {
@@ -255,7 +265,7 @@ bool RuleActionParamList::hasParam(const QString &ruleActionParamName) const
 }
 
 /*! Returns the value of the \l{RuleActionParam} with the given \a ruleActionParamTypeId. */
-QVariant RuleActionParamList::paramValue(const ParamTypeId &ruleActionParamTypeId) const
+QVariant RuleActionParams::paramValue(const ParamTypeId &ruleActionParamTypeId) const
 {
     foreach (const RuleActionParam &param, *this) {
         if (param.paramTypeId() == ruleActionParamTypeId) {
@@ -267,7 +277,7 @@ QVariant RuleActionParamList::paramValue(const ParamTypeId &ruleActionParamTypeI
 }
 
 /*! Returns true if the \a value of the \l{RuleActionParam} with the given \a ruleActionParamTypeId could be set successfully. */
-bool RuleActionParamList::setParamValue(const ParamTypeId &ruleActionParamTypeId, const QVariant &value)
+bool RuleActionParams::setParamValue(const ParamTypeId &ruleActionParamTypeId, const QVariant &value)
 {
     for (int i = 0; i < count(); i++) {
         if (this->operator [](i).paramTypeId()  == ruleActionParamTypeId) {
@@ -280,7 +290,7 @@ bool RuleActionParamList::setParamValue(const ParamTypeId &ruleActionParamTypeId
 }
 
 /*! Appends the given \a ruleActionParam to a RuleActionParamList. */
-RuleActionParamList RuleActionParamList::operator<<(const RuleActionParam &ruleActionParam)
+RuleActionParams RuleActionParams::operator<<(const RuleActionParam &ruleActionParam)
 {
     this->append(ruleActionParam);
     m_ids.append(ruleActionParam.paramTypeId());
@@ -288,7 +298,7 @@ RuleActionParamList RuleActionParamList::operator<<(const RuleActionParam &ruleA
 }
 
 /*! Writes the ruleActionParam of the given \a ruleActionParams to \a dbg. */
-QDebug operator<<(QDebug dbg, const RuleActionParamList &ruleActionParams)
+QDebug operator<<(QDebug dbg, const RuleActionParams &ruleActionParams)
 {
     dbg.nospace() << "RuleActionParamList (count:" << ruleActionParams.count() << ")" << endl;
     for (int i = 0; i < ruleActionParams.count(); i++ ) {
@@ -296,4 +306,9 @@ QDebug operator<<(QDebug dbg, const RuleActionParamList &ruleActionParams)
     }
 
     return dbg.space();
+}
+
+QVariant RuleActionParams::get(int index) const
+{
+    return QVariant::fromValue(at(index));
 }

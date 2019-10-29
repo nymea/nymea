@@ -391,7 +391,7 @@ JsonReply *ConfigurationHandler::SetLanguage(const QVariantMap &params) const
 
 JsonReply *ConfigurationHandler::SetTcpServerConfiguration(const QVariantMap &params) const
 {
-    ServerConfiguration config = unpackServerConfiguration(params.value("configuration").toMap());
+    ServerConfiguration config = unpack<ServerConfiguration>(params.value("configuration").toMap());
     if (config.id.isEmpty()) {
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
@@ -421,7 +421,7 @@ JsonReply *ConfigurationHandler::DeleteTcpServerConfiguration(const QVariantMap 
 
 JsonReply *ConfigurationHandler::SetWebServerConfiguration(const QVariantMap &params) const
 {
-    WebServerConfiguration config = unpackWebServerConfiguration(params.value("configuration").toMap());
+    WebServerConfiguration config = unpack<WebServerConfiguration>(params.value("configuration").toMap());
 
     if (config.id.isEmpty()) {
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
@@ -452,7 +452,7 @@ JsonReply *ConfigurationHandler::DeleteWebServerConfiguration(const QVariantMap 
 
 JsonReply *ConfigurationHandler::SetWebSocketServerConfiguration(const QVariantMap &params) const
 {
-    ServerConfiguration config = unpackServerConfiguration(params.value("configuration").toMap());
+    ServerConfiguration config = unpack<ServerConfiguration>(params.value("configuration").toMap());
     if (config.id.isEmpty()) {
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
@@ -495,7 +495,7 @@ JsonReply *ConfigurationHandler::GetMqttServerConfigurations(const QVariantMap &
 
 JsonReply *ConfigurationHandler::SetMqttServerConfiguration(const QVariantMap &params) const
 {
-    ServerConfiguration config = unpackServerConfiguration(params.value("configuration").toMap());
+    ServerConfiguration config = unpack<ServerConfiguration>(params.value("configuration").toMap());
     if (config.id.isEmpty()) {
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
@@ -538,7 +538,7 @@ JsonReply *ConfigurationHandler::GetMqttPolicies(const QVariantMap &params) cons
 
 JsonReply *ConfigurationHandler::SetMqttPolicy(const QVariantMap &params) const
 {
-    MqttPolicy policy = unpackMqttPolicy(params.value("policy").toMap());
+    MqttPolicy policy = unpack<MqttPolicy>(params.value("policy").toMap());
     NymeaCore::instance()->configuration()->updateMqttPolicy(policy);
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
@@ -662,43 +662,6 @@ QVariantMap ConfigurationHandler::packBasicConfiguration()
     basicConfiguration.insert("language", NymeaCore::instance()->configuration()->locale().name());
     basicConfiguration.insert("debugServerEnabled", NymeaCore::instance()->configuration()->debugServerEnabled());
     return basicConfiguration;
-}
-
-
-MqttPolicy ConfigurationHandler::unpackMqttPolicy(const QVariantMap &mqttPolicyMap)
-{
-    MqttPolicy policy;
-    policy.clientId = mqttPolicyMap.value("clientId").toString();
-    policy.username = mqttPolicyMap.value("username").toString();
-    policy.password = mqttPolicyMap.value("password").toString();
-    policy.allowedPublishTopicFilters = mqttPolicyMap.value("allowedPublishTopicFilters").toStringList();
-    policy.allowedSubscribeTopicFilters = mqttPolicyMap.value("allowedSubscribeTopicFilters").toStringList();
-    return policy;
-}
-
-ServerConfiguration ConfigurationHandler::unpackServerConfiguration(const QVariantMap &serverConfigurationMap)
-{
-    ServerConfiguration serverConfiguration;
-    serverConfiguration.id = serverConfigurationMap.value("id").toString();
-    serverConfiguration.address = QHostAddress(serverConfigurationMap.value("address").toString());
-    serverConfiguration.port = serverConfigurationMap.value("port").toUInt();
-    serverConfiguration.sslEnabled = serverConfigurationMap.value("sslEnabled", true).toBool();
-    serverConfiguration.authenticationEnabled = serverConfigurationMap.value("authenticationEnabled", true).toBool();
-    return serverConfiguration;
-}
-
-WebServerConfiguration ConfigurationHandler::unpackWebServerConfiguration(const QVariantMap &webServerConfigurationMap)
-{
-    ServerConfiguration tmp = unpackServerConfiguration(webServerConfigurationMap);
-    WebServerConfiguration webServerConfiguration;
-    webServerConfiguration.id = tmp.id;
-    webServerConfiguration.address = tmp.address;
-    webServerConfiguration.port = tmp.port;
-    webServerConfiguration.sslEnabled = tmp.sslEnabled;
-    webServerConfiguration.authenticationEnabled = tmp.authenticationEnabled;
-    webServerConfiguration.publicFolder = webServerConfigurationMap.value("publicFolder").toString();
-    qWarning() << "Unpacking web server config:" << webServerConfigurationMap;
-    return webServerConfiguration;
 }
 
 QVariantMap ConfigurationHandler::statusToReply(NymeaConfiguration::ConfigurationError status) const

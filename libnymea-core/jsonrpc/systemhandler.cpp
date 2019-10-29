@@ -33,23 +33,8 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     m_platform(platform)
 {
     // Objects
-    QVariantMap package;
-    package.insert("id", enumValueName(String));
-    package.insert("displayName", enumValueName(String));
-    package.insert("summary", enumValueName(String));
-    package.insert("installedVersion", enumValueName(String));
-    package.insert("candidateVersion", enumValueName(String));
-    package.insert("changelog", enumValueName(String));
-    package.insert("updateAvailable", enumValueName(Bool));
-    package.insert("rollbackAvailable", enumValueName(Bool));
-    package.insert("canRemove", enumValueName(Bool));
-    registerObject("Package", package);
-
-    QVariantMap repository;
-    repository.insert("id", enumValueName(String));
-    repository.insert("displayName", enumValueName(String));
-    repository.insert("enabled", enumValueName(Bool));
-    registerObject("Repository", repository);
+    registerObject<Package, Packages>();
+    registerObject<Repository, Repositories>();
 
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
@@ -93,7 +78,7 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     params.clear(); returns.clear();
     description = "Get the list of packages currently available to the system. This might include installed available but "
                    "not installed packages. Installed packages will have the installedVersion set to a non-empty value.";
-    returns.insert("packages", QVariantList() << objectRef("Package"));
+    returns.insert("packages", objectRef("Packages"));
     registerMethod("GetPackages", description, params, returns);
 
     params.clear(); returns.clear();
@@ -121,7 +106,7 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
 
     params.clear(); returns.clear();
     description = "Get the list of repositories currently available to the system.";
-    returns.insert("repositories", QVariantList() << objectRef("Repository"));
+    returns.insert("repositories",objectRef("Repositories"));
     registerMethod("GetRepositories", description, params, returns);
 
     params.clear(); returns.clear();
@@ -192,12 +177,12 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     });
     connect(m_platform->updateController(), &PlatformUpdateController::packageAdded, this, [this](const Package &package){
         QVariantMap params;
-        params.insert("package", packPackage(package));
+        params.insert("package", pack(package));
         emit PackageAdded(params);
     });
     connect(m_platform->updateController(), &PlatformUpdateController::packageChanged, this, [this](const Package &package){
         QVariantMap params;
-        params.insert("package", packPackage(package));
+        params.insert("package", pack(package));
         emit PackageChanged(params);
     });
     connect(m_platform->updateController(), &PlatformUpdateController::packageRemoved, this, [this](const QString &packageId){
@@ -207,12 +192,12 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     });
     connect(m_platform->updateController(), &PlatformUpdateController::repositoryAdded, this, [this](const Repository &repository){
         QVariantMap params;
-        params.insert("repository", packRepository(repository));
+        params.insert("repository", pack(repository));
         emit RepositoryAdded(params);
     });
     connect(m_platform->updateController(), &PlatformUpdateController::repositoryChanged, this, [this](const Repository &repository){
         QVariantMap params;
-        params.insert("repository", packRepository(repository));
+        params.insert("repository", pack(repository));
         emit RepositoryChanged(params);
     });
     connect(m_platform->updateController(), &PlatformUpdateController::repositoryRemoved, this, [this](const QString &repositoryId){
@@ -277,7 +262,7 @@ JsonReply *SystemHandler::GetPackages(const QVariantMap &params) const
     Q_UNUSED(params)
     QVariantList packagelist;
     foreach (const Package &package, m_platform->updateController()->packages()) {
-        packagelist.append(packPackage(package));
+        packagelist.append(pack(package));
     }
     QVariantMap returns;
     returns.insert("packages", packagelist);
@@ -313,7 +298,7 @@ JsonReply *SystemHandler::GetRepositories(const QVariantMap &params) const
     Q_UNUSED(params)
     QVariantList repos;
     foreach (const Repository &repository, m_platform->updateController()->repositories()) {
-        repos.append(packRepository(repository));
+        repos.append(pack(repository));
     }
     QVariantMap returns;
     returns.insert("repositories", repos);
@@ -335,30 +320,6 @@ void SystemHandler::onCapabilitiesChanged()
     caps.insert("powerManagement", m_platform->systemController()->powerManagementAvailable());
     caps.insert("updateManagement", m_platform->updateController()->updateManagementAvailable());
     emit CapabilitiesChanged(caps);
-}
-
-QVariantMap SystemHandler::packPackage(const Package &package)
-{
-    QVariantMap ret;
-    ret.insert("id", package.packageId());
-    ret.insert("displayName", package.displayName());
-    ret.insert("summary", package.summary());
-    ret.insert("installedVersion", package.installedVersion());
-    ret.insert("candidateVersion", package.candidateVersion());
-    ret.insert("changelog", package.changelog());
-    ret.insert("updateAvailable", package.updateAvailable());
-    ret.insert("rollbackAvailable", package.rollbackAvailable());
-    ret.insert("canRemove", package.canRemove());
-    return ret;
-}
-
-QVariantMap SystemHandler::packRepository(const Repository &repository)
-{
-    QVariantMap ret;
-    ret.insert("id", repository.id());
-    ret.insert("displayName", repository.displayName());
-    ret.insert("enabled", repository.enabled());
-    return ret;
 }
 
 }

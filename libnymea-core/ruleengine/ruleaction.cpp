@@ -49,7 +49,7 @@
 /*! Constructs a RuleAction with the given by \a actionTypeId, \a deviceId and \a params.
  *  Use this to create a RuleAction for regular actions, that is, identifying the Action by deviceId and actionTypeId.
  */
-RuleAction::RuleAction(const ActionTypeId &actionTypeId, const DeviceId &deviceId, const RuleActionParamList &params):
+RuleAction::RuleAction(const ActionTypeId &actionTypeId, const DeviceId &deviceId, const RuleActionParams &params):
     m_id(ActionId::createActionId()),
     m_deviceId(deviceId),
     m_actionTypeId(actionTypeId),
@@ -61,7 +61,7 @@ RuleAction::RuleAction(const ActionTypeId &actionTypeId, const DeviceId &deviceI
 /*! Constructs a RuleAction with the given by \a interface and \a interfaceAction.
  *  This will create an interface based RuleAction. Meaning, the Action is idenfified by an interface and and interfaceAction.
  */
-RuleAction::RuleAction(const QString &interface, const QString &interfaceAction, const RuleActionParamList &params) :
+RuleAction::RuleAction(const QString &interface, const QString &interfaceAction, const RuleActionParams &params) :
     m_interface(interface),
     m_interfaceAction(interfaceAction),
     m_ruleActionParams(params)
@@ -169,10 +169,20 @@ ActionTypeId RuleAction::actionTypeId() const
     return m_actionTypeId;
 }
 
+void RuleAction::setActionTypeId(const ActionTypeId &actionTypeId)
+{
+    m_actionTypeId = actionTypeId;
+}
+
 /*! Returns the browserItemId of this RuleAction. */
 QString RuleAction::browserItemId() const
 {
     return m_browserItemId;
+}
+
+void RuleAction::setBrowserItemId(const QString &browserItemId)
+{
+    m_browserItemId = browserItemId;
 }
 
 /*! Returns the deviceId of this RuleAction. */
@@ -181,10 +191,20 @@ DeviceId RuleAction::deviceId() const
     return m_deviceId;
 }
 
+void RuleAction::setDeviceId(const DeviceId &deviceId)
+{
+    m_deviceId = deviceId;
+}
+
 /*! Returns the name of the interface associated with this RuleAction. */
 QString RuleAction::interface() const
 {
     return m_interface;
+}
+
+void RuleAction::setInterface(const QString &interface)
+{
+    m_interface = interface;
 }
 
 /*! Returns the name of the action of the associated interface. */
@@ -193,16 +213,21 @@ QString RuleAction::interfaceAction() const
     return m_interfaceAction;
 }
 
+void RuleAction::setInterfaceAction(const QString &interfaceAction)
+{
+    m_interfaceAction = interfaceAction;
+}
+
 /*! Returns the \l{RuleActionParamList} of this RuleAction.
  *  \sa RuleActionParam, */
-RuleActionParamList RuleAction::ruleActionParams() const
+RuleActionParams RuleAction::ruleActionParams() const
 {
     return m_ruleActionParams;
 }
 
 /*! Set the \l{RuleActionParamList} of this RuleAction to the given \a ruleActionParams.
  *  \sa RuleActionParam, */
-void RuleAction::setRuleActionParams(const RuleActionParamList &ruleActionParams)
+void RuleAction::setRuleActionParams(const RuleActionParams &ruleActionParams)
 {
     m_ruleActionParams = ruleActionParams;
 }
@@ -259,4 +284,19 @@ QDebug operator<<(QDebug dbg, const QList<RuleAction> &ruleActionList)
         dbg.nospace() << "  " << i << ": " << ruleActionList.at(i);
     }
     return dbg;
+}
+
+RuleActions::RuleActions()
+{
+
+}
+
+RuleActions::RuleActions(const QList<RuleAction> &other): QList<RuleAction>(other)
+{
+
+}
+
+QVariant RuleActions::get(int index) const
+{
+    return QVariant::fromValue(at(index));
 }

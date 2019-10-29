@@ -45,6 +45,7 @@
 #include "logginghandler.h"
 #include "logging/logengine.h"
 #include "logging/logfilter.h"
+#include "logging/logentry.h"
 #include "logging/logvaluetool.h"
 #include "loggingcategories.h"
 #include "nymeacore.h"
@@ -62,7 +63,7 @@ LoggingHandler::LoggingHandler(QObject *parent) :
     registerEnum<Logging::LoggingError>();
 
     // Objects
-    registerObject<LogEntry>();
+    registerObject<LogEntry, LogEntries>();
 
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
@@ -94,7 +95,7 @@ LoggingHandler::LoggingHandler(QObject *parent) :
     params.insert("o:limit", enumValueName(Int));
     params.insert("o:offset", enumValueName(Int));
     returns.insert("loggingError", enumRef<Logging::LoggingError>());
-    returns.insert("o:logEntries", QVariantList() << objectRef("LogEntry"));
+    returns.insert("o:logEntries", objectRef<LogEntries>());
     returns.insert("count", enumValueName(Int));
     returns.insert("offset", enumValueName(Int));
     registerMethod("GetLogEntries", description, params, returns);
@@ -102,7 +103,7 @@ LoggingHandler::LoggingHandler(QObject *parent) :
     // Notifications
     params.clear();
     description = "Emitted whenever an entry is appended to the logging system. ";
-    params.insert("logEntry", objectRef("LogEntry"));
+    params.insert("logEntry", objectRef<LogEntry>());
     registerNotification("LogEntryAdded", description, params);
 
     params.clear();
@@ -187,7 +188,10 @@ QVariantMap LoggingHandler::packLogEntry(const LogEntry &logEntry)
     case Logging::LoggingSourceActions:
     case Logging::LoggingSourceEvents:
     case Logging::LoggingSourceStates:
-        logEntryMap.insert("typeId", logEntry.typeId());
+    case Logging::LoggingSourceBrowserActions:
+        if (!logEntry.typeId().isNull()) {
+            logEntryMap.insert("typeId", logEntry.typeId());
+        }
         logEntryMap.insert("deviceId", logEntry.deviceId());
         logEntryMap.insert("value", LogValueTool::convertVariantToString(logEntry.value()));
         break;
@@ -196,9 +200,6 @@ QVariantMap LoggingHandler::packLogEntry(const LogEntry &logEntry)
         break;
     case Logging::LoggingSourceRules:
         logEntryMap.insert("typeId", logEntry.typeId().toString());
-        break;
-    case Logging::LoggingSourceBrowserActions:
-        logEntryMap.insert("itemId", logEntry.value());
         break;
     }
 

@@ -80,86 +80,17 @@ RulesHandler::RulesHandler(QObject *parent) :
     ruleDescription.insert("executable", enumValueName(Bool));
     registerObject("RuleDescription", ruleDescription);
 
-    QVariantMap paramDescriptor;
-    paramDescriptor.insert("o:paramTypeId", enumValueName(Uuid));
-    paramDescriptor.insert("o:paramName", enumValueName(Uuid));
-    paramDescriptor.insert("value", enumValueName(Variant));
-    paramDescriptor.insert("operator", enumRef<Types::ValueOperator>());
-    registerObject("ParamDescriptor", paramDescriptor);
-
-    QVariantMap eventDescriptor;
-    eventDescriptor.insert("o:eventTypeId", enumValueName(Uuid));
-    eventDescriptor.insert("o:deviceId", enumValueName(Uuid));
-    eventDescriptor.insert("o:interface", enumValueName(String));
-    eventDescriptor.insert("o:interfaceEvent", enumValueName(String));
-    eventDescriptor.insert("o:paramDescriptors", QVariantList() << objectRef("ParamDescriptor"));
-    registerObject("EventDescriptor", eventDescriptor);
-
-    QVariantMap stateDescriptor;
-    stateDescriptor.insert("o:stateTypeId", enumValueName(Uuid));
-    stateDescriptor.insert("o:deviceId", enumValueName(Uuid));
-    stateDescriptor.insert("o:interface", enumValueName(String));
-    stateDescriptor.insert("o:interfaceState", enumValueName(String));
-    stateDescriptor.insert("value", enumValueName(Variant));
-    stateDescriptor.insert("operator", enumRef<Types::ValueOperator>());
-    registerObject("StateDescriptor", stateDescriptor);
-
-    QVariantMap stateEvaluator;
-    stateEvaluator.insert("o:stateDescriptor", objectRef("StateDescriptor"));
-    stateEvaluator.insert("o:childEvaluators", QVariantList() << objectRef("StateEvaluator"));
-    stateEvaluator.insert("o:operator", enumRef<Types::StateOperator>());
-    registerObject("StateEvaluator", stateEvaluator);
-
-    QVariantMap repeatingOption;
-    repeatingOption.insert("mode", enumRef<RepeatingOption::RepeatingMode>());
-    repeatingOption.insert("o:weekDays", QVariantList() << enumValueName(Int));
-    repeatingOption.insert("o:monthDays", QVariantList() << enumValueName(Int));
-    registerObject("RepeatingOption", repeatingOption);
-
-    registerObject<CalendarItem>();
-
-    QVariantMap timeEventItem;
-    timeEventItem.insert("o:datetime", enumValueName(Uint));
-    timeEventItem.insert("o:time", enumValueName(Time));
-    timeEventItem.insert("o:repeating", objectRef("RepeatingOption"));
-    registerObject("TimeEventItem", timeEventItem);
-
-    QVariantMap timeDescriptor;
-    timeDescriptor.insert("o:calendarItems", QVariantList() << objectRef("CalendarItem"));
-    timeDescriptor.insert("o:timeEventItems", QVariantList() << objectRef("TimeEventItem"));
-    registerObject("TimeDescriptor", timeDescriptor);
-
-    QVariantMap ruleActionParam;
-    ruleActionParam.insert("o:paramTypeId", enumValueName(Uuid));
-    ruleActionParam.insert("o:paramName", enumValueName(String));
-    ruleActionParam.insert("o:value", enumValueName(Variant));
-    ruleActionParam.insert("o:eventTypeId", enumValueName(Uuid));
-    ruleActionParam.insert("o:eventParamTypeId", enumValueName(Uuid));
-    ruleActionParam.insert("o:stateDeviceId", enumValueName(Uuid));
-    ruleActionParam.insert("o:stateTypeId", enumValueName(Uuid));
-    registerObject("RuleActionParam", ruleActionParam);
-
-    QVariantMap ruleAction;
-    ruleAction.insert("o:deviceId", enumValueName(Uuid));
-    ruleAction.insert("o:actionTypeId", enumValueName(Uuid));
-    ruleAction.insert("o:interface", enumValueName(String));
-    ruleAction.insert("o:interfaceAction", enumValueName(String));
-    ruleAction.insert("o:browserItemId", enumValueName(String));
-    ruleAction.insert("o:ruleActionParams", QVariantList() << objectRef("RuleActionParam"));
-    registerObject("RuleAction", ruleAction);
-
-    QVariantMap rule;
-    rule.insert("id", enumValueName(Uuid));
-    rule.insert("name", enumValueName(String));
-    rule.insert("enabled", enumValueName(Bool));
-    rule.insert("executable", enumValueName(Bool));
-    rule.insert("active", enumValueName(Bool));
-    rule.insert("eventDescriptors", QVariantList() << objectRef("EventDescriptor"));
-    rule.insert("actions", QVariantList() << objectRef("RuleAction"));
-    rule.insert("exitActions", QVariantList() << objectRef("RuleAction"));
-    rule.insert("stateEvaluator", objectRef("StateEvaluator"));
-    rule.insert("timeDescriptor", objectRef("TimeDescriptor"));
-    registerObject("Rule", rule);
+    registerObject<ParamDescriptor, ParamDescriptors>();
+    registerObject<EventDescriptor, EventDescriptors>();
+    registerObject<StateDescriptor>();
+    registerObject<StateEvaluator, StateEvaluators>();
+    registerObject<RepeatingOption>();
+    registerObject<CalendarItem, CalendarItems>();
+    registerObject<TimeEventItem, TimeEventItems>();
+    registerObject<TimeDescriptor>();
+    registerObject<RuleActionParam, RuleActionParams>();
+    registerObject<RuleAction, RuleActions>();
+    registerObject<Rule, Rules>();
 
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
@@ -765,7 +696,7 @@ TimeEventItem RulesHandler::unpackTimeEventItem(const QVariantMap &timeEventItem
     TimeEventItem timeEventItem;
 
     if (timeEventItemMap.contains("datetime"))
-        timeEventItem.setDateTime(timeEventItemMap.value("datetime").toUInt());
+        timeEventItem.setDateTime(QDateTime::fromTime_t(timeEventItemMap.value("datetime").toUInt()));
 
     if (timeEventItemMap.contains("time"))
         timeEventItem.setTime(timeEventItemMap.value("time").toTime());
@@ -831,9 +762,9 @@ RuleActionParam RulesHandler::unpackRuleActionParam(const QVariantMap &ruleActio
     return param;
 }
 
-RuleActionParamList RulesHandler::unpackRuleActionParams(const QVariantList &ruleActionParamList)
+RuleActionParams RulesHandler::unpackRuleActionParams(const QVariantList &ruleActionParamList)
 {
-    RuleActionParamList ruleActionParams;
+    RuleActionParams ruleActionParams;
     foreach (const QVariant &paramVariant, ruleActionParamList)
         ruleActionParams.append(unpackRuleActionParam(paramVariant.toMap()));
 
@@ -847,7 +778,7 @@ RuleAction RulesHandler::unpackRuleAction(const QVariantMap &ruleActionMap)
     QString interface = ruleActionMap.value("interface").toString();
     QString interfaceAction = ruleActionMap.value("interfaceAction").toString();
     QString browserItemId = ruleActionMap.value("browserItemId").toString();
-    RuleActionParamList actionParamList = unpackRuleActionParams(ruleActionMap.value("ruleActionParams").toList());
+    RuleActionParams actionParamList = unpackRuleActionParams(ruleActionMap.value("ruleActionParams").toList());
 
     if (!actionDeviceId.isNull() && !actionTypeId.isNull()) {
         return RuleAction(actionTypeId, actionDeviceId, actionParamList);

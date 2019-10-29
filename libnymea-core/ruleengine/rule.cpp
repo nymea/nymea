@@ -250,4 +250,19 @@ QDebug operator<<(QDebug dbg, const Rule &rule)
     return dbg.space();
 }
 
+Rules::Rules()
+{
+
+}
+
+Rules::Rules(const QList<Rule> &other): QList<Rule>(other)
+{
+
+}
+
+QVariant Rules::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
 }

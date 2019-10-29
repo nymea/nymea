@@ -80,13 +80,12 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     registerEnum<CloudManager::CloudConnectionState>();
 
     // Objects
-//    QVariantMap tokenInfo;
-//    tokenInfo.insert("id", enumValueName(Uuid));
-//    tokenInfo.insert("userName", enumValueName(String));
-//    tokenInfo.insert("deviceName", enumValueName(String));
-//    tokenInfo.insert("creationTime", enumValueName(Uint));
-//    registerObject("TokenInfo", tokenInfo);
     registerObject<TokenInfo>();
+
+    QVariantMap experiece;
+    experiece.insert("name", enumValueName(String));
+    experiece.insert("version", enumValueName(String));
+    registerObject("Experience", experiece);
 
     // Methods
     QString description; QVariantMap returns; QVariantMap params;
@@ -110,6 +109,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     returns.insert("initialSetupRequired", enumValueName(Bool));
     returns.insert("authenticationRequired", enumValueName(Bool));
     returns.insert("pushButtonAuthAvailable", enumValueName(Bool));
+    returns.insert("o:experiences", QVariantList() << objectRef("Experience"));
     registerMethod("Hello", description, params, returns);
 
     params.clear(); returns.clear();
@@ -455,6 +455,15 @@ void JsonRPCServerImplementation::unregisterTransportInterface(TransportInterfac
     m_interfaces.take(interface);
 }
 
+bool JsonRPCServerImplementation::registerExperienceHandler(JsonHandler *handler, int majorVersion, int minorVersion)
+{
+    bool ret = registerHandler(handler);
+    if (ret) {
+        m_experiences.insert(handler, QString("%1.%2").arg(majorVersion).arg(minorVersion));
+    }
+    return ret;
+}
+
 /*! Send a JSON success response to the client with the given \a clientId,
  * \a commandId and \a params to the inerted \l{TransportInterface}.
  */
@@ -511,6 +520,16 @@ QVariantMap JsonRPCServerImplementation::createWelcomeMessage(TransportInterface
     handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? NymeaCore::instance()->userManager()->initRequired() : false));
     handshake.insert("authenticationRequired", interface->configuration().authenticationEnabled);
     handshake.insert("pushButtonAuthAvailable", NymeaCore::instance()->userManager()->pushButtonAuthAvailable());
+    if (!m_experiences.isEmpty()) {
+        QVariantList experiences;
+        foreach (JsonHandler* handler, m_experiences.keys()) {
+            QVariantMap experience;
+            experience.insert("name", handler->name());
+            experience.insert("version", m_experiences.value(handler));
+            experiences.append(experience);
+        }
+        handshake.insert("experiences", experiences);
+    }
     return handshake;
 }
 
@@ -634,6 +653,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     if (!validationResult.success()) {
         qCWarning(dcJsonRpc()) << "JSON RPC parameter verification failed for method" << targetNamespace + '.' + method;
         qCWarning(dcJsonRpc()) << validationResult.errorString() << "in" << validationResult.where();
+        qCWarning(dcJsonRpc()) << "Call params:" << qUtf8Printable(QJsonDocument::fromVariant(params).toJson());
         sendErrorResponse(interface, clientId, commandId, "Invalid params: " + validationResult.errorString() + " in " + validationResult.where());
         return;
     }

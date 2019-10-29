@@ -63,6 +63,11 @@ StateDescriptor StateEvaluator::stateDescriptor() const
     return m_stateDescriptor;
 }
 
+void StateEvaluator::setStateDescriptor(const StateDescriptor &stateDescriptor)
+{
+    m_stateDescriptor = stateDescriptor;
+}
+
 /*! Returns the list of child \l {StateEvaluator}{StateEvaluators} of this \l StateEvaluator. */
 QList<StateEvaluator> StateEvaluator::childEvaluators() const
 {
@@ -370,6 +375,21 @@ QDebug operator<<(QDebug dbg, const StateEvaluator &stateEvaluator)
         dbg.nospace() << "    " << i << ": " << stateEvaluator.childEvaluators().at(i);
     }
     return dbg;
+}
+
+StateEvaluators::StateEvaluators()
+{
+
+}
+
+StateEvaluators::StateEvaluators(const QList<StateEvaluator> &other): QList<StateEvaluator>(other)
+{
+
+}
+
+QVariant StateEvaluators::get(int index) const
+{
+    return QVariant::fromValue(at(index));
 }
 
 }

@@ -71,6 +71,7 @@ void NymeaTestBase::initTestCase()
     // Wait unitl the server is initialized
     QSignalSpy coreInitializedSpy(NymeaCore::instance(), SIGNAL(initialized()));
     QVERIFY(coreInitializedSpy.wait());
+    qApp->processEvents();
 
     // Yes, we're intentionally mixing upper/lower case email here... username should not be case sensitive
     NymeaCore::instance()->userManager()->removeUser("dummy@guh.io");

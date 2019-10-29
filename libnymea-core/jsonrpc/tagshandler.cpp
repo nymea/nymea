@@ -31,13 +31,7 @@ TagsHandler::TagsHandler(QObject *parent) : JsonHandler(parent)
     registerEnum<TagsStorage::TagError>();
 
     // Objects
-    QVariantMap tag;
-    tag.insert("o:deviceId", enumValueName(Uuid));
-    tag.insert("o:ruleId", enumValueName(Uuid));
-    tag.insert("appId", enumValueName(String));
-    tag.insert("tagId", enumValueName(String));
-    tag.insert("o:value", enumValueName(String));
-    registerObject("Tag", tag);
+    registerObject<Tag, Tags>();
 
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
@@ -47,7 +41,7 @@ TagsHandler::TagsHandler(QObject *parent) : JsonHandler(parent)
     params.insert("o:appId", enumValueName(String));
     params.insert("o:tagId", enumValueName(String));
     returns.insert("tagError", enumRef<TagsStorage::TagError>());
-    returns.insert("o:tags", QVariantList() << objectRef("Tag"));
+    returns.insert("o:tags", objectRef("Tags"));
     registerMethod("GetTags", description, params, returns);
 
     params.clear(); returns.clear();
@@ -103,7 +97,7 @@ JsonReply *TagsHandler::GetTags(const QVariantMap &params) const
         if (params.contains("tagId") && params.value("tagId").toString() != tag.tagId()) {
             continue;
         }
-        ret.append(packTag(tag));
+        ret.append(pack(tag));
     }
     QVariantMap returns = statusToReply(TagsStorage::TagErrorNoError);
     returns.insert("tags", ret);
@@ -113,7 +107,7 @@ JsonReply *TagsHandler::GetTags(const QVariantMap &params) const
 
 JsonReply *TagsHandler::AddTag(const QVariantMap &params) const
 {
-    Tag tag = unpackTag(params.value("tag").toMap());
+    Tag tag = unpack<Tag>(params.value("tag").toMap());
     TagsStorage::TagError error = NymeaCore::instance()->tagsStorage()->addTag(tag);
     QVariantMap returns = statusToReply(error);
     return createReply(returns);
@@ -121,7 +115,7 @@ JsonReply *TagsHandler::AddTag(const QVariantMap &params) const
 
 JsonReply *TagsHandler::RemoveTag(const QVariantMap &params) const
 {
-    Tag tag = unpackTag(params.value("tag").toMap());
+    Tag tag = unpack<Tag>(params.value("tag").toMap());
     TagsStorage::TagError error = NymeaCore::instance()->tagsStorage()->removeTag(tag);
     QVariantMap returns = statusToReply(error);
     return createReply(returns);
@@ -131,7 +125,7 @@ void TagsHandler::onTagAdded(const Tag &tag)
 {
     qCDebug(dcJsonRpc) << "Notify \"Tags.TagAdded\"";
     QVariantMap params;
-    params.insert("tag", packTag(tag));
+    params.insert("tag", pack(tag));
     emit TagAdded(params);
 }
 
@@ -139,7 +133,7 @@ void TagsHandler::onTagRemoved(const Tag &tag)
 {
     qCDebug(dcJsonRpc) << "Notify \"Tags.TagRemoved\"";
     QVariantMap params;
-    params.insert("tag", packTag(tag));
+    params.insert("tag", pack(tag));
     emit TagRemoved(params);
 }
 
@@ -147,35 +141,8 @@ void TagsHandler::onTagValueChanged(const Tag &tag)
 {
     qCDebug(dcJsonRpc) << "Notify \"Tags.TagValueChanged\"";
     QVariantMap params;
-    params.insert("tag", packTag(tag));
+    params.insert("tag", pack(tag));
     emit TagValueChanged(params);
-}
-
-QVariantMap TagsHandler::packTag(const Tag &tag)
-{
-    QVariantMap ret;
-    if (!tag.deviceId().isNull()){
-        ret.insert("deviceId", tag.deviceId().toString());
-    } else {
-        ret.insert("ruleId", tag.ruleId().toString());
-    }
-    ret.insert("appId", tag.appId());
-    ret.insert("tagId", tag.tagId());
-    ret.insert("value", tag.value());
-    return ret;
-}
-
-Tag TagsHandler::unpackTag(const QVariantMap &tagMap)
-{
-    DeviceId deviceId = DeviceId(tagMap.value("deviceId").toString());
-    RuleId ruleId = RuleId(tagMap.value("ruleId").toString());
-    QString appId = tagMap.value("appId").toString();
-    QString tagId = tagMap.value("tagId").toString();
-    QString value = tagMap.value("value").toString();
-    if (!deviceId.isNull()) {
-        return Tag(deviceId, appId, tagId, value);
-    }
-    return Tag(ruleId, appId, tagId, value);
 }
 
 QVariantMap TagsHandler::statusToReply(TagsStorage::TagError status) const

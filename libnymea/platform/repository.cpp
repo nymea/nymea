@@ -54,3 +54,18 @@ void Repository::setEnabled(bool enabled)
 {
     m_enabled = enabled;
 }
+
+Repositories::Repositories()
+{
+
+}
+
+Repositories::Repositories(const QList<Repository> &other): QList<Repository>(other)
+{
+
+}
+
+QVariant Repositories::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}

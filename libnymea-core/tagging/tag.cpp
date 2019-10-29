@@ -24,6 +24,11 @@
 
 namespace nymeaserver {
 
+Tag::Tag()
+{
+
+}
+
 Tag::Tag(const DeviceId &deviceId, const QString &appId, const QString &tagId, const QString &value):
     m_deviceId(deviceId),
     m_appId(appId),
@@ -48,9 +53,19 @@ DeviceId Tag::deviceId() const
     return m_deviceId;
 }
 
+void Tag::setDeviceId(const DeviceId &deviceId)
+{
+    m_deviceId = deviceId;
+}
+
 RuleId Tag::ruleId() const
 {
     return m_ruleId;
+}
+
+void Tag::setRuleId(const RuleId &ruleId)
+{
+    m_ruleId = ruleId;
 }
 
 QString Tag::appId() const
@@ -58,9 +73,19 @@ QString Tag::appId() const
     return m_appId;
 }
 
+void Tag::setAppId(const QString &appId)
+{
+    m_appId = appId;
+}
+
 QString Tag::tagId() const
 {
     return m_tagId;
+}
+
+void Tag::setTagId(const QString &tagId)
+{
+    m_tagId = tagId;
 }
 
 QString Tag::value() const
@@ -90,6 +115,21 @@ QDebug operator<<(QDebug dbg, const Tag &tag)
     }
     dbg.nospace() << ", AppId:" << tag.appId() << ", TagId:" << tag.tagId() << ", Value:" << tag.value() << ")" << endl;
     return dbg;
+}
+
+Tags::Tags()
+{
+
+}
+
+Tags::Tags(const QList<Tag> &other): QList<Tag>(other)
+{
+
+}
+
+QVariant Tags::get(int index) const
+{
+    return QVariant::fromValue(at(index));
 }
 
 }

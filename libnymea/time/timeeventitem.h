@@ -22,16 +22,21 @@
 #define TIMEEVENTITEM_H
 
 #include <QDateTime>
+#include <QVariant>
 
 #include "repeatingoption.h"
 
 class TimeEventItem
 {
+    Q_GADGET
+    Q_PROPERTY(QDateTime datetime READ dateTime WRITE setDateTime USER true)
+    Q_PROPERTY(QTime time READ time WRITE setTime USER true)
+    Q_PROPERTY(RepeatingOption repeating READ repeatingOption WRITE setRepeatingOption USER true)
 public:
     TimeEventItem();
 
     QDateTime dateTime() const;
-    void setDateTime(const uint &timeStamp);
+    void setDateTime(const QDateTime &dateTime);
 
     QTime time() const;
     void setTime(const QTime &time);
@@ -51,6 +56,18 @@ private:
 
     RepeatingOption m_repeatingOption;
 };
+Q_DECLARE_METATYPE(TimeEventItem)
+
+class TimeEventItems: public QList<TimeEventItem>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    TimeEventItems();
+    TimeEventItems(const QList<TimeEventItem> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+};
+Q_DECLARE_METATYPE(TimeEventItems)
 
 QDebug operator<<(QDebug dbg, const TimeEventItem &timeEventItem);
 

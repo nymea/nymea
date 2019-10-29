@@ -43,18 +43,16 @@ namespace nymeaserver {
 StateHandler::StateHandler(QObject *parent) :
     JsonHandler(parent)
 {
-    QVariantMap state;
-    state.insert("stateTypeId", enumValueName(Uuid));
-    state.insert("deviceId", enumValueName(Uuid));
-    state.insert("value", enumValueName(Variant));
-    registerObject("State", state);
+    registerEnum<Types::Unit>();
+    registerObject<State>();
+    registerObject<StateType>();
 
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
     description = "Get the StateType for the given stateTypeId.";
     params.insert("stateTypeId", enumValueName(Uuid));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
-    returns.insert("o:stateType", objectRef("StateType"));
+    returns.insert("o:stateType", objectRef<StateType>());
     registerMethod("GetStateType", description, params, returns, true);
 }
 
@@ -66,6 +64,7 @@ QString StateHandler::name() const
 
 JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
 {
+    QLocale locale = params.value("locale").toLocale();
     qCDebug(dcJsonRpc) << "asked for state type" << params;
     StateTypeId stateTypeId(params.value("stateTypeId").toString());
     foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
@@ -73,8 +72,9 @@ JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
             if (stateType.id() == stateTypeId) {
                 QVariantMap data;
                 data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorNoError));
-                // FIXME TODO!!!
-//                data.insert("stateType", DeviceHandler::packStateType(stateType, deviceClass.pluginId(), params.value("locale").toLocale()));
+                StateType translatedStateType = stateType;
+                translatedStateType.setDisplayName(NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), stateType.displayName(), locale));
+                data.insert("stateType", pack(translatedStateType));
                 return createReply(data);
             }
         }

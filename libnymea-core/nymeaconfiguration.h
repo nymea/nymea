@@ -32,7 +32,7 @@ namespace nymeaserver {
 class ServerConfiguration {
     Q_GADGET
     Q_PROPERTY(QString id MEMBER id)
-    Q_PROPERTY(QString address READ addressString)
+    Q_PROPERTY(QString address READ addressString WRITE setAddress)
     Q_PROPERTY(uint port MEMBER port)
     Q_PROPERTY(bool sslEnabled MEMBER sslEnabled)
     Q_PROPERTY(bool authenticationEnabled MEMBER authenticationEnabled)
@@ -40,6 +40,7 @@ public:
     QString id;
     QHostAddress address;
     QString addressString() { return address.toString(); }
+    void setAddress(const QString &addressString) {address = QHostAddress(addressString); }
     uint port = 0;
     bool sslEnabled = true;
     bool authenticationEnabled = true;

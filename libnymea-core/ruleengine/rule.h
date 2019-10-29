@@ -34,6 +34,18 @@ namespace nymeaserver {
 
 class Rule
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid id READ id WRITE setId)
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(bool active READ active)
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
+    Q_PROPERTY(bool executable READ executable WRITE setExecutable)
+    Q_PROPERTY(EventDescriptors eventDescriptors READ eventDescriptors WRITE setEventDescriptors)
+    Q_PROPERTY(RuleActions actions READ actions WRITE setActions)
+    Q_PROPERTY(RuleActions exitActions READ exitActions WRITE setExitActions)
+    Q_PROPERTY(StateEvaluator stateEvaluator READ stateEvaluator WRITE setStateEvaluator)
+    Q_PROPERTY(TimeDescriptor timeDescriptor READ timeDescriptor WRITE setTimeDescriptor)
+
 public:
     Rule();
 
@@ -94,8 +106,19 @@ private:
     bool m_executable;
 };
 
+class Rules: QList<Rule>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    Rules();
+    Rules(const QList<Rule> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+};
+
 QDebug operator<<(QDebug dbg, const Rule &rule);
 
 }
+Q_DECLARE_METATYPE(nymeaserver::Rules)
 
 #endif // RULE_H

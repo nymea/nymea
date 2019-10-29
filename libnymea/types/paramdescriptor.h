@@ -31,11 +31,17 @@
 
 class LIBNYMEA_EXPORT ParamDescriptor : public Param
 {
+    Q_GADGET
+    Q_PROPERTY(QString paramName READ paramName WRITE setParamName USER true)
+    Q_PROPERTY(Types::ValueOperator operator READ operatorType WRITE setOperatorType)
 public:
+    ParamDescriptor() = default;
     ParamDescriptor(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
     ParamDescriptor(const QString &paramName, const QVariant &value = QVariant());
 
     QString paramName() const;
+    void setParamName(const QString &paramName);
+
     Types::ValueOperator operatorType() const;
     void setOperatorType(Types::ValueOperator operatorType);
 
@@ -43,6 +49,18 @@ private:
     QString m_paramName;
     Types::ValueOperator m_operatorType;
 };
+Q_DECLARE_METATYPE(ParamDescriptor)
+
+class LIBNYMEA_EXPORT ParamDescriptors: public QList<ParamDescriptor>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    ParamDescriptors();
+    ParamDescriptors(const QList<ParamDescriptor> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+};
+Q_DECLARE_METATYPE(ParamDescriptors)
 
 QDebug operator<<(QDebug dbg, const ParamDescriptor &paramDescriptor);
 

@@ -9,7 +9,7 @@
 #include <QLoggingCategory>
 #include <QObject>
 
-extern "C" const QString libnymea_api_version() { return QString("3.0.0");}
+extern "C" const QString libnymea_api_version() { return QString("4.0.0");}
 
 Q_DECLARE_LOGGING_CATEGORY(dcMockDevice)
 Q_LOGGING_CATEGORY(dcMockDevice, "MockDevice")

@@ -1080,7 +1080,7 @@ void TestRules::findRule()
     response = injectAndWait("Rules.FindRules", params);
 
     QCOMPARE(response.toMap().value("params").toMap().value("ruleIds").toList().count(), 1);
-    QCOMPARE(response.toMap().value("params").toMap().value("ruleIds").toList().first().toUuid(), ruleId);
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleIds").toList().first().toUuid().toString(), ruleId.toString());
 
     // REMOVE rule
     QVariantMap removeParams;

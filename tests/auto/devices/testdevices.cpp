@@ -371,7 +371,7 @@ void TestDevices::addConfiguredDevice()
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
 
     if (!jsonValidation) {
-        QCOMPARE(response.toMap().value("status").toString(), "error");
+        QCOMPARE(response.toMap().value("status").toString(), QString("error"));
         return;
     }
     verifyDeviceError(response, deviceError);
@@ -784,7 +784,7 @@ void TestDevices::getStateTypes()
     QVariantList stateTypes = response.toMap().value("params").toMap().value("stateTypes").toList();
     QCOMPARE(stateTypes.count(), resultCount);
     if (resultCount > 0) {
-        QCOMPARE(stateTypes.first().toMap().value("id").toUuid(), mockIntStateTypeId);
+        QCOMPARE(stateTypes.first().toMap().value("id").toUuid().toString(), mockIntStateTypeId.toString());
     }
 }
 
@@ -814,7 +814,7 @@ void TestDevices::getStateType()
     QVariantMap stateType = response.toMap().value("params").toMap().value("stateType").toMap();
 
     QVERIFY2(!stateType.isEmpty(), "Got no stateType");
-    QCOMPARE(stateType.value("id").toUuid(), stateTypeId);
+    QCOMPARE(stateType.value("id").toUuid().toString(), stateTypeId.toString());
 }
 
 void TestDevices::getStateValue_data()

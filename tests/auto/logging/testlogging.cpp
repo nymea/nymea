@@ -253,7 +253,7 @@ void TestLogging::eventLogs()
         if (logEntry.value("deviceId").toUuid() == device->id()) {
             found = true;
             // Make sure the notification contains all the stuff we expect
-            QCOMPARE(logEntry.value("typeId").toUuid(), mockEvent1EventTypeId);
+            QCOMPARE(logEntry.value("typeId").toUuid().toString(), mockEvent1EventTypeId.toString());
             QCOMPARE(logEntry.value("eventType").toString(), enumValueName(Logging::LoggingEventTypeTrigger));
             QCOMPARE(logEntry.value("source").toString(), enumValueName(Logging::LoggingSourceEvents));
             QCOMPARE(logEntry.value("loggingLevel").toString(), enumValueName(Logging::LoggingLevelInfo));
@@ -323,7 +323,7 @@ void TestLogging::actionLog()
         if (logEntry.value("deviceId").toUuid() == m_mockDeviceId) {
             found = true;
             // Make sure the notification contains all the stuff we expect
-            QCOMPARE(logEntry.value("typeId").toUuid(), mockWithParamsActionTypeId);
+            QCOMPARE(logEntry.value("typeId").toUuid().toString(), mockWithParamsActionTypeId.toString());
             QCOMPARE(logEntry.value("eventType").toString(), enumValueName(Logging::LoggingEventTypeTrigger));
             QCOMPARE(logEntry.value("source").toString(), enumValueName(Logging::LoggingSourceActions));
             QCOMPARE(logEntry.value("loggingLevel").toString(), enumValueName(Logging::LoggingLevelInfo));
@@ -382,7 +382,7 @@ void TestLogging::actionLog()
         if (logEntry.value("deviceId").toUuid() == m_mockDeviceId) {
             found = true;
             // Make sure the notification contains all the stuff we expect
-            QCOMPARE(logEntry.value("typeId").toUuid(), mockFailingActionTypeId);
+            QCOMPARE(logEntry.value("typeId").toUuid().toString(), mockFailingActionTypeId.toString());
             QCOMPARE(logEntry.value("eventType").toString(), enumValueName(Logging::LoggingEventTypeTrigger));
             QCOMPARE(logEntry.value("source").toString(), enumValueName(Logging::LoggingSourceActions));
             QCOMPARE(logEntry.value("loggingLevel").toString(), enumValueName(Logging::LoggingLevelAlert));

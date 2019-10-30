@@ -841,7 +841,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     notificationVariant = checkNotification(clientSpy, "Rules.RuleActiveChanged");
     verifyRuleError(response);
 
-    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toUuid(), ruleId);
+    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toUuid().toString(), ruleId.toString());
     QCOMPARE(notificationVariant.toMap().value("params").toMap().value("active").toBool(), true);
 
     spy.clear(); clientSpy.clear();
@@ -859,7 +859,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     notificationVariant = checkNotification(clientSpy, "Rules.RuleActiveChanged");
     verifyRuleError(response);
 
-    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toUuid(), ruleId);
+    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toUuid().toString(), ruleId.toString());
     QCOMPARE(notificationVariant.toMap().value("params").toMap().value("active").toBool(), false);
 
     // now remove the rule and check the RuleRemoved notification
@@ -872,7 +872,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     checkNotification(clientSpy, "Logging.LogDatabaseUpdated");
     verifyRuleError(response);
 
-    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toUuid(), ruleId);
+    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toUuid().toString(), ruleId.toString());
 }
 
 void TestJSONRPC::deviceChangedNotifications()

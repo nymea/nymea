@@ -369,10 +369,13 @@ void NymeaTestBase::enableNotifications(const QStringList &namespaces)
     foreach (const QString &ns, namespaces) {
         variantList << ns;
     }
+    std::sort(variantList.begin(), variantList.end());
     QVariantMap notificationParams;
     notificationParams.insert("namespaces", variantList);
     QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", notificationParams);
-    QCOMPARE(response.toMap().value("params").toMap().value("namespaces").toList(), variantList);
+    QVariantList resultList = response.toMap().value("params").toMap().value("namespaces").toList();
+    std::sort(resultList.begin(), resultList.end());
+    QCOMPARE(resultList, variantList);
 }
 
 bool NymeaTestBase::disableNotifications()

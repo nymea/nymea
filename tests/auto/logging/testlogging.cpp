@@ -217,7 +217,7 @@ void TestLogging::eventLogs()
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 
-    enableNotifications({"Events"});
+    enableNotifications({"Events", "Logging"});
 
     // Setup connection to mock client
     QNetworkAccessManager nam;

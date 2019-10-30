@@ -948,7 +948,7 @@ void TestJSONRPC::deviceChangedNotifications()
 
 void TestJSONRPC::stateChangeEmitsNotifications()
 {
-    enableNotifications({"Devices"});
+    enableNotifications({"Devices", "States", "Logging", "Events"});
     bool found = false;
 
     // Setup connection to mock client

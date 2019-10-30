@@ -216,6 +216,7 @@ QVariantMap TestRules::createStateEvaluatorFromSingleDescriptor(const QVariantMa
 
 void TestRules::setWritableStateValue(const DeviceId &deviceId, const StateTypeId &stateTypeId, const QVariant &value)
 {
+    enableNotifications({"Devices"});
     QVariantMap params;
     params.insert("deviceId", deviceId);
     params.insert("stateTypeId", stateTypeId);

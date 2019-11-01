@@ -3,7 +3,7 @@ include(../nymea.pri)
 TARGET = nymea
 TEMPLATE = lib
 
-QT += network bluetooth
+QT += network bluetooth dbus
 QT -= gui
 DEFINES += LIBNYMEA_LIBRARY
 

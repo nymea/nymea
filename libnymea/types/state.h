@@ -63,7 +63,8 @@ class States: public QList<State>
 public:
     States();
     States(const QList<State> &other);
-    Q_INVOKABLE QVariant get(int index);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 Q_DECLARE_METATYPE(States)
 

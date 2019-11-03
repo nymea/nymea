@@ -198,9 +198,14 @@ StateTypes::StateTypes(const QList<StateType> &other)
     }
 }
 
-QVariant StateTypes::get(int index)
+QVariant StateTypes::get(int index) const
 {
     return QVariant::fromValue(at(index));
+}
+
+void StateTypes::put(const QVariant &variant)
+{
+    append(variant.value<StateType>());
 }
 
 StateType StateTypes::findByName(const QString &name)

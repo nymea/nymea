@@ -128,9 +128,14 @@ EventTypes::EventTypes(const QList<EventType> &other)
     }
 }
 
-QVariant EventTypes::get(int index)
+QVariant EventTypes::get(int index) const
 {
     return QVariant::fromValue(at(index));
+}
+
+void EventTypes::put(const QVariant &variant)
+{
+    append(variant.value<EventType>());
 }
 
 EventType EventTypes::findByName(const QString &name)

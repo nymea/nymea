@@ -73,7 +73,7 @@ public:
     Types::ValueOperator operatorType() const;
     void setOperatorType(Types::ValueOperator opertatorType);
 
-    bool isValid() const;
+    Q_INVOKABLE bool isValid() const;
 
     bool operator ==(const StateDescriptor &other) const;
 
@@ -86,8 +86,9 @@ private:
     QString m_interface;
     QString m_interfaceState;
     QVariant m_stateValue;
-    Types::ValueOperator m_operatorType;
+    Types::ValueOperator m_operatorType = Types::ValueOperatorEquals;
 };
+Q_DECLARE_METATYPE(StateDescriptor)
 
 QDebug operator<<(QDebug dbg, const StateDescriptor &stateDescriptor);
 

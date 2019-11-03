@@ -271,7 +271,7 @@ void Device::setSettingValue(const ParamTypeId &paramTypeId, const QVariant &val
 }
 
 /*! Returns the states of this Device. It must match the \l{StateType} description in the associated \l{DeviceClass}. */
-QList<State> Device::states() const
+States Device::states() const
 {
     return m_states;
 }
@@ -283,7 +283,7 @@ bool Device::hasParam(const ParamTypeId &paramTypeId) const
 }
 
 /*! Set the \l{State}{States} of this \l{Device} to the given \a states.*/
-void Device::setStates(const QList<State> &states)
+void Device::setStates(const States &states)
 {
     m_states = states;
 }

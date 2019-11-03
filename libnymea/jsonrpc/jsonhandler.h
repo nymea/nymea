@@ -72,13 +72,16 @@ public:
     static QVariant::Type basicTypeToVariantType(BasicType basicType);
 
     template<typename T> QVariant pack(const T &value) const;
-    template <typename T> T unpack(const QVariantMap &map) const;
+    template<typename T> QVariant pack(T *value) const;
+    template <typename T> T unpack(const QVariant &value) const;
 
 protected:
     template <typename Enum> void registerEnum();
     template <typename Enum, typename Flags> void registerEnum();
     template <typename ObjectType> void registerObject();
+    template <typename ObjectType> void registerUncreatableObject();
     template <typename ObjectType, typename ListType> void registerObject();
+    template<typename ListType, typename BasicTypeName> void registerList(BasicTypeName typeName);
     void registerObject(const QString &name, const QVariantMap &object);
     void registerMethod(const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, bool deprecated = false);
     void registerNotification(const QString &name, const QString &description, const QVariantMap &params, bool deprecated = false);
@@ -87,7 +90,11 @@ protected:
     JsonReply *createAsyncReply(const QString &method) const;
 
 private:
+
+    void registerObject(const QMetaObject &metaObject);
+
     QVariant pack(const QMetaObject &metaObject, const void *gadget) const;
+    QVariant unpack(const QMetaObject &metaObject, const QVariant &value) const;
 
 private:
     QVariantMap m_enums;
@@ -130,50 +137,23 @@ void JsonHandler::registerEnum()
 template<typename ObjectType>
 void JsonHandler::registerObject()
 {
-    qRegisterMetaType<QVariant::Type>();
+    qRegisterMetaType<ObjectType>();
     QMetaObject metaObject = ObjectType::staticMetaObject;
-    QString className = QString(metaObject.className()).split("::").last();
-    QVariantMap description;
-    for (int i = 0; i < metaObject.propertyCount(); i++) {
-        QMetaProperty metaProperty = metaObject.property(i);
-        QString name = metaProperty.name();
-        if (name == "objectName") {
-            continue; // Skip QObject's objectName property
-        }
-        if (metaProperty.isUser()) {
-            name.prepend("o:");
-        }
-        QVariant typeName;
-//        qWarning() << ".-.-.-.-.-" << metaProperty.name() << metaProperty.type() << metaProperty.typeName();
-        if (metaProperty.type() == QVariant::UserType) {
-            if (metaProperty.typeName() == QStringLiteral("QVariant::Type")) {
-                typeName = QString("$ref:BasicType");
-            } else if (QString(metaProperty.typeName()).startsWith("QList")) {
-                QString elementType = QString(metaProperty.typeName()).remove("QList<").remove(">");
-                QVariant::Type variantType = QVariant::nameToType(elementType.toUtf8());
-                typeName = QVariantList() << enumValueName(variantTypeToBasicType(variantType));
-            } else {
-                typeName = QString("$ref:%1").arg(QString(metaProperty.typeName()).split("::").last());
-            }
-        } else if (metaProperty.isEnumType()) {
-            typeName = QString("$ref:%1").arg(QString(metaProperty.typeName()).split("::").last());
-        } else if (metaProperty.isFlagType()) {
-            typeName = QVariantList() << "$ref:" + m_flagsEnums.value(metaProperty.name());
-        } else if (metaProperty.type() == QVariant::List) {
-            typeName = QVariantList() << enumValueName(Variant);
-        } else {
-            typeName = enumValueName(variantTypeToBasicType(metaProperty.type()));
-        }
-        description.insert(name, typeName);
-    }
-    m_objects.insert(className, description);
-    m_metaObjects.insert(className, metaObject);
+    registerObject(metaObject);
+}
+
+template<typename ObjectType>
+void JsonHandler::registerUncreatableObject()
+{
+    QMetaObject metaObject = ObjectType::staticMetaObject;
+    registerObject(metaObject);
 }
 
 template<typename ObjectType, typename ListType>
 void JsonHandler::registerObject()
 {
     registerObject<ObjectType>();
+    qRegisterMetaType<ListType>();
     QMetaObject metaObject = ObjectType::staticMetaObject;
     QMetaObject listMetaObject = ListType::staticMetaObject;
     QString listTypeName = QString(listMetaObject.className()).split("::").last();
@@ -184,6 +164,19 @@ void JsonHandler::registerObject()
     m_listEntryTypes.insert(listTypeName, objectTypeName);
     Q_ASSERT_X(listMetaObject.indexOfProperty("count") >= 0, "JsonHandler", QString("List type %1 does not implement \"count\" property!").arg(listTypeName).toUtf8());
     Q_ASSERT_X(listMetaObject.indexOfMethod("get(int)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE QVariant get(int index)\" method!").arg(listTypeName).toUtf8());
+    Q_ASSERT_X(listMetaObject.indexOfMethod("put(QVariant)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE void put(QVariant variant)\" method!").arg(listTypeName).toUtf8());
+}
+
+template<typename ListType, typename BasicTypeName>
+void JsonHandler::registerList(BasicTypeName typeName)
+{
+    QMetaObject listMetaObject = ListType::staticMetaObject;
+    QString listTypeName = QString(listMetaObject.className()).split("::").last();
+    m_metaObjects.insert(listTypeName, listMetaObject);
+    m_objects.insert(listTypeName, QVariantList() << QVariant(QString("$ref:%1").arg(enumValueName(typeName))));
+    Q_ASSERT_X(listMetaObject.indexOfProperty("count") >= 0, "JsonHandler", QString("List type %1 does not implement \"count\" property!").arg(listTypeName).toUtf8());
+    Q_ASSERT_X(listMetaObject.indexOfMethod("get(int)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE QVariant get(int index)\" method!").arg(listTypeName).toUtf8());
+    Q_ASSERT_X(listMetaObject.indexOfMethod("put(QVariant)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE void put(QVariant variant)\" method!").arg(listTypeName).toUtf8());
 }
 
 template<typename T>
@@ -222,33 +215,19 @@ QVariant JsonHandler::pack(const T &value) const
 }
 
 template<typename T>
-T JsonHandler::unpack(const QVariantMap &map) const
+QVariant JsonHandler::pack(T *value) const
 {
-    T ret;
     QMetaObject metaObject = T::staticMetaObject;
-    for (int i = 0; i < metaObject.propertyCount(); i++) {
-        QMetaProperty metaProperty = metaObject.property(i);
-        if (metaProperty.name() == QStringLiteral("objectName")) {
-            continue;
-        }
-        if (!metaProperty.isWritable()) {
-            continue;
-        }
-        if (!metaProperty.isUser()) {
-            Q_ASSERT_X(map.contains(metaProperty.name()), this->metaObject()->className(), QString("Missing property %1 in map.").arg(metaProperty.name()).toUtf8());
-        }
-        if (map.contains(metaProperty.name())) {
-            // Special treatment for QDateTime (convert from time_t)
-            QVariant variant = map.value(metaProperty.name());
-            if (metaProperty.type() == QVariant::DateTime) {
-                variant = QDateTime::fromTime_t(variant.toUInt());
-            }
-            metaProperty.writeOnGadget(&ret, variant);
-        }
-    }
-    return ret;
+    return pack(metaObject, static_cast<const void*>(value));
 }
 
+template<typename T>
+T JsonHandler::unpack(const QVariant &value) const
+{
+    QMetaObject metaObject = T::staticMetaObject;
+    QVariant ret = unpack(metaObject, value);
+    return ret.value<T>();
+}
 
 
 #endif // JSONHANDLER_H

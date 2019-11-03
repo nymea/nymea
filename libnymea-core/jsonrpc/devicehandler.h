@@ -60,26 +60,7 @@ public:
     Q_INVOKABLE JsonReply *BrowseDevice(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetBrowserItem(const QVariantMap &params) const;
 
-    QVariantMap packParamType(const ParamType &paramType, const PluginId &pluginId, const QLocale &locale) const;
-//    QVariantMap packPlugin(DevicePlugin *plugin, const QLocale &locale) const;
-    QVariantMap packEventType(const EventType &eventType, const PluginId &pluginId, const QLocale &locale) const;
-//    QVariantMap packStateType(const StateType &stateType, const PluginId &pluginId, const QLocale &locale) const;
-    QVariantMap packActionType(const ActionType &actionType, const PluginId &pluginId, const QLocale &locale) const;
-    QVariantList packCreateMethods(DeviceClass::CreateMethods createMethods) const;
-//    QVariantMap packDeviceClass(const DeviceClass &deviceClass, const QLocale &locale) const;
-    QVariantMap packDeviceDescriptor(const DeviceDescriptor &descriptor) const;
-
-    static QVariantMap packParam(const Param &param);
-    static QVariantList packParams(const ParamList &paramList);
-
-    static QVariantMap packDevice(Device *device);
-    static QVariantList packDeviceStates(Device *device);
-
     static QVariantMap packBrowserItem(const BrowserItem &item);
-
-    static Param unpackParam(const QVariantMap &param);
-    static ParamList unpackParams(const QVariantList &params);
-
 
 signals:
     void PluginConfigurationChanged(const QVariantMap &params);

@@ -69,3 +69,8 @@ QVariant Repositories::get(int index) const
 {
     return QVariant::fromValue(at(index));
 }
+
+void Repositories::put(const QVariant &variant)
+{
+    append(variant.value<Repository>());
+}

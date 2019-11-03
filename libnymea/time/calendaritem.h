@@ -74,7 +74,8 @@ class CalendarItems: public QList<CalendarItem>
 public:
     CalendarItems();
     CalendarItems(const QList<CalendarItem> &other);
-    Q_INVOKABLE QVariant get(int index);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 Q_DECLARE_METATYPE(CalendarItems)
 

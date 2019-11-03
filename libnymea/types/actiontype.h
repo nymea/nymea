@@ -77,7 +77,8 @@ class ActionTypes: public QList<ActionType>
 public:
     ActionTypes() = default;
     ActionTypes(const QList<ActionType> &other);
-    Q_INVOKABLE QVariant get(int index);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
     ActionType findByName(const QString &name);
     ActionType findById(const ActionTypeId &id);
 };

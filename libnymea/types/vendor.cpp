@@ -33,6 +33,11 @@
 
 #include "vendor.h"
 
+Vendor::Vendor()
+{
+
+}
+
 /*! Constructs an Vendor with the given \a id and the given \a name. */
 Vendor::Vendor(const VendorId &id, const QString &name):
     m_id(id),

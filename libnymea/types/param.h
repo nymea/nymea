@@ -33,12 +33,13 @@
 class LIBNYMEA_EXPORT Param
 {
     Q_GADGET
-    Q_PROPERTY(QUuid paramTypeId READ paramTypeId USER true)
+    Q_PROPERTY(QUuid paramTypeId READ paramTypeId WRITE setParamTypeId USER true)
     Q_PROPERTY(QVariant value READ value WRITE setValue)
 public:
     Param(const ParamTypeId &paramTypeId = ParamTypeId(), const QVariant &value = QVariant());
 
     ParamTypeId paramTypeId() const;
+    void setParamTypeId(const ParamTypeId &paramTypeId);
 
     QVariant value() const;
     void setValue(const QVariant &value);
@@ -61,6 +62,7 @@ public:
     ParamList();
     ParamList(const QList<Param> &other);
     Q_INVOKABLE QVariant get(int index);
+    Q_INVOKABLE void put(const QVariant &variant);
     bool hasParam(const ParamTypeId &paramTypeId) const;
     QVariant paramValue(const ParamTypeId &paramTypeId) const;
     bool setParamValue(const ParamTypeId &paramTypeId, const QVariant &value);

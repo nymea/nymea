@@ -78,7 +78,8 @@ class EventTypes: public QList<EventType>
 public:
     EventTypes() = default;
     EventTypes(const QList<EventType> &other);
-    Q_INVOKABLE QVariant get(int index);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
     EventType findByName(const QString &name);
     EventType findById(const EventTypeId &id);
 };

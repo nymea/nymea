@@ -23,8 +23,33 @@
 
 #include <QList>
 #include <QMetaType>
+#include <QVariant>
 
 class QDateTime;
+
+class WeekDays: public QList<int>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    WeekDays();
+    WeekDays(const QList<int> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &value);
+};
+Q_DECLARE_METATYPE(WeekDays)
+
+class MonthDays: public QList<int>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    MonthDays();
+    MonthDays(const QList<int> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &value);
+};
+Q_DECLARE_METATYPE(MonthDays)
 
 class RepeatingOption
 {

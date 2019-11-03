@@ -69,13 +69,13 @@ void StateEvaluator::setStateDescriptor(const StateDescriptor &stateDescriptor)
 }
 
 /*! Returns the list of child \l {StateEvaluator}{StateEvaluators} of this \l StateEvaluator. */
-QList<StateEvaluator> StateEvaluator::childEvaluators() const
+StateEvaluators StateEvaluator::childEvaluators() const
 {
     return m_childEvaluators;
 }
 
 /*! Sets the list of child evaluators of this \l StateEvaluator to the given \a stateEvaluators.*/
-void StateEvaluator::setChildEvaluators(const QList<StateEvaluator> &stateEvaluators)
+void StateEvaluator::setChildEvaluators(const StateEvaluators &stateEvaluators)
 {
     m_childEvaluators = stateEvaluators;
 }
@@ -389,7 +389,14 @@ StateEvaluators::StateEvaluators(const QList<StateEvaluator> &other): QList<Stat
 
 QVariant StateEvaluators::get(int index) const
 {
+    qWarning() << "getting" << index << "of" << count();
+    qWarning() << "at" << at(index);
     return QVariant::fromValue(at(index));
+}
+
+void StateEvaluators::put(const QVariant &variant)
+{
+    append(variant.value<StateEvaluator>());
 }
 
 }

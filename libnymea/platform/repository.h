@@ -57,6 +57,7 @@ public:
     Repositories();
     Repositories(const QList<Repository> &other);
     Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 
 #endif // REPOSITORY_H

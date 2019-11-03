@@ -49,7 +49,7 @@ Rule::Rule():
     m_eventDescriptors(QList<EventDescriptor>()),
     m_actions(QList<RuleAction>()),
     m_exitActions(QList<RuleAction>()),
-    m_enabled(false),
+    m_enabled(true),
     m_active(false),
     m_statesActive(false),
     m_timeActive(false),
@@ -128,37 +128,37 @@ void Rule::setStateEvaluator(const StateEvaluator &stateEvaluator)
 }
 
 /*! Returns the \l{EventDescriptor} for this Rule.*/
-QList<EventDescriptor> Rule::eventDescriptors() const
+EventDescriptors Rule::eventDescriptors() const
 {
     return m_eventDescriptors;
 }
 
 /*! Sets the \a eventDescriptors of this \l{Rule}. */
-void Rule::setEventDescriptors(const QList<EventDescriptor> &eventDescriptors)
+void Rule::setEventDescriptors(const EventDescriptors &eventDescriptors)
 {
     m_eventDescriptors = eventDescriptors;
 }
 
 /*! Returns the \l{RuleAction}{RuleActions} to be executed when this Rule is matched and states match. */
-QList<RuleAction> Rule::actions() const
+RuleActions Rule::actions() const
 {
     return m_actions;
 }
 
 /*! Sets the \a actions of this \l{Rule}. */
-void Rule::setActions(const QList<RuleAction> actions)
+void Rule::setActions(const RuleActions actions)
 {
     m_actions = actions;
 }
 
 /*! Returns the \l{RuleAction}{RuleActions} to be executed when this Rule leaves the active state. */
-QList<RuleAction> Rule::exitActions() const
+RuleActions Rule::exitActions() const
 {
     return m_exitActions;
 }
 
 /*! Sets the \a exitActions of this \l{Rule}. */
-void Rule::setExitActions(const QList<RuleAction> exitActions)
+void Rule::setExitActions(const RuleActions exitActions)
 {
     m_exitActions = exitActions;
 }
@@ -263,6 +263,11 @@ Rules::Rules(const QList<Rule> &other): QList<Rule>(other)
 QVariant Rules::get(int index) const
 {
     return QVariant::fromValue(at(index));
+}
+
+void Rules::put(const QVariant &variant)
+{
+    append(variant.value<Rule>());
 }
 
 }

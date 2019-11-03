@@ -255,9 +255,14 @@ ParamTypes::ParamTypes(const QList<ParamType> &other): QList<ParamType>(other)
 {
 }
 
-QVariant ParamTypes::get(int index)
+QVariant ParamTypes::get(int index) const
 {
     return QVariant::fromValue(at(index));
+}
+
+void ParamTypes::put(const QVariant &variant)
+{
+    append(variant.value<ParamType>());
 }
 
 ParamType ParamTypes::findByName(const QString &name)

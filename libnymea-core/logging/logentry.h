@@ -100,6 +100,7 @@ public:
     LogEntries();
     LogEntries(const QList<LogEntry> &other);
     Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 
 QDebug operator<<(QDebug dbg, const LogEntry &entry);

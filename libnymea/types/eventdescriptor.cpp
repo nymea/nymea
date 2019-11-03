@@ -204,3 +204,8 @@ QVariant EventDescriptors::get(int index) const
 {
     return QVariant::fromValue(at(index));
 }
+
+void EventDescriptors::put(const QVariant &variant)
+{
+    append(variant.value<EventDescriptor>());
+}

@@ -23,7 +23,7 @@
 
 #include <QUuid>
 #include <QDateTime>
-#include <QMetaObject>
+#include <QMetaType>
 
 namespace nymeaserver {
 
@@ -36,6 +36,7 @@ class TokenInfo
     Q_PROPERTY(QString deviveName READ deviceName)
 
 public:
+    TokenInfo();
     TokenInfo(const QUuid &id, const QString &username, const QDateTime &creationTime, const QString &deviceName);
 
     QUuid id() const;
@@ -51,5 +52,6 @@ private:
 };
 
 }
+Q_DECLARE_METATYPE(nymeaserver::TokenInfo)
 
 #endif // TOKENINFO_H

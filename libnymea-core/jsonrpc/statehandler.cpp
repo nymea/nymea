@@ -33,7 +33,6 @@
 */
 
 #include "statehandler.h"
-#include "devicehandler.h"
 #include "nymeacore.h"
 #include "loggingcategories.h"
 

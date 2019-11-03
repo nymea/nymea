@@ -410,23 +410,19 @@ void TestRules::addRemoveRules_data()
     QVariantMap validActionNoParams;
     validActionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     validActionNoParams.insert("deviceId", m_mockDeviceId);
-    validActionNoParams.insert("ruleActionParams", QVariantList());
 
     QVariantMap invalidAction;
     invalidAction.insert("actionTypeId", ActionTypeId("f32c7efb-38b6-4576-a496-c75bbb23132f"));
     invalidAction.insert("deviceId", m_mockDeviceId);
-    invalidAction.insert("ruleActionParams", QVariantList());
 
     // RuleExitAction
     QVariantMap validExitActionNoParams;
     validExitActionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     validExitActionNoParams.insert("deviceId", m_mockDeviceId);
-    validExitActionNoParams.insert("ruleActionParams", QVariantList());
 
     QVariantMap invalidExitAction;
     invalidExitAction.insert("actionTypeId", ActionTypeId("f32c7efb-38b6-4576-a496-c75bbb23132f"));
     invalidExitAction.insert("deviceId", m_mockDeviceId);
-    invalidExitAction.insert("ruleActionParams", QVariantList());
 
     // StateDescriptor
     QVariantMap stateDescriptor;
@@ -448,7 +444,6 @@ void TestRules::addRemoveRules_data()
     QVariantMap validEventDescriptor1;
     validEventDescriptor1.insert("eventTypeId", mockEvent1EventTypeId);
     validEventDescriptor1.insert("deviceId", m_mockDeviceId);
-    validEventDescriptor1.insert("paramDescriptors", QVariantList());
 
     QVariantMap validEventDescriptor2;
     validEventDescriptor2.insert("eventTypeId", mockEvent2EventTypeId);
@@ -464,7 +459,6 @@ void TestRules::addRemoveRules_data()
     QVariantMap validEventDescriptor3;
     validEventDescriptor3.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor3.insert("deviceId", m_mockDeviceId);
-    validEventDescriptor3.insert("paramDescriptors", QVariantList());
 
     // EventDescriptorList
     QVariantList eventDescriptorList;
@@ -474,7 +468,6 @@ void TestRules::addRemoveRules_data()
     QVariantMap invalidEventDescriptor;
     invalidEventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
     invalidEventDescriptor.insert("deviceId", DeviceId("2c4825c8-dfb9-4ba4-bd0e-1d827d945d41"));
-    invalidEventDescriptor.insert("paramDescriptors", QVariantList());
 
     // RuleAction event based
     QVariantMap validActionEventBased;
@@ -617,7 +610,10 @@ void TestRules::addRemoveRules()
     QVariantList eventDescriptors = rule.value("eventDescriptors").toList();
     if (!eventDescriptor.isEmpty()) {
         QVERIFY2(eventDescriptors.count() == 1, "There should be exactly one eventDescriptor");
-        QVERIFY2(eventDescriptors.first().toMap() == eventDescriptor, "Event descriptor doesn't match");
+        QVERIFY2(eventDescriptors.first().toMap() == eventDescriptor,
+                 QString("Event descriptor doesn't match:\nExpected: %1\nGot: %2")
+                 .arg(QString(QJsonDocument::fromVariant(eventDescriptor).toJson()))
+                 .arg(QString(QJsonDocument::fromVariant(eventDescriptors.first().toMap()).toJson())).toUtf8());
     } else if (eventDescriptorList.isEmpty()){
         QVERIFY2(eventDescriptors.count() == eventDescriptorList.count(), QString("There should be exactly %1 eventDescriptor").arg(eventDescriptorList.count()).toLatin1().data());
         foreach (const QVariant &eventDescriptorVariant, eventDescriptorList) {
@@ -634,7 +630,11 @@ void TestRules::addRemoveRules()
     }
 
     QVariantList replyActions = rule.value("actions").toList();
-    QVERIFY2(actions == replyActions, "Actions don't match");
+    QVERIFY2(actions == replyActions,
+             QString("Actions don't match.\nExpected: %1\nGot: %2")
+             .arg(QString(QJsonDocument::fromVariant(actions).toJson()))
+             .arg(QString(QJsonDocument::fromVariant(replyActions).toJson()))
+             .toUtf8());
 
     QVariantList replyExitActions = rule.value("exitActions").toList();
     QVERIFY2(exitActions == replyExitActions, "ExitActions don't match");
@@ -655,23 +655,19 @@ void TestRules::editRules_data()
     QVariantMap validActionNoParams;
     validActionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     validActionNoParams.insert("deviceId", m_mockDeviceId);
-    validActionNoParams.insert("ruleActionParams", QVariantList());
 
     QVariantMap invalidAction;
     invalidAction.insert("actionTypeId", ActionTypeId());
     invalidAction.insert("deviceId", m_mockDeviceId);
-    invalidAction.insert("ruleActionParams", QVariantList());
 
     // RuleExitAction
     QVariantMap validExitActionNoParams;
     validExitActionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     validExitActionNoParams.insert("deviceId", m_mockDeviceId);
-    validExitActionNoParams.insert("ruleActionParams", QVariantList());
 
     QVariantMap invalidExitAction;
     invalidExitAction.insert("actionTypeId", ActionTypeId());
     invalidExitAction.insert("deviceId", m_mockDeviceId);
-    invalidExitAction.insert("ruleActionParams", QVariantList());
 
     // StateDescriptor
     QVariantMap stateDescriptor;
@@ -693,7 +689,6 @@ void TestRules::editRules_data()
     QVariantMap validEventDescriptor1;
     validEventDescriptor1.insert("eventTypeId", mockEvent1EventTypeId);
     validEventDescriptor1.insert("deviceId", m_mockDeviceId);
-    validEventDescriptor1.insert("paramDescriptors", QVariantList());
 
     QVariantMap validEventDescriptor2;
     validEventDescriptor2.insert("eventTypeId", mockEvent2EventTypeId);
@@ -709,7 +704,6 @@ void TestRules::editRules_data()
     QVariantMap validEventDescriptor3;
     validEventDescriptor3.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor3.insert("deviceId", m_mockDeviceId);
-    validEventDescriptor3.insert("paramDescriptors", QVariantList());
 
     // EventDescriptorList
     QVariantList eventDescriptorList;
@@ -719,7 +713,6 @@ void TestRules::editRules_data()
     QVariantMap invalidEventDescriptor;
     invalidEventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
     invalidEventDescriptor.insert("deviceId", DeviceId());
-    invalidEventDescriptor.insert("paramDescriptors", QVariantList());
 
     // RuleAction event based
     QVariantMap validActionEventBased;
@@ -809,11 +802,9 @@ void TestRules::editRules()
     QVariantMap eventDescriptor1;
     eventDescriptor1.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor1.insert("deviceId", m_mockDeviceId);
-    eventDescriptor1.insert("paramDescriptors", QVariantList());
     QVariantMap eventDescriptor2;
     eventDescriptor2.insert("eventTypeId", mockEvent2EventTypeId);
     eventDescriptor2.insert("deviceId", m_mockDeviceId);
-    eventDescriptor2.insert("paramDescriptors", QVariantList());
     QVariantMap eventParam1;
     eventParam1.insert("paramTypeId", mockEvent2EventIntParamParamTypeId);
     eventParam1.insert("value", 3);
@@ -948,7 +939,10 @@ void TestRules::editRules()
         QVariantList eventDescriptors = rule.value("eventDescriptors").toList();
         if (!eventDescriptor.isEmpty()) {
             QVERIFY2(eventDescriptors.count() == 1, "There should be exactly one eventDescriptor");
-            QVERIFY2(eventDescriptors.first().toMap() == eventDescriptor, "Event descriptor doesn't match");
+            QVERIFY2(eventDescriptors.first().toMap() == eventDescriptor,
+                     QString("Event descriptor doesn't match.\nExpected:%1\nGot:%2")
+                     .arg(QString(QJsonDocument::fromVariant(eventDescriptor).toJson()))
+                     .arg(QString(QJsonDocument::fromVariant(eventDescriptors.first().toMap()).toJson())).toUtf8());
         } else if (eventDescriptorList.isEmpty()){
             QVERIFY2(eventDescriptors.count() == eventDescriptorList.count(), QString("There should be exactly %1 eventDescriptor").arg(eventDescriptorList.count()).toLatin1().data());
             foreach (const QVariant &eventDescriptorVariant, eventDescriptorList) {
@@ -965,7 +959,11 @@ void TestRules::editRules()
         }
 
         QVariantList replyActions = rule.value("actions").toList();
-        QVERIFY2(actions == replyActions, "Actions don't match");
+        QVERIFY2(actions == replyActions,
+                 QString("Actions don't match.\nExpected: %1\nGot: %2")
+                 .arg(QString(QJsonDocument::fromVariant(actions).toJson()))
+                 .arg(QString(QJsonDocument::fromVariant(replyActions).toJson()))
+                 .toUtf8());
 
         QVariantList replyExitActions = rule.value("exitActions").toList();
         QVERIFY2(exitActions == replyExitActions, "ExitActions don't match");
@@ -1103,12 +1101,10 @@ void TestRules::loadStoreConfig()
     QVariantMap eventDescriptor1;
     eventDescriptor1.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor1.insert("deviceId", m_mockDeviceId);
-    eventDescriptor1.insert("paramDescriptors", QVariantList());
 
     QVariantMap eventDescriptor2;
     eventDescriptor2.insert("eventTypeId", mockEvent2EventTypeId);
     eventDescriptor2.insert("deviceId", m_mockDeviceId);
-    eventDescriptor2.insert("paramDescriptors", QVariantList());
     QVariantList eventParamDescriptors;
     QVariantMap eventParam1;
     eventParam1.insert("paramTypeId", mockEvent2EventIntParamParamTypeId);
@@ -1195,7 +1191,6 @@ void TestRules::loadStoreConfig()
     QVariantMap validEventDescriptor3;
     validEventDescriptor3.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor3.insert("deviceId", m_mockDeviceId);
-    validEventDescriptor3.insert("paramDescriptors", QVariantList());
     validEventDescriptors3.append(validEventDescriptor3);
 
     // Interface based event descriptor
@@ -1332,7 +1327,11 @@ void TestRules::loadStoreConfig()
                     expectedEventDescriptorVariant.toMap().value("deviceId") == replyEventDescriptorVariant.toMap().value("deviceId")) {
                 found = true;
                 qDebug() << endl << replyEventDescriptorVariant << endl << expectedEventDescriptorVariant;
-                QVERIFY2(replyEventDescriptorVariant == expectedEventDescriptorVariant, "EventDescriptor doesn't match");
+                QVERIFY2(replyEventDescriptorVariant == expectedEventDescriptorVariant,
+                         QString("EventDescriptor doesn't match.\nExpected: %1\nGot: %2")
+                         .arg(QString(QJsonDocument::fromVariant(expectedEventDescriptorVariant).toJson()))
+                         .arg(QString(QJsonDocument::fromVariant(replyEventDescriptorVariant).toJson()))
+                         .toUtf8());
             }
         }
         QVERIFY2(found, "missing eventdescriptor");

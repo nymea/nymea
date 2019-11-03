@@ -115,7 +115,8 @@ class ParamTypes: public QList<ParamType>
 public:
     ParamTypes() = default;
     ParamTypes(const QList<ParamType> &other);
-    Q_INVOKABLE QVariant get(int index);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
     ParamType findByName(const QString &name);
     ParamType findById(const ParamTypeId &id);
 };

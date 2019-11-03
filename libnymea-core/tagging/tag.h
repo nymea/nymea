@@ -74,6 +74,7 @@ public:
     Tags();
     Tags(const QList<Tag> &other);
     Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 
 QDebug operator<<(QDebug dbg, const Tag &tag);

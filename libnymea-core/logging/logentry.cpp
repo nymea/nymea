@@ -193,4 +193,9 @@ QVariant LogEntries::get(int index) const
     return QVariant::fromValue(at(index));
 }
 
+void LogEntries::put(const QVariant &variant)
+{
+    append(variant.value<LogEntry>());
+}
+
 }

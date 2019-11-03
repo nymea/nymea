@@ -101,6 +101,7 @@ public:
     bool hasParam(const ParamTypeId &ruleActionParamTypeId) const;
     bool hasParam(const QString &ruleActionParamName) const;
     Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
     QVariant paramValue(const ParamTypeId &ruleActionParamName) const;
     bool setParamValue(const ParamTypeId &ruleActionParamTypeId, const QVariant &value);
     RuleActionParams operator<<(const RuleActionParam &ruleActionParam);

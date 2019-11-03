@@ -210,3 +210,43 @@ QDebug operator<<(QDebug dbg, const RepeatingOption &repeatingOption)
     dbg.nospace() << "RepeatingOption(Mode:" << repeatingOption.mode() << ", Monthdays:" << repeatingOption.monthDays() << "Weekdays:" << repeatingOption.weekDays() << ")";
     return dbg;
 }
+
+WeekDays::WeekDays()
+{
+
+}
+
+WeekDays::WeekDays(const QList<int> &other): QList<int>(other)
+{
+
+}
+
+QVariant WeekDays::get(int index) const
+{
+    return at(index);
+}
+
+void WeekDays::put(const QVariant &value)
+{
+    append(value.toInt());
+}
+
+MonthDays::MonthDays()
+{
+
+}
+
+MonthDays::MonthDays(const QList<int> &other): QList<int>(other)
+{
+
+}
+
+QVariant MonthDays::get(int index) const
+{
+    return at(index);
+}
+
+void MonthDays::put(const QVariant &value)
+{
+    append(value.toInt());
+}

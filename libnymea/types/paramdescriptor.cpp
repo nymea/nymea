@@ -101,3 +101,8 @@ QVariant ParamDescriptors::get(int index) const
 {
     return QVariant::fromValue(at(index));
 }
+
+void ParamDescriptors::put(const QVariant &variant)
+{
+    append(variant.value<ParamDescriptor>());
+}

@@ -33,7 +33,6 @@
 */
 
 #include "actionhandler.h"
-#include "devicehandler.h"
 
 #include "nymeacore.h"
 #include "devices/devicemanager.h"
@@ -105,7 +104,7 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
 {
     DeviceId deviceId(params.value("deviceId").toString());
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
-    ParamList actionParams = DeviceHandler::unpackParams(params.value("params").toList());
+    ParamList actionParams = unpack<ParamList>(params.value("params"));
     QLocale locale = params.value("locale").toLocale();
 
     Action action(actionTypeId, deviceId);
@@ -174,7 +173,7 @@ JsonReply *ActionHandler::ExecuteBrowserItemAction(const QVariantMap &params)
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
     QString itemId = params.value("itemId").toString();
     ActionTypeId actionTypeId = ActionTypeId(params.value("actionTypeId").toString());
-    ParamList paramList = DeviceHandler::unpackParams(params.value("params").toList());
+    ParamList paramList = unpack<ParamList>(params.value("params"));
     BrowserItemAction browserItemAction(deviceId, itemId, actionTypeId, paramList);
 
     JsonReply *jsonReply = createAsyncReply("ExecuteBrowserItemAction");

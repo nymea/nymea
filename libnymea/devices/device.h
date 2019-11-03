@@ -106,9 +106,9 @@ public:
     QVariant setting(const ParamTypeId &paramTypeId) const;
     void setSettingValue(const ParamTypeId &paramTypeId, const QVariant &value);
 
-    QList<State> states() const;
+    States states() const;
     bool hasState(const StateTypeId &stateTypeId) const;
-    void setStates(const QList<State> &states);
+    void setStates(const States &states);
 
     QVariant stateValue(const StateTypeId &stateTypeId) const;
     void setStateValue(const StateTypeId &stateTypeId, const QVariant &value);
@@ -144,7 +144,7 @@ private:
     QString m_name;
     ParamList m_params;
     ParamList m_settings;
-    QList<State> m_states;
+    States m_states;
     bool m_setupComplete = false;
     bool m_autoCreated = false;
 };

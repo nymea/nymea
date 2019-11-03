@@ -38,6 +38,7 @@ class LIBNYMEA_EXPORT Vendor
     Q_PROPERTY(QString displayName READ displayName WRITE setDisplayName)
 
 public:
+    Vendor();
     Vendor(const VendorId &id, const QString &name = QString());
 
     VendorId id() const;
@@ -56,6 +57,7 @@ private:
     QString m_name;
     QString m_displayName;
 };
+Q_DECLARE_METATYPE(Vendor)
 
 class LIBNYMEA_EXPORT Vendors: public QList<Vendor>
 {
@@ -65,5 +67,6 @@ public:
 
     Vendor findById(const VendorId &vendorId) const;
 };
+Q_DECLARE_METATYPE(Vendors)
 
 #endif // VENDOR_H

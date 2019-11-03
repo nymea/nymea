@@ -312,3 +312,8 @@ QVariant RuleActionParams::get(int index) const
 {
     return QVariant::fromValue(at(index));
 }
+
+void RuleActionParams::put(const QVariant &variant)
+{
+    append(variant.value<RuleActionParam>());
+}

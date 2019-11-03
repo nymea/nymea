@@ -285,7 +285,13 @@ CalendarItems::CalendarItems(const QList<CalendarItem> &other): QList<CalendarIt
 
 }
 
-QVariant CalendarItems::get(int index)
+QVariant CalendarItems::get(int index) const
 {
     return QVariant::fromValue(at(index));
+}
+
+void CalendarItems::put(const QVariant &variant)
+{
+    qWarning() << "Putting!" << variant;
+    append(variant.value<CalendarItem>());
 }

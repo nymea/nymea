@@ -48,6 +48,11 @@ ParamTypeId Param::paramTypeId() const
     return m_paramTypeId;
 }
 
+void Param::setParamTypeId(const ParamTypeId &paramTypeId)
+{
+    m_paramTypeId = paramTypeId;
+}
+
 /*! Returns the value of this \l Param. */
 QVariant Param::value() const
 {
@@ -112,6 +117,11 @@ ParamList::ParamList(const QList<Param> &other): QList<Param>(other)
 QVariant ParamList::get(int index)
 {
     return QVariant::fromValue(at(index));
+}
+
+void ParamList::put(const QVariant &variant)
+{
+    append(variant.value<Param>());
 }
 
 /*! Returns true if this ParamList contains a Param with the given \a paramTypeId. */

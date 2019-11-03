@@ -93,6 +93,7 @@ public:
     Packages();
     Packages(const QList<Package> &other);
     Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 Q_DECLARE_METATYPE(Packages)
 

@@ -55,6 +55,7 @@
 #include <QTranslator>
 #include <QPair>
 #include <QSettings>
+#include <QMetaType>
 
 class DeviceManager;
 
@@ -140,8 +141,8 @@ private:
     PluginMetadata m_metaData;
     ParamList m_config;
 };
-
 Q_DECLARE_INTERFACE(DevicePlugin, "io.nymea.DevicePlugin")
+Q_DECLARE_METATYPE(DevicePlugin*)
 
 
 class LIBNYMEA_EXPORT DevicePlugins: public QList<DevicePlugin*>
@@ -151,5 +152,6 @@ public:
     DevicePlugins(const QList<DevicePlugin*> &other);
     DevicePlugin* findById(const PluginId &id) const;
 };
+Q_DECLARE_METATYPE(DevicePlugins)
 
 #endif // DEVICEPLUGIN_H

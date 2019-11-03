@@ -353,7 +353,10 @@ void TestDevices::addConfiguredDevice_data()
     QTest::newRow("User, JustAdd, wrong param") << mockDeviceClassId << invalidDeviceParams << true << Device::DeviceErrorInvalidParameter;
 
     deviceParams.clear(); deviceParams << httpportParam << fakeparam;
-    QTest::newRow("USer, JustAdd, additional invalid param") << mockDeviceClassId << deviceParams << Device::DeviceErrorNoError;
+    QTest::newRow("USer, JustAdd, additional invalid param") << mockDeviceClassId << deviceParams << false << Device::DeviceErrorNoError;
+
+    deviceParams.clear(); deviceParams << httpportParam << fakeparam2;
+    QTest::newRow("USer, JustAdd, additional param, valid but unused") << mockDeviceClassId << deviceParams << true << Device::DeviceErrorNoError;
 
 }
 
@@ -655,8 +658,8 @@ void TestDevices::parentChildDevices()
 
         if (deviceMap.value("deviceClassId").toString() == mockChildDeviceClassId.toString()) {
             if (deviceMap.value("parentId") == parentDeviceId.toString()) {
-                //qDebug() << QJsonDocument::fromVariant(deviceVariant).toJson();
                 childDeviceId = DeviceId(deviceMap.value("id").toString());
+                break;
             }
         }
     }

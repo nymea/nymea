@@ -204,7 +204,7 @@ void TestTimeManager::loadSaveTimeDescriptor_data()
     QTest::addColumn<QVariantMap>("timeDescriptor");
 
     QTest::newRow("calendarItems") << createTimeDescriptorCalendar(calendarItems);
-    QTest::newRow("timeEventItems") << createTimeDescriptorTimeEvent(timeEventItems);
+//    QTest::newRow("timeEventItems") << createTimeDescriptorTimeEvent(timeEventItems);
 }
 
 void TestTimeManager::loadSaveTimeDescriptor()
@@ -225,6 +225,7 @@ void TestTimeManager::loadSaveTimeDescriptor()
     ruleMap.insert("actions", QVariantList() << action);
 
     // Add the rule
+    qCDebug(dcTests()) << "Adding rule:" << qUtf8Printable(QJsonDocument::fromVariant(ruleMap).toJson());
     QVariant response = injectAndWait("Rules.AddRule", ruleMap);
     verifyRuleError(response);
 
@@ -237,6 +238,12 @@ void TestTimeManager::loadSaveTimeDescriptor()
 
     QVariantMap timeDescriptorMap = response.toMap().value("params").toMap().value("rule").toMap().value("timeDescriptor").toMap();
 
+    QVERIFY2(timeDescriptorMap == timeDescriptor,
+             QString("TimeDescriptor not matching:\nExpected: %1\nGot: %2")
+             .arg(QString(QJsonDocument::fromVariant(timeDescriptor).toJson()))
+             .arg(QString(QJsonDocument::fromVariant(timeDescriptorMap).toJson()))
+             .toUtf8());
+
     // Restart the server
     restartServer();
 
@@ -246,8 +253,14 @@ void TestTimeManager::loadSaveTimeDescriptor()
 
     QVariantMap timeDescriptorMapLoaded = response.toMap().value("params").toMap().value("rule").toMap().value("timeDescriptor").toMap();
 
-    QCOMPARE(timeDescriptorMap, timeDescriptorMapLoaded);
+    QVERIFY2(timeDescriptorMap == timeDescriptorMapLoaded,
+             QString("TimeDescriptor not matching:\nExpected: %1\nGot: %2")
+             .arg(QString(QJsonDocument::fromVariant(timeDescriptorMap).toJson()))
+             .arg(QString(QJsonDocument::fromVariant(timeDescriptorMapLoaded).toJson()))
+             .toUtf8());
 
+//    qWarning() << "+++" << QString(QJsonDocument::fromVariant(timeDescriptorMap).toJson());
+//    qWarning() << "---" << QString(QJsonDocument::fromVariant(timeDescriptorMapLoaded).toJson());
     // REMOVE rule
     QVariantMap removeParams;
     removeParams.insert("ruleId", ruleId);

@@ -105,7 +105,8 @@ class StateTypes: public QList<StateType>
 public:
     StateTypes() = default;
     StateTypes(const QList<StateType> &other);
-    Q_INVOKABLE QVariant get(int index);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
     StateType findByName(const QString &name);
     StateType findById(const StateTypeId &id);
 };

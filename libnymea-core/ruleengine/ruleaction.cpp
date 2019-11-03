@@ -300,3 +300,8 @@ QVariant RuleActions::get(int index) const
 {
     return QVariant::fromValue(at(index));
 }
+
+void RuleActions::put(const QVariant &variant)
+{
+    append(variant.value<RuleAction>());
+}

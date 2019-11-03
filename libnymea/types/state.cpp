@@ -108,7 +108,12 @@ States::States(const QList<State> &other): QList<State>(other)
 
 }
 
-QVariant States::get(int index)
+QVariant States::get(int index) const
 {
     return QVariant::fromValue(at(index));
+}
+
+void States::put(const QVariant &variant)
+{
+    append(variant.value<State>());
 }

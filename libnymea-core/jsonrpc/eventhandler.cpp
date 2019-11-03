@@ -38,7 +38,6 @@
 */
 
 #include "eventhandler.h"
-#include "devicehandler.h"
 #include "nymeacore.h"
 #include "loggingcategories.h"
 

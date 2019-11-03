@@ -32,13 +32,13 @@ class TimeDescriptor
 public:
     explicit TimeDescriptor();
 
-    QList<TimeEventItem> timeEventItems() const;
-    void setTimeEventItems(const QList<TimeEventItem> &timeEventItems);
+    TimeEventItems timeEventItems() const;
+    void setTimeEventItems(const TimeEventItems &timeEventItems);
 
-    QList<CalendarItem> calendarItems() const;
-    void setCalendarItems(const QList<CalendarItem> &calendarItems);
+    CalendarItems calendarItems() const;
+    void setCalendarItems(const CalendarItems &calendarItems);
 
-    bool isValid() const;
+    Q_INVOKABLE bool isValid() const;
     bool isEmpty() const;
 
     bool evaluate(const QDateTime &lastEvaluationTime, const QDateTime &dateTime) const;
@@ -48,8 +48,8 @@ public:
 
 
 private:
-    QList<TimeEventItem> m_timeEventItems;
-    QList<CalendarItem> m_calendarItems;
+    TimeEventItems m_timeEventItems;
+    CalendarItems m_calendarItems;
 
 };
 

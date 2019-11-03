@@ -737,7 +737,7 @@ void JsonRPCServerImplementation::asyncReplyFinished()
         JsonValidator validator;
         Q_ASSERT_X(validator.validateReturns(reply->data(), reply->handler()->name() + '.' + reply->method(), m_api).success()
                    ,validator.result().where().toUtf8()
-                   ,validator.result().errorString().toUtf8());
+                   ,validator.result().errorString().toUtf8() + "\nReturn value:\n" + QJsonDocument::fromVariant(reply->data()).toJson());
         sendResponse(interface, reply->clientId(), reply->commandId(), reply->data());
     } else {
         qCWarning(dcJsonRpc()) << "RPC call timed out:" << reply->handler()->name() << ":" << reply->method();

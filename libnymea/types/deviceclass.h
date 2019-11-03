@@ -157,10 +157,14 @@ QDebug operator<<(QDebug &dbg, const DeviceClass &deviceClass);
 
 class LIBNYMEA_EXPORT DeviceClasses: public QList<DeviceClass>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
 public:
     DeviceClasses();
     DeviceClasses(const QList<DeviceClass> &other);
     DeviceClass findById(const DeviceClassId &id) const;
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 
 #endif

@@ -98,16 +98,16 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     basicConfiguration.insert("debugServerEnabled", enumValueName(Bool));
     returns.insert("basicConfiguration", basicConfiguration);
     QVariantList tcpServerConfigurations;
-    tcpServerConfigurations.append(objectRef("ServerConfiguration"));
+    tcpServerConfigurations.append(objectRef<ServerConfiguration>());
     returns.insert("tcpServerConfigurations", tcpServerConfigurations);
     QVariantList webServerConfigurations;
-    webServerConfigurations.append(objectRef("WebServerConfiguration"));
+    webServerConfigurations.append(objectRef<WebServerConfiguration>());
     returns.insert("webServerConfigurations", webServerConfigurations);
     QVariantList webSocketServerConfigurations;
-    webSocketServerConfigurations.append(objectRef("ServerConfiguration"));
+    webSocketServerConfigurations.append(objectRef<ServerConfiguration>());
     returns.insert("webSocketServerConfigurations", webSocketServerConfigurations);
     QVariantList mqttServerConfigurations;
-    mqttServerConfigurations.append(objectRef("ServerConfiguration"));
+    mqttServerConfigurations.append(objectRef<ServerConfiguration>());
     QVariantMap cloudConfiguration;
     cloudConfiguration.insert("enabled", enumValueName(Bool));
     returns.insert("cloud", cloudConfiguration);
@@ -139,7 +139,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
 
     params.clear(); returns.clear();
     description = "Configure a TCP interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Note: if you are changing the configuration for the interface you are currently connected to, the connection will be dropped.";
-    params.insert("configuration", objectRef("ServerConfiguration"));
+    params.insert("configuration", objectRef<ServerConfiguration>());
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetTcpServerConfiguration", description, params, returns);
 
@@ -151,7 +151,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
 
     params.clear(); returns.clear();
     description = "Configure a WebSocket Server interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Note: if you are changing the configuration for the interface you are currently connected to, the connection will be dropped.";
-    params.insert("configuration", objectRef("ServerConfiguration"));
+    params.insert("configuration", objectRef<ServerConfiguration>());
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetWebSocketServerConfiguration", description, params, returns);
 
@@ -163,7 +163,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
 
     params.clear(); returns.clear();
     description = "Configure a WebServer interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added.";
-    params.insert("configuration", objectRef("WebServerConfiguration"));
+    params.insert("configuration", objectRef<WebServerConfiguration>());
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetWebServerConfiguration", description, params, returns);
 
@@ -182,12 +182,12 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     // MQTT
     params.clear(); returns.clear();
     description = "Get all MQTT Server configurations.";
-    returns.insert("mqttServerConfigurations", QVariantList() << objectRef("ServerConfiguration"));
+    returns.insert("mqttServerConfigurations", QVariantList() << objectRef<ServerConfiguration>());
     registerMethod("GetMqttServerConfigurations", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Configure a MQTT Server interface on the MQTT broker. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Setting authenticationEnabled to true will require MQTT clients to use credentials set in the MQTT broker policies.";
-    params.insert("configuration", objectRef("ServerConfiguration"));
+    params.insert("configuration", objectRef<ServerConfiguration>());
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetMqttServerConfiguration", description, params, returns);
 
@@ -199,12 +199,12 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
 
     params.clear(); returns.clear();
     description = "Get all MQTT broker policies.";
-    returns.insert("mqttPolicies", QVariantList() << objectRef("MqttPolicy"));
+    returns.insert("mqttPolicies", QVariantList() << objectRef<MqttPolicy>());
     registerMethod("GetMqttPolicies", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Configure a MQTT broker policy. If the ID is an existing one, the existing policy will be modified, otherwise a new one will be added.";
-    params.insert("policy", objectRef("MqttPolicy"));
+    params.insert("policy", objectRef<MqttPolicy>());
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetMqttPolicy", description, params, returns);
 
@@ -227,7 +227,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
 
     params.clear(); returns.clear();
     description = "Emitted whenever the TCP server configuration changes.";
-    params.insert("tcpServerConfiguration", objectRef("ServerConfiguration"));
+    params.insert("tcpServerConfiguration", objectRef<ServerConfiguration>());
     registerNotification("TcpServerConfigurationChanged", description, params);
 
     params.clear(); returns.clear();
@@ -237,7 +237,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
 
     params.clear(); returns.clear();
     description = "Emitted whenever the web socket server configuration changes.";
-    params.insert("webSocketServerConfiguration", objectRef("ServerConfiguration"));
+    params.insert("webSocketServerConfiguration", objectRef<ServerConfiguration>());
     registerNotification("WebSocketServerConfigurationChanged", description, params);
 
     params.clear(); returns.clear();
@@ -247,7 +247,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
 
     params.clear(); returns.clear();
     description = "Emitted whenever the MQTT broker configuration is changed.";
-    params.insert("mqttServerConfiguration", objectRef("ServerConfiguration"));
+    params.insert("mqttServerConfiguration", objectRef<ServerConfiguration>());
     registerNotification("MqttServerConfigurationChanged", description, params);
 
     params.clear(); returns.clear();
@@ -257,7 +257,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
 
     params.clear(); returns.clear();
     description = "Emitted whenever the web server configuration changes.";
-    params.insert("webServerConfiguration", objectRef("WebServerConfiguration"));
+    params.insert("webServerConfiguration", objectRef<WebServerConfiguration>());
     registerNotification("WebServerConfigurationChanged", description, params);
 
     params.clear(); returns.clear();
@@ -272,7 +272,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
 
     params.clear(); returns.clear();
     description = "Emitted whenever a MQTT broker policy is changed.";
-    params.insert("policy", objectRef("MqttPolicy"));
+    params.insert("policy", objectRef<MqttPolicy>());
     registerNotification("MqttPolicyChanged", description, params);
 
     params.clear(); returns.clear();

@@ -78,11 +78,19 @@ public:
 protected:
     template <typename Enum> void registerEnum();
     template <typename Enum, typename Flags> void registerEnum();
+
     template <typename ObjectType> void registerObject();
-    template <typename ObjectType> void registerUncreatableObject();
     template <typename ObjectType, typename ListType> void registerObject();
+
+    template <typename ObjectType> void registerUncreatableObject();
+    template <typename ObjectType, typename ListType> void registerUncreatableObject();
+
     template<typename ListType, typename BasicTypeName> void registerList(BasicTypeName typeName);
+
+    // Deprecated QString based registerObject
     void registerObject(const QString &name, const QVariantMap &object);
+
+
     void registerMethod(const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, bool deprecated = false);
     void registerNotification(const QString &name, const QString &description, const QVariantMap &params, bool deprecated = false);
 
@@ -92,6 +100,7 @@ protected:
 private:
 
     void registerObject(const QMetaObject &metaObject);
+    void registerObject(const QMetaObject &metaObject, const QMetaObject &listMetaObject);
 
     QVariant pack(const QMetaObject &metaObject, const void *gadget) const;
     QVariant unpack(const QMetaObject &metaObject, const QVariant &value) const;
@@ -142,6 +151,16 @@ void JsonHandler::registerObject()
     registerObject(metaObject);
 }
 
+template<typename ObjectType, typename ListType>
+void JsonHandler::registerObject()
+{
+    qRegisterMetaType<ObjectType>();
+    qRegisterMetaType<ListType>();
+    QMetaObject metaObject = ObjectType::staticMetaObject;
+    QMetaObject listMetaObject = ListType::staticMetaObject;
+    registerObject(metaObject, listMetaObject);
+}
+
 template<typename ObjectType>
 void JsonHandler::registerUncreatableObject()
 {
@@ -149,22 +168,12 @@ void JsonHandler::registerUncreatableObject()
     registerObject(metaObject);
 }
 
-template<typename ObjectType, typename ListType>
-void JsonHandler::registerObject()
+template<typename ObjectType, typename ListType >
+void JsonHandler::registerUncreatableObject()
 {
-    registerObject<ObjectType>();
-    qRegisterMetaType<ListType>();
     QMetaObject metaObject = ObjectType::staticMetaObject;
     QMetaObject listMetaObject = ListType::staticMetaObject;
-    QString listTypeName = QString(listMetaObject.className()).split("::").last();
-    QString objectTypeName = QString(metaObject.className()).split("::").last();
-    m_objects.insert(listTypeName, QVariantList() << QVariant(QString("$ref:%1").arg(objectTypeName)));
-    m_metaObjects.insert(listTypeName, listMetaObject);
-    m_listMetaObjects.insert(listTypeName, listMetaObject);
-    m_listEntryTypes.insert(listTypeName, objectTypeName);
-    Q_ASSERT_X(listMetaObject.indexOfProperty("count") >= 0, "JsonHandler", QString("List type %1 does not implement \"count\" property!").arg(listTypeName).toUtf8());
-    Q_ASSERT_X(listMetaObject.indexOfMethod("get(int)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE QVariant get(int index)\" method!").arg(listTypeName).toUtf8());
-    Q_ASSERT_X(listMetaObject.indexOfMethod("put(QVariant)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE void put(QVariant variant)\" method!").arg(listTypeName).toUtf8());
+    registerObject(metaObject, listMetaObject);
 }
 
 template<typename ListType, typename BasicTypeName>

@@ -1,14 +1,314 @@
-3.2
+4.0
 {
+    "enums": {
+        "BasicType": [
+            "Uuid",
+            "String",
+            "StringList",
+            "Int",
+            "Uint",
+            "Double",
+            "Bool",
+            "Variant",
+            "Color",
+            "Time",
+            "Object"
+        ],
+        "BrowserIcon": [
+            "BrowserIconNone",
+            "BrowserIconFolder",
+            "BrowserIconFile",
+            "BrowserIconMusic",
+            "BrowserIconVideo",
+            "BrowserIconPictures",
+            "BrowserIconApplication",
+            "BrowserIconDocument",
+            "BrowserIconPackage",
+            "BrowserIconFavorites"
+        ],
+        "CloudConnectionState": [
+            "CloudConnectionStateDisabled",
+            "CloudConnectionStateUnconfigured",
+            "CloudConnectionStateConnecting",
+            "CloudConnectionStateConnected"
+        ],
+        "ConfigurationError": [
+            "ConfigurationErrorNoError",
+            "ConfigurationErrorInvalidTimeZone",
+            "ConfigurationErrorInvalidStationName",
+            "ConfigurationErrorInvalidId",
+            "ConfigurationErrorInvalidPort",
+            "ConfigurationErrorInvalidHostAddress",
+            "ConfigurationErrorBluetoothHardwareNotAvailable",
+            "ConfigurationErrorInvalidCertificate"
+        ],
+        "CreateMethod": [
+            "CreateMethodUser",
+            "CreateMethodAuto",
+            "CreateMethodDiscovery"
+        ],
+        "DeviceError": [
+            "DeviceErrorNoError",
+            "DeviceErrorPluginNotFound",
+            "DeviceErrorVendorNotFound",
+            "DeviceErrorDeviceNotFound",
+            "DeviceErrorDeviceClassNotFound",
+            "DeviceErrorActionTypeNotFound",
+            "DeviceErrorStateTypeNotFound",
+            "DeviceErrorEventTypeNotFound",
+            "DeviceErrorDeviceDescriptorNotFound",
+            "DeviceErrorMissingParameter",
+            "DeviceErrorInvalidParameter",
+            "DeviceErrorSetupFailed",
+            "DeviceErrorDuplicateUuid",
+            "DeviceErrorCreationMethodNotSupported",
+            "DeviceErrorSetupMethodNotSupported",
+            "DeviceErrorHardwareNotAvailable",
+            "DeviceErrorHardwareFailure",
+            "DeviceErrorAuthenticationFailure",
+            "DeviceErrorDeviceInUse",
+            "DeviceErrorDeviceInRule",
+            "DeviceErrorDeviceIsChild",
+            "DeviceErrorPairingTransactionIdNotFound",
+            "DeviceErrorParameterNotWritable",
+            "DeviceErrorItemNotFound",
+            "DeviceErrorItemNotExecutable",
+            "DeviceErrorUnsupportedFeature",
+            "DeviceErrorTimeout"
+        ],
+        "InputType": [
+            "InputTypeNone",
+            "InputTypeTextLine",
+            "InputTypeTextArea",
+            "InputTypePassword",
+            "InputTypeSearch",
+            "InputTypeMail",
+            "InputTypeIPv4Address",
+            "InputTypeIPv6Address",
+            "InputTypeUrl",
+            "InputTypeMacAddress"
+        ],
+        "LoggingError": [
+            "LoggingErrorNoError",
+            "LoggingErrorLogEntryNotFound",
+            "LoggingErrorInvalidFilterParameter"
+        ],
+        "LoggingEventType": [
+            "LoggingEventTypeTrigger",
+            "LoggingEventTypeActiveChange",
+            "LoggingEventTypeEnabledChange",
+            "LoggingEventTypeActionsExecuted",
+            "LoggingEventTypeExitActionsExecuted"
+        ],
+        "LoggingLevel": [
+            "LoggingLevelInfo",
+            "LoggingLevelAlert"
+        ],
+        "LoggingSource": [
+            "LoggingSourceSystem",
+            "LoggingSourceEvents",
+            "LoggingSourceActions",
+            "LoggingSourceStates",
+            "LoggingSourceRules",
+            "LoggingSourceBrowserActions"
+        ],
+        "MediaBrowserIcon": [
+            "MediaBrowserIconNone",
+            "MediaBrowserIconPlaylist",
+            "MediaBrowserIconRecentlyPlayed",
+            "MediaBrowserIconLibrary",
+            "MediaBrowserIconMusicLibrary",
+            "MediaBrowserIconVideoLibrary",
+            "MediaBrowserIconPictureLibrary",
+            "MediaBrowserIconDisk",
+            "MediaBrowserIconUSB",
+            "MediaBrowserIconNetwork",
+            "MediaBrowserIconAux",
+            "MediaBrowserIconSpotify",
+            "MediaBrowserIconAmazon",
+            "MediaBrowserIconTuneIn",
+            "MediaBrowserIconSiriusXM",
+            "MediaBrowserIconVTuner",
+            "MediaBrowserIconTidal",
+            "MediaBrowserIconAirable",
+            "MediaBrowserIconDeezer",
+            "MediaBrowserIconNapster",
+            "MediaBrowserIconSoundCloud"
+        ],
+        "NetworkDeviceState": [
+            "NetworkDeviceStateUnknown",
+            "NetworkDeviceStateUnmanaged",
+            "NetworkDeviceStateUnavailable",
+            "NetworkDeviceStateDisconnected",
+            "NetworkDeviceStatePrepare",
+            "NetworkDeviceStateConfig",
+            "NetworkDeviceStateNeedAuth",
+            "NetworkDeviceStateIpConfig",
+            "NetworkDeviceStateIpCheck",
+            "NetworkDeviceStateSecondaries",
+            "NetworkDeviceStateActivated",
+            "NetworkDeviceStateDeactivating",
+            "NetworkDeviceStateFailed"
+        ],
+        "NetworkManagerError": [
+            "NetworkManagerErrorNoError",
+            "NetworkManagerErrorUnknownError",
+            "NetworkManagerErrorWirelessNotAvailable",
+            "NetworkManagerErrorAccessPointNotFound",
+            "NetworkManagerErrorNetworkInterfaceNotFound",
+            "NetworkManagerErrorInvalidNetworkDeviceType",
+            "NetworkManagerErrorWirelessNetworkingDisabled",
+            "NetworkManagerErrorWirelessConnectionFailed",
+            "NetworkManagerErrorNetworkingDisabled",
+            "NetworkManagerErrorNetworkManagerNotAvailable"
+        ],
+        "NetworkManagerState": [
+            "NetworkManagerStateUnknown",
+            "NetworkManagerStateAsleep",
+            "NetworkManagerStateDisconnected",
+            "NetworkManagerStateDisconnecting",
+            "NetworkManagerStateConnecting",
+            "NetworkManagerStateConnectedLocal",
+            "NetworkManagerStateConnectedSite",
+            "NetworkManagerStateConnectedGlobal"
+        ],
+        "RemovePolicy": [
+            "RemovePolicyCascade",
+            "RemovePolicyUpdate"
+        ],
+        "RepeatingMode": [
+            "RepeatingModeNone",
+            "RepeatingModeHourly",
+            "RepeatingModeDaily",
+            "RepeatingModeWeekly",
+            "RepeatingModeMonthly",
+            "RepeatingModeYearly"
+        ],
+        "RuleError": [
+            "RuleErrorNoError",
+            "RuleErrorInvalidRuleId",
+            "RuleErrorRuleNotFound",
+            "RuleErrorDeviceNotFound",
+            "RuleErrorEventTypeNotFound",
+            "RuleErrorStateTypeNotFound",
+            "RuleErrorActionTypeNotFound",
+            "RuleErrorInvalidParameter",
+            "RuleErrorInvalidRuleFormat",
+            "RuleErrorMissingParameter",
+            "RuleErrorInvalidRuleActionParameter",
+            "RuleErrorInvalidStateEvaluatorValue",
+            "RuleErrorTypesNotMatching",
+            "RuleErrorNotExecutable",
+            "RuleErrorInvalidTimeDescriptor",
+            "RuleErrorInvalidRepeatingOption",
+            "RuleErrorInvalidCalendarItem",
+            "RuleErrorInvalidTimeEventItem",
+            "RuleErrorContainsEventBasesAction",
+            "RuleErrorNoExitActions",
+            "RuleErrorInterfaceNotFound"
+        ],
+        "SetupMethod": [
+            "SetupMethodJustAdd",
+            "SetupMethodDisplayPin",
+            "SetupMethodEnterPin",
+            "SetupMethodPushButton",
+            "SetupMethodUserAndPassword",
+            "SetupMethodOAuth"
+        ],
+        "StateOperator": [
+            "StateOperatorAnd",
+            "StateOperatorOr"
+        ],
+        "TagError": [
+            "TagErrorNoError",
+            "TagErrorDeviceNotFound",
+            "TagErrorRuleNotFound",
+            "TagErrorTagNotFound"
+        ],
+        "Unit": [
+            "UnitNone",
+            "UnitSeconds",
+            "UnitMinutes",
+            "UnitHours",
+            "UnitUnixTime",
+            "UnitMeterPerSecond",
+            "UnitKiloMeterPerHour",
+            "UnitDegree",
+            "UnitRadiant",
+            "UnitDegreeCelsius",
+            "UnitDegreeKelvin",
+            "UnitMired",
+            "UnitMilliBar",
+            "UnitBar",
+            "UnitPascal",
+            "UnitHectoPascal",
+            "UnitAtmosphere",
+            "UnitLumen",
+            "UnitLux",
+            "UnitCandela",
+            "UnitMilliMeter",
+            "UnitCentiMeter",
+            "UnitMeter",
+            "UnitKiloMeter",
+            "UnitGram",
+            "UnitKiloGram",
+            "UnitDezibel",
+            "UnitBpm",
+            "UnitKiloByte",
+            "UnitMegaByte",
+            "UnitGigaByte",
+            "UnitTeraByte",
+            "UnitMilliWatt",
+            "UnitWatt",
+            "UnitKiloWatt",
+            "UnitKiloWattHour",
+            "UnitEuroPerMegaWattHour",
+            "UnitEuroCentPerKiloWattHour",
+            "UnitPercentage",
+            "UnitPartsPerMillion",
+            "UnitEuro",
+            "UnitDollar",
+            "UnitHertz",
+            "UnitAmpere",
+            "UnitMilliAmpere",
+            "UnitVolt",
+            "UnitMilliVolt",
+            "UnitVoltAmpere",
+            "UnitVoltAmpereReactive",
+            "UnitAmpereHour",
+            "UnitMicroSiemensPerCentimeter",
+            "UnitDuration"
+        ],
+        "UserError": [
+            "UserErrorNoError",
+            "UserErrorBackendError",
+            "UserErrorInvalidUserId",
+            "UserErrorDuplicateUserId",
+            "UserErrorBadPassword",
+            "UserErrorTokenNotFound",
+            "UserErrorPermissionDenied"
+        ],
+        "ValueOperator": [
+            "ValueOperatorEquals",
+            "ValueOperatorNotEquals",
+            "ValueOperatorLess",
+            "ValueOperatorGreater",
+            "ValueOperatorLessOrEqual",
+            "ValueOperatorGreaterOrEqual"
+        ]
+    },
+    "flags": {
+        "CreateMethods": [
+            "$ref:CreateMethod"
+        ]
+    },
     "methods": {
         "Actions.ExecuteAction": {
             "description": "Execute a single action.",
             "params": {
                 "actionTypeId": "Uuid",
                 "deviceId": "Uuid",
-                "o:params": [
-                    "$ref:Param"
-                ]
+                "o:params": "$ref:ParamList"
             },
             "returns": {
                 "deviceError": "$ref:DeviceError",
@@ -31,9 +331,7 @@
                 "actionTypeId": "Uuid",
                 "deviceId": "Uuid",
                 "itemId": "String",
-                "o:params": [
-                    "$ref:Param"
-                ]
+                "o:params": "$ref:ParamList"
             },
             "returns": {
                 "deviceError": "$ref:DeviceError"
@@ -46,15 +344,7 @@
             },
             "returns": {
                 "deviceError": "$ref:DeviceError",
-                "o:actionType": {
-                    "displayName": "String",
-                    "id": "Uuid",
-                    "index": "Int",
-                    "name": "String",
-                    "paramTypes": [
-                        "$ref:ParamType"
-                    ]
-                }
+                "o:actionType": "$ref:ActionType"
             }
         },
         "Configuration.DeleteMqttPolicy": {
@@ -265,9 +555,7 @@
                 "deviceClassId": "Uuid",
                 "name": "String",
                 "o:deviceDescriptorId": "Uuid",
-                "o:deviceParams": [
-                    "$ref:Param"
-                ]
+                "o:deviceParams": "$ref:ParamList"
             },
             "returns": {
                 "deviceError": "$ref:DeviceError",
@@ -317,9 +605,7 @@
                 "deviceClassId": "Uuid"
             },
             "returns": {
-                "actionTypes": [
-                    "$ref:ActionType"
-                ]
+                "actionTypes": "$ref:ActionTypes"
             }
         },
         "Devices.GetBrowserItem": {
@@ -339,24 +625,18 @@
                 "o:deviceId": "Uuid"
             },
             "returns": {
-                "devices": [
-                    "$ref:Device"
-                ]
+                "devices": "$ref:Devices"
             }
         },
         "Devices.GetDiscoveredDevices": {
             "description": "Performs a device discovery and returns the results. This function may take a while to return. Note that this method will include all the found devices, that is, including devices that may already have been added. Those devices will have deviceId set to the device id of the already added device. Such results may be used to reconfigure existing devices and might be filtered in cases where only unknown devices are of interest.",
             "params": {
                 "deviceClassId": "Uuid",
-                "o:discoveryParams": [
-                    "$ref:Param"
-                ]
+                "o:discoveryParams": "$ref:ParamList"
             },
             "returns": {
                 "deviceError": "$ref:DeviceError",
-                "o:deviceDescriptors": [
-                    "$ref:DeviceDescriptor"
-                ],
+                "o:deviceDescriptors": "$ref:DeviceDescriptors",
                 "o:displayMessage": "String"
             }
         },
@@ -366,9 +646,7 @@
                 "deviceClassId": "Uuid"
             },
             "returns": {
-                "eventTypes": [
-                    "$ref:EventType"
-                ]
+                "eventTypes": "$ref:EventTypes"
             }
         },
         "Devices.GetPluginConfiguration": {
@@ -378,9 +656,7 @@
             },
             "returns": {
                 "deviceError": "$ref:DeviceError",
-                "o:configuration": [
-                    "$ref:Param"
-                ]
+                "o:configuration": "$ref:ParamList"
             }
         },
         "Devices.GetPlugins": {
@@ -388,9 +664,7 @@
             "params": {
             },
             "returns": {
-                "plugins": [
-                    "$ref:Plugin"
-                ]
+                "plugins": "$ref:DevicePlugins"
             }
         },
         "Devices.GetStateTypes": {
@@ -399,9 +673,7 @@
                 "deviceClassId": "Uuid"
             },
             "returns": {
-                "stateTypes": [
-                    "$ref:StateType"
-                ]
+                "stateTypes": "$ref:StateTypes"
             }
         },
         "Devices.GetStateValue": {
@@ -422,12 +694,7 @@
             },
             "returns": {
                 "deviceError": "$ref:DeviceError",
-                "o:values": [
-                    {
-                        "stateTypeId": "Uuid",
-                        "value": "Variant"
-                    }
-                ]
+                "o:values": "$ref:States"
             }
         },
         "Devices.GetSupportedDevices": {
@@ -436,9 +703,7 @@
                 "o:vendorId": "Uuid"
             },
             "returns": {
-                "deviceClasses": [
-                    "$ref:DeviceClass"
-                ]
+                "deviceClasses": "$ref:DeviceClasses"
             }
         },
         "Devices.GetSupportedVendors": {
@@ -446,9 +711,7 @@
             "params": {
             },
             "returns": {
-                "vendors": [
-                    "$ref:Vendor"
-                ]
+                "vendors": "$ref:Vendors"
             }
         },
         "Devices.PairDevice": {
@@ -457,9 +720,7 @@
                 "o:deviceClassId": "Uuid",
                 "o:deviceDescriptorId": "Uuid",
                 "o:deviceId": "Uuid",
-                "o:deviceParams": [
-                    "$ref:Param"
-                ],
+                "o:deviceParams": "$ref:ParamList",
                 "o:name": "String"
             },
             "returns": {
@@ -476,9 +737,7 @@
             "params": {
                 "o:deviceDescriptorId": "Uuid",
                 "o:deviceId": "Uuid",
-                "o:deviceParams": [
-                    "$ref:Param"
-                ]
+                "o:deviceParams": "$ref:ParamList"
             },
             "returns": {
                 "deviceError": "$ref:DeviceError",
@@ -508,9 +767,7 @@
             "description": "Change the settings of a device.",
             "params": {
                 "deviceId": "Uuid",
-                "settings": [
-                    "$ref:Param"
-                ]
+                "settings": "$ref:ParamList"
             },
             "returns": {
                 "deviceError": "$ref:DeviceError"
@@ -519,9 +776,7 @@
         "Devices.SetPluginConfiguration": {
             "description": "Set a plugin's params.",
             "params": {
-                "configuration": [
-                    "$ref:Param"
-                ],
+                "configuration": "$ref:ParamList",
                 "pluginId": "Uuid"
             },
             "returns": {
@@ -571,6 +826,9 @@
                 "language": "String",
                 "locale": "String",
                 "name": "String",
+                "o:experiences": [
+                    "$ref:Experience"
+                ],
                 "protocol version": "String",
                 "pushButtonAuthAvailable": "Bool",
                 "server": "String",
@@ -630,15 +888,11 @@
             "description": "Enable/Disable notifications for this connections. Either \"enabled\" or \"namespaces\" needs to be given but not both of them. The boolean based \"enabled\" parameter will enable/disable all notifications at once. If instead the list-based \"namespaces\" parameter is provided, all given namespaceswill be enabled, the others will be disabled. The return value of \"success\" will indicate success of the operation. The \"enabled\" property in the return value is deprecated and used for legacy compatibilty only. It will be set to true if at least one namespace has been enabled.",
             "params": {
                 "o:enabled": "Bool",
-                "o:namespaces": [
-                    "$ref:Namespace"
-                ]
+                "o:namespaces": "StringList"
             },
             "returns": {
                 "enabled": "Bool",
-                "namespaces": [
-                    "$ref:Namespace"
-                ]
+                "namespaces": "StringList"
             }
         },
         "JSONRPC.SetupCloudConnection": {
@@ -717,9 +971,7 @@
             "returns": {
                 "count": "Int",
                 "loggingError": "$ref:LoggingError",
-                "o:logEntries": [
-                    "$ref:LogEntry"
-                ],
+                "o:logEntries": "$ref:LogEntries",
                 "offset": "Int"
             }
         },
@@ -974,9 +1226,7 @@
             "params": {
             },
             "returns": {
-                "packages": [
-                    "$ref:Package"
-                ]
+                "packages": "$ref:Packages"
             }
         },
         "System.GetRepositories": {
@@ -984,9 +1234,7 @@
             "params": {
             },
             "returns": {
-                "repositories": [
-                    "$ref:Repository"
-                ]
+                "repositories": "$ref:Repositories"
             }
         },
         "System.GetUpdateStatus": {
@@ -1065,9 +1313,7 @@
                 "o:tagId": "String"
             },
             "returns": {
-                "o:tags": [
-                    "$ref:Tag"
-                ],
+                "o:tags": "$ref:Tags",
                 "tagError": "$ref:TagError"
             }
         },
@@ -1198,9 +1444,7 @@
         "Devices.PluginConfigurationChanged": {
             "description": "Emitted whenever a plugin's configuration is changed.",
             "params": {
-                "configuration": [
-                    "$ref:Param"
-                ],
+                "configuration": "$ref:ParamList",
                 "pluginId": "Uuid"
             }
         },
@@ -1388,43 +1632,17 @@
         "Action": {
             "actionTypeId": "Uuid",
             "deviceId": "Uuid",
-            "o:params": [
-                "$ref:Param"
-            ]
+            "o:params": "$ref:ParamList"
         },
         "ActionType": {
             "displayName": "String",
             "id": "Uuid",
             "index": "Int",
             "name": "String",
-            "paramTypes": [
-                "$ref:ParamType"
-            ]
+            "paramTypes": "$ref:ParamTypes"
         },
-        "BasicType": [
-            "Uuid",
-            "String",
-            "StringList",
-            "Int",
-            "Uint",
-            "Double",
-            "Bool",
-            "Variant",
-            "Color",
-            "Time",
-            "Object"
-        ],
-        "BrowserIcon": [
-            "BrowserIconNone",
-            "BrowserIconFolder",
-            "BrowserIconFile",
-            "BrowserIconMusic",
-            "BrowserIconVideo",
-            "BrowserIconPictures",
-            "BrowserIconApplication",
-            "BrowserIconDocument",
-            "BrowserIconPackage",
-            "BrowserIconFavorites"
+        "ActionTypes": [
+            "$ref:ActionType"
         ],
         "BrowserItem": {
             "actionTypeIds": [
@@ -1446,156 +1664,93 @@
             "o:repeating": "$ref:RepeatingOption",
             "o:startTime": "Time"
         },
-        "CloudConnectionState": [
-            "CloudConnectionStateDisabled",
-            "CloudConnectionStateUnconfigured",
-            "CloudConnectionStateConnecting",
-            "CloudConnectionStateConnected"
-        ],
-        "ConfigurationError": [
-            "ConfigurationErrorNoError",
-            "ConfigurationErrorInvalidTimeZone",
-            "ConfigurationErrorInvalidStationName",
-            "ConfigurationErrorInvalidId",
-            "ConfigurationErrorInvalidPort",
-            "ConfigurationErrorInvalidHostAddress",
-            "ConfigurationErrorBluetoothHardwareNotAvailable",
-            "ConfigurationErrorInvalidCertificate"
-        ],
-        "CreateMethod": [
-            "CreateMethodUser",
-            "CreateMethodAuto",
-            "CreateMethodDiscovery"
+        "CalendarItems": [
+            "$ref:CalendarItem"
         ],
         "Device": {
             "deviceClassId": "Uuid",
             "id": "Uuid",
             "name": "String",
             "o:parentId": "Uuid",
-            "params": [
-                "$ref:Param"
-            ],
-            "settings": [
-                "$ref:Param"
-            ],
+            "params": "$ref:ParamList",
+            "settings": "$ref:ParamList",
             "setupComplete": "Bool",
-            "states": [
-                {
-                    "stateTypeId": "Uuid",
-                    "value": "Variant"
-                }
-            ]
+            "states": "$ref:States"
         },
         "DeviceClass": {
-            "actionTypes": [
-                "$ref:ActionType"
-            ],
+            "actionTypes": "$ref:ActionTypes",
             "browsable": "Bool",
-            "browserItemActionTypes": [
-                "$ref:ActionType"
-            ],
-            "createMethods": [
-                "$ref:CreateMethod"
-            ],
-            "discoveryParamTypes": [
-                "$ref:ParamType"
-            ],
+            "browserItemActionTypes": "$ref:ActionTypes",
+            "createMethods": "$ref:CreateMethods",
+            "discoveryParamTypes": "$ref:ParamTypes",
             "displayName": "String",
-            "eventTypes": [
-                "$ref:EventType"
-            ],
+            "eventTypes": "$ref:EventTypes",
             "id": "Uuid",
-            "interfaces": [
-                "String"
-            ],
+            "interfaces": "StringList",
             "name": "String",
-            "paramTypes": [
-                "$ref:ParamType"
-            ],
+            "paramTypes": "$ref:ParamTypes",
             "pluginId": "Uuid",
-            "settingsTypes": [
-                "$ref:ParamType"
-            ],
+            "settingsTypes": "$ref:ParamTypes",
             "setupMethod": "$ref:SetupMethod",
-            "stateTypes": [
-                "$ref:StateType"
-            ],
+            "stateTypes": "$ref:StateTypes",
             "vendorId": "Uuid"
         },
+        "DeviceClasses": [
+            "$ref:DeviceClass"
+        ],
         "DeviceDescriptor": {
             "description": "String",
-            "deviceId": "Uuid",
-            "deviceParams": [
-                "$ref:Param"
-            ],
+            "deviceParams": "$ref:ParamList",
             "id": "Uuid",
+            "o:deviceId": "Uuid",
             "title": "String"
         },
-        "DeviceError": [
-            "DeviceErrorNoError",
-            "DeviceErrorPluginNotFound",
-            "DeviceErrorVendorNotFound",
-            "DeviceErrorDeviceNotFound",
-            "DeviceErrorDeviceClassNotFound",
-            "DeviceErrorActionTypeNotFound",
-            "DeviceErrorStateTypeNotFound",
-            "DeviceErrorEventTypeNotFound",
-            "DeviceErrorDeviceDescriptorNotFound",
-            "DeviceErrorMissingParameter",
-            "DeviceErrorInvalidParameter",
-            "DeviceErrorSetupFailed",
-            "DeviceErrorDuplicateUuid",
-            "DeviceErrorCreationMethodNotSupported",
-            "DeviceErrorSetupMethodNotSupported",
-            "DeviceErrorHardwareNotAvailable",
-            "DeviceErrorHardwareFailure",
-            "DeviceErrorAuthenticationFailure",
-            "DeviceErrorDeviceInUse",
-            "DeviceErrorDeviceInRule",
-            "DeviceErrorDeviceIsChild",
-            "DeviceErrorPairingTransactionIdNotFound",
-            "DeviceErrorParameterNotWritable",
-            "DeviceErrorItemNotFound",
-            "DeviceErrorItemNotExecutable",
-            "DeviceErrorUnsupportedFeature",
-            "DeviceErrorTimeout"
+        "DeviceDescriptors": [
+            "$ref:DeviceDescriptor"
+        ],
+        "DevicePlugin": {
+            "displayName": "String",
+            "id": "Uuid",
+            "name": "String",
+            "paramTypes": "$ref:ParamTypes"
+        },
+        "DevicePlugins": [
+            "$ref:DevicePlugin"
+        ],
+        "Devices": [
+            "$ref:Device"
         ],
         "Event": {
             "deviceId": "Uuid",
             "eventTypeId": "Uuid",
-            "o:params": [
-                "$ref:Param"
-            ]
+            "params": "$ref:ParamList"
         },
         "EventDescriptor": {
             "o:deviceId": "Uuid",
             "o:eventTypeId": "Uuid",
             "o:interface": "String",
             "o:interfaceEvent": "String",
-            "o:paramDescriptors": [
-                "$ref:ParamDescriptor"
-            ]
+            "o:paramDescriptors": "$ref:ParamDescriptors"
         },
+        "EventDescriptors": [
+            "$ref:EventDescriptor"
+        ],
         "EventType": {
             "displayName": "String",
             "id": "Uuid",
             "index": "Int",
             "name": "String",
-            "paramTypes": [
-                "$ref:ParamType"
-            ]
+            "paramTypes": "$ref:ParamTypes"
         },
-        "InputType": [
-            "InputTypeNone",
-            "InputTypeTextLine",
-            "InputTypeTextArea",
-            "InputTypePassword",
-            "InputTypeSearch",
-            "InputTypeMail",
-            "InputTypeIPv4Address",
-            "InputTypeIPv6Address",
-            "InputTypeUrl",
-            "InputTypeMacAddress"
+        "EventTypes": [
+            "$ref:EventType"
+        ],
+        "Experience": {
+            "name": "String",
+            "version": "String"
+        },
+        "LogEntries": [
+            "$ref:LogEntry"
         ],
         "LogEntry": {
             "loggingLevel": "$ref:LoggingLevel",
@@ -1603,59 +1758,11 @@
             "o:deviceId": "Uuid",
             "o:errorCode": "String",
             "o:eventType": "$ref:LoggingEventType",
-            "o:itemId": "String",
             "o:typeId": "Uuid",
-            "o:value": "String",
+            "o:value": "Variant",
             "source": "$ref:LoggingSource",
-            "timestamp": "Int"
+            "timestamp": "Uint"
         },
-        "LoggingError": [
-            "LoggingErrorNoError",
-            "LoggingErrorLogEntryNotFound",
-            "LoggingErrorInvalidFilterParameter"
-        ],
-        "LoggingEventType": [
-            "LoggingEventTypeTrigger",
-            "LoggingEventTypeActiveChange",
-            "LoggingEventTypeEnabledChange",
-            "LoggingEventTypeActionsExecuted",
-            "LoggingEventTypeExitActionsExecuted"
-        ],
-        "LoggingLevel": [
-            "LoggingLevelInfo",
-            "LoggingLevelAlert"
-        ],
-        "LoggingSource": [
-            "LoggingSourceSystem",
-            "LoggingSourceEvents",
-            "LoggingSourceActions",
-            "LoggingSourceStates",
-            "LoggingSourceRules",
-            "LoggingSourceBrowserActions"
-        ],
-        "MediaBrowserIcon": [
-            "MediaBrowserIconNone",
-            "MediaBrowserIconPlaylist",
-            "MediaBrowserIconRecentlyPlayed",
-            "MediaBrowserIconLibrary",
-            "MediaBrowserIconMusicLibrary",
-            "MediaBrowserIconVideoLibrary",
-            "MediaBrowserIconPictureLibrary",
-            "MediaBrowserIconDisk",
-            "MediaBrowserIconUSB",
-            "MediaBrowserIconNetwork",
-            "MediaBrowserIconAux",
-            "MediaBrowserIconSpotify",
-            "MediaBrowserIconAmazon",
-            "MediaBrowserIconTuneIn",
-            "MediaBrowserIconSiriusXM",
-            "MediaBrowserIconVTuner",
-            "MediaBrowserIconTidal",
-            "MediaBrowserIconAirable",
-            "MediaBrowserIconDeezer",
-            "MediaBrowserIconNapster",
-            "MediaBrowserIconSoundCloud"
-        ],
         "MqttPolicy": {
             "allowedPublishTopicFilters": "StringList",
             "allowedSubscribeTopicFilters": "StringList",
@@ -1663,56 +1770,6 @@
             "password": "String",
             "username": "String"
         },
-        "Namespace": [
-            "Actions",
-            "Configuration",
-            "Devices",
-            "Events",
-            "JSONRPC",
-            "Logging",
-            "NetworkManager",
-            "Rules",
-            "States",
-            "System",
-            "Tags"
-        ],
-        "NetworkDeviceState": [
-            "NetworkDeviceStateUnknown",
-            "NetworkDeviceStateUnmanaged",
-            "NetworkDeviceStateUnavailable",
-            "NetworkDeviceStateDisconnected",
-            "NetworkDeviceStatePrepare",
-            "NetworkDeviceStateConfig",
-            "NetworkDeviceStateNeedAuth",
-            "NetworkDeviceStateIpConfig",
-            "NetworkDeviceStateIpCheck",
-            "NetworkDeviceStateSecondaries",
-            "NetworkDeviceStateActivated",
-            "NetworkDeviceStateDeactivating",
-            "NetworkDeviceStateFailed"
-        ],
-        "NetworkManagerError": [
-            "NetworkManagerErrorNoError",
-            "NetworkManagerErrorUnknownError",
-            "NetworkManagerErrorWirelessNotAvailable",
-            "NetworkManagerErrorAccessPointNotFound",
-            "NetworkManagerErrorNetworkInterfaceNotFound",
-            "NetworkManagerErrorInvalidNetworkDeviceType",
-            "NetworkManagerErrorWirelessNetworkingDisabled",
-            "NetworkManagerErrorWirelessConnectionFailed",
-            "NetworkManagerErrorNetworkingDisabled",
-            "NetworkManagerErrorNetworkManagerNotAvailable"
-        ],
-        "NetworkManagerState": [
-            "NetworkManagerStateUnknown",
-            "NetworkManagerStateAsleep",
-            "NetworkManagerStateDisconnected",
-            "NetworkManagerStateDisconnecting",
-            "NetworkManagerStateConnecting",
-            "NetworkManagerStateConnectedLocal",
-            "NetworkManagerStateConnectedSite",
-            "NetworkManagerStateConnectedGlobal"
-        ],
         "Package": {
             "canRemove": "Bool",
             "candidateVersion": "String",
@@ -1724,16 +1781,25 @@
             "summary": "String",
             "updateAvailable": "Bool"
         },
+        "Packages": [
+            "$ref:Package"
+        ],
         "Param": {
-            "paramTypeId": "Uuid",
-            "value": "$ref:BasicType"
+            "o:paramTypeId": "Uuid",
+            "value": "Variant"
         },
         "ParamDescriptor": {
-            "o:paramName": "Uuid",
+            "o:paramName": "String",
             "o:paramTypeId": "Uuid",
             "operator": "$ref:ValueOperator",
-            "value": "$ref:BasicType"
+            "value": "Variant"
         },
+        "ParamDescriptors": [
+            "$ref:ParamDescriptor"
+        ],
+        "ParamList": [
+            "$ref:Param"
+        ],
         "ParamType": {
             "displayName": "String",
             "id": "Uuid",
@@ -1750,25 +1816,8 @@
             "o:unit": "$ref:Unit",
             "type": "$ref:BasicType"
         },
-        "Plugin": {
-            "displayName": "String",
-            "id": "Uuid",
-            "name": "String",
-            "paramTypes": [
-                "$ref:ParamType"
-            ]
-        },
-        "RemovePolicy": [
-            "RemovePolicyCascade",
-            "RemovePolicyUpdate"
-        ],
-        "RepeatingMode": [
-            "RepeatingModeNone",
-            "RepeatingModeHourly",
-            "RepeatingModeDaily",
-            "RepeatingModeWeekly",
-            "RepeatingModeMonthly",
-            "RepeatingModeYearly"
+        "ParamTypes": [
+            "$ref:ParamType"
         ],
         "RepeatingOption": {
             "mode": "$ref:RepeatingMode",
@@ -1779,28 +1828,25 @@
                 "Int"
             ]
         },
+        "Repositories": [
+            "$ref:Repository"
+        ],
         "Repository": {
             "displayName": "String",
             "enabled": "Bool",
             "id": "String"
         },
         "Rule": {
-            "actions": [
-                "$ref:RuleAction"
-            ],
-            "active": "Bool",
-            "enabled": "Bool",
-            "eventDescriptors": [
-                "$ref:EventDescriptor"
-            ],
-            "executable": "Bool",
-            "exitActions": [
-                "$ref:RuleAction"
-            ],
-            "id": "Uuid",
+            "actions": "$ref:RuleActions",
             "name": "String",
-            "stateEvaluator": "$ref:StateEvaluator",
-            "timeDescriptor": "$ref:TimeDescriptor"
+            "o:active": "Bool",
+            "o:enabled": "Bool",
+            "o:eventDescriptors": "$ref:EventDescriptors",
+            "o:executable": "Bool",
+            "o:exitActions": "$ref:RuleActions",
+            "o:id": "Uuid",
+            "o:stateEvaluator": "$ref:StateEvaluator",
+            "o:timeDescriptor": "$ref:TimeDescriptor"
         },
         "RuleAction": {
             "o:actionTypeId": "Uuid",
@@ -1808,9 +1854,7 @@
             "o:deviceId": "Uuid",
             "o:interface": "String",
             "o:interfaceAction": "String",
-            "o:ruleActionParams": [
-                "$ref:RuleActionParam"
-            ]
+            "o:ruleActionParams": "$ref:RuleActionParams"
         },
         "RuleActionParam": {
             "o:eventParamTypeId": "Uuid",
@@ -1819,8 +1863,14 @@
             "o:paramTypeId": "Uuid",
             "o:stateDeviceId": "Uuid",
             "o:stateTypeId": "Uuid",
-            "o:value": "$ref:BasicType"
+            "o:value": "Variant"
         },
+        "RuleActionParams": [
+            "$ref:RuleActionParam"
+        ],
+        "RuleActions": [
+            "$ref:RuleAction"
+        ],
         "RuleDescription": {
             "active": "Bool",
             "enabled": "Bool",
@@ -1828,28 +1878,8 @@
             "id": "Uuid",
             "name": "String"
         },
-        "RuleError": [
-            "RuleErrorNoError",
-            "RuleErrorInvalidRuleId",
-            "RuleErrorRuleNotFound",
-            "RuleErrorDeviceNotFound",
-            "RuleErrorEventTypeNotFound",
-            "RuleErrorStateTypeNotFound",
-            "RuleErrorActionTypeNotFound",
-            "RuleErrorInvalidParameter",
-            "RuleErrorInvalidRuleFormat",
-            "RuleErrorMissingParameter",
-            "RuleErrorInvalidRuleActionParameter",
-            "RuleErrorInvalidStateEvaluatorValue",
-            "RuleErrorTypesNotMatching",
-            "RuleErrorNotExecutable",
-            "RuleErrorInvalidTimeDescriptor",
-            "RuleErrorInvalidRepeatingOption",
-            "RuleErrorInvalidCalendarItem",
-            "RuleErrorInvalidTimeEventItem",
-            "RuleErrorContainsEventBasesAction",
-            "RuleErrorNoExitActions",
-            "RuleErrorInterfaceNotFound"
+        "Rules": [
+            "$ref:Rule"
         ],
         "ServerConfiguration": {
             "address": "String",
@@ -1858,16 +1888,7 @@
             "port": "Uint",
             "sslEnabled": "Bool"
         },
-        "SetupMethod": [
-            "SetupMethodJustAdd",
-            "SetupMethodDisplayPin",
-            "SetupMethodEnterPin",
-            "SetupMethodPushButton",
-            "SetupMethodUserAndPassword",
-            "SetupMethodOAuth"
-        ],
         "State": {
-            "deviceId": "Uuid",
             "stateTypeId": "Uuid",
             "value": "Variant"
         },
@@ -1880,15 +1901,12 @@
             "value": "Variant"
         },
         "StateEvaluator": {
-            "o:childEvaluators": [
-                "$ref:StateEvaluator"
-            ],
+            "o:childEvaluators": "$ref:StateEvaluators",
             "o:operator": "$ref:StateOperator",
             "o:stateDescriptor": "$ref:StateDescriptor"
         },
-        "StateOperator": [
-            "StateOperatorAnd",
-            "StateOperatorOr"
+        "StateEvaluators": [
+            "$ref:StateEvaluator"
         ],
         "StateType": {
             "defaultValue": "Variant",
@@ -1904,6 +1922,12 @@
             "o:unit": "$ref:Unit",
             "type": "$ref:BasicType"
         },
+        "StateTypes": [
+            "$ref:StateType"
+        ],
+        "States": [
+            "$ref:State"
+        ],
         "Tag": {
             "appId": "String",
             "o:deviceId": "Uuid",
@@ -1911,112 +1935,41 @@
             "o:value": "String",
             "tagId": "String"
         },
-        "TagError": [
-            "TagErrorNoError",
-            "TagErrorDeviceNotFound",
-            "TagErrorRuleNotFound",
-            "TagErrorTagNotFound"
+        "Tags": [
+            "$ref:Tag"
         ],
         "TimeDescriptor": {
-            "o:calendarItems": [
-                "$ref:CalendarItem"
-            ],
-            "o:timeEventItems": [
-                "$ref:TimeEventItem"
-            ]
+            "o:calendarItems": "$ref:CalendarItems",
+            "o:timeEventItems": "$ref:TimeEventItems"
         },
         "TimeEventItem": {
             "o:datetime": "Uint",
             "o:repeating": "$ref:RepeatingOption",
             "o:time": "Time"
         },
+        "TimeEventItems": [
+            "$ref:TimeEventItem"
+        ],
         "TokenInfo": {
             "creationTime": "Uint",
-            "deviceName": "String",
+            "deviveName": "String",
             "id": "Uuid",
-            "userName": "String"
+            "username": "String"
         },
-        "Unit": [
-            "UnitNone",
-            "UnitSeconds",
-            "UnitMinutes",
-            "UnitHours",
-            "UnitUnixTime",
-            "UnitMeterPerSecond",
-            "UnitKiloMeterPerHour",
-            "UnitDegree",
-            "UnitRadiant",
-            "UnitDegreeCelsius",
-            "UnitDegreeKelvin",
-            "UnitMired",
-            "UnitMilliBar",
-            "UnitBar",
-            "UnitPascal",
-            "UnitHectoPascal",
-            "UnitAtmosphere",
-            "UnitLumen",
-            "UnitLux",
-            "UnitCandela",
-            "UnitMilliMeter",
-            "UnitCentiMeter",
-            "UnitMeter",
-            "UnitKiloMeter",
-            "UnitGram",
-            "UnitKiloGram",
-            "UnitDezibel",
-            "UnitBpm",
-            "UnitKiloByte",
-            "UnitMegaByte",
-            "UnitGigaByte",
-            "UnitTeraByte",
-            "UnitMilliWatt",
-            "UnitWatt",
-            "UnitKiloWatt",
-            "UnitKiloWattHour",
-            "UnitEuroPerMegaWattHour",
-            "UnitEuroCentPerKiloWattHour",
-            "UnitPercentage",
-            "UnitPartsPerMillion",
-            "UnitEuro",
-            "UnitDollar",
-            "UnitHertz",
-            "UnitAmpere",
-            "UnitMilliAmpere",
-            "UnitVolt",
-            "UnitMilliVolt",
-            "UnitVoltAmpere",
-            "UnitVoltAmpereReactive",
-            "UnitAmpereHour",
-            "UnitMicroSiemensPerCentimeter",
-            "UnitDuration"
-        ],
-        "UserError": [
-            "UserErrorNoError",
-            "UserErrorBackendError",
-            "UserErrorInvalidUserId",
-            "UserErrorDuplicateUserId",
-            "UserErrorBadPassword",
-            "UserErrorTokenNotFound",
-            "UserErrorPermissionDenied"
-        ],
-        "ValueOperator": [
-            "ValueOperatorEquals",
-            "ValueOperatorNotEquals",
-            "ValueOperatorLess",
-            "ValueOperatorGreater",
-            "ValueOperatorLessOrEqual",
-            "ValueOperatorGreaterOrEqual"
-        ],
         "Vendor": {
             "displayName": "String",
             "id": "Uuid",
             "name": "String"
         },
+        "Vendors": [
+            "$ref:Vendor"
+        ],
         "WebServerConfiguration": {
             "address": "String",
             "authenticationEnabled": "Bool",
             "id": "String",
             "port": "Uint",
+            "publicFolder": "String",
             "sslEnabled": "Bool"
         },
         "WiredNetworkDevice": {

@@ -29,6 +29,7 @@
 
 #include <QString>
 #include <QList>
+#include <QVariant>
 
 class LIBNYMEA_EXPORT Vendor
 {
@@ -61,10 +62,13 @@ Q_DECLARE_METATYPE(Vendor)
 
 class LIBNYMEA_EXPORT Vendors: public QList<Vendor>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
 public:
     Vendors();
     Vendors(const QList<Vendor> &other);
-
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
     Vendor findById(const VendorId &vendorId) const;
 };
 Q_DECLARE_METATYPE(Vendors)

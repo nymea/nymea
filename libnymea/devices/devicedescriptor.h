@@ -76,10 +76,14 @@ private:
 
 class DeviceDescriptors: public QList<DeviceDescriptor>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
 public:
     DeviceDescriptors() {}
     inline DeviceDescriptors(std::initializer_list<DeviceDescriptor> args): QList(args) {}
     DeviceDescriptors(const QList<DeviceDescriptor> &other): QList<DeviceDescriptor>(other) {}
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 
 Q_DECLARE_METATYPE(DeviceDescriptor)

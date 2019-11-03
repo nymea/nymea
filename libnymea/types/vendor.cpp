@@ -95,6 +95,16 @@ Vendors::Vendors(const QList<Vendor> &other): QList<Vendor>(other)
 
 }
 
+QVariant Vendors::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
+void Vendors::put(const QVariant &variant)
+{
+    append(variant.value<Vendor>());
+}
+
 Vendor Vendors::findById(const VendorId &vendorId) const
 {
     foreach (const Vendor &vendor, *this) {

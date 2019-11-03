@@ -64,7 +64,7 @@ ActionHandler::ActionHandler(QObject *parent) :
     description = "Execute a single action.";
     params.insert("actionTypeId", enumValueName(Uuid));
     params.insert("deviceId", enumValueName(Uuid));
-    params.insert("o:params", QVariantList() << objectRef("Param"));
+    params.insert("o:params", objectRef<ParamList>());
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:displayMessage", enumValueName(String));
     registerMethod("ExecuteAction", description, params, returns);
@@ -73,7 +73,7 @@ ActionHandler::ActionHandler(QObject *parent) :
     description = "Get the ActionType for the given ActionTypeId";
     params.insert("actionTypeId", enumValueName(Uuid));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
-    returns.insert("o:actionType", objectRef("ActionType"));
+    returns.insert("o:actionType", objectRef<ActionType>());
     registerMethod("GetActionType", description, params, returns);
 
     params.clear(); returns.clear();
@@ -88,7 +88,7 @@ ActionHandler::ActionHandler(QObject *parent) :
     params.insert("deviceId", enumValueName(Uuid));
     params.insert("itemId", enumValueName(String));
     params.insert("actionTypeId", enumValueName(Uuid));
-    params.insert("o:params", QVariantList() << objectRef("Param"));
+    params.insert("o:params", objectRef<ParamList>());
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     registerMethod("ExecuteBrowserItemAction", description, params, returns);
 

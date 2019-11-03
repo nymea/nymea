@@ -36,6 +36,12 @@ class WirelessAccessPoint : public QObject
     Q_OBJECT
     Q_FLAGS(ApSecurityModes)
 
+    Q_PROPERTY(QString ssid READ ssid)
+    Q_PROPERTY(QString macAddress READ macAddress)
+    Q_PROPERTY(double frequency READ frequency)
+    Q_PROPERTY(int signalStrength READ signalStrength NOTIFY signalStrengthChanged)
+    Q_PROPERTY(bool protected READ isProtected)
+
 public:
     enum ApSecurityMode{
         ApSecurityModeNone         = 0x000,
@@ -53,7 +59,7 @@ public:
     Q_DECLARE_FLAGS(ApSecurityModes, ApSecurityMode)
 
 
-    explicit WirelessAccessPoint(const QDBusObjectPath &objectPath, QObject *parent = 0);
+    explicit WirelessAccessPoint(const QDBusObjectPath &objectPath, QObject *parent = nullptr);
 
     QDBusObjectPath objectPath() const;
 

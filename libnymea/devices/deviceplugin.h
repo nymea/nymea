@@ -147,10 +147,14 @@ Q_DECLARE_METATYPE(DevicePlugin*)
 
 class LIBNYMEA_EXPORT DevicePlugins: public QList<DevicePlugin*>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
 public:
     DevicePlugins();
     DevicePlugins(const QList<DevicePlugin*> &other);
     DevicePlugin* findById(const PluginId &id) const;
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 Q_DECLARE_METATYPE(DevicePlugins)
 

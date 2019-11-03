@@ -334,7 +334,7 @@ QString NetworkDevice::deviceStateReasonToString(const NetworkDevice::NetworkDev
 
 void NetworkDevice::onStateChanged(uint newState, uint oldState, uint reason)
 {
-    Q_UNUSED(oldState);
+    Q_UNUSED(oldState)
     qCDebug(dcNetworkManager()) << m_interface << "--> State changed:" << deviceStateToString(NetworkDeviceState(newState)) << ":" << deviceStateReasonToString(NetworkDeviceStateReason(reason));
     if (m_deviceState != NetworkDeviceState(newState)) {
         m_deviceState = NetworkDeviceState(newState);

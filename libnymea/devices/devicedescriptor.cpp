@@ -143,3 +143,13 @@ void DeviceDescriptor::setParams(const ParamList &params)
 {
     m_params = params;
 }
+
+QVariant DeviceDescriptors::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
+void DeviceDescriptors::put(const QVariant &variant)
+{
+    append(variant.value<DeviceDescriptor>());
+}

@@ -153,6 +153,8 @@ QDebug operator<<(QDebug dbg, Device *device);
 
 class LIBNYMEA_EXPORT Devices: public QList<Device*>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
 public:
     Devices() = default;
     Devices(const QList<Device *> &other);
@@ -162,6 +164,8 @@ public:
     Devices filterByDeviceClassId(const DeviceClassId &deviceClassId);
     Devices filterByParentDeviceId(const DeviceId &deviceId);
     Devices filterByInterface(const QString &interface);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 
 Q_DECLARE_METATYPE(Device::DeviceError)

@@ -90,15 +90,15 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     // Objects
     registerObject<ParamType, ParamTypes>();
     registerObject<Param, ParamList>();
-    registerUncreatableObject<DevicePlugin>();
-    registerObject<Vendor>();
+    registerUncreatableObject<DevicePlugin, DevicePlugins>();
+    registerObject<Vendor, Vendors>();
     registerObject<EventType, EventTypes>();
     registerObject<StateType, StateTypes>();
     registerObject<ActionType, ActionTypes>();
-    registerObject<DeviceClass>();
-    registerObject<DeviceDescriptor>();
+    registerObject<DeviceClass, DeviceClasses>();
+    registerObject<DeviceDescriptor, DeviceDescriptors>();
     registerObject<State, States>();
-    registerUncreatableObject<Device>();
+    registerUncreatableObject<Device, Devices>();
 
     // Regsitering browseritem manually for now. Not sure how to deal with the
     // polymorphism in int (e.g MediaBrowserItem)
@@ -119,31 +119,31 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     // Methods
     QString description; QVariantMap returns; QVariantMap params;
     description = "Returns a list of supported Vendors.";
-    returns.insert("vendors", QVariantList() << objectRef("Vendor"));
+    returns.insert("vendors", objectRef<Vendors>());
     registerMethod("GetSupportedVendors", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Returns a list of supported Device classes, optionally filtered by vendorId.";
     params.insert("o:vendorId", enumValueName(Uuid));
-    returns.insert("deviceClasses", QVariantList() << objectRef("DeviceClass"));
+    returns.insert("deviceClasses", objectRef<DeviceClasses>());
     registerMethod("GetSupportedDevices", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Returns a list of loaded plugins.";
-    returns.insert("plugins", QVariantList() << objectRef("DevicePlugin"));
+    returns.insert("plugins", objectRef<DevicePlugins>());
     registerMethod("GetPlugins", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Get a plugin's params.";
     params.insert("pluginId", enumValueName(Uuid));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
-    returns.insert("o:configuration", QVariantList() << objectRef("Param"));
+    returns.insert("o:configuration", objectRef<ParamList>());
     registerMethod("GetPluginConfiguration", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Set a plugin's params.";
     params.insert("pluginId", enumValueName(Uuid));
-    params.insert("configuration", QVariantList() << objectRef("Param"));
+    params.insert("configuration", objectRef<ParamList>());
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     registerMethod("SetPluginConfiguration", description, params, returns);
 
@@ -157,7 +157,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.insert("deviceClassId", enumValueName(Uuid));
     params.insert("name", enumValueName(String));
     params.insert("o:deviceDescriptorId", enumValueName(Uuid));
-    params.insert("o:deviceParams", QVariantList() << objectRef("Param"));
+    params.insert("o:deviceParams", objectRef<ParamList>());
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:deviceId", enumValueName(Uuid));
     returns.insert("o:displayMessage", enumValueName(String));
@@ -184,7 +184,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.insert("o:deviceClassId", enumValueName(Uuid));
     params.insert("o:name", enumValueName(String));
     params.insert("o:deviceDescriptorId", enumValueName(Uuid));
-    params.insert("o:deviceParams", QVariantList() << objectRef("Param"));
+    params.insert("o:deviceParams", objectRef<ParamList>());
     params.insert("o:deviceId", enumValueName(Uuid));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:setupMethod", enumRef<DeviceClass::SetupMethod>());
@@ -210,7 +210,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.clear(); returns.clear();
     description = "Returns a list of configured devices, optionally filtered by deviceId.";
     params.insert("o:deviceId", enumValueName(Uuid));
-    returns.insert("devices", QVariantList() << objectRef("Device"));
+    returns.insert("devices", objectRef<Devices>());
     registerMethod("GetConfiguredDevices", description, params, returns);
 
     params.clear(); returns.clear();
@@ -220,10 +220,10 @@ DeviceHandler::DeviceHandler(QObject *parent) :
                                            "added device. Such results may be used to reconfigure existing devices and might be filtered "
                                            "in cases where only unknown devices are of interest.";
     params.insert("deviceClassId", enumValueName(Uuid));
-    params.insert("o:discoveryParams", QVariantList() << objectRef("Param"));
+    params.insert("o:discoveryParams", objectRef<ParamList>());
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:displayMessage", enumValueName(String));
-    returns.insert("o:deviceDescriptors", QVariantList() << objectRef("DeviceDescriptor"));
+    returns.insert("o:deviceDescriptors", objectRef<DeviceDescriptors>());
     registerMethod("GetDiscoveredDevices", description, params, returns);
 
     params.clear(); returns.clear();
@@ -236,7 +236,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
                    "be changed.";
     params.insert("o:deviceId", enumValueName(Uuid));
     params.insert("o:deviceDescriptorId", enumValueName(Uuid));
-    params.insert("o:deviceParams", QVariantList() << objectRef("Param"));
+    params.insert("o:deviceParams", objectRef<ParamList>());
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:displayMessage", enumValueName(String));
     registerMethod("ReconfigureDevice", description, params, returns);
@@ -252,7 +252,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.clear(); returns.clear();
     description = "Change the settings of a device.";
     params.insert("deviceId", enumValueName(Uuid));
-    params.insert("settings", QVariantList() << objectRef("Param"));
+    params.insert("settings", objectRef<ParamList>());
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     registerMethod("SetDeviceSettings", description, params, returns);
 
@@ -273,19 +273,19 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.clear(); returns.clear();
     description = "Get event types for a specified deviceClassId.";
     params.insert("deviceClassId", enumValueName(Uuid));
-    returns.insert("eventTypes", QVariantList() << objectRef("EventType"));
+    returns.insert("eventTypes", objectRef<EventTypes>());
     registerMethod("GetEventTypes", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Get action types for a specified deviceClassId.";
     params.insert("deviceClassId", enumValueName(Uuid));
-    returns.insert("actionTypes", QVariantList() << objectRef("ActionType"));
+    returns.insert("actionTypes", objectRef<ActionTypes>());
     registerMethod("GetActionTypes", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Get state types for a specified deviceClassId.";
     params.insert("deviceClassId", enumValueName(Uuid));
-    returns.insert("stateTypes", QVariantList() << objectRef("StateType"));
+    returns.insert("stateTypes", objectRef<StateTypes>());
     registerMethod("GetStateTypes", description, params, returns);
 
     params.clear(); returns.clear();
@@ -300,10 +300,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     description = "Get all the state values of the given device.";
     params.insert("deviceId", enumValueName(Uuid));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
-    QVariantMap state;
-    state.insert("stateTypeId", enumValueName(Uuid));
-    state.insert("value", enumValueName(Variant));
-    returns.insert("o:values", QVariantList() << state);
+    returns.insert("o:values", objectRef<States>());
     registerMethod("GetStateValues", description, params, returns);
 
     params.clear(); returns.clear();
@@ -337,12 +334,12 @@ DeviceHandler::DeviceHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     description = "Emitted whenever a Device was added.";
-    params.insert("device", objectRef("Device"));
+    params.insert("device", objectRef<Device>());
     registerNotification("DeviceAdded", description, params);
 
     params.clear(); returns.clear();
     description = "Emitted whenever the params or name of a Device are changed (by EditDevice or ReconfigureDevice).";
-    params.insert("device", objectRef("Device"));
+    params.insert("device", objectRef<Device>());
     registerNotification("DeviceChanged", description, params);
 
     params.clear(); returns.clear();
@@ -355,7 +352,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.clear(); returns.clear();
     description = "Emitted whenever a plugin's configuration is changed.";
     params.insert("pluginId", enumValueName(Uuid));
-    params.insert("configuration", QVariantList() << objectRef("Param"));
+    params.insert("configuration", objectRef<ParamList>());
     registerNotification("PluginConfigurationChanged", description, params);
 
     connect(NymeaCore::instance(), &NymeaCore::pluginConfigChanged, this, &DeviceHandler::pluginConfigChanged);

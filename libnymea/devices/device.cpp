@@ -471,3 +471,13 @@ Devices Devices::filterByInterface(const QString &interface)
     }
     return ret;
 }
+
+QVariant Devices::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
+void Devices::put(const QVariant &variant)
+{
+    append(variant.value<Device*>());
+}

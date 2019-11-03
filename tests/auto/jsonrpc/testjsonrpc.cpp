@@ -738,18 +738,17 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QVariantMap actionNoParams;
     actionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     actionNoParams.insert("deviceId", m_mockDeviceId);
-    actionNoParams.insert("ruleActionParams", QVariantList());
 
     // EventDescriptor
     QVariantMap eventDescriptor;
     eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor.insert("deviceId", m_mockDeviceId);
-    eventDescriptor.insert("paramDescriptors", QVariantList());
+    QVariantList eventDescriptors = QVariantList() << eventDescriptor;
 
     QVariantMap params;
     params.insert("name", "Test Rule notifications");
     params.insert("actions", QVariantList() << actionNoParams);
-    params.insert("eventDescriptors", QVariantList() << eventDescriptor);
+    params.insert("eventDescriptors", eventDescriptors);
     params.insert("stateEvaluator", stateEvaluator);
 
     QVariant response = injectAndWait("Rules.AddRule", params);
@@ -765,7 +764,11 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QCOMPARE(notificationRuleMap.value("id").toString(), ruleId.toString());
     QCOMPARE(notificationRuleMap.value("actions").toList(), QVariantList() << actionNoParams);
     QCOMPARE(notificationRuleMap.value("stateEvaluator").toMap().value("stateDescriptor").toMap(), stateDescriptor);
-    QCOMPARE(notificationRuleMap.value("eventDescriptors").toList(), QVariantList() << eventDescriptor);
+    QVERIFY2(notificationRuleMap.value("eventDescriptors").toList() == eventDescriptors,
+             QString("eventDescriptors not matching.\nExpected: %1\nGot %2")
+             .arg(QString(QJsonDocument::fromVariant(eventDescriptors).toJson()))
+             .arg(QString(QJsonDocument::fromVariant(notificationRuleMap.value("eventDescriptors").toList()).toJson()))
+             .toUtf8());
     QCOMPARE(notificationRuleMap.value("exitActions").toList(), QVariantList());
 
     // now remove the rule and check the RuleRemoved notification
@@ -802,7 +805,6 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QVariantMap actionNoParams;
     actionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     actionNoParams.insert("deviceId", m_mockDeviceId);
-    actionNoParams.insert("ruleActionParams", QVariantList());
 
     params.clear(); response.clear();
     params.insert("name", "Test Rule notifications");

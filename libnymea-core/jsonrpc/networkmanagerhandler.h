@@ -75,9 +75,9 @@ private slots:
     void onWiredNetworkDeviceChanged(WiredNetworkDevice *networkDevice);
 
 private:
-    static QVariantMap packWirelessAccessPoint(WirelessAccessPoint *wirelessAccessPoint);
-    static QVariantMap packWiredNetworkDevice(WiredNetworkDevice *networkDevice);
-    static QVariantMap packWirelessNetworkDevice(WirelessNetworkDevice *networkDevice);
+    QVariantMap packWirelessAccessPoint(WirelessAccessPoint *wirelessAccessPoint);
+    QVariantMap packWiredNetworkDevice(WiredNetworkDevice *networkDevice);
+    QVariantMap packWirelessNetworkDevice(WirelessNetworkDevice *networkDevice);
 
     QVariantMap statusToReply(NetworkManager::NetworkManagerError status) const;
 

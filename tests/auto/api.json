@@ -304,6 +304,7 @@
     },
     "methods": {
         "Actions.ExecuteAction": {
+            "deprecated": "Please use Devices.ExecuteAction instead.",
             "description": "Execute a single action.",
             "params": {
                 "actionTypeId": "Uuid",
@@ -316,6 +317,7 @@
             }
         },
         "Actions.ExecuteBrowserItem": {
+            "deprecated": "Please use Devices.ExecuteBrowserItem instead.",
             "description": "Execute the item identified by itemId on the given device.",
             "params": {
                 "deviceId": "Uuid",
@@ -326,6 +328,7 @@
             }
         },
         "Actions.ExecuteBrowserItemAction": {
+            "deprecated": "Please use Devices.ExecuteBrowserItem instead.",
             "description": "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.",
             "params": {
                 "actionTypeId": "Uuid",
@@ -338,7 +341,8 @@
             }
         },
         "Actions.GetActionType": {
-            "description": "Get the ActionType for the given ActionTypeId",
+            "deprecated": "Please use the Devices namespace instead.",
+            "description": "Get the ActionType for the given ActionTypeId.",
             "params": {
                 "actionTypeId": "Uuid"
             },
@@ -599,6 +603,40 @@
                 "deviceError": "$ref:DeviceError"
             }
         },
+        "Devices.ExecuteAction": {
+            "description": "Execute a single action.",
+            "params": {
+                "actionTypeId": "Uuid",
+                "deviceId": "Uuid",
+                "o:params": "$ref:ParamList"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError",
+                "o:displayMessage": "String"
+            }
+        },
+        "Devices.ExecuteBrowserItem": {
+            "description": "Execute the item identified by itemId on the given device.",
+            "params": {
+                "deviceId": "Uuid",
+                "itemId": "String"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError"
+            }
+        },
+        "Devices.ExecuteBrowserItemAction": {
+            "description": "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.",
+            "params": {
+                "actionTypeId": "Uuid",
+                "deviceId": "Uuid",
+                "itemId": "String",
+                "o:params": "$ref:ParamList"
+            },
+            "returns": {
+                "deviceError": "$ref:DeviceError"
+            }
+        },
         "Devices.GetActionTypes": {
             "description": "Get action types for a specified deviceClassId.",
             "params": {
@@ -784,6 +822,7 @@
             }
         },
         "Events.GetEventType": {
+            "deprecated": "Please use the Devices namespace instead.",
             "description": "Get the EventType for the given eventTypeId.",
             "params": {
                 "eventTypeId": "Uuid"
@@ -1185,6 +1224,7 @@
             }
         },
         "States.GetStateType": {
+            "deprecated": "Please use the Devices namespace instead.",
             "description": "Get the StateType for the given stateTypeId.",
             "params": {
                 "stateTypeId": "Uuid"
@@ -1441,6 +1481,12 @@
                 "value": "Variant"
             }
         },
+        "Devices.EventTriggered": {
+            "description": "Emitted whenever an Event is triggered.",
+            "params": {
+                "event": "$ref:Event"
+            }
+        },
         "Devices.PluginConfigurationChanged": {
             "description": "Emitted whenever a plugin's configuration is changed.",
             "params": {
@@ -1457,6 +1503,7 @@
             }
         },
         "Events.EventTriggered": {
+            "deprecated": "Please use Devices.EventTriggered instead.",
             "description": "Emitted whenever an Event is triggered.",
             "params": {
                 "event": "$ref:Event"

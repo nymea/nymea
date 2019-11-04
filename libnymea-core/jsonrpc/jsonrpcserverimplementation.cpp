@@ -467,12 +467,16 @@ bool JsonRPCServerImplementation::registerExperienceHandler(JsonHandler *handler
 /*! Send a JSON success response to the client with the given \a clientId,
  * \a commandId and \a params to the inerted \l{TransportInterface}.
  */
-void JsonRPCServerImplementation::sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params)
+void JsonRPCServerImplementation::sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params, const QString &deprecationWarning)
 {
     QVariantMap response;
     response.insert("id", commandId);
     response.insert("status", "success");
     response.insert("params", params);
+
+    if (!deprecationWarning.isEmpty()) {
+        response.insert("deprecationWarning", deprecationWarning);
+    }
 
     QByteArray data = QJsonDocument::fromVariant(response).toJson(QJsonDocument::Compact);
     qCDebug(dcJsonRpcTraffic()) << "Sending data:" << data;
@@ -694,7 +698,15 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
         Q_ASSERT_X((targetNamespace == "JSONRPC" && method == "Introspect") || validator.validateReturns(reply->data(), targetNamespace + '.' + method, m_api).success(),
                    validator.result().where().toUtf8(),
                    validator.result().errorString().toUtf8() + "\nReturn value:\n" + QJsonDocument::fromVariant(reply->data()).toJson());
-        sendResponse(interface, clientId, commandId, reply->data());
+
+        QString deprecationWarning;
+        if (m_api.value("methods").toMap().value(targetNamespace + '.' + method).toMap().contains("deprecated")) {
+            deprecationWarning = m_api.value("methods").toMap().value(targetNamespace + '.' + method).toMap().value("deprecated").toString();
+            qCWarning(dcJsonRpc()) << "Client uses deprecated API. Please update client implementation!";
+            qCWarning(dcJsonRpc()) << targetNamespace + '.' + method + ':' << deprecationWarning;
+        }
+
+        sendResponse(interface, clientId, commandId, reply->data(), deprecationWarning);
         reply->deleteLater();
     }
 }
@@ -703,6 +715,16 @@ void JsonRPCServerImplementation::sendNotification(const QVariantMap &params)
 {
     JsonHandler *handler = qobject_cast<JsonHandler *>(sender());
     QMetaMethod method = handler->metaObject()->method(senderSignalIndex());
+
+    QList<QUuid> clientsToBeNotified;
+    foreach (const QUuid &clientId, m_clientNotifications.keys()) {
+        if (m_clientNotifications.value(clientId).contains(handler->name())) {
+            clientsToBeNotified.append(clientId);
+        }
+    }
+    if (clientsToBeNotified.isEmpty()) {
+        return;
+    }
 
     QVariantMap notification;
     notification.insert("id", m_notificationId++);
@@ -713,14 +735,20 @@ void JsonRPCServerImplementation::sendNotification(const QVariantMap &params)
     Q_ASSERT_X(validator.validateNotificationParams(params, handler->name() + '.' + method.name(), m_api).success(),
                validator.result().where().toUtf8(),
                validator.result().errorString().toUtf8());
+
+    if (m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().contains("deprecated")) {
+        QString deprecationMessage = m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().value("deprecated").toString();
+        qCWarning(dcJsonRpc()) << "Client uses deprecated API. Please update client implementation!";
+        qCWarning(dcJsonRpc()) << handler->name() + '.' + method.name() + ':' << deprecationMessage;
+        notification.insert("deprecationWarning", deprecationMessage);
+    }
+
     QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
-    qCDebug(dcJsonRpc()) << "Sending notification:" << handler->name() + "." + method.name();
     qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
 
-    foreach (const QUuid &clientId, m_clientNotifications.keys()) {
-        if (m_clientNotifications.value(clientId).contains(handler->name())) {
-            m_clientTransports.value(clientId)->sendData(clientId, data);
-        }
+    foreach (const QUuid &clientId, clientsToBeNotified) {
+        qCDebug(dcJsonRpc()) << "Sending notification:" << handler->name() + "." + method.name();
+        m_clientTransports.value(clientId)->sendData(clientId, data);
     }
 }
 
@@ -735,10 +763,19 @@ void JsonRPCServerImplementation::asyncReplyFinished()
     }
     if (!reply->timedOut()) {
         JsonValidator validator;
-        Q_ASSERT_X(validator.validateReturns(reply->data(), reply->handler()->name() + '.' + reply->method(), m_api).success()
+        QString method = reply->handler()->name() + '.' + reply->method();
+        Q_ASSERT_X(validator.validateReturns(reply->data(), method, m_api).success()
                    ,validator.result().where().toUtf8()
                    ,validator.result().errorString().toUtf8() + "\nReturn value:\n" + QJsonDocument::fromVariant(reply->data()).toJson());
-        sendResponse(interface, reply->clientId(), reply->commandId(), reply->data());
+
+        QString deprecationWarning;
+        if (m_api.value("methods").toMap().value(method).toMap().contains("deprecated")) {
+            deprecationWarning = m_api.value("methods").toMap().value(method).toMap().value("deprecated").toString();
+            qCWarning(dcJsonRpc()) << "Client uses deprecated API. Please update client implementation!";
+            qCWarning(dcJsonRpc()) << method + ':' << deprecationWarning;
+        }
+
+        sendResponse(interface, reply->clientId(), reply->commandId(), reply->data(), deprecationWarning);
     } else {
         qCWarning(dcJsonRpc()) << "RPC call timed out:" << reply->handler()->name() << ":" << reply->method();
         sendErrorResponse(interface, reply->clientId(), reply->commandId(), "Command timed out");

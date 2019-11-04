@@ -22,6 +22,8 @@
 #include "nymeatestbase.h"
 #include "nymeacore.h"
 
+#include "servers/mocktcpserver.h"
+
 using namespace nymeaserver;
 
 class TestEvents: public NymeaTestBase
@@ -40,11 +42,14 @@ private slots:
 
 void TestEvents::triggerEvent()
 {
+    enableNotifications({"Events"});
+
     QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 
     QSignalSpy spy(NymeaCore::instance(), SIGNAL(eventTriggered(const Event&)));
+    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     // Setup connection to mock client
     QNetworkAccessManager nam;
@@ -65,15 +70,28 @@ void TestEvents::triggerEvent()
             QCOMPARE(event.eventTypeId(), mockEvent1EventTypeId);
         }
     }
+
+    // Check for the notification on JSON API
+    QVariantList notifications;
+    notifications = checkNotifications(notificationSpy, "Events.EventTriggered");
+    QVERIFY2(notifications.count() == 1, "Should get Events.EventTriggered notification");
+    QVERIFY2(notifications.first().toMap().contains("deprecationWarning"), "Deprecation warning not included in notification");
+
+    QVariantMap notificationContent = notifications.first().toMap().value("params").toMap();
+    QCOMPARE(notificationContent.value("event").toMap().value("deviceId").toUuid().toString(), device->id().toString());
+    QCOMPARE(notificationContent.value("event").toMap().value("eventTypeId").toUuid().toString(), mockEvent1EventTypeId.toString());
 }
 
 void TestEvents::triggerStateChangeEvent()
 {
+    enableNotifications({"Events"});
+
     QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 
     QSignalSpy spy(NymeaCore::instance(), SIGNAL(eventTriggered(const Event&)));
+    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     // Setup connection to mock client
     QNetworkAccessManager nam;
@@ -95,6 +113,17 @@ void TestEvents::triggerStateChangeEvent()
             QCOMPARE(event.param(ParamTypeId(mockIntStateTypeId.toString())).value().toInt(), 11);
         }
     }
+
+    // Check for the notification on JSON API
+    QVariantList notifications;
+    notifications = checkNotifications(notificationSpy, "Events.EventTriggered");
+    QVERIFY2(notifications.count() == 1, "Should get Devices.EventTriggered notification");
+    QVERIFY2(notifications.first().toMap().contains("deprecationWarning"), "Deprecation warning not included in notification!");
+
+    QVariantMap notificationContent = notifications.first().toMap().value("params").toMap();
+
+    QCOMPARE(notificationContent.value("event").toMap().value("deviceId").toUuid().toString(), device->id().toString());
+    QCOMPARE(notificationContent.value("event").toMap().value("eventTypeId").toUuid().toString(), mockIntEventTypeId.toString());
 }
 
 void TestEvents::params()
@@ -129,6 +158,9 @@ void TestEvents::getEventType()
     QVariant response = injectAndWait("Events.GetEventType", params);
 
     verifyError(response, "deviceError", enumValueName(error));
+
+    qCDebug(dcTests()) << "*content" << response;
+    QVERIFY2(response.toMap().contains("deprecationWarning"), "Deprecation warning not shown in reply");
 
     if (error == Device::DeviceErrorNoError) {
         QVERIFY2(EventTypeId(response.toMap().value("params").toMap().value("eventType").toMap().value("id").toString()) == eventTypeId, "Didn't get a reply for the same actionTypeId as requested.");

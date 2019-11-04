@@ -307,7 +307,6 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
 
                 // Manually converting QList<int>... Only QVariantList is known to the meta system
                 if (propertyTypeName.startsWith("QList<int>")) {
-                    qWarning() << "Packing list" << metaProperty.name() << propertyValue.toList();
                     QVariantList list;
                     foreach (int entry, propertyValue.value<QList<int>>()) {
                         list << entry;
@@ -350,7 +349,6 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
 
     // If it's a list object, loop over count
     if (m_listMetaObjects.contains(typeName)) {
-        qWarning() << "** Unpacking" << typeName;
         if (value.type() != QVariant::List) {
             qCWarning(dcJsonRpc()) << "Cannot unpack" << typeName << ". Value is not in list format:" << value;
             return QVariant();
@@ -367,7 +365,6 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
 
         foreach (const QVariant &variant, list) {
             QVariant value = unpack(entryMetaObject, variant);
-            qWarning() << "Putting" << value << putMethod.name() << ptr << typeId;
             putMethod.invokeOnGadget(ptr, Q_ARG(QVariant, value));
         }
 
@@ -378,7 +375,6 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
 
     // if it's an object, loop over all properties
     if (m_metaObjects.contains(typeName)) {
-        qWarning() << "*** Unpacking" << typeName;
         QVariantMap map = value.toMap();
         int typeId = QMetaType::type(metaObject.className());
         Q_ASSERT_X(typeId != 0, this->metaObject()->className(), QString("Cannot handle unregistered meta type %1").arg(typeName).toUtf8());
@@ -403,7 +399,6 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
                 // recurse into child lists
                 if (m_listMetaObjects.contains(propertyTypeName)) {
                     QMetaObject propertyMetaObject = m_listMetaObjects.value(propertyTypeName);
-                    qWarning() << "Entering list object" << propertyTypeName << propertyMetaObject.className();
                     metaProperty.writeOnGadget(ptr, unpack(propertyMetaObject, variant));
                     continue;
                 }

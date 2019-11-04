@@ -26,6 +26,8 @@
 #include "devices/devicediscoveryinfo.h"
 #include "devices/devicesetupinfo.h"
 
+#include "servers/mocktcpserver.h"
+
 using namespace nymeaserver;
 
 class TestDevices : public NymeaTestBase
@@ -116,6 +118,14 @@ private slots:
 
     void testExecuteBrowserItemAction_data();
     void testExecuteBrowserItemAction();
+
+    void executeAction_data();
+    void executeAction();
+
+    void triggerEvent();
+    void triggerStateChangeEvent();
+
+    void params();
 
     // Keep those at last as they will remove devices
     void removeDevice_data();
@@ -1775,6 +1785,181 @@ void TestDevices::testExecuteBrowserItemAction()
     browserEntries = response.toMap().value("params").toMap().value("items").toList();
     QCOMPARE(browserEntries.count(), 0);
 
+}
+
+void TestDevices::executeAction_data()
+{
+    QTest::addColumn<DeviceId>("deviceId");
+    QTest::addColumn<ActionTypeId>("actionTypeId");
+    QTest::addColumn<QVariantList>("actionParams");
+    QTest::addColumn<Device::DeviceError>("error");
+
+    QVariantList params;
+    QVariantMap param1;
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
+    param1.insert("value", 5);
+    params.append(param1);
+    QVariantMap param2;
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
+    param2.insert("value", true);
+    params.append(param2);
+
+    QTest::newRow("valid action") << m_mockDeviceId << mockWithParamsActionTypeId << params << Device::DeviceErrorNoError;
+    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockWithParamsActionTypeId << params << Device::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid actionTypeId") << m_mockDeviceId << ActionTypeId::createActionTypeId() << params << Device::DeviceErrorActionTypeNotFound;
+    QTest::newRow("missing params") << m_mockDeviceId << mockWithParamsActionTypeId << QVariantList() << Device::DeviceErrorMissingParameter;
+    QTest::newRow("async action") << m_mockDeviceId << mockAsyncActionTypeId << QVariantList() << Device::DeviceErrorNoError;
+    QTest::newRow("broken action") << m_mockDeviceId << mockFailingActionTypeId << QVariantList() << Device::DeviceErrorSetupFailed;
+    QTest::newRow("async broken action") << m_mockDeviceId << mockAsyncFailingActionTypeId << QVariantList() << Device::DeviceErrorSetupFailed;
+}
+
+void TestDevices::executeAction()
+{
+    QFETCH(DeviceId, deviceId);
+    QFETCH(ActionTypeId, actionTypeId);
+    QFETCH(QVariantList, actionParams);
+    QFETCH(Device::DeviceError, error);
+
+    QVariantMap params;
+    params.insert("actionTypeId", actionTypeId);
+    params.insert("deviceId", deviceId);
+    params.insert("params", actionParams);
+    QVariant response = injectAndWait("Devices.ExecuteAction", params);
+    qDebug() << "executeActionresponse" << response;
+    verifyError(response, "deviceError", enumValueName(error));
+
+    // Fetch action execution history from mock device
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+    QByteArray data = reply->readAll();
+
+    if (error == Device::DeviceErrorNoError) {
+        QVERIFY2(actionTypeId == ActionTypeId(data), QString("ActionTypeId mismatch. Got %1, Expected: %2")
+                 .arg(ActionTypeId(data).toString()).arg(actionTypeId.toString()).toLatin1().data());
+    } else {
+        QVERIFY2(data.length() == 0, QString("Data is %1, should be empty.").arg(QString(data)).toLatin1().data());
+    }
+
+    // cleanup for the next run
+    spy.clear();
+    request.setUrl(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    spy.clear();
+    request.setUrl(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+    data = reply->readAll();
+    qDebug() << "cleared data:" << data;
+
+}
+
+void TestDevices::triggerEvent()
+{
+    enableNotifications({"Devices"});
+    QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
+    QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
+    Device *device = devices.first();
+
+
+    QSignalSpy spy(NymeaCore::instance(), SIGNAL(eventTriggered(const Event&)));
+    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // Setup connection to mock client
+    QNetworkAccessManager nam;
+
+    // trigger event in mock device
+    int port = device->paramValue(mockDeviceHttpportParamTypeId).toInt();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(port).arg(mockEvent1EventTypeId.toString())));
+    QNetworkReply *reply = nam.get(request);
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
+
+    // Lets wait for the notification
+    spy.wait();
+    QVERIFY(spy.count() > 0);
+    for (int i = 0; i < spy.count(); i++ ){
+        Event event = spy.at(i).at(0).value<Event>();
+        if (event.deviceId() == device->id()) {
+            // Make sure the event contains all the stuff we expect
+            QCOMPARE(event.eventTypeId(), mockEvent1EventTypeId);
+        }
+    }
+
+    // Check for the notification on JSON API
+    QVariantList notifications;
+    notifications = checkNotifications(notificationSpy, "Devices.EventTriggered");
+    QVERIFY2(notifications.count() == 1, "Should get Devices.EventTriggered notification");
+    QVariantMap notificationContent = notifications.first().toMap().value("params").toMap();
+
+    QCOMPARE(notificationContent.value("event").toMap().value("deviceId").toUuid().toString(), device->id().toString());
+    QCOMPARE(notificationContent.value("event").toMap().value("eventTypeId").toUuid().toString(), mockEvent1EventTypeId.toString());
+}
+
+void TestDevices::triggerStateChangeEvent()
+{
+    enableNotifications({"Devices"});
+
+    QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
+    QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
+    Device *device = devices.first();
+
+    QSignalSpy spy(NymeaCore::instance(), SIGNAL(eventTriggered(const Event&)));
+    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // Setup connection to mock client
+    QNetworkAccessManager nam;
+
+    // trigger state changed event in mock device
+    int port = device->paramValue(mockDeviceHttpportParamTypeId).toInt();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockIntStateTypeId.toString()).arg(11)));
+    QNetworkReply *reply = nam.get(request);
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
+
+    // Lets wait for the notification
+    spy.wait();
+    QVERIFY(spy.count() > 0);
+    for (int i = 0; i < spy.count(); i++ ){
+        Event event = spy.at(i).at(0).value<Event>();
+        if (event.deviceId() == device->id()) {
+            // Make sure the event contains all the stuff we expect
+            QCOMPARE(event.eventTypeId().toString(), mockIntStateTypeId.toString());
+            QCOMPARE(event.param(ParamTypeId(mockIntStateTypeId.toString())).value().toInt(), 11);
+        }
+    }
+
+    // Check for the notification on JSON API
+    QVariantList notifications;
+    notifications = checkNotifications(notificationSpy, "Devices.EventTriggered");
+    QVERIFY2(notifications.count() == 1, "Should get Devices.EventTriggered notification");
+    QVariantMap notificationContent = notifications.first().toMap().value("params").toMap();
+
+    QCOMPARE(notificationContent.value("event").toMap().value("deviceId").toUuid().toString(), device->id().toString());
+    QCOMPARE(notificationContent.value("event").toMap().value("eventTypeId").toUuid().toString(), mockIntEventTypeId.toString());
+
+}
+
+void TestDevices::params()
+{
+    Event event;
+    ParamList params;
+    ParamTypeId id = ParamTypeId::createParamTypeId();
+    Param p(id, "foo bar");
+    params.append(p);
+    event.setParams(params);
+
+    QVERIFY(event.param(id).value().toString() == "foo bar");
+    QVERIFY(!event.param(ParamTypeId::createParamTypeId()).value().isValid());
 }
 
 #include "testdevices.moc"

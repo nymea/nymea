@@ -385,7 +385,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     params.clear(); returns.clear();
     description = "Emitted whenever an Event is triggered.";
     params.insert("event", objectRef<Event>());
-    registerNotification("EventTriggered", description, params, "Please use Devices.EventTriggered instead.");
+    registerNotification("EventTriggered", description, params);
     connect(NymeaCore::instance(), &NymeaCore::eventTriggered, this, [this](const Event &event){
         QVariantMap params;
         params.insert("event", pack(event));

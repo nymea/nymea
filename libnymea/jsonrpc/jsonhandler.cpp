@@ -350,7 +350,7 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
     // If it's a list object, loop over count
     if (m_listMetaObjects.contains(typeName)) {
         if (value.type() != QVariant::List) {
-            qCWarning(dcJsonRpc()) << "Cannot unpack" << typeName << ". Value is not in list format:" << value;
+//            qCWarning(dcJsonRpc()) << "Cannot unpack" << typeName << ". Value is not in list format:" << value;
             return QVariant();
         }
 

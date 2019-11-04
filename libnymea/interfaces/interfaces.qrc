@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/interfaces">
-	<file>alert.json</file>
+        <file>alert.json</file>
         <file>light.json</file>
         <file>dimmablelight.json</file>
         <file>account.json</file>
@@ -73,5 +73,6 @@
         <file>extendednavigationpad.json</file>
         <file>closablesensor.json</file>
         <file>powerswitch.json</file>
+        <file>barcodescanner.json</file>
     </qresource>
 </RCC>

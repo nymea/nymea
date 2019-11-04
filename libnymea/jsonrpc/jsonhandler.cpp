@@ -125,23 +125,27 @@ void JsonHandler::registerObject(const QString &name, const QVariantMap &object)
     m_objects.insert(name, object);
 }
 
-void JsonHandler::registerMethod(const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, bool /*deprecated*/)
+void JsonHandler::registerMethod(const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, const QString &deprecationInfo)
 {
     QVariantMap methodData;
     methodData.insert("description", description);
     methodData.insert("params", params);
     methodData.insert("returns", returns);
-//    methodData.insert("deprecated", deprecated);
+    if (!deprecationInfo.isEmpty()) {
+        methodData.insert("deprecated", deprecationInfo);
+    }
 
     m_methods.insert(name, methodData);
 }
 
-void JsonHandler::registerNotification(const QString &name, const QString &description, const QVariantMap &params, bool /*deprecated*/)
+void JsonHandler::registerNotification(const QString &name, const QString &description, const QVariantMap &params, const QString &deprecationInfo)
 {
     QVariantMap notificationData;
     notificationData.insert("description", description);
     notificationData.insert("params", params);
-//    notificationData.insert("deprecated", deprecated);
+    if (!deprecationInfo.isEmpty()) {
+        notificationData.insert("deprecated", deprecationInfo);
+    }
 
     m_notifications.insert(name, notificationData);
 }

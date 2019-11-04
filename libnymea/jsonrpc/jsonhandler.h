@@ -91,8 +91,8 @@ protected:
     void registerObject(const QString &name, const QVariantMap &object);
 
 
-    void registerMethod(const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, bool deprecated = false);
-    void registerNotification(const QString &name, const QString &description, const QVariantMap &params, bool deprecated = false);
+    void registerMethod(const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, const QString &deprecationInfo = QString());
+    void registerNotification(const QString &name, const QString &description, const QVariantMap &params, const QString &deprecationInfo = QString());
 
     JsonReply *createReply(const QVariantMap &data) const;
     JsonReply *createAsyncReply(const QString &method) const;

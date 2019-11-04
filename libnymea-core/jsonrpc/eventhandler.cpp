@@ -61,13 +61,13 @@ EventHandler::EventHandler(QObject *parent) :
     params.insert("eventTypeId", enumValueName(Uuid));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:eventType", objectRef<EventType>());
-    registerMethod("GetEventType", description, params, returns);
+    registerMethod("GetEventType", description, params, returns, "Please use the Devices namespace instead.");
 
     // Notifications
     params.clear(); returns.clear();
     description = "Emitted whenever an Event is triggered.";
     params.insert("event", objectRef<Event>());
-    registerNotification("EventTriggered", description, params);
+    registerNotification("EventTriggered", description, params, "Please use Devices.EventTriggered instead.");
     connect(NymeaCore::instance(), &NymeaCore::eventTriggered, this, &EventHandler::eventTriggered);
 }
 

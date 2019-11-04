@@ -60,6 +60,10 @@ public:
     Q_INVOKABLE JsonReply *BrowseDevice(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetBrowserItem(const QVariantMap &params) const;
 
+    Q_INVOKABLE JsonReply *ExecuteAction(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *ExecuteBrowserItem(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *ExecuteBrowserItemAction(const QVariantMap &params);
+
     static QVariantMap packBrowserItem(const BrowserItem &item);
 
 signals:
@@ -69,6 +73,7 @@ signals:
     void DeviceAdded(const QVariantMap &params);
     void DeviceChanged(const QVariantMap &params);
     void DeviceSettingChanged(const QVariantMap &params);
+    void EventTriggered(const QVariantMap &params);
 
 private slots:
     void pluginConfigChanged(const PluginId &id, const ParamList &config);

@@ -52,7 +52,7 @@ StateHandler::StateHandler(QObject *parent) :
     params.insert("stateTypeId", enumValueName(Uuid));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:stateType", objectRef<StateType>());
-    registerMethod("GetStateType", description, params, returns, true);
+    registerMethod("GetStateType", description, params, returns, "Please use the Devices namespace instead.");
 }
 
 /*! Returns the name of the \l{StateHandler}. In this case \b States.*/

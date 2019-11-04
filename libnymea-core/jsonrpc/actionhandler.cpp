@@ -67,21 +67,21 @@ ActionHandler::ActionHandler(QObject *parent) :
     params.insert("o:params", objectRef<ParamList>());
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:displayMessage", enumValueName(String));
-    registerMethod("ExecuteAction", description, params, returns);
+    registerMethod("ExecuteAction", description, params, returns, "Please use Devices.ExecuteAction instead.");
 
     params.clear(); returns.clear();
-    description = "Get the ActionType for the given ActionTypeId";
+    description = "Get the ActionType for the given ActionTypeId.";
     params.insert("actionTypeId", enumValueName(Uuid));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:actionType", objectRef<ActionType>());
-    registerMethod("GetActionType", description, params, returns);
+    registerMethod("GetActionType", description, params, returns, "Please use the Devices namespace instead.");
 
     params.clear(); returns.clear();
     description = "Execute the item identified by itemId on the given device.";
     params.insert("deviceId", enumValueName(Uuid));
     params.insert("itemId", enumValueName(String));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
-    registerMethod("ExecuteBrowserItem", description, params, returns);
+    registerMethod("ExecuteBrowserItem", description, params, returns, "Please use Devices.ExecuteBrowserItem instead.");
 
     params.clear(); returns.clear();
     description = "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.";
@@ -90,7 +90,7 @@ ActionHandler::ActionHandler(QObject *parent) :
     params.insert("actionTypeId", enumValueName(Uuid));
     params.insert("o:params", objectRef<ParamList>());
     returns.insert("deviceError", enumRef<Device::DeviceError>());
-    registerMethod("ExecuteBrowserItemAction", description, params, returns);
+    registerMethod("ExecuteBrowserItemAction", description, params, returns, "Please use Devices.ExecuteBrowserItem instead.");
 
 }
 

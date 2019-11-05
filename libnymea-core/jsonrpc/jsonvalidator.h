@@ -23,6 +23,7 @@
 
 #include <QPair>
 #include <QVariant>
+#include <QIODevice>
 
 namespace nymeaserver {
 
@@ -58,8 +59,8 @@ public:
 
     Result result() const;
 private:
-    Result validateMap(const QVariantMap &map, const QVariantMap &definition, const QVariantMap &api);
-    Result validateEntry(const QVariant &value, const QVariant &definition, const QVariantMap &api);
+    Result validateMap(const QVariantMap &map, const QVariantMap &definition, const QVariantMap &api, QIODevice::OpenMode openMode);
+    Result validateEntry(const QVariant &value, const QVariant &definition, const QVariantMap &api, QIODevice::OpenMode openMode);
 
     Result m_result;
 };

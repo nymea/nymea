@@ -75,7 +75,7 @@ bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &api)
 JsonValidator::Result JsonValidator::validateParams(const QVariantMap &params, const QString &method, const QVariantMap &api)
 {
     QVariantMap paramDefinition = api.value("methods").toMap().value(method).toMap().value("params").toMap();
-    m_result = validateMap(params, paramDefinition, api);
+    m_result = validateMap(params, paramDefinition, api, QIODevice::WriteOnly);
     m_result.setWhere(method + ", param " + m_result.where());
     return m_result;
 }
@@ -83,7 +83,7 @@ JsonValidator::Result JsonValidator::validateParams(const QVariantMap &params, c
 JsonValidator::Result JsonValidator::validateReturns(const QVariantMap &returns, const QString &method, const QVariantMap &api)
 {
     QVariantMap returnsDefinition = api.value("methods").toMap().value(method).toMap().value("returns").toMap();
-    m_result = validateMap(returns, returnsDefinition, api);
+    m_result = validateMap(returns, returnsDefinition, api, QIODevice::ReadOnly);
     m_result.setWhere(method + ", returns " + m_result.where());
     return m_result;
 }
@@ -91,7 +91,7 @@ JsonValidator::Result JsonValidator::validateReturns(const QVariantMap &returns,
 JsonValidator::Result JsonValidator::validateNotificationParams(const QVariantMap &params, const QString &notification, const QVariantMap &api)
 {
     QVariantMap paramDefinition = api.value("notifications").toMap().value(notification).toMap().value("params").toMap();
-    m_result = validateMap(params, paramDefinition, api);
+    m_result = validateMap(params, paramDefinition, api, QIODevice::ReadOnly);
     m_result.setWhere(notification + ", param " + m_result.where());
     return m_result;
 }
@@ -101,14 +101,21 @@ JsonValidator::Result JsonValidator::result() const
     return m_result;
 }
 
-JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const QVariantMap &definition, const QVariantMap &api)
+JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const QVariantMap &definition, const QVariantMap &api, QIODevice::OpenMode openMode)
 {
     // Make sure all required values are available
     foreach (const QString &key, definition.keys()) {
-        if (key.startsWith("o:")) {
+        QRegExp isOptional = QRegExp("^([a-z]:)*o:.*");
+        if (isOptional.exactMatch(key)) {
             continue;
         }
-        if (!map.contains(key)) {
+        QRegExp isReadOnly = QRegExp("^([a-z]:)*r:.*");
+        if (isReadOnly.exactMatch(key) && openMode.testFlag(QIODevice::WriteOnly)) {
+            continue;
+        }
+        QString trimmedKey = key;
+        trimmedKey.remove(QRegExp("^(o:|r:)"));
+        if (!map.contains(trimmedKey)) {
             return Result(false, "Missing required key: " + key, key);
         }
     }
@@ -117,6 +124,15 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
     foreach (const QString &key, map.keys()) {
         // Is the key allowed in here?
         QVariant expectedValue = definition.value(key);
+        foreach (const QString &definitionKey, definition.keys()) {
+            QRegExp regExp = QRegExp("(o:|r:)*" + key);
+            if (regExp.exactMatch(definitionKey)) {
+                expectedValue = definition.value(definitionKey);
+            }
+        }
+        if (!expectedValue.isValid()) {
+            expectedValue = definition.value("o:" + key);
+        }
         if (!expectedValue.isValid()) {
             expectedValue = definition.value("o:" + key);
         }
@@ -127,7 +143,7 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
         // Validate content
         QVariant value = map.value(key);
 
-        Result result = validateEntry(value, expectedValue, api);
+        Result result = validateEntry(value, expectedValue, api, openMode);
         if (!result.success()) {
             result.setWhere(key + '.' + result.where());
             result.setErrorString(result.errorString());
@@ -139,7 +155,7 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
     return Result(true);
 }
 
-JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const QVariant &definition, const QVariantMap &api)
+JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const QVariant &definition, const QVariantMap &api, QIODevice::OpenMode openMode)
 {
     if (definition.type() == QVariant::String) {
         QString expectedTypeName = definition.toString();
@@ -168,7 +184,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
                 }
                 QString flagEnum = refDefinition.toList().first().toString();
                 foreach (const QVariant &flagsEntry, value.toList()) {
-                    Result result = validateEntry(flagsEntry, flagEnum, api);
+                    Result result = validateEntry(flagsEntry, flagEnum, api, openMode);
                     if (!result.success()) {
                         return result;
                     }
@@ -178,7 +194,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
 
             QVariantMap types = api.value("types").toMap();
             QVariant refDefinition = types.value(refName);
-            return validateEntry(value, refDefinition, api);
+            return validateEntry(value, refDefinition, api, openMode);
         }
 
         JsonHandler::BasicType expectedBasicType = JsonHandler::enumNameToValue<JsonHandler::BasicType>(expectedTypeName);
@@ -240,7 +256,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
         if (value.type() != QVariant::Map) {
             return Result(false, "Invalid value. Expected a map bug received: " + value.toString());
         }
-        return validateMap(value.toMap(), definition.toMap(), api);
+        return validateMap(value.toMap(), definition.toMap(), api, openMode);
     }
 
     if (definition.type() == QVariant::List) {
@@ -250,7 +266,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
             return Result(false, "Expected list of " + entryDefinition.toString() + " but got value of type " + value.typeName() + "\n" + QJsonDocument::fromVariant(value).toJson());
         }
         foreach (const QVariant &entry, value.toList()) {
-            Result result = validateEntry(entry, entryDefinition, api);
+            Result result = validateEntry(entry, entryDefinition, api, openMode);
             if (!result.success()) {
                 return result;
             }

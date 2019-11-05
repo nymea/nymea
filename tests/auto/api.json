@@ -1683,10 +1683,10 @@
         },
         "ActionType": {
             "displayName": "String",
-            "id": "Uuid",
             "index": "Int",
             "name": "String",
-            "paramTypes": "$ref:ParamTypes"
+            "paramTypes": "$ref:ParamTypes",
+            "r:id": "Uuid"
         },
         "ActionTypes": [
             "$ref:ActionType"
@@ -1715,51 +1715,51 @@
             "$ref:CalendarItem"
         ],
         "Device": {
-            "deviceClassId": "Uuid",
-            "id": "Uuid",
             "name": "String",
             "o:parentId": "Uuid",
             "params": "$ref:ParamList",
+            "r:deviceClassId": "Uuid",
+            "r:id": "Uuid",
             "settings": "$ref:ParamList",
             "setupComplete": "Bool",
             "states": "$ref:States"
         },
         "DeviceClass": {
-            "actionTypes": "$ref:ActionTypes",
-            "browsable": "Bool",
-            "browserItemActionTypes": "$ref:ActionTypes",
-            "createMethods": "$ref:CreateMethods",
-            "discoveryParamTypes": "$ref:ParamTypes",
-            "displayName": "String",
-            "eventTypes": "$ref:EventTypes",
-            "id": "Uuid",
-            "interfaces": "StringList",
-            "name": "String",
-            "paramTypes": "$ref:ParamTypes",
-            "pluginId": "Uuid",
-            "settingsTypes": "$ref:ParamTypes",
-            "setupMethod": "$ref:SetupMethod",
-            "stateTypes": "$ref:StateTypes",
-            "vendorId": "Uuid"
+            "r:actionTypes": "$ref:ActionTypes",
+            "r:browsable": "Bool",
+            "r:browserItemActionTypes": "$ref:ActionTypes",
+            "r:createMethods": "$ref:CreateMethods",
+            "r:discoveryParamTypes": "$ref:ParamTypes",
+            "r:displayName": "String",
+            "r:eventTypes": "$ref:EventTypes",
+            "r:id": "Uuid",
+            "r:interfaces": "StringList",
+            "r:name": "String",
+            "r:paramTypes": "$ref:ParamTypes",
+            "r:pluginId": "Uuid",
+            "r:settingsTypes": "$ref:ParamTypes",
+            "r:setupMethod": "$ref:SetupMethod",
+            "r:stateTypes": "$ref:StateTypes",
+            "r:vendorId": "Uuid"
         },
         "DeviceClasses": [
             "$ref:DeviceClass"
         ],
         "DeviceDescriptor": {
-            "description": "String",
-            "deviceParams": "$ref:ParamList",
-            "id": "Uuid",
-            "o:deviceId": "Uuid",
-            "title": "String"
+            "r:description": "String",
+            "r:deviceParams": "$ref:ParamList",
+            "r:id": "Uuid",
+            "r:o:deviceId": "Uuid",
+            "r:title": "String"
         },
         "DeviceDescriptors": [
             "$ref:DeviceDescriptor"
         ],
         "DevicePlugin": {
-            "displayName": "String",
-            "id": "Uuid",
-            "name": "String",
-            "paramTypes": "$ref:ParamTypes"
+            "r:displayName": "String",
+            "r:id": "Uuid",
+            "r:name": "String",
+            "r:paramTypes": "$ref:ParamTypes"
         },
         "DevicePlugins": [
             "$ref:DevicePlugin"
@@ -1768,9 +1768,9 @@
             "$ref:Device"
         ],
         "Event": {
-            "deviceId": "Uuid",
-            "eventTypeId": "Uuid",
-            "params": "$ref:ParamList"
+            "r:deviceId": "Uuid",
+            "r:eventTypeId": "Uuid",
+            "r:params": "$ref:ParamList"
         },
         "EventDescriptor": {
             "o:deviceId": "Uuid",
@@ -1784,10 +1784,10 @@
         ],
         "EventType": {
             "displayName": "String",
-            "id": "Uuid",
-            "index": "Int",
             "name": "String",
-            "paramTypes": "$ref:ParamTypes"
+            "paramTypes": "$ref:ParamTypes",
+            "r:id": "Uuid",
+            "r:index": "Int"
         },
         "EventTypes": [
             "$ref:EventType"
@@ -1800,15 +1800,15 @@
             "$ref:LogEntry"
         ],
         "LogEntry": {
-            "loggingLevel": "$ref:LoggingLevel",
-            "o:active": "Bool",
-            "o:deviceId": "Uuid",
-            "o:errorCode": "String",
-            "o:eventType": "$ref:LoggingEventType",
-            "o:typeId": "Uuid",
-            "o:value": "Variant",
-            "source": "$ref:LoggingSource",
-            "timestamp": "Uint"
+            "r:loggingLevel": "$ref:LoggingLevel",
+            "r:o:active": "Bool",
+            "r:o:deviceId": "Uuid",
+            "r:o:errorCode": "String",
+            "r:o:eventType": "$ref:LoggingEventType",
+            "r:o:typeId": "Uuid",
+            "r:o:value": "Variant",
+            "r:source": "$ref:LoggingSource",
+            "r:timestamp": "Uint"
         },
         "MqttPolicy": {
             "allowedPublishTopicFilters": "StringList",
@@ -1818,15 +1818,15 @@
             "username": "String"
         },
         "Package": {
-            "canRemove": "Bool",
-            "candidateVersion": "String",
-            "changelog": "String",
-            "displayName": "String",
-            "id": "String",
-            "installedVersion": "String",
-            "rollbackAvailable": "Bool",
-            "summary": "String",
-            "updateAvailable": "Bool"
+            "r:canRemove": "Bool",
+            "r:candidateVersion": "String",
+            "r:changelog": "String",
+            "r:displayName": "String",
+            "r:id": "String",
+            "r:installedVersion": "String",
+            "r:rollbackAvailable": "Bool",
+            "r:summary": "String",
+            "r:updateAvailable": "Bool"
         },
         "Packages": [
             "$ref:Package"
@@ -1849,7 +1849,6 @@
         ],
         "ParamType": {
             "displayName": "String",
-            "id": "Uuid",
             "index": "Int",
             "name": "String",
             "o:allowedValues": [
@@ -1861,6 +1860,7 @@
             "o:minValue": "Variant",
             "o:readOnly": "Bool",
             "o:unit": "$ref:Unit",
+            "r:id": "Uuid",
             "type": "$ref:BasicType"
         },
         "ParamTypes": [
@@ -1879,21 +1879,21 @@
             "$ref:Repository"
         ],
         "Repository": {
-            "displayName": "String",
             "enabled": "Bool",
-            "id": "String"
+            "r:displayName": "String",
+            "r:id": "String"
         },
         "Rule": {
             "actions": "$ref:RuleActions",
             "name": "String",
-            "o:active": "Bool",
             "o:enabled": "Bool",
             "o:eventDescriptors": "$ref:EventDescriptors",
             "o:executable": "Bool",
             "o:exitActions": "$ref:RuleActions",
             "o:id": "Uuid",
             "o:stateEvaluator": "$ref:StateEvaluator",
-            "o:timeDescriptor": "$ref:TimeDescriptor"
+            "o:timeDescriptor": "$ref:TimeDescriptor",
+            "r:o:active": "Bool"
         },
         "RuleAction": {
             "o:actionTypeId": "Uuid",
@@ -1936,8 +1936,8 @@
             "sslEnabled": "Bool"
         },
         "State": {
-            "stateTypeId": "Uuid",
-            "value": "Variant"
+            "r:stateTypeId": "Uuid",
+            "r:value": "Variant"
         },
         "StateDescriptor": {
             "o:deviceId": "Uuid",
@@ -1958,7 +1958,6 @@
         "StateType": {
             "defaultValue": "Variant",
             "displayName": "String",
-            "id": "Uuid",
             "index": "Int",
             "name": "String",
             "o:maxValue": "Variant",
@@ -1967,6 +1966,7 @@
                 "Variant"
             ],
             "o:unit": "$ref:Unit",
+            "r:id": "Uuid",
             "type": "$ref:BasicType"
         },
         "StateTypes": [
@@ -1998,10 +1998,10 @@
             "$ref:TimeEventItem"
         ],
         "TokenInfo": {
-            "creationTime": "Uint",
-            "deviveName": "String",
-            "id": "Uuid",
-            "username": "String"
+            "r:creationTime": "Uint",
+            "r:deviveName": "String",
+            "r:id": "Uuid",
+            "r:username": "String"
         },
         "Vendor": {
             "displayName": "String",
@@ -2020,18 +2020,18 @@
             "sslEnabled": "Bool"
         },
         "WiredNetworkDevice": {
-            "bitRate": "String",
-            "interface": "String",
-            "macAddress": "String",
-            "pluggedIn": "Bool",
-            "state": "$ref:NetworkDeviceState"
+            "r:bitRate": "String",
+            "r:interface": "String",
+            "r:macAddress": "String",
+            "r:pluggedIn": "Bool",
+            "r:state": "$ref:NetworkDeviceState"
         },
         "WirelessAccessPoint": {
-            "frequency": "Double",
-            "macAddress": "String",
-            "protected": "Bool",
-            "signalStrength": "Int",
-            "ssid": "String"
+            "r:frequency": "Double",
+            "r:macAddress": "String",
+            "r:protected": "Bool",
+            "r:signalStrength": "Int",
+            "r:ssid": "String"
         },
         "WirelessNetworkDevice": {
             "bitRate": "String",

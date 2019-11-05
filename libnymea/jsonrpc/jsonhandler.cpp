@@ -173,6 +173,9 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
         if (metaProperty.isUser()) {
             name.prepend("o:");
         }
+        if (!metaProperty.isWritable()) {
+            name.prepend("r:");
+        }
         QVariant typeName;
         if (metaProperty.type() == QVariant::UserType) {
             if (metaProperty.typeName() == QStringLiteral("QVariant::Type")) {
@@ -305,12 +308,22 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
                     continue;
                 }
 
-                // Manually converting QList<int>... Only QVariantList is known to the meta system
-                if (propertyTypeName.startsWith("QList<int>")) {
+                // Manually converting QList<BasicType>... Only QVariantList is known to the meta system
+                if (propertyTypeName.startsWith("QList<")) {
                     QVariantList list;
-                    foreach (int entry, propertyValue.value<QList<int>>()) {
-                        list << entry;
+                    if (propertyTypeName == "QList<int>") {
+                        foreach (int entry, propertyValue.value<QList<int>>()) {
+                            list << entry;
+                        }
+                    } else if (propertyTypeName == "QList<QUuid>") {
+                        foreach (const QUuid &entry, propertyValue.value<QList<QUuid>>()) {
+                            list << entry;
+                        }
+                    } else {
+                        Q_ASSERT_X(false, this->metaObject()->className(), QString("Unhandled list type: %1").arg(propertyTypeName).toUtf8());
+                        qCWarning(dcJsonRpc()) << "Cannot pack property of unhandled list type" << propertyTypeName;
                     }
+
                     if (!list.isEmpty() || !metaProperty.isUser()) {
                         ret.insert(metaProperty.name(), list);
                     }
@@ -410,12 +423,20 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
                     continue;
                 }
 
-                if (metaProperty.typeName() == QStringLiteral("QList<int>")) {
-                    QList<int> intList;
-                    foreach (const QVariant &val, variant.toList()) {
-                        intList.append(val.toInt());
+                if (QString(metaProperty.typeName()).startsWith("QList<")) {
+                    if (metaProperty.typeName() == QStringLiteral("QList<int>")) {
+                        QList<int> intList;
+                        foreach (const QVariant &val, variant.toList()) {
+                            intList.append(val.toInt());
+                        }
+                        metaProperty.writeOnGadget(ptr, QVariant::fromValue(intList));
+                    } else if (metaProperty.typeName() == QStringLiteral("QList<QUuid>")) {
+                        QList<QUuid> uuidList;
+                        foreach (const QVariant &val, variant.toList()) {
+                            uuidList.append(val.toUuid());
+                        }
+                        metaProperty.writeOnGadget(ptr, QVariant::fromValue(uuidList));
                     }
-                    metaProperty.writeOnGadget(ptr, QVariant::fromValue(intList));
                     continue;
                 }
 

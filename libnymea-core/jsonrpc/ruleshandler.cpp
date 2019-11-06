@@ -253,7 +253,6 @@ JsonReply *RulesHandler::GetRuleDetails(const QVariantMap &params)
 JsonReply* RulesHandler::AddRule(const QVariantMap &params)
 {
     Rule rule = unpack<Rule>(params);
-    qWarning() << "Unpacked rule" << rule;
     rule.setId(RuleId::createRuleId());
 
     RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->addRule(rule);

@@ -292,6 +292,5 @@ QVariant CalendarItems::get(int index) const
 
 void CalendarItems::put(const QVariant &variant)
 {
-    qWarning() << "Putting!" << variant;
     append(variant.value<CalendarItem>());
 }

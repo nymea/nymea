@@ -173,7 +173,7 @@ void NymeaCore::init() {
     m_cloudManager = new CloudManager(m_configuration, m_networkManager, this);
 
     qCDebug(dcApplication()) << "Loading experiences";
-    new ExperienceManager(m_deviceManager, m_serverManager->jsonServer(), this);
+    m_experienceManager = new ExperienceManager(m_deviceManager, m_serverManager->jsonServer(), this);
 
 
     CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();

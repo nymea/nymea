@@ -3010,7 +3010,6 @@ void TestRules::testLoopingRules()
     addRuleParams.insert("eventDescriptors", QVariantList() << offEvent);
     addRuleParams.insert("actions", QVariantList() << onAction);
     QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
-    qWarning() << response;
     verifyRuleError(response);
 
     // Add rule 1

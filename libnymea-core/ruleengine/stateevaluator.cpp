@@ -389,8 +389,6 @@ StateEvaluators::StateEvaluators(const QList<StateEvaluator> &other): QList<Stat
 
 QVariant StateEvaluators::get(int index) const
 {
-    qWarning() << "getting" << index << "of" << count();
-    qWarning() << "at" << at(index);
     return QVariant::fromValue(at(index));
 }
 

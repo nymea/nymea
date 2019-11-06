@@ -34,9 +34,7 @@ bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &api)
     QVariantMap enums = api.value("enums").toMap();
     QVariantMap flags = api.value("flags").toMap();
     QVariantMap types = api.value("types").toMap();
-//    qWarning() << "checkrefs enums" << enums.keys();
     foreach (const QString &key, map.keys()) {
-//        qWarning() << "checking prop" << key << types.keys();
         if (map.value(key).toString().startsWith("$ref:")) {
             QString refName = map.value(key).toString().remove("$ref:");
             if (!enums.contains(refName) && !flags.contains(refName) && !types.contains(refName)) {

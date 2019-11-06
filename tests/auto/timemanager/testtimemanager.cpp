@@ -259,8 +259,6 @@ void TestTimeManager::loadSaveTimeDescriptor()
              .arg(QString(QJsonDocument::fromVariant(timeDescriptorMapLoaded).toJson()))
              .toUtf8());
 
-//    qWarning() << "+++" << QString(QJsonDocument::fromVariant(timeDescriptorMap).toJson());
-//    qWarning() << "---" << QString(QJsonDocument::fromVariant(timeDescriptorMapLoaded).toJson());
     // REMOVE rule
     QVariantMap removeParams;
     removeParams.insert("ruleId", ruleId);
@@ -2087,7 +2085,6 @@ void TestTimeManager::verifyRuleNotExecuted()
     QCOMPARE(spy.count(), 1);
 
     QByteArray actionHistory = reply->readAll();
-    qWarning() << "actionHistory" << actionHistory;
     QVERIFY2(actionHistory.isEmpty(), "Actfdsfadsion is triggered while it should not have been.");
     reply->deleteLater();
 }

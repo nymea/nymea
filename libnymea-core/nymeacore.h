@@ -54,6 +54,7 @@ class TagsStorage;
 class UserManager;
 class Platform;
 class System;
+class ExperienceManager;
 
 class NymeaCore : public QObject
 {
@@ -134,6 +135,7 @@ private:
     NetworkManager *m_networkManager;
     UserManager *m_userManager;
     System *m_system;
+    ExperienceManager *m_experienceManager;
 
     QList<RuleId> m_executingRules;
 

@@ -3,7 +3,7 @@ TARGET = nymea-core
 
 include(../nymea.pri)
 
-QT += sql
+QT += sql qml
 INCLUDEPATH += $$top_srcdir/libnymea
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto -lnymea-mqtt
 
@@ -17,6 +17,7 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 HEADERS += nymeacore.h \
     devices/devicemanagerimplementation.h \
+    devices/scriptdeviceplugin.h \
     devices/translator.h \
     experiences/experiencemanager.h \
     jsonrpc/jsonrpcserverimplementation.h \
@@ -91,6 +92,7 @@ HEADERS += nymeacore.h \
 
 SOURCES += nymeacore.cpp \
     devices/devicemanagerimplementation.cpp \
+    devices/scriptdeviceplugin.cpp \
     devices/translator.cpp \
     experiences/experiencemanager.cpp \
     jsonrpc/jsonrpcserverimplementation.cpp \

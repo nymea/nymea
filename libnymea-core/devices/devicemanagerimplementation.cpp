@@ -23,6 +23,7 @@
 
 #include "devicemanagerimplementation.h"
 #include "translator.h"
+#include "scriptdeviceplugin.h"
 
 #include "loggingcategories.h"
 #include "typeutils.h"
@@ -1104,6 +1105,10 @@ void DeviceManagerImplementation::loadPlugins()
             loadPlugin(pluginIface, metaData);
         }
     }
+
+    ScriptDevicePlugin *plugin = new ScriptDevicePlugin(this);
+    plugin->loadScript("/home/micha/Develop/nymea-plugin-jstest/devicepluginjstest.js");
+    loadPlugin(plugin, plugin->metaData());
 }
 
 void DeviceManagerImplementation::loadPlugin(DevicePlugin *pluginIface, const PluginMetadata &metaData)

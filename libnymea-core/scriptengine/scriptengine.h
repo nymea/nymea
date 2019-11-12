@@ -1,0 +1,27 @@
+#ifndef SCRIPTENGINE_H
+#define SCRIPTENGINE_H
+
+#include <QObject>
+
+class DeviceManager;
+
+namespace nymeaserver {
+
+class ScriptEngine : public QObject
+{
+    Q_OBJECT
+public:
+    explicit ScriptEngine(DeviceManager *deviceManager, QObject *parent = nullptr);
+
+signals:
+
+private:
+    void loadScripts();
+
+private:
+    DeviceManager *m_deviceManager = nullptr;
+};
+
+}
+
+#endif // SCRIPTENGINE_H

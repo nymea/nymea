@@ -98,6 +98,7 @@
 #include "tagging/tagsstorage.h"
 #include "platform/platform.h"
 #include "experiences/experiencemanager.h"
+#include "scriptengine/scriptengine.h"
 
 #include "devices/devicemanagerimplementation.h"
 #include "devices/device.h"
@@ -159,6 +160,8 @@ void NymeaCore::init() {
 
     qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);
+
+    new ScriptEngine(m_deviceManager, this);
 
     qCDebug(dcApplication()) << "Creating Tags Storage";
     m_tagsStorage = new TagsStorage(m_deviceManager, m_ruleEngine, this);

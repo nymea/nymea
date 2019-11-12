@@ -1417,7 +1417,7 @@ void DeviceManagerImplementation::onEventTriggered(const Event &event)
 {
     // Doing some sanity checks here...
     Device *device = m_configuredDevices.value(event.deviceId());
-    if (!device) {
+    if (!device || !m_configuredDevices.contains(device->id())) {
         qCWarning(dcDeviceManager()) << "Invalid device id in emitted event. Not forwarding event.";
         return;
     }

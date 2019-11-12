@@ -53,12 +53,6 @@ bool ScriptDevicePlugin::loadScript(const QString &fileName)
     }
     m_metaData = QJsonObject::fromVariantMap(jsonDoc.toVariant().toMap());
 
-
-    QFile scriptFile(fileName);
-    if (!scriptFile.open(QIODevice::ReadOnly)) {
-        return false;
-    }
-
     m_engine = new QQmlEngine(this);
     m_engine->installExtensions(QJSEngine::AllExtensions);
 
@@ -181,7 +175,6 @@ void ScriptDevicePlugin::setupDevice(DeviceSetupInfo *info)
 
     ScriptDeviceSetupInfo *scriptInfo = new ScriptDeviceSetupInfo(info, scriptDevice);
 
-    qWarning() << "Setup params" << info->device()->params();
     QJSValue jsInfo = m_engine->newQObject(scriptInfo);
     QJSValue ret = setupFunction.call({jsInfo});
 

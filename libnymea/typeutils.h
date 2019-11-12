@@ -29,19 +29,11 @@
 
 #include "libnymea.h"
 
-class GadgetUuid: public QUuid
-{
-    Q_GADGET
-public:
-    GadgetUuid() {}
-    GadgetUuid(const QUuid &uuid): QUuid(uuid) {}
-};
-
-#define DECLARE_TYPE_ID(type) class type##Id: public GadgetUuid \
+#define DECLARE_TYPE_ID(type) class type##Id: public QUuid \
 { \
 public: \
-    type##Id(const QUuid &uuid): GadgetUuid(uuid) {} \
-    type##Id(): GadgetUuid() {} \
+    type##Id(const QUuid &uuid): QUuid(uuid) {} \
+    type##Id(): QUuid() {} \
     static type##Id create##type##Id() { return type##Id(QUuid::createUuid()); } \
     bool operator==(const type##Id &other) const { \
         return toString() == other.toString(); \

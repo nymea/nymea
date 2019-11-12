@@ -29,13 +29,20 @@
 
 #include "libnymea.h"
 
-#define DECLARE_TYPE_ID(type) class type##Id: public QUuid \
+class GadgetUuid: public QUuid
+{
+    Q_GADGET
+public:
+    GadgetUuid() {}
+    GadgetUuid(const QUuid &uuid): QUuid(uuid) {}
+};
+
+#define DECLARE_TYPE_ID(type) class type##Id: public GadgetUuid \
 { \
 public: \
-    type##Id(const QUuid &uuid): QUuid(uuid) {} \
-    type##Id(): QUuid() {} \
-    static type##Id create##type##Id() { return type##Id(QUuid::createUuid().toString()); } \
-    static type##Id fromUuid(const QUuid &uuid) { return type##Id(uuid.toString()); } \
+    type##Id(const QUuid &uuid): GadgetUuid(uuid) {} \
+    type##Id(): GadgetUuid() {} \
+    static type##Id create##type##Id() { return type##Id(QUuid::createUuid()); } \
     bool operator==(const type##Id &other) const { \
         return toString() == other.toString(); \
     } \

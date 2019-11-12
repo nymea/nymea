@@ -5,6 +5,7 @@
 #include <QJsonDocument>
 
 #include "loggingcategories.h"
+#include <plugintimer.h>
 
 ScriptDevicePlugin::ScriptDevicePlugin(QObject *parent) : DevicePlugin(parent)
 {
@@ -15,7 +16,7 @@ bool ScriptDevicePlugin::loadScript(const QString &fileName)
 {
 
     QFileInfo fi(fileName);
-    QString metaDataFileName = fileName + "on";
+    QString metaDataFileName = fi.absoluteDir().path() + '/' + fi.baseName() + ".json";
 
     QFile metaDataFile(metaDataFileName);
     if (!metaDataFile.open(QFile::ReadOnly)) {
@@ -58,18 +59,18 @@ bool ScriptDevicePlugin::loadScript(const QString &fileName)
         return false;
     }
 
-    m_engine = new QJSEngine(this);
-    m_engine->installExtensions(QJSEngine::ConsoleExtension);
+    m_engine = new QQmlEngine(this);
+    m_engine->installExtensions(QJSEngine::AllExtensions);
+    m_engine->addImportPath(fi.absoluteDir().path() + "/node_modules/");
+    qCWarning(dcDeviceManager()) << "Engine import path list" << m_engine->importPathList();
 
-    QTextStream stream(&scriptFile);
-    QString contents = stream.readAll();
-    scriptFile.close();
-    QJSValue result = m_engine->evaluate(contents, fileName);
-    if (result.isError()) {
-        qCWarning(dcDeviceManager()) << "Error evaluating script" << fileName << result.toString();
+    m_pluginImport = m_engine->importModule(fileName);
+    if (m_pluginImport.isError()) {
+        qCWarning(dcDeviceManager()) << "Error loading plugin module" << m_pluginImport.errorType() << m_pluginImport.toString();
         return false;
     }
 
+    qCDebug(dcDeviceManager()) << "Loaded JS plugin" << fileName;
     return true;
 }
 
@@ -80,5 +81,162 @@ QJsonObject ScriptDevicePlugin::metaData() const
 
 void ScriptDevicePlugin::init()
 {
+    qmlRegisterType<PluginTimerManager>();
+    qmlRegisterType<PluginTimer>();
 
+    QJSValue hardwareManagerObject = m_engine->newQObject(hardwareManager());
+    m_engine->globalObject().setProperty("hardwareManager", hardwareManagerObject);
+
+    if (!m_pluginImport.hasOwnProperty("init")) {
+        DevicePlugin::init();
+        return;
+    }
+    QJSValue initFunction = m_pluginImport.property("init");
+    QJSValue result = initFunction.call();
+    if (result.isError()) {
+        qCWarning(dcDeviceManager()) << "Error calling init in JS plugin:" << result.toString();
+        return;
+    }
+}
+
+void ScriptDevicePlugin::discoverDevices(DeviceDiscoveryInfo *info)
+{
+    if (!m_pluginImport.hasOwnProperty("discoverDevices")) {
+        DevicePlugin::discoverDevices(info);
+        return;
+    }
+
+    ScriptDeviceDiscoveryInfo *scriptInfo = new ScriptDeviceDiscoveryInfo(info);
+    QJSValue jsInfo = m_engine->newQObject(scriptInfo);
+
+    QJSValue discoverFunction = m_pluginImport.property("discoverDevices");
+    QJSValue ret = discoverFunction.call({jsInfo});
+    if (ret.isError()) {
+        qCWarning(dcDeviceManager()) << "discoverDevices script failed to execute:\n" << ret.toString();
+    }
+}
+
+void ScriptDevicePlugin::startPairing(DevicePairingInfo *info)
+{
+    if (!m_pluginImport.hasOwnProperty("startPairing")) {
+        DevicePlugin::startPairing(info);
+        return;
+    }
+
+    ScriptDevicePairingInfo *scriptInfo = new ScriptDevicePairingInfo(info);
+    QJSValue jsInfo = m_engine->newQObject(scriptInfo);
+
+    QJSValue startPairingFunction = m_pluginImport.property("startPairing");
+    QJSValue ret = startPairingFunction.call({jsInfo});
+    if (ret.isError()) {
+        qCWarning(dcDeviceManager()) << "startPairing script failed to execute:\n" << ret.toString();
+    }
+}
+
+void ScriptDevicePlugin::confirmPairing(DevicePairingInfo *info, const QString &username, const QString &secret)
+{
+    if (!m_pluginImport.hasOwnProperty("confirmPairing")) {
+        DevicePlugin::confirmPairing(info, username, secret);
+        return;
+    }
+
+    ScriptDevicePairingInfo *scriptInfo = new ScriptDevicePairingInfo(info);
+    QJSValue jsInfo = m_engine->newQObject(scriptInfo);
+
+    QJSValue confirmPairingFunction = m_pluginImport.property("confirmPairing");
+    QJSValue ret = confirmPairingFunction.call({jsInfo, username, secret});
+    if (ret.isError()) {
+        qCWarning(dcDeviceManager()) << "confirmPairing script failed to execute:\n" << ret.toString();
+    }
+}
+
+void ScriptDevicePlugin::startMonitoringAutoDevices()
+{
+    if (!m_pluginImport.hasOwnProperty("startMonitoringAutoDevices")) {
+        DevicePlugin::startMonitoringAutoDevices();
+        return;
+    }
+
+    QJSValue monitorFunction = m_pluginImport.property("startMonitoringAutoDevices");
+    QJSValue ret = monitorFunction.call();
+    if (ret.isError()) {
+        qCWarning(dcDeviceManager()) << "startMonitoringAutoDevices failed to execute:\n" << ret.toString();
+    }
+}
+
+void ScriptDevicePlugin::setupDevice(DeviceSetupInfo *info)
+{
+    if (!m_pluginImport.hasOwnProperty("setupDevice")) {
+        DevicePlugin::setupDevice(info);
+        return;
+    }
+    QJSValue setupFunction = m_pluginImport.property("setupDevice");
+
+    Device *device = info->device();
+    ScriptDevice *scriptDevice = new ScriptDevice(device);
+    m_devices.insert(device, scriptDevice);
+    connect(device, &Device::destroyed, this, [this, device](){
+        m_devices.remove(device);
+    });
+
+    ScriptDeviceSetupInfo *scriptInfo = new ScriptDeviceSetupInfo(info, scriptDevice);
+
+    qWarning() << "Setup params" << info->device()->params();
+    QJSValue jsInfo = m_engine->newQObject(scriptInfo);
+    QJSValue ret = setupFunction.call({jsInfo});
+
+    if (ret.errorType() != QJSValue::NoError) {
+        qCWarning(dcDeviceManager()) << "setupDevice script failed to execute:\n" << ret.toString();
+    }
+}
+
+void ScriptDevicePlugin::postSetupDevice(Device *device)
+{
+    if (!m_pluginImport.hasOwnProperty("postSetupDevice")) {
+        DevicePlugin::postSetupDevice(device);
+        return;
+    }
+    QJSValue postSetupFunction = m_pluginImport.property("postSetupDevice");
+
+    QJSValue jsDevice = m_engine->newQObject(m_devices.value(device));
+    QJSValue ret = postSetupFunction.call({jsDevice});
+    if (ret.errorType() != QJSValue::NoError) {
+        qCWarning(dcDeviceManager()) << "setupDevice script failed to execute:\n" << ret.toString();
+    }
+}
+
+void ScriptDevicePlugin::deviceRemoved(Device *device)
+{
+    if (!m_pluginImport.hasOwnProperty("deviceRemoved")) {
+        DevicePlugin::deviceRemoved(device);
+        return;
+    }
+
+    QJSValue jsDevice = m_engine->newQObject(m_devices.value(device));
+
+    QJSValue deviceRemovedFunction = m_pluginImport.property("deviceRemoved");
+    QJSValue ret = deviceRemovedFunction.call({jsDevice});
+    if (ret.isError()) {
+        qCWarning(dcDeviceManager()) << "deviceRemoved script failed to execute:\n" << ret.toString();
+    }
+}
+
+void ScriptDevicePlugin::executeAction(DeviceActionInfo *info)
+{
+    if (!m_pluginImport.hasOwnProperty("executeAction")) {
+        DevicePlugin::executeAction(info);
+        return;
+    }
+
+    ScriptDevice *scriptDevice = m_devices.value(info->device());
+    QJSValue jsDevice = m_engine->newQObject(scriptDevice);
+
+    ScriptDeviceActionInfo *scriptInfo = new ScriptDeviceActionInfo(info, scriptDevice);
+    QJSValue jsInfo = m_engine->newQObject(scriptInfo);
+
+    QJSValue executeActionFunction = m_pluginImport.property("executeAction");
+    QJSValue ret = executeActionFunction.call({jsInfo});
+    if (ret.isError()) {
+        qCWarning(dcDeviceManager()) << "executeAction script failed to execute:\n" << ret.toString();
+    }
 }

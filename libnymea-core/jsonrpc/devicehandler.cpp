@@ -455,6 +455,8 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
             QVariantList deviceDescriptorList;
             foreach (const DeviceDescriptor &deviceDescriptor, info->deviceDescriptors()) {
                 deviceDescriptorList.append(pack(deviceDescriptor));
+                qWarning() << "*** Discovery result:" << deviceDescriptor.params();
+                qWarning() << "Packed:" << pack(deviceDescriptor);
             }
             returns.insert("deviceDescriptors", deviceDescriptorList);
         }

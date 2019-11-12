@@ -61,8 +61,9 @@ bool ScriptDevicePlugin::loadScript(const QString &fileName)
 
     m_engine = new QQmlEngine(this);
     m_engine->installExtensions(QJSEngine::AllExtensions);
-    m_engine->addImportPath(fi.absoluteDir().path() + "/node_modules/");
-    qCWarning(dcDeviceManager()) << "Engine import path list" << m_engine->importPathList();
+
+    QJSValue deviceMetaObject = m_engine->newQMetaObject(&Device::staticMetaObject);
+    m_engine->globalObject().setProperty("Device", deviceMetaObject);
 
     m_pluginImport = m_engine->importModule(fileName);
     if (m_pluginImport.isError()) {
@@ -70,7 +71,6 @@ bool ScriptDevicePlugin::loadScript(const QString &fileName)
         return false;
     }
 
-    qCDebug(dcDeviceManager()) << "Loaded JS plugin" << fileName;
     return true;
 }
 

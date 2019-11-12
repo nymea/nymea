@@ -152,7 +152,6 @@ public:
     void postSetupDevice(Device *device) override;
     void deviceRemoved(Device *device) override;
     void executeAction(DeviceActionInfo *info) override;
-    void browseDevice(BrowseResult *result) override;
 
 private:
     QQmlEngine *m_engine = nullptr;

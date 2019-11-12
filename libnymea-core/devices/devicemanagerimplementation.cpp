@@ -1118,21 +1118,40 @@ void DeviceManagerImplementation::loadPlugins()
         }
     }
 
-    ScriptDevicePlugin *plugin = new ScriptDevicePlugin(this);
-    bool ret = plugin->loadScript("/home/micha/Develop/nymea-plugin-jstest/devicepluginjstest.js");
-    if (!ret) {
-        delete plugin;
-        qCWarning(dcDeviceManager()) << "JS plugin failed to load";
-        return;
-    }
-    PluginMetadata metaData(plugin->metaData());
-    if (!metaData.isValid()) {
-        qCWarning(dcDeviceManager()) << "Not loading JS plugin. Invalid metadata.";
-        foreach (const QString &error, metaData.validationErrors()) {
-            qCWarning(dcDeviceManager()) << error;
+    foreach (const QString &path, pluginSearchDirs()) {
+        QDir dir(path);
+        qCDebug(dcDeviceManager) << "Loading JS plugins from:" << dir.absolutePath();
+        foreach (const QString &entry, dir.entryList()) {
+            QFileInfo jsFi;
+            QFileInfo jsonFi;
+
+            if (entry.endsWith(".js")) {
+                jsFi.setFile(path + "/" + entry);
+            } else {
+                jsFi.setFile(path + "/" + entry + "/" + entry + ".js");
+            }
+
+            if (!jsFi.exists()) {
+                continue;
+            }
+
+            ScriptDevicePlugin *plugin = new ScriptDevicePlugin(this);
+            bool ret = plugin->loadScript("/home/micha/Develop/nymea-plugin-jstest/devicepluginjstest.js");
+            if (!ret) {
+                delete plugin;
+                qCWarning(dcDeviceManager()) << "JS plugin failed to load";
+                continue;
+            }
+            PluginMetadata metaData(plugin->metaData());
+            if (!metaData.isValid()) {
+                qCWarning(dcDeviceManager()) << "Not loading JS plugin. Invalid metadata.";
+                foreach (const QString &error, metaData.validationErrors()) {
+                    qCWarning(dcDeviceManager()) << error;
+                }
+            }
+            loadPlugin(plugin, metaData);
         }
     }
-    loadPlugin(plugin, metaData);
 }
 
 void DeviceManagerImplementation::loadPlugin(DevicePlugin *pluginIface, const PluginMetadata &metaData)

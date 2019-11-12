@@ -17,7 +17,6 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 HEADERS += nymeacore.h \
     devices/devicemanagerimplementation.h \
-    devices/scriptdeviceplugin.h \
     devices/translator.h \
     experiences/experiencemanager.h \
     jsonrpc/jsonrpcserverimplementation.h \
@@ -93,7 +92,6 @@ HEADERS += nymeacore.h \
 
 SOURCES += nymeacore.cpp \
     devices/devicemanagerimplementation.cpp \
-    devices/scriptdeviceplugin.cpp \
     devices/translator.cpp \
     experiences/experiencemanager.cpp \
     jsonrpc/jsonrpcserverimplementation.cpp \
@@ -164,3 +162,11 @@ SOURCES += nymeacore.cpp \
     debugreportgenerator.cpp \
     platform/platform.cpp \
     jsonrpc/systemhandler.cpp
+
+versionAtLeast(QT_VERSION, 5.12.0) {
+HEADERS += \
+    devices/scriptdeviceplugin.h \
+
+SOURCES += \
+    devices/scriptdeviceplugin.cpp \
+}

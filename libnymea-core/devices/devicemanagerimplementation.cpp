@@ -23,7 +23,9 @@
 
 #include "devicemanagerimplementation.h"
 #include "translator.h"
+#if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
 #include "scriptdeviceplugin.h"
+#endif
 
 #include "loggingcategories.h"
 #include "typeutils.h"
@@ -1118,6 +1120,7 @@ void DeviceManagerImplementation::loadPlugins()
         }
     }
 
+#if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
     foreach (const QString &path, pluginSearchDirs()) {
         QDir dir(path);
         qCDebug(dcDeviceManager) << "Loading JS plugins from:" << dir.absolutePath();
@@ -1152,6 +1155,7 @@ void DeviceManagerImplementation::loadPlugins()
             loadPlugin(plugin, metaData);
         }
     }
+#endif
 }
 
 void DeviceManagerImplementation::loadPlugin(DevicePlugin *pluginIface, const PluginMetadata &metaData)

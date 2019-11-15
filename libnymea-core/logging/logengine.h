@@ -39,7 +39,8 @@
 namespace nymeaserver {
 
 class DatabaseJob;
-class LogEngineFetchJob;
+class LogEntriesFetchJob;
+class DevicesFetchJob;
 
 class LogEngine: public QObject
 {
@@ -48,7 +49,8 @@ public:
     LogEngine(const QString &driver, const QString &dbName, const QString &hostname = QString("127.0.0.1"), const QString &username = QString(), const QString &password = QString(), int maxDBSize = 50000, QObject *parent = nullptr);
     ~LogEngine();
 
-    LogEngineFetchJob *logEntries(const LogFilter &filter = LogFilter());
+    LogEntriesFetchJob *fetchLogEntries(const LogFilter &filter = LogFilter());
+    DevicesFetchJob *fetchDevices();
 
     void setMaxLogEntries(int maxLogEntries, int overflow);
     void clearDatabase();
@@ -122,24 +124,32 @@ private:
     QSqlQuery m_query;
 };
 
-class LogEngineFetchJob: public QObject
+class LogEntriesFetchJob: public QObject
 {
     Q_OBJECT
 public:
-    LogEngineFetchJob(QObject *parent): QObject(parent) {}
-
+    LogEntriesFetchJob(QObject *parent): QObject(parent) {}
     QList<LogEntry> results() { return m_results; }
-
 signals:
     void finished();
-
 private:
-    void addResult(const LogEntry &entry) { m_results.append(entry); }
     QList<LogEntry> m_results;
-
     friend class LogEngine;
-
 };
+
+class DevicesFetchJob: public QObject
+{
+    Q_OBJECT
+public:
+    DevicesFetchJob(QObject *parent): QObject(parent) {}
+    QList<DeviceId> results() { return m_results; }
+signals:
+    void finished();
+private:
+    QList<DeviceId> m_results;
+    friend class LogEngine;
+};
+
 }
 
 #endif

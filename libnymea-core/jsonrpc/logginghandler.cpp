@@ -140,11 +140,11 @@ JsonReply* LoggingHandler::GetLogEntries(const QVariantMap &params) const
 {
     LogFilter filter = unpackLogFilter(params);
 
-    LogEngineFetchJob *job = NymeaCore::instance()->logEngine()->logEntries(filter);
+    LogEntriesFetchJob *job = NymeaCore::instance()->logEngine()->fetchLogEntries(filter);
 
     JsonReply *reply = createAsyncReply("GetLogEntries");
 
-    connect(job, &LogEngineFetchJob::finished, reply, [this, reply, job, filter](){
+    connect(job, &LogEntriesFetchJob::finished, reply, [reply, job, filter](){
 
         QVariantList entries;
         foreach (const LogEntry &entry, job->results()) {

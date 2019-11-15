@@ -2313,8 +2313,8 @@ void TestRules::testStateBasedAction()
     filter.addDeviceId(m_mockDeviceId);
     filter.addTypeId(mockWithParamsActionTypeId);
 
-    LogEngineFetchJob *job = NymeaCore::instance()->logEngine()->logEntries(filter);
-    QSignalSpy fetchSpy(job, &LogEngineFetchJob::finished);
+    LogEntriesFetchJob *job = NymeaCore::instance()->logEngine()->fetchLogEntries(filter);
+    QSignalSpy fetchSpy(job, &LogEntriesFetchJob::finished);
     fetchSpy.wait();
     QList<LogEntry> entries = job->results();
     qCDebug(dcTests()) << "Log entries:" << entries;
@@ -2335,8 +2335,8 @@ void TestRules::testStateBasedAction()
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    job = NymeaCore::instance()->logEngine()->logEntries(filter);
-    QSignalSpy fetchSpy2(job, &LogEngineFetchJob::finished);
+    job = NymeaCore::instance()->logEngine()->fetchLogEntries(filter);
+    QSignalSpy fetchSpy2(job, &LogEntriesFetchJob::finished);
     fetchSpy2.wait();
     entries = job->results();
 

@@ -82,8 +82,8 @@ void TestLoggingDirect::benchmarkDB()
     engine->setMaxLogEntries(prefill, overflow);
     engine->setMaxLogEntries(maxSize, overflow);
 
-    LogEngineFetchJob *job = engine->logEntries();
-    QSignalSpy fetchSpy(job, &LogEngineFetchJob::finished);
+    LogEntriesFetchJob *job = engine->fetchLogEntries();
+    QSignalSpy fetchSpy(job, &LogEntriesFetchJob::finished);
     fetchSpy.wait();
     QList<LogEntry> entries = job->results();
 
@@ -93,8 +93,8 @@ void TestLoggingDirect::benchmarkDB()
         engine->logSystemEvent(QDateTime::currentDateTime(), true);
     }
 
-    job = engine->logEntries();
-    QSignalSpy fetchSpy2(job, &LogEngineFetchJob::finished);
+    job = engine->fetchLogEntries();
+    QSignalSpy fetchSpy2(job, &LogEntriesFetchJob::finished);
     fetchSpy2.wait();
     entries = job->results();
 
@@ -106,8 +106,8 @@ void TestLoggingDirect::benchmarkDB()
     }
     QDateTime now = QDateTime::currentDateTime();
 
-    job = engine->logEntries();
-    QSignalSpy fetchSpy3(job, &LogEngineFetchJob::finished);
+    job = engine->fetchLogEntries();
+    QSignalSpy fetchSpy3(job, &LogEntriesFetchJob::finished);
     fetchSpy3.wait();
     entries = job->results();
 

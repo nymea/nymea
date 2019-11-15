@@ -180,23 +180,19 @@ LogEngine::LogEngine(const QString &driver, const QString &dbName, const QString
 /*! Destructs the \l{LogEngine}. */
 LogEngine::~LogEngine()
 {
-    qWarning() << "Destroying logEngine";
     // Process the job queue before allowing to shut down
     while (m_currentJob) {
-        qWarning() << "Waiting for job to finish... (" << m_jobQueue.count() << "jobs left in queue)";
+        qCDebug(dcLogEngine()) << "Waiting for job to finish... (" << m_jobQueue.count() << "jobs left in queue)";
         m_jobWatcher.waitForFinished();
+        // Make sure that the job queue is processes
+        // We can't call processQueue ourselves because thread synchronisation is done via queued connections
         qApp->processEvents();
     }
-    qWarning() << "Done waiting";
     qCDebug(dcLogEngine()) << "Closing Database";
     m_db.close();
 }
 
-/*! Returns the list of \l{LogEntry}{LogEntries} of the database matching the given \a filter.
-
-  \sa LogEntry, LogFilter
-*/
-LogEngineFetchJob* LogEngine::logEntries(const LogFilter &filter)
+LogEntriesFetchJob *LogEngine::fetchLogEntries(const LogFilter &filter)
 {
     QList<LogEntry> results;
     QSqlQuery query(m_db);
@@ -224,7 +220,7 @@ LogEngineFetchJob* LogEngine::logEntries(const LogFilter &filter)
     }
 
     DatabaseJob *job = new DatabaseJob(query);
-    LogEngineFetchJob *fetchJob = new LogEngineFetchJob(this);
+    LogEntriesFetchJob *fetchJob = new LogEntriesFetchJob(this);
 
     connect(job, &DatabaseJob::finished, this, [this, job, fetchJob](){
         fetchJob->deleteLater();
@@ -246,7 +242,7 @@ LogEngineFetchJob* LogEngine::logEntries(const LogFilter &filter)
             entry.setEventType((Logging::LoggingEventType)job->query().value("loggingEventType").toInt());
             entry.setActive(job->query().value("active").toBool());
 
-            fetchJob->addResult(entry);
+            fetchJob->m_results.append(entry);
         }
         qCDebug(dcLogEngine) << "Fetched" << fetchJob->results().count() << "entries for db query:" << job->query().executedQuery();
         fetchJob->finished();
@@ -254,6 +250,32 @@ LogEngineFetchJob* LogEngine::logEntries(const LogFilter &filter)
 
     enqueJob(job);
 
+    return fetchJob;
+}
+
+DevicesFetchJob *LogEngine::fetchDevices()
+{
+    QString queryString = QString("SELECT deviceId FROM entries WHERE deviceId != \"%1\" GROUP BY deviceId;").arg(QUuid().toString());
+
+    DatabaseJob *job = new DatabaseJob(queryString, m_db);
+    DevicesFetchJob *fetchJob = new DevicesFetchJob(this);
+    connect(job, &DatabaseJob::finished, this, [this, job, fetchJob](){
+        fetchJob->deleteLater();
+        if (job->query().lastError().type() != QSqlError::NoError) {
+            qCWarning(dcLogEngine()) << "Error fetching device entries from log database:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
+            fetchJob->finished();
+            return;
+        }
+
+        if (!job->query().first()) {
+            fetchJob->finished();
+            return;
+        }
+        do {
+            fetchJob->m_results.append(DeviceId::fromUuid(job->query().value("deviceId").toUuid()));
+        } while (job->query().next());
+        fetchJob->finished();
+    });
     return fetchJob;
 }
 

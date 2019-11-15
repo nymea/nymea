@@ -77,6 +77,7 @@ void TestLogging::initTestCase()
 {
     NymeaTestBase::initTestCase();
     QLoggingCategory::setFilterRules("*.debug=false\n"
+                                     "LogEngine.debug=true\n"
                                      "Tests.debug=true\n"
                                      "MockDevice.debug=true\n"
                                      "DeviceManager.debug=true\n");
@@ -88,8 +89,9 @@ void TestLogging::initLogs()
     verifyLoggingError(response);
 
     QVariantList logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
-    qDebug() << "Got" << logEntries.count() << "logs";
-    QVERIFY(logEntries.count() > 0);
+    QVERIFY2(logEntries.count() > 0,
+             QString("Expected at least one log entry.")
+             .toUtf8());
 
     clearLoggingDatabase();
 
@@ -153,16 +155,34 @@ void TestLogging::coverageCalls()
 
 void TestLogging::systemLogs()
 {
-    // check the active system log at boot
+    qWarning() << "Clearing logging DB";
+    clearLoggingDatabase();
+
     QVariantMap params;
     params.insert("loggingSources", QVariantList() << enumValueName(Logging::LoggingSourceSystem));
     params.insert("eventTypes", QVariantList() << enumValueName(Logging::LoggingEventTypeActiveChange));
 
-    // there should be 2 logs, one for shutdown, one for startup (from server restart)
+    // there should be 0 log entries
     QVariant response = injectAndWait("Logging.GetLogEntries", params);
-    verifyLoggingError(response);
     QVariantList logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
-    QVERIFY(logEntries.count() == 2);
+    QVERIFY2(logEntries.count() == 0,
+             QString("Expected 0 log entries but got:\n%1")
+             .arg(QString(QJsonDocument::fromVariant(logEntries).toJson()))
+             .toUtf8());
+
+    // check the active system log at boot
+    qWarning() << "Restarting server";
+    restartServer();
+    qWarning() << "Restart done";
+
+    // there should be 2 log entries, one for shutdown, one for startup (from server restart)
+    response = injectAndWait("Logging.GetLogEntries", params);
+    verifyLoggingError(response);
+    logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
+    QVERIFY2(logEntries.count() == 2,
+             QString("Expected 2 log entries but got:\n%1")
+             .arg(QString(QJsonDocument::fromVariant(logEntries).toJson()))
+             .toUtf8());
 
     QVariantMap logEntryStartup = logEntries.first().toMap();
     QVariantMap logEntryShutdown = logEntries.last().toMap();
@@ -309,16 +329,19 @@ void TestLogging::actionLog()
     QVariant response = injectAndWait("Actions.ExecuteAction", params);
     verifyDeviceError(response);
 
-    // Lets wait for the notification
+    // wait for the outgoing data
+    // 3 packets: ExecuteAction reply,  LogDatabaseUpdated signal and LogEntryAdded signal
     clientSpy.wait(500);
+    if (clientSpy.count() < 3) {
+        clientSpy.wait(500);
+    }
 
-    QVariantList loggEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
-    QVERIFY2(!loggEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
-    qDebug() << "got" << loggEntryAddedVariants.count() << "Logging.LogEntryAdded notifications";
+    QVariantList logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
+    qWarning() << QJsonDocument::fromVariant(logEntryAddedVariants).toJson();
+    QVERIFY2(!logEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
 
     bool found = false;
-    qDebug() << "got" << loggEntryAddedVariants.count() << "Logging.LogEntryAdded";
-    foreach (const QVariant &loggEntryAddedVariant, loggEntryAddedVariants) {
+    foreach (const QVariant &loggEntryAddedVariant, logEntryAddedVariants) {
         QVariantMap logEntry = loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap();
         if (logEntry.value("deviceId").toUuid() == m_mockDeviceId) {
             found = true;
@@ -330,8 +353,6 @@ void TestLogging::actionLog()
             break;
         }
     }
-    if (!found)
-        qDebug() << QJsonDocument::fromVariant(loggEntryAddedVariants).toJson();
 
     QVERIFY2(found, "Could not find the corresponding Logging.LogEntryAdded notification");
 
@@ -344,8 +365,8 @@ void TestLogging::actionLog()
 
     clientSpy.wait(200);
 
-    loggEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
-    QVERIFY(!loggEntryAddedVariants.isEmpty());
+    logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
+    QVERIFY(!logEntryAddedVariants.isEmpty());
 
     // get this logentry with filter
     params.clear();
@@ -371,13 +392,11 @@ void TestLogging::actionLog()
 
     clientSpy.wait(200);
 
-    loggEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
-    QVERIFY2(!loggEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
-    qDebug() << "got" << loggEntryAddedVariants.count() << "Logging.LogEntryAdded notifications";
+    logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
+    QVERIFY2(!logEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
 
     found = false;
-    qDebug() << "got" << loggEntryAddedVariants.count() << "Logging.LogEntryAdded";
-    foreach (const QVariant &loggEntryAddedVariant, loggEntryAddedVariants) {
+    foreach (const QVariant &loggEntryAddedVariant, logEntryAddedVariants) {
         QVariantMap logEntry = loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap();
         if (logEntry.value("deviceId").toUuid() == m_mockDeviceId) {
             found = true;
@@ -390,8 +409,6 @@ void TestLogging::actionLog()
             break;
         }
     }
-    if (!found)
-        qDebug() << QJsonDocument::fromVariant(loggEntryAddedVariants).toJson();
 
     QVERIFY2(found, "Could not find the corresponding Logging.LogEntryAdded notification");
 

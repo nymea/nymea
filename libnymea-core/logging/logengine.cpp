@@ -221,7 +221,7 @@ LogEngineFetchJob* LogEngine::logEntries(const LogFilter &filter)
         qCDebug(dcLogEngine()) << "Binding value to query:" << LogValueTool::serializeValue(value);
     }
 
-    DatabaseJob *job = new DatabaseJob(query, this);
+    DatabaseJob *job = new DatabaseJob(query);
     LogEngineFetchJob *fetchJob = new LogEngineFetchJob(this);
 
     connect(job, &DatabaseJob::finished, this, [this, job, fetchJob](){
@@ -268,9 +268,8 @@ void LogEngine::clearDatabase()
     qCWarning(dcLogEngine) << "Clear logging database.";
 
     QString queryDeleteString = QString("DELETE FROM entries;");
-    QSqlQuery query(queryDeleteString, m_db);
 
-    DatabaseJob *job = new DatabaseJob(query, this);
+    DatabaseJob *job = new DatabaseJob(queryDeleteString, m_db);
 
     connect(job, &DatabaseJob::finished, this, [this, job](){
         if (job->query().lastError().type() != QSqlError::NoError) {
@@ -402,9 +401,8 @@ void LogEngine::removeDeviceLogs(const DeviceId &deviceId)
     qCDebug(dcLogEngine) << "Deleting log entries from device" << deviceId.toString();
 
     QString queryDeleteString = QString("DELETE FROM entries WHERE deviceId = '%1';").arg(deviceId.toString());
-    QSqlQuery query(queryDeleteString, m_db);
 
-    DatabaseJob *job = new DatabaseJob(query, this);
+    DatabaseJob *job = new DatabaseJob(queryDeleteString, m_db);
     connect(job, &DatabaseJob::finished, this, [this, job, deviceId](){
         if (job->query().lastError().type() != QSqlError::NoError) {
             qCWarning(dcLogEngine) << "Error deleting log entries from device" << deviceId.toString() << ". Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
@@ -421,9 +419,8 @@ void LogEngine::removeRuleLogs(const RuleId &ruleId)
     qCDebug(dcLogEngine) << "Deleting log entries from rule" << ruleId.toString();
 
     QString queryDeleteString = QString("DELETE FROM entries WHERE typeId = '%1';").arg(ruleId.toString());
-    QSqlQuery query(queryDeleteString, m_db);
 
-    DatabaseJob *job = new DatabaseJob(query, this);
+    DatabaseJob *job = new DatabaseJob(queryDeleteString, m_db);
 
     connect(job, &DatabaseJob::finished, this, [this, job, ruleId](){
 
@@ -450,9 +447,7 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
             .arg(entry.active())
             .arg(entry.errorCode());
 
-    QSqlQuery query(queryString, m_db);
-
-    DatabaseJob *job = new DatabaseJob(query, this);
+    DatabaseJob *job = new DatabaseJob(queryString, m_db);
 
     connect(job, &DatabaseJob::finished, this, [this, job, entry](){
 
@@ -483,18 +478,17 @@ void LogEngine::checkDBSize()
     QDateTime startTime = QDateTime::currentDateTime();
     QString queryString = "SELECT COUNT(*) FROM entries;";
 
-    QSqlQuery query(queryString, m_db);
-    DatabaseJob *job = new DatabaseJob(query, this);
+    DatabaseJob *job = new DatabaseJob(queryString, m_db);
     connect(job, &DatabaseJob::finished, this, [this, job, startTime](){
 
         QSqlQuery result = job->query();
 
         if (m_db.lastError().type() != QSqlError::NoError) {
-            qWarning(dcLogEngine()) << "Failed to query entry count in db:" << m_db.lastError().databaseText();
+            qCWarning(dcLogEngine()) << "Failed to query entry count in db:" << m_db.lastError().databaseText();
             return;
         }
         if (!result.first()) {
-            qWarning(dcLogEngine()) << "Failed retrieving entry count.";
+            qCWarning(dcLogEngine()) << "Failed retrieving entry count.";
             return;
         }
         m_entryCount = result.value(0).toInt();
@@ -510,8 +504,7 @@ void LogEngine::checkDBSize()
         }
         QString queryDeleteString = QString("DELETE FROM entries WHERE ROWID IN (SELECT ROWID FROM entries ORDER BY timestamp DESC LIMIT -1 OFFSET %1);").arg(QString::number(m_dbMaxSize));
 
-        QSqlQuery query(queryDeleteString);
-        DatabaseJob *deleteJob = new DatabaseJob(query, this);
+        DatabaseJob *deleteJob = new DatabaseJob(queryDeleteString, m_db);
 
         connect(deleteJob, &DatabaseJob::finished, this, [this, deleteJob,startTime](){
             if (deleteJob->query().lastError().type() != QSqlError::NoError) {

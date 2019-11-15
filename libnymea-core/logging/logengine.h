@@ -103,7 +103,14 @@ class DatabaseJob: public QObject
 {
     Q_OBJECT
 public:
-    DatabaseJob(const QSqlQuery &query, QObject *parent): QObject(parent), m_query(query) {}
+    DatabaseJob(const QString &queryString, const QSqlDatabase &db) {
+        m_query = QSqlQuery(db);
+        m_query.prepare(queryString);
+    }
+
+    // IMPORTANT: Make sure it only prepare()d but not executed
+    // QSQlQuery(QString, QSqlDatabase) implicitly executes!
+    DatabaseJob(const QSqlQuery &query): m_query(query) {}
 
     QSqlQuery query() const { return m_query; }
 

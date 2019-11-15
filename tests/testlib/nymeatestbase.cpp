@@ -190,8 +190,9 @@ QVariantList NymeaTestBase::checkNotifications(const QSignalSpy &spy, const QStr
         // Make sure the response it a valid JSON string
         QJsonParseError error;
         QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.at(i).last().toByteArray(), &error);
+//        qCDebug(dcTests()) << "Got packet:" << qUtf8Printable(jsonDoc.toJson());
         if (error.error != QJsonParseError::NoError) {
-            qWarning() << "JSON parser error" << error.errorString();
+            qCWarning(dcTests()) << "JSON parser error" << error.errorString();
             return notificationList;
         }
 

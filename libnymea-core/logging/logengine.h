@@ -96,6 +96,7 @@ private:
     bool m_dbMalformed = false;
 
     QList<DatabaseJob*> m_jobQueue;
+    DatabaseJob *m_currentJob = nullptr;
     QFutureWatcher<DatabaseJob*> m_jobWatcher;
 };
 

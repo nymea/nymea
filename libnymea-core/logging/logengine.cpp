@@ -182,9 +182,10 @@ LogEngine::~LogEngine()
 {
     qWarning() << "Destroying logEngine";
     // Process the job queue before allowing to shut down
-    while (!m_jobQueue.isEmpty() || !m_jobWatcher.isFinished()) {
-        qWarning() << "Waiting for job to finish...";
+    while (m_currentJob) {
+        qWarning() << "Waiting for job to finish... (" << m_jobQueue.count() << "jobs left in queue)";
         m_jobWatcher.waitForFinished();
+        qApp->processEvents();
     }
     qWarning() << "Done waiting";
     qCDebug(dcLogEngine()) << "Closing Database";
@@ -534,7 +535,7 @@ void LogEngine::processQueue()
         return;
     }
 
-    if (!m_jobWatcher.isFinished()) {
+    if (m_currentJob) {
         return;
     }
 
@@ -547,6 +548,7 @@ void LogEngine::processQueue()
     }
 
     DatabaseJob *job = m_jobQueue.takeFirst();
+    m_currentJob = job;
 
     QFuture<DatabaseJob*> future = QtConcurrent::run([job](){
         job->query().exec();
@@ -561,6 +563,7 @@ void LogEngine::handleJobFinished()
     DatabaseJob *job = m_jobWatcher.result();
     job->finished();
     job->deleteLater();
+    m_currentJob = nullptr;
     processQueue();
 }
 

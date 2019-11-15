@@ -180,13 +180,14 @@ LogEngine::LogEngine(const QString &driver, const QString &dbName, const QString
 /*! Destructs the \l{LogEngine}. */
 LogEngine::~LogEngine()
 {
+    qWarning() << "Destroying logEngine";
     // Process the job queue before allowing to shut down
-    while (!m_jobQueue.isEmpty()) {
-        qApp->processEvents();
-    }
-    if (!m_jobWatcher.isFinished()) {
+    while (!m_jobQueue.isEmpty() || !m_jobWatcher.isFinished()) {
+        qWarning() << "Waiting for job to finish...";
         m_jobWatcher.waitForFinished();
     }
+    qWarning() << "Done waiting";
+    qCDebug(dcLogEngine()) << "Closing Database";
     m_db.close();
 }
 

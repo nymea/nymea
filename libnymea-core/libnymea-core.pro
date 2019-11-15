@@ -25,7 +25,10 @@ HEADERS += nymeacore.h \
     ruleengine/stateevaluator.h \
     ruleengine/ruleaction.h \
     ruleengine/ruleactionparam.h \
+    scriptengine/scriptaction.h \
     scriptengine/scriptengine.h \
+    scriptengine/scriptevent.h \
+    scriptengine/scriptstate.h \
     transportinterface.h \
     nymeaconfiguration.h \
     servermanager.h \
@@ -100,7 +103,10 @@ SOURCES += nymeacore.cpp \
     ruleengine/stateevaluator.cpp \
     ruleengine/ruleaction.cpp \
     ruleengine/ruleactionparam.cpp \
+    scriptengine/scriptaction.cpp \
     scriptengine/scriptengine.cpp \
+    scriptengine/scriptevent.cpp \
+    scriptengine/scriptstate.cpp \
     transportinterface.cpp \
     nymeaconfiguration.cpp \
     servermanager.cpp \

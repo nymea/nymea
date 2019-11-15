@@ -663,6 +663,7 @@ QStringList NymeaCore::loggingFilters()
         "DeviceManager",
         "RuleEngine",
         "RuleEngineDebug",
+        "ScriptEngine",
         "Hardware",
         "Bluetooth",
         "LogEngine",

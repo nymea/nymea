@@ -2,8 +2,10 @@
 #define SCRIPTENGINE_H
 
 #include <QObject>
+#include <QUuid>
+#include <QQmlEngine>
 
-class DeviceManager;
+#include "devices/devicemanager.h"
 
 namespace nymeaserver {
 

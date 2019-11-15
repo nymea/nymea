@@ -172,15 +172,21 @@ LogEngine::LogEngine(const QString &driver, const QString &dbName, const QString
         }
     }
 
-    checkDBSize();
-
     connect(&m_jobWatcher, SIGNAL(finished()), this, SLOT(handleJobFinished()));
 
+    checkDBSize();
 }
 
 /*! Destructs the \l{LogEngine}. */
 LogEngine::~LogEngine()
 {
+    // Process the job queue before allowing to shut down
+    while (!m_jobQueue.isEmpty()) {
+        qApp->processEvents();
+    }
+    if (!m_jobWatcher.isFinished()) {
+        m_jobWatcher.waitForFinished();
+    }
     m_db.close();
 }
 

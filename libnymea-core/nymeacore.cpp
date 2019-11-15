@@ -920,28 +920,6 @@ void NymeaCore::deviceManagerLoaded()
     onDateTimeChanged(m_timeManager->currentDateTime());
 
     emit initialized();
-
-    // Do some houskeeping...
-    qCDebug(dcApplication()) << "Starting housekeeping...";
-    QDateTime startTime = QDateTime::currentDateTime();
-    foreach (const DeviceId &deviceId, m_logger->devicesInLogs()) {
-        if (!m_deviceManager->findConfiguredDevice(deviceId)) {
-            qCDebug(dcApplication()) << "Cleaning stale device entries from log DB for device id" << deviceId;
-            m_logger->removeDeviceLogs(deviceId);
-        }
-    }
-
-    foreach (const DeviceId &deviceId, m_ruleEngine->devicesInRules()) {
-        if (!m_deviceManager->findConfiguredDevice(deviceId)) {
-            qCDebug(dcApplication()) << "Cleaning stale rule entries for device id" << deviceId;
-            foreach (const RuleId &ruleId, m_ruleEngine->findRules(deviceId)) {
-                m_ruleEngine->removeDeviceFromRule(ruleId, deviceId);
-            }
-        }
-    }
-
-    qCDebug(dcApplication()) << "Housekeeping done in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";
-
 }
 
 }

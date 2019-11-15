@@ -81,25 +81,43 @@ void TestLoggingDirect::benchmarkDB()
     qDebug() << "Flushing DB for test";
     engine->setMaxLogEntries(prefill, overflow);
     engine->setMaxLogEntries(maxSize, overflow);
-    qDebug() << "DB has" << engine->logEntries().count() << "entries";
+
+    LogEngineFetchJob *job = engine->logEntries();
+    QSignalSpy fetchSpy(job, &LogEngineFetchJob::finished);
+    fetchSpy.wait();
+    QList<LogEntry> entries = job->results();
+
+    qDebug() << "DB has" << entries.count() << "entries";
     qDebug() << "Prefilling DB for test";
-    for (int i = engine->logEntries().count(); i < prefill; i++) {
+    for (int i = entries.count(); i < prefill; i++) {
         engine->logSystemEvent(QDateTime::currentDateTime(), true);
     }
-    qDebug() << "DB has" << engine->logEntries().count() << "entries";
 
-    qDebug() << "Starting benchmark with" << engine->logEntries().count() << "entries in the db";
+    job = engine->logEntries();
+    QSignalSpy fetchSpy2(job, &LogEngineFetchJob::finished);
+    fetchSpy2.wait();
+    entries = job->results();
+
+    qDebug() << "DB has" << entries.count() << "entries";
+
+    qDebug() << "Starting benchmark with" << entries.count() << "entries in the db";
     QBENCHMARK {
         engine->logSystemEvent(QDateTime::currentDateTime(), true);
     }
     QDateTime now = QDateTime::currentDateTime();
-    while (engine->logEntries().count() > maxSize + overflow) {
+
+    job = engine->logEntries();
+    QSignalSpy fetchSpy3(job, &LogEngineFetchJob::finished);
+    fetchSpy3.wait();
+    entries = job->results();
+
+    while (entries.count() > maxSize + overflow) {
         qApp->processEvents();
         if (now.addSecs(5) < QDateTime::currentDateTime()) {
-            QVERIFY2(false, QString("Housekeeping didn't work. Have %1 entries but expected to have max %2").arg(engine->logEntries().count()).arg(QString::number(maxSize)).toLocal8Bit());
+            QVERIFY2(false, QString("Housekeeping didn't work. Have %1 entries but expected to have max %2").arg(entries.count()).arg(QString::number(maxSize)).toLocal8Bit());
         }
     }
-    qDebug() << "Ended benchmark with" << engine->logEntries().count() << "entries in the db";
+    qDebug() << "Ended benchmark with" << entries.count() << "entries in the db";
 }
 
 #include "testloggingdirect.moc"

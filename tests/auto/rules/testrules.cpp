@@ -2312,7 +2312,11 @@ void TestRules::testStateBasedAction()
     LogFilter filter;
     filter.addDeviceId(m_mockDeviceId);
     filter.addTypeId(mockWithParamsActionTypeId);
-    QList<LogEntry> entries = NymeaCore::instance()->logEngine()->logEntries(filter);
+
+    LogEngineFetchJob *job = NymeaCore::instance()->logEngine()->logEntries(filter);
+    QSignalSpy fetchSpy(job, &LogEngineFetchJob::finished);
+    fetchSpy.wait();
+    QList<LogEntry> entries = job->results();
     qCDebug(dcTests()) << "Log entries:" << entries;
 
     // set bool state to false
@@ -2331,10 +2335,12 @@ void TestRules::testStateBasedAction()
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    entries = NymeaCore::instance()->logEngine()->logEntries(filter);
+    job = NymeaCore::instance()->logEngine()->logEntries(filter);
+    QSignalSpy fetchSpy2(job, &LogEngineFetchJob::finished);
+    fetchSpy2.wait();
+    entries = job->results();
+
     qCDebug(dcTests()) << "Log entries:" << entries;
-
-
 }
 
 void TestRules::removePolicyUpdate()

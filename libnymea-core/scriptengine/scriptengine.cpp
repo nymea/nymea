@@ -7,6 +7,8 @@
 
 #include <QQmlApplicationEngine>
 
+#include "loggingcategories.h"
+
 namespace nymeaserver {
 
 ScriptEngine::ScriptEngine(DeviceManager *deviceManager, QObject *parent) : QObject(parent),
@@ -26,6 +28,7 @@ void ScriptEngine::loadScripts()
     QQmlApplicationEngine *engine = new QQmlApplicationEngine(this);
     engine->setProperty("deviceManager", reinterpret_cast<quint64>(m_deviceManager));
 
+    qCWarning(dcScriptEngine()) << "Loading script";
     engine->load(fileName);
 }
 

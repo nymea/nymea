@@ -58,7 +58,7 @@ void ScriptEvent::setEventName(const QString &eventName)
 
 void ScriptEvent::onEventTriggered(const Event &event)
 {
-    if (QUuid(m_deviceId) != event.deviceId()) {
+    if (DeviceId(m_deviceId) != event.deviceId()) {
         return;
     }
 

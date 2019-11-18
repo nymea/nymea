@@ -15,9 +15,11 @@ class ScriptState : public QObject, public QQmlParserStatus
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(QString deviceId READ deviceId WRITE setDeviceId NOTIFY deviceIdChanged)
-    Q_PROPERTY(QString stateTypeId READ stateTypeId WRITE setStateTypeId NOTIFY stateTypeIdChanged)
-    Q_PROPERTY(QString stateName READ stateName WRITE setStateName NOTIFY stateNameChanged)
+    Q_PROPERTY(QString stateTypeId READ stateTypeId WRITE setStateTypeId NOTIFY stateTypeChanged)
+    Q_PROPERTY(QString stateName READ stateName WRITE setStateName NOTIFY stateTypeChanged)
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
+    Q_PROPERTY(QVariant minimumValue READ minimumValue NOTIFY stateTypeChanged)
+    Q_PROPERTY(QVariant maximumValue READ maximumValue NOTIFY stateTypeChanged)
 
 public:
     explicit ScriptState(QObject *parent = nullptr);
@@ -30,8 +32,14 @@ public:
     QString stateTypeId() const;
     void setStateTypeId(const QString &stateTypeId);
 
+    QString stateName() const;
+    void setStateName(const QString &stateName);
+
     QVariant value() const;
     void setValue(const QVariant &value);
+
+    QVariant minimumValue() const;
+    QVariant maximumValue() const;
 
 public slots:
     void store();
@@ -39,8 +47,7 @@ public slots:
 
 signals:
     void deviceIdChanged();
-    void stateTypeIdChanged();
-    void stateNameChanged();
+    void stateTypeChanged();
     void valueChanged();
 
 private slots:
@@ -51,6 +58,7 @@ private:
 
     QString m_deviceId;
     QString m_stateTypeId;
+    QString m_stateName;
 
     DeviceActionInfo *m_pendingActionInfo = nullptr;
     QVariant m_valueCache;

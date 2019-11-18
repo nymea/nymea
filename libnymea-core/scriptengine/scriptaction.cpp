@@ -5,6 +5,8 @@
 
 #include <QQmlEngine>
 
+#include "loggingcategories.h"
+
 namespace nymeaserver {
 
 ScriptAction::ScriptAction(QObject *parent) : QObject(parent)
@@ -48,10 +50,36 @@ void ScriptAction::setActionTypeId(const QString &actionTypeId)
     }
 }
 
+QString ScriptAction::actionName() const
+{
+    return m_actionName;
+}
+
+void ScriptAction::setActionName(const QString &actionName)
+{
+    if (m_actionName != actionName) {
+        m_actionName = actionName;
+        emit actionNameChanged();
+    }
+}
+
 void ScriptAction::execute(const QVariantList &params)
 {
+    Device *device = m_deviceManager->configuredDevices().findById(DeviceId(m_deviceId));
+    if (!device) {
+        qCWarning(dcScriptEngine) << "No device with id" << m_deviceId;
+        return;
+    }
+    ActionTypeId actionTypeId = ActionTypeId(m_actionTypeId);
+    if (actionTypeId.isNull()) {
+        actionTypeId = device->deviceClass().actionTypes().findByName(m_actionName).id();
+    }
+    if (actionTypeId.isNull()) {
+        qCWarning(dcScriptEngine()) << "Either a valid actionTypeId or actionName is required";
+        return;
+    }
     Action action;
-    action.setActionTypeId(ActionTypeId(m_actionTypeId));
+    action.setActionTypeId(actionTypeId);
     action.setDeviceId(DeviceId(m_deviceId));
     ParamList paramList;
     foreach (const QVariant &p, params) {

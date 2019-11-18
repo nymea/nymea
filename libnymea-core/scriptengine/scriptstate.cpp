@@ -45,7 +45,21 @@ void ScriptState::setStateTypeId(const QString &stateTypeId)
 {
     if (m_stateTypeId != stateTypeId) {
         m_stateTypeId = stateTypeId;
-        emit stateTypeIdChanged();
+        emit stateTypeChanged();
+        store();
+    }
+}
+
+QString ScriptState::stateName() const
+{
+    return m_stateName;
+}
+
+void ScriptState::setStateName(const QString &stateName)
+{
+    if (m_stateName != stateName) {
+        m_stateName = stateName;
+        emit stateTypeChanged();
         store();
     }
 }
@@ -56,7 +70,12 @@ QVariant ScriptState::value() const
     if (!device) {
         return QVariant();
     }
-    return device->stateValue(StateTypeId(m_stateTypeId));
+    StateTypeId stateTypeId = StateTypeId(m_stateTypeId);
+    if (stateTypeId.isNull()) {
+        stateTypeId = device->deviceClass().stateTypes().findByName(m_stateName).id();
+    }
+
+    return device->stateValue(stateTypeId);
 }
 
 void ScriptState::setValue(const QVariant &value)
@@ -73,17 +92,31 @@ void ScriptState::setValue(const QVariant &value)
         return;
     }
 
-    if (device->deviceClass().stateTypes().findById(StateTypeId(m_stateTypeId)).id().isNull()) {
-        qCWarning(dcScriptEngine) << "Device" << device->name() << "does not have a state with type id" << m_stateTypeId;
+    ActionTypeId actionTypeId;
+    if (!m_stateTypeId.isNull()) {
+        actionTypeId = device->deviceClass().stateTypes().findById(StateTypeId(m_stateTypeId)).id();
+        if (actionTypeId.isNull()) {
+            qCWarning(dcScriptEngine) << "Device" << device->name() << "does not have a state with type id" << m_stateTypeId;
+        }
+    }
+    if (actionTypeId.isNull()) {
+        actionTypeId = device->deviceClass().stateTypes().findByName(stateName()).id();
+        if (actionTypeId.isNull()) {
+            qCWarning(dcScriptEngine) << "Device" << device->name() << "does not have a state named" << m_stateName;
+        }
+    }
+
+    if (actionTypeId.isNull()) {
+        qCWarning(dcScriptEngine()) << "Either stateTypeId or stateName is required to be valid.";
         return;
     }
+
     Action action;
     action.setDeviceId(DeviceId(m_deviceId));
-    action.setActionTypeId(ActionTypeId(m_stateTypeId));
-    ParamList params = ParamList() << Param(ParamTypeId(m_stateTypeId), value);
+    action.setActionTypeId(ActionTypeId(actionTypeId));
+    ParamList params = ParamList() << Param(ParamTypeId(actionTypeId), value);
     action.setParams(params);
 
-    qCDebug(dcScriptEngine()) << "setValueCalled2" << value;
     m_valueCache = QVariant();
     m_pendingActionInfo = m_deviceManager->executeAction(action);
     connect(m_pendingActionInfo, &DeviceActionInfo::finished, this, [this](){
@@ -92,6 +125,32 @@ void ScriptState::setValue(const QVariant &value)
             setValue(m_valueCache);
         }
     });
+}
+
+QVariant ScriptState::minimumValue() const
+{
+    Device *device = m_deviceManager->configuredDevices().findById(DeviceId(m_deviceId));
+    if (!device) {
+        return QVariant();
+    }
+    StateType stateType = device->deviceClass().stateTypes().findById(StateTypeId(m_stateTypeId));
+    if (stateType.id().isNull()) {
+        stateType = device->deviceClass().stateTypes().findByName(m_stateName);
+    }
+    return stateType.minValue();
+}
+
+QVariant ScriptState::maximumValue() const
+{
+    Device *device = m_deviceManager->configuredDevices().findById(DeviceId(m_deviceId));
+    if (!device) {
+        return QVariant();
+    }
+    StateType stateType = device->deviceClass().stateTypes().findById(StateTypeId(m_stateTypeId));
+    if (stateType.id().isNull()) {
+        stateType = device->deviceClass().stateTypes().findByName(m_stateName);
+    }
+    return stateType.minValue();
 }
 
 void ScriptState::store()
@@ -108,7 +167,17 @@ void ScriptState::restore()
 
 void nymeaserver::ScriptState::onDeviceStateChanged(Device *device, const StateTypeId &stateTypeId)
 {
-    if (device->id() == DeviceId(m_deviceId) && stateTypeId == StateTypeId(m_stateTypeId)) {
+    if (device->id() != DeviceId(m_deviceId)) {
+        return;
+    }
+    StateTypeId localStateTypeId = StateTypeId(m_stateTypeId);
+    if (localStateTypeId.isNull()) {
+        localStateTypeId = device->deviceClass().stateTypes().findByName(m_stateName).id();
+    }
+    if (localStateTypeId.isNull()) {
+        return;
+    }
+    if (stateTypeId == localStateTypeId) {
         emit valueChanged();
     }
 }

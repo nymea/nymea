@@ -29,6 +29,7 @@ public:
     explicit JsonRPCServer() = default;
     virtual ~JsonRPCServer() = default;
 
+    virtual bool registerHandler(JsonHandler *handler) = 0;
     virtual bool registerExperienceHandler(JsonHandler *handler, int majorVersion, int minorVersion) = 0;
 
 };

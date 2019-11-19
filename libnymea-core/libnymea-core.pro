@@ -20,11 +20,13 @@ HEADERS += nymeacore.h \
     devices/translator.h \
     experiences/experiencemanager.h \
     jsonrpc/jsonrpcserverimplementation.h \
+    jsonrpc/scriptshandler.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
     ruleengine/stateevaluator.h \
     ruleengine/ruleaction.h \
     ruleengine/ruleactionparam.h \
+    scriptengine/script.h \
     scriptengine/scriptaction.h \
     scriptengine/scriptengine.h \
     scriptengine/scriptevent.h \
@@ -98,11 +100,13 @@ SOURCES += nymeacore.cpp \
     devices/translator.cpp \
     experiences/experiencemanager.cpp \
     jsonrpc/jsonrpcserverimplementation.cpp \
+    jsonrpc/scriptshandler.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \
     ruleengine/stateevaluator.cpp \
     ruleengine/ruleaction.cpp \
     ruleengine/ruleactionparam.cpp \
+    scriptengine/script.cpp \
     scriptengine/scriptaction.cpp \
     scriptengine/scriptengine.cpp \
     scriptengine/scriptevent.cpp \

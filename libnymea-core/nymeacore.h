@@ -55,6 +55,7 @@ class UserManager;
 class Platform;
 class System;
 class ExperienceManager;
+class ScriptEngine;
 
 class NymeaCore : public QObject
 {
@@ -125,6 +126,7 @@ private:
     ServerManager *m_serverManager;
     DeviceManagerImplementation *m_deviceManager;
     RuleEngine *m_ruleEngine;
+    ScriptEngine *m_scriptEngine;
     LogEngine *m_logger;
     TimeManager *m_timeManager;
     CloudManager *m_cloudManager;

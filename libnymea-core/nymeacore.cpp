@@ -98,7 +98,9 @@
 #include "tagging/tagsstorage.h"
 #include "platform/platform.h"
 #include "experiences/experiencemanager.h"
+
 #include "scriptengine/scriptengine.h"
+#include "jsonrpc/scriptshandler.h"
 
 #include "devices/devicemanagerimplementation.h"
 #include "devices/device.h"
@@ -161,7 +163,9 @@ void NymeaCore::init() {
     qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);
 
-    new ScriptEngine(m_deviceManager, this);
+    qCDebug(dcApplication()) << "Creating Script Engine";
+    m_scriptEngine = new ScriptEngine(m_deviceManager, this);
+    m_serverManager->jsonServer()->registerHandler(new ScriptsHandler(m_scriptEngine, m_scriptEngine));
 
     qCDebug(dcApplication()) << "Creating Tags Storage";
     m_tagsStorage = new TagsStorage(m_deviceManager, m_ruleEngine, this);

@@ -18,9 +18,16 @@ public:
 
 public slots:
     JsonReply* GetScripts(const QVariantMap &params);
+    JsonReply* GetScriptContent(const QVariantMap &params);
     JsonReply* AddScript(const QVariantMap &params);
     JsonReply* EditScript(const QVariantMap &params);
     JsonReply* RemoveScript(const QVariantMap &params);
+
+signals:
+    void ScriptAdded(const QVariantMap &params);
+    void ScriptRemoved(const QVariantMap &params);
+    void ScriptChanged(const QVariantMap &params);
+    void ScriptLogMessage(const QVariantMap &params);
 
 private:
     ScriptEngine *m_engine = nullptr;

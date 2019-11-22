@@ -15,20 +15,43 @@
 
 #include "loggingcategories.h"
 
+#include <QDir>
+
 namespace nymeaserver {
+
+QtMessageHandler ScriptEngine::s_upstreamMessageHandler;
+QList<ScriptEngine*> ScriptEngine::s_engines;
 
 ScriptEngine::ScriptEngine(DeviceManager *deviceManager, QObject *parent) : QObject(parent),
     m_deviceManager(deviceManager)
 {
-    qmlRegisterType<ScriptEvent>("nymea", 1, 0, "Event");
-    qmlRegisterType<ScriptAction>("nymea", 1, 0, "Action");
-    qmlRegisterType<ScriptState>("nymea", 1, 0, "State");
+    if (s_engines.isEmpty()) {
+        s_upstreamMessageHandler = qInstallMessageHandler(&logMessageHandler);
+    }
+    s_engines.append(this);
+
+    qmlRegisterType<ScriptEvent>("nymea", 1, 0, "DeviceEvent");
+    qmlRegisterType<ScriptAction>("nymea", 1, 0, "DeviceAction");
+    qmlRegisterType<ScriptState>("nymea", 1, 0, "DeviceState");
 
     m_engine = new QQmlApplicationEngine(this);
     m_engine->setProperty("deviceManager", reinterpret_cast<quint64>(m_deviceManager));
 
+    QDir dir;
+    if (!dir.exists(NymeaSettings::storagePath() + "/scripts/")) {
+        dir.mkpath(NymeaSettings::storagePath() + "/scripts/");
+    }
 
     loadScripts();
+
+}
+
+ScriptEngine::~ScriptEngine()
+{
+    s_engines.removeAll(this);
+    if (s_engines.isEmpty()) {
+        qInstallMessageHandler(s_upstreamMessageHandler);
+    }
 }
 
 Scripts ScriptEngine::scripts()
@@ -38,6 +61,25 @@ Scripts ScriptEngine::scripts()
         ret.append(*script);
     }
     return ret;
+}
+
+ScriptEngine::GetScriptReply ScriptEngine::scriptContent(const QUuid &id)
+{
+    GetScriptReply reply;
+    if (!m_scripts.contains(id)) {
+        reply.scriptError = ScriptErrorScriptNotFound;
+        return reply;
+    }
+    QFile scriptFile(baseName(id) + ".qml");
+    if (!scriptFile.open(QFile::ReadOnly)) {
+        reply.scriptError = ScriptErrorHardwareFailure;
+        return reply;
+    }
+    reply.content = scriptFile.readAll();
+    reply.scriptError = ScriptErrorNoError;
+
+    scriptFile.close();
+    return reply;
 }
 
 ScriptEngine::AddScriptReply ScriptEngine::addScript(const QString &name, const QByteArray &content)
@@ -82,6 +124,8 @@ ScriptEngine::AddScriptReply ScriptEngine::addScript(const QString &name, const 
         reply.scriptError = ScriptErrorInvalidScript;
         reply.errors = script->errors;
         delete script;
+        QFile::remove(jsonFileName);
+        QFile::remove(fileName);
         return reply;
     }
 
@@ -89,6 +133,9 @@ ScriptEngine::AddScriptReply ScriptEngine::addScript(const QString &name, const 
 
     reply.scriptError = ScriptErrorNoError;
     reply.script = *m_scripts.value(id);
+
+    emit scriptAdded(reply.script);
+
     return reply;
 }
 
@@ -107,20 +154,24 @@ ScriptEngine::EditScriptReply ScriptEngine::editScript(const QUuid &id, const QB
     Script *script = m_scripts.value(id);
     unloadScript(script);
 
+
     // Deleted compiled qml file to make sure we're reloading the new one
     QString compiledScriptFileName = baseName(id) + ".qmlc";
     QFile::remove(compiledScriptFileName);
 
-    if (!scriptFile.open(QFile::ReadWrite | QFile::Truncate)) {
+    if (!scriptFile.open(QFile::ReadWrite)) {
         qCWarning(dcScriptEngine()) << "Error opening script" << id;
         reply.scriptError = ScriptErrorHardwareFailure;
         return reply;
     }
 
     QByteArray oldContent = scriptFile.readAll();
-    scriptFile.seek(0);
+    scriptFile.close();
 
+    scriptFile.open(QFile::WriteOnly | QFile::Truncate);
     qint64 bytesWritten = scriptFile.write(content);
+    scriptFile.flush();
+    scriptFile.close();
     if (bytesWritten != content.length()) {
         qCWarning(dcScriptEngine()) << "Error writing script content";
         reply.scriptError = ScriptErrorHardwareFailure;
@@ -133,14 +184,19 @@ ScriptEngine::EditScriptReply ScriptEngine::editScript(const QUuid &id, const QB
         reply.errors = script->errors;
 
         // Restore old content
-        scriptFile.seek(0);
+        scriptFile.open(QFile::WriteOnly | QFile::Truncate);
         scriptFile.write(oldContent);
+        scriptFile.flush();
+        scriptFile.close();
         loadScript(script);
 
         return reply;
     }
 
     reply.scriptError = ScriptErrorNoError;
+
+    emit scriptChanged(*script);
+
     return reply;
 }
 
@@ -161,20 +217,59 @@ ScriptEngine::ScriptError ScriptEngine::removeScript(const QUuid &id)
     QFile::remove(jsonFileName);
     QFile::remove(compiledScriptFileName);
 
+    emit scriptRemoved(script->id());
+
     delete script;
     return ScriptErrorNoError;
 }
 
 void ScriptEngine::loadScripts()
 {
+    QDir dir(NymeaSettings::storagePath() + "/scripts/");
+    foreach (const QString &entry, dir.entryList({"*json"})) {
+        qCDebug(dcScriptEngine()) << "Have script:" << entry;
+        QFileInfo jsonFileInfo(NymeaSettings::storagePath() + "/scripts/" + entry);
+        QString jsonFileName = jsonFileInfo.absoluteFilePath();
+        QString scriptFileName = jsonFileInfo.absolutePath() + "/" + jsonFileInfo.baseName() +  ".qml";
+        if (!QFile::exists(scriptFileName)) {
+            qCWarning(dcScriptEngine()) << "Missing script" << scriptFileName;
+            continue;
+        }
 
-//    QString fileName = "/home/micha/Develop/nymea/tests/script.qml";
+        QFile jsonFile(jsonFileName);
+        if (!jsonFile.open(QFile::ReadOnly)) {
+            qCWarning(dcScriptEngine()) << "Failed to open script metadata" << jsonFileName;
+            continue;
+        }
 
-//    loadScript(fileName);
+        QJsonParseError error;
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonFile.readAll(), &error);
+        jsonFile.close();
+        if (error.error != QJsonParseError::NoError) {
+            qCWarning(dcScriptEngine()) << "Error parsing script metadata" << jsonFileName;
+            continue;
+        }
+
+        Script *script = new Script();
+        script->setId(jsonFileInfo.baseName());
+        script->setName(jsonDoc.toVariant().toMap().value("name").toString());
+
+        bool loaded = loadScript(script);
+        if (!loaded) {
+            qCWarning(dcScriptEngine()) << "Script failed to load:";
+            delete script;
+            continue;
+        }
+
+        m_scripts.insert(script->id(), script);
+        qCDebug(dcScriptEngine()) << "Script loaded" << scriptFileName;
+    }
 }
 
 bool ScriptEngine::loadScript(Script *script)
 {
+    qCDebug(dcScriptEngine()) << "Loading script" << script->name();
+
     QString fileName = baseName(script->id()) + ".qml";
     QString jsonFileName = baseName(script->id()) + ".json";
 
@@ -196,6 +291,8 @@ bool ScriptEngine::loadScript(Script *script)
 
     qCWarning(dcScriptEngine()) << "Loading script";
 
+    script->errors.clear();
+
     script->component = new QQmlComponent(m_engine, QUrl::fromLocalFile(fileName), this);
     script->context = new QQmlContext(m_engine, this);
     script->object = script->component->create(script->context);
@@ -208,6 +305,8 @@ bool ScriptEngine::loadScript(Script *script)
         }
         delete script->context;
         delete script->component;
+
+        m_engine->clearComponentCache();
         return false;
     }
     return true;
@@ -215,19 +314,46 @@ bool ScriptEngine::loadScript(Script *script)
 
 void ScriptEngine::unloadScript(Script *script)
 {
+    if (!script->object || !script->component || !script->context) {
+        qCWarning(dcScriptEngine()) << "Script seems not to be loaded. Cannot unload.";
+        return;
+    }
     delete script->object;
     script->object = nullptr;
     delete script->component;
     script->component = nullptr;
     delete script->context;
     script->context = nullptr;
+
+    m_engine->clearComponentCache();
+    qCDebug(dcScriptEngine()) << "Unloading script" << script->name();
 }
 
 QString ScriptEngine::baseName(const QUuid &id)
 {
-    QString path = NymeaSettings::storagePath() + '/';
+    QString path = NymeaSettings::storagePath() + "/scripts/";
     QString basename = id.toString().remove(QRegExp("[{}]"));
     return path + basename;
+}
+
+void ScriptEngine::onScriptMessage(QtMsgType type, const QMessageLogContext &context, const QString &message)
+{
+    QFileInfo fi(context.file);
+    QUuid scriptId = fi.baseName();
+    if (!m_scripts.contains(scriptId)) {
+        return;
+    }
+    emit scriptConsoleMessage(scriptId, type == QtDebugMsg ? ScriptMessageTypeLog : ScriptMessageTypeWarning, message);
+}
+
+void ScriptEngine::logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
+{
+    if (strcmp(context.category, "qml") == 0) {
+        foreach (ScriptEngine *engine, s_engines) {
+            engine->onScriptMessage(type, context, message);
+        }
+    }
+    s_upstreamMessageHandler(type, context, message);
 }
 
 }

@@ -1,0 +1,17 @@
+version: '3'
+services:
+  nymead:
+    build: .
+    image: nymead-image
+    container_name: nymead-container
+    network_mode: host
+    privileged: true
+    hostname: nymea-docker
+    ports:
+      - "80:80"
+      - "443:443"
+      - "2223:2223"
+      - "2224:2224" #tcp
+      - "4444:4444" #ws
+      - "4445:4445" #wss
+      - "1883:1883" #mqtt

@@ -43,7 +43,7 @@ ScriptsHandler::ScriptsHandler(ScriptEngine *scriptEngine, QObject *parent):
     description = "Edit a script";
     params.insert("id", enumValueName(Uuid));
     params.insert("o:name", enumValueName(String));
-    params.insert("content", enumValueName(String));
+    params.insert("o:content", enumValueName(String));
     returns.insert("scriptError", enumRef<ScriptEngine::ScriptError>());
     returns.insert("o:errors", enumValueName(StringList));
     registerMethod("EditScript", description, params, returns);
@@ -65,9 +65,15 @@ ScriptsHandler::ScriptsHandler(ScriptEngine *scriptEngine, QObject *parent):
     registerNotification("ScriptRemoved", description, params);
 
     params.clear();
-    description = "Emitted when a script has been changed in the system.";
-    params.insert("script", objectRef<Script>());
+    description = "Emitted when a script has been changed in the system (e.g. renamed).";
+    params.insert("scriptId", enumValueName(Uuid));
+    params.insert("name", enumValueName(String));
     registerNotification("ScriptChanged", description, params);
+
+    params.clear();
+    description = "Emitted when a script's content has been changed in the system.";
+    params.insert("scriptId", enumValueName(Uuid));
+    registerNotification("ScriptContentChanged", description, params);
 
     params.clear();
     description = "Emitted when a script produces a console message.";
@@ -86,10 +92,16 @@ ScriptsHandler::ScriptsHandler(ScriptEngine *scriptEngine, QObject *parent):
         params.insert("id", scriptId);
         emit ScriptAdded(params);
     });
+    connect(m_engine, &ScriptEngine::scriptRenamed, this, [this](const Script &script){
+        QVariantMap params;
+        params.insert("scriptId", script.id());
+        params.insert("name", script.name());
+        emit ScriptChanged(params);
+    });
     connect(m_engine, &ScriptEngine::scriptChanged, this, [this](const Script &script){
         QVariantMap params;
-        params.insert("script", pack(script));
-        emit ScriptChanged(params);
+        params.insert("scriptId", script.id());
+        emit ScriptContentChanged(params);
     });
     connect(m_engine, &ScriptEngine::scriptConsoleMessage, this, [this](const QUuid &scriptId, ScriptEngine::ScriptMessageType type, const QString &message){
         QVariantMap params;
@@ -145,15 +157,27 @@ JsonReply* ScriptsHandler::AddScript(const QVariantMap &params)
 JsonReply *ScriptsHandler::EditScript(const QVariantMap &params)
 {
     QUuid scriptId = params.value("id").toUuid();
-    QByteArray content = params.value("content").toByteArray();
-
     QVariantMap returns;
 
-    ScriptEngine::EditScriptReply reply = m_engine->editScript(scriptId, content);
-    returns.insert("scriptError", enumValueName(reply.scriptError));
-    if (reply.scriptError != ScriptEngine::ScriptErrorNoError) {
-        returns.insert("errors", reply.errors);
+    if (params.contains("name")) {
+        QString name = params.value("name").toString();
+        ScriptEngine::ScriptError result = m_engine->renameScript(scriptId, name);
+        if (result != ScriptEngine::ScriptErrorNoError) {
+            returns.insert("scriptError", enumValueName(result));
+            return createReply(returns);
+        }
     }
+    if (params.contains("content")) {
+        QByteArray content = params.value("content").toByteArray();
+        ScriptEngine::EditScriptReply reply = m_engine->editScript(scriptId, content);
+        if (reply.scriptError != ScriptEngine::ScriptErrorNoError) {
+            returns.insert("scriptError", enumValueName(reply.scriptError));
+            returns.insert("errors", reply.errors);
+            return createReply(returns);
+        }
+    }
+
+    returns.insert("scriptError", enumValueName(ScriptEngine::ScriptErrorNoError));
     return createReply(returns);
 }
 

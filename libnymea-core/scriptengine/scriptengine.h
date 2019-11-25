@@ -48,6 +48,7 @@ public:
     Scripts scripts();
     GetScriptReply scriptContent(const QUuid &id);
     AddScriptReply addScript(const QString &name, const QByteArray &content);
+    ScriptError renameScript(const QUuid &id, const QString &name);
     EditScriptReply editScript(const QUuid &id, const QByteArray &content);
     ScriptError removeScript(const QUuid &id);
 
@@ -55,6 +56,7 @@ signals:
     void scriptAdded(const Script &script);
     void scriptRemoved(const QUuid &id);
     void scriptChanged(const Script &script);
+    void scriptRenamed(const Script &script);
 
     void scriptConsoleMessage(const QUuid &scriptId, ScriptMessageType type, const QString &message);
 

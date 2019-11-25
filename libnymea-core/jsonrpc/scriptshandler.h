@@ -27,6 +27,7 @@ signals:
     void ScriptAdded(const QVariantMap &params);
     void ScriptRemoved(const QVariantMap &params);
     void ScriptChanged(const QVariantMap &params);
+    void ScriptContentChanged(const QVariantMap &params);
     void ScriptLogMessage(const QVariantMap &params);
 
 private:

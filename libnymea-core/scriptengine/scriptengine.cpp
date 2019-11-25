@@ -139,10 +139,41 @@ ScriptEngine::AddScriptReply ScriptEngine::addScript(const QString &name, const 
     return reply;
 }
 
+ScriptEngine::ScriptError ScriptEngine::renameScript(const QUuid &id, const QString &name)
+{
+    if (!m_scripts.contains(id)) {
+        qCWarning(dcScriptEngine()) << "No script with id" << id;
+        return ScriptErrorScriptNotFound;
+    }
+
+    QString jsonFileName = baseName(id) + ".json";
+    QFile jsonFile(jsonFileName);
+    if (!jsonFile.open(QFile::ReadWrite)) {
+        qCWarning(dcJsonRpc()) << "Erorr opening script json file" << jsonFileName;
+        return ScriptErrorHardwareFailure;
+    }
+    QJsonParseError error;
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(jsonFile.readAll(), &error);
+    QVariantMap jsonData = jsonDocument.toVariant().toMap();
+    if (error.error != QJsonParseError::NoError) {
+        qCWarning(dcScriptEngine()) << "Error parsing json file. Recreating it...";
+        // This is non-critical as we could open it. We can recreate it now.
+    }
+    jsonData["name"] = name;
+    QByteArray jsonString = QJsonDocument::fromVariant(jsonData).toJson();
+    if (!jsonFile.resize(0) || jsonFile.write(jsonString) != jsonString.length()) {
+        qCWarning(dcScriptEngine()) << "Error writing json metadata" << jsonFileName;
+        return ScriptErrorHardwareFailure;
+    }
+    jsonFile.close();
+    m_scripts[id]->setName(name);
+    qCDebug(dcScriptEngine()) << "Script" << id << "renamed to" << name;
+    emit scriptRenamed(*m_scripts.value(id));
+    return ScriptErrorNoError;
+}
+
 ScriptEngine::EditScriptReply ScriptEngine::editScript(const QUuid &id, const QByteArray &content)
 {
-    QString scriptFileName = baseName(id) + ".qml";
-    QFile scriptFile(scriptFileName);
     EditScriptReply reply;
 
     if (!m_scripts.contains(id)) {
@@ -154,11 +185,12 @@ ScriptEngine::EditScriptReply ScriptEngine::editScript(const QUuid &id, const QB
     Script *script = m_scripts.value(id);
     unloadScript(script);
 
-
     // Deleted compiled qml file to make sure we're reloading the new one
     QString compiledScriptFileName = baseName(id) + ".qmlc";
     QFile::remove(compiledScriptFileName);
 
+    QString scriptFileName = baseName(id) + ".qml";
+    QFile scriptFile(scriptFileName);
     if (!scriptFile.open(QFile::ReadWrite)) {
         qCWarning(dcScriptEngine()) << "Error opening script" << id;
         reply.scriptError = ScriptErrorHardwareFailure;
@@ -180,6 +212,7 @@ ScriptEngine::EditScriptReply ScriptEngine::editScript(const QUuid &id, const QB
 
     bool loaded = loadScript(script);
     if (!loaded) {
+        qCDebug(dcScriptEngine()) << "Restoring old content";
         reply.scriptError = ScriptErrorInvalidScript;
         reply.errors = script->errors;
 
@@ -193,10 +226,9 @@ ScriptEngine::EditScriptReply ScriptEngine::editScript(const QUuid &id, const QB
         return reply;
     }
 
+    qCDebug(dcScriptEngine()) << "Script updated" << script->name();
     reply.scriptError = ScriptErrorNoError;
-
     emit scriptChanged(*script);
-
     return reply;
 }
 

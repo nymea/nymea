@@ -90,7 +90,7 @@ ScriptsHandler::ScriptsHandler(ScriptEngine *scriptEngine, QObject *parent):
     connect(m_engine, &ScriptEngine::scriptRemoved, this, [this](const QUuid &scriptId){
         QVariantMap params;
         params.insert("id", scriptId);
-        emit ScriptAdded(params);
+        emit ScriptRemoved(params);
     });
     connect(m_engine, &ScriptEngine::scriptRenamed, this, [this](const Script &script){
         QVariantMap params;

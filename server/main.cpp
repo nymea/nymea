@@ -215,6 +215,9 @@ int main(int argc, char *argv[])
 //        }
     }
 
+    // Always enable the "qml" category. It's needed for the scriptengine to snoop in on console messages.
+    loggingRules.append("qml.debug=true");
+
     // Finally set the rules for the logging
     QLoggingCategory::setFilterRules(loggingRules.join('\n'));
 

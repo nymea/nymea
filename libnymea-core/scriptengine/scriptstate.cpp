@@ -3,6 +3,8 @@
 #include "loggingcategories.h"
 
 #include <QColor>
+#include <qqml.h>
+#include <QQmlEngine>
 
 namespace nymeaserver {
 

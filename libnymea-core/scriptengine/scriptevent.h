@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QUuid>
-#include <QQmlEngine>
+#include <QQmlParserStatus>
 
 #include "types/event.h"
 #include "devices/devicemanager.h"

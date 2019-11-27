@@ -1,5 +1,8 @@
 #include "scriptevent.h"
 
+#include <qqml.h>
+#include <QQmlEngine>
+
 namespace nymeaserver {
 
 ScriptEvent::ScriptEvent(QObject *parent) : QObject(parent)

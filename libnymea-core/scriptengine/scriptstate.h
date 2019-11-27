@@ -2,7 +2,7 @@
 #define SCRIPTSTATE_H
 
 #include <QObject>
-#include <QQmlEngine>
+#include <QQmlParserStatus>
 #include <QPointer>
 
 #include "devices/devicemanager.h"

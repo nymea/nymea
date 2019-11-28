@@ -33,6 +33,8 @@
 #include <QObject>
 #include <QSqlDatabase>
 #include <QSqlQuery>
+#include <QSqlError>
+#include <QSqlRecord>
 #include <QTimer>
 #include <QFutureWatcher>
 
@@ -106,22 +108,30 @@ class DatabaseJob: public QObject
 {
     Q_OBJECT
 public:
-    DatabaseJob(const QString &queryString, const QSqlDatabase &db) {
-        m_query = QSqlQuery(db);
-        m_query.prepare(queryString);
+    DatabaseJob(const QSqlDatabase &db, const QString &queryString, const QStringList &bindValues = QStringList()):
+        m_db(db),
+        m_queryString(queryString),
+        m_bindValues(bindValues)
+    {
     }
 
-    // IMPORTANT: Make sure it only prepare()d but not executed
-    // QSQlQuery(QString, QSqlDatabase) implicitly executes!
-    DatabaseJob(const QSqlQuery &query): m_query(query) {}
-
-    QSqlQuery query() const { return m_query; }
+    QString executedQuery() const { return m_executedQuery; }
+    QSqlError error() const { return m_error; }
+    QList<QSqlRecord> results() const { return m_results; }
 
 signals:
     void finished();
 
 private:
-    QSqlQuery m_query;
+    QSqlDatabase m_db;
+    QString m_queryString;
+    QStringList m_bindValues;
+
+    QString m_executedQuery;
+    QSqlError m_error;
+    QList<QSqlRecord> m_results;
+
+    friend class LogEngine;
 };
 
 class LogEntriesFetchJob: public QObject

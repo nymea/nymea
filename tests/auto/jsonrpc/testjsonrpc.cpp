@@ -665,7 +665,7 @@ void TestJSONRPC::enableDisableNotifications_legacy()
 
     QStringList expectedNamespaces;
     if (enabled == "true") {
-        expectedNamespaces << "Actions" << "NetworkManager" << "Devices" << "System" << "Rules" << "States" << "Logging" << "Tags" << "JSONRPC" << "Configuration" << "Events";
+        expectedNamespaces << "Actions" << "NetworkManager" << "Devices" << "System" << "Rules" << "States" << "Logging" << "Tags" << "JSONRPC" << "Configuration" << "Events" << "Scripts";
     }
     std::sort(expectedNamespaces.begin(), expectedNamespaces.end());
 

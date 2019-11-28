@@ -39,23 +39,43 @@
 
 namespace nymeaserver {
 
-QtMessageHandler ScriptEngine::s_upstreamMessageHandler;
 QList<ScriptEngine*> ScriptEngine::s_engines;
+QtMessageHandler ScriptEngine::s_upstreamMessageHandler;
+QLoggingCategory::CategoryFilter ScriptEngine::s_oldCategoryFilter = nullptr;
 
 ScriptEngine::ScriptEngine(DeviceManager *deviceManager, QObject *parent) : QObject(parent),
     m_deviceManager(deviceManager)
 {
+    qmlRegisterType<ScriptEvent>("nymea", 1, 0, "DeviceEvent");
+    qmlRegisterType<ScriptAction>("nymea", 1, 0, "DeviceAction");
+    qmlRegisterType<ScriptState>("nymea", 1, 0, "DeviceState");
+
+    m_engine = new QQmlEngine(this);
+    m_engine->setProperty("deviceManager", reinterpret_cast<quint64>(m_deviceManager));
+
+    // Don't automatically print script warnings (that is, runtime errors, *not* console.warn() messages)
+    // to stdout as they'd end up on the "default" logging category.
+    // We collect them ourselves through the warnings() signal and print them to the dcScriptEngine category.
+    m_engine->setOutputWarningsToStandardError(false);
+    connect(m_engine, &QQmlEngine::warnings, this, [this](const QList<QQmlError> &warnings){
+        foreach (const QQmlError &warning, warnings) {
+            QMessageLogContext ctx(warning.url().toString().toUtf8(), warning.line(), "", "ScriptEngine");
+            // Send to script logs
+            onScriptMessage(warning.messageType(), ctx, warning.description());
+            // and to logging system
+            qCWarning(dcScriptEngine()) << warning.toString();
+        }
+    });
+
+    // console.log()/warn() messages instead are printed to the "qml" category. We install our own
+    // filter to *always* get them, regardless of the configured logging categories
+    s_oldCategoryFilter = QLoggingCategory::installFilter(&logCategoryFilter);
+    // and our own handler to redirect them to the ScriptEngine category
     if (s_engines.isEmpty()) {
         s_upstreamMessageHandler = qInstallMessageHandler(&logMessageHandler);
     }
     s_engines.append(this);
 
-    qmlRegisterType<ScriptEvent>("nymea", 1, 0, "DeviceEvent");
-    qmlRegisterType<ScriptAction>("nymea", 1, 0, "DeviceAction");
-    qmlRegisterType<ScriptState>("nymea", 1, 0, "DeviceState");
-
-    m_engine = new QQmlApplicationEngine(this);
-    m_engine->setProperty("deviceManager", reinterpret_cast<quint64>(m_deviceManager));
 
     QDir dir;
     if (!dir.exists(NymeaSettings::storagePath() + "/scripts/")) {
@@ -395,17 +415,44 @@ void ScriptEngine::onScriptMessage(QtMsgType type, const QMessageLogContext &con
     if (!m_scripts.contains(scriptId)) {
         return;
     }
-    emit scriptConsoleMessage(scriptId, type == QtDebugMsg ? ScriptMessageTypeLog : ScriptMessageTypeWarning, message);
+    emit scriptConsoleMessage(scriptId, type == QtDebugMsg ? ScriptMessageTypeLog : ScriptMessageTypeWarning, QString::number(context.line) + ": " + message);
 }
 
 void ScriptEngine::logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-    if (strcmp(context.category, "qml") == 0) {
-        foreach (ScriptEngine *engine, s_engines) {
-            engine->onScriptMessage(type, context, message);
-        }
+    if (strcmp(context.category, "qml") != 0) {
+        s_upstreamMessageHandler(type, context, message);
+        return;
     }
-    s_upstreamMessageHandler(type, context, message);
+
+    // Copy the message to the script engine
+    foreach (ScriptEngine *engine, s_engines) {
+        engine->onScriptMessage(type, context, message);
+    }
+
+    if (!s_oldCategoryFilter) {
+        return;
+    }
+
+    // Redirect qml messages to the ScriptEngine handler
+    QMessageLogContext newContext(context.file, context.line, context.function, "ScriptEngine");
+    QLoggingCategory *category = new QLoggingCategory("ScriptEngine", type);
+    s_oldCategoryFilter(category);
+    if (category->isEnabled(type)) {
+        QFileInfo fi(context.file);
+        s_upstreamMessageHandler(type, newContext, fi.fileName() + ":" + QString::number(context.line) + ": " + message);
+    }
+}
+
+void ScriptEngine::logCategoryFilter(QLoggingCategory *category)
+{
+    // always enable qml logs, regardless what the filters are
+    if (qstrcmp(category->categoryName(), "qml") == 0) {
+        category->setEnabled(QtDebugMsg, true);
+        category->setEnabled(QtWarningMsg, true);
+    } else if (s_oldCategoryFilter) {
+        s_oldCategoryFilter(category);
+    }
 }
 
 }

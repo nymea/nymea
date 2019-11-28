@@ -24,6 +24,8 @@
 #include <QObject>
 #include <QUuid>
 #include <QQmlEngine>
+#include <QJsonValue>
+#include <QLoggingCategory>
 
 #include "devices/devicemanager.h"
 #include "script.h"
@@ -94,9 +96,11 @@ private:
 
     QHash<QUuid, Script*> m_scripts;
 
-    static QtMessageHandler s_upstreamMessageHandler;
     static QList<ScriptEngine*> s_engines;
+    static QtMessageHandler s_upstreamMessageHandler;
+    static QLoggingCategory::CategoryFilter s_oldCategoryFilter;
     static void logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message);
+    static void logCategoryFilter(QLoggingCategory *category);
 };
 
 }

@@ -44,54 +44,12 @@
 #include "nymeaapplication.h"
 #include "loggingcategories.h"
 
-static QFile s_logFile;
-
-static const char *const normal = "\033[0m";
-static const char *const warning = "\e[33m";
-static const char *const error = "\e[31m";
 
 using namespace nymeaserver;
 
-static void consoleLogHandler(QtMsgType type, const QMessageLogContext& context, const QString& message)
-{
-    QString messageString;
-    QString timeString = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz");
-    switch (type) {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
-    case QtInfoMsg:
-        messageString = QString(" I %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, " I | %s: %s\n", context.category, message.toUtf8().data());
-        break;
-#endif
-    case QtDebugMsg:
-        messageString = QString(" I %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, " I | %s: %s\n", context.category, message.toUtf8().data());
-        break;
-    case QtWarningMsg:
-        messageString = QString(" W %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, "%s W | %s: %s%s\n", warning, context.category, message.toUtf8().data(), normal);
-        break;
-    case QtCriticalMsg:
-        messageString = QString(" C %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, "%s C | %s: %s%s\n", error, context.category, message.toUtf8().data(), normal);
-        break;
-    case QtFatalMsg:
-        messageString = QString(" F %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, "%s F | %s: %s%s\n", error, context.category, message.toUtf8().data(), normal);
-        break;
-    }
-    fflush(stdout);
-
-    if (s_logFile.isOpen()) {
-        QTextStream textStream(&s_logFile);
-        textStream << messageString << endl;
-    }
-}
 
 int main(int argc, char *argv[])
 {
-    qInstallMessageHandler(consoleLogHandler);
-
     NymeaApplication application(argc, argv);
     application.setOrganizationName("nymea");
     application.setApplicationName("nymead");
@@ -145,8 +103,11 @@ int main(int argc, char *argv[])
     QCommandLineOption allOption(QStringList() << "p" << "print-all", QCoreApplication::translate("nymea", "Enables all debug categories except *Traffic and *Debug categories. Single debug categories can be disabled again with -d parameter."));
     parser.addOption(allOption);
 
-    QCommandLineOption logOption({"l", "log"}, QCoreApplication::translate("nymea", "Specify a log file to write to, if this option is not specified, logs will be printed to the standard output."), "logfile", "/var/log/nymead.log");
+    QCommandLineOption logOption({"l", "log"}, QCoreApplication::translate("nymea", "Specify a log file to write to, if this option is not specified, logs will be printed to the standard output."), "logfile");
     parser.addOption(logOption);
+
+    QCommandLineOption noColorOption({"c", "no-colors"}, QCoreApplication::translate("nymea", "Log output is colorized by default. Use this option to disable colors."));
+    parser.addOption(noColorOption);
 
     QCommandLineOption dbusOption(QStringList() << "session", QCoreApplication::translate("nymea", "If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus."));
     parser.addOption(dbusOption);
@@ -157,20 +118,10 @@ int main(int argc, char *argv[])
     parser.process(application);
 
     // Open the logfile, if any specified
-    if (parser.isSet(logOption)) {
-        QFileInfo fi(parser.value(logOption));
-        QDir dir(fi.absolutePath());
-        if (!dir.exists() && !dir.mkpath(dir.absolutePath())) {
-            qWarning() << "Error opening log file" << parser.value(logOption);
-            return 1;
-        }
-        s_logFile.setFileName(parser.value(logOption));
-        if (!s_logFile.open(QFile::WriteOnly | QFile::Append)) {
-            qWarning() << "Error opening log file" << parser.value(logOption);
-            return 1;
-        }
+    if (!initLogging(parser.value(logOption), !parser.isSet(noColorOption))) {
+        qWarning() << "Error opening log file" << parser.value(logOption);
+        return 1;
     }
-
 
     /* The logging rules will be evaluated sequentially
      *  1. All debug categories off
@@ -215,9 +166,6 @@ int main(int argc, char *argv[])
 //        }
     }
 
-    // Always enable the "qml" category. It's needed for the scriptengine to snoop in on console messages.
-    loggingRules.append("qml.debug=true");
-
     // Finally set the rules for the logging
     QLoggingCategory::setFilterRules(loggingRules.join('\n'));
 
@@ -259,16 +207,12 @@ int main(int argc, char *argv[])
         // create core instance
         NymeaCore::instance()->init();
         int ret = application.exec();
-        if (s_logFile.isOpen()) {
-            s_logFile.close();
-        }
+        closeLogFile();
         return ret;
     }
 
     NymeaService service(argc, argv);
     int ret = service.exec();
-    if (s_logFile.isOpen()) {
-        s_logFile.close();
-    }
+    closeLogFile();
     return ret;
 }

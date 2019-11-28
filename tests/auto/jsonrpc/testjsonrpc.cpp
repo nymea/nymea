@@ -41,6 +41,7 @@ private:
 
 private slots:
     void initTestCase();
+    void cleanup();
 
     void testHandshake();
 
@@ -146,6 +147,13 @@ void TestJSONRPC::initTestCase()
                                      "JsonRpc.debug=true\n"
                                      "Translations.debug=true\n"
                                      "Tests.debug=true");
+}
+
+void TestJSONRPC::cleanup()
+{
+    while (NymeaCore::instance()->logEngine()->jobsRunning()) {
+        qApp->processEvents();
+    }
 }
 
 void TestJSONRPC::testHandshake()
@@ -846,16 +854,56 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toUuid().toString(), ruleId.toString());
     QCOMPARE(notificationVariant.toMap().value("params").toMap().value("active").toBool(), true);
 
+    clientSpy.wait();
+
+    // Make sure the logg notification contains all the stuff we expect
+    QVariantList logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
+    QVERIFY2(!logEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
+    bool found = false;
+    foreach (const QVariant &loggEntryAddedVariant, logEntryAddedVariants) {
+        if (loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid() == mockIntStateTypeId) {
+            found = true;
+            QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("source").toString(), QString("LoggingSourceStates"));
+            QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("value").toInt(), 20);
+            break;
+        }
+    }
+    QVERIFY2(found, "LogEntryAdded notification not received");
+
     spy.clear(); clientSpy.clear();
 
     // set the rule inactive
     qDebug() << "setting mock int state to 42";
     QNetworkRequest request2(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(42)));
     QNetworkReply *reply2 = nam.get(request2);
-    if (spy.count() == 0) spy.wait();
-    QCOMPARE(spy.count(), 1);
     connect(reply2, SIGNAL(finished()), reply2, SLOT(deleteLater()));
 
+    // Waiting for notifications:
+    // Devices.StateChanged for the change we did
+    // Devices.EventTriggered
+    // Events.EventTriggered <-- deprecated
+    // Rules.RuleActiveChanged
+    // Logging.LogEntryAdded
+    // Devices.StateChanged for the change done by the rule
+    // Devices.EventTriggered
+    // Events.EventTriggered <-- deprecated
+    while (clientSpy.count() < 8) {
+        clientSpy.wait();
+    }
+
+    // Make sure the logg notification contains all the stuff we expect
+    logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
+    QVERIFY2(!logEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
+    found = false;
+    foreach (const QVariant &loggEntryAddedVariant, logEntryAddedVariants) {
+        if (loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid() == mockIntStateTypeId) {
+            found = true;
+            QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("source").toString(), QString("LoggingSourceStates"));
+            QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("value").toInt(), 42);
+            break;
+        }
+    }
+    QVERIFY2(found, "LogEntryAdded notification not received");
 
     if (clientSpy.count() == 0) clientSpy.wait();
     notificationVariant = checkNotification(clientSpy, "Rules.RuleActiveChanged");
@@ -994,7 +1042,14 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 
     QVERIFY2(found, "Could not find the correct Devices.StateChanged notification");
 
-    clientSpy.wait();
+    // Waiting for:
+    // Devices.StateChanged
+    // Devices.EventTriggered
+    // Events.EventTriggered <-- deprecated
+    // Logging.LogEntryAdded
+    while (clientSpy.count() < 4) {
+        clientSpy.wait();
+    }
 
     // Make sure the logg notification contains all the stuff we expect
     QVariantList logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
@@ -1010,7 +1065,6 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     }
 
     QVERIFY2(found, "Could not find the corresponding Logging.LogEntryAdded notification");
-
 
     // Make sure the notification contains all the stuff we expect
     QVariantList eventTriggeredVariants = checkNotifications(clientSpy, "Events.EventTriggered");

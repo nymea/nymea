@@ -274,6 +274,11 @@ DevicesFetchJob *LogEngine::fetchDevices()
     return fetchJob;
 }
 
+bool LogEngine::jobsRunning() const
+{
+    return !m_jobQueue.isEmpty() || m_currentJob;
+}
+
 void LogEngine::setMaxLogEntries(int maxLogEntries, int overflow)
 {
     m_dbMaxSize = maxLogEntries;
@@ -547,12 +552,15 @@ void LogEngine::enqueJob(DatabaseJob *job)
 void LogEngine::processQueue()
 {
     if (m_jobQueue.isEmpty()) {
+        emit jobsRunningChanged();
         return;
     }
 
     if (m_currentJob) {
         return;
     }
+
+    emit jobsRunningChanged();
 
     if (m_dbMalformed) {
         qCWarning(dcLogEngine()) << "Database is malformed. Trying to recover...";

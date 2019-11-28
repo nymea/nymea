@@ -54,6 +54,8 @@ public:
     LogEntriesFetchJob *fetchLogEntries(const LogFilter &filter = LogFilter());
     DevicesFetchJob *fetchDevices();
 
+    bool jobsRunning() const;
+
     void setMaxLogEntries(int maxLogEntries, int overflow);
     void clearDatabase();
 
@@ -73,6 +75,8 @@ public:
 signals:
     void logEntryAdded(const LogEntry &logEntry);
     void logDatabaseUpdated();
+
+    void jobsRunningChanged();
 
 private:
     bool initDB(const QString &username, const QString &password);

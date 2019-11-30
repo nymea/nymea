@@ -2011,7 +2011,7 @@ void TestTimeManager::initTimeManager()
 {
     cleanupMockHistory();
     removeAllRules();
-    enableNotifications();
+    enableNotifications({"Rules", "Devices", "Events"});
     NymeaCore::instance()->timeManager()->stopTimer();
     qDebug() << NymeaCore::instance()->timeManager()->currentTime().toString();
     qDebug() << NymeaCore::instance()->timeManager()->currentDate().toString();

@@ -142,8 +142,7 @@ void TestRestLogging::eventLogs()
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Device *device = devices.first();
 
-    // enable notifications
-    QCOMPARE(enableNotifications(), true);
+    enableNotifications({"Logging"});
 
     // Setup connection to mock client
     QNetworkAccessManager nam;
@@ -216,7 +215,7 @@ void TestRestLogging::actionLog()
     params.insert("params", actionParams);
 
     // enable notifications
-    QCOMPARE(enableNotifications(), true);
+    enableNotifications({"Logging"});
 
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
@@ -341,7 +340,7 @@ void TestRestLogging::actionLog()
 void TestRestLogging::removeDevice()
 {
     // enable notifications
-    QCOMPARE(enableNotifications(), true);
+    enableNotifications({"Logging"});
 
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 

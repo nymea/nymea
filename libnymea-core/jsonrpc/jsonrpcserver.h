@@ -104,7 +104,7 @@ private:
 
     QHash<QUuid, TransportInterface*> m_clientTransports;
     QHash<QUuid, QByteArray> m_clientBuffers;
-    QHash<QUuid, bool> m_clientNotifications;
+    QHash<QUuid, QStringList> m_clientNotifications;
     QHash<QUuid, QLocale> m_clientLocales;
     QHash<int, QUuid> m_pushButtonTransactions;
     QHash<QUuid, QTimer*> m_newConnectionWaitTimers;

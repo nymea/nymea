@@ -89,8 +89,7 @@ void TestTags::addTag()
     QFETCH(QString, value);
     QFETCH(TagsStorage::TagError, expectedError);
 
-    // enable notificartions
-    QCOMPARE(enableNotifications(), true);
+    enableNotifications({"Tags"});
 
     // Setup connection to mock client
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
@@ -124,8 +123,7 @@ void TestTags::addTag()
 
 void TestTags::updateTagValue()
 {
-    // enable notificartions
-    QCOMPARE(enableNotifications(), true);
+    enableNotifications({"Tags"});
 
     // Setup connection to mock client
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
@@ -180,8 +178,7 @@ void TestTags::updateTagValue()
 
 void TestTags::removeTag()
 {
-    // enable notificartions
-    QCOMPARE(enableNotifications(), true);
+    enableNotifications({"Tags"});
 
     // Setup connection to mock client
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));

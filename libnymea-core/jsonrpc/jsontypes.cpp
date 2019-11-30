@@ -2305,6 +2305,11 @@ QPair<bool, QString> JsonTypes::validateVariant(const QVariant &templateVariant,
                     qCWarning(dcJsonRpc()) << QString("Value %1 not allowed in %2").arg(variant.toString()).arg(mediaBrowserIconRef());
                     return result;
                 }
+            } else if (refName == "$ref:Namespace") {
+                // This is quite hacky, but unless we explicitly propagate the namespace info in here we can't know.
+                // Let's assume jsonrpcserver handles this properly...
+                // Actually this entire jsontypes file should probably be split up into the handlers themselves but that's a different story.
+                return qMakePair<bool, QString>(true, QString());
             } else {
                 Q_ASSERT_X(false, "JsonTypes", QString("Unhandled ref: %1").arg(refName).toLatin1().data());
                 return report(false, QString("Unhandled ref %1. Server implementation incomplete.").arg(refName));

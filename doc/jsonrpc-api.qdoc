@@ -1,5 +1,5 @@
 /*!
-In the following section you can find a detaild description of the current API version 1.10.
+In the following section you can find a detaild description of the current API version 3.1.
 \list
 \li \l{Types}
 \li \l{Methods}
@@ -35,6 +35,7 @@ See also: \l{ParamType}
 [
     "Uuid", 
     "String", 
+    "StringList", 
     "Int", 
     "Uint", 
     "Double", 
@@ -45,6 +46,39 @@ See also: \l{ParamType}
     "Object"
 ]
 \endcode
+\section2 BrowserIcon
+\code
+[
+    "BrowserIconNone", 
+    "BrowserIconFolder", 
+    "BrowserIconFile", 
+    "BrowserIconMusic", 
+    "BrowserIconVideo", 
+    "BrowserIconPictures", 
+    "BrowserIconApplication", 
+    "BrowserIconDocument", 
+    "BrowserIconPackage", 
+    "BrowserIconFavorites"
+]
+\endcode
+\section2 BrowserItem
+\code
+{
+    "actionTypeIds": [
+        "Uuid"
+    ], 
+    "browsable": "Bool", 
+    "description": "String", 
+    "disabled": "Bool", 
+    "displayName": "String", 
+    "executable": "Bool", 
+    "icon": "$ref:BrowserIcon", 
+    "id": "String", 
+    "o:mediaIcon": "$ref:MediaBrowserIcon", 
+    "thumbnail": "String"
+}
+\endcode
+See also: \l{MediaBrowserIcon}, \l{BrowserIcon}
 \section2 CalendarItem
 \code
 {
@@ -95,6 +129,9 @@ See also: \l{RepeatingOption}
     "params": [
         "$ref:Param"
     ], 
+    "settings": [
+        "$ref:Param"
+    ], 
     "setupComplete": "Bool", 
     "states": [
         {
@@ -104,11 +141,15 @@ See also: \l{RepeatingOption}
     ]
 }
 \endcode
-See also: \l{Param}
+See also: \l{Param}, \l{Param}
 \section2 DeviceClass
 \code
 {
     "actionTypes": [
+        "$ref:ActionType"
+    ], 
+    "browsable": "Bool", 
+    "browserItemActionTypes": [
         "$ref:ActionType"
     ], 
     "createMethods": [
@@ -130,6 +171,9 @@ See also: \l{Param}
         "$ref:ParamType"
     ], 
     "pluginId": "Uuid", 
+    "settingsTypes": [
+        "$ref:ParamType"
+    ], 
     "setupMethod": "$ref:SetupMethod", 
     "stateTypes": [
         "$ref:StateType"
@@ -137,16 +181,20 @@ See also: \l{Param}
     "vendorId": "Uuid"
 }
 \endcode
-See also: \l{ActionType}, \l{CreateMethod}, \l{ParamType}, \l{SetupMethod}, \l{StateType}, \l{EventType}, \l{ParamType}
+See also: \l{ParamType}, \l{ActionType}, \l{CreateMethod}, \l{ParamType}, \l{ActionType}, \l{SetupMethod}, \l{StateType}, \l{EventType}, \l{ParamType}
 \section2 DeviceDescriptor
 \code
 {
     "description": "String", 
+    "deviceId": "Uuid", 
+    "deviceParams": [
+        "$ref:Param"
+    ], 
     "id": "Uuid", 
     "title": "String"
 }
 \endcode
-
+See also: \l{Param}
 \section2 DeviceError
 \code
 [
@@ -167,13 +215,16 @@ See also: \l{ActionType}, \l{CreateMethod}, \l{ParamType}, \l{SetupMethod}, \l{S
     "DeviceErrorSetupMethodNotSupported", 
     "DeviceErrorHardwareNotAvailable", 
     "DeviceErrorHardwareFailure", 
-    "DeviceErrorAuthentificationFailure", 
-    "DeviceErrorAsync", 
+    "DeviceErrorAuthenticationFailure", 
     "DeviceErrorDeviceInUse", 
     "DeviceErrorDeviceInRule", 
     "DeviceErrorDeviceIsChild", 
     "DeviceErrorPairingTransactionIdNotFound", 
-    "DeviceErrorParameterNotWritable"
+    "DeviceErrorParameterNotWritable", 
+    "DeviceErrorItemNotFound", 
+    "DeviceErrorItemNotExecutable", 
+    "DeviceErrorUnsupportedFeature", 
+    "DeviceErrorTimeout"
 ]
 \endcode
 \section2 Event
@@ -236,6 +287,7 @@ See also: \l{ParamType}
     "o:deviceId": "Uuid", 
     "o:errorCode": "String", 
     "o:eventType": "$ref:LoggingEventType", 
+    "o:itemId": "String", 
     "o:typeId": "Uuid", 
     "o:value": "String", 
     "source": "$ref:LoggingSource", 
@@ -275,7 +327,61 @@ See also: \l{LoggingSource}, \l{LoggingEventType}, \l{LoggingLevel}
     "LoggingSourceEvents", 
     "LoggingSourceActions", 
     "LoggingSourceStates", 
-    "LoggingSourceRules"
+    "LoggingSourceRules", 
+    "LoggingSourceBrowserActions"
+]
+\endcode
+\section2 MediaBrowserIcon
+\code
+[
+    "MediaBrowserIconNone", 
+    "MediaBrowserIconPlaylist", 
+    "MediaBrowserIconRecentlyPlayed", 
+    "MediaBrowserIconLibrary", 
+    "MediaBrowserIconMusicLibrary", 
+    "MediaBrowserIconVideoLibrary", 
+    "MediaBrowserIconPictureLibrary", 
+    "MediaBrowserIconDisk", 
+    "MediaBrowserIconUSB", 
+    "MediaBrowserIconNetwork", 
+    "MediaBrowserIconAux", 
+    "MediaBrowserIconSpotify", 
+    "MediaBrowserIconAmazon", 
+    "MediaBrowserIconTuneIn", 
+    "MediaBrowserIconSiriusXM", 
+    "MediaBrowserIconVTuner", 
+    "MediaBrowserIconTidal", 
+    "MediaBrowserIconAirable", 
+    "MediaBrowserIconDeezer", 
+    "MediaBrowserIconNapster", 
+    "MediaBrowserIconSoundCloud"
+]
+\endcode
+\section2 MqttPolicy
+\code
+{
+    "allowedPublishTopicFilters": "StringList", 
+    "allowedSubscribeTopicFilters": "StringList", 
+    "clientId": "String", 
+    "password": "String", 
+    "username": "String"
+}
+\endcode
+
+\section2 Namespace
+\code
+[
+    "Actions", 
+    "Configuration", 
+    "Devices", 
+    "Events", 
+    "JSONRPC", 
+    "Logging", 
+    "NetworkManager", 
+    "Rules", 
+    "States", 
+    "System", 
+    "Tags"
 ]
 \endcode
 \section2 NetworkDeviceState
@@ -324,6 +430,21 @@ See also: \l{LoggingSource}, \l{LoggingEventType}, \l{LoggingLevel}
     "NetworkManagerStateConnectedGlobal"
 ]
 \endcode
+\section2 Package
+\code
+{
+    "canRemove": "Bool", 
+    "candidateVersion": "String", 
+    "changelog": "String", 
+    "displayName": "String", 
+    "id": "String", 
+    "installedVersion": "String", 
+    "rollbackAvailable": "Bool", 
+    "summary": "String", 
+    "updateAvailable": "Bool"
+}
+\endcode
+
 \section2 Param
 \code
 {
@@ -405,6 +526,15 @@ See also: \l{ParamType}
 }
 \endcode
 See also: \l{RepeatingMode}
+\section2 Repository
+\code
+{
+    "displayName": "String", 
+    "enabled": "Bool", 
+    "id": "String"
+}
+\endcode
+
 \section2 Rule
 \code
 {
@@ -431,6 +561,7 @@ See also: \l{TimeDescriptor}, \l{RuleAction}, \l{StateEvaluator}, \l{RuleAction}
 \code
 {
     "o:actionTypeId": "Uuid", 
+    "o:browserItemId": "String", 
     "o:deviceId": "Uuid", 
     "o:interface": "String", 
     "o:interfaceAction": "String", 
@@ -447,6 +578,8 @@ See also: \l{RuleActionParam}
     "o:eventTypeId": "Uuid", 
     "o:paramName": "String", 
     "o:paramTypeId": "Uuid", 
+    "o:stateDeviceId": "Uuid", 
+    "o:stateTypeId": "Uuid", 
     "o:value": "$ref:BasicType"
 }
 \endcode
@@ -505,7 +638,9 @@ See also: \l{BasicType}
     "SetupMethodJustAdd", 
     "SetupMethodDisplayPin", 
     "SetupMethodEnterPin", 
-    "SetupMethodPushButton"
+    "SetupMethodPushButton", 
+    "SetupMethodUserAndPassword", 
+    "SetupMethodOAuth"
 ]
 \endcode
 \section2 State
@@ -765,6 +900,43 @@ Params
 Returns
 \code
 {
+    "deviceError": "$ref:DeviceError", 
+    "o:displayMessage": "String"
+}
+\endcode
+See also: \l{DeviceError}, \l{Param}
+\section2 Actions.ExecuteBrowserItem
+Execute the item identified by itemId on the given device.
+Params
+\code
+{
+    "deviceId": "Uuid", 
+    "itemId": "String"
+}
+\endcode
+Returns
+\code
+{
+    "deviceError": "$ref:DeviceError"
+}
+\endcode
+See also: \l{DeviceError}
+\section2 Actions.ExecuteBrowserItemAction
+Execute the action for the browser item identified by actionTypeId and the itemId on the given device.
+Params
+\code
+{
+    "actionTypeId": "Uuid", 
+    "deviceId": "Uuid", 
+    "itemId": "String", 
+    "o:params": [
+        "$ref:Param"
+    ]
+}
+\endcode
+Returns
+\code
+{
     "deviceError": "$ref:DeviceError"
 }
 \endcode
@@ -793,6 +965,36 @@ Returns
 }
 \endcode
 See also: \l{ParamType}, \l{DeviceError}
+\section2 Configuration.DeleteMqttPolicy
+Delete a MQTT policy from the broker.
+Params
+\code
+{
+    "clientId": "String"
+}
+\endcode
+Returns
+\code
+{
+    "configurationError": "$ref:ConfigurationError"
+}
+\endcode
+See also: \l{ConfigurationError}
+\section2 Configuration.DeleteMqttServerConfiguration
+Delete a MQTT Server interface of the server.
+Params
+\code
+{
+    "id": "String"
+}
+\endcode
+Returns
+\code
+{
+    "configurationError": "$ref:ConfigurationError"
+}
+\endcode
+See also: \l{ConfigurationError}
 \section2 Configuration.DeleteTcpServerConfiguration
 Delete a TCP interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the connection will be dropped.
 Params
@@ -839,7 +1041,7 @@ Returns
 \endcode
 See also: \l{ConfigurationError}
 \section2 Configuration.GetAvailableLanguages
-Returns a list of locale codes available for the server. i.e. en_US, de_AT
+DEPRECATED - Use the locale property in the Handshake message instead - Returns a list of locale codes available for the server. i.e. en_US, de_AT
 Params
 \code
 {}
@@ -885,6 +1087,36 @@ Returns
 }
 \endcode
 See also: \l{ServerConfiguration}, \l{WebServerConfiguration}, \l{ServerConfiguration}
+\section2 Configuration.GetMqttPolicies
+Get all MQTT broker policies.
+Params
+\code
+{}
+\endcode
+Returns
+\code
+{
+    "mqttPolicies": [
+        "$ref:MqttPolicy"
+    ]
+}
+\endcode
+See also: \l{MqttPolicy}
+\section2 Configuration.GetMqttServerConfigurations
+Get all MQTT Server configurations.
+Params
+\code
+{}
+\endcode
+Returns
+\code
+{
+    "mqttServerConfigurations": [
+        "$ref:ServerConfiguration"
+    ]
+}
+\endcode
+See also: \l{ServerConfiguration}
 \section2 Configuration.GetTimeZones
 Get the list of available timezones.
 Params
@@ -931,7 +1163,7 @@ Returns
 \endcode
 See also: \l{ConfigurationError}
 \section2 Configuration.SetLanguage
-Sets the server language to the given language. See also: "GetAvailableLanguages"
+DEPRECATED - Use the locale property in the Handshake message instead - Sets the server language to the given language. See also: "GetAvailableLanguages"
 Params
 \code
 {
@@ -945,6 +1177,36 @@ Returns
 }
 \endcode
 See also: \l{ConfigurationError}
+\section2 Configuration.SetMqttPolicy
+Configure a MQTT broker policy. If the ID is an existing one, the existing policy will be modified, otherwise a new one will be added.
+Params
+\code
+{
+    "policy": "$ref:MqttPolicy"
+}
+\endcode
+Returns
+\code
+{
+    "configurationError": "$ref:ConfigurationError"
+}
+\endcode
+See also: \l{ConfigurationError}, \l{MqttPolicy}
+\section2 Configuration.SetMqttServerConfiguration
+Configure a MQTT Server interface on the MQTT broker. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Setting authenticationEnabled to true will require MQTT clients to use credentials set in the MQTT broker policies.
+Params
+\code
+{
+    "configuration": "$ref:ServerConfiguration"
+}
+\endcode
+Returns
+\code
+{
+    "configurationError": "$ref:ConfigurationError"
+}
+\endcode
+See also: \l{ConfigurationError}, \l{ServerConfiguration}
 \section2 Configuration.SetServerName
 Set the name of the server. Default is nymea.
 Params
@@ -1021,7 +1283,7 @@ Returns
 \endcode
 See also: \l{ConfigurationError}, \l{ServerConfiguration}
 \section2 Devices.AddConfiguredDevice
-Add a configured device with a setupMethod of SetupMethodJustAdd. For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId.
+Add a configured device with a setupMethod of SetupMethodJustAdd. For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. Devices with CreateMethodJustAdd require all parameters to be supplied here. Devices with CreateMethodDiscovery require the use of a deviceDescriptorId. For discovered devices params are not required and will be taken from the DeviceDescriptor, however, they may be overridden by supplying parameters here.
 Params
 \code
 {
@@ -1037,16 +1299,37 @@ Returns
 \code
 {
     "deviceError": "$ref:DeviceError", 
-    "o:deviceId": "Uuid"
+    "o:deviceId": "Uuid", 
+    "o:displayMessage": "String"
 }
 \endcode
 See also: \l{DeviceError}, \l{Param}
+\section2 Devices.BrowseDevice
+Browse a device. If a DeviceClass indicates a device is browsable, this method will return the BrowserItems. If no parameter besides the deviceId is used, the root node of this device will be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.
+Params
+\code
+{
+    "deviceId": "Uuid", 
+    "o:itemId": "String"
+}
+\endcode
+Returns
+\code
+{
+    "deviceError": "$ref:DeviceError", 
+    "items": [
+        "$ref:BrowserItem"
+    ]
+}
+\endcode
+See also: \l{BrowserItem}, \l{DeviceError}
 \section2 Devices.ConfirmPairing
-Confirm an ongoing pairing. In case of SetupMethodEnterPin also provide the pin in the params.
+Confirm an ongoing pairing. For SetupMethodUserAndPassword, provide the username in the "username" field and the password in the "secret" field. For SetupMethodEnterPin and provide the PIN in the "secret" field. For SetupMethodOAuth, return the entire unmodified callback URL containing the code parameter back in the secret field.
 Params
 \code
 {
     "o:secret": "String", 
+    "o:username": "String", 
     "pairingTransactionId": "Uuid"
 }
 \endcode
@@ -1054,7 +1337,8 @@ Returns
 \code
 {
     "deviceError": "$ref:DeviceError", 
-    "o:deviceId": "Uuid"
+    "o:deviceId": "Uuid", 
+    "o:displayMessage": "String"
 }
 \endcode
 See also: \l{DeviceError}
@@ -1091,6 +1375,23 @@ Returns
 }
 \endcode
 See also: \l{ActionType}
+\section2 Devices.GetBrowserItem
+Get a single item from the browser. This won't give any more info on an item than a regular browseDevice call, but it allows to fetch details of an item if only the ID is known.
+Params
+\code
+{
+    "deviceId": "Uuid", 
+    "o:itemId": "String"
+}
+\endcode
+Returns
+\code
+{
+    "deviceError": "$ref:DeviceError", 
+    "o:item": "$ref:BrowserItem"
+}
+\endcode
+See also: \l{BrowserItem}, \l{DeviceError}
 \section2 Devices.GetConfiguredDevices
 Returns a list of configured devices, optionally filtered by deviceId.
 Params
@@ -1109,7 +1410,7 @@ Returns
 \endcode
 See also: \l{Device}
 \section2 Devices.GetDiscoveredDevices
-Performs a device discovery and returns the results. This function may take a while to return.
+Performs a device discovery and returns the results. This function may take a while to return. Note that this method will include all the found devices, that is, including devices that may already have been added. Those devices will have deviceId set to the device id of the already added device. Such results may be used to reconfigure existing devices and might be filtered in cases where only unknown devices are of interest.
 Params
 \code
 {
@@ -1125,7 +1426,8 @@ Returns
     "deviceError": "$ref:DeviceError", 
     "o:deviceDescriptors": [
         "$ref:DeviceDescriptor"
-    ]
+    ], 
+    "o:displayMessage": "String"
 }
 \endcode
 See also: \l{DeviceDescriptor}, \l{DeviceError}, \l{Param}
@@ -1267,7 +1569,7 @@ Returns
 \endcode
 See also: \l{Vendor}
 \section2 Devices.PairDevice
-Pair a device. Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId. If success is true, the return values will contain a pairingTransactionId, a displayMessage and the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice or PairDevice.
+Pair a device. Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId, optionally, parameters can be overridden here. If success is true, the return values will contain a pairingTransactionId, a displayMessage and the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice or PairDevice.
 Params
 \code
 {
@@ -1284,6 +1586,7 @@ Returns
 {
     "deviceError": "$ref:DeviceError", 
     "o:displayMessage": "String", 
+    "o:oAuthUrl": "String", 
     "o:pairingTransactionId": "Uuid", 
     "o:setupMethod": "$ref:SetupMethod"
 }
@@ -1304,7 +1607,8 @@ Params
 Returns
 \code
 {
-    "deviceError": "$ref:DeviceError"
+    "deviceError": "$ref:DeviceError", 
+    "o:displayMessage": "String"
 }
 \endcode
 See also: \l{DeviceError}, \l{Param}
@@ -1333,6 +1637,24 @@ Returns
 }
 \endcode
 See also: \l{DeviceError}, \l{RemovePolicy}, \l{RemovePolicy}
+\section2 Devices.SetDeviceSettings
+Change the settings of a device.
+Params
+\code
+{
+    "deviceId": "Uuid", 
+    "settings": [
+        "$ref:Param"
+    ]
+}
+\endcode
+Returns
+\code
+{
+    "deviceError": "$ref:DeviceError"
+}
+\endcode
+See also: \l{DeviceError}, \l{Param}
 \section2 Devices.SetPluginConfiguration
 Set a plugin's params.
 Params
@@ -1402,16 +1724,7 @@ Returns
 \endcode
 See also: \l{UserError}
 \section2 JSONRPC.Hello
-Initiates a connection. Use this method to perform an initial handshake of the connection. Optionally, a
-parameter \"locale\" is can be passed to set up the used locale for this connection. Strings such as DeviceClass
-displayNames etc will be localized to this locale. If this parameter is omitted, the default system locale
-(depending on the configuration) is used. The reply of this method contains information about this core instance
-such as version information, uuid and its name. The locale value indicates the locale used for this connection.
-Note: This method can be called multiple times. The locale used in the last call for this connection will be used.
-Other values, like initialSetupRequired might change if the setup has been performed in the meantime.
-
-Note: The return value contains a locale and and a language parameter. They will always be set to the same value
-and the language parameter is deprecated as of JSONRPC version 2.0. Clients should use the "locale" parameter instead.
+Initiates a connection. Use this method to perform an initial handshake of the connection. Optionally, a parameter "locale" is can be passed to set up the used locale for this connection. Strings such as DeviceClass displayNames etc will be localized to this locale. If this parameter is omitted, the default system locale (depending on the configuration) is used. The reply of this method contains information about this core instance such as version information, uuid and its name. The locale valueindicates the locale used for this connection. Note: This method can be called multiple times. The locale used in the last call for this connection will be used. Other values, like initialSetupRequired might change if the setup has been performed in the meantime.
 Params
 \code
 {
@@ -1424,7 +1737,7 @@ Returns
     "authenticationRequired": "Bool", 
     "initialSetupRequired": "Bool", 
     "language": "String", 
-    "locale": String,
+    "locale": "String", 
     "name": "String", 
     "protocol version": "String", 
     "pushButtonAuthAvailable": "Bool", 
@@ -1464,7 +1777,7 @@ Returns
 \endcode
 See also: \l{CloudConnectionState}
 \section2 JSONRPC.KeepAlive
-Keep alive a remote connection. The sessionId is the MQTT topic which has been used to establish the session. It will return false if no ongoing session with the given ID can be found.
+This is basically a Ping/Pong mechanism a client app may use to check server connectivity. Currently, the server does not actually do anything with this information and will return the call providing the given sessionId back to the caller. It is up to the client whether to use this or not and not required by the server to keep the connection alive.
 Params
 \code
 {
@@ -1474,6 +1787,7 @@ Params
 Returns
 \code
 {
+    "sessionId": "String", 
     "success": "Bool"
 }
 \endcode
@@ -1510,20 +1824,26 @@ Returns
 \endcode
 
 \section2 JSONRPC.SetNotificationStatus
-Enable/Disable notifications for this connections.
+Enable/Disable notifications for this connections. Either "enabled" or "namespaces" needs to be given but not both of them. The boolean based "enabled" parameter will enable/disable all notifications at once. If instead the list-based "namespaces" parameter is provided, all given namespaceswill be enabled, the others will be disabled. The return value of "success" will indicate success of the operation. The "enabled" property in the return value is deprecated and used for legacy compatibilty only. It will be set to true if at least one namespace has been enabled.
 Params
 \code
 {
-    "enabled": "Bool"
+    "o:enabled": "Bool", 
+    "o:namespaces": [
+        "$ref:Namespace"
+    ]
 }
 \endcode
 Returns
 \code
 {
-    "enabled": "Bool"
+    "enabled": "Bool", 
+    "namespaces": [
+        "$ref:Namespace"
+    ]
 }
 \endcode
-
+See also: \l{Namespace}, \l{Namespace}
 \section2 JSONRPC.SetupCloudConnection
 Sets up the cloud connection by deploying a certificate and its configuration.
 Params
@@ -1972,6 +2292,170 @@ Returns
 }
 \endcode
 See also: \l{StateType}, \l{DeviceError}
+\section2 System.CheckForUpdates
+Instruct the system to poll the server for updates. Normally the system should automatically do this in regular intervals, however, if the client wants to allow the user to manually check for new updates now, this can be called. Returns true if the operation has been started successfully and the update manager will become busy. In order to know whether there are updates available, clients should walk through the list of packages retrieved from GetPackages and check whether there are packages with the updateAvailable flag set to true.
+Params
+\code
+{}
+\endcode
+Returns
+\code
+{
+    "success": "Bool"
+}
+\endcode
+
+\section2 System.EnableRepository
+Enable or disable a repository.
+Params
+\code
+{
+    "enabled": "Bool", 
+    "repositoryId": "String"
+}
+\endcode
+Returns
+\code
+{
+    "success": "Bool"
+}
+\endcode
+
+\section2 System.GetCapabilities
+Get the list of capabilites on this system. This allows reading whether things like rebooting or shutting down the system running nymea:core is supported on this host.
+Params
+\code
+{}
+\endcode
+Returns
+\code
+{
+    "powerManagement": "Bool", 
+    "updateManagement": "Bool"
+}
+\endcode
+
+\section2 System.GetPackages
+Get the list of packages currently available to the system. This might include installed available but not installed packages. Installed packages will have the installedVersion set to a non-empty value.
+Params
+\code
+{}
+\endcode
+Returns
+\code
+{
+    "packages": [
+        "$ref:Package"
+    ]
+}
+\endcode
+See also: \l{Package}
+\section2 System.GetRepositories
+Get the list of repositories currently available to the system.
+Params
+\code
+{}
+\endcode
+Returns
+\code
+{
+    "repositories": [
+        "$ref:Repository"
+    ]
+}
+\endcode
+See also: \l{Repository}
+\section2 System.GetUpdateStatus
+Get the current status of the update system. "busy" indicates that the system is current busy with an operation regarding updates. This does not necessarily mean an actual update is running. When this is true, update related functions on the client should be marked as busy and no interaction with update components shall be allowed. An example for such a state is when the system queries the server if there are updates available, typically after a call to CheckForUpdates. "updateRunning" on the other hand indicates an actual update process is ongoing. The user should be informed about it, the system also might restart at any point while an update is running.
+Params
+\code
+{}
+\endcode
+Returns
+\code
+{
+    "busy": "Bool", 
+    "updateRunning": "Bool"
+}
+\endcode
+
+\section2 System.Reboot
+Initiate a reboot of the system. The return value will indicate whether the procedure has been initiated successfully.
+Params
+\code
+{}
+\endcode
+Returns
+\code
+{
+    "success": "Bool"
+}
+\endcode
+
+\section2 System.RemovePackages
+Starts removing a package. Returns true if the removal has been started successfully. Before calling this method, clients should check whether the package can be removed (canRemove set to true).
+Params
+\code
+{
+    "packageIds": [
+        "String"
+    ]
+}
+\endcode
+Returns
+\code
+{
+    "success": "Bool"
+}
+\endcode
+
+\section2 System.RollbackPackages
+Starts a rollback. Returns true if the rollback has been started successfully. Before calling this method, clients should check whether the package can be rolled back (canRollback set to true).
+Params
+\code
+{
+    "packageIds": [
+        "String"
+    ]
+}
+\endcode
+Returns
+\code
+{
+    "success": "Bool"
+}
+\endcode
+
+\section2 System.Shutdown
+Initiate a shutdown of the system. The return value will indicate whether the procedure has been initiated successfully.
+Params
+\code
+{}
+\endcode
+Returns
+\code
+{
+    "success": "Bool"
+}
+\endcode
+
+\section2 System.UpdatePackages
+Starts updating/installing packages with the given ids. Returns true if the upgrade has been started successfully. Note that it might still fail later. Before calling this method, clients should check the packages whether they are in a state where they can either be installed (no installedVersion set) or upgraded (updateAvailable set to true).
+Params
+\code
+{
+    "o:packageIds": [
+        "String"
+    ]
+}
+\endcode
+Returns
+\code
+{
+    "success": "Bool"
+}
+\endcode
+
 \section2 Tags.AddTag
 Add a Tag. A Tag must have a deviceId OR a ruleId (call this method twice if you want to attach the same tag to a device and a rule), an appId (Use the appId of your app), a tagId (e.g. "favorites") and a value. Upon success, a TagAdded notification will be emitted. Calling this method twice for the same ids (device/rule, appId and tagId) but with a different value will update the tag's value and the TagValueChanged notification will be emitted.
 Params
@@ -2029,11 +2513,14 @@ Emitted whenever the basic configuration of this server changes.
 Params
 \code
 {
-    "debugServerEnabled": "Bool", 
-    "serverName": "String", 
-    "serverTime": "Uint", 
-    "serverUuid": "Uuid", 
-    "timeZone": "String"
+    "basicConfiguration": {
+        "debugServerEnabled": "Bool", 
+        "language": "String", 
+        "serverName": "String", 
+        "serverTime": "Uint", 
+        "serverUuid": "Uuid", 
+        "timeZone": "String"
+    }
 }
 \endcode
 
@@ -2042,7 +2529,9 @@ Emitted whenever the cloud configuration is changed.
 Params
 \code
 {
-    "enabled": "Bool"
+    "cloudConfiguration": {
+        "enabled": "Bool"
+    }
 }
 \endcode
 
@@ -2055,13 +2544,57 @@ Params
 }
 \endcode
 
+\section2 Configuration.MqttPolicyChanged
+Emitted whenever a MQTT broker policy is changed.
+Params
+\code
+{
+    "policy": "$ref:MqttPolicy"
+}
+\endcode
+See also: \l{MqttPolicy}
+\section2 Configuration.MqttPolicyRemoved
+Emitted whenever a MQTT broker policy is removed.
+Params
+\code
+{
+    "clientId": "String"
+}
+\endcode
+
+\section2 Configuration.MqttServerConfigurationChanged
+Emitted whenever the MQTT broker configuration is changed.
+Params
+\code
+{
+    "mqttServerConfiguration": "$ref:ServerConfiguration"
+}
+\endcode
+See also: \l{ServerConfiguration}
+\section2 Configuration.MqttServerConfigurationRemoved
+Emitted whenever a MQTT server configuration is removed.
+Params
+\code
+{
+    "id": "String"
+}
+\endcode
+
 \section2 Configuration.TcpServerConfigurationChanged
 Emitted whenever the TCP server configuration changes.
 Params
 \code
 {
-    "host": "String", 
-    "port": "Uint"
+    "tcpServerConfiguration": "$ref:ServerConfiguration"
+}
+\endcode
+See also: \l{ServerConfiguration}
+\section2 Configuration.TcpServerConfigurationRemoved
+Emitted whenever a TCP server configuration is removed.
+Params
+\code
+{
+    "id": "String"
 }
 \endcode
 
@@ -2070,8 +2603,16 @@ Emitted whenever the web server configuration changes.
 Params
 \code
 {
-    "host": "String", 
-    "port": "Uint"
+    "webServerConfiguration": "$ref:WebServerConfiguration"
+}
+\endcode
+See also: \l{WebServerConfiguration}
+\section2 Configuration.WebServerConfigurationRemoved
+Emitted whenever a Web server configuration is removed.
+Params
+\code
+{
+    "id": "String"
 }
 \endcode
 
@@ -2080,8 +2621,16 @@ Emitted whenever the web socket server configuration changes.
 Params
 \code
 {
-    "host": "String", 
-    "port": "Uint"
+    "webSocketServerConfiguration": "$ref:ServerConfiguration"
+}
+\endcode
+See also: \l{ServerConfiguration}
+\section2 Configuration.WebSocketServerConfigurationRemoved
+Emitted whenever a WebSocket server configuration is removed.
+Params
+\code
+{
+    "id": "String"
 }
 \endcode
 
@@ -2095,7 +2644,7 @@ Params
 \endcode
 See also: \l{Device}
 \section2 Devices.DeviceChanged
-Emitted whenever the params or name of a Device changed (by EditDevice or ReconfigureDevice).
+Emitted whenever the params or name of a Device are changed (by EditDevice or ReconfigureDevice).
 Params
 \code
 {
@@ -2112,6 +2661,29 @@ Params
 }
 \endcode
 
+\section2 Devices.DeviceSettingChanged
+Emitted whenever the setting of a Device is changed.
+Params
+\code
+{
+    "deviceId": "Uuid", 
+    "paramTypeId": "Uuid", 
+    "value": "Variant"
+}
+\endcode
+
+\section2 Devices.PluginConfigurationChanged
+Emitted whenever a plugin's configuration is changed.
+Params
+\code
+{
+    "configuration": [
+        "$ref:Param"
+    ], 
+    "pluginId": "Uuid"
+}
+\endcode
+See also: \l{Param}
 \section2 Devices.StateChanged
 Emitted whenever a State of a device changes.
 Params
@@ -2137,21 +2709,22 @@ Emitted whenever the cloud connection status changes.
 Params
 \code
 {
-    "connected": "Bool"
+    "connected": "Bool", 
+    "connectionState": "$ref:CloudConnectionState"
 }
 \endcode
-
+See also: \l{CloudConnectionState}
 \section2 JSONRPC.PushButtonAuthFinished
 Emitted when a push button authentication reaches final state. NOTE: This notification is special. It will only be emitted to connections that did actively request a push button authentication, but also it will be emitted regardless of the notification settings. 
 Params
 \code
 {
     "o:token": "String", 
-    "status": "$ref:UserError", 
+    "success": "Bool", 
     "transactionId": "Int"
 }
 \endcode
-See also: \l{UserError}
+
 \section2 Logging.LogDatabaseUpdated
 Emitted whenever the database was updated. The database will be updated when a log entry was deleted. A log entry will be deleted when the corresponding device or a rule will be removed, or when the oldest entry of the database was deleted to keep to database in the size limits.
 Params
@@ -2272,6 +2845,80 @@ Params
 }
 \endcode
 
+\section2 System.CapabilitiesChanged
+Emitted whenever the system capabilities change.
+Params
+\code
+{
+    "powerManagement": "Bool", 
+    "updateManagement": "Bool"
+}
+\endcode
+
+\section2 System.PackageAdded
+Emitted whenever a package is added to the list of packages.
+Params
+\code
+{
+    "package": "$ref:Package"
+}
+\endcode
+See also: \l{Package}
+\section2 System.PackageChanged
+Emitted whenever a package in the list of packages changes.
+Params
+\code
+{
+    "package": "$ref:Package"
+}
+\endcode
+See also: \l{Package}
+\section2 System.PackageRemoved
+Emitted whenever a package is removed from the list of packages.
+Params
+\code
+{
+    "packageId": "String"
+}
+\endcode
+
+\section2 System.RepositoryAdded
+Emitted whenever a repository is added to the list of repositories.
+Params
+\code
+{
+    "repository": "$ref:Repository"
+}
+\endcode
+See also: \l{Repository}
+\section2 System.RepositoryChanged
+Emitted whenever a repository in the list of repositories changes.
+Params
+\code
+{
+    "repository": "$ref:Repository"
+}
+\endcode
+See also: \l{Repository}
+\section2 System.RepositoryRemoved
+Emitted whenever a repository is removed from the list of repositories.
+Params
+\code
+{
+    "repositoryId": "String"
+}
+\endcode
+
+\section2 System.UpdateStatusChanged
+Emitted whenever the update status changes.
+Params
+\code
+{
+    "busy": "Bool", 
+    "updateRunning": "Bool"
+}
+\endcode
+
 \section2 Tags.TagAdded
 Emitted whenever a tag is added to the system. 
 Params
@@ -2313,6 +2960,31 @@ See also: \l{Tag}
                 ]
             }, 
             "returns": {
+                "deviceError": "$ref:DeviceError", 
+                "o:displayMessage": "String"
+            }
+        }, 
+        "Actions.ExecuteBrowserItem": {
+            "description": "Execute the item identified by itemId on the given device.", 
+            "params": {
+                "deviceId": "Uuid", 
+                "itemId": "String"
+            }, 
+            "returns": {
+                "deviceError": "$ref:DeviceError"
+            }
+        }, 
+        "Actions.ExecuteBrowserItemAction": {
+            "description": "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.", 
+            "params": {
+                "actionTypeId": "Uuid", 
+                "deviceId": "Uuid", 
+                "itemId": "String", 
+                "o:params": [
+                    "$ref:Param"
+                ]
+            }, 
+            "returns": {
                 "deviceError": "$ref:DeviceError"
             }
         }, 
@@ -2332,6 +3004,24 @@ See also: \l{Tag}
                         "$ref:ParamType"
                     ]
                 }
+            }
+        }, 
+        "Configuration.DeleteMqttPolicy": {
+            "description": "Delete a MQTT policy from the broker.", 
+            "params": {
+                "clientId": "String"
+            }, 
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        }, 
+        "Configuration.DeleteMqttServerConfiguration": {
+            "description": "Delete a MQTT Server interface of the server.", 
+            "params": {
+                "id": "String"
+            }, 
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
             }
         }, 
         "Configuration.DeleteTcpServerConfiguration": {
@@ -2362,7 +3052,7 @@ See also: \l{Tag}
             }
         }, 
         "Configuration.GetAvailableLanguages": {
-            "description": "Returns a list of locale codes available for the server. i.e. en_US, de_AT", 
+            "description": "DEPRECATED - Use the locale property in the Handshake message instead - Returns a list of locale codes available for the server. i.e. en_US, de_AT", 
             "params": {}, 
             "returns": {
                 "languages": [
@@ -2396,6 +3086,24 @@ See also: \l{Tag}
                 ]
             }
         }, 
+        "Configuration.GetMqttPolicies": {
+            "description": "Get all MQTT broker policies.", 
+            "params": {}, 
+            "returns": {
+                "mqttPolicies": [
+                    "$ref:MqttPolicy"
+                ]
+            }
+        }, 
+        "Configuration.GetMqttServerConfigurations": {
+            "description": "Get all MQTT Server configurations.", 
+            "params": {}, 
+            "returns": {
+                "mqttServerConfigurations": [
+                    "$ref:ServerConfiguration"
+                ]
+            }
+        }, 
         "Configuration.GetTimeZones": {
             "description": "Get the list of available timezones.", 
             "params": {}, 
@@ -2424,9 +3132,27 @@ See also: \l{Tag}
             }
         }, 
         "Configuration.SetLanguage": {
-            "description": "Sets the server language to the given language. See also: \"GetAvailableLanguages\"", 
+            "description": "DEPRECATED - Use the locale property in the Handshake message instead - Sets the server language to the given language. See also: \"GetAvailableLanguages\"", 
             "params": {
                 "language": "String"
+            }, 
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        }, 
+        "Configuration.SetMqttPolicy": {
+            "description": "Configure a MQTT broker policy. If the ID is an existing one, the existing policy will be modified, otherwise a new one will be added.", 
+            "params": {
+                "policy": "$ref:MqttPolicy"
+            }, 
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        }, 
+        "Configuration.SetMqttServerConfiguration": {
+            "description": "Configure a MQTT Server interface on the MQTT broker. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Setting authenticationEnabled to true will require MQTT clients to use credentials set in the MQTT broker policies.", 
+            "params": {
+                "configuration": "$ref:ServerConfiguration"
             }, 
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
@@ -2478,7 +3204,7 @@ See also: \l{Tag}
             }
         }, 
         "Devices.AddConfiguredDevice": {
-            "description": "Add a configured device with a setupMethod of SetupMethodJustAdd. For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId.", 
+            "description": "Add a configured device with a setupMethod of SetupMethodJustAdd. For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. Devices with CreateMethodJustAdd require all parameters to be supplied here. Devices with CreateMethodDiscovery require the use of a deviceDescriptorId. For discovered devices params are not required and will be taken from the DeviceDescriptor, however, they may be overridden by supplying parameters here.", 
             "params": {
                 "deviceClassId": "Uuid", 
                 "name": "String", 
@@ -2489,18 +3215,34 @@ See also: \l{Tag}
             }, 
             "returns": {
                 "deviceError": "$ref:DeviceError", 
-                "o:deviceId": "Uuid"
+                "o:deviceId": "Uuid", 
+                "o:displayMessage": "String"
+            }
+        }, 
+        "Devices.BrowseDevice": {
+            "description": "Browse a device. If a DeviceClass indicates a device is browsable, this method will return the BrowserItems. If no parameter besides the deviceId is used, the root node of this device will be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.", 
+            "params": {
+                "deviceId": "Uuid", 
+                "o:itemId": "String"
+            }, 
+            "returns": {
+                "deviceError": "$ref:DeviceError", 
+                "items": [
+                    "$ref:BrowserItem"
+                ]
             }
         }, 
         "Devices.ConfirmPairing": {
-            "description": "Confirm an ongoing pairing. In case of SetupMethodEnterPin also provide the pin in the params.", 
+            "description": "Confirm an ongoing pairing. For SetupMethodUserAndPassword, provide the username in the \"username\" field and the password in the \"secret\" field. For SetupMethodEnterPin and provide the PIN in the \"secret\" field. For SetupMethodOAuth, return the entire unmodified callback URL containing the code parameter back in the secret field.", 
             "params": {
                 "o:secret": "String", 
+                "o:username": "String", 
                 "pairingTransactionId": "Uuid"
             }, 
             "returns": {
                 "deviceError": "$ref:DeviceError", 
-                "o:deviceId": "Uuid"
+                "o:deviceId": "Uuid", 
+                "o:displayMessage": "String"
             }
         }, 
         "Devices.EditDevice": {
@@ -2524,6 +3266,17 @@ See also: \l{Tag}
                 ]
             }
         }, 
+        "Devices.GetBrowserItem": {
+            "description": "Get a single item from the browser. This won't give any more info on an item than a regular browseDevice call, but it allows to fetch details of an item if only the ID is known.", 
+            "params": {
+                "deviceId": "Uuid", 
+                "o:itemId": "String"
+            }, 
+            "returns": {
+                "deviceError": "$ref:DeviceError", 
+                "o:item": "$ref:BrowserItem"
+            }
+        }, 
         "Devices.GetConfiguredDevices": {
             "description": "Returns a list of configured devices, optionally filtered by deviceId.", 
             "params": {
@@ -2536,7 +3289,7 @@ See also: \l{Tag}
             }
         }, 
         "Devices.GetDiscoveredDevices": {
-            "description": "Performs a device discovery and returns the results. This function may take a while to return.", 
+            "description": "Performs a device discovery and returns the results. This function may take a while to return. Note that this method will include all the found devices, that is, including devices that may already have been added. Those devices will have deviceId set to the device id of the already added device. Such results may be used to reconfigure existing devices and might be filtered in cases where only unknown devices are of interest.", 
             "params": {
                 "deviceClassId": "Uuid", 
                 "o:discoveryParams": [
@@ -2547,7 +3300,8 @@ See also: \l{Tag}
                 "deviceError": "$ref:DeviceError", 
                 "o:deviceDescriptors": [
                     "$ref:DeviceDescriptor"
-                ]
+                ], 
+                "o:displayMessage": "String"
             }
         }, 
         "Devices.GetEventTypes": {
@@ -2640,7 +3394,7 @@ See also: \l{Tag}
             }
         }, 
         "Devices.PairDevice": {
-            "description": "Pair a device. Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId. If success is true, the return values will contain a pairingTransactionId, a displayMessage and the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice or PairDevice.", 
+            "description": "Pair a device. Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId, optionally, parameters can be overridden here. If success is true, the return values will contain a pairingTransactionId, a displayMessage and the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice or PairDevice.", 
             "params": {
                 "deviceClassId": "Uuid", 
                 "name": "String", 
@@ -2652,6 +3406,7 @@ See also: \l{Tag}
             "returns": {
                 "deviceError": "$ref:DeviceError", 
                 "o:displayMessage": "String", 
+                "o:oAuthUrl": "String", 
                 "o:pairingTransactionId": "Uuid", 
                 "o:setupMethod": "$ref:SetupMethod"
             }
@@ -2666,7 +3421,8 @@ See also: \l{Tag}
                 ]
             }, 
             "returns": {
-                "deviceError": "$ref:DeviceError"
+                "deviceError": "$ref:DeviceError", 
+                "o:displayMessage": "String"
             }
         }, 
         "Devices.RemoveConfiguredDevice": {
@@ -2686,6 +3442,18 @@ See also: \l{Tag}
                 "o:ruleIds": [
                     "Uuid"
                 ]
+            }
+        }, 
+        "Devices.SetDeviceSettings": {
+            "description": "Change the settings of a device.", 
+            "params": {
+                "deviceId": "Uuid", 
+                "settings": [
+                    "$ref:Param"
+                ]
+            }, 
+            "returns": {
+                "deviceError": "$ref:DeviceError"
             }
         }, 
         "Devices.SetPluginConfiguration": {
@@ -2733,13 +3501,15 @@ See also: \l{Tag}
             }
         }, 
         "JSONRPC.Hello": {
-            "description": "Upon first connection, nymea will automatically send a welcome message containing information about the setup. If this message is lost for whatever reason (connections with multiple hops might drop this if nymea sends it too early), the exact same message can be retrieved multiple times by calling this Hello method. Note that the contents might change if the system changed its state in the meantime, e.g. initialSetupRequired might turn false if the initial setup has been performed in the meantime.", 
-            "params": {}, 
+            "description": "Initiates a connection. Use this method to perform an initial handshake of the connection. Optionally, a parameter \"locale\" is can be passed to set up the used locale for this connection. Strings such as DeviceClass displayNames etc will be localized to this locale. If this parameter is omitted, the default system locale (depending on the configuration) is used. The reply of this method contains information about this core instance such as version information, uuid and its name. The locale valueindicates the locale used for this connection. Note: This method can be called multiple times. The locale used in the last call for this connection will be used. Other values, like initialSetupRequired might change if the setup has been performed in the meantime.", 
+            "params": {
+                "o:locale": "String"
+            }, 
             "returns": {
                 "authenticationRequired": "Bool", 
-                "id": "Int", 
                 "initialSetupRequired": "Bool", 
                 "language": "String", 
+                "locale": "String", 
                 "name": "String", 
                 "protocol version": "String", 
                 "pushButtonAuthAvailable": "Bool", 
@@ -2766,11 +3536,12 @@ See also: \l{Tag}
             }
         }, 
         "JSONRPC.KeepAlive": {
-            "description": "Keep alive a remote connection. The sessionId is the MQTT topic which has been used to establish the session. It will return false if no ongoing session with the given ID can be found.", 
+            "description": "This is basically a Ping/Pong mechanism a client app may use to check server connectivity. Currently, the server does not actually do anything with this information and will return the call providing the given sessionId back to the caller. It is up to the client whether to use this or not and not required by the server to keep the connection alive.", 
             "params": {
                 "sessionId": "String"
             }, 
             "returns": {
+                "sessionId": "String", 
                 "success": "Bool"
             }
         }, 
@@ -2794,12 +3565,18 @@ See also: \l{Tag}
             }
         }, 
         "JSONRPC.SetNotificationStatus": {
-            "description": "Enable/Disable notifications for this connections.", 
+            "description": "Enable/Disable notifications for this connections. Either \"enabled\" or \"namespaces\" needs to be given but not both of them. The boolean based \"enabled\" parameter will enable/disable all notifications at once. If instead the list-based \"namespaces\" parameter is provided, all given namespaceswill be enabled, the others will be disabled. The return value of \"success\" will indicate success of the operation. The \"enabled\" property in the return value is deprecated and used for legacy compatibilty only. It will be set to true if at least one namespace has been enabled.", 
             "params": {
-                "enabled": "Bool"
+                "o:enabled": "Bool", 
+                "o:namespaces": [
+                    "$ref:Namespace"
+                ]
             }, 
             "returns": {
-                "enabled": "Bool"
+                "enabled": "Bool", 
+                "namespaces": [
+                    "$ref:Namespace"
+                ]
             }
         }, 
         "JSONRPC.SetupCloudConnection": {
@@ -3098,6 +3875,104 @@ See also: \l{Tag}
                 "o:stateType": "$ref:StateType"
             }
         }, 
+        "System.CheckForUpdates": {
+            "description": "Instruct the system to poll the server for updates. Normally the system should automatically do this in regular intervals, however, if the client wants to allow the user to manually check for new updates now, this can be called. Returns true if the operation has been started successfully and the update manager will become busy. In order to know whether there are updates available, clients should walk through the list of packages retrieved from GetPackages and check whether there are packages with the updateAvailable flag set to true.", 
+            "params": {}, 
+            "returns": {
+                "success": "Bool"
+            }
+        }, 
+        "System.EnableRepository": {
+            "description": "Enable or disable a repository.", 
+            "params": {
+                "enabled": "Bool", 
+                "repositoryId": "String"
+            }, 
+            "returns": {
+                "success": "Bool"
+            }
+        }, 
+        "System.GetCapabilities": {
+            "description": "Get the list of capabilites on this system. This allows reading whether things like rebooting or shutting down the system running nymea:core is supported on this host.", 
+            "params": {}, 
+            "returns": {
+                "powerManagement": "Bool", 
+                "updateManagement": "Bool"
+            }
+        }, 
+        "System.GetPackages": {
+            "description": "Get the list of packages currently available to the system. This might include installed available but not installed packages. Installed packages will have the installedVersion set to a non-empty value.", 
+            "params": {}, 
+            "returns": {
+                "packages": [
+                    "$ref:Package"
+                ]
+            }
+        }, 
+        "System.GetRepositories": {
+            "description": "Get the list of repositories currently available to the system.", 
+            "params": {}, 
+            "returns": {
+                "repositories": [
+                    "$ref:Repository"
+                ]
+            }
+        }, 
+        "System.GetUpdateStatus": {
+            "description": "Get the current status of the update system. \"busy\" indicates that the system is current busy with an operation regarding updates. This does not necessarily mean an actual update is running. When this is true, update related functions on the client should be marked as busy and no interaction with update components shall be allowed. An example for such a state is when the system queries the server if there are updates available, typically after a call to CheckForUpdates. \"updateRunning\" on the other hand indicates an actual update process is ongoing. The user should be informed about it, the system also might restart at any point while an update is running.", 
+            "params": {}, 
+            "returns": {
+                "busy": "Bool", 
+                "updateRunning": "Bool"
+            }
+        }, 
+        "System.Reboot": {
+            "description": "Initiate a reboot of the system. The return value will indicate whether the procedure has been initiated successfully.", 
+            "params": {}, 
+            "returns": {
+                "success": "Bool"
+            }
+        }, 
+        "System.RemovePackages": {
+            "description": "Starts removing a package. Returns true if the removal has been started successfully. Before calling this method, clients should check whether the package can be removed (canRemove set to true).", 
+            "params": {
+                "packageIds": [
+                    "String"
+                ]
+            }, 
+            "returns": {
+                "success": "Bool"
+            }
+        }, 
+        "System.RollbackPackages": {
+            "description": "Starts a rollback. Returns true if the rollback has been started successfully. Before calling this method, clients should check whether the package can be rolled back (canRollback set to true).", 
+            "params": {
+                "packageIds": [
+                    "String"
+                ]
+            }, 
+            "returns": {
+                "success": "Bool"
+            }
+        }, 
+        "System.Shutdown": {
+            "description": "Initiate a shutdown of the system. The return value will indicate whether the procedure has been initiated successfully.", 
+            "params": {}, 
+            "returns": {
+                "success": "Bool"
+            }
+        }, 
+        "System.UpdatePackages": {
+            "description": "Starts updating/installing packages with the given ids. Returns true if the upgrade has been started successfully. Note that it might still fail later. Before calling this method, clients should check the packages whether they are in a state where they can either be installed (no installedVersion set) or upgraded (updateAvailable set to true).", 
+            "params": {
+                "o:packageIds": [
+                    "String"
+                ]
+            }, 
+            "returns": {
+                "success": "Bool"
+            }
+        }, 
         "Tags.AddTag": {
             "description": "Add a Tag. A Tag must have a deviceId OR a ruleId (call this method twice if you want to attach the same tag to a device and a rule), an appId (Use the appId of your app), a tagId (e.g. \"favorites\") and a value. Upon success, a TagAdded notification will be emitted. Calling this method twice for the same ids (device/rule, appId and tagId) but with a different value will update the tag's value and the TagValueChanged notification will be emitted.", 
             "params": {
@@ -3136,17 +4011,22 @@ See also: \l{Tag}
         "Configuration.BasicConfigurationChanged": {
             "description": "Emitted whenever the basic configuration of this server changes.", 
             "params": {
-                "debugServerEnabled": "Bool", 
-                "serverName": "String", 
-                "serverTime": "Uint", 
-                "serverUuid": "Uuid", 
-                "timeZone": "String"
+                "basicConfiguration": {
+                    "debugServerEnabled": "Bool", 
+                    "language": "String", 
+                    "serverName": "String", 
+                    "serverTime": "Uint", 
+                    "serverUuid": "Uuid", 
+                    "timeZone": "String"
+                }
             }
         }, 
         "Configuration.CloudConfigurationChanged": {
             "description": "Emitted whenever the cloud configuration is changed.", 
             "params": {
-                "enabled": "Bool"
+                "cloudConfiguration": {
+                    "enabled": "Bool"
+                }
             }
         }, 
         "Configuration.LanguageChanged": {
@@ -3155,25 +4035,64 @@ See also: \l{Tag}
                 "language": "String"
             }
         }, 
+        "Configuration.MqttPolicyChanged": {
+            "description": "Emitted whenever a MQTT broker policy is changed.", 
+            "params": {
+                "policy": "$ref:MqttPolicy"
+            }
+        }, 
+        "Configuration.MqttPolicyRemoved": {
+            "description": "Emitted whenever a MQTT broker policy is removed.", 
+            "params": {
+                "clientId": "String"
+            }
+        }, 
+        "Configuration.MqttServerConfigurationChanged": {
+            "description": "Emitted whenever the MQTT broker configuration is changed.", 
+            "params": {
+                "mqttServerConfiguration": "$ref:ServerConfiguration"
+            }
+        }, 
+        "Configuration.MqttServerConfigurationRemoved": {
+            "description": "Emitted whenever a MQTT server configuration is removed.", 
+            "params": {
+                "id": "String"
+            }
+        }, 
         "Configuration.TcpServerConfigurationChanged": {
             "description": "Emitted whenever the TCP server configuration changes.", 
             "params": {
-                "host": "String", 
-                "port": "Uint"
+                "tcpServerConfiguration": "$ref:ServerConfiguration"
+            }
+        }, 
+        "Configuration.TcpServerConfigurationRemoved": {
+            "description": "Emitted whenever a TCP server configuration is removed.", 
+            "params": {
+                "id": "String"
             }
         }, 
         "Configuration.WebServerConfigurationChanged": {
             "description": "Emitted whenever the web server configuration changes.", 
             "params": {
-                "host": "String", 
-                "port": "Uint"
+                "webServerConfiguration": "$ref:WebServerConfiguration"
+            }
+        }, 
+        "Configuration.WebServerConfigurationRemoved": {
+            "description": "Emitted whenever a Web server configuration is removed.", 
+            "params": {
+                "id": "String"
             }
         }, 
         "Configuration.WebSocketServerConfigurationChanged": {
             "description": "Emitted whenever the web socket server configuration changes.", 
             "params": {
-                "host": "String", 
-                "port": "Uint"
+                "webSocketServerConfiguration": "$ref:ServerConfiguration"
+            }
+        }, 
+        "Configuration.WebSocketServerConfigurationRemoved": {
+            "description": "Emitted whenever a WebSocket server configuration is removed.", 
+            "params": {
+                "id": "String"
             }
         }, 
         "Devices.DeviceAdded": {
@@ -3183,7 +4102,7 @@ See also: \l{Tag}
             }
         }, 
         "Devices.DeviceChanged": {
-            "description": "Emitted whenever the params or name of a Device changed (by EditDevice or ReconfigureDevice).", 
+            "description": "Emitted whenever the params or name of a Device are changed (by EditDevice or ReconfigureDevice).", 
             "params": {
                 "device": "$ref:Device"
             }
@@ -3192,6 +4111,23 @@ See also: \l{Tag}
             "description": "Emitted whenever a Device was removed.", 
             "params": {
                 "deviceId": "Uuid"
+            }
+        }, 
+        "Devices.DeviceSettingChanged": {
+            "description": "Emitted whenever the setting of a Device is changed.", 
+            "params": {
+                "deviceId": "Uuid", 
+                "paramTypeId": "Uuid", 
+                "value": "Variant"
+            }
+        }, 
+        "Devices.PluginConfigurationChanged": {
+            "description": "Emitted whenever a plugin's configuration is changed.", 
+            "params": {
+                "configuration": [
+                    "$ref:Param"
+                ], 
+                "pluginId": "Uuid"
             }
         }, 
         "Devices.StateChanged": {
@@ -3211,14 +4147,15 @@ See also: \l{Tag}
         "JSONRPC.CloudConnectedChanged": {
             "description": "Emitted whenever the cloud connection status changes.", 
             "params": {
-                "connected": "Bool"
+                "connected": "Bool", 
+                "connectionState": "$ref:CloudConnectionState"
             }
         }, 
         "JSONRPC.PushButtonAuthFinished": {
             "description": "Emitted when a push button authentication reaches final state. NOTE: This notification is special. It will only be emitted to connections that did actively request a push button authentication, but also it will be emitted regardless of the notification settings. ", 
             "params": {
                 "o:token": "String", 
-                "status": "$ref:UserError", 
+                "success": "Bool", 
                 "transactionId": "Int"
             }
         }, 
@@ -3303,6 +4240,56 @@ See also: \l{Tag}
                 "ruleId": "Uuid"
             }
         }, 
+        "System.CapabilitiesChanged": {
+            "description": "Emitted whenever the system capabilities change.", 
+            "params": {
+                "powerManagement": "Bool", 
+                "updateManagement": "Bool"
+            }
+        }, 
+        "System.PackageAdded": {
+            "description": "Emitted whenever a package is added to the list of packages.", 
+            "params": {
+                "package": "$ref:Package"
+            }
+        }, 
+        "System.PackageChanged": {
+            "description": "Emitted whenever a package in the list of packages changes.", 
+            "params": {
+                "package": "$ref:Package"
+            }
+        }, 
+        "System.PackageRemoved": {
+            "description": "Emitted whenever a package is removed from the list of packages.", 
+            "params": {
+                "packageId": "String"
+            }
+        }, 
+        "System.RepositoryAdded": {
+            "description": "Emitted whenever a repository is added to the list of repositories.", 
+            "params": {
+                "repository": "$ref:Repository"
+            }
+        }, 
+        "System.RepositoryChanged": {
+            "description": "Emitted whenever a repository in the list of repositories changes.", 
+            "params": {
+                "repository": "$ref:Repository"
+            }
+        }, 
+        "System.RepositoryRemoved": {
+            "description": "Emitted whenever a repository is removed from the list of repositories.", 
+            "params": {
+                "repositoryId": "String"
+            }
+        }, 
+        "System.UpdateStatusChanged": {
+            "description": "Emitted whenever the update status changes.", 
+            "params": {
+                "busy": "Bool", 
+                "updateRunning": "Bool"
+            }
+        }, 
         "Tags.TagAdded": {
             "description": "Emitted whenever a tag is added to the system. ", 
             "params": {
@@ -3342,6 +4329,7 @@ See also: \l{Tag}
         "BasicType": [
             "Uuid", 
             "String", 
+            "StringList", 
             "Int", 
             "Uint", 
             "Double", 
@@ -3351,6 +4339,32 @@ See also: \l{Tag}
             "Time", 
             "Object"
         ], 
+        "BrowserIcon": [
+            "BrowserIconNone", 
+            "BrowserIconFolder", 
+            "BrowserIconFile", 
+            "BrowserIconMusic", 
+            "BrowserIconVideo", 
+            "BrowserIconPictures", 
+            "BrowserIconApplication", 
+            "BrowserIconDocument", 
+            "BrowserIconPackage", 
+            "BrowserIconFavorites"
+        ], 
+        "BrowserItem": {
+            "actionTypeIds": [
+                "Uuid"
+            ], 
+            "browsable": "Bool", 
+            "description": "String", 
+            "disabled": "Bool", 
+            "displayName": "String", 
+            "executable": "Bool", 
+            "icon": "$ref:BrowserIcon", 
+            "id": "String", 
+            "o:mediaIcon": "$ref:MediaBrowserIcon", 
+            "thumbnail": "String"
+        }, 
         "CalendarItem": {
             "duration": "Uint", 
             "o:datetime": "Uint", 
@@ -3386,6 +4400,9 @@ See also: \l{Tag}
             "params": [
                 "$ref:Param"
             ], 
+            "settings": [
+                "$ref:Param"
+            ], 
             "setupComplete": "Bool", 
             "states": [
                 {
@@ -3396,6 +4413,10 @@ See also: \l{Tag}
         }, 
         "DeviceClass": {
             "actionTypes": [
+                "$ref:ActionType"
+            ], 
+            "browsable": "Bool", 
+            "browserItemActionTypes": [
                 "$ref:ActionType"
             ], 
             "createMethods": [
@@ -3417,6 +4438,9 @@ See also: \l{Tag}
                 "$ref:ParamType"
             ], 
             "pluginId": "Uuid", 
+            "settingsTypes": [
+                "$ref:ParamType"
+            ], 
             "setupMethod": "$ref:SetupMethod", 
             "stateTypes": [
                 "$ref:StateType"
@@ -3425,6 +4449,10 @@ See also: \l{Tag}
         }, 
         "DeviceDescriptor": {
             "description": "String", 
+            "deviceId": "Uuid", 
+            "deviceParams": [
+                "$ref:Param"
+            ], 
             "id": "Uuid", 
             "title": "String"
         }, 
@@ -3446,13 +4474,16 @@ See also: \l{Tag}
             "DeviceErrorSetupMethodNotSupported", 
             "DeviceErrorHardwareNotAvailable", 
             "DeviceErrorHardwareFailure", 
-            "DeviceErrorAuthentificationFailure", 
-            "DeviceErrorAsync", 
+            "DeviceErrorAuthenticationFailure", 
             "DeviceErrorDeviceInUse", 
             "DeviceErrorDeviceInRule", 
             "DeviceErrorDeviceIsChild", 
             "DeviceErrorPairingTransactionIdNotFound", 
-            "DeviceErrorParameterNotWritable"
+            "DeviceErrorParameterNotWritable", 
+            "DeviceErrorItemNotFound", 
+            "DeviceErrorItemNotExecutable", 
+            "DeviceErrorUnsupportedFeature", 
+            "DeviceErrorTimeout"
         ], 
         "Event": {
             "deviceId": "Uuid", 
@@ -3497,6 +4528,7 @@ See also: \l{Tag}
             "o:deviceId": "Uuid", 
             "o:errorCode": "String", 
             "o:eventType": "$ref:LoggingEventType", 
+            "o:itemId": "String", 
             "o:typeId": "Uuid", 
             "o:value": "String", 
             "source": "$ref:LoggingSource", 
@@ -3523,9 +4555,52 @@ See also: \l{Tag}
             "LoggingSourceEvents", 
             "LoggingSourceActions", 
             "LoggingSourceStates", 
-            "LoggingSourceRules",
+            "LoggingSourceRules", 
             "LoggingSourceBrowserActions"
-        ],
+        ], 
+        "MediaBrowserIcon": [
+            "MediaBrowserIconNone", 
+            "MediaBrowserIconPlaylist", 
+            "MediaBrowserIconRecentlyPlayed", 
+            "MediaBrowserIconLibrary", 
+            "MediaBrowserIconMusicLibrary", 
+            "MediaBrowserIconVideoLibrary", 
+            "MediaBrowserIconPictureLibrary", 
+            "MediaBrowserIconDisk", 
+            "MediaBrowserIconUSB", 
+            "MediaBrowserIconNetwork", 
+            "MediaBrowserIconAux", 
+            "MediaBrowserIconSpotify", 
+            "MediaBrowserIconAmazon", 
+            "MediaBrowserIconTuneIn", 
+            "MediaBrowserIconSiriusXM", 
+            "MediaBrowserIconVTuner", 
+            "MediaBrowserIconTidal", 
+            "MediaBrowserIconAirable", 
+            "MediaBrowserIconDeezer", 
+            "MediaBrowserIconNapster", 
+            "MediaBrowserIconSoundCloud"
+        ], 
+        "MqttPolicy": {
+            "allowedPublishTopicFilters": "StringList", 
+            "allowedSubscribeTopicFilters": "StringList", 
+            "clientId": "String", 
+            "password": "String", 
+            "username": "String"
+        }, 
+        "Namespace": [
+            "Actions", 
+            "Configuration", 
+            "Devices", 
+            "Events", 
+            "JSONRPC", 
+            "Logging", 
+            "NetworkManager", 
+            "Rules", 
+            "States", 
+            "System", 
+            "Tags"
+        ], 
         "NetworkDeviceState": [
             "NetworkDeviceStateUnknown", 
             "NetworkDeviceStateUnmanaged", 
@@ -3563,6 +4638,17 @@ See also: \l{Tag}
             "NetworkManagerStateConnectedSite", 
             "NetworkManagerStateConnectedGlobal"
         ], 
+        "Package": {
+            "canRemove": "Bool", 
+            "candidateVersion": "String", 
+            "changelog": "String", 
+            "displayName": "String", 
+            "id": "String", 
+            "installedVersion": "String", 
+            "rollbackAvailable": "Bool", 
+            "summary": "String", 
+            "updateAvailable": "Bool"
+        }, 
         "Param": {
             "paramTypeId": "Uuid", 
             "value": "$ref:BasicType"
@@ -3618,6 +4704,11 @@ See also: \l{Tag}
                 "Int"
             ]
         }, 
+        "Repository": {
+            "displayName": "String", 
+            "enabled": "Bool", 
+            "id": "String"
+        }, 
         "Rule": {
             "actions": [
                 "$ref:RuleAction"
@@ -3638,6 +4729,7 @@ See also: \l{Tag}
         }, 
         "RuleAction": {
             "o:actionTypeId": "Uuid", 
+            "o:browserItemId": "String", 
             "o:deviceId": "Uuid", 
             "o:interface": "String", 
             "o:interfaceAction": "String", 
@@ -3650,6 +4742,8 @@ See also: \l{Tag}
             "o:eventTypeId": "Uuid", 
             "o:paramName": "String", 
             "o:paramTypeId": "Uuid", 
+            "o:stateDeviceId": "Uuid", 
+            "o:stateTypeId": "Uuid", 
             "o:value": "$ref:BasicType"
         }, 
         "RuleDescription": {
@@ -3693,7 +4787,9 @@ See also: \l{Tag}
             "SetupMethodJustAdd", 
             "SetupMethodDisplayPin", 
             "SetupMethodEnterPin", 
-            "SetupMethodPushButton"
+            "SetupMethodPushButton", 
+            "SetupMethodUserAndPassword", 
+            "SetupMethodOAuth"
         ], 
         "State": {
             "deviceId": "Uuid", 

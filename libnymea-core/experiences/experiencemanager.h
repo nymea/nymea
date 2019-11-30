@@ -29,7 +29,6 @@ class DeviceManager;
 
 namespace nymeaserver {
 
-
 class ExperienceManager : public QObject
 {
     Q_OBJECT

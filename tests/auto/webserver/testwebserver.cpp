@@ -44,9 +44,6 @@ private slots:
     void badRequests_data();
     void badRequests();
 
-    void getOptions_data();
-    void getOptions();
-
     void getFiles_data();
     void getFiles();
 
@@ -317,46 +314,6 @@ void TestWebserver::badRequests()
 
     socket->close();
     socket->deleteLater();
-}
-
-void TestWebserver::getOptions_data()
-{
-    QTest::addColumn<QString>("path");
-
-    QTest::newRow("get OPTIONS /api/v1/devices") << "/api/v1/devices";
-    QTest::newRow("get OPTIONS /api/v1/devices/pair") << "/api/v1/devices/pair";
-    QTest::newRow("get OPTIONS /api/v1/devices/confirmpairing") << "/api/v1/devices/confirmpairing";
-    QTest::newRow("get OPTIONS /api/v1/rules") << "/api/v1/rules";
-    QTest::newRow("get OPTIONS /api/v1/plugins") << "/api/v1/plugins";
-    QTest::newRow("get OPTIONS /api/v1/logs") << "/api/v1/logs";
-    QTest::newRow("get OPTIONS /api/v1/deviceclasses") << "/api/v1/deviceclasses";
-    QTest::newRow("get OPTIONS /api/v1/vendors") << "/api/v1/vendors";
-}
-
-void TestWebserver::getOptions()
-{
-    QFETCH(QString, path);
-
-    QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply* reply, const QList<QSslError> &) {
-        reply->ignoreSslErrors();
-    });
-    QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
-
-    QNetworkRequest request;
-    request.setUrl(QUrl("https://localhost:3333" + path));
-    QNetworkReply *reply = nam.sendCustomRequest(request, "OPTIONS");
-
-    clientSpy.wait();
-    qDebug() << "reply:" << reply->isFinished();
-    QCOMPARE(clientSpy.count(), 1);
-
-    bool ok = false;
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(&ok);
-    QVERIFY2(ok, "Could not convert statuscode from response to int");
-    QCOMPARE(statusCode, 200);
-
-    reply->deleteLater();
 }
 
 void TestWebserver::getFiles_data()

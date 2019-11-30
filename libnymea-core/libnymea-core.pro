@@ -32,14 +32,6 @@ HEADERS += nymeacore.h \
     servers/httprequest.h \
     servers/httpreply.h \
     servers/bluetoothserver.h \
-    servers/rest/restserver.h \
-    servers/rest/restresource.h \
-    servers/rest/devicesresource.h \
-    servers/rest/deviceclassesresource.h \
-    servers/rest/vendorsresource.h \
-    servers/rest/logsresource.h \
-    servers/rest/pluginsresource.h \
-    servers/rest/rulesresource.h \
     servers/websocketserver.h \
     servers/mqttbroker.h \
     jsonrpc/jsonrpcserver.h \
@@ -119,14 +111,6 @@ SOURCES += nymeacore.cpp \
     servers/httpreply.cpp \
     servers/websocketserver.cpp \
     servers/bluetoothserver.cpp \
-    servers/rest/restserver.cpp \
-    servers/rest/restresource.cpp \
-    servers/rest/devicesresource.cpp \
-    servers/rest/deviceclassesresource.cpp \
-    servers/rest/vendorsresource.cpp \
-    servers/rest/logsresource.cpp \
-    servers/rest/pluginsresource.cpp \
-    servers/rest/rulesresource.cpp \
     servers/mqttbroker.cpp \
     jsonrpc/jsonrpcserver.cpp \
     jsonrpc/jsonhandler.cpp \

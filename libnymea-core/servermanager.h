@@ -39,7 +39,6 @@ class TcpServer;
 class WebSocketServer;
 class WebServer;
 class BluetoothServer;
-class RestServer;
 class MqttBroker;
 
 class MockTcpServer;
@@ -52,7 +51,6 @@ public:
 
     // Interfaces
     JsonRPCServer *jsonServer() const;
-    RestServer *restServer() const;
 
     BluetoothServer* bluetoothServer() const;
 
@@ -81,7 +79,6 @@ private:
 
     // Interfaces
     JsonRPCServer *m_jsonServer;
-    RestServer *m_restServer;
 
     BluetoothServer *m_bluetoothServer;
     QHash<QString, TcpServer*> m_tcpServers;

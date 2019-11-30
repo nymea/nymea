@@ -74,8 +74,12 @@ public:
         TypeAsync
     };
 
-    HttpReply(QObject *parent = 0);
-    HttpReply(const HttpStatusCode &statusCode = HttpStatusCode::Ok, const Type &type = TypeSync, QObject *parent = 0);
+    HttpReply(QObject *parent = nullptr);
+    HttpReply(const HttpStatusCode &statusCode = HttpStatusCode::Ok, const Type &type = TypeSync, QObject *parent = nullptr);
+
+    static HttpReply* createSuccessReply();
+    static HttpReply* createErrorReply(const HttpReply::HttpStatusCode &statusCode);
+    static HttpReply* createAsyncReply();
 
     void setHttpStatusCode(const HttpStatusCode &statusCode);
     HttpStatusCode httpStatusCode() const;

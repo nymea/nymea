@@ -82,7 +82,6 @@ public:
     NymeaConfiguration *configuration() const;
     LogEngine* logEngine() const;
     JsonRPCServer *jsonRPCServer() const;
-    RestServer *restServer() const;
     DeviceManager *deviceManager() const;
     RuleEngine *ruleEngine() const;
     TimeManager *timeManager() const;

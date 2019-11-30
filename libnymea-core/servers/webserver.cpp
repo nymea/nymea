@@ -76,7 +76,6 @@
 #include "nymeacore.h"
 #include "httpreply.h"
 #include "httprequest.h"
-#include "rest/restresource.h"
 #include "debugserverhandler.h"
 
 #include <QJsonDocument>
@@ -150,7 +149,7 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
     // make sure the file exists
     if (!file.exists()) {
         qCWarning(dcWebServer()) << "requested file" << file.filePath() << "does not exist.";
-        HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+        HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
         reply->setClientId(m_clientList.key(socket));
         sendHttpReply(reply);
         reply->deleteLater();
@@ -160,7 +159,7 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
     // make sure the file is in the public directory
     if (!file.canonicalFilePath().startsWith(QDir(m_configuration.publicFolder).canonicalPath())) {
         qCWarning(dcWebServer()) << "Requested file" << file.fileName() << "is outside the public folder.";
-        HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+        HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
         reply->setClientId(m_clientList.key(socket));
         sendHttpReply(reply);
         reply->deleteLater();
@@ -170,7 +169,7 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
     // make sure we can read the file
     if (!file.isReadable()) {
         qCWarning(dcWebServer()) << "Requested file" << file.fileName() << "is not readable.";
-        HttpReply *reply = RestResource::createErrorReply(HttpReply::Forbidden);
+        HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
         reply->setClientId(m_clientList.key(socket));
         reply->setPayload("403 Forbidden. File not readable");
         sendHttpReply(reply);
@@ -195,7 +194,7 @@ QString WebServer::fileName(const QString &query)
 HttpReply *WebServer::processIconRequest(const QString &fileName)
 {
     if (!fileName.endsWith(".png"))
-        return RestResource::createErrorReply(HttpReply::NotFound);
+        return HttpReply::createErrorReply(HttpReply::NotFound);
 
     QByteArray imageData;
 
@@ -205,13 +204,13 @@ HttpReply *WebServer::processIconRequest(const QString &fileName)
     image.save(&buffer, "png");
 
     if (!imageData.isEmpty()) {
-        HttpReply *reply = RestResource::createSuccessReply();
+        HttpReply *reply = HttpReply::createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "image/png");
         reply->setPayload(imageData);
         return reply;
     }
 
-    return RestResource::createErrorReply(HttpReply::NotFound);
+    return HttpReply::createErrorReply(HttpReply::NotFound);
 }
 
 void WebServer::incomingConnection(qintptr socketDescriptor)
@@ -309,7 +308,7 @@ void WebServer::readClient()
     // Check if the request is valid
     if (!request.isValid()) {
         qCWarning(dcWebServer()) << "Got invalid request:" << request.url().path();
-        HttpReply *reply = RestResource::createErrorReply(HttpReply::BadRequest);
+        HttpReply *reply = HttpReply::createErrorReply(HttpReply::BadRequest);
         reply->setClientId(clientId);
         sendHttpReply(reply);
         reply->deleteLater();
@@ -319,7 +318,7 @@ void WebServer::readClient()
     // Check HTTP version
     if (request.httpVersion() != "HTTP/1.1" && request.httpVersion() != "HTTP/1.0") {
         qCWarning(dcWebServer()) << "HTTP version is not supported." << request.httpVersion();
-        HttpReply *reply = RestResource::createErrorReply(HttpReply::HttpVersionNotSupported);
+        HttpReply *reply = HttpReply::createErrorReply(HttpReply::HttpVersionNotSupported);
         reply->setClientId(clientId);
         sendHttpReply(reply);
         reply->deleteLater();
@@ -338,27 +337,12 @@ void WebServer::readClient()
 
     // Verify method
     if (request.method() == HttpRequest::Unhandled) {
-        HttpReply *reply = RestResource::createErrorReply(HttpReply::MethodNotAllowed);
+        HttpReply *reply = HttpReply::createErrorReply(HttpReply::MethodNotAllowed);
         reply->setClientId(clientId);
         reply->setHeader(HttpReply::AllowHeader, "GET, PUT, POST, DELETE, OPTIONS");
         sendHttpReply(reply);
         reply->deleteLater();
         return;
-    }
-
-    // Verify API query
-    if (request.url().path().startsWith("/api/v1")) {
-        if (m_configuration.restServerEnabled) {
-            emit httpRequestReady(clientId, request);
-            return;
-        } else {
-            qCWarning(dcWebServer()) << "The REST server is disabled. You can enable it by adding \'restServerEnabled=true\' in the WebServer section of the nymead.conf file.";
-            HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
-            reply->setClientId(clientId);
-            sendHttpReply(reply);
-            reply->deleteLater();
-            return;
-        }
     }
 
     // Check icon call
@@ -376,7 +360,7 @@ void WebServer::readClient()
         if (NymeaCore::instance()->configuration()->debugServerEnabled()) {
             // Verify methods
             if (request.method() != HttpRequest::Get && request.method() != HttpRequest::Options) {
-                HttpReply *reply = RestResource::createErrorReply(HttpReply::MethodNotAllowed);
+                HttpReply *reply = HttpReply::createErrorReply(HttpReply::MethodNotAllowed);
                 reply->setClientId(clientId);
                 reply->setHeader(HttpReply::AllowHeader, "GET, OPTIONS");
                 sendHttpReply(reply);
@@ -399,7 +383,7 @@ void WebServer::readClient()
             return;
         } else {
             qCWarning(dcWebServer()) << "The debug server handler is disabled. You can enable it by adding \'debugServerEnabled=true\' in the \'nymead\' section of the nymead.conf file.";
-            HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+            HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
             reply->setClientId(clientId);
             sendHttpReply(reply);
             reply->deleteLater();
@@ -410,7 +394,7 @@ void WebServer::readClient()
     // Check server.xml call
     if (request.url().path() == "/server.xml" && request.method() == HttpRequest::Get) {
         qCDebug(dcWebServer()) << "Server XML request call";
-        HttpReply *reply = RestResource::createSuccessReply();
+        HttpReply *reply = HttpReply::createSuccessReply();
         reply->setHeader(HttpReply::ContentTypeHeader, "text/xml");
         reply->setPayload(createServerXmlDocument(socket->localAddress()));
         reply->setClientId(clientId);
@@ -426,7 +410,7 @@ void WebServer::readClient()
         // FIXME: return a default webpage containing server information
         if (!QDir(m_configuration.publicFolder).exists()) {
             qCWarning(dcWebServer()) << "Webinterface folder" << m_configuration.publicFolder << "does not exist.";
-            HttpReply *reply = RestResource::createErrorReply(HttpReply::NotFound);
+            HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
             reply->setClientId(clientId);
             sendHttpReply(reply);
             reply->deleteLater();
@@ -440,7 +424,7 @@ void WebServer::readClient()
         QFile file(path);
         if (file.open(QFile::ReadOnly | QFile::Truncate)) {
             qCDebug(dcWebServer()) << "Load file" << file.fileName();
-            HttpReply *reply = RestResource::createSuccessReply();
+            HttpReply *reply = HttpReply::createSuccessReply();
 
             // Check content type
             if (file.fileName().endsWith(".html")) {
@@ -477,7 +461,7 @@ void WebServer::readClient()
 
     // Reject everything else...
     qCWarning(dcWebServer()) << "Unknown message received.";
-    HttpReply *reply = RestResource::createErrorReply(HttpReply::NotImplemented);
+    HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotImplemented);
     reply->setClientId(clientId);
     sendHttpReply(reply);
     reply->deleteLater();

@@ -60,6 +60,8 @@
 #include "devices/deviceplugin.h"
 #include "loggingcategories.h"
 #include "types/deviceclass.h"
+#include "types/browseritem.h"
+#include "types/mediabrowseritem.h"
 #include "devices/translator.h"
 #include "devices/devicediscoveryinfo.h"
 #include "devices/devicepairinginfo.h"
@@ -75,74 +77,96 @@ namespace nymeaserver {
 DeviceHandler::DeviceHandler(QObject *parent) :
     JsonHandler(parent)
 {
-    QVariantMap returns;
-    QVariantMap params;
+    // Enums
+    registerEnum<Device::DeviceError>();
+    registerEnum<DeviceClass::SetupMethod>();
+    registerEnum<DeviceClass::CreateMethod, DeviceClass::CreateMethods>();
+    registerEnum<Types::Unit>();
+    registerEnum<Types::InputType>();
+    registerEnum<RuleEngine::RemovePolicy>();
+    registerEnum<BrowserItem::BrowserIcon>();
+    registerEnum<MediaBrowserItem::MediaBrowserIcon>();
+
+    // Objects
+    registerObject<ParamType, ParamTypes>();
+    registerObject<Param, ParamList>();
+    registerUncreatableObject<DevicePlugin, DevicePlugins>();
+    registerObject<Vendor, Vendors>();
+    registerObject<EventType, EventTypes>();
+    registerObject<StateType, StateTypes>();
+    registerObject<ActionType, ActionTypes>();
+    registerObject<DeviceClass, DeviceClasses>();
+    registerObject<DeviceDescriptor, DeviceDescriptors>();
+    registerObject<Event>();
+    registerObject<Action>();
+    registerObject<State, States>();
+    registerUncreatableObject<Device, Devices>();
+
+    // Regsitering browseritem manually for now. Not sure how to deal with the
+    // polymorphism in int (e.g MediaBrowserItem)
+    QVariantMap browserItem;
+    browserItem.insert("id", enumValueName(String));
+    browserItem.insert("displayName", enumValueName(String));
+    browserItem.insert("description", enumValueName(String));
+    browserItem.insert("icon", enumRef<BrowserItem::BrowserIcon>());
+    browserItem.insert("thumbnail", enumValueName(String));
+    browserItem.insert("executable", enumValueName(Bool));
+    browserItem.insert("browsable", enumValueName(Bool));
+    browserItem.insert("disabled", enumValueName(Bool));
+    browserItem.insert("actionTypeIds", QVariantList() << enumValueName(Uuid));
+    browserItem.insert("o:mediaIcon", enumRef<MediaBrowserItem::MediaBrowserIcon>());
+    registerObject("BrowserItem", browserItem);
+
+
+    // Methods
+    QString description; QVariantMap returns; QVariantMap params;
+    description = "Returns a list of supported Vendors.";
+    returns.insert("vendors", objectRef<Vendors>());
+    registerMethod("GetSupportedVendors", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetSupportedVendors", "Returns a list of supported Vendors.");
-    setParams("GetSupportedVendors", params);
-    QVariantList vendors;
-    vendors.append(JsonTypes::vendorRef());
-    returns.insert("vendors", vendors);
-    setReturns("GetSupportedVendors", returns);
+    description = "Returns a list of supported Device classes, optionally filtered by vendorId.";
+    params.insert("o:vendorId", enumValueName(Uuid));
+    returns.insert("deviceClasses", objectRef<DeviceClasses>());
+    registerMethod("GetSupportedDevices", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetSupportedDevices", "Returns a list of supported Device classes, optionally filtered by vendorId.");
-    params.insert("o:vendorId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("GetSupportedDevices", params);
-    QVariantList deviceClasses;
-    deviceClasses.append(JsonTypes::deviceClassRef());
-    returns.insert("deviceClasses", deviceClasses);
-    setReturns("GetSupportedDevices", returns);
+    description = "Returns a list of loaded plugins.";
+    returns.insert("plugins", objectRef<DevicePlugins>());
+    registerMethod("GetPlugins", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetPlugins", "Returns a list of loaded plugins.");
-    setParams("GetPlugins", params);
-    QVariantList plugins;
-    plugins.append(JsonTypes::pluginRef());
-    returns.insert("plugins", plugins);
-    setReturns("GetPlugins", returns);
+    description = "Get a plugin's params.";
+    params.insert("pluginId", enumValueName(Uuid));
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:configuration", objectRef<ParamList>());
+    registerMethod("GetPluginConfiguration", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetPluginConfiguration", "Get a plugin's params.");
-    params.insert("pluginId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("GetPluginConfiguration", params);
-    QVariantList pluginParams;
-    pluginParams.append(JsonTypes::paramRef());
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("o:configuration", pluginParams);
-    setReturns("GetPluginConfiguration", returns);
+    description = "Set a plugin's params.";
+    params.insert("pluginId", enumValueName(Uuid));
+    params.insert("configuration", objectRef<ParamList>());
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    registerMethod("SetPluginConfiguration", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("SetPluginConfiguration", "Set a plugin's params.");
-    params.insert("pluginId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("configuration", pluginParams);
-    setParams("SetPluginConfiguration", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    setReturns("SetPluginConfiguration", returns);
-
-    params.clear(); returns.clear();
-    setDescription("AddConfiguredDevice", "Add a configured device with a setupMethod of SetupMethodJustAdd. "
+    description = "Add a configured device with a setupMethod of SetupMethodJustAdd. "
                                           "For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. "
                                           "Devices with CreateMethodJustAdd require all parameters to be supplied here. "
                                           "Devices with CreateMethodDiscovery require the use of a deviceDescriptorId. For discovered "
                                           "devices params are not required and will be taken from the DeviceDescriptor, however, they "
-                                          "may be overridden by supplying deviceParams."
-                   );
-    params.insert("deviceClassId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("o:deviceDescriptorId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    QVariantList deviceParams;
-    deviceParams.append(JsonTypes::paramRef());
-    params.insert("o:deviceParams", deviceParams);
-    setParams("AddConfiguredDevice", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("o:deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    returns.insert("o:displayMessage", JsonTypes::basicTypeToString(JsonTypes::String));
-    setReturns("AddConfiguredDevice", returns);
+                                          "may be overridden by supplying deviceParams.";
+    params.insert("deviceClassId", enumValueName(Uuid));
+    params.insert("name", enumValueName(String));
+    params.insert("o:deviceDescriptorId", enumValueName(Uuid));
+    params.insert("o:deviceParams", objectRef<ParamList>());
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:deviceId", enumValueName(Uuid));
+    returns.insert("o:displayMessage", enumValueName(String));
+    registerMethod("AddConfiguredDevice", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("PairDevice", "Pair a device. "
+    description = "Pair a device. "
                                  "Use this to set up or reconfigure devices for DeviceClasses with a setupMethod different than SetupMethodJustAdd. "
                                  "Depending on the CreateMethod and whether a new devices is set up or an existing one is reconfigured, different parameters "
                                  "are required:\n"
@@ -158,215 +182,215 @@ DeviceHandler::DeviceHandler(QObject *parent) :
                                  "mask for a user and password login should be presented to the user. In case of SetupMethodOAuth, an OAuth URL will be returned "
                                  "which shall be opened in a web view to allow the user logging in.\n"
                                  "Once the login procedure has completed, the application shall proceed with ConfirmPairing, providing the results of the pairing "
-                                 "procedure."
-                   );
-    params.insert("o:deviceClassId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("o:name", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("o:deviceDescriptorId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("o:deviceParams", deviceParams);
-    params.insert("o:deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("PairDevice", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("o:setupMethod", JsonTypes::setupMethodRef());
-    returns.insert("o:pairingTransactionId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    returns.insert("o:displayMessage", JsonTypes::basicTypeToString(JsonTypes::String));
-    returns.insert("o:oAuthUrl", JsonTypes::basicTypeToString(JsonTypes::String));
-    returns.insert("o:pin", JsonTypes::basicTypeToString(JsonTypes::String));
-    setReturns("PairDevice", returns);
+                                 "procedure.";
+    params.insert("o:deviceClassId", enumValueName(Uuid));
+    params.insert("o:name", enumValueName(String));
+    params.insert("o:deviceDescriptorId", enumValueName(Uuid));
+    params.insert("o:deviceParams", objectRef<ParamList>());
+    params.insert("o:deviceId", enumValueName(Uuid));
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:setupMethod", enumRef<DeviceClass::SetupMethod>());
+    returns.insert("o:pairingTransactionId", enumValueName(Uuid));
+    returns.insert("o:displayMessage", enumValueName(String));
+    returns.insert("o:oAuthUrl", enumValueName(String));
+    returns.insert("o:pin", enumValueName(String));
+    registerMethod("PairDevice", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("ConfirmPairing", "Confirm an ongoing pairing. For SetupMethodUserAndPassword, provide the username in the \"username\" field "
+    description = "Confirm an ongoing pairing. For SetupMethodUserAndPassword, provide the username in the \"username\" field "
                                      "and the password in the \"secret\" field. For SetupMethodEnterPin and provide the PIN in the \"secret\" "
                                      "field. In case of SetupMethodOAuth, the previously opened web view will eventually be redirected to http://128.0.0.1:8888 "
-                                     "and the OAuth code as query parameters to this url. Provide the entire unmodified URL in the secret field.");
-    params.insert("pairingTransactionId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("o:username", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("o:secret", JsonTypes::basicTypeToString(JsonTypes::String));
-    setParams("ConfirmPairing", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("o:displayMessage", JsonTypes::basicTypeToString(JsonTypes::String));
-    returns.insert("o:deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setReturns("ConfirmPairing", returns);
+                                     "and the OAuth code as query parameters to this url. Provide the entire unmodified URL in the secret field.";
+    params.insert("pairingTransactionId", enumValueName(Uuid));
+    params.insert("o:username", enumValueName(String));
+    params.insert("o:secret", enumValueName(String));
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:displayMessage", enumValueName(String));
+    returns.insert("o:deviceId", enumValueName(Uuid));
+    registerMethod("ConfirmPairing", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetConfiguredDevices", "Returns a list of configured devices, optionally filtered by deviceId.");
-    params.insert("o:deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("GetConfiguredDevices", params);
-    QVariantList devices;
-    devices.append(JsonTypes::deviceRef());
-    returns.insert("devices", devices);
-    setReturns("GetConfiguredDevices", returns);
+    description = "Returns a list of configured devices, optionally filtered by deviceId.";
+    params.insert("o:deviceId", enumValueName(Uuid));
+    returns.insert("devices", objectRef<Devices>());
+    registerMethod("GetConfiguredDevices", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetDiscoveredDevices", "Performs a device discovery and returns the results. This function may take a while to return. "
+    description = "Performs a device discovery and returns the results. This function may take a while to return. "
                                            "Note that this method will include all the found devices, that is, including devices that may "
                                            "already have been added. Those devices will have deviceId set to the device id of the already "
                                            "added device. Such results may be used to reconfigure existing devices and might be filtered "
-                                           "in cases where only unknown devices are of interest.");
-    params.insert("deviceClassId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    QVariantList discoveryParams;
-    discoveryParams.append(JsonTypes::paramRef());
-    params.insert("o:discoveryParams", discoveryParams);
-    setParams("GetDiscoveredDevices", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("o:displayMessage", JsonTypes::basicTypeToString(JsonTypes::String));
-    QVariantList deviceDescriptors;
-    deviceDescriptors.append(JsonTypes::deviceDescriptorRef());
-    returns.insert("o:deviceDescriptors", deviceDescriptors);
-    setReturns("GetDiscoveredDevices", returns);
+                                           "in cases where only unknown devices are of interest.";
+    params.insert("deviceClassId", enumValueName(Uuid));
+    params.insert("o:discoveryParams", objectRef<ParamList>());
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:displayMessage", enumValueName(String));
+    returns.insert("o:deviceDescriptors", objectRef<DeviceDescriptors>());
+    registerMethod("GetDiscoveredDevices", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("ReconfigureDevice", "Reconfigure a device. This comes down to removing and recreating a device with new parameters "
-                                        "but keeping its device id the same (and with that keeping rules, tags etc). For devices with "
-                                        "create method CreateMethodDiscovery, a discovery (GetDiscoveredDevices) shall be performed first "
-                                        "and this method is to be called with a deviceDescriptorId of the re-discovered device instead of "
-                                        "the deviceId directly. Device parameters will be taken from the discovery, but can be overridden "
-                                        "individually here by providing them in the deviceParams parameter. Only writable parameters can "
-                                        "be changed.");
-    params.insert("o:deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("o:deviceDescriptorId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    QVariantList newDeviceParams;
-    newDeviceParams.append(JsonTypes::paramRef());
-    params.insert("o:deviceParams", newDeviceParams);
-    setParams("ReconfigureDevice", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("o:displayMessage", JsonTypes::basicTypeToString(JsonTypes::String));
-    setReturns("ReconfigureDevice", returns);
+    description = "Reconfigure a device. This comes down to removing and recreating a device with new parameters "
+                  "but keeping its device id the same (and with that keeping rules, tags etc). For devices with "
+                  "create method CreateMethodDiscovery, a discovery (GetDiscoveredDevices) shall be performed first "
+                  "and this method is to be called with a deviceDescriptorId of the re-discovered device instead of "
+                  "the deviceId directly. Device parameters will be taken from the discovery, but can be overridden "
+                  "individually here by providing them in the deviceParams parameter. Only writable parameters can "
+                   "be changed.";
+    params.insert("o:deviceId", enumValueName(Uuid));
+    params.insert("o:deviceDescriptorId", enumValueName(Uuid));
+    params.insert("o:deviceParams", objectRef<ParamList>());
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:displayMessage", enumValueName(String));
+    registerMethod("ReconfigureDevice", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("EditDevice", "Edit the name of a device. This method does not change the "
-                                 "configuration of the device.");
-    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
-    setParams("EditDevice", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    setReturns("EditDevice", returns);
+    description = "Edit the name of a device. This method does not change the "
+                                 "configuration of the device.";
+    params.insert("deviceId", enumValueName(Uuid));
+    params.insert("name", enumValueName(String));
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    registerMethod("EditDevice", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("SetDeviceSettings", "Change the settings of a device.");
-    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("settings", QVariantList() << JsonTypes::paramRef());
-    setParams("SetDeviceSettings", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    setReturns("SetDeviceSettings", returns);
+    description = "Change the settings of a device.";
+    params.insert("deviceId", enumValueName(Uuid));
+    params.insert("settings", objectRef<ParamList>());
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    registerMethod("SetDeviceSettings", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("RemoveConfiguredDevice", "Remove a device from the system.");
-    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    QVariantList removePolicyList;
+    description = "Remove a device from the system.";
+    params.insert("deviceId", enumValueName(Uuid));
+    params.insert("o:removePolicy", enumRef<RuleEngine::RemovePolicy>());
     QVariantMap policy;
-    policy.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    policy.insert("policy", JsonTypes::removePolicyRef());
+    policy.insert("ruleId", enumValueName(Uuid));
+    policy.insert("policy", enumRef<RuleEngine::RemovePolicy>());
+    QVariantList removePolicyList;
     removePolicyList.append(policy);
-    params.insert("o:removePolicy", JsonTypes::removePolicyRef());
     params.insert("o:removePolicyList", removePolicyList);
-    setParams("RemoveConfiguredDevice", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("o:ruleIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setReturns("RemoveConfiguredDevice", returns);
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:ruleIds", QVariantList() << enumValueName(Uuid));
+    registerMethod("RemoveConfiguredDevice", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetEventTypes", "Get event types for a specified deviceClassId.");
-    params.insert("deviceClassId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("GetEventTypes", params);
-    QVariantList events;
-    events.append(JsonTypes::eventTypeRef());
-    returns.insert("eventTypes", events);
-    setReturns("GetEventTypes", returns);
+    description = "Get event types for a specified deviceClassId.";
+    params.insert("deviceClassId", enumValueName(Uuid));
+    returns.insert("eventTypes", objectRef<EventTypes>());
+    registerMethod("GetEventTypes", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetActionTypes", "Get action types for a specified deviceClassId.");
-    params.insert("deviceClassId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("GetActionTypes", params);
-    QVariantList actions;
-    actions.append(JsonTypes::actionTypeRef());
-    returns.insert("actionTypes", actions);
-    setReturns("GetActionTypes", returns);
+    description = "Get action types for a specified deviceClassId.";
+    params.insert("deviceClassId", enumValueName(Uuid));
+    returns.insert("actionTypes", objectRef<ActionTypes>());
+    registerMethod("GetActionTypes", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetStateTypes", "Get state types for a specified deviceClassId.");
-    params.insert("deviceClassId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("GetStateTypes", params);
-    QVariantList states;
-    states.append(JsonTypes::stateTypeRef());
-    returns.insert("stateTypes", states);
-    setReturns("GetStateTypes", returns);
+    description = "Get state types for a specified deviceClassId.";
+    params.insert("deviceClassId", enumValueName(Uuid));
+    returns.insert("stateTypes", objectRef<StateTypes>());
+    registerMethod("GetStateTypes", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetStateValue", "Get the value of the given device and the given stateType");
-    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("stateTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("GetStateValue", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("o:value", JsonTypes::basicTypeToString(JsonTypes::Variant));
-    setReturns("GetStateValue", returns);
+    description = "Get the value of the given device and the given stateType";
+    params.insert("deviceId", enumValueName(Uuid));
+    params.insert("stateTypeId", enumValueName(Uuid));
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:value", enumValueName(Variant));
+    registerMethod("GetStateValue", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetStateValues", "Get all the state values of the given device.");
-    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("GetStateValues", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    states.clear();
-    QVariantMap state;
-    state.insert("stateTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    state.insert("value", JsonTypes::basicTypeToString(JsonTypes::Variant));
-    states.append(state);
-    returns.insert("o:values", states);
-    setReturns("GetStateValues", returns);
+    description = "Get all the state values of the given device.";
+    params.insert("deviceId", enumValueName(Uuid));
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:values", objectRef<States>());
+    registerMethod("GetStateValues", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("BrowseDevice", "Browse a device. If a DeviceClass indicates a device is browsable, this method will return the BrowserItems. If no parameter besides the deviceId is used, the root node of this device will be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.");
-    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("o:itemId", JsonTypes::basicTypeToString(JsonTypes::String));
-    setParams("BrowseDevice", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("items", QVariantList() << JsonTypes::browserItemRef());
-    setReturns("BrowseDevice", returns);
+    description = "Browse a device. If a DeviceClass indicates a device is browsable, this method will return the BrowserItems. If no parameter besides the deviceId is used, the root node of this device will be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.";
+    params.insert("deviceId", enumValueName(Uuid));
+    params.insert("o:itemId", enumValueName(String));
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("items", QVariantList() << objectRef("BrowserItem"));
+    registerMethod("BrowseDevice", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetBrowserItem", "Get a single item from the browser. This won't give any more info on an item than a regular browseDevice call, but it allows to fetch details of an item if only the ID is known.");
-    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("o:itemId", JsonTypes::basicTypeToString(JsonTypes::String));
-    setParams("GetBrowserItem", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("o:item", JsonTypes::browserItemRef());
-    setReturns("GetBrowserItem", returns);
+    description = "Get a single item from the browser. This won't give any more info on an item than a regular browseDevice call, but it allows to fetch details of an item if only the ID is known.";
+    params.insert("deviceId", enumValueName(Uuid));
+    params.insert("o:itemId", enumValueName(String));
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:item", objectRef("BrowserItem"));
+    registerMethod("GetBrowserItem", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Execute a single action.";
+    params.insert("actionTypeId", enumValueName(Uuid));
+    params.insert("deviceId", enumValueName(Uuid));
+    params.insert("o:params", objectRef<ParamList>());
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:displayMessage", enumValueName(String));
+    registerMethod("ExecuteAction", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Execute the item identified by itemId on the given device.";
+    params.insert("deviceId", enumValueName(Uuid));
+    params.insert("itemId", enumValueName(String));
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    registerMethod("ExecuteBrowserItem", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.";
+    params.insert("deviceId", enumValueName(Uuid));
+    params.insert("itemId", enumValueName(String));
+    params.insert("actionTypeId", enumValueName(Uuid));
+    params.insert("o:params", objectRef<ParamList>());
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    registerMethod("ExecuteBrowserItemAction", description, params, returns);
 
     // Notifications
     params.clear(); returns.clear();
-    setDescription("StateChanged", "Emitted whenever a State of a device changes.");
-    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("stateTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("value", JsonTypes::basicTypeToString(JsonTypes::Variant));
-    setParams("StateChanged", params);
+    description = "Emitted whenever a State of a device changes.";
+    params.insert("deviceId", enumValueName(Uuid));
+    params.insert("stateTypeId", enumValueName(Uuid));
+    params.insert("value", enumValueName(Variant));
+    registerNotification("StateChanged", description, params);
 
     params.clear(); returns.clear();
-    setDescription("DeviceRemoved", "Emitted whenever a Device was removed.");
-    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("DeviceRemoved", params);
+    description = "Emitted whenever a Device was removed.";
+    params.insert("deviceId", enumValueName(Uuid));
+    registerNotification("DeviceRemoved", description, params);
 
     params.clear(); returns.clear();
-    setDescription("DeviceAdded", "Emitted whenever a Device was added.");
-    params.insert("device", JsonTypes::deviceRef());
-    setParams("DeviceAdded", params);
+    description = "Emitted whenever a Device was added.";
+    params.insert("device", objectRef<Device>());
+    registerNotification("DeviceAdded", description, params);
 
     params.clear(); returns.clear();
-    setDescription("DeviceChanged", "Emitted whenever the params or name of a Device are changed (by EditDevice or ReconfigureDevice).");
-    params.insert("device", JsonTypes::deviceRef());
-    setParams("DeviceChanged", params);
+    description = "Emitted whenever the params or name of a Device are changed (by EditDevice or ReconfigureDevice).";
+    params.insert("device", objectRef<Device>());
+    registerNotification("DeviceChanged", description, params);
 
     params.clear(); returns.clear();
-    setDescription("DeviceSettingChanged", "Emitted whenever the setting of a Device is changed.");
-    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("paramTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("value", JsonTypes::basicTypeToString(JsonTypes::Variant));
-    setParams("DeviceSettingChanged", params);
+    description = "Emitted whenever the setting of a Device is changed.";
+    params.insert("deviceId", enumValueName(Uuid));
+    params.insert("paramTypeId", enumValueName(Uuid));
+    params.insert("value", enumValueName(Variant));
+    registerNotification("DeviceSettingChanged", description, params);
 
     params.clear(); returns.clear();
-    setDescription("PluginConfigurationChanged", "Emitted whenever a plugin's configuration is changed.");
-    params.insert("pluginId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("configuration", QVariantList() << JsonTypes::paramRef());
-    setParams("PluginConfigurationChanged", params);
+    description = "Emitted whenever a plugin's configuration is changed.";
+    params.insert("pluginId", enumValueName(Uuid));
+    params.insert("configuration", objectRef<ParamList>());
+    registerNotification("PluginConfigurationChanged", description, params);
+
+    params.clear(); returns.clear();
+    description = "Emitted whenever an Event is triggered.";
+    params.insert("event", objectRef<Event>());
+    registerNotification("EventTriggered", description, params);
+    connect(NymeaCore::instance(), &NymeaCore::eventTriggered, this, [this](const Event &event){
+        QVariantMap params;
+        params.insert("event", pack(event));
+        emit EventTriggered(params);
+    });
 
     connect(NymeaCore::instance(), &NymeaCore::pluginConfigChanged, this, &DeviceHandler::pluginConfigChanged);
     connect(NymeaCore::instance(), &NymeaCore::deviceStateChanged, this, &DeviceHandler::deviceStateChanged);
@@ -384,17 +408,31 @@ QString DeviceHandler::name() const
 
 JsonReply* DeviceHandler::GetSupportedVendors(const QVariantMap &params) const
 {
-    Q_UNUSED(params)
+    QLocale locale = params.value("locale").toLocale();
+
+    QVariantList vendors;
+    foreach (const Vendor &vendor, NymeaCore::instance()->deviceManager()->supportedVendors()) {
+        Vendor translatedVendor = NymeaCore::instance()->deviceManager()->translateVendor(vendor, locale);
+        vendors.append(pack(translatedVendor));
+    }
 
     QVariantMap returns;
-    returns.insert("vendors", JsonTypes::packSupportedVendors(params.value("locale").toLocale()));
+    returns.insert("vendors", vendors);
     return createReply(returns);
 }
 
 JsonReply* DeviceHandler::GetSupportedDevices(const QVariantMap &params) const
 {
+    QLocale locale = params.value("locale").toLocale();
+    VendorId vendorId = VendorId(params.value("vendorId").toString());
     QVariantMap returns;
-    returns.insert("deviceClasses", JsonTypes::packSupportedDevices(VendorId(params.value("vendorId").toString()), params.value("locale").toLocale()));
+    QVariantList deviceClasses;
+    foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices(vendorId)) {
+        DeviceClass translatedDeviceClass = NymeaCore::instance()->deviceManager()->translateDeviceClass(deviceClass, locale);
+        deviceClasses.append(pack(translatedDeviceClass));
+    }
+
+    returns.insert("deviceClasses", deviceClasses);
     return createReply(returns);
 }
 
@@ -405,17 +443,20 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
     QVariantMap returns;
 
     DeviceClassId deviceClassId = DeviceClassId(params.value("deviceClassId").toString());
-
-    ParamList discoveryParams = JsonTypes::unpackParams(params.value("discoveryParams").toList());
+    ParamList discoveryParams = unpack<ParamList>(params.value("discoveryParams"));
 
     JsonReply *reply = createAsyncReply("GetDiscoveredDevices");
     DeviceDiscoveryInfo *info = NymeaCore::instance()->deviceManager()->discoverDevices(deviceClassId, discoveryParams);
-    connect(info, &DeviceDiscoveryInfo::finished, reply, [reply, info, locale](){
+    connect(info, &DeviceDiscoveryInfo::finished, reply, [this, reply, info, locale](){
         QVariantMap returns;
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(info->status()));
+        returns.insert("deviceError", enumValueName<Device::DeviceError>(info->status()));
 
         if (info->status() == Device::DeviceErrorNoError) {
-            returns.insert("deviceDescriptors", JsonTypes::packDeviceDescriptors(info->deviceDescriptors()));
+            QVariantList deviceDescriptorList;
+            foreach (const DeviceDescriptor &deviceDescriptor, info->deviceDescriptors()) {
+                deviceDescriptorList.append(pack(deviceDescriptor));
+            }
+            returns.insert("deviceDescriptors", deviceDescriptorList);
         }
 
         if (!info->displayMessage().isEmpty()) {
@@ -431,10 +472,17 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
 
 JsonReply* DeviceHandler::GetPlugins(const QVariantMap &params) const
 {
-    Q_UNUSED(params)
+    QLocale locale = params.value("locale").toLocale();
+
+    QVariantList plugins;
+    foreach (DevicePlugin* plugin, NymeaCore::instance()->deviceManager()->plugins()) {
+        QVariantMap packedPlugin = pack(*plugin).toMap();
+        packedPlugin["displayName"] = NymeaCore::instance()->deviceManager()->translate(plugin->pluginId(), plugin->pluginDisplayName(), locale);
+        plugins.append(packedPlugin);
+    }
 
     QVariantMap returns;
-    returns.insert("plugins", JsonTypes::packPlugins(params.value("locale").toLocale()));
+    returns.insert("plugins", plugins);
     return createReply(returns);
 }
 
@@ -444,16 +492,16 @@ JsonReply *DeviceHandler::GetPluginConfiguration(const QVariantMap &params) cons
 
     DevicePlugin *plugin = NymeaCore::instance()->deviceManager()->plugins().findById(PluginId(params.value("pluginId").toString()));
     if (!plugin) {
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorPluginNotFound));
+        returns.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorPluginNotFound));
         return createReply(returns);
     }
 
     QVariantList paramVariantList;
     foreach (const Param &param, plugin->configuration()) {
-        paramVariantList.append(JsonTypes::packParam(param));
+        paramVariantList.append(pack(param));
     }
     returns.insert("configuration", paramVariantList);
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorNoError));
+    returns.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorNoError));
     return createReply(returns);
 }
 
@@ -461,9 +509,9 @@ JsonReply* DeviceHandler::SetPluginConfiguration(const QVariantMap &params)
 {
     QVariantMap returns;
     PluginId pluginId = PluginId(params.value("pluginId").toString());
-    ParamList pluginParams = JsonTypes::unpackParams(params.value("configuration").toList());
+    ParamList pluginParams = unpack<ParamList>(params.value("configuration"));
     Device::DeviceError result = NymeaCore::instance()->deviceManager()->setPluginConfig(pluginId, pluginParams);
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(result));
+    returns.insert("deviceError",enumValueName<Device::DeviceError>(result));
     return createReply(returns);
 }
 
@@ -471,7 +519,7 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
 {
     DeviceClassId deviceClassId(params.value("deviceClassId").toString());
     QString deviceName = params.value("name").toString();
-    ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
+    ParamList deviceParams = unpack<ParamList>(params.value("deviceParams"));
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     QLocale locale = params.value("locale").toLocale();
 
@@ -485,7 +533,7 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
     }
     connect(info, &DeviceSetupInfo::finished, jsonReply, [info, jsonReply, locale](){
         QVariantMap returns;
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(info->status()));
+        returns.insert("deviceError", enumValueName<Device::DeviceError>(info->status()));
 
         if (!info->displayMessage().isEmpty()) {
             returns.insert("displayMessage", info->translatedDisplayMessage(locale));
@@ -504,7 +552,7 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
 JsonReply *DeviceHandler::PairDevice(const QVariantMap &params)
 {
     QString deviceName = params.value("name").toString();
-    ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
+    ParamList deviceParams = unpack<ParamList>(params.value("deviceParams"));
     QLocale locale = params.value("locale").toLocale();
 
     DevicePairingInfo *info;
@@ -523,12 +571,12 @@ JsonReply *DeviceHandler::PairDevice(const QVariantMap &params)
 
     connect(info, &DevicePairingInfo::finished, jsonReply, [jsonReply, info, locale](){
         QVariantMap returns;
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(info->status()));
+        returns.insert("deviceError", enumValueName<Device::DeviceError>(info->status()));
         returns.insert("pairingTransactionId", info->transactionId().toString());
 
         if (info->status() == Device::DeviceErrorNoError) {
             DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(info->deviceClassId());
-            returns.insert("setupMethod", JsonTypes::setupMethodToString(deviceClass.setupMethod()));
+            returns.insert("setupMethod", enumValueName<DeviceClass::SetupMethod>(deviceClass.setupMethod()));
         }
 
         if (!info->displayMessage().isEmpty()) {
@@ -559,7 +607,7 @@ JsonReply *DeviceHandler::ConfirmPairing(const QVariantMap &params)
     connect(info, &DevicePairingInfo::finished, jsonReply, [info, jsonReply, locale](){
 
         QVariantMap returns;
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(info->status()));
+        returns.insert("deviceError", enumValueName<Device::DeviceError>(info->status()));
         if (!info->displayMessage().isEmpty()) {
             returns.insert("displayMessage", info->translatedDisplayMessage(locale));
         }
@@ -580,14 +628,14 @@ JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
     if (params.contains("deviceId")) {
         Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(DeviceId(params.value("deviceId").toString()));
         if (!device) {
-            returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorDeviceNotFound));
+            returns.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorDeviceNotFound));
             return createReply(returns);
         } else {
-            configuredDeviceList.append(JsonTypes::packDevice(device));
+            configuredDeviceList.append(pack(device));
         }
     } else {
         foreach (Device *device, NymeaCore::instance()->deviceManager()->configuredDevices()) {
-            configuredDeviceList.append(JsonTypes::packDevice(device));
+            configuredDeviceList.append(pack(device));
         }
     }
     returns.insert("devices", configuredDeviceList);
@@ -597,7 +645,7 @@ JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
 JsonReply *DeviceHandler::ReconfigureDevice(const QVariantMap &params)
 {
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
-    ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
+    ParamList deviceParams = unpack<ParamList>(params.value("deviceParams"));
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
     QLocale locale = params.value("locale").toLocale();
 
@@ -611,14 +659,14 @@ JsonReply *DeviceHandler::ReconfigureDevice(const QVariantMap &params)
     } else {
         qCWarning(dcJsonRpc()) << "Either deviceId or deviceDescriptorId are required";
         QVariantMap ret;
-        ret.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorMissingParameter));
+        ret.insert("deviceError", enumValueName(Device::DeviceErrorMissingParameter));
         return createReply(ret);
     }
 
     connect(info, &DeviceSetupInfo::finished, jsonReply, [info, jsonReply, locale](){
 
         QVariantMap returns;
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(info->status()));
+        returns.insert("deviceError", enumValueName<Device::DeviceError>(info->status()));
         returns.insert("displayMessage", info->translatedDisplayMessage(locale));
         jsonReply->setData(returns);
         jsonReply->finished();
@@ -637,9 +685,7 @@ JsonReply *DeviceHandler::EditDevice(const QVariantMap &params)
 
     Device::DeviceError status = NymeaCore::instance()->deviceManager()->editDevice(deviceId, name);
 
-    QVariantMap returns;
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
-    return createReply(returns);
+    return createReply(statusToReply(status));
 }
 
 JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
@@ -651,7 +697,7 @@ JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
     if (params.contains("removePolicy")) {
         RuleEngine::RemovePolicy removePolicy = params.value("removePolicy").toString() == "RemovePolicyCascade" ? RuleEngine::RemovePolicyCascade : RuleEngine::RemovePolicyUpdate;
         Device::DeviceError status = NymeaCore::instance()->removeConfiguredDevice(deviceId, removePolicy);
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
+        returns.insert("deviceError", enumValueName<Device::DeviceError>(status));
         return createReply(returns);
     }
 
@@ -663,7 +709,7 @@ JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
     }
 
     QPair<Device::DeviceError, QList<RuleId> > status = NymeaCore::instance()->removeConfiguredDevice(deviceId, removePolicyList);
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(status.first));
+    returns.insert("deviceError", enumValueName<Device::DeviceError>(status.first));
 
     if (!status.second.isEmpty()) {
         QVariantList ruleIdList;
@@ -678,85 +724,73 @@ JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
 
 JsonReply *DeviceHandler::SetDeviceSettings(const QVariantMap &params)
 {
-    QVariantMap returns;
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
-    ParamList settings = JsonTypes::unpackParams(params.value("settings").toList());
+    ParamList settings = unpack<ParamList>(params.value("settings"));
     Device::DeviceError status = NymeaCore::instance()->deviceManager()->setDeviceSettings(deviceId, settings);
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(status));
-    return createReply(returns);
+    return createReply(statusToReply(status));
 }
 
 JsonReply* DeviceHandler::GetEventTypes(const QVariantMap &params) const
 {
-    QVariantMap returns;
+    QLocale locale = params.value("locale").toLocale();
 
-    QVariantList eventList;
     DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
-    foreach (const EventType &eventType, deviceClass.eventTypes()) {
-        eventList.append(JsonTypes::packEventType(eventType, deviceClass.pluginId(), params.value("locale").toLocale()));
-    }
-    returns.insert("eventTypes", eventList);
+    DeviceClass translatedDeviceClass = NymeaCore::instance()->deviceManager()->translateDeviceClass(deviceClass, locale);
+
+    QVariantMap returns;
+    returns.insert("eventTypes", pack(translatedDeviceClass.eventTypes()));
     return createReply(returns);
 }
 
 JsonReply* DeviceHandler::GetActionTypes(const QVariantMap &params) const
 {
-    QVariantMap returns;
+    QLocale locale = params.value("locale").toLocale();
 
-    QVariantList actionList;
     DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
-    foreach (const ActionType &actionType, deviceClass.actionTypes()) {
-        actionList.append(JsonTypes::packActionType(actionType, deviceClass.pluginId(), params.value("locale").toLocale()));
-    }
-    returns.insert("actionTypes", actionList);
+    DeviceClass translatedDeviceClass = NymeaCore::instance()->deviceManager()->translateDeviceClass(deviceClass, locale);
+
+    QVariantMap returns;
+    returns.insert("actionTypes", pack(translatedDeviceClass.actionTypes()));
     return createReply(returns);
 }
 
 JsonReply* DeviceHandler::GetStateTypes(const QVariantMap &params) const
 {
-    QVariantMap returns;
+    QLocale locale = params.value("locale").toLocale();
 
-    QVariantList stateList;
     DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
-    foreach (const StateType &stateType, deviceClass.stateTypes()) {
-        stateList.append(JsonTypes::packStateType(stateType, deviceClass.pluginId(), NymeaCore::instance()->configuration()->locale()));
-    }
-    returns.insert("stateTypes", stateList);
+    DeviceClass translatedDeviceClass = NymeaCore::instance()->deviceManager()->translateDeviceClass(deviceClass, locale);
+
+    QVariantMap returns;
+    returns.insert("stateTypes", pack(translatedDeviceClass.stateTypes()));
     return createReply(returns);
 }
 
 JsonReply* DeviceHandler::GetStateValue(const QVariantMap &params) const
 {
-    QVariantMap returns;
-
     Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(DeviceId(params.value("deviceId").toString()));
     if (!device) {
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorDeviceNotFound));
-        return createReply(returns);
+        return createReply(statusToReply(Device::DeviceErrorDeviceNotFound));
     }
     StateTypeId stateTypeId = StateTypeId(params.value("stateTypeId").toString());
     if (!device->hasState(stateTypeId)) {
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorStateTypeNotFound));
-        return createReply(returns);
+        return createReply(statusToReply(Device::DeviceErrorStateTypeNotFound));
     }
 
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorNoError));
+    QVariantMap returns = statusToReply(Device::DeviceErrorNoError);
     returns.insert("value", device->state(stateTypeId).value());
     return createReply(returns);
 }
 
 JsonReply *DeviceHandler::GetStateValues(const QVariantMap &params) const
 {
-    QVariantMap returns;
-
     Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(DeviceId(params.value("deviceId").toString()));
     if (!device) {
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorDeviceNotFound));
-        return createReply(returns);
+        return createReply(statusToReply(Device::DeviceErrorDeviceNotFound));
     }
 
-    returns.insert("deviceError", JsonTypes::deviceErrorToString(Device::DeviceErrorNoError));
-    returns.insert("values", JsonTypes::packDeviceStates(device));
+    QVariantMap returns = statusToReply(Device::DeviceErrorNoError);
+    returns.insert("values", pack(device->states()));
     return createReply(returns);
 }
 
@@ -768,11 +802,14 @@ JsonReply *DeviceHandler::BrowseDevice(const QVariantMap &params) const
     JsonReply *jsonReply = createAsyncReply("BrowseDevice");
 
     BrowseResult *result = NymeaCore::instance()->deviceManager()->browseDevice(deviceId, itemId, params.value("locale").toLocale());
-    connect(result, &BrowseResult::finished, jsonReply, [jsonReply, result](){
+    connect(result, &BrowseResult::finished, jsonReply, [this, jsonReply, result](){
 
-        QVariantMap returns;
-        returns.insert("deviceError", JsonTypes::deviceErrorToString(result->status()));
-        returns.insert("items", JsonTypes::packBrowserItems(result->items()));
+        QVariantMap returns = statusToReply(result->status());
+        QVariantList list;
+        foreach (const BrowserItem &item, result->items()) {
+            list.append(packBrowserItem(item));
+        }
+        returns.insert("items", list);
         jsonReply->setData(returns);
         jsonReply->finished();
     });
@@ -789,17 +826,104 @@ JsonReply *DeviceHandler::GetBrowserItem(const QVariantMap &params) const
     JsonReply *jsonReply = createAsyncReply("GetBrowserItem");
 
     BrowserItemResult *result = NymeaCore::instance()->deviceManager()->browserItemDetails(deviceId, itemId, params.value("locale").toLocale());
-    connect(result, &BrowserItemResult::finished, jsonReply, [jsonReply, result](){
-        QVariantMap params;
+    connect(result, &BrowserItemResult::finished, jsonReply, [this, jsonReply, result](){
+        QVariantMap params = statusToReply(result->status());
         if (result->status() == Device::DeviceErrorNoError) {
-            params.insert("item", JsonTypes::packBrowserItem(result->item()));
+            params.insert("item", packBrowserItem(result->item()));
         }
-        params.insert("deviceError", JsonTypes::deviceErrorToString(result->status()));
         jsonReply->setData(params);
         jsonReply->finished();
     });
 
     return jsonReply;
+}
+
+JsonReply *DeviceHandler::ExecuteAction(const QVariantMap &params)
+{
+    DeviceId deviceId(params.value("deviceId").toString());
+    ActionTypeId actionTypeId(params.value("actionTypeId").toString());
+    ParamList actionParams = unpack<ParamList>(params.value("params"));
+    QLocale locale = params.value("locale").toLocale();
+
+    Action action(actionTypeId, deviceId);
+    action.setParams(actionParams);
+
+    JsonReply *jsonReply = createAsyncReply("ExecuteAction");
+
+    DeviceActionInfo *info = NymeaCore::instance()->executeAction(action);
+    connect(info, &DeviceActionInfo::finished, jsonReply, [info, jsonReply, locale](){
+        QVariantMap data;
+        data.insert("deviceError", enumValueName(info->status()));
+        if (!info->displayMessage().isEmpty()) {
+            data.insert("displayMessage", info->translatedDisplayMessage(locale));
+        }
+        jsonReply->setData(data);
+        jsonReply->finished();
+    });
+
+    return jsonReply;
+}
+
+JsonReply *DeviceHandler::ExecuteBrowserItem(const QVariantMap &params)
+{
+    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+    QString itemId = params.value("itemId").toString();
+    BrowserAction action(deviceId, itemId);
+
+    JsonReply *jsonReply = createAsyncReply("ExecuteBrowserItem");
+
+    BrowserActionInfo *info = NymeaCore::instance()->executeBrowserItem(action);
+    connect(info, &BrowserActionInfo::finished, jsonReply, [info, jsonReply](){
+        QVariantMap data;
+        data.insert("deviceError", enumValueName<Device::DeviceError>(info->status()));
+        jsonReply->setData(data);
+        jsonReply->finished();
+    });
+
+    return jsonReply;
+}
+
+JsonReply *DeviceHandler::ExecuteBrowserItemAction(const QVariantMap &params)
+{
+    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+    QString itemId = params.value("itemId").toString();
+    ActionTypeId actionTypeId = ActionTypeId(params.value("actionTypeId").toString());
+    ParamList paramList = unpack<ParamList>(params.value("params"));
+    BrowserItemAction browserItemAction(deviceId, itemId, actionTypeId, paramList);
+
+    JsonReply *jsonReply = createAsyncReply("ExecuteBrowserItemAction");
+
+    BrowserItemActionInfo *info = NymeaCore::instance()->executeBrowserItemAction(browserItemAction);
+    connect(info, &BrowserItemActionInfo::finished, jsonReply, [info, jsonReply](){
+        QVariantMap data;
+        data.insert("deviceError", enumValueName<Device::DeviceError>(info->status()));
+        jsonReply->setData(data);
+        jsonReply->finished();
+    });
+
+    return jsonReply;
+}
+
+QVariantMap DeviceHandler::packBrowserItem(const BrowserItem &item)
+{
+    QVariantMap ret;
+    ret.insert("id", item.id());
+    ret.insert("displayName", item.displayName());
+    ret.insert("description", item.description());
+    ret.insert("icon", enumValueName<BrowserItem::BrowserIcon>(item.icon()));
+    if (item.extendedPropertiesFlags().testFlag(BrowserItem::ExtendedPropertiesMedia)) {
+        ret.insert("mediaIcon", enumValueName<MediaBrowserItem::MediaBrowserIcon>(static_cast<MediaBrowserItem::MediaBrowserIcon>(item.extendedProperty("mediaIcon").toInt())));
+    }
+    ret.insert("thumbnail", item.thumbnail());
+    ret.insert("executable", item.executable());
+    ret.insert("browsable", item.browsable());
+    ret.insert("disabled", item.disabled());
+    QVariantList actionTypeIds;
+    foreach (const ActionTypeId &id, item.actionTypeIds()) {
+        actionTypeIds.append(id.toString());
+    }
+    ret.insert("actionTypeIds", actionTypeIds);
+    return ret;
 }
 
 void DeviceHandler::pluginConfigChanged(const PluginId &id, const ParamList &config)
@@ -808,7 +932,7 @@ void DeviceHandler::pluginConfigChanged(const PluginId &id, const ParamList &con
     params.insert("pluginId", id);
     QVariantList configList;
     foreach (const Param &param, config) {
-        configList << JsonTypes::packParam(param);
+        configList << pack(param);
     }
     params.insert("configuration", configList);
     emit PluginConfigurationChanged(params);
@@ -820,7 +944,6 @@ void DeviceHandler::deviceStateChanged(Device *device, const QUuid &stateTypeId,
     params.insert("deviceId", device->id());
     params.insert("stateTypeId", stateTypeId);
     params.insert("value", value);
-
     emit StateChanged(params);
 }
 
@@ -828,23 +951,20 @@ void DeviceHandler::deviceRemovedNotification(const QUuid &deviceId)
 {
     QVariantMap params;
     params.insert("deviceId", deviceId);
-
     emit DeviceRemoved(params);
 }
 
 void DeviceHandler::deviceAddedNotification(Device *device)
 {
     QVariantMap params;
-    params.insert("device", JsonTypes::packDevice(device));
-
+    params.insert("device", pack(device));
     emit DeviceAdded(params);
 }
 
 void DeviceHandler::deviceChangedNotification(Device *device)
 {
     QVariantMap params;
-    params.insert("device", JsonTypes::packDevice(device));
-
+    params.insert("device", pack(device));
     emit DeviceChanged(params);
 }
 
@@ -855,6 +975,13 @@ void DeviceHandler::deviceSettingChangedNotification(const DeviceId deviceId, co
     params.insert("paramTypeId", paramTypeId.toString());
     params.insert("value", value);
     emit DeviceSettingChanged(params);
+}
+
+QVariantMap DeviceHandler::statusToReply(Device::DeviceError status) const
+{
+    QVariantMap returns;
+    returns.insert("deviceError", enumValueName<Device::DeviceError>(status));
+    return returns;
 }
 
 }

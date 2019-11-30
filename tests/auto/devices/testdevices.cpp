@@ -26,6 +26,8 @@
 #include "devices/devicediscoveryinfo.h"
 #include "devices/devicesetupinfo.h"
 
+#include "servers/mocktcpserver.h"
+
 using namespace nymeaserver;
 
 class TestDevices : public NymeaTestBase
@@ -34,6 +36,10 @@ class TestDevices : public NymeaTestBase
 
 private:
     DeviceId m_mockDeviceAsyncId;
+
+    inline void verifyDeviceError(const QVariant &response, Device::DeviceError error = Device::DeviceErrorNoError) {
+        verifyError(response, "deviceError", enumValueName(error));
+    }
 
 private slots:
 
@@ -112,6 +118,14 @@ private slots:
 
     void testExecuteBrowserItemAction_data();
     void testExecuteBrowserItemAction();
+
+    void executeAction_data();
+    void executeAction();
+
+    void triggerEvent();
+    void triggerStateChangeEvent();
+
+    void params();
 
     // Keep those at last as they will remove devices
     void removeDevice_data();
@@ -287,7 +301,7 @@ void TestDevices::verifyInterfaces()
 
     QVariantMap mockDevice;
     foreach (const QVariant &deviceClass, supportedDevices) {
-        if (deviceClass.toMap().value("id") == mockDeviceClassId) {
+        if (deviceClass.toMap().value("id").toUuid() == mockDeviceClassId) {
             mockDevice = deviceClass.toMap();
         }
     }
@@ -308,6 +322,7 @@ void TestDevices::addConfiguredDevice_data()
 {
     QTest::addColumn<DeviceClassId>("deviceClassId");
     QTest::addColumn<QVariantList>("deviceParams");
+    QTest::addColumn<bool>("jsonValidation");
     QTest::addColumn<Device::DeviceError>("deviceError");
 
     QVariantMap httpportParam;
@@ -323,32 +338,35 @@ void TestDevices::addConfiguredDevice_data()
     QVariantList deviceParams;
 
     deviceParams.clear(); deviceParams << httpportParam;
-    QTest::newRow("User, JustAdd") << mockDeviceClassId << deviceParams << Device::DeviceErrorNoError;
+    QTest::newRow("User, JustAdd") << mockDeviceClassId << deviceParams << true << Device::DeviceErrorNoError;
     deviceParams.clear(); deviceParams << httpportParam << asyncParam;
-    QTest::newRow("User, JustAdd, Async") << mockDeviceClassId << deviceParams << Device::DeviceErrorNoError;
-    QTest::newRow("Invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << deviceParams << Device::DeviceErrorDeviceClassNotFound;
+    QTest::newRow("User, JustAdd, Async") << mockDeviceClassId << deviceParams << true << Device::DeviceErrorNoError;
+    QTest::newRow("Invalid DeviceClassId") << DeviceClassId::createDeviceClassId() << deviceParams << true << Device::DeviceErrorDeviceClassNotFound;
     deviceParams.clear(); deviceParams << httpportParam << brokenParam;
-    QTest::newRow("Setup failure") << mockDeviceClassId << deviceParams << Device::DeviceErrorSetupFailed;
+    QTest::newRow("Setup failure") << mockDeviceClassId << deviceParams << true << Device::DeviceErrorSetupFailed;
     deviceParams.clear(); deviceParams << httpportParam << asyncParam << brokenParam;
-    QTest::newRow("Setup failure, Async") << mockDeviceClassId << deviceParams << Device::DeviceErrorSetupFailed;
+    QTest::newRow("Setup failure, Async") << mockDeviceClassId << deviceParams << true << Device::DeviceErrorSetupFailed;
 
     QVariantList invalidDeviceParams;
-    QTest::newRow("User, JustAdd, missing params") << mockDeviceClassId << invalidDeviceParams << Device::DeviceErrorMissingParameter;
+    QTest::newRow("User, JustAdd, missing params") << mockDeviceClassId << invalidDeviceParams << true << Device::DeviceErrorMissingParameter;
 
     QVariantMap fakeparam;
     fakeparam.insert("paramTypeId", ParamTypeId::createParamTypeId());
     invalidDeviceParams.append(fakeparam);
-    QTest::newRow("User, JustAdd, invalid param") << mockDeviceClassId << invalidDeviceParams << Device::DeviceErrorMissingParameter;
+    QTest::newRow("User, JustAdd, invalid param") << mockDeviceClassId << invalidDeviceParams << false << Device::DeviceErrorMissingParameter;
 
     QVariantMap fakeparam2;
     fakeparam2.insert("paramTypeId", mockDeviceHttpportParamTypeId.toString());
     fakeparam2.insert("value", "blabla");
     invalidDeviceParams.clear();
     invalidDeviceParams.append(fakeparam2);
-    QTest::newRow("User, JustAdd, wrong param") << mockDeviceClassId << invalidDeviceParams << Device::DeviceErrorInvalidParameter;
+    QTest::newRow("User, JustAdd, wrong param") << mockDeviceClassId << invalidDeviceParams << true << Device::DeviceErrorInvalidParameter;
 
     deviceParams.clear(); deviceParams << httpportParam << fakeparam;
-    QTest::newRow("USer, JustAdd, additional invalid param") << mockDeviceClassId << deviceParams << Device::DeviceErrorNoError;
+    QTest::newRow("USer, JustAdd, additional invalid param") << mockDeviceClassId << deviceParams << false << Device::DeviceErrorNoError;
+
+    deviceParams.clear(); deviceParams << httpportParam << fakeparam2;
+    QTest::newRow("USer, JustAdd, additional param, valid but unused") << mockDeviceClassId << deviceParams << true << Device::DeviceErrorNoError;
 
 }
 
@@ -356,6 +374,7 @@ void TestDevices::addConfiguredDevice()
 {
     QFETCH(DeviceClassId, deviceClassId);
     QFETCH(QVariantList, deviceParams);
+    QFETCH(bool, jsonValidation);
     QFETCH(Device::DeviceError, deviceError);
 
     QVariantMap params;
@@ -363,8 +382,11 @@ void TestDevices::addConfiguredDevice()
     params.insert("name", "Test Add Device");
     params.insert("deviceParams", deviceParams);
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
-    qDebug() << "response is" << response;
 
+    if (!jsonValidation) {
+        QCOMPARE(response.toMap().value("status").toString(), QString("error"));
+        return;
+    }
     verifyDeviceError(response, deviceError);
 
     if (deviceError == Device::DeviceErrorNoError) {
@@ -646,8 +668,8 @@ void TestDevices::parentChildDevices()
 
         if (deviceMap.value("deviceClassId").toString() == mockChildDeviceClassId.toString()) {
             if (deviceMap.value("parentId") == parentDeviceId.toString()) {
-                //qDebug() << QJsonDocument::fromVariant(deviceVariant).toJson();
                 childDeviceId = DeviceId(deviceMap.value("id").toString());
+                break;
             }
         }
     }
@@ -775,7 +797,7 @@ void TestDevices::getStateTypes()
     QVariantList stateTypes = response.toMap().value("params").toMap().value("stateTypes").toList();
     QCOMPARE(stateTypes.count(), resultCount);
     if (resultCount > 0) {
-        QCOMPARE(stateTypes.first().toMap().value("id").toString(), mockIntStateTypeId.toString());
+        QCOMPARE(stateTypes.first().toMap().value("id").toUuid().toString(), mockIntStateTypeId.toString());
     }
 }
 
@@ -804,10 +826,8 @@ void TestDevices::getStateType()
 
     QVariantMap stateType = response.toMap().value("params").toMap().value("stateType").toMap();
 
-    qDebug() << QJsonDocument::fromVariant(stateType).toJson();
-
     QVERIFY2(!stateType.isEmpty(), "Got no stateType");
-    QCOMPARE(stateType.value("id").toString(), stateTypeId.toString());
+    QCOMPARE(stateType.value("id").toUuid().toString(), stateTypeId.toString());
 }
 
 void TestDevices::getStateValue_data()
@@ -832,7 +852,7 @@ void TestDevices::getStateValue()
     params.insert("stateTypeId", stateTypeId);
     QVariant response = injectAndWait("Devices.GetStateValue", params);
 
-    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), JsonTypes::deviceErrorToString(statusCode));
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), enumValueName(statusCode));
     if (statusCode == Device::DeviceErrorNoError) {
         QVariant value = response.toMap().value("params").toMap().value("value");
         QCOMPARE(value.toInt(), 10); // Mock device has value 10 by default...
@@ -857,7 +877,7 @@ void TestDevices::getStateValues()
     params.insert("deviceId", deviceId);
     QVariant response = injectAndWait("Devices.GetStateValues", params);
 
-    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), JsonTypes::deviceErrorToString(statusCode));
+    QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), enumValueName(statusCode));
     if (statusCode == Device::DeviceErrorNoError) {
         QVariantList values = response.toMap().value("params").toMap().value("values").toList();
         QCOMPARE(values.count(), 6); // Mock device has 6 states...
@@ -1765,6 +1785,181 @@ void TestDevices::testExecuteBrowserItemAction()
     browserEntries = response.toMap().value("params").toMap().value("items").toList();
     QCOMPARE(browserEntries.count(), 0);
 
+}
+
+void TestDevices::executeAction_data()
+{
+    QTest::addColumn<DeviceId>("deviceId");
+    QTest::addColumn<ActionTypeId>("actionTypeId");
+    QTest::addColumn<QVariantList>("actionParams");
+    QTest::addColumn<Device::DeviceError>("error");
+
+    QVariantList params;
+    QVariantMap param1;
+    param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
+    param1.insert("value", 5);
+    params.append(param1);
+    QVariantMap param2;
+    param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
+    param2.insert("value", true);
+    params.append(param2);
+
+    QTest::newRow("valid action") << m_mockDeviceId << mockWithParamsActionTypeId << params << Device::DeviceErrorNoError;
+    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockWithParamsActionTypeId << params << Device::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid actionTypeId") << m_mockDeviceId << ActionTypeId::createActionTypeId() << params << Device::DeviceErrorActionTypeNotFound;
+    QTest::newRow("missing params") << m_mockDeviceId << mockWithParamsActionTypeId << QVariantList() << Device::DeviceErrorMissingParameter;
+    QTest::newRow("async action") << m_mockDeviceId << mockAsyncActionTypeId << QVariantList() << Device::DeviceErrorNoError;
+    QTest::newRow("broken action") << m_mockDeviceId << mockFailingActionTypeId << QVariantList() << Device::DeviceErrorSetupFailed;
+    QTest::newRow("async broken action") << m_mockDeviceId << mockAsyncFailingActionTypeId << QVariantList() << Device::DeviceErrorSetupFailed;
+}
+
+void TestDevices::executeAction()
+{
+    QFETCH(DeviceId, deviceId);
+    QFETCH(ActionTypeId, actionTypeId);
+    QFETCH(QVariantList, actionParams);
+    QFETCH(Device::DeviceError, error);
+
+    QVariantMap params;
+    params.insert("actionTypeId", actionTypeId);
+    params.insert("deviceId", deviceId);
+    params.insert("params", actionParams);
+    QVariant response = injectAndWait("Devices.ExecuteAction", params);
+    qDebug() << "executeActionresponse" << response;
+    verifyError(response, "deviceError", enumValueName(error));
+
+    // Fetch action execution history from mock device
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+    QByteArray data = reply->readAll();
+
+    if (error == Device::DeviceErrorNoError) {
+        QVERIFY2(actionTypeId == ActionTypeId(data), QString("ActionTypeId mismatch. Got %1, Expected: %2")
+                 .arg(ActionTypeId(data).toString()).arg(actionTypeId.toString()).toLatin1().data());
+    } else {
+        QVERIFY2(data.length() == 0, QString("Data is %1, should be empty.").arg(QString(data)).toLatin1().data());
+    }
+
+    // cleanup for the next run
+    spy.clear();
+    request.setUrl(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    spy.clear();
+    request.setUrl(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+    data = reply->readAll();
+    qDebug() << "cleared data:" << data;
+
+}
+
+void TestDevices::triggerEvent()
+{
+    enableNotifications({"Devices"});
+    QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
+    QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
+    Device *device = devices.first();
+
+
+    QSignalSpy spy(NymeaCore::instance(), SIGNAL(eventTriggered(const Event&)));
+    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // Setup connection to mock client
+    QNetworkAccessManager nam;
+
+    // trigger event in mock device
+    int port = device->paramValue(mockDeviceHttpportParamTypeId).toInt();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(port).arg(mockEvent1EventTypeId.toString())));
+    QNetworkReply *reply = nam.get(request);
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
+
+    // Lets wait for the notification
+    spy.wait();
+    QVERIFY(spy.count() > 0);
+    for (int i = 0; i < spy.count(); i++ ){
+        Event event = spy.at(i).at(0).value<Event>();
+        if (event.deviceId() == device->id()) {
+            // Make sure the event contains all the stuff we expect
+            QCOMPARE(event.eventTypeId(), mockEvent1EventTypeId);
+        }
+    }
+
+    // Check for the notification on JSON API
+    QVariantList notifications;
+    notifications = checkNotifications(notificationSpy, "Devices.EventTriggered");
+    QVERIFY2(notifications.count() == 1, "Should get Devices.EventTriggered notification");
+    QVariantMap notificationContent = notifications.first().toMap().value("params").toMap();
+
+    QCOMPARE(notificationContent.value("event").toMap().value("deviceId").toUuid().toString(), device->id().toString());
+    QCOMPARE(notificationContent.value("event").toMap().value("eventTypeId").toUuid().toString(), mockEvent1EventTypeId.toString());
+}
+
+void TestDevices::triggerStateChangeEvent()
+{
+    enableNotifications({"Devices"});
+
+    QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
+    QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
+    Device *device = devices.first();
+
+    QSignalSpy spy(NymeaCore::instance(), SIGNAL(eventTriggered(const Event&)));
+    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // Setup connection to mock client
+    QNetworkAccessManager nam;
+
+    // trigger state changed event in mock device
+    int port = device->paramValue(mockDeviceHttpportParamTypeId).toInt();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockIntStateTypeId.toString()).arg(11)));
+    QNetworkReply *reply = nam.get(request);
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
+
+    // Lets wait for the notification
+    spy.wait();
+    QVERIFY(spy.count() > 0);
+    for (int i = 0; i < spy.count(); i++ ){
+        Event event = spy.at(i).at(0).value<Event>();
+        if (event.deviceId() == device->id()) {
+            // Make sure the event contains all the stuff we expect
+            QCOMPARE(event.eventTypeId().toString(), mockIntStateTypeId.toString());
+            QCOMPARE(event.param(ParamTypeId(mockIntStateTypeId.toString())).value().toInt(), 11);
+        }
+    }
+
+    // Check for the notification on JSON API
+    QVariantList notifications;
+    notifications = checkNotifications(notificationSpy, "Devices.EventTriggered");
+    QVERIFY2(notifications.count() == 1, "Should get Devices.EventTriggered notification");
+    QVariantMap notificationContent = notifications.first().toMap().value("params").toMap();
+
+    QCOMPARE(notificationContent.value("event").toMap().value("deviceId").toUuid().toString(), device->id().toString());
+    QCOMPARE(notificationContent.value("event").toMap().value("eventTypeId").toUuid().toString(), mockIntEventTypeId.toString());
+
+}
+
+void TestDevices::params()
+{
+    Event event;
+    ParamList params;
+    ParamTypeId id = ParamTypeId::createParamTypeId();
+    Param p(id, "foo bar");
+    params.append(p);
+    event.setParams(params);
+
+    QVERIFY(event.param(id).value().toString() == "foo bar");
+    QVERIFY(!event.param(ParamTypeId::createParamTypeId()).value().isValid());
 }
 
 #include "testdevices.moc"

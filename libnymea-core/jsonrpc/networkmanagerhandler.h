@@ -23,7 +23,8 @@
 
 #include <QObject>
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
+#include "networkmanager/networkmanager.h"
 
 namespace nymeaserver {
 
@@ -72,6 +73,13 @@ private slots:
     void onWiredNetworkDeviceAdded(WiredNetworkDevice *networkDevice);
     void onWiredNetworkDeviceRemoved(const QString &interface);
     void onWiredNetworkDeviceChanged(WiredNetworkDevice *networkDevice);
+
+private:
+    QVariantMap packWirelessAccessPoint(WirelessAccessPoint *wirelessAccessPoint);
+    QVariantMap packWiredNetworkDevice(WiredNetworkDevice *networkDevice);
+    QVariantMap packWirelessNetworkDevice(WirelessNetworkDevice *networkDevice);
+
+    QVariantMap statusToReply(NetworkManager::NetworkManagerError status) const;
 
 };
 

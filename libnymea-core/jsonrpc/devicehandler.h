@@ -22,7 +22,7 @@
 #ifndef DEVICEHANDLER_H
 #define DEVICEHANDLER_H
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
 #include "devices/devicemanager.h"
 
 namespace nymeaserver {
@@ -60,6 +60,12 @@ public:
     Q_INVOKABLE JsonReply *BrowseDevice(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetBrowserItem(const QVariantMap &params) const;
 
+    Q_INVOKABLE JsonReply *ExecuteAction(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *ExecuteBrowserItem(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *ExecuteBrowserItemAction(const QVariantMap &params);
+
+    static QVariantMap packBrowserItem(const BrowserItem &item);
+
 signals:
     void PluginConfigurationChanged(const QVariantMap &params);
     void StateChanged(const QVariantMap &params);
@@ -67,6 +73,7 @@ signals:
     void DeviceAdded(const QVariantMap &params);
     void DeviceChanged(const QVariantMap &params);
     void DeviceSettingChanged(const QVariantMap &params);
+    void EventTriggered(const QVariantMap &params);
 
 private slots:
     void pluginConfigChanged(const PluginId &id, const ParamList &config);
@@ -80,6 +87,9 @@ private slots:
     void deviceChangedNotification(Device *device);
 
     void deviceSettingChangedNotification(const DeviceId deviceId, const ParamTypeId &paramTypeId, const QVariant &value);
+
+private:
+    QVariantMap statusToReply(Device::DeviceError status) const;
 };
 
 }

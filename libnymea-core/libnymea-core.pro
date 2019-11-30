@@ -18,6 +18,8 @@ RESOURCES += $$top_srcdir/icons.qrc \
 HEADERS += nymeacore.h \
     devices/devicemanagerimplementation.h \
     devices/translator.h \
+    experiences/experiencemanager.h \
+    jsonrpc/jsonrpcserverimplementation.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
     ruleengine/stateevaluator.h \
@@ -34,10 +36,8 @@ HEADERS += nymeacore.h \
     servers/bluetoothserver.h \
     servers/websocketserver.h \
     servers/mqttbroker.h \
-    jsonrpc/jsonrpcserver.h \
-    jsonrpc/jsonhandler.h \
+    jsonrpc/jsonvalidator.h \
     jsonrpc/devicehandler.h \
-    jsonrpc/jsontypes.h \
     jsonrpc/ruleshandler.h \
     jsonrpc/actionhandler.h \
     jsonrpc/eventhandler.h \
@@ -50,10 +50,6 @@ HEADERS += nymeacore.h \
     logging/logfilter.h \
     logging/logentry.h \
     logging/logvaluetool.h \
-    time/timedescriptor.h \
-    time/calendaritem.h \
-    time/repeatingoption.h \
-    time/timeeventitem.h \
     time/timemanager.h \
     networkmanager/dbus-interfaces.h \
     networkmanager/networkmanager.h \
@@ -96,6 +92,8 @@ HEADERS += nymeacore.h \
 SOURCES += nymeacore.cpp \
     devices/devicemanagerimplementation.cpp \
     devices/translator.cpp \
+    experiences/experiencemanager.cpp \
+    jsonrpc/jsonrpcserverimplementation.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \
     ruleengine/stateevaluator.cpp \
@@ -112,10 +110,8 @@ SOURCES += nymeacore.cpp \
     servers/websocketserver.cpp \
     servers/bluetoothserver.cpp \
     servers/mqttbroker.cpp \
-    jsonrpc/jsonrpcserver.cpp \
-    jsonrpc/jsonhandler.cpp \
+    jsonrpc/jsonvalidator.cpp \
     jsonrpc/devicehandler.cpp \
-    jsonrpc/jsontypes.cpp \
     jsonrpc/ruleshandler.cpp \
     jsonrpc/actionhandler.cpp \
     jsonrpc/eventhandler.cpp \
@@ -127,10 +123,6 @@ SOURCES += nymeacore.cpp \
     logging/logfilter.cpp \
     logging/logentry.cpp \
     logging/logvaluetool.cpp \
-    time/timedescriptor.cpp \
-    time/calendaritem.cpp \
-    time/repeatingoption.cpp \
-    time/timeeventitem.cpp \
     time/timemanager.cpp \
     networkmanager/networkmanager.cpp \
     networkmanager/networkdevice.cpp \

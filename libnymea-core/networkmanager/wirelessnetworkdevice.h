@@ -37,9 +37,15 @@ namespace nymeaserver {
 class WirelessNetworkDevice : public NetworkDevice
 {
     Q_OBJECT
+    Q_PROPERTY(QString interface READ interface)
+    Q_PROPERTY(QString macAddress READ macAddress)
+    Q_PROPERTY(NetworkDeviceState state READ deviceState)
+    Q_PROPERTY(QString bitRate READ bitRate)
+    Q_PROPERTY(WirelessAccessPoint* currentAccessPoint READ activeAccessPoint)
+
 public:
 
-    explicit WirelessNetworkDevice(const QDBusObjectPath &objectPath, QObject *parent = 0);
+    explicit WirelessNetworkDevice(const QDBusObjectPath &objectPath, QObject *parent = nullptr);
 
     // Properties
     QString macAddress() const;

@@ -22,8 +22,6 @@
 #ifndef NYMEATESTBASE_H
 #define NYMEATESTBASE_H
 
-#include "jsonrpc/jsontypes.h"
-
 #include <QSignalSpy>
 #include <QtTest>
 #include <QNetworkRequest>
@@ -78,25 +76,17 @@ protected:
                  .toLatin1().data());
     }
 
-    inline void verifyRuleError(const QVariant &response, RuleEngine::RuleError error = RuleEngine::RuleErrorNoError) {
-        verifyError(response, "ruleError", JsonTypes::ruleErrorToString(error));
+    template<typename T> QString enumValueName(T value)
+    {
+        QMetaEnum metaEnum = QMetaEnum::fromType<T>();
+        return metaEnum.valueToKey(value);
     }
 
-    inline void verifyDeviceError(const QVariant &response, Device::DeviceError error = Device::DeviceErrorNoError) {
-        verifyError(response, "deviceError", JsonTypes::deviceErrorToString(error));
+    template<typename T> T enumNameToValue(const QString &name) {
+        QMetaEnum metaEnum = QMetaEnum::fromType<T>();
+        return static_cast<T>(metaEnum.keyToValue(name.toUtf8()));
     }
 
-    inline void verifyLoggingError(const QVariant &response, Logging::LoggingError error = Logging::LoggingErrorNoError) {
-        verifyError(response, "loggingError", JsonTypes::loggingErrorToString(error));
-    }
-
-    inline void verifyConfigurationError(const QVariant &response, NymeaConfiguration::ConfigurationError error = NymeaConfiguration::ConfigurationErrorNoError) {
-        verifyError(response, "configurationError", JsonTypes::configurationErrorToString(error));
-    }
-
-    inline void verifyTagError(const QVariant &response, TagsStorage::TagError error = TagsStorage::TagErrorNoError) {
-        verifyError(response, "tagError", JsonTypes::tagErrorToString(error));
-    }
 
     inline void verifyParams(const QVariantList &requestList, const QVariantList &responseList, bool allRequired = true)
     {

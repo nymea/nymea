@@ -18,54 +18,59 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef REPEATINGOPTION_H
-#define REPEATINGOPTION_H
+#ifndef TIMEEVENTITEM_H
+#define TIMEEVENTITEM_H
 
-#include <QList>
-#include <QMetaType>
+#include <QDateTime>
+#include <QVariant>
 
-class QDateTime;
+#include "repeatingoption.h"
 
-namespace nymeaserver {
-
-class RepeatingOption
+class TimeEventItem
 {
     Q_GADGET
-
+    Q_PROPERTY(QDateTime datetime READ dateTime WRITE setDateTime USER true)
+    Q_PROPERTY(QTime time READ time WRITE setTime USER true)
+    Q_PROPERTY(RepeatingOption repeating READ repeatingOption WRITE setRepeatingOption USER true)
 public:
-    enum RepeatingMode {
-        RepeatingModeNone,
-        RepeatingModeHourly,
-        RepeatingModeDaily,
-        RepeatingModeWeekly,
-        RepeatingModeMonthly,
-        RepeatingModeYearly
-    };
-    Q_ENUM(RepeatingMode)
+    TimeEventItem();
 
-    RepeatingOption();
-    RepeatingOption(const RepeatingMode &mode, const QList<int> &weekDays = QList<int>(), const QList<int> &monthDays = QList<int>());
+    QDateTime dateTime() const;
+    void setDateTime(const QDateTime &dateTime);
 
-    RepeatingMode mode() const;
+    QTime time() const;
+    void setTime(const QTime &time);
 
-    QList<int> weekDays() const;
-    QList<int> monthDays() const;
+    RepeatingOption repeatingOption() const;
+    void setRepeatingOption(const RepeatingOption &repeatingOption);
 
-    bool isEmtpy() const;
+    // TODO spectioalDayTime
+
     bool isValid() const;
 
-    bool evaluateWeekDay(const QDateTime &dateTime) const;
-    bool evaluateMonthDay(const QDateTime &dateTime) const;
+    bool evaluate(const QDateTime &lastEvaluationTime, const QDateTime &dateTime) const;
 
 private:
-    RepeatingMode m_mode;
+    QDateTime m_dateTime;
+    QTime m_time;
 
-    QList<int> m_weekDays;
-    QList<int> m_monthDays;
-
+    RepeatingOption m_repeatingOption;
 };
+Q_DECLARE_METATYPE(TimeEventItem)
 
-QDebug operator<<(QDebug dbg, const RepeatingOption &RepeatingOption);
-}
+class TimeEventItems: public QList<TimeEventItem>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    TimeEventItems();
+    TimeEventItems(const QList<TimeEventItem> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
+};
+Q_DECLARE_METATYPE(TimeEventItems)
 
-#endif // REPEATINGOPTION_H
+QDebug operator<<(QDebug dbg, const TimeEventItem &timeEventItem);
+
+
+#endif // TIMEEVENTITEM_H

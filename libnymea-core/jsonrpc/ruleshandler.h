@@ -22,7 +22,9 @@
 #ifndef RULESHANDLER_H
 #define RULESHANDLER_H
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
+
+#include "ruleengine/rule.h"
 
 namespace nymeaserver {
 
@@ -30,7 +32,7 @@ class RulesHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit RulesHandler(QObject *parent = 0);
+    explicit RulesHandler(QObject *parent = nullptr);
 
     QString name() const override;
 
@@ -60,6 +62,8 @@ private slots:
     void ruleActiveChangedNotification(const Rule &rule);
     void ruleConfigurationChangedNotification(const Rule &rule);
 
+private:
+    QVariantMap packRuleDescription(const Rule &rule);
 };
 
 }

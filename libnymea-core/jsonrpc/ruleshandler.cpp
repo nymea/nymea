@@ -58,6 +58,7 @@
 #include "loggingcategories.h"
 
 #include <QDebug>
+#include <QJsonDocument>
 
 namespace nymeaserver {
 
@@ -65,26 +66,49 @@ namespace nymeaserver {
 RulesHandler::RulesHandler(QObject *parent) :
     JsonHandler(parent)
 {
-    QVariantMap params;
-    QVariantMap returns;
+    // Enums
+    registerEnum<RuleEngine::RuleError>();
+    registerEnum<Types::ValueOperator>();
+    registerEnum<Types::StateOperator>();
+    registerEnum<RepeatingOption::RepeatingMode>();
+
+    // Objects
+    QVariantMap ruleDescription;
+    ruleDescription.insert("id", enumValueName(Uuid));
+    ruleDescription.insert("name", enumValueName(String));
+    ruleDescription.insert("enabled", enumValueName(Bool));
+    ruleDescription.insert("active", enumValueName(Bool));
+    ruleDescription.insert("executable", enumValueName(Bool));
+    registerObject("RuleDescription", ruleDescription);
+
+    registerObject<ParamDescriptor, ParamDescriptors>();
+    registerObject<EventDescriptor, EventDescriptors>();
+    registerObject<StateDescriptor>();
+    registerObject<StateEvaluator, StateEvaluators>();
+    registerObject<RepeatingOption>();
+    registerObject<CalendarItem, CalendarItems>();
+    registerObject<TimeEventItem, TimeEventItems>();
+    registerObject<TimeDescriptor>();
+    registerObject<RuleActionParam, RuleActionParams>();
+    registerObject<RuleAction, RuleActions>();
+    registerObject<Rule, Rules>();
+
+    // Methods
+    QString description; QVariantMap params; QVariantMap returns;
+    description = "Get the descriptions of all configured rules. If you need more information about a specific rule use the "
+                   "method Rules.GetRuleDetails.";
+    returns.insert("ruleDescriptions", QVariantList() << objectRef("RuleDescription"));
+    registerMethod("GetRules", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetRules", "Get the descriptions of all configured rules. If you need more information about a specific rule use the "
-                   "method Rules.GetRuleDetails.");
-    setParams("GetRules", params);
-    returns.insert("ruleDescriptions", QVariantList() << JsonTypes::ruleDescriptionRef());
-    setReturns("GetRules", returns);
+    description = "Get details for the rule identified by ruleId";
+    params.insert("ruleId", enumValueName(Uuid));
+    returns.insert("o:rule", objectRef("Rule"));
+    returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
+    registerMethod("GetRuleDetails", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("GetRuleDetails", "Get details for the rule identified by ruleId");
-    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("GetRuleDetails", params);
-    returns.insert("o:rule", JsonTypes::ruleRef());
-    returns.insert("ruleError", JsonTypes::ruleErrorRef());
-    setReturns("GetRuleDetails", returns);
-
-    params.clear(); returns.clear();
-    setDescription("AddRule", "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. "
+    description = "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. "
                               "Note that only one of either eventDescriptor or eventDescriptorList may be passed at a time. "
                               "A rule can be created but left disabled, meaning it won't actually be executed until set to enabled. "
                               "If not given, enabled defaults to true. A rule can have a list of actions and exitActions. "
@@ -94,104 +118,96 @@ RulesHandler::RulesHandler(QObject *parent) :
                               "happens and if the stateEvaluator matches the system's state. ExitActions for such rules will be "
                               "executed when a matching event happens and the stateEvaluator is not matching the system's state. "
                               "A rule marked as executable can be executed via the API using Rules.ExecuteRule, that means, its "
-                              "actions will be executed regardless of the eventDescriptor and stateEvaluators.");
-    params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("actions", QVariantList() << JsonTypes::ruleActionRef());
-    params.insert("o:timeDescriptor", JsonTypes::timeDescriptorRef());
-    params.insert("o:stateEvaluator", JsonTypes::stateEvaluatorRef());
-    params.insert("o:eventDescriptors", QVariantList() << JsonTypes::eventDescriptorRef());
-    params.insert("o:exitActions", QVariantList() << JsonTypes::ruleActionRef());
-    params.insert("o:enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    params.insert("o:executable", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setParams("AddRule", params);
-    returns.insert("ruleError", JsonTypes::ruleErrorRef());
-    returns.insert("o:ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setReturns("AddRule", returns);
+                              "actions will be executed regardless of the eventDescriptor and stateEvaluators.";
+    params.insert("name", enumValueName(String));
+    params.insert("actions", QVariantList() << objectRef("RuleAction"));
+    params.insert("o:timeDescriptor", objectRef("TimeDescriptor"));
+    params.insert("o:stateEvaluator", objectRef("StateEvaluator"));
+    params.insert("o:eventDescriptors", QVariantList() << objectRef("EventDescriptor"));
+    params.insert("o:exitActions", QVariantList() << objectRef("RuleAction"));
+    params.insert("o:enabled", enumValueName(Bool));
+    params.insert("o:executable", enumValueName(Bool));
+    returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
+    returns.insert("o:ruleId", enumValueName(Uuid));
+    registerMethod("AddRule", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("EditRule", "Edit the parameters of a rule. The configuration of the rule with the given ruleId "
+    description = "Edit the parameters of a rule. The configuration of the rule with the given ruleId "
                    "will be replaced with the new given configuration. In ordert to enable or disable a Rule, please use the "
                    "methods \"Rules.EnableRule\" and \"Rules.DisableRule\". If successful, the notification \"Rule.RuleConfigurationChanged\" "
-                   "will be emitted.");
-    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("name", JsonTypes::basicTypeToString(JsonTypes::String));
-    params.insert("actions", QVariantList() << JsonTypes::ruleActionRef());
-    params.insert("o:timeDescriptor", JsonTypes::timeDescriptorRef());
-    params.insert("o:stateEvaluator", JsonTypes::stateEvaluatorRef());
-    params.insert("o:eventDescriptors", QVariantList() << JsonTypes::eventDescriptorRef());
-    params.insert("o:exitActions", QVariantList() << JsonTypes::ruleActionRef());
-    params.insert("o:enabled", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    params.insert("o:executable", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setParams("EditRule", params);
-    returns.insert("ruleError", JsonTypes::ruleErrorRef());
-    returns.insert("o:rule", JsonTypes::ruleRef());
-    setReturns("EditRule", returns);
+                   "will be emitted.";
+    params.insert("ruleId", enumValueName(Uuid));
+    params.insert("name", enumValueName(String));
+    params.insert("actions", QVariantList() << objectRef("RuleAction"));
+    params.insert("o:timeDescriptor", objectRef("TimeDescriptor"));
+    params.insert("o:stateEvaluator", objectRef("StateEvaluator"));
+    params.insert("o:eventDescriptors", QVariantList() << objectRef("EventDescriptor"));
+    params.insert("o:exitActions", QVariantList() << objectRef("RuleAction"));
+    params.insert("o:enabled", enumValueName(Bool));
+    params.insert("o:executable", enumValueName(Bool));
+    returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
+    returns.insert("o:rule", objectRef("Rule"));
+    registerMethod("EditRule", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("RemoveRule", "Remove a rule");
-    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("RemoveRule", params);
-    returns.insert("ruleError", JsonTypes::ruleErrorRef());
-    setReturns("RemoveRule", returns);
+    description = "Remove a rule";
+    params.insert("ruleId", enumValueName(Uuid));
+    returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
+    registerMethod("RemoveRule", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("FindRules", "Find a list of rules containing any of the given parameters.");
-    params.insert("deviceId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("FindRules", params);
-    returns.insert("ruleIds", QVariantList() << JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setReturns("FindRules", returns);
+    description = "Find a list of rules containing any of the given parameters.";
+    params.insert("deviceId", enumValueName(Uuid));
+    returns.insert("ruleIds", QVariantList() << enumValueName(Uuid));
+    registerMethod("FindRules", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("EnableRule", "Enabled a rule that has previously been disabled."
-                   "If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.");
-    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("EnableRule", params);
-    returns.insert("ruleError", JsonTypes::ruleErrorRef());
-    setReturns("EnableRule", returns);
+    description = "Enabled a rule that has previously been disabled."
+                   "If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.";
+    params.insert("ruleId", enumValueName(Uuid));
+    returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
+    registerMethod("EnableRule", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("DisableRule", "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled. "
-                   "If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.");
-    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("DisableRule", params);
-    returns.insert("ruleError", JsonTypes::ruleErrorRef());
-    setReturns("DisableRule", returns);
+    description = "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled. "
+                   "If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.";
+    params.insert("ruleId", enumValueName(Uuid));
+    returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
+    registerMethod("DisableRule", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("ExecuteActions", "Execute the action list of the rule with the given ruleId.");
-    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("ExecuteActions", params);
-    returns.insert("ruleError", JsonTypes::ruleErrorRef());
-    setReturns("ExecuteActions", returns);
+    description = "Execute the action list of the rule with the given ruleId.";
+    params.insert("ruleId", enumValueName(Uuid));
+    returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
+    registerMethod("ExecuteActions", description, params, returns);
 
     params.clear(); returns.clear();
-    setDescription("ExecuteExitActions", "Execute the exit action list of the rule with the given ruleId.");
-    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("ExecuteExitActions", params);
-    returns.insert("ruleError", JsonTypes::ruleErrorRef());
-    setReturns("ExecuteExitActions", returns);
+    description = "Execute the exit action list of the rule with the given ruleId.";
+    params.insert("ruleId", enumValueName(Uuid));
+    returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
+    registerMethod("ExecuteExitActions", description, params, returns);
 
     // Notifications
     params.clear(); returns.clear();
-    setDescription("RuleRemoved", "Emitted whenever a Rule was removed.");
-    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("RuleRemoved", params);
+    description = "Emitted whenever a Rule was removed.";
+    params.insert("ruleId", enumValueName(Uuid));
+    registerNotification("RuleRemoved", description, params);
 
     params.clear(); returns.clear();
-    setDescription("RuleAdded", "Emitted whenever a Rule was added.");
-    params.insert("rule", JsonTypes::ruleRef());
-    setParams("RuleAdded", params);
+    description = "Emitted whenever a Rule was added.";
+    params.insert("rule", objectRef("Rule"));
+    registerNotification("RuleAdded", description, params);
 
     params.clear(); returns.clear();
-    setDescription("RuleActiveChanged", "Emitted whenever the active state of a Rule changed.");
-    params.insert("ruleId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    params.insert("active", JsonTypes::basicTypeToString(JsonTypes::Bool));
-    setParams("RuleActiveChanged", params);
+    description = "Emitted whenever the active state of a Rule changed.";
+    params.insert("ruleId", enumValueName(Uuid));
+    params.insert("active", enumValueName(Bool));
+    registerNotification("RuleActiveChanged", description, params);
 
     params.clear(); returns.clear();
-    setDescription("RuleConfigurationChanged", "Emitted whenever the configuration of a Rule changed.");
-    params.insert("rule", JsonTypes::ruleRef());
-    setParams("RuleConfigurationChanged", params);
+    description = "Emitted whenever the configuration of a Rule changed.";
+    params.insert("rule", objectRef("Rule"));
+    registerNotification("RuleConfigurationChanged", description, params);
 
     connect(NymeaCore::instance(), &NymeaCore::ruleAdded, this, &RulesHandler::ruleAddedNotification);
     connect(NymeaCore::instance(), &NymeaCore::ruleRemoved, this, &RulesHandler::ruleRemovedNotification);
@@ -209,9 +225,13 @@ JsonReply* RulesHandler::GetRules(const QVariantMap &params)
 {
     Q_UNUSED(params)
 
-    QVariantMap returns;
-    returns.insert("ruleDescriptions", JsonTypes::packRuleDescriptions());
+    QVariantList rulesList;
+    foreach (const Rule &rule, NymeaCore::instance()->ruleEngine()->rules()) {
+        rulesList.append(packRuleDescription(rule));
+    }
 
+    QVariantMap returns;
+    returns.insert("ruleDescriptions", rulesList);
     return createReply(returns);
 }
 
@@ -220,16 +240,19 @@ JsonReply *RulesHandler::GetRuleDetails(const QVariantMap &params)
     RuleId ruleId = RuleId(params.value("ruleId").toString());
     Rule rule = NymeaCore::instance()->ruleEngine()->findRule(ruleId);
     if (rule.id().isNull()) {
-        return createReply(statusToReply(RuleEngine::RuleErrorRuleNotFound));
+        QVariantMap data;
+        data.insert("ruleError", enumValueName<RuleEngine::RuleError>(RuleEngine::RuleErrorRuleNotFound));
+        return createReply(data);
     }
-    QVariantMap returns = statusToReply(RuleEngine::RuleErrorNoError);
-    returns.insert("rule", JsonTypes::packRule(rule));
+    QVariantMap returns;
+    returns.insert("ruleError", enumValueName<RuleEngine::RuleError>(RuleEngine::RuleErrorNoError));
+    returns.insert("rule", pack(rule));
     return createReply(returns);
 }
 
 JsonReply* RulesHandler::AddRule(const QVariantMap &params)
 {
-    Rule rule = JsonTypes::unpackRule(params);
+    Rule rule = unpack<Rule>(params);
     rule.setId(RuleId::createRuleId());
 
     RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->addRule(rule);
@@ -237,19 +260,23 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
     if (status ==  RuleEngine::RuleErrorNoError) {
         returns.insert("ruleId", rule.id().toString());
     }
-    returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
+    returns.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
     return createReply(returns);
 }
 
 JsonReply *RulesHandler::EditRule(const QVariantMap &params)
 {
-    Rule rule = JsonTypes::unpackRule(params);
+    Rule rule = unpack<Rule>(params);
+
+    // FIXME: Edit rule API currently has "ruleId" while the Rule type has "id". Auto unpacking will fail for this property
+    rule.setId(params.value("ruleId").toUuid());
+
     RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->editRule(rule);
     QVariantMap returns;
     if (status ==  RuleEngine::RuleErrorNoError) {
-        returns.insert("rule", JsonTypes::packRule(NymeaCore::instance()->ruleEngine()->findRule(rule.id())));
+        returns.insert("rule", pack(NymeaCore::instance()->ruleEngine()->findRule(rule.id())));
     }
-    returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
+    returns.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
     return createReply(returns);
 }
 
@@ -258,7 +285,7 @@ JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
     QVariantMap returns;
     RuleId ruleId(params.value("ruleId").toString());
     RuleEngine::RuleError status = NymeaCore::instance()->removeRule(ruleId);
-    returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
+    returns.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
     return createReply(returns);
 }
 
@@ -279,12 +306,18 @@ JsonReply *RulesHandler::FindRules(const QVariantMap &params)
 
 JsonReply *RulesHandler::EnableRule(const QVariantMap &params)
 {
-    return createReply(statusToReply(NymeaCore::instance()->ruleEngine()->enableRule(RuleId(params.value("ruleId").toString()))));
+    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->enableRule(RuleId(params.value("ruleId").toString()));
+    QVariantMap ret;
+    ret.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
+    return createReply(ret);
 }
 
 JsonReply *RulesHandler::DisableRule(const QVariantMap &params)
 {
-    return createReply(statusToReply(NymeaCore::instance()->ruleEngine()->disableRule(RuleId(params.value("ruleId").toString()))));
+    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->disableRule(RuleId(params.value("ruleId").toString()));
+    QVariantMap ret;
+    ret.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
+    return createReply(ret);
 }
 
 JsonReply *RulesHandler::ExecuteActions(const QVariantMap &params)
@@ -292,7 +325,7 @@ JsonReply *RulesHandler::ExecuteActions(const QVariantMap &params)
     QVariantMap returns;
     RuleId ruleId(params.value("ruleId").toString());
     RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->executeActions(ruleId);
-    returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
+    returns.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
     return createReply(returns);
 }
 
@@ -301,7 +334,7 @@ JsonReply *RulesHandler::ExecuteExitActions(const QVariantMap &params)
     QVariantMap returns;
     RuleId ruleId(params.value("ruleId").toString());
     RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->executeExitActions(ruleId);
-    returns.insert("ruleError", JsonTypes::ruleErrorToString(status));
+    returns.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
     return createReply(returns);
 }
 
@@ -316,7 +349,7 @@ void RulesHandler::ruleRemovedNotification(const RuleId &ruleId)
 void RulesHandler::ruleAddedNotification(const Rule &rule)
 {
     QVariantMap params;
-    params.insert("rule", JsonTypes::packRule(rule));
+    params.insert("rule", pack(rule));
 
     emit RuleAdded(params);
 }
@@ -333,9 +366,20 @@ void RulesHandler::ruleActiveChangedNotification(const Rule &rule)
 void RulesHandler::ruleConfigurationChangedNotification(const Rule &rule)
 {
     QVariantMap params;
-    params.insert("rule", JsonTypes::packRule(rule));
+    params.insert("rule", pack(rule));
 
     emit RuleConfigurationChanged(params);
+}
+
+QVariantMap RulesHandler::packRuleDescription(const Rule &rule)
+{
+    QVariantMap ruleDescriptionMap;
+    ruleDescriptionMap.insert("id", rule.id().toString());
+    ruleDescriptionMap.insert("name", rule.name());
+    ruleDescriptionMap.insert("enabled", rule.enabled());
+    ruleDescriptionMap.insert("active", rule.active());
+    ruleDescriptionMap.insert("executable", rule.executable());
+    return ruleDescriptionMap;
 }
 
 }

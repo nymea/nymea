@@ -32,6 +32,13 @@
 
 class LIBNYMEA_EXPORT ActionType
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid id READ id)
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString displayName READ displayName WRITE setDisplayName)
+    Q_PROPERTY(int index READ index WRITE setIndex)
+    Q_PROPERTY(ParamTypes paramTypes READ paramTypes WRITE setParamTypes)
+
 public:
     ActionType(const ActionTypeId &id = ActionTypeId());
 
@@ -59,16 +66,22 @@ private:
     int m_index;
     ParamTypes m_paramTypes;
 };
+Q_DECLARE_METATYPE(ActionType)
 
 QDebug operator<<(QDebug dbg, const ActionType &actionType);
 
 class ActionTypes: public QList<ActionType>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
 public:
     ActionTypes() = default;
     ActionTypes(const QList<ActionType> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
     ActionType findByName(const QString &name);
     ActionType findById(const ActionTypeId &id);
 };
+Q_DECLARE_METATYPE(ActionTypes)
 
 #endif // ACTIONTYPE_H

@@ -22,7 +22,7 @@
 #ifndef ACTIONHANDLER_H
 #define ACTIONHANDLER_H
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
 #include "devices/devicemanager.h"
 
 namespace nymeaserver {

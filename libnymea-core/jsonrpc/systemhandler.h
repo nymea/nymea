@@ -23,9 +23,11 @@
 
 #include <QObject>
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
 
 #include "platform/platform.h"
+#include "platform/package.h"
+#include "platform/repository.h"
 
 namespace nymeaserver {
 

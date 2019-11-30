@@ -20,12 +20,18 @@
 
 #include "nymeatestbase.h"
 #include "servers/mocktcpserver.h"
+#include "tagging/tagsstorage.h"
 
 using namespace nymeaserver;
 
 class TestTags: public NymeaTestBase
 {
     Q_OBJECT
+
+private:
+    inline void verifyTagError(const QVariant &response, TagsStorage::TagError error = TagsStorage::TagErrorNoError) {
+        verifyError(response, "tagError", enumValueName(error));
+    }
 
 private slots:
     void addTag_data();
@@ -37,7 +43,7 @@ private slots:
 
 private:
     QVariantMap createDeviceTag(const QString &deviceId, const QString &appId, const QString &tagId, const QString &value);
-    bool compareDeviceTag(const QVariantMap &tag, const QString &deviceId, const QString &appId, const QString &tagId, const QString &value);
+    bool compareDeviceTag(const QVariantMap &tag, const QUuid &deviceId, const QString &appId, const QString &tagId, const QString &value);
     QVariantMap createRuleTag(const QString &ruleId, const QString &appId, const QString &tagId, const QString &value);
     bool comapreRuleTag(const QVariantMap &tag, const QString &ruleId, const QString &appId, const QString &tagId, const QString &value);
 };
@@ -62,9 +68,9 @@ QVariantMap TestTags::createRuleTag(const QString &ruleId, const QString &appId,
     return tag;
 }
 
-bool TestTags::compareDeviceTag(const QVariantMap &tag, const QString &deviceId, const QString &appId, const QString &tagId, const QString &value)
+bool TestTags::compareDeviceTag(const QVariantMap &tag, const QUuid &deviceId, const QString &appId, const QString &tagId, const QString &value)
 {
-    return tag.value("deviceId").toString() == deviceId &&
+    return tag.value("deviceId").toUuid() == deviceId &&
             tag.value("appId").toString() == appId &&
             tag.value("tagId").toString() == tagId &&
             tag.value("value").toString() == value;
@@ -108,7 +114,7 @@ void TestTags::addTag()
     // Make sure the TagAdded notification is emitted.
     QVariantMap notificationTagMap = checkNotification(clientSpy, "Tags.TagAdded").toMap().value("params").toMap().value("tag").toMap();
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(notificationTagMap);
-    QVERIFY2(compareDeviceTag(notificationTagMap, deviceId.toString(), appId, tagId, value), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
+    QVERIFY2(compareDeviceTag(notificationTagMap, deviceId, appId, tagId, value), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
 
     // Try getting the tag via GetTag
     params.clear();
@@ -118,7 +124,7 @@ void TestTags::addTag()
     response = injectAndWait("Tags.GetTags", params);
     QVariantList tagsList = response.toMap().value("params").toMap().value("tags").toList();
     QCOMPARE(tagsList.count(), 1);
-    QVERIFY2(compareDeviceTag(tagsList.first().toMap(), deviceId.toString(), appId, tagId, value), "Fetched tag isn't matching the one we added");
+    QVERIFY2(compareDeviceTag(tagsList.first().toMap(), deviceId, appId, tagId, value), "Fetched tag isn't matching the one we added");
 }
 
 void TestTags::updateTagValue()

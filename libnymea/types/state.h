@@ -32,7 +32,12 @@
 
 class LIBNYMEA_EXPORT State
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid stateTypeId READ stateTypeId)
+    Q_PROPERTY(QVariant value READ value)
+
 public:
+    State();
     State(const StateTypeId &stateTypeId, const DeviceId &deviceId);
 
     StateId id() const;
@@ -49,6 +54,19 @@ private:
     DeviceId m_deviceId;
     QVariant m_value;
 };
+Q_DECLARE_METATYPE(State)
+
+class States: public QList<State>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    States();
+    States(const QList<State> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
+};
+Q_DECLARE_METATYPE(States)
 
 QDebug operator<<(QDebug dbg, const State &event);
 QDebug operator<<(QDebug dbg, const QList<State> &events);

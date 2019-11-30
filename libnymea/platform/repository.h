@@ -24,9 +24,14 @@
 #define REPOSITORY_H
 
 #include <QString>
+#include <QVariant>
 
 class Repository
 {
+    Q_GADGET
+    Q_PROPERTY(QString id READ id)
+    Q_PROPERTY(QString displayName READ displayName)
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
 public:
     Repository();
     Repository(const QString &id, const QString &displayName, bool enabled);
@@ -41,6 +46,18 @@ private:
     QString m_id;
     QString m_displayName;
     bool m_enabled = false;
+};
+Q_DECLARE_METATYPE(Repository)
+
+class Repositories: public QList<Repository>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    Repositories();
+    Repositories(const QList<Repository> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 
 #endif // REPOSITORY_H

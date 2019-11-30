@@ -40,7 +40,7 @@
 #include "platform/platform.h"
 #include "platform/platformzeroconfcontroller.h"
 
-#include "jsonrpc/jsonrpcserver.h"
+#include "jsonrpc/jsonrpcserverimplementation.h"
 #include "servers/mocktcpserver.h"
 #include "servers/tcpserver.h"
 #include "servers/websocketserver.h"
@@ -99,7 +99,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     }
 
     // Interfaces
-    m_jsonServer = new JsonRPCServer(m_sslConfiguration, this);
+    m_jsonServer = new JsonRPCServerImplementation(m_sslConfiguration, this);
 
     // Transports
     MockTcpServer *tcpServer = new MockTcpServer(this);
@@ -158,7 +158,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 }
 
 /*! Returns the pointer to the created \l{JsonRPCServer} in this \l{ServerManager}. */
-JsonRPCServer *ServerManager::jsonServer() const
+JsonRPCServerImplementation *ServerManager::jsonServer() const
 {
     return m_jsonServer;
 }

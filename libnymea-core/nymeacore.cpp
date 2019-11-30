@@ -91,12 +91,13 @@
 #include "nymeacore.h"
 #include "loggingcategories.h"
 #include "platform/platform.h"
-#include "jsonrpc/jsonrpcserver.h"
+#include "jsonrpc/jsonrpcserverimplementation.h"
 #include "ruleengine/ruleengine.h"
 #include "networkmanager/networkmanager.h"
 #include "nymeasettings.h"
 #include "tagging/tagsstorage.h"
 #include "platform/platform.h"
+#include "experiences/experiencemanager.h"
 
 #include "devices/devicemanagerimplementation.h"
 #include "devices/device.h"
@@ -170,6 +171,10 @@ void NymeaCore::init() {
 
     qCDebug(dcApplication) << "Creating Cloud Manager";
     m_cloudManager = new CloudManager(m_configuration, m_networkManager, this);
+
+    qCDebug(dcApplication()) << "Loading experiences";
+    m_experienceManager = new ExperienceManager(m_deviceManager, m_serverManager->jsonServer(), this);
+
 
     CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
     m_deviceManager->registerStaticPlugin(cloudNotifications, cloudNotifications->metaData());
@@ -650,6 +655,7 @@ QStringList NymeaCore::loggingFilters()
         "Platform",
         "PlatformUpdate",
         "PlatformZeroConf",
+        "Experiences",
         "Device",
         "DeviceManager",
         "RuleEngine",
@@ -793,7 +799,7 @@ void NymeaCore::gotEvent(const Event &event)
 
     // Set action params, depending on the event value
     foreach (RuleAction ruleAction, eventBasedActions) {
-        RuleActionParamList newParams;
+        RuleActionParams newParams;
         foreach (RuleActionParam ruleActionParam, ruleAction.ruleActionParams()) {
             // if this event param should be taken over in this action
             if (event.eventTypeId() == ruleActionParam.eventTypeId()) {
@@ -848,7 +854,7 @@ LogEngine* NymeaCore::logEngine() const
 }
 
 /*! Returns the pointer to the \l{JsonRPCServer} of this instance. */
-JsonRPCServer *NymeaCore::jsonRPCServer() const
+JsonRPCServerImplementation *NymeaCore::jsonRPCServer() const
 {
     return m_serverManager->jsonServer();
 }

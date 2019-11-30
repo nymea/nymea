@@ -48,6 +48,10 @@ Translator::~Translator()
 QString Translator::translate(const PluginId &pluginId, const QString &string, const QLocale &locale)
 {
     DevicePlugin *plugin = m_deviceManager->plugins().findById(pluginId);
+    if (!plugin) {
+        qCWarning(dcDeviceManager()) << "Unable to translate" << string << "Plugin not found";
+        return string;
+    }
 
     if (!m_translatorContexts.contains(plugin->pluginId()) || !m_translatorContexts.value(plugin->pluginId()).translators.contains(locale.name())) {
         loadTranslator(plugin, locale);

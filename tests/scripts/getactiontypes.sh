@@ -2,6 +2,11 @@
 
 if [ -z $2 ]; then
   echo "usage: $0 host deviceClassId"
-else
-  (echo '{"id":1, "method":"Devices.GetActionTypes", "params":{"deviceClassId":"'$2'"}}'; sleep 1) | nc $1 2222
+  exit 1
 fi
+
+
+cat <<EOD | nc $1 2222
+{"id":2, "method":"JSONRPC.Hello"}
+{"id":1, "method":"Devices.GetActionTypes", "params":{"deviceClassId":"$2"}}
+EOD

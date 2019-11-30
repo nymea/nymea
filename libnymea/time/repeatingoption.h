@@ -18,44 +18,58 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef TIMEEVENTITEM_H
-#define TIMEEVENTITEM_H
+#ifndef REPEATINGOPTION_H
+#define REPEATINGOPTION_H
 
-#include <QDateTime>
+#include <QList>
+#include <QMetaType>
+#include <QVariant>
 
-#include "repeatingoption.h"
+class QDateTime;
 
-namespace nymeaserver {
-
-class TimeEventItem
+class RepeatingOption
 {
+    Q_GADGET
+    Q_PROPERTY(RepeatingMode mode READ mode WRITE setMode)
+    Q_PROPERTY(QList<int> weekDays READ weekDays WRITE setWeekDays USER true)
+    Q_PROPERTY(QList<int> monthDays READ monthDays WRITE setMonthDays USER true)
 public:
-    TimeEventItem();
+    enum RepeatingMode {
+        RepeatingModeNone,
+        RepeatingModeHourly,
+        RepeatingModeDaily,
+        RepeatingModeWeekly,
+        RepeatingModeMonthly,
+        RepeatingModeYearly
+    };
+    Q_ENUM(RepeatingMode)
 
-    QDateTime dateTime() const;
-    void setDateTime(const uint &timeStamp);
+    RepeatingOption();
+    RepeatingOption(const RepeatingMode &mode, const QList<int> &weekDays = QList<int>(), const QList<int> &monthDays = QList<int>());
 
-    QTime time() const;
-    void setTime(const QTime &time);
+    RepeatingMode mode() const;
+    void setMode(RepeatingMode mode);
 
-    RepeatingOption repeatingOption() const;
-    void setRepeatingOption(const RepeatingOption &repeatingOption);
+    QList<int> weekDays() const;
+    void setWeekDays(const QList<int> &weekDays);
 
-    // TODO spectioalDayTime
+    QList<int> monthDays() const;
+    void setMonthDays(const QList<int> &monthDays);
 
+    bool isEmtpy() const;
     bool isValid() const;
 
-    bool evaluate(const QDateTime &lastEvaluationTime, const QDateTime &dateTime) const;
+    bool evaluateWeekDay(const QDateTime &dateTime) const;
+    bool evaluateMonthDay(const QDateTime &dateTime) const;
 
 private:
-    QDateTime m_dateTime;
-    QTime m_time;
+    RepeatingMode m_mode;
 
-    RepeatingOption m_repeatingOption;
+    QList<int> m_weekDays;
+    QList<int> m_monthDays;
+
 };
 
-QDebug operator<<(QDebug dbg, const TimeEventItem &timeEventItem);
+QDebug operator<<(QDebug dbg, const RepeatingOption &RepeatingOption);
 
-}
-
-#endif // TIMEEVENTITEM_H
+#endif // REPEATINGOPTION_H

@@ -34,6 +34,15 @@
 
 class LIBNYMEA_EXPORT RuleActionParam
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid paramTypeId READ paramTypeId WRITE setParamTypeId USER true)
+    Q_PROPERTY(QString paramName READ paramName WRITE setParamName USER true)
+    Q_PROPERTY(QVariant value READ value WRITE setValue USER true)
+    Q_PROPERTY(QUuid eventTypeId READ eventTypeId WRITE setEventTypeId USER true)
+    Q_PROPERTY(QUuid eventParamTypeId READ eventParamTypeId WRITE setEventParamTypeId USER true)
+    Q_PROPERTY(QUuid stateDeviceId READ stateDeviceId WRITE setStateDeviceId USER true)
+    Q_PROPERTY(QUuid stateTypeId READ stateTypeId WRITE setStateTypeId USER true)
+
 public:
     RuleActionParam(const Param &param = Param());
     RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
@@ -44,7 +53,10 @@ public:
     RuleActionParam(const QString &paramName, const DeviceId &stateDeviceId, const StateTypeId &stateTypeId);
 
     ParamTypeId paramTypeId() const;
+    void setParamTypeId(const ParamTypeId &paramTypeId);
+
     QString paramName() const;
+    void setParamName(const QString &paramName);
 
     bool isValid() const;
     bool isValueBased() const;
@@ -81,19 +93,23 @@ private:
 Q_DECLARE_METATYPE(RuleActionParam)
 QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam);
 
-class LIBNYMEA_EXPORT RuleActionParamList: public QList<RuleActionParam>
+class LIBNYMEA_EXPORT RuleActionParams: public QList<RuleActionParam>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
 public:
     bool hasParam(const ParamTypeId &ruleActionParamTypeId) const;
     bool hasParam(const QString &ruleActionParamName) const;
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
     QVariant paramValue(const ParamTypeId &ruleActionParamName) const;
     bool setParamValue(const ParamTypeId &ruleActionParamTypeId, const QVariant &value);
-    RuleActionParamList operator<<(const RuleActionParam &ruleActionParam);
+    RuleActionParams operator<<(const RuleActionParam &ruleActionParam);
 
 private:
     QList<ParamTypeId> m_ids;
 };
-QDebug operator<<(QDebug dbg, const RuleActionParamList &ruleActionParams);
+QDebug operator<<(QDebug dbg, const RuleActionParams &ruleActionParams);
 
 
 #endif // RULEACTIONPARAM_H

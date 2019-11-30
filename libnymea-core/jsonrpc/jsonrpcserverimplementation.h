@@ -19,10 +19,11 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef JSONRPCSERVER_H
-#define JSONRPCSERVER_H
+#ifndef JSONRPCSERVERIMPLEMENTATION_H
+#define JSONRPCSERVERIMPLEMENTATION_H
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonrpcserver.h"
+#include "jsonrpc/jsonhandler.h"
 #include "transportinterface.h"
 #include "usermanager/usermanager.h"
 
@@ -39,11 +40,11 @@ class Device;
 
 namespace nymeaserver {
 
-class JsonRPCServer: public JsonHandler
+class JsonRPCServerImplementation: public JsonHandler, public JsonRPCServer
 {
     Q_OBJECT
 public:
-    JsonRPCServer(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = nullptr);
+    JsonRPCServerImplementation(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = nullptr);
 
     // JsonHandler API implementation
     QString name() const;
@@ -71,10 +72,13 @@ public:
     void registerTransportInterface(TransportInterface *interface, bool authenticationRequired);
     void unregisterTransportInterface(TransportInterface *interface);
 
+    bool registerExperienceHandler(JsonHandler *handler, int majorVersion, int minorVersion) override;
+
 private:
+    bool registerHandler(JsonHandler *handler);
     QHash<QString, JsonHandler *> handlers() const;
 
-    void sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap());
+    void sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap(), const QString &deprecationWarning = QString());
     void sendErrorResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
     void sendUnauthorizedResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
     QVariantMap createWelcomeMessage(TransportInterface *interface, const QUuid &clientId) const;
@@ -98,6 +102,8 @@ private slots:
     void onPushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
 
 private:
+    QVariantMap m_api;
+    QHash<JsonHandler*, QString> m_experiences;
     QMap<TransportInterface*, bool> m_interfaces; // Interface, authenticationRequired
     QHash<QString, JsonHandler *> m_handlers;
     QHash<JsonReply *, TransportInterface *> m_asyncReplies;
@@ -113,10 +119,10 @@ private:
 
     int m_notificationId;
 
-    void registerHandler(JsonHandler *handler);
     QString formatAssertion(const QString &targetNamespace, const QString &method, QMetaMethod::MethodType methodType, JsonHandler *handler, const QVariantMap &data) const;
 };
 
 }
 
-#endif // JSONRPCSERVER_H
+#endif // JSONRPCSERVERIMPLEMENTATION_H
+

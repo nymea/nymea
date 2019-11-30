@@ -9,7 +9,7 @@
 #include <QLoggingCategory>
 #include <QObject>
 
-extern "C" const QString libnymea_api_version() { return QString("3.0.0");}
+extern "C" const QString libnymea_api_version() { return QString("4.0.0");}
 
 Q_DECLARE_LOGGING_CATEGORY(dcMockDevice)
 Q_LOGGING_CATEGORY(dcMockDevice, "MockDevice")
@@ -69,7 +69,7 @@ ParamTypeId mockDeviceAutoBoolValueEventBoolValueParamTypeId = ParamTypeId("{978
 EventTypeId mockDeviceAutoEvent1EventTypeId = EventTypeId("{00f81fca-26f1-4a84-aa2b-4c6a3d953ec6}");
 EventTypeId mockDeviceAutoEvent2EventTypeId = EventTypeId("{6e27922d-aa9d-44d1-b9b4-9faf31b6bd97}");
 ParamTypeId mockDeviceAutoEvent2EventIntParamParamTypeId = ParamTypeId("{12ed5a15-96b4-4381-9d9c-a24875283d4f}");
-ActionTypeId mockDeviceAutoWithParamsActionTypeId = ActionTypeId("{00000000-0000-0000-0000-000000000000}");
+ActionTypeId mockDeviceAutoWithParamsActionTypeId = ActionTypeId("{07cd8d5f-2f65-4955-b1f9-05d7f4da488a}");
 ParamTypeId mockDeviceAutoWithParamsActionMockActionParam1ParamTypeId = ParamTypeId("{b8126ba6-3a54-45a3-be4d-63feb0ddb77b}");
 ParamTypeId mockDeviceAutoWithParamsActionMockActionParam2ParamTypeId = ParamTypeId("{df41ba71-e43b-4854-91d1-b19d8066d4f9}");
 ActionTypeId mockDeviceAutoMockActionNoParmsActionTypeId = ActionTypeId("{ef518d53-50e2-4ca5-a4b1-e9a8b9309d44}");
@@ -348,7 +348,7 @@ const QString translations[] {
     //: The name of the ParamType (DeviceClass: mockInputType, Type: device, ID: {a8494faf-3a0f-4cf3-84b7-4b39148a838d})
     QT_TRANSLATE_NOOP("mockDevice", "Mail address"),
 
-    //: The name of the ActionType ({00000000-0000-0000-0000-000000000000}) of DeviceClass mockDeviceAuto
+    //: The name of the ActionType ({07cd8d5f-2f65-4955-b1f9-05d7f4da488a}) of DeviceClass mockDeviceAuto
     QT_TRANSLATE_NOOP("mockDevice", "Mock Action 1 (with params)"),
 
     //: The name of the ActionType ({dea0f4e1-65e3-4981-8eaa-2701c53a9185}) of DeviceClass mock

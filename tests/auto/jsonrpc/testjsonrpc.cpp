@@ -23,12 +23,21 @@
 #include "../../utils/pushbuttonagent.h"
 #include "nymeacore.h"
 #include "servers/mocktcpserver.h"
+#include "usermanager/usermanager.h"
 
 using namespace nymeaserver;
 
 class TestJSONRPC: public NymeaTestBase
 {
     Q_OBJECT
+
+private:
+    inline void verifyDeviceError(const QVariant &response, Device::DeviceError error = Device::DeviceErrorNoError) {
+        verifyError(response, "deviceError", enumValueName(error));
+    }
+    inline void verifyRuleError(const QVariant &response, RuleEngine::RuleError error = RuleEngine::RuleErrorNoError) {
+        verifyError(response, "ruleError", enumValueName(error));
+    }
 
 private slots:
     void initTestCase();
@@ -603,6 +612,8 @@ void TestJSONRPC::introspect()
     QVariant response = injectAndWait("JSONRPC.Introspect");
     QVariantMap methods = response.toMap().value("params").toMap().value("methods").toMap();
     QVariantMap notifications = response.toMap().value("params").toMap().value("notifications").toMap();
+    QVariantMap enums = response.toMap().value("params").toMap().value("enums").toMap();
+    QVariantMap flags = response.toMap().value("params").toMap().value("flags").toMap();
     QVariantMap types = response.toMap().value("params").toMap().value("types").toMap();
 
     QVERIFY2(methods.count() > 0, "No methods in Introspect response!");
@@ -615,8 +626,11 @@ void TestJSONRPC::introspect()
         foreach (const QString &ref, extractRefs(item)) {
             QString typeId = ref;
             typeId.remove("$ref:");
-            QVERIFY2(types.contains(typeId), QString("Undefined ref: %1. Did you forget to add it to JsonTypes::allTypes()?").arg(ref).toLatin1().data());
-            QVERIFY2(!types.value(typeId).toString().startsWith("$ref:"), QString("Definition for %1 must not be a reference itself").arg(ref).toLatin1().data());
+            QVERIFY2(enums.contains(typeId) || types.contains(typeId) || flags.contains(typeId),
+                     QString("Undefined ref: %1. Did you forget to add it to JsonTypes::allTypes()?").arg(ref).toLatin1().data());
+            QVERIFY2(!types.value(typeId).toString().startsWith("$ref:")
+                     && !flags.value(typeId).toString().startsWith("$ref:")
+                     && !enums.value(typeId).toString().startsWith("$ref:"), QString("Definition for %1 must not be a reference itself").arg(ref).toLatin1().data());
         }
     }
 }
@@ -714,7 +728,7 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("deviceId", m_mockDeviceId);
-    stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorLess));
+    stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorLess));
     stateDescriptor.insert("value", "20");
 
     QVariantMap stateEvaluator;
@@ -724,18 +738,17 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QVariantMap actionNoParams;
     actionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     actionNoParams.insert("deviceId", m_mockDeviceId);
-    actionNoParams.insert("ruleActionParams", QVariantList());
 
     // EventDescriptor
     QVariantMap eventDescriptor;
     eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor.insert("deviceId", m_mockDeviceId);
-    eventDescriptor.insert("paramDescriptors", QVariantList());
+    QVariantList eventDescriptors = QVariantList() << eventDescriptor;
 
     QVariantMap params;
     params.insert("name", "Test Rule notifications");
     params.insert("actions", QVariantList() << actionNoParams);
-    params.insert("eventDescriptors", QVariantList() << eventDescriptor);
+    params.insert("eventDescriptors", eventDescriptors);
     params.insert("stateEvaluator", stateEvaluator);
 
     QVariant response = injectAndWait("Rules.AddRule", params);
@@ -751,7 +764,11 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QCOMPARE(notificationRuleMap.value("id").toString(), ruleId.toString());
     QCOMPARE(notificationRuleMap.value("actions").toList(), QVariantList() << actionNoParams);
     QCOMPARE(notificationRuleMap.value("stateEvaluator").toMap().value("stateDescriptor").toMap(), stateDescriptor);
-    QCOMPARE(notificationRuleMap.value("eventDescriptors").toList(), QVariantList() << eventDescriptor);
+    QVERIFY2(notificationRuleMap.value("eventDescriptors").toList() == eventDescriptors,
+             QString("eventDescriptors not matching.\nExpected: %1\nGot %2")
+             .arg(QString(QJsonDocument::fromVariant(eventDescriptors).toJson()))
+             .arg(QString(QJsonDocument::fromVariant(notificationRuleMap.value("eventDescriptors").toList()).toJson()))
+             .toUtf8());
     QCOMPARE(notificationRuleMap.value("exitActions").toList(), QVariantList());
 
     // now remove the rule and check the RuleRemoved notification
@@ -778,7 +795,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("deviceId", m_mockDeviceId);
-    stateDescriptor.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptor.insert("value", "20");
 
     QVariantMap stateEvaluator;
@@ -788,7 +805,6 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QVariantMap actionNoParams;
     actionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     actionNoParams.insert("deviceId", m_mockDeviceId);
-    actionNoParams.insert("ruleActionParams", QVariantList());
 
     params.clear(); response.clear();
     params.insert("name", "Test Rule notifications");
@@ -827,7 +843,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     notificationVariant = checkNotification(clientSpy, "Rules.RuleActiveChanged");
     verifyRuleError(response);
 
-    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toString(), ruleId.toString());
+    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toUuid().toString(), ruleId.toString());
     QCOMPARE(notificationVariant.toMap().value("params").toMap().value("active").toBool(), true);
 
     spy.clear(); clientSpy.clear();
@@ -845,7 +861,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     notificationVariant = checkNotification(clientSpy, "Rules.RuleActiveChanged");
     verifyRuleError(response);
 
-    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toString(), ruleId.toString());
+    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toUuid().toString(), ruleId.toString());
     QCOMPARE(notificationVariant.toMap().value("params").toMap().value("active").toBool(), false);
 
     // now remove the rule and check the RuleRemoved notification
@@ -858,7 +874,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     checkNotification(clientSpy, "Logging.LogDatabaseUpdated");
     verifyRuleError(response);
 
-    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toString(), ruleId.toString());
+    QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toUuid().toString(), ruleId.toString());
 }
 
 void TestJSONRPC::deviceChangedNotifications()

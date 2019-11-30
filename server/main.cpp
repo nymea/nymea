@@ -208,11 +208,11 @@ int main(int argc, char *argv[])
         bool isWarning = debugArea.endsWith("Warnings");
         debugArea.remove(QRegExp("^No"));
         debugArea.remove(QRegExp("Warnings$"));
-        if (loggingFilters.contains(debugArea) || loggingFiltersPlugins.contains(debugArea)) {
-            loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg(isWarning ? "warning" : "debug").arg(enable ? "true": "false"));
-        } else {
-            qCWarning(dcApplication) << QCoreApplication::translate("nymea", "No such debug category:") << debugArea;
-        }
+        loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg(isWarning ? "warning" : "debug").arg(enable ? "true": "false"));
+//        if (loggingFilters.contains(debugArea) || loggingFiltersPlugins.contains(debugArea)) {
+//        } else {
+//            qCWarning(dcApplication) << QCoreApplication::translate("nymea", "No such debug category:") << debugArea;
+//        }
     }
 
     // Finally set the rules for the logging

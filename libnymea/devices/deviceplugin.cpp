@@ -487,3 +487,13 @@ DevicePlugin *DevicePlugins::findById(const PluginId &id) const
     }
     return nullptr;
 }
+
+QVariant DevicePlugins::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
+void DevicePlugins::put(const QVariant &variant)
+{
+    append(variant.value<DevicePlugin*>());
+}

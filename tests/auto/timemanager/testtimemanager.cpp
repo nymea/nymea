@@ -29,6 +29,11 @@ class TestTimeManager: public NymeaTestBase
 {
     Q_OBJECT
 
+private:
+    inline void verifyRuleError(const QVariant &response, RuleEngine::RuleError error = RuleEngine::RuleErrorNoError) {
+        verifyError(response, "ruleError", enumValueName(error));
+    }
+
 private slots:
     void initTestCase();
 
@@ -40,6 +45,9 @@ private slots:
 
     void addTimeDescriptor_data();
     void addTimeDescriptor();
+
+    void addTimeDescriptorInvalidTimes_data();
+    void addTimeDescriptorInvalidTimes();
 
     // CalendarItems
     void testCalendarDateTime_data();
@@ -196,7 +204,7 @@ void TestTimeManager::loadSaveTimeDescriptor_data()
     QTest::addColumn<QVariantMap>("timeDescriptor");
 
     QTest::newRow("calendarItems") << createTimeDescriptorCalendar(calendarItems);
-    QTest::newRow("timeEventItems") << createTimeDescriptorTimeEvent(timeEventItems);
+//    QTest::newRow("timeEventItems") << createTimeDescriptorTimeEvent(timeEventItems);
 }
 
 void TestTimeManager::loadSaveTimeDescriptor()
@@ -217,6 +225,7 @@ void TestTimeManager::loadSaveTimeDescriptor()
     ruleMap.insert("actions", QVariantList() << action);
 
     // Add the rule
+    qCDebug(dcTests()) << "Adding rule:" << qUtf8Printable(QJsonDocument::fromVariant(ruleMap).toJson());
     QVariant response = injectAndWait("Rules.AddRule", ruleMap);
     verifyRuleError(response);
 
@@ -229,6 +238,12 @@ void TestTimeManager::loadSaveTimeDescriptor()
 
     QVariantMap timeDescriptorMap = response.toMap().value("params").toMap().value("rule").toMap().value("timeDescriptor").toMap();
 
+    QVERIFY2(timeDescriptorMap == timeDescriptor,
+             QString("TimeDescriptor not matching:\nExpected: %1\nGot: %2")
+             .arg(QString(QJsonDocument::fromVariant(timeDescriptor).toJson()))
+             .arg(QString(QJsonDocument::fromVariant(timeDescriptorMap).toJson()))
+             .toUtf8());
+
     // Restart the server
     restartServer();
 
@@ -238,7 +253,11 @@ void TestTimeManager::loadSaveTimeDescriptor()
 
     QVariantMap timeDescriptorMapLoaded = response.toMap().value("params").toMap().value("rule").toMap().value("timeDescriptor").toMap();
 
-    QCOMPARE(timeDescriptorMap, timeDescriptorMapLoaded);
+    QVERIFY2(timeDescriptorMap == timeDescriptorMapLoaded,
+             QString("TimeDescriptor not matching:\nExpected: %1\nGot: %2")
+             .arg(QString(QJsonDocument::fromVariant(timeDescriptorMap).toJson()))
+             .arg(QString(QJsonDocument::fromVariant(timeDescriptorMapLoaded).toJson()))
+             .toUtf8());
 
     // REMOVE rule
     QVariantMap removeParams;
@@ -330,10 +349,8 @@ void TestTimeManager::addTimeDescriptor_data()
     QTest::newRow("valid: timeEventItem - weekly - multiple days") << createTimeDescriptorTimeEvent(timeEventItems) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: timeEventItem - monthly - multiple days") << createTimeDescriptorTimeEvent(createTimeEventItem("23:00", repeatingOptionMonthlyMultiple)) << RuleEngine::RuleErrorNoError;
 
-    QTest::newRow("invalid: calendarItem empty") << createTimeDescriptorCalendar(createCalendarItem()) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem none") << createTimeDescriptorCalendar(createCalendarItem("00:12", 12, repeatingOptionInvalidNone)) << RuleEngine::RuleErrorInvalidRepeatingOption;
     QTest::newRow("invalid: calendarItem dateTime - daily") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toTime_t(), 5, repeatingOptionDaily)) << RuleEngine::RuleErrorInvalidCalendarItem;
-    QTest::newRow("invalid: calendarItem invalid time") << createTimeDescriptorCalendar(createCalendarItem("35:80", 5)) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem invalid duration") << createTimeDescriptorCalendar(createCalendarItem("12:00", 0)) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem - monthly - weekDays") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
     QTest::newRow("invalid: calendarItem - weekly - monthDays") << createTimeDescriptorCalendar(createCalendarItem("15:30", 20, repeatingOptionInvalidWeekly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
@@ -342,10 +359,8 @@ void TestTimeManager::addTimeDescriptor_data()
     QTest::newRow("invalid: calendarItem - invalid monthdays  (negative)") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthDays)) << RuleEngine::RuleErrorInvalidRepeatingOption;
     QTest::newRow("invalid: calendarItem - invalid monthdays  (to big)") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthDays2)) << RuleEngine::RuleErrorInvalidRepeatingOption;
 
-    QTest::newRow("invalid: timeEventItem empty") << createTimeDescriptorTimeEvent(createTimeEventItem()) << RuleEngine::RuleErrorInvalidTimeEventItem;
     QTest::newRow("invalid: timeEventItem none") << createTimeDescriptorTimeEvent(createTimeEventItem("00:12", repeatingOptionInvalidNone)) << RuleEngine::RuleErrorInvalidRepeatingOption;
     QTest::newRow("invalid: timeEventItem - dateTime + repeatingOption") << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toTime_t(), repeatingOptionDaily)) << RuleEngine::RuleErrorInvalidTimeEventItem;
-    QTest::newRow("invalid: timeEventItem invalid time") << createTimeDescriptorTimeEvent(createTimeEventItem("35:80")) << RuleEngine::RuleErrorInvalidTimeEventItem;
     QTest::newRow("invalid: timeEventItem - monthly - weekDays") << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidMonthly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
     QTest::newRow("invalid: timeEventItem - weekly - monthDays") << createTimeDescriptorTimeEvent(createTimeEventItem("15:30", repeatingOptionInvalidWeekly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
     QTest::newRow("invalid: timeEventItem - invalid weekdays  (negative)") << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidWeekDays)) << RuleEngine::RuleErrorInvalidRepeatingOption;
@@ -380,6 +395,34 @@ void TestTimeManager::addTimeDescriptor()
     removeParams.insert("ruleId", newRuleId);
     response = injectAndWait("Rules.RemoveRule", removeParams);
     verifyRuleError(response);
+}
+
+void TestTimeManager::addTimeDescriptorInvalidTimes_data()
+{
+    QTest::addColumn<QVariantMap>("timeDescriptor");
+
+    QTest::newRow("invalid: calendarItem empty") << createTimeDescriptorCalendar(createCalendarItem());
+    QTest::newRow("invalid: calendarItem invalid time") << createTimeDescriptorCalendar(createCalendarItem("35:80", 5));
+
+    QTest::newRow("invalid: timeEventItem empty") << createTimeDescriptorTimeEvent(createTimeEventItem());
+    QTest::newRow("invalid: timeEventItem invalid time") << createTimeDescriptorTimeEvent(createTimeEventItem("35:80"));
+}
+
+void TestTimeManager::addTimeDescriptorInvalidTimes()
+{
+    QFETCH(QVariantMap, timeDescriptor);
+
+    // ADD the rule
+    QVariantMap ruleMap; QVariantMap action;
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
+    action.insert("deviceId", m_mockDeviceId);
+    action.insert("ruleActionParams", QVariantList());
+    ruleMap.insert("name", "TimeBased rule");
+    ruleMap.insert("timeDescriptor", timeDescriptor);
+    ruleMap.insert("actions", QVariantList() << action);
+
+    QVariant response = injectAndWait("Rules.AddRule", ruleMap);
+    QVERIFY2(response.toMap().value("status").toString() == "error", "Invalid time must fail JSON verification.");
 }
 
 void TestTimeManager::testCalendarDateTime_data()
@@ -1078,25 +1121,25 @@ void TestTimeManager::testCalendarItemStates_data()
     QVariantMap stateEvaluator;
     QVariantMap stateDescriptorInt;
     stateDescriptorInt.insert("deviceId", m_mockDeviceId);
-    stateDescriptorInt.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorGreaterOrEqual));
+    stateDescriptorInt.insert("operator", enumValueName(Types::ValueOperatorGreaterOrEqual));
     stateDescriptorInt.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptorInt.insert("value", 65);
     QVariantMap stateDescriptorBool;
     stateDescriptorBool.insert("deviceId", m_mockDeviceId);
-    stateDescriptorBool.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptorBool.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptorBool.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptorBool.insert("value", true);
     QVariantMap stateEvaluatorInt;
     stateEvaluatorInt.insert("stateDescriptor", stateDescriptorInt);
-    stateEvaluatorInt.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluatorInt.insert("operator", enumValueName(Types::StateOperatorAnd));
     QVariantMap stateEvaluatorBool;
     stateEvaluatorBool.insert("stateDescriptor", stateDescriptorBool);
-    stateEvaluatorBool.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluatorBool.insert("operator", enumValueName(Types::StateOperatorAnd));
     QVariantList childEvaluators;
     childEvaluators.append(stateEvaluatorInt);
     childEvaluators.append(stateEvaluatorBool);
     stateEvaluator.insert("childEvaluators", childEvaluators);
-    stateEvaluator.insert("operator", JsonTypes::stateOperatorToString(Types::StateOperatorAnd));
+    stateEvaluator.insert("operator", enumValueName(Types::StateOperatorAnd));
 
 
     // The rule
@@ -1246,7 +1289,7 @@ void TestTimeManager::testCalendarItemStatesEvent_data()
     // State evaluator
     QVariantMap stateDescriptorBool;
     stateDescriptorBool.insert("deviceId", m_mockDeviceId);
-    stateDescriptorBool.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptorBool.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptorBool.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptorBool.insert("value", true);
 
@@ -1880,7 +1923,7 @@ void TestTimeManager::testEventItemStates_data()
     // State evaluator
     QVariantMap stateDescriptorBool;
     stateDescriptorBool.insert("deviceId", m_mockDeviceId);
-    stateDescriptorBool.insert("operator", JsonTypes::valueOperatorToString(Types::ValueOperatorEquals));
+    stateDescriptorBool.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptorBool.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptorBool.insert("value", true);
 
@@ -2042,7 +2085,6 @@ void TestTimeManager::verifyRuleNotExecuted()
     QCOMPARE(spy.count(), 1);
 
     QByteArray actionHistory = reply->readAll();
-    qWarning() << "actionHistory" << actionHistory;
     QVERIFY2(actionHistory.isEmpty(), "Actfdsfadsion is triggered while it should not have been.");
     reply->deleteLater();
 }
@@ -2078,7 +2120,7 @@ void TestTimeManager::setIntState(const int &value)
     params.insert("deviceId", m_mockDeviceId);
     params.insert("stateTypeId", mockIntStateTypeId);
     QVariant response = injectAndWait("Devices.GetStateValue", params);
-    verifyDeviceError(response);
+    verifyError(response, "deviceError", "DeviceErrorNoError");
 
     int currentStateValue = response.toMap().value("params").toMap().value("value").toInt();
     bool shouldGetNotification = currentStateValue != value;
@@ -2119,7 +2161,7 @@ void TestTimeManager::setBoolState(const bool &value)
     params.insert("deviceId", m_mockDeviceId);
     params.insert("stateTypeId", mockBoolStateTypeId);
     QVariant response = injectAndWait("Devices.GetStateValue", params);
-    verifyDeviceError(response);
+    verifyError(response, "deviceError", "DeviceErrorNoError");
 
     bool currentStateValue = response.toMap().value("params").toMap().value("value").toBool();
     bool shouldGetNotification = currentStateValue != value;

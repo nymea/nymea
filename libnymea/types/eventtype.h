@@ -32,7 +32,15 @@
 
 class LIBNYMEA_EXPORT EventType
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid id READ id)
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString displayName READ displayName WRITE setDisplayName)
+    Q_PROPERTY(int index READ index)
+    Q_PROPERTY(ParamTypes paramTypes READ paramTypes WRITE setParamTypes)
+
 public:
+    EventType();
     EventType(const EventTypeId &id);
 
     EventTypeId id() const;
@@ -61,14 +69,20 @@ private:
     int m_index;
     QList<ParamType> m_paramTypes;
 };
+Q_DECLARE_METATYPE(EventType)
 
 class EventTypes: public QList<EventType>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
 public:
     EventTypes() = default;
     EventTypes(const QList<EventType> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
     EventType findByName(const QString &name);
     EventType findById(const EventTypeId &id);
 };
+Q_DECLARE_METATYPE(EventTypes)
 
 #endif // TRIGGERTYPE_H

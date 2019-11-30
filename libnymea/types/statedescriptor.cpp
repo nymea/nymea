@@ -85,10 +85,20 @@ StateTypeId StateDescriptor::stateTypeId() const
     return m_stateTypeId;
 }
 
+void StateDescriptor::setStateTypeId(const StateTypeId &stateTypeId)
+{
+    m_stateTypeId = stateTypeId;
+}
+
 /*! Returns the DeviceId of this \l{State}.*/
 DeviceId StateDescriptor::deviceId() const
 {
     return m_deviceId;
+}
+
+void StateDescriptor::setDeviceId(const DeviceId &deviceId)
+{
+    m_deviceId = deviceId;
 }
 
 /*! Returns the interface for this \{StateDescriptor}.*/
@@ -97,10 +107,20 @@ QString StateDescriptor::interface() const
     return m_interface;
 }
 
+void StateDescriptor::setInterface(const QString &interface)
+{
+    m_interface = interface;
+}
+
 /*! Returns the interface state's name for this \{StateDescriptor}.*/
 QString StateDescriptor::interfaceState() const
 {
     return m_interfaceState;
+}
+
+void StateDescriptor::setInterfaceState(const QString &interfaceState)
+{
+    m_interfaceState = interfaceState;
 }
 
 /*! Returns the Value of this \l{State}.*/
@@ -109,10 +129,20 @@ QVariant StateDescriptor::stateValue() const
     return m_stateValue;
 }
 
+void StateDescriptor::setStateValue(const QVariant &value)
+{
+    m_stateValue = value;
+}
+
 /*! Returns the ValueOperator of this \l{State}.*/
 Types::ValueOperator StateDescriptor::operatorType() const
 {
     return m_operatorType;
+}
+
+void StateDescriptor::setOperatorType(Types::ValueOperator opertatorType)
+{
+    m_operatorType = opertatorType;
 }
 
 /*! Compare this StateDescriptor to \a other.

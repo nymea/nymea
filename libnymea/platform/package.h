@@ -24,9 +24,23 @@
 #define PACKAGE_H
 
 #include <QString>
+#include <QMetaObject>
+#include <QList>
+#include <QVariant>
 
 class Package
 {
+    Q_GADGET
+    Q_PROPERTY(QString id READ packageId)
+    Q_PROPERTY(QString displayName READ displayName)
+    Q_PROPERTY(QString summary READ summary)
+    Q_PROPERTY(QString installedVersion READ installedVersion)
+    Q_PROPERTY(QString candidateVersion READ candidateVersion)
+    Q_PROPERTY(QString changelog READ changelog)
+    Q_PROPERTY(bool updateAvailable READ updateAvailable)
+    Q_PROPERTY(bool rollbackAvailable READ rollbackAvailable)
+    Q_PROPERTY(bool canRemove READ canRemove)
+
 public:
     explicit Package(const QString &packageId = QString(), const QString &displayName = QString(), const QString &installedVersion = QString(), const QString &candidateVersion = QString(), const QString &changelog = QString());
 
@@ -69,5 +83,18 @@ private:
     bool m_rollbackAvailable = false;
     bool m_canRemove = false;
 };
+Q_DECLARE_METATYPE(Package)
+
+class Packages: public QList<Package>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    Packages();
+    Packages(const QList<Package> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
+};
+Q_DECLARE_METATYPE(Packages)
 
 #endif // PACKAGE_H

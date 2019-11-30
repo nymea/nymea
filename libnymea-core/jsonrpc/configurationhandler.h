@@ -23,7 +23,8 @@
 
 #include <QObject>
 
-#include "jsonhandler.h"
+#include "jsonrpc/jsonhandler.h"
+#include "nymeaconfiguration.h"
 
 namespace nymeaserver {
 
@@ -88,6 +89,11 @@ private slots:
     void onMqttServerConfigurationRemoved(const QString &id);
     void onMqttPolicyChanged(const QString &clientId);
     void onMqttPolicyRemoved(const QString &clientId);
+
+private:
+    static QVariantMap packBasicConfiguration();
+    QVariantMap statusToReply(NymeaConfiguration::ConfigurationError status) const;
+
 };
 
 }

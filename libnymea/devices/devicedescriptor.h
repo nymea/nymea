@@ -32,6 +32,13 @@
 
 class LIBNYMEA_EXPORT DeviceDescriptor
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid id READ id)
+    Q_PROPERTY(QUuid deviceId READ deviceId USER true)
+    Q_PROPERTY(QString title READ title)
+    Q_PROPERTY(QString description READ description)
+    Q_PROPERTY(ParamList deviceParams READ params)
+
 public:
     DeviceDescriptor();
     DeviceDescriptor(const DeviceClassId &deviceClassId, const QString &title = QString(), const QString &description = QString(), const DeviceId &parentDeviceId = DeviceId());
@@ -69,10 +76,14 @@ private:
 
 class DeviceDescriptors: public QList<DeviceDescriptor>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
 public:
     DeviceDescriptors() {}
     inline DeviceDescriptors(std::initializer_list<DeviceDescriptor> args): QList(args) {}
     DeviceDescriptors(const QList<DeviceDescriptor> &other): QList<DeviceDescriptor>(other) {}
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 
 Q_DECLARE_METATYPE(DeviceDescriptor)

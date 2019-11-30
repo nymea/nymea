@@ -375,3 +375,13 @@ DeviceClass DeviceClasses::findById(const DeviceClassId &id) const
     }
     return DeviceClass();
 }
+
+QVariant DeviceClasses::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
+void DeviceClasses::put(const QVariant &variant)
+{
+    append(variant.value<DeviceClass>());
+}

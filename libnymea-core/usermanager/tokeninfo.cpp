@@ -34,6 +34,11 @@
 
 namespace nymeaserver {
 
+TokenInfo::TokenInfo()
+{
+
+}
+
 /*! Constructs a new token info with the given \a id, \a username, \a creationTime and \a deviceName. */
 TokenInfo::TokenInfo(const QUuid &id, const QString &username, const QDateTime &creationTime, const QString &deviceName):
     m_id(id),

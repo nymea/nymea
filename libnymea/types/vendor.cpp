@@ -33,6 +33,11 @@
 
 #include "vendor.h"
 
+Vendor::Vendor()
+{
+
+}
+
 /*! Constructs an Vendor with the given \a id and the given \a name. */
 Vendor::Vendor(const VendorId &id, const QString &name):
     m_id(id),
@@ -88,6 +93,16 @@ Vendors::Vendors()
 Vendors::Vendors(const QList<Vendor> &other): QList<Vendor>(other)
 {
 
+}
+
+QVariant Vendors::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
+void Vendors::put(const QVariant &variant)
+{
+    append(variant.value<Vendor>());
 }
 
 Vendor Vendors::findById(const VendorId &vendorId) const

@@ -865,6 +865,43 @@ QString DeviceManagerImplementation::translate(const PluginId &pluginId, const Q
     return m_translator->translate(pluginId, string, locale);
 }
 
+ParamType DeviceManagerImplementation::translateParamType(const PluginId &pluginId, const ParamType &paramType, const QLocale &locale)
+{
+    ParamType translatedParamType = paramType;
+    translatedParamType.setDisplayName(translate(pluginId, paramType.displayName(), locale));
+    return translatedParamType;
+}
+
+DeviceClass DeviceManagerImplementation::translateDeviceClass(const DeviceClass &deviceClass, const QLocale &locale)
+{
+    DeviceClass translatedDeviceClass = deviceClass;
+    translatedDeviceClass.setDisplayName(translate(deviceClass.pluginId(), deviceClass.displayName(), locale));
+
+    ParamTypes translatedSettingsTypes;
+    foreach (const ParamType &paramType, deviceClass.settingsTypes()) {
+        translatedSettingsTypes.append(translateParamType(deviceClass.pluginId(), paramType, locale));
+    }
+    translatedDeviceClass.setSettingsTypes(translatedSettingsTypes);
+    return translatedDeviceClass;
+}
+
+Vendor DeviceManagerImplementation::translateVendor(const Vendor &vendor, const QLocale &locale)
+{
+    DevicePlugin *plugin = nullptr;
+    foreach (DevicePlugin *p, m_devicePlugins) {
+        if (p->supportedVendors().contains(vendor)) {
+            plugin = p;
+        }
+    }
+    if (!plugin) {
+        return vendor;
+    }
+
+    Vendor translatedVendor = vendor;
+    translatedVendor.setDisplayName(translate(plugin->pluginId(), vendor.displayName(), locale));
+    return translatedVendor;
+}
+
 /*! Returns the \l{Device} with the given \a id. Null if the id couldn't be found. */
 Device *DeviceManagerImplementation::findConfiguredDevice(const DeviceId &id) const
 {

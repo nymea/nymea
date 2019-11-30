@@ -30,6 +30,11 @@ class TestConfigurations: public NymeaTestBase
 {
     Q_OBJECT
 
+private:
+    inline void verifyConfigurationError(const QVariant &response, NymeaConfiguration::ConfigurationError error = NymeaConfiguration::ConfigurationErrorNoError) {
+        verifyError(response, "configurationError", enumValueName(error));
+    }
+
 protected slots:
     void initTestCase();
 
@@ -316,7 +321,7 @@ void TestConfigurations::testDebugServerConfiguration()
     QVariantMap basicConfigurationMap = loadBasicConfiguration();
 
     bool debugServerEnabled = basicConfigurationMap.value("debugServerEnabled").toBool();
-    qDebug() << "Debug server enabled" << debugServerEnabled;
+    qCDebug(dcTests) << "Debug server enabled" << debugServerEnabled;
 
     QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
@@ -335,6 +340,8 @@ void TestConfigurations::testDebugServerConfiguration()
     bool newValue = true;
     params.clear(); response.clear(); configurationChangedNotifications.clear();
     params.insert("enabled", newValue);
+
+    qCDebug(dcTests()) << "Enabling debug server";
 
     notificationSpy.clear();
     response = injectAndWait("Configuration.SetDebugServerEnabled", params);
@@ -356,7 +363,7 @@ void TestConfigurations::testDebugServerConfiguration()
     QVERIFY2(basicConfigurationNotificationMap.contains("debugServerEnabled"), "Notification does not contain key debugServerEnabled");
     QVERIFY2(basicConfigurationNotificationMap.value("debugServerEnabled").toBool() == newValue, "Notification does not contain the new debugServerEnabled");
 
-    qDebug() << "TestWebserver starting";
+    qCDebug(dcTests()) << "TestWebserver starting";
     foreach (const WebServerConfiguration &config, NymeaCore::instance()->configuration()->webServerConfigurations()) {
         if (config.port == 3333 && (config.address == QHostAddress("127.0.0.1") || config.address == QHostAddress("0.0.0.0"))) {
             qDebug() << "Already have a webserver listening on 127.0.0.1:3333";
@@ -364,7 +371,7 @@ void TestConfigurations::testDebugServerConfiguration()
         }
     }
 
-    qDebug() << "Creating new webserver instance on 127.0.0.1:3333";
+    qCDebug(dcTests) << "Creating new webserver instance on 127.0.0.1:3333";
     WebServerConfiguration config;
     config.id = "Testwebserver for debug server interface";
     config.address = QHostAddress("127.0.0.1");

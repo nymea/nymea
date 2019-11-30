@@ -42,16 +42,17 @@ namespace nymeaserver {
 StateHandler::StateHandler(QObject *parent) :
     JsonHandler(parent)
 {
-    QVariantMap params;
-    QVariantMap returns;
+    registerEnum<Types::Unit>();
+    registerObject<State>();
+    registerObject<StateType>();
 
-    params.clear(); returns.clear();
-    setDescription("GetStateType", "Get the StateType for the given stateTypeId.");
-    params.insert("stateTypeId", JsonTypes::basicTypeToString(JsonTypes::Uuid));
-    setParams("GetStateType", params);
-    returns.insert("deviceError", JsonTypes::deviceErrorRef());
-    returns.insert("o:stateType", JsonTypes::stateTypeRef());
-    setReturns("GetStateType", returns);
+    // Methods
+    QString description; QVariantMap params; QVariantMap returns;
+    description = "Get the StateType for the given stateTypeId.";
+    params.insert("stateTypeId", enumValueName(Uuid));
+    returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:stateType", objectRef<StateType>());
+    registerMethod("GetStateType", description, params, returns, "Please use the Devices namespace instead.");
 }
 
 /*! Returns the name of the \l{StateHandler}. In this case \b States.*/
@@ -62,18 +63,24 @@ QString StateHandler::name() const
 
 JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
 {
+    QLocale locale = params.value("locale").toLocale();
     qCDebug(dcJsonRpc) << "asked for state type" << params;
     StateTypeId stateTypeId(params.value("stateTypeId").toString());
     foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const StateType &stateType, deviceClass.stateTypes()) {
             if (stateType.id() == stateTypeId) {
-                QVariantMap data = statusToReply(Device::DeviceErrorNoError);
-                data.insert("stateType", JsonTypes::packStateType(stateType, deviceClass.pluginId(), params.value("locale").toLocale()));
+                QVariantMap data;
+                data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorNoError));
+                StateType translatedStateType = stateType;
+                translatedStateType.setDisplayName(NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), stateType.displayName(), locale));
+                data.insert("stateType", pack(translatedStateType));
                 return createReply(data);
             }
         }
     }
-    return createReply(statusToReply(Device::DeviceErrorStateTypeNotFound));
+    QVariantMap data;
+    data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorStateTypeNotFound));
+    return createReply(data);
 }
 
 }

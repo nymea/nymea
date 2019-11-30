@@ -1,7 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2015 Simon Stürz <simon.stuerz@guh.io>                   *
- *  Copyright (C) 2014 Michael Zanetti <michael_zanetti@gmx.net>           *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -19,17 +18,13 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef JSONHANDLER_H
-#define JSONHANDLER_H
-
-#include "jsontypes.h"
+#ifndef JSONREPLY_H
+#define JSONREPLY_H
 
 #include <QObject>
 #include <QVariantMap>
-#include <QMetaMethod>
+#include <QUuid>
 #include <QTimer>
-
-namespace nymeaserver {
 
 class JsonHandler;
 
@@ -84,43 +79,4 @@ private:
 
 };
 
-class JsonHandler : public QObject
-{
-    Q_OBJECT
-public:
-    explicit JsonHandler(QObject *parent = nullptr);
-
-    virtual QString name() const = 0;
-
-    QVariantMap introspect(QMetaMethod::MethodType);
-
-    bool hasMethod(const QString &methodName);
-    QPair<bool, QString> validateParams(const QString &methodName, const QVariantMap &params);
-    QPair<bool, QString> validateReturns(const QString &methodName, const QVariantMap &returns);
-
-signals:
-    void asyncReply(int id, const QVariantMap &params);
-
-protected:
-    void setDescription(const QString &methodName, const QString &description);
-    void setParams(const QString &methodName, const QVariantMap &params);
-    void setReturns(const QString &methodName, const QVariantMap &returns);
-
-    JsonReply *createReply(const QVariantMap &data) const;
-    JsonReply *createAsyncReply(const QString &method) const;
-    QVariantMap statusToReply(Device::DeviceError status) const;
-    QVariantMap statusToReply(RuleEngine::RuleError status) const;
-    QVariantMap statusToReply(Logging::LoggingError status) const;
-    QVariantMap statusToReply(NymeaConfiguration::ConfigurationError status) const;
-    QVariantMap statusToReply(NetworkManager::NetworkManagerError status) const;
-    QVariantMap statusToReply(TagsStorage::TagError status) const;
-
-private:
-    QHash<QString, QString> m_descriptions;
-    QHash<QString, QVariantMap> m_params;
-    QHash<QString, QVariantMap> m_returns;
-};
-
-}
-
-#endif // JSONHANDLER_H
+#endif // JSONREPLY_H

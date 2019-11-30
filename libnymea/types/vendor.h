@@ -29,10 +29,17 @@
 
 #include <QString>
 #include <QList>
+#include <QVariant>
 
 class LIBNYMEA_EXPORT Vendor
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid id READ id WRITE setId)
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString displayName READ displayName WRITE setDisplayName)
+
 public:
+    Vendor();
     Vendor(const VendorId &id, const QString &name = QString());
 
     VendorId id() const;
@@ -51,14 +58,19 @@ private:
     QString m_name;
     QString m_displayName;
 };
+Q_DECLARE_METATYPE(Vendor)
 
 class LIBNYMEA_EXPORT Vendors: public QList<Vendor>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
 public:
     Vendors();
     Vendors(const QList<Vendor> &other);
-
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
     Vendor findById(const VendorId &vendorId) const;
 };
+Q_DECLARE_METATYPE(Vendors)
 
 #endif // VENDOR_H

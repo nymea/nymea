@@ -89,10 +89,20 @@ EventTypeId EventDescriptor::eventTypeId() const
     return m_eventTypeId;
 }
 
+void EventDescriptor::setEventTypeId(const EventTypeId &eventTypeId)
+{
+    m_eventTypeId = eventTypeId;
+}
+
 /*! Returns the id of the \l{Device} associated with this Event. */
 DeviceId EventDescriptor::deviceId() const
 {
     return m_deviceId;
+}
+
+void EventDescriptor::setDeviceId(const DeviceId &deviceId)
+{
+    m_deviceId = deviceId;
 }
 
 /*! Returns the interface associated with this EventDescriptor. */
@@ -101,10 +111,20 @@ QString EventDescriptor::interface() const
     return m_interface;
 }
 
+void EventDescriptor::setInterface(const QString &interface)
+{
+    m_interface = interface;
+}
+
 /*! Returns the interface's event name associated with this EventDescriptor.*/
 QString EventDescriptor::interfaceEvent() const
 {
     return m_interfaceEvent;
+}
+
+void EventDescriptor::setInterfaceEvent(const QString &interfaceEvent)
+{
+    m_interfaceEvent = interfaceEvent;
 }
 
 /*! Returns the parameters of this Event. */
@@ -168,4 +188,24 @@ QDebug operator<<(QDebug dbg, const QList<EventDescriptor> &eventDescriptors)
     }
 
     return dbg;
+}
+
+EventDescriptors::EventDescriptors()
+{
+
+}
+
+EventDescriptors::EventDescriptors(const QList<EventDescriptor> &other): QList<EventDescriptor>(other)
+{
+
+}
+
+QVariant EventDescriptors::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
+void EventDescriptors::put(const QVariant &variant)
+{
+    append(variant.value<EventDescriptor>());
 }

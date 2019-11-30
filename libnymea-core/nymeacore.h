@@ -46,7 +46,7 @@ class Device;
 
 namespace nymeaserver {
 
-class JsonRPCServer;
+class JsonRPCServerImplementation;
 class LogEngine;
 class NetworkManager;
 class NymeaConfiguration;
@@ -54,6 +54,7 @@ class TagsStorage;
 class UserManager;
 class Platform;
 class System;
+class ExperienceManager;
 
 class NymeaCore : public QObject
 {
@@ -81,7 +82,7 @@ public:
 
     NymeaConfiguration *configuration() const;
     LogEngine* logEngine() const;
-    JsonRPCServer *jsonRPCServer() const;
+    JsonRPCServerImplementation *jsonRPCServer() const;
     DeviceManager *deviceManager() const;
     RuleEngine *ruleEngine() const;
     TimeManager *timeManager() const;
@@ -134,6 +135,7 @@ private:
     NetworkManager *m_networkManager;
     UserManager *m_userManager;
     System *m_system;
+    ExperienceManager *m_experienceManager;
 
     QList<RuleId> m_executingRules;
 

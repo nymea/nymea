@@ -23,6 +23,7 @@
 #include "nymeacore.h"
 #include "nymeasettings.h"
 #include "servers/mocktcpserver.h"
+#include "usermanager/usermanager.h"
 
 using namespace nymeaserver;
 
@@ -45,10 +46,9 @@ NymeaTestBase::NymeaTestBase(QObject *parent) :
 
 void NymeaTestBase::initTestCase()
 {
-    qDebug() << "NymeaTestBase starting.";
+    qCDebug(dcTests) << "NymeaTestBase starting.";
 
     // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
-    qDebug() << "Reset test settings";
     NymeaSettings rulesSettings(NymeaSettings::SettingsRoleRules);
     rulesSettings.clear();
     NymeaSettings deviceSettings(NymeaSettings::SettingsRoleDevices);
@@ -65,11 +65,14 @@ void NymeaTestBase::initTestCase()
     QLoggingCategory::setFilterRules("*.debug=false\nTests.debug=true\nMockDevice.debug=true");
 
     // Start the server
+    qCDebug(dcTests()) << "Setting up nymea core instance";
     NymeaCore::instance()->init();
 
     // Wait unitl the server is initialized
     QSignalSpy coreInitializedSpy(NymeaCore::instance(), SIGNAL(initialized()));
     QVERIFY(coreInitializedSpy.wait());
+    qApp->processEvents();
+    qCDebug(dcTests()) << "Nymea core instance initialized. Creating dummy user.";
 
     // Yes, we're intentionally mixing upper/lower case email here... username should not be case sensitive
     NymeaCore::instance()->userManager()->removeUser("dummy@guh.io");
@@ -77,7 +80,7 @@ void NymeaTestBase::initTestCase()
     m_apiToken = NymeaCore::instance()->userManager()->authenticate("Dummy@guh.io", "DummyPW1!", "testcase");
 
     if (MockTcpServer::servers().isEmpty()) {
-        qWarning() << "no mock tcp server found";
+        qCWarning(dcTests) << "no mock tcp server found";
         exit(-1);
     }
 
@@ -86,6 +89,7 @@ void NymeaTestBase::initTestCase()
     m_clientId = QUuid::createUuid();
     m_mockTcpServer->clientConnected(m_clientId);
 
+    qCDebug(dcTests()) << "Starting JSON handshake";
     QVariant response = injectAndWait("JSONRPC.Hello");
 
     createMockDevice();
@@ -423,7 +427,7 @@ void NymeaTestBase::createMockDevice()
 
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
 
-    verifyDeviceError(response);
+    verifyError(response, "deviceError", "DeviceErrorNoError");
 
     m_mockDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY2(!m_mockDeviceId.isNull(), "Newly created mock device must not be null.");

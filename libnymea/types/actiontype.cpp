@@ -123,6 +123,16 @@ ActionTypes::ActionTypes(const QList<ActionType> &other)
     }
 }
 
+QVariant ActionTypes::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
+void ActionTypes::put(const QVariant &variant)
+{
+    append(variant.value<ActionType>());
+}
+
 ActionType ActionTypes::findByName(const QString &name)
 {
     foreach (const ActionType &actionType, *this) {

@@ -32,6 +32,20 @@
 
 class LIBNYMEA_EXPORT ParamType
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid id READ id)
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString displayName READ displayName WRITE setDisplayName)
+    Q_PROPERTY(QVariant::Type type READ type WRITE setType)
+    Q_PROPERTY(int index READ index WRITE setIndex)
+    Q_PROPERTY(QVariant defaultValue READ defaultValue WRITE setDefaultValue USER true)
+    Q_PROPERTY(QVariant minValue READ minValue WRITE setMinValue USER true)
+    Q_PROPERTY(QVariant maxValue READ maxValue WRITE setMaxValue USER true)
+    Q_PROPERTY(QVariantList allowedValues READ allowedValues WRITE setAllowedValues USER true)
+    Q_PROPERTY(Types::InputType inputType READ inputType WRITE setInputType USER true)
+    Q_PROPERTY(Types::Unit unit READ unit WRITE setUnit USER true)
+    Q_PROPERTY(bool readOnly READ readOnly WRITE setReadOnly USER true)
+
 public:
     ParamType() = default;
     ParamType(const ParamTypeId &id, const QString &name, const QVariant::Type type, const QVariant &defaultValue = QVariant());
@@ -96,12 +110,18 @@ private:
 
 class ParamTypes: public QList<ParamType>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
 public:
     ParamTypes() = default;
     ParamTypes(const QList<ParamType> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
     ParamType findByName(const QString &name);
     ParamType findById(const ParamTypeId &id);
 };
+Q_DECLARE_METATYPE(QList<ParamType>)
+Q_DECLARE_METATYPE(ParamTypes)
 
 QDebug operator<<(QDebug dbg, const ParamType &paramType);
 QDebug operator<<(QDebug dbg, const QList<ParamType> &paramTypes);

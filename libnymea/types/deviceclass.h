@@ -38,6 +38,22 @@
 class LIBNYMEA_EXPORT DeviceClass
 {
     Q_GADGET
+    Q_PROPERTY(QUuid id READ id)
+    Q_PROPERTY(QUuid vendorId READ vendorId)
+    Q_PROPERTY(QUuid pluginId READ pluginId)
+    Q_PROPERTY(QString name READ name)
+    Q_PROPERTY(QString displayName READ displayName)
+    Q_PROPERTY(QStringList interfaces READ interfaces)
+    Q_PROPERTY(bool browsable READ browsable)
+    Q_PROPERTY(SetupMethod setupMethod READ setupMethod)
+    Q_PROPERTY(CreateMethods createMethods READ createMethods)
+    Q_PROPERTY(StateTypes stateTypes READ stateTypes)
+    Q_PROPERTY(EventTypes eventTypes READ eventTypes)
+    Q_PROPERTY(ActionTypes actionTypes READ actionTypes)
+    Q_PROPERTY(ActionTypes browserItemActionTypes READ browserItemActionTypes)
+    Q_PROPERTY(ParamTypes paramTypes READ paramTypes)
+    Q_PROPERTY(ParamTypes settingsTypes READ settingsTypes)
+    Q_PROPERTY(ParamTypes discoveryParamTypes READ discoveryParamTypes)
 
 public:
     enum CreateMethod {
@@ -47,6 +63,7 @@ public:
     };
     Q_ENUM(CreateMethod)
     Q_DECLARE_FLAGS(CreateMethods, CreateMethod)
+    Q_FLAG(CreateMethods)
 
     enum SetupMethod {
         SetupMethodJustAdd,
@@ -140,10 +157,14 @@ QDebug operator<<(QDebug &dbg, const DeviceClass &deviceClass);
 
 class LIBNYMEA_EXPORT DeviceClasses: public QList<DeviceClass>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
 public:
     DeviceClasses();
     DeviceClasses(const QList<DeviceClass> &other);
     DeviceClass findById(const DeviceClassId &id) const;
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 
 #endif

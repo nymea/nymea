@@ -37,5 +37,8 @@
 
 DeviceManager::DeviceManager(QObject *parent) : QObject(parent)
 {
-
+    qRegisterMetaType<Param>();
+    qRegisterMetaType<ParamList>();
+    qRegisterMetaType<ParamType>();
+    qRegisterMetaType<ParamTypes>();
 }

@@ -73,7 +73,7 @@ void TestStates::getStateValue()
 
     QVariant response = injectAndWait("Devices.GetStateValue", params);
 
-    verifyDeviceError(response, error);
+    verifyError(response, "deviceError", enumValueName(error));
 }
 
 void TestStates::save_load_states()

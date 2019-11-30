@@ -63,14 +63,19 @@ StateDescriptor StateEvaluator::stateDescriptor() const
     return m_stateDescriptor;
 }
 
+void StateEvaluator::setStateDescriptor(const StateDescriptor &stateDescriptor)
+{
+    m_stateDescriptor = stateDescriptor;
+}
+
 /*! Returns the list of child \l {StateEvaluator}{StateEvaluators} of this \l StateEvaluator. */
-QList<StateEvaluator> StateEvaluator::childEvaluators() const
+StateEvaluators StateEvaluator::childEvaluators() const
 {
     return m_childEvaluators;
 }
 
 /*! Sets the list of child evaluators of this \l StateEvaluator to the given \a stateEvaluators.*/
-void StateEvaluator::setChildEvaluators(const QList<StateEvaluator> &stateEvaluators)
+void StateEvaluator::setChildEvaluators(const StateEvaluators &stateEvaluators)
 {
     m_childEvaluators = stateEvaluators;
 }
@@ -370,6 +375,26 @@ QDebug operator<<(QDebug dbg, const StateEvaluator &stateEvaluator)
         dbg.nospace() << "    " << i << ": " << stateEvaluator.childEvaluators().at(i);
     }
     return dbg;
+}
+
+StateEvaluators::StateEvaluators()
+{
+
+}
+
+StateEvaluators::StateEvaluators(const QList<StateEvaluator> &other): QList<StateEvaluator>(other)
+{
+
+}
+
+QVariant StateEvaluators::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
+void StateEvaluators::put(const QVariant &variant)
+{
+    append(variant.value<StateEvaluator>());
 }
 
 }

@@ -1,3 +1,8 @@
+nymea (0.17.0) UNRELEASED; urgency=medium
+
+
+ -- Michael Zanetti <michael.zanetti@guh.io>  Wed, 30 Oct 2019 00:32:48 +0100
+
 nymea (0.16.0) xenial; urgency=medium
   [ Michael Zanetti ]
   * Add account interface

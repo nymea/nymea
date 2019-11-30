@@ -31,8 +31,14 @@ namespace nymeaserver {
 class WiredNetworkDevice : public NetworkDevice
 {
     Q_OBJECT
+    Q_PROPERTY(QString interface READ interface)
+    Q_PROPERTY(QString macAddress READ macAddress)
+    Q_PROPERTY(NetworkDeviceState state READ deviceState)
+    Q_PROPERTY(QString bitRate READ bitRate)
+    Q_PROPERTY(bool pluggedIn READ pluggedIn)
+
 public:
-    explicit WiredNetworkDevice(const QDBusObjectPath &objectPath, QObject *parent = 0);
+    explicit WiredNetworkDevice(const QDBusObjectPath &objectPath, QObject *parent = nullptr);
 
     QString macAddress() const;
     int bitRate() const;

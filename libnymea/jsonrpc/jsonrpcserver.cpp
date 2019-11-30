@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  Copyright (C) 2016 Simon Stürz <simon.stuerz@guh.io>                   *
+ *  Copyright (C) 2019 Michael Zanetti <michael.zanetti@nymea.io>          *
  *                                                                         *
  *  This file is part of nymea.                                            *
  *                                                                         *
@@ -18,52 +18,8 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef CALENDARITEM_H
-#define CALENDARITEM_H
+#include "jsonrpcserver.h"
 
-#include <QTime>
-
-#include "repeatingoption.h"
-
-namespace nymeaserver {
-
-class CalendarItem
-{
-public:
-    CalendarItem();
-
-    QDateTime dateTime() const;
-    void setDateTime(const QDateTime &dateTime);
-
-    QTime startTime() const;
-    void setStartTime(const QTime &startTime);
-
-    uint duration() const;
-    void setDuration(const uint &duration);
-
-    RepeatingOption repeatingOption() const;
-    void setRepeatingOption(const RepeatingOption &repeatingOption);
-
-    bool isValid() const;
-    bool evaluate(const QDateTime &dateTime) const;
-
-private:
-    QDateTime m_dateTime;
-    QTime m_startTime;
-    QTime m_endTime;
-    uint m_duration;
-
-    RepeatingOption m_repeatingOption;
-
-    bool evaluateHourly(const QDateTime &dateTime) const;
-    bool evaluateDaily(const QDateTime &dateTime) const;
-    bool evaluateWeekly(const QDateTime &dateTime) const;
-    bool evaluateMonthly(const QDateTime &dateTime) const;
-    bool evaluateYearly(const QDateTime &dateTime) const;
-
-};
-
-QDebug operator<<(QDebug dbg, const CalendarItem &calendarItem);
-}
-
-#endif // CALENDARITEM_H
+/*! \fn void JsonRPCServer::registerExperienceHandler(JsonHandler *handler, int majorVersion, int minorVersion)
+    Register an experience JSON RPC handler on the JSON RPC server.
+*/

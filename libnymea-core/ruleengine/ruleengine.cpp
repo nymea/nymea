@@ -1264,7 +1264,7 @@ QList<RuleAction> RuleEngine::loadRuleActions(NymeaSettings *settings)
     foreach (const QString &actionNumber, settings->childGroups()) {
         settings->beginGroup(actionNumber);
 
-        RuleActionParamList params;
+        RuleActionParams params;
         foreach (QString paramTypeIdString, settings->childGroups()) {
             if (paramTypeIdString.startsWith("RuleActionParam-")) {
                 settings->beginGroup(paramTypeIdString);
@@ -1384,7 +1384,7 @@ void RuleEngine::init()
             settings.beginGroup(childGroup);
 
             TimeEventItem timeEventItem;
-            timeEventItem.setDateTime(settings.value("dateTime", 0).toUInt());
+            timeEventItem.setDateTime(QDateTime::fromTime_t(settings.value("dateTime", 0).toUInt()));
             timeEventItem.setTime(QTime::fromString(settings.value("time").toString()));
 
             QList<int> weekDays;

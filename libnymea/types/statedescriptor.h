@@ -36,6 +36,13 @@
 
 class LIBNYMEA_EXPORT StateDescriptor
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid stateTypeId READ stateTypeId WRITE setStateTypeId USER true)
+    Q_PROPERTY(QUuid deviceId READ deviceId WRITE setDeviceId USER true)
+    Q_PROPERTY(QString interface READ interface WRITE setInterface USER true)
+    Q_PROPERTY(QString interfaceState READ interfaceState WRITE setInterfaceState USER true)
+    Q_PROPERTY(QVariant value READ stateValue WRITE setStateValue)
+    Q_PROPERTY(Types::ValueOperator operator READ operatorType WRITE setOperatorType)
 public:
     enum Type {
         TypeDevice,
@@ -49,15 +56,24 @@ public:
     Type type() const;
 
     StateTypeId stateTypeId() const;
+    void setStateTypeId(const StateTypeId &stateTypeId);
+
     DeviceId deviceId() const;
+    void setDeviceId(const DeviceId &deviceId);
 
     QString interface() const;
+    void setInterface(const QString &interface);
+
     QString interfaceState() const;
+    void setInterfaceState(const QString &interfaceState);
 
     QVariant stateValue() const;
-    Types::ValueOperator operatorType() const;
+    void setStateValue(const QVariant &value);
 
-    bool isValid() const;
+    Types::ValueOperator operatorType() const;
+    void setOperatorType(Types::ValueOperator opertatorType);
+
+    Q_INVOKABLE bool isValid() const;
 
     bool operator ==(const StateDescriptor &other) const;
 
@@ -70,8 +86,9 @@ private:
     QString m_interface;
     QString m_interfaceState;
     QVariant m_stateValue;
-    Types::ValueOperator m_operatorType;
+    Types::ValueOperator m_operatorType = Types::ValueOperatorEquals;
 };
+Q_DECLARE_METATYPE(StateDescriptor)
 
 QDebug operator<<(QDebug dbg, const StateDescriptor &stateDescriptor);
 

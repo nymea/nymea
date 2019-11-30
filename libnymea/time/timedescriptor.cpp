@@ -36,8 +36,6 @@
 
 #include <QDebug>
 
-namespace nymeaserver {
-
 /*! Constructs an invalid \l{TimeDescriptor}.*/
 TimeDescriptor::TimeDescriptor()
 {
@@ -45,25 +43,25 @@ TimeDescriptor::TimeDescriptor()
 }
 
 /*! Returns the list of \l{TimeEventItem}{TimeEventItems} of this \l{TimeDescriptor}.*/
-QList<TimeEventItem> TimeDescriptor::timeEventItems() const
+TimeEventItems TimeDescriptor::timeEventItems() const
 {
     return m_timeEventItems;
 }
 
 /*! Set the list of \l{TimeEventItem}{TimeEventItems} of this \l{TimeDescriptor} to the given \a timeEventItems.*/
-void TimeDescriptor::setTimeEventItems(const QList<TimeEventItem> &timeEventItems)
+void TimeDescriptor::setTimeEventItems(const TimeEventItems &timeEventItems)
 {
     m_timeEventItems = timeEventItems;
 }
 
 /*! Returns the list of \l{CalendarItem}{CalendarItems} of this \l{TimeDescriptor}.*/
-QList<CalendarItem> TimeDescriptor::calendarItems() const
+CalendarItems TimeDescriptor::calendarItems() const
 {
     return m_calendarItems;
 }
 
 /*! Set the list of \l{CalendarItem}{CalendarItems} of this \l{TimeDescriptor} to the given \a calendarItems.*/
-void TimeDescriptor::setCalendarItems(const QList<CalendarItem> &calendarItems)
+void TimeDescriptor::setCalendarItems(const CalendarItems &calendarItems)
 {
     m_calendarItems = calendarItems;
 }
@@ -118,6 +116,4 @@ QDebug operator<<(QDebug dbg, const TimeDescriptor &timeDescriptor)
         dbg.nospace() << "  " << i << ": " << timeDescriptor.calendarItems().at(i);
     }
     return dbg;
-}
-
 }

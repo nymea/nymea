@@ -34,6 +34,18 @@ namespace nymeaserver {
 
 class Rule
 {
+    Q_GADGET
+    Q_PROPERTY(QUuid id READ id WRITE setId USER true)
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(bool active READ active USER true)
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled USER true)
+    Q_PROPERTY(bool executable READ executable WRITE setExecutable USER true)
+    Q_PROPERTY(EventDescriptors eventDescriptors READ eventDescriptors WRITE setEventDescriptors USER true)
+    Q_PROPERTY(RuleActions actions READ actions WRITE setActions)
+    Q_PROPERTY(RuleActions exitActions READ exitActions WRITE setExitActions USER true)
+    Q_PROPERTY(nymeaserver::StateEvaluator stateEvaluator READ stateEvaluator WRITE setStateEvaluator USER true)
+    Q_PROPERTY(TimeDescriptor timeDescriptor READ timeDescriptor WRITE setTimeDescriptor USER true)
+
 public:
     Rule();
 
@@ -53,14 +65,14 @@ public:
     StateEvaluator stateEvaluator() const;
     void setStateEvaluator(const StateEvaluator &stateEvaluator);
 
-    QList<EventDescriptor> eventDescriptors() const;
-    void setEventDescriptors(const QList<EventDescriptor> &eventDescriptors);
+    EventDescriptors eventDescriptors() const;
+    void setEventDescriptors(const EventDescriptors &eventDescriptors);
 
-    QList<RuleAction> actions() const;
-    void setActions(const QList<RuleAction> actions);
+    RuleActions actions() const;
+    void setActions(const RuleActions actions);
 
-    QList<RuleAction> exitActions() const;
-    void setExitActions(const QList<RuleAction> exitActions);
+    RuleActions exitActions() const;
+    void setExitActions(const RuleActions exitActions);
 
     bool enabled() const;
     void setEnabled(const bool &enabled);
@@ -83,9 +95,9 @@ private:
     QString m_name;
     TimeDescriptor m_timeDescriptor;
     StateEvaluator m_stateEvaluator;
-    QList<EventDescriptor> m_eventDescriptors;
-    QList<RuleAction> m_actions;
-    QList<RuleAction> m_exitActions;
+    EventDescriptors m_eventDescriptors;
+    RuleActions m_actions;
+    RuleActions m_exitActions;
 
     bool m_enabled;
     bool m_active;
@@ -94,8 +106,20 @@ private:
     bool m_executable;
 };
 
+class Rules: QList<Rule>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    Rules();
+    Rules(const QList<Rule> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
+};
+
 QDebug operator<<(QDebug dbg, const Rule &rule);
 
 }
+Q_DECLARE_METATYPE(nymeaserver::Rules)
 
 #endif // RULE_H

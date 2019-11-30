@@ -33,8 +33,6 @@
 
 #include <QDebug>
 
-namespace nymeaserver {
-
 /*! Constructs an invalid \l{TimeEventItem}. */
 TimeEventItem::TimeEventItem()
 {
@@ -48,9 +46,9 @@ QDateTime TimeEventItem::dateTime() const
 }
 
 /*! Sets the dateTime of this \l{TimeEventItem} to the given \a timeStamp. */
-void TimeEventItem::setDateTime(const uint &timeStamp)
+void TimeEventItem::setDateTime(const QDateTime &dateTime)
 {
-    m_dateTime = QDateTime::fromTime_t(timeStamp);
+    m_dateTime = dateTime;
 }
 
 /*! Returns the time of this \l{TimeEventItem}. */
@@ -141,4 +139,23 @@ QDebug operator<<(QDebug dbg, const TimeEventItem &timeEventItem)
     return dbg;
 }
 
+
+TimeEventItems::TimeEventItems()
+{
+
+}
+
+TimeEventItems::TimeEventItems(const QList<TimeEventItem> &other): QList<TimeEventItem>(other)
+{
+
+}
+
+QVariant TimeEventItems::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
+void TimeEventItems::put(const QVariant &variant)
+{
+    append(variant.value<TimeEventItem>());
 }

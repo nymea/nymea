@@ -41,9 +41,14 @@ class DevicePlugin;
 class LIBNYMEA_EXPORT Device: public QObject
 {
     Q_OBJECT
-
-    friend class DeviceManager;
-    friend class DeviceManagerImplementation;
+    Q_PROPERTY(QUuid id READ id)
+    Q_PROPERTY(QUuid deviceClassId READ deviceClassId)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(ParamList params READ params WRITE setParams)
+    Q_PROPERTY(ParamList settings READ settings WRITE setSettings)
+    Q_PROPERTY(States states READ states WRITE setStates)
+    Q_PROPERTY(bool setupComplete READ setupComplete WRITE setSetupComplete)
+    Q_PROPERTY(QUuid parentId READ parentId WRITE setParentId USER true)
 
 public:
     enum DeviceError {
@@ -101,9 +106,9 @@ public:
     QVariant setting(const ParamTypeId &paramTypeId) const;
     void setSettingValue(const ParamTypeId &paramTypeId, const QVariant &value);
 
-    QList<State> states() const;
+    States states() const;
     bool hasState(const StateTypeId &stateTypeId) const;
-    void setStates(const QList<State> &states);
+    void setStates(const States &states);
 
     QVariant stateValue(const StateTypeId &stateTypeId) const;
     void setStateValue(const StateTypeId &stateTypeId, const QVariant &value);
@@ -122,6 +127,8 @@ signals:
     void nameChanged();
 
 private:
+    friend class DeviceManager;
+    friend class DeviceManagerImplementation;
     Device(DevicePlugin *plugin, const DeviceClass &deviceClass, const DeviceId &id, QObject *parent = nullptr);
     Device(DevicePlugin *plugin, const DeviceClass &deviceClass, QObject *parent = nullptr);
 
@@ -137,7 +144,7 @@ private:
     QString m_name;
     ParamList m_params;
     ParamList m_settings;
-    QList<State> m_states;
+    States m_states;
     bool m_setupComplete = false;
     bool m_autoCreated = false;
 };
@@ -146,6 +153,8 @@ QDebug operator<<(QDebug dbg, Device *device);
 
 class LIBNYMEA_EXPORT Devices: public QList<Device*>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
 public:
     Devices() = default;
     Devices(const QList<Device *> &other);
@@ -154,6 +163,9 @@ public:
     Devices filterByParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
     Devices filterByDeviceClassId(const DeviceClassId &deviceClassId);
     Devices filterByParentDeviceId(const DeviceId &deviceId);
+    Devices filterByInterface(const QString &interface);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 
 Q_DECLARE_METATYPE(Device::DeviceError)

@@ -3,7 +3,7 @@ include(../nymea.pri)
 TARGET = nymea
 TEMPLATE = lib
 
-QT += network bluetooth
+QT += network bluetooth dbus
 QT -= gui
 DEFINES += LIBNYMEA_LIBRARY
 
@@ -24,6 +24,9 @@ HEADERS += \
         devices/devicepairinginfo.h \
         devices/deviceactioninfo.h \
         devices/browseresult.h \
+        jsonrpc/jsonhandler.h \
+        jsonrpc/jsonreply.h \
+        jsonrpc/jsonrpcserver.h \
         libnymea.h \
         platform/package.h \
         platform/repository.h \
@@ -73,6 +76,10 @@ HEADERS += \
         types/paramdescriptor.h \
         types/statedescriptor.h \
         types/interface.h \
+        time/timedescriptor.h \
+        time/calendaritem.h \
+        time/repeatingoption.h \
+        time/timeeventitem.h \
         hardwareresource.h \
         plugintimer.h \
         hardwaremanager.h \
@@ -82,6 +89,7 @@ HEADERS += \
         platform/platformsystemcontroller.h \
         platform/platformupdatecontroller.h \
         platform/platformzeroconfcontroller.h \
+        experiences/experienceplugin.h \
 
 SOURCES += \
         devices/browseractioninfo.cpp \
@@ -98,6 +106,9 @@ SOURCES += \
         devices/devicepairinginfo.cpp \
         devices/deviceactioninfo.cpp \
         devices/browseresult.cpp \
+        jsonrpc/jsonhandler.cpp \
+        jsonrpc/jsonreply.cpp \
+        jsonrpc/jsonrpcserver.cpp \
         loggingcategories.cpp \
         nymeasettings.cpp \
         platform/package.cpp \
@@ -145,6 +156,10 @@ SOURCES += \
         types/paramdescriptor.cpp \
         types/statedescriptor.cpp \
         types/interface.cpp \
+        time/timedescriptor.cpp \
+        time/calendaritem.cpp \
+        time/repeatingoption.cpp \
+        time/timeeventitem.cpp \
         hardwareresource.cpp \
         plugintimer.cpp \
         hardwaremanager.cpp \
@@ -154,6 +169,7 @@ SOURCES += \
         platform/platformsystemcontroller.cpp \
         platform/platformupdatecontroller.cpp \
         platform/platformzeroconfcontroller.cpp \
+        experiences/experienceplugin.cpp \
 
 
 RESOURCES += \

@@ -125,7 +125,9 @@ public:
     virtual BrowserItemActionInfo* executeBrowserItemAction(const BrowserItemAction &browserItemAction) = 0;
 
     virtual QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) = 0;
-
+    virtual ParamType translateParamType(const PluginId &pluginId, const ParamType &paramType, const QLocale &locale) = 0;
+    virtual DeviceClass translateDeviceClass(const DeviceClass &deviceClass, const QLocale &locale) = 0;
+    virtual Vendor translateVendor(const Vendor &vendor, const QLocale &locale) = 0;
 signals:
     void pluginConfigChanged(const PluginId &id, const ParamList &config);
     void eventTriggered(const Event &event);

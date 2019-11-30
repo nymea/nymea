@@ -83,8 +83,6 @@
 
 #include <QDateTime>
 
-namespace nymeaserver {
-
 /*! Constructs an empty \l{RepeatingOption}. */
 RepeatingOption::RepeatingOption() :
     m_mode(RepeatingModeNone)
@@ -107,16 +105,31 @@ RepeatingOption::RepeatingMode RepeatingOption::mode() const
     return m_mode;
 }
 
+void RepeatingOption::setMode(RepeatingOption::RepeatingMode mode)
+{
+    m_mode = mode;
+}
+
 /*! Returns the list of week days on which this \l{RepeatingOption} should be valid. */
 QList<int> RepeatingOption::weekDays() const
 {
     return m_weekDays;
 }
 
+void RepeatingOption::setWeekDays(const QList<int> &weekDays)
+{
+    m_weekDays = weekDays;
+}
+
 /*! Returns the list of month days on which this \l{RepeatingOption} should be valid. */
 QList<int> RepeatingOption::monthDays() const
 {
     return m_monthDays;
+}
+
+void RepeatingOption::setMonthDays(const QList<int> &monthDays)
+{
+    m_monthDays = monthDays;
 }
 
 /*! Returns true if this \l{RepeatingOption} is empty. */
@@ -196,6 +209,4 @@ QDebug operator<<(QDebug dbg, const RepeatingOption &repeatingOption)
 {
     dbg.nospace() << "RepeatingOption(Mode:" << repeatingOption.mode() << ", Monthdays:" << repeatingOption.monthDays() << "Weekdays:" << repeatingOption.weekDays() << ")";
     return dbg;
-}
-
 }

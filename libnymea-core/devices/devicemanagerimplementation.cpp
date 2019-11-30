@@ -1483,7 +1483,7 @@ void DeviceManagerImplementation::onEventTriggered(const Event &event)
     // Doing some sanity checks here...
     Device *device = m_configuredDevices.value(event.deviceId());
     if (!device) {
-        qCWarning(dcDeviceManager()) << "Invalid device id in emitted event. Not forwarding event.";
+        qCWarning(dcDeviceManager()) << "Invalid device id in emitted event. Not forwarding event. Device setup not complete yet?";
         return;
     }
     EventType eventType = device->deviceClass().eventTypes().findById(event.eventTypeId());
@@ -1498,7 +1498,8 @@ void DeviceManagerImplementation::onEventTriggered(const Event &event)
 void DeviceManagerImplementation::slotDeviceStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value)
 {
     Device *device = qobject_cast<Device*>(sender());
-    if (!device) {
+    if (!device || !m_configuredDevices.contains(device->id())) {
+        qCWarning(dcDeviceManager()) << "Invalid device id in state change. Not forwarding event. Device setup not complete yet?";
         return;
     }
     emit deviceStateChanged(device, stateTypeId, value);

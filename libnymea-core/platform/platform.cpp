@@ -102,7 +102,10 @@ QStringList Platform::pluginSearchDirs() const
     foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
         searchDirs << libraryPath.replace("qt5", "nymea").replace("plugins", "platform");
     }
-    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/nymea/platform";
+    foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+        searchDirs << libraryPath.replace("plugins", "nymea/platform");
+    }
+    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/nymea/platform/";
     searchDirs << QCoreApplication::applicationDirPath() + "/../platform/";
     searchDirs << QCoreApplication::applicationDirPath() + "/../../../platform/";
     return searchDirs;

@@ -107,7 +107,10 @@ QStringList DeviceManagerImplementation::pluginSearchDirs()
     foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
         searchDirs << libraryPath.replace("qt5", "nymea");
     }
-    searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../lib/nymea/plugins").absolutePath();
+    foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+        searchDirs << libraryPath.replace("plugins", "nymea/plugins");
+    }
+    searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../lib/nymea/plugins/").absolutePath();
     searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../plugins/").absolutePath();
     searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../../../plugins/").absolutePath();
     searchDirs.removeDuplicates();

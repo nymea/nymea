@@ -479,7 +479,6 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
             qCWarning(dcLogEngine) << "Error writing log entry. Driver error:" << job->error().driverText() << "Database error:" << job->error().number() << job->error().databaseText();
             qCWarning(dcLogEngine) << entry;
             m_dbMalformed = true;
-            processQueue();
             return;
         }
 

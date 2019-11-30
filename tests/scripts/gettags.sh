@@ -2,6 +2,10 @@
 
 if [ -z $1 ]; then
   echo "usage: $0 host"
-else
-  (echo '{"id":1, "method":"Tags.GetTags"}'; sleep 1) | nc $1 2222
+  exit 1
 fi
+
+cat << EOD | nc $1 2222
+{"id":0, "method":"JSONRPC.Hello"}
+{"id":1, "method":"Tags.GetTags"}
+EOD

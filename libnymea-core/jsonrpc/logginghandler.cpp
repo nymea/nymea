@@ -140,16 +140,27 @@ JsonReply* LoggingHandler::GetLogEntries(const QVariantMap &params) const
 {
     LogFilter filter = unpackLogFilter(params);
 
-    QVariantList entries;
-    foreach (const LogEntry &entry, NymeaCore::instance()->logEngine()->logEntries(filter)) {
-        entries.append(packLogEntry(entry));
-    }
-    QVariantMap returns;
-    returns.insert("loggingError", enumValueName<Logging::LoggingError>(Logging::LoggingErrorNoError));
-    returns.insert("logEntries", entries);
-    returns.insert("offset", filter.offset());
-    returns.insert("count", entries.count());
-    return createReply(returns);
+    LogEntriesFetchJob *job = NymeaCore::instance()->logEngine()->fetchLogEntries(filter);
+
+    JsonReply *reply = createAsyncReply("GetLogEntries");
+
+    connect(job, &LogEntriesFetchJob::finished, reply, [reply, job, filter](){
+
+        QVariantList entries;
+        foreach (const LogEntry &entry, job->results()) {
+            entries.append(packLogEntry(entry));
+        }
+        QVariantMap returns;
+        returns.insert("loggingError", enumValueName<Logging::LoggingError>(Logging::LoggingErrorNoError));
+        returns.insert("logEntries", entries);
+        returns.insert("offset", filter.offset());
+        returns.insert("count", entries.count());
+
+        reply->setData(returns);
+        reply->finished();
+    });
+
+    return reply;
 }
 
 QVariantMap LoggingHandler::packLogEntry(const LogEntry &logEntry)

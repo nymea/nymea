@@ -128,6 +128,7 @@
 #include <QDateTime>
 #include <QFileInfo>
 #include <QTime>
+#include <QtConcurrent/QtConcurrent>
 
 #define DB_SCHEMA_VERSION 3
 
@@ -138,8 +139,17 @@ namespace nymeaserver {
     \a dbName is the name of the database. In case of SQLITE this should contain a file path. The Driver will create the file if required. In case of using a
     database server like MYSQL, the database must exist on the host given by \a hostname and be accessible with the given \a username and \a password.
 */
+
+// IMPORTANT:
+// DatabaseJobs run threaded, however, QSql is *not* threadsafe.
+// It is crucial to *not* access m_db while the job queue is being processed.
+// That is, entire setup of the DB must happen before processQueue() is called
+// and teardown must happen only after the job queue is empty.
+
 LogEngine::LogEngine(const QString &driver, const QString &dbName, const QString &hostname, const QString &username, const QString &password, int maxDBSize, QObject *parent):
     QObject(parent),
+    m_username(username),
+    m_password(password),
     m_dbMaxSize(maxDBSize)
 {
     m_db = QSqlDatabase::addDatabase(driver, "logs");
@@ -169,9 +179,7 @@ LogEngine::LogEngine(const QString &driver, const QString &dbName, const QString
         }
     }
 
-    connect(&m_housekeepingTimer, &QTimer::timeout, this, &LogEngine::checkDBSize);
-    m_housekeepingTimer.setInterval(1); // Trigger on next idle event loop run
-    m_housekeepingTimer.setSingleShot(true);
+    connect(&m_jobWatcher, SIGNAL(finished()), this, SLOT(handleJobFinished()));
 
     checkDBSize();
 }
@@ -179,17 +187,21 @@ LogEngine::LogEngine(const QString &driver, const QString &dbName, const QString
 /*! Destructs the \l{LogEngine}. */
 LogEngine::~LogEngine()
 {
+    // Process the job queue before allowing to shut down
+    while (m_currentJob) {
+        qCDebug(dcLogEngine()) << "Waiting for job to finish... (" << m_jobQueue.count() << "jobs left in queue)";
+        m_jobWatcher.waitForFinished();
+        // Make sure that the job queue is processes
+        // We can't call processQueue ourselves because thread synchronisation is done via queued connections
+        qApp->processEvents();
+    }
+    qCDebug(dcLogEngine()) << "Closing Database";
     m_db.close();
 }
 
-/*! Returns the list of \l{LogEntry}{LogEntries} of the database matching the given \a filter.
-
-  \sa LogEntry, LogFilter
-*/
-QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
+LogEntriesFetchJob *LogEngine::fetchLogEntries(const LogFilter &filter)
 {
     QList<LogEntry> results;
-    QSqlQuery query(m_db);
 
     QString limitString;
     if (filter.limit() >= 0) {
@@ -205,37 +217,66 @@ QList<LogEntry> LogEngine::logEntries(const LogFilter &filter) const
     } else {
         queryString = QString("SELECT * FROM entries WHERE %1 ORDER BY timestamp DESC %2;").arg(filter.queryString()).arg(limitString);
     }
-    qCDebug(dcLogEngine()) << "Preparing query:" << queryString;
-    query.prepare(queryString);
 
-    foreach (const QString &value, filter.values()) {
-        query.addBindValue(LogValueTool::serializeValue(value));
-        qCDebug(dcLogEngine()) << "Binding value to query:" << LogValueTool::serializeValue(value);
-    }
+    DatabaseJob *job = new DatabaseJob(m_db, queryString, filter.values());
+    LogEntriesFetchJob *fetchJob = new LogEntriesFetchJob(this);
 
-    query.exec();
+    connect(job, &DatabaseJob::finished, this, [this, job, fetchJob](){
+        fetchJob->deleteLater();
+        if (job->error().isValid()) {
+            qCWarning(dcLogEngine) << "Error fetching log entries. Driver error:" << job->error().driverText() << "Database error:" << job->error().databaseText();
+            fetchJob->finished();
+            return;
+        }
 
-    if (m_db.lastError().isValid()) {
-        qCWarning(dcLogEngine) << "Error fetching log entries. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
-        return QList<LogEntry>();
-    }
+        foreach (const QSqlRecord &result, job->results()) {
+            LogEntry entry(
+                        QDateTime::fromTime_t(result.value("timestamp").toUInt()),
+                        static_cast<Logging::LoggingLevel>(result.value("loggingLevel").toInt()),
+                        static_cast<Logging::LoggingSource>(result.value("sourceType").toInt()),
+                        result.value("errorCode").toInt());
+            entry.setTypeId(result.value("typeId").toUuid());
+            entry.setDeviceId(DeviceId(result.value("deviceId").toString()));
+            entry.setValue(LogValueTool::convertVariantToString(LogValueTool::deserializeValue(result.value("value").toString())));
+            entry.setEventType(static_cast<Logging::LoggingEventType>(result.value("loggingEventType").toInt()));
+            entry.setActive(result.value("active").toBool());
 
-    while (query.next()) {
-        LogEntry entry(
-                    QDateTime::fromTime_t(query.value("timestamp").toLongLong()),
-                    (Logging::LoggingLevel)query.value("loggingLevel").toInt(),
-                    (Logging::LoggingSource)query.value("sourceType").toInt(),
-                    query.value("errorCode").toInt());
-        entry.setTypeId(query.value("typeId").toUuid());
-        entry.setDeviceId(DeviceId(query.value("deviceId").toString()));
-        entry.setValue(LogValueTool::convertVariantToString(LogValueTool::deserializeValue(query.value("value").toString())));
-        entry.setEventType((Logging::LoggingEventType)query.value("loggingEventType").toInt());
-        entry.setActive(query.value("active").toBool());
-        results.append(entry);
-    }
-//    qCDebug(dcLogEngine) << "Fetched" << results.count() << "entries for db query:" << query.executedQuery();
+            fetchJob->m_results.append(entry);
+        }
+        qCDebug(dcLogEngine) << "Fetched" << fetchJob->results().count() << "entries for db query:" << job->executedQuery();
+        fetchJob->finished();
+    });
 
-    return results;
+    enqueJob(job);
+
+    return fetchJob;
+}
+
+DevicesFetchJob *LogEngine::fetchDevices()
+{
+    QString queryString = QString("SELECT deviceId FROM entries WHERE deviceId != \"%1\" GROUP BY deviceId;").arg(QUuid().toString());
+
+    DatabaseJob *job = new DatabaseJob(m_db, queryString);
+    DevicesFetchJob *fetchJob = new DevicesFetchJob(this);
+    connect(job, &DatabaseJob::finished, this, [this, job, fetchJob](){
+        fetchJob->deleteLater();
+        if (job->error().type() != QSqlError::NoError) {
+            qCWarning(dcLogEngine()) << "Error fetching device entries from log database:" << job->error().driverText() << job->error().databaseText();
+            fetchJob->finished();
+            return;
+        }
+
+        foreach (const QSqlRecord &result, job->results()) {
+            fetchJob->m_results.append(DeviceId::fromUuid(result.value("deviceId").toUuid()));
+        }
+        fetchJob->finished();
+    });
+    return fetchJob;
+}
+
+bool LogEngine::jobsRunning() const
+{
+    return !m_jobQueue.isEmpty() || m_currentJob;
 }
 
 void LogEngine::setMaxLogEntries(int maxLogEntries, int overflow)
@@ -251,11 +292,17 @@ void LogEngine::clearDatabase()
     qCWarning(dcLogEngine) << "Clear logging database.";
 
     QString queryDeleteString = QString("DELETE FROM entries;");
-    if (m_db.exec(queryDeleteString).lastError().type() != QSqlError::NoError) {
-        qCWarning(dcLogEngine) << "Could not clear logging database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
-    }
 
-    emit logDatabaseUpdated();
+    DatabaseJob *job = new DatabaseJob(m_db, queryDeleteString);
+
+    connect(job, &DatabaseJob::finished, this, [this, job](){
+        if (job->error().type() != QSqlError::NoError) {
+            qCWarning(dcLogEngine) << "Could not clear logging database. Driver error:" << job->error().driverText() << "Database error:" << job->error().databaseText();
+        }
+        emit logDatabaseUpdated();
+    });
+
+    enqueJob(job);
 }
 
 void LogEngine::logSystemEvent(const QDateTime &dateTime, bool active, Logging::LoggingLevel level)
@@ -378,11 +425,17 @@ void LogEngine::removeDeviceLogs(const DeviceId &deviceId)
     qCDebug(dcLogEngine) << "Deleting log entries from device" << deviceId.toString();
 
     QString queryDeleteString = QString("DELETE FROM entries WHERE deviceId = '%1';").arg(deviceId.toString());
-    if (m_db.exec(queryDeleteString).lastError().type() != QSqlError::NoError) {
-        qCWarning(dcLogEngine) << "Error deleting log entries from device" << deviceId.toString() << ". Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
-    } else {
-        emit logDatabaseUpdated();
-    }
+
+    DatabaseJob *job = new DatabaseJob(m_db, queryDeleteString);
+    connect(job, &DatabaseJob::finished, this, [this, job, deviceId](){
+        if (job->error().type() != QSqlError::NoError) {
+            qCWarning(dcLogEngine) << "Error deleting log entries from device" << deviceId.toString() << ". Driver error:" << job->error().driverText() << "Database error:" << job->error().databaseText();
+        } else {
+            emit logDatabaseUpdated();
+        }
+    });
+
+    enqueJob(job);
 }
 
 void LogEngine::removeRuleLogs(const RuleId &ruleId)
@@ -390,29 +443,19 @@ void LogEngine::removeRuleLogs(const RuleId &ruleId)
     qCDebug(dcLogEngine) << "Deleting log entries from rule" << ruleId.toString();
 
     QString queryDeleteString = QString("DELETE FROM entries WHERE typeId = '%1';").arg(ruleId.toString());
-    if (m_db.exec(queryDeleteString).lastError().type() != QSqlError::NoError) {
-        qCWarning(dcLogEngine) << "Error deleting log entries from rule" << ruleId.toString() << ". Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
-    } else {
-        emit logDatabaseUpdated();
-    }
-}
 
-QList<DeviceId> LogEngine::devicesInLogs() const
-{
-    QString queryString = QString("SELECT deviceId FROM entries WHERE deviceId != \"%1\" GROUP BY deviceId;").arg(QUuid().toString());
-    QSqlQuery result = m_db.exec(queryString);
-    QList<DeviceId> ret;
-    if (result.lastError().type() != QSqlError::NoError) {
-        qCWarning(dcLogEngine()) << "Error fetching device entries from log database:" << m_db.lastError().driverText() << m_db.lastError().databaseText();
-        return ret;
-    }
-    if (!result.first()) {
-        return ret;
-    }
-    do {
-        ret.append(DeviceId::fromUuid(result.value("deviceId").toUuid()));
-    } while (result.next());
-    return ret;
+    DatabaseJob *job = new DatabaseJob(m_db, queryDeleteString);
+
+    connect(job, &DatabaseJob::finished, this, [this, job, ruleId](){
+
+        if (job->error().type() != QSqlError::NoError) {
+            qCWarning(dcLogEngine) << "Error deleting log entries from rule" << ruleId.toString() << ". Driver error:" << job->error().driverText() << "Database error:" << job->error().databaseText();
+        } else {
+            emit logDatabaseUpdated();
+        }
+    });
+
+    enqueJob(job);
 }
 
 void LogEngine::appendLogEntry(const LogEntry &entry)
@@ -428,17 +471,25 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
             .arg(entry.active())
             .arg(entry.errorCode());
 
-    if (m_db.exec(queryString).lastError().type() != QSqlError::NoError) {
-        qCWarning(dcLogEngine) << "Error writing log entry. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
-        qCWarning(dcLogEngine) << entry;
-        return;
-    }
+    DatabaseJob *job = new DatabaseJob(m_db, queryString);
 
-    emit logEntryAdded(entry);
+    connect(job, &DatabaseJob::finished, this, [this, job, entry](){
 
-    if (++m_entryCount > m_dbMaxSize + m_overflow) {
-        m_housekeepingTimer.start();
-    }
+        if (job->error().type() != QSqlError::NoError) {
+            qCWarning(dcLogEngine) << "Error writing log entry. Driver error:" << job->error().driverText() << "Database error:" << job->error().number() << job->error().databaseText();
+            qCWarning(dcLogEngine) << entry;
+            m_dbMalformed = true;
+            return;
+        }
+
+        emit logEntryAdded(entry);
+
+        if (++m_entryCount > m_dbMaxSize + m_overflow) {
+            checkDBSize();
+        }
+    });
+
+    enqueJob(job);
 }
 
 void LogEngine::checkDBSize()
@@ -449,31 +500,110 @@ void LogEngine::checkDBSize()
     }
     QDateTime startTime = QDateTime::currentDateTime();
     QString queryString = "SELECT COUNT(*) FROM entries;";
-    QSqlQuery result = m_db.exec(queryString);
-    if (m_db.lastError().type() != QSqlError::NoError) {
-        qWarning(dcLogEngine()) << "Failed to query entry count in db:" << m_db.lastError().databaseText();
-        return;
-    }
-    if (!result.first()) {
-        qWarning(dcLogEngine()) << "Failed retrieving entry count.";
-        return;
-    }
-    m_entryCount = result.value(0).toInt();
 
-    if (m_entryCount >= m_dbMaxSize) {
+    DatabaseJob *job = new DatabaseJob(m_db, queryString);
+    connect(job, &DatabaseJob::finished, this, [this, job, startTime](){
+
+        if (job->error().type() != QSqlError::NoError) {
+            qCWarning(dcLogEngine()) << "Failed to query entry count in db:" << job->error().databaseText();
+            return;
+        }
+        if (job->results().isEmpty()) {
+            qCWarning(dcLogEngine()) << "Failed retrieving entry count.";
+            return;
+        }
+        m_entryCount = job->results().first().value(0).toInt();
+
+        if (m_entryCount <= m_dbMaxSize) {
+            return;
+        }
+
         // keep only the latest m_dbMaxSize entries
         if (!m_trimWarningPrinted) {
             qCDebug(dcLogEngine) << "Deleting oldest entries" << (m_entryCount - m_dbMaxSize) << "and keep only the latest" << m_dbMaxSize << "entries.";
             m_trimWarningPrinted = true;
         }
         QString queryDeleteString = QString("DELETE FROM entries WHERE ROWID IN (SELECT ROWID FROM entries ORDER BY timestamp DESC LIMIT -1 OFFSET %1);").arg(QString::number(m_dbMaxSize));
-        if (m_db.exec(queryDeleteString).lastError().type() != QSqlError::NoError) {
-            qCWarning(dcLogEngine) << "Error deleting oldest log entries to keep size. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
-        }
-        m_entryCount = m_dbMaxSize;
-        emit logDatabaseUpdated();
+
+        DatabaseJob *deleteJob = new DatabaseJob(m_db, queryDeleteString);
+
+        connect(deleteJob, &DatabaseJob::finished, this, [this, deleteJob,startTime](){
+            if (deleteJob->error().type() != QSqlError::NoError) {
+                qCWarning(dcLogEngine) << "Error deleting oldest log entries to keep size. Driver error:" << deleteJob->error().driverText() << "Database error:" << deleteJob->error().databaseText();
+            }
+            m_entryCount = m_dbMaxSize;
+            qCDebug(dcLogEngine()) << "Ran housekeeping on log database in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";
+
+            emit logDatabaseUpdated();
+        });
+        enqueJob(deleteJob);
+    });
+    enqueJob(job);
+
+}
+
+void LogEngine::enqueJob(DatabaseJob *job)
+{
+    m_jobQueue.append(job);
+    processQueue();
+}
+
+void LogEngine::processQueue()
+{
+    if (m_jobQueue.isEmpty()) {
+        emit jobsRunningChanged();
+        return;
     }
-    qCDebug(dcLogEngine()) << "Ran housekeeping on log database in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";
+
+    if (m_currentJob) {
+        return;
+    }
+
+    emit jobsRunningChanged();
+
+    if (m_dbMalformed) {
+        qCWarning(dcLogEngine()) << "Database is malformed. Trying to recover...";
+        m_db.close();
+        rotate(m_db.databaseName());
+        initDB(m_username, m_password);
+        m_dbMalformed = false;
+    }
+
+    DatabaseJob *job = m_jobQueue.takeFirst();
+    m_currentJob = job;
+
+    QFuture<DatabaseJob*> future = QtConcurrent::run([job](){
+        QSqlQuery query(job->m_db);
+        query.prepare(job->m_queryString);
+
+        foreach (const QString &value, job->m_bindValues) {
+            query.addBindValue(LogValueTool::serializeValue(value));
+        }
+
+        query.exec();
+
+        job->m_error = query.lastError();
+        job->m_executedQuery = query.executedQuery();
+
+        if (!query.lastError().isValid()) {
+            while (query.next()) {
+                job->m_results.append(query.record());
+            }
+        }
+
+       return job;
+    });
+
+    m_jobWatcher.setFuture(future);
+}
+
+void LogEngine::handleJobFinished()
+{
+    DatabaseJob *job = m_jobWatcher.result();
+    job->finished();
+    job->deleteLater();
+    m_currentJob = nullptr;
+    processQueue();
 }
 
 void LogEngine::rotate(const QString &dbName)
@@ -639,6 +769,7 @@ bool LogEngine::initDB(const QString &username, const QString &password)
     }
 
     if (!m_db.tables().contains("entries")) {
+        qCDebug(dcLogEngine()) << "No \"entries\" table in database. Creating it.";
         m_db.exec("CREATE TABLE entries "
                   "("
                   "timestamp int,"

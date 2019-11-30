@@ -32,18 +32,29 @@
 
 #include <QObject>
 #include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QSqlRecord>
 #include <QTimer>
+#include <QFutureWatcher>
 
 namespace nymeaserver {
+
+class DatabaseJob;
+class LogEntriesFetchJob;
+class DevicesFetchJob;
 
 class LogEngine: public QObject
 {
     Q_OBJECT
 public:
-    LogEngine(const QString &driver, const QString &dbName, const QString &hostname = QString("127.0.0.1"), const QString &username = QString(), const QString &password = QString(), int maxDBSize = 50000, QObject *parent = 0);
+    LogEngine(const QString &driver, const QString &dbName, const QString &hostname = QString("127.0.0.1"), const QString &username = QString(), const QString &password = QString(), int maxDBSize = 50000, QObject *parent = nullptr);
     ~LogEngine();
 
-    QList<LogEntry> logEntries(const LogFilter &filter = LogFilter()) const;
+    LogEntriesFetchJob *fetchLogEntries(const LogFilter &filter = LogFilter());
+    DevicesFetchJob *fetchDevices();
+
+    bool jobsRunning() const;
 
     void setMaxLogEntries(int maxLogEntries, int overflow);
     void clearDatabase();
@@ -60,11 +71,12 @@ public:
     void logRuleExitActionsExecuted(const Rule &rule);
     void removeDeviceLogs(const DeviceId &deviceId);
     void removeRuleLogs(const RuleId &ruleId);
-    QList<DeviceId> devicesInLogs() const;
 
 signals:
     void logEntryAdded(const LogEntry &logEntry);
     void logDatabaseUpdated();
+
+    void jobsRunningChanged();
 
 private:
     bool initDB(const QString &username, const QString &password);
@@ -77,13 +89,79 @@ private:
 private slots:
     void checkDBSize();
 
+    void enqueJob(DatabaseJob *job);
+    void processQueue();
+    void handleJobFinished();
+
 private:
     QSqlDatabase m_db;
+    QString m_username;
+    QString m_password;
     int m_dbMaxSize;
     int m_overflow;
     bool m_trimWarningPrinted = false;
     int m_entryCount = 0;
-    QTimer m_housekeepingTimer;
+    bool m_dbMalformed = false;
+
+    QList<DatabaseJob*> m_jobQueue;
+    DatabaseJob *m_currentJob = nullptr;
+    QFutureWatcher<DatabaseJob*> m_jobWatcher;
+};
+
+class DatabaseJob: public QObject
+{
+    Q_OBJECT
+public:
+    DatabaseJob(const QSqlDatabase &db, const QString &queryString, const QStringList &bindValues = QStringList()):
+        m_db(db),
+        m_queryString(queryString),
+        m_bindValues(bindValues)
+    {
+    }
+
+    QString executedQuery() const { return m_executedQuery; }
+    QSqlError error() const { return m_error; }
+    QList<QSqlRecord> results() const { return m_results; }
+
+signals:
+    void finished();
+
+private:
+    QSqlDatabase m_db;
+    QString m_queryString;
+    QStringList m_bindValues;
+
+    QString m_executedQuery;
+    QSqlError m_error;
+    QList<QSqlRecord> m_results;
+
+    friend class LogEngine;
+};
+
+class LogEntriesFetchJob: public QObject
+{
+    Q_OBJECT
+public:
+    LogEntriesFetchJob(QObject *parent): QObject(parent) {}
+    QList<LogEntry> results() { return m_results; }
+signals:
+    void finished();
+private:
+    QList<LogEntry> m_results;
+    friend class LogEngine;
+};
+
+class DevicesFetchJob: public QObject
+{
+    Q_OBJECT
+public:
+    DevicesFetchJob(QObject *parent): QObject(parent) {}
+    QList<DeviceId> results() { return m_results; }
+signals:
+    void finished();
+private:
+    QList<DeviceId> m_results;
+    friend class LogEngine;
 };
 
 }

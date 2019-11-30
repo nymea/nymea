@@ -1,0 +1,13 @@
+{
+    "events": [
+        {
+            "name": "codeScanned",
+            "params": [
+                {
+                    "name": "content",
+                    "type": "QString"
+                }
+            ]
+        }
+    ]
+}

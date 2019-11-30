@@ -34,7 +34,7 @@ class DeviceUtils
 public:
     DeviceUtils();
 
-    static Device::DeviceError verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll = true);
+    static Device::DeviceError verifyParams(const QList<ParamType> paramTypes, const ParamList &params);
     static Device::DeviceError verifyParam(const QList<ParamType> paramTypes, const Param &param);
     static Device::DeviceError verifyParam(const ParamType &paramType, const Param &param);
 

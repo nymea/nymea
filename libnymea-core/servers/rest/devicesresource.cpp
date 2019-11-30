@@ -375,7 +375,6 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
         return createDeviceErrorReply(HttpReply::BadRequest, Device::DeviceErrorDeviceClassNotFound);
 
     QString deviceName = params.value("name").toString();
-    DeviceId newDeviceId = DeviceId::createDeviceId();
     ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
 
@@ -384,10 +383,10 @@ HttpReply *DevicesResource::addConfiguredDevice(const QByteArray &payload) const
     DeviceSetupInfo *info;
     if (deviceDescriptorId.isNull()) {
         qCDebug(dcRest) << "Adding device" << deviceName << "with" << deviceParams;
-        info = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceParams, newDeviceId);
+        info = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceParams, deviceName);
     } else {
         qCDebug(dcRest) << "Adding discovered device" << deviceName << "with DeviceDescriptorId" << deviceDescriptorId.toString();
-        info = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceClassId, deviceName, deviceDescriptorId, deviceParams, newDeviceId);
+        info = NymeaCore::instance()->deviceManager()->addConfiguredDevice(deviceDescriptorId, deviceParams, deviceName);
     }
 
     connect(info, &DeviceSetupInfo::finished, httpReply, [info, httpReply](){
@@ -443,6 +442,7 @@ HttpReply *DevicesResource::pairDevice(const QByteArray &payload) const
     }
 
     QString deviceName = params.value("name").toString();
+    ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
 
     qCDebug(dcRest) << "Pair device" << deviceName << "with deviceClassId" << deviceClassId.toString();
 
@@ -451,10 +451,9 @@ HttpReply *DevicesResource::pairDevice(const QByteArray &payload) const
     DevicePairingInfo *info;
     if (params.contains("deviceDescriptorId")) {
         DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
-        info = NymeaCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceName, deviceDescriptorId);
+        info = NymeaCore::instance()->deviceManager()->pairDevice(deviceDescriptorId, deviceParams, deviceName);
     } else {
-        ParamList deviceParams = JsonTypes::unpackParams(params.value("deviceParams").toList());
-        info = NymeaCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceName, deviceParams);
+        info = NymeaCore::instance()->deviceManager()->pairDevice(deviceClassId, deviceParams, deviceName);
     }
 
     connect(info, &DevicePairingInfo::finished, httpReply, [info, httpReply](){
@@ -533,7 +532,7 @@ HttpReply *DevicesResource::reconfigureDevice(Device *device, const QByteArray &
         info = NymeaCore::instance()->deviceManager()->reconfigureDevice(device->id(), deviceParams);
     } else {
         qCDebug(dcRest) << "Reconfigure device using the new discovered device with descriptorId:" << deviceDescriptorId.toString();
-        info = NymeaCore::instance()->deviceManager()->reconfigureDevice(device->id(), deviceDescriptorId);
+        info = NymeaCore::instance()->deviceManager()->reconfigureDevice(deviceDescriptorId);
     }
 
     connect(info, &DeviceSetupInfo::finished, httpReply, [httpReply, info](){

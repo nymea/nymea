@@ -34,7 +34,7 @@ DeviceUtils::DeviceUtils()
 
 /*! Verify if the given \a params matches the given \a paramTypes. Ith \a requireAll
  *  is true, all \l{ParamList}{Params} has to be valid. Returns \l{Device::DeviceError} to inform about the result.*/
-Device::DeviceError DeviceUtils::verifyParams(const QList<ParamType> paramTypes, ParamList &params, bool requireAll)
+Device::DeviceError DeviceUtils::verifyParams(const QList<ParamType> paramTypes, const ParamList &params)
 {
     foreach (const Param &param, params) {
         Device::DeviceError result = verifyParam(paramTypes, param);
@@ -42,25 +42,17 @@ Device::DeviceError DeviceUtils::verifyParams(const QList<ParamType> paramTypes,
             return result;
         }
     }
-    if (!requireAll) {
-        return Device::DeviceErrorNoError;
-    }
     foreach (const ParamType &paramType, paramTypes) {
         bool found = false;
         foreach (const Param &param, params) {
             if (paramType.id() == param.paramTypeId()) {
                 found = true;
+                break;
             }
         }
 
-        // This paramType has a default value... lets fill in that one.
-        if (!paramType.defaultValue().isNull() && !found) {
-            found = true;
-            params.append(Param(paramType.id(), paramType.defaultValue()));
-        }
-
         if (!found) {
-            qCWarning(dcDevice) << "Missing parameter:" << paramType.name();
+            qCWarning(dcDevice) << "Missing parameter:" << paramType.name() << params;
             return Device::DeviceErrorMissingParameter;
         }
     }

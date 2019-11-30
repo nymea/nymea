@@ -732,19 +732,19 @@ void TestRestDevices::reconfigureByDiscovery()
     // add Discovered Device 1 port 55555
     request.setUrl(QUrl("https://localhost:3333/api/v1/devices"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");
-    DeviceDescriptorId descriptorId1;
+    DeviceDescriptorId descriptorId;
     foreach (const QVariant &descriptor, foundDevices) {
         // find the device with port 55555
         if (descriptor.toMap().value("description").toString() == "55555") {
-            descriptorId1 = DeviceDescriptorId(descriptor.toMap().value("id").toString());
-            qDebug() << descriptorId1.toString();
+            descriptorId = DeviceDescriptorId(descriptor.toMap().value("id").toString());
+            qDebug() << descriptorId.toString();
             break;
         }
     }
     params.clear();
     params.insert("deviceClassId", deviceClassId);
     params.insert("name", "Discovered mock device");
-    params.insert("deviceDescriptorId", descriptorId1.toString());
+    params.insert("deviceDescriptorId", descriptorId.toString());
 
     QVariant response = postAndWait(request, params, expectedStatusCode);
     QVERIFY2(!response.isNull(), "Could not delete device");
@@ -767,23 +767,27 @@ void TestRestDevices::reconfigureByDiscovery()
     foundDevices = response.toList();
     QCOMPARE(foundDevices.count(), resultCount);
 
-    // get the second device
-    DeviceDescriptorId descriptorId2;
+    // find the already added device
+    descriptorId = DeviceDescriptorId(); // reset it first
     foreach (const QVariant &descriptor, foundDevices) {
-        // find the device with port 55556
-        if (descriptor.toMap().value("description").toString() == "55556") {
-            descriptorId2 = DeviceDescriptorId(descriptor.toMap().value("id").toString());
+        if (descriptor.toMap().value("deviceId").toUuid().toString() == deviceId.toString()) {
+            descriptorId = DeviceDescriptorId(descriptor.toMap().value("id").toString());
             break;
         }
     }
-    QVERIFY(!descriptorId2.isNull());
-    qDebug() << "edit device 1 (55555) with descriptor 2 (55556) " << descriptorId2;
+
+    QVERIFY(!descriptorId.isNull());
+    qDebug() << "edit device 1 (55555) with descriptor 2 (55556) " << descriptorId;
 
     // RECONFIGURE
     response.clear();
     params.clear();
-    params.insert("deviceId", deviceId.toString());
-    params.insert("deviceDescriptorId", descriptorId2);
+    params.insert("deviceDescriptorId", descriptorId);
+    // override port param
+    QVariantMap portParam;
+    portParam.insert("paramTypeId", mockDeviceHttpportParamTypeId);
+    portParam.insert("value", "55556");
+    params.insert("deviceParams", QVariantList() << portParam);
 
     request = QNetworkRequest(QUrl(QString("https://localhost:3333/api/v1/devices/%1").arg(deviceId.toString())));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "text/json");

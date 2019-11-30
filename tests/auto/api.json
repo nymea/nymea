@@ -1,4 +1,4 @@
-3.1
+3.2
 {
     "methods": {
         "Actions.ExecuteAction": {
@@ -260,7 +260,7 @@
             }
         },
         "Devices.AddConfiguredDevice": {
-            "description": "Add a configured device with a setupMethod of SetupMethodJustAdd. For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. Devices with CreateMethodJustAdd require all parameters to be supplied here. Devices with CreateMethodDiscovery require the use of a deviceDescriptorId. For discovered devices params are not required and will be taken from the DeviceDescriptor, however, they may be overridden by supplying parameters here.",
+            "description": "Add a configured device with a setupMethod of SetupMethodJustAdd. For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. Devices with CreateMethodJustAdd require all parameters to be supplied here. Devices with CreateMethodDiscovery require the use of a deviceDescriptorId. For discovered devices params are not required and will be taken from the DeviceDescriptor, however, they may be overridden by supplying deviceParams.",
             "params": {
                 "deviceClassId": "Uuid",
                 "name": "String",
@@ -289,7 +289,7 @@
             }
         },
         "Devices.ConfirmPairing": {
-            "description": "Confirm an ongoing pairing. For SetupMethodUserAndPassword, provide the username in the \"username\" field and the password in the \"secret\" field. For SetupMethodEnterPin and provide the PIN in the \"secret\" field. For SetupMethodOAuth, return the entire unmodified callback URL containing the code parameter back in the secret field.",
+            "description": "Confirm an ongoing pairing. For SetupMethodUserAndPassword, provide the username in the \"username\" field and the password in the \"secret\" field. For SetupMethodEnterPin and provide the PIN in the \"secret\" field. In case of SetupMethodOAuth, the previously opened web view will eventually be redirected to http://128.0.0.1:8888 and the OAuth code as query parameters to this url. Provide the entire unmodified URL in the secret field.",
             "params": {
                 "o:secret": "String",
                 "o:username": "String",
@@ -452,28 +452,30 @@
             }
         },
         "Devices.PairDevice": {
-            "description": "Pair a device. Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId, optionally, parameters can be overridden here. If success is true, the return values will contain a pairingTransactionId, a displayMessage and the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice or PairDevice.",
+            "description": "Pair a device. Use this to set up or reconfigure devices for DeviceClasses with a setupMethod different than SetupMethodJustAdd. Depending on the CreateMethod and whether a new devices is set up or an existing one is reconfigured, different parameters are required:\nCreateMethodJustAdd takes the deviceClassId and the parameters you want to have with that device.\nCreateMethodDiscovery requires the use of a deviceDescriptorId, previously obtained with DiscoverDevices. Optionally, parameters can be overridden with the give deviceParams.\nIf an existing device should be reconfigured, the deviceId of said device should be given additionally.\nIf success is true, the return values will contain a pairingTransactionId, a displayMessage and the setupMethod. Depending on the setupMethod, the application should present the use an appropriate login mask, that is, For SetupMethodDisplayPin the user should enter a pin that is displayed on the device, for SetupMethodEnterPin the application should present the given PIN so the user can enter it on the device. For SetupMethodPushButton, the displayMessage shall be presented to the user as informational hints to press a button on the device. For SetupMethodUserAndPassword a login mask for a user and password login should be presented to the user. In case of SetupMethodOAuth, an OAuth URL will be returned which shall be opened in a web view to allow the user logging in.\nOnce the login procedure has completed, the application shall proceed with ConfirmPairing, providing the results of the pairing procedure.",
             "params": {
-                "deviceClassId": "Uuid",
-                "name": "String",
+                "o:deviceClassId": "Uuid",
                 "o:deviceDescriptorId": "Uuid",
+                "o:deviceId": "Uuid",
                 "o:deviceParams": [
                     "$ref:Param"
-                ]
+                ],
+                "o:name": "String"
             },
             "returns": {
                 "deviceError": "$ref:DeviceError",
                 "o:displayMessage": "String",
                 "o:oAuthUrl": "String",
                 "o:pairingTransactionId": "Uuid",
+                "o:pin": "String",
                 "o:setupMethod": "$ref:SetupMethod"
             }
         },
         "Devices.ReconfigureDevice": {
-            "description": "Edit the parameter configuration of the device. The device params will be set to the passed parameters and the setup device will be called. If the device is discoverable, you can perform a GetDiscoveredDevices before calling this method and pass the new DeviceDescriptor (rediscover). Only writable parameters can be changed. By default, every Param is writable.",
+            "description": "Reconfigure a device. This comes down to removing and recreating a device with new parameters but keeping its device id the same (and with that keeping rules, tags etc). For devices with create method CreateMethodDiscovery, a discovery (GetDiscoveredDevices) shall be performed first and this method is to be called with a deviceDescriptorId of the re-discovered device instead of the deviceId directly. Device parameters will be taken from the discovery, but can be overridden individually here by providing them in the deviceParams parameter. Only writable parameters can be changed.",
             "params": {
-                "deviceId": "Uuid",
                 "o:deviceDescriptorId": "Uuid",
+                "o:deviceId": "Uuid",
                 "o:deviceParams": [
                     "$ref:Param"
                 ]

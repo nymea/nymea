@@ -83,18 +83,19 @@ public:
 
     DeviceDiscoveryInfo* discoverDevices(const DeviceClassId &deviceClassId, const ParamList &params) override;
 
-    DeviceSetupInfo* addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId id = DeviceId::createDeviceId()) override;
-    DeviceSetupInfo* addConfiguredDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const DeviceId &deviceId = DeviceId::createDeviceId()) override;
+    DeviceSetupInfo* addConfiguredDevice(const DeviceClassId &deviceClassId, const ParamList &params, const QString &name = QString()) override;
+    DeviceSetupInfo* addConfiguredDevice(const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) override;
 
-    DeviceSetupInfo* reconfigureDevice(const DeviceId &deviceId, const ParamList &params, bool fromDiscoveryOrAuto = false) override;
-    DeviceSetupInfo* reconfigureDevice(const DeviceId &deviceId, const DeviceDescriptorId &deviceDescriptorId) override;
+    DeviceSetupInfo* reconfigureDevice(const DeviceId &deviceId, const ParamList &params, const QString &name = QString()) override;
+    DeviceSetupInfo* reconfigureDevice(const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) override;
+
+    DevicePairingInfo* pairDevice(const DeviceClassId &deviceClassId, const ParamList &params, const QString &name = QString()) override;
+    DevicePairingInfo* pairDevice(const DeviceDescriptorId &deviceDescriptorId, const ParamList &params = ParamList(), const QString &name = QString()) override;
+    DevicePairingInfo* pairDevice(const DeviceId &deviceId, const ParamList &params, const QString &name = QString()) override;
+    DevicePairingInfo* confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &username, const QString &secret) override;
 
     Device::DeviceError editDevice(const DeviceId &deviceId, const QString &name) override;
     Device::DeviceError setDeviceSettings(const DeviceId &deviceId, const ParamList &settings) override;
-
-    DevicePairingInfo* pairDevice(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params) override;
-    DevicePairingInfo* pairDevice(const DeviceClassId &deviceClassId, const QString &name, const DeviceDescriptorId &deviceDescriptorId) override;
-    DevicePairingInfo* confirmPairing(const PairingTransactionId &pairingTransactionId, const QString &username, const QString &secret) override;
 
     Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId) override;
 
@@ -130,8 +131,12 @@ private slots:
     void slotDeviceSettingChanged(const ParamTypeId &paramTypeId, const QVariant &value);
 
 private:
+    // Builds a list of params ready to create a device.
+    // Template is deviceClass.paramtypes, "first" has highest priority. If a param is not found neither in first nor in second, defaults apply.
+    ParamList buildParams(const ParamTypes &types, const ParamList &first, const ParamList &second = ParamList());
     void pairDeviceInternal(DevicePairingInfo *info);
-    DeviceSetupInfo *addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId &deviceId = DeviceId::createDeviceId(), const DeviceId &parentDeviceId = DeviceId());
+    DeviceSetupInfo *addConfiguredDeviceInternal(const DeviceClassId &deviceClassId, const QString &name, const ParamList &params, const DeviceId &parentDeviceId = DeviceId());
+    DeviceSetupInfo *reconfigureDeviceInternal(Device *device, const ParamList &params, const QString &name = QString());
     DeviceSetupInfo *setupDevice(Device *device);
     void postSetupDevice(Device *device);
     void storeDeviceStates(Device *device);
@@ -147,7 +152,7 @@ private:
     QHash<VendorId, QList<DeviceClassId> > m_vendorDeviceMap;
     QHash<DeviceClassId, DeviceClass> m_supportedDevices;
     QHash<DeviceId, Device*> m_configuredDevices;
-    QHash<DeviceClassId, QHash<DeviceDescriptorId, DeviceDescriptor> > m_discoveredDevices;
+    QHash<DeviceDescriptorId, DeviceDescriptor> m_discoveredDevices;
 
     QHash<PluginId, DevicePlugin*> m_devicePlugins;
 

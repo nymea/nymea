@@ -1205,6 +1205,12 @@ void DeviceManagerImplementation::loadConfiguredDevices()
             continue;
         }
 
+        // Cross-check if this plugin still implements this device class
+        if (!plugin->supportedDevices().contains(deviceClass)) {
+            qCWarning(dcDeviceManager()) << "Not loading device" << deviceName << idString << "because plugin" << plugin->pluginName() << "has removed support for it.";
+            settings.endGroup(); // DeviceId
+            continue;
+        }
         Device *device = new Device(plugin, deviceClass, DeviceId(idString), this);
         device->m_autoCreated = settings.value("autoCreated").toBool();
         device->setName(deviceName);

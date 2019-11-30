@@ -1,7 +1,19 @@
-nymea (0.17.0) UNRELEASED; urgency=medium
+nymea (0.17.0) xenial; urgency=medium
 
+  [ Michael Zanetti ]
+  * Allow more fine grained notification options
+  * More complete setup
+  * Drop old REST server
+  * Experience plugins
+  * Add a barcodescanner interface
+  * Don't load devices if the plugin dropped support for it
+  * Don't emit EventEmitted for invalid devices
+  * Threaded log database
+  * Weaken password requirements a bit
+  * Add some more plugin search paths to work better on non-debian
+    systems
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Wed, 30 Oct 2019 00:32:48 +0100
+ -- Jenkins <jenkins@nymea.io>  Sun, 01 Dec 2019 00:05:04 +0100
 
 nymea (0.16.0) xenial; urgency=medium
   [ Michael Zanetti ]

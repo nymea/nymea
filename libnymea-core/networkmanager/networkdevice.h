@@ -169,6 +169,8 @@ public:
     QDBusObjectPath ip4Config() const;
     QList<QDBusObjectPath> availableConnections() const;
 
+    QList<QString> addresses() const;
+
     // Method
     void disconnectDevice();
 
@@ -194,6 +196,7 @@ private:
     NetworkDeviceState m_deviceState;
     NetworkDeviceStateReason m_deviceStateReason;
     NetworkDeviceType m_deviceType;
+    QList<QString> m_addresses;
 
     QDBusObjectPath m_activeConnection;
     QDBusObjectPath m_ip4Config;

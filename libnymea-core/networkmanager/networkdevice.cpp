@@ -185,6 +185,21 @@ NetworkDevice::NetworkDevice(const QDBusObjectPath &objectPath, QObject *parent)
     m_ip4Config = qdbus_cast<QDBusObjectPath>(m_networkDeviceInterface->property("Ip4Config"));
     m_ip6Config = qdbus_cast<QDBusObjectPath>(m_networkDeviceInterface->property("Ip6Config"));
 
+    if (m_ip4Config.path() != "/") {
+        QDBusInterface iface(serviceString, m_ip4Config.path(), "org.freedesktop.DBus.Properties", QDBusConnection::systemBus());
+
+        QDBusMessage reply = iface.call("Get", "org.freedesktop.NetworkManager.IP4Config", "AddressData");
+        QVariant v = reply.arguments().first();
+        QDBusArgument arg = v.value<QDBusVariant>().variant().value<QDBusArgument>();
+
+        arg.beginArray();
+        while(!arg.atEnd()) {
+            QVariantMap m;
+            arg >> m;
+            m_addresses.append(m.value("address").toString());
+        }
+    }
+
     QDBusConnection::systemBus().connect(serviceString, m_objectPath.path(), deviceInterfaceString, "StateChanged", this, SLOT(onStateChanged(uint,uint,uint)));
 }
 

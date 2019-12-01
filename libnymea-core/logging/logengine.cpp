@@ -267,7 +267,7 @@ DevicesFetchJob *LogEngine::fetchDevices()
         }
 
         foreach (const QSqlRecord &result, job->results()) {
-            fetchJob->m_results.append(DeviceId::fromUuid(result.value("deviceId").toUuid()));
+            fetchJob->m_results.append(DeviceId(result.value("deviceId").toUuid()));
         }
         fetchJob->finished();
     });

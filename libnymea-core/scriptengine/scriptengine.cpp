@@ -61,7 +61,13 @@ ScriptEngine::ScriptEngine(DeviceManager *deviceManager, QObject *parent) : QObj
         foreach (const QQmlError &warning, warnings) {
             QMessageLogContext ctx(warning.url().toString().toUtf8(), warning.line(), "", "ScriptEngine");
             // Send to script logs
-            onScriptMessage(warning.messageType(), ctx, warning.description());
+            onScriptMessage(
+#if QT_VERSION >= QT_VERSION_CHECK(5,9,0)
+                        warning.messageType(),
+#else
+                        QtMsgType::QtWarningMsg,
+#endif
+                        ctx, warning.description());
             // and to logging system
             qCWarning(dcScriptEngine()) << warning.toString();
         }

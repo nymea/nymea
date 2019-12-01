@@ -75,7 +75,9 @@ ScriptEngine::ScriptEngine(DeviceManager *deviceManager, QObject *parent) : QObj
 
     // console.log()/warn() messages instead are printed to the "qml" category. We install our own
     // filter to *always* get them, regardless of the configured logging categories
-    s_oldCategoryFilter = QLoggingCategory::installFilter(&logCategoryFilter);
+    if (!s_oldCategoryFilter) {
+        s_oldCategoryFilter = QLoggingCategory::installFilter(&logCategoryFilter);
+    }
     // and our own handler to redirect them to the ScriptEngine category
     if (s_engines.isEmpty()) {
         s_upstreamMessageHandler = qInstallMessageHandler(&logMessageHandler);

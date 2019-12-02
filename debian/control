@@ -31,6 +31,7 @@ Section: metapackages
 Multi-Arch: same
 Depends: nymead (= ${binary:Version}),
          ${misc:Depends}
+Recommends: qml-module-qtquick2
 Suggests: nymea-doc
 Replaces: guh
 Description: An open source IoT server - meta package

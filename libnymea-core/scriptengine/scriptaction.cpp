@@ -84,27 +84,39 @@ void ScriptAction::setActionName(const QString &actionName)
     }
 }
 
-void ScriptAction::execute(const QVariantList &params)
+void ScriptAction::execute(const QVariantMap &params)
 {
     Device *device = m_deviceManager->configuredDevices().findById(DeviceId(m_deviceId));
     if (!device) {
         qCWarning(dcScriptEngine) << "No device with id" << m_deviceId;
         return;
     }
-    ActionTypeId actionTypeId = ActionTypeId(m_actionTypeId);
-    if (actionTypeId.isNull()) {
-        actionTypeId = device->deviceClass().actionTypes().findByName(m_actionName).id();
+    ActionType actionType;
+    if (!ActionTypeId(m_actionTypeId).isNull()) {
+        actionType = device->deviceClass().actionTypes().findById(ActionTypeId(m_actionTypeId));
+    } else {
+        actionType = device->deviceClass().actionTypes().findByName(m_actionName);
     }
-    if (actionTypeId.isNull()) {
+    if (actionType.id().isNull()) {
         qCWarning(dcScriptEngine()) << "Either a valid actionTypeId or actionName is required";
         return;
     }
     Action action;
-    action.setActionTypeId(actionTypeId);
+    action.setActionTypeId(actionType.id());
     action.setDeviceId(DeviceId(m_deviceId));
     ParamList paramList;
-    foreach (const QVariant &p, params) {
-        paramList << Param(ParamTypeId(p.toMap().value("paramTypeId").toUuid()), p.toMap().value("value"));
+    foreach (const QString &paramNameOrId, params.keys()) {
+        ParamType paramType;
+        if (!ParamTypeId(paramNameOrId).isNull()) {
+            paramType = actionType.paramTypes().findById(ParamTypeId(paramNameOrId));
+        } else {
+            paramType = actionType.paramTypes().findByName(paramNameOrId);
+        }
+        if (paramType.id().isNull()) {
+            qCWarning(dcScriptEngine()) << "Invalid param id or name";
+            continue;
+        }
+        paramList << Param(paramType.id(), params.value(paramNameOrId));
     }
     action.setParams(paramList);
     m_deviceManager->executeAction(action);

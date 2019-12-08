@@ -30,6 +30,8 @@
 
 namespace nymeaserver {
 
+class ScriptParams;
+
 class ScriptEvent: public QObject, public QQmlParserStatus
 {
     Q_OBJECT
@@ -59,7 +61,8 @@ signals:
     void eventTypeIdChanged();
     void eventNameChanged();
 
-    void triggered();
+//    void triggered(ScriptParams *params);
+    void triggered(const QVariantMap &params);
 
 private:
     DeviceManager *m_deviceManager = nullptr;

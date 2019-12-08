@@ -94,7 +94,16 @@ void ScriptEvent::onEventTriggered(const Event &event)
         return;
     }
 
-    emit triggered();
+//    ScriptParams *params = new ScriptParams(event.params());
+//    qmlEngine(this)->setObjectOwnership(params, QQmlEngine::JavaScriptOwnership);
+    QVariantMap params;
+    foreach (const Param &param, event.params()) {
+        params.insert(param.paramTypeId().toString().remove(QRegExp("[{}]")), param.value());
+        QString paramName = device->deviceClass().eventTypes().findById(event.eventTypeId()).paramTypes().findById(param.paramTypeId()).name();
+        params.insert(paramName, param.value());
+    }
+
+    emit triggered(params);
 }
 
 }

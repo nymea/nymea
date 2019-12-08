@@ -49,7 +49,7 @@ public:
     void setActionName(const QString &actionName);
 
 public slots:
-    void execute(const QVariantList &params);
+    void execute(const QVariantMap &params);
 
 signals:
     void deviceIdChanged();

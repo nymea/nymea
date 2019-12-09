@@ -24,6 +24,7 @@
 #include "scriptaction.h"
 #include "scriptevent.h"
 #include "scriptstate.h"
+#include "scriptalarm.h"
 
 #include "nymeasettings.h"
 
@@ -49,6 +50,7 @@ ScriptEngine::ScriptEngine(DeviceManager *deviceManager, QObject *parent) : QObj
     qmlRegisterType<ScriptEvent>("nymea", 1, 0, "DeviceEvent");
     qmlRegisterType<ScriptAction>("nymea", 1, 0, "DeviceAction");
     qmlRegisterType<ScriptState>("nymea", 1, 0, "DeviceState");
+    qmlRegisterType<ScriptAlarm>("nymea", 1, 0, "Alarm");
 
     m_engine = new QQmlEngine(this);
     m_engine->setProperty("deviceManager", reinterpret_cast<quint64>(m_deviceManager));

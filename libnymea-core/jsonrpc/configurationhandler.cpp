@@ -61,6 +61,8 @@
 #include "configurationhandler.h"
 #include "nymeacore.h"
 #include "nymeaconfiguration.h"
+#include "platform/platform.h"
+#include "platform/platformsystemcontroller.h"
 
 namespace nymeaserver {
 
@@ -80,21 +82,21 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     QString description; QVariantMap params; QVariantMap returns;
     description = "Get the list of available timezones.";
     returns.insert("timeZones", QVariantList() << enumValueName(String));
-    registerMethod("GetTimeZones", description, params, returns);
+    registerMethod("GetTimeZones", description, params, returns, "Use System.GetTimeZones instead.");
 
     params.clear(); returns.clear();
-    description = "DEPRECATED - Use the locale property in the Handshake message instead - Returns a list of locale codes available for the server. i.e. en_US, de_AT";
+    description = "Returns a list of locale codes available for the server. i.e. en_US, de_AT";
     returns.insert("languages", QVariantList() << enumValueName(String));
-    registerMethod("GetAvailableLanguages", description, params, returns);
+    registerMethod("GetAvailableLanguages", description, params, returns, "Use the locale property in the Handshake message instead.");
 
     params.clear(); returns.clear();
     description = "Get all configuration parameters of the server.";
     QVariantMap basicConfiguration;
     basicConfiguration.insert("serverName", enumValueName(String));
     basicConfiguration.insert("serverUuid", enumValueName(Uuid));
-    basicConfiguration.insert("serverTime", enumValueName(Uint));
-    basicConfiguration.insert("timeZone", enumValueName(String));
-    basicConfiguration.insert("language", enumValueName(String));
+    basicConfiguration.insert("d:serverTime", enumValueName(Uint));
+    basicConfiguration.insert("d:timeZone", enumValueName(String));
+    basicConfiguration.insert("d:language", enumValueName(String));
     basicConfiguration.insert("debugServerEnabled", enumValueName(Bool));
     returns.insert("basicConfiguration", basicConfiguration);
     QVariantList tcpServerConfigurations;
@@ -123,13 +125,13 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     description = "Set the time zone of the server. See also: \"GetTimeZones\"";
     params.insert("timeZone",  enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
-    registerMethod("SetTimeZone", description, params, returns);
+    registerMethod("SetTimeZone", description, params, returns, "Use System.SetTimeZone instead.");
 
     params.clear(); returns.clear();
-    description = "DEPRECATED - Use the locale property in the Handshake message instead - Sets the server language to the given language. See also: \"GetAvailableLanguages\"";
+    description = "Sets the server language to the given language. See also: \"GetAvailableLanguages\"";
     params.insert("language",  enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
-    registerMethod("SetLanguage", description, params, returns);
+    registerMethod("SetLanguage", description, params, returns, "Use the locale property in the Handshake message instead.");
 
     params.clear(); returns.clear();
     description = "Enable or disable the debug server.";
@@ -339,7 +341,7 @@ JsonReply *ConfigurationHandler::GetTimeZones(const QVariantMap &params) const
 {
     Q_UNUSED(params)
     QVariantList timeZones;
-    foreach (const QByteArray &timeZoneId, NymeaCore::instance()->timeManager()->availableTimeZones()) {
+    foreach (const QByteArray &timeZoneId, QTimeZone::availableTimeZoneIds()) {
         timeZones.append(QString::fromUtf8(timeZoneId));
     }
 
@@ -371,11 +373,18 @@ JsonReply *ConfigurationHandler::SetTimeZone(const QVariantMap &params) const
 {
     qCDebug(dcJsonRpc()) << "Setting time zone to" << params.value("timeZone").toString();
 
-    QByteArray timeZone = params.value("timeZone").toString().toUtf8();
-    if (!NymeaCore::instance()->timeManager()->setTimeZone(timeZone))
-        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidTimeZone));
+    QByteArray timeZoneName = params.value("timeZone").toString().toUtf8();
 
-    NymeaCore::instance()->configuration()->setTimeZone(timeZone);
+    QTimeZone timeZone(timeZoneName);
+    if (!timeZone.isValid()) {
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidTimeZone));
+    }
+
+    bool success = NymeaCore::instance()->platform()->systemController()->setTimeZone(timeZone);
+    if (!success) {
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidTimeZone));
+    }
+
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
@@ -658,7 +667,7 @@ QVariantMap ConfigurationHandler::packBasicConfiguration()
     basicConfiguration.insert("serverName", NymeaCore::instance()->configuration()->serverName());
     basicConfiguration.insert("serverUuid", NymeaCore::instance()->configuration()->serverUuid().toString());
     basicConfiguration.insert("serverTime", NymeaCore::instance()->timeManager()->currentDateTime().toTime_t());
-    basicConfiguration.insert("timeZone", QString::fromUtf8(NymeaCore::instance()->timeManager()->timeZone()));
+    basicConfiguration.insert("timeZone", QTimeZone::systemTimeZoneId());
     basicConfiguration.insert("language", NymeaCore::instance()->configuration()->locale().name());
     basicConfiguration.insert("debugServerEnabled", NymeaCore::instance()->configuration()->debugServerEnabled());
     return basicConfiguration;

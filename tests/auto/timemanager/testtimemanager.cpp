@@ -23,6 +23,9 @@
 #include "nymeacore.h"
 #include "servers/mocktcpserver.h"
 
+#include "platform/platform.h"
+#include "platform/platformsystemcontroller.h"
+
 using namespace nymeaserver;
 
 class TestTimeManager: public NymeaTestBase
@@ -36,9 +39,6 @@ private:
 
 private slots:
     void initTestCase();
-
-    void changeTimeZone_data();
-    void changeTimeZone();
 
     void loadSaveTimeDescriptor_data();
     void loadSaveTimeDescriptor();
@@ -140,41 +140,6 @@ void TestTimeManager::initTestCase()
                                      "MockDevice.debug=true\n"
                                      "JsonRpc.debug=true\n"
                                      "TimeManager.debug=true");
-}
-
-void TestTimeManager::changeTimeZone_data()
-{
-    QTest::addColumn<QByteArray>("timeZoneId");
-    QTest::addColumn<bool>("valid");
-
-    QTest::newRow("valid timezone: Asia/Tokyo") << QByteArray("Asia/Tokyo") << true;
-    QTest::newRow("valid timezone: America/Lima") << QByteArray("America/Lima") << true;
-    QTest::newRow("valid timezone: Africa/Harare") << QByteArray("Africa/Harare") << true;
-    QTest::newRow("invalid timezone: Mars/Diacria") << QByteArray("Mars/Diacria") << false;
-    QTest::newRow("invalid timezone: Moon/Kepler") << QByteArray("Moon/Kepler") << false;
-}
-
-void TestTimeManager::changeTimeZone()
-{
-    QFETCH(QByteArray, timeZoneId);
-    QFETCH(bool, valid);
-
-    QTimeZone currentTimeZone(NymeaCore::instance()->timeManager()->timeZone());
-    QTimeZone newTimeZone(timeZoneId);
-
-
-    QDateTime currentDateTime = NymeaCore::instance()->timeManager()->currentDateTime();
-
-    NymeaCore::instance()->timeManager()->setTimeZone(timeZoneId);
-
-    QDateTime newDateTime = NymeaCore::instance()->timeManager()->currentDateTime();
-
-    int offsetOriginal = currentTimeZone.offsetFromUtc(currentDateTime);
-    int offsetNew = newTimeZone.offsetFromUtc(newDateTime);
-
-    if (valid)
-        QVERIFY(offsetOriginal != offsetNew);
-
 }
 
 void TestTimeManager::loadSaveTimeDescriptor_data()
@@ -2056,8 +2021,7 @@ void TestTimeManager::initTimeManager()
     removeAllRules();
     enableNotifications({"Rules", "Devices", "Events"});
     NymeaCore::instance()->timeManager()->stopTimer();
-    qDebug() << NymeaCore::instance()->timeManager()->currentTime().toString();
-    qDebug() << NymeaCore::instance()->timeManager()->currentDate().toString();
+    qDebug() << NymeaCore::instance()->timeManager()->currentDateTime().toString();
 }
 
 void TestTimeManager::verifyRuleExecuted(const ActionTypeId &actionTypeId)

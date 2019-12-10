@@ -86,6 +86,7 @@ public:
     JsonRPCServerImplementation *jsonRPCServer() const;
     DeviceManager *deviceManager() const;
     RuleEngine *ruleEngine() const;
+    ScriptEngine *scriptEngine() const;
     TimeManager *timeManager() const;
     ServerManager *serverManager() const;
     BluetoothServer *bluetoothServer() const;

@@ -91,7 +91,9 @@ bool ScriptAlarm::active() const
 void ScriptAlarm::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
+
     QTime now = QTime::currentTime();
+
 
     updateActive();
 

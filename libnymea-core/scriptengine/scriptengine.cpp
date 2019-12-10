@@ -371,8 +371,6 @@ bool ScriptEngine::loadScript(Script *script)
 
     QString name = jsonDoc.toVariant().toMap().value("name").toString();
 
-    qCWarning(dcScriptEngine()) << "Loading script";
-
     script->errors.clear();
 
     script->component = new QQmlComponent(m_engine, QUrl::fromLocalFile(fileName), this);

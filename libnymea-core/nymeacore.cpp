@@ -607,6 +607,12 @@ RuleEngine *NymeaCore::ruleEngine() const
     return m_ruleEngine;
 }
 
+/*! Returns a pointer to the \l{ScriptEngine} instance owned by NymeaCore.*/
+ScriptEngine *NymeaCore::scriptEngine() const
+{
+    return m_scriptEngine;
+}
+
 /*! Returns a pointer to the \l{TimeManager} instance owned by NymeaCore.*/
 TimeManager *NymeaCore::timeManager() const
 {

@@ -124,6 +124,17 @@ void DevicePluginMock::discoverDevices(DeviceDiscoveryInfo *info)
         return;
     }
 
+    if (info->deviceClassId() == mockUserAndPassDeviceClassId) {
+        QTimer::singleShot(1000, info, [this, info](){
+            if (myDevices().filterByDeviceClassId(mockUserAndPassDeviceClassId).isEmpty()) {
+                DeviceDescriptor descriptor(mockUserAndPassDeviceClassId, "Mock User & Password (Discovered)", QString());
+                info->addDeviceDescriptor(descriptor);
+            }
+            info->finish(Device::DeviceErrorNoError);
+        });
+        return;
+    }
+
     qCWarning(dcMockDevice()) << "Cannot discover for deviceClassId" << info->deviceClassId();
     info->finish(Device::DeviceErrorDeviceNotFound);
 }

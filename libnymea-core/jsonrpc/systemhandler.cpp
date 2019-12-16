@@ -135,7 +135,7 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     params.clear(); returns.clear();
     description = "Set the system time configuraton. The system can be configured to update the time automatically "
                   "by setting \"automaticTime\" to true. This will only work if the \"timeManagement\" capability is "
-                  "available on this system and \"GetTime\" indicates the availability of automatic time settngs. If "
+                  "available on this system and \"GetTime\" indicates the availability of automatic time settings. If "
                   "any of those requirements are not met, this method will return \"false\" in the \"success\" property. "
                   "In order to manually configure the time, \"automaticTime\" should be set to false and \"time\" should "
                   "be set. Note that if \"automaticTime\" is set to true and a manual \"time\" is still passed, the system "

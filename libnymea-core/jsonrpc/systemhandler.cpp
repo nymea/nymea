@@ -39,10 +39,10 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
     description = "Get the list of capabilites on this system. The property \"powerManagement\" indicates whether "
-                  "rebooting or shutting down the system running nymea:core is supported on this host. The property "
-                  "\"updateManagement indicates whether system update features are available in this API. The "
-                  "property \"timeManagement\" indicates whether the system time can be configured on this system. "
-                  "Note that GetTime will be available in any case.";
+                  "rebooting or shutting down is supported on this system. The property \"updateManagement indicates "
+                  "whether system update features are available in this system. The property \"timeManagement\" "
+                  "indicates whether the system time can be configured on this system. Note that GetTime will be "
+                  "available in any case.";
     returns.insert("powerManagement", enumValueName(Bool));
     returns.insert("updateManagement", enumValueName(Bool));
     returns.insert("timeManagement", enumValueName(Bool));
@@ -150,7 +150,7 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
 
     params.clear(); returns.clear();
     description = "Returns the list of IANA specified time zone IDs which can be used to select a time zone. It is not "
-                  "required to use this method of the client toolkit already provides means to obtain a list of IANA time "
+                  "required to use this method if the client toolkit already provides means to obtain a list of IANA time "
                   "zone ids.";
     returns.insert("timeZones", enumValueName(StringList));
     registerMethod("GetTimeZones", description, params, returns);

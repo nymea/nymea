@@ -252,7 +252,7 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     });
     connect(m_platform->systemController(), &PlatformSystemController::timeConfigurationChanged, this, [this](){
         QVariantMap params;
-        params.insert("time", QDateTime::currentDateTime().toSecsSinceEpoch());
+        params.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
         params.insert("timeZone", QTimeZone::systemTimeZoneId());
         params.insert("automaticTimeAvailable", m_platform->systemController()->automaticTimeAvailable());
         params.insert("automaticTime", m_platform->systemController()->automaticTime());
@@ -374,7 +374,7 @@ JsonReply *SystemHandler::GetTime(const QVariantMap &params) const
     QVariantMap returns;
     returns.insert("automaticTimeAvailable", m_platform->systemController()->automaticTimeAvailable());
     returns.insert("automaticTime", m_platform->systemController()->automaticTime());
-    returns.insert("time", QDateTime::currentDateTime().toSecsSinceEpoch());
+    returns.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
     returns.insert("timeZone", QTimeZone::systemTimeZoneId());
     return createReply(returns);
 }
@@ -392,7 +392,7 @@ JsonReply *SystemHandler::SetTime(const QVariantMap &params) const
         handled = true;
     }
     if (!automaticTime && params.contains("time")) {
-        QDateTime time = QDateTime::fromSecsSinceEpoch(params.value("time").toUInt());
+        QDateTime time = QDateTime::fromMSecsSinceEpoch(params.value("time").toLongLong() * 1000);
         if (!m_platform->systemController()->setTime(time)) {
             returns.insert("success", false);
             return createReply(returns);

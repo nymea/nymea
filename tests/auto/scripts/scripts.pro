@@ -5,7 +5,7 @@ TARGET = scripts
 SOURCES += testscripts.cpp \
     testhelper.cpp
 
-QT += quick
+QT += qml
 
 HEADERS += \
     testhelper.h

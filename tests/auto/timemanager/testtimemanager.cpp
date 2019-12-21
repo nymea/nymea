@@ -2171,7 +2171,9 @@ void TestTimeManager::triggerMockEvent1()
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    eventSpy.wait(200);
+    if (eventSpy.isEmpty()) {
+        eventSpy.wait();
+    }
     QVariantList eventTriggerVariants = checkNotifications(eventSpy, "Events.EventTriggered");
     QVERIFY2(eventTriggerVariants.count() == 1, "Did not get Events.EventTriggered notification.");
     QVERIFY2(eventTriggerVariants.first().toMap().value("params").toMap().contains("event"), "Notification Events.EventTriggered does not contain event.");

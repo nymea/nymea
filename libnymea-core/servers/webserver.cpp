@@ -616,8 +616,8 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     writer.writeTextElement("presentationURL", presentationUrl);
     writer.writeTextElement("deviceType", "urn:schemas-upnp-org:device:Basic:1");
     writer.writeTextElement("friendlyName", NymeaCore::instance()->configuration()->serverName());
-    writer.writeTextElement("manufacturer", "guh GmbH");
-    writer.writeTextElement("manufacturerURL", "http://guh.io");
+    writer.writeTextElement("manufacturer", "nymea GmbH");
+    writer.writeTextElement("manufacturerURL", "http://nymea.io");
     writer.writeTextElement("modelDescription", "IoT server");
     writer.writeTextElement("modelName", "nymead");
     writer.writeTextElement("modelNumber", NYMEA_VERSION_STRING);

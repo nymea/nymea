@@ -41,6 +41,11 @@ private:
     inline void verifyDeviceError(const QVariant &response, Device::DeviceError error = Device::DeviceErrorNoError) {
         verifyError(response, "deviceError", enumValueName(error));
     }
+    inline void waitForDBSync() {
+        while (NymeaCore::instance()->logEngine()->jobsRunning()) {
+            qApp->processEvents();
+        }
+    }
 
 private slots:
     void initTestCase();
@@ -80,7 +85,8 @@ void TestLogging::initTestCase()
                                      "LogEngine.debug=true\n"
                                      "Tests.debug=true\n"
                                      "MockDevice.debug=true\n"
-                                     "DeviceManager.debug=true\n");
+                                     "DeviceManager.debug=true\n"
+                                     "Application.debug=true\n");
 }
 
 void TestLogging::initLogs()
@@ -101,6 +107,7 @@ void TestLogging::initLogs()
     QVERIFY(logEntries.count() == 0);
 
     restartServer();
+    NymeaCore::instance()->logEngine()->setMaxLogEntries(1000, 10);
 }
 
 void TestLogging::databaseSerializationTest_data()
@@ -157,6 +164,8 @@ void TestLogging::systemLogs()
 {
     qWarning() << "Clearing logging DB";
     clearLoggingDatabase();
+
+    waitForDBSync();
 
     QVariantMap params;
     params.insert("loggingSources", QVariantList() << enumValueName(Logging::LoggingSourceSystem));
@@ -610,6 +619,8 @@ void TestLogging::testHouseKeeping()
     connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
     spy.wait();
 
+    waitForDBSync();
+
     params.clear();
     params.insert("deviceIds", QVariantList() << deviceId);
     response = injectAndWait("Logging.GetLogEntries", params);
@@ -623,15 +634,13 @@ void TestLogging::testHouseKeeping()
 
     restartServer();
 
-    // Wait for the mock device to complete the setup
-    do {
-        qApp->processEvents();
-        params.clear();
-        params.insert("deviceId", m_mockDeviceId);
-        response = injectAndWait("Devices.GetConfiguredDevices", params);
-    } while (!response.toMap().value("params").toMap().value("devices").toList().first().toMap().value("setupComplete").toBool());
+    waitForDBSync();
 
+    params.clear();
+    params.insert("deviceIds", QVariantList() << deviceId);
     response = injectAndWait("Logging.GetLogEntries", params);
+    qCDebug(dcTests()) << qUtf8Printable(QJsonDocument::fromVariant(response).toJson());
+    QVERIFY2(response.toMap().value("status").toString() == QString("success"), "GetLogEntries failed");
     QVERIFY2(response.toMap().value("params").toMap().value("logEntries").toList().count() == 0, "Device state change event still in log. Should've been cleaned by housekeeping.");
 }
 
@@ -659,6 +668,8 @@ void TestLogging::testLimits()
         QVariant response = injectAndWait("Actions.ExecuteAction", params);
         verifyDeviceError(response);
     }
+
+    waitForDBSync();
 
     QVariantMap params;
     QVariantMap response;

@@ -4,7 +4,8 @@
     "states": [
         {
             "name": "currentPower",
-            "type": "double"
+            "type": "double",
+            "unit": "Watt"
         }
     ]
 }

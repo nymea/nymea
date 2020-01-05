@@ -164,14 +164,8 @@ void AWSConnector::onDeviceRegistered(bool needsReconnect)
 
 void AWSConnector::setupSubscriptions()
 {
-    // Subscribe to pairing info topics
-    QStringList subscriptions;
-    subscriptions.append(QString("%1/device/name/response").arg(m_clientId));
-    subscriptions.append(QString("%1/device/users/response").arg(m_clientId));
-    subscriptions.append(QString("%1/pair/response").arg(m_clientId));
-    subscriptions.append(QString("%1/notify/response").arg(m_clientId));
-    subscriptions.append(QString("%1/notify/info/endpoint").arg(m_clientId));
-    subscribe(subscriptions);
+    // Subscribe to our namespace
+    subscribe({QString("%1/#").arg(m_clientId)});
 
     // fetch previous pairings
     fetchPairings();
@@ -194,14 +188,6 @@ void AWSConnector::onPairingsRetrieved(const QVariantMap &pairings)
     }
 
     qCDebug(dcAWS) << pairings.value("users").toList().count() << "devices paired in cloud.";
-    if (pairings.value("users").toList().count() > 0) {
-        QStringList topics;
-        foreach (const QVariant &pairing, pairings.value("users").toList()) {
-            topics << QString("%1/%2/#").arg(m_clientId).arg(pairing.toString());
-        }
-        subscribe(topics);
-    }
-
     qCDebug(dcAWS) << pairings.value("pushNotificationsEndpoints").toList().count() << "push notification enabled users paired in cloud.";
     QList<PushNotificationsEndpoint> pushNotificationEndpoints;
     if (pairings.value("pushNotificationsEndpoints").toList().count() > 0) {
@@ -429,7 +415,7 @@ void AWSConnector::onPublishReceived(const QString &topic, const QByteArray &pay
         if (jsonDoc.toVariant().toMap().value("status").toInt() == 200) {
             storeSyncedNameCache(m_clientName);
         }
-    } else if (topic.startsWith(QString("%1/eu-west-1:").arg(m_clientId)) && topic.contains("proxy")) {
+    } else if (topic.startsWith(QString("%1/").arg(m_clientId)) && topic.contains("proxy")) {
         QString token = jsonDoc.toVariant().toMap().value("token").toString();
         QString timestamp = jsonDoc.toVariant().toMap().value("timestamp").toString();
         QString serverUrl = jsonDoc.toVariant().toMap().value("serverUrl").toString();

@@ -463,8 +463,6 @@ Device::DeviceError DeviceManagerImplementation::editDevice(const DeviceId &devi
         return Device::DeviceErrorDeviceNotFound;
 
     device->setName(name);
-    storeConfiguredDevices();
-    emit deviceChanged(device);
 
     return Device::DeviceErrorNoError;
 }
@@ -1522,6 +1520,16 @@ void DeviceManagerImplementation::slotDeviceSettingChanged(const ParamTypeId &pa
     emit deviceSettingChanged(device->id(), paramTypeId, value);
 }
 
+void DeviceManagerImplementation::slotDeviceNameChanged()
+{
+    Device *device = qobject_cast<Device*>(sender());
+    if (!device) {
+        return;
+    }
+    storeConfiguredDevices();
+    emit deviceChanged(device);
+}
+
 ParamList DeviceManagerImplementation::buildParams(const ParamTypes &types, const ParamList &first, const ParamList &second)
 {
     // Merge params from discovered descriptor and additional overrides provided on API call. User provided params have higher priority than discovery params.
@@ -1603,6 +1611,7 @@ DeviceSetupInfo* DeviceManagerImplementation::setupDevice(Device *device)
 
     connect(device, &Device::stateValueChanged, this, &DeviceManagerImplementation::slotDeviceStateValueChanged);
     connect(device, &Device::settingChanged, this, &DeviceManagerImplementation::slotDeviceSettingChanged);
+    connect(device, &Device::nameChanged, this, &DeviceManagerImplementation::slotDeviceNameChanged);
 
 
     DeviceSetupInfo *info = new DeviceSetupInfo(device, this, 30000);

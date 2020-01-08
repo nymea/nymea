@@ -416,11 +416,18 @@ void AWSConnector::onPublishReceived(const QString &topic, const QByteArray &pay
             storeSyncedNameCache(m_clientName);
         }
     } else if (topic.startsWith(QString("%1/").arg(m_clientId)) && topic.contains("proxy")) {
-        QString token = jsonDoc.toVariant().toMap().value("token").toString();
-        QString timestamp = jsonDoc.toVariant().toMap().value("timestamp").toString();
-        QString serverUrl = jsonDoc.toVariant().toMap().value("serverUrl").toString();
+        QVariantMap payload = jsonDoc.toVariant().toMap();
+        QString token = payload.value("token").toString();
+        QString nonce;
+        // Backwards compatibility. Old protocol spec had "timestamp", keeping it for a while for backwards compatiblity
+        if (payload.contains("nonce")) {
+            nonce = payload.value("nonce").toString();
+        } else {
+            nonce = payload.value("timestamp").toString();
+        }
+        QString serverUrl = payload.value("serverUrl").toString();
         static QHash<QString, QDateTime> dupes;
-        QString packetId = topic + token + timestamp;
+        QString packetId = topic + token + nonce;
         if (dupes.contains(packetId)) {
             qCDebug(dcAWS()) << "Dropping duplicate packet";
             return;
@@ -432,7 +439,7 @@ void AWSConnector::onPublishReceived(const QString &topic, const QByteArray &pay
             }
         }
         qCDebug(dcAWS) << "Proxy remote connection request received";
-        proxyConnectionRequestReceived(token, timestamp, serverUrl);
+        proxyConnectionRequestReceived(token, nonce, serverUrl);
     } else if (topic == QString("%1/notify/response").arg(m_clientId)) {
         int transactionId = jsonDoc.toVariant().toMap().value("id").toInt();
         int status = jsonDoc.toVariant().toMap().value("status").toInt();

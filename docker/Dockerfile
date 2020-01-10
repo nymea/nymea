@@ -16,4 +16,4 @@ RUN apt-get update
 RUN apt-get upgrade -y
 RUN apt-get install -y nymea nymea-plugins nymea-cli
 
-CMD ["/usr/bin/nymead", "-n", "-p"]
+CMD ["/usr/bin/nymead", "-n"]

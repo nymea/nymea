@@ -38,6 +38,7 @@
 
 #include "nymeasettings.h"
 #include "loggingcategories.h"
+#include "version.h"
 
 #include "upnpdiscoveryimplementation.h"
 #include "upnpdiscoveryreplyimplementation.h"

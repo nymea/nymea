@@ -4,7 +4,7 @@ TARGET = nymea-core
 include(../nymea.pri)
 
 QT += sql qml
-INCLUDEPATH += $$top_srcdir/libnymea
+INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto -lnymea-mqtt
 
 target.path = $$[QT_INSTALL_LIBS]

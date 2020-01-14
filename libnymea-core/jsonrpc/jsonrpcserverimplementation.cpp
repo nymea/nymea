@@ -48,6 +48,7 @@
 #include "ruleengine/ruleengine.h"
 #include "loggingcategories.h"
 #include "platform/platform.h"
+#include "version.h"
 
 #include "devicehandler.h"
 #include "actionhandler.h"

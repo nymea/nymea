@@ -3,7 +3,8 @@ CONFIG += testcase
 
 INCLUDEPATH += $$top_srcdir/libnymea \
                $$top_srcdir/libnymea-core \
-               $$top_srcdir/tests/testlib/
+               $$top_srcdir/tests/testlib/ \
+               $$top_builddir
 
 LIBS += -L$$top_builddir/libnymea/ -lnymea \
         -L$$top_builddir/libnymea-core/ -lnymea-core \

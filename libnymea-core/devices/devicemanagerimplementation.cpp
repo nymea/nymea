@@ -30,6 +30,7 @@
 #include "loggingcategories.h"
 #include "typeutils.h"
 #include "nymeasettings.h"
+#include "version.h"
 
 #include "devices/devicediscoveryinfo.h"
 #include "devices/devicepairinginfo.h"

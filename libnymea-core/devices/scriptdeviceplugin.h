@@ -96,7 +96,7 @@ signals:
     void finished();
 private:
     DeviceSetupInfo *m_info = nullptr;
-    ScriptDevice* m_device = nullptr;
+    ScriptDevice *m_device = nullptr;
 };
 
 class ScriptDevicePairingInfo: public QObject

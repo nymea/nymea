@@ -178,12 +178,10 @@ QVariant ScriptState::maximumValue() const
 void ScriptState::store()
 {
     m_valueStore = value();
-    qCDebug(dcScriptEngine()) << "Storing value:" << m_valueStore;
 }
 
 void ScriptState::restore()
 {
-    qCDebug(dcScriptEngine()) << "Restoring value:" << m_valueStore << m_valueStore.value<QColor>().toRgb();
     setValue(m_valueStore);
 }
 

@@ -302,7 +302,6 @@ DeviceSetupInfo* DeviceManagerImplementation::addConfiguredDevice(const DeviceCl
  *  Returns \l{DeviceError} to inform about the result. */
 DeviceSetupInfo *DeviceManagerImplementation::addConfiguredDevice(const DeviceDescriptorId &deviceDescriptorId, const ParamList &params, const QString &name)
 {
-    qWarning() << "Have descriptors" << m_discoveredDevices.keys();
     DeviceDescriptor descriptor = m_discoveredDevices.value(deviceDescriptorId);
     if (!descriptor.isValid()) {
         qCWarning(dcDeviceManager()) << "Cannot add device. DeviceDescriptor" << deviceDescriptorId << "not found.";
@@ -1139,7 +1138,7 @@ void DeviceManagerImplementation::loadPlugins()
             }
 
             ScriptDevicePlugin *plugin = new ScriptDevicePlugin(this);
-            bool ret = plugin->loadScript("/home/micha/Develop/nymea-plugin-jstest/devicepluginjstest.js");
+            bool ret = plugin->loadScript(jsFi.absoluteFilePath());
             if (!ret) {
                 delete plugin;
                 qCWarning(dcDeviceManager()) << "JS plugin failed to load";

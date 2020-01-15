@@ -140,7 +140,7 @@ bool initLogging(const QString &fileName, bool useColors)
         }
         s_logFile.setFileName(fileName);
         if (!s_logFile.open(QFile::WriteOnly | QFile::Append)) {
-            qWarning() << "Error opening log file:" <<fileName;
+            qWarning() << "Error opening log file:" << fileName;
             return false;
         }
     }

@@ -476,7 +476,7 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
     connect(job, &DatabaseJob::finished, this, [this, job, entry](){
 
         if (job->error().type() != QSqlError::NoError) {
-            qCWarning(dcLogEngine) << "Error writing log entry. Driver error:" << job->error().driverText() << "Database error:" << job->error().number() << job->error().databaseText();
+            qCWarning(dcLogEngine) << "Error writing log entry. Driver error:" << job->error().driverText() << "Database error:" << job->error().databaseText();
             qCWarning(dcLogEngine) << entry;
             m_dbMalformed = true;
             return;

@@ -308,7 +308,7 @@ ScriptEngine::ScriptError ScriptEngine::removeScript(const QUuid &id)
 void ScriptEngine::loadScripts()
 {
     QDir dir(NymeaSettings::storagePath() + "/scripts/");
-    foreach (const QString &entry, dir.entryList({"*json"})) {
+    foreach (const QString &entry, dir.entryList({"*.json"})) {
         qCDebug(dcScriptEngine()) << "Have script:" << entry;
         QFileInfo jsonFileInfo(NymeaSettings::storagePath() + "/scripts/" + entry);
         QString jsonFileName = jsonFileInfo.absoluteFilePath();

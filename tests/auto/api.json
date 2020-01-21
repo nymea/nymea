@@ -974,6 +974,8 @@
             },
             "returns": {
                 "protocol version": "String",
+                "qtBuildVersion": "String",
+                "qtVersion": "String",
                 "version": "String"
             }
         },

@@ -123,6 +123,8 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     description = "Version of this nymea/JSONRPC interface.";
     returns.insert("version", enumValueName(String));
     returns.insert("protocol version", enumValueName(String));
+    returns.insert("qtVersion", enumValueName(String));
+    returns.insert("qtBuildVersion", enumValueName(String));
     registerMethod("Version", description, params, returns);
 
     params.clear(); returns.clear();
@@ -278,6 +280,8 @@ JsonReply* JsonRPCServerImplementation::Version(const QVariantMap &params) const
     QVariantMap data;
     data.insert("version", NYMEA_VERSION_STRING);
     data.insert("protocol version", JSON_PROTOCOL_VERSION);
+    data.insert("qtVersion", qVersion());
+    data.insert("qtBuildVersion", QT_VERSION_STR);
     return createReply(data);
 }
 

@@ -65,6 +65,8 @@ public:
 
     virtual QString name() const = 0;
 
+    virtual QVariantMap translateNotification(const QString &notification, const QVariantMap &params, const QLocale &locale);
+
     QVariantMap jsonEnums() const;
     QVariantMap jsonFlags() const;
     QVariantMap jsonObjects() const;

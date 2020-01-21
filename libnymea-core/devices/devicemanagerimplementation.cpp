@@ -436,7 +436,7 @@ DeviceSetupInfo *DeviceManagerImplementation::reconfigureDeviceInternal(Device *
     plugin->deviceRemoved(device);
 
     // mark setup as incomplete
-    device->setSetupComplete(false);
+    device->setSetupStatus(Device::DeviceSetupStatusInProgress, Device::DeviceErrorNoError);
 
     // set new params
     foreach (const Param &param, params) {
@@ -454,6 +454,7 @@ DeviceSetupInfo *DeviceManagerImplementation::reconfigureDeviceInternal(Device *
 
         if (info->status() != Device::DeviceErrorNoError) {
             qCWarning(dcDeviceManager()) << "Device reconfiguration failed for" << info->device()->name() << info->device()->id().toString() << info->status() << info->displayMessage();
+            info->device()->setSetupStatus(Device::DeviceSetupStatusFailed, info->status(), info->displayMessage());
             // TODO: recover old params.??
             return;
         }
@@ -461,7 +462,7 @@ DeviceSetupInfo *DeviceManagerImplementation::reconfigureDeviceInternal(Device *
         storeConfiguredDevices();
 
         postSetupDevice(info->device());
-        info->device()->setupCompleted();
+        info->device()->setSetupStatus(Device::DeviceSetupStatusComplete, Device::DeviceErrorNoError);
 
         emit deviceChanged(info->device());
 
@@ -640,7 +641,7 @@ DevicePairingInfo *DeviceManagerImplementation::confirmPairing(const PairingTran
             }
         } else {
             device = m_configuredDevices.value(internalInfo->deviceId());
-            device->setSetupComplete(false);
+            device->setSetupStatus(Device::DeviceSetupStatusInProgress, Device::DeviceErrorNoError);
             qCDebug(dcDeviceManager()) << "Reconfiguring device" << device;
         }
 
@@ -654,10 +655,17 @@ DevicePairingInfo *DeviceManagerImplementation::confirmPairing(const PairingTran
             externalInfo->finish(info->status(), info->displayMessage());
 
             if (info->status() != Device::DeviceErrorNoError) {
-                qCWarning(dcDeviceManager()) << "Failed to set up device" << info->device()->name() << info->status() << info->displayMessage();
-                info->device()->deleteLater();
+                if (addNewDevice) {
+                    qCWarning(dcDeviceManager()) << "Failed to set up device" << info->device()->name()
+                                                 << "Not adding device to the system. Error:"
+                                                  << info->status() << info->displayMessage();
+                    info->device()->deleteLater();
+                }
 
                 if (!addNewDevice) {
+                    qCWarning(dcDeviceManager()) << "Failed to reconfigure device" << info->device()->name() <<
+                                                    "Error:" << info->status() << info->displayMessage();
+                    info->device()->setSetupStatus(Device::DeviceSetupStatusFailed, info->status(), info->displayMessage());
                     // TODO: restore parameters?
                 }
 
@@ -665,7 +673,7 @@ DevicePairingInfo *DeviceManagerImplementation::confirmPairing(const PairingTran
             }
 
             qCDebug(dcDeviceManager()) << "Setup complete for device" << info->device();
-            info->device()->setupCompleted();
+            info->device()->setSetupStatus(Device::DeviceSetupStatusComplete, Device::DeviceErrorNoError);
 
             if (addNewDevice) {
                 qCDebug(dcDeviceManager()) << "Device added:" << info->device();
@@ -749,7 +757,7 @@ DeviceSetupInfo* DeviceManagerImplementation::addConfiguredDeviceInternal(const 
             return;
         }
 
-        info->device()->setupCompleted();
+        info->device()->setSetupStatus(Device::DeviceSetupStatusComplete, Device::DeviceErrorNoError);
 
         qCDebug(dcDeviceManager) << "Device setup complete.";
         m_configuredDevices.insert(info->device()->id(), info->device());
@@ -1062,7 +1070,25 @@ void DeviceManagerImplementation::loadPlugins()
             if (!fi.exists())
                 continue;
 
+            // Check plugin API version compatibility
+            QLibrary lib(fi.absoluteFilePath());
+            QFunctionPointer versionFunc = lib.resolve("libnymea_api_version");
+            if (!versionFunc) {
+                qCWarning(dcDeviceManager()).nospace() << "Unable to resolve version in plugin " << entry << ". Not loading plugin.";
+                lib.unload();
+                continue;
+            }
 
+            QString version = reinterpret_cast<QString(*)()>(versionFunc)();
+            lib.unload();
+            QStringList parts = version.split('.');
+            QStringList coreParts = QString(LIBNYMEA_API_VERSION).split('.');
+            if (parts.length() != 3 || parts.at(0).toInt() != coreParts.at(0).toInt() || parts.at(1).toInt() > coreParts.at(1).toInt()) {
+                qCWarning(dcDeviceManager()).nospace() << "Libnymea API mismatch for " << entry << ". Core API: " << LIBNYMEA_API_VERSION << ", Plugin API: " << version;
+                continue;
+            }
+
+            // Version is ok. Now load the plugin
             QPluginLoader loader;
             loader.setFileName(fi.absoluteFilePath());
             loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
@@ -1070,29 +1096,6 @@ void DeviceManagerImplementation::loadPlugins()
             qCDebug(dcDeviceManager()) << "Loading plugin from:" << fi.absoluteFilePath();
             if (!loader.load()) {
                 qCWarning(dcDeviceManager) << "Could not load plugin data of" << entry << "\n" << loader.errorString();
-                continue;
-            }
-
-            // Check plugin API version compatibility
-            QLibrary lib(fi.absoluteFilePath());
-            QFunctionPointer versionFunc = lib.resolve("libnymea_api_version");
-            if (!versionFunc) {
-                qCWarning(dcDeviceManager()).nospace() << "Unable to resolve version in plugin " << entry << ". Not loading plugin.";
-                loader.unload();
-                lib.unload();
-                continue;
-
-            }
-            QString version = reinterpret_cast<QString(*)()>(versionFunc)();
-//            QString *version = reinterpret_cast<QString*>(lib.resolve("libnymea_api_version"));
-//            if (!version) {
-//            }
-            lib.unload();
-            QStringList parts = version.split('.');
-            QStringList coreParts = QString(LIBNYMEA_API_VERSION).split('.');
-            if (parts.length() != 3 || parts.at(0).toInt() != coreParts.at(0).toInt() || parts.at(1).toInt() > coreParts.at(1).toInt()) {
-                qCWarning(dcDeviceManager()).nospace() << "Libnymea API mismatch for " << entry << ". Core API: " << LIBNYMEA_API_VERSION << ", Plugin API: " << version;
-                loader.unload();
                 continue;
             }
 
@@ -1357,6 +1360,7 @@ void DeviceManagerImplementation::loadConfiguredDevices()
         }
         Q_ASSERT(device != nullptr);
 
+        device->setSetupStatus(Device::DeviceSetupStatusInProgress, Device::DeviceErrorNoError);
         DeviceSetupInfo *info = setupDevice(device);
         // Set receiving object to "device" because at startup we load it in any case, knowing that it worked at
         // some point. However, it'll be marked as non-working until the setup succeeds so the user might delete
@@ -1365,11 +1369,14 @@ void DeviceManagerImplementation::loadConfiguredDevices()
 
             if (info->status() != Device::DeviceErrorNoError) {
                 qCWarning(dcDeviceManager()) << "Error setting up device" << info->device()->name() << info->device()->id().toString() << info->status() << info->displayMessage();
+                info->device()->setSetupStatus(Device::DeviceSetupStatusFailed, info->status(), info->displayMessage());
+                emit deviceChanged(info->device());
                 return;
             }
 
             qCDebug(dcDeviceManager()) << "Setup complete for device" << info->device();
-            info->device()->setupCompleted();
+            info->device()->setSetupStatus(Device::DeviceSetupStatusComplete, Device::DeviceErrorNoError);
+            emit deviceChanged(info->device());
             postSetupDevice(info->device());
         });
     }
@@ -1475,7 +1482,7 @@ void DeviceManagerImplementation::onAutoDevicesAppeared(const DeviceDescriptors 
                 return;
             }
 
-            info->device()->setupCompleted();
+            info->device()->setSetupStatus(Device::DeviceSetupStatusComplete, Device::DeviceErrorNoError);
             m_configuredDevices.insert(info->device()->id(), info->device());
             storeConfiguredDevices();
 

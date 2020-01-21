@@ -738,26 +738,11 @@ void JsonRPCServerImplementation::sendNotification(const QVariantMap &params)
     JsonHandler *handler = qobject_cast<JsonHandler *>(sender());
     QMetaMethod method = handler->metaObject()->method(senderSignalIndex());
 
-    QList<QUuid> clientsToBeNotified;
-    foreach (const QUuid &clientId, m_clientNotifications.keys()) {
-        if (m_clientNotifications.value(clientId).contains(handler->name())) {
-            clientsToBeNotified.append(clientId);
-        }
-    }
-    if (clientsToBeNotified.isEmpty()) {
-        return;
-    }
-
     QVariantMap notification;
     notification.insert("id", m_notificationId++);
     notification.insert("notification", handler->name() + "." + method.name());
-    notification.insert("params", params);
 
-    JsonValidator validator;
-    Q_ASSERT_X(validator.validateNotificationParams(params, handler->name() + '.' + method.name(), m_api).success(),
-               validator.result().where().toUtf8(),
-               validator.result().errorString().toUtf8() + "\nGot:" + QJsonDocument::fromVariant(params).toJson(QJsonDocument::Indented));
-
+    // Add deprecation warning if necessary
     if (m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().contains("deprecated")) {
         QString deprecationMessage = m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().value("deprecated").toString();
         qCWarning(dcJsonRpc()) << "Client uses deprecated API. Please update client implementation!";
@@ -765,11 +750,28 @@ void JsonRPCServerImplementation::sendNotification(const QVariantMap &params)
         notification.insert("deprecationWarning", deprecationMessage);
     }
 
-    QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
-    qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
+    foreach (const QUuid &clientId, m_clientNotifications.keys()) {
 
-    foreach (const QUuid &clientId, clientsToBeNotified) {
-        qCDebug(dcJsonRpc()) << "Sending notification:" << handler->name() + "." + method.name();
+        // Check if this client wants to be notified
+        if (!m_clientNotifications.value(clientId).contains(handler->name())) {
+            continue;
+        }
+
+        QLocale locale = m_clientLocales.value(clientId);
+        QVariantMap translatedParams = handler->translateNotification(method.name(), params, locale);
+
+        JsonValidator validator;
+        Q_ASSERT_X(validator.validateNotificationParams(translatedParams, handler->name() + '.' + method.name(), m_api).success(),
+                   validator.result().where().toUtf8(),
+                   validator.result().errorString().toUtf8() + "\nGot:" + QJsonDocument::fromVariant(translatedParams).toJson(QJsonDocument::Indented));
+
+        notification.insert("params", translatedParams);
+
+        QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
+
+        qCDebug(dcJsonRpc()) << "Sending notification" << handler->name() + "." + method.name() << "to client" << clientId;
+        qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
+
         m_clientTransports.value(clientId)->sendData(clientId, data);
     }
 }

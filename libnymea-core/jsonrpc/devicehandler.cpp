@@ -88,6 +88,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
 {
     // Enums
     registerEnum<Device::DeviceError>();
+    registerEnum<Device::DeviceSetupStatus>();
     registerEnum<DeviceClass::SetupMethod>();
     registerEnum<DeviceClass::CreateMethod, DeviceClass::CreateMethods>();
     registerEnum<Types::Unit>();
@@ -374,7 +375,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     registerNotification("DeviceAdded", description, params);
 
     params.clear(); returns.clear();
-    description = "Emitted whenever the params or name of a Device are changed (by EditDevice or ReconfigureDevice).";
+    description = "Emitted whenever the params, name or setupStatus of a Device changes.";
     params.insert("device", objectRef<Device>());
     registerNotification("DeviceChanged", description, params);
 
@@ -627,7 +628,7 @@ JsonReply *DeviceHandler::ConfirmPairing(const QVariantMap &params, const JsonCo
     return jsonReply;
 }
 
-JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
+JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params, const JsonContext &context) const
 {
     QVariantMap returns;
     QVariantList configuredDeviceList;
@@ -641,7 +642,12 @@ JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
         }
     } else {
         foreach (Device *device, NymeaCore::instance()->deviceManager()->configuredDevices()) {
-            configuredDeviceList.append(pack(device));
+            QVariantMap packedDevice = pack(device).toMap();
+            QString translatedSetupStatus = NymeaCore::instance()->deviceManager()->translate(device->pluginId(), device->setupDisplayMessage(), context.locale());
+            if (!translatedSetupStatus.isEmpty()) {
+                packedDevice["setupDisplayMessage"] = translatedSetupStatus;
+            }
+            configuredDeviceList.append(packedDevice);
         }
     }
     returns.insert("devices", configuredDeviceList);
@@ -975,6 +981,25 @@ void DeviceHandler::deviceSettingChangedNotification(const DeviceId deviceId, co
     params.insert("paramTypeId", paramTypeId.toString());
     params.insert("value", value);
     emit DeviceSettingChanged(params);
+}
+
+QVariantMap DeviceHandler::translateNotification(const QString &notification, const QVariantMap &params, const QLocale &locale)
+{
+    if (notification == "DeviceChanged") {
+        QVariantMap deviceMap = params.value("device").toMap();
+        DeviceId deviceId = params.value("device").toMap().value("id").toUuid();
+        Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(deviceId);
+        QString setupDisplayMessage = params.value("device").toMap().value("setupDisplayMessage").toString();
+        QString translatedSetupDisplayMessage = NymeaCore::instance()->deviceManager()->translate(device->pluginId(), setupDisplayMessage, locale);
+        if (!translatedSetupDisplayMessage.isEmpty()) {
+            deviceMap["setupDisplayMessage"] = translatedSetupDisplayMessage;
+        }
+        QVariantMap translatedParams = params;
+        translatedParams["device"] = deviceMap;
+        return translatedParams;
+    }
+
+    return params;
 }
 
 QVariantMap DeviceHandler::statusToReply(Device::DeviceError status) const

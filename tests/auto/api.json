@@ -76,6 +76,12 @@
             "DeviceErrorUnsupportedFeature",
             "DeviceErrorTimeout"
         ],
+        "DeviceSetupStatus": [
+            "DeviceSetupStatusNone",
+            "DeviceSetupStatusInProgress",
+            "DeviceSetupStatusComplete",
+            "DeviceSetupStatusFailed"
+        ],
         "InputType": [
             "InputTypeNone",
             "InputTypeTextLine",
@@ -1609,7 +1615,7 @@
             }
         },
         "Devices.DeviceChanged": {
-            "description": "Emitted whenever the params or name of a Device are changed (by EditDevice or ReconfigureDevice).",
+            "description": "Emitted whenever the params, name or setupStatus of a Device changes.",
             "params": {
                 "device": "$ref:Device"
             }
@@ -1904,14 +1910,17 @@
             "$ref:CalendarItem"
         ],
         "Device": {
-            "name": "String",
-            "o:parentId": "Uuid",
-            "params": "$ref:ParamList",
+            "d:r:setupComplete": "Bool",
+            "o:name": "String",
+            "o:settings": "$ref:ParamList",
             "r:deviceClassId": "Uuid",
             "r:id": "Uuid",
-            "settings": "$ref:ParamList",
-            "setupComplete": "Bool",
-            "states": "$ref:States"
+            "r:o:parentId": "Uuid",
+            "r:o:setupDisplayMessage": "String",
+            "r:params": "$ref:ParamList",
+            "r:setupError": "$ref:DeviceError",
+            "r:setupStatus": "$ref:DeviceSetupStatus",
+            "r:states": "$ref:States"
         },
         "DeviceClass": {
             "r:actionTypes": "$ref:ActionTypes",

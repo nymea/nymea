@@ -43,6 +43,7 @@ public:
     explicit DeviceHandler(QObject *parent = nullptr);
 
     QString name() const override;
+    QVariantMap translateNotification(const QString &notification, const QVariantMap &params, const QLocale &locale) override;
 
     Q_INVOKABLE JsonReply *GetSupportedVendors(const QVariantMap &params, const JsonContext &context) const;
     Q_INVOKABLE JsonReply *GetSupportedDevices(const QVariantMap &params, const JsonContext &context) const;
@@ -54,7 +55,7 @@ public:
     Q_INVOKABLE JsonReply *AddConfiguredDevice(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *PairDevice(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *ConfirmPairing(const QVariantMap &params, const JsonContext &context);
-    Q_INVOKABLE JsonReply *GetConfiguredDevices(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetConfiguredDevices(const QVariantMap &params, const JsonContext &context) const;
     Q_INVOKABLE JsonReply *ReconfigureDevice(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *EditDevice(const QVariantMap &params);
     Q_INVOKABLE JsonReply *RemoveConfiguredDevice(const QVariantMap &params);

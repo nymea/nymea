@@ -138,11 +138,6 @@ Device::Device(DevicePlugin *plugin, const DeviceClass &deviceClass, QObject *pa
 
 }
 
-void Device::setupCompleted()
-{
-    m_setupComplete = true;
-}
-
 /*! Returns the id of this Device. */
 DeviceId Device::id() const
 {
@@ -366,10 +361,16 @@ void Device::setParentId(const DeviceId &parentId)
     m_parentId = parentId;
 }
 
-/*! Returns true, if setup of this Device is already completed. */
+/*! Returns true, if setup of this Device is already completed. This method is deprecated, use setupStatus() instead. */
 bool Device::setupComplete() const
 {
-    return m_setupComplete;
+    return m_setupStatus == DeviceSetupStatusComplete;
+}
+
+/*! Returns the setup error display message, if any. */
+QString Device::setupDisplayMessage() const
+{
+    return m_setupDisplayMessage;
 }
 
 /*! Returns true if this device has been auto-created (not created by the user) */
@@ -378,9 +379,23 @@ bool Device::autoCreated() const
     return m_autoCreated;
 }
 
-void Device::setSetupComplete(bool complete)
+/* Returns the current device setup status. */
+Device::DeviceSetupStatus Device::setupStatus() const
 {
-    m_setupComplete = complete;
+    return m_setupStatus;
+}
+
+Device::DeviceError Device::setupError() const
+{
+    return m_setupError;
+}
+
+void Device::setSetupStatus(Device::DeviceSetupStatus status, Device::DeviceError setupError, const QString &displayMessage)
+{
+    m_setupStatus = status;
+    m_setupError = setupError;
+    m_setupDisplayMessage = displayMessage;
+    emit setupStatusChanged();
 }
 
 Devices::Devices(const QList<Device*> &other)

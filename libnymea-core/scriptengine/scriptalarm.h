@@ -18,20 +18,73 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef JSONRPCSERVER_H
-#define JSONRPCSERVER_H
+#ifndef SCRIPTALARM_H
+#define SCRIPTALARM_H
 
-class JsonHandler;
+#include <QObject>
+#include <QDateTime>
+#include <QTimer>
 
-class JsonRPCServer
+class ScriptAlarm : public QObject
 {
+    Q_OBJECT
+    Q_PROPERTY(QTime time READ time WRITE setTime NOTIFY timeChanged)
+    Q_PROPERTY(QTime endTime READ endTime WRITE setEndTime NOTIFY endTimeChanged)
+    Q_PROPERTY(WeekDays weekDays READ weekDays WRITE setWeekDays NOTIFY weekDaysChanged)
+
+    Q_PROPERTY(bool active READ active NOTIFY activeChanged)
+
 public:
-    explicit JsonRPCServer() = default;
-    virtual ~JsonRPCServer() = default;
+    enum WeekDay {
+        Monday    = 0x01,
+        Tuesday   = 0x02,
+        Wednesday = 0x04,
+        Thursday  = 0x08,
+        Friday    = 0x10,
+        Saturday  = 0x20,
+        Sunday    = 0x40,
+        AllDays   = 0xFF
+    };
+    Q_ENUM(WeekDay)
+    Q_DECLARE_FLAGS(WeekDays, WeekDay)
+    Q_FLAG(WeekDays)
 
-    virtual bool registerHandler(JsonHandler *handler) = 0;
-    virtual bool registerExperienceHandler(JsonHandler *handler, int majorVersion, int minorVersion) = 0;
+    explicit ScriptAlarm(QObject *parent = nullptr);
 
+    QTime time() const;
+    void setTime(const QTime &time);
+
+    QTime endTime() const;
+    void setEndTime(const QTime &endTime);
+
+    WeekDays weekDays() const;
+    void setWeekDays(const WeekDays &weekDays);
+
+    bool active() const;
+
+signals:
+    void timeChanged();
+    void endTimeChanged();
+    void weekDaysChanged();
+
+    void triggered();
+    void activeChanged();
+
+protected:
+    void timerEvent(QTimerEvent *event) override;
+
+private:
+    WeekDay today() const;
+
+    void updateActive();
+
+private:
+    QTime m_time;
+    QTime m_endTime;
+    WeekDays m_weekDays = AllDays;
+
+    bool m_active = false;
+    int m_timerId = 0;
 };
 
-#endif // JSONRPCSERVER_H
+#endif // SCRIPTALARM_H

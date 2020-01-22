@@ -41,7 +41,6 @@
 
 namespace nymeaserver {
 
-QtMessageHandler DebugServerHandler::s_oldLogMessageHandler = nullptr;
 QList<QWebSocket*> DebugServerHandler::s_websocketClients;
 
 DebugServerHandler::DebugServerHandler(QObject *parent) :
@@ -514,8 +513,6 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
 void DebugServerHandler::logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-    s_oldLogMessageHandler(type, context, message);
-
     QString finalMessage;
     switch (type) {
     case QtDebugMsg:
@@ -616,7 +613,7 @@ void DebugServerHandler::onWebsocketClientConnected()
     if (s_websocketClients.isEmpty()) {
         qCDebug(dcDebugServer()) << "Install debug message handler for live logs.";
         //QLoggingCategory::setFilterRules("*.debug=true");
-        s_oldLogMessageHandler = qInstallMessageHandler(&logMessageHandler);
+        nymeaInstallMessageHandler(&logMessageHandler);
     }
 
     s_websocketClients.append(client);
@@ -634,9 +631,8 @@ void DebugServerHandler::onWebsocketClientDisconnected()
     client->deleteLater();
 
     if (s_websocketClients.isEmpty()) {
-        qCDebug(dcDebugServer()) << "Uninstall debug message handler for live logs and restore default message handler";
-        qInstallMessageHandler(s_oldLogMessageHandler);
-        s_oldLogMessageHandler = nullptr;
+        qCDebug(dcDebugServer()) << "Uninstalling debug message handler for live logs.";
+        nymeaUninstallMessageHandler(&logMessageHandler);
     }
 }
 

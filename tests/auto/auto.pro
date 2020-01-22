@@ -20,4 +20,5 @@ SUBDIRS = versioning \
         usermanager \
         mqttbroker \
         tags \
+        scripts \
 

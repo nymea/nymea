@@ -38,6 +38,7 @@ class HardwareResource;
 class HardwareManager : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
 
 public:
     HardwareManager(QObject *parent = nullptr);

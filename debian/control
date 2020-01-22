@@ -6,15 +6,9 @@ Standards-Version: 3.9.7
 Homepage: https://nymea.io
 Vcs-Git: https://github.com/guh/guh.git
 Build-Depends: debhelper (>= 9.0.0),
+               dbus-test-runner,
                dh-systemd,
                dpkg-dev (>= 1.16.1~),
-               rsync,
-               qtchooser,
-               qt5-default,
-               qt5-qmake:native,
-               qtbase5-dev,
-               qttools5-dev-tools,
-               qtconnectivity5-dev,
                libnymea-remoteproxyclient-dev,
                libqt5websockets5-dev,
                libqt5bluetooth5,
@@ -22,7 +16,15 @@ Build-Depends: debhelper (>= 9.0.0),
                libqt5dbus5,
                libssl-dev,
                libnymea-mqtt-dev (>= 0.1.2),
-               dbus-test-runner,
+               rsync,
+               qml-module-qtquick2,
+               qtchooser,
+               qt5-default,
+               qt5-qmake:native,
+               qtbase5-dev,
+               qttools5-dev-tools,
+               qtconnectivity5-dev,
+               qtdeclarative5-dev,
 
 Package: nymea
 Architecture: any
@@ -30,6 +32,7 @@ Section: metapackages
 Multi-Arch: same
 Depends: nymead (= ${binary:Version}),
          ${misc:Depends}
+Recommends: qml-module-qtquick2
 Suggests: nymea-doc
 Replaces: guh
 Description: An open source IoT server - meta package
@@ -59,6 +62,7 @@ Depends: libqt5network5,
          tar,
          iputils-tracepath,
          iputils-ping,
+         qml-module-qtquick2,
          dnsutils,
          nymea-translations,
          libnymea1 (= ${binary:Version}),

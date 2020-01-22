@@ -1,4 +1,4 @@
-4.0
+4.1
 {
     "enums": {
         "BasicType": [
@@ -206,6 +206,16 @@
             "RuleErrorContainsEventBasesAction",
             "RuleErrorNoExitActions",
             "RuleErrorInterfaceNotFound"
+        ],
+        "ScriptError": [
+            "ScriptErrorNoError",
+            "ScriptErrorScriptNotFound",
+            "ScriptErrorInvalidScript",
+            "ScriptErrorHardwareFailure"
+        ],
+        "ScriptMessageType": [
+            "ScriptMessageTypeLog",
+            "ScriptMessageTypeWarning"
         ],
         "SetupMethod": [
             "SetupMethodJustAdd",
@@ -1223,6 +1233,57 @@
                 "ruleError": "$ref:RuleError"
             }
         },
+        "Scripts.AddScript": {
+            "description": "Add a script",
+            "params": {
+                "content": "String",
+                "name": "String"
+            },
+            "returns": {
+                "o:errors": "StringList",
+                "o:script": "$ref:Script",
+                "scriptError": "$ref:ScriptError"
+            }
+        },
+        "Scripts.EditScript": {
+            "description": "Edit a script",
+            "params": {
+                "id": "Uuid",
+                "o:content": "String",
+                "o:name": "String"
+            },
+            "returns": {
+                "o:errors": "StringList",
+                "scriptError": "$ref:ScriptError"
+            }
+        },
+        "Scripts.GetScriptContent": {
+            "description": "Get a scripts content.",
+            "params": {
+                "id": "Uuid"
+            },
+            "returns": {
+                "o:content": "String",
+                "scriptError": "$ref:ScriptError"
+            }
+        },
+        "Scripts.GetScripts": {
+            "description": "Get all script, that is, their names and properties, but no content.",
+            "params": {
+            },
+            "returns": {
+                "scripts": "$ref:Scripts"
+            }
+        },
+        "Scripts.RemoveScript": {
+            "description": "remove a script",
+            "params": {
+                "id": "Uuid"
+            },
+            "returns": {
+                "scriptError": "$ref:ScriptError"
+            }
+        },
         "States.GetStateType": {
             "deprecated": "Please use the Devices namespace instead.",
             "description": "Get the StateType for the given stateTypeId.",
@@ -1606,6 +1667,39 @@
                 "ruleId": "Uuid"
             }
         },
+        "Scripts.ScriptAdded": {
+            "description": "Emitted when a script has been added to the system.",
+            "params": {
+                "script": "$ref:Script"
+            }
+        },
+        "Scripts.ScriptChanged": {
+            "description": "Emitted when a script has been changed in the system (e.g. renamed).",
+            "params": {
+                "name": "String",
+                "scriptId": "Uuid"
+            }
+        },
+        "Scripts.ScriptContentChanged": {
+            "description": "Emitted when a script's content has been changed in the system.",
+            "params": {
+                "scriptId": "Uuid"
+            }
+        },
+        "Scripts.ScriptLogMessage": {
+            "description": "Emitted when a script produces a console message.",
+            "params": {
+                "message": "String",
+                "scriptId": "Uuid",
+                "type": "$ref:ScriptMessageType"
+            }
+        },
+        "Scripts.ScriptRemoved": {
+            "description": "Emitted when a script has been removed from the system.",
+            "params": {
+                "id": "Uuid"
+            }
+        },
         "System.CapabilitiesChanged": {
             "description": "Emitted whenever the system capabilities change.",
             "params": {
@@ -1927,6 +2021,13 @@
         },
         "Rules": [
             "$ref:Rule"
+        ],
+        "Script": {
+            "name": "String",
+            "r:id": "Uuid"
+        },
+        "Scripts": [
+            "$ref:Script"
         ],
         "ServerConfiguration": {
             "address": "String",

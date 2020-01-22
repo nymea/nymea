@@ -23,6 +23,9 @@
 
 #include "devicemanagerimplementation.h"
 #include "translator.h"
+#if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
+#include "scriptdeviceplugin.h"
+#endif
 
 #include "loggingcategories.h"
 #include "typeutils.h"
@@ -268,6 +271,10 @@ DeviceDiscoveryInfo* DeviceManagerImplementation::discoverDevices(const DeviceCl
         }
         qCDebug(dcDeviceManager()) << "Discovery finished. Found devices:" << discoveryInfo->deviceDescriptors().count();
         foreach (const DeviceDescriptor &descriptor, discoveryInfo->deviceDescriptors()) {
+            if (!descriptor.isValid()) {
+                qCWarning(dcDeviceManager()) << "Descriptor is invalid. Not adding to results";
+                continue;
+            }
             m_discoveredDevices.insert(descriptor.id(), descriptor);
         }
     });
@@ -297,6 +304,7 @@ DeviceSetupInfo *DeviceManagerImplementation::addConfiguredDevice(const DeviceDe
 {
     DeviceDescriptor descriptor = m_discoveredDevices.value(deviceDescriptorId);
     if (!descriptor.isValid()) {
+        qCWarning(dcDeviceManager()) << "Cannot add device. DeviceDescriptor" << deviceDescriptorId << "not found.";
         DeviceSetupInfo *info = new DeviceSetupInfo(nullptr, this);
         info->finish(Device::DeviceErrorDeviceDescriptorNotFound);
         return info;
@@ -304,11 +312,13 @@ DeviceSetupInfo *DeviceManagerImplementation::addConfiguredDevice(const DeviceDe
 
     DeviceClass deviceClass = findDeviceClass(descriptor.deviceClassId());
     if (!deviceClass.isValid()) {
+        qCWarning(dcDeviceManager()) << "Cannot add device. DeviceClass" << descriptor.deviceClassId() << "not found.";
         DeviceSetupInfo *info = new DeviceSetupInfo(nullptr, this);
         info->finish(Device::DeviceErrorDeviceClassNotFound);
         return info;
     }
     if (!deviceClass.createMethods().testFlag(DeviceClass::CreateMethodDiscovery)) {
+        qCWarning(dcDeviceManager()) << "Cannot add device. This device cannot be added via discovery.";
         DeviceSetupInfo *info = new DeviceSetupInfo(nullptr, this);
         info->finish(Device::DeviceErrorCreationMethodNotSupported);
         return info;
@@ -674,12 +684,14 @@ DeviceSetupInfo* DeviceManagerImplementation::addConfiguredDeviceInternal(const 
 {
     DeviceClass deviceClass = findDeviceClass(deviceClassId);
     if (deviceClass.id().isNull()) {
+        qCWarning(dcDeviceManager()) << "Cannot add device. DeviceClass" << deviceClassId << "not found.";
         DeviceSetupInfo *info = new DeviceSetupInfo(nullptr, this);
         info->finish(Device::DeviceErrorDeviceClassNotFound);
         return info;
     }
 
     if (deviceClass.setupMethod() != DeviceClass::SetupMethodJustAdd) {
+        qCWarning(dcDeviceManager()) << "Cannot add device. This device cannot be added this way. (SetupMethodJustAdd)";
         DeviceSetupInfo *info = new DeviceSetupInfo(nullptr, this);
         info->finish(Device::DeviceErrorCreationMethodNotSupported);
         return info;
@@ -693,6 +705,7 @@ DeviceSetupInfo* DeviceManagerImplementation::addConfiguredDeviceInternal(const 
 
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
     if (!plugin) {
+        qCWarning(dcDeviceManager()) << "Cannot add device. Plugin for device class" << deviceClass.name() << "not found.";
         DeviceSetupInfo *info = new DeviceSetupInfo(nullptr, this);
         info->finish(Device::DeviceErrorPluginNotFound);
         return info;
@@ -702,6 +715,7 @@ DeviceSetupInfo* DeviceManagerImplementation::addConfiguredDeviceInternal(const 
     ParamList effectiveParams = buildParams(deviceClass.paramTypes(), params);
     Device::DeviceError paramsResult = DeviceUtils::verifyParams(deviceClass.paramTypes(), effectiveParams);
     if (paramsResult != Device::DeviceErrorNoError) {
+        qCWarning(dcDeviceManager()) << "Cannot add device. Parameter verification failed.";
         DeviceSetupInfo *info = new DeviceSetupInfo(nullptr, this);
         info->finish(paramsResult);
         return info;
@@ -1104,6 +1118,43 @@ void DeviceManagerImplementation::loadPlugins()
             loadPlugin(pluginIface, metaData);
         }
     }
+
+#if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
+    foreach (const QString &path, pluginSearchDirs()) {
+        QDir dir(path);
+        qCDebug(dcDeviceManager) << "Loading JS plugins from:" << dir.absolutePath();
+        foreach (const QString &entry, dir.entryList()) {
+            QFileInfo jsFi;
+            QFileInfo jsonFi;
+
+            if (entry.endsWith(".js")) {
+                jsFi.setFile(path + "/" + entry);
+            } else {
+                jsFi.setFile(path + "/" + entry + "/" + entry + ".js");
+            }
+
+            if (!jsFi.exists()) {
+                continue;
+            }
+
+            ScriptDevicePlugin *plugin = new ScriptDevicePlugin(this);
+            bool ret = plugin->loadScript(jsFi.absoluteFilePath());
+            if (!ret) {
+                delete plugin;
+                qCWarning(dcDeviceManager()) << "JS plugin failed to load";
+                continue;
+            }
+            PluginMetadata metaData(plugin->metaData());
+            if (!metaData.isValid()) {
+                qCWarning(dcDeviceManager()) << "Not loading JS plugin. Invalid metadata.";
+                foreach (const QString &error, metaData.validationErrors()) {
+                    qCWarning(dcDeviceManager()) << error;
+                }
+            }
+            loadPlugin(plugin, metaData);
+        }
+    }
+#endif
 }
 
 void DeviceManagerImplementation::loadPlugin(DevicePlugin *pluginIface, const PluginMetadata &metaData)

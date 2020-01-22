@@ -18,20 +18,42 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef JSONRPCSERVER_H
-#define JSONRPCSERVER_H
+#ifndef SCRIPTSHANDLER_H
+#define SCRIPTSHANDLER_H
 
-class JsonHandler;
+#include "jsonrpc/jsonhandler.h"
 
-class JsonRPCServer
+#include "scriptengine/scriptengine.h"
+
+namespace nymeaserver {
+
+
+class ScriptsHandler : public JsonHandler
 {
+    Q_OBJECT
 public:
-    explicit JsonRPCServer() = default;
-    virtual ~JsonRPCServer() = default;
+    explicit ScriptsHandler(ScriptEngine *scriptEngine, QObject *parent = nullptr);
 
-    virtual bool registerHandler(JsonHandler *handler) = 0;
-    virtual bool registerExperienceHandler(JsonHandler *handler, int majorVersion, int minorVersion) = 0;
+    QString name() const override;
 
+public slots:
+    JsonReply* GetScripts(const QVariantMap &params);
+    JsonReply* GetScriptContent(const QVariantMap &params);
+    JsonReply* AddScript(const QVariantMap &params);
+    JsonReply* EditScript(const QVariantMap &params);
+    JsonReply* RemoveScript(const QVariantMap &params);
+
+signals:
+    void ScriptAdded(const QVariantMap &params);
+    void ScriptRemoved(const QVariantMap &params);
+    void ScriptChanged(const QVariantMap &params);
+    void ScriptContentChanged(const QVariantMap &params);
+    void ScriptLogMessage(const QVariantMap &params);
+
+private:
+    ScriptEngine *m_engine = nullptr;
 };
 
-#endif // JSONRPCSERVER_H
+}
+
+#endif // SCRIPTSHANDLER_H

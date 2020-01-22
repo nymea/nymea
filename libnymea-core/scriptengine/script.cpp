@@ -18,20 +18,54 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef JSONRPCSERVER_H
-#define JSONRPCSERVER_H
+#include "script.h"
 
-class JsonHandler;
+namespace nymeaserver {
 
-class JsonRPCServer
+Script::Script()
 {
-public:
-    explicit JsonRPCServer() = default;
-    virtual ~JsonRPCServer() = default;
 
-    virtual bool registerHandler(JsonHandler *handler) = 0;
-    virtual bool registerExperienceHandler(JsonHandler *handler, int majorVersion, int minorVersion) = 0;
+}
 
-};
+QUuid Script::id() const
+{
+    return m_id;
+}
 
-#endif // JSONRPCSERVER_H
+void Script::setId(const QUuid &id)
+{
+    m_id = id;
+}
+
+QString Script::name() const
+{
+    return m_name;
+}
+
+void Script::setName(const QString &name)
+{
+    m_name = name;
+}
+
+Scripts::Scripts()
+{
+
+}
+
+Scripts::Scripts(const QList<Script> &other):
+    QList<Script>(other)
+{
+
+}
+
+QVariant Scripts::get(int index)
+{
+    return QVariant::fromValue(at(index));
+}
+
+void Scripts::put(const QVariant &value)
+{
+    append(value.value<Script>());
+}
+
+}

@@ -32,6 +32,7 @@ class DeviceManager;
 class LIBNYMEA_EXPORT DeviceSetupInfo : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(Device* device READ device CONSTANT)
 public:
     explicit DeviceSetupInfo(Device *device, DeviceManager *deviceManager, quint32 timeout = 0);
 

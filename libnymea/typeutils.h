@@ -34,8 +34,7 @@
 public: \
     type##Id(const QUuid &uuid): QUuid(uuid) {} \
     type##Id(): QUuid() {} \
-    static type##Id create##type##Id() { return type##Id(QUuid::createUuid().toString()); } \
-    static type##Id fromUuid(const QUuid &uuid) { return type##Id(uuid.toString()); } \
+    static type##Id create##type##Id() { return type##Id(QUuid::createUuid()); } \
     bool operator==(const type##Id &other) const { \
         return toString() == other.toString(); \
     } \

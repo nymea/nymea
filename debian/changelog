@@ -1,6 +1,26 @@
-nymea (0.18.0) UNRELEASED; urgency=medium
+nymea (0.18.0) xenial; urgency=medium
+  [ Michael Zanetti ]
+  * Scriptengine
+  * Add System Time API
+  * Add discovery mode to userandpassword mock device
+  * Update company name
+  * Improve log DB housekeeping performance
+  * Support units in interfaces
+  * Update device names when changed by the plugin
+  * Subscribe to the entire device namespace in nymea:cloud MQTT
+  * Use a more unique nonce for the remote connection
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Wed, 27 Nov 2019 15:24:26 +0100
+  [ Simon Stürz ]
+  * Update year and copyright
+
+  [ Michael Zanetti ]
+  * Generate a version.h file
+  * Disconnect all slots of nymea:core on shutdown
+  * Add Bluetooth media icon
+  * Qt versions
+  * Fix crash when removing a connected transport interface
+
+ -- Jenkins <jenkins@nymea.io>  Wed, 22 Jan 2020 23:47:19 +0100
 
 nymea (0.17.0) xenial; urgency=medium
 

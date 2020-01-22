@@ -129,6 +129,7 @@ private slots:
     // Only connect this to Devices. It will query the sender()
     void slotDeviceStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value);
     void slotDeviceSettingChanged(const ParamTypeId &paramTypeId, const QVariant &value);
+    void slotDeviceNameChanged();
 
 private:
     // Builds a list of params ready to create a device.

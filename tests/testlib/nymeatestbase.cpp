@@ -62,7 +62,7 @@ void NymeaTestBase::initTestCase()
     NymeaSettings nymeadSettings(NymeaSettings::SettingsRoleGlobal);
     nymeadSettings.clear();
 
-    QLoggingCategory::setFilterRules("*.debug=false\nTests.debug=true\nMockDevice.debug=true");
+    QLoggingCategory::setFilterRules("*.debug=false\nApplication.debug=true\nTests.debug=true\nMockDevice.debug=true");
 
     // Start the server
     qCDebug(dcTests()) << "Setting up nymea core instance";

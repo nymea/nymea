@@ -4,7 +4,8 @@
     "states": [
         {
             "name": "totalEnergyConsumed",
-            "type": "double"
+            "type": "double",
+            "unit": "KiloWattHour"
         }
     ]
 }

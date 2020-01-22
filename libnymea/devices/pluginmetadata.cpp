@@ -594,6 +594,12 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                         hasError = true;
                         continue;
                     }
+                    if (ifaceStateType.unit() != Types::UnitNone && ifaceStateType.unit() != stateType.unit()) {
+                        QMetaEnum unitEnum = QMetaEnum::fromType<Types::Unit>();
+                        m_validationErrors.append("Device class \"" + deviceClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching unit: \"" + unitEnum.valueToKey(ifaceStateType.unit()) + "\" != \"" + unitEnum.valueToKey(stateType.unit()));
+                        hasError = true;
+                        continue;
+                    }
                 }
 
                 foreach (const ActionType &ifaceActionType, iface.actionTypes()) {

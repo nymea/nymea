@@ -39,6 +39,7 @@
 #include "nymeasettings.h"
 #include "platform/platform.h"
 #include "platform/platformzeroconfcontroller.h"
+#include "version.h"
 
 #include "jsonrpc/jsonrpcserverimplementation.h"
 #include "servers/mocktcpserver.h"

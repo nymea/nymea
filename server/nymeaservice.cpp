@@ -40,6 +40,7 @@
 #include "nymeacore.h"
 #include "nymeasettings.h"
 #include "loggingcategories.h"
+#include "version.h"
 
 
 namespace nymeaserver {

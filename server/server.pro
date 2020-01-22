@@ -3,7 +3,7 @@ include(../nymea.pri)
 TARGET = nymead
 TEMPLATE = app
 
-INCLUDEPATH += ../libnymea ../libnymea-core
+INCLUDEPATH += ../libnymea ../libnymea-core $$top_builddir
 
 target.path = /usr/bin
 INSTALLS += target

@@ -134,6 +134,7 @@
 #include "httpreply.h"
 #include "loggingcategories.h"
 #include "nymeacore.h"
+#include "version.h"
 
 #include <QDateTime>
 #include <QPair>

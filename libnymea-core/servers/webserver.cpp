@@ -77,6 +77,7 @@
 #include "httpreply.h"
 #include "httprequest.h"
 #include "debugserverhandler.h"
+#include "version.h"
 
 #include <QJsonDocument>
 #include <QNetworkInterface>

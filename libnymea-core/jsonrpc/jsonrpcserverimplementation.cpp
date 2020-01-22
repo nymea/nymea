@@ -458,6 +458,10 @@ void JsonRPCServerImplementation::unregisterTransportInterface(TransportInterfac
     disconnect(interface, &TransportInterface::clientConnected, this, &JsonRPCServerImplementation::clientConnected);
     disconnect(interface, &TransportInterface::clientDisconnected, this, &JsonRPCServerImplementation::clientDisconnected);
     disconnect(interface, &TransportInterface::dataAvailable, this, &JsonRPCServerImplementation::processData);
+    foreach (const QUuid &clientId, m_clientTransports.keys(interface)) {
+        interface->terminateClientConnection(clientId);
+        clientDisconnected(clientId);
+    }
     m_interfaces.take(interface);
 }
 

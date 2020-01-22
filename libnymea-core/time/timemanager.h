@@ -32,32 +32,27 @@ class TimeManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit TimeManager(const QByteArray &timeZone, QObject *parent = 0);
-
-    QByteArray timeZone() const;
-    bool setTimeZone(const QByteArray &timeZone = QTimeZone::systemTimeZoneId());
+    explicit TimeManager(QObject *parent = nullptr);
 
     QDateTime currentDateTime() const;
-    QTime currentTime() const;
-    QDate currentDate() const;
 
-    QList<QByteArray> availableTimeZones() const;
-
+    // For testability only
     void stopTimer();
     void setTime(const QDateTime &dateTime);
-
-private:
-    QTimeZone m_timeZone;
-    QDateTime m_dateTime;
-    QTimer *m_nymeaTimer;
 
 signals:
     void tick();
     void dateTimeChanged(const QDateTime &dateTime);
 
-private slots:
-    void nymeaTimeout();
+protected:
+    void timerEvent(QTimerEvent *event) override;
 
+private:
+    int m_timerId = 0;
+    QDateTime m_lastEvent;
+
+    // For testability
+    qint64 m_overrideDifference = 0;
 };
 
 }

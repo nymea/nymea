@@ -114,9 +114,6 @@ public:
 signals:
     void loaded();
 
-public slots:
-    void timeTick();
-
 private slots:
     void loadPlugins();
     void loadPlugin(DevicePlugin *pluginIface, const PluginMetadata &metaData);

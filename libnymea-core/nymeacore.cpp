@@ -98,6 +98,7 @@
 #include "tagging/tagsstorage.h"
 #include "platform/platform.h"
 #include "experiences/experiencemanager.h"
+#include "platform/platformsystemcontroller.h"
 
 #include "scriptengine/scriptengine.h"
 #include "jsonrpc/scriptshandler.h"
@@ -143,7 +144,14 @@ void NymeaCore::init() {
     m_configuration = new NymeaConfiguration(this);
 
     qCDebug(dcApplication()) << "Creating Time Manager";
-    m_timeManager = new TimeManager(m_configuration->timeZone(), this);
+    // Migration path: nymea < 0.18 doesn't use system time zone but stores its own time zone in the config
+    // For migration, let's set the system's time zone to the config now to upgrade to the system time zone based nymea >= 0.18
+    if (QTimeZone(m_configuration->timeZone()).isValid()) {
+        if (m_platform->systemController()->setTimeZone(QTimeZone(m_configuration->timeZone()))) {
+            m_configuration->setTimeZone("");
+        }
+    }
+    m_timeManager = new TimeManager(this);
 
     qCDebug(dcApplication) << "Creating Log Engine";
     m_logger = new LogEngine(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), m_configuration->logDBMaxEntries(), this);
@@ -206,7 +214,6 @@ void NymeaCore::init() {
     connect(m_ruleEngine, &RuleEngine::ruleConfigurationChanged, this, &NymeaCore::ruleConfigurationChanged);
 
     connect(m_timeManager, &TimeManager::dateTimeChanged, this, &NymeaCore::onDateTimeChanged);
-    connect(m_timeManager, &TimeManager::tick, m_deviceManager, &DeviceManagerImplementation::timeTick);
 
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), true);
 }

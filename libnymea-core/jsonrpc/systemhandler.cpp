@@ -38,9 +38,14 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
 
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
-    description = "Get the list of capabilites on this system. This allows reading whether things like rebooting or shutting down the system running nymea:core is supported on this host.";
+    description = "Get the list of capabilites on this system. The property \"powerManagement\" indicates whether "
+                  "rebooting or shutting down is supported on this system. The property \"updateManagement indicates "
+                  "whether system update features are available in this system. The property \"timeManagement\" "
+                  "indicates whether the system time can be configured on this system. Note that GetTime will be "
+                  "available in any case.";
     returns.insert("powerManagement", enumValueName(Bool));
     returns.insert("updateManagement", enumValueName(Bool));
+    returns.insert("timeManagement", enumValueName(Bool));
     registerMethod("GetCapabilities", description, params, returns);
 
     params.clear(); returns.clear();
@@ -116,6 +121,39 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     returns.insert("success", enumValueName(Bool));
     registerMethod("EnableRepository", description, params, returns);
 
+    params.clear(); returns.clear();
+    description = "Get the system time and configuraton. The \"serverTime\" and \"serverTimezone\" properties "
+                  "give the current server time and time zone. \"automaticTimeAvailable\" indicates whether "
+                  "this system supports automatically setting the clock (e.g. using NTP). \"automaticTime\" will "
+                  "be true if the system is configured to automatically update the clock.";
+    returns.insert("time", enumValueName(Uint));
+    returns.insert("timeZone", enumValueName(String));
+    returns.insert("automaticTimeAvailable", enumValueName(Bool));
+    returns.insert("automaticTime", enumValueName(Bool));
+    registerMethod("GetTime", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Set the system time configuraton. The system can be configured to update the time automatically "
+                  "by setting \"automaticTime\" to true. This will only work if the \"timeManagement\" capability is "
+                  "available on this system and \"GetTime\" indicates the availability of automatic time settings. If "
+                  "any of those requirements are not met, this method will return \"false\" in the \"success\" property. "
+                  "In order to manually configure the time, \"automaticTime\" should be set to false and \"time\" should "
+                  "be set. Note that if \"automaticTime\" is set to true and a manual \"time\" is still passed, the system "
+                  "will attempt to configure automatic time updates and only set the manual time if automatic mode fails. "
+                  "A time zone can always be passed optionally to change the system time zone and should be a IANA time zone "
+                  "id.";
+    params.insert("o:automaticTime", enumValueName(Bool));
+    params.insert("o:time", enumValueName(Uint));
+    params.insert("o:timeZone", enumValueName(String));
+    returns.insert("success", enumValueName(Bool));
+    registerMethod("SetTime", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Returns the list of IANA specified time zone IDs which can be used to select a time zone. It is not "
+                  "required to use this method if the client toolkit already provides means to obtain a list of IANA time "
+                  "zone ids.";
+    returns.insert("timeZones", enumValueName(StringList));
+    registerMethod("GetTimeZones", description, params, returns);
 
     // Notifications
     params.clear();
@@ -160,6 +198,13 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     params.insert("repositoryId", enumValueName(String));
     registerNotification("RepositoryRemoved", description, params);
 
+    params.clear();
+    description = "Emitted whenever the time configuration is changed";
+    params.insert("time", enumValueName(Uint));
+    params.insert("timeZone", enumValueName(String));
+    params.insert("automaticTimeAvailable", enumValueName(Bool));
+    params.insert("automaticTime", enumValueName(Bool));
+    registerNotification("TimeConfigurationChanged", description, params);
 
     connect(m_platform->systemController(), &PlatformSystemController::availableChanged, this, &SystemHandler::onCapabilitiesChanged);
     connect(m_platform->updateController(), &PlatformUpdateController::availableChanged, this, &SystemHandler::onCapabilitiesChanged);
@@ -205,6 +250,14 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
         params.insert("repositoryId", repositoryId);
         emit RepositoryRemoved(params);
     });
+    connect(m_platform->systemController(), &PlatformSystemController::timeConfigurationChanged, this, [this](){
+        QVariantMap params;
+        params.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
+        params.insert("timeZone", QTimeZone::systemTimeZoneId());
+        params.insert("automaticTimeAvailable", m_platform->systemController()->automaticTimeAvailable());
+        params.insert("automaticTime", m_platform->systemController()->automaticTime());
+        emit TimeConfigurationChanged(params);
+    }, Qt::QueuedConnection); // Queued to give QDateTime a chance to sync itself to the system
 }
 
 QString SystemHandler::name() const
@@ -218,6 +271,7 @@ JsonReply *SystemHandler::GetCapabilities(const QVariantMap &params)
     QVariantMap data;
     data.insert("powerManagement", m_platform->systemController()->powerManagementAvailable());
     data.insert("updateManagement", m_platform->updateController()->updateManagementAvailable());
+    data.insert("timeManagement", m_platform->systemController()->timeManagementAvailable());
     return createReply(data);
 }
 
@@ -311,6 +365,62 @@ JsonReply *SystemHandler::EnableRepository(const QVariantMap &params) const
     bool success = m_platform->updateController()->enableRepository(params.value("repositoryId").toString(), params.value("enabled").toBool());
     QVariantMap returns;
     returns.insert("success", success);
+    return createReply(returns);
+}
+
+JsonReply *SystemHandler::GetTime(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    QVariantMap returns;
+    returns.insert("automaticTimeAvailable", m_platform->systemController()->automaticTimeAvailable());
+    returns.insert("automaticTime", m_platform->systemController()->automaticTime());
+    returns.insert("time", QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
+    returns.insert("timeZone", QTimeZone::systemTimeZoneId());
+    return createReply(returns);
+}
+
+JsonReply *SystemHandler::SetTime(const QVariantMap &params) const
+{
+    QVariantMap returns;
+    bool handled = false;
+    bool automaticTime = params.value("automaticTime", false).toBool();
+    if (params.contains("automaticTime") && m_platform->systemController()->automaticTimeAvailable()) {
+        if (!m_platform->systemController()->setAutomaticTime(automaticTime)) {
+            returns.insert("success", false);
+            return createReply(returns);
+        }
+        handled = true;
+    }
+    if (!automaticTime && params.contains("time")) {
+        QDateTime time = QDateTime::fromMSecsSinceEpoch(params.value("time").toLongLong() * 1000);
+        if (!m_platform->systemController()->setTime(time)) {
+            returns.insert("success", false);
+            return createReply(returns);
+        }
+        handled = true;
+    }
+    if (params.contains("timeZone")) {
+        QTimeZone timeZone(params.value("timeZone").toByteArray());
+        if (!m_platform->systemController()->setTimeZone(timeZone)) {
+            returns.insert("success", false);
+            return createReply(returns);
+        }
+        handled = true;
+    }
+    returns.insert("success", handled);
+    return createReply(returns);
+}
+
+JsonReply *SystemHandler::GetTimeZones(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    QVariantList timeZones;
+    foreach (const QByteArray &timeZoneId, QTimeZone::availableTimeZoneIds()) {
+        timeZones.append(QString::fromUtf8(timeZoneId));
+    }
+
+    QVariantMap returns;
+    returns.insert("timeZones", timeZones);
     return createReply(returns);
 }
 

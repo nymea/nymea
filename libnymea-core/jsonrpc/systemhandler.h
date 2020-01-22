@@ -53,8 +53,13 @@ public:
     Q_INVOKABLE JsonReply *GetRepositories(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *EnableRepository(const QVariantMap &params) const;
 
+    Q_INVOKABLE JsonReply *GetTime(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *SetTime(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetTimeZones(const QVariantMap &params) const;
+
 signals:
     void CapabilitiesChanged(const QVariantMap &params);
+
     void UpdateStatusChanged(const QVariantMap &params);
     void PackageAdded(const QVariantMap &params);
     void PackageChanged(const QVariantMap &params);
@@ -62,6 +67,8 @@ signals:
     void RepositoryAdded(const QVariantMap &params);
     void RepositoryChanged(const QVariantMap &params);
     void RepositoryRemoved(const QVariantMap &params);
+
+    void TimeConfigurationChanged(const QVariantMap &params);
 
 private slots:
     void onCapabilitiesChanged();

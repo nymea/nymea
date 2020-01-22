@@ -56,7 +56,7 @@ public:
 
     bool jobsRunning() const;
 
-    void setMaxLogEntries(int maxLogEntries, int overflow);
+    void setMaxLogEntries(int maxLogEntries, int trimSize);
     void clearDatabase();
 
     void logSystemEvent(const QDateTime &dateTime, bool active, Logging::LoggingLevel level = Logging::LoggingLevelInfo);
@@ -88,8 +88,9 @@ private:
 
 private slots:
     void checkDBSize();
+    void trim();
 
-    void enqueJob(DatabaseJob *job);
+    void enqueJob(DatabaseJob *job, bool priority = false);
     void processQueue();
     void handleJobFinished();
 
@@ -98,10 +99,13 @@ private:
     QString m_username;
     QString m_password;
     int m_dbMaxSize;
-    int m_overflow;
-    bool m_trimWarningPrinted = false;
+    int m_trimSize;
     int m_entryCount = 0;
     bool m_dbMalformed = false;
+
+    // When maxQueueLength is exceeded, jobs will be flagged and discarded if this source logs more events
+    int m_maxQueueLength;
+    QHash<QString, QList<DatabaseJob*>> m_flaggedJobs;
 
     QList<DatabaseJob*> m_jobQueue;
     DatabaseJob *m_currentJob = nullptr;

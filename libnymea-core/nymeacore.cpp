@@ -946,7 +946,7 @@ void NymeaCore::deviceManagerLoaded()
     qCDebug(dcApplication()) << "Starting housekeeping...";
     QDateTime startTime = QDateTime::currentDateTime();
     DevicesFetchJob *job = m_logger->fetchDevices();
-    connect(job, &DevicesFetchJob::finished, this, [this, job, startTime](){
+    connect(job, &DevicesFetchJob::finished, m_deviceManager, [this, job, startTime](){
         foreach (const DeviceId &deviceId, job->results()) {
             if (!m_deviceManager->findConfiguredDevice(deviceId)) {
                 qCDebug(dcApplication()) << "Cleaning stale device entries from log DB for device id" << deviceId;

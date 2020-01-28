@@ -122,7 +122,7 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     registerMethod("EnableRepository", description, params, returns);
 
     params.clear(); returns.clear();
-    description = "Get the system time and configuraton. The \"serverTime\" and \"serverTimezone\" properties "
+    description = "Get the system time and configuraton. The \"time\" and \"timeZone\" properties "
                   "give the current server time and time zone. \"automaticTimeAvailable\" indicates whether "
                   "this system supports automatically setting the clock (e.g. using NTP). \"automaticTime\" will "
                   "be true if the system is configured to automatically update the clock.";

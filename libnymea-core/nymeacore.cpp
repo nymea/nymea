@@ -221,12 +221,13 @@ void NymeaCore::init() {
 /*! Destructor of the \l{NymeaCore}. */
 NymeaCore::~NymeaCore()
 {
+    qCDebug(dcApplication()) << "Shutting down NymeaCore";
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), false);
 
-    // Disconnect everything that could still spawn events
-    disconnect(m_deviceManager);
-    disconnect(m_ruleEngine);
-    disconnect(m_timeManager);
+    // Disconnect all signals/slots, we're going down now
+    m_timeManager->disconnect(this);
+    m_deviceManager->disconnect(this);
+    m_ruleEngine->disconnect(this);
 
     // At very first, cut off the outside world
     qCDebug(dcApplication) << "Shutting down \"Server Manager\"";

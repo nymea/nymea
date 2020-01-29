@@ -866,7 +866,7 @@
                     "id": "6fe07a77-9c07-4736-81e2-d504314bbcb9",
                     "name": "mockUserAndPass",
                     "displayName": "Mock Device (User & Password)",
-                    "createMethods": ["user"],
+                    "createMethods": ["discovery", "user"],
                     "setupMethod": "userandpassword"
                 }
             ]

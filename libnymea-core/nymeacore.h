@@ -55,6 +55,7 @@ class UserManager;
 class Platform;
 class System;
 class ExperienceManager;
+class ScriptEngine;
 
 class NymeaCore : public QObject
 {
@@ -85,6 +86,7 @@ public:
     JsonRPCServerImplementation *jsonRPCServer() const;
     DeviceManager *deviceManager() const;
     RuleEngine *ruleEngine() const;
+    ScriptEngine *scriptEngine() const;
     TimeManager *timeManager() const;
     ServerManager *serverManager() const;
     BluetoothServer *bluetoothServer() const;
@@ -125,6 +127,7 @@ private:
     ServerManager *m_serverManager;
     DeviceManagerImplementation *m_deviceManager;
     RuleEngine *m_ruleEngine;
+    ScriptEngine *m_scriptEngine;
     LogEngine *m_logger;
     TimeManager *m_timeManager;
     CloudManager *m_cloudManager;

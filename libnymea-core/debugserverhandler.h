@@ -41,7 +41,6 @@ public:
     HttpReply *processDebugRequest(const QString &requestPath, const QUrlQuery &requestQuery);
 
 private:
-    static QtMessageHandler s_oldLogMessageHandler;
     static QList<QWebSocket*> s_websocketClients;
     static void logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message);
 

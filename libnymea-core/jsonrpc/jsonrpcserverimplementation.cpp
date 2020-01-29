@@ -52,6 +52,7 @@
 #include "devicehandler.h"
 #include "actionhandler.h"
 #include "ruleshandler.h"
+#include "scriptshandler.h"
 #include "eventhandler.h"
 #include "logginghandler.h"
 #include "statehandler.h"

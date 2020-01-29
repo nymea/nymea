@@ -72,10 +72,10 @@ public:
     void registerTransportInterface(TransportInterface *interface, bool authenticationRequired);
     void unregisterTransportInterface(TransportInterface *interface);
 
+    bool registerHandler(JsonHandler *handler) override;
     bool registerExperienceHandler(JsonHandler *handler, int majorVersion, int minorVersion) override;
 
 private:
-    bool registerHandler(JsonHandler *handler);
     QHash<QString, JsonHandler *> handlers() const;
 
     void sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap(), const QString &deprecationWarning = QString());

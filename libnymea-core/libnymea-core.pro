@@ -3,7 +3,7 @@ TARGET = nymea-core
 
 include(../nymea.pri)
 
-QT += sql
+QT += sql qml
 INCLUDEPATH += $$top_srcdir/libnymea
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto -lnymea-mqtt
 
@@ -20,11 +20,18 @@ HEADERS += nymeacore.h \
     devices/translator.h \
     experiences/experiencemanager.h \
     jsonrpc/jsonrpcserverimplementation.h \
+    jsonrpc/scriptshandler.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
     ruleengine/stateevaluator.h \
     ruleengine/ruleaction.h \
     ruleengine/ruleactionparam.h \
+    scriptengine/script.h \
+    scriptengine/scriptaction.h \
+    scriptengine/scriptalarm.h \
+    scriptengine/scriptengine.h \
+    scriptengine/scriptevent.h \
+    scriptengine/scriptstate.h \
     transportinterface.h \
     nymeaconfiguration.h \
     servermanager.h \
@@ -94,11 +101,18 @@ SOURCES += nymeacore.cpp \
     devices/translator.cpp \
     experiences/experiencemanager.cpp \
     jsonrpc/jsonrpcserverimplementation.cpp \
+    jsonrpc/scriptshandler.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \
     ruleengine/stateevaluator.cpp \
     ruleengine/ruleaction.cpp \
     ruleengine/ruleactionparam.cpp \
+    scriptengine/script.cpp \
+    scriptengine/scriptaction.cpp \
+    scriptengine/scriptalarm.cpp \
+    scriptengine/scriptengine.cpp \
+    scriptengine/scriptevent.cpp \
+    scriptengine/scriptstate.cpp \
     transportinterface.cpp \
     nymeaconfiguration.cpp \
     servermanager.cpp \
@@ -160,3 +174,11 @@ SOURCES += nymeacore.cpp \
     debugreportgenerator.cpp \
     platform/platform.cpp \
     jsonrpc/systemhandler.cpp
+
+versionAtLeast(QT_VERSION, 5.12.0) {
+HEADERS += \
+    devices/scriptdeviceplugin.h \
+
+SOURCES += \
+    devices/scriptdeviceplugin.cpp \
+}

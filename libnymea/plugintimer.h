@@ -66,8 +66,8 @@ public:
     PluginTimerManager(QObject *parent = nullptr);
     virtual ~PluginTimerManager() = default;
 
-    virtual PluginTimer *registerTimer(int seconds = 60) = 0;
-    virtual void unregisterTimer(PluginTimer *timer = nullptr) = 0;
+    Q_INVOKABLE virtual PluginTimer *registerTimer(int seconds = 60) = 0;
+    Q_INVOKABLE virtual void unregisterTimer(PluginTimer *timer = nullptr) = 0;
 };
 
 #endif // PLUGINTIMER_H

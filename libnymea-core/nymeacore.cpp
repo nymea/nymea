@@ -99,6 +99,9 @@
 #include "platform/platform.h"
 #include "experiences/experiencemanager.h"
 
+#include "scriptengine/scriptengine.h"
+#include "jsonrpc/scriptshandler.h"
+
 #include "devices/devicemanagerimplementation.h"
 #include "devices/device.h"
 #include "devices/deviceactioninfo.h"
@@ -159,6 +162,10 @@ void NymeaCore::init() {
 
     qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);
+
+    qCDebug(dcApplication()) << "Creating Script Engine";
+    m_scriptEngine = new ScriptEngine(m_deviceManager, this);
+    m_serverManager->jsonServer()->registerHandler(new ScriptsHandler(m_scriptEngine, m_scriptEngine));
 
     qCDebug(dcApplication()) << "Creating Tags Storage";
     m_tagsStorage = new TagsStorage(m_deviceManager, m_ruleEngine, this);
@@ -600,6 +607,12 @@ RuleEngine *NymeaCore::ruleEngine() const
     return m_ruleEngine;
 }
 
+/*! Returns a pointer to the \l{ScriptEngine} instance owned by NymeaCore.*/
+ScriptEngine *NymeaCore::scriptEngine() const
+{
+    return m_scriptEngine;
+}
+
 /*! Returns a pointer to the \l{TimeManager} instance owned by NymeaCore.*/
 TimeManager *NymeaCore::timeManager() const
 {
@@ -660,6 +673,7 @@ QStringList NymeaCore::loggingFilters()
         "DeviceManager",
         "RuleEngine",
         "RuleEngineDebug",
+        "ScriptEngine",
         "Hardware",
         "Bluetooth",
         "LogEngine",

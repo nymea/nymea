@@ -39,6 +39,7 @@ Q_DECLARE_LOGGING_CATEGORY(dcExperiences)
 Q_DECLARE_LOGGING_CATEGORY(dcTimeManager)
 Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
 Q_DECLARE_LOGGING_CATEGORY(dcRuleEngineDebug)
+Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
 Q_DECLARE_LOGGING_CATEGORY(dcHardware)
 Q_DECLARE_LOGGING_CATEGORY(dcLogEngine)
 Q_DECLARE_LOGGING_CATEGORY(dcServerManager)
@@ -66,5 +67,24 @@ Q_DECLARE_LOGGING_CATEGORY(dcBluetoothServerTraffic)
 Q_DECLARE_LOGGING_CATEGORY(dcMqtt)
 Q_DECLARE_LOGGING_CATEGORY(dcTranslations)
 Q_DECLARE_LOGGING_CATEGORY(dcCoap)
+
+/*
+  Installs a nymea log message handler in the system.
+  This is different to the qLogMessageHandler which works like a chain.
+
+  In nymea we have the use case that we need to copy log messages
+  to different places and also dynamically install/uninstall such
+  handlers.
+
+  If you need to copy log messages, use this, if you need to modify log messages
+  for the entire system (e.g. redirect to a different logging category, the Qt's
+  mechanism of qInstallMessageHandler() is still available and will always be called
+  *before* distributing the message to every nymea message handler.
+*/
+
+void nymeaInstallMessageHandler(QtMessageHandler handler);
+void nymeaUninstallMessageHandler(QtMessageHandler handler);
+bool initLogging(const QString &fileName, bool useColors);
+void closeLogFile();
 
 #endif // LOGGINGCATEGORYS_H

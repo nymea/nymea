@@ -185,7 +185,7 @@ Interface DeviceUtils::loadInterface(const QString &name)
     ActionTypes actionTypes;
     EventTypes eventTypes;
     foreach (const QVariant &stateVariant, content.value("states").toList()) {
-        StateType stateType(StateTypeId::fromUuid(QUuid()));
+        StateType stateType;
         stateType.setName(stateVariant.toMap().value("name").toString());
         stateType.setType(QVariant::nameToType(stateVariant.toMap().value("type").toByteArray()));
         stateType.setPossibleValues(stateVariant.toMap().value("allowedValues").toList());
@@ -193,7 +193,7 @@ Interface DeviceUtils::loadInterface(const QString &name)
         stateType.setMaxValue(stateVariant.toMap().value("maxValue"));
         stateTypes.append(stateType);
 
-        EventType stateChangeEventType(EventTypeId::fromUuid(QUuid()));
+        EventType stateChangeEventType;
         stateChangeEventType.setName(stateType.name());
         ParamType stateChangeEventParamType;
         stateChangeEventParamType.setName(stateType.name());
@@ -205,7 +205,7 @@ Interface DeviceUtils::loadInterface(const QString &name)
         eventTypes.append(stateChangeEventType);
 
         if (stateVariant.toMap().value("writable", false).toBool()) {
-            ActionType stateChangeActionType(ActionTypeId::fromUuid(QUuid()));
+            ActionType stateChangeActionType;
             stateChangeActionType.setName(stateType.name());
             stateChangeActionType.setParamTypes(ParamTypes() << stateChangeEventParamType);
             actionTypes.append(stateChangeActionType);
@@ -213,7 +213,7 @@ Interface DeviceUtils::loadInterface(const QString &name)
     }
 
     foreach (const QVariant &actionVariant, content.value("actions").toList()) {
-        ActionType actionType(ActionTypeId::fromUuid(QUuid()));
+        ActionType actionType;
         actionType.setName(actionVariant.toMap().value("name").toString());
         ParamTypes paramTypes;
         foreach (const QVariant &actionParamVariant, actionVariant.toMap().value("params").toList()) {
@@ -229,7 +229,7 @@ Interface DeviceUtils::loadInterface(const QString &name)
     }
 
     foreach (const QVariant &eventVariant, content.value("events").toList()) {
-        EventType eventType(EventTypeId::fromUuid(QUuid()));
+        EventType eventType;
         eventType.setName(eventVariant.toMap().value("name").toString());
         ParamTypes paramTypes;
         foreach (const QVariant &eventParamVariant, eventVariant.toMap().value("params").toList()) {

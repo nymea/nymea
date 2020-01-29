@@ -599,7 +599,7 @@ void TestLogging::testHouseKeeping()
     deviceParams.append(httpParam);
     params.insert("deviceParams", deviceParams);
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
-    DeviceId deviceId = DeviceId::fromUuid(response.toMap().value("params").toMap().value("deviceId").toUuid());
+    DeviceId deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toUuid());
     QVERIFY2(!deviceId.isNull(), "Something went wrong creating the device for testing.");
 
     // Trigger something that creates a logging entry

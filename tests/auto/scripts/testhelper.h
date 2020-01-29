@@ -18,20 +18,31 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef JSONRPCSERVER_H
-#define JSONRPCSERVER_H
+#ifndef TESTHELPER_H
+#define TESTHELPER_H
 
-class JsonHandler;
+#include <QObject>
 
-class JsonRPCServer
+#include "typeutils.h"
+
+class TestHelper : public QObject
 {
+    Q_OBJECT
 public:
-    explicit JsonRPCServer() = default;
-    virtual ~JsonRPCServer() = default;
+    static TestHelper* instance();
 
-    virtual bool registerHandler(JsonHandler *handler) = 0;
-    virtual bool registerExperienceHandler(JsonHandler *handler, int majorVersion, int minorVersion) = 0;
+    Q_INVOKABLE void logEvent(const QString &deviceId, const QString &eventId, const QVariantMap &params);
+    Q_INVOKABLE void logStateChange(const QString &deviceId, const QString &stateId, const QVariant &value);
 
+signals:
+    void setState(const QVariant &value);
+    void executeAction(const QVariantMap &params);
+
+    void eventLogged(const DeviceId &deviceId, const QString &eventId, const QVariantMap &params);
+    void stateChangeLogged(const DeviceId &deviceId, const QString stateId, const QVariant &value);
+private:
+    explicit TestHelper(QObject *parent = nullptr);
+    static TestHelper* s_instance;
 };
 
-#endif // JSONRPCSERVER_H
+#endif // TESTHELPER_H

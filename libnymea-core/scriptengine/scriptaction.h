@@ -18,20 +18,51 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef JSONRPCSERVER_H
-#define JSONRPCSERVER_H
+#ifndef SCRIPTACTION_H
+#define SCRIPTACTION_H
 
-class JsonHandler;
+#include <QObject>
+#include <QQmlParserStatus>
 
-class JsonRPCServer
+class DeviceManager;
+
+namespace nymeaserver {
+
+class ScriptAction : public QObject, public QQmlParserStatus
 {
+    Q_OBJECT
+    Q_PROPERTY(QString deviceId READ deviceId WRITE setDeviceId NOTIFY deviceIdChanged)
+    Q_PROPERTY(QString actionTypeId READ actionTypeId WRITE setActionTypeId NOTIFY actionTypeIdChanged)
+    Q_PROPERTY(QString actionName READ actionName WRITE setActionName NOTIFY actionNameChanged)
 public:
-    explicit JsonRPCServer() = default;
-    virtual ~JsonRPCServer() = default;
+    explicit ScriptAction(QObject *parent = nullptr);
+    void classBegin() override;
+    void componentComplete() override;
 
-    virtual bool registerHandler(JsonHandler *handler) = 0;
-    virtual bool registerExperienceHandler(JsonHandler *handler, int majorVersion, int minorVersion) = 0;
+    QString deviceId() const;
+    void setDeviceId(const QString &deviceId);
 
+    QString actionTypeId() const;
+    void setActionTypeId(const QString &actionTypeId);
+
+    QString actionName() const;
+    void setActionName(const QString &actionName);
+
+public slots:
+    void execute(const QVariantMap &params);
+
+signals:
+    void deviceIdChanged();
+    void actionTypeIdChanged();
+    void actionNameChanged();
+
+public:
+    DeviceManager *m_deviceManager = nullptr;
+    QString m_deviceId;
+    QString m_actionTypeId;
+    QString m_actionName;
 };
 
-#endif // JSONRPCSERVER_H
+}
+
+#endif // SCRIPTACTION_H

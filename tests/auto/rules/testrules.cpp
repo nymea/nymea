@@ -2766,7 +2766,7 @@ void TestRules::testInitStatesActive()
     params.insert("exitActions", exitActions);
 
     QVariant response = injectAndWait("Rules.AddRule", params);
-    RuleId ruleId = RuleId::fromUuid(response.toMap().value("params").toMap().value("ruleId").toUuid());
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toUuid());
     QVERIFY2(!ruleId.isNull(), "Error adding rule");
 
     // Get the current state value, make sure it's false
@@ -3140,7 +3140,7 @@ void TestRules::testHousekeeping()
     deviceParams.append(httpParam);
     params.insert("deviceParams", deviceParams);
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
-    DeviceId deviceId = DeviceId::fromUuid(response.toMap().value("params").toMap().value("deviceId").toUuid());
+    DeviceId deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toUuid());
     QVERIFY2(!deviceId.isNull(), "Something went wrong creating the device for testing.");
 
     // Create a rule with this device
@@ -3181,7 +3181,7 @@ void TestRules::testHousekeeping()
     }
 
     response = injectAndWait("Rules.AddRule", params);
-    RuleId ruleId = RuleId::fromUuid(response.toMap().value("params").toMap().value("ruleId").toUuid());
+    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toUuid());
 
 
     // Verfy that the rule has been created successfully and our device is in there.

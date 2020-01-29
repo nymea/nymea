@@ -21,6 +21,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "plugininfocompiler.h"
+#include "version.h"
 
 #include <QJsonObject>
 #include <QFile>

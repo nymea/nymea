@@ -3,7 +3,7 @@ CONFIG += c++11 console
 CONFIG -= app_bundle
 
 include(../../nymea.pri)
-INCLUDEPATH += $$top_srcdir/libnymea
+INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea -lnymea
 
 SOURCES += \

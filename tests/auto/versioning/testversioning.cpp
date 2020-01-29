@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "nymeatestbase.h"
+#include "version.h"
 
 using namespace nymeaserver;
 

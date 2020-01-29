@@ -43,6 +43,7 @@
 #include "nymeadbusservice.h"
 #include "nymeaapplication.h"
 #include "loggingcategories.h"
+#include "version.h"
 
 
 using namespace nymeaserver;

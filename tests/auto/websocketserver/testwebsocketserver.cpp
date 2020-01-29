@@ -20,6 +20,7 @@
 
 #include "nymeatestbase.h"
 #include "nymeacore.h"
+#include "version.h"
 
 #include <QWebSocket>
 

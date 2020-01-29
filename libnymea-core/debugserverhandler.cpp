@@ -26,6 +26,7 @@
 #include "debugserverhandler.h"
 #include "nymeaconfiguration.h"
 #include "stdio.h"
+#include "version.h"
 
 #include <QXmlStreamWriter>
 #include <QCoreApplication>

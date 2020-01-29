@@ -23,6 +23,7 @@
 #include "nymeasettings.h"
 #include "nymeacore.h"
 #include "nymeaconfiguration.h"
+#include "version.h"
 
 #include <QDir>
 #include <QFile>

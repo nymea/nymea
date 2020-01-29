@@ -24,6 +24,7 @@
 #define PLATFORMSYSTEMCONTROLLER_H
 
 #include <QObject>
+#include <QTimeZone>
 
 class PlatformSystemController : public QObject
 {
@@ -36,8 +37,19 @@ public:
     virtual bool reboot();
     virtual bool shutdown();
 
+    virtual bool timeManagementAvailable() const;
+    virtual bool automaticTimeAvailable() const;
+    virtual bool automaticTime() const;
+    virtual bool setTime(const QDateTime &time);
+    virtual bool setAutomaticTime(bool automaticTime);
+    virtual bool setTimeZone(const QTimeZone &timeZone);
+
+
 signals:
     void availableChanged();
+    void timeZoneManagementAvailableChanged();
+
+    void timeConfigurationChanged();
 };
 
 Q_DECLARE_INTERFACE(PlatformSystemController, "io.nymea.PlatformSystemController")

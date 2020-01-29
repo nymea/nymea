@@ -407,7 +407,8 @@
             }
         },
         "Configuration.GetAvailableLanguages": {
-            "description": "DEPRECATED - Use the locale property in the Handshake message instead - Returns a list of locale codes available for the server. i.e. en_US, de_AT",
+            "deprecated": "Use the locale property in the Handshake message instead.",
+            "description": "Returns a list of locale codes available for the server. i.e. en_US, de_AT",
             "params": {
             },
             "returns": {
@@ -422,12 +423,12 @@
             },
             "returns": {
                 "basicConfiguration": {
+                    "d:language": "String",
+                    "d:serverTime": "Uint",
+                    "d:timeZone": "String",
                     "debugServerEnabled": "Bool",
-                    "language": "String",
                     "serverName": "String",
-                    "serverTime": "Uint",
-                    "serverUuid": "Uuid",
-                    "timeZone": "String"
+                    "serverUuid": "Uuid"
                 },
                 "cloud": {
                     "enabled": "Bool"
@@ -464,6 +465,7 @@
             }
         },
         "Configuration.GetTimeZones": {
+            "deprecated": "Use System.GetTimeZones instead.",
             "description": "Get the list of available timezones.",
             "params": {
             },
@@ -492,7 +494,8 @@
             }
         },
         "Configuration.SetLanguage": {
-            "description": "DEPRECATED - Use the locale property in the Handshake message instead - Sets the server language to the given language. See also: \"GetAvailableLanguages\"",
+            "deprecated": "Use the locale property in the Handshake message instead.",
+            "description": "Sets the server language to the given language. See also: \"GetAvailableLanguages\"",
             "params": {
                 "language": "String"
             },
@@ -537,6 +540,7 @@
             }
         },
         "Configuration.SetTimeZone": {
+            "deprecated": "Use System.SetTimeZone instead.",
             "description": "Set the time zone of the server. See also: \"GetTimeZones\"",
             "params": {
                 "timeZone": "String"
@@ -1314,11 +1318,12 @@
             }
         },
         "System.GetCapabilities": {
-            "description": "Get the list of capabilites on this system. This allows reading whether things like rebooting or shutting down the system running nymea:core is supported on this host.",
+            "description": "Get the list of capabilites on this system. The property \"powerManagement\" indicates whether rebooting or shutting down is supported on this system. The property \"updateManagement indicates whether system update features are available in this system. The property \"timeManagement\" indicates whether the system time can be configured on this system. Note that GetTime will be available in any case.",
             "params": {
             },
             "returns": {
                 "powerManagement": "Bool",
+                "timeManagement": "Bool",
                 "updateManagement": "Bool"
             }
         },
@@ -1336,6 +1341,25 @@
             },
             "returns": {
                 "repositories": "$ref:Repositories"
+            }
+        },
+        "System.GetTime": {
+            "description": "Get the system time and configuraton. The \"time\" and \"timeZone\" properties give the current server time and time zone. \"automaticTimeAvailable\" indicates whether this system supports automatically setting the clock (e.g. using NTP). \"automaticTime\" will be true if the system is configured to automatically update the clock.",
+            "params": {
+            },
+            "returns": {
+                "automaticTime": "Bool",
+                "automaticTimeAvailable": "Bool",
+                "time": "Uint",
+                "timeZone": "String"
+            }
+        },
+        "System.GetTimeZones": {
+            "description": "Returns the list of IANA specified time zone IDs which can be used to select a time zone. It is not required to use this method if the client toolkit already provides means to obtain a list of IANA time zone ids.",
+            "params": {
+            },
+            "returns": {
+                "timeZones": "StringList"
             }
         },
         "System.GetUpdateStatus": {
@@ -1372,6 +1396,17 @@
                 "packageIds": [
                     "String"
                 ]
+            },
+            "returns": {
+                "success": "Bool"
+            }
+        },
+        "System.SetTime": {
+            "description": "Set the system time configuraton. The system can be configured to update the time automatically by setting \"automaticTime\" to true. This will only work if the \"timeManagement\" capability is available on this system and \"GetTime\" indicates the availability of automatic time settings. If any of those requirements are not met, this method will return \"false\" in the \"success\" property. In order to manually configure the time, \"automaticTime\" should be set to false and \"time\" should be set. Note that if \"automaticTime\" is set to true and a manual \"time\" is still passed, the system will attempt to configure automatic time updates and only set the manual time if automatic mode fails. A time zone can always be passed optionally to change the system time zone and should be a IANA time zone id.",
+            "params": {
+                "o:automaticTime": "Bool",
+                "o:time": "Uint",
+                "o:timeZone": "String"
             },
             "returns": {
                 "success": "Bool"
@@ -1433,12 +1468,12 @@
             "description": "Emitted whenever the basic configuration of this server changes.",
             "params": {
                 "basicConfiguration": {
+                    "d:language": "String",
+                    "d:serverTime": "Uint",
+                    "d:timeZone": "String",
                     "debugServerEnabled": "Bool",
-                    "language": "String",
                     "serverName": "String",
-                    "serverTime": "Uint",
-                    "serverUuid": "Uuid",
-                    "timeZone": "String"
+                    "serverUuid": "Uuid"
                 }
             }
         },
@@ -1741,6 +1776,15 @@
             "description": "Emitted whenever a repository is removed from the list of repositories.",
             "params": {
                 "repositoryId": "String"
+            }
+        },
+        "System.TimeConfigurationChanged": {
+            "description": "Emitted whenever the time configuration is changed",
+            "params": {
+                "automaticTime": "Bool",
+                "automaticTimeAvailable": "Bool",
+                "time": "Uint",
+                "timeZone": "String"
             }
         },
         "System.UpdateStatusChanged": {

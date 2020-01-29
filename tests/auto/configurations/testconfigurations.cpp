@@ -41,7 +41,6 @@ protected slots:
 private slots:
     void getConfigurations();
 
-    void testTimeZones();
     void testServerName();
     void testLanguages();
 
@@ -79,101 +78,6 @@ void TestConfigurations::getConfigurations()
     QVERIFY(configurations.contains("tcpServerConfigurations"));
     QVERIFY(configurations.contains("webServerConfigurations"));
     QVERIFY(configurations.contains("webSocketServerConfigurations"));
-}
-
-void TestConfigurations::testTimeZones()
-{
-    enableNotifications({"Configuration"});
-
-    QVariantMap params; QVariant response; QVariantMap configurations; QVariantList configurationChangedNotifications;
-
-    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
-
-    QVariantList timeZones = injectAndWait("Configuration.GetTimeZones").toMap().value("params").toMap().value("timeZones").toList();
-    QVERIFY(timeZones.count() > 0);
-    QVERIFY(timeZones.contains("America/Toronto"));
-    QVERIFY(timeZones.contains("Europe/Vienna"));
-    QVERIFY(timeZones.contains("Africa/Dakar"));
-
-    // Get current configurations
-    QVariantMap basicConfigurationMap = loadBasicConfiguration();
-
-    // Set timezone unchainged
-    params.clear(); response.clear(); configurations.clear();
-    params.insert("timeZone", basicConfigurationMap.value("timeZone").toString());
-    response = injectAndWait("Configuration.SetTimeZone", params);
-    verifyConfigurationError(response);
-
-    // Check notification not emitted
-    notificationSpy.wait(200);
-    configurationChangedNotifications = checkNotifications(notificationSpy, "Configuration.BasicConfigurationChanged");
-    QVERIFY2(configurationChangedNotifications.count() == 0, "Got Configuration.BasicConfigurationChanged notification but should have not.");
-
-    // Set new timezone (Africa/Dakar)
-    QString newTimeZone("Africa/Dakar");
-    params.clear(); response.clear(); configurations.clear(); notificationSpy.clear();
-    params.insert("timeZone", newTimeZone);
-    response = injectAndWait("Configuration.SetTimeZone", params);
-    verifyConfigurationError(response);
-
-    notificationSpy.wait(200);
-    configurationChangedNotifications = checkNotifications(notificationSpy, "Configuration.BasicConfigurationChanged");
-    QVERIFY2(configurationChangedNotifications.count() == 1, "Should get only one Configuration.BasicConfigurationChanged notification");
-    QVariantMap notificationContent = configurationChangedNotifications.first().toMap().value("params").toMap();
-
-    qDebug() << notificationContent;
-
-    QVERIFY2(notificationContent.contains("basicConfiguration"), "Notification does not contain basicConfiguration");
-    QVariantMap basicConfigurationNotificationMap = notificationContent.value("basicConfiguration").toMap();
-    QVERIFY2(basicConfigurationNotificationMap.contains("language"), "Notification does not contain key language");
-    QVERIFY2(basicConfigurationNotificationMap.contains("serverName"), "Notification does not contain key serverName");
-    QVERIFY2(basicConfigurationNotificationMap.contains("serverTime"), "Notification does not contain key serverTime");
-    QVERIFY2(basicConfigurationNotificationMap.contains("serverUuid"), "Notification does not contain key serverUuid");
-    QVERIFY2(basicConfigurationNotificationMap.contains("debugServerEnabled"), "Notification does not contain key debugServerEnabled");
-    QVERIFY2(basicConfigurationNotificationMap.contains("timeZone"), "Notification does not contain key timeZone");
-    QVERIFY2(basicConfigurationNotificationMap.value("timeZone").toString() == newTimeZone, "Notification does not contain the new timeZone");
-
-    // Get current timezone and time
-    params.clear(); response.clear(); configurations.clear();
-    configurations = injectAndWait("Configuration.GetConfigurations").toMap().value("params").toMap();
-    QString currentTimeZone = configurations.value("basicConfiguration").toMap().value("timeZone").toString();
-    int currentTime = configurations.value("basicConfiguration").toMap().value("serverTime").toInt();
-    qDebug() << currentTimeZone << QDateTime::fromTime_t(currentTime);
-
-    // Set new timezone
-    params.clear(); response.clear(); configurations.clear();
-    params.insert("timeZone", "Moon/Darkside");
-    response = injectAndWait("Configuration.SetTimeZone", params);
-    verifyConfigurationError(response, NymeaConfiguration::ConfigurationErrorInvalidTimeZone);
-
-    // Set new timezone
-    params.clear(); response.clear(); configurations.clear();
-    params.insert("timeZone", "America/Toronto");
-    response = injectAndWait("Configuration.SetTimeZone", params);
-    verifyConfigurationError(response);
-
-    // Check new timezone
-    params.clear(); response.clear(); configurations.clear();
-    configurations = injectAndWait("Configuration.GetConfigurations").toMap().value("params").toMap();
-    newTimeZone = configurations.value("basicConfiguration").toMap().value("timeZone").toString();
-    int newTime = configurations.value("basicConfiguration").toMap().value("serverTime").toInt();
-    qDebug() << newTimeZone << QDateTime::fromTime_t(newTime);
-    QVERIFY(currentTimeZone != newTimeZone);
-
-    restartServer();
-
-    // Check loaded timezone
-    configurations = injectAndWait("Configuration.GetConfigurations").toMap().value("params").toMap();
-    QString reloadedTimeZone = configurations.value("basicConfiguration").toMap().value("timeZone").toString();
-    QVERIFY(newTimeZone == reloadedTimeZone);
-
-    // Reset the timezone
-    params.clear(); response.clear();
-    params.insert("timeZone", "Europe/Vienna");
-    response = injectAndWait("Configuration.SetTimeZone", params);
-    verifyConfigurationError(response);
-
-    disableNotifications();
 }
 
 void TestConfigurations::testServerName()

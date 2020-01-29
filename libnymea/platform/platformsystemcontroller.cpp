@@ -22,6 +22,8 @@
 
 #include "platformsystemcontroller.h"
 
+#include "loggingcategories.h"
+
 PlatformSystemController::PlatformSystemController(QObject *parent) : QObject(parent)
 {
 
@@ -39,5 +41,41 @@ bool PlatformSystemController::reboot()
 
 bool PlatformSystemController::shutdown()
 {
+    return false;
+}
+
+bool PlatformSystemController::timeManagementAvailable() const
+{
+    return false;
+}
+
+bool PlatformSystemController::automaticTimeAvailable() const
+{
+    return false;
+}
+
+bool PlatformSystemController::automaticTime() const
+{
+    return false;
+}
+
+bool PlatformSystemController::setTime(const QDateTime &time)
+{
+    Q_UNUSED(time)
+    qCWarning(dcPlatform()) << "setTime not implemented in platform plugin";
+    return false;
+}
+
+bool PlatformSystemController::setAutomaticTime(bool automaticTime)
+{
+    Q_UNUSED(automaticTime)
+    qCWarning(dcPlatform()) << "setAutomaticTime not implemented in platform plugin";
+    return false;
+}
+
+bool PlatformSystemController::setTimeZone(const QTimeZone &timeZone)
+{
+    Q_UNUSED(timeZone)
+    qCWarning(dcPlatform()) << "setTimeZone not implemented in platform plugin";
     return false;
 }

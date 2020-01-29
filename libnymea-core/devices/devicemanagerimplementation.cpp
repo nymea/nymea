@@ -1040,12 +1040,6 @@ DeviceActionInfo *DeviceManagerImplementation::executeAction(const Action &actio
     return info;
 }
 
-/*! Centralized time tick for the NymeaTimer resource. Ticks every second. */
-void DeviceManagerImplementation::timeTick()
-{
-
-}
-
 void DeviceManagerImplementation::loadPlugins()
 {
     foreach (const QString &path, pluginSearchDirs()) {

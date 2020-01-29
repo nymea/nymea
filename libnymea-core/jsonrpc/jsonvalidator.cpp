@@ -112,7 +112,7 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
             continue;
         }
         QString trimmedKey = key;
-        trimmedKey.remove(QRegExp("^(o:|r:)"));
+        trimmedKey.remove(QRegExp("^(o:|r:|d:)"));
         if (!map.contains(trimmedKey)) {
             return Result(false, "Missing required key: " + key, key);
         }
@@ -123,7 +123,7 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
         // Is the key allowed in here?
         QVariant expectedValue = definition.value(key);
         foreach (const QString &definitionKey, definition.keys()) {
-            QRegExp regExp = QRegExp("(o:|r:)*" + key);
+            QRegExp regExp = QRegExp("(o:|r:|d:)*" + key);
             if (regExp.exactMatch(definitionKey)) {
                 expectedValue = definition.value(definitionKey);
             }
@@ -132,7 +132,7 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
             expectedValue = definition.value("o:" + key);
         }
         if (!expectedValue.isValid()) {
-            expectedValue = definition.value("o:" + key);
+            expectedValue = definition.value("d:" + key);
         }
         if (!expectedValue.isValid()) {
             return Result(false, "Invalid key: " + key);

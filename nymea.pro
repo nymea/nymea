@@ -46,9 +46,6 @@ doc.commands += cd $$top_srcdir/doc; qdoc --highlighting config.qdocconf; cp -r 
                 cp -r favicons/* html/; cp -r $$top_srcdir/doc/html $$top_builddir/
 QMAKE_EXTRA_TARGETS += doc
 
-licensecheck.commands = $$top_srcdir/tests/auto/checklicenseheaders.sh $$top_srcdir
-QMAKE_EXTRA_TARGETS += licensecheck
-
 # Translations:
 # make lupdate to update .ts files
 CORE_TRANSLATIONS += $$files($${top_srcdir}/translations/*.ts, true)
@@ -73,7 +70,6 @@ INSTALLS += translations
 
 QMAKE_EXTRA_TARGETS += lupdate lrelease
 
-test.depends = licensecheck
 test.depends += lrelease
 test.commands = LD_LIBRARY_PATH=$$top_builddir/libnymea-core:$$top_builddir/libnymea:$$top_builddir/tests/testlib make check TESTRUNNER=\"dbus-test-runner --bus-type=system --task\"
 QMAKE_EXTRA_TARGETS += test

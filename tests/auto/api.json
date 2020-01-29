@@ -1890,10 +1890,10 @@
             "o:eventDescriptors": "$ref:EventDescriptors",
             "o:executable": "Bool",
             "o:exitActions": "$ref:RuleActions",
-            "o:id": "Uuid",
             "o:stateEvaluator": "$ref:StateEvaluator",
             "o:timeDescriptor": "$ref:TimeDescriptor",
-            "r:o:active": "Bool"
+            "r:active": "Bool",
+            "r:id": "Uuid"
         },
         "RuleAction": {
             "o:actionTypeId": "Uuid",

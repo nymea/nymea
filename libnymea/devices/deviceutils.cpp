@@ -26,6 +26,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QJsonParseError>
+#include <QMetaEnum>
 
 DeviceUtils::DeviceUtils()
 {
@@ -191,6 +192,15 @@ Interface DeviceUtils::loadInterface(const QString &name)
         stateType.setPossibleValues(stateVariant.toMap().value("allowedValues").toList());
         stateType.setMinValue(stateVariant.toMap().value("minValue"));
         stateType.setMaxValue(stateVariant.toMap().value("maxValue"));
+        if (stateVariant.toMap().contains("unit")) {
+            QMetaEnum unitEnum = QMetaEnum::fromType<Types::Unit>();
+            int enumValue = unitEnum.keyToValue("Unit" + stateVariant.toMap().value("unit").toByteArray());
+            if (enumValue == -1) {
+                qCWarning(dcDeviceManager) << "Invalid unit" << stateVariant.toMap().value("unit").toString() << "in interface" << name;
+            } else {
+                stateType.setUnit(static_cast<Types::Unit>(unitEnum.keyToValue("Unit" + stateVariant.toMap().value("unit").toByteArray())));
+            }
+        }
         stateTypes.append(stateType);
 
         EventType stateChangeEventType;

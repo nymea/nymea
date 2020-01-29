@@ -44,6 +44,7 @@ public:
         MediaBrowserIconUSB = 101,
         MediaBrowserIconNetwork = 102,
         MediaBrowserIconAux = 103,
+        MediaBrowserIconBluetooth = 104,
 
         MediaBrowserIconSpotify = 200,
         MediaBrowserIconAmazon = 201,

@@ -124,6 +124,7 @@
             "MediaBrowserIconUSB",
             "MediaBrowserIconNetwork",
             "MediaBrowserIconAux",
+            "MediaBrowserIconBluetooth",
             "MediaBrowserIconSpotify",
             "MediaBrowserIconAmazon",
             "MediaBrowserIconTuneIn",

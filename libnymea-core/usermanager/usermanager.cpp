@@ -167,7 +167,7 @@ UserManager::UserError UserManager::createUser(const QString &username, const QS
     QByteArray salt = QUuid::createUuid().toString().remove(QRegExp("[{}]")).toUtf8();
     QByteArray hashedPassword = QCryptographicHash::hash(QString(password + salt).toUtf8(), QCryptographicHash::Sha512).toBase64();
     QString queryString = QString("INSERT INTO users(username, password, salt) values(\"%1\", \"%2\", \"%3\");")
-            .arg(username)
+            .arg(username.toLower())
             .arg(QString::fromUtf8(hashedPassword))
             .arg(QString::fromUtf8(salt));
     m_db.exec(queryString);
@@ -178,9 +178,41 @@ UserManager::UserError UserManager::createUser(const QString &username, const QS
     return UserErrorNoError;
 }
 
-/*! Remove the user with the given \a username and all of its tokens. If the \a username is empty, all anonymous
-    tokens (e.g. issued by pushbutton auth) will be cleared.
-*/
+UserManager::UserError UserManager::changePassword(const QString &username, const QString &newPassword)
+{
+    if (!validateUsername(username)) {
+        qCWarning(dcUserManager) << "Invalid username:" << username;
+        return UserErrorInvalidUserId;
+    }
+
+    if (!validatePassword(newPassword)) {
+        qCWarning(dcUserManager) << "Password failed character validation. Must contain a letter, a number and a special charactar. Minimum length: 8";
+        return UserErrorBadPassword;
+    }
+
+    QString checkForUserExistingQuery = QString("SELECT * FROM users WHERE lower(username) = \"%1\";").arg(username.toLower());
+    QSqlQuery result = m_db.exec(checkForUserExistingQuery);
+    if (!result.first()) {
+        qCWarning(dcUserManager) << "Username does not exist.";
+        return UserErrorInvalidUserId;
+    }
+
+    // Update the password
+    QByteArray salt = QUuid::createUuid().toString().remove(QRegExp("[{}]")).toUtf8();
+    QByteArray hashedPassword = QCryptographicHash::hash(QString(newPassword + salt).toUtf8(), QCryptographicHash::Sha512).toBase64();
+    QString queryString = QString("UPDATE users SET password = \"%1\", salt = \"%2\" WHERE lower(username) = \"%3\";")
+            .arg(QString::fromUtf8(hashedPassword))
+            .arg(QString::fromUtf8(salt))
+            .arg(username.toLower());
+    m_db.exec(queryString);
+    if (m_db.lastError().type() != QSqlError::NoError) {
+        qCWarning(dcUserManager) << "Error updating password for user:" << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        return UserErrorBackendError;
+    }
+    qCDebug(dcUserManager()) << "Password updated for user" << username;
+    return UserErrorNoError;
+}
+
 UserManager::UserError UserManager::removeUser(const QString &username)
 {
     if (!username.isEmpty()) {
@@ -189,13 +221,10 @@ UserManager::UserError UserManager::removeUser(const QString &username)
         if (result.numRowsAffected() == 0) {
             return UserErrorInvalidUserId;
         }
-
-        QString dropTokensQuery = QString("DELETE FROM tokens WHERE lower(username) = \"%1\";").arg(username.toLower());
-        m_db.exec(dropTokensQuery);
-    } else {
-        QString dropTokensQuery = QString("DELETE FROM tokens WHERE username = \"\";").arg(username.toLower());
-        m_db.exec(dropTokensQuery);
     }
+
+    QString dropTokensQuery = QString("DELETE FROM tokens WHERE lower(username) = \"%1\";").arg(username.toLower());
+    m_db.exec(dropTokensQuery);
 
     return UserErrorNoError;
 }
@@ -233,7 +262,7 @@ QByteArray UserManager::authenticate(const QString &username, const QString &pas
     QByteArray token = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
     QString storeTokenQuery = QString("INSERT INTO tokens(id, username, token, creationdate, devicename) VALUES(\"%1\", \"%2\", \"%3\", \"%4\", \"%5\");")
             .arg(QUuid::createUuid().toString())
-            .arg(username)
+            .arg(username.toLower())
             .arg(QString::fromUtf8(token))
             .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
             .arg(deviceName);
@@ -280,32 +309,32 @@ void UserManager::cancelPushButtonAuth(int transactionId)
 
 }
 
-/*! Returns the username for the given \a token. If the token is invalid, an empty string will be returned. */
-QString UserManager::userForToken(const QByteArray &token) const
+UserInfo UserManager::userInfo(const QByteArray &token) const
 {
-    if (!validateToken(token)) {
-        qCWarning(dcUserManager) << "Token failed character validation:" << token;
-        return QString();
+    TokenInfo tokenInfo = this->tokenInfo(token);
+
+    if (tokenInfo.id().isNull()) {
+        qCWarning(dcUserManager) << "Cannot fetch user info for invalid token:" << token;
+        return UserInfo();
     }
-    QString getUserQuery = QString("SELECT * FROM tokens WHERE token = \"%1\";")
-            .arg(QString::fromUtf8(token));
+
+    // OK, this seems pointless, but data structures are prepared to have more details about users than just the username
+    // i.e. permissions etc will be in here at some point
+    QString getUserQuery = QString("SELECT username FROM users WHERE lower(username) = \"%1\";")
+            .arg(tokenInfo.username().toLower());
     QSqlQuery result = m_db.exec(getUserQuery);
     if (m_db.lastError().type() != QSqlError::NoError) {
-        qCWarning(dcUserManager) << "Error fetching username for token:" << m_db.lastError().databaseText() << m_db.lastError().driverText() << getUserQuery;
-        return QString();
-    }
-    if (!result.first()) {
-        qCWarning(dcUserManager) << "No such token in DB:" << token;
-        return QString();
+        qCWarning(dcUserManager) << "Query for token failed:" << m_db.lastError().databaseText() << m_db.lastError().driverText() << getUserQuery;
+        return UserInfo();
     }
 
-    return result.value("username").toString();
+    if (!result.first()) {
+        return UserInfo();
+    }
+    return UserInfo(result.value("username").toString());
+
 }
 
-/*! Returns a list of tokens for the given \a username.
-
-    \sa TokenInfo
-*/
 QList<TokenInfo> UserManager::tokens(const QString &username) const
 {
     QList<TokenInfo> ret;
@@ -326,6 +355,44 @@ QList<TokenInfo> UserManager::tokens(const QString &username) const
         ret << TokenInfo(result.value("id").toUuid(), result.value("username").toString(), result.value("creationdate").toDateTime(), result.value("devicename").toString());
     }
     return ret;
+}
+
+TokenInfo UserManager::tokenInfo(const QByteArray &token) const
+{
+    if (!validateToken(token)) {
+        qCWarning(dcUserManager) << "Token did not pass validation:" << token;
+        return TokenInfo();
+    }
+
+    QString getTokenQuery = QString("SELECT id, username, creationdate, deviceName FROM tokens WHERE token = \"%1\";")
+            .arg(QString::fromUtf8(token));
+    QSqlQuery result = m_db.exec(getTokenQuery);
+    if (m_db.lastError().type() != QSqlError::NoError) {
+        qCWarning(dcUserManager) << "Query for token failed:" << m_db.lastError().databaseText() << m_db.lastError().driverText() << getTokenQuery;
+        return TokenInfo();
+    }
+
+    if (!result.first()) {
+        return TokenInfo();
+    }
+    return TokenInfo(result.value("id").toUuid(), result.value("username").toString(), result.value("creationdate").toDateTime(), result.value("devicename").toString());
+}
+
+TokenInfo UserManager::tokenInfo(const QUuid &tokenId) const
+{
+
+    QString getTokenQuery = QString("SELECT id, username, creationdate, deviceName FROM tokens WHERE id = \"%1\";")
+            .arg(tokenId.toString());
+    QSqlQuery result = m_db.exec(getTokenQuery);
+    if (m_db.lastError().type() != QSqlError::NoError) {
+        qCWarning(dcUserManager) << "Query for token failed:" << m_db.lastError().databaseText() << m_db.lastError().driverText() << getTokenQuery;
+        return TokenInfo();
+    }
+
+    if (!result.first()) {
+        return TokenInfo();
+    }
+    return TokenInfo(result.value("id").toUuid(), result.value("username").toString(), result.value("creationdate").toDateTime(), result.value("devicename").toString());
 }
 
 /*! Removes the token with the given \a tokenId. Returns \l{UserError} to inform about the result. */

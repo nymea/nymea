@@ -34,6 +34,7 @@
 #include "nymeacore.h"
 #include "nymeatestbase.h"
 #include "usermanager/usermanager.h"
+#include "servers/mocktcpserver.h"
 
 using namespace nymeaserver;
 
@@ -44,11 +45,33 @@ public:
     TestUsermanager(QObject* parent = nullptr);
 
 private slots:
-    void createUser_data();
+    void init();
+
+    void loginValidation_data();
+    void loginValidation();
+
     void createUser();
+    void authenticate();
+
+    void createDuplicateUser();
+
+    void getTokens();
+
+    void removeToken();
+
+    void unauthenticatedCallAfterTokenRemove();
+
+    void changePassword();
+
+    void authenticateAfterPasswordChangeOK();
+
+    void authenticateAfterPasswordChangeFail();
+
+    void getUserInfo();
 
 private:
-    LogEngine *engine;
+    // m_apiToken is in testBase
+    QUuid m_tokenId;
 };
 
 TestUsermanager::TestUsermanager(QObject *parent): NymeaTestBase(parent)
@@ -56,7 +79,18 @@ TestUsermanager::TestUsermanager(QObject *parent): NymeaTestBase(parent)
     QCoreApplication::instance()->setOrganizationName("nymea-test");
 }
 
-void TestUsermanager::createUser_data() {
+void TestUsermanager::init()
+{
+    UserManager *userManager = NymeaCore::instance()->userManager();
+    foreach (const QString &user, userManager->users()) {
+        qCDebug(dcTests()) << "Removing user" << user;
+        userManager->removeUser(user);
+    }
+    userManager->removeUser("");
+
+}
+
+void TestUsermanager::loginValidation_data() {
     QTest::addColumn<QString>("username");
     QTest::addColumn<QString>("password");
     QTest::addColumn<UserManager::UserError>("expectedError");
@@ -88,22 +122,162 @@ void TestUsermanager::createUser_data() {
 
 }
 
-void TestUsermanager::createUser()
+void TestUsermanager::loginValidation()
 {
     QFETCH(QString, username);
     QFETCH(QString, password);
     QFETCH(UserManager::UserError, expectedError);
 
     UserManager *userManager = NymeaCore::instance()->userManager();
-    foreach (const QString &user, userManager->users()) {
-        userManager->removeUser(user);
-    }
-    userManager->removeUser("");
-
     UserManager::UserError error = userManager->createUser(username, password);
     qDebug() << "Error:" << error << "Expected:" << expectedError;
     QCOMPARE(error, expectedError);
 
+}
+
+void TestUsermanager::createUser()
+{
+    QVariantMap params;
+    params.insert("username", "valid@user.test");
+    params.insert("password", "Bla1234*");
+    QVariant response = injectAndWait("Users.CreateUser", params);
+
+    QVERIFY2(response.toMap().value("status").toString() == "success", "Error creating user");
+    QVERIFY2(response.toMap().value("params").toMap().value("error").toString() == "UserErrorNoError", "Error creating user");
+}
+
+void TestUsermanager::authenticate()
+{
+    m_apiToken.clear();
+    createUser();
+
+    QVariantMap params;
+    params.insert("username", "valid@user.test");
+    params.insert("password", "Bla1234*");
+    params.insert("deviceName", "autotests");
+    QVariant response = injectAndWait("JSONRPC.Authenticate", params);
+
+    m_apiToken = response.toMap().value("params").toMap().value("token").toByteArray();
+
+    QVERIFY2(response.toMap().value("status").toString() == "success", "Error authenticating");
+    QVERIFY2(response.toMap().value("params").toMap().value("success").toString() == "true", "Error authenticating");
+}
+
+void TestUsermanager::createDuplicateUser()
+{
+    authenticate();
+
+    QVariantMap params;
+    params.insert("username", "valid@user.test");
+    params.insert("password", "Bla1234*");
+    QVariant response = injectAndWait("Users.CreateUser", params);
+
+    QVERIFY2(response.toMap().value("status").toString() == "success", "Unexpected error code creating duplicate user");
+    QVERIFY2(response.toMap().value("params").toMap().value("error").toString() == "UserErrorDuplicateUserId", "Unexpected error creating duplicate user");
+}
+
+void TestUsermanager::getTokens()
+{
+    authenticate();
+
+    QVariant response = injectAndWait("Users.GetTokens");
+    QVERIFY2(response.toMap().value("status").toString() == "success", "Unexpected error code creating duplicate user");
+    QCOMPARE(response.toMap().value("params").toMap().value("error").toString(), QString("UserErrorNoError"));
+
+    QVariantList tokenInfoList = response.toMap().value("params").toMap().value("tokenInfoList").toList();
+    QCOMPARE(tokenInfoList.count(), 1);
+
+    m_tokenId = tokenInfoList.first().toMap().value("id").toUuid();
+    QVERIFY2(!m_tokenId.isNull(), "Token ID should not be null");
+    QCOMPARE(tokenInfoList.first().toMap().value("username").toString(), QString("valid@user.test"));
+    QCOMPARE(tokenInfoList.first().toMap().value("deviceName").toString(), QString("autotests"));
+}
+
+void TestUsermanager::removeToken()
+{
+    getTokens();
+
+    QVariantMap params;
+    params.insert("tokenId", m_tokenId);
+    QVariant response = injectAndWait("Users.RemoveToken", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("error").toString(), QString("UserErrorNoError"));
+}
+
+void TestUsermanager::changePassword()
+{
+    authenticate();
+
+    QVariantMap params;
+    params.insert("newPassword", "Blubb123");
+    QVariant response = injectAndWait("Users.ChangePassword", params);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("error").toString(), QString("UserErrorNoError"));
+}
+
+void TestUsermanager::authenticateAfterPasswordChangeOK()
+{
+    changePassword();
+
+    QVariantMap params;
+    params.insert("username", "valid@user.test");
+    params.insert("password", "Blubb123"); // New password, should be ok
+    params.insert("deviceName", "autotests");
+    QVariant response = injectAndWait("JSONRPC.Authenticate", params);
+
+    m_apiToken = response.toMap().value("params").toMap().value("token").toByteArray();
+    QVERIFY2(!m_apiToken.isEmpty(), "Token should not be empty");
+    QVERIFY2(response.toMap().value("status").toString() == "success", "Error authenticating");
+    QVERIFY2(response.toMap().value("params").toMap().value("success").toString() == "true", "Error authenticating");
+}
+
+void TestUsermanager::authenticateAfterPasswordChangeFail()
+{
+    changePassword();
+
+    QVariantMap params;
+    params.insert("username", "valid@user.test");
+    params.insert("password", "Bla1234*"); // Original password, should not be ok
+    params.insert("deviceName", "autotests");
+    QVariant response = injectAndWait("JSONRPC.Authenticate", params);
+
+    m_apiToken = response.toMap().value("params").toMap().value("token").toByteArray();
+    QVERIFY2(m_apiToken.isEmpty(), "Token should be empty");
+    QVERIFY2(response.toMap().value("status").toString() == "success", "Error authenticating");
+    QCOMPARE(response.toMap().value("params").toMap().value("success").toString(), QString("false"));
+}
+
+void TestUsermanager::getUserInfo()
+{
+    authenticate();
+
+    QVariant response = injectAndWait("Users.GetUserInfo");
+
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+
+    QVariantMap userInfoMap = response.toMap().value("params").toMap().value("userInfo").toMap();
+
+
+    QCOMPARE(userInfoMap.value("username").toString(), QString("valid@user.test"));
+
+}
+
+void TestUsermanager::unauthenticatedCallAfterTokenRemove()
+{
+    removeToken();
+
+    QSignalSpy spy(m_mockTcpServer, &MockTcpServer::connectionTerminated);
+
+    QVariant response = injectAndWait("Users.GetTokens");
+    QCOMPARE(response.toMap().value("status").toString(), QString("unauthorized"));
+
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY2(spy.count() == 1, "Connection should be terminated!");
+
+    // need to restart as our connection dies
+    restartServer();
 }
 
 #include "testusermanager.moc"

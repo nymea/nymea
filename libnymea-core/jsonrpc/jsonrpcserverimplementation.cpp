@@ -70,6 +70,7 @@
 #include "networkmanagerhandler.h"
 #include "tagshandler.h"
 #include "systemhandler.h"
+#include "usershandler.h"
 
 #include <QJsonDocument>
 #include <QStringList>
@@ -194,13 +195,13 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     params.clear(); returns.clear();
     description = "Return a list of TokenInfo objects of all the tokens for the current user.";
     returns.insert("tokenInfoList", QVariantList() << objectRef("TokenInfo"));
-    registerMethod("Tokens", description, params, returns);
+    registerMethod("Tokens", description, params, returns, "Use Users.GetTokens instead.");
 
     params.clear(); returns.clear();
     description = "Revoke access for a given token.";
     params.insert("tokenId", enumValueName(Uuid));
     returns.insert("error", enumRef<UserManager::UserError>());
-    registerMethod("RemoveToken", description, params, returns);
+    registerMethod("RemoveToken", description, params, returns, "Use Users.RemoveToken instead.");
 
     params.clear(); returns.clear();
     description = "Sets up the cloud connection by deploying a certificate and its configuration.";
@@ -370,8 +371,8 @@ JsonReply *JsonRPCServerImplementation::Tokens(const QVariantMap &params) const
     Q_UNUSED(params)
     QByteArray token = property("token").toByteArray();
 
-    QString username = NymeaCore::instance()->userManager()->userForToken(token);
-    QList<TokenInfo> tokens = NymeaCore::instance()->userManager()->tokens(username);
+    TokenInfo tokenInfo = NymeaCore::instance()->userManager()->tokenInfo(token);
+    QList<TokenInfo> tokens = NymeaCore::instance()->userManager()->tokens(tokenInfo.username());
     QVariantList retList;
     foreach (const TokenInfo &tokenInfo, tokens) {
         retList << pack(tokenInfo);
@@ -569,6 +570,7 @@ void JsonRPCServerImplementation::setup()
     registerHandler(new NetworkManagerHandler(this));
     registerHandler(new TagsHandler(this));
     registerHandler(new SystemHandler(NymeaCore::instance()->platform(), this));
+    registerHandler(new UsersHandler(NymeaCore::instance()->userManager(), this));
 
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::pairingReply, this, &JsonRPCServerImplementation::pairingFinished);
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::connectionStateChanged, this, &JsonRPCServerImplementation::onCloudConnectionStateChanged);
@@ -634,19 +636,19 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     // check if authentication is required for this transport
     if (m_interfaces.value(interface)) {
         QByteArray token = message.value("token").toByteArray();
-        QStringList authExemptMethodsNoUser = {"Introspect", "Hello", "CreateUser", "RequestPushButtonAuth"};
-        QStringList authExemptMethodsWithUser = {"Introspect", "Hello", "Authenticate", "RequestPushButtonAuth"};
+        QStringList authExemptMethodsNoUser = {"JSONRPC.Introspect", "JSONRPC.Hello", "JSONRPC.RequestPushButtonAuth", "JSONRPC.CreateUser", "Users.CreateUser"};
+        QStringList authExemptMethodsWithUser = {"JSONRPC.Introspect", "JSONRPC.Hello", "JSONRPC.Authenticate", "JSONRPC.RequestPushButtonAuth"};
         // if there is no user in the system yet, let's fail unless this is special method for authentication itself
         if (NymeaCore::instance()->userManager()->initRequired()) {
-            if (!(targetNamespace == "JSONRPC" && authExemptMethodsNoUser.contains(method)) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
-                sendUnauthorizedResponse(interface, clientId, commandId, "Initial setup required. Call CreateUser first.");
+            if (!authExemptMethodsNoUser.contains(targetNamespace + "." + method) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
+                sendUnauthorizedResponse(interface, clientId, commandId, "Initial setup required. Call Users.CreateUser first.");
                 qCWarning(dcJsonRpc()) << "Initial setup required but client does not call the setup. Dropping connection.";
                 interface->terminateClientConnection(clientId);
                 return;
             }
         } else {
             // ok, we have a user. if there isn't a valid token, let's fail unless this is a Authenticate, Introspect  Hello call
-            if (!(targetNamespace == "JSONRPC" && authExemptMethodsWithUser.contains(method)) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
+            if (!authExemptMethodsWithUser.contains(targetNamespace + "." + method) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
                 sendUnauthorizedResponse(interface, clientId, commandId, "Forbidden: Invalid token.");
                 qCWarning(dcJsonRpc()) << "Client did not not present a valid token. Dropping connection.";
                 interface->terminateClientConnection(clientId);

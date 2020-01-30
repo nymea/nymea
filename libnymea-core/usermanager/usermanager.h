@@ -32,6 +32,7 @@
 #define USERMANAGER_H
 
 #include "tokeninfo.h"
+#include "userinfo.h"
 
 #include <QObject>
 #include <QSqlDatabase>
@@ -61,6 +62,7 @@ public:
     QStringList users() const;
 
     UserError createUser(const QString &username, const QString &password);
+    UserError changePassword(const QString &username, const QString &newPassword);
     UserError removeUser(const QString &username);
 
     bool pushButtonAuthAvailable() const;
@@ -68,9 +70,14 @@ public:
     QByteArray authenticate(const QString &username, const QString &password, const QString &deviceName);
     int requestPushButtonAuth(const QString &deviceName);
     void cancelPushButtonAuth(int transactionId);
-    QString userForToken(const QByteArray &token) const;
+
+    UserInfo userInfo(const QByteArray &token) const;
+    TokenInfo tokenInfo(const QByteArray &token) const;
+    TokenInfo tokenInfo(const QUuid &tokenId) const;
     QList<TokenInfo> tokens(const QString &username) const;
-    nymeaserver::UserManager::UserError removeToken(const QUuid &tokenId);
+
+    UserError removeToken(const QUuid &tokenId);
+
 
     bool verifyToken(const QByteArray &token);
 

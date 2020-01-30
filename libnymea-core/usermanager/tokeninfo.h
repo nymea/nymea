@@ -34,6 +34,7 @@
 #include <QUuid>
 #include <QDateTime>
 #include <QMetaType>
+#include <QVariant>
 
 namespace nymeaserver {
 
@@ -43,7 +44,7 @@ class TokenInfo
     Q_PROPERTY(QUuid id READ id)
     Q_PROPERTY(QString username READ username)
     Q_PROPERTY(QDateTime creationTime READ creationTime)
-    Q_PROPERTY(QString deviveName READ deviceName)
+    Q_PROPERTY(QString deviceName READ deviceName)
 
 public:
     TokenInfo();
@@ -61,7 +62,17 @@ private:
     QString m_deviceName;
 };
 
-}
-Q_DECLARE_METATYPE(nymeaserver::TokenInfo)
 
+class TokenInfoList: public QList<TokenInfo>
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
+};
+}
+
+Q_DECLARE_METATYPE(nymeaserver::TokenInfo)
+Q_DECLARE_METATYPE(nymeaserver::TokenInfoList)
 #endif // TOKENINFO_H

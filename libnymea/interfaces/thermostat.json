@@ -4,7 +4,9 @@
     {
       "name": "targetTemperature",
       "type": "double",
-      "unit": "DegreeCelsius"
+      "unit": "DegreeCelsius",
+      "minValue": "any",
+      "maxValue": "any"
     }
   ]
 }

@@ -93,16 +93,15 @@ void EventHandler::eventTriggered(const Event &event)
     emit EventTriggered(params);
 }
 
-JsonReply* EventHandler::GetEventType(const QVariantMap &params) const
+JsonReply* EventHandler::GetEventType(const QVariantMap &params, const JsonContext &context) const
 {
-    QLocale locale = params.value("locale").toLocale();
     qCDebug(dcJsonRpc) << "asked for event type" << params;
     EventTypeId eventTypeId(params.value("eventTypeId").toString());
     foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
             if (eventType.id() == eventTypeId) {
                 EventType translatedEventType = eventType;
-                translatedEventType.setDisplayName(NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), eventType.displayName(), locale));
+                translatedEventType.setDisplayName(NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), eventType.displayName(), context.locale()));
                 QVariantMap data;
                 data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorNoError));
                 data.insert("eventType", pack(translatedEventType));

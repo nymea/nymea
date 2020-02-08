@@ -70,9 +70,8 @@ QString StateHandler::name() const
     return "States";
 }
 
-JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
+JsonReply* StateHandler::GetStateType(const QVariantMap &params, const JsonContext &context) const
 {
-    QLocale locale = params.value("locale").toLocale();
     qCDebug(dcJsonRpc) << "asked for state type" << params;
     StateTypeId stateTypeId(params.value("stateTypeId").toString());
     foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
@@ -81,7 +80,7 @@ JsonReply* StateHandler::GetStateType(const QVariantMap &params) const
                 QVariantMap data;
                 data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorNoError));
                 StateType translatedStateType = stateType;
-                translatedStateType.setDisplayName(NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), stateType.displayName(), locale));
+                translatedStateType.setDisplayName(NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), stateType.displayName(), context.locale()));
                 data.insert("stateType", pack(translatedStateType));
                 return createReply(data);
             }

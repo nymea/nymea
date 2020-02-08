@@ -39,6 +39,7 @@
 #include <QDateTime>
 
 #include "jsonreply.h"
+#include "jsoncontext.h"
 
 class JsonHandler : public QObject
 {
@@ -108,7 +109,6 @@ protected:
     JsonReply *createAsyncReply(const QString &method) const;
 
 private:
-
     void registerObject(const QMetaObject &metaObject);
     void registerObject(const QMetaObject &metaObject, const QMetaObject &listMetaObject);
 

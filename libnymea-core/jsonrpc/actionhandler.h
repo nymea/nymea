@@ -44,8 +44,8 @@ public:
 
     QString name() const;
 
-    Q_INVOKABLE JsonReply *ExecuteAction(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *GetActionType(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *ExecuteAction(const QVariantMap &params, const JsonContext &context);
+    Q_INVOKABLE JsonReply *GetActionType(const QVariantMap &params, const JsonContext &context) const;
 
     Q_INVOKABLE JsonReply *ExecuteBrowserItem(const QVariantMap &params);
     Q_INVOKABLE JsonReply *ExecuteBrowserItemAction(const QVariantMap &params);

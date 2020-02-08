@@ -415,13 +415,12 @@ QString DeviceHandler::name() const
     return "Devices";
 }
 
-JsonReply* DeviceHandler::GetSupportedVendors(const QVariantMap &params) const
+JsonReply* DeviceHandler::GetSupportedVendors(const QVariantMap &params, const JsonContext &context) const
 {
-    QLocale locale = params.value("locale").toLocale();
-
+    Q_UNUSED(params)
     QVariantList vendors;
     foreach (const Vendor &vendor, NymeaCore::instance()->deviceManager()->supportedVendors()) {
-        Vendor translatedVendor = NymeaCore::instance()->deviceManager()->translateVendor(vendor, locale);
+        Vendor translatedVendor = NymeaCore::instance()->deviceManager()->translateVendor(vendor, context.locale());
         vendors.append(pack(translatedVendor));
     }
 
@@ -430,14 +429,13 @@ JsonReply* DeviceHandler::GetSupportedVendors(const QVariantMap &params) const
     return createReply(returns);
 }
 
-JsonReply* DeviceHandler::GetSupportedDevices(const QVariantMap &params) const
+JsonReply* DeviceHandler::GetSupportedDevices(const QVariantMap &params, const JsonContext &context) const
 {
-    QLocale locale = params.value("locale").toLocale();
     VendorId vendorId = VendorId(params.value("vendorId").toString());
     QVariantMap returns;
     QVariantList deviceClasses;
     foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices(vendorId)) {
-        DeviceClass translatedDeviceClass = NymeaCore::instance()->deviceManager()->translateDeviceClass(deviceClass, locale);
+        DeviceClass translatedDeviceClass = NymeaCore::instance()->deviceManager()->translateDeviceClass(deviceClass, context.locale());
         deviceClasses.append(pack(translatedDeviceClass));
     }
 
@@ -445,9 +443,9 @@ JsonReply* DeviceHandler::GetSupportedDevices(const QVariantMap &params) const
     return createReply(returns);
 }
 
-JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
+JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params, const JsonContext &context) const
 {
-    QLocale locale = params.value("locale").toLocale();
+    QLocale locale = context.locale();
 
     QVariantMap returns;
 
@@ -479,14 +477,13 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params) const
     return reply;
 }
 
-JsonReply* DeviceHandler::GetPlugins(const QVariantMap &params) const
+JsonReply* DeviceHandler::GetPlugins(const QVariantMap &params, const JsonContext &context) const
 {
-    QLocale locale = params.value("locale").toLocale();
-
+    Q_UNUSED(params)
     QVariantList plugins;
     foreach (DevicePlugin* plugin, NymeaCore::instance()->deviceManager()->plugins()) {
         QVariantMap packedPlugin = pack(*plugin).toMap();
-        packedPlugin["displayName"] = NymeaCore::instance()->deviceManager()->translate(plugin->pluginId(), plugin->pluginDisplayName(), locale);
+        packedPlugin["displayName"] = NymeaCore::instance()->deviceManager()->translate(plugin->pluginId(), plugin->pluginDisplayName(), context.locale());
         plugins.append(packedPlugin);
     }
 
@@ -524,13 +521,13 @@ JsonReply* DeviceHandler::SetPluginConfiguration(const QVariantMap &params)
     return createReply(returns);
 }
 
-JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
+JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params, const JsonContext &context)
 {
     DeviceClassId deviceClassId(params.value("deviceClassId").toString());
     QString deviceName = params.value("name").toString();
     ParamList deviceParams = unpack<ParamList>(params.value("deviceParams"));
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
-    QLocale locale = params.value("locale").toLocale();
+    QLocale locale = context.locale();
 
     JsonReply *jsonReply = createAsyncReply("AddConfiguredDevice");
 
@@ -558,11 +555,11 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params)
     return jsonReply;
 }
 
-JsonReply *DeviceHandler::PairDevice(const QVariantMap &params)
+JsonReply *DeviceHandler::PairDevice(const QVariantMap &params, const JsonContext &context)
 {
     QString deviceName = params.value("name").toString();
     ParamList deviceParams = unpack<ParamList>(params.value("deviceParams"));
-    QLocale locale = params.value("locale").toLocale();
+    QLocale locale = context.locale();
 
     DevicePairingInfo *info;
     if (params.contains("deviceDescriptorId")) {
@@ -603,12 +600,12 @@ JsonReply *DeviceHandler::PairDevice(const QVariantMap &params)
     return jsonReply;
 }
 
-JsonReply *DeviceHandler::ConfirmPairing(const QVariantMap &params)
+JsonReply *DeviceHandler::ConfirmPairing(const QVariantMap &params, const JsonContext &context)
 {
     PairingTransactionId pairingTransactionId = PairingTransactionId(params.value("pairingTransactionId").toString());
     QString secret = params.value("secret").toString();
     QString username = params.value("username").toString();
-    QLocale locale = params.value("locale").toLocale();
+    QLocale locale = context.locale();
 
     JsonReply *jsonReply = createAsyncReply("ConfirmPairing");
 
@@ -651,12 +648,12 @@ JsonReply* DeviceHandler::GetConfiguredDevices(const QVariantMap &params) const
     return createReply(returns);
 }
 
-JsonReply *DeviceHandler::ReconfigureDevice(const QVariantMap &params)
+JsonReply *DeviceHandler::ReconfigureDevice(const QVariantMap &params, const JsonContext &context)
 {
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
     ParamList deviceParams = unpack<ParamList>(params.value("deviceParams"));
     DeviceDescriptorId deviceDescriptorId(params.value("deviceDescriptorId").toString());
-    QLocale locale = params.value("locale").toLocale();
+    QLocale locale = context.locale();
 
     JsonReply *jsonReply = createAsyncReply("ReconfigureDevice");
 
@@ -739,36 +736,30 @@ JsonReply *DeviceHandler::SetDeviceSettings(const QVariantMap &params)
     return createReply(statusToReply(status));
 }
 
-JsonReply* DeviceHandler::GetEventTypes(const QVariantMap &params) const
+JsonReply* DeviceHandler::GetEventTypes(const QVariantMap &params, const JsonContext &context) const
 {
-    QLocale locale = params.value("locale").toLocale();
-
     DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
-    DeviceClass translatedDeviceClass = NymeaCore::instance()->deviceManager()->translateDeviceClass(deviceClass, locale);
+    DeviceClass translatedDeviceClass = NymeaCore::instance()->deviceManager()->translateDeviceClass(deviceClass, context.locale());
 
     QVariantMap returns;
     returns.insert("eventTypes", pack(translatedDeviceClass.eventTypes()));
     return createReply(returns);
 }
 
-JsonReply* DeviceHandler::GetActionTypes(const QVariantMap &params) const
+JsonReply* DeviceHandler::GetActionTypes(const QVariantMap &params, const JsonContext &context) const
 {
-    QLocale locale = params.value("locale").toLocale();
-
     DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
-    DeviceClass translatedDeviceClass = NymeaCore::instance()->deviceManager()->translateDeviceClass(deviceClass, locale);
+    DeviceClass translatedDeviceClass = NymeaCore::instance()->deviceManager()->translateDeviceClass(deviceClass, context.locale());
 
     QVariantMap returns;
     returns.insert("actionTypes", pack(translatedDeviceClass.actionTypes()));
     return createReply(returns);
 }
 
-JsonReply* DeviceHandler::GetStateTypes(const QVariantMap &params) const
+JsonReply* DeviceHandler::GetStateTypes(const QVariantMap &params, const JsonContext &context) const
 {
-    QLocale locale = params.value("locale").toLocale();
-
     DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(DeviceClassId(params.value("deviceClassId").toString()));
-    DeviceClass translatedDeviceClass = NymeaCore::instance()->deviceManager()->translateDeviceClass(deviceClass, locale);
+    DeviceClass translatedDeviceClass = NymeaCore::instance()->deviceManager()->translateDeviceClass(deviceClass, context.locale());
 
     QVariantMap returns;
     returns.insert("stateTypes", pack(translatedDeviceClass.stateTypes()));
@@ -803,14 +794,14 @@ JsonReply *DeviceHandler::GetStateValues(const QVariantMap &params) const
     return createReply(returns);
 }
 
-JsonReply *DeviceHandler::BrowseDevice(const QVariantMap &params) const
+JsonReply *DeviceHandler::BrowseDevice(const QVariantMap &params, const JsonContext &context) const
 {
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
     QString itemId = params.value("itemId").toString();
 
     JsonReply *jsonReply = createAsyncReply("BrowseDevice");
 
-    BrowseResult *result = NymeaCore::instance()->deviceManager()->browseDevice(deviceId, itemId, params.value("locale").toLocale());
+    BrowseResult *result = NymeaCore::instance()->deviceManager()->browseDevice(deviceId, itemId, context.locale());
     connect(result, &BrowseResult::finished, jsonReply, [this, jsonReply, result](){
 
         QVariantMap returns = statusToReply(result->status());
@@ -826,7 +817,7 @@ JsonReply *DeviceHandler::BrowseDevice(const QVariantMap &params) const
     return jsonReply;
 }
 
-JsonReply *DeviceHandler::GetBrowserItem(const QVariantMap &params) const
+JsonReply *DeviceHandler::GetBrowserItem(const QVariantMap &params, const JsonContext &context) const
 {
     QVariantMap returns;
     DeviceId deviceId = DeviceId(params.value("deviceId").toString());
@@ -834,7 +825,7 @@ JsonReply *DeviceHandler::GetBrowserItem(const QVariantMap &params) const
 
     JsonReply *jsonReply = createAsyncReply("GetBrowserItem");
 
-    BrowserItemResult *result = NymeaCore::instance()->deviceManager()->browserItemDetails(deviceId, itemId, params.value("locale").toLocale());
+    BrowserItemResult *result = NymeaCore::instance()->deviceManager()->browserItemDetails(deviceId, itemId, context.locale());
     connect(result, &BrowserItemResult::finished, jsonReply, [this, jsonReply, result](){
         QVariantMap params = statusToReply(result->status());
         if (result->status() == Device::DeviceErrorNoError) {
@@ -847,12 +838,12 @@ JsonReply *DeviceHandler::GetBrowserItem(const QVariantMap &params) const
     return jsonReply;
 }
 
-JsonReply *DeviceHandler::ExecuteAction(const QVariantMap &params)
+JsonReply *DeviceHandler::ExecuteAction(const QVariantMap &params, const JsonContext &context)
 {
     DeviceId deviceId(params.value("deviceId").toString());
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     ParamList actionParams = unpack<ParamList>(params.value("params"));
-    QLocale locale = params.value("locale").toLocale();
+    QLocale locale = context.locale();
 
     Action action(actionTypeId, deviceId);
     action.setParams(actionParams);

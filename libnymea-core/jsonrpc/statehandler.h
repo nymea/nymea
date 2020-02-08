@@ -42,7 +42,7 @@ public:
     explicit StateHandler(QObject *parent = nullptr);
     QString name() const override;
 
-    Q_INVOKABLE JsonReply *GetStateType(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetStateType(const QVariantMap &params, const JsonContext &context) const;
 
 };
 

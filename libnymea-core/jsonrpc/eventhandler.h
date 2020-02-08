@@ -44,7 +44,7 @@ public:
     explicit EventHandler(QObject *parent = nullptr);
     QString name() const override;
 
-    Q_INVOKABLE JsonReply *GetEventType(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetEventType(const QVariantMap &params, const JsonContext &context) const;
 
 signals:
     void EventTriggered(const QVariantMap &params);

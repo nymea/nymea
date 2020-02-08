@@ -1,3 +1,33 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+*
+* Copyright 2013 - 2020, nymea GmbH
+* Contact: contact@nymea.io
+*
+* This file is part of nymea.
+* This project including source code and documentation is protected by
+* copyright law, and remains the property of nymea GmbH. All rights, including
+* reproduction, publication, editing and translation, are reserved. The use of
+* this project is subject to the terms of a license agreement to be concluded
+* with nymea GmbH in accordance with the terms of use of nymea GmbH, available
+* under https://nymea.io/license
+*
+* GNU Lesser General Public License Usage
+* Alternatively, this project may be redistributed and/or modified under the
+* terms of the GNU Lesser General Public License as published by the Free
+* Software Foundation; version 3. This project is distributed in the hope that
+* it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+* warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with this project. If not, see <https://www.gnu.org/licenses/>.
+*
+* For any further details and any questions please contact us under
+* contact@nymea.io or see our FAQ/Licensing Information on
+* https://nymea.io/license/faq
+*
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #include "usershandler.h"
 #include "usermanager/usermanager.h"
 #include "usermanager/userinfo.h"
@@ -24,6 +54,37 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     registerMethod("CreateUser", description, params, returns);
 
     params.clear(); returns.clear();
+    description = "Authenticate a client to the api via user & password challenge. Provide "
+                   "a device name which allows the user to identify the client and revoke the token in case "
+                   "the device is lost or stolen. This will return a new token to be used to authorize a "
+                   "client at the API.";
+    params.insert("username", enumValueName(String));
+    params.insert("password", enumValueName(String));
+    params.insert("deviceName", enumValueName(String));
+    returns.insert("success", enumValueName(Bool));
+    returns.insert("o:token", enumValueName(String));
+    registerMethod("Authenticate", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Authenticate a client to the api via Push Button method. "
+                   "Provide a device name which allows the user to identify the client and revoke the "
+                   "token in case the device is lost or stolen. If push button hardware is available, "
+                   "this will return with success and start listening for push button presses. When the "
+                   "push button is pressed, the PushButtonAuthFinished notification will be sent to the "
+                   "requesting client. The procedure will be cancelled when the connection is interrupted. "
+                   "If another client requests push button authentication while a procedure is still going "
+                   "on, the second call will take over and the first one will be notified by the "
+                   "PushButtonAuthFinished signal about the error. The application should make it clear "
+                   "to the user to not press the button when the procedure fails as this can happen for 2 "
+                   "reasons: a) a second user is trying to auth at the same time and only the currently "
+                   "active user should press the button or b) it might indicate an attacker trying to take "
+                   "over and snooping in for tokens.";
+    params.insert("deviceName", enumValueName(String));
+    returns.insert("success", enumValueName(Bool));
+    returns.insert("transactionId", enumValueName(Int));
+    registerMethod("RequestPushButtonAuth", description, params, returns);
+
+    params.clear(); returns.clear();
     description = "Change the password for the currently logged in user.";
     params.insert("newPassword", enumValueName(String));
     returns.insert("error", enumRef<UserManager::UserError>());
@@ -47,6 +108,18 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("RemoveToken", description, params, returns);
 
+    // Notifications
+    params.clear();
+    description = "Emitted when a push button authentication reaches final state. NOTE: This notification is "
+                  "special. It will only be emitted to connections that did actively request a push button "
+                  "authentication, but also it will be emitted regardless of the notification settings.";
+    params.insert("success", enumValueName(Bool));
+    params.insert("transactionId", enumValueName(Int));
+    params.insert("o:token", enumValueName(String));
+    registerNotification("PushButtonAuthFinished", description, params);
+
+    connect(m_userManager, &UserManager::pushButtonAuthFinished, this, &UsersHandler::onPushButtonAuthFinished);
+
 }
 
 QString UsersHandler::name() const
@@ -66,11 +139,11 @@ JsonReply *UsersHandler::CreateUser(const QVariantMap &params)
     return createReply(returns);
 }
 
-JsonReply *UsersHandler::ChangePassword(const QVariantMap &params)
+JsonReply *UsersHandler::ChangePassword(const QVariantMap &params, const JsonContext &context)
 {
     QVariantMap ret;
 
-    QByteArray currentToken = property("token").toByteArray();
+    QByteArray currentToken = context.token();
     if (currentToken.isEmpty()) {
         qCWarning(dcJsonRpc()) << "Cannot change password from an unauthenticated connection";
         ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
@@ -106,13 +179,12 @@ JsonReply *UsersHandler::Authenticate(const QVariantMap &params)
     return createReply(ret);
 }
 
-JsonReply *UsersHandler::RequestPushButtonAuth(const QVariantMap &params)
+JsonReply *UsersHandler::RequestPushButtonAuth(const QVariantMap &params, const JsonContext &context)
 {
     QString deviceName = params.value("deviceName").toString();
-    QUuid clientId = this->property("clientId").toUuid();
 
     int transactionId = m_userManager->requestPushButtonAuth(deviceName);
-    m_pushButtonTransactions.insert(transactionId, clientId);
+    m_pushButtonTransactions.insert(transactionId, context.clientId());
 
     QVariantMap data;
     data.insert("transactionId", transactionId);
@@ -121,12 +193,12 @@ JsonReply *UsersHandler::RequestPushButtonAuth(const QVariantMap &params)
     return createReply(data);
 }
 
-JsonReply *UsersHandler::GetUserInfo(const QVariantMap &params)
+JsonReply *UsersHandler::GetUserInfo(const QVariantMap &params, const JsonContext &context)
 {
     Q_UNUSED(params)
     QVariantMap ret;
 
-    QByteArray currentToken = property("token").toByteArray();
+    QByteArray currentToken = context.token();
     if (currentToken.isEmpty()) {
         qCWarning(dcJsonRpc()) << "Cannot get user info form an unauthenticated connection";
         ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
@@ -145,12 +217,12 @@ JsonReply *UsersHandler::GetUserInfo(const QVariantMap &params)
     return createReply(ret);
 }
 
-JsonReply *UsersHandler::GetTokens(const QVariantMap &params)
+JsonReply *UsersHandler::GetTokens(const QVariantMap &params, const JsonContext &context)
 {
     Q_UNUSED(params)
     QVariantMap ret;
 
-    QByteArray currentToken = property("token").toByteArray();
+    QByteArray currentToken = context.token();
     if (currentToken.isEmpty()) {
         qCWarning(dcJsonRpc()) << "Cannot fetch tokens form an unauthenticated connection";
         ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
@@ -175,11 +247,11 @@ JsonReply *UsersHandler::GetTokens(const QVariantMap &params)
     return createReply(ret);
 }
 
-JsonReply *UsersHandler::RemoveToken(const QVariantMap &params)
+JsonReply *UsersHandler::RemoveToken(const QVariantMap &params, const JsonContext &context)
 {
     QVariantMap ret;
 
-    QByteArray currentToken = property("token").toByteArray();
+    QByteArray currentToken = context.token();
     if (currentToken.isEmpty()) {
         qCWarning(dcJsonRpc()) << "Cannot remove a token from an unauthenticated connection.";
         ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
@@ -211,6 +283,26 @@ JsonReply *UsersHandler::RemoveToken(const QVariantMap &params)
     UserManager::UserError error = m_userManager->removeToken(tokenId);
     ret.insert("error", enumValueName<UserManager::UserError>(error));
     return createReply(ret);
+}
+
+void UsersHandler::onPushButtonAuthFinished(int transactionId, bool success, const QByteArray &token)
+{
+    Q_UNUSED(success)
+    Q_UNUSED(token)
+    QUuid clientId = m_pushButtonTransactions.take(transactionId);
+    if (clientId.isNull()) {
+        qCDebug(dcJsonRpc()) << "Received a PushButton reply but wasn't expecting it.";
+        return;
+    }
+
+    QVariantMap params;
+    params.insert("transactionId", transactionId);
+    params.insert("success", success);
+    if (success) {
+        params.insert("token", token);
+    }
+
+    emit PushButtonAuthFinished(clientId, params);
 }
 
 }

@@ -28,45 +28,31 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef USERSHANDLER_H
-#define USERSHANDLER_H
+#include "jsoncontext.h"
 
-#include <QObject>
-
-#include "jsonrpc/jsonhandler.h"
-
-namespace nymeaserver {
-
-class UserManager;
-
-class UsersHandler : public JsonHandler
+JsonContext::JsonContext(const QUuid &clientId, const QLocale &locale):
+    m_clientId(clientId),
+    m_locale(locale)
 {
-    Q_OBJECT
-public:
-    explicit UsersHandler(UserManager *userManager, QObject *parent = nullptr);
-
-    QString name() const override;
-
-    Q_INVOKABLE JsonReply *CreateUser(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *ChangePassword(const QVariantMap &params, const JsonContext &context);
-    Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *RequestPushButtonAuth(const QVariantMap &params, const JsonContext &context);
-    Q_INVOKABLE JsonReply *GetUserInfo(const QVariantMap &params, const JsonContext &context);
-    Q_INVOKABLE JsonReply *GetTokens(const QVariantMap &params, const JsonContext &context);
-    Q_INVOKABLE JsonReply *RemoveToken(const QVariantMap &params, const JsonContext &context);
-
-signals:
-    void PushButtonAuthFinished(const QUuid &clientId, const QVariantMap &params);
-
-private slots:
-    void onPushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
-
-private:
-    UserManager *m_userManager = nullptr;
-    QHash<int, QUuid> m_pushButtonTransactions;
-
-};
 
 }
 
-#endif // USERSHANDLER_H
+QUuid JsonContext::clientId() const
+{
+    return m_clientId;
+}
+
+QLocale JsonContext::locale() const
+{
+    return m_locale;
+}
+
+QByteArray JsonContext::token() const
+{
+    return m_token;
+}
+
+void JsonContext::setToken(const QByteArray &token)
+{
+    m_token = token;
+}

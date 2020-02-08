@@ -159,7 +159,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     params.insert("username", enumValueName(String));
     params.insert("password", enumValueName(String));
     returns.insert("error", enumRef<UserManager::UserError>());
-    registerMethod("CreateUser", description, params, returns);
+    registerMethod("CreateUser", description, params, returns, "Use Users.CreateUser instead.");
 
     params.clear(); returns.clear();
     description = "Authenticate a client to the api via user & password challenge. Provide "
@@ -171,7 +171,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     params.insert("deviceName", enumValueName(String));
     returns.insert("success", enumValueName(Bool));
     returns.insert("o:token", enumValueName(String));
-    registerMethod("Authenticate", description, params, returns);
+    registerMethod("Authenticate", description, params, returns, "Use Users.Authenticate instead.");
 
     params.clear(); returns.clear();
     description = "Authenticate a client to the api via Push Button method. "
@@ -190,7 +190,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     params.insert("deviceName", enumValueName(String));
     returns.insert("success", enumValueName(Bool));
     returns.insert("transactionId", enumValueName(Int));
-    registerMethod("RequestPushButtonAuth", description, params, returns);
+    registerMethod("RequestPushButtonAuth", description, params, returns, "Use Users.RequestPushButtonAuth instead.");
 
     params.clear(); returns.clear();
     description = "Return a list of TokenInfo objects of all the tokens for the current user.";
@@ -246,7 +246,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     params.insert("success", enumValueName(Bool));
     params.insert("transactionId", enumValueName(Int));
     params.insert("o:token", enumValueName(String));
-    registerNotification("PushButtonAuthFinished", description, params);
+    registerNotification("PushButtonAuthFinished", description, params, "Use Users.PushButtonAuthFinished instead.");
 
     QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
 
@@ -259,12 +259,12 @@ QString JsonRPCServerImplementation::name() const
     return QStringLiteral("JSONRPC");
 }
 
-JsonReply *JsonRPCServerImplementation::Hello(const QVariantMap &params)
+JsonReply *JsonRPCServerImplementation::Hello(const QVariantMap &params, const JsonContext &context)
 {
     TransportInterface *interface = reinterpret_cast<TransportInterface*>(property("transportInterface").toLongLong());
 
     qCDebug(dcJsonRpc()) << params;
-    QUuid clientId = this->property("clientId").toUuid();
+    QUuid clientId = context.clientId();
     if (params.contains("locale")) {
         m_clientLocales.insert(clientId, QLocale(params.value("locale").toString()));
     }
@@ -297,9 +297,9 @@ JsonReply* JsonRPCServerImplementation::Version(const QVariantMap &params) const
     return createReply(data);
 }
 
-JsonReply* JsonRPCServerImplementation::SetNotificationStatus(const QVariantMap &params)
+JsonReply* JsonRPCServerImplementation::SetNotificationStatus(const QVariantMap &params, const JsonContext &context)
 {
-    QUuid clientId = this->property("clientId").toUuid();
+    QUuid clientId = context.clientId();
     Q_ASSERT_X(m_clientTransports.contains(clientId), "JsonRPCServer", "Invalid client ID.");
 
     QStringList enabledNamespaces;
@@ -351,10 +351,10 @@ JsonReply *JsonRPCServerImplementation::Authenticate(const QVariantMap &params)
     return createReply(ret);
 }
 
-JsonReply *JsonRPCServerImplementation::RequestPushButtonAuth(const QVariantMap &params)
+JsonReply *JsonRPCServerImplementation::RequestPushButtonAuth(const QVariantMap &params, const JsonContext &context)
 {
     QString deviceName = params.value("deviceName").toString();
-    QUuid clientId = this->property("clientId").toUuid();
+    QUuid clientId = context.clientId();
 
     int transactionId = NymeaCore::instance()->userManager()->requestPushButtonAuth(deviceName);
     m_pushButtonTransactions.insert(transactionId, clientId);
@@ -366,12 +366,11 @@ JsonReply *JsonRPCServerImplementation::RequestPushButtonAuth(const QVariantMap 
     return createReply(data);
 }
 
-JsonReply *JsonRPCServerImplementation::Tokens(const QVariantMap &params) const
+JsonReply *JsonRPCServerImplementation::Tokens(const QVariantMap &params, const JsonContext &context) const
 {
     Q_UNUSED(params)
-    QByteArray token = property("token").toByteArray();
 
-    TokenInfo tokenInfo = NymeaCore::instance()->userManager()->tokenInfo(token);
+    TokenInfo tokenInfo = NymeaCore::instance()->userManager()->tokenInfo(context.token());
     QList<TokenInfo> tokens = NymeaCore::instance()->userManager()->tokens(tokenInfo.username());
     QVariantList retList;
     foreach (const TokenInfo &tokenInfo, tokens) {
@@ -636,8 +635,8 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     // check if authentication is required for this transport
     if (m_interfaces.value(interface)) {
         QByteArray token = message.value("token").toByteArray();
-        QStringList authExemptMethodsNoUser = {"JSONRPC.Introspect", "JSONRPC.Hello", "JSONRPC.RequestPushButtonAuth", "JSONRPC.CreateUser", "Users.CreateUser"};
-        QStringList authExemptMethodsWithUser = {"JSONRPC.Introspect", "JSONRPC.Hello", "JSONRPC.Authenticate", "JSONRPC.RequestPushButtonAuth"};
+        QStringList authExemptMethodsNoUser = {"JSONRPC.Introspect", "JSONRPC.Hello", "JSONRPC.RequestPushButtonAuth", "JSONRPC.CreateUser", "Users.RequestPushButtonAuth", "Users.CreateUser"};
+        QStringList authExemptMethodsWithUser = {"JSONRPC.Introspect", "JSONRPC.Hello", "JSONRPC.Authenticate", "JSONRPC.RequestPushButtonAuth", "Users.Authenticate", "Users.RequestPushButtonAuth"};
         // if there is no user in the system yet, let's fail unless this is special method for authentication itself
         if (NymeaCore::instance()->userManager()->initRequired()) {
             if (!authExemptMethodsNoUser.contains(targetNamespace + "." + method) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
@@ -683,13 +682,6 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
         return;
     }
 
-    // Hack: attach some properties to the handler to be able to handle the JSONRPC methods. Do not use this outside of jsonrpcserver
-    handler->setProperty("clientId", clientId);
-    handler->setProperty("token", message.value("token").toByteArray());
-    handler->setProperty("transportInterface", reinterpret_cast<qint64>(interface));
-
-    qCDebug(dcJsonRpc()) << "Invoking method" << targetNamespace << method.toLatin1().data();
-
     if (!(targetNamespace == "JSONRPC" && method == "Hello")) {
         // This is not the handshake message. If we've waited for it, consider this a protocol violation and drop connection
         if (m_newConnectionWaitTimers.contains(clientId)) {
@@ -698,16 +690,25 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
             interface->terminateClientConnection(clientId);
             return;
         }
-
-
-        // Unless this is the Hello message, which allows setting the locale explicitly, attach the locale
-        // for this connection
-        // If the client did request a locale in the Hello message, use that locale
-        params.insert("locale", m_clientLocales.value(clientId));
     }
 
+    // Attach the transportInterface if this call is for ourselves
+    if (handler == this) {
+        handler->setProperty("transportInterface", reinterpret_cast<qint64>(interface));
+    }
+
+    JsonContext callContext(clientId, m_clientLocales.value(clientId));
+    callContext.setToken(message.value("token").toByteArray());
+
+    qCDebug(dcJsonRpc()) << "Invoking method" << targetNamespace + '.' +  method << "from client" << clientId;
+
     JsonReply *reply;
-    QMetaObject::invokeMethod(handler, method.toLatin1().data(), Q_RETURN_ARG(JsonReply*, reply), Q_ARG(QVariantMap, params));
+    if (handler->metaObject()->indexOfMethod(method.toUtf8() + "(QVariantMap,JsonContext)") >= 0) {
+        QMetaObject::invokeMethod(handler, method.toUtf8().data(), Q_RETURN_ARG(JsonReply*, reply), Q_ARG(QVariantMap, params), Q_ARG(JsonContext, callContext));
+    } else {
+        QMetaObject::invokeMethod(handler, method.toUtf8().data(), Q_RETURN_ARG(JsonReply*, reply), Q_ARG(QVariantMap, params));
+    }
+
     if (reply->type() == JsonReply::TypeAsync) {
         m_asyncReplies.insert(reply, interface);
         reply->setClientId(clientId);
@@ -755,7 +756,7 @@ void JsonRPCServerImplementation::sendNotification(const QVariantMap &params)
     JsonValidator validator;
     Q_ASSERT_X(validator.validateNotificationParams(params, handler->name() + '.' + method.name(), m_api).success(),
                validator.result().where().toUtf8(),
-               validator.result().errorString().toUtf8());
+               validator.result().errorString().toUtf8() + "\nGot:" + QJsonDocument::fromVariant(params).toJson(QJsonDocument::Indented));
 
     if (m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().contains("deprecated")) {
         QString deprecationMessage = m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().value("deprecated").toString();
@@ -771,6 +772,39 @@ void JsonRPCServerImplementation::sendNotification(const QVariantMap &params)
         qCDebug(dcJsonRpc()) << "Sending notification:" << handler->name() + "." + method.name();
         m_clientTransports.value(clientId)->sendData(clientId, data);
     }
+}
+
+void JsonRPCServerImplementation::sendClientNotification(const QUuid &clientId, const QVariantMap &params)
+{
+    JsonHandler *handler = qobject_cast<JsonHandler *>(sender());
+    QMetaMethod method = handler->metaObject()->method(senderSignalIndex());
+
+    if (!m_clientTransports.contains(clientId)) {
+        qCWarning(dcJsonRpc()) << "No client with id" << clientId << ". Not sending client notification.";
+        return;
+    }
+
+    QVariantMap notification;
+    notification.insert("id", m_notificationId++);
+    notification.insert("notification", handler->name() + "." + method.name());
+    notification.insert("params", params);
+
+    JsonValidator validator;
+    Q_ASSERT_X(validator.validateNotificationParams(params, handler->name() + '.' + method.name(), m_api).success(),
+               validator.result().where().toUtf8(),
+               validator.result().errorString().toUtf8() + "\nGot:" + QJsonDocument::fromVariant(params).toJson(QJsonDocument::Indented));
+
+    if (m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().contains("deprecated")) {
+        QString deprecationMessage = m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().value("deprecated").toString();
+        qCWarning(dcJsonRpc()) << "Client uses deprecated API. Please update client implementation!";
+        qCWarning(dcJsonRpc()) << handler->name() + '.' + method.name() + ':' << deprecationMessage;
+        notification.insert("deprecationWarning", deprecationMessage);
+    }
+
+    QByteArray data = QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact);
+    qCDebug(dcJsonRpcTraffic()) << "Notification content:" << data;
+    qCDebug(dcJsonRpc()) << "Sending notification:" << handler->name() + "." + method.name();
+    m_clientTransports.value(clientId)->sendData(clientId, data);
 }
 
 void JsonRPCServerImplementation::asyncReplyFinished()
@@ -834,12 +868,6 @@ void JsonRPCServerImplementation::onPushButtonAuthFinished(int transactionId, bo
         return;
     }
 
-    TransportInterface *transport = m_clientTransports.value(clientId);
-    if (!transport) {
-        qCWarning(dcJsonRpc()) << "No transport for given clientId";
-        return;
-    }
-
     QVariantMap params;
     params.insert("transactionId", transactionId);
     params.insert("success", success);
@@ -847,12 +875,7 @@ void JsonRPCServerImplementation::onPushButtonAuthFinished(int transactionId, bo
         params.insert("token", token);
     }
 
-    QVariantMap notification;
-    notification.insert("id", transactionId);
-    notification.insert("notification", "JSONRPC.PushButtonAuthFinished");
-    notification.insert("params", params);
-
-    transport->sendData(clientId, QJsonDocument::fromVariant(notification).toJson(QJsonDocument::Compact));
+    emit PushButtonAuthFinished(clientId, params);
 }
 
 bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
@@ -914,8 +937,10 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
     QVariantMap newMethods;
     foreach (const QString &methodName, handler->jsonMethods().keys()) {
         QVariantMap method = handler->jsonMethods().value(methodName).toMap();
-        if (handler->metaObject()->indexOfMethod(methodName.toUtf8() + "(QVariantMap)") < 0) {
-            qCWarning(dcJsonRpc()).nospace().noquote() << "Invalid method \"" << methodName << "\". Method \"JsonReply* " + methodName + "(QVariantMap)\" does not exist. Not registering handler " << handler->name();
+
+        if (handler->metaObject()->indexOfMethod(methodName.toUtf8() + "(QVariantMap)") < 0
+                && handler->metaObject()->indexOfMethod(methodName.toUtf8() + "(QVariantMap,JsonContext)") < 0) {
+            qCWarning(dcJsonRpc()).nospace().noquote() << "Invalid method \"" << methodName << "\". Method \"JsonReply* " + methodName + "(QVariantMap,JsonContext)\" does not exist. Not registering handler " << handler->name();
             return false;
         }
         if (!JsonValidator::checkRefs(method.value("params").toMap(), apiIncludingThis)) {
@@ -952,7 +977,11 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
     for (int i = 0; i < handler->metaObject()->methodCount(); ++i) {
         QMetaMethod method = handler->metaObject()->method(i);
         if (method.methodType() == QMetaMethod::Signal && QString(method.name()).contains(QRegExp("^[A-Z]"))) {
-            QObject::connect(handler, method, this, metaObject()->method(metaObject()->indexOfSlot("sendNotification(QVariantMap)")));
+            if (method.parameterCount() == 1 && method.parameterType(0) == QVariant::Map) {
+                QObject::connect(handler, method, this, metaObject()->method(metaObject()->indexOfSlot("sendNotification(QVariantMap)")));
+            } else if (method.parameterCount() == 2 && method.parameterType(0) == QVariant::Uuid && method.parameterType(1) == QVariant::Map) {
+                QObject::connect(handler, method, this, metaObject()->method(metaObject()->indexOfSlot("sendClientNotification(QUuid,QVariantMap)")));
+            }
         }
     }
     return true;

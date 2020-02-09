@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
                                                                           "for your environment.\n\n");
 
     applicationDescription.append(QString("nymead %1 %2 %3 nymea GmbH\n"
-                                          "Released under the GNU GENERAL PUBLIC LICENSE Version 2.\n\n"
+                                          "Released under the GNU GENERAL PUBLIC LICENSE Version 3.\n\n"
                                           "API version: %4\n").arg(NYMEA_VERSION_STRING).arg(QChar(0xA9)).arg(COPYRIGHT_YEAR_STRING).arg(JSON_PROTOCOL_VERSION));
 
     parser.setApplicationDescription(applicationDescription);

@@ -78,6 +78,7 @@ DevicePluginMock::DevicePluginMock()
 
 DevicePluginMock::~DevicePluginMock()
 {
+    delete m_virtualFs;
 }
 
 void DevicePluginMock::discoverDevices(DeviceDiscoveryInfo *info)

@@ -58,8 +58,8 @@ private:
     QDBusInterface *m_wiredInterface;
 
     QString m_macAddress;
-    int m_bitRate;
-    bool m_pluggedIn;
+    int m_bitRate = 0;
+    bool m_pluggedIn = false;
 
     void setMacAddress(const QString &macAddress);
     void setBitRate(const int &bitRate);

@@ -74,7 +74,7 @@ private:
     QDBusInterface *m_wirelessInterface;
 
     QString m_macAddress;
-    int m_bitRate;
+    int m_bitRate = 0;
     WirelessAccessPoint *m_activeAccessPoint;
     QDBusObjectPath m_activeAccessPointObjectPath;
 

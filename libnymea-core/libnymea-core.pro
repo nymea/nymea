@@ -16,6 +16,7 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 
 HEADERS += nymeacore.h \
+    devices/deviceclasscache.h \
     devices/devicemanagerimplementation.h \
     devices/translator.h \
     experiences/experiencemanager.h \
@@ -100,6 +101,7 @@ HEADERS += nymeacore.h \
 
 
 SOURCES += nymeacore.cpp \
+    devices/deviceclasscache.cpp \
     devices/devicemanagerimplementation.cpp \
     devices/translator.cpp \
     experiences/experiencemanager.cpp \

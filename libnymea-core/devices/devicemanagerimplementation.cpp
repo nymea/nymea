@@ -38,6 +38,7 @@
 #include "typeutils.h"
 #include "nymeasettings.h"
 #include "version.h"
+#include "deviceclasscache.h"
 
 #include "devices/devicediscoveryinfo.h"
 #include "devices/devicepairinginfo.h"
@@ -258,7 +259,7 @@ DeviceDiscoveryInfo* DeviceManagerImplementation::discoverDevices(const DeviceCl
     if (!plugin) {
         qCWarning(dcDeviceManager) << "Device discovery failed. Plugin not found for device class" << deviceClass.name();
         DeviceDiscoveryInfo *discoveryInfo = new DeviceDiscoveryInfo(deviceClassId, params, this);
-        discoveryInfo->finish(Device::DeviceErrorPluginNotFound);
+        discoveryInfo->finish(Device::DeviceErrorPluginNotFound, tr("The plugin for this device or service is not loaded."));
         return discoveryInfo;
     }
 
@@ -594,9 +595,10 @@ DevicePairingInfo *DeviceManagerImplementation::confirmPairing(const PairingTran
     PairingContext context = m_pendingPairings.take(pairingTransactionId);
     DeviceClassId deviceClassId = context.deviceClassId;
 
-    DevicePlugin *plugin = m_devicePlugins.value(m_supportedDevices.value(deviceClassId).pluginId());
+    DeviceClass deviceClass = m_supportedDevices.value(deviceClassId);
+    DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
     if (!plugin) {
-        qCWarning(dcDeviceManager) << "Can't find a plugin for this device class";
+        qCWarning(dcDeviceManager) << "Can't find a plugin for this device class:" << deviceClass;
         DevicePairingInfo *info = new DevicePairingInfo(pairingTransactionId, deviceClassId, context.deviceId, context.deviceName, context.params, context.parentDeviceId, this);
         info->finish(Device::DeviceErrorPluginNotFound);
         return info;
@@ -633,7 +635,7 @@ DevicePairingInfo *DeviceManagerImplementation::confirmPairing(const PairingTran
         Device *device = nullptr;
 
         if (addNewDevice) {
-            device = new Device(plugin, deviceClass, internalInfo->deviceId(), this);
+            device = new Device(plugin->pluginId(), deviceClass, internalInfo->deviceId(), this);
             if (internalInfo->deviceName().isEmpty()) {
                 device->setName(deviceClass.displayName());
             } else {
@@ -735,7 +737,7 @@ DeviceSetupInfo* DeviceManagerImplementation::addConfiguredDeviceInternal(const 
         return info;
     }
 
-    Device *device = new Device(plugin, deviceClass, deviceId, this);
+    Device *device = new Device(plugin->pluginId(), deviceClass, deviceId, this);
     device->setParentId(parentDeviceId);
     if (name.isEmpty()) {
         device->setName(deviceClass.name());
@@ -809,13 +811,24 @@ BrowseResult *DeviceManagerImplementation::browseDevice(const DeviceId &deviceId
         return result;
     }
 
+    DevicePlugin *plugin = m_devicePlugins.value(device->pluginId());
+    if (!plugin) {
+        qCWarning(dcDeviceManager()) << "Cannot browse device. Plugin not found for device" << device;
+        return result;
+    }
+
+    if (!device->setupComplete()) {
+        qCWarning(dcDeviceManager()) << "Cannot browse device. Device did not finish setup" << device;
+        return result;
+    }
+
     if (!device->deviceClass().browsable()) {
         qCWarning(dcDeviceManager()) << "Cannot browse device. DeviceClass" << device->deviceClass().name() << "is not browsable.";
         result->finish(Device::DeviceErrorUnsupportedFeature);
         return result;
     }
 
-    device->plugin()->browseDevice(result);
+    plugin->browseDevice(result);
     connect(result, &BrowseResult::finished, this, [result](){
         if (result->status() != Device::DeviceErrorNoError) {
             qCWarning(dcDeviceManager()) << "Browse device failed:" << result->status();
@@ -836,13 +849,24 @@ BrowserItemResult *DeviceManagerImplementation::browserItemDetails(const DeviceI
         return result;
     }
 
+    DevicePlugin *plugin = m_devicePlugins.value(device->pluginId());
+    if (!plugin) {
+        qCWarning(dcDeviceManager()) << "Cannot browse device. Plugin not found for device" << device;
+        return result;
+    }
+
+    if (device->setupStatus() != Device::DeviceSetupStatusComplete) {
+        qCWarning(dcDeviceManager()) << "Cannot browse device. Device did not finish setup" << device;
+        return result;
+    }
+
     if (!device->deviceClass().browsable()) {
         qCWarning(dcDeviceManager()) << "Cannot browse device. DeviceClass" << device->deviceClass().name() << "is not browsable.";
         result->finish(Device::DeviceErrorUnsupportedFeature);
         return result;
     }
 
-    device->plugin()->browserItem(result);
+    plugin->browserItem(result);
     connect(result, &BrowserItemResult::finished, this, [result](){
         if (result->status() != Device::DeviceErrorNoError) {
             qCWarning(dcDeviceManager()) << "Browse device failed:" << result->status();
@@ -862,11 +886,24 @@ BrowserActionInfo* DeviceManagerImplementation::executeBrowserItem(const Browser
         return info;
     }
 
+    DevicePlugin *plugin = m_devicePlugins.value(device->pluginId());
+    if (!plugin) {
+        qCWarning(dcDeviceManager()) << "Cannot browse device. Plugin not found for device" << device;
+        info->finish(Device::DeviceErrorPluginNotFound);
+        return info;
+    }
+
+    if (device->setupStatus() != Device::DeviceSetupStatusComplete) {
+        qCWarning(dcDeviceManager()) << "Cannot browse device. Device did not finish setup" << device;
+        info->finish(Device::DeviceErrorSetupFailed);
+        return info;
+    }
+
     if (!device->deviceClass().browsable()) {
         info->finish(Device::DeviceErrorUnsupportedFeature);
         return info;
     }
-    device->plugin()->executeBrowserItem(info);
+    plugin->executeBrowserItem(info);
     return info;
 }
 
@@ -881,13 +918,26 @@ BrowserItemActionInfo* DeviceManagerImplementation::executeBrowserItemAction(con
         return info;
     }
 
+    DevicePlugin *plugin = m_devicePlugins.value(device->pluginId());
+    if (!plugin) {
+        qCWarning(dcDeviceManager()) << "Cannot execute browser item action. Plugin not found for device" << device;
+        info->finish(Device::DeviceErrorPluginNotFound);
+        return info;
+    }
+
+    if (device->setupStatus() != Device::DeviceSetupStatusComplete) {
+        qCWarning(dcDeviceManager()) << "Cannot execute browser item action. Device did not finish setup" << device;
+        info->finish(Device::DeviceErrorSetupFailed);
+        return info;
+    }
+
     if (!device->deviceClass().browsable()) {
         info->finish(Device::DeviceErrorUnsupportedFeature);
         return info;
     }
     // TODO: check browserItemAction.params with deviceClass
 
-    device->plugin()->executeBrowserItemAction(info);
+    plugin->executeBrowserItemAction(info);
     return info;
 }
 
@@ -1099,7 +1149,8 @@ void DeviceManagerImplementation::loadPlugins()
                 continue;
             }
 
-            PluginMetadata metaData(loader.metaData().value("MetaData").toObject());
+            QJsonObject pluginInfo = loader.metaData().value("MetaData").toObject();
+            PluginMetadata metaData(pluginInfo);
             if (!metaData.isValid()) {
                 foreach (const QString &error, metaData.validationErrors()) {
                     qCWarning(dcDeviceManager()) << error;
@@ -1119,6 +1170,7 @@ void DeviceManagerImplementation::loadPlugins()
                 continue;
             }
             loadPlugin(pluginIface, metaData);
+            PluginInfoCache::cachePluginInfo(pluginInfo);
         }
     }
 
@@ -1249,13 +1301,28 @@ void DeviceManagerImplementation::loadConfiguredDevices()
     foreach (const QString &idString, settings.childGroups()) {
         settings.beginGroup(idString);
         QString deviceName = settings.value("devicename").toString();
-        DevicePlugin *plugin = m_devicePlugins.value(PluginId(settings.value("pluginid").toString()));
+        PluginId pluginId = PluginId(settings.value("pluginid").toString());
+        DevicePlugin *plugin = m_devicePlugins.value(pluginId);
         if (!plugin) {
-            qCWarning(dcDeviceManager()) << "Not loading device" << deviceName << idString << "because the plugin for this device could not be found.";
-            settings.endGroup(); // DeviceId
-            continue;
+            qCWarning(dcDeviceManager()) << "Plugin for device" << deviceName << idString << "not found. This device will not be functional until the plugin can be loaded.";
         }
-        DeviceClass deviceClass = findDeviceClass(DeviceClassId(settings.value("deviceClassId").toString()));
+        DeviceClassId deviceClassId = DeviceClassId(settings.value("deviceClassId").toString());
+        DeviceClass deviceClass = findDeviceClass(deviceClassId);
+        if (!deviceClass.isValid()) {
+            // Try to load the device class from the cache
+            QJsonObject pluginInfo = PluginInfoCache::loadPluginInfo(pluginId);
+            if (!pluginInfo.empty()) {
+                PluginMetadata pluginMetadata(pluginInfo);
+                deviceClass = pluginMetadata.deviceClasses().findById(deviceClassId);
+                if (deviceClass.isValid()) {
+                    m_supportedDevices.insert(deviceClassId, deviceClass);
+                    if (!m_supportedVendors.contains(deviceClass.vendorId())) {
+                        Vendor vendor = pluginMetadata.vendors().findById(deviceClass.vendorId());
+                        m_supportedVendors.insert(vendor.id(), vendor);
+                    }
+                }
+            }
+        }
         if (!deviceClass.isValid()) {
             qCWarning(dcDeviceManager()) << "Not loading device" << deviceName << idString << "because the device class for this device could not be found.";
             settings.endGroup(); // DeviceId
@@ -1263,12 +1330,12 @@ void DeviceManagerImplementation::loadConfiguredDevices()
         }
 
         // Cross-check if this plugin still implements this device class
-        if (!plugin->supportedDevices().contains(deviceClass)) {
+        if (plugin && !plugin->supportedDevices().contains(deviceClass)) {
             qCWarning(dcDeviceManager()) << "Not loading device" << deviceName << idString << "because plugin" << plugin->pluginName() << "has removed support for it.";
             settings.endGroup(); // DeviceId
             continue;
         }
-        Device *device = new Device(plugin, deviceClass, DeviceId(idString), this);
+        Device *device = new Device(pluginId, deviceClass, DeviceId(idString), this);
         device->m_autoCreated = settings.value("autoCreated").toBool();
         device->setName(deviceName);
         device->setParentId(DeviceId(settings.value("parentid", QUuid()).toString()));
@@ -1463,7 +1530,7 @@ void DeviceManagerImplementation::onAutoDevicesAppeared(const DeviceDescriptors 
             continue;
         }
 
-        device = new Device(plugin, deviceClass, this);
+        device = new Device(plugin->pluginId(), deviceClass, this);
         device->m_autoCreated = true;
         device->setName(deviceDescriptor.title());
         device->setParams(deviceDescriptor.params());
@@ -1655,9 +1722,9 @@ DeviceSetupInfo* DeviceManagerImplementation::setupDevice(Device *device)
     DevicePlugin *plugin = m_devicePlugins.value(deviceClass.pluginId());
 
     if (!plugin) {
-        qCWarning(dcDeviceManager) << "Can't find a plugin for this device" << device->id();
-        DeviceSetupInfo *info = new DeviceSetupInfo(nullptr, this);
-        info->finish(Device::DeviceErrorPluginNotFound);
+        qCWarning(dcDeviceManager) << "Can't find a plugin for this device" << device;
+        DeviceSetupInfo *info = new DeviceSetupInfo(device, this);
+        info->finish(Device::DeviceErrorPluginNotFound, tr("The plugin for this device or service is not loaded."));
         return info;
     }
 

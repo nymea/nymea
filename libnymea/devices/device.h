@@ -105,7 +105,6 @@ public:
     PluginId pluginId() const;
 
     DeviceClass deviceClass() const;
-    DevicePlugin* plugin() const;
 
     QString name() const;
     void setName(const QString &name);
@@ -153,14 +152,14 @@ signals:
 private:
     friend class DeviceManager;
     friend class DeviceManagerImplementation;
-    Device(DevicePlugin *plugin, const DeviceClass &deviceClass, const DeviceId &id, QObject *parent = nullptr);
-    Device(DevicePlugin *plugin, const DeviceClass &deviceClass, QObject *parent = nullptr);
+    Device(const PluginId &pluginId, const DeviceClass &deviceClass, const DeviceId &id, QObject *parent = nullptr);
+    Device(const PluginId &pluginId, const DeviceClass &deviceClass, QObject *parent = nullptr);
 
     void setSetupStatus(Device::DeviceSetupStatus status, Device::DeviceError setupError, const QString &displayMessage = QString());
 
 private:
     DeviceClass m_deviceClass;
-    DevicePlugin* m_plugin = nullptr;
+    PluginId m_pluginId;
 
     DeviceId m_id;
     DeviceId m_parentId;

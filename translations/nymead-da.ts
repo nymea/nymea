@@ -46,6 +46,15 @@
     </message>
 </context>
 <context>
+    <name>DeviceManagerImplementation</name>
+    <message>
+        <location filename="../libnymea-core/devices/devicemanagerimplementation.cpp" line="262"/>
+        <location filename="../libnymea-core/devices/devicemanagerimplementation.cpp" line="1727"/>
+        <source>The plugin for this device or service is not loaded.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>nymea</name>
     <message>
         <location filename="../server/main.cpp" line="86"/>

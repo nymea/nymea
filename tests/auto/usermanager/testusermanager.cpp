@@ -122,6 +122,12 @@ void TestUsermanager::initTestCase()
 {
     NymeaDBusService::setBusType(QDBusConnection::SessionBus);
     NymeaTestBase::initTestCase();
+
+    QLoggingCategory::setFilterRules("*.debug=false\n"
+                                     "Application.debug=true\n"
+                                     "Tests.debug=true\n"
+                                     "UserManager.debug=true\n"
+                                     "MockDevice.debug=true");
 }
 
 void TestUsermanager::init()

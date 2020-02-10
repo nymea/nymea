@@ -127,6 +127,7 @@ void TestUsermanager::initTestCase()
                                      "Application.debug=true\n"
                                      "Tests.debug=true\n"
                                      "UserManager.debug=true\n"
+                                     "PushButtonAgent.debug=true\n"
                                      "MockDevice.debug=true");
 }
 
@@ -222,6 +223,7 @@ void TestUsermanager::authenticatePushButton()
     QVariantMap params;
     params.insert("deviceName", "pbtestdevice");
     QVariant response = injectAndWait("Users.RequestPushButtonAuth", params);
+    qCDebug(dcTests()) << "Pushbutton auth response:" << qUtf8Printable(QJsonDocument::fromVariant(response).toJson(QJsonDocument::Indented));
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
     int transactionId = response.toMap().value("params").toMap().value("transactionId").toInt();
 
@@ -232,6 +234,10 @@ void TestUsermanager::authenticatePushButton()
 
     if (clientSpy.count() == 0) clientSpy.wait();
     QVariantMap rsp = checkNotification(clientSpy, "Users.PushButtonAuthFinished").toMap();
+
+    for (int i = 0; i < clientSpy.count(); i++) {
+        qCDebug(dcTests()) << "Notification:" << clientSpy.at(i);
+    }
 
     QCOMPARE(rsp.value("params").toMap().value("transactionId").toInt(), transactionId);
     QVERIFY2(!rsp.value("params").toMap().value("token").toByteArray().isEmpty(), "Token not in push button auth notification");

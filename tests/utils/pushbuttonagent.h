@@ -24,6 +24,10 @@
 #include <QObject>
 #include <QDBusConnection>
 
+#include <QLoggingCategory>
+
+Q_DECLARE_LOGGING_CATEGORY(dcPushButtonAgent)
+
 class PushButtonAgent : public QObject
 {
     Q_OBJECT

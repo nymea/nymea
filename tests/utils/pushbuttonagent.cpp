@@ -25,6 +25,8 @@
 #include <QDebug>
 #include <QTimer>
 
+Q_LOGGING_CATEGORY(dcPushButtonAgent, "PushButtonAgent")
+
 PushButtonAgent::PushButtonAgent(QObject *parent) : QObject(parent)
 {
 }
@@ -35,7 +37,7 @@ bool PushButtonAgent::init(QDBusConnection::BusType busType)
 
     bool result = bus.registerObject("/nymea/pushbuttonhandler", this, QDBusConnection::ExportScriptableContents);
     if (!result) {
-        qDebug() << "Error registering PushButton agent on D-Bus.";
+        qCWarning(dcPushButtonAgent()) << "Error registering PushButton agent on D-Bus" << (busType == QDBusConnection::SessionBus ? "session" : "system") << "bus.";
         return false;
     }
 
@@ -43,15 +45,15 @@ bool PushButtonAgent::init(QDBusConnection::BusType busType)
     message << qVariantFromValue(QDBusObjectPath("/nymea/pushbuttonhandler"));
     QDBusMessage reply = bus.call(message);
     if (!reply.errorName().isEmpty()) {
-        qDebug() << "Error registering PushButton agent:" << reply.errorMessage();
+        qCWarning(dcPushButtonAgent()) << "Error registering PushButton agent:" << reply.errorMessage();
         return false;
     }
-    qDebug() << "PushButton agent registered.";
+    qCDebug(dcPushButtonAgent()) << "PushButton agent registered.";
     return true;
 }
 
 void PushButtonAgent::sendButtonPressed()
 {
-    qDebug() << "Sending button pressed event.";
+    qCDebug(dcPushButtonAgent()) << "Sending button pressed event.";
     emit PushButtonPressed();
 }

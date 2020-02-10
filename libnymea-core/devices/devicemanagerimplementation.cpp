@@ -38,7 +38,7 @@
 #include "typeutils.h"
 #include "nymeasettings.h"
 #include "version.h"
-#include "deviceclasscache.h"
+#include "plugininfocache.h"
 
 #include "devices/devicediscoveryinfo.h"
 #include "devices/devicepairinginfo.h"

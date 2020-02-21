@@ -33,7 +33,7 @@
     \brief The plugin timer class for plugins.
 
     \ingroup hardware
-    \inmodule libguh
+    \inmodule libnymea
 
     The plugin timer allows to trigger repeating actions in a device plugin. This timer does not represent a precise timer
     should be used for not time critical things. The PluginTimerManager will schedule the requested timer as needed and
@@ -163,7 +163,7 @@
     \brief The plugin timer manager for guh.
 
     \ingroup hardware
-    \inmodule libguh
+    \inmodule libnymea
 
     The plugin timer manager allows to register and unregister generic timers for device plugins. In order to save
     resources the PluginTimerManager is responsible to schedule the timers appropriate and stop them if the HardwareResource

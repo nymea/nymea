@@ -1,0 +1,18 @@
+/*!
+    \page index.html
+    \title libnymea documentation
+
+    \chapter Device releated classes
+    \annotatedlist devices
+
+    \chapter Types
+    \annotatedlist nymea-types
+
+    \chapter Hardware classes
+    \annotatedlist hardware
+
+    \generatelist classes
+    \generatelist overviews
+
+*/
+

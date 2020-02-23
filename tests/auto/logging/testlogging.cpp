@@ -58,6 +58,7 @@ private:
 
 private slots:
     void initTestCase();
+    void init();
 
     void initLogs();
 
@@ -98,6 +99,11 @@ void TestLogging::initTestCase()
                                      "Application.debug=true\n");
 }
 
+void TestLogging::init()
+{
+    waitForDBSync();
+}
+
 void TestLogging::initLogs()
 {
     QVariant response = injectAndWait("Logging.GetLogEntries");
@@ -109,6 +115,7 @@ void TestLogging::initLogs()
              .toUtf8());
 
     clearLoggingDatabase();
+    waitForDBSync();
 
     response = injectAndWait("Logging.GetLogEntries");
     verifyLoggingError(response);
@@ -543,7 +550,7 @@ void TestLogging::testDoubleValues()
     PairingTransactionId pairingTransactionId(response.toMap().value("params").toMap().value("pairingTransactionId").toString());
     QString displayMessage = response.toMap().value("params").toMap().value("displayMessage").toString();
 
-    qDebug() << "displayMessage" << displayMessage;
+    qCDebug(dcTests) << "displayMessage" << displayMessage;
 
     params.clear();
     params.insert("pairingTransactionId", pairingTransactionId.toString());
@@ -570,7 +577,7 @@ void TestLogging::testDoubleValues()
     response = injectAndWait("Actions.ExecuteAction", params);
     verifyDeviceError(response);
 
-    notificationSpy.wait(1000);
+    notificationSpy.wait();
     QVariantList logNotificationsList = checkNotifications(notificationSpy, "Logging.LogEntryAdded");
     QVERIFY2(!logNotificationsList.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
 

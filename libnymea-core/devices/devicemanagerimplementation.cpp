@@ -94,6 +94,7 @@ DeviceManagerImplementation::~DeviceManagerImplementation()
 
     foreach (Device *device, m_configuredDevices) {
         storeDeviceStates(device);
+        delete device;
     }
 
     foreach (DevicePlugin *plugin, m_devicePlugins) {

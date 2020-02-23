@@ -1,3 +1,4 @@
 {
-    "description": "The heating interface defines basic heating appliances."
+    "description": "The heating interface defines basic heating appliances.",
+    "extends": "power"
 }

@@ -1,6 +1,23 @@
-nymea (0.19.0) UNRELEASED; urgency=medium
+nymea (0.19.0) xenial; urgency=medium
+  [ Michael Zanetti ]
+  * Delete devices before plugin destruction
+  * Cleanup Rule definition in introspection
+  * Add more detailed setup status to API
+  * Improve heating interfaces
+  * Add Users API
+  * Fix some issues reported by valgrind
+  * Fix ScriptAction qqmlparserstatus
+  * Keep devices without plugins in the system
+  * Update copyright in --help text
+  * Bump version for 0.19
 
- -- Michael Zanetti <michael.zanetti@nymea.io>  Mon, 10 Feb 2020 13:23:20 +0100
+  [ Simon Stürz ]
+  * Add units: newton, newtonmeter and rpm
+
+  [ Michael Zanetti ]
+  * Stabilize logging tests
+
+ -- Jenkins <jenkins@nymea.io>  Sun, 23 Feb 2020 23:38:31 +0100
 
 nymea (0.18.1) xenial; urgency=medium
 

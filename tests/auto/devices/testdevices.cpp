@@ -136,6 +136,8 @@ private slots:
 
     void params();
 
+    void asyncSetupEmitsSetupStatusUpdate();
+
     // Keep those at last as they will remove devices
     void removeDevice_data();
     void removeDevice();
@@ -1969,6 +1971,55 @@ void TestDevices::params()
 
     QVERIFY(event.param(id).value().toString() == "foo bar");
     QVERIFY(!event.param(ParamTypeId::createParamTypeId()).value().isValid());
+}
+
+void TestDevices::asyncSetupEmitsSetupStatusUpdate()
+{
+    QVariantMap configuredDevices = injectAndWait("Devices.GetConfiguredDevices").toMap();
+    foreach (const QVariant &deviceVariant, configuredDevices.value("params").toMap().value("devices").toList()) {
+        QVariantMap device = deviceVariant.toMap();
+        qCDebug(dcTests()) << "confdiguredd device" << device.value("setupStatus");
+    }
+
+    // Restart the core instance to check if settings are loaded at startup
+    restartServer();
+    enableNotifications({"Devices"});
+
+    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    configuredDevices = injectAndWait("Devices.GetConfiguredDevices").toMap();
+    QList<QUuid> devicesWithSetupInProgress;
+    foreach (const QVariant &deviceVariant, configuredDevices.value("params").toMap().value("devices").toList()) {
+        QVariantMap device = deviceVariant.toMap();
+        qCDebug(dcTests()) << "Configured device" << device.value("name").toString() << "with setup status" << device.value("setupStatus").toString();
+        if (device.value("setupStatus").toString() == "DeviceSetupStatusInProgress") {
+            devicesWithSetupInProgress << device.value("id").toUuid();
+        }
+    }
+    QVERIFY2(devicesWithSetupInProgress.count() > 0, "This test requires at least one device that is still being set up at this point.");
+
+    QDateTime maxTime = QDateTime::currentDateTime().addSecs(10);
+    while (QDateTime::currentDateTime() < maxTime && devicesWithSetupInProgress.count() > 0) {
+        QList<QList<QVariant>> notifications = notificationSpy;
+        while (notifications.count() > 0) {
+            QByteArray notificationData = notifications.takeFirst().at(1).toByteArray();
+            QVariantMap notification = QJsonDocument::fromJson(notificationData).toVariant().toMap();
+            if (notification.value("notification").toString() == "Devices.DeviceChanged") {
+                QString setupStatus = notification.value("params").toMap().value("device").toMap().value("setupStatus").toString();
+                if (setupStatus == "DeviceSetupStatusComplete") {
+                    qCDebug(dcTests()) << "Device setup completed for" << notification.value("params").toMap().value("device").toMap().value("name").toString();
+                    DeviceId deviceId = notification.value("params").toMap().value("device").toMap().value("id").toUuid();
+                    devicesWithSetupInProgress.removeAll(deviceId);
+                }
+            }
+        }
+        notificationSpy.clear();
+        if (devicesWithSetupInProgress.count() > 0) {
+            notificationSpy.wait();
+        }
+    }
+
+    QVERIFY2(devicesWithSetupInProgress.isEmpty(), "Some devices did not finish the setup!");
 }
 
 #include "testdevices.moc"

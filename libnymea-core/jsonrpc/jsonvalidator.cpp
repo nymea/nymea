@@ -122,7 +122,7 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
             continue;
         }
         QString trimmedKey = key;
-        trimmedKey.remove(QRegExp("^(o:|r:|d:)"));
+        trimmedKey.remove(QRegExp("^(o:|r:|d:)*"));
         if (!map.contains(trimmedKey)) {
             return Result(false, "Missing required key: " + key, key);
         }

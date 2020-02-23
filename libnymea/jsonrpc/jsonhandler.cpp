@@ -41,6 +41,13 @@ JsonHandler::JsonHandler(QObject *parent) : QObject(parent)
     registerEnum<BasicType>();
 }
 
+QVariantMap JsonHandler::translateNotification(const QString &notification, const QVariantMap &params, const QLocale &locale)
+{
+    Q_UNUSED(notification)
+    Q_UNUSED(locale)
+    return params;
+}
+
 QVariantMap JsonHandler::jsonEnums() const
 {
     return m_enums;
@@ -185,6 +192,9 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
         }
         if (!metaProperty.isWritable()) {
             name.prepend("r:");
+        }
+        if (metaProperty.revision() == 1) {
+            name.prepend("d:");
         }
         QVariant typeName;
         if (metaProperty.type() == QVariant::UserType) {

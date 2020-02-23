@@ -50,12 +50,15 @@ class LIBNYMEA_EXPORT Device: public QObject
     Q_OBJECT
     Q_PROPERTY(QUuid id READ id)
     Q_PROPERTY(QUuid deviceClassId READ deviceClassId)
-    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
-    Q_PROPERTY(ParamList params READ params WRITE setParams)
-    Q_PROPERTY(ParamList settings READ settings WRITE setSettings)
-    Q_PROPERTY(States states READ states WRITE setStates)
-    Q_PROPERTY(bool setupComplete READ setupComplete WRITE setSetupComplete)
-    Q_PROPERTY(QUuid parentId READ parentId WRITE setParentId USER true)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged USER true)
+    Q_PROPERTY(ParamList params READ params)
+    Q_PROPERTY(ParamList settings READ settings WRITE setSettings USER true)
+    Q_PROPERTY(States states READ states)
+    Q_PROPERTY(bool setupComplete READ setupComplete NOTIFY setupStatusChanged REVISION 1)
+    Q_PROPERTY(DeviceSetupStatus setupStatus READ setupStatus NOTIFY setupStatusChanged)
+    Q_PROPERTY(QString setupDisplayMessage READ setupDisplayMessage NOTIFY setupStatusChanged USER true)
+    Q_PROPERTY(DeviceError setupError READ setupError NOTIFY setupStatusChanged)
+    Q_PROPERTY(QUuid parentId READ parentId USER true)
 
 public:
     enum DeviceError {
@@ -88,6 +91,14 @@ public:
         DeviceErrorTimeout,
     };
     Q_ENUM(DeviceError)
+
+    enum DeviceSetupStatus {
+        DeviceSetupStatusNone,
+        DeviceSetupStatusInProgress,
+        DeviceSetupStatusComplete,
+        DeviceSetupStatusFailed,
+    };
+    Q_ENUM(DeviceSetupStatus)
 
     DeviceId id() const;
     DeviceClassId deviceClassId() const;
@@ -125,13 +136,19 @@ public:
     DeviceId parentId() const;
     void setParentId(const DeviceId &parentId);
 
+    // Deprecated
     bool setupComplete() const;
     bool autoCreated() const;
+
+    DeviceSetupStatus setupStatus() const;
+    DeviceError setupError() const;
+    QString setupDisplayMessage() const;
 
 signals:
     void stateValueChanged(const StateTypeId &stateTypeId, const QVariant &value);
     void settingChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     void nameChanged();
+    void setupStatusChanged();
 
 private:
     friend class DeviceManager;
@@ -139,8 +156,7 @@ private:
     Device(DevicePlugin *plugin, const DeviceClass &deviceClass, const DeviceId &id, QObject *parent = nullptr);
     Device(DevicePlugin *plugin, const DeviceClass &deviceClass, QObject *parent = nullptr);
 
-    void setupCompleted();
-    void setSetupComplete(bool complete);
+    void setSetupStatus(Device::DeviceSetupStatus status, Device::DeviceError setupError, const QString &displayMessage = QString());
 
 private:
     DeviceClass m_deviceClass;
@@ -152,8 +168,11 @@ private:
     ParamList m_params;
     ParamList m_settings;
     States m_states;
-    bool m_setupComplete = false;
     bool m_autoCreated = false;
+
+    DeviceSetupStatus m_setupStatus = DeviceSetupStatusNone;
+    DeviceError m_setupError = DeviceErrorNoError;
+    QString m_setupDisplayMessage;
 };
 
 QDebug operator<<(QDebug dbg, Device *device);

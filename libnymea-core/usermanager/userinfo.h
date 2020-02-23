@@ -28,71 +28,26 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*!
-    \class nymeaserver::TokenInfo
-    \brief This class holds information about an authentication token.
+#ifndef USERINFO_H
+#define USERINFO_H
 
-    \ingroup user
-    \inmodule core
+#include <QUuid>
+#include <QObject>
 
-    The TokenInfo class holds information about a token used for authentication in the \l{nymeaserver::UserManager}{UserManager}.
-
-    \sa TokenInfo, PushButtonDBusService
-*/
-
-#include "tokeninfo.h"
-
-#include <QVariant>
-
-namespace nymeaserver {
-
-TokenInfo::TokenInfo()
+class UserInfo
 {
+    Q_GADGET
+    Q_PROPERTY(QString username READ username)
 
-}
+public:
+    UserInfo();
+    UserInfo(const QString &username);
 
-/*! Constructs a new token info with the given \a id, \a username, \a creationTime and \a deviceName. */
-TokenInfo::TokenInfo(const QUuid &id, const QString &username, const QDateTime &creationTime, const QString &deviceName):
-    m_id(id),
-    m_username(username),
-    m_creationTime(creationTime),
-    m_deviceName(deviceName)
-{
+    QString username() const;
+    void setUsername(const QString &username);
 
-}
+private:
+    QString m_username;
+};
 
-/*! Returns the id of this TokenInfo. */
-QUuid TokenInfo::id() const
-{
-    return m_id;
-}
-
-/*! Returns the userename of this TokenInfo. */
-QString TokenInfo::username() const
-{
-    return m_username;
-}
-
-/*! Returns the creation time of this TokenInfo. */
-QDateTime TokenInfo::creationTime() const
-{
-    return m_creationTime;
-}
-
-/*! Returns the device name of this TokenInfo. */
-QString TokenInfo::deviceName() const
-{
-    return m_deviceName;
-}
-
-QVariant TokenInfoList::get(int index) const
-{
-    return QVariant::fromValue(at(index));
-}
-
-void TokenInfoList::put(const QVariant &variant)
-{
-    append(variant.value<TokenInfo>());
-}
-
-}
+#endif // USERINFO_H

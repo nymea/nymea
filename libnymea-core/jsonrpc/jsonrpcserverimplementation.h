@@ -57,15 +57,15 @@ public:
 
     // JsonHandler API implementation
     QString name() const;
-    Q_INVOKABLE JsonReply *Hello(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *Hello(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *Introspect(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *Version(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *SetNotificationStatus(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *SetNotificationStatus(const QVariantMap &params, const JsonContext &context);
 
     Q_INVOKABLE JsonReply *CreateUser(const QVariantMap &params);
     Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *RequestPushButtonAuth(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *Tokens(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *RequestPushButtonAuth(const QVariantMap &params, const JsonContext &context);
+    Q_INVOKABLE JsonReply *Tokens(const QVariantMap &params, const JsonContext &context) const;
     Q_INVOKABLE JsonReply *RemoveToken(const QVariantMap &params);
     Q_INVOKABLE JsonReply *SetupCloudConnection(const QVariantMap &params);
     Q_INVOKABLE JsonReply *SetupRemoteAccess(const QVariantMap &params);
@@ -74,7 +74,7 @@ public:
 
 signals:
     void CloudConnectedChanged(const QVariantMap &map);
-    void PushButtonAuthFinished(const QVariantMap &params);
+    void PushButtonAuthFinished(const QUuid &clientId, const QVariantMap &params);
 
     // Server API
 public:
@@ -103,6 +103,7 @@ private slots:
     void processData(const QUuid &clientId, const QByteArray &data);
 
     void sendNotification(const QVariantMap &params);
+    void sendClientNotification(const QUuid &clientId, const QVariantMap &params);
 
     void asyncReplyFinished();
 

@@ -24,6 +24,7 @@ HEADERS += \
         devices/devicepairinginfo.h \
         devices/deviceactioninfo.h \
         devices/browseresult.h \
+    jsonrpc/jsoncontext.h \
         jsonrpc/jsonhandler.h \
         jsonrpc/jsonreply.h \
         jsonrpc/jsonrpcserver.h \
@@ -106,6 +107,7 @@ SOURCES += \
         devices/devicepairinginfo.cpp \
         devices/deviceactioninfo.cpp \
         devices/browseresult.cpp \
+    jsonrpc/jsoncontext.cpp \
         jsonrpc/jsonhandler.cpp \
         jsonrpc/jsonreply.cpp \
         jsonrpc/jsonrpcserver.cpp \

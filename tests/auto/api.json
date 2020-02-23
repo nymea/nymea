@@ -1,4 +1,4 @@
-4.1
+4.2
 {
     "enums": {
         "BasicType": [
@@ -75,6 +75,12 @@
             "DeviceErrorItemNotExecutable",
             "DeviceErrorUnsupportedFeature",
             "DeviceErrorTimeout"
+        ],
+        "DeviceSetupStatus": [
+            "DeviceSetupStatusNone",
+            "DeviceSetupStatusInProgress",
+            "DeviceSetupStatusComplete",
+            "DeviceSetupStatusFailed"
         ],
         "InputType": [
             "InputTypeNone",
@@ -920,6 +926,7 @@
             }
         },
         "JSONRPC.RemoveToken": {
+            "deprecated": "Use Users.RemoveToken instead.",
             "description": "Revoke access for a given token.",
             "params": {
                 "tokenId": "Uuid"
@@ -974,6 +981,7 @@
             }
         },
         "JSONRPC.Tokens": {
+            "deprecated": "Use Users.GetTokens instead.",
             "description": "Return a list of TokenInfo objects of all the tokens for the current user.",
             "params": {
             },
@@ -1464,6 +1472,52 @@
             "returns": {
                 "tagError": "$ref:TagError"
             }
+        },
+        "Users.ChangePassword": {
+            "description": "Change the password for the currently logged in user.",
+            "params": {
+                "newPassword": "String"
+            },
+            "returns": {
+                "error": "$ref:UserError"
+            }
+        },
+        "Users.CreateUser": {
+            "description": "Create a new user in the API. Currently this is only allowed to be called once when a new nymea instance is set up. Call Authenticate after this to obtain a device token for this user.",
+            "params": {
+                "password": "String",
+                "username": "String"
+            },
+            "returns": {
+                "error": "$ref:UserError"
+            }
+        },
+        "Users.GetTokens": {
+            "description": "Get all the tokens for the current user.",
+            "params": {
+            },
+            "returns": {
+                "error": "$ref:UserError",
+                "o:tokenInfoList": "$ref:TokenInfoList"
+            }
+        },
+        "Users.GetUserInfo": {
+            "description": "Get info about the current token (the currently logged in user).",
+            "params": {
+            },
+            "returns": {
+                "error": "$ref:UserError",
+                "o:userInfo": "$ref:UserInfo"
+            }
+        },
+        "Users.RemoveToken": {
+            "description": "Revoke access for a given token.",
+            "params": {
+                "tokenId": "Uuid"
+            },
+            "returns": {
+                "error": "$ref:UserError"
+            }
         }
     },
     "notifications": {
@@ -1561,7 +1615,7 @@
             }
         },
         "Devices.DeviceChanged": {
-            "description": "Emitted whenever the params or name of a Device are changed (by EditDevice or ReconfigureDevice).",
+            "description": "Emitted whenever the params, name or setupStatus of a Device changes.",
             "params": {
                 "device": "$ref:Device"
             }
@@ -1856,14 +1910,17 @@
             "$ref:CalendarItem"
         ],
         "Device": {
-            "name": "String",
-            "o:parentId": "Uuid",
-            "params": "$ref:ParamList",
+            "d:r:setupComplete": "Bool",
+            "o:name": "String",
+            "o:settings": "$ref:ParamList",
             "r:deviceClassId": "Uuid",
             "r:id": "Uuid",
-            "settings": "$ref:ParamList",
-            "setupComplete": "Bool",
-            "states": "$ref:States"
+            "r:o:parentId": "Uuid",
+            "r:o:setupDisplayMessage": "String",
+            "r:params": "$ref:ParamList",
+            "r:setupError": "$ref:DeviceError",
+            "r:setupStatus": "$ref:DeviceSetupStatus",
+            "r:states": "$ref:States"
         },
         "DeviceClass": {
             "r:actionTypes": "$ref:ActionTypes",
@@ -2147,8 +2204,14 @@
         ],
         "TokenInfo": {
             "r:creationTime": "Uint",
-            "r:deviveName": "String",
+            "r:deviceName": "String",
             "r:id": "Uuid",
+            "r:username": "String"
+        },
+        "TokenInfoList": [
+            "$ref:TokenInfo"
+        ],
+        "UserInfo": {
             "r:username": "String"
         },
         "Vendor": {

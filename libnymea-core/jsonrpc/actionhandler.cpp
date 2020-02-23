@@ -109,12 +109,12 @@ QString ActionHandler::name() const
     return "Actions";
 }
 
-JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
+JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params, const JsonContext &context)
 {
     DeviceId deviceId(params.value("deviceId").toString());
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     ParamList actionParams = unpack<ParamList>(params.value("params"));
-    QLocale locale = params.value("locale").toLocale();
+    QLocale locale = context.locale();
 
     Action action(actionTypeId, deviceId);
     action.setParams(actionParams);
@@ -135,9 +135,9 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params)
     return jsonReply;
 }
 
-JsonReply *ActionHandler::GetActionType(const QVariantMap &params) const
+JsonReply *ActionHandler::GetActionType(const QVariantMap &params, const JsonContext &context) const
 {
-    QLocale locale = params.value("locale").toLocale();
+    QLocale locale = context.locale();
     qCDebug(dcJsonRpc) << "asked for action type" << params;
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {

@@ -34,6 +34,7 @@
 #include "version.h"
 #include "servers/mocktcpserver.h"
 #include "usermanager/usermanager.h"
+#include "nymeadbusservice.h"
 
 using namespace nymeaserver;
 
@@ -151,6 +152,7 @@ QStringList TestJSONRPC::extractRefs(const QVariant &variant)
 
 void TestJSONRPC::initTestCase()
 {
+    NymeaDBusService::setBusType(QDBusConnection::SessionBus);
     NymeaTestBase::initTestCase();
     QLoggingCategory::setFilterRules("*.debug=false\n"
 //                                     "JsonRpcTraffic.debug=true\n"
@@ -182,7 +184,7 @@ void TestJSONRPC::testHandshake()
 
     // Now register push button agent
     PushButtonAgent pushButtonAgent;
-    pushButtonAgent.init();
+    pushButtonAgent.init(QDBusConnection::SessionBus);
 
     // And now check if it is sent again when calling JSONRPC.Hello
     handShake = injectAndWait("JSONRPC.Hello").toMap();
@@ -675,7 +677,7 @@ void TestJSONRPC::enableDisableNotifications_legacy()
 
     QStringList expectedNamespaces;
     if (enabled == "true") {
-        expectedNamespaces << "Actions" << "NetworkManager" << "Devices" << "System" << "Rules" << "States" << "Logging" << "Tags" << "JSONRPC" << "Configuration" << "Events" << "Scripts";
+        expectedNamespaces << "Actions" << "NetworkManager" << "Devices" << "System" << "Rules" << "States" << "Logging" << "Tags" << "JSONRPC" << "Configuration" << "Events" << "Scripts" << "Users";
     }
     std::sort(expectedNamespaces.begin(), expectedNamespaces.end());
 
@@ -1141,7 +1143,7 @@ void TestJSONRPC::pluginConfigChangeEmitsNotification()
 void TestJSONRPC::testPushButtonAuth()
 {
     PushButtonAgent pushButtonAgent;
-    pushButtonAgent.init();
+    pushButtonAgent.init(QDBusConnection::SessionBus);
 
     QVariantMap params;
     params.insert("deviceName", "pbtestdevice");
@@ -1167,7 +1169,7 @@ void TestJSONRPC::testPushButtonAuthInterrupt()
 {
     enableNotifications({});
     PushButtonAgent pushButtonAgent;
-    pushButtonAgent.init();
+    pushButtonAgent.init(QDBusConnection::SessionBus);
 
     // m_clientId is registered in gutTestbase already, just using it here to improve readability of the test
     QUuid aliceId = m_clientId;
@@ -1272,7 +1274,7 @@ void TestJSONRPC::testPushButtonAuthInterrupt()
 void TestJSONRPC::testPushButtonAuthConnectionDrop()
 {
     PushButtonAgent pushButtonAgent;
-    pushButtonAgent.init();
+    pushButtonAgent.init(QDBusConnection::SessionBus);
 
     // Snoop in on everything the TCP server sends to its clients.
     QSignalSpy clientSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
@@ -1339,7 +1341,7 @@ void TestJSONRPC::testInitialSetupWithPushButtonAuth()
     QVERIFY(spy.isValid());
 
     PushButtonAgent pushButtonAgent;
-    pushButtonAgent.init();
+    pushButtonAgent.init(QDBusConnection::SessionBus);
 
     // Hello call should work in any case, telling us initial setup is required
     spy.clear();

@@ -2,4 +2,9 @@ include(../../../nymea.pri)
 include(../autotests.pri)
 
 TARGET = testusermanager
-SOURCES += testusermanager.cpp
+
+HEADERS += ../../utils/pushbuttonagent.h
+
+SOURCES += testusermanager.cpp \
+    ../../utils/pushbuttonagent.cpp
+

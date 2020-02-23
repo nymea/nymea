@@ -19,8 +19,6 @@ HEADERS += nymeacore.h \
     devices/devicemanagerimplementation.h \
     devices/translator.h \
     experiences/experiencemanager.h \
-    jsonrpc/jsonrpcserverimplementation.h \
-    jsonrpc/scriptshandler.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
     ruleengine/stateevaluator.h \
@@ -43,6 +41,7 @@ HEADERS += nymeacore.h \
     servers/bluetoothserver.h \
     servers/websocketserver.h \
     servers/mqttbroker.h \
+    jsonrpc/jsonrpcserverimplementation.h \
     jsonrpc/jsonvalidator.h \
     jsonrpc/devicehandler.h \
     jsonrpc/ruleshandler.h \
@@ -52,6 +51,10 @@ HEADERS += nymeacore.h \
     jsonrpc/logginghandler.h \
     jsonrpc/configurationhandler.h \
     jsonrpc/networkmanagerhandler.h \
+    jsonrpc/tagshandler.h \
+    jsonrpc/systemhandler.h \
+    jsonrpc/scriptshandler.h \
+    jsonrpc/usershandler.h \
     logging/logging.h \
     logging/logengine.h \
     logging/logfilter.h \
@@ -66,6 +69,7 @@ HEADERS += nymeacore.h \
     networkmanager/networksettings.h \
     networkmanager/networkconnection.h \
     networkmanager/wirednetworkdevice.h \
+    usermanager/userinfo.h \
     usermanager/usermanager.h \
     usermanager/tokeninfo.h \
     usermanager/pushbuttondbusservice.h \
@@ -90,18 +94,15 @@ HEADERS += nymeacore.h \
     debugserverhandler.h \
     tagging/tagsstorage.h \
     tagging/tag.h \
-    jsonrpc/tagshandler.h \
     cloud/cloudtransport.h \
     debugreportgenerator.h \
     platform/platform.h \
-    jsonrpc/systemhandler.h
+
 
 SOURCES += nymeacore.cpp \
     devices/devicemanagerimplementation.cpp \
     devices/translator.cpp \
     experiences/experiencemanager.cpp \
-    jsonrpc/jsonrpcserverimplementation.cpp \
-    jsonrpc/scriptshandler.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \
     ruleengine/stateevaluator.cpp \
@@ -124,6 +125,7 @@ SOURCES += nymeacore.cpp \
     servers/websocketserver.cpp \
     servers/bluetoothserver.cpp \
     servers/mqttbroker.cpp \
+    jsonrpc/jsonrpcserverimplementation.cpp \
     jsonrpc/jsonvalidator.cpp \
     jsonrpc/devicehandler.cpp \
     jsonrpc/ruleshandler.cpp \
@@ -133,6 +135,10 @@ SOURCES += nymeacore.cpp \
     jsonrpc/logginghandler.cpp \
     jsonrpc/configurationhandler.cpp \
     jsonrpc/networkmanagerhandler.cpp \
+    jsonrpc/tagshandler.cpp \
+    jsonrpc/systemhandler.cpp \
+    jsonrpc/scriptshandler.cpp \
+    jsonrpc/usershandler.cpp \
     logging/logengine.cpp \
     logging/logfilter.cpp \
     logging/logentry.cpp \
@@ -145,6 +151,7 @@ SOURCES += nymeacore.cpp \
     networkmanager/networksettings.cpp \
     networkmanager/networkconnection.cpp \
     networkmanager/wirednetworkdevice.cpp \
+    usermanager/userinfo.cpp \
     usermanager/usermanager.cpp \
     usermanager/tokeninfo.cpp \
     usermanager/pushbuttondbusservice.cpp \
@@ -169,11 +176,10 @@ SOURCES += nymeacore.cpp \
     debugserverhandler.cpp \
     tagging/tagsstorage.cpp \
     tagging/tag.cpp \
-    jsonrpc/tagshandler.cpp \
     cloud/cloudtransport.cpp \
     debugreportgenerator.cpp \
     platform/platform.cpp \
-    jsonrpc/systemhandler.cpp
+
 
 versionAtLeast(QT_VERSION, 5.12.0) {
 HEADERS += \

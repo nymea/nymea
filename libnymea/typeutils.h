@@ -138,7 +138,10 @@ public:
         UnitVoltAmpereReactive,
         UnitAmpereHour,
         UnitMicroSiemensPerCentimeter,
-        UnitDuration
+        UnitDuration,
+        UnitNewton,
+        UnitNewtonMeter,
+        UnitRpm
     };
     Q_ENUM(Unit)
 

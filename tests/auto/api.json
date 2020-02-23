@@ -294,7 +294,10 @@
             "UnitVoltAmpereReactive",
             "UnitAmpereHour",
             "UnitMicroSiemensPerCentimeter",
-            "UnitDuration"
+            "UnitDuration",
+            "UnitNewton",
+            "UnitNewtonMeter",
+            "UnitRpm"
         ],
         "UserError": [
             "UserErrorNoError",

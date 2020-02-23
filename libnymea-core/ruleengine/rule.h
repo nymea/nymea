@@ -44,9 +44,9 @@ namespace nymeaserver {
 class Rule
 {
     Q_GADGET
-    Q_PROPERTY(QUuid id READ id WRITE setId USER true)
+    Q_PROPERTY(QUuid id READ id)
     Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(bool active READ active USER true)
+    Q_PROPERTY(bool active READ active)
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled USER true)
     Q_PROPERTY(bool executable READ executable WRITE setExecutable USER true)
     Q_PROPERTY(EventDescriptors eventDescriptors READ eventDescriptors WRITE setEventDescriptors USER true)

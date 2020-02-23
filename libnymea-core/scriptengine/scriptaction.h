@@ -41,6 +41,7 @@ namespace nymeaserver {
 class ScriptAction : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
+    Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(QString deviceId READ deviceId WRITE setDeviceId NOTIFY deviceIdChanged)
     Q_PROPERTY(QString actionTypeId READ actionTypeId WRITE setActionTypeId NOTIFY actionTypeIdChanged)
     Q_PROPERTY(QString actionName READ actionName WRITE setActionName NOTIFY actionNameChanged)

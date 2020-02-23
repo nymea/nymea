@@ -86,6 +86,7 @@ private:
     class VirtualFsNode {
     public:
         VirtualFsNode(const BrowserItem &item):item(item) {}
+        ~VirtualFsNode() { while (!childs.isEmpty()) delete childs.takeFirst(); }
         BrowserItem item;
         QList<VirtualFsNode*> childs;
         void addChild(VirtualFsNode* child) {childs.append(child); }

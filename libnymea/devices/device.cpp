@@ -119,20 +119,20 @@
 #include <QDebug>
 
 /*! Construct an Device with the given \a pluginId, \a id, \a deviceClassId and \a parent. */
-Device::Device(DevicePlugin *plugin, const DeviceClass &deviceClass, const DeviceId &id, QObject *parent):
+Device::Device(const PluginId &pluginId, const DeviceClass &deviceClass, const DeviceId &id, QObject *parent):
     QObject(parent),
     m_deviceClass(deviceClass),
-    m_plugin(plugin),
+    m_pluginId(pluginId),
     m_id(id)
 {
 
 }
 
 /*! Construct an Device with the given \a pluginId, \a deviceClassId and \a parent. A new DeviceId will be created for this Device. */
-Device::Device(DevicePlugin *plugin, const DeviceClass &deviceClass, QObject *parent):
+Device::Device(const PluginId &pluginId, const DeviceClass &deviceClass, QObject *parent):
     QObject(parent),
     m_deviceClass(deviceClass),
-    m_plugin(plugin),
+    m_pluginId(pluginId),
     m_id(DeviceId::createDeviceId())
 {
 
@@ -153,19 +153,13 @@ DeviceClassId Device::deviceClassId() const
 /*! Returns the id of the \l{DevicePlugin} this Device is managed by. */
 PluginId Device::pluginId() const
 {
-    return m_plugin->pluginId();
+    return m_pluginId;
 }
 
 /*! Returns the \l{DeviceClass} of this device. */
 DeviceClass Device::deviceClass() const
 {
     return m_deviceClass;
-}
-
-/*! Returns the the \l{DevicePlugin} this Device is managed by. */
-DevicePlugin *Device::plugin() const
-{
-    return m_plugin;
 }
 
 /*! Returns the name of this Device. This is visible to the user. */

@@ -15,5 +15,5 @@ LIBS += -L$$top_builddir/libnymea/ -lnymea \
 target.path = /usr/tests
 INSTALLS += target
 
-test.commands = LD_LIBRARY_PATH=../../../libnymea:../../../libnymea-core/:../../testlib/ make check TESTRUNNER=\"dbus-test-runner --bus-type=system --task\"
+test.commands = LD_LIBRARY_PATH=../../../libnymea:../../../libnymea-core/:../../testlib/ make check TESTRUNNER=\"dbus-test-runner --bus-type=both --task\"
 QMAKE_EXTRA_TARGETS += test

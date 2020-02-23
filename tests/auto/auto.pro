@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 
-SUBDIRS = versioning \
+SUBDIRS = \
+        versioning \
         devices \
         jsonrpc \
         events \

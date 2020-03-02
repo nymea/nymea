@@ -36,7 +36,7 @@
 #include "transportinterface.h"
 #include "usermanager/usermanager.h"
 
-#include "types/deviceclass.h"
+#include "types/thingclass.h"
 #include "types/action.h"
 #include "types/event.h"
 
@@ -45,7 +45,7 @@
 #include <QString>
 #include <QSslConfiguration>
 
-class Device;
+class Thing;
 
 namespace nymeaserver {
 

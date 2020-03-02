@@ -31,6 +31,7 @@
 #include "nymeatestbase.h"
 #include "nymeacore.h"
 
+#include "jsonrpc/devicehandler.h"
 #include "servers/mocktcpserver.h"
 
 using namespace nymeaserver;
@@ -53,9 +54,9 @@ void TestEvents::triggerEvent()
 {
     enableNotifications({"Events"});
 
-    QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
+    QList<Thing*> devices = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
-    Device *device = devices.first();
+    Thing *device = devices.first();
 
     QSignalSpy spy(NymeaCore::instance(), SIGNAL(eventTriggered(const Event&)));
     QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
@@ -74,7 +75,7 @@ void TestEvents::triggerEvent()
     QVERIFY(spy.count() > 0);
     for (int i = 0; i < spy.count(); i++ ){
         Event event = spy.at(i).at(0).value<Event>();
-        if (event.deviceId() == device->id()) {
+        if (event.thingId() == device->id()) {
             // Make sure the event contains all the stuff we expect
             QCOMPARE(event.eventTypeId(), mockEvent1EventTypeId);
         }
@@ -95,9 +96,9 @@ void TestEvents::triggerStateChangeEvent()
 {
     enableNotifications({"Events"});
 
-    QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
+    QList<Thing*> devices = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
-    Device *device = devices.first();
+    Thing *device = devices.first();
 
     QSignalSpy spy(NymeaCore::instance(), SIGNAL(eventTriggered(const Event&)));
     QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
@@ -116,7 +117,7 @@ void TestEvents::triggerStateChangeEvent()
     QVERIFY(spy.count() > 0);
     for (int i = 0; i < spy.count(); i++ ){
         Event event = spy.at(i).at(0).value<Event>();
-        if (event.deviceId() == device->id()) {
+        if (event.thingId() == device->id()) {
             // Make sure the event contains all the stuff we expect
             QCOMPARE(event.eventTypeId().toString(), mockIntStateTypeId.toString());
             QCOMPARE(event.param(ParamTypeId(mockIntStateTypeId.toString())).value().toInt(), 11);

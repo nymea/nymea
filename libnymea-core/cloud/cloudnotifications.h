@@ -31,24 +31,24 @@
 #ifndef CLOUDNOTIFICATIONS_H
 #define CLOUDNOTIFICATIONS_H
 
-#include "devices/deviceplugin.h"
+#include "integrations/integrationplugin.h"
 #include "awsconnector.h"
 
-class CloudNotifications : public DevicePlugin
+class CloudNotifications : public IntegrationPlugin
 {
     Q_OBJECT
 
-//    Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "deviceplugincloudnotifications.json")
-    Q_INTERFACES(DevicePlugin)
+//    Q_PLUGIN_METADATA(IID "io.nymea.IntegrationPlugin" FILE "deviceplugincloudnotifications.json")
+    Q_INTERFACES(IntegrationPlugin)
 
 public:
     CloudNotifications(AWSConnector *awsConnector, QObject* parent = nullptr);
 
     PluginMetadata metaData() const;
 
-    void setupDevice(DeviceSetupInfo *info) override;
-    void startMonitoringAutoDevices() override;
-    void executeAction(DeviceActionInfo *info) override;
+    void setupThing(ThingSetupInfo *info) override;
+    void startMonitoringAutoThings() override;
+    void executeAction(ThingActionInfo *info) override;
 
 private slots:
     void pushNotificationEndpointsUpdated(const QList<AWSConnector::PushNotificationsEndpoint> &endpoints);
@@ -57,7 +57,7 @@ private slots:
 
 private:
     AWSConnector *m_awsConnector = nullptr;
-    QHash<int, DeviceActionInfo*> m_pendingPushNotifications;
+    QHash<int, ThingActionInfo*> m_pendingPushNotifications;
 };
 
 #endif // CLOUDNOTIFICATIONS_H

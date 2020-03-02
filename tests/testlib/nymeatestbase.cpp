@@ -60,11 +60,11 @@ void NymeaTestBase::initTestCase()
     // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
     NymeaSettings rulesSettings(NymeaSettings::SettingsRoleRules);
     rulesSettings.clear();
-    NymeaSettings deviceSettings(NymeaSettings::SettingsRoleDevices);
+    NymeaSettings deviceSettings(NymeaSettings::SettingsRoleThings);
     deviceSettings.clear();
     NymeaSettings pluginSettings(NymeaSettings::SettingsRolePlugins);
     pluginSettings.clear();
-    NymeaSettings statesSettings(NymeaSettings::SettingsRoleDeviceStates);
+    NymeaSettings statesSettings(NymeaSettings::SettingsRoleThingStates);
     statesSettings.clear();
 
     // Reset to default settings
@@ -105,8 +105,8 @@ void NymeaTestBase::initTestCase()
 
     response = injectAndWait("Devices.GetConfiguredDevices", {});
     foreach (const QVariant &device, response.toMap().value("params").toMap().value("devices").toList()) {
-        if (device.toMap().value("deviceClassId").toUuid() == mockDeviceAutoDeviceClassId) {
-            m_mockDeviceAutoId = DeviceId(device.toMap().value("id").toString());
+        if (device.toMap().value("deviceClassId").toUuid() == mockDeviceAutoThingClassId) {
+            m_mockThingAutoId = ThingId(device.toMap().value("id").toString());
         }
     }
 }
@@ -119,7 +119,7 @@ void NymeaTestBase::cleanupTestCase()
 void NymeaTestBase::cleanup()
 {
     // In case a test deleted the mock device, lets recreate it.
-    if (NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId).count() == 0) {
+    if (NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId).count() == 0) {
         createMockDevice();
     }
 }
@@ -426,7 +426,7 @@ void NymeaTestBase::createMockDevice()
 {
     QVariantMap params;
     params.insert("name", "Test Mock Device");
-    params.insert("deviceClassId", mockDeviceClassId.toString());
+    params.insert("deviceClassId", mockThingClassId.toString());
 
     QVariantList deviceParams;
     QVariantMap httpPortParam;
@@ -439,7 +439,7 @@ void NymeaTestBase::createMockDevice()
 
     verifyError(response, "deviceError", "DeviceErrorNoError");
 
-    m_mockDeviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
-    QVERIFY2(!m_mockDeviceId.isNull(), "Newly created mock device must not be null.");
+    m_mockThingId = ThingId(response.toMap().value("params").toMap().value("deviceId").toString());
+    QVERIFY2(!m_mockThingId.isNull(), "Newly created mock device must not be null.");
 }
 

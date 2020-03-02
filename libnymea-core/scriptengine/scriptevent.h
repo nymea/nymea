@@ -36,7 +36,7 @@
 #include <QQmlParserStatus>
 
 #include "types/event.h"
-#include "devices/devicemanager.h"
+#include "integrations/thingmanager.h"
 
 namespace nymeaserver {
 
@@ -75,9 +75,9 @@ signals:
     void triggered(const QVariantMap &params);
 
 private:
-    DeviceManager *m_deviceManager = nullptr;
+    ThingManager *m_deviceManager = nullptr;
 
-    QString m_deviceId;
+    QString m_thingId;
     QString m_eventTypeId;
     QString m_eventName;
 };

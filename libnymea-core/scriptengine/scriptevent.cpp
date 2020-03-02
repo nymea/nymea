@@ -41,8 +41,8 @@ ScriptEvent::ScriptEvent(QObject *parent) : QObject(parent)
 
 void ScriptEvent::classBegin()
 {
-    m_deviceManager = reinterpret_cast<DeviceManager*>(qmlEngine(this)->property("deviceManager").toULongLong());
-    connect(m_deviceManager, &DeviceManager::eventTriggered, this, &ScriptEvent::onEventTriggered);
+    m_deviceManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("deviceManager").toULongLong());
+    connect(m_deviceManager, &ThingManager::eventTriggered, this, &ScriptEvent::onEventTriggered);
 }
 
 void ScriptEvent::componentComplete()
@@ -52,13 +52,13 @@ void ScriptEvent::componentComplete()
 
 QString ScriptEvent::deviceId() const
 {
-    return m_deviceId;
+    return m_thingId;
 }
 
 void ScriptEvent::setDeviceId(const QString &deviceId)
 {
-    if (m_deviceId != deviceId) {
-        m_deviceId = deviceId;
+    if (m_thingId != deviceId) {
+        m_thingId = deviceId;
         emit deviceIdChanged();
     }
 }
@@ -91,7 +91,7 @@ void ScriptEvent::setEventName(const QString &eventName)
 
 void ScriptEvent::onEventTriggered(const Event &event)
 {
-    if (DeviceId(m_deviceId) != event.deviceId()) {
+    if (ThingId(m_thingId) != event.thingId()) {
         return;
     }
 
@@ -99,8 +99,8 @@ void ScriptEvent::onEventTriggered(const Event &event)
         return;
     }
 
-    Device *device = m_deviceManager->findConfiguredDevice(event.deviceId());
-    if (!m_eventName.isEmpty() && device->deviceClass().eventTypes().findByName(m_eventName).id() != event.eventTypeId()) {
+    Thing *thing = m_deviceManager->findConfiguredThing(event.thingId());
+    if (!m_eventName.isEmpty() && thing->thingClass().eventTypes().findByName(m_eventName).id() != event.eventTypeId()) {
         return;
     }
 
@@ -109,7 +109,7 @@ void ScriptEvent::onEventTriggered(const Event &event)
     QVariantMap params;
     foreach (const Param &param, event.params()) {
         params.insert(param.paramTypeId().toString().remove(QRegExp("[{}]")), param.value());
-        QString paramName = device->deviceClass().eventTypes().findById(event.eventTypeId()).paramTypes().findById(param.paramTypeId()).name();
+        QString paramName = thing->thingClass().eventTypes().findById(event.eventTypeId()).paramTypes().findById(param.paramTypeId()).name();
         params.insert(paramName, param.value());
     }
 

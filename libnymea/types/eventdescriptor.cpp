@@ -62,9 +62,9 @@ EventDescriptor::EventDescriptor()
 }
 
 /*! Constructs an EventDescriptor describing an \l{Event} with the given \a eventTypeId, \a deviceId and the given \a paramDescriptors. */
-EventDescriptor::EventDescriptor(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors):
+EventDescriptor::EventDescriptor(const EventTypeId &eventTypeId, const ThingId &thingId, const QList<ParamDescriptor> &paramDescriptors):
     m_eventTypeId(eventTypeId),
-    m_deviceId(deviceId),
+    m_thingId(thingId),
     m_paramDescriptors(paramDescriptors)
 {
 }
@@ -81,13 +81,13 @@ EventDescriptor::EventDescriptor(const QString &interface, const QString &interf
 /*! Returns true \l{EventDescriptor::Type}{Type} of this descriptor. */
 EventDescriptor::Type EventDescriptor::type() const
 {
-    return (!m_deviceId.isNull() && !m_eventTypeId.isNull()) ? TypeDevice : TypeInterface;
+    return (!m_thingId.isNull() && !m_eventTypeId.isNull()) ? TypeDevice : TypeInterface;
 }
 
 /*! Returns true if the EventDescriptor is valid, that is, when it has either enough data to describe a device/eventType or an interface/interfaceEvent pair. */
 bool EventDescriptor::isValid() const
 {
-    return (!m_deviceId.isNull() && !m_eventTypeId.isNull()) || (!m_interface.isEmpty() && !m_interfaceEvent.isEmpty());
+    return (!m_thingId.isNull() && !m_eventTypeId.isNull()) || (!m_interface.isEmpty() && !m_interfaceEvent.isEmpty());
 }
 
 /*! Returns the id of the \l{EventType} which describes this Event. */
@@ -101,15 +101,15 @@ void EventDescriptor::setEventTypeId(const EventTypeId &eventTypeId)
     m_eventTypeId = eventTypeId;
 }
 
-/*! Returns the id of the \l{Device} associated with this Event. */
-DeviceId EventDescriptor::deviceId() const
+/*! Returns the id of the \l{Thing} associated with this Event. */
+ThingId EventDescriptor::thingId() const
 {
-    return m_deviceId;
+    return m_thingId;
 }
 
-void EventDescriptor::setDeviceId(const DeviceId &deviceId)
+void EventDescriptor::setThingId(const ThingId &thingId)
 {
-    m_deviceId = deviceId;
+    m_thingId = thingId;
 }
 
 /*! Returns the interface associated with this EventDescriptor. */
@@ -171,14 +171,14 @@ bool EventDescriptor::operator ==(const EventDescriptor &other) const
     }
 
     return m_eventTypeId == other.eventTypeId()
-            && m_deviceId == other.deviceId()
+            && m_thingId == other.thingId()
             && paramsMatch;
 }
 
 /*! Print an EventDescriptor including ParamDescriptors to QDebug. */
 QDebug operator<<(QDebug dbg, const EventDescriptor &eventDescriptor)
 {
-    dbg.nospace() << "EventDescriptor(EventTypeId: " << eventDescriptor.eventTypeId().toString() << ", DeviceId:" << eventDescriptor.deviceId().toString() << ", Interface:" << eventDescriptor.interface() << ", InterfaceEvent:" << eventDescriptor.interfaceEvent() <<  ")" << endl;
+    dbg.nospace() << "EventDescriptor(EventTypeId: " << eventDescriptor.eventTypeId().toString() << ", ThingId:" << eventDescriptor.thingId().toString() << ", Interface:" << eventDescriptor.interface() << ", InterfaceEvent:" << eventDescriptor.interfaceEvent() <<  ")" << endl;
     for (int i = 0; i < eventDescriptor.paramDescriptors().count(); i++) {
         dbg.nospace() << "    " << i << ": " << eventDescriptor.paramDescriptors().at(i);
     }

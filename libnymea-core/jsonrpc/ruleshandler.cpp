@@ -300,7 +300,7 @@ JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
 
 JsonReply *RulesHandler::FindRules(const QVariantMap &params)
 {
-    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+    ThingId deviceId = ThingId(params.value("deviceId").toString());
     QList<RuleId> rules = NymeaCore::instance()->ruleEngine()->findRules(deviceId);
 
     QVariantList rulesList;

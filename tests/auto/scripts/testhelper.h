@@ -31,15 +31,15 @@ class TestHelper : public QObject
 public:
     static TestHelper* instance();
 
-    Q_INVOKABLE void logEvent(const QString &deviceId, const QString &eventId, const QVariantMap &params);
-    Q_INVOKABLE void logStateChange(const QString &deviceId, const QString &stateId, const QVariant &value);
+    Q_INVOKABLE void logEvent(const QString &thingId, const QString &eventId, const QVariantMap &params);
+    Q_INVOKABLE void logStateChange(const QString &thingId, const QString &stateId, const QVariant &value);
 
 signals:
     void setState(const QVariant &value);
     void executeAction(const QVariantMap &params);
 
-    void eventLogged(const DeviceId &deviceId, const QString &eventId, const QVariantMap &params);
-    void stateChangeLogged(const DeviceId &deviceId, const QString stateId, const QVariant &value);
+    void eventLogged(const ThingId &thingId, const QString &eventId, const QVariantMap &params);
+    void stateChangeLogged(const ThingId &thingId, const QString stateId, const QVariant &value);
 private:
     explicit TestHelper(QObject *parent = nullptr);
     static TestHelper* s_instance;

@@ -32,9 +32,105 @@
 #define DEVICEHANDLER_H
 
 #include "jsonrpc/jsonhandler.h"
-#include "devices/devicemanager.h"
+#include "integrations/thingmanager.h"
+#include "integrations/thing.h"
+
+#include <QObject>
+
+DECLARE_TYPE_ID(DeviceClass)
+DECLARE_TYPE_ID(Device)
 
 namespace nymeaserver {
+
+// Device has been renamed to Thing. As we need to keep compatibility with the Devices API for a bit,
+// let's create them here
+
+class DevicePlugin: public IntegrationPlugin
+{
+    Q_OBJECT
+};
+
+class DevicePlugins: public IntegrationPlugins
+{
+    Q_GADGET
+};
+
+class DeviceClass: public ThingClass
+{
+    Q_GADGET
+
+public:
+    DeviceClass(): ThingClass() {}
+    DeviceClass(const ThingClass &other);
+};
+
+class DeviceClasses: public ThingClasses
+{
+    Q_GADGET
+};
+
+class Device: public Thing
+{
+    Q_OBJECT
+    Q_PROPERTY(QUuid deviceClassId READ deviceClassId)
+public:
+    enum DeviceError {
+        DeviceErrorNoError,
+        DeviceErrorPluginNotFound,
+        DeviceErrorVendorNotFound,
+        DeviceErrorDeviceNotFound,
+        DeviceErrorDeviceClassNotFound,
+        DeviceErrorActionTypeNotFound,
+        DeviceErrorStateTypeNotFound,
+        DeviceErrorEventTypeNotFound,
+        DeviceErrorDeviceDescriptorNotFound,
+        DeviceErrorMissingParameter,
+        DeviceErrorInvalidParameter,
+        DeviceErrorSetupFailed,
+        DeviceErrorDuplicateUuid,
+        DeviceErrorCreationMethodNotSupported,
+        DeviceErrorSetupMethodNotSupported,
+        DeviceErrorHardwareNotAvailable,
+        DeviceErrorHardwareFailure,
+        DeviceErrorAuthenticationFailure,
+        DeviceErrorDeviceInUse,
+        DeviceErrorDeviceInRule,
+        DeviceErrorDeviceIsChild,
+        DeviceErrorPairingTransactionIdNotFound,
+        DeviceErrorParameterNotWritable,
+        DeviceErrorItemNotFound,
+        DeviceErrorItemNotExecutable,
+        DeviceErrorUnsupportedFeature,
+        DeviceErrorTimeout,
+    };
+    Q_ENUM(DeviceError)
+
+    enum DeviceSetupStatus {
+        DeviceSetupStatusNone,
+        DeviceSetupStatusInProgress,
+        DeviceSetupStatusComplete,
+        DeviceSetupStatusFailed,
+    };
+    Q_ENUM(DeviceSetupStatus)
+
+    DeviceClassId deviceClassId() const;
+};
+
+class Devices: public Things
+{
+    Q_GADGET
+};
+
+class DeviceDescriptor: public ThingDescriptor
+{
+    Q_GADGET
+    Q_PROPERTY(QUuid deviceId READ thingId USER true)
+};
+
+class DeviceDescriptors: public ThingDescriptors
+{
+    Q_GADGET
+};
 
 class DeviceHandler : public JsonHandler
 {
@@ -88,20 +184,22 @@ signals:
 private slots:
     void pluginConfigChanged(const PluginId &id, const ParamList &config);
 
-    void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
+    void deviceStateChanged(Thing *device, const QUuid &stateTypeId, const QVariant &value);
 
     void deviceRemovedNotification(const QUuid &deviceId);
 
-    void deviceAddedNotification(Device *device);
+    void deviceAddedNotification(Thing *thing);
 
-    void deviceChangedNotification(Device *device);
+    void deviceChangedNotification(Thing *device);
 
-    void deviceSettingChangedNotification(const DeviceId deviceId, const ParamTypeId &paramTypeId, const QVariant &value);
+    void deviceSettingChangedNotification(const ThingId &thingId, const ParamTypeId &paramTypeId, const QVariant &value);
 
 private:
-    QVariantMap statusToReply(Device::DeviceError status) const;
+    QVariantMap statusToReply(Device::ThingError status) const;
 };
 
 }
+Q_DECLARE_METATYPE(nymeaserver::DeviceClass)
+Q_DECLARE_METATYPE(nymeaserver::Device::DeviceError)
 
 #endif // DEVICEHANDLER_H

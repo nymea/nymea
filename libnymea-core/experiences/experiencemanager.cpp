@@ -41,8 +41,8 @@
 
 namespace nymeaserver {
 
-ExperienceManager::ExperienceManager(DeviceManager *deviceManager, JsonRPCServer *jsonRpcServer, QObject *parent) : QObject(parent),
-    m_deviceManager(deviceManager),
+ExperienceManager::ExperienceManager(ThingManager *thingManager, JsonRPCServer *jsonRpcServer, QObject *parent) : QObject(parent),
+    m_thingManager(thingManager),
     m_jsonRpcServer(jsonRpcServer)
 {
     staticMetaObject.invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
@@ -103,7 +103,7 @@ void ExperienceManager::loadExperiencePlugin(const QString &file)
     qCDebug(dcExperiences()) << "Loaded experience plugin:" << loader.fileName();
     m_plugins.append(plugin);
     plugin->setParent(this);
-    plugin->initPlugin(m_deviceManager, m_jsonRpcServer);
+    plugin->initPlugin(m_thingManager, m_jsonRpcServer);
 
 }
 

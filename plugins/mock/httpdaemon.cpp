@@ -30,9 +30,9 @@
 
 #include "httpdaemon.h"
 
-#include "devices/device.h"
-#include "devices/deviceplugin.h"
-#include "types/deviceclass.h"
+#include "integrations/thing.h"
+#include "integrations/integrationplugin.h"
+#include "types/thingclass.h"
 #include "types/statetype.h"
 #include "extern-plugininfo.h"
 
@@ -43,13 +43,13 @@
 #include <QRegExp>
 #include <QStringList>
 
-HttpDaemon::HttpDaemon(Device *device, DevicePlugin *parent):
-    QTcpServer(parent), disabled(false), m_plugin(parent), m_device(device)
+HttpDaemon::HttpDaemon(Thing *thing, IntegrationPlugin *parent):
+    QTcpServer(parent), disabled(false), m_plugin(parent), m_thing(thing)
 {
-    QHash<DeviceClassId, ParamTypeId> portMap;
-    portMap.insert(mockDeviceClassId, mockDeviceHttpportParamTypeId);
-    portMap.insert(mockDeviceAutoDeviceClassId, mockDeviceAutoDeviceHttpportParamTypeId);
-    listen(QHostAddress::Any, device->paramValue(portMap.value(device->deviceClassId())).toInt());
+    QHash<ThingClassId, ParamTypeId> portMap;
+    portMap.insert(mockThingClassId, mockDeviceHttpportParamTypeId);
+    portMap.insert(mockDeviceAutoThingClassId, mockDeviceAutoDeviceHttpportParamTypeId);
+    listen(QHostAddress::Any, thing->paramValue(portMap.value(thing->thingClassId())).toInt());
 }
 
 HttpDaemon::~HttpDaemon()
@@ -159,34 +159,34 @@ QString HttpDaemon::generateHeader()
 
 QString HttpDaemon::generateWebPage()
 {
-    DeviceClass deviceClass;
-    foreach (const DeviceClass &dc, m_plugin->supportedDevices()) {
-        if (dc.id() == m_device->deviceClassId()) {
-            deviceClass = dc;
+    ThingClass thingClass;
+    foreach (const ThingClass &tc, m_plugin->supportedThings()) {
+        if (tc.id() == m_thing->thingClassId()) {
+            thingClass = tc;
         }
     }
-    Q_ASSERT(deviceClass.isValid());
+    Q_ASSERT(thingClass.isValid());
 
     QString body = QString(
     "<html>"
         "<body>"
-        "<h1>Mock device Controller</h1>\n"
+        "<h1>Mock thing controller</h1>\n"
         "<hr>"
-                "<h2>Device Information</h2>"
+                "<h2>Thing Information</h2>"
         "Name: %1<br>"
         "ID: %2<br>"
-        "DeviceClass ID: %3<br>").arg(m_device->name()).arg(m_device->id().toString()).arg(deviceClass.id().toString());
+        "ThingClass ID: %3<br>").arg(m_thing->name()).arg(m_thing->id().toString()).arg(thingClass.id().toString());
 
     body.append("<hr>");
     body.append("<h2>States</h2>");
 
     body.append("<table>");
-    for (int i = 0; i < deviceClass.stateTypes().count(); ++i) {
+    for (int i = 0; i < thingClass.stateTypes().count(); ++i) {
         body.append("<tr>");
         body.append("<form action=\"/setstate\" method=\"get\">");
-        StateType stateType = deviceClass.stateTypes().at(i);
+        StateType stateType = thingClass.stateTypes().at(i);
         body.append("<td>" + stateType.name() + "</td>");
-        body.append(QString("<td><input type='input'' name='%1' value='%2'></td>").arg(stateType.id().toString()).arg(m_device->states().at(i).value().toString()));
+        body.append(QString("<td><input type='input'' name='%1' value='%2'></td>").arg(stateType.id().toString()).arg(m_thing->states().at(i).value().toString()));
         body.append("<td><input type=submit value='Set State'/></td>");
         body.append("</form>");
         body.append("</tr>");
@@ -197,8 +197,8 @@ QString HttpDaemon::generateWebPage()
     body.append("<h2>Events</h2>");
 
     body.append("<table>");
-    for (int i = 0; i < deviceClass.eventTypes().count(); ++i) {
-        EventType eventType = deviceClass.eventTypes().at(i);
+    for (int i = 0; i < thingClass.eventTypes().count(); ++i) {
+        EventType eventType = thingClass.eventTypes().at(i);
         body.append(QString(
         "<tr>"
         "<form action=\"/generateevent\" method=\"get\">"
@@ -223,7 +223,7 @@ QString HttpDaemon::generateWebPage()
         ActionTypeId actionTypeId = ActionTypeId(m_actionList.at(i).first);
         QDateTime timestamp = m_actionList.at(i).second;
         QString actionName;
-        foreach (const ActionType &at, deviceClass.actionTypes()) {
+        foreach (const ActionType &at, thingClass.actionTypes()) {
             if (at.id() == actionTypeId) {
                 actionName = at.name();
                 break;

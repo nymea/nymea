@@ -36,20 +36,20 @@
 class BrowserAction
 {
 public:
-    explicit BrowserAction(const DeviceId &deviceId = DeviceId(), const QString &itemId = QString());
+    explicit BrowserAction(const ThingId &thingId = ThingId(), const QString &itemId = QString());
     BrowserAction(const BrowserAction &other);
 
     ActionId id() const;
 
     bool isValid() const;
 
-    DeviceId deviceId() const;
+    ThingId thingId() const;
     QString itemId() const;
 
     void operator=(const BrowserAction &other);
 private:
     ActionId m_id;
-    DeviceId m_deviceId;
+    ThingId m_thingId;
     QString m_itemId;
 };
 

@@ -30,7 +30,7 @@
 
 #include "scriptaction.h"
 
-#include "devices/devicemanager.h"
+#include "integrations/thingmanager.h"
 #include "types/action.h"
 
 #include <QQmlEngine>
@@ -47,7 +47,7 @@ ScriptAction::ScriptAction(QObject *parent) : QObject(parent)
 
 void ScriptAction::classBegin()
 {
-    m_deviceManager = reinterpret_cast<DeviceManager*>(qmlEngine(this)->property("deviceManager").toULongLong());
+    m_deviceManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("deviceManager").toULongLong());
 }
 
 void ScriptAction::componentComplete()
@@ -57,13 +57,13 @@ void ScriptAction::componentComplete()
 
 QString ScriptAction::deviceId() const
 {
-    return m_deviceId;
+    return m_thingId;
 }
 
 void ScriptAction::setDeviceId(const QString &deviceId)
 {
-    if (m_deviceId != deviceId) {
-        m_deviceId = deviceId;
+    if (m_thingId != deviceId) {
+        m_thingId = deviceId;
         emit deviceIdChanged();
     }
 }
@@ -96,16 +96,16 @@ void ScriptAction::setActionName(const QString &actionName)
 
 void ScriptAction::execute(const QVariantMap &params)
 {
-    Device *device = m_deviceManager->configuredDevices().findById(DeviceId(m_deviceId));
-    if (!device) {
-        qCWarning(dcScriptEngine) << "No device with id" << m_deviceId;
+    Thing *thing = m_deviceManager->configuredThings().findById(ThingId(m_thingId));
+    if (!thing) {
+        qCWarning(dcScriptEngine) << "No device with id" << m_thingId;
         return;
     }
     ActionType actionType;
     if (!ActionTypeId(m_actionTypeId).isNull()) {
-        actionType = device->deviceClass().actionTypes().findById(ActionTypeId(m_actionTypeId));
+        actionType = thing->thingClass().actionTypes().findById(ActionTypeId(m_actionTypeId));
     } else {
-        actionType = device->deviceClass().actionTypes().findByName(m_actionName);
+        actionType = thing->thingClass().actionTypes().findByName(m_actionName);
     }
     if (actionType.id().isNull()) {
         qCWarning(dcScriptEngine()) << "Either a valid actionTypeId or actionName is required";
@@ -113,7 +113,7 @@ void ScriptAction::execute(const QVariantMap &params)
     }
     Action action;
     action.setActionTypeId(actionType.id());
-    action.setDeviceId(DeviceId(m_deviceId));
+    action.setThingId(ThingId(m_thingId));
     ParamList paramList;
     foreach (const QString &paramNameOrId, params.keys()) {
         ParamType paramType;

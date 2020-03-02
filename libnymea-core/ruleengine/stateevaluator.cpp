@@ -45,7 +45,7 @@
 
 #include "stateevaluator.h"
 #include "nymeacore.h"
-#include "devices/devicemanager.h"
+#include "integrations/thingmanager.h"
 #include "loggingcategories.h"
 #include "nymeasettings.h"
 
@@ -118,12 +118,12 @@ bool StateEvaluator::evaluate() const
     if (m_stateDescriptor.isValid()) {
         descriptorMatching = false;
         if (m_stateDescriptor.type() == StateDescriptor::TypeDevice) {
-            Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(m_stateDescriptor.deviceId());
+            Thing *device = NymeaCore::instance()->thingManager()->findConfiguredThing(m_stateDescriptor.thingId());
             if (device) {
-                DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+                ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(device->thingClassId());
                 if (device->hasState(m_stateDescriptor.stateTypeId())) {
                     if (m_stateDescriptor == device->state(m_stateDescriptor.stateTypeId())) {
-                        qCDebug(dcRuleEngineDebug()) << "StateEvaluator:" << this << "State" << device->name() << deviceClass.stateTypes().findById(m_stateDescriptor.stateTypeId()).name() << (descriptorMatching ? "is" : "not") << "matching:" << m_stateDescriptor.stateValue() << m_stateDescriptor.operatorType() << device->stateValue(m_stateDescriptor.stateTypeId());
+                        qCDebug(dcRuleEngineDebug()) << "StateEvaluator:" << this << "State" << device->name() << thingClass.stateTypes().findById(m_stateDescriptor.stateTypeId()).name() << (descriptorMatching ? "is" : "not") << "matching:" << m_stateDescriptor.stateValue() << m_stateDescriptor.operatorType() << device->stateValue(m_stateDescriptor.stateTypeId());
                         descriptorMatching = true;
                     }
                 } else {
@@ -133,14 +133,14 @@ bool StateEvaluator::evaluate() const
                 qCWarning(dcRuleEngine) << "StateEvaluator:" << this << "Device not existing!";
             }
         } else { // interface
-            foreach (Device* device, NymeaCore::instance()->deviceManager()->configuredDevices()) {
-                DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
-                if (!deviceClass.isValid()) {
+            foreach (Thing* device, NymeaCore::instance()->thingManager()->configuredThings()) {
+                ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(device->thingClassId());
+                if (!thingClass.isValid()) {
                     qCWarning(dcRuleEngine()) << "Could not find DeviceClass for Device" << device->name() << device->id();
                     continue;
                 }
-                if (deviceClass.interfaces().contains(m_stateDescriptor.interface())) {
-                    StateType stateType = deviceClass.stateTypes().findByName(m_stateDescriptor.interfaceState());
+                if (thingClass.interfaces().contains(m_stateDescriptor.interface())) {
+                    StateType stateType = thingClass.stateTypes().findByName(m_stateDescriptor.interfaceState());
                     State state = device->state(stateType.id());
                     // As the StateDescriptor can't compare on it's own against interfaces, generate custom one, matching the device
                     StateDescriptor temporaryDescriptor(stateType.id(), device->id(), m_stateDescriptor.stateValue(), m_stateDescriptor.operatorType());
@@ -183,40 +183,40 @@ bool StateEvaluator::evaluate() const
     return true;
 }
 
-/*! Returns true if this \l StateEvaluator has a \l Device in it with the given \a deviceId. */
-bool StateEvaluator::containsDevice(const DeviceId &deviceId) const
+/*! Returns true if this \l StateEvaluator contains a \l{Thing} in it with the given \a thingId. */
+bool StateEvaluator::containsThing(const ThingId &thingId) const
 {
-    if (m_stateDescriptor.deviceId() == deviceId)
+    if (m_stateDescriptor.thingId() == thingId)
         return true;
 
     foreach (const StateEvaluator &childEvaluator, m_childEvaluators) {
-        if (childEvaluator.containsDevice(deviceId)) {
+        if (childEvaluator.containsThing(thingId)) {
             return true;
         }
     }
     return false;
 }
 
-/*! Removes a \l Device with the given \a deviceId from this \l StateEvaluator. */
-void StateEvaluator::removeDevice(const DeviceId &deviceId)
+/*! Removes the \l Thing with the given \a thingId from this \l StateEvaluator and all its child evaluators. */
+void StateEvaluator::removeThing(const ThingId &thingId)
 {
-    if (m_stateDescriptor.deviceId() == deviceId)
+    if (m_stateDescriptor.thingId() == thingId)
         m_stateDescriptor = StateDescriptor();
 
     for (int i = 0; i < m_childEvaluators.count(); i++) {
-        m_childEvaluators[i].removeDevice(deviceId);
+        m_childEvaluators[i].removeThing(thingId);
     }
 }
 
-/*! Returns a list of \l{DeviceId}{DeviceIds} of this StateEvaluator. */
-QList<DeviceId> StateEvaluator::containedDevices() const
+/*! Returns a list of \l{ThingIds} of this StateEvaluator. */
+QList<ThingId> StateEvaluator::containedThings() const
 {
-    QList<DeviceId> ret;
-    if (!m_stateDescriptor.deviceId().isNull()) {
-        ret.append(m_stateDescriptor.deviceId());
+    QList<ThingId> ret;
+    if (!m_stateDescriptor.thingId().isNull()) {
+        ret.append(m_stateDescriptor.thingId());
     }
     foreach (const StateEvaluator &childEvaluator, m_childEvaluators) {
-        ret.append(childEvaluator.containedDevices());
+        ret.append(childEvaluator.containedThings());
     }
     return ret;
 }
@@ -229,7 +229,7 @@ void StateEvaluator::dumpToSettings(NymeaSettings &settings, const QString &grou
 
     settings.beginGroup("stateDescriptor");
     settings.setValue("stateTypeId", m_stateDescriptor.stateTypeId().toString());
-    settings.setValue("deviceId", m_stateDescriptor.deviceId().toString());
+    settings.setValue("thingId", m_stateDescriptor.thingId().toString());
     settings.setValue("interface", m_stateDescriptor.interface());
     settings.setValue("interfaceState", m_stateDescriptor.interfaceState());
     settings.setValue("value", m_stateDescriptor.stateValue());
@@ -255,7 +255,10 @@ StateEvaluator StateEvaluator::loadFromSettings(NymeaSettings &settings, const Q
     settings.beginGroup(groupName);
     settings.beginGroup("stateDescriptor");
     StateTypeId stateTypeId(settings.value("stateTypeId").toString());
-    DeviceId deviceId(settings.value("deviceId").toString());
+    ThingId thingId(settings.value("thingId").toString());
+    if (thingId.isNull()) { // Retry with deviceId for backwards compatibility (<0.19)
+        thingId = ThingId(settings.value("deviceId").toString());
+    }
     QVariant stateValue = settings.value("value");
     if (settings.contains("valueType")) {
         QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
@@ -273,8 +276,8 @@ StateEvaluator StateEvaluator::loadFromSettings(NymeaSettings &settings, const Q
     QString interfaceState = settings.value("interfaceState").toString();
     Types::ValueOperator valueOperator = (Types::ValueOperator)settings.value("operator").toInt();
     StateDescriptor stateDescriptor;
-    if (!deviceId.isNull() && !stateTypeId.isNull()) {
-        stateDescriptor = StateDescriptor(stateTypeId, deviceId, stateValue, valueOperator);
+    if (!thingId.isNull() && !stateTypeId.isNull()) {
+        stateDescriptor = StateDescriptor(stateTypeId, thingId, stateValue, valueOperator);
     } else {
         stateDescriptor = StateDescriptor(interface, interfaceState, stateValue, valueOperator);
     }
@@ -298,19 +301,19 @@ bool StateEvaluator::isValid() const
 {
     if (m_stateDescriptor.isValid()) {
         if (m_stateDescriptor.type() == StateDescriptor::TypeDevice) {
-            Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(m_stateDescriptor.deviceId());
-            if (!device) {
+            Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(m_stateDescriptor.thingId());
+            if (!thing) {
                 qCWarning(dcRuleEngine) << "State evaluator device does not exist!";
                 return false;
             }
 
-            if (!device->hasState(m_stateDescriptor.stateTypeId())) {
+            if (!thing->hasState(m_stateDescriptor.stateTypeId())) {
                 qCWarning(dcRuleEngine) << "State evaluator device found, but it does not appear to have such a state!";
                 return false;
             }
 
-            DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
-            foreach (const StateType &stateType, deviceClass.stateTypes()) {
+            ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(thing->thingClassId());
+            foreach (const StateType &stateType, thingClass.stateTypes()) {
                 if (stateType.id() == m_stateDescriptor.stateTypeId()) {
 
                     QVariant stateValue = m_stateDescriptor.stateValue();
@@ -341,7 +344,7 @@ bool StateEvaluator::isValid() const
                 }
             }
         } else { // TypeInterface
-            Interface iface = NymeaCore::instance()->deviceManager()->supportedInterfaces().findByName(m_stateDescriptor.interface());
+            Interface iface = NymeaCore::instance()->thingManager()->supportedInterfaces().findByName(m_stateDescriptor.interface());
             if (!iface.isValid()) {
                 qWarning(dcRuleEngine()) << "No such interface:" << m_stateDescriptor.interface();
                 return false;

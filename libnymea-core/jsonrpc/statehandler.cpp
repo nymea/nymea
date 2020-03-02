@@ -45,6 +45,8 @@
 #include "nymeacore.h"
 #include "loggingcategories.h"
 
+#include "devicehandler.h"
+
 namespace nymeaserver {
 
 /*! Constructs a new \l{StateHandler} with the given \a parent. */
@@ -61,7 +63,7 @@ StateHandler::StateHandler(QObject *parent) :
     params.insert("stateTypeId", enumValueName(Uuid));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:stateType", objectRef<StateType>());
-    registerMethod("GetStateType", description, params, returns, "Please use the Devices namespace instead.");
+    registerMethod("GetStateType", description, params, returns, "Please use the Integrations namespace instead.");
 }
 
 /*! Returns the name of the \l{StateHandler}. In this case \b States.*/
@@ -74,20 +76,20 @@ JsonReply* StateHandler::GetStateType(const QVariantMap &params, const JsonConte
 {
     qCDebug(dcJsonRpc) << "asked for state type" << params;
     StateTypeId stateTypeId(params.value("stateTypeId").toString());
-    foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
+    foreach (const ThingClass &deviceClass, NymeaCore::instance()->thingManager()->supportedThings()) {
         foreach (const StateType &stateType, deviceClass.stateTypes()) {
             if (stateType.id() == stateTypeId) {
                 QVariantMap data;
-                data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorNoError));
+                data.insert("deviceError", enumValueName<Thing::ThingError>(Thing::ThingErrorNoError).replace("ThingError", "DeviceError"));
                 StateType translatedStateType = stateType;
-                translatedStateType.setDisplayName(NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), stateType.displayName(), context.locale()));
+                translatedStateType.setDisplayName(NymeaCore::instance()->thingManager()->translate(deviceClass.pluginId(), stateType.displayName(), context.locale()));
                 data.insert("stateType", pack(translatedStateType));
                 return createReply(data);
             }
         }
     }
     QVariantMap data;
-    data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorStateTypeNotFound));
+    data.insert("deviceError", enumValueName<Thing::ThingError>(Thing::ThingErrorStateTypeNotFound).replace("ThingError", "DeviceError"));
     return createReply(data);
 }
 

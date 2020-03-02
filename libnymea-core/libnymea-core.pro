@@ -16,9 +16,10 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 
 HEADERS += nymeacore.h \
-    devices/devicemanagerimplementation.h \
-    devices/plugininfocache.h \
-    devices/translator.h \
+    integrations/plugininfocache.h \
+    integrations/scriptintegrationplugin.h \
+    integrations/thingmanagerimplementation.h \
+    integrations/translator.h \
     experiences/experiencemanager.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
@@ -44,6 +45,7 @@ HEADERS += nymeacore.h \
     servers/mqttbroker.h \
     jsonrpc/jsonrpcserverimplementation.h \
     jsonrpc/jsonvalidator.h \
+    jsonrpc/integrationshandler.h \
     jsonrpc/devicehandler.h \
     jsonrpc/ruleshandler.h \
     jsonrpc/actionhandler.h \
@@ -101,9 +103,10 @@ HEADERS += nymeacore.h \
 
 
 SOURCES += nymeacore.cpp \
-    devices/devicemanagerimplementation.cpp \
-    devices/plugininfocache.cpp \
-    devices/translator.cpp \
+    integrations/plugininfocache.cpp \
+    integrations/scriptintegrationplugin.cpp \
+    integrations/thingmanagerimplementation.cpp \
+    integrations/translator.cpp \
     experiences/experiencemanager.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \
@@ -129,6 +132,7 @@ SOURCES += nymeacore.cpp \
     servers/mqttbroker.cpp \
     jsonrpc/jsonrpcserverimplementation.cpp \
     jsonrpc/jsonvalidator.cpp \
+    jsonrpc/integrationshandler.cpp \
     jsonrpc/devicehandler.cpp \
     jsonrpc/ruleshandler.cpp \
     jsonrpc/actionhandler.cpp \
@@ -185,8 +189,6 @@ SOURCES += nymeacore.cpp \
 
 versionAtLeast(QT_VERSION, 5.12.0) {
 HEADERS += \
-    devices/scriptdeviceplugin.h \
 
 SOURCES += \
-    devices/scriptdeviceplugin.cpp \
 }

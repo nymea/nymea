@@ -241,7 +241,7 @@ LogEntriesFetchJob *LogEngine::fetchLogEntries(const LogFilter &filter)
                         static_cast<Logging::LoggingSource>(result.value("sourceType").toInt()),
                         result.value("errorCode").toInt());
             entry.setTypeId(result.value("typeId").toUuid());
-            entry.setDeviceId(DeviceId(result.value("deviceId").toString()));
+            entry.setThingId(ThingId(result.value("deviceId").toString()));
             entry.setValue(LogValueTool::convertVariantToString(LogValueTool::deserializeValue(result.value("value").toString())));
             entry.setEventType(static_cast<Logging::LoggingEventType>(result.value("loggingEventType").toInt()));
             entry.setActive(result.value("active").toBool());
@@ -272,7 +272,7 @@ DevicesFetchJob *LogEngine::fetchDevices()
         }
 
         foreach (const QSqlRecord &result, job->results()) {
-            fetchJob->m_results.append(DeviceId(result.value("deviceId").toUuid()));
+            fetchJob->m_results.append(ThingId(result.value("deviceId").toUuid()));
         }
         fetchJob->finished();
     });
@@ -341,7 +341,7 @@ void LogEngine::logEvent(const Event &event)
 
     LogEntry entry(sourceType);
     entry.setTypeId(event.eventTypeId());
-    entry.setDeviceId(event.deviceId());
+    entry.setThingId(event.thingId());
     if (valueList.count() == 1) {
         entry.setValue(valueList.first());
     } else {
@@ -354,7 +354,7 @@ void LogEngine::logAction(const Action &action, Logging::LoggingLevel level, int
 {
     LogEntry entry(level, Logging::LoggingSourceActions, errorCode);
     entry.setTypeId(action.actionTypeId());
-    entry.setDeviceId(action.deviceId());
+    entry.setThingId(action.thingId());
 
     if (action.params().isEmpty()) {
         entry.setValue(QVariant());
@@ -373,7 +373,7 @@ void LogEngine::logAction(const Action &action, Logging::LoggingLevel level, int
 void LogEngine::logBrowserAction(const BrowserAction &browserAction, Logging::LoggingLevel level, int errorCode)
 {
     LogEntry entry(level, Logging::LoggingSourceBrowserActions, errorCode);
-    entry.setDeviceId(browserAction.deviceId());
+    entry.setThingId(browserAction.thingId());
     entry.setValue(browserAction.itemId());
     appendLogEntry(entry);
 }
@@ -381,7 +381,7 @@ void LogEngine::logBrowserAction(const BrowserAction &browserAction, Logging::Lo
 void LogEngine::logBrowserItemAction(const BrowserItemAction &browserItemAction, Logging::LoggingLevel level, int errorCode)
 {
     LogEntry entry(level, Logging::LoggingSourceBrowserActions, errorCode);
-    entry.setDeviceId(browserItemAction.deviceId());
+    entry.setThingId(browserItemAction.thingId());
     entry.setTypeId(browserItemAction.actionTypeId());
     entry.setValue(browserItemAction.itemId());
     appendLogEntry(entry);
@@ -429,16 +429,16 @@ void LogEngine::logRuleExitActionsExecuted(const Rule &rule)
     appendLogEntry(entry);
 }
 
-void LogEngine::removeDeviceLogs(const DeviceId &deviceId)
+void LogEngine::removeDeviceLogs(const ThingId &thingId)
 {
-    qCDebug(dcLogEngine) << "Deleting log entries from device" << deviceId.toString();
+    qCDebug(dcLogEngine) << "Deleting log entries from device" << thingId.toString();
 
-    QString queryDeleteString = QString("DELETE FROM entries WHERE deviceId = '%1';").arg(deviceId.toString());
+    QString queryDeleteString = QString("DELETE FROM entries WHERE deviceId = '%1';").arg(thingId.toString());
 
     DatabaseJob *job = new DatabaseJob(m_db, queryDeleteString);
-    connect(job, &DatabaseJob::finished, this, [this, job, deviceId](){
+    connect(job, &DatabaseJob::finished, this, [this, job, thingId](){
         if (job->error().type() != QSqlError::NoError) {
-            qCWarning(dcLogEngine) << "Error deleting log entries from device" << deviceId.toString() << ". Driver error:" << job->error().driverText() << "Database error:" << job->error().databaseText();
+            qCWarning(dcLogEngine) << "Error deleting log entries from device" << thingId.toString() << ". Driver error:" << job->error().driverText() << "Database error:" << job->error().databaseText();
             return;
         }
 
@@ -479,7 +479,7 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
             .arg(entry.level())
             .arg(entry.source())
             .arg(entry.typeId().toString())
-            .arg(entry.deviceId().toString())
+            .arg(entry.thingId().toString())
             .arg(LogValueTool::serializeValue(entry.value()))
             .arg(entry.active())
             .arg(entry.errorCode());
@@ -492,20 +492,20 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
     // the last event in a series).
     if (m_jobQueue.count() > m_maxQueueLength) {
         qCDebug(dcLogEngine()) << "An excessive amount of data is being logged. (" << m_jobQueue.length() << "jobs in the queue)";
-        if (m_flaggedJobs.contains(entry.typeId().toString() + entry.deviceId().toString())) {
-            if (m_flaggedJobs.value(entry.typeId().toString() + entry.deviceId().toString()).count() > 10) {
+        if (m_flaggedJobs.contains(entry.typeId().toString() + entry.thingId().toString())) {
+            if (m_flaggedJobs.value(entry.typeId().toString() + entry.thingId().toString()).count() > 10) {
                 qCWarning(dcLogEngine()) << "Discarding log entry because of excessive log flooding.";
-                DatabaseJob *job = m_flaggedJobs[entry.typeId().toString() + entry.deviceId().toString()].takeFirst();
+                DatabaseJob *job = m_flaggedJobs[entry.typeId().toString() + entry.thingId().toString()].takeFirst();
                 int jobIdx = m_jobQueue.indexOf(job);
                 m_jobQueue.takeAt(jobIdx)->deleteLater();
             }
         }
-        m_flaggedJobs[entry.typeId().toString() + entry.deviceId().toString()].append(job);
+        m_flaggedJobs[entry.typeId().toString() + entry.thingId().toString()].append(job);
     }
 
     connect(job, &DatabaseJob::finished, this, [this, job, entry](){
 
-        m_flaggedJobs[entry.typeId().toString() + entry.deviceId().toString()].removeAll(job);
+        m_flaggedJobs[entry.typeId().toString() + entry.thingId().toString()].removeAll(job);
 
         if (job->error().type() != QSqlError::NoError) {
             qCWarning(dcLogEngine) << "Error writing log entry. Driver error:" << job->error().driverText() << "Database error:" << job->error().databaseText();

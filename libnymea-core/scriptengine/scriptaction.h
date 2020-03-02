@@ -34,7 +34,7 @@
 #include <QObject>
 #include <QQmlParserStatus>
 
-class DeviceManager;
+class ThingManager;
 
 namespace nymeaserver {
 
@@ -68,8 +68,8 @@ signals:
     void actionNameChanged();
 
 public:
-    DeviceManager *m_deviceManager = nullptr;
-    QString m_deviceId;
+    ThingManager *m_deviceManager = nullptr;
+    QString m_thingId;
     QString m_actionTypeId;
     QString m_actionName;
 };

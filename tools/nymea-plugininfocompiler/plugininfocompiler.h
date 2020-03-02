@@ -35,7 +35,7 @@
 #include <QFile>
 
 #include "types/paramtype.h"
-#include "devices/pluginmetadata.h"
+#include "integrations/pluginmetadata.h"
 
 class PluginInfoCompiler
 {
@@ -47,13 +47,13 @@ public:
 
 private:
     void writePlugin(const PluginMetadata &metadata);
-    void writeParams(const ParamTypes &paramTypes, const QString &deviceClassName, const QString &typeClass, const QString &typeName);
+    void writeParams(const ParamTypes &paramTypes, const QString &thingClassName, const QString &typeClass, const QString &typeName);
     void writeVendor(const Vendor &vendor);
-    void writeDeviceClass(const DeviceClass &deviceClass);
-    void writeStateTypes(const StateTypes &stateTypes, const QString &deviceClassName);
-    void writeEventTypes(const EventTypes &eventTypes, const QString &deviceClassName);
-    void writeActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
-    void writeBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName);
+    void writeThingClass(const ThingClass &thingClass);
+    void writeStateTypes(const StateTypes &stateTypes, const QString &thingClassName);
+    void writeEventTypes(const EventTypes &eventTypes, const QString &thingClassName);
+    void writeActionTypes(const ActionTypes &actionTypes, const QString &thingClassName);
+    void writeBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &thingClassName);
 
     void write(const QString &line = QString());
     void writeExtern(const QString &line = QString());

@@ -43,7 +43,7 @@ class TestJSONRPC: public NymeaTestBase
     Q_OBJECT
 
 private:
-    inline void verifyDeviceError(const QVariant &response, Device::DeviceError error = Device::DeviceErrorNoError) {
+    inline void verifyDeviceError(const QVariant &response, Thing::ThingError error = Thing::ThingErrorNoError) {
         verifyError(response, "deviceError", enumValueName(error));
     }
     inline void verifyRuleError(const QVariant &response, RuleEngine::RuleError error = RuleEngine::RuleErrorNoError) {
@@ -213,7 +213,7 @@ void TestJSONRPC::testHandshakeLocale()
     QVariantMap supportedDevices = injectAndWait("Devices.GetSupportedDevices").toMap();
     bool found = false;
     foreach (const QVariant &dcMap, supportedDevices.value("params").toMap().value("deviceClasses").toList()) {
-        if (dcMap.toMap().value("id").toUuid() == mockDeviceAutoDeviceClassId) {
+        if (dcMap.toMap().value("id").toUuid() == mockDeviceAutoThingClassId) {
             QCOMPARE(dcMap.toMap().value("displayName").toString(), QString("Mock Device (Auto created)"));
             found = true;
         }
@@ -229,7 +229,7 @@ void TestJSONRPC::testHandshakeLocale()
     supportedDevices = injectAndWait("Devices.GetSupportedDevices").toMap();
     found = false;
     foreach (const QVariant &dcMap, supportedDevices.value("params").toMap().value("deviceClasses").toList()) {
-        if (dcMap.toMap().value("id").toUuid() == mockDeviceAutoDeviceClassId) {
+        if (dcMap.toMap().value("id").toUuid() == mockDeviceAutoThingClassId) {
             QCOMPARE(dcMap.toMap().value("displayName").toString(), QString("Mock Gerät (Automatisch erzeugt)"));
             found = true;
         }
@@ -705,7 +705,7 @@ void TestJSONRPC::deviceAddedRemovedNotifications()
     deviceParams.append(httpportParam);
 
     QVariantMap params; clientSpy.clear();
-    params.insert("deviceClassId", mockDeviceClassId);
+    params.insert("ddeviceClassId", mockThingClassId);
     params.insert("name", "Mock device");
     params.insert("deviceParams", deviceParams);
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
@@ -713,11 +713,11 @@ void TestJSONRPC::deviceAddedRemovedNotifications()
     verifyDeviceError(response);
     QVariantMap notificationDeviceMap = checkNotification(clientSpy, "Devices.DeviceAdded").toMap().value("params").toMap().value("device").toMap();
 
-    DeviceId deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    ThingId deviceId = ThingId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY(!deviceId.isNull());
 
     // check the DeviceAdded notification
-    QCOMPARE(notificationDeviceMap.value("deviceClassId").toString(), mockDeviceClassId.toString());
+    QCOMPARE(notificationDeviceMap.value("deviceClassId").toString(), mockThingClassId.toString());
     QCOMPARE(notificationDeviceMap.value("id").toString(), deviceId.toString());
     foreach (const QVariant &param, notificationDeviceMap.value("params").toList()) {
         if (param.toMap().value("name").toString() == "httpport") {
@@ -747,7 +747,7 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     // StateDescriptor
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
-    stateDescriptor.insert("deviceId", m_mockDeviceId);
+    stateDescriptor.insert("deviceId", m_mockThingId);
     stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorLess));
     stateDescriptor.insert("value", "20");
 
@@ -757,12 +757,12 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     // RuleAction
     QVariantMap actionNoParams;
     actionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    actionNoParams.insert("deviceId", m_mockDeviceId);
+    actionNoParams.insert("deviceId", m_mockThingId);
 
     // EventDescriptor
     QVariantMap eventDescriptor;
     eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
-    eventDescriptor.insert("deviceId", m_mockDeviceId);
+    eventDescriptor.insert("deviceId", m_mockThingId);
     QVariantList eventDescriptors = QVariantList() << eventDescriptor;
 
     QVariantMap params;
@@ -814,7 +814,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     // StateDescriptor
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
-    stateDescriptor.insert("deviceId", m_mockDeviceId);
+    stateDescriptor.insert("deviceId", m_mockThingId);
     stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptor.insert("value", "20");
 
@@ -824,7 +824,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     // RuleAction
     QVariantMap actionNoParams;
     actionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    actionNoParams.insert("deviceId", m_mockDeviceId);
+    actionNoParams.insert("deviceId", m_mockThingId);
 
     params.clear(); response.clear();
     params.insert("name", "Test Rule notifications");
@@ -957,17 +957,17 @@ void TestJSONRPC::deviceChangedNotifications()
     deviceParams.append(httpportParam);
 
     params.clear(); response.clear(); clientSpy.clear();
-    params.insert("deviceClassId", mockDeviceClassId);
+    params.insert("deviceClassId", mockThingClassId);
     params.insert("name", "Mock");
     params.insert("deviceParams", deviceParams);
     response = injectAndWait("Devices.AddConfiguredDevice", params);
-    DeviceId deviceId = DeviceId(response.toMap().value("params").toMap().value("deviceId").toString());
+    ThingId deviceId = ThingId(response.toMap().value("params").toMap().value("deviceId").toString());
     QVERIFY(!deviceId.isNull());
     if (clientSpy.count() == 0) clientSpy.wait();
     verifyDeviceError(response);
     QVariantMap notificationDeviceMap = checkNotification(clientSpy, "Devices.DeviceAdded").toMap().value("params").toMap().value("device").toMap();
 
-    QCOMPARE(notificationDeviceMap.value("deviceClassId").toString(), mockDeviceClassId.toString());
+    QCOMPARE(notificationDeviceMap.value("deviceClassId").toString(), mockThingClassId.toString());
     QCOMPARE(notificationDeviceMap.value("id").toString(), deviceId.toString());
     foreach (const QVariant &param, notificationDeviceMap.value("params").toList()) {
         if (param.toMap().value("name").toString() == "httpport") {
@@ -990,7 +990,7 @@ void TestJSONRPC::deviceChangedNotifications()
     if (clientSpy.count() == 0) clientSpy.wait();
     verifyDeviceError(response);
     QVariantMap reconfigureDeviceNotificationMap = checkNotification(clientSpy, "Devices.DeviceChanged").toMap().value("params").toMap().value("device").toMap();
-    QCOMPARE(reconfigureDeviceNotificationMap.value("deviceClassId").toString(), mockDeviceClassId.toString());
+    QCOMPARE(reconfigureDeviceNotificationMap.value("deviceClassId").toString(), mockThingClassId.toString());
     QCOMPARE(reconfigureDeviceNotificationMap.value("id").toString(), deviceId.toString());
     foreach (const QVariant &param, reconfigureDeviceNotificationMap.value("params").toList()) {
         if (param.toMap().value("name").toString() == "httpport") {
@@ -1007,7 +1007,7 @@ void TestJSONRPC::deviceChangedNotifications()
     if (clientSpy.count() == 0) clientSpy.wait();
     verifyDeviceError(response);
     QVariantMap editDeviceNotificationMap = checkNotification(clientSpy, "Devices.DeviceChanged").toMap().value("params").toMap().value("device").toMap();
-    QCOMPARE(editDeviceNotificationMap.value("deviceClassId").toString(), mockDeviceClassId.toString());
+    QCOMPARE(editDeviceNotificationMap.value("deviceClassId").toString(), mockThingClassId.toString());
     QCOMPARE(editDeviceNotificationMap.value("id").toString(), deviceId.toString());
     QCOMPARE(editDeviceNotificationMap.value("name").toString(), deviceName);
 
@@ -1109,7 +1109,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 
     // Now check that the state has indeed changed even though we didn't get a notification
     QVariantMap params;
-    params.insert("deviceId", m_mockDeviceId);
+    params.insert("deviceId", m_mockThingId);
     params.insert("stateTypeId", stateTypeId);
     QVariant response = injectAndWait("Devices.GetStateValue", params);
 

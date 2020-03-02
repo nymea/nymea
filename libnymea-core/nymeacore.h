@@ -32,10 +32,10 @@
 #define NYMEACORE_H
 
 #include "types/event.h"
-#include "types/deviceclass.h"
-#include "devices/deviceplugin.h"
-#include "devices/devicedescriptor.h"
-#include "devices/devicemanagerimplementation.h"
+#include "types/thingclass.h"
+#include "integrations/integrationplugin.h"
+#include "integrations/thingdescriptor.h"
+#include "integrations/thingmanagerimplementation.h"
 
 #include "ruleengine/rule.h"
 #include "ruleengine/ruleengine.h"
@@ -51,7 +51,7 @@
 
 #include <QObject>
 
-class Device;
+class Thing;
 
 namespace nymeaserver {
 
@@ -78,11 +78,11 @@ public:
     void init();
     void destroy();
 
-    // Device handling
-    QPair<Device::DeviceError, QList<RuleId> >removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
-    Device::DeviceError removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy);
+    // Thing handling
+    QPair<Thing::ThingError, QList<RuleId> >removeConfiguredThing(const ThingId &thingId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
+    Thing::ThingError removeConfiguredThing(const ThingId &thingId, const RuleEngine::RemovePolicy &removePolicy);
 
-    DeviceActionInfo *executeAction(const Action &action);
+    ThingActionInfo *executeAction(const Action &action);
     BrowserActionInfo* executeBrowserItem(const BrowserAction &browserAction);
     BrowserItemActionInfo* executeBrowserItemAction(const BrowserItemAction &browserItemAction);
 
@@ -93,7 +93,7 @@ public:
     NymeaConfiguration *configuration() const;
     LogEngine* logEngine() const;
     JsonRPCServerImplementation *jsonRPCServer() const;
-    DeviceManager *deviceManager() const;
+    ThingManager *thingManager() const;
     RuleEngine *ruleEngine() const;
     ScriptEngine *scriptEngine() const;
     TimeManager *timeManager() const;
@@ -115,11 +115,11 @@ signals:
 
     void pluginConfigChanged(const PluginId &id, const ParamList &config);
     void eventTriggered(const Event &event);
-    void deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
-    void deviceRemoved(const DeviceId &deviceId);
-    void deviceAdded(Device *device);
-    void deviceChanged(Device *device);
-    void deviceSettingChanged(const DeviceId deviceId, const ParamTypeId &settingParamTypeId, const QVariant &value);
+    void thingStateChanged(Thing *thing, const QUuid &stateTypeId, const QVariant &value);
+    void thingRemoved(const ThingId &thingId);
+    void thingAdded(Thing *thing);
+    void thingChanged(Thing *thing);
+    void thingSettingChanged(const ThingId &thingId, const ParamTypeId &settingParamTypeId, const QVariant &value);
 
     void ruleRemoved(const RuleId &ruleId);
     void ruleAdded(const Rule &rule);
@@ -134,7 +134,7 @@ private:
 
     NymeaConfiguration *m_configuration;
     ServerManager *m_serverManager;
-    DeviceManagerImplementation *m_deviceManager;
+    ThingManagerImplementation *m_thingManager;
     RuleEngine *m_ruleEngine;
     ScriptEngine *m_scriptEngine;
     LogEngine *m_logger;
@@ -154,8 +154,8 @@ private:
 private slots:
     void gotEvent(const Event &event);
     void onDateTimeChanged(const QDateTime &dateTime);
-    void onDeviceDisappeared(const DeviceId &deviceId);
-    void deviceManagerLoaded();
+    void onThingDisappeared(const ThingId &thingId);
+    void thingManagerLoaded();
 
 };
 

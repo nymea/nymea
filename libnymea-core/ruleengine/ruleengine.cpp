@@ -119,8 +119,8 @@
 #include "types/eventdescriptor.h"
 #include "types/paramdescriptor.h"
 #include "nymeasettings.h"
-#include "devices/devicemanager.h"
-#include "devices/device.h"
+#include "integrations/thingmanager.h"
+#include "integrations/thing.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -150,19 +150,19 @@ RuleEngine::~RuleEngine()
 */
 QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 {
-    Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(event.deviceId());
-    if (!device) {
+    Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(event.thingId());
+    if (!thing) {
         qCWarning(dcRuleEngine()) << "Invalid event. DeviceID does not reference a valid device";
         return QList<Rule>();
     }
-    DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+    ThingClass deviceClass = NymeaCore::instance()->thingManager()->findThingClass(thing->thingClassId());
     EventType eventType = deviceClass.eventTypes().findById(event.eventTypeId());
 
 
     if (event.params().count() == 0) {
-        qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << device->name() << " - " << eventType.name() << " (DeviceId:" << device->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")";
+        qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << thing->name() << " - " << eventType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")";
     } else {
-        qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << device->name() << " - " << eventType.name() << " (DeviceId:" << device->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")" << endl << "     " << event.params();
+        qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << thing->name() << " - " << eventType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")" << endl << "     " << event.params();
     }
 
     QList<Rule> rules;
@@ -200,7 +200,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
             }
         } else {
             // Event based rule
-            if (containsEvent(rule, event, device->deviceClassId())) {
+            if (containsEvent(rule, event, thing->thingClassId())) {
                 qCDebug(dcRuleEngineDebug()).nospace().noquote() << "Rule " << rule.name() << " (" << rule.id().toString() << ") contains event " << event.eventId();
                 if (rule.statesActive() && rule.timeActive()) {
                     qCDebug(dcRuleEngine).nospace().noquote() << "Rule " << rule.name() << " (" + rule.id().toString() << ") contains event" << event.eventId() << "and all states match.";
@@ -315,27 +315,27 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
         }
         if (eventDescriptor.type() == EventDescriptor::TypeDevice) {
             // check deviceId
-            Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(eventDescriptor.deviceId());
-            if (!device) {
+            Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(eventDescriptor.thingId());
+            if (!thing) {
                 qCWarning(dcRuleEngine) << "Cannot create rule. No configured device for eventTypeId" << eventDescriptor.eventTypeId();
                 return RuleErrorDeviceNotFound;
             }
 
             // Check eventTypeId for this deivce
-            DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
+            ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(thing->thingClassId());
             bool eventTypeFound = false;
-            foreach (const EventType &eventType, deviceClass.eventTypes()) {
+            foreach (const EventType &eventType, thingClass.eventTypes()) {
                 if (eventType.id() == eventDescriptor.eventTypeId()) {
                     eventTypeFound = true;
                 }
             }
             if (!eventTypeFound) {
-                qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no event type:" << eventDescriptor.eventTypeId();
+                qCWarning(dcRuleEngine) << "Cannot create rule. Device " + thing->name() + " has no event type:" << eventDescriptor.eventTypeId();
                 return RuleErrorEventTypeNotFound;
             }
         } else {
             // Interface based event
-            Interface iface = NymeaCore::instance()->deviceManager()->supportedInterfaces().findByName(eventDescriptor.interface());
+            Interface iface = NymeaCore::instance()->thingManager()->supportedInterfaces().findByName(eventDescriptor.interface());
             if (!iface.isValid()) {
                 qWarning(dcRuleEngine()) << "No such interface:" << eventDescriptor.interface();
                 return RuleErrorInterfaceNotFound;
@@ -634,30 +634,30 @@ Rule RuleEngine::findRule(const RuleId &ruleId)
 }
 
 /*! Returns a list of all \l{Rule}{Rules} loaded in this Engine, which contains a \l{Device} with the given \a deviceId. */
-QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId) const
+QList<RuleId> RuleEngine::findRules(const ThingId &thingId) const
 {
     // Find all offending rules
     QList<RuleId> offendingRules;
     foreach (const Rule &rule, m_rules) {
         bool offending = false;
         foreach (const EventDescriptor &eventDescriptor, rule.eventDescriptors()) {
-            if (eventDescriptor.deviceId() == deviceId) {
+            if (eventDescriptor.thingId() == thingId) {
                 offending = true;
                 break;
             }
         }
 
-        if (!offending && rule.stateEvaluator().containsDevice(deviceId))
+        if (!offending && rule.stateEvaluator().containsThing(thingId))
             offending = true;
 
         if (!offending) {
             foreach (const RuleAction &action, rule.actions()) {
-                if (action.deviceId() == deviceId) {
+                if (action.thingId() == thingId) {
                     offending = true;
                     break;
                 }
                 foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
-                    if (ruleActionParam.stateDeviceId() == deviceId) {
+                    if (ruleActionParam.stateThingId() == thingId) {
                         offending = true;
                         break;
                     }
@@ -670,12 +670,12 @@ QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId) const
 
         if (!offending) {
             foreach (const RuleAction &action, rule.exitActions()) {
-                if (action.deviceId() == deviceId) {
+                if (action.thingId() == thingId) {
                     offending = true;
                     break;
                 }
                 foreach (const RuleActionParam &ruleActionParam, action.ruleActionParams()) {
-                    if (ruleActionParam.stateDeviceId() == deviceId) {
+                    if (ruleActionParam.stateThingId() == thingId) {
                         offending = true;
                         break;
                     }
@@ -693,37 +693,37 @@ QList<RuleId> RuleEngine::findRules(const DeviceId &deviceId) const
     return offendingRules;
 }
 
-/*! Returns all devices that are somehow contained in a rule */
-QList<DeviceId> RuleEngine::devicesInRules() const
+/*! Returns all \l Things that are contained in a rule */
+QList<ThingId> RuleEngine::thingsInRules() const
 {
-    QList<DeviceId> tmp;
+    QList<ThingId> tmp;
     foreach (const Rule &rule, m_rules) {
         foreach (const EventDescriptor &descriptor, rule.eventDescriptors()) {
-            if (!tmp.contains(descriptor.deviceId()) && !descriptor.deviceId().isNull()) {
-                tmp.append(descriptor.deviceId());
+            if (!tmp.contains(descriptor.thingId()) && !descriptor.thingId().isNull()) {
+                tmp.append(descriptor.thingId());
             }
         }
-        foreach (const DeviceId &deviceId, rule.stateEvaluator().containedDevices()) {
-            if (!tmp.contains(deviceId) && !deviceId.isNull()) {
-                tmp.append(deviceId);
+        foreach (const ThingId &thingId, rule.stateEvaluator().containedThings()) {
+            if (!tmp.contains(thingId) && !thingId.isNull()) {
+                tmp.append(thingId);
             }
         }
         foreach (const RuleAction &action, rule.actions()) {
-            if (!tmp.contains(action.deviceId()) && !action.deviceId().isNull()) {
-                tmp.append(action.deviceId());
+            if (!tmp.contains(action.thingId()) && !action.thingId().isNull()) {
+                tmp.append(action.thingId());
             }
         }
         foreach (const RuleAction &exitAction, rule.exitActions()) {
-            if (!tmp.contains(exitAction.deviceId()) && !exitAction.deviceId().isNull()) {
-                tmp.append(exitAction.deviceId());
+            if (!tmp.contains(exitAction.thingId()) && !exitAction.thingId().isNull()) {
+                tmp.append(exitAction.thingId());
             }
         }
     }
     return tmp;
 }
 
-/*! Removes a \l{Device} from a \l{Rule} with the given \a id and \a deviceId. */
-void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId)
+/*! Removes thing \l{Thing} with id \a thingId from the \l{Rule} with the given \a id. */
+void RuleEngine::removeThingFromRule(const RuleId &id, const ThingId &thingId)
 {
     if (!m_rules.contains(id))
         return;
@@ -734,7 +734,7 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     QList<EventDescriptor> eventDescriptors = rule.eventDescriptors();
     QList<int> removeIndexes;
     for (int i = 0; i < eventDescriptors.count(); i++) {
-        if (eventDescriptors.at(i).deviceId() == deviceId) {
+        if (eventDescriptors.at(i).thingId() == thingId) {
             removeIndexes.append(i);
         }
     }
@@ -744,17 +744,17 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
 
     // remove device from state evaluators
     StateEvaluator stateEvalatuator = rule.stateEvaluator();
-    stateEvalatuator.removeDevice(deviceId);
+    stateEvalatuator.removeThing(thingId);
 
     // remove device from actions
     QList<RuleAction> actions = rule.actions();
     for (int i = 0; i < actions.count(); i++) {
-        if (actions.at(i).deviceId() == deviceId) {
+        if (actions.at(i).thingId() == thingId) {
             removeIndexes.append(i);
             continue;
         }
         foreach (const RuleActionParam &param, actions.at(i).ruleActionParams()) {
-            if (param.stateDeviceId() == deviceId) {
+            if (param.stateThingId() == thingId) {
                 removeIndexes.append(i);
                 break;
             }
@@ -767,12 +767,12 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     // remove device from exit actions
     QList<RuleAction> exitActions = rule.exitActions();
     for (int i = 0; i < exitActions.count(); i++) {
-        if (exitActions.at(i).deviceId() == deviceId) {
+        if (exitActions.at(i).thingId() == thingId) {
             removeIndexes.append(i);
             continue;
         }
         foreach (const RuleActionParam &param, exitActions.at(i).ruleActionParams()) {
-            if (param.stateDeviceId() == deviceId) {
+            if (param.stateThingId() == thingId) {
                 removeIndexes.append(i);
                 break;
             }
@@ -811,19 +811,19 @@ void RuleEngine::removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId
     emit ruleConfigurationChanged(newRule);
 }
 
-bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const DeviceClassId &deviceClassId)
+bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const ThingClassId &thingClassId)
 {
     foreach (const EventDescriptor &eventDescriptor, rule.eventDescriptors()) {
         // If this is a device based rule, eventTypeId and deviceId must match
         if (eventDescriptor.type() == EventDescriptor::TypeDevice) {
-            if (eventDescriptor.eventTypeId() != event.eventTypeId() ||  eventDescriptor.deviceId() != event.deviceId()) {
+            if (eventDescriptor.eventTypeId() != event.eventTypeId() ||  eventDescriptor.thingId() != event.thingId()) {
                 continue;
             }
         }
 
         // If this is a interface based rule, the device must implement the interface
         if (eventDescriptor.type() == EventDescriptor::TypeInterface) {
-            DeviceClass dc = NymeaCore::instance()->deviceManager()->findDeviceClass(deviceClassId);
+            ThingClass dc = NymeaCore::instance()->thingManager()->findThingClass(thingClassId);
             if (!dc.interfaces().contains(eventDescriptor.interface())) {
                 // DeviceClass for this event doesn't implement the interface for this eventDescriptor
                 continue;
@@ -848,7 +848,7 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Devic
                     allOK = false;
                     continue;
                 }
-                DeviceClass dc = NymeaCore::instance()->deviceManager()->findDeviceClass(deviceClassId);
+                ThingClass dc = NymeaCore::instance()->thingManager()->findThingClass(thingClassId);
                 EventType et = dc.eventTypes().findById(event.eventTypeId());
                 ParamType pt = et.paramTypes().findByName(paramDescriptor.paramName());
                 paramValue = event.param(pt.id()).value();
@@ -905,9 +905,9 @@ bool RuleEngine::containsState(const StateEvaluator &stateEvaluator, const Event
                 return true;
             }
         } else {
-            Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(stateChangeEvent.deviceId());
-            DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
-            if (deviceClass.interfaces().contains(stateEvaluator.stateDescriptor().interface())) {
+            Thing *device = NymeaCore::instance()->thingManager()->findConfiguredThing(stateChangeEvent.thingId());
+            ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(device->thingClassId());
+            if (thingClass.interfaces().contains(stateEvaluator.stateDescriptor().interface())) {
                 return true;
             }
         }
@@ -931,21 +931,21 @@ RuleEngine::RuleError RuleEngine::checkRuleAction(const RuleAction &ruleAction, 
 
     ActionType actionType;
     if (ruleAction.type() == RuleAction::TypeDevice) {
-        Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(ruleAction.deviceId());
-        if (!device) {
-            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device with ID" << ruleAction.deviceId();
+        Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(ruleAction.thingId());
+        if (!thing) {
+            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device with ID" << ruleAction.thingId();
             return RuleErrorDeviceNotFound;
         }
 
-        DeviceClass deviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(device->deviceClassId());
-        if (!deviceClass.hasActionType(ruleAction.actionTypeId())) {
-            qCWarning(dcRuleEngine) << "Cannot create rule. Device " + device->name() + " has no action type:" << ruleAction.actionTypeId();
+        ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(thing->thingClassId());
+        if (!thingClass.hasActionType(ruleAction.actionTypeId())) {
+            qCWarning(dcRuleEngine) << "Cannot create rule. Device " + thing->name() + " has no action type:" << ruleAction.actionTypeId();
             return RuleErrorActionTypeNotFound;
         }
 
-        actionType = deviceClass.actionTypes().findById(ruleAction.actionTypeId());
+        actionType = thingClass.actionTypes().findById(ruleAction.actionTypeId());
     } else if (ruleAction.type() == RuleAction::TypeInterface) {
-        Interface iface = NymeaCore::instance()->deviceManager()->supportedInterfaces().findByName(ruleAction.interface());
+        Interface iface = NymeaCore::instance()->thingManager()->supportedInterfaces().findByName(ruleAction.interface());
         if (!iface.isValid()) {
             qCWarning(dcRuleEngine()) << "Cannot create rule. No such interface:" << ruleAction.interface();
             return RuleError::RuleErrorInterfaceNotFound;
@@ -956,9 +956,9 @@ RuleEngine::RuleError RuleEngine::checkRuleAction(const RuleAction &ruleAction, 
             return RuleError::RuleErrorActionTypeNotFound;
         }
     } else if (ruleAction.type() == RuleAction::TypeBrowser) {
-        Device *device = NymeaCore::instance()->deviceManager()->findConfiguredDevice(ruleAction.deviceId());
+        Thing *device = NymeaCore::instance()->thingManager()->findConfiguredThing(ruleAction.thingId());
         if (!device) {
-            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device with ID" << ruleAction.deviceId();
+            qCWarning(dcRuleEngine) << "Cannot create rule. No configured device with ID" << ruleAction.thingId();
             return RuleErrorDeviceNotFound;
         }
         if (ruleAction.browserItemId().isEmpty()) {
@@ -1034,13 +1034,13 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
             return RuleErrorTypesNotMatching;
         }
     } else if (ruleActionParam.isStateBased()) {
-        Device *d = NymeaCore::instance()->deviceManager()->findConfiguredDevice(ruleActionParam.stateDeviceId());
+        Thing *d = NymeaCore::instance()->thingManager()->findConfiguredThing(ruleActionParam.stateThingId());
         if (!d) {
             qCWarning(dcRuleEngine()) << "Cannot create Rule. DeviceId from RuleActionParam" << ruleActionParam.paramTypeId() << "not found in system.";
             return RuleErrorDeviceNotFound;
         }
-        DeviceClass stateDeviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(d->deviceClassId());
-        StateType stateType = stateDeviceClass.stateTypes().findById(ruleActionParam.stateTypeId());
+        ThingClass stateThingClass = NymeaCore::instance()->thingManager()->findThingClass(d->thingClassId());
+        StateType stateType = stateThingClass.stateTypes().findById(ruleActionParam.stateTypeId());
         QVariant::Type actionParamType = getActionParamType(actionType.id(), ruleActionParam.paramTypeId());
         QVariant v(stateType.type());
         if (actionParamType != stateType.type() && !v.canConvert(static_cast<int>(actionParamType))) {
@@ -1067,7 +1067,7 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
 
 QVariant::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, const ParamTypeId &paramTypeId)
 {
-    foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
+    foreach (const ThingClass &deviceClass, NymeaCore::instance()->thingManager()->supportedThings()) {
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {
             if (actionType.id() == actionTypeId) {
                 foreach (const ParamType &paramType, actionType.paramTypes()) {
@@ -1084,7 +1084,7 @@ QVariant::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, 
 
 QVariant::Type RuleEngine::getEventParamType(const EventTypeId &eventTypeId, const ParamTypeId &paramTypeId)
 {
-    foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
+    foreach (const ThingClass &deviceClass, NymeaCore::instance()->thingManager()->supportedThings()) {
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
             if (eventType.id() == eventTypeId) {
                 foreach (const ParamType &paramType, eventType.paramTypes()) {
@@ -1193,7 +1193,7 @@ void RuleEngine::saveRule(const Rule &rule)
     for (int i = 0; i < rule.eventDescriptors().count(); i++) {
         const EventDescriptor &eventDescriptor = rule.eventDescriptors().at(i);
         settings.beginGroup("EventDescriptor-" + QString::number(i));
-        settings.setValue("deviceId", eventDescriptor.deviceId().toString());
+        settings.setValue("deviceId", eventDescriptor.thingId().toString());
         settings.setValue("eventTypeId", eventDescriptor.eventTypeId().toString());
         settings.setValue("interface", eventDescriptor.interface());
         settings.setValue("interfaceEvent", eventDescriptor.interfaceEvent());
@@ -1234,10 +1234,10 @@ void RuleEngine::saveRuleActions(NymeaSettings *settings, const QList<RuleAction
     foreach (const RuleAction &action, ruleActions) {
         settings->beginGroup(QString::number(i));
         if (action.type() == RuleAction::TypeDevice) {
-            settings->setValue("deviceId", action.deviceId().toString());
+            settings->setValue("deviceId", action.thingId().toString());
             settings->setValue("actionTypeId", action.actionTypeId().toString());
         } else if (action.type() == RuleAction::TypeBrowser) {
-            settings->setValue("deviceId", action.deviceId().toString());
+            settings->setValue("deviceId", action.thingId().toString());
             settings->setValue("browserItemId", action.browserItemId());
         } else if (action.type() == RuleAction::TypeInterface){
             settings->setValue("interface", action.interface());
@@ -1257,7 +1257,7 @@ void RuleEngine::saveRuleActions(NymeaSettings *settings, const QList<RuleAction
                 settings->setValue("eventTypeId", param.eventTypeId().toString());
                 settings->setValue("eventParamTypeId", param.eventParamTypeId());
             } else if (param.isStateBased()) {
-                settings->setValue("stateDeviceId", param.stateDeviceId().toString());
+                settings->setValue("stateDeviceId", param.stateThingId().toString());
                 settings->setValue("stateTypeId", param.stateTypeId());
             }
             settings->endGroup();
@@ -1280,7 +1280,10 @@ QList<RuleAction> RuleEngine::loadRuleActions(NymeaSettings *settings)
                 QString strippedParamTypeIdString = paramTypeIdString.remove(QRegExp("^RuleActionParam-"));
                 EventTypeId eventTypeId = EventTypeId(settings->value("eventTypeId", EventTypeId()).toString());
                 ParamTypeId eventParamTypeId = ParamTypeId(settings->value("eventParamTypeId", ParamTypeId()).toString());
-                DeviceId stateDeviceId = DeviceId(settings->value("stateDeviceId", DeviceId()).toString());
+                ThingId stateThingId = ThingId(settings->value("stateThingId", ThingId()).toString());
+                if (stateThingId.isNull()) { // nymea < 0.19
+                    stateThingId = ThingId(settings->value("stateDeviceId", ThingId()).toString());
+                }
                 StateTypeId stateTypeId = StateTypeId(settings->value("stateTypeId", StateTypeId()).toString());
                 QVariant value = settings->value("value");
                 if (settings->contains("valueType")) {
@@ -1305,19 +1308,27 @@ QList<RuleAction> RuleEngine::loadRuleActions(NymeaSettings *settings)
                 }
                 param.setEventTypeId(eventTypeId);
                 param.setEventParamTypeId(eventParamTypeId);
-                param.setStateDeviceId(stateDeviceId);
+                param.setStateThingId(stateThingId);
                 param.setStateTypeId(stateTypeId);
                 params.append(param);
                 settings->endGroup();
             }
         }
 
-        if (settings->contains("actionTypeId") && settings->contains("deviceId")) {
-            RuleAction action = RuleAction(ActionTypeId(settings->value("actionTypeId").toString()), DeviceId(settings->value("deviceId").toString()));
+        if (settings->contains("actionTypeId") && settings->contains("thingId")) {
+            RuleAction action = RuleAction(ActionTypeId(settings->value("actionTypeId").toString()), ThingId(settings->value("thingId").toString()));
             action.setRuleActionParams(params);
             actions.append(action);
+        } else if (settings->contains("actionTypeId") && settings->contains("deviceId")) {
+            // nymea  < 0.19
+            RuleAction action = RuleAction(ActionTypeId(settings->value("actionTypeId").toString()), ThingId(settings->value("deviceId").toString()));
+            action.setRuleActionParams(params);
+            actions.append(action);
+        } else if (settings->contains("thingId") && settings->contains("browserItemId")) {
+            RuleAction action = RuleAction(ThingId(settings->value("thingId").toString()), settings->value("browserItemId").toString());
+            actions.append(action);
         } else if (settings->contains("deviceId") && settings->contains("browserItemId")) {
-            RuleAction action = RuleAction(DeviceId(settings->value("deviceId").toString()), settings->value("browserItemId").toString());
+            RuleAction action = RuleAction(ThingId(settings->value("deviceId").toString()), settings->value("browserItemId").toString());
             actions.append(action);
         } else if (settings->contains("interface") && settings->contains("interfaceAction")){
             RuleAction action = RuleAction(settings->value("interface").toString(), settings->value("interfaceAction").toString());
@@ -1434,7 +1445,10 @@ void RuleEngine::init()
             if (eventGroupName.startsWith("EventDescriptor-")) {
                 settings.beginGroup(eventGroupName);
                 EventTypeId eventTypeId(settings.value("eventTypeId").toString());
-                DeviceId deviceId(settings.value("deviceId").toString());
+                ThingId thingId(settings.value("thingId").toString());
+                if (thingId.isNull()) { // nymea < 0.19
+                    thingId = ThingId(settings.value("deviceId").toString());
+                }
                 QString interface = settings.value("interface").toString();
                 QString interfaceEvent = settings.value("interfaceEvent").toString();
 
@@ -1471,7 +1485,11 @@ void RuleEngine::init()
                 }
 
                 if (!eventTypeId.isNull()) {
-                    EventDescriptor eventDescriptor(eventTypeId, deviceId, params);
+                    ThingId thingId(settings.value("thingId").toString());
+                    if (thingId.isNull()) { // nymea < 0.19
+                        thingId = ThingId(settings.value("deviceId").toString());
+                    }
+                    EventDescriptor eventDescriptor(eventTypeId, thingId, params);
                     eventDescriptorList.append(eventDescriptor);
                 } else {
                     EventDescriptor eventDescriptor(interface, interfaceEvent, params);

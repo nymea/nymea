@@ -44,11 +44,11 @@ class LIBNYMEA_EXPORT NymeaSettings : public QObject
 public:
     enum SettingsRole {
         SettingsRoleNone,
-        SettingsRoleDevices,
+        SettingsRoleThings,
         SettingsRoleRules,
         SettingsRolePlugins,
         SettingsRoleGlobal,
-        SettingsRoleDeviceStates,
+        SettingsRoleThingStates,
         SettingsRoleTags,
         SettingsRoleMqttPolicies,
     };

@@ -33,7 +33,7 @@
 
 #include <QObject>
 
-class DeviceManager;
+class ThingManager;
 class JsonRPCServer;
 
 namespace nymeaserver {
@@ -48,14 +48,14 @@ public:
     virtual void init() = 0;
 
 protected:
-    DeviceManager* deviceManager();
+    ThingManager* deviceManager();
     JsonRPCServer* jsonRpcServer();
 
 private:
     friend class nymeaserver::ExperienceManager;
-    void initPlugin(DeviceManager *deviceManager, JsonRPCServer *jsonRPCServer);
+    void initPlugin(ThingManager *deviceManager, JsonRPCServer *jsonRPCServer);
 
-    DeviceManager *m_deviceManager = nullptr;
+    ThingManager *m_deviceManager = nullptr;
     JsonRPCServer *m_jsonRpcServer = nullptr;
 
 };

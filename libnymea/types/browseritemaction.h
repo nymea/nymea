@@ -37,14 +37,14 @@
 class BrowserItemAction
 {
 public:
-    explicit BrowserItemAction(const DeviceId &deviceId = DeviceId(), const QString &itemId = QString(), const ActionTypeId &actionTypeId = ActionTypeId(), const ParamList &params = ParamList());
+    explicit BrowserItemAction(const ThingId &thingId = ThingId(), const QString &itemId = QString(), const ActionTypeId &actionTypeId = ActionTypeId(), const ParamList &params = ParamList());
     BrowserItemAction(const BrowserItemAction &other);
 
     ActionId id() const;
 
     bool isValid() const;
 
-    DeviceId deviceId() const;
+    ThingId thingId() const;
     QString itemId() const;
     ActionTypeId actionTypeId() const;
 
@@ -55,7 +55,7 @@ public:
     void operator=(const BrowserItemAction &other);
 private:
     ActionId m_id;
-    DeviceId m_deviceId;
+    ThingId m_thingId;
     QString m_itemId;
     ActionTypeId m_actionTypeId;
     ParamList m_params;

@@ -9,7 +9,7 @@
 #include <QLoggingCategory>
 #include <QObject>
 
-extern "C" const QString libnymea_api_version() { return QString("4.0.0");}
+extern "C" const QString libnymea_api_version() { return QString("5.0.0");}
 
 Q_DECLARE_LOGGING_CATEGORY(dcMockDevice)
 Q_LOGGING_CATEGORY(dcMockDevice, "MockDevice")
@@ -18,7 +18,7 @@ PluginId pluginId = PluginId("{727a4a9a-c187-446f-aadf-f1b2220607d1}");
 ParamTypeId mockDevicePluginConfigParamIntParamTypeId = ParamTypeId("{e1f72121-a426-45e2-b475-8262b5cdf103}");
 ParamTypeId mockDevicePluginConfigParamBoolParamTypeId = ParamTypeId("{c75723b6-ea4f-4982-9751-6c5e39c88145}");
 VendorId nymeaVendorId = VendorId("{2062d64d-3232-433c-88bc-0d33c0ba2ba6}");
-DeviceClassId mockDeviceClassId = DeviceClassId("{753f0d32-0468-4d08-82ed-1964aab03298}");
+ThingClassId mockThingClassId = ThingClassId("{753f0d32-0468-4d08-82ed-1964aab03298}");
 ParamTypeId mockDeviceHttpportParamTypeId = ParamTypeId("{d4f06047-125e-4479-9810-b54c189917f5}");
 ParamTypeId mockDeviceAsyncParamTypeId = ParamTypeId("{f2977061-4dd0-4ef5-85aa-3b7134743be3}");
 ParamTypeId mockDeviceBrokenParamTypeId = ParamTypeId("{ae8f8901-f2c1-42a5-8111-6d2fc8e4c1e4}");
@@ -56,7 +56,7 @@ ActionTypeId mockFailingActionTypeId = ActionTypeId("{df3cf33d-26d5-4577-9132-98
 ActionTypeId mockAsyncFailingActionTypeId = ActionTypeId("{bfe89a1d-3497-4121-8318-e77c37537219}");
 ActionTypeId mockAddToFavoritesBrowserItemActionTypeId = ActionTypeId("{00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3}");
 ActionTypeId mockRemoveFromFavoritesBrowserItemActionTypeId = ActionTypeId("{da6faef8-2816-430e-93bb-57e8f9582d29}");
-DeviceClassId mockDeviceAutoDeviceClassId = DeviceClassId("{ab4257b3-7548-47ee-9bd4-7dc3004fd197}");
+ThingClassId mockDeviceAutoThingClassId = ThingClassId("{ab4257b3-7548-47ee-9bd4-7dc3004fd197}");
 ParamTypeId mockDeviceAutoDeviceHttpportParamTypeId = ParamTypeId("{bfeb0613-dab6-408c-aa27-c362c921d0d1}");
 ParamTypeId mockDeviceAutoDeviceAsyncParamTypeId = ParamTypeId("{a5c4315f-0624-4971-87c1-4bbfbfdbd16e}");
 ParamTypeId mockDeviceAutoDeviceBrokenParamTypeId = ParamTypeId("{66179395-ef7a-4013-9fc6-2084104eea09}");
@@ -76,7 +76,7 @@ ActionTypeId mockDeviceAutoMockActionNoParmsActionTypeId = ActionTypeId("{ef518d
 ActionTypeId mockDeviceAutoMockActionAsyncActionTypeId = ActionTypeId("{5f27a9f2-59cd-4a15-98bd-6ed6e10bc6ed}");
 ActionTypeId mockDeviceAutoMockActionBrokenActionTypeId = ActionTypeId("{58a61de4-472c-4775-8fe8-583a9c83fcf1}");
 ActionTypeId mockDeviceAutoMockActionAsyncBrokenActionTypeId = ActionTypeId("{17ad52dd-ef2f-4947-9b73-5bf6e172a9d0}");
-DeviceClassId mockPushButtonDeviceClassId = DeviceClassId("{9e03144c-e436-4eea-82d9-ccb33ef778db}");
+ThingClassId mockPushButtonThingClassId = ThingClassId("{9e03144c-e436-4eea-82d9-ccb33ef778db}");
 ParamTypeId mockPushButtonDiscoveryResultCountParamTypeId = ParamTypeId("{c40dbc59-4bba-4871-9b8e-bbd8d5d9193b}");
 StateTypeId mockPushButtonColorStateTypeId = StateTypeId("{20dc7c22-c50e-42db-837c-2bbced939f8e}");
 StateTypeId mockPushButtonPercentageStateTypeId = StateTypeId("{72981c04-267a-4ba0-a59e-9921d2f3af9c}");
@@ -104,7 +104,7 @@ ParamTypeId mockPushButtonDoubleActionDoubleParamTypeId = ParamTypeId("{53cd7c55
 ActionTypeId mockPushButtonBoolActionTypeId = ActionTypeId("{e680f7a4-b39e-46da-be41-fa3170fe3768}");
 ParamTypeId mockPushButtonBoolActionBoolParamTypeId = ParamTypeId("{e680f7a4-b39e-46da-be41-fa3170fe3768}");
 ActionTypeId mockPushButtonTimeoutActionTypeId = ActionTypeId("{54646e7c-bc54-4895-81a2-590d72d120f9}");
-DeviceClassId mockDisplayPinDeviceClassId = DeviceClassId("{296f1fd4-e893-46b2-8a42-50d1bceb8730}");
+ThingClassId mockDisplayPinThingClassId = ThingClassId("{296f1fd4-e893-46b2-8a42-50d1bceb8730}");
 ParamTypeId mockDisplayPinDevicePinParamTypeId = ParamTypeId("{da820e07-22dc-4173-9c07-2f49a4e265f9}");
 ParamTypeId mockDisplayPinDiscoveryResultCountParamTypeId = ParamTypeId("{35f6e4ba-28ad-4152-a58d-ec2600667bcf}");
 StateTypeId mockDisplayPinColorStateTypeId = StateTypeId("{3e161294-8a0d-4384-9676-6959e08cc2fa}");
@@ -133,19 +133,19 @@ ParamTypeId mockDisplayPinDoubleActionDoubleParamTypeId = ParamTypeId("{17635624
 ActionTypeId mockDisplayPinBoolActionTypeId = ActionTypeId("{7ffe514f-7999-4998-8350-0e73e222a8c4}");
 ParamTypeId mockDisplayPinBoolActionBoolParamTypeId = ParamTypeId("{7ffe514f-7999-4998-8350-0e73e222a8c4}");
 ActionTypeId mockDisplayPinTimeoutActionTypeId = ActionTypeId("{854a0a4a-803f-4b7f-9dce-b07794f9011b}");
-DeviceClassId mockParentDeviceClassId = DeviceClassId("{a71fbde9-9a38-4bf8-beab-c8aade2608ba}");
+ThingClassId mockParentThingClassId = ThingClassId("{a71fbde9-9a38-4bf8-beab-c8aade2608ba}");
 StateTypeId mockParentBoolValueStateTypeId = StateTypeId("{d24ede5f-4064-4898-bb84-cfb533b1fbc0}");
 EventTypeId mockParentBoolValueEventTypeId = EventTypeId("{d24ede5f-4064-4898-bb84-cfb533b1fbc0}");
 ParamTypeId mockParentBoolValueEventBoolValueParamTypeId = ParamTypeId("{d24ede5f-4064-4898-bb84-cfb533b1fbc0}");
 ActionTypeId mockParentBoolValueActionTypeId = ActionTypeId("{d24ede5f-4064-4898-bb84-cfb533b1fbc0}");
 ParamTypeId mockParentBoolValueActionBoolValueParamTypeId = ParamTypeId("{d24ede5f-4064-4898-bb84-cfb533b1fbc0}");
-DeviceClassId mockChildDeviceClassId = DeviceClassId("{40893c9f-bc47-40c1-8bf7-b390c7c1b4fc}");
+ThingClassId mockChildThingClassId = ThingClassId("{40893c9f-bc47-40c1-8bf7-b390c7c1b4fc}");
 StateTypeId mockChildBoolValueStateTypeId = StateTypeId("{80ba1449-b485-47d4-a067-6bf306e2a568}");
 EventTypeId mockChildBoolValueEventTypeId = EventTypeId("{80ba1449-b485-47d4-a067-6bf306e2a568}");
 ParamTypeId mockChildBoolValueEventBoolValueParamTypeId = ParamTypeId("{80ba1449-b485-47d4-a067-6bf306e2a568}");
 ActionTypeId mockChildBoolValueActionTypeId = ActionTypeId("{80ba1449-b485-47d4-a067-6bf306e2a568}");
 ParamTypeId mockChildBoolValueActionBoolValueParamTypeId = ParamTypeId("{80ba1449-b485-47d4-a067-6bf306e2a568}");
-DeviceClassId mockInputTypeDeviceClassId = DeviceClassId("{515ffdf1-55e5-498d-9abc-4e2fe768f3a9}");
+ThingClassId mockInputTypeThingClassId = ThingClassId("{515ffdf1-55e5-498d-9abc-4e2fe768f3a9}");
 ParamTypeId mockInputTypeDeviceTextLineParamTypeId = ParamTypeId("{e6acf0c7-4b8e-4296-ac62-855d20deb816}");
 ParamTypeId mockInputTypeDeviceTextAreaParamTypeId = ParamTypeId("{716f0994-bc01-42b0-b64d-59236f7320d2}");
 ParamTypeId mockInputTypeDevicePasswordParamTypeId = ParamTypeId("{e5c0d14b-c9f1-4aca-a56e-85bfa6977150}");
@@ -247,9 +247,9 @@ ActionTypeId mockInputTypeWritableTimestampIntActionTypeId = ActionTypeId("{88b6
 ParamTypeId mockInputTypeWritableTimestampIntActionWritableTimestampIntParamTypeId = ParamTypeId("{88b6746a-b009-4df6-8986-d7884ffd94b2}");
 ActionTypeId mockInputTypeWritableTimestampUIntActionTypeId = ActionTypeId("{45d0069a-63ac-4265-8170-8152778608ee}");
 ParamTypeId mockInputTypeWritableTimestampUIntActionWritableTimestampUIntParamTypeId = ParamTypeId("{45d0069a-63ac-4265-8170-8152778608ee}");
-DeviceClassId mockOAuthGoogleDeviceClassId = DeviceClassId("{805d1692-7bd0-449a-9d5c-43a332ff58f4}");
-DeviceClassId mockOAuthSonosDeviceClassId = DeviceClassId("{783c615b-7bd6-49a4-98b0-8d1deb3c7156}");
-DeviceClassId mockUserAndPassDeviceClassId = DeviceClassId("{6fe07a77-9c07-4736-81e2-d504314bbcb9}");
+ThingClassId mockOAuthGoogleThingClassId = ThingClassId("{805d1692-7bd0-449a-9d5c-43a332ff58f4}");
+ThingClassId mockOAuthSonosThingClassId = ThingClassId("{783c615b-7bd6-49a4-98b0-8d1deb3c7156}");
+ThingClassId mockUserAndPassThingClassId = ThingClassId("{6fe07a77-9c07-4736-81e2-d504314bbcb9}");
 
 const QString translations[] {
     //: The name of the Browser Item ActionType ({00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3}) of DeviceClass mock
@@ -378,34 +378,34 @@ const QString translations[] {
     //: The name of the ActionType ({bfe89a1d-3497-4121-8318-e77c37537219}) of DeviceClass mock
     QT_TRANSLATE_NOOP("mockDevice", "Mock Action 5 (async, broken)"),
 
-    //: The name of the DeviceClass ({753f0d32-0468-4d08-82ed-1964aab03298})
+    //: The name of the ThingClass ({753f0d32-0468-4d08-82ed-1964aab03298})
     QT_TRANSLATE_NOOP("mockDevice", "Mock Device"),
 
-    //: The name of the DeviceClass ({ab4257b3-7548-47ee-9bd4-7dc3004fd197})
+    //: The name of the ThingClass ({ab4257b3-7548-47ee-9bd4-7dc3004fd197})
     QT_TRANSLATE_NOOP("mockDevice", "Mock Device (Auto created)"),
 
-    //: The name of the DeviceClass ({40893c9f-bc47-40c1-8bf7-b390c7c1b4fc})
+    //: The name of the ThingClass ({40893c9f-bc47-40c1-8bf7-b390c7c1b4fc})
     QT_TRANSLATE_NOOP("mockDevice", "Mock Device (Child)"),
 
-    //: The name of the DeviceClass ({296f1fd4-e893-46b2-8a42-50d1bceb8730})
+    //: The name of the ThingClass ({296f1fd4-e893-46b2-8a42-50d1bceb8730})
     QT_TRANSLATE_NOOP("mockDevice", "Mock Device (Display Pin)"),
 
-    //: The name of the DeviceClass ({805d1692-7bd0-449a-9d5c-43a332ff58f4})
+    //: The name of the ThingClass ({805d1692-7bd0-449a-9d5c-43a332ff58f4})
     QT_TRANSLATE_NOOP("mockDevice", "Mock Device (Google OAuth)"),
 
-    //: The name of the DeviceClass ({515ffdf1-55e5-498d-9abc-4e2fe768f3a9})
+    //: The name of the ThingClass ({515ffdf1-55e5-498d-9abc-4e2fe768f3a9})
     QT_TRANSLATE_NOOP("mockDevice", "Mock Device (InputTypes)"),
 
-    //: The name of the DeviceClass ({a71fbde9-9a38-4bf8-beab-c8aade2608ba})
+    //: The name of the ThingClass ({a71fbde9-9a38-4bf8-beab-c8aade2608ba})
     QT_TRANSLATE_NOOP("mockDevice", "Mock Device (Parent)"),
 
-    //: The name of the DeviceClass ({9e03144c-e436-4eea-82d9-ccb33ef778db})
+    //: The name of the ThingClass ({9e03144c-e436-4eea-82d9-ccb33ef778db})
     QT_TRANSLATE_NOOP("mockDevice", "Mock Device (Push Button)"),
 
-    //: The name of the DeviceClass ({783c615b-7bd6-49a4-98b0-8d1deb3c7156})
+    //: The name of the ThingClass ({783c615b-7bd6-49a4-98b0-8d1deb3c7156})
     QT_TRANSLATE_NOOP("mockDevice", "Mock Device (Sonos OAuth)"),
 
-    //: The name of the DeviceClass ({6fe07a77-9c07-4736-81e2-d504314bbcb9})
+    //: The name of the ThingClass ({6fe07a77-9c07-4736-81e2-d504314bbcb9})
     QT_TRANSLATE_NOOP("mockDevice", "Mock Device (User & Password)"),
 
     //: The name of the plugin mockDevice ({727a4a9a-c187-446f-aadf-f1b2220607d1})

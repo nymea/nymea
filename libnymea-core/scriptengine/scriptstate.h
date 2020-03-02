@@ -35,8 +35,8 @@
 #include <QQmlParserStatus>
 #include <QPointer>
 
-#include "devices/devicemanager.h"
-#include "devices/deviceactioninfo.h"
+#include "integrations/thingmanager.h"
+#include "integrations/thingactioninfo.h"
 
 namespace nymeaserver {
 
@@ -81,16 +81,16 @@ signals:
     void valueChanged();
 
 private slots:
-    void onDeviceStateChanged(Device *device, const StateTypeId &stateTypeId);
+    void onThingStateChanged(Thing *thing, const StateTypeId &stateTypeId);
 
 private:
-    DeviceManager *m_deviceManager = nullptr;
+    ThingManager *m_deviceManager = nullptr;
 
-    QString m_deviceId;
+    QString m_thingId;
     QString m_stateTypeId;
     QString m_stateName;
 
-    DeviceActionInfo *m_pendingActionInfo = nullptr;
+    ThingActionInfo *m_pendingActionInfo = nullptr;
     QVariant m_valueCache;
 
     QVariant m_valueStore;

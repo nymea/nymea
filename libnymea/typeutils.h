@@ -49,9 +49,9 @@ public: \
 Q_DECLARE_METATYPE(type##Id);
 
 DECLARE_TYPE_ID(Vendor)
-DECLARE_TYPE_ID(DeviceClass)
-DECLARE_TYPE_ID(Device)
-DECLARE_TYPE_ID(DeviceDescriptor)
+DECLARE_TYPE_ID(ThingClass)
+DECLARE_TYPE_ID(Thing)
+DECLARE_TYPE_ID(ThingDescriptor)
 
 DECLARE_TYPE_ID(ParamType)
 DECLARE_TYPE_ID(Param)

@@ -56,9 +56,9 @@
 /*! Constructs a RuleAction with the given by \a actionTypeId, \a deviceId and \a params.
  *  Use this to create a RuleAction for regular actions, that is, identifying the Action by deviceId and actionTypeId.
  */
-RuleAction::RuleAction(const ActionTypeId &actionTypeId, const DeviceId &deviceId, const RuleActionParams &params):
+RuleAction::RuleAction(const ActionTypeId &actionTypeId, const ThingId &thingId, const RuleActionParams &params):
     m_id(ActionId::createActionId()),
-    m_deviceId(deviceId),
+    m_thingId(thingId),
     m_actionTypeId(actionTypeId),
     m_ruleActionParams(params)
 {
@@ -79,8 +79,8 @@ RuleAction::RuleAction(const QString &interface, const QString &interfaceAction,
 /*! Constructs a RuleAction with the given by \a interface and \a interfaceAction.
  *  Use this to create a RuleAction for executing browser items.
  */
-RuleAction::RuleAction(const DeviceId &deviceId, const QString &browserItemId):
-    m_deviceId(deviceId),
+RuleAction::RuleAction(const ThingId &thingId, const QString &browserItemId):
+    m_thingId(thingId),
     m_browserItemId(browserItemId)
 {
 
@@ -89,7 +89,7 @@ RuleAction::RuleAction(const DeviceId &deviceId, const QString &browserItemId):
 /*! Constructs a copy of the given \a other RuleAction. */
 RuleAction::RuleAction(const RuleAction &other) :
     m_id(other.id()),
-    m_deviceId(other.deviceId()),
+    m_thingId(other.thingId()),
     m_actionTypeId(other.actionTypeId()),
     m_browserItemId(other.browserItemId()),
     m_interface(other.interface()),
@@ -108,18 +108,18 @@ ActionId RuleAction::id() const
 /*! Return true, if the actionTypeId and the deviceId of this RuleAction are valid (set).*/
 bool RuleAction::isValid() const
 {
-    return (!m_actionTypeId.isNull() && !m_deviceId.isNull())
+    return (!m_actionTypeId.isNull() && !m_thingId.isNull())
             || (!m_interface.isEmpty() && !m_interfaceAction.isEmpty())
-            || (!m_deviceId.isNull() && !m_browserItemId.isEmpty());
+            || (!m_thingId.isNull() && !m_browserItemId.isEmpty());
 }
 
 /*! Returns whether this RuleAction is targetting a specific device or rather an interface. */
 RuleAction::Type RuleAction::type() const
 {
-    if (!m_deviceId.isNull() && !m_actionTypeId.isNull()) {
+    if (!m_thingId.isNull() && !m_actionTypeId.isNull()) {
         return TypeDevice;
     }
-    if (!m_deviceId.isNull() && !m_browserItemId.isEmpty()) {
+    if (!m_thingId.isNull() && !m_browserItemId.isEmpty()) {
         return TypeBrowser;
     }
     if (!m_interface.isEmpty() && !m_interfaceAction.isEmpty()) {
@@ -154,7 +154,7 @@ bool RuleAction::isStateBased() const
  *  \sa Action, */
 Action RuleAction::toAction() const
 {
-    Action action(m_actionTypeId, m_deviceId);
+    Action action(m_actionTypeId, m_thingId);
     ParamList params;
     foreach (const RuleActionParam &ruleActionParam, m_ruleActionParams) {
         params.append(Param(ruleActionParam.paramTypeId(), ruleActionParam.value()));
@@ -167,7 +167,7 @@ Action RuleAction::toAction() const
  *  \sa BrowserItemAction, */
 BrowserItemAction RuleAction::toBrowserItemAction() const
 {
-    return BrowserItemAction(m_deviceId, m_browserItemId);
+    return BrowserItemAction(m_thingId, m_browserItemId);
 }
 
 /*! Returns the actionTypeId of this RuleAction. */
@@ -192,15 +192,15 @@ void RuleAction::setBrowserItemId(const QString &browserItemId)
     m_browserItemId = browserItemId;
 }
 
-/*! Returns the deviceId of this RuleAction. */
-DeviceId RuleAction::deviceId() const
+/*! Returns the \l{ThingId} of this RuleAction. */
+ThingId RuleAction::thingId() const
 {
-    return m_deviceId;
+    return m_thingId;
 }
 
-void RuleAction::setDeviceId(const DeviceId &deviceId)
+void RuleAction::setThingId(const ThingId &thingId)
 {
-    m_deviceId = deviceId;
+    m_thingId = thingId;
 }
 
 /*! Returns the name of the interface associated with this RuleAction. */
@@ -276,7 +276,7 @@ void RuleAction::operator=(const RuleAction &other)
 /*! Print a RuleAction including RuleActionParams to QDebug. */
 QDebug operator<<(QDebug dbg, const RuleAction &ruleAction)
 {
-    dbg.nospace() << "RuleAction(ActionTypeId:" << ruleAction.actionTypeId().toString() << ", DeviceId:" << ruleAction.deviceId().toString() << ", Interface:" << ruleAction.interface() << ", InterfaceAction:" << ruleAction.interfaceAction() << ", BrowserItemId:" << ruleAction.browserItemId() << ")" << endl;
+    dbg.nospace() << "RuleAction(ActionTypeId:" << ruleAction.actionTypeId().toString() << ", DeviceId:" << ruleAction.thingId().toString() << ", Interface:" << ruleAction.interface() << ", InterfaceAction:" << ruleAction.interfaceAction() << ", BrowserItemId:" << ruleAction.browserItemId() << ")" << endl;
     for (int i = 0; i < ruleAction.ruleActionParams().count(); i++) {
         dbg.nospace() << "    " << i << ": " << ruleAction.ruleActionParams().at(i) << endl;
     }

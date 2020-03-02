@@ -82,7 +82,7 @@ QString LogFilter::queryString() const
     }
     query.append(createTypeIdsString());
 
-    if (!query.isEmpty() && !deviceIds().isEmpty()) {
+    if (!query.isEmpty() && !thingIds().isEmpty()) {
         query.append("AND ");
     }
     query.append(createDeviceIdString());
@@ -162,16 +162,16 @@ QList<QUuid> LogFilter::typeIds() const
 }
 
 /*! Add a new \a deviceId to this \l{LogFilter}. */
-void LogFilter::addDeviceId(const DeviceId &deviceId)
+void LogFilter::addThingId(const ThingId &thingId)
 {
-    if (!m_deviceIds.contains(deviceId))
-        m_deviceIds.append(deviceId);
+    if (!m_thingIds.contains(thingId))
+        m_thingIds.append(thingId);
 }
 
-/*! Returns the list of device id's from this \l{LogFilter}. */
-QList<DeviceId> LogFilter::deviceIds() const
+/*! Returns the list of thing id's from this \l{LogFilter}. */
+QList<ThingId> LogFilter::thingIds() const
 {
-    return m_deviceIds;
+    return m_thingIds;
 }
 
 /*! Add a new \a value to this \l{LogFilter}. */
@@ -236,7 +236,7 @@ bool LogFilter::isEmpty() const
             m_levels.isEmpty() &&
             m_eventTypes.isEmpty() &&
             m_typeIds.isEmpty() &&
-            m_deviceIds.isEmpty() &&
+            m_thingIds.isEmpty() &&
             m_values.isEmpty();
 }
 
@@ -369,14 +369,14 @@ QString LogFilter::createTypeIdsString() const
 QString LogFilter::createDeviceIdString() const
 {
     QString query;
-    if (!m_deviceIds.isEmpty()) {
-        if (m_deviceIds.count() == 1) {
-            query.append(QString("deviceId = '%1' ").arg(m_deviceIds.first().toString()));
+    if (!m_thingIds.isEmpty()) {
+        if (m_thingIds.count() == 1) {
+            query.append(QString("deviceId = '%1' ").arg(m_thingIds.first().toString()));
         } else {
             query.append("( ");
-            foreach (const DeviceId &deviceId, m_deviceIds) {
-                query.append(QString("deviceId = '%1' ").arg(deviceId.toString()));
-                if (deviceId != m_deviceIds.last())
+            foreach (const ThingId &thingId, m_thingIds) {
+                query.append(QString("deviceId = '%1' ").arg(thingId.toString()));
+                if (thingId != m_thingIds.last())
                     query.append("OR ");
             }
             query.append(") ");

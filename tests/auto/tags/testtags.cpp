@@ -53,7 +53,7 @@ private slots:
 
 private:
     QVariantMap createDeviceTag(const QString &deviceId, const QString &appId, const QString &tagId, const QString &value);
-    bool compareDeviceTag(const QVariantMap &tag, const QUuid &deviceId, const QString &appId, const QString &tagId, const QString &value);
+    bool compareDeviceTag(const QVariantMap &tag, const QUuid &thingId, const QString &appId, const QString &tagId, const QString &value);
     QVariantMap createRuleTag(const QString &ruleId, const QString &appId, const QString &tagId, const QString &value);
     bool comapreRuleTag(const QVariantMap &tag, const QString &ruleId, const QString &appId, const QString &tagId, const QString &value);
 };
@@ -78,28 +78,29 @@ QVariantMap TestTags::createRuleTag(const QString &ruleId, const QString &appId,
     return tag;
 }
 
-bool TestTags::compareDeviceTag(const QVariantMap &tag, const QUuid &deviceId, const QString &appId, const QString &tagId, const QString &value)
+bool TestTags::compareDeviceTag(const QVariantMap &tag, const QUuid &thingId, const QString &appId, const QString &tagId, const QString &value)
 {
-    return tag.value("deviceId").toUuid() == deviceId &&
+    return tag.value("thingId").toUuid() == thingId &&
+            tag.value("deviceId").toUuid() == thingId && // backwards compatibility to < 0.19 adds deviceId along with thingId
             tag.value("appId").toString() == appId &&
             tag.value("tagId").toString() == tagId &&
             tag.value("value").toString() == value;
 }
 void TestTags::addTag_data()
 {
-    QTest::addColumn<DeviceId>("deviceId");
+    QTest::addColumn<ThingId>("deviceId");
     QTest::addColumn<QString>("appId");
     QTest::addColumn<QString>("tagId");
     QTest::addColumn<QString>("value");
     QTest::addColumn<TagsStorage::TagError>("expectedError");
 
-    QTest::newRow("tagDevice") << m_mockDeviceId << "testtags" << "favorites" << "1" << TagsStorage::TagErrorNoError;
-    QTest::newRow("invalidDevice") << DeviceId::createDeviceId() << "testtags" << "favorites" << "1" << TagsStorage::TagErrorDeviceNotFound;
+    QTest::newRow("tagDevice") << m_mockThingId << "testtags" << "favorites" << "1" << TagsStorage::TagErrorNoError;
+    QTest::newRow("invalidDevice") << ThingId::createThingId() << "testtags" << "favorites" << "1" << TagsStorage::TagErrorDeviceNotFound;
 }
 
 void TestTags::addTag()
 {
-    QFETCH(DeviceId, deviceId);
+    QFETCH(ThingId, deviceId);
     QFETCH(QString, appId);
     QFETCH(QString, tagId);
     QFETCH(QString, value);
@@ -144,7 +145,7 @@ void TestTags::updateTagValue()
     // Setup connection to mock client
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    QString deviceId = m_mockDeviceId.toString();
+    QString deviceId = m_mockThingId.toString();
     QString appId = "testtags";
     QString tagId = "changedNotificationTag";
 
@@ -199,7 +200,7 @@ void TestTags::removeTag()
     // Setup connection to mock client
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    QString deviceId = m_mockDeviceId.toString();
+    QString deviceId = m_mockThingId.toString();
     QString appId = "testtags";
     QString tagId = "removeTagTest";
     QString value = "1";

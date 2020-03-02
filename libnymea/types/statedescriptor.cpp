@@ -61,9 +61,9 @@ StateDescriptor::StateDescriptor():
 }
 
 /*! Constructs an StateDescriptor describing an \l{State} with the given \a stateTypeId, \a deviceId, \a stateValue and \a operatorType.*/
-StateDescriptor::StateDescriptor(const StateTypeId &stateTypeId, const DeviceId &deviceId, const QVariant &stateValue, Types::ValueOperator operatorType):
+StateDescriptor::StateDescriptor(const StateTypeId &stateTypeId, const ThingId &thingId, const QVariant &stateValue, Types::ValueOperator operatorType):
     m_stateTypeId(stateTypeId),
-    m_deviceId(deviceId),
+    m_thingId(thingId),
     m_stateValue(stateValue),
     m_operatorType(operatorType)
 {
@@ -83,7 +83,7 @@ StateDescriptor::StateDescriptor(const QString &interface, const QString &interf
 /*! Returns true \l{StateDescriptor::Type}{Type} of this descriptor. */
 StateDescriptor::Type StateDescriptor::type() const
 {
-    return (!m_deviceId.isNull() && !m_stateTypeId.isNull()) ? TypeDevice : TypeInterface;
+    return (!m_thingId.isNull() && !m_stateTypeId.isNull()) ? TypeDevice : TypeInterface;
 }
 
 /*! Returns the StateTypeId of this \l{State}.*/
@@ -97,15 +97,15 @@ void StateDescriptor::setStateTypeId(const StateTypeId &stateTypeId)
     m_stateTypeId = stateTypeId;
 }
 
-/*! Returns the DeviceId of this \l{State}.*/
-DeviceId StateDescriptor::deviceId() const
+/*! Returns the \l{ThingId} of this \l{State}.*/
+ThingId StateDescriptor::thingId() const
 {
-    return m_deviceId;
+    return m_thingId;
 }
 
-void StateDescriptor::setDeviceId(const DeviceId &deviceId)
+void StateDescriptor::setThingId(const ThingId &thingId)
 {
-    m_deviceId = deviceId;
+    m_thingId = thingId;
 }
 
 /*! Returns the interface for this \{StateDescriptor}.*/
@@ -157,7 +157,7 @@ void StateDescriptor::setOperatorType(Types::ValueOperator opertatorType)
 bool StateDescriptor::operator ==(const StateDescriptor &other) const
 {
     return m_stateTypeId == other.stateTypeId() &&
-            m_deviceId == other.deviceId() &&
+            m_thingId == other.thingId() &&
             m_interface == other.interface() &&
             m_interfaceState == other.interfaceState() &&
             m_stateValue == other.stateValue() &&
@@ -168,7 +168,7 @@ bool StateDescriptor::operator ==(const StateDescriptor &other) const
  *  Returns true if the given \a state matches the definition of the StateDescriptor */
 bool StateDescriptor::operator ==(const State &state) const
 {
-    if ((m_stateTypeId != state.stateTypeId()) || (m_deviceId != state.deviceId())) {
+    if ((m_stateTypeId != state.stateTypeId()) || (m_thingId != state.thingId())) {
         return false;
     }
     if (!m_stateValue.canConvert(state.value().type())) {
@@ -206,13 +206,13 @@ bool StateDescriptor::operator !=(const State &state) const
  */
 bool StateDescriptor::isValid() const
 {
-    return ((!m_deviceId.isNull() && !m_stateTypeId.isNull()) || (!m_interface.isNull() && !m_interfaceState.isNull())) && m_stateValue.isValid();
+    return ((!m_thingId.isNull() && !m_stateTypeId.isNull()) || (!m_interface.isNull() && !m_interfaceState.isNull())) && m_stateValue.isValid();
 }
 
 /*! Print a StateDescriptor with all its contents to QDebug. */
 QDebug operator<<(QDebug dbg, const StateDescriptor &stateDescriptor)
 {
-    dbg.nospace() << "StateDescriptor(DeviceId:" << stateDescriptor.deviceId().toString() << ", StateTypeId:"
+    dbg.nospace() << "StateDescriptor(ThingId:" << stateDescriptor.thingId().toString() << ", StateTypeId:"
                   << stateDescriptor.stateTypeId().toString() << ", Interface:" << stateDescriptor.interface()
                   << ", InterfaceState:" << stateDescriptor.interfaceState() << ", Operator:" << stateDescriptor.operatorType() << ", Value:" << stateDescriptor.stateValue();
     return dbg;

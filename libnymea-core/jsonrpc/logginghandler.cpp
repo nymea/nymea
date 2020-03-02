@@ -195,7 +195,7 @@ QVariantMap LoggingHandler::packLogEntry(const LogEntry &logEntry)
         case Logging::LoggingSourceEvents:
         case Logging::LoggingSourceStates:
         case Logging::LoggingSourceBrowserActions:
-            logEntryMap.insert("errorCode", enumValueName<Device::DeviceError>(static_cast<Device::DeviceError>(logEntry.errorCode())));
+            logEntryMap.insert("errorCode", enumValueName<Thing::ThingError>(static_cast<Thing::ThingError>(logEntry.errorCode())));
             break;
         case Logging::LoggingSourceSystem:
             // FIXME: Update this once we support error codes for the general system
@@ -212,7 +212,7 @@ QVariantMap LoggingHandler::packLogEntry(const LogEntry &logEntry)
         if (!logEntry.typeId().isNull()) {
             logEntryMap.insert("typeId", logEntry.typeId());
         }
-        logEntryMap.insert("deviceId", logEntry.deviceId());
+        logEntryMap.insert("deviceId", logEntry.thingId());
         logEntryMap.insert("value", LogValueTool::convertVariantToString(logEntry.value()));
         break;
     case Logging::LoggingSourceSystem:
@@ -271,7 +271,7 @@ LogFilter LoggingHandler::unpackLogFilter(const QVariantMap &logFilterMap)
     if (logFilterMap.contains("deviceIds")) {
         QVariantList deviceIds = logFilterMap.value("deviceIds").toList();
         foreach (const QVariant &deviceId, deviceIds) {
-            filter.addDeviceId(DeviceId(deviceId.toString()));
+            filter.addThingId(ThingId(deviceId.toString()));
         }
     }
     if (logFilterMap.contains("values")) {

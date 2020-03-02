@@ -227,16 +227,16 @@ void PluginInfoCompiler::writePlugin(const PluginMetadata &metadata)
         writeVendor(vendor);
     }
 
-    foreach (const DeviceClass &deviceClass, metadata.deviceClasses()) {
-        writeDeviceClass(deviceClass);
+    foreach (const ThingClass &thingClass, metadata.thingClasses()) {
+        writeThingClass(thingClass);
     }
 
 }
 
-void PluginInfoCompiler::writeParams(const ParamTypes &paramTypes, const QString &deviceClassName, const QString &typeClass, const QString &typeName)
+void PluginInfoCompiler::writeParams(const ParamTypes &paramTypes, const QString &thingClassName, const QString &typeClass, const QString &typeName)
 {
     foreach (const ParamType &paramType, paramTypes) {
-        QString variableName = QString("%1ParamTypeId").arg(deviceClassName + typeName[0].toUpper() + typeName.right(typeName.length()-1) + typeClass + paramType.name()[0].toUpper() + paramType.name().right(paramType.name().length() -1 ));
+        QString variableName = QString("%1ParamTypeId").arg(thingClassName + typeName[0].toUpper() + typeName.right(typeName.length()-1) + typeClass + paramType.name()[0].toUpper() + paramType.name().right(paramType.name().length() -1 ));
         if (m_variableNames.contains(variableName)) {
             qWarning().nospace() << "Error: Duplicate name " << variableName << " for ParamTypeId " << paramType.id() << ". Skipping entry.";
             continue;
@@ -244,7 +244,7 @@ void PluginInfoCompiler::writeParams(const ParamTypes &paramTypes, const QString
         m_variableNames.append(variableName);
 
         write(QString("ParamTypeId %1 = ParamTypeId(\"%2\");").arg(variableName).arg(paramType.id().toString()));
-        m_translationStrings.insert(paramType.displayName(), QString("The name of the ParamType (DeviceClass: %1, %2Type: %3, ID: %4)").arg(deviceClassName).arg(typeClass).arg(typeName).arg(paramType.id().toString()));
+        m_translationStrings.insert(paramType.displayName(), QString("The name of the ParamType (DeviceClass: %1, %2Type: %3, ID: %4)").arg(thingClassName).arg(typeClass).arg(typeName).arg(paramType.id().toString()));
         writeExtern(QString("extern ParamTypeId %1;").arg(variableName));
     }
 }
@@ -263,92 +263,92 @@ void PluginInfoCompiler::writeVendor(const Vendor &vendor)
     writeExtern(QString("extern VendorId %1;").arg(variableName));
 }
 
-void PluginInfoCompiler::writeDeviceClass(const DeviceClass &deviceClass)
+void PluginInfoCompiler::writeThingClass(const ThingClass &thingClass)
 {
-    QString variableName = QString("%1DeviceClassId").arg(deviceClass.name());
+    QString variableName = QString("%1ThingClassId").arg(thingClass.name());
     if (m_variableNames.contains(variableName)) {
-        qWarning().nospace() << "Error: Duplicate name " << variableName << " for DeviceClass " << deviceClass.id() << ". Skipping entry.";
+        qWarning().nospace() << "Error: Duplicate name " << variableName << " for ThingClass " << thingClass.id() << ". Skipping entry.";
         return;
     }
     m_variableNames.append(variableName);
 
-    write(QString("DeviceClassId %1 = DeviceClassId(\"%2\");").arg(variableName).arg(deviceClass.id().toString()));
-    m_translationStrings.insert(deviceClass.displayName(), QString("The name of the DeviceClass (%1)").arg(deviceClass.id().toString()));
-    writeExtern(QString("extern DeviceClassId %1;").arg(variableName));
+    write(QString("ThingClassId %1 = ThingClassId(\"%2\");").arg(variableName).arg(thingClass.id().toString()));
+    m_translationStrings.insert(thingClass.displayName(), QString("The name of the ThingClass (%1)").arg(thingClass.id().toString()));
+    writeExtern(QString("extern ThingClassId %1;").arg(variableName));
 
-    writeParams(deviceClass.paramTypes(), deviceClass.name(), "", "device");
-    writeParams(deviceClass.settingsTypes(), deviceClass.name(), "", "settings");
-    writeParams(deviceClass.discoveryParamTypes(), deviceClass.name(), "", "discovery");
+    writeParams(thingClass.paramTypes(), thingClass.name(), "", "device");
+    writeParams(thingClass.settingsTypes(), thingClass.name(), "", "settings");
+    writeParams(thingClass.discoveryParamTypes(), thingClass.name(), "", "discovery");
 
-    writeStateTypes(deviceClass.stateTypes(), deviceClass.name());
-    writeEventTypes(deviceClass.eventTypes(), deviceClass.name());
-    writeActionTypes(deviceClass.actionTypes(), deviceClass.name());
-    writeBrowserItemActionTypes(deviceClass.browserItemActionTypes(), deviceClass.name());
+    writeStateTypes(thingClass.stateTypes(), thingClass.name());
+    writeEventTypes(thingClass.eventTypes(), thingClass.name());
+    writeActionTypes(thingClass.actionTypes(), thingClass.name());
+    writeBrowserItemActionTypes(thingClass.browserItemActionTypes(), thingClass.name());
 }
 
-void PluginInfoCompiler::writeStateTypes(const StateTypes &stateTypes, const QString &deviceClassName)
+void PluginInfoCompiler::writeStateTypes(const StateTypes &stateTypes, const QString &thingClassName)
 {
     foreach (const StateType &stateType, stateTypes) {
-        QString variableName = QString("%1%2StateTypeId").arg(deviceClassName, stateType.name()[0].toUpper() + stateType.name().right(stateType.name().length() - 1));
+        QString variableName = QString("%1%2StateTypeId").arg(thingClassName, stateType.name()[0].toUpper() + stateType.name().right(stateType.name().length() - 1));
         if (m_variableNames.contains(variableName)) {
-            qWarning().nospace() << "Error: Duplicate name " << variableName << " for StateType " << stateType.name() << " in DeviceClass " << deviceClassName << ". Skipping entry.";
+            qWarning().nospace() << "Error: Duplicate name " << variableName << " for StateType " << stateType.name() << " in DeviceClass " << thingClassName << ". Skipping entry.";
             return;
         }
         m_variableNames.append(variableName);
         write(QString("StateTypeId %1 = StateTypeId(\"%2\");").arg(variableName).arg(stateType.id().toString()));
-        m_translationStrings.insert(stateType.displayName(), QString("The name of the StateType (%1) of DeviceClass %2").arg(stateType.id().toString()).arg(deviceClassName));
+        m_translationStrings.insert(stateType.displayName(), QString("The name of the StateType (%1) of DeviceClass %2").arg(stateType.id().toString()).arg(thingClassName));
         writeExtern(QString("extern StateTypeId %1;").arg(variableName));
     }
 }
 
-void PluginInfoCompiler::writeEventTypes(const EventTypes &eventTypes, const QString &deviceClassName)
+void PluginInfoCompiler::writeEventTypes(const EventTypes &eventTypes, const QString &thingClassName)
 {
     foreach (const EventType &eventType, eventTypes) {
-        QString variableName = QString("%1%2EventTypeId").arg(deviceClassName, eventType.name()[0].toUpper() + eventType.name().right(eventType.name().length() - 1));
+        QString variableName = QString("%1%2EventTypeId").arg(thingClassName, eventType.name()[0].toUpper() + eventType.name().right(eventType.name().length() - 1));
         if (m_variableNames.contains(variableName)) {
-            qWarning().nospace() << "Error: Duplicate name " << variableName << " for EventType " << eventType.name() << " in DeviceClass " << deviceClassName << ". Skipping entry.";
+            qWarning().nospace() << "Error: Duplicate name " << variableName << " for EventType " << eventType.name() << " in DeviceClass " << thingClassName << ". Skipping entry.";
             return;
         }
         m_variableNames.append(variableName);
         write(QString("EventTypeId %1 = EventTypeId(\"%2\");").arg(variableName).arg(eventType.id().toString()));
-        m_translationStrings.insert(eventType.displayName(), QString("The name of the EventType (%1) of DeviceClass %2").arg(eventType.id().toString()).arg(deviceClassName));
+        m_translationStrings.insert(eventType.displayName(), QString("The name of the EventType (%1) of DeviceClass %2").arg(eventType.id().toString()).arg(thingClassName));
         writeExtern(QString("extern EventTypeId %1;").arg(variableName));
 
-        writeParams(eventType.paramTypes(), deviceClassName, "Event", eventType.name());
+        writeParams(eventType.paramTypes(), thingClassName, "Event", eventType.name());
     }
 }
 
-void PluginInfoCompiler::writeActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName)
+void PluginInfoCompiler::writeActionTypes(const ActionTypes &actionTypes, const QString &thingClassName)
 {
     foreach (const ActionType &actionType, actionTypes) {
-        QString variableName = QString("%1%2ActionTypeId").arg(deviceClassName, actionType.name()[0].toUpper() + actionType.name().right(actionType.name().length() - 1));
+        QString variableName = QString("%1%2ActionTypeId").arg(thingClassName, actionType.name()[0].toUpper() + actionType.name().right(actionType.name().length() - 1));
         if (m_variableNames.contains(variableName)) {
-            qWarning().nospace() << "Error: Duplicate name " << variableName << " for ActionType " << actionType.name() << " in DeviceClass " << deviceClassName << ". Skipping entry.";
+            qWarning().nospace() << "Error: Duplicate name " << variableName << " for ActionType " << actionType.name() << " in DeviceClass " << thingClassName << ". Skipping entry.";
             return;
         }
         m_variableNames.append(variableName);
         write(QString("ActionTypeId %1 = ActionTypeId(\"%2\");").arg(variableName).arg(actionType.id().toString()));
-        m_translationStrings.insert(actionType.displayName(), QString("The name of the ActionType (%1) of DeviceClass %2").arg(actionType.id().toString()).arg(deviceClassName));
+        m_translationStrings.insert(actionType.displayName(), QString("The name of the ActionType (%1) of DeviceClass %2").arg(actionType.id().toString()).arg(thingClassName));
         writeExtern(QString("extern ActionTypeId %1;").arg(variableName));
 
-        writeParams(actionType.paramTypes(), deviceClassName, "Action", actionType.name());
+        writeParams(actionType.paramTypes(), thingClassName, "Action", actionType.name());
     }    
 }
 
-void PluginInfoCompiler::writeBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &deviceClassName)
+void PluginInfoCompiler::writeBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &thingClassName)
 {
     foreach (const ActionType &actionType, actionTypes) {
-        QString variableName = QString("%1%2BrowserItemActionTypeId").arg(deviceClassName, actionType.name()[0].toUpper() + actionType.name().right(actionType.name().length() - 1));
+        QString variableName = QString("%1%2BrowserItemActionTypeId").arg(thingClassName, actionType.name()[0].toUpper() + actionType.name().right(actionType.name().length() - 1));
         if (m_variableNames.contains(variableName)) {
-            qWarning().nospace() << "Error: Duplicate name " << variableName << " for Browser Item ActionType " << actionType.name() << " in DeviceClass " << deviceClassName << ". Skipping entry.";
+            qWarning().nospace() << "Error: Duplicate name " << variableName << " for Browser Item ActionType " << actionType.name() << " in DeviceClass " << thingClassName << ". Skipping entry.";
             return;
         }
         m_variableNames.append(variableName);
         write(QString("ActionTypeId %1 = ActionTypeId(\"%2\");").arg(variableName).arg(actionType.id().toString()));
-        m_translationStrings.insert(actionType.displayName(), QString("The name of the Browser Item ActionType (%1) of DeviceClass %2").arg(actionType.id().toString()).arg(deviceClassName));
+        m_translationStrings.insert(actionType.displayName(), QString("The name of the Browser Item ActionType (%1) of DeviceClass %2").arg(actionType.id().toString()).arg(thingClassName));
         writeExtern(QString("extern ActionTypeId %1;").arg(variableName));
 
-        writeParams(actionType.paramTypes(), deviceClassName, "BrowserItemAction", actionType.name());
+        writeParams(actionType.paramTypes(), thingClassName, "BrowserItemAction", actionType.name());
     }
 }
 

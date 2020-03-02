@@ -31,39 +31,39 @@
 #ifndef DEVICEPLUGINMOCK_H
 #define DEVICEPLUGINMOCK_H
 
-#include "devices/deviceplugin.h"
+#include "integrations/integrationplugin.h"
 
 #include <QProcess>
 
 class HttpDaemon;
 
-class DevicePluginMock : public DevicePlugin
+class DevicePluginMock : public IntegrationPlugin
 {
     Q_OBJECT
 
     Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginmock.json")
-    Q_INTERFACES(DevicePlugin)
+    Q_INTERFACES(IntegrationPlugin)
 
 public:
     explicit DevicePluginMock();
     ~DevicePluginMock() override;
 
-    void discoverDevices(DeviceDiscoveryInfo *info) override;
+    void discoverThings(ThingDiscoveryInfo *info) override;
 
-    void setupDevice(DeviceSetupInfo *info) override;
-    void postSetupDevice(Device *device) override;
-    void deviceRemoved(Device *device) override;
+    void setupThing(ThingSetupInfo *info) override;
+    void postSetupThing(Thing *device) override;
+    void thingRemoved(Thing *device) override;
 
-    void startMonitoringAutoDevices() override;
+    void startMonitoringAutoThings() override;
 
-    void startPairing(DevicePairingInfo *info) override;
-    void confirmPairing(DevicePairingInfo *info, const QString &username, const QString &secret) override;
+    void startPairing(ThingPairingInfo *info) override;
+    void confirmPairing(ThingPairingInfo *info, const QString &username, const QString &secret) override;
 
-    void browseDevice(BrowseResult *result) override;
+    void browseThing(BrowseResult *result) override;
     void browserItem(BrowserItemResult *result) override;
 
 public slots:
-    void executeAction(DeviceActionInfo *info) override;
+    void executeAction(ThingActionInfo *info) override;
     void executeBrowserItem(BrowserActionInfo *info) override;
     void executeBrowserItemAction(BrowserItemActionInfo *info) override;
 
@@ -72,9 +72,9 @@ private slots:
     void triggerEvent(const EventTypeId &id);
     void onDisappear();
     void onReconfigureAutoDevice();
-    void generateDiscoveredDevices(DeviceDiscoveryInfo *info);
-    void generateDiscoveredPushButtonDevices(DeviceDiscoveryInfo *info);
-    void generateDiscoveredDisplayPinDevices(DeviceDiscoveryInfo *info);
+    void generateDiscoveredDevices(ThingDiscoveryInfo *info);
+    void generateDiscoveredPushButtonDevices(ThingDiscoveryInfo *info);
+    void generateDiscoveredDisplayPinDevices(ThingDiscoveryInfo *info);
 
     void onPushButtonPressed();
     void onPluginConfigChanged();
@@ -100,8 +100,8 @@ private:
         }
     };
 
-    QHash<Device*, HttpDaemon*> m_daemons;
-    QList<QPair<Action, Device*> > m_asyncActions;
+    QHash<Thing*, HttpDaemon*> m_daemons;
+    QList<QPair<Action, Thing*> > m_asyncActions;
 
     int m_discoveredDeviceCount;
     bool m_pushbuttonPressed;

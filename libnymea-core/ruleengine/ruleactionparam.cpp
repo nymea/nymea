@@ -88,9 +88,9 @@ RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const EventType
 
 /*! Constructs a \l{RuleActionParam} with the given \a paramTypeId, \a stateDeviceId and \a stateTypeId.
  *  \sa Param, Event, */
-RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const DeviceId &stateDeviceId, const StateTypeId &stateTypeId):
+RuleActionParam::RuleActionParam(const ParamTypeId &paramTypeId, const ThingId &stateThingId, const StateTypeId &stateTypeId):
     m_paramTypeId(paramTypeId),
-    m_stateDeviceId(stateDeviceId),
+    m_stateThingId(stateThingId),
     m_stateTypeId(stateTypeId)
 {
 
@@ -117,9 +117,9 @@ RuleActionParam::RuleActionParam(const QString &paramName, const EventTypeId &ev
 
 /*! Constructs a \l{RuleActionParam} with the given \a paramName, \a stateDeviceId and \a stateTypeId.
  *  \sa Param, Event, */
-RuleActionParam::RuleActionParam(const QString &paramName, const DeviceId &stateDeviceId, const StateTypeId &stateTypeId):
+RuleActionParam::RuleActionParam(const QString &paramName, const ThingId &stateThingId, const StateTypeId &stateTypeId):
     m_paramName(paramName),
-    m_stateDeviceId(stateDeviceId),
+    m_stateThingId(stateThingId),
     m_stateTypeId(stateTypeId)
 {
 
@@ -183,16 +183,16 @@ void RuleActionParam::setEventParamTypeId(const ParamTypeId &eventParamTypeId)
     m_eventParamTypeId = eventParamTypeId;
 }
 
-/*! Returns the deviceId identifying the device to use a state value from. */
-DeviceId RuleActionParam::stateDeviceId() const
+/*! Returns the \l{ThingId} identifying the thing to use a state value from. */
+ThingId RuleActionParam::stateThingId() const
 {
-    return m_stateDeviceId;
+    return m_stateThingId;
 }
 
-/*! Sets the deviceId identifying the device to use a state value from. */
-void RuleActionParam::setStateDeviceId(const DeviceId &stateDeviceId)
+/*! Sets the \l{ThingId} identifying the thing to use a state value from. */
+void RuleActionParam::setStateThingId(const ThingId &thingId)
 {
-    m_stateDeviceId = stateDeviceId;
+    m_stateThingId = thingId;
 }
 
 /*! Returns the stateTypeId identifying the state to use the value. */
@@ -228,7 +228,7 @@ bool RuleActionParam::isEventBased() const
 
 bool RuleActionParam::isStateBased() const
 {
-    return !m_stateDeviceId.isNull() && !m_stateTypeId.isNull();
+    return !m_stateThingId.isNull() && !m_stateTypeId.isNull();
 }
 
 /*! Writes the paramTypeId, value, eventId and eventParamTypeId of the given \a ruleActionParam to \a dbg. */

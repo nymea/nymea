@@ -43,7 +43,8 @@
 class LIBNYMEA_EXPORT EventDescriptor
 {
     Q_GADGET
-    Q_PROPERTY(QUuid deviceId READ deviceId WRITE setDeviceId USER true)
+    Q_PROPERTY(QUuid thingId READ thingId WRITE setThingId USER true)
+    Q_PROPERTY(QUuid deviceId READ thingId WRITE setThingId USER true REVISION 1)
     Q_PROPERTY(QUuid eventTypeId READ eventTypeId WRITE setEventTypeId USER true)
     Q_PROPERTY(QString interface READ interface WRITE setInterface USER true)
     Q_PROPERTY(QString interfaceEvent READ interfaceEvent WRITE setInterfaceEvent USER true)
@@ -55,7 +56,7 @@ public:
     };
 
     EventDescriptor();
-    EventDescriptor(const EventTypeId &eventTypeId, const DeviceId &deviceId, const QList<ParamDescriptor> &paramDescriptors = QList<ParamDescriptor>());
+    EventDescriptor(const EventTypeId &eventTypeId, const ThingId &thingId, const QList<ParamDescriptor> &paramDescriptors = QList<ParamDescriptor>());
     EventDescriptor(const QString &interface, const QString &interfaceEvent, const QList<ParamDescriptor> &paramDescriptors = QList<ParamDescriptor>());
 
     Type type() const;
@@ -64,8 +65,8 @@ public:
     EventTypeId eventTypeId() const;
     void setEventTypeId(const EventTypeId &eventTypeId);
 
-    DeviceId deviceId() const;
-    void setDeviceId(const DeviceId &deviceId);
+    ThingId thingId() const;
+    void setThingId(const ThingId &thingId);
 
     QString interface() const;
     void setInterface(const QString &interface);
@@ -81,7 +82,7 @@ public:
 
 private:
     EventTypeId m_eventTypeId;
-    DeviceId m_deviceId;
+    ThingId m_thingId;
     QString m_interface;
     QString m_interfaceEvent;
     QList<ParamDescriptor> m_paramDescriptors;

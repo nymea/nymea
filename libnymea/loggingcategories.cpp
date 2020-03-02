@@ -35,8 +35,8 @@
 
 Q_LOGGING_CATEGORY(dcApplication, "Application")
 Q_LOGGING_CATEGORY(dcPluginMetadata, "PluginMetadata")
-Q_LOGGING_CATEGORY(dcDevice, "Device")
-Q_LOGGING_CATEGORY(dcDeviceManager, "DeviceManager")
+Q_LOGGING_CATEGORY(dcThing, "Thing")
+Q_LOGGING_CATEGORY(dcThingManager, "ThingManager")
 Q_LOGGING_CATEGORY(dcSystem, "System")
 Q_LOGGING_CATEGORY(dcPlatform, "Platform")
 Q_LOGGING_CATEGORY(dcPlatformUpdate, "PlatformUpdate")

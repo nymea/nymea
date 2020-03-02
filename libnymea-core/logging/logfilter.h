@@ -64,8 +64,8 @@ public:
     QList<QUuid> typeIds() const;
 
     // Valid for LoggingSourceStates, LoggingSourceEvents, LoggingSourceActions
-    void addDeviceId(const DeviceId &deviceId);
-    QList<DeviceId> deviceIds() const;
+    void addThingId(const ThingId &thingId);
+    QList<ThingId> thingIds() const;
 
     // Valid for LoggingSourceStates
     void addValue(const QString &value);
@@ -85,7 +85,7 @@ private:
     QList<Logging::LoggingLevel> m_levels;
     QList<Logging::LoggingEventType> m_eventTypes;
     QList<QUuid> m_typeIds;
-    QList<DeviceId> m_deviceIds;
+    QList<ThingId> m_thingIds;
     QList<QString> m_values;
     int m_limit = -1;
     int m_offset = 0;

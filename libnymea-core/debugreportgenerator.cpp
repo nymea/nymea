@@ -206,8 +206,8 @@ void DebugReportGenerator::saveConfigs()
 {
     // Start copy files setting files
     copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName(), "config");
-    copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleDevices).fileName(), "config");
-    copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleDeviceStates).fileName(), "config");
+    copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleThings).fileName(), "config");
+    copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleThingStates).fileName(), "config");
     copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleRules).fileName(), "config");
     copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRolePlugins).fileName(), "config");
     copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleTags).fileName(), "config");

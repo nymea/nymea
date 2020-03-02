@@ -37,7 +37,7 @@
 #include <QObject>
 #include <QVector>
 
-class DeviceManager;
+class ThingManager;
 
 namespace nymeaserver {
 
@@ -55,13 +55,13 @@ public:
     };
     Q_ENUM(TagError)
 
-    explicit TagsStorage(DeviceManager* deviceManager, RuleEngine* ruleEngine, QObject *parent = nullptr);
+    explicit TagsStorage(ThingManager* deviceManager, RuleEngine* ruleEngine, QObject *parent = nullptr);
 
     TagError addTag(const Tag &tag);
     TagError removeTag(const Tag &tag);
 
     QList<Tag> tags() const;
-    QList<Tag> tags(const DeviceId &deviceId) const;
+    QList<Tag> tags(const ThingId &thingId) const;
     QList<Tag> tags(const RuleId &ruleId) const;
 
 signals:
@@ -70,7 +70,7 @@ signals:
     void tagValueChanged(const Tag &tag);
 
 private slots:
-    void deviceRemoved(const DeviceId &deviceId);
+    void thingRemoved(const ThingId &thingId);
     void ruleRemoved(const RuleId &ruleId);
 
 private:
@@ -78,7 +78,7 @@ private:
     void unsaveTag(const Tag &tag);
 
 private:
-    DeviceManager *m_deviceManager;
+    ThingManager *m_deviceManager;
     RuleEngine *m_ruleEngine;
     QList<Tag> m_tags;
 };

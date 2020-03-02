@@ -78,7 +78,7 @@ public:
     void logRuleEnabledChanged(const Rule &rule, const bool &enabled);
     void logRuleActionsExecuted(const Rule &rule);
     void logRuleExitActionsExecuted(const Rule &rule);
-    void removeDeviceLogs(const DeviceId &deviceId);
+    void removeDeviceLogs(const ThingId &thingId);
     void removeRuleLogs(const RuleId &ruleId);
 
 signals:
@@ -169,11 +169,11 @@ class DevicesFetchJob: public QObject
     Q_OBJECT
 public:
     DevicesFetchJob(QObject *parent): QObject(parent) {}
-    QList<DeviceId> results() { return m_results; }
+    QList<ThingId> results() { return m_results; }
 signals:
     void finished();
 private:
-    QList<DeviceId> m_results;
+    QList<ThingId> m_results;
     friend class LogEngine;
 };
 

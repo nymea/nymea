@@ -30,15 +30,15 @@
 
 #include "cloudnotifications.h"
 #include "loggingcategories.h"
-#include "devices/devicesetupinfo.h"
-#include "devices/deviceactioninfo.h"
+#include "integrations/thingsetupinfo.h"
+#include "integrations/thingactioninfo.h"
 
 #include <QDebug>
 #include <QJsonObject>
 
-DeviceClassId cloudNotificationsDeviceClassId = DeviceClassId("81c1bbcc-543a-48fd-bd18-ab6a76f9c38d");
-ParamTypeId cloudNotificationsDeviceClassUserParamId = ParamTypeId("5bdeaf08-91a9-42bc-a9f9-ef6b02ecaa3c");
-ParamTypeId cloudNotificationsDeviceClassEndpointParamId = ParamTypeId("e7c41785-dd3b-4f46-b5b4-1f8a7d060ddd");
+ThingClassId cloudNotificationsThingClassId = ThingClassId("81c1bbcc-543a-48fd-bd18-ab6a76f9c38d");
+ParamTypeId cloudNotificationsThingClassUserParamId = ParamTypeId("5bdeaf08-91a9-42bc-a9f9-ef6b02ecaa3c");
+ParamTypeId cloudNotificationsThingClassEndpointParamId = ParamTypeId("e7c41785-dd3b-4f46-b5b4-1f8a7d060ddd");
 
 ActionTypeId notifyActionTypeId = ActionTypeId("211d1f25-28e7-4eba-8938-b29de0e41571");
 ParamTypeId notifyActionParamTitleId = ParamTypeId("096503fc-b343-4d7f-8387-96162faf0f8e");
@@ -47,7 +47,7 @@ ParamTypeId notifyActionParamBodyId = ParamTypeId("4bd0fa87-c663-4621-8040-99b6d
 StateTypeId connectedStateTypeId = StateTypeId("518e27b6-c3bf-49d7-be24-05ae978c00f7");
 
 CloudNotifications::CloudNotifications(AWSConnector* awsConnector, QObject *parent):
-    DevicePlugin(parent),
+    IntegrationPlugin(parent),
     m_awsConnector(awsConnector)
 {
     connect(m_awsConnector, &AWSConnector::pushNotificationEndpointsUpdated, this, &CloudNotifications::pushNotificationEndpointsUpdated);
@@ -70,20 +70,20 @@ PluginMetadata CloudNotifications::metaData() const
     createMethods.append("auto");
 
     QVariantMap userIdParam;
-    userIdParam.insert("id", cloudNotificationsDeviceClassUserParamId);
+    userIdParam.insert("id", cloudNotificationsThingClassUserParamId);
     userIdParam.insert("name", "userId");
     userIdParam.insert("displayName", tr("User ID"));
     userIdParam.insert("type", "QString");
 
     QVariantMap endpointIdParam;
-    endpointIdParam.insert("id", cloudNotificationsDeviceClassEndpointParamId);
+    endpointIdParam.insert("id", cloudNotificationsThingClassEndpointParamId);
     endpointIdParam.insert("name", "endpoint");
     endpointIdParam.insert("displayName", tr("Device"));
     endpointIdParam.insert("type", "QString");
 
-    QVariantList cloudNotificationDeviceClassParamTypes;
-    cloudNotificationDeviceClassParamTypes.append(userIdParam);
-    cloudNotificationDeviceClassParamTypes.append(endpointIdParam);
+    QVariantList cloudNotificationThingClassParamTypes;
+    cloudNotificationThingClassParamTypes.append(userIdParam);
+    cloudNotificationThingClassParamTypes.append(endpointIdParam);
 
     QVariantMap notifyActionParamTitle;
     notifyActionParamTitle.insert("id", notifyActionParamTitleId);
@@ -122,24 +122,24 @@ PluginMetadata CloudNotifications::metaData() const
     stateTypes.append(connectedState);
 
 
-    QVariantMap cloudNotificationsDeviceClass;
-    cloudNotificationsDeviceClass.insert("id", cloudNotificationsDeviceClassId);
-    cloudNotificationsDeviceClass.insert("name", "cloudNotifications");
-    cloudNotificationsDeviceClass.insert("displayName", tr("Cloud Notifications"));
-    cloudNotificationsDeviceClass.insert("createMethods", createMethods);
-    cloudNotificationsDeviceClass.insert("paramTypes", cloudNotificationDeviceClassParamTypes);
-    cloudNotificationsDeviceClass.insert("interfaces", interfaces);
-    cloudNotificationsDeviceClass.insert("actionTypes", actionTypes);
-    cloudNotificationsDeviceClass.insert("stateTypes", stateTypes);
+    QVariantMap cloudNotificationsThingClass;
+    cloudNotificationsThingClass.insert("id", cloudNotificationsThingClassId);
+    cloudNotificationsThingClass.insert("name", "cloudNotifications");
+    cloudNotificationsThingClass.insert("displayName", tr("Cloud Notifications"));
+    cloudNotificationsThingClass.insert("createMethods", createMethods);
+    cloudNotificationsThingClass.insert("paramTypes", cloudNotificationThingClassParamTypes);
+    cloudNotificationsThingClass.insert("interfaces", interfaces);
+    cloudNotificationsThingClass.insert("actionTypes", actionTypes);
+    cloudNotificationsThingClass.insert("stateTypes", stateTypes);
 
-    QVariantList deviceClasses;
-    deviceClasses.append(cloudNotificationsDeviceClass);
+    QVariantList thingClasses;
+    thingClasses.append(cloudNotificationsThingClass);
 
     QVariantMap guhVendor;
     guhVendor.insert("id", "2062d64d-3232-433c-88bc-0d33c0ba2ba6"); // nymea's id
     guhVendor.insert("name", "nymea");
     guhVendor.insert("displayName", "nymea");
-    guhVendor.insert("deviceClasses", deviceClasses);
+    guhVendor.insert("thingClasses", thingClasses);
 
     QVariantList vendors;
     vendors.append(guhVendor);
@@ -148,29 +148,29 @@ PluginMetadata CloudNotifications::metaData() const
     return PluginMetadata(QJsonObject::fromVariantMap(pluginMetaData), true);
 }
 
-void CloudNotifications::setupDevice(DeviceSetupInfo *info)
+void CloudNotifications::setupThing(ThingSetupInfo *info)
 {
-    Device *device = info->device();
-    device->setStateValue(connectedStateTypeId, m_awsConnector->isConnected());
-    qCDebug(dcCloud) << "Cloud Notifications Device setup:" << device->name() << "Connected:" << m_awsConnector->isConnected();
-    connect(m_awsConnector, &AWSConnector::connected, info->device(), [device]() {
-        device->setStateValue(connectedStateTypeId, true);
+    Thing *thing = info->thing();
+    thing->setStateValue(connectedStateTypeId, m_awsConnector->isConnected());
+    qCDebug(dcCloud) << "Cloud Notifications thing setup:" << thing->name() << "Connected:" << m_awsConnector->isConnected();
+    connect(m_awsConnector, &AWSConnector::connected, info->thing(), [thing]() {
+        thing->setStateValue(connectedStateTypeId, true);
     });
-    connect(m_awsConnector, &AWSConnector::disconnected, device, [device]() {
-        device->setStateValue(connectedStateTypeId, false);
+    connect(m_awsConnector, &AWSConnector::disconnected, thing, [thing]() {
+        thing->setStateValue(connectedStateTypeId, false);
     });
-    info->finish(Device::DeviceErrorNoError);
+    info->finish(Thing::ThingErrorNoError);
 }
 
-void CloudNotifications::startMonitoringAutoDevices()
+void CloudNotifications::startMonitoringAutoThings()
 {
 }
 
-void CloudNotifications::executeAction(DeviceActionInfo *info)
+void CloudNotifications::executeAction(ThingActionInfo *info)
 {
-    qCDebug(dcCloud()) << "executeAction" << info->device() << info->action().id() << info->action().params();
-    QString userId = info->device()->paramValue(cloudNotificationsDeviceClassUserParamId).toString();
-    QString endpointId = info->device()->paramValue(cloudNotificationsDeviceClassEndpointParamId).toString();
+    qCDebug(dcCloud()) << "executeAction" << info->thing() << info->action().id() << info->action().params();
+    QString userId = info->thing()->paramValue(cloudNotificationsThingClassUserParamId).toString();
+    QString endpointId = info->thing()->paramValue(cloudNotificationsThingClassEndpointParamId).toString();
     int id = m_awsConnector->sendPushNotification(userId, endpointId, info->action().param(notifyActionParamTitleId).value().toString(), info->action().param(notifyActionParamBodyId).value().toString());
     m_pendingPushNotifications.insert(id, info);
 }
@@ -178,79 +178,79 @@ void CloudNotifications::executeAction(DeviceActionInfo *info)
 void CloudNotifications::pushNotificationEndpointsUpdated(const QList<AWSConnector::PushNotificationsEndpoint> &endpoints)
 {
     qCDebug(dcCloud()) << "Push Notification endpoint update";
-    QList<Device*> devicesToRemove;
-    foreach (Device *configuredDevice, myDevices()) {
+    QList<Thing*> thingsToRemove;
+    foreach (Thing *configuredThing, myThings()) {
         bool found = false;
         foreach (const AWSConnector::PushNotificationsEndpoint &ep, endpoints) {
-            if (configuredDevice->paramValue(cloudNotificationsDeviceClassUserParamId).toString() == ep.userId
-                    && configuredDevice->paramValue(cloudNotificationsDeviceClassEndpointParamId).toString() == ep.endpointId) {
+            if (configuredThing->paramValue(cloudNotificationsThingClassUserParamId).toString() == ep.userId
+                    && configuredThing->paramValue(cloudNotificationsThingClassEndpointParamId).toString() == ep.endpointId) {
                 found = true;
                 break;
             }
         }
         if (!found) {
-            devicesToRemove.append(configuredDevice);
+            thingsToRemove.append(configuredThing);
         }
     }
-    foreach (Device *d, devicesToRemove) {
-        emit autoDeviceDisappeared(d->id());
+    foreach (Thing *d, thingsToRemove) {
+        emit autoThingDisappeared(d->id());
     }
 
-    DeviceDescriptors devicesToAdd;
+    ThingDescriptors thingsToAdd;
     foreach (const AWSConnector::PushNotificationsEndpoint &ep, endpoints) {
         bool found = false;
         qCDebug(dcCloud) << "Checking endoint:" << ep.endpointId;
-        foreach (Device *d, myDevices()) {
-            qCDebug(dcCloud) << "Have existing device:" << d->name() << d->paramValue(cloudNotificationsDeviceClassEndpointParamId);
-            if (d->paramValue(cloudNotificationsDeviceClassUserParamId).toString() == ep.userId
-                    && d->paramValue(cloudNotificationsDeviceClassEndpointParamId).toString() == ep.endpointId) {
+        foreach (Thing *d, myThings()) {
+            qCDebug(dcCloud) << "Have existing thing:" << d->name() << d->paramValue(cloudNotificationsThingClassEndpointParamId);
+            if (d->paramValue(cloudNotificationsThingClassUserParamId).toString() == ep.userId
+                    && d->paramValue(cloudNotificationsThingClassEndpointParamId).toString() == ep.endpointId) {
                 found = true;
                 break;
             }
         }
         if (!found) {
-            qCDebug(dcCloud) << "Adding new notification device" << ep.displayName;
-            DeviceDescriptor descriptor(cloudNotificationsDeviceClassId, ep.displayName, QString("Send notifications to %1").arg(ep.displayName));
+            qCDebug(dcCloud) << "Adding new notification thing" << ep.displayName;
+            ThingDescriptor descriptor(cloudNotificationsThingClassId, ep.displayName, QString("Send notifications to %1").arg(ep.displayName));
             ParamList params;
-            Param userIdParam(cloudNotificationsDeviceClassUserParamId, ep.userId);
+            Param userIdParam(cloudNotificationsThingClassUserParamId, ep.userId);
             params.append(userIdParam);
-            Param endpointIdParam(cloudNotificationsDeviceClassEndpointParamId, ep.endpointId);
+            Param endpointIdParam(cloudNotificationsThingClassEndpointParamId, ep.endpointId);
             params.append(endpointIdParam);
             descriptor.setParams(params);
-            devicesToAdd.append(descriptor);
+            thingsToAdd.append(descriptor);
         }
     }
-    emit autoDevicesAppeared(devicesToAdd);
+    emit autoThingsAppeared(thingsToAdd);
 
 }
 
 void CloudNotifications::pushNotificationEndpointAdded(const AWSConnector::PushNotificationsEndpoint &endpoint)
 {
     // Could be just an update, don't add it in that case...
-    foreach (Device *d, myDevices()) {
-        if (d->paramValue(cloudNotificationsDeviceClassUserParamId).toString() == endpoint.userId
-                && d->paramValue(cloudNotificationsDeviceClassEndpointParamId).toString() == endpoint.endpointId) {
+    foreach (Thing *d, myThings()) {
+        if (d->paramValue(cloudNotificationsThingClassUserParamId).toString() == endpoint.userId
+                && d->paramValue(cloudNotificationsThingClassEndpointParamId).toString() == endpoint.endpointId) {
             return;
         }
     }
     qCDebug(dcCloud) << "Push notification endpoint added:" << endpoint.displayName;
-    DeviceDescriptor descriptor(cloudNotificationsDeviceClassId, endpoint.displayName, QString("Send notifications to %1").arg(endpoint.displayName));
+    ThingDescriptor descriptor(cloudNotificationsThingClassId, endpoint.displayName, QString("Send notifications to %1").arg(endpoint.displayName));
     ParamList params;
-    Param userIdParam(cloudNotificationsDeviceClassUserParamId, endpoint.userId);
+    Param userIdParam(cloudNotificationsThingClassUserParamId, endpoint.userId);
     params.append(userIdParam);
-    Param endpointIdParam(cloudNotificationsDeviceClassEndpointParamId, endpoint.endpointId);
+    Param endpointIdParam(cloudNotificationsThingClassEndpointParamId, endpoint.endpointId);
     params.append(endpointIdParam);
     descriptor.setParams(params);
-    emit autoDevicesAppeared({descriptor});
+    emit autoThingsAppeared({descriptor});
 }
 
 void CloudNotifications::pushNotificationSent(int id, int status)
 {
     qCDebug(dcCloud()) << "Push notification sent" << id << status;
-    DeviceActionInfo *info = m_pendingPushNotifications.take(id);
+    ThingActionInfo *info = m_pendingPushNotifications.take(id);
     if (!info) {
         qCWarning(dcCloud()) << "Received a push notification send reponse for a request we're not waiting for.";
         return;
     }
-    info->finish(status == 200 ? Device::DeviceErrorNoError : Device::DeviceErrorHardwareNotAvailable);
+    info->finish(status == 200 ? Thing::ThingErrorNoError : Thing::ThingErrorHardwareNotAvailable);
 }

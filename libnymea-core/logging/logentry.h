@@ -47,7 +47,8 @@ class LogEntry
     Q_PROPERTY(Logging::LoggingLevel loggingLevel READ level)
     Q_PROPERTY(Logging::LoggingSource source READ source)
     Q_PROPERTY(QUuid typeId READ typeId USER true)
-    Q_PROPERTY(QUuid deviceId READ deviceId USER true)
+    Q_PROPERTY(QUuid thingId READ thingId USER true)
+    Q_PROPERTY(QUuid deviceId READ thingId USER true REVISION 1)
     Q_PROPERTY(QVariant value READ value USER true)
     Q_PROPERTY(bool active READ active USER true)
     Q_PROPERTY(Logging::LoggingEventType eventType READ eventType USER true)
@@ -72,8 +73,8 @@ public:
     void setTypeId(const QUuid &typeId);
 
     // Valid for LoggingSourceStates, LoggingSourceEvents, LoggingSourceActions
-    DeviceId deviceId() const;
-    void setDeviceId(const DeviceId &deviceId);
+    ThingId thingId() const;
+    void setThingId(const ThingId &thingId);
 
     // Valid for LoggingSourceStates, LoggingSourceBrowserActions
     QVariant value() const;
@@ -94,7 +95,7 @@ private:
     // RuleSource specific properties.
     // FIXME: If it turns out we need many more of those, we should subclass LogEntry with specific ones.
     QUuid m_typeId;
-    DeviceId m_deviceId;
+    ThingId m_thingId;
     QVariant m_value;
     Logging::LoggingEventType m_eventType;
     bool m_active;

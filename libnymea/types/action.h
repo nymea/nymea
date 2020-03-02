@@ -41,11 +41,12 @@ class LIBNYMEA_EXPORT Action
 {
     Q_GADGET
     Q_PROPERTY(QUuid actionTypeId READ actionTypeId WRITE setActionTypeId)
-    Q_PROPERTY(QUuid deviceId READ deviceId WRITE setDeviceId)
+    Q_PROPERTY(QUuid thingId READ thingId WRITE setThingId)
+    Q_PROPERTY(QUuid deviceId READ thingId WRITE setThingId REVISION 1)
     Q_PROPERTY(ParamList params READ params WRITE setParams USER true)
 
 public:
-    explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId());
+    explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const ThingId &thingId = ThingId());
     Action(const Action &other);
 
     ActionId id() const;
@@ -54,8 +55,8 @@ public:
 
     ActionTypeId actionTypeId() const;
     void setActionTypeId(const ActionTypeId &actionTypeId);
-    DeviceId deviceId() const;
-    void setDeviceId(const DeviceId &deviceId);
+    ThingId thingId() const;
+    void setThingId(const ThingId &thingId);
 
     ParamList params() const;
     void setParams(const ParamList &params);
@@ -65,7 +66,7 @@ public:
 private:
     ActionId m_id;
     ActionTypeId m_actionTypeId;
-    DeviceId m_deviceId;
+    ThingId m_thingId;
     ParamList m_params;
 };
 

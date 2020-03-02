@@ -29,7 +29,7 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "scriptengine.h"
-#include "devices/devicemanager.h"
+#include "integrations/thingmanager.h"
 
 #include "scriptaction.h"
 #include "scriptevent.h"
@@ -54,7 +54,7 @@ QList<ScriptEngine*> ScriptEngine::s_engines;
 QtMessageHandler ScriptEngine::s_upstreamMessageHandler;
 QLoggingCategory::CategoryFilter ScriptEngine::s_oldCategoryFilter = nullptr;
 
-ScriptEngine::ScriptEngine(DeviceManager *deviceManager, QObject *parent) : QObject(parent),
+ScriptEngine::ScriptEngine(ThingManager *deviceManager, QObject *parent) : QObject(parent),
     m_deviceManager(deviceManager)
 {
     qmlRegisterType<ScriptEvent>("nymea", 1, 0, "DeviceEvent");

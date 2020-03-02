@@ -31,9 +31,9 @@
 #include "browseritemaction.h"
 
 
-BrowserItemAction::BrowserItemAction(const DeviceId &deviceId, const QString &itemId, const ActionTypeId &actionTypeId, const ParamList &params):
+BrowserItemAction::BrowserItemAction(const ThingId &thingId, const QString &itemId, const ActionTypeId &actionTypeId, const ParamList &params):
     m_id(ActionId::createActionId()),
-    m_deviceId(deviceId),
+    m_thingId(thingId),
     m_itemId(itemId),
     m_actionTypeId(actionTypeId),
     m_params(params)
@@ -43,7 +43,7 @@ BrowserItemAction::BrowserItemAction(const DeviceId &deviceId, const QString &it
 
 BrowserItemAction::BrowserItemAction(const BrowserItemAction &other):
     m_id(other.id()),
-    m_deviceId(other.deviceId()),
+    m_thingId(other.thingId()),
     m_itemId(other.itemId()),
     m_actionTypeId(other.actionTypeId()),
     m_params(other.params())
@@ -58,12 +58,12 @@ ActionId BrowserItemAction::id() const
 
 bool BrowserItemAction::isValid() const
 {
-    return !m_id.isNull() && !m_deviceId.isNull() && !m_itemId.isNull();
+    return !m_id.isNull() && !m_thingId.isNull() && !m_itemId.isNull();
 }
 
-DeviceId BrowserItemAction::deviceId() const
+ThingId BrowserItemAction::thingId() const
 {
-    return m_deviceId;
+    return m_thingId;
 }
 
 QString BrowserItemAction::itemId() const
@@ -84,7 +84,7 @@ ParamList BrowserItemAction::params() const
 void BrowserItemAction::operator=(const BrowserItemAction &other)
 {
     m_id = other.id();
-    m_deviceId = other.deviceId();
+    m_thingId = other.thingId();
     m_itemId = other.itemId();
     m_actionTypeId = other.actionTypeId();
     m_params = other.params();

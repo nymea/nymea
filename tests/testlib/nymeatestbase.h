@@ -138,8 +138,8 @@ protected:
     int m_mockDevice1Port;
     int m_mockDevice2Port;
 
-    DeviceId m_mockDeviceId;
-    DeviceId m_mockDeviceAutoId;
+    ThingId m_mockThingId;
+    ThingId m_mockThingAutoId;
     QByteArray m_apiToken;
 
 };

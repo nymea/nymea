@@ -50,10 +50,10 @@ State::State()
 
 /*! Constructs a State reflecting the \l{StateType} given by \a stateTypeId
  *  and associated with the \l{Device} given by \a deviceId */
-State::State(const StateTypeId &stateTypeId, const DeviceId &deviceId):
+State::State(const StateTypeId &stateTypeId, const ThingId &deviceId):
     m_id(StateId::createStateId()),
     m_stateTypeId(stateTypeId),
-    m_deviceId(deviceId)
+    m_thingId(deviceId)
 {
 }
 
@@ -69,10 +69,10 @@ StateTypeId State::stateTypeId() const
     return m_stateTypeId;
 }
 
-/*! Returns the id of the StateType describing this State. */
-DeviceId State::deviceId() const
+/*! Returns the \l{ThingId} of the thing of this State. */
+ThingId State::thingId() const
 {
-    return m_deviceId;
+    return m_thingId;
 }
 
 /*! Returns the state's value. */
@@ -90,7 +90,7 @@ void State::setValue(const QVariant &value)
 /*! Writes the stateTypeId, the deviceId and the value of the given \a state to \a dbg. */
 QDebug operator<<(QDebug dbg, const State &state)
 {
-    dbg.nospace() << "State(StateTypeId: " << state.stateTypeId().toString() << ", DeviceId:" << state.deviceId() << ", value:" << state.value() << ")";
+    dbg.nospace() << "State(StateTypeId: " << state.stateTypeId().toString() << ", DeviceId:" << state.thingId() << ", value:" << state.value() << ")";
     return dbg.space();
 }
 

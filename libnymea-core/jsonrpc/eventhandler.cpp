@@ -28,27 +28,10 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*!
-    \class nymeaserver::EventHandler
-    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Events namespace.
-
-    \ingroup json
-    \inmodule core
-
-    This \l{JsonHandler} will be created in the \l{JsonRPCServer} and used to handle JSON-RPC requests
-    for the \tt {Events} namespace of the API.
-
-    \sa Event, JsonHandler, JsonRPCServer
-*/
-
-/*! \fn void nymeaserver::EventHandler::EventTriggered(const QVariantMap &params);
-    This signal is emitted to the API notifications when an \l{Event} triggered.
-    The \a params contain the map for the notification.
-*/
-
 #include "eventhandler.h"
 #include "nymeacore.h"
 #include "loggingcategories.h"
+#include "devicehandler.h"
 
 namespace nymeaserver {
 
@@ -97,20 +80,20 @@ JsonReply* EventHandler::GetEventType(const QVariantMap &params, const JsonConte
 {
     qCDebug(dcJsonRpc) << "asked for event type" << params;
     EventTypeId eventTypeId(params.value("eventTypeId").toString());
-    foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
+    foreach (const ThingClass &deviceClass, NymeaCore::instance()->thingManager()->supportedThings()) {
         foreach (const EventType &eventType, deviceClass.eventTypes()) {
             if (eventType.id() == eventTypeId) {
                 EventType translatedEventType = eventType;
-                translatedEventType.setDisplayName(NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), eventType.displayName(), context.locale()));
+                translatedEventType.setDisplayName(NymeaCore::instance()->thingManager()->translate(deviceClass.pluginId(), eventType.displayName(), context.locale()));
                 QVariantMap data;
-                data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorNoError));
+                data.insert("deviceError", enumValueName<Thing::ThingError>(Thing::ThingErrorNoError).replace("ThingError", "DeviceError"));
                 data.insert("eventType", pack(translatedEventType));
                 return createReply(data);
             }
         }
     }
     QVariantMap data;
-    data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorEventTypeNotFound));
+    data.insert("deviceError", enumValueName<Thing::ThingError>(Thing::ThingErrorEventTypeNotFound).replace("ThingError", "DeviceError"));
     return createReply(data);
 }
 

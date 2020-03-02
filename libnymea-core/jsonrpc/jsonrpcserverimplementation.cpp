@@ -49,10 +49,10 @@
 #include "jsonrpc/jsonhandler.h"
 #include "jsonvalidator.h"
 #include "nymeacore.h"
-#include "devices/devicemanager.h"
-#include "devices/deviceplugin.h"
-#include "devices/device.h"
-#include "types/deviceclass.h"
+#include "integrations/thingmanager.h"
+#include "integrations/integrationplugin.h"
+#include "integrations/thing.h"
+#include "types/thingclass.h"
 #include "ruleengine/rule.h"
 #include "ruleengine/ruleengine.h"
 #include "loggingcategories.h"
@@ -60,6 +60,7 @@
 #include "version.h"
 
 #include "devicehandler.h"
+#include "integrationshandler.h"
 #include "actionhandler.h"
 #include "ruleshandler.h"
 #include "scriptshandler.h"
@@ -559,6 +560,7 @@ QVariantMap JsonRPCServerImplementation::createWelcomeMessage(TransportInterface
 void JsonRPCServerImplementation::setup()
 {
     registerHandler(this);
+    registerHandler(new IntegrationsHandler(NymeaCore::instance()->thingManager(), this));
     registerHandler(new DeviceHandler(this));
     registerHandler(new ActionHandler(this));
     registerHandler(new RulesHandler(this));

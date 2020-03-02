@@ -45,12 +45,12 @@ class LIBNYMEA_EXPORT State
 
 public:
     State();
-    State(const StateTypeId &stateTypeId, const DeviceId &deviceId);
+    State(const StateTypeId &stateTypeId, const ThingId &deviceId);
 
     StateId id() const;
 
     StateTypeId stateTypeId() const;
-    DeviceId deviceId() const;
+    ThingId thingId() const;
 
     QVariant value() const;
     void setValue(const QVariant &value);
@@ -58,7 +58,7 @@ public:
 private:
     StateId m_id;
     StateTypeId m_stateTypeId;
-    DeviceId m_deviceId;
+    ThingId m_thingId;
     QVariant m_value;
 };
 Q_DECLARE_METATYPE(State)

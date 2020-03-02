@@ -190,7 +190,7 @@ void TestTimeManager::loadSaveTimeDescriptor()
     // Action (without params)
     QVariantMap ruleMap; QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     // Create the rule map
@@ -351,7 +351,7 @@ void TestTimeManager::addTimeDescriptor()
     // ADD the rule
     QVariantMap ruleMap; QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
     ruleMap.insert("name", "TimeBased rule");
     ruleMap.insert("timeDescriptor", timeDescriptor);
@@ -389,7 +389,7 @@ void TestTimeManager::addTimeDescriptorInvalidTimes()
     // ADD the rule
     QVariantMap ruleMap; QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
     ruleMap.insert("name", "TimeBased rule");
     ruleMap.insert("timeDescriptor", timeDescriptor);
@@ -419,7 +419,7 @@ void TestTimeManager::testCalendarDateTime()
     // Action (without params)
     QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     // Exit action (with params)
@@ -433,7 +433,7 @@ void TestTimeManager::testCalendarDateTime()
     param2.insert("value", true);
     actionParams.append(param2);
     exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
-    exitAction.insert("deviceId", m_mockDeviceId);
+    exitAction.insert("deviceId", m_mockThingId);
     exitAction.insert("ruleActionParams", actionParams);
 
     // CalendarItem
@@ -495,7 +495,7 @@ void TestTimeManager::testCalendarItemHourly()
     QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction; QVariantMap repeatingOptionHourly;
     repeatingOptionHourly.insert("mode", "RepeatingModeHourly");
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
     exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
     QVariantList actionParams;
@@ -507,7 +507,7 @@ void TestTimeManager::testCalendarItemHourly()
     param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
-    exitAction.insert("deviceId", m_mockDeviceId);
+    exitAction.insert("deviceId", m_mockThingId);
     exitAction.insert("ruleActionParams", actionParams);
     ruleMap.insert("name", "Time based hourly calendar rule");
     ruleMap.insert("timeDescriptor", createTimeDescriptorCalendar(createCalendarItem("08:05", duration, repeatingOptionHourly)));
@@ -588,7 +588,7 @@ void TestTimeManager::testCalendarItemDaily()
 
     QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
     exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
     QVariantList actionParams;
@@ -600,7 +600,7 @@ void TestTimeManager::testCalendarItemDaily()
     param2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
     param2.insert("value", true);
     actionParams.append(param2);
-    exitAction.insert("deviceId", m_mockDeviceId);
+    exitAction.insert("deviceId", m_mockThingId);
     exitAction.insert("ruleActionParams", actionParams);
     ruleMap.insert("name", "Time based hourly calendar rule");
     ruleMap.insert("timeDescriptor", timeDescriptor);
@@ -687,7 +687,7 @@ void TestTimeManager::testCalendarItemWeekly()
     // Action (without params)
     QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     // Exit action (with params)
@@ -701,7 +701,7 @@ void TestTimeManager::testCalendarItemWeekly()
     param2.insert("value", true);
     actionParams.append(param2);
     exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
-    exitAction.insert("deviceId", m_mockDeviceId);
+    exitAction.insert("deviceId", m_mockThingId);
     exitAction.insert("ruleActionParams", actionParams);
 
     // Create the rule map
@@ -842,7 +842,7 @@ void TestTimeManager::testCalendarItemMonthly()
     // Action (without params)
     QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     // Exit action (with params)
@@ -856,7 +856,7 @@ void TestTimeManager::testCalendarItemMonthly()
     param2.insert("value", true);
     actionParams.append(param2);
     exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
-    exitAction.insert("deviceId", m_mockDeviceId);
+    exitAction.insert("deviceId", m_mockThingId);
     exitAction.insert("ruleActionParams", actionParams);
 
     // Create the rule map
@@ -970,7 +970,7 @@ void TestTimeManager::testCalendarYearlyDateTime()
     // Action (without params)
     QVariantMap ruleMap; QVariantMap action; QVariantMap exitAction;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     // Exit action (with params)
@@ -984,7 +984,7 @@ void TestTimeManager::testCalendarYearlyDateTime()
     param2.insert("value", true);
     actionParams.append(param2);
     exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
-    exitAction.insert("deviceId", m_mockDeviceId);
+    exitAction.insert("deviceId", m_mockThingId);
     exitAction.insert("ruleActionParams", actionParams);
 
     // RepeatingOption
@@ -1073,7 +1073,7 @@ void TestTimeManager::testCalendarItemStates_data()
     // Action
     QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     // Exit action (with params)
@@ -1088,18 +1088,18 @@ void TestTimeManager::testCalendarItemStates_data()
     param2.insert("value", true);
     actionParams.append(param2);
     exitAction.insert("actionTypeId", mockWithParamsActionTypeId);
-    exitAction.insert("deviceId", m_mockDeviceId);
+    exitAction.insert("deviceId", m_mockThingId);
     exitAction.insert("ruleActionParams", actionParams);
 
     // Stateevaluators
     QVariantMap stateEvaluator;
     QVariantMap stateDescriptorInt;
-    stateDescriptorInt.insert("deviceId", m_mockDeviceId);
+    stateDescriptorInt.insert("deviceId", m_mockThingId);
     stateDescriptorInt.insert("operator", enumValueName(Types::ValueOperatorGreaterOrEqual));
     stateDescriptorInt.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptorInt.insert("value", 65);
     QVariantMap stateDescriptorBool;
-    stateDescriptorBool.insert("deviceId", m_mockDeviceId);
+    stateDescriptorBool.insert("deviceId", m_mockThingId);
     stateDescriptorBool.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptorBool.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptorBool.insert("value", true);
@@ -1188,12 +1188,12 @@ void TestTimeManager::testCalendarItemEvent_data()
     // Action (without params)
     QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     QVariantMap eventDescriptor;
     eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
-    eventDescriptor.insert("deviceId", m_mockDeviceId);
+    eventDescriptor.insert("deviceId", m_mockThingId);
 
     // The rule
     QVariantMap ruleMap;
@@ -1252,17 +1252,17 @@ void TestTimeManager::testCalendarItemStatesEvent_data()
     // Action (without params)
     QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     // Event descriptor
     QVariantMap eventDescriptor;
     eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
-    eventDescriptor.insert("deviceId", m_mockDeviceId);
+    eventDescriptor.insert("deviceId", m_mockThingId);
 
     // State evaluator
     QVariantMap stateDescriptorBool;
-    stateDescriptorBool.insert("deviceId", m_mockDeviceId);
+    stateDescriptorBool.insert("deviceId", m_mockThingId);
     stateDescriptorBool.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptorBool.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptorBool.insert("value", true);
@@ -1326,7 +1326,7 @@ void TestTimeManager::testCalendarItemCrossesMidnight()
     // Action
     QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     QVariantMap repeatingOptionDaily;
@@ -1394,12 +1394,12 @@ void TestTimeManager::testEventBasedWithCalendarItemCrossingMidnight()
     // Event descriptor
     QVariantMap eventDescriptor;
     eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
-    eventDescriptor.insert("deviceId", m_mockDeviceId);
+    eventDescriptor.insert("deviceId", m_mockThingId);
 
     // Action
     QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     QVariantMap repeatingOptionDaily;
@@ -1466,7 +1466,7 @@ void TestTimeManager::testEventItemDateTime()
     // Action (without params)
     QVariantMap ruleMap; QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     // Create the rule map
@@ -1523,7 +1523,7 @@ void TestTimeManager::testEventItemHourly()
     // Action
     QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     QVariantMap ruleMap;
@@ -1592,7 +1592,7 @@ void TestTimeManager::testEventItemDaily()
     // Action
     QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     QVariantMap ruleMap;
@@ -1665,7 +1665,7 @@ void TestTimeManager::testEventItemWeekly()
     // Action
     QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     QVariantMap ruleMap;
@@ -1747,7 +1747,7 @@ void TestTimeManager::testEventItemMonthly()
     // Action
     QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     QVariantMap ruleMap;
@@ -1826,7 +1826,7 @@ void TestTimeManager::testEventItemYearly()
     // Action (without params)
     QVariantMap ruleMap; QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     // Create the rule map
@@ -1885,7 +1885,7 @@ void TestTimeManager::testEventItemStates_data()
     // Action (without params)
     QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     // Time descriptor
@@ -1896,7 +1896,7 @@ void TestTimeManager::testEventItemStates_data()
 
     // State evaluator
     QVariantMap stateDescriptorBool;
-    stateDescriptorBool.insert("deviceId", m_mockDeviceId);
+    stateDescriptorBool.insert("deviceId", m_mockThingId);
     stateDescriptorBool.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptorBool.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptorBool.insert("value", true);
@@ -1968,7 +1968,7 @@ void TestTimeManager::testEnableDisableTimeRule()
     // Action
     QVariantMap action;
     action.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    action.insert("deviceId", m_mockDeviceId);
+    action.insert("deviceId", m_mockThingId);
     action.insert("ruleActionParams", QVariantList());
 
     QVariantMap ruleMap;
@@ -2090,7 +2090,7 @@ void TestTimeManager::setIntState(const int &value)
     qDebug() << "Setting mock int state to" << value;
 
     QVariantMap params;
-    params.insert("deviceId", m_mockDeviceId);
+    params.insert("deviceId", m_mockThingId);
     params.insert("stateTypeId", mockIntStateTypeId);
     QVariant response = injectAndWait("Devices.GetStateValue", params);
     verifyError(response, "deviceError", "DeviceErrorNoError");
@@ -2117,7 +2117,7 @@ void TestTimeManager::setIntState(const int &value)
 
         QVariantMap notification = stateChangedVariants.first().toMap().value("params").toMap();
         QVERIFY2(notification.contains("deviceId"), "Devices.StateChanged notification does not contain deviceId");
-        QVERIFY2(DeviceId(notification.value("deviceId").toString()) == m_mockDeviceId, "Devices.StateChanged notification does not contain the correct deviceId");
+        QVERIFY2(ThingId(notification.value("deviceId").toString()) == m_mockThingId, "Devices.StateChanged notification does not contain the correct deviceId");
         QVERIFY2(notification.contains("stateTypeId"), "Devices.StateChanged notification does not contain stateTypeId");
         QVERIFY2(StateTypeId(notification.value("stateTypeId").toString()) == mockIntStateTypeId, "Devices.StateChanged notification does not contain the correct stateTypeId");
         QVERIFY2(notification.contains("value"), "Devices.StateChanged notification does not contain new state value");
@@ -2131,7 +2131,7 @@ void TestTimeManager::setBoolState(const bool &value)
 
     // Get the current state value to check if we have to wait for state changed notfication
     QVariantMap params;
-    params.insert("deviceId", m_mockDeviceId);
+    params.insert("deviceId", m_mockThingId);
     params.insert("stateTypeId", mockBoolStateTypeId);
     QVariant response = injectAndWait("Devices.GetStateValue", params);
     verifyError(response, "deviceError", "DeviceErrorNoError");
@@ -2157,7 +2157,7 @@ void TestTimeManager::setBoolState(const bool &value)
 
         QVariantMap notification = stateChangedSignals.first().toMap().value("params").toMap();
         QVERIFY2(notification.contains("deviceId"), "Devices.StateChanged notification does not contain deviceId");
-        QVERIFY2(DeviceId(notification.value("deviceId").toString()) == m_mockDeviceId, "Devices.StateChanged notification does not contain the correct deviceId");
+        QVERIFY2(ThingId(notification.value("deviceId").toString()) == m_mockThingId, "Devices.StateChanged notification does not contain the correct deviceId");
         QVERIFY2(notification.contains("stateTypeId"), "Devices.StateChanged notification does not contain stateTypeId");
         QVERIFY2(StateTypeId(notification.value("stateTypeId").toString()) == mockBoolStateTypeId, "Devices.StateChanged notification does not contain the correct stateTypeId");
         QVERIFY2(notification.contains("value"), "Devices.StateChanged notification does not contain new state value");
@@ -2189,7 +2189,7 @@ void TestTimeManager::triggerMockEvent1()
     QVariantMap eventMap = eventTriggerVariants.first().toMap().value("params").toMap().value("event").toMap();
 
     QVERIFY2(eventMap.contains("deviceId"), "Events.EventTriggered notification does not contain deviceId");
-    QVERIFY2(DeviceId(eventMap.value("deviceId").toString()) == m_mockDeviceId, "Events.EventTriggered notification does not contain the correct deviceId");
+    QVERIFY2(ThingId(eventMap.value("deviceId").toString()) == m_mockThingId, "Events.EventTriggered notification does not contain the correct deviceId");
     QVERIFY2(eventMap.contains("eventTypeId"), "Events.EventTriggered notification does not contain eventTypeId");
     QVERIFY2(EventTypeId(eventMap.value("eventTypeId").toString()) == mockEvent1EventTypeId, "Events.EventTriggered notification does not contain the correct eventTypeId");
 }

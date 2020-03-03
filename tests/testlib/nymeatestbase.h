@@ -121,6 +121,7 @@ protected:
         qDebug() << jsonDoc.toJson();
     }
 
+    void waitForDBSync();
     void restartServer();
     void clearLoggingDatabase();
 
@@ -129,14 +130,14 @@ private:
 
 protected:
     PluginId mockPluginId = PluginId("727a4a9a-c187-446f-aadf-f1b2220607d1");
-    VendorId guhVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
+    VendorId nymeaVendorId = VendorId("2062d64d-3232-433c-88bc-0d33c0ba2ba6");
 
     MockTcpServer *m_mockTcpServer;
     QUuid m_clientId;
     int m_commandId;
 
-    int m_mockDevice1Port;
-    int m_mockDevice2Port;
+    int m_mockThing1Port;
+    int m_mockThing2Port;
 
     ThingId m_mockThingId;
     ThingId m_mockThingAutoId;

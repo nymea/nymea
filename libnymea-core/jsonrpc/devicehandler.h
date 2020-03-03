@@ -190,7 +190,7 @@ private slots:
 
     void deviceAddedNotification(Thing *thing);
 
-    void deviceChangedNotification(Thing *device);
+    void deviceChangedNotification(Thing *thing);
 
     void deviceSettingChangedNotification(const ThingId &thingId, const ParamTypeId &paramTypeId, const QVariant &value);
 

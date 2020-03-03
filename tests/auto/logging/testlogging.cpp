@@ -47,13 +47,12 @@ private:
     inline void verifyLoggingError(const QVariant &response, Logging::LoggingError error = Logging::LoggingErrorNoError) {
         verifyError(response, "loggingError", enumValueName(error));
     }
-    inline void verifyDeviceError(const QVariant &response, Thing::ThingError error = Thing::ThingErrorNoError) {
-        verifyError(response, "deviceError", enumValueName(error));
+    inline void verifyThingError(const QVariant &response, Thing::ThingError error = Thing::ThingErrorNoError) {
+        verifyError(response, "thingError", enumValueName(error));
     }
-    inline void waitForDBSync() {
-        while (NymeaCore::instance()->logEngine()->jobsRunning()) {
-            qApp->processEvents();
-        }
+    // DEPRECTATED
+    inline void verifyDeviceError(const QVariant &response, Thing::ThingError error = Thing::ThingErrorNoError) {
+        verifyError(response, "deviceError", enumValueName(error).replace("Thing", "Device"));
     }
 
 private slots:
@@ -277,7 +276,7 @@ void TestLogging::eventLogs()
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     // trigger event in mock device
-    int port = device->paramValue(mockDeviceHttpportParamTypeId).toInt();
+    int port = device->paramValue(mockThingHttpportParamTypeId).toInt();
     QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(port).arg(mockEvent1EventTypeId.toString())));
     QNetworkReply *reply = nam.get(request);
 
@@ -343,7 +342,7 @@ void TestLogging::actionLog()
 
     QVariantMap params;
     params.insert("actionTypeId", mockWithParamsActionTypeId);
-    params.insert("deviceId", m_mockThingId);
+    params.insert("thingId", m_mockThingId);
     params.insert("params", actionParams);
 
     enableNotifications({"Logging"});
@@ -351,8 +350,8 @@ void TestLogging::actionLog()
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     // EXECUTE with params
-    QVariant response = injectAndWait("Actions.ExecuteAction", params);
-    verifyDeviceError(response);
+    QVariant response = injectAndWait("Integrations.ExecuteAction", params);
+    verifyThingError(response);
 
     // wait for the outgoing data
     // 3 packets: ExecuteAction reply,  LogDatabaseUpdated signal and LogEntryAdded signal
@@ -484,7 +483,7 @@ void TestLogging::actionLog()
 void TestLogging::deviceLogs()
 {
     QVariantMap params;
-    params.insert("deviceClassId", mockParentThingClassId);
+    params.insert("deviceClassId", parentMockThingClassId);
     params.insert("name", "Parent device");
 
     QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
@@ -526,12 +525,12 @@ void TestLogging::testDoubleValues()
     // Discover device
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
-    resultCountParam.insert("paramTypeId", mockDisplayPinDiscoveryResultCountParamTypeId);
+    resultCountParam.insert("paramTypeId", displayPinMockDiscoveryResultCountParamTypeId);
     resultCountParam.insert("value", 1);
     discoveryParams.append(resultCountParam);
 
     QVariantMap params;
-    params.insert("deviceClassId", mockDisplayPinThingClassId);
+    params.insert("deviceClassId", displayPinMockThingClassId);
     params.insert("discoveryParams", discoveryParams);
     QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
 
@@ -540,7 +539,7 @@ void TestLogging::testDoubleValues()
     // Pair device
     ThingDescriptorId descriptorId = ThingDescriptorId(response.toMap().value("params").toMap().value("deviceDescriptors").toList().first().toMap().value("id").toString());
     params.clear();
-    params.insert("deviceClassId", mockDisplayPinThingClassId);
+    params.insert("deviceClassId", displayPinMockThingClassId);
     params.insert("name", "Display pin mock device");
     params.insert("deviceDescriptorId", descriptorId.toString());
     response = injectAndWait("Devices.PairDevice", params);
@@ -566,12 +565,12 @@ void TestLogging::testDoubleValues()
     // Set the double state value and sniff for LogEntryAdded notification
     double value = 23.80;
     QVariantMap actionParam;
-    actionParam.insert("paramTypeId", mockDisplayPinDoubleActionDoubleParamTypeId.toString());
+    actionParam.insert("paramTypeId", displayPinMockDoubleActionDoubleParamTypeId.toString());
     actionParam.insert("value", value);
 
     params.clear(); response.clear();
     params.insert("deviceId", deviceId);
-    params.insert("actionTypeId", mockDisplayPinDoubleActionTypeId.toString());
+    params.insert("actionTypeId", displayPinMockDoubleActionTypeId.toString());
     params.insert("params", QVariantList() << actionParam);
 
     response = injectAndWait("Actions.ExecuteAction", params);
@@ -584,8 +583,8 @@ void TestLogging::testDoubleValues()
     foreach (const QVariant &logNotificationVariant, logNotificationsList) {
         QVariantMap logNotification = logNotificationVariant.toMap().value("params").toMap().value("logEntry").toMap();
 
-        if (logNotification.value("typeId").toString() == mockDisplayPinDoubleActionDoubleParamTypeId.toString()) {
-            if (logNotification.value("typeId").toString() == mockDisplayPinDoubleActionDoubleParamTypeId.toString()) {
+        if (logNotification.value("typeId").toString() == displayPinMockDoubleActionDoubleParamTypeId.toString()) {
+            if (logNotification.value("typeId").toString() == displayPinMockDoubleActionDoubleParamTypeId.toString()) {
 
                 // If state source
                 if (logNotification.value("source").toString() == enumValueName(Logging::LoggingSourceStates)) {
@@ -619,7 +618,7 @@ void TestLogging::testHouseKeeping()
     params.insert("name", "TestDeviceToBeRemoved");
     QVariantList deviceParams;
     QVariantMap httpParam;
-    httpParam.insert("paramTypeId", mockDeviceHttpportParamTypeId);
+    httpParam.insert("paramTypeId", mockThingHttpportParamTypeId);
     httpParam.insert("value", 6667);
     deviceParams.append(httpParam);
     params.insert("deviceParams", deviceParams);

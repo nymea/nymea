@@ -70,12 +70,9 @@ private slots:
     void enableDisableNotifications_legacy_data();
     void enableDisableNotifications_legacy();
 
-    void deviceAddedRemovedNotifications();
     void ruleAddedRemovedNotifications();
 
     void ruleActiveChangedNotifications();
-
-    void deviceChangedNotifications();
 
     void stateChangeEmitsNotifications();
 
@@ -213,7 +210,7 @@ void TestJSONRPC::testHandshakeLocale()
     QVariantMap supportedDevices = injectAndWait("Devices.GetSupportedDevices").toMap();
     bool found = false;
     foreach (const QVariant &dcMap, supportedDevices.value("params").toMap().value("deviceClasses").toList()) {
-        if (dcMap.toMap().value("id").toUuid() == mockDeviceAutoThingClassId) {
+        if (dcMap.toMap().value("id").toUuid() == autoMockThingClassId) {
             QCOMPARE(dcMap.toMap().value("displayName").toString(), QString("Mock Device (Auto created)"));
             found = true;
         }
@@ -229,7 +226,7 @@ void TestJSONRPC::testHandshakeLocale()
     supportedDevices = injectAndWait("Devices.GetSupportedDevices").toMap();
     found = false;
     foreach (const QVariant &dcMap, supportedDevices.value("params").toMap().value("deviceClasses").toList()) {
-        if (dcMap.toMap().value("id").toUuid() == mockDeviceAutoThingClassId) {
+        if (dcMap.toMap().value("id").toUuid() == autoMockThingClassId) {
             QCOMPARE(dcMap.toMap().value("displayName").toString(), QString("Mock Gerät (Automatisch erzeugt)"));
             found = true;
         }
@@ -677,7 +674,7 @@ void TestJSONRPC::enableDisableNotifications_legacy()
 
     QStringList expectedNamespaces;
     if (enabled == "true") {
-        expectedNamespaces << "Actions" << "NetworkManager" << "Devices" << "System" << "Rules" << "States" << "Logging" << "Tags" << "JSONRPC" << "Configuration" << "Events" << "Scripts" << "Users";
+        expectedNamespaces << "Actions" << "NetworkManager" << "Devices" << "Integrations" << "System" << "Rules" << "States" << "Logging" << "Tags" << "JSONRPC" << "Configuration" << "Events" << "Scripts" << "Users";
     }
     std::sort(expectedNamespaces.begin(), expectedNamespaces.end());
 
@@ -690,51 +687,6 @@ void TestJSONRPC::enableDisableNotifications_legacy()
     QCOMPARE(expectedNamespaces, actualNamespaces);
 }
 
-void TestJSONRPC::deviceAddedRemovedNotifications()
-{
-    enableNotifications({"Devices"});
-
-    // Setup connection to mock client
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
-
-    // add device and wait for notification
-    QVariantList deviceParams;
-    QVariantMap httpportParam;
-    httpportParam.insert("paramTypeId", mockDeviceHttpportParamTypeId);
-    httpportParam.insert("value", 8765);
-    deviceParams.append(httpportParam);
-
-    QVariantMap params; clientSpy.clear();
-    params.insert("ddeviceClassId", mockThingClassId);
-    params.insert("name", "Mock device");
-    params.insert("deviceParams", deviceParams);
-    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
-    if (clientSpy.count() == 0) clientSpy.wait();
-    verifyDeviceError(response);
-    QVariantMap notificationDeviceMap = checkNotification(clientSpy, "Devices.DeviceAdded").toMap().value("params").toMap().value("device").toMap();
-
-    ThingId deviceId = ThingId(response.toMap().value("params").toMap().value("deviceId").toString());
-    QVERIFY(!deviceId.isNull());
-
-    // check the DeviceAdded notification
-    QCOMPARE(notificationDeviceMap.value("deviceClassId").toString(), mockThingClassId.toString());
-    QCOMPARE(notificationDeviceMap.value("id").toString(), deviceId.toString());
-    foreach (const QVariant &param, notificationDeviceMap.value("params").toList()) {
-        if (param.toMap().value("name").toString() == "httpport") {
-            QCOMPARE(param.toMap().value("value").toInt(), httpportParam.value("value").toInt());
-        }
-    }
-
-    // now remove the device and check the device removed notification
-    params.clear(); response.clear(); clientSpy.clear();
-    params.insert("deviceId", deviceId);
-    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-    if (clientSpy.count() == 0) clientSpy.wait();
-    verifyDeviceError(response);
-    checkNotification(clientSpy, "Devices.DeviceRemoved");
-
-    QCOMPARE(disableNotifications(), true);
-}
 
 void TestJSONRPC::ruleAddedRemovedNotifications()
 {
@@ -747,9 +699,14 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     // StateDescriptor
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
-    stateDescriptor.insert("deviceId", m_mockThingId);
+    stateDescriptor.insert("thingId", m_mockThingId);
+    stateDescriptor.insert("deviceId", m_mockThingId); // DEPRECATED
     stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorLess));
     stateDescriptor.insert("value", "20");
+    // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
+    // .toString(QUuid::WithoutBraces) has only been added in 5.11 so we can't use that either...
+    // Only hack I can come up with right now is to convert it to a Json and back to use the implicit cast
+    stateDescriptor = QJsonDocument::fromVariant(stateDescriptor).toVariant().toMap();
 
     QVariantMap stateEvaluator;
     stateEvaluator.insert("stateDescriptor", stateDescriptor);
@@ -757,17 +714,26 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     // RuleAction
     QVariantMap actionNoParams;
     actionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    actionNoParams.insert("deviceId", m_mockThingId);
+    actionNoParams.insert("thingId", m_mockThingId);
+    actionNoParams.insert("deviceId", m_mockThingId); // DEPRECATED
+    // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
+    // .toString(QUuid::WithoutBraces) has only been added in 5.11 so we can't use that either...
+    // Only hack I can come up with right now is to convert it to a Json and back to use the implicit cast
+    QVariantList actions = QVariantList() << QJsonDocument::fromVariant(actionNoParams).toVariant().toMap();
 
     // EventDescriptor
     QVariantMap eventDescriptor;
     eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
-    eventDescriptor.insert("deviceId", m_mockThingId);
-    QVariantList eventDescriptors = QVariantList() << eventDescriptor;
+    eventDescriptor.insert("thingId", m_mockThingId);
+    eventDescriptor.insert("deviceId", m_mockThingId); // DEPRECATED
+    // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
+    // .toString(QUuid::WithoutBraces) has only been added in 5.11 so we can't use that either...
+    // Only hack I can come up with right now is to convert it to a Json and back to use the implicit cast
+    QVariantList eventDescriptors = QVariantList() << QJsonDocument::fromVariant(eventDescriptor).toVariant().toMap();
 
     QVariantMap params;
     params.insert("name", "Test Rule notifications");
-    params.insert("actions", QVariantList() << actionNoParams);
+    params.insert("actions", actions);
     params.insert("eventDescriptors", eventDescriptors);
     params.insert("stateEvaluator", stateEvaluator);
 
@@ -781,9 +747,17 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
 
     QCOMPARE(notificationRuleMap.value("enabled").toBool(), true);
     QCOMPARE(notificationRuleMap.value("name").toString(), params.value("name").toString());
-    QCOMPARE(notificationRuleMap.value("id").toString(), ruleId.toString());
-    QCOMPARE(notificationRuleMap.value("actions").toList(), QVariantList() << actionNoParams);
-    QCOMPARE(notificationRuleMap.value("stateEvaluator").toMap().value("stateDescriptor").toMap(), stateDescriptor);
+    QCOMPARE(notificationRuleMap.value("id").toUuid(), QUuid(ruleId));
+    QVERIFY2(notificationRuleMap.value("actions").toList() == actions,
+             QString("actions not matching.\nExpected: %1\nGot %2")
+             .arg(QString(QJsonDocument::fromVariant(actions).toJson()))
+             .arg(QString(QJsonDocument::fromVariant(notificationRuleMap.value("actions").toList()).toJson()))
+             .toUtf8());
+    QVERIFY2(notificationRuleMap.value("stateEvaluator").toMap().value("stateDescriptor").toMap() == stateDescriptor,
+             QString("stateDescriptor not matching.\nExpected: %1\nGot %2")
+             .arg(QString(QJsonDocument::fromVariant(stateDescriptor).toJson()))
+             .arg(QString(QJsonDocument::fromVariant(notificationRuleMap.value("stateEvaluator").toMap().value("stateDescriptor").toMap()).toJson()))
+             .toUtf8());
     QVERIFY2(notificationRuleMap.value("eventDescriptors").toList() == eventDescriptors,
              QString("eventDescriptors not matching.\nExpected: %1\nGot %2")
              .arg(QString(QJsonDocument::fromVariant(eventDescriptors).toJson()))
@@ -814,9 +788,14 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     // StateDescriptor
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
-    stateDescriptor.insert("deviceId", m_mockThingId);
+    stateDescriptor.insert("thingId", m_mockThingId);
+    stateDescriptor.insert("deviceId", m_mockThingId); // DEPRECATED
     stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptor.insert("value", "20");
+    // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
+    // .toString(QUuid::WithoutBraces) has only been added in 5.11 so we can't use that either...
+    // Only hack I can come up with right now is to convert it to a Json and back to use the implicit cast
+    stateDescriptor = QJsonDocument::fromVariant(stateDescriptor).toVariant().toMap();
 
     QVariantMap stateEvaluator;
     stateEvaluator.insert("stateDescriptor", stateDescriptor);
@@ -824,11 +803,16 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     // RuleAction
     QVariantMap actionNoParams;
     actionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
-    actionNoParams.insert("deviceId", m_mockThingId);
+    actionNoParams.insert("thingId", m_mockThingId);
+    actionNoParams.insert("deviceId", m_mockThingId); // DEPRECATED
+    // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
+    // .toString(QUuid::WithoutBraces) has only been added in 5.11 so we can't use that either...
+    // Only hack I can come up with right now is to convert it to a Json and back to use the implicit cast
+    QVariantList actions = QVariantList() << QJsonDocument::fromVariant(actionNoParams).toVariant().toMap();
 
     params.clear(); response.clear();
     params.insert("name", "Test Rule notifications");
-    params.insert("actions", QVariantList() << actionNoParams);
+    params.insert("actions", actions);
     params.insert("stateEvaluator", stateEvaluator);
 
     // Setup connection to mock client
@@ -844,8 +828,8 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QVERIFY(!ruleId.isNull());
     QCOMPARE(notificationRuleMap.value("enabled").toBool(), true);
     QCOMPARE(notificationRuleMap.value("name").toString(), params.value("name").toString());
-    QCOMPARE(notificationRuleMap.value("id").toString(), ruleId.toString());
-    QCOMPARE(notificationRuleMap.value("actions").toList(), QVariantList() << actionNoParams);
+    QCOMPARE(notificationRuleMap.value("id").toUuid(), QUuid(ruleId));
+    QCOMPARE(notificationRuleMap.value("actions").toList(), actions);
     QCOMPARE(notificationRuleMap.value("stateEvaluator").toMap().value("stateDescriptor").toMap(), stateDescriptor);
     QCOMPARE(notificationRuleMap.value("exitActions").toList(), QVariantList());
 
@@ -855,7 +839,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
 
     // state state to 20
     qDebug() << "setting mock int state to 20";
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(20)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(20)));
     QNetworkReply *reply = nam.get(request);
     connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
 
@@ -867,6 +851,8 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QCOMPARE(notificationVariant.toMap().value("params").toMap().value("active").toBool(), true);
 
     clientSpy.wait();
+
+    waitForDBSync();
 
     // Make sure the logg notification contains all the stuff we expect
     QVariantList logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
@@ -886,7 +872,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
 
     // set the rule inactive
     qDebug() << "setting mock int state to 42";
-    QNetworkRequest request2(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(42)));
+    QNetworkRequest request2(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(42)));
     QNetworkReply *reply2 = nam.get(request2);
     connect(reply2, SIGNAL(finished()), reply2, SLOT(deleteLater()));
 
@@ -907,11 +893,12 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
     QVERIFY2(!logEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
     found = false;
-    foreach (const QVariant &loggEntryAddedVariant, logEntryAddedVariants) {
-        if (loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid() == mockIntStateTypeId) {
+    foreach (const QVariant &logEntryAddedVariant, logEntryAddedVariants) {
+        qCDebug(dcTests()) << "Checking log entry" << mockIntStateTypeId << qUtf8Printable(QJsonDocument::fromVariant(logEntryAddedVariant).toJson());
+        if (logEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid() == mockIntStateTypeId) {
             found = true;
-            QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("source").toString(), QString("LoggingSourceStates"));
-            QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("value").toInt(), 42);
+            QCOMPARE(logEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("source").toString(), QString("LoggingSourceStates"));
+            QCOMPARE(logEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("value").toInt(), 42);
             break;
         }
     }
@@ -937,91 +924,6 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toUuid().toString(), ruleId.toString());
 }
 
-void TestJSONRPC::deviceChangedNotifications()
-{
-    // enable notificartions
-    QVariantMap params;
-    params.insert("enabled", true);
-    QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", params);
-    QCOMPARE(response.toMap().value("params").toMap().value("enabled").toBool(), true);
-
-    // Setup connection to mock client
-    QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
-
-    // ADD
-    // add device and wait for notification
-    QVariantList deviceParams;
-    QVariantMap httpportParam;
-    httpportParam.insert("paramTypeId", mockDeviceHttpportParamTypeId);
-    httpportParam.insert("value", 23234);
-    deviceParams.append(httpportParam);
-
-    params.clear(); response.clear(); clientSpy.clear();
-    params.insert("deviceClassId", mockThingClassId);
-    params.insert("name", "Mock");
-    params.insert("deviceParams", deviceParams);
-    response = injectAndWait("Devices.AddConfiguredDevice", params);
-    ThingId deviceId = ThingId(response.toMap().value("params").toMap().value("deviceId").toString());
-    QVERIFY(!deviceId.isNull());
-    if (clientSpy.count() == 0) clientSpy.wait();
-    verifyDeviceError(response);
-    QVariantMap notificationDeviceMap = checkNotification(clientSpy, "Devices.DeviceAdded").toMap().value("params").toMap().value("device").toMap();
-
-    QCOMPARE(notificationDeviceMap.value("deviceClassId").toString(), mockThingClassId.toString());
-    QCOMPARE(notificationDeviceMap.value("id").toString(), deviceId.toString());
-    foreach (const QVariant &param, notificationDeviceMap.value("params").toList()) {
-        if (param.toMap().value("name").toString() == "httpport") {
-            QCOMPARE(param.toMap().value("value").toInt(), httpportParam.value("value").toInt());
-        }
-    }
-
-    // RECONFIGURE
-    // now reconfigure the device and check the deviceChanged notification
-    QVariantList newDeviceParams;
-    QVariantMap newHttpportParam;
-    newHttpportParam.insert("paramTypeId", mockDeviceHttpportParamTypeId);
-    newHttpportParam.insert("value", 45473);
-    newDeviceParams.append(newHttpportParam);
-
-    params.clear(); response.clear(); clientSpy.clear();
-    params.insert("deviceId", deviceId);
-    params.insert("deviceParams", newDeviceParams);
-    response = injectAndWait("Devices.ReconfigureDevice", params);
-    if (clientSpy.count() == 0) clientSpy.wait();
-    verifyDeviceError(response);
-    QVariantMap reconfigureDeviceNotificationMap = checkNotification(clientSpy, "Devices.DeviceChanged").toMap().value("params").toMap().value("device").toMap();
-    QCOMPARE(reconfigureDeviceNotificationMap.value("deviceClassId").toString(), mockThingClassId.toString());
-    QCOMPARE(reconfigureDeviceNotificationMap.value("id").toString(), deviceId.toString());
-    foreach (const QVariant &param, reconfigureDeviceNotificationMap.value("params").toList()) {
-        if (param.toMap().value("name").toString() == "httpport") {
-            QCOMPARE(param.toMap().value("value").toInt(), newHttpportParam.value("value").toInt());
-        }
-    }
-
-    // EDIT device name
-    QString deviceName = "Test device 1234";
-    params.clear(); response.clear(); clientSpy.clear();
-    params.insert("deviceId", deviceId);
-    params.insert("name", deviceName);
-    response = injectAndWait("Devices.EditDevice", params);
-    if (clientSpy.count() == 0) clientSpy.wait();
-    verifyDeviceError(response);
-    QVariantMap editDeviceNotificationMap = checkNotification(clientSpy, "Devices.DeviceChanged").toMap().value("params").toMap().value("device").toMap();
-    QCOMPARE(editDeviceNotificationMap.value("deviceClassId").toString(), mockThingClassId.toString());
-    QCOMPARE(editDeviceNotificationMap.value("id").toString(), deviceId.toString());
-    QCOMPARE(editDeviceNotificationMap.value("name").toString(), deviceName);
-
-    // REMOVE
-    // now remove the device and check the device removed notification
-    params.clear(); response.clear(); clientSpy.clear();
-    params.insert("deviceId", deviceId);
-    response = injectAndWait("Devices.RemoveConfiguredDevice", params);
-    if (clientSpy.count() == 0) clientSpy.wait();
-    verifyDeviceError(response);
-    checkNotification(clientSpy, "Devices.DeviceRemoved");
-    checkNotification(clientSpy, "Logging.LogDatabaseUpdated");
-}
-
 void TestJSONRPC::stateChangeEmitsNotifications()
 {
     enableNotifications({"Devices", "States", "Logging", "Events"});
@@ -1034,7 +936,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     // trigger state change in mock device
     int newVal = 38;
     QUuid stateTypeId("80baec19-54de-4948-ac46-31eabfaceb83");
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(stateTypeId.toString()).arg(QString::number(newVal))));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(stateTypeId.toString()).arg(QString::number(newVal))));
     QNetworkReply *reply = nam.get(request);
     connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
     QSignalSpy replySpy(reply, SIGNAL(finished()));
@@ -1098,7 +1000,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     // Fire the a statechange once again
     clientSpy.clear();
     newVal = 42;
-    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(stateTypeId.toString()).arg(newVal)));
+    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(stateTypeId.toString()).arg(newVal)));
     reply = nam.get(request);
     connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
 
@@ -1129,7 +1031,7 @@ void TestJSONRPC::pluginConfigChangeEmitsNotification()
     params.insert("pluginId", mockPluginId);
     QVariantList pluginParams;
     QVariantMap param1;
-    param1.insert("paramTypeId",  mockDevicePluginConfigParamIntParamTypeId);
+    param1.insert("paramTypeId",  mockPluginConfigParamIntParamTypeId);
     param1.insert("value", 42);
     pluginParams.append(param1);
     params.insert("configuration", pluginParams);

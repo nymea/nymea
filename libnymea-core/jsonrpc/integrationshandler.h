@@ -40,36 +40,35 @@ class IntegrationsHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit IntegrationsHandler(ThingManager *deviceManager, QObject *parent = nullptr);
+    explicit IntegrationsHandler(ThingManager *thingManager, QObject *parent = nullptr);
 
     QString name() const override;
 
-    Q_INVOKABLE JsonReply *GetSupportedVendors(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *GetSupportedDevices(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *GetDiscoveredDevices(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *GetPlugins(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetVendors(const QVariantMap &params, const JsonContext &context) const;
+    Q_INVOKABLE JsonReply *GetThingClasses(const QVariantMap &params, const JsonContext &context) const;
+    Q_INVOKABLE JsonReply *DiscoverThings(const QVariantMap &params, const JsonContext &context) const;
+    Q_INVOKABLE JsonReply *GetPlugins(const QVariantMap &params, const JsonContext &context) const;
     Q_INVOKABLE JsonReply *GetPluginConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetPluginConfiguration(const QVariantMap &params);
-
-    Q_INVOKABLE JsonReply *AddConfiguredDevice(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *PairDevice(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *AddThing(const QVariantMap &params, const JsonContext &context);
+    Q_INVOKABLE JsonReply *PairThing(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *ConfirmPairing(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *GetConfiguredDevices(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *ReconfigureDevice(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *EditDevice(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *RemoveConfiguredDevice(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *SetDeviceSettings(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetThings(const QVariantMap &params, const JsonContext &context) const;
+    Q_INVOKABLE JsonReply *ReconfigureThing(const QVariantMap &params, const JsonContext &context);
+    Q_INVOKABLE JsonReply *EditThing(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *RemoveThing(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *SetThingSettings(const QVariantMap &params);
 
-    Q_INVOKABLE JsonReply *GetEventTypes(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *GetActionTypes(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *GetStateTypes(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *GetEventTypes(const QVariantMap &params, const JsonContext &context) const;
+    Q_INVOKABLE JsonReply *GetActionTypes(const QVariantMap &params, const JsonContext &context) const;
+    Q_INVOKABLE JsonReply *GetStateTypes(const QVariantMap &params, const JsonContext &context) const;
     Q_INVOKABLE JsonReply *GetStateValue(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetStateValues(const QVariantMap &params) const;
 
-    Q_INVOKABLE JsonReply *BrowseDevice(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *GetBrowserItem(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *BrowseThing(const QVariantMap &params, const JsonContext &context) const;
+    Q_INVOKABLE JsonReply *GetBrowserItem(const QVariantMap &params, const JsonContext &context) const;
 
-    Q_INVOKABLE JsonReply *ExecuteAction(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *ExecuteAction(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *ExecuteBrowserItem(const QVariantMap &params);
     Q_INVOKABLE JsonReply *ExecuteBrowserItemAction(const QVariantMap &params);
 
@@ -78,10 +77,10 @@ public:
 signals:
     void PluginConfigurationChanged(const QVariantMap &params);
     void StateChanged(const QVariantMap &params);
-    void DeviceRemoved(const QVariantMap &params);
-    void DeviceAdded(const QVariantMap &params);
-    void DeviceChanged(const QVariantMap &params);
-    void DeviceSettingChanged(const QVariantMap &params);
+    void ThingRemoved(const QVariantMap &params);
+    void ThingAdded(const QVariantMap &params);
+    void ThingChanged(const QVariantMap &params);
+    void ThingSettingChanged(const QVariantMap &params);
     void EventTriggered(const QVariantMap &params);
 
 private slots:
@@ -91,14 +90,14 @@ private slots:
 
     void thingRemovedNotification(const ThingId &thingId);
 
-    void deviceAddedNotification(Thing *device);
+    void thingAddedNotification(Thing *thing);
 
-    void deviceChangedNotification(Thing *device);
+    void thingChangedNotification(Thing *thing);
 
-    void deviceSettingChangedNotification(const ThingId &thingId, const ParamTypeId &paramTypeId, const QVariant &value);
+    void thingSettingChangedNotification(const ThingId &thingId, const ParamTypeId &paramTypeId, const QVariant &value);
 
 private:
-    ThingManager *m_deviceManager = nullptr;
+    ThingManager *m_thingManager = nullptr;
     QVariantMap statusToReply(Thing::ThingError status) const;
 };
 

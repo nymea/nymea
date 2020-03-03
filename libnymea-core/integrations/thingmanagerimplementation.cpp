@@ -1062,10 +1062,10 @@ void ThingManagerImplementation::loadPlugins()
         qCDebug(dcThingManager) << "Loading plugins from:" << dir.absolutePath();
         foreach (const QString &entry, dir.entryList()) {
             QFileInfo fi;
-            if (entry.startsWith("libnymea_deviceplugin") && entry.endsWith(".so")) {
+            if (entry.startsWith("libnymea_integrationplugin") && entry.endsWith(".so")) {
                 fi.setFile(path + "/" + entry);
             } else {
-                fi.setFile(path + "/" + entry + "/libnymea_deviceplugin" + entry + ".so");
+                fi.setFile(path + "/" + entry + "/libnymea_integrationplugin" + entry + ".so");
             }
 
             if (!fi.exists())

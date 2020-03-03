@@ -134,7 +134,7 @@ ThingId ThingDescriptor::parentId() const
 }
 
 /*! Sets the parent id for things created from this DeviceDescriptor. */
-void ThingDescriptor::setParentDeviceId(const ThingId &parentId)
+void ThingDescriptor::setParentId(const ThingId &parentId)
 {
     m_parentId = parentId;
 }

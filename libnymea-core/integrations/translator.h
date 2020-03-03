@@ -42,7 +42,7 @@ class ThingManagerImplementation;
 class Translator
 {
 public:
-    Translator(ThingManagerImplementation *deviceManager);
+    Translator(ThingManagerImplementation *thingManager);
     ~Translator();
 
     QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale);
@@ -51,7 +51,7 @@ private:
     void loadTranslator(IntegrationPlugin *plugin, const QLocale &locale);
 
 private:
-    ThingManagerImplementation *m_deviceManager = nullptr;
+    ThingManagerImplementation *m_thingManager = nullptr;
 
     struct TranslatorContext {
         PluginId pluginId;

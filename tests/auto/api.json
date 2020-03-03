@@ -1,4 +1,4 @@
-4.2
+5.0
 {
     "enums": {
         "BasicType": [
@@ -195,7 +195,7 @@
             "RuleErrorNoError",
             "RuleErrorInvalidRuleId",
             "RuleErrorRuleNotFound",
-            "RuleErrorDeviceNotFound",
+            "RuleErrorThingNotFound",
             "RuleErrorEventTypeNotFound",
             "RuleErrorStateTypeNotFound",
             "RuleErrorActionTypeNotFound",
@@ -238,9 +238,44 @@
         ],
         "TagError": [
             "TagErrorNoError",
-            "TagErrorDeviceNotFound",
+            "TagErrorThingNotFound",
             "TagErrorRuleNotFound",
             "TagErrorTagNotFound"
+        ],
+        "ThingError": [
+            "ThingErrorNoError",
+            "ThingErrorPluginNotFound",
+            "ThingErrorVendorNotFound",
+            "ThingErrorThingNotFound",
+            "ThingErrorThingClassNotFound",
+            "ThingErrorActionTypeNotFound",
+            "ThingErrorStateTypeNotFound",
+            "ThingErrorEventTypeNotFound",
+            "ThingErrorThingDescriptorNotFound",
+            "ThingErrorMissingParameter",
+            "ThingErrorInvalidParameter",
+            "ThingErrorSetupFailed",
+            "ThingErrorDuplicateUuid",
+            "ThingErrorCreationMethodNotSupported",
+            "ThingErrorSetupMethodNotSupported",
+            "ThingErrorHardwareNotAvailable",
+            "ThingErrorHardwareFailure",
+            "ThingErrorAuthenticationFailure",
+            "ThingErrorThingInUse",
+            "ThingErrorThingInRule",
+            "ThingErrorThingIsChild",
+            "ThingErrorPairingTransactionIdNotFound",
+            "ThingErrorParameterNotWritable",
+            "ThingErrorItemNotFound",
+            "ThingErrorItemNotExecutable",
+            "ThingErrorUnsupportedFeature",
+            "ThingErrorTimeout"
+        ],
+        "ThingSetupStatus": [
+            "ThingSetupStatusNone",
+            "ThingSetupStatusInProgress",
+            "ThingSetupStatusComplete",
+            "ThingSetupStatusFailed"
         ],
         "Unit": [
             "UnitNone",
@@ -324,7 +359,7 @@
     },
     "methods": {
         "Actions.ExecuteAction": {
-            "deprecated": "Please use Devices.ExecuteAction instead.",
+            "deprecated": "Please use Integrations.ExecuteAction instead.",
             "description": "Execute a single action.",
             "params": {
                 "actionTypeId": "Uuid",
@@ -337,7 +372,7 @@
             }
         },
         "Actions.ExecuteBrowserItem": {
-            "deprecated": "Please use Devices.ExecuteBrowserItem instead.",
+            "deprecated": "Please use Integrations.ExecuteBrowserItem instead.",
             "description": "Execute the item identified by itemId on the given device.",
             "params": {
                 "deviceId": "Uuid",
@@ -348,7 +383,7 @@
             }
         },
         "Actions.ExecuteBrowserItemAction": {
-            "deprecated": "Please use Devices.ExecuteBrowserItem instead.",
+            "deprecated": "Please use Integrations.ExecuteBrowserItem instead.",
             "description": "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.",
             "params": {
                 "actionTypeId": "Uuid",
@@ -361,7 +396,7 @@
             }
         },
         "Actions.GetActionType": {
-            "deprecated": "Please use the Devices namespace instead.",
+            "deprecated": "Please use the Integrations namespace instead.",
             "description": "Get the ActionType for the given ActionTypeId.",
             "params": {
                 "actionTypeId": "Uuid"
@@ -856,6 +891,276 @@
                 "o:eventType": "$ref:EventType"
             }
         },
+        "Integrations.AddThing": {
+            "description": "Add a new thing to the system. Only things with a setupMethod of SetupMethodJustAdd can be added this way. For things with a setupMethod different than SetupMethodJustAdd, use PairThing. Things with CreateMethodJustAdd require all parameters to be supplied here. Things with CreateMethodDiscovery require the use of a thingDescriptorId. For discovered things, params are not required and will be taken from the ThingDescriptor, however, they may be overridden by supplying thingParams.",
+            "params": {
+                "name": "String",
+                "o:thingDescriptorId": "Uuid",
+                "o:thingParams": "$ref:ParamList",
+                "thingClassId": "Uuid"
+            },
+            "returns": {
+                "o:displayMessage": "String",
+                "o:thingId": "Uuid",
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.BrowseThing": {
+            "description": "Browse a thing. If a ThingClass indicates a thing is browsable, this method will return the BrowserItems. If no parameter besides the thingId is used, the root node of this thingwill be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.",
+            "params": {
+                "o:itemId": "String",
+                "thingId": "Uuid"
+            },
+            "returns": {
+                "items": [
+                    "$ref:BrowserItem"
+                ],
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.ConfirmPairing": {
+            "description": "Confirm an ongoing pairing. For SetupMethodUserAndPassword, provide the username in the \"username\" field and the password in the \"secret\" field. For SetupMethodEnterPin and provide the PIN in the \"secret\" field. In case of SetupMethodOAuth, the previously opened web view will eventually be redirected to http://128.0.0.1:8888 and the OAuth code as query parameters to this url. Provide the entire unmodified URL in the secret field.",
+            "params": {
+                "o:secret": "String",
+                "o:username": "String",
+                "pairingTransactionId": "Uuid"
+            },
+            "returns": {
+                "o:displayMessage": "String",
+                "o:thingId": "Uuid",
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.DiscoverThings": {
+            "description": "Performs a thing discovery for things of the given thingClassId and returns the results. This function may take a while to return. Note that this method will include all the found things, that is, including things that may already have been added. Those things will have thingId set to the id of the already added thing. Such results may be used to reconfigure existing things and might be filtered in cases where only unknown things are of interest.",
+            "params": {
+                "o:discoveryParams": "$ref:ParamList",
+                "thingClassId": "Uuid"
+            },
+            "returns": {
+                "o:displayMessage": "String",
+                "o:thingDescriptors": "$ref:ThingDescriptors",
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.EditThing": {
+            "description": "Edit the name of a thing.",
+            "params": {
+                "name": "String",
+                "thingId": "Uuid"
+            },
+            "returns": {
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.ExecuteAction": {
+            "description": "Execute a single action.",
+            "params": {
+                "actionTypeId": "Uuid",
+                "o:params": "$ref:ParamList",
+                "thingId": "Uuid"
+            },
+            "returns": {
+                "o:displayMessage": "String",
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.ExecuteBrowserItem": {
+            "description": "Execute the item identified by itemId on the given thing.",
+            "params": {
+                "itemId": "String",
+                "thingId": "Uuid"
+            },
+            "returns": {
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.ExecuteBrowserItemAction": {
+            "description": "Execute the action for the browser item identified by actionTypeId and the itemId on the given thing.",
+            "params": {
+                "actionTypeId": "Uuid",
+                "itemId": "String",
+                "o:params": "$ref:ParamList",
+                "thingId": "Uuid"
+            },
+            "returns": {
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.GetActionTypes": {
+            "description": "Get action types for a specified thingClassId.",
+            "params": {
+                "thingClassId": "Uuid"
+            },
+            "returns": {
+                "actionTypes": "$ref:ActionTypes"
+            }
+        },
+        "Integrations.GetBrowserItem": {
+            "description": "Get a single item from the browser. This won't give any more info on an item than a regular BrowseThing call, but it allows to fetch details of an item if only the ID is known.",
+            "params": {
+                "o:itemId": "String",
+                "thingId": "Uuid"
+            },
+            "returns": {
+                "o:item": "$ref:BrowserItem",
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.GetEventTypes": {
+            "description": "Get event types for a specified thingClassId.",
+            "params": {
+                "thingClassId": "Uuid"
+            },
+            "returns": {
+                "eventTypes": "$ref:EventTypes"
+            }
+        },
+        "Integrations.GetPluginConfiguration": {
+            "description": "Get a plugin's params.",
+            "params": {
+                "pluginId": "Uuid"
+            },
+            "returns": {
+                "o:configuration": "$ref:ParamList",
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.GetPlugins": {
+            "description": "Returns a list of loaded plugins.",
+            "params": {
+            },
+            "returns": {
+                "plugins": "$ref:IntegrationPlugins"
+            }
+        },
+        "Integrations.GetStateTypes": {
+            "description": "Get state types for a specified thingClassId.",
+            "params": {
+                "thingClassId": "Uuid"
+            },
+            "returns": {
+                "stateTypes": "$ref:StateTypes"
+            }
+        },
+        "Integrations.GetStateValue": {
+            "description": "Get the value of the given thing and the given stateType",
+            "params": {
+                "stateTypeId": "Uuid",
+                "thingId": "Uuid"
+            },
+            "returns": {
+                "o:value": "Variant",
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.GetStateValues": {
+            "description": "Get all the state values of the given thing.",
+            "params": {
+                "thingId": "Uuid"
+            },
+            "returns": {
+                "o:values": "$ref:States",
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.GetThingClasses": {
+            "description": "Returns a list of supported thing classes, optionally filtered by vendorId.",
+            "params": {
+                "o:vendorId": "Uuid"
+            },
+            "returns": {
+                "o:thingClasses": "$ref:ThingClasses",
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.GetThings": {
+            "description": "Returns a list of configured things, optionally filtered by thingId.",
+            "params": {
+                "o:thingId": "Uuid"
+            },
+            "returns": {
+                "o:things": "$ref:Things",
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.GetVendors": {
+            "description": "Returns a list of supported Vendors.",
+            "params": {
+            },
+            "returns": {
+                "vendors": "$ref:Vendors"
+            }
+        },
+        "Integrations.PairThing": {
+            "description": "Pair a new thing. Use this to set up or reconfigure things for ThingClasses with a setupMethod different than SetupMethodJustAdd. Depending on the CreateMethod and whether a new thing is set up or an existing one is reconfigured, different parameters are required:\nCreateMethodJustAdd takes the thingClassId and the parameters you want to have with that thing.\nCreateMethodDiscovery requires the use of a thingDescriptorId, previously obtained with DiscoverThings. Optionally, parameters can be overridden with the give thingParams.\nIf an existing thing should be reconfigured, the thingId of said thing should be given additionally.\nIf success is true, the return values will contain a pairingTransactionId, a displayMessage and the setupMethod. Depending on the setupMethod, the application should present the use an appropriate login mask, that is, For SetupMethodDisplayPin the user should enter a pin that is displayed on the device or online service, for SetupMethodEnterPin the application should present the given PIN so the user can enter it on the device or online service. For SetupMethodPushButton, the displayMessage shall be presented to the user as informational hints to press a button on the device. For SetupMethodUserAndPassword a login mask for a user and password login should be presented to the user. In case of SetupMethodOAuth, an OAuth URL will be returned which shall be opened in a web view to allow the user logging in.\nOnce the login procedure has completed, the application shall proceed with ConfirmPairing, providing the results of the pairing procedure.",
+            "params": {
+                "o:name": "String",
+                "o:thingClassId": "Uuid",
+                "o:thingDescriptorId": "Uuid",
+                "o:thingId": "Uuid",
+                "o:thingParams": "$ref:ParamList"
+            },
+            "returns": {
+                "o:displayMessage": "String",
+                "o:oAuthUrl": "String",
+                "o:pairingTransactionId": "Uuid",
+                "o:pin": "String",
+                "o:setupMethod": "$ref:SetupMethod",
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.ReconfigureThing": {
+            "description": "Reconfigure a thing. This comes down to removing and recreating a thing with new parameters but keeping its thing id the same (and with that keeping rules, tags etc). For things with create method CreateMethodDiscovery, a discovery (DiscoverThings) shall be performed first and this method is to be called with a thingDescriptorId of the re-discovered thing instead of the thingId directly. Thing parameters will be taken from the discovery, but can be overridden individually here by providing them in the thingParams parameter. Only writable parameters can be changed.",
+            "params": {
+                "o:thingDescriptorId": "Uuid",
+                "o:thingId": "Uuid",
+                "o:thingParams": "$ref:ParamList"
+            },
+            "returns": {
+                "o:displayMessage": "String",
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.RemoveThing": {
+            "description": "Remove a thing from the system.",
+            "params": {
+                "o:removePolicy": "$ref:RemovePolicy",
+                "o:removePolicyList": [
+                    {
+                        "policy": "$ref:RemovePolicy",
+                        "ruleId": "Uuid"
+                    }
+                ],
+                "thingId": "Uuid"
+            },
+            "returns": {
+                "o:ruleIds": [
+                    "Uuid"
+                ],
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.SetPluginConfiguration": {
+            "description": "Set a plugin's params.",
+            "params": {
+                "configuration": "$ref:ParamList",
+                "pluginId": "Uuid"
+            },
+            "returns": {
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.SetThingSettings": {
+            "description": "Change the settings of a thing.",
+            "params": {
+                "settings": "$ref:ParamList",
+                "thingId": "Uuid"
+            },
+            "returns": {
+                "thingError": "$ref:ThingError"
+            }
+        },
         "JSONRPC.Authenticate": {
             "deprecated": "Use Users.Authenticate instead.",
             "description": "Authenticate a client to the api via user & password challenge. Provide a device name which allows the user to identify the client and revoke the token in case the device is lost or stolen. This will return a new token to be used to authorize a client at the API.",
@@ -881,7 +1186,7 @@
             }
         },
         "JSONRPC.Hello": {
-            "description": "Initiates a connection. Use this method to perform an initial handshake of the connection. Optionally, a parameter \"locale\" is can be passed to set up the used locale for this connection. Strings such as DeviceClass displayNames etc will be localized to this locale. If this parameter is omitted, the default system locale (depending on the configuration) is used. The reply of this method contains information about this core instance such as version information, uuid and its name. The locale valueindicates the locale used for this connection. Note: This method can be called multiple times. The locale used in the last call for this connection will be used. Other values, like initialSetupRequired might change if the setup has been performed in the meantime.",
+            "description": "Initiates a connection. Use this method to perform an initial handshake of the connection. Optionally, a parameter \"locale\" is can be passed to set up the used locale for this connection. Strings such as ThingClass displayNames etc will be localized to this locale. If this parameter is omitted, the default system locale (depending on the configuration) is used. The reply of this method contains information about this core instance such as version information, uuid and its name. The locale valueindicates the locale used for this connection. Note: This method can be called multiple times. The locale used in the last call for this connection will be used. Other values, like initialSetupRequired might change if the setup has been performed in the meantime.",
             "params": {
                 "o:locale": "String"
             },
@@ -1011,7 +1316,7 @@
         "Logging.GetLogEntries": {
             "description": "Get the LogEntries matching the given filter. The result set will contain entries matching all filter rules combined. If multiple options are given for a single filter type, the result set will contain entries matching any of those. The offset starts at the newest entry in the result set. By default all items are returned. Example: If the specified filter returns a total amount of 100 entries:\n- a offset value of 10 would include the oldest 90 entries\n- a offset value of 0 would return all 100 entries\n\nThe offset is particularly useful in combination with the maxCount property and can be used for pagination. E.g. A result set of 10000 entries can be fetched in  batches of 1000 entries by fetching\n1) offset 0, maxCount 1000: Entries 0 to 9999\n2) offset 10000, maxCount 1000: Entries 10000 - 19999\n3) offset 20000, maxCount 1000: Entries 20000 - 29999\n...",
             "params": {
-                "o:deviceIds": [
+                "d:o:deviceIds": [
                     "Uuid"
                 ],
                 "o:eventTypes": [
@@ -1025,6 +1330,9 @@
                     "$ref:LoggingSource"
                 ],
                 "o:offset": "Int",
+                "o:thingIds": [
+                    "Uuid"
+                ],
                 "o:timeFilters": [
                     {
                         "o:endDate": "Int",
@@ -1217,7 +1525,8 @@
         "Rules.FindRules": {
             "description": "Find a list of rules containing any of the given parameters.",
             "params": {
-                "deviceId": "Uuid"
+                "d:o:deviceId": "Uuid",
+                "o:thingId": "Uuid"
             },
             "returns": {
                 "ruleIds": [
@@ -1306,7 +1615,7 @@
             }
         },
         "States.GetStateType": {
-            "deprecated": "Please use the Devices namespace instead.",
+            "deprecated": "Please use the Integrations namespace instead.",
             "description": "Get the StateType for the given stateTypeId.",
             "params": {
                 "stateTypeId": "Uuid"
@@ -1449,7 +1758,7 @@
             }
         },
         "Tags.AddTag": {
-            "description": "Add a Tag. A Tag must have a deviceId OR a ruleId (call this method twice if you want to attach the same tag to a device and a rule), an appId (Use the appId of your app), a tagId (e.g. \"favorites\") and a value. Upon success, a TagAdded notification will be emitted. Calling this method twice for the same ids (device/rule, appId and tagId) but with a different value will update the tag's value and the TagValueChanged notification will be emitted.",
+            "description": "Add a Tag. A Tag must have a thingId OR a ruleId (call this method twice if you want to attach the same tag to a thing and a rule), an appId (Use the appId of your app), a tagId (e.g. \"favorites\") and a value. Upon success, a TagAdded notification will be emitted. Calling this method twice for the same ids (thing/rule, appId and tagId) but with a different value will update the tag's value and the TagValueChanged notification will be emitted.",
             "params": {
                 "tag": "$ref:Tag"
             },
@@ -1458,12 +1767,13 @@
             }
         },
         "Tags.GetTags": {
-            "description": "Get the Tags matching the given filter. Tags can be filtered by a deviceID, a ruleId, an appId, a tagId or a combination of any (however, combining deviceId and ruleId will return an empty result set).",
+            "description": "Get the Tags matching the given filter. Tags can be filtered by a thingID, a ruleId, an appId, a tagId or a combination of any (however, combining thingId and ruleId will return an empty result set).",
             "params": {
+                "d:o:deviceId": "Uuid",
                 "o:appId": "String",
-                "o:deviceId": "Uuid",
                 "o:ruleId": "Uuid",
-                "o:tagId": "String"
+                "o:tagId": "String",
+                "o:thingId": "Uuid"
             },
             "returns": {
                 "o:tags": "$ref:Tags",
@@ -1571,7 +1881,7 @@
             }
         },
         "Configuration.LanguageChanged": {
-            "description": "Emitted whenever the language of the server changed. The Plugins, Vendors and DeviceClasses have to be reloaded to get the translated data.",
+            "description": "Emitted whenever the language of the server changed. The Plugins, Vendors and ThingClasses have to be reloaded to get the translated data.",
             "params": {
                 "language": "String"
             }
@@ -1690,6 +2000,53 @@
                 "event": "$ref:Event"
             }
         },
+        "Integrations.EventTriggered": {
+            "description": "Emitted whenever an Event is triggered.",
+            "params": {
+                "event": "$ref:Event"
+            }
+        },
+        "Integrations.PluginConfigurationChanged": {
+            "description": "Emitted whenever a plugin's configuration is changed.",
+            "params": {
+                "configuration": "$ref:ParamList",
+                "pluginId": "Uuid"
+            }
+        },
+        "Integrations.StateChanged": {
+            "description": "Emitted whenever a state of a thing changes.",
+            "params": {
+                "stateTypeId": "Uuid",
+                "thingId": "Uuid",
+                "value": "Variant"
+            }
+        },
+        "Integrations.ThingAdded": {
+            "description": "Emitted whenever a thing was added.",
+            "params": {
+                "thing": "$ref:Thing"
+            }
+        },
+        "Integrations.ThingChanged": {
+            "description": "Emitted whenever the params or name of a thing are changed (by EditThing or ReconfigureThing).",
+            "params": {
+                "thing": "$ref:Thing"
+            }
+        },
+        "Integrations.ThingRemoved": {
+            "description": "Emitted whenever a thing was removed.",
+            "params": {
+                "thingId": "Uuid"
+            }
+        },
+        "Integrations.ThingSettingChanged": {
+            "description": "Emitted whenever the setting of a thing is changed.",
+            "params": {
+                "paramTypeId": "Uuid",
+                "thingId": "Uuid",
+                "value": "Variant"
+            }
+        },
         "JSONRPC.CloudConnectedChanged": {
             "description": "Emitted whenever the cloud connection status changes.",
             "params": {
@@ -1707,7 +2064,7 @@
             }
         },
         "Logging.LogDatabaseUpdated": {
-            "description": "Emitted whenever the database was updated. The database will be updated when a log entry was deleted. A log entry will be deleted when the corresponding device or a rule will be removed, or when the oldest entry of the database was deleted to keep to database in the size limits.",
+            "description": "Emitted whenever the database was updated. The database will be updated when a log entry was deleted. A log entry will be deleted when the corresponding thing or a rule will be removed, or when the oldest entry of the database was deleted to keep to database in the size limits.",
             "params": {
             }
         },
@@ -1910,8 +2267,9 @@
     "types": {
         "Action": {
             "actionTypeId": "Uuid",
-            "deviceId": "Uuid",
-            "o:params": "$ref:ParamList"
+            "d:deviceId": "Uuid",
+            "o:params": "$ref:ParamList",
+            "thingId": "Uuid"
         },
         "ActionType": {
             "displayName": "String",
@@ -1955,9 +2313,10 @@
             "r:o:parentId": "Uuid",
             "r:o:setupDisplayMessage": "String",
             "r:params": "$ref:ParamList",
-            "r:setupError": "$ref:DeviceError",
-            "r:setupStatus": "$ref:DeviceSetupStatus",
-            "r:states": "$ref:States"
+            "r:setupError": "$ref:ThingError",
+            "r:setupStatus": "$ref:ThingSetupStatus",
+            "r:states": "$ref:States",
+            "r:thingClassId": "Uuid"
         },
         "DeviceClass": {
             "r:actionTypes": "$ref:ActionTypes",
@@ -1985,6 +2344,7 @@
             "r:deviceParams": "$ref:ParamList",
             "r:id": "Uuid",
             "r:o:deviceId": "Uuid",
+            "r:o:thingId": "Uuid",
             "r:title": "String"
         },
         "DeviceDescriptors": [
@@ -2003,16 +2363,18 @@
             "$ref:Device"
         ],
         "Event": {
-            "r:deviceId": "Uuid",
+            "d:r:deviceId": "Uuid",
             "r:eventTypeId": "Uuid",
-            "r:params": "$ref:ParamList"
+            "r:params": "$ref:ParamList",
+            "r:thingId": "Uuid"
         },
         "EventDescriptor": {
-            "o:deviceId": "Uuid",
+            "d:o:deviceId": "Uuid",
             "o:eventTypeId": "Uuid",
             "o:interface": "String",
             "o:interfaceEvent": "String",
-            "o:paramDescriptors": "$ref:ParamDescriptors"
+            "o:paramDescriptors": "$ref:ParamDescriptors",
+            "o:thingId": "Uuid"
         },
         "EventDescriptors": [
             "$ref:EventDescriptor"
@@ -2031,15 +2393,25 @@
             "name": "String",
             "version": "String"
         },
+        "IntegrationPlugin": {
+            "r:displayName": "String",
+            "r:id": "Uuid",
+            "r:name": "String",
+            "r:paramTypes": "$ref:ParamTypes"
+        },
+        "IntegrationPlugins": [
+            "$ref:IntegrationPlugin"
+        ],
         "LogEntries": [
             "$ref:LogEntry"
         ],
         "LogEntry": {
+            "d:r:o:deviceId": "Uuid",
             "r:loggingLevel": "$ref:LoggingLevel",
             "r:o:active": "Bool",
-            "r:o:deviceId": "Uuid",
             "r:o:errorCode": "String",
             "r:o:eventType": "$ref:LoggingEventType",
+            "r:o:thingId": "Uuid",
             "r:o:typeId": "Uuid",
             "r:o:value": "Variant",
             "r:source": "$ref:LoggingSource",
@@ -2131,19 +2503,21 @@
             "r:id": "Uuid"
         },
         "RuleAction": {
+            "d:o:deviceId": "Uuid",
             "o:actionTypeId": "Uuid",
             "o:browserItemId": "String",
-            "o:deviceId": "Uuid",
             "o:interface": "String",
             "o:interfaceAction": "String",
-            "o:ruleActionParams": "$ref:RuleActionParams"
+            "o:ruleActionParams": "$ref:RuleActionParams",
+            "o:thingId": "Uuid"
         },
         "RuleActionParam": {
+            "d:o:stateDeviceId": "Uuid",
             "o:eventParamTypeId": "Uuid",
             "o:eventTypeId": "Uuid",
             "o:paramName": "String",
             "o:paramTypeId": "Uuid",
-            "o:stateDeviceId": "Uuid",
+            "o:stateThingId": "Uuid",
             "o:stateTypeId": "Uuid",
             "o:value": "Variant"
         },
@@ -2182,10 +2556,11 @@
             "r:value": "Variant"
         },
         "StateDescriptor": {
-            "o:deviceId": "Uuid",
+            "d:o:deviceId": "Uuid",
             "o:interface": "String",
             "o:interfaceState": "String",
             "o:stateTypeId": "Uuid",
+            "o:thingId": "Uuid",
             "operator": "$ref:ValueOperator",
             "value": "Variant"
         },
@@ -2219,13 +2594,61 @@
         ],
         "Tag": {
             "appId": "String",
-            "o:deviceId": "Uuid",
+            "d:o:deviceId": "Uuid",
             "o:ruleId": "Uuid",
+            "o:thingId": "Uuid",
             "o:value": "String",
             "tagId": "String"
         },
         "Tags": [
             "$ref:Tag"
+        ],
+        "Thing": {
+            "d:r:setupComplete": "Bool",
+            "o:name": "String",
+            "o:settings": "$ref:ParamList",
+            "r:id": "Uuid",
+            "r:o:parentId": "Uuid",
+            "r:o:setupDisplayMessage": "String",
+            "r:params": "$ref:ParamList",
+            "r:setupError": "$ref:ThingError",
+            "r:setupStatus": "$ref:ThingSetupStatus",
+            "r:states": "$ref:States",
+            "r:thingClassId": "Uuid"
+        },
+        "ThingClass": {
+            "r:actionTypes": "$ref:ActionTypes",
+            "r:browsable": "Bool",
+            "r:browserItemActionTypes": "$ref:ActionTypes",
+            "r:createMethods": "$ref:CreateMethods",
+            "r:discoveryParamTypes": "$ref:ParamTypes",
+            "r:displayName": "String",
+            "r:eventTypes": "$ref:EventTypes",
+            "r:id": "Uuid",
+            "r:interfaces": "StringList",
+            "r:name": "String",
+            "r:paramTypes": "$ref:ParamTypes",
+            "r:pluginId": "Uuid",
+            "r:settingsTypes": "$ref:ParamTypes",
+            "r:setupMethod": "$ref:SetupMethod",
+            "r:stateTypes": "$ref:StateTypes",
+            "r:vendorId": "Uuid"
+        },
+        "ThingClasses": [
+            "$ref:ThingClass"
+        ],
+        "ThingDescriptor": {
+            "r:description": "String",
+            "r:deviceParams": "$ref:ParamList",
+            "r:id": "Uuid",
+            "r:o:thingId": "Uuid",
+            "r:title": "String"
+        },
+        "ThingDescriptors": [
+            "$ref:ThingDescriptor"
+        ],
+        "Things": [
+            "$ref:Thing"
         ],
         "TimeDescriptor": {
             "o:calendarItems": "$ref:CalendarItems",

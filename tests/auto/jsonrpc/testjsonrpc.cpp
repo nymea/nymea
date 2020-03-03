@@ -207,11 +207,11 @@ void TestJSONRPC::testHandshakeLocale()
     QVariantMap handShake = injectAndWait("JSONRPC.Hello").toMap();
     QCOMPARE(handShake.value("params").toMap().value("locale").toString(), QString("en_US"));
 
-    QVariantMap supportedDevices = injectAndWait("Devices.GetSupportedDevices").toMap();
+    QVariantMap supportedDevices = injectAndWait("Integrations.GetThingClasses").toMap();
     bool found = false;
-    foreach (const QVariant &dcMap, supportedDevices.value("params").toMap().value("deviceClasses").toList()) {
+    foreach (const QVariant &dcMap, supportedDevices.value("params").toMap().value("thingClasses").toList()) {
         if (dcMap.toMap().value("id").toUuid() == autoMockThingClassId) {
-            QCOMPARE(dcMap.toMap().value("displayName").toString(), QString("Mock Device (Auto created)"));
+            QCOMPARE(dcMap.toMap().value("displayName").toString(), QString("Mocked Thing (Auto created)"));
             found = true;
         }
     }
@@ -223,11 +223,11 @@ void TestJSONRPC::testHandshakeLocale()
     handShake = injectAndWait("JSONRPC.Hello", params).toMap();
     QCOMPARE(handShake.value("params").toMap().value("locale").toString(), QString("de_DE"));
 
-    supportedDevices = injectAndWait("Devices.GetSupportedDevices").toMap();
+    supportedDevices = injectAndWait("Integrations.GetThingClasses").toMap();
     found = false;
-    foreach (const QVariant &dcMap, supportedDevices.value("params").toMap().value("deviceClasses").toList()) {
+    foreach (const QVariant &dcMap, supportedDevices.value("params").toMap().value("thingClasses").toList()) {
         if (dcMap.toMap().value("id").toUuid() == autoMockThingClassId) {
-            QCOMPARE(dcMap.toMap().value("displayName").toString(), QString("Mock Gerät (Automatisch erzeugt)"));
+            QCOMPARE(dcMap.toMap().value("displayName").toString(), QString("Mock \"Thing\" (automatisch erstellt)"));
             found = true;
         }
     }
@@ -1011,9 +1011,9 @@ void TestJSONRPC::stateChangeEmitsNotifications()
 
     // Now check that the state has indeed changed even though we didn't get a notification
     QVariantMap params;
-    params.insert("deviceId", m_mockThingId);
+    params.insert("thingId", m_mockThingId);
     params.insert("stateTypeId", stateTypeId);
-    QVariant response = injectAndWait("Devices.GetStateValue", params);
+    QVariant response = injectAndWait("Integrations.GetStateValue", params);
 
     QCOMPARE(response.toMap().value("params").toMap().value("value").toInt(), newVal);
 }
@@ -1036,10 +1036,10 @@ void TestJSONRPC::pluginConfigChangeEmitsNotification()
     pluginParams.append(param1);
     params.insert("configuration", pluginParams);
 
-    response = injectAndWait("Devices.SetPluginConfiguration", params);
+    response = injectAndWait("Integrations.SetPluginConfiguration", params);
 
-    QVariantList notificationData = checkNotifications(clientSpy, "Devices.PluginConfigurationChanged");
-    QCOMPARE(notificationData.first().toMap().value("notification").toString() == "Devices.PluginConfigurationChanged", true);
+    QVariantList notificationData = checkNotifications(clientSpy, "Integrations.PluginConfigurationChanged");
+    QCOMPARE(notificationData.first().toMap().value("notification").toString() == "Integrations.PluginConfigurationChanged", true);
 }
 
 void TestJSONRPC::testPushButtonAuth()

@@ -409,7 +409,7 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
     QList<Action> actions;
     QList<BrowserAction> browserActions;
     foreach (const RuleAction &ruleAction, ruleActions) {
-        if (ruleAction.type() == RuleAction::TypeDevice) {
+        if (ruleAction.type() == RuleAction::TypeThing) {
             Thing *thing = m_thingManager->findConfiguredThing(ruleAction.thingId());
             if (!thing) {
                 qCWarning(dcRuleEngine()) << "Unable to find thing" << ruleAction.thingId() << "for rule action" << ruleAction;
@@ -859,8 +859,8 @@ void NymeaCore::thingManagerLoaded()
     // Do some houskeeping...
     qCDebug(dcApplication()) << "Starting housekeeping...";
     QDateTime startTime = QDateTime::currentDateTime();
-    DevicesFetchJob *job = m_logger->fetchDevices();
-    connect(job, &DevicesFetchJob::finished, m_thingManager, [this, job, startTime](){
+    ThingsFetchJob *job = m_logger->fetchDevices();
+    connect(job, &ThingsFetchJob::finished, m_thingManager, [this, job, startTime](){
         foreach (const ThingId &thingId, job->results()) {
             if (!m_thingManager->findConfiguredThing(thingId)) {
                 qCDebug(dcApplication()) << "Cleaning stale thing entries from log DB for thing id" << thingId;

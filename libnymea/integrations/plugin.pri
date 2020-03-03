@@ -22,8 +22,8 @@
 # Example project file for a plugin:
 
 # include($$[QT_INSTALL_PREFIX]/include/nymea/plugi.pri)
-# SOURCES += devicepluginexample.cpp
-# HEADERS += devicepluginexample.h
+# SOURCES += integrationpluginexample.cpp
+# HEADERS += integrationpluginexample.h
 
 
 TEMPLATE = lib
@@ -34,7 +34,7 @@ PKGCONFIG += nymea
 QMAKE_CXXFLAGS *= -Werror -std=c++11 -g
 QMAKE_LFLAGS *= -std=c++11
 
-JSONFILE=$${_PRO_FILE_PWD_}/deviceplugin"$$TARGET".json
+JSONFILE=$${_PRO_FILE_PWD_}/integrationplugin"$$TARGET".json
 
 # Make the device plugin json file visible in the Qt Creator
 OTHER_FILES += $$JSONFILE
@@ -81,7 +81,7 @@ translations.path = /usr/share/nymea/translations
 translations.files = $$[QT_SOURCE_TREE]/translations/*.qm
 
 # Redefine target to make output file suite the plugin filename schema
-TARGET = $$qtLibraryTarget(nymea_deviceplugin"$$TARGET")
+TARGET = $$qtLibraryTarget(nymea_integrationplugin"$$TARGET")
 
 # Install plugin
 target.path = $$[QT_INSTALL_LIBS]/nymea/plugins/

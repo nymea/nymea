@@ -2,14 +2,14 @@ include(../plugins.pri)
 
 QT+= network
 
-TARGET = $$qtLibraryTarget(nymea_devicepluginmock)
+TARGET = $$qtLibraryTarget(nymea_integrationpluginmock)
 
-OTHER_FILES += devicepluginmock.json
+OTHER_FILES += interationpluginmock.json
 
 SOURCES += \
-    devicepluginmock.cpp \
+    integrationpluginmock.cpp \
     httpdaemon.cpp
 
 HEADERS += \
-    devicepluginmock.h \
+    integrationpluginmock.h \
     httpdaemon.h

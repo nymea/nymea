@@ -40,7 +40,7 @@
 
 using namespace nymeaserver;
 
-class TestIntegrations : public NymeaTestBase
+class TestDevices : public NymeaTestBase
 {
     Q_OBJECT
 
@@ -155,7 +155,7 @@ private slots:
     void discoverDeviceParenting();
 };
 
-void TestIntegrations::initTestCase()
+void TestDevices::initTestCase()
 {
     NymeaTestBase::initTestCase();
     QLoggingCategory::setFilterRules("*.debug=false\n"
@@ -190,7 +190,7 @@ void TestIntegrations::initTestCase()
     qCDebug(dcTests()) << "Created Async mock device with ID" << m_mockThingAsyncId;
 }
 
-void TestIntegrations::getPlugins()
+void TestDevices::getPlugins()
 {
     QVariant response = injectAndWait("Devices.GetPlugins");
 
@@ -206,7 +206,7 @@ void TestIntegrations::getPlugins()
     QCOMPARE(found, true);
 }
 
-void TestIntegrations::getPluginConfig_data()
+void TestDevices::getPluginConfig_data()
 {
     QTest::addColumn<PluginId>("pluginId");
     QTest::addColumn<Device::DeviceError>("error");
@@ -215,7 +215,7 @@ void TestIntegrations::getPluginConfig_data()
     QTest::newRow("invalid plugin") << PluginId::createPluginId() << Device::DeviceErrorPluginNotFound;
 }
 
-void TestIntegrations::getPluginConfig()
+void TestDevices::getPluginConfig()
 {
     QFETCH(PluginId, pluginId);
     QFETCH(Device::DeviceError, error);
@@ -226,7 +226,7 @@ void TestIntegrations::getPluginConfig()
     verifyDeviceError(response, error);
 }
 
-void TestIntegrations::setPluginConfig_data()
+void TestDevices::setPluginConfig_data()
 {
     QTest::addColumn<PluginId>("pluginId");
     QTest::addColumn<QVariant>("value");
@@ -239,7 +239,7 @@ void TestIntegrations::setPluginConfig_data()
     QTest::newRow("wrong type") << mockPluginId << QVariant("wrontType") << Device::DeviceErrorInvalidParameter;
 }
 
-void TestIntegrations::setPluginConfig()
+void TestDevices::setPluginConfig()
 {
     QFETCH(PluginId, pluginId);
     QFETCH(QVariant, value);
@@ -268,7 +268,7 @@ void TestIntegrations::setPluginConfig()
     }
 }
 
-void TestIntegrations::getSupportedVendors()
+void TestDevices::getSupportedVendors()
 {
     QVariant supportedVendors = injectAndWait("Devices.GetSupportedVendors");
     qDebug() << "response" << supportedVendors;
@@ -285,7 +285,7 @@ void TestIntegrations::getSupportedVendors()
     QCOMPARE(found, true);
 }
 
-void TestIntegrations::getSupportedDevices_data()
+void TestDevices::getSupportedDevices_data()
 {
     QTest::addColumn<VendorId>("vendorId");
     QTest::addColumn<int>("resultCount");
@@ -295,7 +295,7 @@ void TestIntegrations::getSupportedDevices_data()
     QTest::newRow("invalid vendor") << VendorId("93e7d361-8025-4354-b17e-b68406c800bc") << 0;
 }
 
-void TestIntegrations::getSupportedDevices()
+void TestDevices::getSupportedDevices()
 {
     QFETCH(VendorId, vendorId);
     QFETCH(int, resultCount);
@@ -311,7 +311,7 @@ void TestIntegrations::getSupportedDevices()
     QCOMPARE(supportedDevices.count() >= resultCount, true);
 }
 
-void TestIntegrations::verifyInterfaces()
+void TestDevices::verifyInterfaces()
 {
     QVariantMap params;
     params.insert("vendorId", nymeaVendorId);
@@ -337,7 +337,7 @@ void TestIntegrations::verifyInterfaces()
     QVERIFY(!interfaces.contains("gateway"));
 }
 
-void TestIntegrations::addConfiguredDevice_data()
+void TestDevices::addConfiguredDevice_data()
 {
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<QVariantList>("deviceParams");
@@ -389,7 +389,7 @@ void TestIntegrations::addConfiguredDevice_data()
 
 }
 
-void TestIntegrations::addConfiguredDevice()
+void TestDevices::addConfiguredDevice()
 {
     QFETCH(ThingClassId, thingClassId);
     QFETCH(QVariantList, deviceParams);
@@ -417,7 +417,7 @@ void TestIntegrations::addConfiguredDevice()
     }
 }
 
-void TestIntegrations::deviceAddedRemovedNotifications()
+void TestDevices::deviceAddedRemovedNotifications()
 {
     enableNotifications({"Devices"});
 
@@ -463,7 +463,7 @@ void TestIntegrations::deviceAddedRemovedNotifications()
     QCOMPARE(disableNotifications(), true);
 }
 
-void TestIntegrations::deviceChangedNotifications()
+void TestDevices::deviceChangedNotifications()
 {
     enableNotifications({"Devices"});
 
@@ -545,7 +545,7 @@ void TestIntegrations::deviceChangedNotifications()
     checkNotification(clientSpy, "Logging.LogDatabaseUpdated");
 }
 
-void TestIntegrations::getConfiguredDevices()
+void TestDevices::getConfiguredDevices()
 {
     QVariant response = injectAndWait("Devices.GetConfiguredDevices");
 
@@ -553,7 +553,7 @@ void TestIntegrations::getConfiguredDevices()
     QCOMPARE(devices.count(), 3); // There should be: one auto created mock device, one created in NymeaTestBase::initTestcase() and one created in TestDevices::initTestCase()
 }
 
-void TestIntegrations::getConfiguredDevice_data()
+void TestDevices::getConfiguredDevice_data()
 {
     QTest::addColumn<DeviceId>("deviceId");
     QTest::addColumn<Device::DeviceError>("expectedError");
@@ -562,7 +562,7 @@ void TestIntegrations::getConfiguredDevice_data()
     QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << Device::DeviceErrorDeviceNotFound;
 }
 
-void TestIntegrations::getConfiguredDevice()
+void TestDevices::getConfiguredDevice()
 {
     QFETCH(DeviceId, deviceId);
     QFETCH(Device::DeviceError, expectedError);
@@ -579,7 +579,7 @@ void TestIntegrations::getConfiguredDevice()
     }
 }
 
-void TestIntegrations::storedDevices()
+void TestDevices::storedDevices()
 {
     QVariantMap params;
     params.insert("deviceClassId", mockThingClassId);
@@ -627,7 +627,7 @@ void TestIntegrations::storedDevices()
     verifyDeviceError(response);
 }
 
-void TestIntegrations::discoverDevices_data()
+void TestDevices::discoverDevices_data()
 {
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<int>("resultCount");
@@ -645,7 +645,7 @@ void TestIntegrations::discoverDevices_data()
     QTest::newRow("invalid ThingClassId") << ThingClassId::createThingClassId() << 0 << Device::DeviceErrorDeviceClassNotFound << QVariantList();
 }
 
-void TestIntegrations::discoverDevices()
+void TestDevices::discoverDevices()
 {
     QFETCH(ThingClassId, thingClassId);
     QFETCH(int, resultCount);
@@ -682,7 +682,7 @@ void TestIntegrations::discoverDevices()
     }
 }
 
-void TestIntegrations::addPushButtonDevices_data()
+void TestDevices::addPushButtonDevices_data()
 {
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<Device::DeviceError>("error");
@@ -692,7 +692,7 @@ void TestIntegrations::addPushButtonDevices_data()
     QTest::newRow("Invalid: Add PushButton device (press to early)") << pushButtonMockThingClassId << Device::DeviceErrorAuthenticationFailure << false;
 }
 
-void TestIntegrations::addPushButtonDevices()
+void TestDevices::addPushButtonDevices()
 {
     QFETCH(ThingClassId, thingClassId);
     QFETCH(Device::DeviceError, error);
@@ -748,7 +748,7 @@ void TestIntegrations::addPushButtonDevices()
     }
 }
 
-void TestIntegrations::addDisplayPinDevices_data()
+void TestDevices::addDisplayPinDevices_data()
 {
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<Device::DeviceError>("error");
@@ -758,7 +758,7 @@ void TestIntegrations::addDisplayPinDevices_data()
     QTest::newRow("Invalid: Add DisplayPin device (wrong pin)") << displayPinMockThingClassId << Device::DeviceErrorAuthenticationFailure << "243682";
 }
 
-void TestIntegrations::addDisplayPinDevices()
+void TestDevices::addDisplayPinDevices()
 {
     QFETCH(ThingClassId, thingClassId);
     QFETCH(Device::DeviceError, error);
@@ -812,7 +812,7 @@ void TestIntegrations::addDisplayPinDevices()
 
 }
 
-void TestIntegrations::parentChildDevices()
+void TestDevices::parentChildDevices()
 {
     // add parent device
     QVariantMap params;
@@ -894,7 +894,7 @@ void TestIntegrations::parentChildDevices()
     QVERIFY2(!found, "Could not find child device.");
 }
 
-void TestIntegrations::getActionTypes_data()
+void TestDevices::getActionTypes_data()
 {
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<QList<ActionTypeId> >("actionTypeTestData");
@@ -904,7 +904,7 @@ void TestIntegrations::getActionTypes_data()
     QTest::newRow("invalid deviceclass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << QList<ActionTypeId>();
 }
 
-void TestIntegrations::getActionTypes()
+void TestDevices::getActionTypes()
 {
     QFETCH(ThingClassId, thingClassId);
     QFETCH(QList<ActionTypeId>, actionTypeTestData);
@@ -927,7 +927,7 @@ void TestIntegrations::getActionTypes()
     }
 }
 
-void TestIntegrations::getEventTypes_data()
+void TestDevices::getEventTypes_data()
 {
     QTest::addColumn<ThingClassId>("deviceClassId");
     QTest::addColumn<int>("resultCount");
@@ -936,7 +936,7 @@ void TestIntegrations::getEventTypes_data()
     QTest::newRow("invalid deviceclass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
-void TestIntegrations::getEventTypes()
+void TestDevices::getEventTypes()
 {
     QFETCH(ThingClassId, deviceClassId);
     QFETCH(int, resultCount);
@@ -952,7 +952,7 @@ void TestIntegrations::getEventTypes()
 
 }
 
-void TestIntegrations::getStateTypes_data()
+void TestDevices::getStateTypes_data()
 {
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<int>("resultCount");
@@ -961,7 +961,7 @@ void TestIntegrations::getStateTypes_data()
     QTest::newRow("invalid deviceclass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
-void TestIntegrations::getStateTypes()
+void TestDevices::getStateTypes()
 {
     QFETCH(ThingClassId, thingClassId);
     QFETCH(int, resultCount);
@@ -977,7 +977,7 @@ void TestIntegrations::getStateTypes()
     }
 }
 
-void TestIntegrations::getStateType_data()
+void TestDevices::getStateType_data()
 {
     QTest::addColumn<StateTypeId>("stateTypeId");
     QTest::addColumn<Device::DeviceError>("error");
@@ -987,7 +987,7 @@ void TestIntegrations::getStateType_data()
     QTest::newRow("invalid stateTypeId") << StateTypeId::createStateTypeId() << Device::DeviceErrorStateTypeNotFound;
 }
 
-void TestIntegrations::getStateType()
+void TestDevices::getStateType()
 {
     QFETCH(StateTypeId, stateTypeId);
     QFETCH(Device::DeviceError, error);
@@ -1006,7 +1006,7 @@ void TestIntegrations::getStateType()
     QCOMPARE(stateType.value("id").toUuid().toString(), stateTypeId.toString());
 }
 
-void TestIntegrations::getStateValue_data()
+void TestDevices::getStateValue_data()
 {
     QTest::addColumn<DeviceId>("deviceId");
     QTest::addColumn<StateTypeId>("stateTypeId");
@@ -1017,7 +1017,7 @@ void TestIntegrations::getStateValue_data()
     QTest::newRow("invalid statetypeId") << DeviceId(m_mockThingId) << StateTypeId("120514f1-343e-4621-9bff-dac616169df9") << Device::DeviceErrorStateTypeNotFound;
 }
 
-void TestIntegrations::getStateValue()
+void TestDevices::getStateValue()
 {
     QFETCH(DeviceId, deviceId);
     QFETCH(StateTypeId, stateTypeId);
@@ -1035,7 +1035,7 @@ void TestIntegrations::getStateValue()
     }
 }
 
-void TestIntegrations::getStateValues_data()
+void TestDevices::getStateValues_data()
 {
     QTest::addColumn<DeviceId>("deviceId");
     QTest::addColumn<Device::DeviceError>("statusCode");
@@ -1044,7 +1044,7 @@ void TestIntegrations::getStateValues_data()
     QTest::newRow("invalid deviceId") << DeviceId("094f8024-5caa-48c1-ab6a-de486a92088f") << Device::DeviceErrorDeviceNotFound;
 }
 
-void TestIntegrations::getStateValues()
+void TestDevices::getStateValues()
 {
     QFETCH(DeviceId, deviceId);
     QFETCH(Device::DeviceError, statusCode);
@@ -1060,7 +1060,7 @@ void TestIntegrations::getStateValues()
     }
 }
 
-void TestIntegrations::editDevices_data()
+void TestDevices::editDevices_data()
 {
     QTest::addColumn<QString>("name");
 
@@ -1069,7 +1069,7 @@ void TestIntegrations::editDevices_data()
     QTest::newRow("change name") << "Bar device";
 }
 
-void TestIntegrations::editDevices()
+void TestDevices::editDevices()
 {
     QFETCH(QString, name);
 
@@ -1131,7 +1131,7 @@ void TestIntegrations::editDevices()
     verifyDeviceError(response);
 }
 
-void TestIntegrations::testDeviceSettings()
+void TestDevices::testDeviceSettings()
 {
     // add device
     QVariantList deviceParams;
@@ -1211,7 +1211,7 @@ void TestIntegrations::testDeviceSettings()
 
 }
 
-void TestIntegrations::reconfigureDevices_data()
+void TestDevices::reconfigureDevices_data()
 {
     QVariantList asyncChangeDeviceParams;
     QVariantMap asyncParamDifferent;
@@ -1250,7 +1250,7 @@ void TestIntegrations::reconfigureDevices_data()
     QTest::newRow("invalid - change all params (except broken)") << false << changeAllWritableDeviceParams << Device::DeviceErrorParameterNotWritable;
 }
 
-void TestIntegrations::reconfigureDevices()
+void TestDevices::reconfigureDevices()
 {
     QFETCH(bool, broken);
     QFETCH(QVariantList, newDeviceParams);
@@ -1376,7 +1376,7 @@ void TestIntegrations::reconfigureDevices()
 }
 
 
-void TestIntegrations::reconfigureByDiscovery_data()
+void TestDevices::reconfigureByDiscovery_data()
 {
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<int>("resultCount");
@@ -1392,7 +1392,7 @@ void TestIntegrations::reconfigureByDiscovery_data()
     QTest::newRow("discover 2 devices with params") << mockThingClassId << 2 << Device::DeviceErrorNoError << discoveryParams;
 }
 
-void TestIntegrations::reconfigureByDiscovery()
+void TestDevices::reconfigureByDiscovery()
 {
     QFETCH(ThingClassId, thingClassId);
     QFETCH(int, resultCount);
@@ -1526,7 +1526,7 @@ void TestIntegrations::reconfigureByDiscovery()
     verifyDeviceError(response);
 }
 
-void TestIntegrations::reconfigureByDiscoveryAndPair()
+void TestDevices::reconfigureByDiscoveryAndPair()
 {
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
@@ -1627,7 +1627,7 @@ void TestIntegrations::reconfigureByDiscoveryAndPair()
 
 }
 
-void TestIntegrations::reconfigureAutodevice()
+void TestDevices::reconfigureAutodevice()
 {
     qCDebug(dcTests()) << "Reconfigure auto device";
 
@@ -1656,7 +1656,7 @@ void TestIntegrations::reconfigureAutodevice()
 }
 
 
-void TestIntegrations::removeDevice_data()
+void TestDevices::removeDevice_data()
 {
     QTest::addColumn<DeviceId>("deviceId");
     QTest::addColumn<Device::DeviceError>("deviceError");
@@ -1666,7 +1666,7 @@ void TestIntegrations::removeDevice_data()
 //    QTest::newRow("Auto device") << m_mockDeviceAutoId << Device::DeviceErrorCreationMethodNotSupported;
 }
 
-void TestIntegrations::removeDevice()
+void TestDevices::removeDevice()
 {
     QFETCH(DeviceId, deviceId);
     QFETCH(Device::DeviceError, deviceError);
@@ -1692,7 +1692,7 @@ void TestIntegrations::removeDevice()
     }
 }
 
-void TestIntegrations::removeAutoDevice()
+void TestDevices::removeAutoDevice()
 {
     // Setup connection to mock client
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
@@ -1735,7 +1735,7 @@ void TestIntegrations::removeAutoDevice()
     QCOMPARE(NymeaCore::instance()->thingManager()->findConfiguredThings(autoMockThingClassId).count(), oldCount - 1);
 }
 
-void TestIntegrations::testBrowsing_data()
+void TestDevices::testBrowsing_data()
 {
     QTest::addColumn<DeviceId>("deviceId");
 
@@ -1743,7 +1743,7 @@ void TestIntegrations::testBrowsing_data()
     QTest::newRow("async mock device") << DeviceId(m_mockThingAsyncId);
 }
 
-void TestIntegrations::testBrowsing()
+void TestDevices::testBrowsing()
 {
     QFETCH(DeviceId, deviceId);
 
@@ -1786,7 +1786,7 @@ void TestIntegrations::testBrowsing()
 
 }
 
-void TestIntegrations::discoverDeviceParenting()
+void TestDevices::discoverDeviceParenting()
 {
     // Try to discover a mock child device. We don't have a mockParent yet, so it should fail
     ThingDiscoveryInfo *discoveryInfo = NymeaCore::instance()->thingManager()->discoverThings(childMockThingClassId, ParamList());
@@ -1854,7 +1854,7 @@ void TestIntegrations::discoverDeviceParenting()
 
 }
 
-void TestIntegrations::testExecuteBrowserItem_data()
+void TestDevices::testExecuteBrowserItem_data()
 {
     QTest::addColumn<DeviceId>("deviceId");
     QTest::addColumn<QString>("itemId");
@@ -1865,7 +1865,7 @@ void TestIntegrations::testExecuteBrowserItem_data()
     QTest::newRow("async mock device") << DeviceId(m_mockThingAsyncId) << "002" << "DeviceErrorNoError";
 }
 
-void TestIntegrations::testExecuteBrowserItem()
+void TestDevices::testExecuteBrowserItem()
 {
     QFETCH(DeviceId, deviceId);
     QFETCH(QString, itemId);
@@ -1880,7 +1880,7 @@ void TestIntegrations::testExecuteBrowserItem()
     QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), deviceError);
 }
 
-void TestIntegrations::testExecuteBrowserItemAction_data()
+void TestDevices::testExecuteBrowserItemAction_data()
 {
     QTest::addColumn<DeviceId>("deviceId");
 
@@ -1888,7 +1888,7 @@ void TestIntegrations::testExecuteBrowserItemAction_data()
     QTest::newRow("async mock device") << DeviceId(m_mockThingAsyncId);
 }
 
-void TestIntegrations::testExecuteBrowserItemAction()
+void TestDevices::testExecuteBrowserItemAction()
 {
     QFETCH(DeviceId, deviceId);
 
@@ -1959,7 +1959,7 @@ void TestIntegrations::testExecuteBrowserItemAction()
 
 }
 
-void TestIntegrations::executeAction_data()
+void TestDevices::executeAction_data()
 {
     QTest::addColumn<DeviceId>("deviceId");
     QTest::addColumn<ActionTypeId>("actionTypeId");
@@ -1985,7 +1985,7 @@ void TestIntegrations::executeAction_data()
     QTest::newRow("async broken action") << DeviceId(m_mockThingId) << mockAsyncFailingActionTypeId << QVariantList() << Device::DeviceErrorSetupFailed;
 }
 
-void TestIntegrations::executeAction()
+void TestDevices::executeAction()
 {
     QFETCH(DeviceId, deviceId);
     QFETCH(ActionTypeId, actionTypeId);
@@ -2037,7 +2037,7 @@ void TestIntegrations::executeAction()
 
 }
 
-void TestIntegrations::triggerEvent()
+void TestDevices::triggerEvent()
 {
     enableNotifications({"Devices"});
     QList<Thing*> devices = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
@@ -2078,7 +2078,7 @@ void TestIntegrations::triggerEvent()
     QCOMPARE(notificationContent.value("event").toMap().value("eventTypeId").toUuid().toString(), mockEvent1EventTypeId.toString());
 }
 
-void TestIntegrations::triggerStateChangeEvent()
+void TestDevices::triggerStateChangeEvent()
 {
     enableNotifications({"Devices"});
 
@@ -2121,7 +2121,7 @@ void TestIntegrations::triggerStateChangeEvent()
 
 }
 
-void TestIntegrations::params()
+void TestDevices::params()
 {
     Event event;
     ParamList params;
@@ -2134,7 +2134,7 @@ void TestIntegrations::params()
     QVERIFY(!event.param(ParamTypeId::createParamTypeId()).value().isValid());
 }
 
-void TestIntegrations::asyncSetupEmitsSetupStatusUpdate()
+void TestDevices::asyncSetupEmitsSetupStatusUpdate()
 {
     QVariantMap configuredDevices = injectAndWait("Devices.GetConfiguredDevices").toMap();
     foreach (const QVariant &deviceVariant, configuredDevices.value("params").toMap().value("devices").toList()) {
@@ -2184,5 +2184,5 @@ void TestIntegrations::asyncSetupEmitsSetupStatusUpdate()
 }
 
 #include "testdevices.moc"
-QTEST_MAIN(TestIntegrations)
+QTEST_MAIN(TestDevices)
 

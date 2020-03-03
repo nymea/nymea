@@ -28,8 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef DEVICEPLUGINMOCK_H
-#define DEVICEPLUGINMOCK_H
+#ifndef INTEGRATIONPLUGINMOCK_H
+#define INTEGRATIONPLUGINMOCK_H
 
 #include "integrations/integrationplugin.h"
 
@@ -37,16 +37,16 @@
 
 class HttpDaemon;
 
-class DevicePluginMock : public IntegrationPlugin
+class IntegrationPluginMock : public IntegrationPlugin
 {
     Q_OBJECT
 
-    Q_PLUGIN_METADATA(IID "io.nymea.DevicePlugin" FILE "devicepluginmock.json")
+    Q_PLUGIN_METADATA(IID "io.nymea.IntegrationPlugin" FILE "integrationpluginmock.json")
     Q_INTERFACES(IntegrationPlugin)
 
 public:
-    explicit DevicePluginMock();
-    ~DevicePluginMock() override;
+    explicit IntegrationPluginMock();
+    ~IntegrationPluginMock() override;
 
     void discoverThings(ThingDiscoveryInfo *info) override;
 
@@ -109,4 +109,4 @@ private:
     VirtualFsNode* m_virtualFs = nullptr;
 };
 
-#endif // DEVICEPLUGINMOCK_H
+#endif // INTEGRATIONPLUGINMOCK_H

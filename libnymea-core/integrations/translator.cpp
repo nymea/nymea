@@ -37,8 +37,8 @@
 #include <QCoreApplication>
 #include <QDir>
 
-Translator::Translator(ThingManagerImplementation *deviceManager):
-    m_deviceManager(deviceManager)
+Translator::Translator(ThingManagerImplementation *thingManager):
+    m_thingManager(thingManager)
 {
 
 }
@@ -55,7 +55,7 @@ Translator::~Translator()
 
 QString Translator::translate(const PluginId &pluginId, const QString &string, const QLocale &locale)
 {
-    IntegrationPlugin *plugin = m_deviceManager->plugins().findById(pluginId);
+    IntegrationPlugin *plugin = m_thingManager->plugins().findById(pluginId);
     if (!plugin) {
         qCWarning(dcThingManager()) << "Unable to translate" << string << "Plugin not found";
         return string;
@@ -101,7 +101,7 @@ void Translator::loadTranslator(IntegrationPlugin *plugin, const QLocale &locale
     } else {
         QString pluginId = plugin->pluginId().toString().remove(QRegExp("[{}]"));
 
-        foreach (const QString &pluginPath, m_deviceManager->pluginSearchDirs()) {
+        foreach (const QString &pluginPath, m_thingManager->pluginSearchDirs()) {
             if (translator->load(locale, pluginId, "-", QDir(pluginPath + "/translations/").absolutePath(), ".qm")) {
                 qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for plugin" << plugin->pluginName() << "from" << QDir(pluginPath + "/translations/").absolutePath();
                 loaded = true;

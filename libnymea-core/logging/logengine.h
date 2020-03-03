@@ -51,7 +51,7 @@ namespace nymeaserver {
 
 class DatabaseJob;
 class LogEntriesFetchJob;
-class DevicesFetchJob;
+class ThingsFetchJob;
 
 class LogEngine: public QObject
 {
@@ -61,7 +61,7 @@ public:
     ~LogEngine();
 
     LogEntriesFetchJob *fetchLogEntries(const LogFilter &filter = LogFilter());
-    DevicesFetchJob *fetchDevices();
+    ThingsFetchJob *fetchDevices();
 
     bool jobsRunning() const;
 
@@ -164,11 +164,11 @@ private:
     friend class LogEngine;
 };
 
-class DevicesFetchJob: public QObject
+class ThingsFetchJob: public QObject
 {
     Q_OBJECT
 public:
-    DevicesFetchJob(QObject *parent): QObject(parent) {}
+    ThingsFetchJob(QObject *parent): QObject(parent) {}
     QList<ThingId> results() { return m_results; }
 signals:
     void finished();

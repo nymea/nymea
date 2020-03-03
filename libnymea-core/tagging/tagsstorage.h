@@ -49,13 +49,13 @@ class TagsStorage : public QObject
 public:
     enum TagError {
         TagErrorNoError,
-        TagErrorDeviceNotFound,
+        TagErrorThingNotFound,
         TagErrorRuleNotFound,
         TagErrorTagNotFound
     };
     Q_ENUM(TagError)
 
-    explicit TagsStorage(ThingManager* deviceManager, RuleEngine* ruleEngine, QObject *parent = nullptr);
+    explicit TagsStorage(ThingManager* thingManager, RuleEngine* ruleEngine, QObject *parent = nullptr);
 
     TagError addTag(const Tag &tag);
     TagError removeTag(const Tag &tag);
@@ -78,7 +78,7 @@ private:
     void unsaveTag(const Tag &tag);
 
 private:
-    ThingManager *m_deviceManager;
+    ThingManager *m_thingManager;
     RuleEngine *m_ruleEngine;
     QList<Tag> m_tags;
 };

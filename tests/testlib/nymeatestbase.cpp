@@ -60,8 +60,8 @@ void NymeaTestBase::initTestCase()
     // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
     NymeaSettings rulesSettings(NymeaSettings::SettingsRoleRules);
     rulesSettings.clear();
-    NymeaSettings deviceSettings(NymeaSettings::SettingsRoleThings);
-    deviceSettings.clear();
+    NymeaSettings thingSettings(NymeaSettings::SettingsRoleThings);
+    thingSettings.clear();
     NymeaSettings pluginSettings(NymeaSettings::SettingsRolePlugins);
     pluginSettings.clear();
     NymeaSettings statesSettings(NymeaSettings::SettingsRoleThingStates);
@@ -71,7 +71,7 @@ void NymeaTestBase::initTestCase()
     NymeaSettings nymeadSettings(NymeaSettings::SettingsRoleGlobal);
     nymeadSettings.clear();
 
-    QLoggingCategory::setFilterRules("*.debug=false\nApplication.debug=true\nTests.debug=true\nMockDevice.debug=true");
+    QLoggingCategory::setFilterRules("*.debug=false\nApplication.debug=true\nTests.debug=true\nMock.debug=true");
 
     // Start the server
     qCDebug(dcTests()) << "Setting up nymea core instance";
@@ -93,7 +93,7 @@ void NymeaTestBase::initTestCase()
         exit(-1);
     }
 
-    // Add the mockdevice
+    // Add the mock
     m_mockTcpServer = MockTcpServer::servers().first();
     m_clientId = QUuid::createUuid();
     m_mockTcpServer->clientConnected(m_clientId);
@@ -101,12 +101,12 @@ void NymeaTestBase::initTestCase()
     qCDebug(dcTests()) << "Starting JSON handshake";
     QVariant response = injectAndWait("JSONRPC.Hello");
 
-    createMockDevice();
+    createMock();
 
-    response = injectAndWait("Devices.GetConfiguredDevices", {});
-    foreach (const QVariant &device, response.toMap().value("params").toMap().value("devices").toList()) {
-        if (device.toMap().value("deviceClassId").toUuid() == autoMockThingClassId) {
-            m_mockThingAutoId = ThingId(device.toMap().value("id").toString());
+    response = injectAndWait("Integrations.GetThings", {});
+    foreach (const QVariant &thing, response.toMap().value("params").toMap().value("things").toList()) {
+        if (thing.toMap().value("thingClassId").toUuid() == autoMockThingClassId) {
+            m_mockThingAutoId = ThingId(thing.toMap().value("id").toString());
         }
     }
 }
@@ -118,9 +118,9 @@ void NymeaTestBase::cleanupTestCase()
 
 void NymeaTestBase::cleanup()
 {
-    // In case a test deleted the mock device, lets recreate it.
+    // In case a test deleted the mock, lets recreate it.
     if (NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId).count() == 0) {
-        createMockDevice();
+        createMock();
     }
 }
 
@@ -429,24 +429,24 @@ void NymeaTestBase::clearLoggingDatabase()
     NymeaCore::instance()->logEngine()->clearDatabase();
 }
 
-void NymeaTestBase::createMockDevice()
+void NymeaTestBase::createMock()
 {
     QVariantMap params;
-    params.insert("name", "Test Mock Device");
-    params.insert("deviceClassId", mockThingClassId.toString());
+    params.insert("name", "Test Mock");
+    params.insert("thingClassId", mockThingClassId.toString());
 
-    QVariantList deviceParams;
+    QVariantList thingParams;
     QVariantMap httpPortParam;
     httpPortParam.insert("paramTypeId", mockThingHttpportParamTypeId.toString());
     httpPortParam.insert("value", m_mockThing1Port);
-    deviceParams.append(httpPortParam);
-    params.insert("deviceParams", deviceParams);
+    thingParams.append(httpPortParam);
+    params.insert("thingParams", thingParams);
 
-    QVariant response = injectAndWait("Devices.AddConfiguredDevice", params);
+    QVariant response = injectAndWait("Integrations.AddThing", params);
 
-    verifyError(response, "deviceError", "DeviceErrorNoError");
+    verifyError(response, "thingError", "ThingErrorNoError");
 
-    m_mockThingId = ThingId(response.toMap().value("params").toMap().value("deviceId").toString());
-    QVERIFY2(!m_mockThingId.isNull(), "Newly created mock device must not be null.");
+    m_mockThingId = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
+    QVERIFY2(!m_mockThingId.isNull(), "Newly created mock thing id must not be null.");
 }
 

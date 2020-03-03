@@ -28,24 +28,7 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*!
-    \page mockdevices.html
-    \title Mock devices
-    \brief Devices for the nymea test base.
-
-    \ingroup plugins
-    \ingroup nymea-tests
-
-    The mock devices are used for testing.
-
-    \chapter Plugin properties
-    Following JSON file contains the definition and the description of all available \l{DeviceClass}{DeviceClasses}
-    and \l{Vendor}{Vendors} of this \l{DevicePlugin}.
-
-    For more details how to read this JSON file please check out the documentation for \l{The plugin JSON File}.
-*/
-
-#include "devicepluginmock.h"
+#include "integrationpluginmock.h"
 #include "httpdaemon.h"
 
 #include "types/mediabrowseritem.h"
@@ -71,17 +54,17 @@
 #include <QNetworkReply>
 #include <QJsonDocument>
 
-DevicePluginMock::DevicePluginMock()
+IntegrationPluginMock::IntegrationPluginMock()
 {
     generateBrowseItems();
 }
 
-DevicePluginMock::~DevicePluginMock()
+IntegrationPluginMock::~IntegrationPluginMock()
 {
     delete m_virtualFs;
 }
 
-void DevicePluginMock::discoverThings(ThingDiscoveryInfo *info)
+void IntegrationPluginMock::discoverThings(ThingDiscoveryInfo *info)
 {
     if (info->thingClassId() == mockThingClassId) {
         qCDebug(dcMock()) << "starting mock discovery:" << info->params();
@@ -147,7 +130,7 @@ void DevicePluginMock::discoverThings(ThingDiscoveryInfo *info)
     info->finish(Thing::ThingErrorThingNotFound);
 }
 
-void DevicePluginMock::setupThing(ThingSetupInfo *info)
+void IntegrationPluginMock::setupThing(ThingSetupInfo *info)
 {
     if (info->thing()->thingClassId() == mockThingClassId || info->thing()->thingClassId() == autoMockThingClassId) {
         bool async = false;
@@ -177,11 +160,11 @@ void DevicePluginMock::setupThing(ThingSetupInfo *info)
                 return;
             }
 
-            connect(daemon, &HttpDaemon::triggerEvent, this, &DevicePluginMock::triggerEvent);
-            connect(daemon, &HttpDaemon::setState, this, &DevicePluginMock::setState);
+            connect(daemon, &HttpDaemon::triggerEvent, this, &IntegrationPluginMock::triggerEvent);
+            connect(daemon, &HttpDaemon::setState, this, &IntegrationPluginMock::setState);
             // Keep this queued or it might happen that the HttpDaemon is deleted before it is able to reply to the caller
-            connect(daemon, &HttpDaemon::disappear, this, &DevicePluginMock::onDisappear, Qt::QueuedConnection);
-            connect(daemon, &HttpDaemon::reconfigureAutodevice, this, &DevicePluginMock::onReconfigureAutoDevice, Qt::QueuedConnection);
+            connect(daemon, &HttpDaemon::disappear, this, &IntegrationPluginMock::onDisappear, Qt::QueuedConnection);
+            connect(daemon, &HttpDaemon::reconfigureAutodevice, this, &IntegrationPluginMock::onReconfigureAutoDevice, Qt::QueuedConnection);
         }
 
 
@@ -254,7 +237,7 @@ void DevicePluginMock::setupThing(ThingSetupInfo *info)
     info->finish(Thing::ThingErrorThingClassNotFound);
 }
 
-void DevicePluginMock::postSetupThing(Thing *device)
+void IntegrationPluginMock::postSetupThing(Thing *device)
 {
     qCDebug(dcMock()) << "Postsetup mock" << device->name();
     if (device->thingClassId() == parentMockThingClassId) {
@@ -269,12 +252,12 @@ void DevicePluginMock::postSetupThing(Thing *device)
     }
 }
 
-void DevicePluginMock::thingRemoved(Thing *device)
+void IntegrationPluginMock::thingRemoved(Thing *device)
 {
     delete m_daemons.take(device);
 }
 
-void DevicePluginMock::startMonitoringAutoThings()
+void IntegrationPluginMock::startMonitoringAutoThings()
 {
     foreach (Thing *device, myThings()) {
         if (device->thingClassId() == autoMockThingClassId) {
@@ -297,7 +280,7 @@ void DevicePluginMock::startMonitoringAutoThings()
     emit autoThingsAppeared(deviceDescriptorList);
 }
 
-void DevicePluginMock::startPairing(ThingPairingInfo *info)
+void IntegrationPluginMock::startPairing(ThingPairingInfo *info)
 {
     if (info->thingClassId() == pushButtonMockThingClassId) {
         qCDebug(dcMock()) << "Push button. Pressing the button in 3 seconds.";
@@ -360,7 +343,7 @@ void DevicePluginMock::startPairing(ThingPairingInfo *info)
     info->finish(Thing::ThingErrorCreationMethodNotSupported);
 }
 
-void DevicePluginMock::confirmPairing(ThingPairingInfo *info, const QString &username, const QString &secret)
+void IntegrationPluginMock::confirmPairing(ThingPairingInfo *info, const QString &username, const QString &secret)
 {
     qCDebug(dcMock()) << "Confirm pairing";
 
@@ -487,7 +470,7 @@ void DevicePluginMock::confirmPairing(ThingPairingInfo *info, const QString &use
     info->finish(Thing::ThingErrorThingClassNotFound);
 }
 
-void DevicePluginMock::browseThing(BrowseResult *result)
+void IntegrationPluginMock::browseThing(BrowseResult *result)
 {
     qCDebug(dcMock()) << "Browse thing called" << result->thing();
     if (result->thing()->thingClassId() == mockThingClassId) {
@@ -535,7 +518,7 @@ void DevicePluginMock::browseThing(BrowseResult *result)
     result->finish(Thing::ThingErrorInvalidParameter);
 }
 
-void DevicePluginMock::browserItem(BrowserItemResult *result)
+void IntegrationPluginMock::browserItem(BrowserItemResult *result)
 {
     VirtualFsNode *node = m_virtualFs->findNode(result->itemId());
     if (!node) {
@@ -545,7 +528,7 @@ void DevicePluginMock::browserItem(BrowserItemResult *result)
     result->finish(node->item);
 }
 
-void DevicePluginMock::executeAction(ThingActionInfo *info)
+void IntegrationPluginMock::executeAction(ThingActionInfo *info)
 {
     if (info->thing()->thingClassId() == mockThingClassId) {
         if (info->action().actionTypeId() == mockAsyncActionTypeId || info->action().actionTypeId() == mockAsyncFailingActionTypeId) {
@@ -711,7 +694,7 @@ void DevicePluginMock::executeAction(ThingActionInfo *info)
     info->finish(Thing::ThingErrorThingClassNotFound);
 }
 
-void DevicePluginMock::executeBrowserItem(BrowserActionInfo *info)
+void IntegrationPluginMock::executeBrowserItem(BrowserActionInfo *info)
 {
     qCDebug(dcMock()) << "ExecuteBrowserItem called" << info->browserAction().itemId();
     bool broken = info->thing()->paramValue(mockThingBrokenParamTypeId).toBool();
@@ -743,7 +726,7 @@ void DevicePluginMock::executeBrowserItem(BrowserActionInfo *info)
 
 }
 
-void DevicePluginMock::executeBrowserItemAction(BrowserItemActionInfo *info)
+void IntegrationPluginMock::executeBrowserItemAction(BrowserItemActionInfo *info)
 {
     qCDebug(dcMock()) << "TODO" << info << info->browserItemAction().id();
     if (info->browserItemAction().actionTypeId() == mockAddToFavoritesBrowserItemActionTypeId) {
@@ -783,7 +766,7 @@ void DevicePluginMock::executeBrowserItemAction(BrowserItemActionInfo *info)
     info->finish(Thing::ThingErrorActionTypeNotFound);
 }
 
-void DevicePluginMock::setState(const StateTypeId &stateTypeId, const QVariant &value)
+void IntegrationPluginMock::setState(const StateTypeId &stateTypeId, const QVariant &value)
 {
     HttpDaemon *daemon = qobject_cast<HttpDaemon*>(sender());
     if (!daemon)
@@ -793,7 +776,7 @@ void DevicePluginMock::setState(const StateTypeId &stateTypeId, const QVariant &
     device->setStateValue(stateTypeId, value);
 }
 
-void DevicePluginMock::triggerEvent(const EventTypeId &id)
+void IntegrationPluginMock::triggerEvent(const EventTypeId &id)
 {
     HttpDaemon *daemon = qobject_cast<HttpDaemon*>(sender());
     if (!daemon)
@@ -807,7 +790,7 @@ void DevicePluginMock::triggerEvent(const EventTypeId &id)
     emit emitEvent(event);
 }
 
-void DevicePluginMock::onDisappear()
+void IntegrationPluginMock::onDisappear()
 {
     HttpDaemon *daemon = qobject_cast<HttpDaemon*>(sender());
     if (!daemon) {
@@ -818,7 +801,7 @@ void DevicePluginMock::onDisappear()
     emit autoThingDisappeared(device->id());
 }
 
-void DevicePluginMock::onReconfigureAutoDevice()
+void IntegrationPluginMock::onReconfigureAutoDevice()
 {
     HttpDaemon *daemon = qobject_cast<HttpDaemon *>(sender());
     if (!daemon)
@@ -842,7 +825,7 @@ void DevicePluginMock::onReconfigureAutoDevice()
     emit autoThingsAppeared({deviceDescriptor});
 }
 
-void DevicePluginMock::generateDiscoveredDevices(ThingDiscoveryInfo *info)
+void IntegrationPluginMock::generateDiscoveredDevices(ThingDiscoveryInfo *info)
 {
     if (m_discoveredDeviceCount > 0) {
         ThingDescriptor d1(mockThingClassId, "Mock Device 1 (Discovered)", "55555");
@@ -877,7 +860,7 @@ void DevicePluginMock::generateDiscoveredDevices(ThingDiscoveryInfo *info)
     info->finish(Thing::ThingErrorNoError);
 }
 
-void DevicePluginMock::generateDiscoveredPushButtonDevices(ThingDiscoveryInfo *info)
+void IntegrationPluginMock::generateDiscoveredPushButtonDevices(ThingDiscoveryInfo *info)
 {
     if (m_discoveredDeviceCount > 0) {
         ThingDescriptor d1(pushButtonMockThingClassId, "Mocked Thing (Push Button)", "1");
@@ -891,7 +874,7 @@ void DevicePluginMock::generateDiscoveredPushButtonDevices(ThingDiscoveryInfo *i
     info->finish(Thing::ThingErrorNoError, QT_TR_NOOP("This thing will simulate a push button press in 3 seconds."));
 }
 
-void DevicePluginMock::generateDiscoveredDisplayPinDevices(ThingDiscoveryInfo *info)
+void IntegrationPluginMock::generateDiscoveredDisplayPinDevices(ThingDiscoveryInfo *info)
 {
     if (m_discoveredDeviceCount > 0) {
         ThingDescriptor d1(displayPinMockThingClassId, "Mocked Thing (Display Pin)", "1");
@@ -919,18 +902,18 @@ void DevicePluginMock::generateDiscoveredDisplayPinDevices(ThingDiscoveryInfo *i
     info->finish(Thing::ThingErrorNoError);
 }
 
-void DevicePluginMock::onPushButtonPressed()
+void IntegrationPluginMock::onPushButtonPressed()
 {
     qCDebug(dcMock) << "PushButton pressed (automatically)";
     m_pushbuttonPressed = true;
 }
 
-void DevicePluginMock::onPluginConfigChanged()
+void IntegrationPluginMock::onPluginConfigChanged()
 {
 
 }
 
-void DevicePluginMock::generateBrowseItems()
+void IntegrationPluginMock::generateBrowseItems()
 {
     m_virtualFs = new VirtualFsNode(BrowserItem());
 

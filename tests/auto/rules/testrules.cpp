@@ -141,7 +141,7 @@ private slots:
 void TestRules::cleanupMockHistory() {
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(QString::number(m_mockDevice1Port))));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/clearactionhistory").arg(QString::number(m_mockThing1Port))));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -162,12 +162,12 @@ ThingId TestRules::addDisplayPinDevice()
     // Discover device
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
-    resultCountParam.insert("paramTypeId", mockDisplayPinDiscoveryResultCountParamTypeId);
+    resultCountParam.insert("paramTypeId", displayPinMockDiscoveryResultCountParamTypeId);
     resultCountParam.insert("value", 1);
     discoveryParams.append(resultCountParam);
 
     QVariantMap params;
-    params.insert("deviceClassId", mockDisplayPinThingClassId);
+    params.insert("deviceClassId", displayPinMockThingClassId);
     params.insert("discoveryParams", discoveryParams);
     QVariant response = injectAndWait("Devices.GetDiscoveredDevices", params);
 
@@ -176,7 +176,7 @@ ThingId TestRules::addDisplayPinDevice()
     // Pair device
     ThingDescriptorId descriptorId = ThingDescriptorId(response.toMap().value("params").toMap().value("deviceDescriptors").toList().first().toMap().value("id").toString());
     params.clear();
-    params.insert("deviceClassId", mockDisplayPinThingClassId);
+    params.insert("deviceClassId", displayPinMockThingClassId);
     params.insert("name", "Display pin mock device");
     params.insert("deviceDescriptorId", descriptorId.toString());
     response = injectAndWait("Devices.PairDevice", params);
@@ -285,7 +285,7 @@ void TestRules::verifyRuleExecuted(const ActionTypeId &actionTypeId)
     while (!actionFound && i < 50) {
         QNetworkAccessManager nam;
         QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-        QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockDevice1Port))));
+        QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockThing1Port))));
         QNetworkReply *reply = nam.get(request);
         spy.wait();
         QCOMPARE(spy.count(), 1);
@@ -305,7 +305,7 @@ void TestRules::verifyRuleNotExecuted()
 {
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockDevice1Port))));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(QString::number(m_mockThing1Port))));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -394,7 +394,7 @@ void TestRules::generateEvent(const EventTypeId &eventTypeId)
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     // trigger event in mock device
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(eventTypeId.toString())));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockThing1Port).arg(eventTypeId.toString())));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1588,7 +1588,7 @@ void TestRules::evaluateEvent()
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     // trigger event in mock device
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockThing1Port).arg(mockEvent1EventTypeId.toString())));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1602,7 +1602,7 @@ void TestRules::evaluateEventParams()
     // Init bool state to  true
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg("true")));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBoolStateTypeId.toString()).arg("true")));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1641,7 +1641,7 @@ void TestRules::evaluateEventParams()
 
     // Trigger a non matching param
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg("false")));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBoolStateTypeId.toString()).arg("false")));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1651,7 +1651,7 @@ void TestRules::evaluateEventParams()
 
     // Trigger a matching param
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg("true")));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBoolStateTypeId.toString()).arg("true")));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1661,7 +1661,7 @@ void TestRules::evaluateEventParams()
 
     // Reset back to false to not mess with other tests
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg("false")));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBoolStateTypeId.toString()).arg("false")));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1698,7 +1698,7 @@ void TestRules::testStateChange() {
 
     // state state to 42
     qDebug() << "setting mock int state to 42";
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(42)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(42)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1711,7 +1711,7 @@ void TestRules::testStateChange() {
     // set state to 45
     qDebug() << "setting mock int state to 45";
     spy.clear();
-    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(45)));
+    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(45)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1724,7 +1724,7 @@ void TestRules::testStateChange() {
     // set state to 30
     qDebug() << "setting mock int state to 30";
     spy.clear();
-    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(30)));
+    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(30)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1737,7 +1737,7 @@ void TestRules::testStateChange() {
     // set state to 100
     qDebug() << "setting mock int state to 100";
     spy.clear();
-    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(100)));
+    request.setUrl(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(100)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -1903,25 +1903,25 @@ void TestRules::testChildEvaluator_data()
     QVariantMap stateDescriptorPercentage;
     stateDescriptorPercentage.insert("deviceId", testDeviceId);
     stateDescriptorPercentage.insert("operator", enumValueName(Types::ValueOperatorGreaterOrEqual));
-    stateDescriptorPercentage.insert("stateTypeId", mockDisplayPinPercentageStateTypeId);
+    stateDescriptorPercentage.insert("stateTypeId", displayPinMockPercentageStateTypeId);
     stateDescriptorPercentage.insert("value", 50);
 
     QVariantMap stateDescriptorDouble;
     stateDescriptorDouble.insert("deviceId", testDeviceId);
     stateDescriptorDouble.insert("operator", enumValueName(Types::ValueOperatorEquals));
-    stateDescriptorDouble.insert("stateTypeId", mockDisplayPinDoubleActionDoubleParamTypeId);
+    stateDescriptorDouble.insert("stateTypeId", displayPinMockDoubleActionDoubleParamTypeId);
     stateDescriptorDouble.insert("value", 20.5);
 
     QVariantMap stateDescriptorAllowedValues;
     stateDescriptorAllowedValues.insert("deviceId", testDeviceId);
     stateDescriptorAllowedValues.insert("operator", enumValueName(Types::ValueOperatorEquals));
-    stateDescriptorAllowedValues.insert("stateTypeId", mockDisplayPinAllowedValuesStateTypeId);
+    stateDescriptorAllowedValues.insert("stateTypeId", displayPinMockAllowedValuesStateTypeId);
     stateDescriptorAllowedValues.insert("value", "String value 2");
 
     QVariantMap stateDescriptorColor;
     stateDescriptorColor.insert("deviceId", testDeviceId);
     stateDescriptorColor.insert("operator", enumValueName(Types::ValueOperatorEquals));
-    stateDescriptorColor.insert("stateTypeId", mockDisplayPinColorStateTypeId);
+    stateDescriptorColor.insert("stateTypeId", displayPinMockColorStateTypeId);
     stateDescriptorColor.insert("value", "#00FF00");
 
     QVariantMap firstStateEvaluator;
@@ -1976,10 +1976,10 @@ void TestRules::testChildEvaluator()
     QFETCH(bool, active);
 
     // Init the states
-    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinPercentageStateTypeId.toString()), QVariant(0));
-    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinDoubleActionDoubleParamTypeId.toString()), QVariant(0));
-    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinAllowedValuesStateTypeId.toString()), QVariant("String value 1"));
-    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinColorStateTypeId.toString()), QVariant("#000000"));
+    setWritableStateValue(deviceId, StateTypeId(displayPinMockPercentageStateTypeId.toString()), QVariant(0));
+    setWritableStateValue(deviceId, StateTypeId(displayPinMockDoubleActionDoubleParamTypeId.toString()), QVariant(0));
+    setWritableStateValue(deviceId, StateTypeId(displayPinMockAllowedValuesStateTypeId.toString()), QVariant("String value 1"));
+    setWritableStateValue(deviceId, StateTypeId(displayPinMockColorStateTypeId.toString()), QVariant("#000000"));
 
     qCDebug(dcTests()) << "Adding rule";
 
@@ -1991,13 +1991,13 @@ void TestRules::testChildEvaluator()
 
     // Set the states
     qCDebug(dcTests()) << "Setting state 1";
-    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinPercentageStateTypeId.toString()), QVariant::fromValue(percentageValue));
+    setWritableStateValue(deviceId, StateTypeId(displayPinMockPercentageStateTypeId.toString()), QVariant::fromValue(percentageValue));
     qCDebug(dcTests()) << "Setting state 2";
-    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinDoubleActionDoubleParamTypeId.toString()), QVariant::fromValue(doubleValue));
+    setWritableStateValue(deviceId, StateTypeId(displayPinMockDoubleActionDoubleParamTypeId.toString()), QVariant::fromValue(doubleValue));
     qCDebug(dcTests()) << "Setting state 3";
-    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinAllowedValuesStateTypeId.toString()), QVariant::fromValue(allowedValue));
+    setWritableStateValue(deviceId, StateTypeId(displayPinMockAllowedValuesStateTypeId.toString()), QVariant::fromValue(allowedValue));
     qCDebug(dcTests()) << "Setting state 4";
-    setWritableStateValue(deviceId, StateTypeId(mockDisplayPinColorStateTypeId.toString()), QVariant::fromValue(colorValue));
+    setWritableStateValue(deviceId, StateTypeId(displayPinMockColorStateTypeId.toString()), QVariant::fromValue(colorValue));
 
     // Verfiy if the rule executed successfully
     // Actions
@@ -2055,7 +2055,7 @@ void TestRules::enableDisableRule()
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     // trigger event in mock device
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockThing1Port).arg(mockEvent1EventTypeId.toString())));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2079,7 +2079,7 @@ void TestRules::enableDisableRule()
 
     // trigger event in mock device
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockThing1Port).arg(mockEvent1EventTypeId.toString())));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2103,7 +2103,7 @@ void TestRules::enableDisableRule()
 
     // trigger event in mock device
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockThing1Port).arg(mockEvent1EventTypeId.toString())));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2152,7 +2152,7 @@ void TestRules::testEventBasedAction()
 
     // state state to 42
     qDebug() << "setting mock int state to 42";
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(42)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(42)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2169,7 +2169,7 @@ void TestRules::testEventBasedRuleWithExitAction()
 
     // Init bool state to true
     spy.clear();
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg(true)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBoolStateTypeId.toString()).arg(true)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2224,7 +2224,7 @@ void TestRules::testEventBasedRuleWithExitAction()
 
     // trigger event
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockThing1Port).arg(mockEvent1EventTypeId.toString())));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2235,7 +2235,7 @@ void TestRules::testEventBasedRuleWithExitAction()
 
     // set bool state to false
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg(false)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBoolStateTypeId.toString()).arg(false)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2243,7 +2243,7 @@ void TestRules::testEventBasedRuleWithExitAction()
 
     // trigger event
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockThing1Port).arg(mockEvent1EventTypeId.toString())));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2261,7 +2261,7 @@ void TestRules::testStateBasedAction()
 
     // Init bool state to true
     spy.clear();
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg(true)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBoolStateTypeId.toString()).arg(true)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2269,7 +2269,7 @@ void TestRules::testStateBasedAction()
 
     // Init int state to 11
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockIntStateTypeId.toString()).arg(11)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(11)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2312,7 +2312,7 @@ void TestRules::testStateBasedAction()
 
     // trigger event
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockThing1Port).arg(mockEvent1EventTypeId.toString())));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2330,7 +2330,7 @@ void TestRules::testStateBasedAction()
 
     // set bool state to false
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBoolStateTypeId.toString()).arg(false)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBoolStateTypeId.toString()).arg(false)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2338,7 +2338,7 @@ void TestRules::testStateBasedAction()
 
     // trigger event
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockDevice1Port).arg(mockEvent1EventTypeId.toString())));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockThing1Port).arg(mockEvent1EventTypeId.toString())));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2356,7 +2356,7 @@ void TestRules::removePolicyUpdate()
 {
     // ADD parent device
     QVariantMap params;
-    params.insert("deviceClassId", mockParentThingClassId);
+    params.insert("deviceClassId", parentMockThingClassId);
     params.insert("name", "Parent device");
 
     QSignalSpy addedSpy(NymeaCore::instance()->thingManager(), &ThingManager::thingAdded);
@@ -2378,7 +2378,7 @@ void TestRules::removePolicyUpdate()
     foreach (const QVariant deviceVariant, devices) {
         QVariantMap deviceMap = deviceVariant.toMap();
 
-        if (deviceMap.value("deviceClassId").toString() == mockChildThingClassId.toString()) {
+        if (deviceMap.value("deviceClassId").toString() == childMockThingClassId.toString()) {
             if (deviceMap.value("parentId") == parentId.toString()) {
                 //qDebug() << QJsonDocument::fromVariant(deviceVariant).toJson();
                 childId = ThingId(deviceMap.value("id").toString());
@@ -2389,8 +2389,8 @@ void TestRules::removePolicyUpdate()
 
     // Add rule with child device
     QVariantList eventDescriptors;
-    eventDescriptors.append(createEventDescriptor(childId, mockChildBoolValueEventTypeId));
-    eventDescriptors.append(createEventDescriptor(parentId, mockParentBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(childId, childMockBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(parentId, parentMockBoolValueEventTypeId));
     eventDescriptors.append(createEventDescriptor(m_mockThingId, mockEvent1EventTypeId));
 
     params.clear(); response.clear();
@@ -2443,7 +2443,7 @@ void TestRules::removePolicyCascade()
 {
     // ADD parent device
     QVariantMap params;
-    params.insert("deviceClassId", mockParentThingClassId);
+    params.insert("deviceClassId", parentMockThingClassId);
     params.insert("name", "Parent device");
 
     QSignalSpy addedSpy(NymeaCore::instance()->thingManager(), &ThingManager::thingAdded);
@@ -2465,7 +2465,7 @@ void TestRules::removePolicyCascade()
     foreach (const QVariant deviceVariant, devices) {
         QVariantMap deviceMap = deviceVariant.toMap();
 
-        if (deviceMap.value("deviceClassId").toString() == mockChildThingClassId.toString()) {
+        if (deviceMap.value("deviceClassId").toString() == childMockThingClassId.toString()) {
             if (deviceMap.value("parentId") == parentId.toString()) {
                 //qDebug() << QJsonDocument::fromVariant(deviceVariant).toJson();
                 childId = ThingId(deviceMap.value("id").toString());
@@ -2476,8 +2476,8 @@ void TestRules::removePolicyCascade()
 
     // Add rule with child device
     QVariantList eventDescriptors;
-    eventDescriptors.append(createEventDescriptor(childId, mockChildBoolValueEventTypeId));
-    eventDescriptors.append(createEventDescriptor(parentId, mockParentBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(childId, childMockBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(parentId, parentMockBoolValueEventTypeId));
     eventDescriptors.append(createEventDescriptor(m_mockThingId, mockEvent1EventTypeId));
 
     params.clear(); response.clear();
@@ -2520,7 +2520,7 @@ void TestRules::removePolicyUpdateRendersUselessRule()
 {
     // ADD parent device
     QVariantMap params;
-    params.insert("deviceClassId", mockParentThingClassId);
+    params.insert("deviceClassId", parentMockThingClassId);
     params.insert("name", "Parent device");
 
     QSignalSpy addedSpy(NymeaCore::instance()->thingManager(), &ThingManager::thingAdded);
@@ -2543,7 +2543,7 @@ void TestRules::removePolicyUpdateRendersUselessRule()
     foreach (const QVariant deviceVariant, devices) {
         QVariantMap deviceMap = deviceVariant.toMap();
 
-        if (deviceMap.value("deviceClassId").toString() == mockChildThingClassId.toString()) {
+        if (deviceMap.value("deviceClassId").toString() == childMockThingClassId.toString()) {
             if (deviceMap.value("parentId") == parentId.toString()) {
                 //qDebug() << QJsonDocument::fromVariant(deviceVariant).toJson();
                 childId = ThingId(deviceMap.value("id").toString());
@@ -2554,8 +2554,8 @@ void TestRules::removePolicyUpdateRendersUselessRule()
 
     // Add rule with child device
     QVariantList eventDescriptors;
-    eventDescriptors.append(createEventDescriptor(childId, mockChildBoolValueEventTypeId));
-    eventDescriptors.append(createEventDescriptor(parentId, mockParentBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(childId, childMockBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(parentId, parentMockBoolValueEventTypeId));
     eventDescriptors.append(createEventDescriptor(m_mockThingId, mockEvent1EventTypeId));
 
     params.clear(); response.clear();
@@ -2564,9 +2564,9 @@ void TestRules::removePolicyUpdateRendersUselessRule()
 
     QVariantMap action;
     action.insert("deviceId", childId);
-    action.insert("actionTypeId", mockChildBoolValueActionTypeId);
+    action.insert("actionTypeId", childMockBoolValueActionTypeId);
     QVariantMap ruleActionParam;
-    ruleActionParam.insert("paramTypeId", mockChildBoolValueActionBoolValueParamTypeId);
+    ruleActionParam.insert("paramTypeId", childMockBoolValueActionBoolValueParamTypeId);
     ruleActionParam.insert("value", true);
     action.insert("ruleActionParams", QVariantList() << ruleActionParam);
     params.insert("actions", QVariantList() << action);
@@ -2826,7 +2826,7 @@ void TestRules::testInterfaceBasedEventRule()
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     // state battery critical state to false initially
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2882,13 +2882,13 @@ void TestRules::testInterfaceBasedEventRule()
 
     // Change the state to true, action should trigger
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockThing1Port)));
     reply = nam.get(request);
 
     qDebug(dcTests) << "Changing battery state -> true";
 
     spy.wait(); spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(true)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(true)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2900,13 +2900,13 @@ void TestRules::testInterfaceBasedEventRule()
 
     // Change the state to false, action should not trigger
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockThing1Port)));
     reply = nam.get(request);
 
     qDebug(dcTests) << "Changing battery state -> false";
 
     spy.wait(); spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2920,7 +2920,7 @@ void TestRules::testInterfaceBasedStateRule()
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     // state battery critical state to false initially
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -2974,7 +2974,7 @@ void TestRules::testInterfaceBasedStateRule()
 
     // Change the state
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(true)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(true)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -3070,7 +3070,7 @@ void TestRules::testScene()
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     // state power state to false initially
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockPowerStateTypeId.toString()).arg(false)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockPowerStateTypeId.toString()).arg(false)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -3078,7 +3078,7 @@ void TestRules::testScene()
 
     // state battery critical state to false initially
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(false)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -3105,7 +3105,7 @@ void TestRules::testScene()
 
     // trigger state change on battery critical
     spy.clear();
-    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockDevice1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(true)));
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockBatteryCriticalStateTypeId.toString()).arg(true)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -3144,7 +3144,7 @@ void TestRules::testHousekeeping()
     params.insert("name", "TestDeviceToBeRemoved");
     QVariantList deviceParams;
     QVariantMap httpParam;
-    httpParam.insert("paramTypeId", mockDeviceHttpportParamTypeId);
+    httpParam.insert("paramTypeId", mockThingHttpportParamTypeId);
     httpParam.insert("value", 6667);
     deviceParams.append(httpParam);
     params.insert("deviceParams", deviceParams);

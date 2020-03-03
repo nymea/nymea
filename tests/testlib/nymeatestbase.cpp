@@ -46,8 +46,8 @@ NymeaTestBase::NymeaTestBase(QObject *parent) :
 {
     qRegisterMetaType<QNetworkReply*>();
     qsrand(QDateTime::currentMSecsSinceEpoch());
-    m_mockDevice1Port = 1337 + (qrand() % 10000);
-    m_mockDevice2Port = 7331 + (qrand() % 10000);
+    m_mockThing1Port = 1337 + (qrand() % 10000);
+    m_mockThing2Port = 7331 + (qrand() % 10000);
 
     // Important for settings
     QCoreApplication::instance()->setOrganizationName("nymea-test");
@@ -105,7 +105,7 @@ void NymeaTestBase::initTestCase()
 
     response = injectAndWait("Devices.GetConfiguredDevices", {});
     foreach (const QVariant &device, response.toMap().value("params").toMap().value("devices").toList()) {
-        if (device.toMap().value("deviceClassId").toUuid() == mockDeviceAutoThingClassId) {
+        if (device.toMap().value("deviceClassId").toUuid() == autoMockThingClassId) {
             m_mockThingAutoId = ThingId(device.toMap().value("id").toString());
         }
     }
@@ -404,6 +404,13 @@ bool NymeaTestBase::disableNotifications()
     return true;
 }
 
+void NymeaTestBase::waitForDBSync()
+{
+    while (NymeaCore::instance()->logEngine()->jobsRunning()) {
+        qApp->processEvents();
+    }
+}
+
 void NymeaTestBase::restartServer()
 {
     // Destroy and recreate the core instance...
@@ -430,8 +437,8 @@ void NymeaTestBase::createMockDevice()
 
     QVariantList deviceParams;
     QVariantMap httpPortParam;
-    httpPortParam.insert("paramTypeId", mockDeviceHttpportParamTypeId.toString());
-    httpPortParam.insert("value", m_mockDevice1Port);
+    httpPortParam.insert("paramTypeId", mockThingHttpportParamTypeId.toString());
+    httpPortParam.insert("value", m_mockThing1Port);
     deviceParams.append(httpPortParam);
     params.insert("deviceParams", deviceParams);
 

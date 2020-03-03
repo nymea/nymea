@@ -65,7 +65,7 @@ void TestEvents::triggerEvent()
     QNetworkAccessManager nam;
 
     // trigger event in mock device
-    int port = device->paramValue(mockDeviceHttpportParamTypeId).toInt();
+    int port = device->paramValue(mockThingHttpportParamTypeId).toInt();
     QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(port).arg(mockEvent1EventTypeId.toString())));
     QNetworkReply *reply = nam.get(request);
     connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
@@ -107,7 +107,7 @@ void TestEvents::triggerStateChangeEvent()
     QNetworkAccessManager nam;
 
     // trigger state changed event in mock device
-    int port = device->paramValue(mockDeviceHttpportParamTypeId).toInt();
+    int port = device->paramValue(mockThingHttpportParamTypeId).toInt();
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockIntStateTypeId.toString()).arg(11)));
     QNetworkReply *reply = nam.get(request);
     connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);

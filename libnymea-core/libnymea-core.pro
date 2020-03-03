@@ -17,7 +17,6 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 HEADERS += nymeacore.h \
     integrations/plugininfocache.h \
-    integrations/scriptintegrationplugin.h \
     integrations/thingmanagerimplementation.h \
     integrations/translator.h \
     experiences/experiencemanager.h \
@@ -104,7 +103,6 @@ HEADERS += nymeacore.h \
 
 SOURCES += nymeacore.cpp \
     integrations/plugininfocache.cpp \
-    integrations/scriptintegrationplugin.cpp \
     integrations/thingmanagerimplementation.cpp \
     integrations/translator.cpp \
     experiences/experiencemanager.cpp \
@@ -189,6 +187,8 @@ SOURCES += nymeacore.cpp \
 
 versionAtLeast(QT_VERSION, 5.12.0) {
 HEADERS += \
+    integrations/scriptintegrationplugin.h
 
 SOURCES += \
+    integrations/scriptintegrationplugin.cpp
 }

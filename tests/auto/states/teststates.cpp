@@ -94,7 +94,7 @@ void TestStates::save_load_states()
     QVERIFY2(!mockDeviceClass.getStateType(mockBoolStateTypeId).cached(), "Mock bool state is cached (required to be false for this test)");
 
     Thing* device = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId).first();
-    int port = device->paramValue(mockDeviceHttpportParamTypeId).toInt();
+    int port = device->paramValue(mockThingHttpportParamTypeId).toInt();
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 

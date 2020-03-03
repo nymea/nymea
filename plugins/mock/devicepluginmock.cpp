@@ -84,7 +84,7 @@ DevicePluginMock::~DevicePluginMock()
 void DevicePluginMock::discoverThings(ThingDiscoveryInfo *info)
 {
     if (info->thingClassId() == mockThingClassId) {
-        qCDebug(dcMockDevice) << "starting mock discovery:" << info->params();
+        qCDebug(dcMock()) << "starting mock discovery:" << info->params();
         m_discoveredDeviceCount = info->params().paramValue(mockDiscoveryResultCountParamTypeId).toInt();
         QTimer::singleShot(1000, info, [this, info](){
             generateDiscoveredDevices(info);
@@ -92,39 +92,39 @@ void DevicePluginMock::discoverThings(ThingDiscoveryInfo *info)
         return;
     }
 
-    if (info->thingClassId() == mockPushButtonThingClassId) {
-        qCDebug(dcMockDevice) << "starting mock push button discovery:" << info->params();
-        m_discoveredDeviceCount = info->params().paramValue(mockPushButtonDiscoveryResultCountParamTypeId).toInt();
+    if (info->thingClassId() == pushButtonMockThingClassId) {
+        qCDebug(dcMock()) << "starting mock push button discovery:" << info->params();
+        m_discoveredDeviceCount = info->params().paramValue(pushButtonMockDiscoveryResultCountParamTypeId).toInt();
         QTimer::singleShot(1000, info, [this, info]() {
             generateDiscoveredPushButtonDevices(info);
         });
         return;
     }
 
-    if (info->thingClassId() == mockDisplayPinThingClassId) {
-        qCDebug(dcMockDevice) << "starting mock display pin discovery:" << info->params();
-        m_discoveredDeviceCount = info->params().paramValue(mockDisplayPinDiscoveryResultCountParamTypeId).toInt();
+    if (info->thingClassId() == displayPinMockThingClassId) {
+        qCDebug(dcMock()) << "starting mock display pin discovery:" << info->params();
+        m_discoveredDeviceCount = info->params().paramValue(displayPinMockDiscoveryResultCountParamTypeId).toInt();
         QTimer::singleShot(1000, info, [this, info]() {
             generateDiscoveredDisplayPinDevices(info);
         });
         return;
     }
 
-    if (info->thingClassId() == mockParentThingClassId) {
-        qCDebug(dcMockDevice()) << "Starting discovery for mock device parent";
+    if (info->thingClassId() == parentMockThingClassId) {
+        qCDebug(dcMock()) << "Starting discovery for mocked parent thing";
         QTimer::singleShot(1000, info, [info](){
-            ThingDescriptor descriptor(mockParentThingClassId, "Mock Parent (Discovered)");
+            ThingDescriptor descriptor(parentMockThingClassId, "Mocked Thing Parent (Discovered)");
             info->addThingDescriptor(descriptor);
             info->finish(Thing::ThingErrorNoError);
         });
         return;
     }
 
-    if (info->thingClassId() == mockChildThingClassId) {
+    if (info->thingClassId() == childMockThingClassId) {
         QTimer::singleShot(1000, info, [this, info](){
-            if (!myThings().filterByThingClassId(mockParentThingClassId).isEmpty()) {
-                Thing *parent = myThings().filterByThingClassId(mockParentThingClassId).first();
-                ThingDescriptor descriptor(mockChildThingClassId, "Mock Child (Discovered)", QString(), parent->id());
+            if (!myThings().filterByThingClassId(parentMockThingClassId).isEmpty()) {
+                Thing *parent = myThings().filterByThingClassId(parentMockThingClassId).first();
+                ThingDescriptor descriptor(childMockThingClassId, "Mocked Thing Child (Discovered)", QString(), parent->id());
                 info->addThingDescriptor(descriptor);
             }
             info->finish(Thing::ThingErrorNoError);
@@ -132,10 +132,10 @@ void DevicePluginMock::discoverThings(ThingDiscoveryInfo *info)
         return;
     }
 
-    if (info->thingClassId() == mockUserAndPassThingClassId) {
+    if (info->thingClassId() == userAndPassMockThingClassId) {
         QTimer::singleShot(1000, info, [this, info](){
-            if (myThings().filterByThingClassId(mockUserAndPassThingClassId).isEmpty()) {
-                ThingDescriptor descriptor(mockUserAndPassThingClassId, "Mock User & Password (Discovered)", QString());
+            if (myThings().filterByThingClassId(userAndPassMockThingClassId).isEmpty()) {
+                ThingDescriptor descriptor(userAndPassMockThingClassId, "Mocked Thing User & Password (Discovered)", QString());
                 info->addThingDescriptor(descriptor);
             }
             info->finish(Thing::ThingErrorNoError);
@@ -143,27 +143,27 @@ void DevicePluginMock::discoverThings(ThingDiscoveryInfo *info)
         return;
     }
 
-    qCWarning(dcMockDevice()) << "Cannot discover for ThingClassId" << info->thingClassId();
+    qCWarning(dcMock()) << "Cannot discover for ThingClassId" << info->thingClassId();
     info->finish(Thing::ThingErrorThingNotFound);
 }
 
 void DevicePluginMock::setupThing(ThingSetupInfo *info)
 {
-    if (info->thing()->thingClassId() == mockThingClassId || info->thing()->thingClassId() == mockDeviceAutoThingClassId) {
+    if (info->thing()->thingClassId() == mockThingClassId || info->thing()->thingClassId() == autoMockThingClassId) {
         bool async = false;
         bool broken = false;
         if (info->thing()->thingClassId() == mockThingClassId) {
-            async = info->thing()->paramValue(mockDeviceAsyncParamTypeId).toBool();
-            broken = info->thing()->paramValue(mockDeviceBrokenParamTypeId).toBool();
+            async = info->thing()->paramValue(mockThingAsyncParamTypeId).toBool();
+            broken = info->thing()->paramValue(mockThingBrokenParamTypeId).toBool();
         } else {
-            async = info->thing()->paramValue(mockDeviceAutoDeviceAsyncParamTypeId).toBool();
-            broken = info->thing()->paramValue(mockDeviceAutoDeviceBrokenParamTypeId).toBool();
+            async = info->thing()->paramValue(autoMockThingAsyncParamTypeId).toBool();
+            broken = info->thing()->paramValue(autoMockThingBrokenParamTypeId).toBool();
         }
-        qCDebug(dcMockDevice()) << "SetupDevice for" << info->thing()->name() << "Async:" << async << "Broken:" << broken;
+        qCDebug(dcMock()) << "SetupThing for" << info->thing()->name() << "Async:" << async << "Broken:" << broken;
 
         if (!async && broken) {
-            qCWarning(dcMockDevice) << "This device is intentionally broken.";
-            info->finish(Thing::ThingErrorSetupFailed, QT_TR_NOOP("This mock device is intentionally broken."));
+            qCWarning(dcMock()) << "This thing is intentionally broken.";
+            info->finish(Thing::ThingErrorSetupFailed, QT_TR_NOOP("This mocked thing is intentionally broken."));
             return;
         }
 
@@ -172,7 +172,7 @@ void DevicePluginMock::setupThing(ThingSetupInfo *info)
             m_daemons.insert(info->thing(), daemon);
 
             if (!daemon->isListening()) {
-                qCWarning(dcMockDevice) << "HTTP port opening failed:" << info->thing()->paramValue(mockDeviceHttpportParamTypeId).toInt();
+                qCWarning(dcMock()) << "HTTP port opening failed:" << info->thing()->paramValue(mockThingHttpportParamTypeId).toInt();
                 info->finish(Thing::ThingErrorHardwareNotAvailable, QT_TR_NOOP("Failed to open HTTP port. Port in use?"));
                 return;
             }
@@ -188,83 +188,83 @@ void DevicePluginMock::setupThing(ThingSetupInfo *info)
         if (async) {
             Thing *device = info->thing();
             QTimer::singleShot(1000, device, [info](){
-                qCDebug(dcMockDevice) << "Finishing device setup for mock device" << info->thing()->name();
-                if (info->thing()->paramValue(mockDeviceBrokenParamTypeId).toBool()) {
-                    info->finish(Thing::ThingErrorSetupFailed, QT_TR_NOOP("This mock device is intentionally broken."));
+                qCDebug(dcMock()) << "Finishing thing setup for mocked thing" << info->thing()->name();
+                if (info->thing()->paramValue(mockThingBrokenParamTypeId).toBool()) {
+                    info->finish(Thing::ThingErrorSetupFailed, QT_TR_NOOP("This mocked thing is intentionally broken."));
                 } else {
                     info->finish(Thing::ThingErrorNoError);
                 }
             });
             return;
         }
-        qCDebug(dcMockDevice()) << "Setup complete" << info->thing()->name();
+        qCDebug(dcMock()) << "Setup complete" << info->thing()->name();
         info->finish(Thing::ThingErrorNoError);
         return;
     }
 
-    if (info->thing()->thingClassId() == mockPushButtonThingClassId) {
-        qCDebug(dcMockDevice) << "Setup PushButton mock device" << info->thing()->params();
+    if (info->thing()->thingClassId() == pushButtonMockThingClassId) {
+        qCDebug(dcMock()) << "Setup PushButton mock thing" << info->thing()->params();
         info->finish(Thing::ThingErrorNoError);
         return;
     }
 
-    if (info->thing()->thingClassId() == mockDisplayPinThingClassId) {
-        qCDebug(dcMockDevice) << "Setup DisplayPin mock device" << info->thing()->params();
+    if (info->thing()->thingClassId() == displayPinMockThingClassId) {
+        qCDebug(dcMock()) << "Setup DisplayPin mock thing" << info->thing()->params();
         info->finish(Thing::ThingErrorNoError);
         return;
     }
 
-    if (info->thing()->thingClassId() == mockParentThingClassId) {
-        qCDebug(dcMockDevice) << "Setup Parent mock device" << info->thing()->params();
+    if (info->thing()->thingClassId() == parentMockThingClassId) {
+        qCDebug(dcMock()) << "Setup Parent mock thing" << info->thing()->params();
         info->finish(Thing::ThingErrorNoError);
         return;
     }
 
-    if (info->thing()->thingClassId() == mockChildThingClassId) {
-        qCDebug(dcMockDevice) << "Setup Child mock device" << info->thing()->params();
+    if (info->thing()->thingClassId() == childMockThingClassId) {
+        qCDebug(dcMock()) << "Setup Child mock thing" << info->thing()->params();
         info->finish(Thing::ThingErrorNoError);
         return;
     }
 
-    if (info->thing()->thingClassId() == mockInputTypeThingClassId) {
-        qCDebug(dcMockDevice) << "Setup InputType mock device" << info->thing()->params();
+    if (info->thing()->thingClassId() == inputTypeMockThingClassId) {
+        qCDebug(dcMock()) << "Setup InputType mock thing" << info->thing()->params();
         info->finish(Thing::ThingErrorNoError);
         return;
     }
 
-    if (info->thing()->thingClassId() == mockUserAndPassThingClassId) {
-        qCDebug(dcMockDevice()) << "Setup User and password mock device";
+    if (info->thing()->thingClassId() == userAndPassMockThingClassId) {
+        qCDebug(dcMock()) << "Setup User and password mock thing";
         info->finish(Thing::ThingErrorNoError);
         return;
     }
 
-    if (info->thing()->thingClassId() == mockOAuthGoogleThingClassId) {
-        qCDebug(dcMockDevice()) << "Google OAuth setup complete";
+    if (info->thing()->thingClassId() == oAuthGoogleMockThingClassId) {
+        qCDebug(dcMock()) << "Google OAuth setup complete";
         info->finish(Thing::ThingErrorNoError);
         return;
     }
 
-    if (info->thing()->thingClassId() == mockOAuthSonosThingClassId) {
-        qCDebug(dcMockDevice()) << "Sonos OAuth setup complete";
+    if (info->thing()->thingClassId() == oAuthSonosMockThingClassId) {
+        qCDebug(dcMock()) << "Sonos OAuth setup complete";
         info->finish(Thing::ThingErrorNoError);
         return;
     }
 
-    qCWarning(dcMockDevice()) << "Unhandled device class" << info->thing()->thingClass();
+    qCWarning(dcMock()) << "Unhandled thing class" << info->thing()->thingClass();
     info->finish(Thing::ThingErrorThingClassNotFound);
 }
 
 void DevicePluginMock::postSetupThing(Thing *device)
 {
-    qCDebug(dcMockDevice) << "Postsetup mockdevice" << device->name();
-    if (device->thingClassId() == mockParentThingClassId) {
+    qCDebug(dcMock()) << "Postsetup mock" << device->name();
+    if (device->thingClassId() == parentMockThingClassId) {
         foreach (Thing *d, myThings()) {
-            if (d->thingClassId() == mockChildThingClassId && d->parentId() == device->id()) {
+            if (d->thingClassId() == childMockThingClassId && d->parentId() == device->id()) {
                 return;
             }
         }
 
-        ThingDescriptor mockDescriptor(mockChildThingClassId, "Child Mock Device (Auto created)", "Child Mock Device (Auto created)", device->id());
+        ThingDescriptor mockDescriptor(childMockThingClassId, "Mocked Thing Child (Auto created)", "Mocked Thing Child (Auto created)", device->id());
         emit autoThingsAppeared(ThingDescriptors() << mockDescriptor);
     }
 }
@@ -277,17 +277,17 @@ void DevicePluginMock::thingRemoved(Thing *device)
 void DevicePluginMock::startMonitoringAutoThings()
 {
     foreach (Thing *device, myThings()) {
-        if (device->thingClassId() == mockDeviceAutoThingClassId) {
+        if (device->thingClassId() == autoMockThingClassId) {
             return; // We already have a Auto Mock device... do nothing.
         }
     }
 
-    ThingDescriptor mockDescriptor(mockDeviceAutoThingClassId, "Mock Device (Auto created)");
+    ThingDescriptor mockDescriptor(autoMockThingClassId, "Mocked Thing (Auto created)");
 
     ParamList params;
     qsrand(QDateTime::currentMSecsSinceEpoch());
     int port = 4242 + (qrand() % 1000);
-    Param param(mockDeviceAutoDeviceHttpportParamTypeId, port);
+    Param param(autoMockThingHttpportParamTypeId, port);
     params.append(param);
     mockDescriptor.setParams(params);
 
@@ -299,27 +299,27 @@ void DevicePluginMock::startMonitoringAutoThings()
 
 void DevicePluginMock::startPairing(ThingPairingInfo *info)
 {
-    if (info->thingClassId() == mockPushButtonThingClassId) {
-        qCDebug(dcMockDevice) << "Push button. Pressing the button in 3 seconds.";
+    if (info->thingClassId() == pushButtonMockThingClassId) {
+        qCDebug(dcMock()) << "Push button. Pressing the button in 3 seconds.";
         info->finish(Thing::ThingErrorNoError, QT_TR_NOOP("Wait 3 second before you continue, the push button will be pressed automatically."));
         m_pushbuttonPressed = false;
         QTimer::singleShot(3000, this, SLOT(onPushButtonPressed()));
         return;
     }
 
-    if (info->thingClassId() == mockDisplayPinThingClassId) {
-        qCDebug(dcMockDevice) << "Display pin!! The pin is 243681";
-        info->finish(Thing::ThingErrorNoError, QT_TR_NOOP("Please enter the secret which normaly will be displayed on the device. For the mockdevice the pin is 243681."));
+    if (info->thingClassId() == displayPinMockThingClassId) {
+        qCDebug(dcMock()) << "Display pin!! The pin is 243681";
+        info->finish(Thing::ThingErrorNoError, QT_TR_NOOP("Please enter the secret which normaly will be displayed on the device. For this mocked thing the pin is 243681."));
         return;
     }
 
-    if (info->thingClassId() == mockUserAndPassThingClassId) {
-        qCDebug(dcMockDevice) << "User and password. Login is \"user\" and \"password\".";
-        info->finish(Thing::ThingErrorNoError, QT_TR_NOOP("Please enter login credentials for the mock device (\"user\" and \"password\")."));
+    if (info->thingClassId() == userAndPassMockThingClassId) {
+        qCDebug(dcMock()) << "User and password. Login is \"user\" and \"password\".";
+        info->finish(Thing::ThingErrorNoError, QT_TR_NOOP("Please enter login credentials for the mocked thing (\"user\" and \"password\")."));
         return;
     }
 
-    if (info->thingClassId() == mockOAuthSonosThingClassId) {
+    if (info->thingClassId() == oAuthSonosMockThingClassId) {
         QString clientId = "b15cbf8c-a39c-47aa-bd93-635a96e9696c";
         QString clientSecret = "c086ba71-e562-430b-a52f-867c6482fd11";
 
@@ -332,14 +332,14 @@ void DevicePluginMock::startPairing(ThingPairingInfo *info)
         queryParams.addQueryItem("state", "ya-ya");
         url.setQuery(queryParams);
 
-        qCDebug(dcMockDevice()) << "Sonos url:" << url;
+        qCDebug(dcMock()) << "Sonos url:" << url;
 
         info->setOAuthUrl(url);
         info->finish(Thing::ThingErrorNoError);
         return;
     }
 
-    if (info->thingClassId() == mockOAuthGoogleThingClassId) {
+    if (info->thingClassId() == oAuthGoogleMockThingClassId) {
         QString clientId= "937667874529-pr6s5ciu6sfnnqmt2sppvb6rokbkjjta.apps.googleusercontent.com";
         QString clientSecret = "1ByBRmNqaK08VC54eEVcnGf1";
 
@@ -362,11 +362,11 @@ void DevicePluginMock::startPairing(ThingPairingInfo *info)
 
 void DevicePluginMock::confirmPairing(ThingPairingInfo *info, const QString &username, const QString &secret)
 {
-    qCDebug(dcMockDevice) << "Confirm pairing";
+    qCDebug(dcMock()) << "Confirm pairing";
 
-    if (info->thingClassId() == mockPushButtonThingClassId) {
+    if (info->thingClassId() == pushButtonMockThingClassId) {
         if (!m_pushbuttonPressed) {
-            qCDebug(dcMockDevice) << "PushButton not pressed yet!";
+            qCDebug(dcMock()) << "PushButton not pressed yet!";
             info->finish(Thing::ThingErrorAuthenticationFailure, QT_TR_NOOP("The push button has not been pressed."));
             return;
         }
@@ -377,21 +377,21 @@ void DevicePluginMock::confirmPairing(ThingPairingInfo *info, const QString &use
         return;
     }
 
-    if (info->thingClassId() == mockDisplayPinThingClassId) {
+    if (info->thingClassId() == displayPinMockThingClassId) {
         if (secret != "243681") {
-            qCWarning(dcMockDevice) << "Invalid pin:" << secret;
+            qCWarning(dcMock()) << "Invalid pin:" << secret;
             info->finish(Thing::ThingErrorAuthenticationFailure, QT_TR_NOOP("Invalid PIN!"));
             return;
         }
         QTimer::singleShot(500, this, [info](){
-            qCDebug(dcMockDevice()) << "Pairing finished.";
+            qCDebug(dcMock()) << "Pairing finished.";
             info->finish(Thing::ThingErrorNoError);
         });
         return;
     }
 
-    if (info->thingClassId() == mockUserAndPassThingClassId) {
-        qCDebug(dcMockDevice()) << "Credentials received:" << username << secret;
+    if (info->thingClassId() == userAndPassMockThingClassId) {
+        qCDebug(dcMock()) << "Credentials received:" << username << secret;
         if (username == "user" && secret == "password") {
             info->finish(Thing::ThingErrorNoError);
             return;
@@ -402,11 +402,11 @@ void DevicePluginMock::confirmPairing(ThingPairingInfo *info, const QString &use
     }
 
 
-    if (info->thingClassId() == mockOAuthSonosThingClassId) {
-        qCDebug(dcMockDevice()) << "Secret is" << secret;
+    if (info->thingClassId() == oAuthSonosMockThingClassId) {
+        qCDebug(dcMock()) << "Secret is" << secret;
         QUrl url(secret);
         QUrlQuery query(url);
-        qCDebug(dcMockDevice()) << "Acess code is:" << query.queryItemValue("code");
+        qCDebug(dcMock()) << "Acess code is:" << query.queryItemValue("code");
 
         QString accessCode = query.queryItemValue("code");
 
@@ -432,10 +432,10 @@ void DevicePluginMock::confirmPairing(ThingPairingInfo *info, const QString &use
             reply->deleteLater();
 
             QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll());
-            qCDebug(dcMockDevice()) << "Sonos accessToken reply:" << this << reply->error() << reply->errorString() << jsonDoc.toJson();
-            qCDebug(dcMockDevice()) << "Access token:" << jsonDoc.toVariant().toMap().value("access_token").toString();
-            qCDebug(dcMockDevice()) << "expires at" << QDateTime::currentDateTime().addSecs(jsonDoc.toVariant().toMap().value("expires_in").toInt()).toString();
-            qCDebug(dcMockDevice()) << "Refresh token:" << jsonDoc.toVariant().toMap().value("refresh_token").toString();
+            qCDebug(dcMock()) << "Sonos accessToken reply:" << this << reply->error() << reply->errorString() << jsonDoc.toJson();
+            qCDebug(dcMock()) << "Access token:" << jsonDoc.toVariant().toMap().value("access_token").toString();
+            qCDebug(dcMock()) << "expires at" << QDateTime::currentDateTime().addSecs(jsonDoc.toVariant().toMap().value("expires_in").toInt()).toString();
+            qCDebug(dcMock()) << "Refresh token:" << jsonDoc.toVariant().toMap().value("refresh_token").toString();
             info->finish(Thing::ThingErrorNoError);
         });
 
@@ -443,11 +443,11 @@ void DevicePluginMock::confirmPairing(ThingPairingInfo *info, const QString &use
     }
 
 
-    if (info->thingClassId() == mockOAuthGoogleThingClassId) {
-        qCDebug(dcMockDevice()) << "Secret is" << secret;
+    if (info->thingClassId() == oAuthGoogleMockThingClassId) {
+        qCDebug(dcMock()) << "Secret is" << secret;
         QUrl url(secret);
         QUrlQuery query(url);
-        qCDebug(dcMockDevice()) << "Acess code is:" << query.queryItemValue("code");
+        qCDebug(dcMock()) << "Acess code is:" << query.queryItemValue("code");
 
         QString accessCode = query.queryItemValue("code");
 
@@ -472,29 +472,29 @@ void DevicePluginMock::confirmPairing(ThingPairingInfo *info, const QString &use
             reply->deleteLater();
 
             QJsonDocument jsonDoc = QJsonDocument::fromJson(reply->readAll());
-            qCDebug(dcMockDevice()) << "Sonos accessToken reply:" << this << reply->error() << reply->errorString() << jsonDoc.toJson();
-            qCDebug(dcMockDevice()) << "Access token:" << jsonDoc.toVariant().toMap().value("access_token").toString();
-            qCDebug(dcMockDevice()) << "expires at" << QDateTime::currentDateTime().addSecs(jsonDoc.toVariant().toMap().value("expires_in").toInt()).toString();
-            qCDebug(dcMockDevice()) << "Refresh token:" << jsonDoc.toVariant().toMap().value("refresh_token").toString();
-            qCDebug(dcMockDevice()) << "ID token:" << jsonDoc.toVariant().toMap().value("id_token").toString();
+            qCDebug(dcMock()) << "Sonos accessToken reply:" << this << reply->error() << reply->errorString() << jsonDoc.toJson();
+            qCDebug(dcMock()) << "Access token:" << jsonDoc.toVariant().toMap().value("access_token").toString();
+            qCDebug(dcMock()) << "expires at" << QDateTime::currentDateTime().addSecs(jsonDoc.toVariant().toMap().value("expires_in").toInt()).toString();
+            qCDebug(dcMock()) << "Refresh token:" << jsonDoc.toVariant().toMap().value("refresh_token").toString();
+            qCDebug(dcMock()) << "ID token:" << jsonDoc.toVariant().toMap().value("id_token").toString();
             info->finish(Thing::ThingErrorNoError);
         });
         return;
     }
 
 
-    qCWarning(dcMockDevice) << "Invalid ThingClassId -> no pairing possible with this device";
+    qCWarning(dcMock()) << "Invalid ThingClassId -> no pairing possible with this thing";
     info->finish(Thing::ThingErrorThingClassNotFound);
 }
 
 void DevicePluginMock::browseThing(BrowseResult *result)
 {
-    qCDebug(dcMockDevice()) << "Browse device called" << result->thing();
+    qCDebug(dcMock()) << "Browse thing called" << result->thing();
     if (result->thing()->thingClassId() == mockThingClassId) {
-        if (result->thing()->paramValue(mockDeviceAsyncParamTypeId).toBool()) {
+        if (result->thing()->paramValue(mockThingAsyncParamTypeId).toBool()) {
 
             QTimer::singleShot(1000, result, [this, result]() {
-                if (result->thing()->paramValue(mockDeviceBrokenParamTypeId).toBool()) {
+                if (result->thing()->paramValue(mockThingBrokenParamTypeId).toBool()) {
                     result->finish(Thing::ThingErrorHardwareFailure);
                     return;
                 }
@@ -515,7 +515,7 @@ void DevicePluginMock::browseThing(BrowseResult *result)
             return;
         }
 
-        if (result->thing()->paramValue(mockDeviceBrokenParamTypeId).toBool()) {
+        if (result->thing()->paramValue(mockThingBrokenParamTypeId).toBool()) {
             result->finish(Thing::ThingErrorHardwareFailure);
             return;
         }
@@ -567,7 +567,7 @@ void DevicePluginMock::executeAction(ThingActionInfo *info)
         }
 
         if (info->action().actionTypeId() == mockPowerActionTypeId) {
-            qCDebug(dcMockDevice()) << "Setting power to" << info->action().param(mockPowerActionPowerParamTypeId).value().toBool();
+            qCDebug(dcMock()) << "Setting power to" << info->action().param(mockPowerActionPowerParamTypeId).value().toBool();
             info->thing()->setStateValue(mockPowerStateTypeId, info->action().param(mockPowerActionPowerParamTypeId).value().toBool());
         }
         m_daemons.value(info->thing())->actionExecuted(info->action().actionTypeId());
@@ -575,10 +575,10 @@ void DevicePluginMock::executeAction(ThingActionInfo *info)
         return;
     }
 
-    if (info->thing()->thingClassId() == mockDeviceAutoThingClassId) {
-        if (info->action().actionTypeId() == mockDeviceAutoMockActionAsyncActionTypeId || info->action().actionTypeId() == mockDeviceAutoMockActionAsyncBrokenActionTypeId) {
+    if (info->thing()->thingClassId() == autoMockThingClassId) {
+        if (info->action().actionTypeId() == autoMockMockActionAsyncActionTypeId || info->action().actionTypeId() == autoMockMockActionAsyncBrokenActionTypeId) {
             QTimer::singleShot(1000, info->thing(), [info](){
-                if (info->action().actionTypeId() == mockDeviceAutoMockActionAsyncBrokenActionTypeId) {
+                if (info->action().actionTypeId() == autoMockMockActionAsyncBrokenActionTypeId) {
                     info->finish(Thing::ThingErrorSetupFailed, QT_TR_NOOP("This mock action is intentionally broken."));
                 } else {
                     info->finish(Thing::ThingErrorNoError);
@@ -586,124 +586,124 @@ void DevicePluginMock::executeAction(ThingActionInfo *info)
             });
         }
 
-        if (info->action().actionTypeId() == mockDeviceAutoMockActionBrokenActionTypeId) {
+        if (info->action().actionTypeId() == autoMockMockActionBrokenActionTypeId) {
             info->finish(Thing::ThingErrorSetupFailed);
             return;
         }
 
         m_daemons.value(info->thing())->actionExecuted(info->action().actionTypeId());
         info->finish(Thing::ThingErrorNoError);
-    } else if (info->thing()->thingClassId() == mockPushButtonThingClassId) {
-        if (info->action().actionTypeId() == mockPushButtonColorActionTypeId) {
-            QString colorString = info->action().param(mockPushButtonColorActionColorParamTypeId).value().toString();
+    } else if (info->thing()->thingClassId() == pushButtonMockThingClassId) {
+        if (info->action().actionTypeId() == pushButtonMockColorActionTypeId) {
+            QString colorString = info->action().param(pushButtonMockColorActionColorParamTypeId).value().toString();
             QColor color(colorString);
             if (!color.isValid()) {
-                qCWarning(dcMockDevice) << "Invalid color parameter";
+                qCWarning(dcMock()) << "Invalid color parameter";
                 info->finish(Thing::ThingErrorInvalidParameter);
                 return;
             }
-            info->thing()->setStateValue(mockPushButtonColorStateTypeId, colorString);
+            info->thing()->setStateValue(pushButtonMockColorStateTypeId, colorString);
             info->finish(Thing::ThingErrorNoError);
             return;
-        } else if (info->action().actionTypeId() == mockPushButtonPercentageActionTypeId) {
-            info->thing()->setStateValue(mockPushButtonPercentageStateTypeId, info->action().param(mockPushButtonPercentageActionPercentageParamTypeId).value().toInt());
+        } else if (info->action().actionTypeId() == pushButtonMockPercentageActionTypeId) {
+            info->thing()->setStateValue(pushButtonMockPercentageStateTypeId, info->action().param(pushButtonMockPercentageActionPercentageParamTypeId).value().toInt());
             info->finish(Thing::ThingErrorNoError);
             return;
-        } else if (info->action().actionTypeId() == mockPushButtonAllowedValuesActionTypeId) {
-            info->thing()->setStateValue(mockPushButtonAllowedValuesStateTypeId, info->action().param(mockPushButtonAllowedValuesActionAllowedValuesParamTypeId).value().toString());
+        } else if (info->action().actionTypeId() == pushButtonMockAllowedValuesActionTypeId) {
+            info->thing()->setStateValue(pushButtonMockAllowedValuesStateTypeId, info->action().param(pushButtonMockAllowedValuesActionAllowedValuesParamTypeId).value().toString());
             info->finish(Thing::ThingErrorNoError);
             return;
-        } else if (info->action().actionTypeId() == mockPushButtonDoubleActionTypeId) {
-            info->thing()->setStateValue(mockPushButtonDoubleStateTypeId, info->action().param(mockPushButtonDoubleActionDoubleParamTypeId).value().toDouble());
+        } else if (info->action().actionTypeId() == pushButtonMockDoubleActionTypeId) {
+            info->thing()->setStateValue(pushButtonMockDoubleStateTypeId, info->action().param(pushButtonMockDoubleActionDoubleParamTypeId).value().toDouble());
             info->finish(Thing::ThingErrorNoError);
             return;
-        } else if (info->action().actionTypeId() == mockPushButtonBoolActionTypeId) {
-            info->thing()->setStateValue(mockPushButtonBoolStateTypeId, info->action().param(mockPushButtonBoolActionBoolParamTypeId).value().toBool());
+        } else if (info->action().actionTypeId() == pushButtonMockBoolActionTypeId) {
+            info->thing()->setStateValue(pushButtonMockBoolStateTypeId, info->action().param(pushButtonMockBoolActionBoolParamTypeId).value().toBool());
             info->finish(Thing::ThingErrorNoError);
             return;
-        } else if (info->action().actionTypeId() == mockPushButtonTimeoutActionTypeId) {
+        } else if (info->action().actionTypeId() == pushButtonMockTimeoutActionTypeId) {
             // Not finishing action intentionally...
             return;
         }
         info->finish(Thing::ThingErrorActionTypeNotFound);
         return;
-    } else if (info->thing()->thingClassId() == mockDisplayPinThingClassId) {
-        if (info->action().actionTypeId() == mockDisplayPinColorActionTypeId) {
-            QString colorString = info->action().param(mockDisplayPinColorActionColorParamTypeId).value().toString();
+    } else if (info->thing()->thingClassId() == displayPinMockThingClassId) {
+        if (info->action().actionTypeId() == displayPinMockColorActionTypeId) {
+            QString colorString = info->action().param(displayPinMockColorActionColorParamTypeId).value().toString();
             QColor color(colorString);
             if (!color.isValid()) {
-                qCWarning(dcMockDevice) << "Invalid color parameter";
+                qCWarning(dcMock()) << "Invalid color parameter";
                 info->finish(Thing::ThingErrorInvalidParameter);
                 return;
             }
-            info->thing()->setStateValue(mockDisplayPinColorStateTypeId, colorString);
+            info->thing()->setStateValue(displayPinMockColorStateTypeId, colorString);
             info->finish(Thing::ThingErrorNoError);
             return;
-        } else if (info->action().actionTypeId() == mockDisplayPinPercentageActionTypeId) {
-            info->thing()->setStateValue(mockDisplayPinPercentageStateTypeId, info->action().param(mockDisplayPinPercentageActionPercentageParamTypeId).value().toInt());
+        } else if (info->action().actionTypeId() == displayPinMockPercentageActionTypeId) {
+            info->thing()->setStateValue(displayPinMockPercentageStateTypeId, info->action().param(displayPinMockPercentageActionPercentageParamTypeId).value().toInt());
             info->finish(Thing::ThingErrorNoError);
             return;
-        } else if (info->action().actionTypeId() == mockDisplayPinAllowedValuesActionTypeId) {
-            info->thing()->setStateValue(mockDisplayPinAllowedValuesStateTypeId, info->action().param(mockDisplayPinAllowedValuesActionAllowedValuesParamTypeId).value().toString());
+        } else if (info->action().actionTypeId() == displayPinMockAllowedValuesActionTypeId) {
+            info->thing()->setStateValue(displayPinMockAllowedValuesStateTypeId, info->action().param(displayPinMockAllowedValuesActionAllowedValuesParamTypeId).value().toString());
             info->finish(Thing::ThingErrorNoError);
             return;
-        } else if (info->action().actionTypeId() == mockDisplayPinDoubleActionTypeId) {
-            info->thing()->setStateValue(mockDisplayPinDoubleStateTypeId, info->action().param(mockDisplayPinDoubleActionDoubleParamTypeId).value().toDouble());
+        } else if (info->action().actionTypeId() == displayPinMockDoubleActionTypeId) {
+            info->thing()->setStateValue(displayPinMockDoubleStateTypeId, info->action().param(displayPinMockDoubleActionDoubleParamTypeId).value().toDouble());
             info->finish(Thing::ThingErrorNoError);
             return;
-        } else if (info->action().actionTypeId() == mockDisplayPinBoolActionTypeId) {
-            info->thing()->setStateValue(mockDisplayPinBoolStateTypeId, info->action().param(mockDisplayPinBoolActionBoolParamTypeId).value().toBool());
+        } else if (info->action().actionTypeId() == displayPinMockBoolActionTypeId) {
+            info->thing()->setStateValue(displayPinMockBoolStateTypeId, info->action().param(displayPinMockBoolActionBoolParamTypeId).value().toBool());
             info->finish(Thing::ThingErrorNoError);
             return;
-        } else if (info->action().actionTypeId() == mockDisplayPinTimeoutActionTypeId) {
+        } else if (info->action().actionTypeId() == displayPinMockTimeoutActionTypeId) {
             // Not finishing action intentionally...
             return;
         }
         info->finish(Thing::ThingErrorActionTypeNotFound);
         return;
-    } else if (info->thing()->thingClassId() == mockParentThingClassId) {
-        if (info->action().actionTypeId() == mockParentBoolValueActionTypeId) {
-            info->thing()->setStateValue(mockParentBoolValueStateTypeId, info->action().param(mockParentBoolValueActionBoolValueParamTypeId).value().toBool());
+    } else if (info->thing()->thingClassId() == parentMockThingClassId) {
+        if (info->action().actionTypeId() == parentMockBoolValueActionTypeId) {
+            info->thing()->setStateValue(parentMockBoolValueStateTypeId, info->action().param(parentMockBoolValueActionBoolValueParamTypeId).value().toBool());
             info->finish(Thing::ThingErrorNoError);
             return;
         }
         info->finish(Thing::ThingErrorActionTypeNotFound);
         return;
-    } else if (info->thing()->thingClassId() == mockChildThingClassId) {
-        if (info->action().actionTypeId() == mockChildBoolValueActionTypeId) {
-            info->thing()->setStateValue(mockChildBoolValueStateTypeId, info->action().param(mockChildBoolValueActionBoolValueParamTypeId).value().toBool());
+    } else if (info->thing()->thingClassId() == childMockThingClassId) {
+        if (info->action().actionTypeId() == childMockBoolValueActionTypeId) {
+            info->thing()->setStateValue(childMockBoolValueStateTypeId, info->action().param(childMockBoolValueActionBoolValueParamTypeId).value().toBool());
             info->finish(Thing::ThingErrorNoError);
             return;
         }
         info->finish(Thing::ThingErrorActionTypeNotFound);
         return;
-    } else if (info->thing()->thingClassId() == mockInputTypeThingClassId) {
-        if (info->action().actionTypeId() == mockInputTypeWritableBoolActionTypeId) {
-            info->thing()->setStateValue(mockInputTypeWritableBoolStateTypeId, info->action().param(mockInputTypeWritableBoolActionWritableBoolParamTypeId).value().toULongLong());
-        } else if (info->action().actionTypeId() == mockInputTypeWritableIntActionTypeId) {
-            info->thing()->setStateValue(mockInputTypeWritableIntStateTypeId, info->action().param(mockInputTypeWritableIntActionWritableIntParamTypeId).value().toLongLong());
-        } else if (info->action().actionTypeId() == mockInputTypeWritableIntMinMaxActionTypeId) {
-            info->thing()->setStateValue(mockInputTypeWritableIntMinMaxStateTypeId, info->action().param(mockInputTypeWritableIntMinMaxActionWritableIntMinMaxParamTypeId).value().toLongLong());
-        } else if (info->action().actionTypeId() == mockInputTypeWritableUIntActionTypeId) {
-            info->thing()->setStateValue(mockInputTypeWritableUIntStateTypeId, info->action().param(mockInputTypeWritableUIntActionWritableUIntParamTypeId).value().toULongLong());
-        } else if (info->action().actionTypeId() == mockInputTypeWritableUIntMinMaxActionTypeId) {
-            info->thing()->setStateValue(mockInputTypeWritableUIntMinMaxStateTypeId, info->action().param(mockInputTypeWritableUIntMinMaxActionWritableUIntMinMaxParamTypeId).value().toLongLong());
-        } else if (info->action().actionTypeId() == mockInputTypeWritableDoubleActionTypeId) {
-            info->thing()->setStateValue(mockInputTypeWritableDoubleStateTypeId, info->action().param(mockInputTypeWritableDoubleActionWritableDoubleParamTypeId).value().toDouble());
-        } else if (info->action().actionTypeId() == mockInputTypeWritableDoubleMinMaxActionTypeId) {
-            info->thing()->setStateValue(mockInputTypeWritableDoubleMinMaxStateTypeId, info->action().param(mockInputTypeWritableDoubleMinMaxActionWritableDoubleMinMaxParamTypeId).value().toDouble());
-        } else if (info->action().actionTypeId() == mockInputTypeWritableStringActionTypeId) {
-            info->thing()->setStateValue(mockInputTypeWritableStringStateTypeId, info->action().param(mockInputTypeWritableStringActionWritableStringParamTypeId).value().toString());
-        } else if (info->action().actionTypeId() == mockInputTypeWritableStringSelectionActionTypeId) {
-            info->thing()->setStateValue(mockInputTypeWritableStringSelectionStateTypeId, info->action().param(mockInputTypeWritableStringSelectionActionWritableStringSelectionParamTypeId).value().toString());
-        } else if (info->action().actionTypeId() == mockInputTypeWritableColorActionTypeId) {
-            info->thing()->setStateValue(mockInputTypeWritableColorStateTypeId, info->action().param(mockInputTypeWritableColorActionWritableColorParamTypeId).value().toString());
-        } else if (info->action().actionTypeId() == mockInputTypeWritableTimeActionTypeId) {
-            info->thing()->setStateValue(mockInputTypeWritableTimeStateTypeId, info->action().param(mockInputTypeWritableTimeActionWritableTimeParamTypeId).value().toTime());
-        } else if (info->action().actionTypeId() == mockInputTypeWritableTimestampIntActionTypeId) {
-            info->thing()->setStateValue(mockInputTypeWritableTimestampIntStateTypeId, info->action().param(mockInputTypeWritableTimestampIntActionWritableTimestampIntParamTypeId).value().toLongLong());
-        } else if (info->action().actionTypeId() == mockInputTypeWritableTimestampUIntActionTypeId) {
-            info->thing()->setStateValue(mockInputTypeWritableTimestampUIntStateTypeId, info->action().param(mockInputTypeWritableTimestampUIntActionWritableTimestampUIntParamTypeId).value().toULongLong());
+    } else if (info->thing()->thingClassId() == inputTypeMockThingClassId) {
+        if (info->action().actionTypeId() == inputTypeMockWritableBoolActionTypeId) {
+            info->thing()->setStateValue(inputTypeMockWritableBoolStateTypeId, info->action().param(inputTypeMockWritableBoolActionWritableBoolParamTypeId).value().toULongLong());
+        } else if (info->action().actionTypeId() == inputTypeMockWritableIntActionTypeId) {
+            info->thing()->setStateValue(inputTypeMockWritableIntStateTypeId, info->action().param(inputTypeMockWritableIntActionWritableIntParamTypeId).value().toLongLong());
+        } else if (info->action().actionTypeId() == inputTypeMockWritableIntMinMaxActionTypeId) {
+            info->thing()->setStateValue(inputTypeMockWritableIntMinMaxStateTypeId, info->action().param(inputTypeMockWritableIntMinMaxActionWritableIntMinMaxParamTypeId).value().toLongLong());
+        } else if (info->action().actionTypeId() == inputTypeMockWritableUIntActionTypeId) {
+            info->thing()->setStateValue(inputTypeMockWritableUIntStateTypeId, info->action().param(inputTypeMockWritableUIntActionWritableUIntParamTypeId).value().toULongLong());
+        } else if (info->action().actionTypeId() == inputTypeMockWritableUIntMinMaxActionTypeId) {
+            info->thing()->setStateValue(inputTypeMockWritableUIntMinMaxStateTypeId, info->action().param(inputTypeMockWritableUIntMinMaxActionWritableUIntMinMaxParamTypeId).value().toLongLong());
+        } else if (info->action().actionTypeId() == inputTypeMockWritableDoubleActionTypeId) {
+            info->thing()->setStateValue(inputTypeMockWritableDoubleStateTypeId, info->action().param(inputTypeMockWritableDoubleActionWritableDoubleParamTypeId).value().toDouble());
+        } else if (info->action().actionTypeId() == inputTypeMockWritableDoubleMinMaxActionTypeId) {
+            info->thing()->setStateValue(inputTypeMockWritableDoubleMinMaxStateTypeId, info->action().param(inputTypeMockWritableDoubleMinMaxActionWritableDoubleMinMaxParamTypeId).value().toDouble());
+        } else if (info->action().actionTypeId() == inputTypeMockWritableStringActionTypeId) {
+            info->thing()->setStateValue(inputTypeMockWritableStringStateTypeId, info->action().param(inputTypeMockWritableStringActionWritableStringParamTypeId).value().toString());
+        } else if (info->action().actionTypeId() == inputTypeMockWritableStringSelectionActionTypeId) {
+            info->thing()->setStateValue(inputTypeMockWritableStringSelectionStateTypeId, info->action().param(inputTypeMockWritableStringSelectionActionWritableStringSelectionParamTypeId).value().toString());
+        } else if (info->action().actionTypeId() == inputTypeMockWritableColorActionTypeId) {
+            info->thing()->setStateValue(inputTypeMockWritableColorStateTypeId, info->action().param(inputTypeMockWritableColorActionWritableColorParamTypeId).value().toString());
+        } else if (info->action().actionTypeId() == inputTypeMockWritableTimeActionTypeId) {
+            info->thing()->setStateValue(inputTypeMockWritableTimeStateTypeId, info->action().param(inputTypeMockWritableTimeActionWritableTimeParamTypeId).value().toTime());
+        } else if (info->action().actionTypeId() == inputTypeMockWritableTimestampIntActionTypeId) {
+            info->thing()->setStateValue(inputTypeMockWritableTimestampIntStateTypeId, info->action().param(inputTypeMockWritableTimestampIntActionWritableTimestampIntParamTypeId).value().toLongLong());
+        } else if (info->action().actionTypeId() == inputTypeMockWritableTimestampUIntActionTypeId) {
+            info->thing()->setStateValue(inputTypeMockWritableTimestampUIntStateTypeId, info->action().param(inputTypeMockWritableTimestampUIntActionWritableTimestampUIntParamTypeId).value().toULongLong());
         }
         return;
 
@@ -713,9 +713,9 @@ void DevicePluginMock::executeAction(ThingActionInfo *info)
 
 void DevicePluginMock::executeBrowserItem(BrowserActionInfo *info)
 {
-    qCDebug(dcMockDevice()) << "ExecuteBrowserItem called" << info->browserAction().itemId();
-    bool broken = info->thing()->paramValue(mockDeviceBrokenParamTypeId).toBool();
-    bool async = info->thing()->paramValue(mockDeviceAsyncParamTypeId).toBool();
+    qCDebug(dcMock()) << "ExecuteBrowserItem called" << info->browserAction().itemId();
+    bool broken = info->thing()->paramValue(mockThingBrokenParamTypeId).toBool();
+    bool async = info->thing()->paramValue(mockThingAsyncParamTypeId).toBool();
 
     VirtualFsNode *node = m_virtualFs->findNode(info->browserAction().itemId());
     if (!node) {
@@ -745,7 +745,7 @@ void DevicePluginMock::executeBrowserItem(BrowserActionInfo *info)
 
 void DevicePluginMock::executeBrowserItemAction(BrowserItemActionInfo *info)
 {
-    qCDebug(dcMockDevice()) << "TODO" << info << info->browserItemAction().id();
+    qCDebug(dcMock()) << "TODO" << info << info->browserItemAction().id();
     if (info->browserItemAction().actionTypeId() == mockAddToFavoritesBrowserItemActionTypeId) {
 
         VirtualFsNode *node = m_virtualFs->findNode(info->browserItemAction().itemId());
@@ -803,7 +803,7 @@ void DevicePluginMock::triggerEvent(const EventTypeId &id)
 
     Event event(id, device->id());
 
-    qCDebug(dcMockDevice) << "Emitting event " << event.eventTypeId();
+    qCDebug(dcMock) << "Emitting event " << event.eventTypeId();
     emit emitEvent(event);
 }
 
@@ -814,7 +814,7 @@ void DevicePluginMock::onDisappear()
         return;
     }
     Thing *device = m_daemons.key(daemon);
-    qCDebug(dcMockDevice) << "Emitting autoDeviceDisappeared for device" << device->id();
+    qCDebug(dcMock) << "Emitting autoDeviceDisappeared for device" << device->id();
     emit autoThingDisappeared(device->id());
 }
 
@@ -825,15 +825,15 @@ void DevicePluginMock::onReconfigureAutoDevice()
         return;
 
     Thing *device = m_daemons.key(daemon);
-    qCDebug(dcMockDevice()) << "Reconfigure auto device for" << device << device->params();
+    qCDebug(dcMock()) << "Reconfigure auto device for" << device << device->params();
 
-    int currentPort = device->params().paramValue(mockDeviceAutoDeviceHttpportParamTypeId).toInt();
+    int currentPort = device->params().paramValue(autoMockThingHttpportParamTypeId).toInt();
 
     // Note: the reconfigure makes the http server listen on port + 1
     ParamList params;
-    params.append(Param(mockDeviceAutoDeviceHttpportParamTypeId, currentPort + 1));
+    params.append(Param(autoMockThingHttpportParamTypeId, currentPort + 1));
 
-    ThingDescriptor deviceDescriptor(mockDeviceAutoThingClassId);
+    ThingDescriptor deviceDescriptor(autoMockThingClassId);
     deviceDescriptor.setTitle(device->name() + " (reconfigured)");
     deviceDescriptor.setDescription("This auto device was reconfigured");
     deviceDescriptor.setThingId(device->id());
@@ -847,11 +847,11 @@ void DevicePluginMock::generateDiscoveredDevices(ThingDiscoveryInfo *info)
     if (m_discoveredDeviceCount > 0) {
         ThingDescriptor d1(mockThingClassId, "Mock Device 1 (Discovered)", "55555");
         ParamList params;
-        Param httpParam(mockDeviceHttpportParamTypeId, "55555");
+        Param httpParam(mockThingHttpportParamTypeId, "55555");
         params.append(httpParam);
         d1.setParams(params);
         foreach (Thing *d, myThings()) {
-            if (d->thingClassId() == mockThingClassId && d->paramValue(mockDeviceHttpportParamTypeId).toInt() == 55555) {
+            if (d->thingClassId() == mockThingClassId && d->paramValue(mockThingHttpportParamTypeId).toInt() == 55555) {
                 d1.setThingId(d->id());
                 break;
             }
@@ -862,11 +862,11 @@ void DevicePluginMock::generateDiscoveredDevices(ThingDiscoveryInfo *info)
     if (m_discoveredDeviceCount > 1) {
         ThingDescriptor d2(mockThingClassId, "Mock Device 2 (Discovered)", "55556");
         ParamList params;
-        Param httpParam(mockDeviceHttpportParamTypeId, "55556");
+        Param httpParam(mockThingHttpportParamTypeId, "55556");
         params.append(httpParam);
         d2.setParams(params);
         foreach (Thing *d, myThings()) {
-            if (d->thingClassId() == mockThingClassId && d->paramValue(mockDeviceHttpportParamTypeId).toInt() == 55556) {
+            if (d->thingClassId() == mockThingClassId && d->paramValue(mockThingHttpportParamTypeId).toInt() == 55556) {
                 d2.setThingId(d->id());
                 break;
             }
@@ -880,23 +880,23 @@ void DevicePluginMock::generateDiscoveredDevices(ThingDiscoveryInfo *info)
 void DevicePluginMock::generateDiscoveredPushButtonDevices(ThingDiscoveryInfo *info)
 {
     if (m_discoveredDeviceCount > 0) {
-        ThingDescriptor d1(mockPushButtonThingClassId, "Mock Device (Push Button)", "1");
+        ThingDescriptor d1(pushButtonMockThingClassId, "Mocked Thing (Push Button)", "1");
         info->addThingDescriptor(d1);
     }
 
     if (m_discoveredDeviceCount > 1) {
-        ThingDescriptor d2(mockPushButtonThingClassId, "Mock Device (Push Button)", "2");
+        ThingDescriptor d2(pushButtonMockThingClassId, "Mocked Thhing (Push Button)", "2");
         info->addThingDescriptor(d2);
     }
-    info->finish(Thing::ThingErrorNoError, QT_TR_NOOP("This device will simulate a push button press in 3 seconds."));
+    info->finish(Thing::ThingErrorNoError, QT_TR_NOOP("This thing will simulate a push button press in 3 seconds."));
 }
 
 void DevicePluginMock::generateDiscoveredDisplayPinDevices(ThingDiscoveryInfo *info)
 {
     if (m_discoveredDeviceCount > 0) {
-        ThingDescriptor d1(mockDisplayPinThingClassId, "Mock Device (Display Pin)", "1");
+        ThingDescriptor d1(displayPinMockThingClassId, "Mocked Thing (Display Pin)", "1");
         foreach (Thing *existingDev, myThings()) {
-            if (existingDev->thingClassId() == mockDisplayPinThingClassId) {
+            if (existingDev->thingClassId() == displayPinMockThingClassId) {
                 d1.setThingId(existingDev->id());
                 break;
             }
@@ -905,10 +905,10 @@ void DevicePluginMock::generateDiscoveredDisplayPinDevices(ThingDiscoveryInfo *i
     }
 
     if (m_discoveredDeviceCount > 1) {
-        ThingDescriptor d2(mockDisplayPinThingClassId, "Mock Device (Display Pin)", "2");
+        ThingDescriptor d2(displayPinMockThingClassId, "Mocked Thing (Display Pin)", "2");
         int count = 0;
         foreach (Thing *existingDev, myThings()) {
-            if (existingDev->thingClassId() == mockDisplayPinThingClassId && ++count > 1) {
+            if (existingDev->thingClassId() == displayPinMockThingClassId && ++count > 1) {
                 d2.setThingId(existingDev->id());
                 break;
             }
@@ -921,7 +921,7 @@ void DevicePluginMock::generateDiscoveredDisplayPinDevices(ThingDiscoveryInfo *i
 
 void DevicePluginMock::onPushButtonPressed()
 {
-    qCDebug(dcMockDevice) << "PushButton pressed (automatically)";
+    qCDebug(dcMock) << "PushButton pressed (automatically)";
     m_pushbuttonPressed = true;
 }
 

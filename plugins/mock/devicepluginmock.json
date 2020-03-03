@@ -1,6 +1,6 @@
 {
-    "name": "mockDevice",
-    "displayName": "Mock Devices",
+    "name": "mock",
+    "displayName": "Mocked things",
     "id": "727a4a9a-c187-446f-aadf-f1b2220607d1",
     "paramTypes": [
         {
@@ -29,7 +29,7 @@
                 {
                     "id": "753f0d32-0468-4d08-82ed-1964aab03298",
                     "name": "mock",
-                    "displayName": "Mock Device",
+                    "displayName": "Mock Thing",
                     "interfaces": ["system", "light", "battery"],
                     "createMethods": ["user", "discovery"],
                     "browsable": true,
@@ -210,8 +210,8 @@
                 },
                 {
                     "id": "ab4257b3-7548-47ee-9bd4-7dc3004fd197",
-                    "name": "mockDeviceAuto",
-                    "displayName": "Mock Device (Auto created)",
+                    "name": "autoMock",
+                    "displayName": "Mocked Thing (Auto created)",
                     "interfaces": ["system"],
                     "createMethods": ["auto"],
                     "paramTypes": [
@@ -321,8 +321,8 @@
                 },
                 {
                     "id": "9e03144c-e436-4eea-82d9-ccb33ef778db",
-                    "name": "mockPushButton",
-                    "displayName": "Mock Device (Push Button)",
+                    "name": "pushButtonMock",
+                    "displayName": "Mocked Thing (Push Button)",
                     "interfaces": ["system"],
                     "createMethods": ["discovery"],
                     "setupMethod": "pushButton",
@@ -410,8 +410,8 @@
                 },
                 {
                     "id": "296f1fd4-e893-46b2-8a42-50d1bceb8730",
-                    "name": "mockDisplayPin",
-                    "displayName": "Mock Device (Display Pin)",
+                    "name": "displayPinMock",
+                    "displayName": "Mocked Thing (Display Pin)",
                     "interfaces": ["system"],
                     "createMethods": ["discovery"],
                     "setupMethod": "displayPin",
@@ -509,8 +509,8 @@
                 },
                 {
                     "id": "a71fbde9-9a38-4bf8-beab-c8aade2608ba",
-                    "name": "mockParent",
-                    "displayName": "Mock Device (Parent)",
+                    "name": "parentMock",
+                    "displayName": "Mocked Thing (Parent)",
                     "interfaces": ["system"],
                     "createMethods": ["user", "discovery"],
                     "paramTypes": [ ],
@@ -529,8 +529,8 @@
                 },
                 {
                     "id": "40893c9f-bc47-40c1-8bf7-b390c7c1b4fc",
-                    "name": "mockChild",
-                    "displayName": "Mock Device (Child)",
+                    "name": "childMock",
+                    "displayName": "Mocked Thing (Child)",
                     "createMethods": ["auto", "discovery"],
                     "paramTypes": [],
                     "stateTypes": [
@@ -548,8 +548,8 @@
                 },
                 {
                     "id": "515ffdf1-55e5-498d-9abc-4e2fe768f3a9",
-                    "name": "mockInputType",
-                    "displayName": "Mock Device (InputTypes)",
+                    "name": "inputTypeMock",
+                    "displayName": "Mocked Thing (InputTypes)",
                     "createMethods": ["user"],
                     "paramTypes": [
                         {
@@ -850,22 +850,22 @@
                 },
                 {
                     "id": "805d1692-7bd0-449a-9d5c-43a332ff58f4",
-                    "name": "mockOAuthGoogle",
-                    "displayName": "Mock Device (Google OAuth)",
+                    "name": "oAuthGoogleMock",
+                    "displayName": "Mocked Thing (Google OAuth)",
                     "createMethods": ["user"],
                     "setupMethod": "oauth"
                 },
                 {
                     "id": "783c615b-7bd6-49a4-98b0-8d1deb3c7156",
-                    "name": "mockOAuthSonos",
-                    "displayName": "Mock Device (Sonos OAuth)",
+                    "name": "oAuthSonosMock",
+                    "displayName": "Mocked Thing (Sonos OAuth)",
                     "createMethods": ["user"],
                     "setupMethod": "oauth"
                 },
                 {
                     "id": "6fe07a77-9c07-4736-81e2-d504314bbcb9",
-                    "name": "mockUserAndPass",
-                    "displayName": "Mock Device (User & Password)",
+                    "name": "userAndPassMock",
+                    "displayName": "Mocked Thing (User & Password)",
                     "createMethods": ["discovery", "user"],
                     "setupMethod": "userandpassword"
                 }

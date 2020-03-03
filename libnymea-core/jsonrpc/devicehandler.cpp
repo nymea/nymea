@@ -75,6 +75,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     registerObject<ActionType, ActionTypes>();
     registerObject<DeviceClass, DeviceClasses>();
     registerObject<DeviceDescriptor, DeviceDescriptors>();
+    registerObject<ThingDescriptor, ThingDescriptors>();
     registerObject<Event>();
     registerObject<Action>();
     registerObject<State, States>();
@@ -426,12 +427,16 @@ JsonReply *DeviceHandler::GetDiscoveredDevices(const QVariantMap &params, const 
     ThingDiscoveryInfo *info = NymeaCore::instance()->thingManager()->discoverThings(thingClassId, discoveryParams);
     connect(info, &ThingDiscoveryInfo::finished, reply, [this, reply, info, locale](){
         QVariantMap returns;
-        returns.insert("deviceError", enumValueName<Device::ThingError>(info->status()).replace("ThingError", "DeviceError"));
+        returns.insert("deviceError", enumValueName<Device::ThingError>(info->status()).replace("Thing", "Device"));
 
         if (info->status() == Device::ThingErrorNoError) {
             QVariantList deviceDescriptorList;
-            foreach (const ThingDescriptor &deviceDescriptor, info->thingDescriptors()) {
-                deviceDescriptorList.append(pack(deviceDescriptor));
+            foreach (const ThingDescriptor &thingDescriptor, info->thingDescriptors()) {
+                QVariantMap packedDescriptor = pack(thingDescriptor).toMap();
+                if (packedDescriptor.contains("thingId")) {
+                    packedDescriptor.insert("deviceId", packedDescriptor.value("thingId"));
+                }
+                deviceDescriptorList.append(packedDescriptor);
             }
             returns.insert("deviceDescriptors", deviceDescriptorList);
         }
@@ -468,7 +473,7 @@ JsonReply *DeviceHandler::GetPluginConfiguration(const QVariantMap &params) cons
 
     IntegrationPlugin *plugin = NymeaCore::instance()->thingManager()->plugins().findById(PluginId(params.value("pluginId").toString()));
     if (!plugin) {
-        returns.insert("deviceError", enumValueName<Device::ThingError>(Device::ThingErrorPluginNotFound).replace("ThingError", "DeviceError"));
+        returns.insert("deviceError", enumValueName<Device::ThingError>(Device::ThingErrorPluginNotFound).replace("Thing", "Device"));
         return createReply(returns);
     }
 
@@ -477,7 +482,7 @@ JsonReply *DeviceHandler::GetPluginConfiguration(const QVariantMap &params) cons
         paramVariantList.append(pack(param));
     }
     returns.insert("configuration", paramVariantList);
-    returns.insert("deviceError", enumValueName<Device::ThingError>(Device::ThingErrorNoError).replace("ThingError", "DeviceError"));
+    returns.insert("deviceError", enumValueName<Device::ThingError>(Device::ThingErrorNoError).replace("Thing", "Device"));
     return createReply(returns);
 }
 
@@ -487,7 +492,7 @@ JsonReply* DeviceHandler::SetPluginConfiguration(const QVariantMap &params)
     PluginId pluginId = PluginId(params.value("pluginId").toString());
     ParamList pluginParams = unpack<ParamList>(params.value("configuration"));
     Device::ThingError result = NymeaCore::instance()->thingManager()->setPluginConfig(pluginId, pluginParams);
-    returns.insert("deviceError",enumValueName<Device::ThingError>(result).replace("ThingError", "DeviceError"));
+    returns.insert("deviceError",enumValueName<Device::ThingError>(result).replace("Thing", "Device"));
     return createReply(returns);
 }
 
@@ -509,7 +514,7 @@ JsonReply* DeviceHandler::AddConfiguredDevice(const QVariantMap &params, const J
     }
     connect(info, &ThingSetupInfo::finished, jsonReply, [info, jsonReply, locale](){
         QVariantMap returns;
-        returns.insert("deviceError", enumValueName<Device::ThingError>(info->status()).replace("ThingError", "DeviceError"));
+        returns.insert("deviceError", enumValueName<Device::ThingError>(info->status()).replace("Thing", "Device"));
 
         if (!info->displayMessage().isEmpty()) {
             returns.insert("displayMessage", info->translatedDisplayMessage(locale));
@@ -547,7 +552,7 @@ JsonReply *DeviceHandler::PairDevice(const QVariantMap &params, const JsonContex
 
     connect(info, &ThingPairingInfo::finished, jsonReply, [jsonReply, info, locale](){
         QVariantMap returns;
-        returns.insert("deviceError", enumValueName<Device::ThingError>(info->status()).replace("ThingError", "DeviceError"));
+        returns.insert("deviceError", enumValueName<Device::ThingError>(info->status()).replace("Thing", "Device"));
         returns.insert("pairingTransactionId", info->transactionId().toString());
 
         if (info->status() == Device::ThingErrorNoError) {
@@ -583,7 +588,7 @@ JsonReply *DeviceHandler::ConfirmPairing(const QVariantMap &params, const JsonCo
     connect(info, &ThingPairingInfo::finished, jsonReply, [info, jsonReply, locale](){
 
         QVariantMap returns;
-        returns.insert("deviceError", enumValueName<Device::ThingError>(info->status()).replace("ThingError", "DeviceError"));
+        returns.insert("deviceError", enumValueName<Device::ThingError>(info->status()).replace("Thing", "Device"));
         if (!info->displayMessage().isEmpty()) {
             returns.insert("displayMessage", info->translatedDisplayMessage(locale));
         }
@@ -683,7 +688,7 @@ JsonReply* DeviceHandler::RemoveConfiguredDevice(const QVariantMap &params)
     if (params.contains("removePolicy")) {
         RuleEngine::RemovePolicy removePolicy = params.value("removePolicy").toString() == "RemovePolicyCascade" ? RuleEngine::RemovePolicyCascade : RuleEngine::RemovePolicyUpdate;
         Device::ThingError status = NymeaCore::instance()->removeConfiguredThing(thingId, removePolicy);
-        returns.insert("deviceError", enumValueName<Device::ThingError>(status));
+        returns.insert("deviceError", enumValueName<Device::ThingError>(status).replace("Thing", "Device"));
         return createReply(returns);
     }
 
@@ -833,7 +838,7 @@ JsonReply *DeviceHandler::ExecuteAction(const QVariantMap &params, const JsonCon
     ThingActionInfo *info = NymeaCore::instance()->executeAction(action);
     connect(info, &ThingActionInfo::finished, jsonReply, [info, jsonReply, locale](){
         QVariantMap data;
-        data.insert("deviceError", enumValueName(info->status()).replace("ThingError", "DeviceError"));
+        data.insert("deviceError", enumValueName(info->status()).replace("Thing", "Device"));
         if (!info->displayMessage().isEmpty()) {
             data.insert("displayMessage", info->translatedDisplayMessage(locale));
         }
@@ -855,7 +860,7 @@ JsonReply *DeviceHandler::ExecuteBrowserItem(const QVariantMap &params)
     BrowserActionInfo *info = NymeaCore::instance()->executeBrowserItem(action);
     connect(info, &BrowserActionInfo::finished, jsonReply, [info, jsonReply](){
         QVariantMap data;
-        data.insert("deviceError", enumValueName<Device::ThingError>(info->status()).replace("ThingError", "DeviceError"));
+        data.insert("deviceError", enumValueName<Device::ThingError>(info->status()).replace("Thing", "Device"));
         jsonReply->setData(data);
         jsonReply->finished();
     });
@@ -876,7 +881,7 @@ JsonReply *DeviceHandler::ExecuteBrowserItemAction(const QVariantMap &params)
     BrowserItemActionInfo *info = NymeaCore::instance()->executeBrowserItemAction(browserItemAction);
     connect(info, &BrowserItemActionInfo::finished, jsonReply, [info, jsonReply](){
         QVariantMap data;
-        data.insert("deviceError", enumValueName<Device::ThingError>(info->status()));
+        data.insert("deviceError", enumValueName<Device::ThingError>(info->status()).replace("Thing", "Device"));
         jsonReply->setData(data);
         jsonReply->finished();
     });
@@ -938,15 +943,19 @@ void DeviceHandler::deviceAddedNotification(Thing *thing)
 {
     QVariantMap params;
     QVariantMap deviceMap = pack(thing).toMap();
+    // Patch in deviceClassId
     deviceMap.insert("deviceClassId", deviceMap.value("thingClassId"));
     params.insert("device", deviceMap);
     emit DeviceAdded(params);
 }
 
-void DeviceHandler::deviceChangedNotification(Thing *device)
+void DeviceHandler::deviceChangedNotification(Thing *thing)
 {
     QVariantMap params;
-    params.insert("device", pack(device));
+    QVariantMap deviceMap = pack(thing).toMap();
+    // Patch in deviceClassId
+    deviceMap.insert("deviceClassId", deviceMap.value("thingClassId"));
+    params.insert("device", deviceMap);
     emit DeviceChanged(params);
 }
 

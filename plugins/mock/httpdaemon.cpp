@@ -47,8 +47,8 @@ HttpDaemon::HttpDaemon(Thing *thing, IntegrationPlugin *parent):
     QTcpServer(parent), disabled(false), m_plugin(parent), m_thing(thing)
 {
     QHash<ThingClassId, ParamTypeId> portMap;
-    portMap.insert(mockThingClassId, mockDeviceHttpportParamTypeId);
-    portMap.insert(mockDeviceAutoThingClassId, mockDeviceAutoDeviceHttpportParamTypeId);
+    portMap.insert(mockThingClassId, mockThingHttpportParamTypeId);
+    portMap.insert(autoMockThingClassId, autoMockThingHttpportParamTypeId);
     listen(QHostAddress::Any, thing->paramValue(portMap.value(thing->thingClassId())).toInt());
 }
 
@@ -102,30 +102,30 @@ void HttpDaemon::readClient()
             } else if (stateTypeId == mockDoubleStateTypeId) {
                 stateValue.convert(QVariant::Double);
             }
-            qCDebug(dcMockDevice) << "Set state value" << stateValue;
+            qCDebug(dcMock()) << "Set state value" << stateValue;
             emit setState(stateTypeId, stateValue);
         } else if (url.path() == "/generateevent") {
             emit triggerEvent(EventTypeId(query.queryItemValue("eventtypeid")));
         } else if (url.path() == "/actionhistory") {
-            qCDebug(dcMockDevice) << "Get action history called";
+            qCDebug(dcMock()) << "Get action history called";
 
             QTextStream os(socket);
             os.setAutoDetectUnicode(true);
             os << generateHeader();
             for (int i = 0; i < m_actionList.count(); ++i) {
                 os << m_actionList.at(i).first.toString() << '\n';
-                qCDebug(dcMockDevice) << "    " << m_actionList.at(i).first.toString();
+                qCDebug(dcMock()) << "    " << m_actionList.at(i).first.toString();
             }
             socket->close();
             return;
         } else if (url.path() == "/clearactionhistory") {
-            qCDebug(dcMockDevice) << "Clear action history";
+            qCDebug(dcMock()) << "Clear action history";
             m_actionList.clear();
         } else if (url.path() == "/disappear") {
-            qCDebug(dcMockDevice) << "Should disappear";
+            qCDebug(dcMock()) << "Should disappear";
             emit disappear();
         } else if (url.path() == "/reconfigureautodevice") {
-            qCDebug(dcMockDevice) << "Reconfigure auto device";
+            qCDebug(dcMock()) << "Reconfigure auto device";
             emit reconfigureAutodevice();
         }
 

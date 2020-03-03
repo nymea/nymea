@@ -194,9 +194,9 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
             // Check mandatory fields
             if (!verificationResult.first.isEmpty()) {
-                m_validationErrors.append("Device class has missing fields: \"" + verificationResult.first.join("\", \"") + "\"\n" + qUtf8Printable(QJsonDocument::fromVariant(thingClassObject.toVariantMap()).toJson(QJsonDocument::Indented)));
+                m_validationErrors.append("Thing class has missing fields: \"" + verificationResult.first.join("\", \"") + "\"\n" + qUtf8Printable(QJsonDocument::fromVariant(thingClassObject.toVariantMap()).toJson(QJsonDocument::Indented)));
                 hasError = true;
-                // Stop parsing this deviceClass as we rely on mandatory fields being around.
+                // Stop parsing this thingClass as we rely on mandatory fields being around.
                 continue;
             }
 
@@ -210,11 +210,11 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             }
 
             if (thingClassId.isNull()) {
-                m_validationErrors.append("Device class \"" + thingClassName + "\" has invalid UUID: " + thingClassObject.value("id").toString());
+                m_validationErrors.append("Thing class \"" + thingClassName + "\" has invalid UUID: " + thingClassObject.value("id").toString());
                 hasError = true;
             }
             if (!verifyDuplicateUuid(thingClassId)) {
-                m_validationErrors.append("Device class \"" + thingClassName + "\" has duplicate UUID: " + thingClassName);
+                m_validationErrors.append("Thing class \"" + thingClassName + "\" has duplicate UUID: " + thingClassName);
                 hasError = true;
             }
 
@@ -306,7 +306,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
-                    m_validationErrors.append("Device class \"" + thingClass.name() + "\" has missing properties \"" + verificationResult.first.join("\", \"") + "\" in stateType definition\n" + qUtf8Printable(QJsonDocument::fromVariant(st.toVariantMap()).toJson(QJsonDocument::Indented)));
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" has missing properties \"" + verificationResult.first.join("\", \"") + "\" in stateType definition\n" + qUtf8Printable(QJsonDocument::fromVariant(st.toVariantMap()).toJson(QJsonDocument::Indented)));
                     hasError = true;
                     // Not processing further as mandatory fields are expected to be here
                     continue;

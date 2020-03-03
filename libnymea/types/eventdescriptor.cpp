@@ -81,7 +81,7 @@ EventDescriptor::EventDescriptor(const QString &interface, const QString &interf
 /*! Returns true \l{EventDescriptor::Type}{Type} of this descriptor. */
 EventDescriptor::Type EventDescriptor::type() const
 {
-    return (!m_thingId.isNull() && !m_eventTypeId.isNull()) ? TypeDevice : TypeInterface;
+    return (!m_thingId.isNull() && !m_eventTypeId.isNull()) ? TypeThing : TypeInterface;
 }
 
 /*! Returns true if the EventDescriptor is valid, that is, when it has either enough data to describe a device/eventType or an interface/interfaceEvent pair. */

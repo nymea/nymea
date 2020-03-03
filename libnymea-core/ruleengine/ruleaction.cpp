@@ -28,34 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*!
-    \class RuleAction
-    \brief Describes an action for a \l{nymeaserver::Rule}.
-
-    \ingroup nymea-types
-    \ingroup rules
-    \inmodule libnymea
-
-    A RuleAction describes a special form of an \l{Action} for a \l{nymeaserver::Rule}. The main difference is
-    the \l{RuleActionParam}, which allows to use an EventTypeId within a \l{nymeaserver::Rule} to execute this \l{RuleAction}.
-
-    \sa nymeaserver::Rule, RuleActionParam,
-*/
-
-/*! \enum RuleAction::Type
-
-    \value TypeDevice
-        The RuleAction describes a device Action.
-    \value TypeInterface
-        The RuleAction describes an interface based Action.
-*/
-
-
 #include "ruleaction.h"
 
-/*! Constructs a RuleAction with the given by \a actionTypeId, \a deviceId and \a params.
- *  Use this to create a RuleAction for regular actions, that is, identifying the Action by deviceId and actionTypeId.
- */
 RuleAction::RuleAction(const ActionTypeId &actionTypeId, const ThingId &thingId, const RuleActionParams &params):
     m_id(ActionId::createActionId()),
     m_thingId(thingId),
@@ -65,9 +39,6 @@ RuleAction::RuleAction(const ActionTypeId &actionTypeId, const ThingId &thingId,
 
 }
 
-/*! Constructs a RuleAction with the given by \a interface and \a interfaceAction.
- *  This will create an interface based RuleAction. Meaning, the Action is idenfified by an interface and and interfaceAction.
- */
 RuleAction::RuleAction(const QString &interface, const QString &interfaceAction, const RuleActionParams &params) :
     m_interface(interface),
     m_interfaceAction(interfaceAction),
@@ -76,9 +47,6 @@ RuleAction::RuleAction(const QString &interface, const QString &interfaceAction,
 
 }
 
-/*! Constructs a RuleAction with the given by \a interface and \a interfaceAction.
- *  Use this to create a RuleAction for executing browser items.
- */
 RuleAction::RuleAction(const ThingId &thingId, const QString &browserItemId):
     m_thingId(thingId),
     m_browserItemId(browserItemId)
@@ -86,7 +54,6 @@ RuleAction::RuleAction(const ThingId &thingId, const QString &browserItemId):
 
 }
 
-/*! Constructs a copy of the given \a other RuleAction. */
 RuleAction::RuleAction(const RuleAction &other) :
     m_id(other.id()),
     m_thingId(other.thingId()),
@@ -99,13 +66,11 @@ RuleAction::RuleAction(const RuleAction &other) :
 
 }
 
-/*! Return the ActionId of this RuleAction.*/
 ActionId RuleAction::id() const
 {
     return m_id;
 }
 
-/*! Return true, if the actionTypeId and the deviceId of this RuleAction are valid (set).*/
 bool RuleAction::isValid() const
 {
     return (!m_actionTypeId.isNull() && !m_thingId.isNull())
@@ -113,11 +78,10 @@ bool RuleAction::isValid() const
             || (!m_thingId.isNull() && !m_browserItemId.isEmpty());
 }
 
-/*! Returns whether this RuleAction is targetting a specific device or rather an interface. */
 RuleAction::Type RuleAction::type() const
 {
     if (!m_thingId.isNull() && !m_actionTypeId.isNull()) {
-        return TypeDevice;
+        return TypeThing;
     }
     if (!m_thingId.isNull() && !m_browserItemId.isEmpty()) {
         return TypeBrowser;
@@ -126,10 +90,9 @@ RuleAction::Type RuleAction::type() const
         return TypeInterface;
     }
     // uhmm... invalid...
-    return TypeDevice;
+    return TypeThing;
 }
 
-/*! Return true, if this RuleAction contains a \l{RuleActionParam} which is based on an EventTypeId.*/
 bool RuleAction::isEventBased() const
 {
     foreach (const RuleActionParam &param, m_ruleActionParams) {
@@ -150,8 +113,6 @@ bool RuleAction::isStateBased() const
     return false;
 }
 
-/*! Converts this \l{RuleAction} to a normal \l{Action}.
- *  \sa Action, */
 Action RuleAction::toAction() const
 {
     Action action(m_actionTypeId, m_thingId);
@@ -163,14 +124,11 @@ Action RuleAction::toAction() const
     return action;
 }
 
-/*! Converts this \l{RuleAction} to a \l{BrowserItemAction}.
- *  \sa BrowserItemAction, */
 BrowserItemAction RuleAction::toBrowserItemAction() const
 {
     return BrowserItemAction(m_thingId, m_browserItemId);
 }
 
-/*! Returns the actionTypeId of this RuleAction. */
 ActionTypeId RuleAction::actionTypeId() const
 {
     return m_actionTypeId;
@@ -181,7 +139,6 @@ void RuleAction::setActionTypeId(const ActionTypeId &actionTypeId)
     m_actionTypeId = actionTypeId;
 }
 
-/*! Returns the browserItemId of this RuleAction. */
 QString RuleAction::browserItemId() const
 {
     return m_browserItemId;
@@ -192,7 +149,6 @@ void RuleAction::setBrowserItemId(const QString &browserItemId)
     m_browserItemId = browserItemId;
 }
 
-/*! Returns the \l{ThingId} of this RuleAction. */
 ThingId RuleAction::thingId() const
 {
     return m_thingId;
@@ -203,7 +159,6 @@ void RuleAction::setThingId(const ThingId &thingId)
     m_thingId = thingId;
 }
 
-/*! Returns the name of the interface associated with this RuleAction. */
 QString RuleAction::interface() const
 {
     return m_interface;
@@ -214,7 +169,6 @@ void RuleAction::setInterface(const QString &interface)
     m_interface = interface;
 }
 
-/*! Returns the name of the action of the associated interface. */
 QString RuleAction::interfaceAction() const
 {
     return m_interfaceAction;
@@ -225,23 +179,16 @@ void RuleAction::setInterfaceAction(const QString &interfaceAction)
     m_interfaceAction = interfaceAction;
 }
 
-/*! Returns the \l{RuleActionParamList} of this RuleAction.
- *  \sa RuleActionParam, */
 RuleActionParams RuleAction::ruleActionParams() const
 {
     return m_ruleActionParams;
 }
 
-/*! Set the \l{RuleActionParamList} of this RuleAction to the given \a ruleActionParams.
- *  \sa RuleActionParam, */
 void RuleAction::setRuleActionParams(const RuleActionParams &ruleActionParams)
 {
     m_ruleActionParams = ruleActionParams;
 }
 
-/*! Returns the \l{RuleActionParam} of this RuleAction with the given \a ruleActionParamTypeId.
- *  If there is no \l{RuleActionParam} with th given id an invalid \l{RuleActionParam} will be returnend.
- *  \sa RuleActionParam, */
 RuleActionParam RuleAction::ruleActionParam(const ParamTypeId &ruleActionParamTypeId) const
 {
     foreach (const RuleActionParam &ruleActionParam, m_ruleActionParams) {
@@ -252,9 +199,6 @@ RuleActionParam RuleAction::ruleActionParam(const ParamTypeId &ruleActionParamTy
     return RuleActionParam();
 }
 
-/*! Returns the \l{RuleActionParam} of this RuleAction with the given \a ruleActionParamName.
- *  If there is no \l{RuleActionParam} with th given name an invalid \l{RuleActionParam} will be returnend.
- *  \sa RuleActionParam, */
 RuleActionParam RuleAction::ruleActionParam(const QString &ruleActionParamName) const
 {
     foreach (const RuleActionParam &ruleActionParam, m_ruleActionParams) {
@@ -265,7 +209,6 @@ RuleActionParam RuleAction::ruleActionParam(const QString &ruleActionParamName) 
     return RuleActionParam();
 }
 
-/*! Copy the data to a \l{RuleAction} from an \a other rule action. */
 void RuleAction::operator=(const RuleAction &other)
 {
     m_id = other.id();
@@ -273,17 +216,15 @@ void RuleAction::operator=(const RuleAction &other)
     m_ruleActionParams = other.ruleActionParams();
 }
 
-/*! Print a RuleAction including RuleActionParams to QDebug. */
 QDebug operator<<(QDebug dbg, const RuleAction &ruleAction)
 {
-    dbg.nospace() << "RuleAction(ActionTypeId:" << ruleAction.actionTypeId().toString() << ", DeviceId:" << ruleAction.thingId().toString() << ", Interface:" << ruleAction.interface() << ", InterfaceAction:" << ruleAction.interfaceAction() << ", BrowserItemId:" << ruleAction.browserItemId() << ")" << endl;
+    dbg.nospace() << "RuleAction(ActionTypeId:" << ruleAction.actionTypeId().toString() << ", ThingId:" << ruleAction.thingId().toString() << ", Interface:" << ruleAction.interface() << ", InterfaceAction:" << ruleAction.interfaceAction() << ", BrowserItemId:" << ruleAction.browserItemId() << ")" << endl;
     for (int i = 0; i < ruleAction.ruleActionParams().count(); i++) {
         dbg.nospace() << "    " << i << ": " << ruleAction.ruleActionParams().at(i) << endl;
     }
     return dbg;
 }
 
-/*! Print a List of RuleActions with all their contents to QDebug. */
 QDebug operator<<(QDebug dbg, const QList<RuleAction> &ruleActionList)
 {
     dbg.nospace() << "RuleActionList (count:" << ruleActionList.count() << "):" << endl;

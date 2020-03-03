@@ -46,11 +46,11 @@
     </message>
 </context>
 <context>
-    <name>DeviceManagerImplementation</name>
+    <name>ThingManagerImplementation</name>
     <message>
-        <location filename="../libnymea-core/devices/devicemanagerimplementation.cpp" line="262"/>
-        <location filename="../libnymea-core/devices/devicemanagerimplementation.cpp" line="1727"/>
-        <source>The plugin for this device or service is not loaded.</source>
+        <location filename="../libnymea-core/integrations/thingmanagerimplementation.cpp" line="258"/>
+        <location filename="../libnymea-core/integrations/thingmanagerimplementation.cpp" line="1696"/>
+        <source>The plugin for this thing is not loaded.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -299,6 +299,23 @@ The network section of the debug interface</extracomment>
         <translation>Log-database</translation>
     </message>
     <message>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1320"/>
+        <source>Thing settings</source>
+        <extracomment>The thing settings download description of the debug interface</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1370"/>
+        <source>Thing states settings</source>
+        <extracomment>The thing states settings download description of the debug interface</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../libnymea-core/debugserverhandler.cpp" line="1692"/>
+        <source>This test shows the trace path from the nymea device to the nymea.io server.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1731"/>
         <source>This section allows you to see the live logs of the nymea server.</source>
         <translation type="unfinished"></translation>
@@ -408,18 +425,6 @@ The download logs section of the debug interface</extracomment>
         <translation>nymead-instellingen</translation>
     </message>
     <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1320"/>
-        <source>Device settings</source>
-        <extracomment>The device settings download description of the debug interface</extracomment>
-        <translation>Apparaatinstellingen</translation>
-    </message>
-    <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1370"/>
-        <source>Device states settings</source>
-        <extracomment>The device states settings download description of the debug interface</extracomment>
-        <translation>Instellingen apparaatstatus</translation>
-    </message>
-    <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1420"/>
         <source>Rules settings</source>
         <extracomment>The rules settings download description of the debug interface</extracomment>
@@ -487,11 +492,6 @@ The download logs section of the debug interface</extracomment>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1689"/>
         <source>Trace path</source>
         <extracomment>The trace section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../libnymea-core/debugserverhandler.cpp" line="1692"/>
-        <source>This test showes the trace path from the nymea device to the nymea.io server.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

@@ -104,7 +104,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     QString description; QVariantMap returns; QVariantMap params;
     description = "Initiates a connection. Use this method to perform an initial handshake of the "
                             "connection. Optionally, a parameter \"locale\" is can be passed to set up the used "
-                            "locale for this connection. Strings such as DeviceClass displayNames etc will be "
+                            "locale for this connection. Strings such as ThingClass displayNames etc will be "
                             "localized to this locale. If this parameter is omitted, the default system locale "
                             "(depending on the configuration) is used. The reply of this method contains information "
                             "about this core instance such as version information, uuid and its name. The locale value"
@@ -150,9 +150,9 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
                                             "deprecated and used for legacy compatibilty only. It will be set to true if at least "
                                             "one namespace has been enabled.";
     params.insert("o:namespaces", enumValueName(StringList));
-    params.insert("o:enabled", enumValueName(Bool));
+    params.insert("d:o:enabled", enumValueName(Bool));
     returns.insert("namespaces", enumValueName(StringList));
-    returns.insert("enabled", enumValueName(Bool));
+    returns.insert("d:enabled", enumValueName(Bool));
     registerMethod("SetNotificationStatus", description, params, returns);
 
     params.clear(); returns.clear();
@@ -224,7 +224,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
 
     params.clear(); returns.clear();
     description = "Check whether the cloud is currently connected. \"connected\" will be true whenever connectionState equals CloudConnectionStateConnected and is deprecated. Please use the connectionState value instead.";
-    returns.insert("connected", enumValueName(Bool));
+    returns.insert("d:connected", enumValueName(Bool));
     returns.insert("connectionState", enumRef<CloudManager::CloudConnectionState>());
     registerMethod("IsCloudConnected", description, params, returns);
 

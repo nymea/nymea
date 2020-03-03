@@ -49,7 +49,7 @@ class LIBNYMEA_EXPORT RuleAction
 
 public:
     enum Type {
-        TypeDevice,
+        TypeThing,
         TypeInterface,
         TypeBrowser
     };

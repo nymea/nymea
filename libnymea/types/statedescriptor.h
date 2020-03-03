@@ -53,7 +53,7 @@ class LIBNYMEA_EXPORT StateDescriptor
     Q_PROPERTY(Types::ValueOperator operator READ operatorType WRITE setOperatorType)
 public:
     enum Type {
-        TypeDevice,
+        TypeThing,
         TypeInterface
     };
 

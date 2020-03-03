@@ -51,7 +51,7 @@ class LIBNYMEA_EXPORT EventDescriptor
     Q_PROPERTY(ParamDescriptors paramDescriptors READ paramDescriptors WRITE setParamDescriptors USER true)
 public:
     enum Type {
-        TypeDevice,
+        TypeThing,
         TypeInterface
     };
 

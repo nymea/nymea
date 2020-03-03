@@ -126,7 +126,7 @@ protected:
     void clearLoggingDatabase();
 
 private:
-    void createMockDevice();
+    void createMock();
 
 protected:
     PluginId mockPluginId = PluginId("727a4a9a-c187-446f-aadf-f1b2220607d1");

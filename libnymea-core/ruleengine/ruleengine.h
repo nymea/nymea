@@ -51,7 +51,7 @@ public:
         RuleErrorNoError,
         RuleErrorInvalidRuleId,
         RuleErrorRuleNotFound,
-        RuleErrorDeviceNotFound,
+        RuleErrorThingNotFound,
         RuleErrorEventTypeNotFound,
         RuleErrorStateTypeNotFound,
         RuleErrorActionTypeNotFound,

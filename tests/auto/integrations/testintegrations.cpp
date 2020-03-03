@@ -113,7 +113,7 @@ private slots:
     void editThings_data();
     void editThings();
 
-    void testDeviceSettings();
+    void testThingSettings();
 
     void reconfigureThings_data();
     void reconfigureThings();
@@ -143,7 +143,7 @@ private slots:
 
     void asyncSetupEmitsSetupStatusUpdate();
 
-    // Keep those at last as they will remove devices
+    // Keep those at last as they will remove things
     void removeThing_data();
     void removeThing();
 
@@ -267,10 +267,10 @@ void TestIntegrations::setPluginConfig()
 
 void TestIntegrations::getSupportedVendors()
 {
-    QVariant supportedVendors = injectAndWait("Devices.GetSupportedVendors");
+    QVariant supportedVendors = injectAndWait("Integrations.GetVendors");
     qDebug() << "response" << supportedVendors;
 
-    // Make sure there is exactly 1 supported Vendor named "guh"
+    // Make sure there is exactly 1 Vendor with nymea's id
     QVariantList vendorList = supportedVendors.toMap().value("params").toMap().value("vendors").toList();
     QCOMPARE(vendorList.count() > 0, true);
     bool found = false;
@@ -312,19 +312,19 @@ void TestIntegrations::verifyInterfaces()
 {
     QVariantMap params;
     params.insert("vendorId", nymeaVendorId);
-    QVariant result = injectAndWait("Devices.GetSupportedDevices", params);
-    QVariantList supportedDevices = result.toMap().value("params").toMap().value("deviceClasses").toList();
+    QVariant result = injectAndWait("Integrations.GetThingClasses", params);
+    QVariantList supportedThings = result.toMap().value("params").toMap().value("thingClasses").toList();
 
-    QVariantMap mockDevice;
-    foreach (const QVariant &deviceClass, supportedDevices) {
-        if (deviceClass.toMap().value("id").toUuid() == mockThingClassId) {
-            mockDevice = deviceClass.toMap();
+    QVariantMap mock;
+    foreach (const QVariant &thingClass, supportedThings) {
+        if (thingClass.toMap().value("id").toUuid() == mockThingClassId) {
+            mock = thingClass.toMap();
         }
     }
-    QVERIFY(!mockDevice.isEmpty());
+    QVERIFY(!mock.isEmpty());
 
-    QVariantList interfaces = mockDevice.value("interfaces").toList();
-    // Must contain system, power, light and battery, but must not contain gateway as the device manager should filter
+    QVariantList interfaces = mock.value("interfaces").toList();
+    // Must contain system, power, light and battery, but must not contain gateway as the thing manager should filter
     // that away because it doesn't implement all the required states.
     QCOMPARE(interfaces.count(), 4);
     QVERIFY(interfaces.contains("system"));
@@ -351,38 +351,38 @@ void TestIntegrations::addThing_data()
     brokenParam.insert("paramTypeId", mockThingBrokenParamTypeId);
     brokenParam.insert("value", true);
 
-    QVariantList deviceParams;
+    QVariantList thingParams;
 
-    deviceParams.clear(); deviceParams << httpportParam;
-    QTest::newRow("User, JustAdd") << mockThingClassId << deviceParams << true << Thing::ThingErrorNoError;
-    deviceParams.clear(); deviceParams << httpportParam << asyncParam;
-    QTest::newRow("User, JustAdd, Async") << mockThingClassId << deviceParams << true << Thing::ThingErrorNoError;
-    QTest::newRow("Invalid ThingClassId") << ThingClassId::createThingClassId() << deviceParams << true << Thing::ThingErrorThingClassNotFound;
-    deviceParams.clear(); deviceParams << httpportParam << brokenParam;
-    QTest::newRow("Setup failure") << mockThingClassId << deviceParams << true << Thing::ThingErrorSetupFailed;
-    deviceParams.clear(); deviceParams << httpportParam << asyncParam << brokenParam;
-    QTest::newRow("Setup failure, Async") << mockThingClassId << deviceParams << true << Thing::ThingErrorSetupFailed;
+    thingParams.clear(); thingParams << httpportParam;
+    QTest::newRow("User, JustAdd") << mockThingClassId << thingParams << true << Thing::ThingErrorNoError;
+    thingParams.clear(); thingParams << httpportParam << asyncParam;
+    QTest::newRow("User, JustAdd, Async") << mockThingClassId << thingParams << true << Thing::ThingErrorNoError;
+    QTest::newRow("Invalid ThingClassId") << ThingClassId::createThingClassId() << thingParams << true << Thing::ThingErrorThingClassNotFound;
+    thingParams.clear(); thingParams << httpportParam << brokenParam;
+    QTest::newRow("Setup failure") << mockThingClassId << thingParams << true << Thing::ThingErrorSetupFailed;
+    thingParams.clear(); thingParams << httpportParam << asyncParam << brokenParam;
+    QTest::newRow("Setup failure, Async") << mockThingClassId << thingParams << true << Thing::ThingErrorSetupFailed;
 
-    QVariantList invalidDeviceParams;
-    QTest::newRow("User, JustAdd, missing params") << mockThingClassId << invalidDeviceParams << true << Thing::ThingErrorMissingParameter;
+    QVariantList invalidThingParams;
+    QTest::newRow("User, JustAdd, missing params") << mockThingClassId << invalidThingParams << true << Thing::ThingErrorMissingParameter;
 
     QVariantMap fakeparam;
     fakeparam.insert("paramTypeId", ParamTypeId::createParamTypeId());
-    invalidDeviceParams.append(fakeparam);
-    QTest::newRow("User, JustAdd, invalid param") << mockThingClassId << invalidDeviceParams << false << Thing::ThingErrorMissingParameter;
+    invalidThingParams.append(fakeparam);
+    QTest::newRow("User, JustAdd, invalid param") << mockThingClassId << invalidThingParams << false << Thing::ThingErrorMissingParameter;
 
     QVariantMap fakeparam2;
     fakeparam2.insert("paramTypeId", mockThingHttpportParamTypeId.toString());
     fakeparam2.insert("value", "blabla");
-    invalidDeviceParams.clear();
-    invalidDeviceParams.append(fakeparam2);
-    QTest::newRow("User, JustAdd, wrong param") << mockThingClassId << invalidDeviceParams << true << Thing::ThingErrorInvalidParameter;
+    invalidThingParams.clear();
+    invalidThingParams.append(fakeparam2);
+    QTest::newRow("User, JustAdd, wrong param") << mockThingClassId << invalidThingParams << true << Thing::ThingErrorInvalidParameter;
 
-    deviceParams.clear(); deviceParams << httpportParam << fakeparam;
-    QTest::newRow("USer, JustAdd, additional invalid param") << mockThingClassId << deviceParams << false << Thing::ThingErrorNoError;
+    thingParams.clear(); thingParams << httpportParam << fakeparam;
+    QTest::newRow("USer, JustAdd, additional invalid param") << mockThingClassId << thingParams << false << Thing::ThingErrorNoError;
 
-    deviceParams.clear(); deviceParams << httpportParam << fakeparam2;
-    QTest::newRow("USer, JustAdd, additional param, valid but unused") << mockThingClassId << deviceParams << true << Thing::ThingErrorNoError;
+    thingParams.clear(); thingParams << httpportParam << fakeparam2;
+    QTest::newRow("USer, JustAdd, additional param, valid but unused") << mockThingClassId << thingParams << true << Thing::ThingErrorNoError;
 
 }
 
@@ -395,7 +395,7 @@ void TestIntegrations::addThing()
 
     QVariantMap params;
     params.insert("thingClassId", thingClassId);
-    params.insert("name", "Test Add Device");
+    params.insert("name", "Test Add Thing");
     params.insert("thingParams", thingParams);
     QVariant response = injectAndWait("Integrations.AddThing", params);
 
@@ -421,17 +421,17 @@ void TestIntegrations::thingAddedRemovedNotifications()
     // Setup connection to mock client
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    // add device and wait for notification
-    QVariantList deviceParams;
+    // add thing and wait for notification
+    QVariantList thingParams;
     QVariantMap httpportParam;
     httpportParam.insert("paramTypeId", mockThingHttpportParamTypeId);
     httpportParam.insert("value", 5678);
-    deviceParams.append(httpportParam);
+    thingParams.append(httpportParam);
 
     QVariantMap params; clientSpy.clear();
     params.insert("thingClassId", mockThingClassId);
     params.insert("name", "Mocked thing");
-    params.insert("thingParams", deviceParams);
+    params.insert("thingParams", thingParams);
     QVariant response = injectAndWait("Integrations.AddThing", params);
     if (clientSpy.count() == 0) clientSpy.wait();
     verifyThingError(response);
@@ -440,7 +440,7 @@ void TestIntegrations::thingAddedRemovedNotifications()
     ThingId thingId = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
     QVERIFY(!thingId.isNull());
 
-    // check the DeviceAdded notification
+    // check the ThingAdded notification
     QCOMPARE(notificationThingMap.value("thingClassId").toUuid(), QUuid(mockThingClassId));
     QCOMPARE(notificationThingMap.value("id").toUuid(), QUuid(thingId));
     foreach (const QVariant &param, notificationThingMap.value("params").toList()) {
@@ -449,7 +449,7 @@ void TestIntegrations::thingAddedRemovedNotifications()
         }
     }
 
-    // now remove the device and check the device removed notification
+    // now remove the thong and check the thing removed notification
     params.clear(); response.clear(); clientSpy.clear();
     params.insert("thingId", thingId);
     response = injectAndWait("Integrations.RemoveThing", params);
@@ -468,44 +468,44 @@ void TestIntegrations::thingChangedNotifications()
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     // ADD
-    // add device and wait for notification
-    QVariantList deviceParams;
+    // add thing and wait for notification
+    QVariantList thingParams;
     QVariantMap httpportParam;
     httpportParam.insert("paramTypeId", mockThingHttpportParamTypeId);
     httpportParam.insert("value", 23234);
-    deviceParams.append(httpportParam);
+    thingParams.append(httpportParam);
 
     clientSpy.clear();
     QVariantMap params;
     params.insert("thingClassId", mockThingClassId);
     params.insert("name", "Mock");
-    params.insert("thingParams", deviceParams);
+    params.insert("thingParams", thingParams);
     QVariant response = injectAndWait("Integrations.AddThing", params);
     ThingId thingId = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
     QVERIFY(!thingId.isNull());
     if (clientSpy.count() == 0) clientSpy.wait();
     verifyThingError(response);
-    QVariantMap notificationDeviceMap = checkNotification(clientSpy, "Integrations.ThingAdded").toMap().value("params").toMap().value("thing").toMap();
+    QVariantMap notificationThingMap = checkNotification(clientSpy, "Integrations.ThingAdded").toMap().value("params").toMap().value("thing").toMap();
 
-    QCOMPARE(notificationDeviceMap.value("thingClassId").toUuid(), QUuid(mockThingClassId));
-    QCOMPARE(notificationDeviceMap.value("id").toUuid(), QUuid(thingId));
-    foreach (const QVariant &param, notificationDeviceMap.value("params").toList()) {
+    QCOMPARE(notificationThingMap.value("thingClassId").toUuid(), QUuid(mockThingClassId));
+    QCOMPARE(notificationThingMap.value("id").toUuid(), QUuid(thingId));
+    foreach (const QVariant &param, notificationThingMap.value("params").toList()) {
         if (param.toMap().value("name").toString() == "httpport") {
             QCOMPARE(param.toMap().value("value").toInt(), httpportParam.value("value").toInt());
         }
     }
 
     // RECONFIGURE
-    // now reconfigure the device and check the deviceChanged notification
-    QVariantList newDeviceParams;
+    // now reconfigure the thing and check the thing changed notification
+    QVariantList newThingParams;
     QVariantMap newHttpportParam;
     newHttpportParam.insert("paramTypeId", mockThingHttpportParamTypeId);
     newHttpportParam.insert("value", 45473);
-    newDeviceParams.append(newHttpportParam);
+    newThingParams.append(newHttpportParam);
 
     params.clear(); response.clear(); clientSpy.clear();
     params.insert("thingId", thingId);
-    params.insert("thingParams", newDeviceParams);
+    params.insert("thingParams", newThingParams);
     response = injectAndWait("Integrations.ReconfigureThing", params);
     if (clientSpy.count() == 0) clientSpy.wait();
     verifyThingError(response);
@@ -518,8 +518,8 @@ void TestIntegrations::thingChangedNotifications()
         }
     }
 
-    // EDIT device name
-    QString thingName = "Test device 1234";
+    // EDIT thing name
+    QString thingName = "Test thing 1234";
     params.clear(); response.clear(); clientSpy.clear();
     params.insert("thingId", thingId);
     params.insert("name", thingName);
@@ -532,7 +532,7 @@ void TestIntegrations::thingChangedNotifications()
     QCOMPARE(editThingNotificationMap.value("name").toString(), thingName);
 
     // REMOVE
-    // now remove the device and check the device removed notification
+    // now remove the thing and check the thing removed notification
     params.clear(); response.clear(); clientSpy.clear();
     params.insert("thingId", thingId);
     response = injectAndWait("Integrations.RemoveThing", params);
@@ -546,8 +546,8 @@ void TestIntegrations::getThings()
 {
     QVariant response = injectAndWait("Integrations.GetThings");
 
-    QVariantList devices = response.toMap().value("params").toMap().value("things").toList();
-    QCOMPARE(devices.count(), 3); // There should be: one auto created mock, one created in NymeaTestBase::initTestcase() and one created in TestIntegrations::initTestCase()
+    QVariantList things = response.toMap().value("params").toMap().value("things").toList();
+    QCOMPARE(things.count(), 3); // There should be: one auto created mock, one created in NymeaTestBase::initTestcase() and one created in TestIntegrations::initTestCase()
 }
 
 void TestIntegrations::getThing_data()
@@ -665,7 +665,7 @@ void TestIntegrations::discoverThings()
 
         params.clear();
         params.insert("thingClassId", thingClassId);
-        params.insert("name", "Discoverd mock device");
+        params.insert("name", "Discoverd mock");
         params.insert("thingDescriptorId", descriptorId.toString());
         response = injectAndWait("Integrations.AddThing", params);
 
@@ -695,7 +695,7 @@ void TestIntegrations::addPushButtonThings()
     QFETCH(Thing::ThingError, error);
     QFETCH(bool, waitForButtonPressed);
 
-    // Discover device
+    // Discover things
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
     resultCountParam.insert("paramTypeId", pushButtonMockDiscoveryResultCountParamTypeId);
@@ -711,11 +711,11 @@ void TestIntegrations::addPushButtonThings()
     QCOMPARE(response.toMap().value("params").toMap().value("thingDescriptors").toList().count(), 1);
 
 
-    // Pair device
+    // Pair thing
     ThingDescriptorId descriptorId = ThingDescriptorId(response.toMap().value("params").toMap().value("thingDescriptors").toList().first().toMap().value("id").toString());
     params.clear();
     params.insert("thingClassId", thingClassId);
-    params.insert("name", "Pushbutton device");
+    params.insert("name", "Pushbutton mock");
     params.insert("thingDescriptorId", descriptorId.toString());
     response = injectAndWait("Integrations.PairThing", params);
 
@@ -751,8 +751,8 @@ void TestIntegrations::addDisplayPinThings_data()
     QTest::addColumn<Thing::ThingError>("error");
     QTest::addColumn<QString>("secret");
 
-    QTest::newRow("Valid: Add DisplayPin device") << displayPinMockThingClassId << Thing::ThingErrorNoError << "243681";
-    QTest::newRow("Invalid: Add DisplayPin device (wrong pin)") << displayPinMockThingClassId << Thing::ThingErrorAuthenticationFailure << "243682";
+    QTest::newRow("Valid: Add DisplayPin mock") << displayPinMockThingClassId << Thing::ThingErrorNoError << "243681";
+    QTest::newRow("Invalid: Add DisplayPin mock (wrong pin)") << displayPinMockThingClassId << Thing::ThingErrorAuthenticationFailure << "243682";
 }
 
 void TestIntegrations::addDisplayPinThings()
@@ -761,7 +761,7 @@ void TestIntegrations::addDisplayPinThings()
     QFETCH(Thing::ThingError, error);
     QFETCH(QString, secret);
 
-    // Discover device
+    // Discover things
     QVariantList discoveryParams;
     QVariantMap resultCountParam;
     resultCountParam.insert("paramTypeId", displayPinMockDiscoveryResultCountParamTypeId);
@@ -776,11 +776,11 @@ void TestIntegrations::addDisplayPinThings()
     verifyThingError(response, Thing::ThingErrorNoError);
     QCOMPARE(response.toMap().value("params").toMap().value("thingDescriptors").toList().count(), 1);
 
-    // Pair device
+    // Pair thing
     ThingDescriptorId descriptorId = ThingDescriptorId(response.toMap().value("params").toMap().value("thingDescriptors").toList().first().toMap().value("id").toString());
     params.clear();
     params.insert("thingClassId", thingClassId);
-    params.insert("name", "Display pin mock device");
+    params.insert("name", "Display pin mock");
     params.insert("thingDescriptorId", descriptorId.toString());
     response = injectAndWait("Integrations.PairThing", params);
 
@@ -789,7 +789,7 @@ void TestIntegrations::addDisplayPinThings()
     PairingTransactionId pairingTransactionId(response.toMap().value("params").toMap().value("pairingTransactionId").toString());
     QString displayMessage = response.toMap().value("params").toMap().value("displayMessage").toString();
 
-    qDebug() << "displayMessage" << displayMessage;
+    qCDebug(dcTests()) << "displayMessage" << displayMessage;
 
     params.clear();
     params.insert("pairingTransactionId", pairingTransactionId.toString());
@@ -809,7 +809,7 @@ void TestIntegrations::addDisplayPinThings()
 
 void TestIntegrations::parentChildThings()
 {
-    // add parent device
+    // add parent
     QVariantMap params;
     params.insert("thingClassId", parentMockThingClassId);
     params.insert("name", "Parent");
@@ -825,41 +825,41 @@ void TestIntegrations::parentChildThings()
     thingAddedSpy.wait();
     QCOMPARE(thingAddedSpy.count(), 2);
 
-    // find child device
+    // find child
     response = injectAndWait("Integrations.GetThings");
 
     QVariantList things = response.toMap().value("params").toMap().value("things").toList();
 
     ThingId childId;
     foreach (const QVariant thingVariant, things) {
-        QVariantMap deviceMap = thingVariant.toMap();
+        QVariantMap thingMap = thingVariant.toMap();
 
-        if (deviceMap.value("thingClassId").toUuid() == childMockThingClassId) {
-            if (deviceMap.value("parentId").toUuid() == parentId) {
-                childId = ThingId(deviceMap.value("id").toString());
+        if (thingMap.value("thingClassId").toUuid() == childMockThingClassId) {
+            if (thingMap.value("parentId").toUuid() == parentId) {
+                childId = ThingId(thingMap.value("id").toString());
                 break;
             }
         }
     }
-    QVERIFY2(!childId.isNull(), QString("Could not find child device:\nParent ID:%1\nResponse:%2")
+    QVERIFY2(!childId.isNull(), QString("Could not find child:\nParent ID:%1\nResponse:%2")
              .arg(parentId.toString())
              .arg(qUtf8Printable(QJsonDocument::fromVariant(response).toJson()))
              .toUtf8());
 
-    // Try to remove the child device
+    // Try to remove the child
     params.clear();
     params.insert("thingId", childId.toString());
     response = injectAndWait("Integrations.RemoveThing", params);
     verifyThingError(response, Thing::ThingErrorThingIsChild);
 
-    // check if the child device is still there
+    // check if the child is still there
     response = injectAndWait("Integrations.GetThings");
     things = response.toMap().value("params").toMap().value("things").toList();
     bool found = false;
     foreach (const QVariant thingVariant, things) {
-        QVariantMap deviceMap = thingVariant.toMap();
-        if (deviceMap.value("thingClassId").toUuid() == childMockThingClassId) {
-            if (deviceMap.value("id").toUuid() == childId) {
+        QVariantMap thingMap = thingVariant.toMap();
+        if (thingMap.value("thingClassId").toUuid() == childMockThingClassId) {
+            if (thingMap.value("id").toUuid() == childId) {
                 found = true;
                 break;
             }
@@ -867,13 +867,13 @@ void TestIntegrations::parentChildThings()
     }
     QVERIFY2(found, "Could not find child.");
 
-    // remove the parent device
+    // remove the parent
     params.clear();
     params.insert("thingId", parentId.toString());
     response = injectAndWait("Integrations.RemoveThing", params);
     verifyThingError(response);
 
-    // check if the child device is still there
+    // check if the child is still there
     response = injectAndWait("Integrations.GetThings");
     things = response.toMap().value("params").toMap().value("things").toList();
     found = false;
@@ -997,7 +997,7 @@ void TestIntegrations::getStateValue()
     QCOMPARE(response.toMap().value("params").toMap().value("thingError").toString(), enumValueName(statusCode));
     if (statusCode == Thing::ThingErrorNoError) {
         QVariant value = response.toMap().value("params").toMap().value("value");
-        QCOMPARE(value.toInt(), 10); // Mock device has value 10 by default...
+        QCOMPARE(value.toInt(), 10); // Mock has value 10 by default...
     }
 }
 
@@ -1022,7 +1022,7 @@ void TestIntegrations::getStateValues()
     QCOMPARE(response.toMap().value("params").toMap().value("thingError").toString(), enumValueName(statusCode));
     if (statusCode == Thing::ThingErrorNoError) {
         QVariantList values = response.toMap().value("params").toMap().value("values").toList();
-        QCOMPARE(values.count(), 6); // Mock device has 6 states...
+        QCOMPARE(values.count(), 6); // Mock has 6 states...
     }
 }
 
@@ -1031,8 +1031,8 @@ void TestIntegrations::editThings_data()
     QTest::addColumn<QString>("name");
 
     QTest::newRow("change name") << "New name";
-    QTest::newRow("change name") << "Foo device";
-    QTest::newRow("change name") << "Bar device";
+    QTest::newRow("change name") << "Foo";
+    QTest::newRow("change name") << "Bar";
 }
 
 void TestIntegrations::editThings()
@@ -1042,16 +1042,16 @@ void TestIntegrations::editThings()
     QString originalName = "Test thing";
 
     // add thing
-    QVariantList deviceParams;
+    QVariantList thingParams;
     QVariantMap httpportParam;
     httpportParam.insert("paramTypeId", mockThingHttpportParamTypeId);
     httpportParam.insert("value", 8889);
-    deviceParams.append(httpportParam);
+    thingParams.append(httpportParam);
 
     QVariantMap params;
     params.insert("thingClassId", mockThingClassId);
     params.insert("name", originalName);
-    params.insert("thingParams", deviceParams);
+    params.insert("thingParams", thingParams);
     QVariant response = injectAndWait("Integrations.AddThing", params);
     verifyThingError(response);
     ThingId thingId = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
@@ -1069,10 +1069,10 @@ void TestIntegrations::editThings()
     response = injectAndWait("Integrations.GetThings");
     QVariantList things = response.toMap().value("params").toMap().value("things").toList();
 
-    foreach (const QVariant &deviceVariant, things) {
-        QVariantMap device = deviceVariant.toMap();
-        if (ThingId(device.value("id").toString()) == thingId) {
-            newName = device.value("name").toString();
+    foreach (const QVariant &thingVariant, things) {
+        QVariantMap thing = thingVariant.toMap();
+        if (ThingId(thing.value("id").toString()) == thingId) {
+            newName = thing.value("name").toString();
         }
     }
     QCOMPARE(newName, name);
@@ -1083,9 +1083,9 @@ void TestIntegrations::editThings()
     response = injectAndWait("Integrations.GetThings");
     things = response.toMap().value("params").toMap().value("things").toList();
     foreach (const QVariant &thingVariant, things) {
-        QVariantMap device = thingVariant.toMap();
-        if (ThingId(device.value("id").toString()) == thingId) {
-            newName = device.value("name").toString();
+        QVariantMap thing = thingVariant.toMap();
+        if (ThingId(thing.value("id").toString()) == thingId) {
+            newName = thing.value("name").toString();
             break;
         }
     }
@@ -1097,19 +1097,19 @@ void TestIntegrations::editThings()
     verifyThingError(response);
 }
 
-void TestIntegrations::testDeviceSettings()
+void TestIntegrations::testThingSettings()
 {
-    // add device
-    QVariantList deviceParams;
+    // add thing
+    QVariantList thingParams;
     QVariantMap httpportParam;
     httpportParam.insert("paramTypeId", mockThingHttpportParamTypeId);
     httpportParam.insert("value", 8889);
-    deviceParams.append(httpportParam);
+    thingParams.append(httpportParam);
 
     QVariantMap params;
     params.insert("thingClassId", mockThingClassId);
     params.insert("name", "Mock");
-    params.insert("thingParams", deviceParams);
+    params.insert("thingParams", thingParams);
     QVariant response = injectAndWait("Integrations.AddThing", params);
     verifyThingError(response);
     ThingId thingId = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
@@ -1188,7 +1188,7 @@ void TestIntegrations::reconfigureThings_data()
     QVariantList httpportChangeThingParams;
     QVariantMap httpportParamDifferent;
     httpportParamDifferent.insert("paramTypeId", mockThingHttpportParamTypeId);
-    httpportParamDifferent.insert("value", 8893); // if change -> change also newPort in reconfigureDevices()
+    httpportParamDifferent.insert("value", 8893); // if changing this, change also newPort in reconfigureThings()
     httpportChangeThingParams.append(httpportParamDifferent);
 
     QVariantList brokenChangedThingParams;
@@ -1241,14 +1241,14 @@ void TestIntegrations::reconfigureThings()
     thingParams.append(httpportParam);
     params.insert("thingParams", thingParams);
 
-    // add a mockdevice
+    // add a mock
     QVariant response = injectAndWait("Integrations.AddThing", params);
     verifyThingError(response);
 
     ThingId thingId = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
     QVERIFY(!thingId.isNull());
 
-    // now EDIT the added device
+    // now EDIT the added mock
     response.clear();
     QVariantMap editParams;
     editParams.insert("thingId", thingId);
@@ -1282,7 +1282,7 @@ void TestIntegrations::reconfigureThings()
         foreach (const QVariant &thing, response.toMap().value("params").toMap().value("things").toList()) {
             if (ThingId(thing.toMap().value("id").toString()) == thingId) {
                 qDebug() << "found added thing" << thing.toMap().value("params");
-                qDebug() << "expected deviceParams:" << newThingParams;
+                qDebug() << "expected params:" << newThingParams;
                 // check if the edit was ok
                 verifyParams(newThingParams, thing.toMap().value("params").toList(), false);
                 found = true;
@@ -1376,12 +1376,12 @@ void TestIntegrations::reconfigureByDiscovery()
         QCOMPARE(response.toMap().value("params").toMap().value("thingDescriptors").toList().count(), resultCount);
     }
 
-    // add Discovered Device 1 port 55555
+    // add Discovered Thing 1 port 55555
     QVariantList thingDescriptors = response.toMap().value("params").toMap().value("thingDescriptors").toList();
 
     ThingDescriptorId descriptorId;
     foreach (const QVariant &descriptor, thingDescriptors) {
-        // find the device with port 55555
+        // find the thing with port 55555
         if (descriptor.toMap().value("description").toString() == "55555") {
             descriptorId = ThingDescriptorId(descriptor.toMap().value("id").toString());
             qDebug() << descriptorId.toString();
@@ -1396,14 +1396,14 @@ void TestIntegrations::reconfigureByDiscovery()
     params.clear();
     response.clear();
     params.insert("thingClassId", thingClassId);
-    params.insert("name", "Discoverd mock device");
+    params.insert("name", "Discoverd mock");
     params.insert("thingDescriptorId", descriptorId);
     response = injectAndWait("Integrations.AddThing", params);
 
     ThingId thingId(response.toMap().value("params").toMap().value("thingId").toString());
     QVERIFY(!thingId.isNull());
 
-    // and now rediscover and find the existing device in the discovery results
+    // and now rediscover and find the existing thing in the discovery results
     qCDebug(dcTests()) << "Re-Discovering...";
 
     params.clear();
@@ -1419,7 +1419,7 @@ void TestIntegrations::reconfigureByDiscovery()
 
     thingDescriptors = response.toMap().value("params").toMap().value("thingDescriptors").toList();
 
-    // find the already added device
+    // find the already added thing
     descriptorId = ThingDescriptorId(); // reset it first
     foreach (const QVariant &descriptor, thingDescriptors) {
         if (descriptor.toMap().value("thingId").toUuid().toString() == thingId.toString()) {
@@ -1445,24 +1445,24 @@ void TestIntegrations::reconfigureByDiscovery()
     response.clear();
     response = injectAndWait("Integrations.GetThings", QVariantMap());
 
-    QVariantMap deviceMap;
+    QVariantMap thingMap;
     bool found = false;
     foreach (const QVariant &thing, response.toMap().value("params").toMap().value("things").toList()) {
         if (ThingId(thing.toMap().value("id").toString()) == thingId) {
             qDebug() << "found added thing" << thing.toMap().value("params");
             found = true;
-            deviceMap = thing.toMap();
+            thingMap = thing.toMap();
             break;
         }
     }
 
     QVERIFY2(found, "Thing missing in config!");
-    QCOMPARE(deviceMap.value("id").toUuid(), QUuid(thingId));
-    if (deviceMap.contains("setupComplete"))
-        QVERIFY2(deviceMap.value("setupComplete").toBool(), "Setup not completed after edit");
+    QCOMPARE(thingMap.value("id").toUuid(), QUuid(thingId));
+    if (thingMap.contains("setupComplete"))
+        QVERIFY2(thingMap.value("setupComplete").toBool(), "Setup not completed after edit");
 
     // Note: this shows that by discovery a not editable param (name) can be changed!
-    foreach (QVariant param, deviceMap.value("params").toList()) {
+    foreach (QVariant param, thingMap.value("params").toList()) {
         if (param.toMap().value("paramTypeId") == mockThingHttpportParamTypeId) {
             QCOMPARE(param.toMap().value("value").toInt(), 55556);
         }
@@ -1524,7 +1524,7 @@ void TestIntegrations::reconfigureByDiscoveryAndPair()
     params.clear();
     response.clear();
     params.insert("thingClassId", displayPinMockThingClassId);
-    params.insert("name", "Discoverd mock device");
+    params.insert("name", "Discoverd mock");
     params.insert("thingDescriptorId", descriptorId);
     response = injectAndWait("Integrations.PairThing", params);
     verifyThingError(response);
@@ -1545,7 +1545,7 @@ void TestIntegrations::reconfigureByDiscoveryAndPair()
 
     qCDebug(dcTests()) << "Discovering again...";
 
-    // and now rediscover, and edit the first device with the second
+    // and now rediscover, and edit the first thing with the second
     params.clear();
     response.clear();
     params.insert("thingClassId", displayPinMockThingClassId);
@@ -1566,7 +1566,7 @@ void TestIntegrations::reconfigureByDiscoveryAndPair()
 
     QVERIFY(!descriptorId.isNull());
 
-    qDebug() << "Reconfiguring device by pairing again" << descriptorId;
+    qDebug() << "Reconfiguring thing by pairing again" << descriptorId;
 
     params.clear();
     response.clear();
@@ -1597,16 +1597,16 @@ void TestIntegrations::reconfigureAutoThing()
 {
     qCDebug(dcTests()) << "Reconfigure auto thing";
 
-    // Get the autodevice
+    // Get the auto mock
     QList<Thing*> things  = NymeaCore::instance()->thingManager()->findConfiguredThings(autoMockThingClassId);
-    QVERIFY2(things.count() > 0, "There needs to be at least one auto-created Mock Device for this test");
+    QVERIFY2(things.count() > 0, "There needs to be at least one auto-created Mock for this test");
 
-    // Get current auto device infos
+    // Get current auto mock infos
     Thing *currentThing = things.first();
     ThingId thingId = currentThing->id();
     int currentPort = currentThing->paramValue(autoMockThingHttpportParamTypeId).toInt();
 
-    // Trigger reconfigure signal in mock device
+    // Trigger reconfigure signal in mock
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
     QSignalSpy spy(nam, &QNetworkAccessManager::finished);
     QNetworkReply *reply = nam->get(QNetworkRequest(QUrl(QString("http://localhost:%1/reconfigureautodevice").arg(currentPort))));
@@ -1617,7 +1617,7 @@ void TestIntegrations::reconfigureAutoThing()
     Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(thingId);
     QVERIFY(thing);
     int newPort = thing->paramValue(autoMockThingHttpportParamTypeId).toInt();
-    // Note: reconfigure autodevice increases the http port by 1
+    // Note: reconfigure auto mock increases the http port by 1
     QCOMPARE(newPort, currentPort + 1);
 }
 
@@ -1629,7 +1629,7 @@ void TestIntegrations::removeThing_data()
 
     QTest::newRow("Existing thing") << ThingId(m_mockThingId) << Thing::ThingErrorNoError;
     QTest::newRow("Not existing thing") << ThingId::createThingId() << Thing::ThingErrorThingNotFound;
-//    QTest::newRow("Auto device") << m_mockDeviceAutoId << Thing::ThingErrorCreationMethodNotSupported;
+//    QTest::newRow("Auto device") << m_mockThingAutoId << Thing::ThingErrorCreationMethodNotSupported;
 }
 
 void TestIntegrations::removeThing()

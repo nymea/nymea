@@ -83,7 +83,7 @@ StateDescriptor::StateDescriptor(const QString &interface, const QString &interf
 /*! Returns true \l{StateDescriptor::Type}{Type} of this descriptor. */
 StateDescriptor::Type StateDescriptor::type() const
 {
-    return (!m_thingId.isNull() && !m_stateTypeId.isNull()) ? TypeDevice : TypeInterface;
+    return (!m_thingId.isNull() && !m_stateTypeId.isNull()) ? TypeThing : TypeInterface;
 }
 
 /*! Returns the StateTypeId of this \l{State}.*/

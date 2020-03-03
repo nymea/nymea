@@ -527,18 +527,18 @@ void TestWebserver::getDebugServer_data()
     QTest::newRow("DELETE /debug/settings/nymead | server disabled | 404") << "delete" << "/debug/settings/nymead" << false << 404;
 
     // settings/devices enabled
-    QTest::newRow("GET /debug/settings/devices | server enabled | 200") << "get" << "/debug/settings/devices" << true << 200;
-    QTest::newRow("OPTIONS /debug/settings/devices | server enabled | 200") << "options" << "/debug/settings/devices" << true << 200;
-    QTest::newRow("PUT /debug/settings/devices | server enabled | 405") << "put" << "/debug/settings/devices" << true << 405;
-    QTest::newRow("POST /debug/settings/devices | server enabled | 405") << "post" << "/debug/settings/devices" << true << 405;
-    QTest::newRow("DELETE /debug/settings/devices | server enabled | 405") << "delete" << "/debug/settings/devices" << true << 405;
+    QTest::newRow("GET /debug/settings/devices | server enabled | 200") << "get" << "/debug/settings/things" << true << 200;
+    QTest::newRow("OPTIONS /debug/settings/devices | server enabled | 200") << "options" << "/debug/settings/things" << true << 200;
+    QTest::newRow("PUT /debug/settings/devices | server enabled | 405") << "put" << "/debug/settings/things" << true << 405;
+    QTest::newRow("POST /debug/settings/devices | server enabled | 405") << "post" << "/debug/settings/things" << true << 405;
+    QTest::newRow("DELETE /debug/settings/devices | server enabled | 405") << "delete" << "/debug/settings/things" << true << 405;
 
     // settings/devices disabled
-    QTest::newRow("GET /debug/settings/devices | server disabled | 404") << "get" << "/debug/settings/devices" << false << 404;
-    QTest::newRow("OPTIONS /debug/settings/devices | server disabled | 404") << "options" << "/debug/settings/devices" << false << 404;
-    QTest::newRow("PUT /debug/settings/devices | server disabled | 404") << "put" << "/debug/settings/devices" << false << 404;
-    QTest::newRow("POST /debug/settings/devices | server disabled | 404") << "post" << "/debug/settings/devices" << false << 404;
-    QTest::newRow("DELETE /debug/settings/devices | server disabled | 404") << "delete" << "/debug/settings/devices" << false << 404;
+    QTest::newRow("GET /debug/settings/devices | server disabled | 404") << "get" << "/debug/settings/things" << false << 404;
+    QTest::newRow("OPTIONS /debug/settings/devices | server disabled | 404") << "options" << "/debug/settings/things" << false << 404;
+    QTest::newRow("PUT /debug/settings/devices | server disabled | 404") << "put" << "/debug/settings/things" << false << 404;
+    QTest::newRow("POST /debug/settings/devices | server disabled | 404") << "post" << "/debug/settings/things" << false << 404;
+    QTest::newRow("DELETE /debug/settings/devices | server disabled | 404") << "delete" << "/debug/settings/things" << false << 404;
 
     // settings/rules enabled
     QTest::newRow("GET /debug/settings/rules | server enabled | 200") << "get" << "/debug/settings/rules" << true << 200;
@@ -555,18 +555,18 @@ void TestWebserver::getDebugServer_data()
     QTest::newRow("DELETE /debug/settings/rules | server disabled | 404") << "delete" << "/debug/settings/rules" << false << 404;
 
     // settings/devicestates enabled
-    QTest::newRow("GET /debug/settings/devicestates | server enabled | 200") << "get" << "/debug/settings/devicestates" << true << 200;
-    QTest::newRow("OPTIONS /debug/settings/devicestates | server enabled | 200") << "options" << "/debug/settings/devicestates" << true << 200;
-    QTest::newRow("PUT /debug/settings/devicestates | server enabled | 405") << "put" << "/debug/settings/devicestates" << true << 405;
-    QTest::newRow("POST /debug/settings/devicestates | server enabled | 405") << "post" << "/debug/settings/devicestates" << true << 405;
-    QTest::newRow("DELETE /debug/settings/devicestates | server enabled | 405") << "delete" << "/debug/settings/devicestates" << true << 405;
+    QTest::newRow("GET /debug/settings/devicestates | server enabled | 200") << "get" << "/debug/settings/thingstates" << true << 200;
+    QTest::newRow("OPTIONS /debug/settings/devicestates | server enabled | 200") << "options" << "/debug/settings/thingstates" << true << 200;
+    QTest::newRow("PUT /debug/settings/devicestates | server enabled | 405") << "put" << "/debug/settings/thingstates" << true << 405;
+    QTest::newRow("POST /debug/settings/devicestates | server enabled | 405") << "post" << "/debug/settings/thingstates" << true << 405;
+    QTest::newRow("DELETE /debug/settings/devicestates | server enabled | 405") << "delete" << "/debug/settings/thingstates" << true << 405;
 
     // settings/devicestates disabled
-    QTest::newRow("GET /debug/settings/devicestates | server disabled | 404") << "get" << "/debug/settings/devicestates" << false << 404;
-    QTest::newRow("OPTIONS /debug/settings/devicestates | server disabled | 404") << "options" << "/debug/settings/devicestates" << false << 404;
-    QTest::newRow("PUT /debug/settings/devicestates | server disabled | 404") << "put" << "/debug/settings/devicestates" << false << 404;
-    QTest::newRow("POST /debug/settings/devicestates | server disabled | 404") << "post" << "/debug/settings/devicestates" << false << 404;
-    QTest::newRow("DELETE /debug/settings/devicestates | server disabled | 404") << "delete" << "/debug/settings/devicestates" << false << 404;
+    QTest::newRow("GET /debug/settings/devicestates | server disabled | 404") << "get" << "/debug/settings/thingstates" << false << 404;
+    QTest::newRow("OPTIONS /debug/settings/devicestates | server disabled | 404") << "options" << "/debug/settings/thingstates" << false << 404;
+    QTest::newRow("PUT /debug/settings/devicestates | server disabled | 404") << "put" << "/debug/settings/thingstates" << false << 404;
+    QTest::newRow("POST /debug/settings/devicestates | server disabled | 404") << "post" << "/debug/settings/thingstates" << false << 404;
+    QTest::newRow("DELETE /debug/settings/devicestates | server disabled | 404") << "delete" << "/debug/settings/thingstates" << false << 404;
 
     // settings/plugins enabled
     QTest::newRow("GET /debug/settings/plugins | server enabled | 200") << "get" << "/debug/settings/plugins" << true << 200;

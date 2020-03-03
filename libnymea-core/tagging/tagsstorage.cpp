@@ -35,27 +35,27 @@
 
 namespace nymeaserver {
 
-TagsStorage::TagsStorage(ThingManager *deviceManager, RuleEngine *ruleEngine, QObject *parent):
+TagsStorage::TagsStorage(ThingManager *thingManager, RuleEngine *ruleEngine, QObject *parent):
     QObject(parent),
-    m_deviceManager(deviceManager),
+    m_thingManager(thingManager),
     m_ruleEngine(ruleEngine)
 {
-    connect(deviceManager, &ThingManager::thingRemoved, this, &TagsStorage::thingRemoved);
+    connect(thingManager, &ThingManager::thingRemoved, this, &TagsStorage::thingRemoved);
 
     NymeaSettings settings(NymeaSettings::SettingsRoleTags);
 
     if (settings.childGroups().contains("Things")) {
         settings.beginGroup("Things");
-    } else {
+    } else { // backwards compatibility with <= 0.19
         settings.beginGroup("Devices");
     }
 
-    foreach (const QString &deviceId, settings.childGroups()) {
-        settings.beginGroup(deviceId);
+    foreach (const QString &thingId, settings.childGroups()) {
+        settings.beginGroup(thingId);
         foreach (const QString &appId, settings.childGroups()) {
             settings.beginGroup(appId);
             foreach (const QString &tagId, settings.childKeys()) {
-                Tag tag(ThingId(deviceId), appId, tagId, settings.value(tagId).toString());
+                Tag tag(ThingId(thingId), appId, tagId, settings.value(tagId).toString());
                 m_tags.append(tag);
             }
             settings.endGroup();
@@ -64,9 +64,9 @@ TagsStorage::TagsStorage(ThingManager *deviceManager, RuleEngine *ruleEngine, QO
     }
     settings.endGroup();
 
-    // Migration path from nymea < 0.19
+    // Migration path from nymea <= 0.19
     if (settings.childGroups().contains("Devices")) {
-        // Save all Device tags to things tags and drop Devices group
+        // Save all Devices tags to things tags and drop Devices group
         foreach (const Tag &tag, m_tags) {
             saveTag(tag);
         }
@@ -119,8 +119,8 @@ QList<Tag> TagsStorage::tags(const RuleId &ruleId) const
 TagsStorage::TagError TagsStorage::addTag(const Tag &tag)
 {
     if (!tag.thingId().isNull()) {
-        if (!m_deviceManager->findConfiguredThing(tag.thingId())) {
-            return TagsStorage::TagErrorDeviceNotFound;
+        if (!m_thingManager->findConfiguredThing(tag.thingId())) {
+            return TagsStorage::TagErrorThingNotFound;
         }
     } else if (!tag.ruleId().isNull()) {
        if (!m_ruleEngine->findRule(tag.ruleId()).isValid()) {

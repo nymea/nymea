@@ -66,7 +66,7 @@ public:
     void setDescription(const QString &description);
 
     ThingId parentId() const;
-    void setParentDeviceId(const ThingId &parentId);
+    void setParentId(const ThingId &parentId);
 
     ParamList params() const;
     void setParams(const ParamList &params);

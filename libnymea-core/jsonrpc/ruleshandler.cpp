@@ -166,7 +166,8 @@ RulesHandler::RulesHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     description = "Find a list of rules containing any of the given parameters.";
-    params.insert("deviceId", enumValueName(Uuid));
+    params.insert("o:thingId", enumValueName(Uuid)); // TODO: remove "o:" from thingId once we drop deviceId support
+    params.insert("d:o:deviceId", enumValueName(Uuid));
     returns.insert("ruleIds", QVariantList() << enumValueName(Uuid));
     registerMethod("FindRules", description, params, returns);
 
@@ -300,8 +301,11 @@ JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
 
 JsonReply *RulesHandler::FindRules(const QVariantMap &params)
 {
-    ThingId deviceId = ThingId(params.value("deviceId").toString());
-    QList<RuleId> rules = NymeaCore::instance()->ruleEngine()->findRules(deviceId);
+    ThingId thingId = ThingId(params.value("deviceId").toString()); // DEPRECATED
+    if (params.contains("thingId")) {
+        thingId = ThingId(params.value("thingId").toString());
+    }
+    QList<RuleId> rules = NymeaCore::instance()->ruleEngine()->findRules(thingId);
 
     QVariantList rulesList;
     foreach (const RuleId &ruleId, rules) {

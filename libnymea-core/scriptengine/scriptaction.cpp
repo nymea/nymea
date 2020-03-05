@@ -47,7 +47,7 @@ ScriptAction::ScriptAction(QObject *parent) : QObject(parent)
 
 void ScriptAction::classBegin()
 {
-    m_deviceManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("deviceManager").toULongLong());
+    m_thingManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("thingManager").toULongLong());
 }
 
 void ScriptAction::componentComplete()
@@ -55,16 +55,16 @@ void ScriptAction::componentComplete()
 
 }
 
-QString ScriptAction::deviceId() const
+QString ScriptAction::thingId() const
 {
     return m_thingId;
 }
 
-void ScriptAction::setDeviceId(const QString &deviceId)
+void ScriptAction::setThingId(const QString &thingId)
 {
-    if (m_thingId != deviceId) {
-        m_thingId = deviceId;
-        emit deviceIdChanged();
+    if (m_thingId != thingId) {
+        m_thingId = thingId;
+        emit thingIdChanged();
     }
 }
 
@@ -96,9 +96,9 @@ void ScriptAction::setActionName(const QString &actionName)
 
 void ScriptAction::execute(const QVariantMap &params)
 {
-    Thing *thing = m_deviceManager->configuredThings().findById(ThingId(m_thingId));
+    Thing *thing = m_thingManager->configuredThings().findById(ThingId(m_thingId));
     if (!thing) {
-        qCWarning(dcScriptEngine) << "No device with id" << m_thingId;
+        qCWarning(dcScriptEngine) << "No thing with id" << m_thingId;
         return;
     }
     ActionType actionType;
@@ -129,7 +129,7 @@ void ScriptAction::execute(const QVariantMap &params)
         paramList << Param(paramType.id(), params.value(paramNameOrId));
     }
     action.setParams(paramList);
-    m_deviceManager->executeAction(action);
+    m_thingManager->executeAction(action);
 }
 
 }

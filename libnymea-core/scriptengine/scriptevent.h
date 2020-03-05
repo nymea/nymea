@@ -46,7 +46,8 @@ class ScriptEvent: public QObject, public QQmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
-    Q_PROPERTY(QString deviceId READ deviceId WRITE setDeviceId NOTIFY deviceIdChanged)
+    Q_PROPERTY(QString thingId READ thingId WRITE setThingId NOTIFY thingIdChanged)
+    Q_PROPERTY(QString deviceId READ thingId WRITE setThingId NOTIFY thingIdChanged) // DEPRECATED
     Q_PROPERTY(QString eventTypeId READ eventTypeId WRITE setEventTypeId NOTIFY eventTypeIdChanged)
     Q_PROPERTY(QString eventName READ eventName WRITE setEventName NOTIFY eventNameChanged)
 public:
@@ -54,8 +55,8 @@ public:
     void classBegin() override;
     void componentComplete() override;
 
-    QString deviceId() const;
-    void setDeviceId(const QString &deviceId);
+    QString thingId() const;
+    void setThingId(const QString &thingId);
 
     QString eventTypeId() const;
     void setEventTypeId(const QString &eventTypeId);
@@ -67,7 +68,7 @@ private slots:
     void onEventTriggered(const Event &event);
 
 signals:
-    void deviceIdChanged();
+    void thingIdChanged();
     void eventTypeIdChanged();
     void eventNameChanged();
 
@@ -75,7 +76,7 @@ signals:
     void triggered(const QVariantMap &params);
 
 private:
-    ThingManager *m_deviceManager = nullptr;
+    ThingManager *m_thingManager = nullptr;
 
     QString m_thingId;
     QString m_eventTypeId;

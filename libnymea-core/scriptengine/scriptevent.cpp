@@ -41,8 +41,8 @@ ScriptEvent::ScriptEvent(QObject *parent) : QObject(parent)
 
 void ScriptEvent::classBegin()
 {
-    m_deviceManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("deviceManager").toULongLong());
-    connect(m_deviceManager, &ThingManager::eventTriggered, this, &ScriptEvent::onEventTriggered);
+    m_thingManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("thingManager").toULongLong());
+    connect(m_thingManager, &ThingManager::eventTriggered, this, &ScriptEvent::onEventTriggered);
 }
 
 void ScriptEvent::componentComplete()
@@ -50,16 +50,16 @@ void ScriptEvent::componentComplete()
 
 }
 
-QString ScriptEvent::deviceId() const
+QString ScriptEvent::thingId() const
 {
     return m_thingId;
 }
 
-void ScriptEvent::setDeviceId(const QString &deviceId)
+void ScriptEvent::setThingId(const QString &thingId)
 {
-    if (m_thingId != deviceId) {
-        m_thingId = deviceId;
-        emit deviceIdChanged();
+    if (m_thingId != thingId) {
+        m_thingId = thingId;
+        emit thingIdChanged();
     }
 }
 
@@ -99,7 +99,7 @@ void ScriptEvent::onEventTriggered(const Event &event)
         return;
     }
 
-    Thing *thing = m_deviceManager->findConfiguredThing(event.thingId());
+    Thing *thing = m_thingManager->findConfiguredThing(event.thingId());
     if (!m_eventName.isEmpty() && thing->thingClass().eventTypes().findByName(m_eventName).id() != event.eventTypeId()) {
         return;
     }

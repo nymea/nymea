@@ -45,8 +45,8 @@ ScriptState::ScriptState(QObject *parent) : QObject(parent)
 
 void ScriptState::classBegin()
 {
-    m_deviceManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("deviceManager").toULongLong());
-    connect(m_deviceManager, &ThingManager::thingStateChanged, this, &ScriptState::onThingStateChanged);
+    m_thingManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("thingManager").toULongLong());
+    connect(m_thingManager, &ThingManager::thingStateChanged, this, &ScriptState::onThingStateChanged);
 }
 
 void ScriptState::componentComplete()
@@ -54,16 +54,16 @@ void ScriptState::componentComplete()
 
 }
 
-QString ScriptState::deviceId() const
+QString ScriptState::thingId() const
 {
     return m_thingId;
 }
 
-void ScriptState::setDeviceId(const QString &deviceId)
+void ScriptState::setThingId(const QString &thingId)
 {
-    if (m_thingId != deviceId) {
-        m_thingId = deviceId;
-        emit deviceIdChanged();
+    if (m_thingId != thingId) {
+        m_thingId = thingId;
+        emit thingIdChanged();
         store();
     }
 }
@@ -98,7 +98,7 @@ void ScriptState::setStateName(const QString &stateName)
 
 QVariant ScriptState::value() const
 {
-    Thing* thing = m_deviceManager->findConfiguredThing(ThingId(m_thingId));
+    Thing* thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
     if (!thing) {
         return QVariant();
     }
@@ -112,15 +112,14 @@ QVariant ScriptState::value() const
 
 void ScriptState::setValue(const QVariant &value)
 {
-    qCDebug(dcScriptEngine()) << "setValueCalled1" << value;
     if (m_pendingActionInfo) {
         m_valueCache = value;
         return;
     }
 
-    Thing* thing = m_deviceManager->findConfiguredThing(ThingId(m_thingId));
+    Thing* thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
     if (!thing) {
-        qCWarning(dcScriptEngine()) << "No device with id" << m_thingId << "found.";
+        qCWarning(dcScriptEngine()) << "No thing with id" << m_thingId << "found.";
         return;
     }
 
@@ -128,13 +127,13 @@ void ScriptState::setValue(const QVariant &value)
     if (!m_stateTypeId.isNull()) {
         actionTypeId = thing->thingClass().stateTypes().findById(StateTypeId(m_stateTypeId)).id();
         if (actionTypeId.isNull()) {
-            qCWarning(dcScriptEngine) << "Device" << thing->name() << "does not have a state with type id" << m_stateTypeId;
+            qCWarning(dcScriptEngine) << "Thing" << thing->name() << "does not have a state with type id" << m_stateTypeId;
         }
     }
     if (actionTypeId.isNull()) {
         actionTypeId = thing->thingClass().stateTypes().findByName(stateName()).id();
         if (actionTypeId.isNull()) {
-            qCWarning(dcScriptEngine) << "Device" << thing->name() << "does not have a state named" << m_stateName;
+            qCWarning(dcScriptEngine) << "Thing" << thing->name() << "does not have a state named" << m_stateName;
         }
     }
 
@@ -150,7 +149,7 @@ void ScriptState::setValue(const QVariant &value)
     action.setParams(params);
 
     m_valueCache = QVariant();
-    m_pendingActionInfo = m_deviceManager->executeAction(action);
+    m_pendingActionInfo = m_thingManager->executeAction(action);
     connect(m_pendingActionInfo, &ThingActionInfo::finished, this, [this](){
         m_pendingActionInfo = nullptr;
         if (!m_valueCache.isNull()) {
@@ -161,7 +160,7 @@ void ScriptState::setValue(const QVariant &value)
 
 QVariant ScriptState::minimumValue() const
 {
-    Thing *thing = m_deviceManager->configuredThings().findById(ThingId(m_thingId));
+    Thing *thing = m_thingManager->configuredThings().findById(ThingId(m_thingId));
     if (!thing) {
         return QVariant();
     }
@@ -174,7 +173,7 @@ QVariant ScriptState::minimumValue() const
 
 QVariant ScriptState::maximumValue() const
 {
-    Thing *thing = m_deviceManager->configuredThings().findById(ThingId(m_thingId));
+    Thing *thing = m_thingManager->configuredThings().findById(ThingId(m_thingId));
     if (!thing) {
         return QVariant();
     }

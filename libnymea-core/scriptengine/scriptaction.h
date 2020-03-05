@@ -42,7 +42,8 @@ class ScriptAction : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
-    Q_PROPERTY(QString deviceId READ deviceId WRITE setDeviceId NOTIFY deviceIdChanged)
+    Q_PROPERTY(QString thingId READ thingId WRITE setThingId NOTIFY thingIdChanged)
+    Q_PROPERTY(QString deviceId READ thingId WRITE setThingId NOTIFY thingIdChanged) // DEPRECATED
     Q_PROPERTY(QString actionTypeId READ actionTypeId WRITE setActionTypeId NOTIFY actionTypeIdChanged)
     Q_PROPERTY(QString actionName READ actionName WRITE setActionName NOTIFY actionNameChanged)
 public:
@@ -50,8 +51,8 @@ public:
     void classBegin() override;
     void componentComplete() override;
 
-    QString deviceId() const;
-    void setDeviceId(const QString &deviceId);
+    QString thingId() const;
+    void setThingId(const QString &thingId);
 
     QString actionTypeId() const;
     void setActionTypeId(const QString &actionTypeId);
@@ -63,12 +64,12 @@ public slots:
     void execute(const QVariantMap &params);
 
 signals:
-    void deviceIdChanged();
+    void thingIdChanged();
     void actionTypeIdChanged();
     void actionNameChanged();
 
 public:
-    ThingManager *m_deviceManager = nullptr;
+    ThingManager *m_thingManager = nullptr;
     QString m_thingId;
     QString m_actionTypeId;
     QString m_actionName;

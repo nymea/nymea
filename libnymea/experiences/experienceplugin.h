@@ -48,14 +48,14 @@ public:
     virtual void init() = 0;
 
 protected:
-    ThingManager* deviceManager();
+    ThingManager* thingManager();
     JsonRPCServer* jsonRpcServer();
 
 private:
     friend class nymeaserver::ExperienceManager;
-    void initPlugin(ThingManager *deviceManager, JsonRPCServer *jsonRPCServer);
+    void initPlugin(ThingManager *thingManager, JsonRPCServer *jsonRPCServer);
 
-    ThingManager *m_deviceManager = nullptr;
+    ThingManager *m_thingManager = nullptr;
     JsonRPCServer *m_jsonRpcServer = nullptr;
 
 };

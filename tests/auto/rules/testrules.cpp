@@ -3071,7 +3071,7 @@ void TestRules::testLoopingRules()
     params.insert("thingId", m_mockThingId);
     params.insert("actionTypeId", mockPowerStateTypeId);
     params.insert("params", QVariantList() << powerOffActionParam);
-    response = injectAndWait("Actions.ExecuteAction", params);
+    response = injectAndWait("Integrations.ExecuteAction", params);
     verifyRuleExecuted(mockPowerActionTypeId);
 
     cleanupMockHistory();
@@ -3080,7 +3080,7 @@ void TestRules::testLoopingRules()
     params.insert("thingId", m_mockThingId);
     params.insert("actionTypeId", mockPowerStateTypeId);
     params.insert("params", QVariantList() << powerOnActionParam);
-    response = injectAndWait("Actions.ExecuteAction", params);
+    response = injectAndWait("Integrations.ExecuteAction", params);
     verifyRuleExecuted(mockPowerActionTypeId);
 
     // No need to check anything else. This test sets up a binding loop and if the core doesn't catch it it'll crash here.

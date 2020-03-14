@@ -150,10 +150,11 @@ DeviceHandler::DeviceHandler(QObject *parent) :
                                  "Use this to set up or reconfigure devices for DeviceClasses with a setupMethod different than SetupMethodJustAdd. "
                                  "Depending on the CreateMethod and whether a new devices is set up or an existing one is reconfigured, different parameters "
                                  "are required:\n"
-                                 "CreateMethodJustAdd takes the deviceClassId and the parameters you want to have with that device.\n"
-                                 "CreateMethodDiscovery requires the use of a deviceDescriptorId, previously obtained with DiscoverDevices. Optionally, "
-                                 "parameters can be overridden with the give deviceParams.\n"
+                                 "CreateMethodJustAdd takes the deviceClassId and the parameters to be used with that device. "
                                  "If an existing device should be reconfigured, the deviceId of said device should be given additionally.\n"
+                                 "CreateMethodDiscovery requires the use of a deviceDescriptorId, previously obtained with DiscoverDevices. Optionally, "
+                                 "parameters can be overridden with the give deviceParams. DeviceDescriptors containing a deviceId will reconfigure that "
+                                 "device, descriptors without deviceId will add a new one.\n"
                                  "If success is true, the return values will contain a pairingTransactionId, a displayMessage and "
                                  "the setupMethod. Depending on the setupMethod, the application should present the use an appropriate login mask, "
                                  "that is, For SetupMethodDisplayPin the user should enter a pin that is displayed on the device, for SetupMethodEnterPin the "
@@ -197,7 +198,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     description = "Performs a device discovery and returns the results. This function may take a while to return. "
-                                           "Note that this method will include all the found devices, that is, including devices that may "
+                                           "Note that this method will include all the found devices, that is, including devices that "
                                            "already have been added. Those devices will have deviceId set to the device id of the already "
                                            "added device. Such results may be used to reconfigure existing devices and might be filtered "
                                            "in cases where only unknown devices are of interest.";
@@ -215,7 +216,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
                   "and this method is to be called with a deviceDescriptorId of the re-discovered device instead of "
                   "the deviceId directly. Device parameters will be taken from the discovery, but can be overridden "
                   "individually here by providing them in the deviceParams parameter. Only writable parameters can "
-                   "be changed.";
+                  "be changed.";
     params.insert("o:deviceId", enumValueName(Uuid));
     params.insert("o:deviceDescriptorId", enumValueName(Uuid));
     params.insert("o:deviceParams", objectRef<ParamList>());

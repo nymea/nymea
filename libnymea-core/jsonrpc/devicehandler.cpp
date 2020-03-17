@@ -545,7 +545,7 @@ JsonReply *DeviceHandler::PairDevice(const QVariantMap &params, const JsonContex
         ThingId thingId = ThingId(params.value("deviceId").toString());
         info = NymeaCore::instance()->thingManager()->pairThing(thingId, deviceParams, deviceName);
     } else {
-        ThingClassId thingClassId(params.value("thingClassId").toString());
+        ThingClassId thingClassId(params.value("deviceClassId").toString());
         info = NymeaCore::instance()->thingManager()->pairThing(thingClassId, deviceParams, deviceName);
     }
 

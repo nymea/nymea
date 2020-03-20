@@ -233,6 +233,13 @@ void SslServer::incomingConnection(qintptr socketDescriptor)
     connect(sslSocket, &QSslSocket::encrypted, [this, sslSocket](){ emit clientConnected(sslSocket); });
     connect(sslSocket, &QSslSocket::readyRead, this, &SslServer::onSocketReadyRead);
     connect(sslSocket, &QSslSocket::disconnected, this, &SslServer::onClientDisconnected);
+    typedef void (QSslSocket:: *sslErrorsSignal)(const QList<QSslError> &);
+    connect(sslSocket, static_cast<sslErrorsSignal>(&QSslSocket::sslErrors), this, [](const QList<QSslError> &errors) {
+        qCWarning(dcTcpServer()) << "SSL Errors happened in the client connections:";
+        foreach (const QSslError &error, errors) {
+            qCWarning(dcTcpServer()) << "SSL Error:" << error.error() << error.errorString();
+        }
+    });
 
     if (!sslSocket->setSocketDescriptor(socketDescriptor)) {
         qCWarning(dcTcpServer()) << "Failed to set SSL socket descriptor.";
@@ -240,6 +247,7 @@ void SslServer::incomingConnection(qintptr socketDescriptor)
         return;
     }
     if (m_sslEnabled) {
+        qCDebug(dcTcpServer()) << "Starting SSL encryption";
         sslSocket->setSslConfiguration(m_config);
         sslSocket->startServerEncryption();
     } else {

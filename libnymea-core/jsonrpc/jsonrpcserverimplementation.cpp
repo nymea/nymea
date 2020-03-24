@@ -744,19 +744,19 @@ void JsonRPCServerImplementation::sendNotification(const QVariantMap &params)
     notification.insert("id", m_notificationId++);
     notification.insert("notification", handler->name() + "." + method.name());
 
-    // Add deprecation warning if necessary
-    if (m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().contains("deprecated")) {
-        QString deprecationMessage = m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().value("deprecated").toString();
-        qCWarning(dcJsonRpc()) << "Client uses deprecated API. Please update client implementation!";
-        qCWarning(dcJsonRpc()) << handler->name() + '.' + method.name() + ':' << deprecationMessage;
-        notification.insert("deprecationWarning", deprecationMessage);
-    }
-
     foreach (const QUuid &clientId, m_clientNotifications.keys()) {
 
         // Check if this client wants to be notified
         if (!m_clientNotifications.value(clientId).contains(handler->name())) {
             continue;
+        }
+
+        // Add deprecation warning if necessary
+        if (m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().contains("deprecated")) {
+            QString deprecationMessage = m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().value("deprecated").toString();
+            qCWarning(dcJsonRpc()) << "Client" << clientId << "uses deprecated API. Please update client implementation!";
+            qCWarning(dcJsonRpc()) << handler->name() + '.' + method.name() + ':' << deprecationMessage;
+            notification.insert("deprecationWarning", deprecationMessage);
         }
 
         QLocale locale = m_clientLocales.value(clientId);

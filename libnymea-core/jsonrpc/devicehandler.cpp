@@ -287,18 +287,30 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     registerMethod("GetStateValues", description, params, returns);
 
     params.clear(); returns.clear();
-    description = "Browse a device. If a DeviceClass indicates a device is browsable, this method will return the BrowserItems. If no parameter besides the deviceId is used, the root node of this device will be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.";
+    description = "Browse a device. If a DeviceClass indicates a device is browsable, this method will return "
+                  "the BrowserItems. If no parameter besides the deviceId is used, the root node of this device "
+                  "will be returned. Any returned item which is browsable can be passed as node. Results will be "
+                  "children of the given node.\n"
+                  "In case of an error during browsing, the error will be indicated and the displayMessage may contain "
+                  "additional information for the user. The displayMessage will be translated. A client UI showing this "
+                  "message to the user should be prepared for empty, but also longer strings.";
     params.insert("deviceId", enumValueName(Uuid));
     params.insert("o:itemId", enumValueName(String));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:displayMessage", enumValueName(String));
     returns.insert("items", QVariantList() << objectRef("BrowserItem"));
     registerMethod("BrowseDevice", description, params, returns);
 
     params.clear(); returns.clear();
-    description = "Get a single item from the browser. This won't give any more info on an item than a regular browseDevice call, but it allows to fetch details of an item if only the ID is known.";
+    description = "Get a single item from the browser. This won't give any more info on an item than a regular browseDevice "
+                  "call, but it allows to fetch details of an item if only the ID is known.\n"
+                  "In case of an error during browsing, the error will be indicated and the displayMessage may contain "
+                  "additional information for the user. The displayMessage will be translated. A client UI showing this "
+                  "message to the user should be prepared for empty, but also longer strings.";
     params.insert("deviceId", enumValueName(Uuid));
     params.insert("o:itemId", enumValueName(String));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:displayMessage", enumValueName(String));
     returns.insert("o:item", objectRef("BrowserItem"));
     registerMethod("GetBrowserItem", description, params, returns);
 
@@ -312,19 +324,27 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     registerMethod("ExecuteAction", description, params, returns);
 
     params.clear(); returns.clear();
-    description = "Execute the item identified by itemId on the given device.";
+    description = "Execute the item identified by itemId on the given device.\n"
+                  "In case of an error during execution, the error will be indicated and the displayMessage may contain "
+                  "additional information for the user. The displayMessage will be translated. A client UI showing this "
+                  "message to the user should be prepared for empty, but also longer strings.";
     params.insert("deviceId", enumValueName(Uuid));
     params.insert("itemId", enumValueName(String));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:displayMessage", enumValueName(String));
     registerMethod("ExecuteBrowserItem", description, params, returns);
 
     params.clear(); returns.clear();
-    description = "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.";
+    description = "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.\n"
+                  "In case of an error during execution, the error will be indicated and the displayMessage may contain "
+                  "additional information for the user. The displayMessage will be translated. A client UI showing this "
+                  "message to the user should be prepared for empty, but also longer strings.";
     params.insert("deviceId", enumValueName(Uuid));
     params.insert("itemId", enumValueName(String));
     params.insert("actionTypeId", enumValueName(Uuid));
     params.insert("o:params", objectRef<ParamList>());
     returns.insert("deviceError", enumRef<Device::DeviceError>());
+    returns.insert("o:displayMessage", enumValueName(String));
     registerMethod("ExecuteBrowserItemAction", description, params, returns);
 
     // Notifications
@@ -788,7 +808,7 @@ JsonReply *DeviceHandler::BrowseDevice(const QVariantMap &params, const JsonCont
     JsonReply *jsonReply = createAsyncReply("BrowseDevice");
 
     BrowseResult *result = NymeaCore::instance()->thingManager()->browseThing(thingId, itemId, context.locale());
-    connect(result, &BrowseResult::finished, jsonReply, [this, jsonReply, result](){
+    connect(result, &BrowseResult::finished, jsonReply, [this, jsonReply, result, context](){
 
         QVariantMap returns = statusToReply(result->status());
         QVariantList list;
@@ -796,6 +816,9 @@ JsonReply *DeviceHandler::BrowseDevice(const QVariantMap &params, const JsonCont
             list.append(packBrowserItem(item));
         }
         returns.insert("items", list);
+        if (!result->displayMessage().isEmpty()) {
+            returns.insert("displayMessage", result->translatedDisplayMessage(context.locale()));
+        }
         jsonReply->setData(returns);
         jsonReply->finished();
     });
@@ -812,10 +835,13 @@ JsonReply *DeviceHandler::GetBrowserItem(const QVariantMap &params, const JsonCo
     JsonReply *jsonReply = createAsyncReply("GetBrowserItem");
 
     BrowserItemResult *result = NymeaCore::instance()->thingManager()->browserItemDetails(thingId, itemId, context.locale());
-    connect(result, &BrowserItemResult::finished, jsonReply, [this, jsonReply, result](){
+    connect(result, &BrowserItemResult::finished, jsonReply, [this, jsonReply, result, context](){
         QVariantMap params = statusToReply(result->status());
         if (result->status() == Device::ThingErrorNoError) {
             params.insert("item", packBrowserItem(result->item()));
+        }
+        if (!result->displayMessage().isEmpty()) {
+            params.insert("displayMessage", result->translatedDisplayMessage(context.locale()));
         }
         jsonReply->setData(params);
         jsonReply->finished();
@@ -850,7 +876,7 @@ JsonReply *DeviceHandler::ExecuteAction(const QVariantMap &params, const JsonCon
     return jsonReply;
 }
 
-JsonReply *DeviceHandler::ExecuteBrowserItem(const QVariantMap &params)
+JsonReply *DeviceHandler::ExecuteBrowserItem(const QVariantMap &params, const JsonContext &context)
 {
     ThingId thingId = ThingId(params.value("deviceId").toString());
     QString itemId = params.value("itemId").toString();
@@ -859,9 +885,12 @@ JsonReply *DeviceHandler::ExecuteBrowserItem(const QVariantMap &params)
     JsonReply *jsonReply = createAsyncReply("ExecuteBrowserItem");
 
     BrowserActionInfo *info = NymeaCore::instance()->executeBrowserItem(action);
-    connect(info, &BrowserActionInfo::finished, jsonReply, [info, jsonReply](){
+    connect(info, &BrowserActionInfo::finished, jsonReply, [info, jsonReply, context](){
         QVariantMap data;
         data.insert("deviceError", enumValueName<Device::ThingError>(info->status()).replace("Thing", "Device"));
+        if (!info->displayMessage().isEmpty()) {
+            data.insert("displayMessage", info->translatedDisplayMessage(context.locale()));
+        }
         jsonReply->setData(data);
         jsonReply->finished();
     });
@@ -869,7 +898,7 @@ JsonReply *DeviceHandler::ExecuteBrowserItem(const QVariantMap &params)
     return jsonReply;
 }
 
-JsonReply *DeviceHandler::ExecuteBrowserItemAction(const QVariantMap &params)
+JsonReply *DeviceHandler::ExecuteBrowserItemAction(const QVariantMap &params, const JsonContext &context)
 {
     ThingId thingId = ThingId(params.value("deviceId").toString());
     QString itemId = params.value("itemId").toString();
@@ -880,9 +909,12 @@ JsonReply *DeviceHandler::ExecuteBrowserItemAction(const QVariantMap &params)
     JsonReply *jsonReply = createAsyncReply("ExecuteBrowserItemAction");
 
     BrowserItemActionInfo *info = NymeaCore::instance()->executeBrowserItemAction(browserItemAction);
-    connect(info, &BrowserItemActionInfo::finished, jsonReply, [info, jsonReply](){
+    connect(info, &BrowserItemActionInfo::finished, jsonReply, [info, jsonReply, context](){
         QVariantMap data;
         data.insert("deviceError", enumValueName<Device::ThingError>(info->status()).replace("Thing", "Device"));
+        if (!info->displayMessage().isEmpty()) {
+            data.insert("displayMessage", info->translatedDisplayMessage(context.locale()));
+        }
         jsonReply->setData(data);
         jsonReply->finished();
     });

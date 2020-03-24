@@ -69,8 +69,8 @@ public:
     Q_INVOKABLE JsonReply *GetBrowserItem(const QVariantMap &params, const JsonContext &context) const;
 
     Q_INVOKABLE JsonReply *ExecuteAction(const QVariantMap &params, const JsonContext &context);
-    Q_INVOKABLE JsonReply *ExecuteBrowserItem(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *ExecuteBrowserItemAction(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *ExecuteBrowserItem(const QVariantMap &params, const JsonContext &context);
+    Q_INVOKABLE JsonReply *ExecuteBrowserItemAction(const QVariantMap &params, const JsonContext &context);
 
     static QVariantMap packBrowserItem(const BrowserItem &item);
 

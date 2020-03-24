@@ -35,12 +35,14 @@
 
 #include "thing.h"
 
+class ThingManager;
+
 class BrowserItemResult : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit BrowserItemResult(Thing *thing, const QString &itemId, const QLocale &locale, QObject *parent, quint32 timeout = 0);
+    explicit BrowserItemResult(Thing *thing, ThingManager *thingManager, const QString &itemId, const QLocale &locale, QObject *parent, quint32 timeout = 0);
 
     Thing* thing() const;
     QString itemId() const;
@@ -50,10 +52,12 @@ public:
 
     bool isFinished() const;
     Thing::ThingError status() const;
+    QString displayMessage() const;
+    QString translatedDisplayMessage(const QLocale &locale);
 
 public slots:
     void finish(const BrowserItem &item);
-    void finish(Thing::ThingError status);
+    void finish(Thing::ThingError status, const QString &displayMessage = QString());
 
 signals:
     void finished();
@@ -68,6 +72,9 @@ private:
 
     bool m_finished = false;
     Thing::ThingError m_status = Thing::ThingErrorNoError;
+    QString m_displayMessage;
+
+    ThingManager *m_thingManager = nullptr;
 };
 
 #endif // BROWSERITEMRESULT_H

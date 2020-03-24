@@ -29,13 +29,15 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "browseractioninfo.h"
+#include "thingmanager.h"
 
 #include <QTimer>
 
-BrowserActionInfo::BrowserActionInfo(Thing *thing, const BrowserAction &browserAction, QObject *parent, quint32 timeout):
+BrowserActionInfo::BrowserActionInfo(Thing *thing, ThingManager *thingManager, const BrowserAction &browserAction, QObject *parent, quint32 timeout):
     QObject (parent),
     m_thing(thing),
-    m_browserAction(browserAction)
+    m_browserAction(browserAction),
+    m_thingManager(thingManager)
 {
     connect(this, &BrowserActionInfo::finished, this, &BrowserActionInfo::deleteLater, Qt::QueuedConnection);
 
@@ -67,9 +69,24 @@ Thing::ThingError BrowserActionInfo::status() const
     return m_status;
 }
 
-void BrowserActionInfo::finish(Thing::ThingError status)
+QString BrowserActionInfo::displayMessage() const
+{
+    return m_displayMessage;
+}
+
+QString BrowserActionInfo::translatedDisplayMessage(const QLocale &locale)
+{
+    if (!m_thingManager || !m_thing) {
+        return m_displayMessage;
+    }
+
+    return m_thingManager->translate(m_thing->pluginId(), m_displayMessage.toUtf8(), locale);
+}
+
+void BrowserActionInfo::finish(Thing::ThingError status, const QString &displayMessage)
 {
     m_finished = true;
     m_status = status;
+    m_displayMessage = displayMessage;
     staticMetaObject.invokeMethod(this, "finished", Qt::QueuedConnection);
 }

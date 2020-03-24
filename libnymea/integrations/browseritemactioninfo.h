@@ -36,11 +36,13 @@
 #include "thing.h"
 #include "types/browseritemaction.h"
 
+class ThingManager;
+
 class BrowserItemActionInfo : public QObject
 {
     Q_OBJECT
 public:
-    explicit BrowserItemActionInfo(Thing *thing, const BrowserItemAction &browserItemAction, QObject *parent, quint32 timeout = 0);
+    explicit BrowserItemActionInfo(Thing *thing, ThingManager *thingManager, const BrowserItemAction &browserItemAction, QObject *parent, quint32 timeout = 0);
 
     Thing *thing() const;
     BrowserItemAction browserItemAction() const;
@@ -48,13 +50,15 @@ public:
     bool isFinished() const;
 
     Thing::ThingError status() const;
+    QString displayMessage() const;
+    QString translatedDisplayMessage(const QLocale &locale);
 
 signals:
     void finished();
     void aborted();
 
 public slots:
-    void finish(Thing::ThingError status);
+    void finish(Thing::ThingError status, const QString &displayMessage = QString());
 
 private:
     Thing *m_thing = nullptr;
@@ -62,6 +66,9 @@ private:
 
     bool m_finished = false;
     Thing::ThingError m_status = Thing::ThingErrorNoError;
+    QString m_displayMessage;
+
+    ThingManager *m_thingManager = nullptr;
 };
 
 #endif // BROWSERITEMACTIONINFO_H

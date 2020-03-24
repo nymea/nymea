@@ -627,7 +627,7 @@
             }
         },
         "Devices.BrowseDevice": {
-            "description": "Browse a device. If a DeviceClass indicates a device is browsable, this method will return the BrowserItems. If no parameter besides the deviceId is used, the root node of this device will be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.",
+            "description": "Browse a device. If a DeviceClass indicates a device is browsable, this method will return the BrowserItems. If no parameter besides the deviceId is used, the root node of this device will be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.\nIn case of an error during browsing, the error will be indicated and the displayMessage may contain additional information for the user. The displayMessage will be translated. A client UI showing this message to the user should be prepared for empty, but also longer strings.",
             "params": {
                 "deviceId": "Uuid",
                 "o:itemId": "String"
@@ -636,7 +636,8 @@
                 "deviceError": "$ref:DeviceError",
                 "items": [
                     "$ref:BrowserItem"
-                ]
+                ],
+                "o:displayMessage": "String"
             }
         },
         "Devices.ConfirmPairing": {
@@ -675,17 +676,18 @@
             }
         },
         "Devices.ExecuteBrowserItem": {
-            "description": "Execute the item identified by itemId on the given device.",
+            "description": "Execute the item identified by itemId on the given device.\nIn case of an error during execution, the error will be indicated and the displayMessage may contain additional information for the user. The displayMessage will be translated. A client UI showing this message to the user should be prepared for empty, but also longer strings.",
             "params": {
                 "deviceId": "Uuid",
                 "itemId": "String"
             },
             "returns": {
-                "deviceError": "$ref:DeviceError"
+                "deviceError": "$ref:DeviceError",
+                "o:displayMessage": "String"
             }
         },
         "Devices.ExecuteBrowserItemAction": {
-            "description": "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.",
+            "description": "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.\nIn case of an error during execution, the error will be indicated and the displayMessage may contain additional information for the user. The displayMessage will be translated. A client UI showing this message to the user should be prepared for empty, but also longer strings.",
             "params": {
                 "actionTypeId": "Uuid",
                 "deviceId": "Uuid",
@@ -693,7 +695,8 @@
                 "o:params": "$ref:ParamList"
             },
             "returns": {
-                "deviceError": "$ref:DeviceError"
+                "deviceError": "$ref:DeviceError",
+                "o:displayMessage": "String"
             }
         },
         "Devices.GetActionTypes": {
@@ -706,13 +709,14 @@
             }
         },
         "Devices.GetBrowserItem": {
-            "description": "Get a single item from the browser. This won't give any more info on an item than a regular browseDevice call, but it allows to fetch details of an item if only the ID is known.",
+            "description": "Get a single item from the browser. This won't give any more info on an item than a regular browseDevice call, but it allows to fetch details of an item if only the ID is known.\nIn case of an error during browsing, the error will be indicated and the displayMessage may contain additional information for the user. The displayMessage will be translated. A client UI showing this message to the user should be prepared for empty, but also longer strings.",
             "params": {
                 "deviceId": "Uuid",
                 "o:itemId": "String"
             },
             "returns": {
                 "deviceError": "$ref:DeviceError",
+                "o:displayMessage": "String",
                 "o:item": "$ref:BrowserItem"
             }
         },
@@ -906,7 +910,7 @@
             }
         },
         "Integrations.BrowseThing": {
-            "description": "Browse a thing. If a ThingClass indicates a thing is browsable, this method will return the BrowserItems. If no parameter besides the thingId is used, the root node of this thingwill be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.",
+            "description": "Browse a thing. If a ThingClass indicates a thing is browsable, this method will return the BrowserItems. If no parameter besides the thingId is used, the root node of this thingwill be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.\nIn case of an error during browsing, the error will be indicated and the displayMessage may contain additional information for the user. The displayMessage will be translated. A client UI showing this message to the user should be prepared for empty, but also longer strings.",
             "params": {
                 "o:itemId": "String",
                 "thingId": "Uuid"
@@ -915,6 +919,7 @@
                 "items": [
                     "$ref:BrowserItem"
                 ],
+                "o:displayMessage": "String",
                 "thingError": "$ref:ThingError"
             }
         },
@@ -966,17 +971,18 @@
             }
         },
         "Integrations.ExecuteBrowserItem": {
-            "description": "Execute the item identified by itemId on the given thing.",
+            "description": "Execute the item identified by itemId on the given thing.\nIn case of an error during execution, the error will be indicated and the displayMessage may contain additional information for the user. The displayMessage will be translated. A client UI showing this message to the user should be prepared for empty, but also longer strings.",
             "params": {
                 "itemId": "String",
                 "thingId": "Uuid"
             },
             "returns": {
+                "o:displayMessage": "String",
                 "thingError": "$ref:ThingError"
             }
         },
         "Integrations.ExecuteBrowserItemAction": {
-            "description": "Execute the action for the browser item identified by actionTypeId and the itemId on the given thing.",
+            "description": "Execute the action for the browser item identified by actionTypeId and the itemId on the given thing.\nIn case of an error during execution, the error will be indicated and the displayMessage may contain additional information for the user. The displayMessage will be translated. A client UI showing this message to the user should be prepared for empty, but also longer strings.",
             "params": {
                 "actionTypeId": "Uuid",
                 "itemId": "String",
@@ -984,6 +990,7 @@
                 "thingId": "Uuid"
             },
             "returns": {
+                "o:displayMessage": "String",
                 "thingError": "$ref:ThingError"
             }
         },
@@ -997,12 +1004,13 @@
             }
         },
         "Integrations.GetBrowserItem": {
-            "description": "Get a single item from the browser. This won't give any more info on an item than a regular BrowseThing call, but it allows to fetch details of an item if only the ID is known.",
+            "description": "Get a single item from the browser. This won't give any more info on an item than a regular BrowseThing call, but it allows to fetch details of an item if only the ID is known.\nIn case of an error during browsing, the error will be indicated and the displayMessage may contain additional information for the user. The displayMessage will be translated. A client UI showing this message to the user should be prepared for empty, but also longer strings.",
             "params": {
                 "o:itemId": "String",
                 "thingId": "Uuid"
             },
             "returns": {
+                "o:displayMessage": "String",
                 "o:item": "$ref:BrowserItem",
                 "thingError": "$ref:ThingError"
             }

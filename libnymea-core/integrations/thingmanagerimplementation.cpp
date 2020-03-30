@@ -1375,6 +1375,8 @@ void ThingManagerImplementation::loadConfiguredThings()
         // it means that it was working at some point so lets still add it as there might
         // be rules associated with this thing.
         m_configuredThings.insert(thing->id(), thing);
+
+        emit thingAdded(thing);
     }
     settings.endGroup();
 

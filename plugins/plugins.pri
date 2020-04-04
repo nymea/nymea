@@ -14,7 +14,7 @@ HEADERS += plugininfo.h extern-plugininfo.h
 # so we can't do this automatically at build time
 plugininfo.commands = LD_LIBRARY_PATH=$$top_builddir/libnymea \
                       $$top_builddir/tools/nymea-plugininfocompiler/nymea-plugininfocompiler \
-                      $$PWD/$${TARGET}/deviceplugin"$$TARGET".json \
+                      $$PWD/$${TARGET}/integrationplugin"$$TARGET".json \
                       --output $$PWD/$${TARGET}/plugininfo.h \
                       --extern $$PWD/$${TARGET}/extern-plugininfo.h
 QMAKE_EXTRA_TARGETS += plugininfo

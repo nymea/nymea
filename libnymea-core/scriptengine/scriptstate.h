@@ -35,8 +35,8 @@
 #include <QQmlParserStatus>
 #include <QPointer>
 
-#include "devices/devicemanager.h"
-#include "devices/deviceactioninfo.h"
+#include "integrations/thingmanager.h"
+#include "integrations/thingactioninfo.h"
 
 namespace nymeaserver {
 
@@ -44,7 +44,8 @@ class ScriptState : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
-    Q_PROPERTY(QString deviceId READ deviceId WRITE setDeviceId NOTIFY deviceIdChanged)
+    Q_PROPERTY(QString thingId READ thingId WRITE setThingId NOTIFY thingIdChanged)
+    Q_PROPERTY(QString deviceId READ thingId WRITE setThingId NOTIFY thingIdChanged) // DEPRECATED
     Q_PROPERTY(QString stateTypeId READ stateTypeId WRITE setStateTypeId NOTIFY stateTypeChanged)
     Q_PROPERTY(QString stateName READ stateName WRITE setStateName NOTIFY stateTypeChanged)
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
@@ -56,8 +57,8 @@ public:
     void classBegin() override;
     void componentComplete() override;
 
-    QString deviceId() const;
-    void setDeviceId(const QString &deviceId);
+    QString thingId() const;
+    void setThingId(const QString &thingId);
 
     QString stateTypeId() const;
     void setStateTypeId(const QString &stateTypeId);
@@ -76,21 +77,21 @@ public slots:
     void restore();
 
 signals:
-    void deviceIdChanged();
+    void thingIdChanged();
     void stateTypeChanged();
     void valueChanged();
 
 private slots:
-    void onDeviceStateChanged(Device *device, const StateTypeId &stateTypeId);
+    void onThingStateChanged(Thing *thing, const StateTypeId &stateTypeId);
 
 private:
-    DeviceManager *m_deviceManager = nullptr;
+    ThingManager *m_thingManager = nullptr;
 
-    QString m_deviceId;
+    QString m_thingId;
     QString m_stateTypeId;
     QString m_stateName;
 
-    DeviceActionInfo *m_pendingActionInfo = nullptr;
+    ThingActionInfo *m_pendingActionInfo = nullptr;
     QVariant m_valueCache;
 
     QVariant m_valueStore;

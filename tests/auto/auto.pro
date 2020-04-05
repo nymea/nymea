@@ -3,6 +3,7 @@ TEMPLATE = subdirs
 SUBDIRS = \
         versioning \
         devices \
+        integrations \
         jsonrpc \
         events \
         states \

@@ -28,75 +28,6 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*!
-    \class nymeaserver::NymeaCore
-    \brief The main entry point for the nymea Server and the place where all the messages are dispatched.
-
-    \inmodule core
-
-    NymeaCore is a singleton instance and the main entry point of the nymea daemon. It is responsible to
-    instantiate, set up and connect all the other components.
-*/
-
-/*! \fn void nymeaserver::NymeaCore::eventTriggered(const Event &event);
-    This signal is emitted when an \a event happend.
-*/
-
-/*! \fn void nymeaserver::NymeaCore::deviceStateChanged(Device *device, const QUuid &stateTypeId, const QVariant &value);
-    This signal is emitted when the \l{State} of a \a device changed. The \a stateTypeId parameter describes the
-    \l{StateType} and the \a value parameter holds the new value.
-*/
-
-/*! \fn void nymeaserver::NymeaCore::deviceRemoved(const DeviceId &deviceId);
-    This signal is emitted when a \l{Device} with the given \a deviceId was removed.
-*/
-
-/*! \fn void nymeaserver::NymeaCore::deviceAdded(Device *device);
-    This signal is emitted when a \a device was added to the system.
-*/
-
-/*! \fn void nymeaserver::NymeaCore::deviceChanged(Device *device);
-    This signal is emitted when the \l{ParamList}{Params} of a \a device have been changed.
-*/
-
-/*! \fn void nymeaserver::NymeaCore::actionExecuted(const ActionId &id, Device::DeviceError status);
-    This signal is emitted when the \l{Action} with the given \a id is finished.
-    The \a status of the \l{Action} execution will be described as \l{Device::DeviceError}{DeviceError}.
-*/
-
-/*! \fn void nymeaserver::NymeaCore::pairingFinished(const PairingTransactionId &pairingTransactionId, Device::DeviceError status, const DeviceId &deviceId);
-    The DeviceManager will emit a this Signal when the pairing of a \l{Device} with the \a deviceId and \a pairingTransactionId is finished.
-    The \a status of the pairing will be described as \l{Device::DeviceError}{DeviceError}.
-*/
-
-/*! \fn void nymeaserver::NymeaCore::ruleRemoved(const RuleId &ruleId);
-    This signal is emitted when a \l{Rule} with the given \a ruleId was removed.
-*/
-
-/*! \fn void nymeaserver::NymeaCore::ruleAdded(const Rule &rule);
-    This signal is emitted when a \a rule was added to the system.
-*/
-
-/*! \fn void nymeaserver::NymeaCore::ruleConfigurationChanged(const Rule &rule);
-    This signal is emitted when the configuration of \a rule changed.
-*/
-
-/*! \fn void nymeaserver::NymeaCore::initialized();
-    This signal is emitted when the core is initialized.
-*/
-
-/*! \fn void nymeaserver::NymeaCore::pluginConfigChanged(const PluginId &id, const ParamList &config);
-    This signal is emitted when the plugin \a config of the plugin with the given \a id changed.
-*/
-
-
-/*! \fn void ruleActiveChanged(const Rule &rule);
-    This signal is emitted when a \a rule changed the active state.
-    A \l{Rule} is active, when all \l{State}{States} match with the \l{StateDescriptor} conditions.
-
-    \sa Rule::active()
-*/
-
 #include "nymeacore.h"
 #include "loggingcategories.h"
 #include "platform/platform.h"
@@ -112,11 +43,11 @@
 #include "scriptengine/scriptengine.h"
 #include "jsonrpc/scriptshandler.h"
 
-#include "devices/devicemanagerimplementation.h"
-#include "devices/device.h"
-#include "devices/deviceactioninfo.h"
-#include "devices/browseractioninfo.h"
-#include "devices/browseritemactioninfo.h"
+#include "integrations/thingmanagerimplementation.h"
+#include "integrations/thing.h"
+#include "integrations/thingactioninfo.h"
+#include "integrations/browseractioninfo.h"
+#include "integrations/browseritemactioninfo.h"
 #include "cloud/cloudnotifications.h"
 #include "cloud/cloudtransport.h"
 
@@ -174,18 +105,18 @@ void NymeaCore::init() {
     qCDebug(dcApplication) << "Creating Hardware Manager";
     m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), this);
 
-    qCDebug(dcApplication) << "Creating Device Manager (locale:" << m_configuration->locale() << ")";
-    m_deviceManager = new DeviceManagerImplementation(m_hardwareManager, m_configuration->locale(), this);
+    qCDebug(dcApplication) << "Creating Thing Manager (locale:" << m_configuration->locale() << ")";
+    m_thingManager = new ThingManagerImplementation(m_hardwareManager, m_configuration->locale(), this);
 
     qCDebug(dcApplication) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);
 
     qCDebug(dcApplication()) << "Creating Script Engine";
-    m_scriptEngine = new ScriptEngine(m_deviceManager, this);
+    m_scriptEngine = new ScriptEngine(m_thingManager, this);
     m_serverManager->jsonServer()->registerHandler(new ScriptsHandler(m_scriptEngine, m_scriptEngine));
 
     qCDebug(dcApplication()) << "Creating Tags Storage";
-    m_tagsStorage = new TagsStorage(m_deviceManager, m_ruleEngine, this);
+    m_tagsStorage = new TagsStorage(m_thingManager, m_ruleEngine, this);
 
     qCDebug(dcApplication) << "Creating Network Manager";
     m_networkManager = new NetworkManager(this);
@@ -197,26 +128,26 @@ void NymeaCore::init() {
     m_cloudManager = new CloudManager(m_configuration, m_networkManager, this);
 
     qCDebug(dcApplication()) << "Loading experiences";
-    m_experienceManager = new ExperienceManager(m_deviceManager, m_serverManager->jsonServer(), this);
+    m_experienceManager = new ExperienceManager(m_thingManager, m_serverManager->jsonServer(), this);
 
 
     CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
-    m_deviceManager->registerStaticPlugin(cloudNotifications, cloudNotifications->metaData());
+    m_thingManager->registerStaticPlugin(cloudNotifications, cloudNotifications->metaData());
 
     CloudTransport *cloudTransport = m_cloudManager->createTransportInterface();
     m_serverManager->jsonServer()->registerTransportInterface(cloudTransport, false);
 
     connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
 
-    connect(m_deviceManager, &DeviceManagerImplementation::pluginConfigChanged, this, &NymeaCore::pluginConfigChanged);
-    connect(m_deviceManager, &DeviceManagerImplementation::eventTriggered, this, &NymeaCore::gotEvent);
-    connect(m_deviceManager, &DeviceManagerImplementation::deviceStateChanged, this, &NymeaCore::deviceStateChanged);
-    connect(m_deviceManager, &DeviceManagerImplementation::deviceAdded, this, &NymeaCore::deviceAdded);
-    connect(m_deviceManager, &DeviceManagerImplementation::deviceChanged, this, &NymeaCore::deviceChanged);
-    connect(m_deviceManager, &DeviceManagerImplementation::deviceSettingChanged, this, &NymeaCore::deviceSettingChanged);
-    connect(m_deviceManager, &DeviceManagerImplementation::deviceRemoved, this, &NymeaCore::deviceRemoved);
-    connect(m_deviceManager, &DeviceManagerImplementation::deviceDisappeared, this, &NymeaCore::onDeviceDisappeared);
-    connect(m_deviceManager, &DeviceManagerImplementation::loaded, this, &NymeaCore::deviceManagerLoaded);
+    connect(m_thingManager, &ThingManagerImplementation::pluginConfigChanged, this, &NymeaCore::pluginConfigChanged);
+    connect(m_thingManager, &ThingManagerImplementation::eventTriggered, this, &NymeaCore::gotEvent);
+    connect(m_thingManager, &ThingManagerImplementation::thingStateChanged, this, &NymeaCore::thingStateChanged);
+    connect(m_thingManager, &ThingManagerImplementation::thingAdded, this, &NymeaCore::thingAdded);
+    connect(m_thingManager, &ThingManagerImplementation::thingChanged, this, &NymeaCore::thingChanged);
+    connect(m_thingManager, &ThingManagerImplementation::thingSettingChanged, this, &NymeaCore::thingSettingChanged);
+    connect(m_thingManager, &ThingManagerImplementation::thingRemoved, this, &NymeaCore::thingRemoved);
+    connect(m_thingManager, &ThingManagerImplementation::thingDisappeared, this, &NymeaCore::onThingDisappeared);
+    connect(m_thingManager, &ThingManagerImplementation::loaded, this, &NymeaCore::thingManagerLoaded);
 
     connect(m_ruleEngine, &RuleEngine::ruleAdded, this, &NymeaCore::ruleAdded);
     connect(m_ruleEngine, &RuleEngine::ruleRemoved, this, &NymeaCore::ruleRemoved);
@@ -235,7 +166,7 @@ NymeaCore::~NymeaCore()
 
     // Disconnect all signals/slots, we're going down now
     m_timeManager->disconnect(this);
-    m_deviceManager->disconnect(this);
+    m_thingManager->disconnect(this);
     m_ruleEngine->disconnect(this);
 
     // At very first, cut off the outside world
@@ -248,9 +179,9 @@ NymeaCore::~NymeaCore()
     qCDebug(dcApplication) << "Shutting down \"Rule Engine\"";
     delete m_ruleEngine;
 
-    // Next, DeviceManager, so plugins don't access any resources any more.
-    qCDebug(dcApplication) << "Shutting down \"Device Manager\"";
-    delete m_deviceManager;
+    // Next, ThingManager, so plugins don't access any resources any more.
+    qCDebug(dcApplication) << "Shutting down \"Thing Manager\"";
+    delete m_thingManager;
 
     // Now go ahead and clean up stuff.
     qCDebug(dcApplication) << "Shutting down \"Log Engine\"";
@@ -262,7 +193,6 @@ NymeaCore::~NymeaCore()
     qCDebug(dcApplication) << "Done shutting down NymeaCore";
 }
 
-/*! Destroyes the \l{NymeaCore} instance. */
 void NymeaCore::destroy()
 {
     if (s_instance) {
@@ -272,46 +202,45 @@ void NymeaCore::destroy()
     s_instance = nullptr;
 }
 
-/*! Removes a configured \l{Device} with the given \a deviceId and \a removePolicyList. */
-QPair<Device::DeviceError, QList<RuleId> > NymeaCore::removeConfiguredDevice(const DeviceId &deviceId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList)
+QPair<Thing::ThingError, QList<RuleId> > NymeaCore::removeConfiguredThing(const ThingId &thingId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList)
 {
-    Device *device = m_deviceManager->findConfiguredDevice(deviceId);
+    Thing *thing = m_thingManager->findConfiguredThing(thingId);
 
-    if (!device) {
-        return QPair<Device::DeviceError, QList<RuleId> > (Device::DeviceErrorDeviceNotFound, QList<RuleId>());
+    if (!thing) {
+        return QPair<Thing::ThingError, QList<RuleId> > (Thing::ThingErrorThingNotFound, QList<RuleId>());
     }
 
-    // Check if this is a child device
-    if (!device->parentId().isNull()) {
-        qCWarning(dcDeviceManager) << "The device is a child of" << device->parentId().toString() << ". Please remove the parent device.";
-        return QPair<Device::DeviceError, QList<RuleId> > (Device::DeviceErrorDeviceIsChild, QList<RuleId>());
+    // Check if this is a child
+    if (!thing->parentId().isNull()) {
+        qCWarning(dcThingManager) << "Thing is a child of" << thing->parentId().toString() << ". Please remove the parent.";
+        return QPair<Thing::ThingError, QList<RuleId> > (Thing::ThingErrorThingIsChild, QList<RuleId>());
     }
 
     // FIXME: Let's remove this for now. It will come back with more fine grained control, presumably introducing a RemoveMethod flag in the DeviceClass
-//    if (device->autoCreated()) {
-//        qCWarning(dcDeviceManager) << "This device has been auto-created and cannot be deleted manually.";
-//        return QPair<Device::DeviceError, QList<RuleId> >(Device::DeviceErrorCreationMethodNotSupported, {});
+//    if (thing->autoCreated()) {
+//        qCWarning(dcThingManager) << "This thing has been auto-created and cannot be deleted manually.";
+//        return QPair<Thing::ThingError, QList<RuleId> >(Thing::ThingErrorCreationMethodNotSupported, {});
 //    }
 
-    // Check if this device has child devices
-    QList<Device *> devicesToRemove;
-    devicesToRemove.append(device);
-    QList<Device *> childDevices = m_deviceManager->findChildDevices(deviceId);
-    if (!childDevices.isEmpty()) {
-        foreach (Device *child, childDevices) {
-            devicesToRemove.append(child);
+    // Check if this thing has childs
+    QList<Thing *> thingsToRemove;
+    thingsToRemove.append(thing);
+    QList<Thing *> childs = m_thingManager->findChilds(thingId);
+    if (!childs.isEmpty()) {
+        foreach (Thing *child, childs) {
+            thingsToRemove.append(child);
         }
     }
 
-    // check devices
+    // check things
     QList<RuleId> offendingRules;
-    qCDebug(dcDeviceManager) << "Devices to remove:";
-    foreach (Device *d, devicesToRemove) {
-        qCDebug(dcDeviceManager) << " -> " << d->name() << d->id().toString();
+    qCDebug(dcThingManager) << "Things to remove:";
+    foreach (Thing *d, thingsToRemove) {
+        qCDebug(dcThingManager) << " -> " << d->name() << d->id().toString();
 
-        // Check if device is in a rule
+        // Check if thing is in a rule
         foreach (const RuleId &ruleId, m_ruleEngine->findRules(d->id())) {
-            qCDebug(dcDeviceManager) << "      -> in rule:" << ruleId.toString();
+            qCDebug(dcThingManager) << "      -> in rule:" << ruleId.toString();
             if (!offendingRules.contains(ruleId)) {
                 offendingRules.append(ruleId);
             }
@@ -336,8 +265,8 @@ QPair<Device::DeviceError, QList<RuleId> > NymeaCore::removeConfiguredDevice(con
     }
 
     if (!unhandledRules.isEmpty()) {
-        qCWarning(dcDeviceManager) << "There are unhandled rules which depend on this device:\n" << unhandledRules;
-        return QPair<Device::DeviceError, QList<RuleId> > (Device::DeviceErrorDeviceInRule, unhandledRules);
+        qCWarning(dcThingManager) << "There are unhandled rules which depend on this thing:\n" << unhandledRules;
+        return QPair<Thing::ThingError, QList<RuleId> > (Thing::ThingErrorThingInRule, unhandledRules);
     }
 
     // Update the rules...
@@ -345,70 +274,69 @@ QPair<Device::DeviceError, QList<RuleId> > NymeaCore::removeConfiguredDevice(con
         if (toBeChanged.value(ruleId) == RuleEngine::RemovePolicyCascade) {
             m_ruleEngine->removeRule(ruleId);
         } else if (toBeChanged.value(ruleId) == RuleEngine::RemovePolicyUpdate){
-            foreach (Device *d, devicesToRemove) {
-                m_ruleEngine->removeDeviceFromRule(ruleId, d->id());
+            foreach (Thing *thing, thingsToRemove) {
+                m_ruleEngine->removeThingFromRule(ruleId, thing->id());
             }
         }
     }
 
-    // remove the child devices
-    foreach (Device *d, childDevices) {
-        Device::DeviceError removeError = m_deviceManager->removeConfiguredDevice(d->id());
-        if (removeError == Device::DeviceErrorNoError) {
+    // remove the childs
+    foreach (Thing *d, childs) {
+        Thing::ThingError removeError = m_thingManager->removeConfiguredThing(d->id());
+        if (removeError == Thing::ThingErrorNoError) {
             m_logger->removeDeviceLogs(d->id());
         }
     }
 
-    // delete the devices
-    Device::DeviceError removeError = m_deviceManager->removeConfiguredDevice(deviceId);
-    if (removeError == Device::DeviceErrorNoError) {
-        m_logger->removeDeviceLogs(deviceId);
+    // delete the things
+    Thing::ThingError removeError = m_thingManager->removeConfiguredThing(thingId);
+    if (removeError == Thing::ThingErrorNoError) {
+        m_logger->removeDeviceLogs(thingId);
     }
 
-    return QPair<Device::DeviceError, QList<RuleId> > (Device::DeviceErrorNoError, QList<RuleId>());
+    return QPair<Thing::ThingError, QList<RuleId> > (Thing::ThingErrorNoError, QList<RuleId>());
 }
 
 
-/*! Removes a configured \l{Device} with the given \a deviceId and \a removePolicy. */
-Device::DeviceError NymeaCore::removeConfiguredDevice(const DeviceId &deviceId, const RuleEngine::RemovePolicy &removePolicy)
+Thing::ThingError NymeaCore::removeConfiguredThing(const ThingId &thingId, const RuleEngine::RemovePolicy &removePolicy)
 {
-    Device *device = m_deviceManager->findConfiguredDevice(deviceId);
+    Thing *thing = m_thingManager->findConfiguredThing(thingId);
 
-    if (!device) {
-        return Device::DeviceErrorDeviceNotFound;
+    if (!thing) {
+        return Thing::ThingErrorThingNotFound;
     }
 
-    // Check if this is a child device
-    if (!device->parentId().isNull()) {
-        qCWarning(dcDeviceManager) << "The device is a child of" << device->parentId().toString() << ". Please remove the parent device.";
-        return Device::DeviceErrorDeviceIsChild;
+    // Check if this is a child
+    if (!thing->parentId().isNull()) {
+        qCWarning(dcThingManager) << "Thing is a child of" << thing->parentId().toString() << ". Please remove the parent.";
+        return Thing::ThingErrorThingIsChild;
     }
 
     // FIXME: Let's remove this for now. It will come back with more fine grained control, presumably introducing a RemoveMethod flag in the DeviceClass
-//    if (device->autoCreated()) {
-//        qCWarning(dcDeviceManager) << "This device has been auto-created and cannot be deleted manually.";
-//        return Device::DeviceErrorCreationMethodNotSupported;
+//    if (thing->autoCreated()) {
+//        qCWarning(dcThingManager) << "This thing has been auto-created and cannot be deleted manually.";
+//        return Thing::ThingErrorCreationMethodNotSupported;
 //    }
 
-    // Check if this device has child devices
-    QList<Device *> devicesToRemove;
-    devicesToRemove.append(device);
-    QList<Device *> childDevices = m_deviceManager->findChildDevices(deviceId);
-    if (!childDevices.isEmpty()) {
-        foreach (Device *child, childDevices) {
-            devicesToRemove.append(child);
+    // Check if this thing has childs
+    QList<Thing *> thingsToRemove;
+    thingsToRemove.append(thing);
+    QList<Thing *> childs = m_thingManager->findChilds(thingId);
+    if (!childs.isEmpty()) {
+        foreach (Thing *child, childs) {
+            thingsToRemove.append(child);
         }
     }
 
-    // check devices
+    // check things
     QList<RuleId> offendingRules;
-    qCDebug(dcDeviceManager) << "Devices to remove:";
-    foreach (Device *d, devicesToRemove) {
-        qCDebug(dcDeviceManager) << " -> " << d->name() << d->id().toString();
+    qCDebug(dcThingManager) << "Things to remove:";
+    foreach (Thing *d, thingsToRemove) {
+        qCDebug(dcThingManager) << " -> " << d->name() << d->id().toString();
 
-        // Check if device is in a rule
+        // Check if thing is in a rule
         foreach (const RuleId &ruleId, m_ruleEngine->findRules(d->id())) {
-            qCDebug(dcDeviceManager) << "      -> in rule:" << ruleId.toString();
+            qCDebug(dcThingManager) << "      -> in rule:" << ruleId.toString();
             if (!offendingRules.contains(ruleId)) {
                 offendingRules.append(ruleId);
             }
@@ -420,36 +348,34 @@ Device::DeviceError NymeaCore::removeConfiguredDevice(const DeviceId &deviceId, 
         if (removePolicy == RuleEngine::RemovePolicyCascade) {
             m_ruleEngine->removeRule(ruleId);
         } else if (removePolicy == RuleEngine::RemovePolicyUpdate){
-            foreach (Device *d, devicesToRemove) {
-                m_ruleEngine->removeDeviceFromRule(ruleId, d->id());
+            foreach (Thing *thing, thingsToRemove) {
+                m_ruleEngine->removeThingFromRule(ruleId, thing->id());
             }
         }
     }
 
-    // remove the child devices
-    foreach (Device *d, childDevices) {
-        Device::DeviceError removeError = m_deviceManager->removeConfiguredDevice(d->id());
-        if (removeError == Device::DeviceErrorNoError) {
+    // remove the childs
+    foreach (Thing *d, childs) {
+        Thing::ThingError removeError = m_thingManager->removeConfiguredThing(d->id());
+        if (removeError == Thing::ThingErrorNoError) {
             m_logger->removeDeviceLogs(d->id());
         }
     }
 
-    // delete the devices
-    Device::DeviceError removeError = m_deviceManager->removeConfiguredDevice(deviceId);
-    if (removeError == Device::DeviceErrorNoError) {
-        m_logger->removeDeviceLogs(deviceId);
+    // delete the things
+    Thing::ThingError removeError = m_thingManager->removeConfiguredThing(thingId);
+    if (removeError == Thing::ThingErrorNoError) {
+        m_logger->removeDeviceLogs(thingId);
     }
 
     return removeError;
 }
 
-/*! Calls the metheod DeviceManager::executeAction(\a action).
- *  \sa DeviceManager::executeAction(), */
-DeviceActionInfo* NymeaCore::executeAction(const Action &action)
+ThingActionInfo* NymeaCore::executeAction(const Action &action)
 {
-    DeviceActionInfo *info = m_deviceManager->executeAction(action);
-    connect(info, &DeviceActionInfo::finished, this, [this, info](){
-        if (info->status() == Device::DeviceErrorNoError) {
+    ThingActionInfo *info = m_thingManager->executeAction(action);
+    connect(info, &ThingActionInfo::finished, this, [this, info](){
+        if (info->status() == Thing::ThingErrorNoError) {
             m_logger->logAction(info->action());
         } else {
             m_logger->logAction(info->action(), Logging::LoggingLevelAlert, info->status());
@@ -461,18 +387,18 @@ DeviceActionInfo* NymeaCore::executeAction(const Action &action)
 
 BrowserActionInfo* NymeaCore::executeBrowserItem(const BrowserAction &browserAction)
 {
-    BrowserActionInfo *info = m_deviceManager->executeBrowserItem(browserAction);
-    connect(info, &BrowserActionInfo::finished, info->device(), [this, info](){
-        m_logger->logBrowserAction(info->browserAction(), info->status() == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, info->status());
+    BrowserActionInfo *info = m_thingManager->executeBrowserItem(browserAction);
+    connect(info, &BrowserActionInfo::finished, info->thing(), [this, info](){
+        m_logger->logBrowserAction(info->browserAction(), info->status() == Thing::ThingErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, info->status());
     });
     return info;
 }
 
 BrowserItemActionInfo *NymeaCore::executeBrowserItemAction(const BrowserItemAction &browserItemAction)
 {
-    BrowserItemActionInfo *info = m_deviceManager->executeBrowserItemAction(browserItemAction);
-    connect(info, &BrowserItemActionInfo::finished, info->device(), [this, info](){
-        m_logger->logBrowserItemAction(info->browserItemAction(), info->status() == Device::DeviceErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, info->status());
+    BrowserItemActionInfo *info = m_thingManager->executeBrowserItemAction(browserItemAction);
+    connect(info, &BrowserItemActionInfo::finished, info->thing(), [this, info](){
+        m_logger->logBrowserItemAction(info->browserItemAction(), info->status() == Thing::ThingErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, info->status());
     });
     return info;
 }
@@ -483,10 +409,10 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
     QList<Action> actions;
     QList<BrowserAction> browserActions;
     foreach (const RuleAction &ruleAction, ruleActions) {
-        if (ruleAction.type() == RuleAction::TypeDevice) {
-            Device *device = m_deviceManager->findConfiguredDevice(ruleAction.deviceId());
-            if (!device) {
-                qCWarning(dcRuleEngine()) << "Unable to find device" << ruleAction.deviceId() << "for rule action" << ruleAction;
+        if (ruleAction.type() == RuleAction::TypeThing) {
+            Thing *thing = m_thingManager->findConfiguredThing(ruleAction.thingId());
+            if (!thing) {
+                qCWarning(dcRuleEngine()) << "Unable to find thing" << ruleAction.thingId() << "for rule action" << ruleAction;
                 continue;
             }
             ActionTypeId actionTypeId = ruleAction.actionTypeId();
@@ -496,43 +422,43 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
                 if (ruleActionParam.isValueBased()) {
                     params.append(Param(ruleActionParam.paramTypeId(), ruleActionParam.value()));
                 } else if (ruleActionParam.isStateBased()) {
-                    Device *stateDevice = m_deviceManager->findConfiguredDevice(ruleActionParam.stateDeviceId());
-                    if (!stateDevice) {
-                        qCWarning(dcRuleEngine()) << "Cannot find device" << ruleActionParam.stateDeviceId() << "required by rule action" << ruleAction.id();
+                    Thing *stateThing = m_thingManager->findConfiguredThing(ruleActionParam.stateThingId());
+                    if (!stateThing) {
+                        qCWarning(dcRuleEngine()) << "Cannot find thing" << ruleActionParam.stateThingId() << "required by rule action" << ruleAction.id();
                         ok = false;
                         break;
                     }
-                    DeviceClass stateDeviceClass = m_deviceManager->findDeviceClass(stateDevice->deviceClassId());
-                    if (!stateDeviceClass.hasStateType(ruleActionParam.stateTypeId())) {
-                        qCWarning(dcRuleEngine()) << "Device" << device->name() << device->id() << "does not have a state type" << ruleActionParam.stateTypeId();
+                    ThingClass stateThingClass = m_thingManager->findThingClass(stateThing->thingClassId());
+                    if (!stateThingClass.hasStateType(ruleActionParam.stateTypeId())) {
+                        qCWarning(dcRuleEngine()) << "Device" << thing->name() << thing->id() << "does not have a state type" << ruleActionParam.stateTypeId();
                         ok = false;
                         break;
                     }
-                    params.append(Param(ruleActionParam.paramTypeId(), stateDevice->stateValue(ruleActionParam.stateTypeId())));
+                    params.append(Param(ruleActionParam.paramTypeId(), stateThing->stateValue(ruleActionParam.stateTypeId())));
                 }
             }
             if (!ok) {
                 qCWarning(dcRuleEngine()) << "Not executing rule action" << ruleAction.id();
                 continue;
             }
-            Action action(actionTypeId, device->id());
+            Action action(actionTypeId, thing->id());
             action.setParams(params);
             actions.append(action);
         } else if (ruleAction.type() == RuleAction::TypeBrowser) {
-            Device *device = m_deviceManager->findConfiguredDevice(ruleAction.deviceId());
-            if (!device) {
-                qCWarning(dcRuleEngine()) << "Unable to find device" << ruleAction.deviceId() << "for rule action" << ruleAction;
+            Thing *thing = m_thingManager->findConfiguredThing(ruleAction.thingId());
+            if (!thing) {
+                qCWarning(dcRuleEngine()) << "Unable to find thing" << ruleAction.thingId() << "for rule action" << ruleAction;
                 continue;
             }
-            BrowserAction browserAction(ruleAction.deviceId(), ruleAction.browserItemId());
+            BrowserAction browserAction(ruleAction.thingId(), ruleAction.browserItemId());
             browserActions.append(browserAction);
         } else {
-            QList<Device*> devices = m_deviceManager->findConfiguredDevices(ruleAction.interface());
-            foreach (Device* device, devices) {
-                DeviceClass deviceClass = m_deviceManager->findDeviceClass(device->deviceClassId());
-                ActionType actionType = deviceClass.actionTypes().findByName(ruleAction.interfaceAction());
+            Things things = m_thingManager->findConfiguredThings(ruleAction.interface());
+            foreach (Thing* thing, things) {
+                ThingClass thingClass = m_thingManager->findThingClass(thing->thingClassId());
+                ActionType actionType = thingClass.actionTypes().findByName(ruleAction.interfaceAction());
                 if (actionType.id().isNull()) {
-                    qCWarning(dcRuleEngine()) << "Error creating Action. The given DeviceClass does not implement action:" << ruleAction.interfaceAction();
+                    qCWarning(dcRuleEngine()) << "Error creating Action. The given ThingClass does not implement action:" << ruleAction.interfaceAction();
                     continue;
                 }
 
@@ -548,19 +474,19 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
                     if (ruleActionParam.isValueBased()) {
                         params.append(Param(paramType.id(), ruleActionParam.value()));
                     } else if (ruleActionParam.isStateBased()) {
-                        Device *stateDevice = m_deviceManager->findConfiguredDevice(ruleActionParam.stateDeviceId());
-                        if (!stateDevice) {
-                            qCWarning(dcRuleEngine()) << "Cannot find device" << ruleActionParam.stateDeviceId() << "required by rule action" << ruleAction.id();
+                        Thing *stateThing = m_thingManager->findConfiguredThing(ruleActionParam.stateThingId());
+                        if (!stateThing) {
+                            qCWarning(dcRuleEngine()) << "Cannot find thing" << ruleActionParam.stateThingId() << "required by rule action" << ruleAction.id();
                             ok = false;
                             break;
                         }
-                        DeviceClass stateDeviceClass = m_deviceManager->findDeviceClass(stateDevice->deviceClassId());
-                        if (!stateDeviceClass.hasStateType(ruleActionParam.stateTypeId())) {
-                            qCWarning(dcRuleEngine()) << "Device" << device->name() << device->id() << "does not have a state type" << ruleActionParam.stateTypeId();
+                        ThingClass stateThingClass = m_thingManager->findThingClass(stateThing->thingClassId());
+                        if (!stateThingClass.hasStateType(ruleActionParam.stateTypeId())) {
+                            qCWarning(dcRuleEngine()) << "Thing" << thing->name() << thing->id() << "does not have a state type" << ruleActionParam.stateTypeId();
                             ok = false;
                             break;
                         }
-                        params.append(Param(paramType.id(), stateDevice->stateValue(ruleActionParam.stateTypeId())));
+                        params.append(Param(paramType.id(), stateThing->stateValue(ruleActionParam.stateTypeId())));
                     }
                 }
                 if (!ok) {
@@ -568,7 +494,7 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
                     continue;
                 }
 
-                Action action = Action(actionType.id(), device->id());
+                Action action = Action(actionType.id(), thing->id());
                 action.setParams(params);
                 actions.append(action);
             }
@@ -577,9 +503,9 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
 
     foreach (const Action &action, actions) {
         qCDebug(dcRuleEngine) << "Executing action" << action.actionTypeId() << action.params();
-        DeviceActionInfo *info = executeAction(action);
-        connect(info, &DeviceActionInfo::finished, this, [info](){
-            if (info->status() != Device::DeviceErrorNoError) {
+        ThingActionInfo *info = executeAction(action);
+        connect(info, &ThingActionInfo::finished, this, [info](){
+            if (info->status() != Thing::ThingErrorNoError) {
                 qCWarning(dcRuleEngine) << "Error executing action:" << info->status() << info->displayMessage();
             }
         });
@@ -588,7 +514,7 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
     foreach (const BrowserAction &browserAction, browserActions) {
         BrowserActionInfo *info = executeBrowserItem(browserAction);
         connect(info, &BrowserActionInfo::finished, this, [info](){
-            if (info->status() != Device::DeviceErrorNoError) {
+            if (info->status() != Thing::ThingErrorNoError) {
                 qCWarning(dcRuleEngine) << "Error executing browser action:" << info->status();
             }
         });
@@ -606,43 +532,36 @@ RuleEngine::RuleError NymeaCore::removeRule(const RuleId &id)
     return removeError;
 }
 
-/*! Returns a pointer to the \l{NymeaConfiguration} instance owned by NymeaCore.*/
 NymeaConfiguration *NymeaCore::configuration() const
 {
     return m_configuration;
 }
 
-/*! Returns a pointer to the \l{DeviceManager} instance owned by NymeaCore.*/
-DeviceManager *NymeaCore::deviceManager() const
+ThingManager *NymeaCore::thingManager() const
 {
-    return m_deviceManager;
+    return m_thingManager;
 }
 
-/*! Returns a pointer to the \l{RuleEngine} instance owned by NymeaCore.*/
 RuleEngine *NymeaCore::ruleEngine() const
 {
     return m_ruleEngine;
 }
 
-/*! Returns a pointer to the \l{ScriptEngine} instance owned by NymeaCore.*/
 ScriptEngine *NymeaCore::scriptEngine() const
 {
     return m_scriptEngine;
 }
 
-/*! Returns a pointer to the \l{TimeManager} instance owned by NymeaCore.*/
 TimeManager *NymeaCore::timeManager() const
 {
     return m_timeManager;
 }
 
-/*! Returns a pointer to the \l{ServerManager} instance owned by NymeaCore. */
 ServerManager *NymeaCore::serverManager() const
 {
     return m_serverManager;
 }
 
-/*! Returns the list of available system languages. */
 QStringList NymeaCore::getAvailableLanguages()
 {
     qCDebug(dcApplication()) << "Loading translations from" << NymeaSettings::translationsPath();
@@ -675,7 +594,6 @@ QStringList NymeaCore::getAvailableLanguages()
     return availableLanguages;
 }
 
-/*! Returns the list of logging categories from the core and the libnymea. */
 QStringList NymeaCore::loggingFilters()
 {
     QStringList loggingFilters = {
@@ -686,8 +604,8 @@ QStringList NymeaCore::loggingFilters()
         "PlatformUpdate",
         "PlatformZeroConf",
         "Experiences",
-        "Device",
-        "DeviceManager",
+        "Thing",
+        "ThingManager",
         "RuleEngine",
         "RuleEngineDebug",
         "ScriptEngine",
@@ -729,60 +647,48 @@ QStringList NymeaCore::loggingFilters()
 QStringList NymeaCore::loggingFiltersPlugins()
 {
     QStringList loggingFiltersPlugins;
-    foreach (const QJsonObject &pluginMetadata, DeviceManagerImplementation::pluginsMetadata()) {
+    foreach (const QJsonObject &pluginMetadata, ThingManagerImplementation::pluginsMetadata()) {
         QString pluginName = pluginMetadata.value("name").toString();
         loggingFiltersPlugins << pluginName.left(1).toUpper() + pluginName.mid(1);
     }
     return loggingFiltersPlugins;
 }
 
-/*! Returns a pointer to the \l{BluetoothServer} instance owned by NymeaCore. */
 BluetoothServer *NymeaCore::bluetoothServer() const
 {
     return m_serverManager->bluetoothServer();
 }
 
-/*! Returns a pointer to the \l{NetworkManager} instance owned by NymeaCore. */
 NetworkManager *NymeaCore::networkManager() const
 {
     return m_networkManager;
 }
 
-/*! Returns a pointer to the \l{UserManager} instance owned by NymeaCore. */
 UserManager *NymeaCore::userManager() const
 {
     return m_userManager;
 }
 
-/*! Returns a pointer to the CloudManager instance owned by NymeaCore. */
 CloudManager *NymeaCore::cloudManager() const
 {
     return m_cloudManager;
 }
 
-/*! Returns a pointer to the \l{DebugServerHandler} instance owned by NymeaCore. */
 DebugServerHandler *NymeaCore::debugServerHandler() const
 {
     return m_debugServerHandler;
 }
 
-/*! Returns a pointer to the \l{TagsStorage} instance owned by NymeaCore. */
 TagsStorage *NymeaCore::tagsStorage() const
 {
     return m_tagsStorage;
 }
 
-/*! Returns a pointer to the \l{Platform} instance owned by NymeaCore.
-    The Platform represents the host system this nymea instance is running on.
-*/
 Platform *NymeaCore::platform() const
 {
     return m_platform;
 }
 
-
-/*! Connected to the DeviceManager's emitEvent signal. Events received in
-    here will be evaluated by the \l{RuleEngine} and the according \l{RuleAction}{RuleActions} are executed.*/
 void NymeaCore::gotEvent(const Event &event)
 {
     m_logger->logEvent(event);
@@ -878,44 +784,42 @@ void NymeaCore::onDateTimeChanged(const QDateTime &dateTime)
     executeRuleActions(actions);
 }
 
-/*! Return the instance of the log engine */
 LogEngine* NymeaCore::logEngine() const
 {
     return m_logger;
 }
 
-/*! Returns the pointer to the \l{JsonRPCServer} of this instance. */
 JsonRPCServerImplementation *NymeaCore::jsonRPCServer() const
 {
     return m_serverManager->jsonServer();
 }
 
-void NymeaCore::onDeviceDisappeared(const DeviceId &deviceId)
+void NymeaCore::onThingDisappeared(const ThingId &thingId)
 {
-    Device *device = m_deviceManager->findConfiguredDevice(deviceId);
-    if (!device) {
+    Thing *thing = m_thingManager->findConfiguredThing(thingId);
+    if (!thing) {
         return;
     }
 
-    // Check if this device has child devices
-    QList<Device *> devicesToRemove;
-    devicesToRemove.append(device);
-    QList<Device *> childDevices = m_deviceManager->findChildDevices(deviceId);
-    if (!childDevices.isEmpty()) {
-        foreach (Device *child, childDevices) {
-            devicesToRemove.append(child);
+    // Check if this thing has childs
+    Things thingsToRemove;
+    thingsToRemove.append(thing);
+    QList<Thing *> childs = m_thingManager->findChilds(thingId);
+    if (!childs.isEmpty()) {
+        foreach (Thing *child, childs) {
+            thingsToRemove.append(child);
         }
     }
 
-    // check devices
+    // check things
     QList<RuleId> offendingRules;
-    qCDebug(dcDeviceManager) << "Devices to remove:";
-    foreach (Device *d, devicesToRemove) {
-        qCDebug(dcDeviceManager) << " -> " << d->name() << d->id().toString();
+    qCDebug(dcThingManager) << "Thing to remove:";
+    foreach (Thing *d, thingsToRemove) {
+        qCDebug(dcThingManager) << " -> " << d->name() << d->id().toString();
 
-        // Check if device is in a rule
+        // Check if thing is in a rule
         foreach (const RuleId &ruleId, m_ruleEngine->findRules(d->id())) {
-            qCDebug(dcDeviceManager) << "      -> in rule:" << ruleId.toString();
+            qCDebug(dcThingManager) << "      -> in rule:" << ruleId.toString();
             if (!offendingRules.contains(ruleId)) {
                 offendingRules.append(ruleId);
             }
@@ -924,27 +828,27 @@ void NymeaCore::onDeviceDisappeared(const DeviceId &deviceId)
 
     // update involved rules
     foreach (const RuleId &ruleId, offendingRules) {
-        foreach (Device *d, devicesToRemove) {
-            m_ruleEngine->removeDeviceFromRule(ruleId, d->id());
+        foreach (Thing *thing, thingsToRemove) {
+            m_ruleEngine->removeThingFromRule(ruleId, thing->id());
         }
     }
 
     // remove the child devices
-    foreach (Device *d, childDevices) {
-        Device::DeviceError removeError = m_deviceManager->removeConfiguredDevice(d->id());
-        if (removeError == Device::DeviceErrorNoError) {
+    foreach (Thing *d, childs) {
+        Thing::ThingError removeError = m_thingManager->removeConfiguredThing(d->id());
+        if (removeError == Thing::ThingErrorNoError) {
             m_logger->removeDeviceLogs(d->id());
         }
     }
 
-    // delete the device
-    Device::DeviceError removeError = m_deviceManager->removeConfiguredDevice(deviceId);
-    if (removeError == Device::DeviceErrorNoError) {
-        m_logger->removeDeviceLogs(deviceId);
+    // delete the thing
+    Thing::ThingError removeError = m_thingManager->removeConfiguredThing(thingId);
+    if (removeError == Thing::ThingErrorNoError) {
+        m_logger->removeDeviceLogs(thingId);
     }
 }
 
-void NymeaCore::deviceManagerLoaded()
+void NymeaCore::thingManagerLoaded()
 {
     m_ruleEngine->init();
     // Evaluate rules on current time
@@ -955,22 +859,22 @@ void NymeaCore::deviceManagerLoaded()
     // Do some houskeeping...
     qCDebug(dcApplication()) << "Starting housekeeping...";
     QDateTime startTime = QDateTime::currentDateTime();
-    DevicesFetchJob *job = m_logger->fetchDevices();
-    connect(job, &DevicesFetchJob::finished, m_deviceManager, [this, job, startTime](){
-        foreach (const DeviceId &deviceId, job->results()) {
-            if (!m_deviceManager->findConfiguredDevice(deviceId)) {
-                qCDebug(dcApplication()) << "Cleaning stale device entries from log DB for device id" << deviceId;
-                m_logger->removeDeviceLogs(deviceId);
+    ThingsFetchJob *job = m_logger->fetchDevices();
+    connect(job, &ThingsFetchJob::finished, m_thingManager, [this, job, startTime](){
+        foreach (const ThingId &thingId, job->results()) {
+            if (!m_thingManager->findConfiguredThing(thingId)) {
+                qCDebug(dcApplication()) << "Cleaning stale thing entries from log DB for thing id" << thingId;
+                m_logger->removeDeviceLogs(thingId);
             }
         }
         qCDebug(dcApplication()) << "Housekeeping done in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";
     });
 
-    foreach (const DeviceId &deviceId, m_ruleEngine->devicesInRules()) {
-        if (!m_deviceManager->findConfiguredDevice(deviceId)) {
-            qCDebug(dcApplication()) << "Cleaning stale rule entries for device id" << deviceId;
-            foreach (const RuleId &ruleId, m_ruleEngine->findRules(deviceId)) {
-                m_ruleEngine->removeDeviceFromRule(ruleId, deviceId);
+    foreach (const ThingId &thingId, m_ruleEngine->thingsInRules()) {
+        if (!m_thingManager->findConfiguredThing(thingId)) {
+            qCDebug(dcApplication()) << "Cleaning stale rule entries for thing id" << thingId;
+            foreach (const RuleId &ruleId, m_ruleEngine->findRules(thingId)) {
+                m_ruleEngine->removeThingFromRule(ruleId, thingId);
             }
         }
     }

@@ -37,7 +37,7 @@
 #include <QJsonValue>
 #include <QLoggingCategory>
 
-#include "devices/devicemanager.h"
+#include "integrations/thingmanager.h"
 #include "script.h"
 
 namespace nymeaserver {
@@ -74,7 +74,7 @@ public:
         QByteArray content;
     };
 
-    explicit ScriptEngine(DeviceManager *deviceManager, QObject *parent = nullptr);
+    explicit ScriptEngine(ThingManager *deviceManager, QObject *parent = nullptr);
     ~ScriptEngine();
 
     Scripts scripts();
@@ -101,7 +101,7 @@ private:
 
     void onScriptMessage(QtMsgType type, const QMessageLogContext &context, const QString &message);
 private:
-    DeviceManager *m_deviceManager = nullptr;
+    ThingManager *m_deviceManager = nullptr;
     QQmlEngine *m_engine = nullptr;
 
     QHash<QUuid, Script*> m_scripts;

@@ -86,9 +86,9 @@ void TestScripts::init()
     }
 
     // Set initial state values of mock device
-    Action action(mockPowerActionTypeId, m_mockDeviceId);
+    Action action(mockPowerActionTypeId, m_mockThingId);
     action.setParams(ParamList() << Param(mockPowerActionPowerParamTypeId, false));
-    NymeaCore::instance()->deviceManager()->executeAction(action);
+    NymeaCore::instance()->thingManager()->executeAction(action);
 }
 
 void TestScripts::testScriptEventById()
@@ -103,7 +103,7 @@ void TestScripts::testScriptEventById()
                             "            TestHelper.logEvent(deviceId, eventTypeId, params);\n"
                             "        }\n"
                             "    }\n"
-                            "}\n").arg(m_mockDeviceId.toString()).arg(mockPowerEventTypeId.toString());
+                            "}\n").arg(m_mockThingId.toString()).arg(mockPowerEventTypeId.toString());
 
     qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
     ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestEvent", script.toUtf8());
@@ -112,14 +112,14 @@ void TestScripts::testScriptEventById()
     QSignalSpy spy(TestHelper::instance(), &TestHelper::eventLogged);
 
     // Generate event by setting state value of powerState
-    Action action(mockPowerActionTypeId, m_mockDeviceId);
+    Action action(mockPowerActionTypeId, m_mockThingId);
     action.setParams(ParamList() << Param(mockPowerActionPowerParamTypeId, true));
-    NymeaCore::instance()->deviceManager()->executeAction(action);
+    NymeaCore::instance()->thingManager()->executeAction(action);
 
     spy.wait(1);
 
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.first().at(0).value<DeviceId>(), m_mockDeviceId);
+    QCOMPARE(spy.first().at(0).value<ThingId>(), m_mockThingId);
     QCOMPARE(EventTypeId(spy.first().at(1).toUuid()), mockPowerEventTypeId);
     QVariantMap expectedParams;
     expectedParams.insert(mockPowerEventTypeId.toString().remove(QRegExp("[{}]")), true);
@@ -139,7 +139,7 @@ void TestScripts::testScriptEventByName()
                             "            TestHelper.logEvent(deviceId, eventName, params);\n"
                             "        }\n"
                             "    }\n"
-                            "}\n").arg(m_mockDeviceId.toString()).arg("power");
+                            "}\n").arg(m_mockThingId.toString()).arg("power");
 
     qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
     ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestEvent", script.toUtf8());
@@ -148,14 +148,14 @@ void TestScripts::testScriptEventByName()
     QSignalSpy spy(TestHelper::instance(), &TestHelper::eventLogged);
 
     // Generate event by setting state value of powerState
-    Action action(mockPowerActionTypeId, m_mockDeviceId);
+    Action action(mockPowerActionTypeId, m_mockThingId);
     action.setParams(ParamList() << Param(mockPowerActionPowerParamTypeId, true));
-    NymeaCore::instance()->deviceManager()->executeAction(action);
+    NymeaCore::instance()->thingManager()->executeAction(action);
 
     spy.wait(1);
 
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.first().at(0).value<DeviceId>(), m_mockDeviceId);
+    QCOMPARE(spy.first().at(0).value<ThingId>(), m_mockThingId);
     QCOMPARE(spy.first().at(1).toString(), QString("power"));
     QVariantMap expectedParams;
     expectedParams.insert(mockPowerEventTypeId.toString().remove(QRegExp("[{}]")), true);
@@ -175,7 +175,7 @@ void TestScripts::testReadScriptStateById()
                             "            TestHelper.logStateChange(deviceId, stateTypeId, value);\n"
                             "        }\n"
                             "    }\n"
-                            "}\n").arg(m_mockDeviceId.toString()).arg(mockPowerStateTypeId.toString());
+                            "}\n").arg(m_mockThingId.toString()).arg(mockPowerStateTypeId.toString());
 
     qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
     ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestState", script.toUtf8());
@@ -184,14 +184,14 @@ void TestScripts::testReadScriptStateById()
     QSignalSpy spy(TestHelper::instance(), &TestHelper::stateChangeLogged);
 
     // Generate state change
-    Action action(mockPowerActionTypeId, m_mockDeviceId);
+    Action action(mockPowerActionTypeId, m_mockThingId);
     action.setParams(ParamList() << Param(mockPowerActionPowerParamTypeId, true));
-    NymeaCore::instance()->deviceManager()->executeAction(action);
+    NymeaCore::instance()->thingManager()->executeAction(action);
 
     spy.wait(1);
 
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.first().at(0).value<DeviceId>(), m_mockDeviceId);
+    QCOMPARE(spy.first().at(0).value<ThingId>(), m_mockThingId);
     QCOMPARE(StateTypeId(spy.first().at(1).toString()), mockPowerStateTypeId);
     QCOMPARE(spy.first().at(2).toBool(), true);
 }
@@ -208,7 +208,7 @@ void TestScripts::testReadScriptStateByNyme()
                             "            TestHelper.logStateChange(deviceId, stateName, value);\n"
                             "        }\n"
                             "    }\n"
-                            "}\n").arg(m_mockDeviceId.toString()).arg("power");
+                            "}\n").arg(m_mockThingId.toString()).arg("power");
 
     qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
     ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestState", script.toUtf8());
@@ -217,14 +217,14 @@ void TestScripts::testReadScriptStateByNyme()
     QSignalSpy spy(TestHelper::instance(), &TestHelper::stateChangeLogged);
 
     // Generate state change
-    Action action(mockPowerActionTypeId, m_mockDeviceId);
+    Action action(mockPowerActionTypeId, m_mockThingId);
     action.setParams(ParamList() << Param(mockPowerActionPowerParamTypeId, true));
-    NymeaCore::instance()->deviceManager()->executeAction(action);
+    NymeaCore::instance()->thingManager()->executeAction(action);
 
     spy.wait(1);
 
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.first().at(0).value<DeviceId>(), m_mockDeviceId);
+    QCOMPARE(spy.first().at(0).value<ThingId>(), m_mockThingId);
     QCOMPARE(spy.first().at(1).toString(), QString("power"));
     QCOMPARE(spy.first().at(2).toBool(), true);
 }
@@ -245,20 +245,20 @@ void TestScripts::testWriteScriptStateById()
                             "            deviceState.value = value\n"
                             "        }\n"
                             "    }\n"
-                            "}\n").arg(m_mockDeviceId.toString()).arg(mockPowerStateTypeId.toString());
+                            "}\n").arg(m_mockThingId.toString()).arg(mockPowerStateTypeId.toString());
 
     qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
     ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestState", script.toUtf8());
     QCOMPARE(reply.scriptError, ScriptEngine::ScriptErrorNoError);
 
-    QSignalSpy spy(NymeaCore::instance()->deviceManager(), &DeviceManager::deviceStateChanged);
+    QSignalSpy spy(NymeaCore::instance()->thingManager(), &ThingManager::thingStateChanged);
 
     TestHelper::instance()->setState(true);
 
     spy.wait(1);
 
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.first().at(0).value<Device*>()->id(), m_mockDeviceId);
+    QCOMPARE(spy.first().at(0).value<Thing*>()->id(), m_mockThingId);
     QCOMPARE(spy.first().at(1).value<StateTypeId>(), mockPowerStateTypeId);
     QCOMPARE(spy.first().at(2).toBool(), true);
 }
@@ -279,20 +279,20 @@ void TestScripts::testWriteScriptStateByName()
                             "            deviceState.value = value\n"
                             "        }\n"
                             "    }\n"
-                            "}\n").arg(m_mockDeviceId.toString()).arg("power");
+                            "}\n").arg(m_mockThingId.toString()).arg("power");
 
     qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
     ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestState", script.toUtf8());
     QCOMPARE(reply.scriptError, ScriptEngine::ScriptErrorNoError);
 
-    QSignalSpy spy(NymeaCore::instance()->deviceManager(), &DeviceManager::deviceStateChanged);
+    QSignalSpy spy(NymeaCore::instance()->thingManager(), &ThingManager::thingStateChanged);
 
     TestHelper::instance()->setState(true);
 
     spy.wait(1);
 
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.first().at(0).value<Device*>()->id(), m_mockDeviceId);
+    QCOMPARE(spy.first().at(0).value<Thing*>()->id(), m_mockThingId);
     QCOMPARE(spy.first().at(1).value<StateTypeId>(), mockPowerStateTypeId);
     QCOMPARE(spy.first().at(2).toBool(), true);
 }
@@ -313,13 +313,13 @@ void TestScripts::testScriptActionById()
                             "            deviceAction.execute(params)\n"
                             "        }\n"
                             "    }\n"
-                            "}\n").arg(m_mockDeviceId.toString()).arg(mockPowerActionTypeId.toString());
+                            "}\n").arg(m_mockThingId.toString()).arg(mockPowerActionTypeId.toString());
 
     qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
     ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestAction", script.toUtf8());
     QCOMPARE(reply.scriptError, ScriptEngine::ScriptErrorNoError);
 
-    QSignalSpy spy(NymeaCore::instance()->deviceManager(), &DeviceManager::deviceStateChanged);
+    QSignalSpy spy(NymeaCore::instance()->thingManager(), &ThingManager::thingStateChanged);
 
     QVariantMap params;
     params.insert(mockPowerActionPowerParamTypeId.toString(), true);
@@ -328,7 +328,7 @@ void TestScripts::testScriptActionById()
     spy.wait(1);
 
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.first().at(0).value<Device*>()->id(), m_mockDeviceId);
+    QCOMPARE(spy.first().at(0).value<Thing*>()->id(), m_mockThingId);
     QCOMPARE(spy.first().at(1).value<StateTypeId>(), mockPowerStateTypeId);
     QCOMPARE(spy.first().at(2).toBool(), true);
 }
@@ -349,13 +349,13 @@ void TestScripts::testScriptActionByName()
                             "            deviceAction.execute(params)\n"
                             "        }\n"
                             "    }\n"
-                            "}\n").arg(m_mockDeviceId.toString()).arg("power");
+                            "}\n").arg(m_mockThingId.toString()).arg("power");
 
     qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
     ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestAction", script.toUtf8());
     QCOMPARE(reply.scriptError, ScriptEngine::ScriptErrorNoError);
 
-    QSignalSpy spy(NymeaCore::instance()->deviceManager(), &DeviceManager::deviceStateChanged);
+    QSignalSpy spy(NymeaCore::instance()->thingManager(), &ThingManager::thingStateChanged);
 
     QVariantMap params;
     params.insert("power", true);
@@ -364,7 +364,7 @@ void TestScripts::testScriptActionByName()
     spy.wait(1);
 
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.first().at(0).value<Device*>()->id(), m_mockDeviceId);
+    QCOMPARE(spy.first().at(0).value<Thing*>()->id(), m_mockThingId);
     QCOMPARE(spy.first().at(1).value<StateTypeId>(), mockPowerStateTypeId);
     QCOMPARE(spy.first().at(2).toBool(), true);
 }

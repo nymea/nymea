@@ -43,9 +43,9 @@ void ExperiencePlugin::init()
 }
 
 /*! Returns a pointer to the DeviceManager. The pointer won't be valid unless init() has been called. */
-DeviceManager *ExperiencePlugin::deviceManager()
+ThingManager *ExperiencePlugin::thingManager()
 {
-    return m_deviceManager;
+    return m_thingManager;
 }
 
 /*! Returns a pointer to the JsonRPCServer. The pointer won't be valid unless init() has been called. */
@@ -55,9 +55,9 @@ JsonRPCServer *ExperiencePlugin::jsonRpcServer()
 }
 
 
-void ExperiencePlugin::initPlugin(DeviceManager *deviceManager, JsonRPCServer *jsonRPCServer)
+void ExperiencePlugin::initPlugin(ThingManager *deviceManager, JsonRPCServer *jsonRPCServer)
 {
-    m_deviceManager = deviceManager;
+    m_thingManager = deviceManager;
     m_jsonRpcServer = jsonRPCServer;
 
     init();

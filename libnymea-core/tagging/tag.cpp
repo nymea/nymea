@@ -39,8 +39,8 @@ Tag::Tag()
 
 }
 
-Tag::Tag(const DeviceId &deviceId, const QString &appId, const QString &tagId, const QString &value):
-    m_deviceId(deviceId),
+Tag::Tag(const ThingId &thingId, const QString &appId, const QString &tagId, const QString &value):
+    m_thingId(thingId),
     m_appId(appId),
     m_tagId(tagId),
     m_value(value)
@@ -58,14 +58,14 @@ Tag::Tag(const RuleId &ruleId, const QString &appId, const QString &tagId, const
 
 }
 
-DeviceId Tag::deviceId() const
+ThingId Tag::thingId() const
 {
-    return m_deviceId;
+    return m_thingId;
 }
 
-void Tag::setDeviceId(const DeviceId &deviceId)
+void Tag::setThingId(const ThingId &thingId)
 {
-    m_deviceId = deviceId;
+    m_thingId = thingId;
 }
 
 RuleId Tag::ruleId() const
@@ -110,7 +110,7 @@ void Tag::setValue(const QString &value)
 
 bool Tag::operator==(const Tag &other) const
 {
-    return m_deviceId == other.deviceId() &&
+    return m_thingId == other.thingId() &&
             m_ruleId == other.ruleId() &&
             m_appId == other.appId() &&
             m_tagId == other.tagId();
@@ -118,8 +118,8 @@ bool Tag::operator==(const Tag &other) const
 
 QDebug operator<<(QDebug dbg, const Tag &tag)
 {
-    if (!tag.deviceId().isNull()) {
-        dbg.nospace() << "Tag (DeviceId:" << tag.deviceId();
+    if (!tag.thingId().isNull()) {
+        dbg.nospace() << "Tag (ThingId:" << tag.thingId();
     } else {
         dbg.nospace() << "Tag (RuleId:" << tag.ruleId();
     }

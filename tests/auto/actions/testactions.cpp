@@ -29,7 +29,8 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "nymeatestbase.h"
-#include "devices/device.h"
+#include "integrations/thing.h"
+#include "jsonrpc/devicehandler.h"
 
 using namespace nymeaserver;
 
@@ -48,7 +49,7 @@ private slots:
 
 void TestActions::executeAction_data()
 {
-    QTest::addColumn<DeviceId>("deviceId");
+    QTest::addColumn<ThingId>("deviceId");
     QTest::addColumn<ActionTypeId>("actionTypeId");
     QTest::addColumn<QVariantList>("actionParams");
     QTest::addColumn<Device::DeviceError>("error");
@@ -63,18 +64,18 @@ void TestActions::executeAction_data()
     param2.insert("value", true);
     params.append(param2);
 
-    QTest::newRow("valid action") << m_mockDeviceId << mockWithParamsActionTypeId << params << Device::DeviceErrorNoError;
-    QTest::newRow("invalid deviceId") << DeviceId::createDeviceId() << mockWithParamsActionTypeId << params << Device::DeviceErrorDeviceNotFound;
-    QTest::newRow("invalid actionTypeId") << m_mockDeviceId << ActionTypeId::createActionTypeId() << params << Device::DeviceErrorActionTypeNotFound;
-    QTest::newRow("missing params") << m_mockDeviceId << mockWithParamsActionTypeId << QVariantList() << Device::DeviceErrorMissingParameter;
-    QTest::newRow("async action") << m_mockDeviceId << mockAsyncActionTypeId << QVariantList() << Device::DeviceErrorNoError;
-    QTest::newRow("broken action") << m_mockDeviceId << mockFailingActionTypeId << QVariantList() << Device::DeviceErrorSetupFailed;
-    QTest::newRow("async broken action") << m_mockDeviceId << mockAsyncFailingActionTypeId << QVariantList() << Device::DeviceErrorSetupFailed;
+    QTest::newRow("valid action") << m_mockThingId << mockWithParamsActionTypeId << params << Device::DeviceErrorNoError;
+    QTest::newRow("invalid deviceId") << ThingId::createThingId() << mockWithParamsActionTypeId << params << Device::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid actionTypeId") << m_mockThingId << ActionTypeId::createActionTypeId() << params << Device::DeviceErrorActionTypeNotFound;
+    QTest::newRow("missing params") << m_mockThingId << mockWithParamsActionTypeId << QVariantList() << Device::DeviceErrorMissingParameter;
+    QTest::newRow("async action") << m_mockThingId << mockAsyncActionTypeId << QVariantList() << Device::DeviceErrorNoError;
+    QTest::newRow("broken action") << m_mockThingId << mockFailingActionTypeId << QVariantList() << Device::DeviceErrorSetupFailed;
+    QTest::newRow("async broken action") << m_mockThingId << mockAsyncFailingActionTypeId << QVariantList() << Device::DeviceErrorSetupFailed;
 }
 
 void TestActions::executeAction()
 {
-    QFETCH(DeviceId, deviceId);
+    QFETCH(ThingId, deviceId);
     QFETCH(ActionTypeId, actionTypeId);
     QFETCH(QVariantList, actionParams);
     QFETCH(Device::DeviceError, error);
@@ -91,7 +92,7 @@ void TestActions::executeAction()
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockThing1Port)));
     QNetworkReply *reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
@@ -107,14 +108,14 @@ void TestActions::executeAction()
 
     // cleanup for the next run
     spy.clear();
-    request.setUrl(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockDevice1Port)));
+    request.setUrl(QUrl(QString("http://localhost:%1/clearactionhistory").arg(m_mockThing1Port)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
     spy.clear();
-    request.setUrl(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockDevice1Port)));
+    request.setUrl(QUrl(QString("http://localhost:%1/actionhistory").arg(m_mockThing1Port)));
     reply = nam.get(request);
     spy.wait();
     QCOMPARE(spy.count(), 1);

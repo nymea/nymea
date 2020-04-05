@@ -52,16 +52,16 @@ private slots:
     void removeTag();
 
 private:
-    QVariantMap createDeviceTag(const QString &deviceId, const QString &appId, const QString &tagId, const QString &value);
-    bool compareDeviceTag(const QVariantMap &tag, const QUuid &deviceId, const QString &appId, const QString &tagId, const QString &value);
+    QVariantMap createThingTag(const QString &thingId, const QString &appId, const QString &tagId, const QString &value);
+    bool compareThingTag(const QVariantMap &tag, const QUuid &thingId, const QString &appId, const QString &tagId, const QString &value);
     QVariantMap createRuleTag(const QString &ruleId, const QString &appId, const QString &tagId, const QString &value);
     bool comapreRuleTag(const QVariantMap &tag, const QString &ruleId, const QString &appId, const QString &tagId, const QString &value);
 };
 
-QVariantMap TestTags::createDeviceTag(const QString &deviceId, const QString &appId, const QString &tagId, const QString &value)
+QVariantMap TestTags::createThingTag(const QString &thingId, const QString &appId, const QString &tagId, const QString &value)
 {
     QVariantMap tag;
-    tag.insert("deviceId", deviceId);
+    tag.insert("thingId", thingId);
     tag.insert("appId", appId);
     tag.insert("tagId", tagId);
     tag.insert("value", value);
@@ -78,28 +78,29 @@ QVariantMap TestTags::createRuleTag(const QString &ruleId, const QString &appId,
     return tag;
 }
 
-bool TestTags::compareDeviceTag(const QVariantMap &tag, const QUuid &deviceId, const QString &appId, const QString &tagId, const QString &value)
+bool TestTags::compareThingTag(const QVariantMap &tag, const QUuid &thingId, const QString &appId, const QString &tagId, const QString &value)
 {
-    return tag.value("deviceId").toUuid() == deviceId &&
+    return tag.value("thingId").toUuid() == thingId &&
+            tag.value("deviceId").toUuid() == thingId && // backwards compatibility to < 0.19 adds deviceId along with thingId
             tag.value("appId").toString() == appId &&
             tag.value("tagId").toString() == tagId &&
             tag.value("value").toString() == value;
 }
 void TestTags::addTag_data()
 {
-    QTest::addColumn<DeviceId>("deviceId");
+    QTest::addColumn<ThingId>("thingId");
     QTest::addColumn<QString>("appId");
     QTest::addColumn<QString>("tagId");
     QTest::addColumn<QString>("value");
     QTest::addColumn<TagsStorage::TagError>("expectedError");
 
-    QTest::newRow("tagDevice") << m_mockDeviceId << "testtags" << "favorites" << "1" << TagsStorage::TagErrorNoError;
-    QTest::newRow("invalidDevice") << DeviceId::createDeviceId() << "testtags" << "favorites" << "1" << TagsStorage::TagErrorDeviceNotFound;
+    QTest::newRow("tagThing") << m_mockThingId << "testtags" << "favorites" << "1" << TagsStorage::TagErrorNoError;
+    QTest::newRow("invalidThing") << ThingId::createThingId() << "testtags" << "favorites" << "1" << TagsStorage::TagErrorThingNotFound;
 }
 
 void TestTags::addTag()
 {
-    QFETCH(DeviceId, deviceId);
+    QFETCH(ThingId, thingId);
     QFETCH(QString, appId);
     QFETCH(QString, tagId);
     QFETCH(QString, value);
@@ -112,7 +113,7 @@ void TestTags::addTag()
 
     // Create a tag;
     QVariantMap params;
-    params.insert("tag", createDeviceTag(deviceId.toString(), appId, tagId, value));
+    params.insert("tag", createThingTag(thingId.toString(), appId, tagId, value));
     QVariant response = injectAndWait("Tags.AddTag", params);
     verifyTagError(response, expectedError);
 
@@ -124,17 +125,17 @@ void TestTags::addTag()
     // Make sure the TagAdded notification is emitted.
     QVariantMap notificationTagMap = checkNotification(clientSpy, "Tags.TagAdded").toMap().value("params").toMap().value("tag").toMap();
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(notificationTagMap);
-    QVERIFY2(compareDeviceTag(notificationTagMap, deviceId, appId, tagId, value), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
+    QVERIFY2(compareThingTag(notificationTagMap, thingId, appId, tagId, value), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
 
     // Try getting the tag via GetTag
     params.clear();
-    params.insert("deviceId", deviceId.toString());
+    params.insert("thingId", thingId.toString());
     params.insert("appId", appId);
     params.insert("tagId", tagId);
     response = injectAndWait("Tags.GetTags", params);
     QVariantList tagsList = response.toMap().value("params").toMap().value("tags").toList();
     QCOMPARE(tagsList.count(), 1);
-    QVERIFY2(compareDeviceTag(tagsList.first().toMap(), deviceId, appId, tagId, value), "Fetched tag isn't matching the one we added");
+    QVERIFY2(compareThingTag(tagsList.first().toMap(), thingId, appId, tagId, value), "Fetched tag isn't matching the one we added");
 }
 
 void TestTags::updateTagValue()
@@ -144,52 +145,52 @@ void TestTags::updateTagValue()
     // Setup connection to mock client
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    QString deviceId = m_mockDeviceId.toString();
+    QString thingId = m_mockThingId.toString();
     QString appId = "testtags";
     QString tagId = "changedNotificationTag";
 
     // Create a Tag
     QVariantMap params;
-    params.insert("tag", createDeviceTag(deviceId, appId, tagId, "1"));
+    params.insert("tag", createThingTag(thingId, appId, tagId, "1"));
     QVariant response = injectAndWait("Tags.AddTag", params);
     verifyTagError(response, TagsStorage::TagErrorNoError);
 
     // Check for TagAdded notification
     QVariantMap notificationTagMap = checkNotification(clientSpy, "Tags.TagAdded").toMap().value("params").toMap().value("tag").toMap();
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(notificationTagMap);
-    QVERIFY2(compareDeviceTag(notificationTagMap, deviceId, appId, tagId, "1"), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
+    QVERIFY2(compareThingTag(notificationTagMap, thingId, appId, tagId, "1"), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
     clientSpy.clear();
 
     // Try getting the changed tag via GetTag
     params.clear();
-    params.insert("deviceId", deviceId);
+    params.insert("thingId", thingId);
     params.insert("appId", appId);
     params.insert("tagId", tagId);
     response = injectAndWait("Tags.GetTags", params);
     QVariantList tagsList = response.toMap().value("params").toMap().value("tags").toList();
     QCOMPARE(tagsList.count(), 1);
-    QVERIFY2(compareDeviceTag(tagsList.first().toMap(), deviceId, appId, tagId, "1"), "Fetched tag isn't matching the one we added");
+    QVERIFY2(compareThingTag(tagsList.first().toMap(), thingId, appId, tagId, "1"), "Fetched tag isn't matching the one we added");
 
     // Now update the tag
     params.clear();
-    params.insert("tag", createDeviceTag(deviceId, appId, tagId, "2"));
+    params.insert("tag", createThingTag(thingId, appId, tagId, "2"));
     response = injectAndWait("Tags.AddTag", params);
     verifyTagError(response, TagsStorage::TagErrorNoError);
 
     // Check for TagAdded notification
     notificationTagMap = checkNotification(clientSpy, "Tags.TagValueChanged").toMap().value("params").toMap().value("tag").toMap();
     jsonDoc = QJsonDocument::fromVariant(notificationTagMap);
-    QVERIFY2(compareDeviceTag(notificationTagMap, deviceId, appId, tagId, "2"), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
+    QVERIFY2(compareThingTag(notificationTagMap, thingId, appId, tagId, "2"), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
 
     // Try getting the changed tag via GetTag
     params.clear();
-    params.insert("deviceId", deviceId);
+    params.insert("thingId", thingId);
     params.insert("appId", appId);
     params.insert("tagId", tagId);
     response = injectAndWait("Tags.GetTags", params);
     tagsList = response.toMap().value("params").toMap().value("tags").toList();
     QCOMPARE(tagsList.count(), 1);
-    QVERIFY2(compareDeviceTag(tagsList.first().toMap(), deviceId, appId, tagId, "2"), "Fetched tag isn't matching the one we added");
+    QVERIFY2(compareThingTag(tagsList.first().toMap(), thingId, appId, tagId, "2"), "Fetched tag isn't matching the one we added");
 }
 
 void TestTags::removeTag()
@@ -199,47 +200,47 @@ void TestTags::removeTag()
     // Setup connection to mock client
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    QString deviceId = m_mockDeviceId.toString();
+    QString thingId = m_mockThingId.toString();
     QString appId = "testtags";
     QString tagId = "removeTagTest";
     QString value = "1";
 
     // Create a Tag
     QVariantMap params;
-    params.insert("tag", createDeviceTag(deviceId, appId, tagId, value));
+    params.insert("tag", createThingTag(thingId, appId, tagId, value));
     QVariant response = injectAndWait("Tags.AddTag", params);
     verifyTagError(response, TagsStorage::TagErrorNoError);
 
     // Check for TagAdded notification
     QVariantMap notificationTagMap = checkNotification(clientSpy, "Tags.TagAdded").toMap().value("params").toMap().value("tag").toMap();
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(notificationTagMap);
-    QVERIFY2(compareDeviceTag(notificationTagMap, deviceId, appId, tagId, value), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
+    QVERIFY2(compareThingTag(notificationTagMap, thingId, appId, tagId, value), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
     clientSpy.clear();
 
     // Try getting the tag via GetTag
     params.clear();
-    params.insert("deviceId", deviceId);
+    params.insert("thingId", thingId);
     params.insert("appId", appId);
     params.insert("tagId", tagId);
     response = injectAndWait("Tags.GetTags", params);
     QVariantList tagsList = response.toMap().value("params").toMap().value("tags").toList();
     QCOMPARE(tagsList.count(), 1);
-    QVERIFY2(compareDeviceTag(tagsList.first().toMap(), deviceId, appId, tagId, value), "Fetched tag isn't matching the one we added");
+    QVERIFY2(compareThingTag(tagsList.first().toMap(), thingId, appId, tagId, value), "Fetched tag isn't matching the one we added");
 
     // Now remove the tag
     params.clear();
-    params.insert("tag", createDeviceTag(deviceId, appId, tagId, QString()));
+    params.insert("tag", createThingTag(thingId, appId, tagId, QString()));
     response = injectAndWait("Tags.RemoveTag", params);
     verifyTagError(response, TagsStorage::TagErrorNoError);
 
     // Check for TagRemoved notification
     notificationTagMap = checkNotification(clientSpy, "Tags.TagRemoved").toMap().value("params").toMap().value("tag").toMap();
     jsonDoc = QJsonDocument::fromVariant(notificationTagMap);
-    QVERIFY2(compareDeviceTag(notificationTagMap, deviceId, appId, tagId, QString()), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
+    QVERIFY2(compareThingTag(notificationTagMap, thingId, appId, tagId, QString()), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
 
     // Try getting the tag via GetTag
     params.clear();
-    params.insert("deviceId", deviceId);
+    params.insert("thingId", thingId);
     params.insert("appId", appId);
     params.insert("tagId", tagId);
     response = injectAndWait("Tags.GetTags", params);

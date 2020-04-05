@@ -49,10 +49,10 @@
 #include "jsonrpc/jsonhandler.h"
 #include "jsonvalidator.h"
 #include "nymeacore.h"
-#include "devices/devicemanager.h"
-#include "devices/deviceplugin.h"
-#include "devices/device.h"
-#include "types/deviceclass.h"
+#include "integrations/thingmanager.h"
+#include "integrations/integrationplugin.h"
+#include "integrations/thing.h"
+#include "types/thingclass.h"
 #include "ruleengine/rule.h"
 #include "ruleengine/ruleengine.h"
 #include "loggingcategories.h"
@@ -60,6 +60,7 @@
 #include "version.h"
 
 #include "devicehandler.h"
+#include "integrationshandler.h"
 #include "actionhandler.h"
 #include "ruleshandler.h"
 #include "scriptshandler.h"
@@ -103,7 +104,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     QString description; QVariantMap returns; QVariantMap params;
     description = "Initiates a connection. Use this method to perform an initial handshake of the "
                             "connection. Optionally, a parameter \"locale\" is can be passed to set up the used "
-                            "locale for this connection. Strings such as DeviceClass displayNames etc will be "
+                            "locale for this connection. Strings such as ThingClass displayNames etc will be "
                             "localized to this locale. If this parameter is omitted, the default system locale "
                             "(depending on the configuration) is used. The reply of this method contains information "
                             "about this core instance such as version information, uuid and its name. The locale value"
@@ -149,9 +150,9 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
                                             "deprecated and used for legacy compatibilty only. It will be set to true if at least "
                                             "one namespace has been enabled.";
     params.insert("o:namespaces", enumValueName(StringList));
-    params.insert("o:enabled", enumValueName(Bool));
+    params.insert("d:o:enabled", enumValueName(Bool));
     returns.insert("namespaces", enumValueName(StringList));
-    returns.insert("enabled", enumValueName(Bool));
+    returns.insert("d:enabled", enumValueName(Bool));
     registerMethod("SetNotificationStatus", description, params, returns);
 
     params.clear(); returns.clear();
@@ -223,7 +224,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
 
     params.clear(); returns.clear();
     description = "Check whether the cloud is currently connected. \"connected\" will be true whenever connectionState equals CloudConnectionStateConnected and is deprecated. Please use the connectionState value instead.";
-    returns.insert("connected", enumValueName(Bool));
+    returns.insert("d:connected", enumValueName(Bool));
     returns.insert("connectionState", enumRef<CloudManager::CloudConnectionState>());
     registerMethod("IsCloudConnected", description, params, returns);
 
@@ -559,6 +560,7 @@ QVariantMap JsonRPCServerImplementation::createWelcomeMessage(TransportInterface
 void JsonRPCServerImplementation::setup()
 {
     registerHandler(this);
+    registerHandler(new IntegrationsHandler(NymeaCore::instance()->thingManager(), this));
     registerHandler(new DeviceHandler(this));
     registerHandler(new ActionHandler(this));
     registerHandler(new RulesHandler(this));
@@ -742,19 +744,19 @@ void JsonRPCServerImplementation::sendNotification(const QVariantMap &params)
     notification.insert("id", m_notificationId++);
     notification.insert("notification", handler->name() + "." + method.name());
 
-    // Add deprecation warning if necessary
-    if (m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().contains("deprecated")) {
-        QString deprecationMessage = m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().value("deprecated").toString();
-        qCWarning(dcJsonRpc()) << "Client uses deprecated API. Please update client implementation!";
-        qCWarning(dcJsonRpc()) << handler->name() + '.' + method.name() + ':' << deprecationMessage;
-        notification.insert("deprecationWarning", deprecationMessage);
-    }
-
     foreach (const QUuid &clientId, m_clientNotifications.keys()) {
 
         // Check if this client wants to be notified
         if (!m_clientNotifications.value(clientId).contains(handler->name())) {
             continue;
+        }
+
+        // Add deprecation warning if necessary
+        if (m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().contains("deprecated")) {
+            QString deprecationMessage = m_api.value("notifications").toMap().value(handler->name() + '.' + method.name()).toMap().value("deprecated").toString();
+            qCWarning(dcJsonRpc()) << "Client" << clientId << "uses deprecated API. Please update client implementation!";
+            qCWarning(dcJsonRpc()) << handler->name() + '.' + method.name() + ':' << deprecationMessage;
+            notification.insert("deprecationWarning", deprecationMessage);
         }
 
         QLocale locale = m_clientLocales.value(clientId);

@@ -28,29 +28,6 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*!
-    \class nymeaserver::LoggingHandler
-    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Logging namespace of the JSON-RPC API.
-
-    \ingroup json
-    \inmodule core
-
-    This \l{JsonHandler} will be created in the \l{JsonRPCServer} and used to handle JSON-RPC requests
-    for the \tt {Logging} namespace of the API.
-
-    \sa LogEngine, JsonHandler, JsonRPCServer
-*/
-
-/*! \fn void nymeaserver::LoggingHandler::LogEntryAdded(const QVariantMap &params);
-    This signal is emitted to the API notifications when a \l{LogEntry} was added to the database.
-    The \a params contain the map for the notification.
-*/
-
-/*! \fn void nymeaserver::LoggingHandler::LogDatabaseUpdated(const QVariantMap &params);
-    This signal is emitted to the API notifications when the logging aatabase has been updated (i.e. \l{Device} or \l{Rule} removed).
-    The \a params contain the map for the notification.
-*/
-
 #include "logginghandler.h"
 #include "logging/logengine.h"
 #include "logging/logfilter.h"
@@ -61,7 +38,6 @@
 
 namespace nymeaserver {
 
-/*! Constructs a new \l LoggingHandler with the given \a parent. */
 LoggingHandler::LoggingHandler(QObject *parent) :
     JsonHandler(parent)
 {
@@ -99,7 +75,8 @@ LoggingHandler::LoggingHandler(QObject *parent) :
     params.insert("o:loggingLevels", QVariantList() << enumRef<Logging::LoggingLevel>());
     params.insert("o:eventTypes", QVariantList() << enumRef<Logging::LoggingEventType>());
     params.insert("o:typeIds", QVariantList() << enumValueName(Uuid));
-    params.insert("o:deviceIds", QVariantList() << enumValueName(Uuid));
+    params.insert("o:thingIds", QVariantList() << enumValueName(Uuid));
+    params.insert("d:o:deviceIds", QVariantList() << enumValueName(Uuid));
     params.insert("o:values", QVariantList() << enumValueName(Variant));
     params.insert("o:limit", enumValueName(Int));
     params.insert("o:offset", enumValueName(Int));
@@ -118,7 +95,7 @@ LoggingHandler::LoggingHandler(QObject *parent) :
     params.clear();
     description = "Emitted whenever the database was updated. "
                    "The database will be updated when a log entry was deleted. A log "
-                   "entry will be deleted when the corresponding device or a rule will "
+                   "entry will be deleted when the corresponding thing or a rule will "
                    "be removed, or when the oldest entry of the database was deleted to "
                    "keep to database in the size limits.";
     registerNotification("LogDatabaseUpdated", description, params);
@@ -127,7 +104,6 @@ LoggingHandler::LoggingHandler(QObject *parent) :
     connect(NymeaCore::instance()->logEngine(), &LogEngine::logDatabaseUpdated, this, &LoggingHandler::logDatabaseUpdated);
 }
 
-/*! Returns the name of the \l{LoggingHandler}. In this case \b Logging.*/
 QString LoggingHandler::name() const
 {
     return "Logging";
@@ -195,7 +171,7 @@ QVariantMap LoggingHandler::packLogEntry(const LogEntry &logEntry)
         case Logging::LoggingSourceEvents:
         case Logging::LoggingSourceStates:
         case Logging::LoggingSourceBrowserActions:
-            logEntryMap.insert("errorCode", enumValueName<Device::DeviceError>(static_cast<Device::DeviceError>(logEntry.errorCode())));
+            logEntryMap.insert("errorCode", enumValueName<Thing::ThingError>(static_cast<Thing::ThingError>(logEntry.errorCode())));
             break;
         case Logging::LoggingSourceSystem:
             // FIXME: Update this once we support error codes for the general system
@@ -212,7 +188,8 @@ QVariantMap LoggingHandler::packLogEntry(const LogEntry &logEntry)
         if (!logEntry.typeId().isNull()) {
             logEntryMap.insert("typeId", logEntry.typeId());
         }
-        logEntryMap.insert("deviceId", logEntry.deviceId());
+        logEntryMap.insert("thingId", logEntry.thingId());
+        logEntryMap.insert("deviceId", logEntry.thingId()); // DEPRECATED
         logEntryMap.insert("value", LogValueTool::convertVariantToString(logEntry.value()));
         break;
     case Logging::LoggingSourceSystem:
@@ -268,10 +245,17 @@ LogFilter LoggingHandler::unpackLogFilter(const QVariantMap &logFilterMap)
             filter.addTypeId(typeId.toUuid());
         }
     }
+    if (logFilterMap.contains("thingIds")) {
+        QVariantList thingIds = logFilterMap.value("thingIds").toList();
+        foreach (const QVariant &thingId, thingIds) {
+            filter.addThingId(ThingId(thingId.toString()));
+        }
+    }
+    // DEPRECATED
     if (logFilterMap.contains("deviceIds")) {
         QVariantList deviceIds = logFilterMap.value("deviceIds").toList();
         foreach (const QVariant &deviceId, deviceIds) {
-            filter.addDeviceId(DeviceId(deviceId.toString()));
+            filter.addThingId(ThingId(deviceId.toString()));
         }
     }
     if (logFilterMap.contains("values")) {

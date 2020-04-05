@@ -34,7 +34,7 @@
 #include "rule.h"
 #include "stateevaluator.h"
 #include "types/event.h"
-#include "types/deviceclass.h"
+#include "types/thingclass.h"
 
 #include <QObject>
 #include <QList>
@@ -51,7 +51,7 @@ public:
         RuleErrorNoError,
         RuleErrorInvalidRuleId,
         RuleErrorRuleNotFound,
-        RuleErrorDeviceNotFound,
+        RuleErrorThingNotFound,
         RuleErrorEventTypeNotFound,
         RuleErrorStateTypeNotFound,
         RuleErrorActionTypeNotFound,
@@ -100,10 +100,10 @@ public:
     RuleError executeExitActions(const RuleId &ruleId);
 
     Rule findRule(const RuleId &ruleId);
-    QList<RuleId> findRules(const DeviceId &deviceId) const;
-    QList<DeviceId> devicesInRules() const;
+    QList<RuleId> findRules(const ThingId &thingId) const;
+    QList<ThingId> thingsInRules() const;
 
-    void removeDeviceFromRule(const RuleId &id, const DeviceId &deviceId);
+    void removeThingFromRule(const RuleId &id, const ThingId &thingId);
 
 signals:
     void ruleAdded(const Rule &rule);
@@ -111,7 +111,7 @@ signals:
     void ruleConfigurationChanged(const Rule &rule);
 
 private:
-    bool containsEvent(const Rule &rule, const Event &event, const DeviceClassId &deviceClassId);
+    bool containsEvent(const Rule &rule, const Event &event, const ThingClassId &thingClassId);
     bool containsState(const StateEvaluator &stateEvaluator, const Event &stateChangeEvent);
 
     RuleError checkRuleAction(const RuleAction &ruleAction, const Rule &rule);

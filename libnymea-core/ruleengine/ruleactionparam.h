@@ -47,17 +47,18 @@ class LIBNYMEA_EXPORT RuleActionParam
     Q_PROPERTY(QVariant value READ value WRITE setValue USER true)
     Q_PROPERTY(QUuid eventTypeId READ eventTypeId WRITE setEventTypeId USER true)
     Q_PROPERTY(QUuid eventParamTypeId READ eventParamTypeId WRITE setEventParamTypeId USER true)
-    Q_PROPERTY(QUuid stateDeviceId READ stateDeviceId WRITE setStateDeviceId USER true)
+    Q_PROPERTY(QUuid stateThingId READ stateThingId WRITE setStateThingId USER true)
+    Q_PROPERTY(QUuid stateDeviceId READ stateThingId WRITE setStateThingId USER true REVISION 1)
     Q_PROPERTY(QUuid stateTypeId READ stateTypeId WRITE setStateTypeId USER true)
 
 public:
     RuleActionParam(const Param &param = Param());
     RuleActionParam(const ParamTypeId &paramTypeId, const QVariant &value = QVariant());
     RuleActionParam(const ParamTypeId &paramTypeId, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId);
-    RuleActionParam(const ParamTypeId &paramTypeId, const DeviceId &stateDeviceId, const StateTypeId &stateTypeId);
+    RuleActionParam(const ParamTypeId &paramTypeId, const ThingId &stateThingId, const StateTypeId &stateTypeId);
     RuleActionParam(const QString &paramName, const QVariant &value = QVariant());
     RuleActionParam(const QString &paramName, const EventTypeId &eventTypeId, const ParamTypeId &eventParamTypeId);
-    RuleActionParam(const QString &paramName, const DeviceId &stateDeviceId, const StateTypeId &stateTypeId);
+    RuleActionParam(const QString &paramName, const ThingId &stateThingId, const StateTypeId &stateTypeId);
 
     ParamTypeId paramTypeId() const;
     void setParamTypeId(const ParamTypeId &paramTypeId);
@@ -79,8 +80,8 @@ public:
     ParamTypeId eventParamTypeId() const;
     void setEventParamTypeId(const ParamTypeId &eventParamTypeId);
 
-    DeviceId stateDeviceId() const;
-    void setStateDeviceId(const DeviceId &deviceId);
+    ThingId stateThingId() const;
+    void setStateThingId(const ThingId &thingId);
 
     StateTypeId stateTypeId() const;
     void setStateTypeId(const StateTypeId &stateTypeId);
@@ -93,7 +94,7 @@ private:
     EventTypeId m_eventTypeId;
     ParamTypeId m_eventParamTypeId;
 
-    DeviceId m_stateDeviceId;
+    ThingId m_stateThingId;
     StateTypeId m_stateTypeId;
 };
 

@@ -73,10 +73,10 @@ public:
     void setOperatorType(Types::StateOperator operatorType);
 
     bool evaluate() const;
-    bool containsDevice(const DeviceId &deviceId) const;
+    bool containsThing(const ThingId &thingId) const;
 
-    void removeDevice(const DeviceId &deviceId);
-    QList<DeviceId> containedDevices() const;
+    void removeThing(const ThingId &thingId);
+    QList<ThingId> containedThings() const;
 
     void dumpToSettings(NymeaSettings &settings, const QString &groupName) const;
     static StateEvaluator loadFromSettings(NymeaSettings &settings, const QString &groupPrefix);

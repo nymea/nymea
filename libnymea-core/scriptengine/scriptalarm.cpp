@@ -44,7 +44,6 @@ QTime ScriptAlarm::time() const
 
 void ScriptAlarm::setTime(const QTime &time)
 {
-    qCDebug(dcScriptEngine()) << "Blablabla" << time;
     if (m_time != time) {
         m_time = time;
         emit timeChanged();

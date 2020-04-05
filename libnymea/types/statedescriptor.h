@@ -45,19 +45,20 @@ class LIBNYMEA_EXPORT StateDescriptor
 {
     Q_GADGET
     Q_PROPERTY(QUuid stateTypeId READ stateTypeId WRITE setStateTypeId USER true)
-    Q_PROPERTY(QUuid deviceId READ deviceId WRITE setDeviceId USER true)
+    Q_PROPERTY(QUuid thingId READ thingId WRITE setThingId USER true)
+    Q_PROPERTY(QUuid deviceId READ thingId WRITE setThingId USER true REVISION 1)
     Q_PROPERTY(QString interface READ interface WRITE setInterface USER true)
     Q_PROPERTY(QString interfaceState READ interfaceState WRITE setInterfaceState USER true)
     Q_PROPERTY(QVariant value READ stateValue WRITE setStateValue)
     Q_PROPERTY(Types::ValueOperator operator READ operatorType WRITE setOperatorType)
 public:
     enum Type {
-        TypeDevice,
+        TypeThing,
         TypeInterface
     };
 
     StateDescriptor();
-    StateDescriptor(const StateTypeId &stateTypeId, const DeviceId &deviceId, const QVariant &stateValue, Types::ValueOperator operatorType = Types::ValueOperatorEquals);
+    StateDescriptor(const StateTypeId &stateTypeId, const ThingId &thingId, const QVariant &stateValue, Types::ValueOperator operatorType = Types::ValueOperatorEquals);
     StateDescriptor(const QString &interface, const QString &interfaceState, const QVariant &stateValue, Types::ValueOperator operatorType = Types::ValueOperatorEquals);
 
     Type type() const;
@@ -65,8 +66,8 @@ public:
     StateTypeId stateTypeId() const;
     void setStateTypeId(const StateTypeId &stateTypeId);
 
-    DeviceId deviceId() const;
-    void setDeviceId(const DeviceId &deviceId);
+    ThingId thingId() const;
+    void setThingId(const ThingId &thingId);
 
     QString interface() const;
     void setInterface(const QString &interface);
@@ -89,7 +90,7 @@ public:
 
 private:
     StateTypeId m_stateTypeId;
-    DeviceId m_deviceId;
+    ThingId m_thingId;
     QString m_interface;
     QString m_interfaceState;
     QVariant m_stateValue;

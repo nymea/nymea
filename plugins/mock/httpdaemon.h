@@ -37,14 +37,14 @@
 #include <QUuid>
 #include <QDateTime>
 
-class Device;
-class DevicePlugin;
+class Thing;
+class IntegrationPlugin;
 
 class HttpDaemon : public QTcpServer
 {
     Q_OBJECT
 public:
-    HttpDaemon(Device *device, DevicePlugin* parent = 0);
+    HttpDaemon(Thing *thing, IntegrationPlugin* parent = nullptr);
     ~HttpDaemon();
     void incomingConnection(qintptr socket) override;
 
@@ -67,8 +67,8 @@ private:
 private:
     bool disabled;
 
-    DevicePlugin *m_plugin;
-    Device *m_device;
+    IntegrationPlugin *m_plugin;
+    Thing *m_thing;
 
     QList<QPair<ActionTypeId, QDateTime> > m_actionList;
 };

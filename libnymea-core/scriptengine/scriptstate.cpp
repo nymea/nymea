@@ -45,8 +45,8 @@ ScriptState::ScriptState(QObject *parent) : QObject(parent)
 
 void ScriptState::classBegin()
 {
-    m_deviceManager = reinterpret_cast<DeviceManager*>(qmlEngine(this)->property("deviceManager").toULongLong());
-    connect(m_deviceManager, &DeviceManager::deviceStateChanged, this, &ScriptState::onDeviceStateChanged);
+    m_thingManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("thingManager").toULongLong());
+    connect(m_thingManager, &ThingManager::thingStateChanged, this, &ScriptState::onThingStateChanged);
 }
 
 void ScriptState::componentComplete()
@@ -54,16 +54,16 @@ void ScriptState::componentComplete()
 
 }
 
-QString ScriptState::deviceId() const
+QString ScriptState::thingId() const
 {
-    return m_deviceId;
+    return m_thingId;
 }
 
-void ScriptState::setDeviceId(const QString &deviceId)
+void ScriptState::setThingId(const QString &thingId)
 {
-    if (m_deviceId != deviceId) {
-        m_deviceId = deviceId;
-        emit deviceIdChanged();
+    if (m_thingId != thingId) {
+        m_thingId = thingId;
+        emit thingIdChanged();
         store();
     }
 }
@@ -98,43 +98,42 @@ void ScriptState::setStateName(const QString &stateName)
 
 QVariant ScriptState::value() const
 {
-    Device* device = m_deviceManager->findConfiguredDevice(DeviceId(m_deviceId));
-    if (!device) {
+    Thing* thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
+    if (!thing) {
         return QVariant();
     }
     StateTypeId stateTypeId = StateTypeId(m_stateTypeId);
     if (stateTypeId.isNull()) {
-        stateTypeId = device->deviceClass().stateTypes().findByName(m_stateName).id();
+        stateTypeId = thing->thingClass().stateTypes().findByName(m_stateName).id();
     }
 
-    return device->stateValue(stateTypeId);
+    return thing->stateValue(stateTypeId);
 }
 
 void ScriptState::setValue(const QVariant &value)
 {
-    qCDebug(dcScriptEngine()) << "setValueCalled1" << value;
     if (m_pendingActionInfo) {
         m_valueCache = value;
         return;
     }
 
-    Device* device = m_deviceManager->findConfiguredDevice(DeviceId(m_deviceId));
-    if (!device) {
-        qCWarning(dcScriptEngine()) << "No device with id" << m_deviceId << "found.";
+    Thing* thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
+    if (!thing) {
+        qCWarning(dcScriptEngine()) << "No thing with id" << m_thingId << "found.";
         return;
     }
 
     ActionTypeId actionTypeId;
     if (!m_stateTypeId.isNull()) {
-        actionTypeId = device->deviceClass().stateTypes().findById(StateTypeId(m_stateTypeId)).id();
+        actionTypeId = thing->thingClass().stateTypes().findById(StateTypeId(m_stateTypeId)).id();
         if (actionTypeId.isNull()) {
-            qCWarning(dcScriptEngine) << "Device" << device->name() << "does not have a state with type id" << m_stateTypeId;
+            qCWarning(dcScriptEngine) << "Thing" << thing->name() << "does not have a state with type id" << m_stateTypeId;
         }
     }
     if (actionTypeId.isNull()) {
-        actionTypeId = device->deviceClass().stateTypes().findByName(stateName()).id();
+        actionTypeId = thing->thingClass().stateTypes().findByName(stateName()).id();
         if (actionTypeId.isNull()) {
-            qCWarning(dcScriptEngine) << "Device" << device->name() << "does not have a state named" << m_stateName;
+            qCWarning(dcScriptEngine) << "Thing" << thing->name() << "does not have a state named" << m_stateName;
         }
     }
 
@@ -144,14 +143,14 @@ void ScriptState::setValue(const QVariant &value)
     }
 
     Action action;
-    action.setDeviceId(DeviceId(m_deviceId));
+    action.setThingId(ThingId(m_thingId));
     action.setActionTypeId(ActionTypeId(actionTypeId));
     ParamList params = ParamList() << Param(ParamTypeId(actionTypeId), value);
     action.setParams(params);
 
     m_valueCache = QVariant();
-    m_pendingActionInfo = m_deviceManager->executeAction(action);
-    connect(m_pendingActionInfo, &DeviceActionInfo::finished, this, [this](){
+    m_pendingActionInfo = m_thingManager->executeAction(action);
+    connect(m_pendingActionInfo, &ThingActionInfo::finished, this, [this](){
         m_pendingActionInfo = nullptr;
         if (!m_valueCache.isNull()) {
             setValue(m_valueCache);
@@ -161,26 +160,26 @@ void ScriptState::setValue(const QVariant &value)
 
 QVariant ScriptState::minimumValue() const
 {
-    Device *device = m_deviceManager->configuredDevices().findById(DeviceId(m_deviceId));
-    if (!device) {
+    Thing *thing = m_thingManager->configuredThings().findById(ThingId(m_thingId));
+    if (!thing) {
         return QVariant();
     }
-    StateType stateType = device->deviceClass().stateTypes().findById(StateTypeId(m_stateTypeId));
+    StateType stateType = thing->thingClass().stateTypes().findById(StateTypeId(m_stateTypeId));
     if (stateType.id().isNull()) {
-        stateType = device->deviceClass().stateTypes().findByName(m_stateName);
+        stateType = thing->thingClass().stateTypes().findByName(m_stateName);
     }
     return stateType.minValue();
 }
 
 QVariant ScriptState::maximumValue() const
 {
-    Device *device = m_deviceManager->configuredDevices().findById(DeviceId(m_deviceId));
-    if (!device) {
+    Thing *thing = m_thingManager->configuredThings().findById(ThingId(m_thingId));
+    if (!thing) {
         return QVariant();
     }
-    StateType stateType = device->deviceClass().stateTypes().findById(StateTypeId(m_stateTypeId));
+    StateType stateType = thing->thingClass().stateTypes().findById(StateTypeId(m_stateTypeId));
     if (stateType.id().isNull()) {
-        stateType = device->deviceClass().stateTypes().findByName(m_stateName);
+        stateType = thing->thingClass().stateTypes().findByName(m_stateName);
     }
     return stateType.minValue();
 }
@@ -195,14 +194,14 @@ void ScriptState::restore()
     setValue(m_valueStore);
 }
 
-void nymeaserver::ScriptState::onDeviceStateChanged(Device *device, const StateTypeId &stateTypeId)
+void ScriptState::onThingStateChanged(Thing *thing, const StateTypeId &stateTypeId)
 {
-    if (device->id() != DeviceId(m_deviceId)) {
+    if (thing->id() != ThingId(m_thingId)) {
         return;
     }
     StateTypeId localStateTypeId = StateTypeId(m_stateTypeId);
     if (localStateTypeId.isNull()) {
-        localStateTypeId = device->deviceClass().stateTypes().findByName(m_stateName).id();
+        localStateTypeId = thing->thingClass().stateTypes().findByName(m_stateName).id();
     }
     if (localStateTypeId.isNull()) {
         return;

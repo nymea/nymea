@@ -46,10 +46,10 @@
 #include "action.h"
 
 /*! Construct an Action with the given \a deviceId and \a actionTypeId. */
-Action::Action(const ActionTypeId &actionTypeId, const DeviceId &deviceId) :
+Action::Action(const ActionTypeId &actionTypeId, const ThingId &thingId) :
     m_id(ActionId::createActionId()),
     m_actionTypeId(actionTypeId),
-    m_deviceId(deviceId)
+    m_thingId(thingId)
 {
 }
 
@@ -57,7 +57,7 @@ Action::Action(const ActionTypeId &actionTypeId, const DeviceId &deviceId) :
 Action::Action(const Action &other):
     m_id(other.id()),
     m_actionTypeId(other.actionTypeId()),
-    m_deviceId(other.deviceId()),
+    m_thingId(other.thingId()),
     m_params(other.params())
 {
 }
@@ -71,7 +71,7 @@ ActionId Action::id() const
 /*! An Action is valid if actionTypeId and deviceId are valid uuids. Returns true if valid, false if not. */
 bool Action::isValid() const
 {
-    return !m_actionTypeId.isNull() && !m_deviceId.isNull();
+    return !m_actionTypeId.isNull() && !m_thingId.isNull();
 }
 
 /*! Returns the actionTypeId for this Action.*/
@@ -85,15 +85,15 @@ void Action::setActionTypeId(const ActionTypeId &actionTypeId)
     m_actionTypeId = actionTypeId;
 }
 
-/*! Returns the deviceId this Action is associated with. */
-DeviceId Action::deviceId() const
+/*! Returns the \l {ThingId} this Action is associated with. */
+ThingId Action::thingId() const
 {
-    return m_deviceId;
+    return m_thingId;
 }
 
-void Action::setDeviceId(const DeviceId &deviceId)
+void Action::setThingId(const ThingId &thingId)
 {
-    m_deviceId = deviceId;
+    m_thingId = thingId;
 }
 
 /*! Returns the parameters for this Action. */

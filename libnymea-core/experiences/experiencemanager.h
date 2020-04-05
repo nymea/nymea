@@ -35,7 +35,7 @@
 
 class ExperiencePlugin;
 class JsonRPCServer;
-class DeviceManager;
+class ThingManager;
 
 namespace nymeaserver {
 
@@ -43,7 +43,7 @@ class ExperienceManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ExperienceManager(DeviceManager *deviceManager, JsonRPCServer *jsonRpcServer, QObject *parent = nullptr);
+    explicit ExperienceManager(ThingManager *thingManager, JsonRPCServer *jsonRpcServer, QObject *parent = nullptr);
 
 signals:
 
@@ -56,7 +56,7 @@ private:
     QStringList pluginSearchDirs() const;
 
 private:
-    DeviceManager *m_deviceManager = nullptr;
+    ThingManager *m_thingManager = nullptr;
     JsonRPCServer *m_jsonRpcServer = nullptr;
 
     void loadExperiencePlugin(const QString &file);

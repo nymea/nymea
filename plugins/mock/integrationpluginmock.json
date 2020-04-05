@@ -1,0 +1,875 @@
+{
+    "name": "mock",
+    "displayName": "Mocked things",
+    "id": "727a4a9a-c187-446f-aadf-f1b2220607d1",
+    "paramTypes": [
+        {
+            "id": "e1f72121-a426-45e2-b475-8262b5cdf103",
+            "name": "configParamInt",
+            "displayName": "configParamInt",
+            "type": "int",
+            "defaultValue": 42,
+            "minValue": 1,
+            "maxValue": 50
+        },
+        {
+            "id": "c75723b6-ea4f-4982-9751-6c5e39c88145",
+            "name": "configParamBool",
+            "displayName": "configParamBool",
+            "type": "bool",
+            "defaultValue": true
+        }
+    ],
+    "vendors": [
+        {
+            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
+            "name": "nymea",
+            "displayName": "nymea",
+            "thingClasses": [
+                {
+                    "id": "753f0d32-0468-4d08-82ed-1964aab03298",
+                    "name": "mock",
+                    "displayName": "Mock Thing",
+                    "interfaces": ["system", "light", "battery"],
+                    "createMethods": ["user", "discovery"],
+                    "browsable": true,
+                    "discoveryParamTypes": [
+                        {
+                            "id": "d222adb4-2f9c-4c3f-8655-76400d0fb6ce",
+                            "name": "resultCount",
+                            "displayName": "resultCount",
+                            "type": "int",
+                            "defaultValue": 2,
+                            "allowedValues": [1, 2]
+                        }
+                    ],
+                    "paramTypes": [
+                        {
+                            "id": "d4f06047-125e-4479-9810-b54c189917f5",
+                            "name": "httpport",
+                            "displayName": "http port",
+                            "type": "int"
+                        },
+                        {
+                            "id": "f2977061-4dd0-4ef5-85aa-3b7134743be3",
+                            "name": "async",
+                            "displayName": "async",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "readOnly": true
+                        },
+                        {
+                            "id": "ae8f8901-f2c1-42a5-8111-6d2fc8e4c1e4",
+                            "name": "broken",
+                            "displayName": "broken",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ],
+                    "settingsTypes": [
+                        {
+                            "id": "367f7ba4-5039-47be-abd8-59cc8eaf4b9a",
+                            "name": "setting1",
+                            "displayName": "Setting 1",
+                            "type": "int",
+                            "defaultValue": 5
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "80baec19-54de-4948-ac46-31eabfaceb83",
+                            "name": "int",
+                            "displayName": "Dummy int state",
+                            "displayNameEvent": "Dummy int state changed",
+                            "defaultValue": 10,
+                            "type": "int"
+                        },
+                        {
+                            "id": "9dd6a97c-dfd1-43dc-acbd-367932742310",
+                            "name": "bool",
+                            "displayName": "Dummy bool state",
+                            "displayNameEvent": "Dummy bool state changed",
+                            "defaultValue": false,
+                            "type": "bool",
+                            "cached": false
+                        },
+                        {
+                            "id": "7cac53ee-7048-4dc9-b000-7b585390f34c",
+                            "name": "double",
+                            "displayName": "Dummy double state",
+                            "displayNameEvent": "Dummy double state changed",
+                            "type": "int",
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "defaultValue": 2.7
+                        },
+                        {
+                            "id": "6c8ab9a6-0164-4795-b829-f4394fe4edc4",
+                            "name": "batteryLevel",
+                            "displayName": "battery level",
+                            "displayNameEvent": "battery level",
+                            "type": "int",
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "580bc611-1a55-41f3-996f-8d3ccf543db3",
+                            "name": "batteryCritical",
+                            "displayName": "battery level critical",
+                            "displayNameEvent": "battery level critical",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "id": "064aed0d-da4c-49d4-b236-60f97e98ff84",
+                            "name": "power",
+                            "displayName": "powered",
+                            "displayNameEvent": "powered changed",
+                            "displayNameAction": "set power",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        }
+
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "45bf3752-0fc6-46b9-89fd-ffd878b5b22b",
+                            "name": "event1",
+                            "displayName": "Mock Event 1"
+                        },
+                        {
+                            "id": "863d5920-b1cf-4eb9-88bd-8f7b8583b1cf",
+                            "name": "event2",
+                            "displayName": "Mock Event 2",
+                            "paramTypes": [
+                                {
+                                    "id": "0550e16d-60b9-4ba5-83f4-4d3cee656121",
+                                    "name": "intParam",
+                                    "displayName": "mockParamInt",
+                                    "type": "int",
+                                    "defaultValue": 10
+                                }
+                            ]
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "dea0f4e1-65e3-4981-8eaa-2701c53a9185",
+                            "displayName": "Mock Action 1 (with params)",
+                            "name": "withParams",
+                            "paramTypes": [
+                                {
+                                    "id": "a2d3a256-a551-4712-a65b-ecd5a436a1cb",
+                                    "name": "param1",
+                                    "displayName": "mockActionParam1",
+                                    "type": "int"
+                                },
+                                {
+                                    "id": "304a4899-18be-4e3b-94f4-d03be52f3233",
+                                    "name": "param2",
+                                    "displayName": "mockActionParam2",
+                                    "type": "bool"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "defd3ed6-1a0d-400b-8879-a0202cf39935",
+                            "name": "withoutParams",
+                            "displayName": "Mock Action 2 (without params)"
+                        },
+                        {
+                            "id": "fbae06d3-7666-483e-a39e-ec50fe89054e",
+                            "name": "async",
+                            "displayName": "Mock Action 3 (async)"
+                        },
+                        {
+                            "id": "df3cf33d-26d5-4577-9132-9823bd33fad0",
+                            "name": "failing",
+                            "displayName": "Mock Action 4 (broken)"
+                        },
+                        {
+                            "id": "bfe89a1d-3497-4121-8318-e77c37537219",
+                            "name": "asyncFailing",
+                            "displayName": "Mock Action 5 (async, broken)"
+                        }
+                    ],
+                    "browserItemActionTypes": [
+                        {
+                            "id": "00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3",
+                            "name": "addToFavorites",
+                            "displayName": "Add to favorites"
+                        },
+                        {
+                            "id": "da6faef8-2816-430e-93bb-57e8f9582d29",
+                            "name": "removeFromFavorites",
+                            "displayName": "Remove from favorites"
+                        }
+                    ]
+                },
+                {
+                    "id": "ab4257b3-7548-47ee-9bd4-7dc3004fd197",
+                    "name": "autoMock",
+                    "displayName": "Mocked Thing (Auto created)",
+                    "interfaces": ["system"],
+                    "createMethods": ["auto"],
+                    "paramTypes": [
+                        {
+                            "id": "bfeb0613-dab6-408c-aa27-c362c921d0d1",
+                            "name": "httpport",
+                            "displayName": "http port",
+                            "type": "int"
+                        },
+                        {
+                            "id": "a5c4315f-0624-4971-87c1-4bbfbfdbd16e",
+                            "name": "async",
+                            "displayName": "async",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "readOnly": true
+                        },
+                        {
+                            "id": "66179395-ef7a-4013-9fc6-2084104eea09",
+                            "name": "broken",
+                            "displayName": "broken",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "74b24296-ba0b-4fbd-87f3-1b09a8bc3e8c",
+                            "name": "int",
+                            "displayName": "Dummy int state",
+                            "displayNameEvent": "Dummy int state changed",
+                            "defaultValue": 10,
+                            "type": "int"
+                        },
+                        {
+                            "id": "978b0ba5-d008-41bd-b63d-a3bd23cb6469",
+                            "name": "boolValue",
+                            "displayName": "Dummy bool state",
+                            "displayNameEvent": "Dummy bool state changed",
+                            "defaultValue": false,
+                            "type": "bool",
+                            "cached": false
+                        }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "00f81fca-26f1-4a84-aa2b-4c6a3d953ec6",
+                            "name": "event1",
+                            "displayName": "Mock Event 1"
+                        },
+                        {
+                            "id": "6e27922d-aa9d-44d1-b9b4-9faf31b6bd97",
+                            "name": "event2",
+                            "displayName": "Mock Event 2",
+                            "paramTypes": [
+                                {
+                                    "id": "12ed5a15-96b4-4381-9d9c-a24875283d4f",
+                                    "name": "intParam",
+                                    "displayName": "mockParamInt",
+                                    "type": "int",
+                                    "defaultValue": 10
+                                }
+                            ]
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "07cd8d5f-2f65-4955-b1f9-05d7f4da488a",
+                            "name": "withParams",
+                            "displayName": "Mock Action 1 (with params)",
+                            "paramTypes": [
+                                {
+                                    "id": "b8126ba6-3a54-45a3-be4d-63feb0ddb77b",
+                                    "name": "mockActionParam1",
+                                    "displayName": "mockActionParam1",
+                                    "type": "int"
+                                },
+                                {
+                                    "id": "df41ba71-e43b-4854-91d1-b19d8066d4f9",
+                                    "name": "mockActionParam2",
+                                    "displayName": "mockActionParam2",
+                                    "type": "bool"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "ef518d53-50e2-4ca5-a4b1-e9a8b9309d44",
+                            "name": "mockActionNoParms",
+                            "displayName": "Mock Action 2 (without params)"
+                        },
+                        {
+                            "id": "5f27a9f2-59cd-4a15-98bd-6ed6e10bc6ed",
+                            "name": "mockActionAsync",
+                            "displayName": "Mock Action 3 (async)"
+                        },
+                        {
+                            "id": "58a61de4-472c-4775-8fe8-583a9c83fcf1",
+                            "name": "mockActionBroken",
+                            "displayName": "Mock Action 4 (broken)"
+                        },
+                        {
+                            "id": "17ad52dd-ef2f-4947-9b73-5bf6e172a9d0",
+                            "name": "mockActionAsyncBroken",
+                            "displayName": "Mock Action 5 (async, broken)"
+                        }
+                    ]
+                },
+                {
+                    "id": "9e03144c-e436-4eea-82d9-ccb33ef778db",
+                    "name": "pushButtonMock",
+                    "displayName": "Mocked Thing (Push Button)",
+                    "interfaces": ["system"],
+                    "createMethods": ["discovery"],
+                    "setupMethod": "pushButton",
+                    "paramTypes": [ ],
+                    "discoveryParamTypes": [
+                        {
+                            "id": "c40dbc59-4bba-4871-9b8e-bbd8d5d9193b",
+                            "name": "resultCount",
+                            "displayName": "resultCount",
+                            "type": "int",
+                            "defaultValue": 2,
+                            "allowedValues": [1, 2]
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "20dc7c22-c50e-42db-837c-2bbced939f8e",
+                            "name": "color",
+                            "displayName": "color",
+                            "displayNameEvent": "color changed",
+                            "displayNameAction": "Set color",
+                            "type": "QColor",
+                            "defaultValue": "#000000",
+                            "writable": true
+                        },
+                        {
+                            "id": "72981c04-267a-4ba0-a59e-9921d2f3af9c",
+                            "name": "percentage",
+                            "displayName": "percentage",
+                            "displayNameEvent": "percentage changed",
+                            "displayNameAction": "Set percentage",
+                            "type": "int",
+                            "unit": "Percentage",
+                            "defaultValue": 0,
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true
+                        },
+                        {
+                            "id": "05f63f9c-f61e-4dcf-ad55-3f13fde2765b",
+                            "name": "allowedValues",
+                            "displayName": "allowed values",
+                            "displayNameEvent": "allowed values changed",
+                            "displayNameAction": "Set allowed values",
+                            "type": "QString",
+                            "defaultValue": "String value 1",
+                            "possibleValues": [
+                                "String value 1",
+                                "String value 2",
+                                "String value 3",
+                                "String value 4"
+                            ],
+                            "writable": true
+                        },
+                        {
+                            "id": "53cd7c55-49b7-441b-b970-9048f20f0e2c",
+                            "name": "double",
+                            "displayName": "double value",
+                            "displayNameEvent": "double value changed",
+                            "displayNameAction": "Set double value",
+                            "type": "double",
+                            "defaultValue": 0.0,
+                            "minValue": -100.0,
+                            "maxValue": 100.0,
+                            "writable": true
+                        },
+                        {
+                            "id": "e680f7a4-b39e-46da-be41-fa3170fe3768",
+                            "name": "bool",
+                            "displayName": "bool value",
+                            "displayNameEvent": "bool value changed",
+                            "displayNameAction": "Set bool value",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "54646e7c-bc54-4895-81a2-590d72d120f9",
+                            "name": "timeout",
+                            "displayName": "Timeout action"
+                        }
+                    ]
+                },
+                {
+                    "id": "296f1fd4-e893-46b2-8a42-50d1bceb8730",
+                    "name": "displayPinMock",
+                    "displayName": "Mocked Thing (Display Pin)",
+                    "interfaces": ["system"],
+                    "createMethods": ["discovery"],
+                    "setupMethod": "displayPin",
+                    "discoveryParamTypes": [
+                        {
+                            "id": "35f6e4ba-28ad-4152-a58d-ec2600667bcf",
+                            "name": "resultCount",
+                            "displayName": "resultCount",
+                            "type": "int",
+                            "defaultValue": 2,
+                            "allowedValues": [1, 2]
+                        }
+                    ],
+                    "paramTypes": [
+                        {
+                            "id": "da820e07-22dc-4173-9c07-2f49a4e265f9",
+                            "name": "pin",
+                            "displayName": "pin",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "243681",
+                            "readOnly": true
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "3e161294-8a0d-4384-9676-6959e08cc2fa",
+                            "name": "color",
+                            "displayName": "color",
+                            "displayNameEvent": "color changed",
+                            "displayNameAction": "Set color",
+                            "type": "QColor",
+                            "defaultValue": "#000000",
+                            "writable": true
+                        },
+                        {
+                            "id": "527f0687-0b28-4c26-852c-25b8f83e4797",
+                            "name": "percentage",
+                            "displayName": "percentage",
+                            "displayNameEvent": "percentage changed",
+                            "displayNameAction": "Set percentage",
+                            "type": "int",
+                            "unit": "Percentage",
+                            "defaultValue": 0,
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true
+                        },
+                        {
+                            "id": "b463c5ae-4d55-402f-8480-a5cdb485c143",
+                            "name": "allowedValues",
+                            "displayName": "allowed values",
+                            "displayNameEvent": "allowed values changed",
+                            "displayNameAction": "Set allowed values",
+                            "type": "QString",
+                            "defaultValue": "String value 1",
+                            "possibleValues": [
+                                "String value 1",
+                                "String value 2",
+                                "String value 3",
+                                "String value 4"
+                            ],
+                            "writable": true
+                        },
+                        {
+                            "id": "17635624-7c19-4bae-8429-2f7aa5d2f843",
+                            "name": "double",
+                            "displayName": "double value",
+                            "displayNameEvent": "double value changed",
+                            "displayNameAction": "Set double value",
+                            "type": "double",
+                            "defaultValue": 0.0,
+                            "minValue": -100.0,
+                            "maxValue": 100.0,
+                            "writable": true
+                        },
+                        {
+                            "id": "7ffe514f-7999-4998-8350-0e73e222a8c4",
+                            "name": "bool",
+                            "displayName": "bool value",
+                            "displayNameEvent": "bool value changed",
+                            "displayNameAction": "Set bool value",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "854a0a4a-803f-4b7f-9dce-b07794f9011b",
+                            "name": "timeout",
+                            "displayName": "Timeout action"
+                        }
+                    ]
+                },
+                {
+                    "id": "a71fbde9-9a38-4bf8-beab-c8aade2608ba",
+                    "name": "parentMock",
+                    "displayName": "Mocked Thing (Parent)",
+                    "interfaces": ["system"],
+                    "createMethods": ["user", "discovery"],
+                    "paramTypes": [ ],
+                    "stateTypes": [
+                        {
+                            "id": "d24ede5f-4064-4898-bb84-cfb533b1fbc0",
+                            "name": "boolValue",
+                            "displayName": "bool value",
+                            "displayNameEvent": "bool value changed",
+                            "displayNameAction": "Set bool value",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        }
+                    ]
+                },
+                {
+                    "id": "40893c9f-bc47-40c1-8bf7-b390c7c1b4fc",
+                    "name": "childMock",
+                    "displayName": "Mocked Thing (Child)",
+                    "createMethods": ["auto", "discovery"],
+                    "paramTypes": [],
+                    "stateTypes": [
+                        {
+                            "id": "80ba1449-b485-47d4-a067-6bf306e2a568",
+                            "name": "boolValue",
+                            "displayName": "bool value",
+                            "displayNameEvent": "bool value changed",
+                            "displayNameAction": "Set bool value",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        }
+                    ]
+                },
+                {
+                    "id": "515ffdf1-55e5-498d-9abc-4e2fe768f3a9",
+                    "name": "inputTypeMock",
+                    "displayName": "Mocked Thing (InputTypes)",
+                    "createMethods": ["user"],
+                    "paramTypes": [
+                        {
+                            "id": "e6acf0c7-4b8e-4296-ac62-855d20deb816",
+                            "name": "textLine",
+                            "displayName": "Text line",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": "This is a text line"
+                        },
+                        {
+                            "id": "716f0994-bc01-42b0-b64d-59236f7320d2",
+                            "name": "textArea",
+                            "displayName": "Text area",
+                            "type": "QString",
+                            "inputType": "TextArea",
+                            "defaultValue": "This is a text area"
+                        },
+                        {
+                            "id": "e5c0d14b-c9f1-4aca-a56e-85bfa6977150",
+                            "name": "password",
+                            "displayName": "Password text",
+                            "type": "QString",
+                            "inputType": "Password",
+                            "defaultValue": "secret"
+                        },
+                        {
+                            "id": "22add8c9-ee4f-43ad-8931-58e999313ac3",
+                            "name": "search",
+                            "displayName": "Search text",
+                            "type": "QString",
+                            "inputType": "Search",
+                            "defaultValue": "Search text..."
+                        },
+                        {
+                            "id": "a8494faf-3a0f-4cf3-84b7-4b39148a838d",
+                            "name": "mail",
+                            "displayName": "Mail address",
+                            "type": "QString",
+                            "inputType": "Mail",
+                            "defaultValue": "name@example.com"
+                        },
+                        {
+                            "id": "9e5f86a0-4bb3-4892-bff8-3fc4032af6e2",
+                            "name": "ip4",
+                            "displayName": "IPv4 address",
+                            "type": "QString",
+                            "inputType": "IPv4Address",
+                            "defaultValue": "127.0.0.1"
+                        },
+                        {
+                            "id": "43bf3832-dd48-4090-a836-656e8b60216e",
+                            "name": "ip6",
+                            "displayName": "IPv6 address",
+                            "type": "QString",
+                            "inputType": "IPv6Address",
+                            "defaultValue": "::1"
+                        },
+                        {
+                            "id": "fa67229f-fcef-496f-b671-59a4b48f3ab5",
+                            "name": "url",
+                            "displayName": "URL",
+                            "type": "QString",
+                            "inputType": "Url",
+                            "defaultValue": "http://nymea.io"
+                        },
+                        {
+                            "id": "e93db587-7919-48f3-8c88-1651de63c765",
+                            "name": "mac",
+                            "displayName": "Mac address",
+                            "type": "QString",
+                            "inputType": "MacAddress",
+                            "defaultValue": "11:22:33:aa:bb:cc"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "3bad3a09-5826-4ed7-a832-10e3e2ee2a7d",
+                            "name": "bool",
+                            "displayName": "Bool",
+                            "displayNameEvent": "Bool changed",
+                            "type": "bool",
+                            "defaultValue": true
+                        },
+                        {
+                            "id": "a7c11774-f31f-4d64-99d1-e0ae5fb35a5c",
+                            "name": "writableBool",
+                            "displayName": "Writable Bool",
+                            "displayNameEvent": "Writable Bool changed",
+                            "displayNameAction": "Set Writable Bool",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "writable": true
+                        },
+                        {
+                            "id": "d0fc56ae-5791-4e91-b76c-dadfbc7e7dbb",
+                            "name": "int",
+                            "displayName": "Int",
+                            "displayNameEvent": "Int changed",
+                            "type": "int",
+                            "defaultValue": -5
+                        },
+                        {
+                            "id": "857a8422-983c-47d6-a15f-d8450b3162f7",
+                            "name": "writableInt",
+                            "displayName": "Writable Int",
+                            "displayNameEvent": "Writable Int changed",
+                            "displayNameAction": "Set Writable Int",
+                            "type": "int",
+                            "defaultValue": -8,
+                            "writable": true,
+                            "unit": "DegreeCelsius"
+                        },
+                        {
+                            "id": "86a107bc-510a-4d38-bfeb-0a9c2b6d8d87",
+                            "name": "writableIntMinMax",
+                            "displayName": "Writable Int (min/max)",
+                            "displayNameEvent": "Writable Int (min/max) changed",
+                            "displayNameAction": "Set Writable Int (min/max)",
+                            "type": "int",
+                            "defaultValue": 45,
+                            "minValue": -100,
+                            "maxValue": 100,
+                            "writable": true
+                        },
+                        {
+                            "id": "19e74fcc-bfd5-491f-8eb6-af128e8f1162",
+                            "name": "uint",
+                            "displayName": "UInt",
+                            "displayNameEvent": "UInt changed",
+                            "type": "uint",
+                            "defaultValue": 13
+                        },
+                        {
+                            "id": "563e9c4c-5198-400a-9f6c-358f4752af58",
+                            "name": "writableUInt",
+                            "displayName": "Writable UInt",
+                            "displayNameEvent": "Writable UInt changed",
+                            "displayNameAction": "Set Writable UInt",
+                            "type": "uint",
+                            "defaultValue": 16,
+                            "writable": true,
+                            "unit": "MeterPerSecond"
+                        },
+                        {
+                            "id": "79238998-eaab-4d71-b406-5d78f1749751",
+                            "name": "writableUIntMinMax",
+                            "displayName": "Writable UInt (min/max)",
+                            "displayNameEvent": "Writable UInt (min/max) changed",
+                            "displayNameAction": "Set Writable UInt (min/max)",
+                            "type": "uint",
+                            "defaultValue": 45,
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "writable": true,
+                            "unit": "Percentage"
+                        },
+                        {
+                            "id": "f7d2063d-959e-46ac-8568-8b99722d3b22",
+                            "name": "double",
+                            "displayName": "Double",
+                            "displayNameEvent": "Double changed",
+                            "type": "double",
+                            "defaultValue": 2.346422356544,
+                            "unit": "MicroSiemensPerCentimeter"
+                        },
+                        {
+                            "id": "8e2eb91b-d60b-4461-9a50-d7b8ad263170",
+                            "name": "writableDouble",
+                            "displayName": "Writable Double",
+                            "displayNameEvent": "Writable Double changed",
+                            "displayNameAction": "Set Writable Double",
+                            "type": "double",
+                            "defaultValue": -8.8,
+                            "writable": true,
+                            "unit": "MilliBar"
+                        },
+                        {
+                            "id": "00d3425e-1da6-4748-8906-4555ceefb136",
+                            "name": "writableDoubleMinMax",
+                            "displayName": "Writable Double (min/max)",
+                            "displayNameEvent": "Writable Double (min/max) changed",
+                            "displayNameAction": "Set Writable Double (min/max)",
+                            "type": "double",
+                            "defaultValue": 12.4,
+                            "minValue": -40,
+                            "maxValue": 60,
+                            "writable": true,
+                            "unit": "Euro"
+                        },
+                        {
+                            "id": "27f69ca9-a321-40ff-bfee-4b0272a671b4",
+                            "name": "string",
+                            "displayName": "String",
+                            "displayNameEvent": "String changed",
+                            "type": "QString",
+                            "defaultValue": "A string :)"
+                        },
+                        {
+                            "id": "ef511043-bd1a-4a5f-984c-222b7da43f38",
+                            "name": "writableString",
+                            "displayName": "Writable String",
+                            "displayNameEvent": "Writable String changed",
+                            "displayNameAction": "Set Writable String",
+                            "type": "QString",
+                            "defaultValue": "Change me!",
+                            "writable": true
+                        },
+                        {
+                            "id": "209d7afc-6fe9-4fe9-939b-e472ea0ad639",
+                            "name": "writableStringSelection",
+                            "displayName": "Writable String (selection)",
+                            "displayNameEvent": "Writable String (selection) changed",
+                            "displayNameAction": "Set Writable String (selection)",
+                            "type": "QString",
+                            "defaultValue": "One",
+                            "possibleValues": ["One", "Two", "🎄"],
+                            "writable": true
+                        },
+                        {
+                            "id": "4507d5c6-b692-4bd6-87f2-00364bc0cb4d",
+                            "name": "color",
+                            "displayName": "Color",
+                            "displayNameEvent": "Color changed",
+                            "type": "QColor",
+                            "defaultValue": "#FF0000"
+                        },
+                        {
+                            "id": "455f4f68-3cb0-4e8a-a707-62e4a2a8035c",
+                            "name": "writableColor",
+                            "displayName": "Writable Color",
+                            "displayNameEvent": "Writable Color changed",
+                            "displayNameAction": "Set Writable Color",
+                            "type": "QColor",
+                            "defaultValue": "#0000FF",
+                            "writable": true
+                        },
+                        {
+                            "id": "8250c71e-59bc-41ab-b576-99fcfc34e8d1",
+                            "name": "time",
+                            "displayName": "Time",
+                            "displayNameEvent": "Time changed",
+                            "displayNameAction": "Set Time",
+                            "type": "QTime",
+                            "defaultValue": "03:04"
+                        },
+                        {
+                            "id": "d64c8b3f-ca7d-47f6-b271-867ffd80a4d4",
+                            "name": "writableTime",
+                            "displayName": "Writable Time",
+                            "displayNameEvent": "Writable Time changed",
+                            "displayNameAction": "Set Writable Time",
+                            "type": "QTime",
+                            "defaultValue": "15:12",
+                            "writable": true
+                        },
+                        {
+                            "id": "2c91b5ef-c2d1-4367-bc65-5a13abf69641",
+                            "name": "timestampInt",
+                            "displayName": "Timestamp (Int)",
+                            "displayNameEvent": "Timestamp (Int) changed",
+                            "type": "int",
+                            "defaultValue": -349394745,
+                            "unit": "UnixTime"
+                        },
+                        {
+                            "id": "88b6746a-b009-4df6-8986-d7884ffd94b2",
+                            "name": "writableTimestampInt",
+                            "displayName": "Writable Timestamp (Int)",
+                            "displayNameEvent": "Writable Timestamp (Int) changed",
+                            "displayNameAction": "Set Writable Timestamp (Int)",
+                            "type": "int",
+                            "defaultValue": -349394745,
+                            "unit": "UnixTime",
+                            "writable": true
+                        },
+                        {
+                            "id": "6c9a96e8-0d48-4f42-8967-848358fd7f79",
+                            "name": "timestampUInt",
+                            "displayName": "Timestamp (UInt)",
+                            "displayNameEvent": "Timestamp (UInt) changed",
+                            "type": "uint",
+                            "defaultValue": 1549394745,
+                            "unit": "UnixTime"
+                        },
+                        {
+                            "id": "45d0069a-63ac-4265-8170-8152778608ee",
+                            "name": "writableTimestampUInt",
+                            "displayName": "Writable Timestamp (UInt)",
+                            "displayNameEvent": "Writable Timestamp (UInt) changed",
+                            "displayNameAction": "Set Writable Timestamp (UInt)",
+                            "type": "uint",
+                            "defaultValue": 1549394745,
+                            "unit": "UnixTime",
+                            "writable": true
+                        }
+                    ]
+                },
+                {
+                    "id": "805d1692-7bd0-449a-9d5c-43a332ff58f4",
+                    "name": "oAuthGoogleMock",
+                    "displayName": "Mocked Thing (Google OAuth)",
+                    "createMethods": ["user"],
+                    "setupMethod": "oauth"
+                },
+                {
+                    "id": "783c615b-7bd6-49a4-98b0-8d1deb3c7156",
+                    "name": "oAuthSonosMock",
+                    "displayName": "Mocked Thing (Sonos OAuth)",
+                    "createMethods": ["user"],
+                    "setupMethod": "oauth"
+                },
+                {
+                    "id": "6fe07a77-9c07-4736-81e2-d504314bbcb9",
+                    "name": "userAndPassMock",
+                    "displayName": "Mocked Thing (User & Password)",
+                    "createMethods": ["discovery", "user"],
+                    "setupMethod": "userandpassword"
+                }
+            ]
+        }
+    ]
+}

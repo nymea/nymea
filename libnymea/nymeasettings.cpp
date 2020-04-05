@@ -48,7 +48,7 @@
     \value SettingsRoleNone
         No role will be used. This sould not be used!
     \value SettingsRoleDevices
-        This role will create the \b{devices.conf} file and is used to store the configured \l{Device}{Devices}.
+        This role will create the \b{things.conf} file and is used to store the configured \l{Device}{Devices}.
     \value SettingsRoleRules
         This role will create the \b{rules.conf} file and is used to store the configured \l{nymeaserver::Rule}{Rules}.
     \value SettingsRolePlugins
@@ -94,8 +94,8 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     switch (role) {
     case SettingsRoleNone:
         break;
-    case SettingsRoleDevices:
-        fileName = "devices.conf";
+    case SettingsRoleThings:
+        fileName = "things.conf";
         break;
     case SettingsRoleRules:
         fileName = "rules.conf";
@@ -106,8 +106,8 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     case SettingsRoleGlobal:
         fileName = "nymead.conf";
         break;
-    case SettingsRoleDeviceStates:
-        fileName = "devicestates.conf";
+    case SettingsRoleThingStates:
+        fileName = "thingstates.conf";
         break;
     case SettingsRoleTags:
         fileName = "tags.conf";

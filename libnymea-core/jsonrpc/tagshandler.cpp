@@ -45,8 +45,11 @@ TagsHandler::TagsHandler(QObject *parent) : JsonHandler(parent)
 
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
-    description = "Get the Tags matching the given filter. Tags can be filtered by a deviceID, a ruleId, an appId, a tagId or a combination of any (however, combining deviceId and ruleId will return an empty result set).";
-    params.insert("o:deviceId", enumValueName(Uuid));
+    description = "Get the Tags matching the given filter. "
+                  "Tags can be filtered by a thingID, a ruleId, an appId, a tagId or a combination of any (however, "
+                  "combining thingId and ruleId will return an empty result set).";
+    params.insert("o:thingId", enumValueName(Uuid));
+    params.insert("d:o:deviceId", enumValueName(Uuid));
     params.insert("o:ruleId", enumValueName(Uuid));
     params.insert("o:appId", enumValueName(String));
     params.insert("o:tagId", enumValueName(String));
@@ -55,13 +58,20 @@ TagsHandler::TagsHandler(QObject *parent) : JsonHandler(parent)
     registerMethod("GetTags", description, params, returns);
 
     params.clear(); returns.clear();
-    description = "Add a Tag. A Tag must have a deviceId OR a ruleId (call this method twice if you want to attach the same tag to a device and a rule), an appId (Use the appId of your app), a tagId (e.g. \"favorites\") and a value. Upon success, a TagAdded notification will be emitted. Calling this method twice for the same ids (device/rule, appId and tagId) but with a different value will update the tag's value and the TagValueChanged notification will be emitted.";
+    description = "Add a Tag. "
+                  "A Tag must have a thingId OR a ruleId (call this method twice if you want to attach the same tag "
+                  "to a thing and a rule), an appId (Use the appId of your app), a tagId (e.g. \"favorites\") and a "
+                  "value. Upon success, a TagAdded notification will be emitted. Calling this method twice for the "
+                  "same ids (thing/rule, appId and tagId) but with a different value will update the tag's value and "
+                  "the TagValueChanged notification will be emitted.";
     params.insert("tag", objectRef("Tag"));
     returns.insert("tagError", enumRef<TagsStorage::TagError>());
     registerMethod("AddTag", description, params, returns);
 
     params.clear(); returns.clear();
-    description = "Remove a Tag. Tag value is optional and will be disregarded. If the ids match, the tag will be deleted and a TagRemoved notification will be emitted.";
+    description = "Remove a Tag. "
+                  "Tag value is optional and will be disregarded. If the ids match, the tag will be deleted and a "
+                  "TagRemoved notification will be emitted.";
     params.insert("tag", objectRef("Tag"));
     returns.insert("tagError", enumRef<TagsStorage::TagError>());
     registerMethod("RemoveTag", description, params, returns);
@@ -95,7 +105,11 @@ JsonReply *TagsHandler::GetTags(const QVariantMap &params) const
 {
     QVariantList ret;
     foreach (const Tag &tag, NymeaCore::instance()->tagsStorage()->tags()) {
-        if (params.contains("deviceId") && params.value("deviceId").toString() != tag.deviceId().toString()) {
+        if (params.contains("thingId") && params.value("thingId").toString() != tag.thingId().toString()) {
+            continue;
+        }
+        if (params.contains("deviceId") && params.value("deviceId").toString() != tag.thingId().toString()) {
+            // nymea < 0.19
             continue;
         }
         if (params.contains("ruleId") && params.value("ruleId").toString() != tag.ruleId().toString()) {

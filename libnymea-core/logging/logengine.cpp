@@ -28,99 +28,6 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*!
-    \class nymeaserver::LogEngine
-    \brief  The engine which creates the log databse and provides access to it.
-
-    \ingroup logs
-    \inmodule core
-
-    The \l{LogEngine} creates a \l{https://sqlite.org/}{SQLite3} database to stores everything what's
-    happening in the system. The database can be accessed from the API's. To control the size of the database the
-    limit of the databse are 8000 entries.
-
-
-    \sa LogEntry, LogFilter, LogsResource, LoggingHandler
-*/
-
-/*! \fn void nymeaserver::LogEngine::logEntryAdded(const LogEntry &logEntry);
-    This signal is emitted when an \a logEntry was added to the database.
-
-    \sa LogEntry
-*/
-
-/*! \fn void nymeaserver::LogEngine::logDatabaseUpdated();
-    This signal is emitted when the log database was updated. The log database
-    will be updated when a \l{LogEntry} was added or when a device was removed
-    and all corresponding \l{LogEntry}{LogEntries} were removed from the database.
-*/
-
-/*!
-    \class nymeaserver::Logging
-    \brief  The logging class provides enums and flags for the LogEngine.
-
-    \ingroup logs
-    \inmodule core
-
-    \sa LogEngine, LogEntry, LogFilter
-*/
-
-/*! \fn nymeaserver::Logging::Logging(QObject *parent)
-    Constructs the \l{Logging} object with the given \a parent.
-*/
-
-/*! \enum nymeaserver::Logging::LoggingError
-    Represents the possible errors from the \l{LogEngine}.
-
-    \value LoggingErrorNoError
-        No error happened. Everything is fine.
-    \value LoggingErrorLogEntryNotFound
-        The requested \l{LogEntry} could not be found.
-    \value LoggingErrorInvalidFilterParameter
-        The given \l{LogFilter} contains an invalid parameter.
-*/
-
-/*! \enum nymeaserver::Logging::LoggingEventType
-    Represents the event type of this \l{LogEntry}.
-
-    \value LoggingEventTypeTrigger
-        This event type describes an \l{Event} which has triggered.
-    \value LoggingEventTypeActiveChange
-        This event type describes a \l{Rule} which has changed its active status.
-    \value LoggingEventTypeActionsExecuted
-        This event type describes the actions execution of a \l{Rule}.
-    \value LoggingEventTypeExitActionsExecuted
-        This event type describes the  exit actions execution of a \l{Rule}.
-    \value LoggingEventTypeEnabledChange
-
-*/
-
-/*! \enum nymeaserver::Logging::LoggingLevel
-    Indicates if the corresponding \l{LogEntry} is an information or an alert.
-
-    \value LoggingLevelInfo
-        This \l{LogEntry} represents an information.
-    \value LoggingLevelAlert
-        This \l{LogEntry} represents an alert. Something is not ok.
-*/
-
-/*! \enum nymeaserver::Logging::LoggingSource
-    Indicates from where the \l{LogEntry} was created. Can be used as flag.
-
-    \value LoggingSourceSystem
-        This \l{LogEntry} was created from the nymea system (server).
-    \value LoggingSourceEvents
-        This \l{LogEntry} was created from an \l{Event} which trigged.
-    \value LoggingSourceActions
-        This \l{LogEntry} was created from an \l{Action} which was executed.
-    \value LoggingSourceStates
-        This \l{LogEntry} was created from an \l{State} which hase changed.
-    \value LoggingSourceRules
-        This \l{LogEntry} represents the enable/disable event from an \l{Rule}.
-    \value LoggingSourceBrowserActions
-        This \l{LogEntry} was created from a \l{BrowserItemAction}.
-*/
-
 #include "nymeasettings.h"
 #include "logengine.h"
 #include "loggingcategories.h"
@@ -142,12 +49,6 @@
 #define DB_SCHEMA_VERSION 3
 
 namespace nymeaserver {
-
-/*! Constructs the log engine with the given parameters.
-    The Qt Database backend to be used. Depending on the installed Qt modules this can be any of QDB2 QIBASE QMYSQL QOCI QODBC QPSQL QSQLITE QSQLITE2 QTDS.
-    \a dbName is the name of the database. In case of SQLITE this should contain a file path. The Driver will create the file if required. In case of using a
-    database server like MYSQL, the database must exist on the host given by \a hostname and be accessible with the given \a username and \a password.
-*/
 
 // IMPORTANT:
 // DatabaseJobs run threaded, however, QSql is *not* threadsafe.
@@ -189,7 +90,6 @@ LogEngine::LogEngine(const QString &driver, const QString &dbName, const QString
     checkDBSize();
 }
 
-/*! Destructs the \l{LogEngine}. */
 LogEngine::~LogEngine()
 {
     // Process the job queue before allowing to shut down
@@ -241,7 +141,7 @@ LogEntriesFetchJob *LogEngine::fetchLogEntries(const LogFilter &filter)
                         static_cast<Logging::LoggingSource>(result.value("sourceType").toInt()),
                         result.value("errorCode").toInt());
             entry.setTypeId(result.value("typeId").toUuid());
-            entry.setDeviceId(DeviceId(result.value("deviceId").toString()));
+            entry.setThingId(ThingId(result.value("deviceId").toString()));
             entry.setValue(LogValueTool::convertVariantToString(LogValueTool::deserializeValue(result.value("value").toString())));
             entry.setEventType(static_cast<Logging::LoggingEventType>(result.value("loggingEventType").toInt()));
             entry.setActive(result.value("active").toBool());
@@ -257,12 +157,12 @@ LogEntriesFetchJob *LogEngine::fetchLogEntries(const LogFilter &filter)
     return fetchJob;
 }
 
-DevicesFetchJob *LogEngine::fetchDevices()
+ThingsFetchJob *LogEngine::fetchDevices()
 {
     QString queryString = QString("SELECT deviceId FROM entries WHERE deviceId != \"%1\" GROUP BY deviceId;").arg(QUuid().toString());
 
     DatabaseJob *job = new DatabaseJob(m_db, queryString);
-    DevicesFetchJob *fetchJob = new DevicesFetchJob(this);
+    ThingsFetchJob *fetchJob = new ThingsFetchJob(this);
     connect(job, &DatabaseJob::finished, this, [job, fetchJob](){
         fetchJob->deleteLater();
         if (job->error().type() != QSqlError::NoError) {
@@ -272,7 +172,7 @@ DevicesFetchJob *LogEngine::fetchDevices()
         }
 
         foreach (const QSqlRecord &result, job->results()) {
-            fetchJob->m_results.append(DeviceId(result.value("deviceId").toUuid()));
+            fetchJob->m_results.append(ThingId(result.value("deviceId").toUuid()));
         }
         fetchJob->finished();
     });
@@ -341,7 +241,7 @@ void LogEngine::logEvent(const Event &event)
 
     LogEntry entry(sourceType);
     entry.setTypeId(event.eventTypeId());
-    entry.setDeviceId(event.deviceId());
+    entry.setThingId(event.thingId());
     if (valueList.count() == 1) {
         entry.setValue(valueList.first());
     } else {
@@ -354,7 +254,7 @@ void LogEngine::logAction(const Action &action, Logging::LoggingLevel level, int
 {
     LogEntry entry(level, Logging::LoggingSourceActions, errorCode);
     entry.setTypeId(action.actionTypeId());
-    entry.setDeviceId(action.deviceId());
+    entry.setThingId(action.thingId());
 
     if (action.params().isEmpty()) {
         entry.setValue(QVariant());
@@ -373,7 +273,7 @@ void LogEngine::logAction(const Action &action, Logging::LoggingLevel level, int
 void LogEngine::logBrowserAction(const BrowserAction &browserAction, Logging::LoggingLevel level, int errorCode)
 {
     LogEntry entry(level, Logging::LoggingSourceBrowserActions, errorCode);
-    entry.setDeviceId(browserAction.deviceId());
+    entry.setThingId(browserAction.thingId());
     entry.setValue(browserAction.itemId());
     appendLogEntry(entry);
 }
@@ -381,7 +281,7 @@ void LogEngine::logBrowserAction(const BrowserAction &browserAction, Logging::Lo
 void LogEngine::logBrowserItemAction(const BrowserItemAction &browserItemAction, Logging::LoggingLevel level, int errorCode)
 {
     LogEntry entry(level, Logging::LoggingSourceBrowserActions, errorCode);
-    entry.setDeviceId(browserItemAction.deviceId());
+    entry.setThingId(browserItemAction.thingId());
     entry.setTypeId(browserItemAction.actionTypeId());
     entry.setValue(browserItemAction.itemId());
     appendLogEntry(entry);
@@ -429,16 +329,16 @@ void LogEngine::logRuleExitActionsExecuted(const Rule &rule)
     appendLogEntry(entry);
 }
 
-void LogEngine::removeDeviceLogs(const DeviceId &deviceId)
+void LogEngine::removeDeviceLogs(const ThingId &thingId)
 {
-    qCDebug(dcLogEngine) << "Deleting log entries from device" << deviceId.toString();
+    qCDebug(dcLogEngine) << "Deleting log entries from device" << thingId.toString();
 
-    QString queryDeleteString = QString("DELETE FROM entries WHERE deviceId = '%1';").arg(deviceId.toString());
+    QString queryDeleteString = QString("DELETE FROM entries WHERE deviceId = '%1';").arg(thingId.toString());
 
     DatabaseJob *job = new DatabaseJob(m_db, queryDeleteString);
-    connect(job, &DatabaseJob::finished, this, [this, job, deviceId](){
+    connect(job, &DatabaseJob::finished, this, [this, job, thingId](){
         if (job->error().type() != QSqlError::NoError) {
-            qCWarning(dcLogEngine) << "Error deleting log entries from device" << deviceId.toString() << ". Driver error:" << job->error().driverText() << "Database error:" << job->error().databaseText();
+            qCWarning(dcLogEngine) << "Error deleting log entries from device" << thingId.toString() << ". Driver error:" << job->error().driverText() << "Database error:" << job->error().databaseText();
             return;
         }
 
@@ -479,7 +379,7 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
             .arg(entry.level())
             .arg(entry.source())
             .arg(entry.typeId().toString())
-            .arg(entry.deviceId().toString())
+            .arg(entry.thingId().toString())
             .arg(LogValueTool::serializeValue(entry.value()))
             .arg(entry.active())
             .arg(entry.errorCode());
@@ -492,20 +392,20 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
     // the last event in a series).
     if (m_jobQueue.count() > m_maxQueueLength) {
         qCDebug(dcLogEngine()) << "An excessive amount of data is being logged. (" << m_jobQueue.length() << "jobs in the queue)";
-        if (m_flaggedJobs.contains(entry.typeId().toString() + entry.deviceId().toString())) {
-            if (m_flaggedJobs.value(entry.typeId().toString() + entry.deviceId().toString()).count() > 10) {
+        if (m_flaggedJobs.contains(entry.typeId().toString() + entry.thingId().toString())) {
+            if (m_flaggedJobs.value(entry.typeId().toString() + entry.thingId().toString()).count() > 10) {
                 qCWarning(dcLogEngine()) << "Discarding log entry because of excessive log flooding.";
-                DatabaseJob *job = m_flaggedJobs[entry.typeId().toString() + entry.deviceId().toString()].takeFirst();
+                DatabaseJob *job = m_flaggedJobs[entry.typeId().toString() + entry.thingId().toString()].takeFirst();
                 int jobIdx = m_jobQueue.indexOf(job);
                 m_jobQueue.takeAt(jobIdx)->deleteLater();
             }
         }
-        m_flaggedJobs[entry.typeId().toString() + entry.deviceId().toString()].append(job);
+        m_flaggedJobs[entry.typeId().toString() + entry.thingId().toString()].append(job);
     }
 
     connect(job, &DatabaseJob::finished, this, [this, job, entry](){
 
-        m_flaggedJobs[entry.typeId().toString() + entry.deviceId().toString()].removeAll(job);
+        m_flaggedJobs[entry.typeId().toString() + entry.thingId().toString()].removeAll(job);
 
         if (job->error().type() != QSqlError::NoError) {
             qCWarning(dcLogEngine) << "Error writing log entry. Driver error:" << job->error().driverText() << "Database error:" << job->error().databaseText();

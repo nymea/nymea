@@ -113,16 +113,16 @@ void LogEntry::setTypeId(const QUuid &typeId) {
     m_typeId = typeId;
 }
 
-/*! Returns the deviceId of this \l{LogEntry}. */
-DeviceId LogEntry::deviceId() const
+/*! Returns the thingId of this \l{LogEntry}. */
+ThingId LogEntry::thingId() const
 {
-    return m_deviceId;
+    return m_thingId;
 }
 
-/*! Sets the \a deviceId of this \l{LogEntry}. */
-void LogEntry::setDeviceId(const DeviceId &deviceId)
+/*! Sets the \a thingId of this \l{LogEntry}. */
+void LogEntry::setThingId(const ThingId &thingId)
 {
-    m_deviceId = deviceId;
+    m_thingId = thingId;
 }
 
 /*! Returns the value of this \l{LogEntry}. */
@@ -173,7 +173,7 @@ QDebug operator<<(QDebug dbg, const LogEntry &entry)
     QMetaEnum metaEnum;
     dbg.nospace() << "LogEntry (" << entry.timestamp().toString() << ")" << endl;
     dbg.nospace() << " time stamp: " << entry.timestamp().toTime_t() << endl;
-    dbg.nospace() << "   DeviceId: " << entry.deviceId().toString() << endl;
+    dbg.nospace() << "    ThingId: " << entry.thingId().toString() << endl;
     dbg.nospace() << "    type id: " << entry.typeId().toString() << endl;
     metaEnum = QMetaEnum::fromType<Logging::LoggingSource>();
     dbg.nospace() << "     source: " << metaEnum.valueToKey(entry.source()) << endl;

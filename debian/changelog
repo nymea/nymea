@@ -1,4 +1,10 @@
+nymea (0.20.0) UNRELEASED; urgency=medium
+
+
+ -- Michael Zanetti <michael.zanetti@guh.io>  Thu, 05 Mar 2020 19:52:05 +0100
+
 nymea (0.19.0) xenial; urgency=medium
+
   [ Michael Zanetti ]
   * Delete devices before plugin destruction
   * Cleanup Rule definition in introspection

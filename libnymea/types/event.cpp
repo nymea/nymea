@@ -55,10 +55,10 @@ Event::Event():
  *  the \l{Device} given by \a deviceId and the parameters given by \a params. The parameter \a isStateChangeEvent
  *  specifies if the \l{Event} will be autogeneratet or not. The parameters must
  *  match the description in the reflecting \l{Event}.  */
-Event::Event(const EventTypeId &eventTypeId, const DeviceId &deviceId, const ParamList &params, bool isStateChangeEvent):
+Event::Event(const EventTypeId &eventTypeId, const ThingId &thingId, const ParamList &params, bool isStateChangeEvent):
     m_id(EventId::createEventId()),
     m_eventTypeId(eventTypeId),
-    m_deviceId(deviceId),
+    m_thingId(thingId),
     m_params(params),
     m_isStateChangeEvent(isStateChangeEvent)
 {
@@ -83,16 +83,16 @@ void Event::setEventTypeId(const EventTypeId &eventTypeId)
     m_eventTypeId = eventTypeId;
 }
 
-/*! Returns the id of the \l{Device} associated with this Event. */
-DeviceId Event::deviceId() const
+/*! Returns the id of the \l{Thing} associated with this Event. */
+ThingId Event::thingId() const
 {
-    return m_deviceId;
+    return m_thingId;
 }
 
-/*! Set the \a deviceId for this Event. */
-void Event::setDeviceId(const DeviceId &deviceId)
+/*! Set the \l {ThingId} for this Event. */
+void Event::setThingId(const ThingId &thingId)
 {
-    m_deviceId = deviceId;
+    m_thingId = thingId;
 }
 
 /*! Returns the parameters of this Event. */
@@ -138,14 +138,14 @@ bool Event::operator ==(const Event &other) const
     }
 
     return m_eventTypeId == other.eventTypeId()
-            && m_deviceId == other.deviceId()
+            && m_thingId == other.thingId()
             && paramsMatch;
 }
 
 /*! Writes the eventTypeId and the deviceId of the given \a event to \a dbg. */
 QDebug operator<<(QDebug dbg, const Event &event)
 {
-    dbg.nospace() << "Event(EventTypeId: " << event.eventTypeId().toString() << ", DeviceId" << event.deviceId().toString() << ")";
+    dbg.nospace() << "Event(EventTypeId: " << event.eventTypeId().toString() << ", DeviceId" << event.thingId().toString() << ")";
     return dbg.space();
 }
 

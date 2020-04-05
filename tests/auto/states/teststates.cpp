@@ -30,6 +30,7 @@
 
 #include "nymeatestbase.h"
 #include "nymeacore.h"
+#include "jsonrpc/devicehandler.h"
 
 using namespace nymeaserver;
 
@@ -49,7 +50,7 @@ private slots:
 void TestStates::getStateTypes()
 {
     QVariantMap params;
-    params.insert("deviceClassId", mockDeviceClassId);
+    params.insert("deviceClassId", mockThingClassId);
     QVariant response = injectAndWait("Devices.GetStateTypes", params);
     QVERIFY(!response.isNull());
     //verifyDeviceError(response);
@@ -57,22 +58,22 @@ void TestStates::getStateTypes()
 
 void TestStates::getStateValue_data()
 {
-    QList<Device*> devices = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId);
+    QList<Thing*> devices = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
-    Device *device = devices.first();
+    Thing *device = devices.first();
 
-    QTest::addColumn<DeviceId>("deviceId");
+    QTest::addColumn<ThingId>("deviceId");
     QTest::addColumn<StateTypeId>("stateTypeId");
     QTest::addColumn<Device::DeviceError>("error");
 
     QTest::newRow("existing state") << device->id() << mockIntStateTypeId << Device::DeviceErrorNoError;
-    QTest::newRow("invalid device") << DeviceId::createDeviceId() << mockIntStateTypeId << Device::DeviceErrorDeviceNotFound;
+    QTest::newRow("invalid device") << ThingId::createThingId() << mockIntStateTypeId << Device::DeviceErrorDeviceNotFound;
     QTest::newRow("invalid statetype") << device->id() << StateTypeId::createStateTypeId() << Device::DeviceErrorStateTypeNotFound;
 }
 
 void TestStates::getStateValue()
 {
-    QFETCH(DeviceId, deviceId);
+    QFETCH(ThingId, deviceId);
     QFETCH(StateTypeId, stateTypeId);
     QFETCH(Device::DeviceError, error);
 
@@ -87,13 +88,13 @@ void TestStates::getStateValue()
 
 void TestStates::save_load_states()
 {
-    DeviceClass mockDeviceClass = NymeaCore::instance()->deviceManager()->findDeviceClass(mockDeviceClassId);
+    ThingClass mockDeviceClass = NymeaCore::instance()->thingManager()->findThingClass(mockThingClassId);
 
     QVERIFY2(mockDeviceClass.getStateType(mockIntStateTypeId).cached(), "Mock int state is not cached (required to be true for this test)");
     QVERIFY2(!mockDeviceClass.getStateType(mockBoolStateTypeId).cached(), "Mock bool state is cached (required to be false for this test)");
 
-    Device* device = NymeaCore::instance()->deviceManager()->findConfiguredDevices(mockDeviceClassId).first();
-    int port = device->paramValue(mockDeviceHttpportParamTypeId).toInt();
+    Thing* device = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId).first();
+    int port = device->paramValue(mockThingHttpportParamTypeId).toInt();
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 

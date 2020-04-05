@@ -40,14 +40,14 @@ TestHelper *TestHelper::instance()
     return s_instance;
 }
 
-void TestHelper::logEvent(const QString &deviceId, const QString &eventId, const QVariantMap &params)
+void TestHelper::logEvent(const QString &thingId, const QString &eventId, const QVariantMap &params)
 {
-    emit eventLogged(DeviceId(deviceId), eventId, params);
+    emit eventLogged(ThingId(thingId), eventId, params);
 }
 
-void TestHelper::logStateChange(const QString &deviceId, const QString &stateId, const QVariant &value)
+void TestHelper::logStateChange(const QString &thingId, const QString &stateId, const QVariant &value)
 {
-    emit stateChangeLogged(DeviceId(deviceId), stateId, value);
+    emit stateChangeLogged(ThingId(thingId), stateId, value);
 }
 
 TestHelper::TestHelper(QObject *parent) : QObject(parent)

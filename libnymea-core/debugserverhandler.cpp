@@ -139,8 +139,8 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
     // Check if this is a settings request
     if (requestPath.startsWith("/debug/settings")) {
-        if (requestPath.startsWith("/debug/settings/devices")) {
-            QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleDevices).fileName();
+        if (requestPath.startsWith("/debug/settings/things")) {
+            QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleThings).fileName();
             qCDebug(dcDebugServer()) << "Loading" << settingsFileName;
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
@@ -226,8 +226,8 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             return reply;
         }
 
-        if (requestPath.startsWith("/debug/settings/devicestates")) {
-            QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleDeviceStates).fileName();
+        if (requestPath.startsWith("/debug/settings/thingstates")) {
+            QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleThingStates).fileName();
             qCDebug(dcDebugServer()) << "Loading" << settingsFileName;
             QFile settingsFile(settingsFileName);
             if (!settingsFile.exists()) {
@@ -1310,19 +1310,19 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // div download-row
 
 
-    // Download row devices
+    // Download row things
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-row");
 
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-name-column");
-    //: The device settings download description of the debug interface
-    writer.writeTextElement("p", tr("Device settings"));
+    //: The thing settings download description of the debug interface
+    writer.writeTextElement("p", tr("Thing settings"));
     writer.writeEndElement(); // div download-name-column
 
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-path-column");
-    writer.writeTextElement("p", NymeaSettings(NymeaSettings::SettingsRoleDevices).fileName());
+    writer.writeTextElement("p", NymeaSettings(NymeaSettings::SettingsRoleThings).fileName());
     writer.writeEndElement(); // div download-path-column
 
     writer.writeStartElement("div");
@@ -1332,10 +1332,10 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "button");
-    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleDevices).fileName())) {
+    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleThings).fileName())) {
         writer.writeAttribute("disabled", "disabled");
     }
-    writer.writeAttribute("onClick", "downloadFile('/debug/settings/devices', 'devices.conf')");
+    writer.writeAttribute("onClick", "downloadFile('/debug/settings/things', 'things.conf')");
     writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1348,10 +1348,10 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "button");
-    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleDevices).fileName())) {
+    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleThings).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "showFile('/debug/settings/devices')");
+    writer.writeAttribute("onClick", "showFile('/debug/settings/things')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1360,19 +1360,19 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeEndElement(); // div download-row
 
 
-    // Download row device states
+    // Download row thing states
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-row");
 
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-name-column");
-    //: The device states settings download description of the debug interface
-    writer.writeTextElement("p", tr("Device states settings"));
+    //: The thing states settings download description of the debug interface
+    writer.writeTextElement("p", tr("Thing states settings"));
     writer.writeEndElement(); // div download-name-column
 
     writer.writeStartElement("div");
     writer.writeAttribute("class", "download-path-column");
-    writer.writeTextElement("p", NymeaSettings(NymeaSettings::SettingsRoleDeviceStates).fileName());
+    writer.writeTextElement("p", NymeaSettings(NymeaSettings::SettingsRoleThingStates).fileName());
     writer.writeEndElement(); // div download-path-column
 
     writer.writeStartElement("div");
@@ -1382,10 +1382,10 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "button");
-    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleDeviceStates).fileName())) {
+    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleThingStates).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "downloadFile('/debug/settings/devicestates', 'devicestates.conf')");
+    writer.writeAttribute("onClick", "downloadFile('/debug/settings/thingstates', 'thingstates.conf')");
     writer.writeCharacters(tr("Download"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1398,10 +1398,10 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("button");
     writer.writeAttribute("class", "button");
     writer.writeAttribute("type", "button");
-    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleDeviceStates).fileName())) {
+    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleThingStates).fileName())) {
         writer.writeAttribute("disabled", "true");
     }
-    writer.writeAttribute("onClick", "showFile('/debug/settings/devicestates')");
+    writer.writeAttribute("onClick", "showFile('/debug/settings/thingstates')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form
@@ -1689,7 +1689,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeTextElement("h3", tr("Trace path"));
     writer.writeEmptyElement("hr");
 
-    writer.writeTextElement("p", tr("This test showes the trace path from the nymea device to the nymea.io server."));
+    writer.writeTextElement("p", tr("This test shows the trace path from the nymea device to the nymea.io server."));
 
     // Start tracepath button
     writer.writeStartElement("button");

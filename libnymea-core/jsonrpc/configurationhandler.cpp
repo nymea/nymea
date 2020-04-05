@@ -233,7 +233,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     registerNotification("BasicConfigurationChanged", description, params);
 
     params.clear(); returns.clear();
-    description = "Emitted whenever the language of the server changed. The Plugins, Vendors and DeviceClasses have to be reloaded to get the translated data.";
+    description = "Emitted whenever the language of the server changed. The Plugins, Vendors and ThingClasses have to be reloaded to get the translated data.";
     params.insert("language", enumValueName(String));
     registerNotification("LanguageChanged", description, params);
 

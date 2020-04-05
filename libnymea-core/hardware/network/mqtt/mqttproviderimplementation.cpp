@@ -50,7 +50,7 @@ MqttProviderImplementation::MqttProviderImplementation(MqttBroker *broker, QObje
 MqttChannel *MqttProviderImplementation::createChannel(const QString &clientId, const QHostAddress &clientAddress, const QStringList &topicPrefixList)
 {
     if (m_broker->configurations().isEmpty()) {
-        qCWarning(dcMqtt) << "MQTT broker not running. Cannot create a channel for device" << clientId;
+        qCWarning(dcMqtt) << "MQTT broker not running. Cannot create a channel for thing" << clientId;
         return nullptr;
     }
 

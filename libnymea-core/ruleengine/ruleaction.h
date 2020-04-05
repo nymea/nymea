@@ -39,7 +39,8 @@
 class LIBNYMEA_EXPORT RuleAction
 {
     Q_GADGET
-    Q_PROPERTY(QUuid deviceId READ deviceId WRITE setDeviceId USER true)
+    Q_PROPERTY(QUuid thingId READ thingId WRITE setThingId USER true)
+    Q_PROPERTY(QUuid deviceId READ thingId WRITE setThingId USER true REVISION 1)
     Q_PROPERTY(QUuid actionTypeId READ actionTypeId WRITE setActionTypeId USER true)
     Q_PROPERTY(QString interface READ interface WRITE setInterface USER true)
     Q_PROPERTY(QString interfaceAction READ interfaceAction WRITE setInterfaceAction USER true)
@@ -48,13 +49,13 @@ class LIBNYMEA_EXPORT RuleAction
 
 public:
     enum Type {
-        TypeDevice,
+        TypeThing,
         TypeInterface,
         TypeBrowser
     };
-    explicit RuleAction(const ActionTypeId &actionTypeId = ActionTypeId(), const DeviceId &deviceId = DeviceId(), const RuleActionParams &params = RuleActionParams());
+    explicit RuleAction(const ActionTypeId &actionTypeId = ActionTypeId(), const ThingId &thingId = ThingId(), const RuleActionParams &params = RuleActionParams());
     explicit RuleAction(const QString &interface, const QString &interfaceAction, const RuleActionParams &params = RuleActionParams());
-    explicit RuleAction(const DeviceId &deviceId, const QString &browserItemId);
+    explicit RuleAction(const ThingId &thingId, const QString &browserItemId);
     RuleAction(const RuleAction &other);
 
     ActionId id() const;
@@ -68,8 +69,8 @@ public:
     Action toAction() const;
     BrowserItemAction toBrowserItemAction() const;
 
-    DeviceId deviceId() const;
-    void setDeviceId(const DeviceId &deviceId);
+    ThingId thingId() const;
+    void setThingId(const ThingId &thingId);
 
     ActionTypeId actionTypeId() const;
     void setActionTypeId(const ActionTypeId &actionTypeId);
@@ -92,7 +93,7 @@ public:
 
 private:
     ActionId m_id;
-    DeviceId m_deviceId;
+    ThingId m_thingId;
     ActionTypeId m_actionTypeId;
     QString m_browserItemId;
     QString m_interface;

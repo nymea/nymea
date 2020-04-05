@@ -43,16 +43,17 @@ class Tag
     Q_GADGET
     Q_PROPERTY(QString appId READ appId WRITE setAppId)
     Q_PROPERTY(QString tagId READ tagId WRITE setTagId)
-    Q_PROPERTY(QUuid deviceId READ deviceId WRITE setDeviceId USER true)
+    Q_PROPERTY(QUuid thingId READ thingId WRITE setThingId USER true)
+    Q_PROPERTY(QUuid deviceId READ thingId WRITE setThingId USER true REVISION 1)
     Q_PROPERTY(QUuid ruleId READ ruleId WRITE setRuleId USER true)
     Q_PROPERTY(QString value READ value WRITE setValue USER true)
 public:
     Tag();
-    Tag(const DeviceId &deviceId, const QString &appId, const QString &tagId, const QString &value);
+    Tag(const ThingId &thingId, const QString &appId, const QString &tagId, const QString &value);
     Tag(const RuleId &ruleId, const QString &appId, const QString &tagId, const QString &value);
 
-    DeviceId deviceId() const;
-    void setDeviceId(const DeviceId &deviceId);
+    ThingId thingId() const;
+    void setThingId(const ThingId &thingId);
 
     RuleId ruleId() const;
     void setRuleId(const RuleId &ruleId);
@@ -69,7 +70,7 @@ public:
     bool operator==(const Tag &other) const;
 
 private:
-    DeviceId m_deviceId;
+    ThingId m_thingId;
     RuleId m_ruleId;
     QString m_appId;
     QString m_tagId;

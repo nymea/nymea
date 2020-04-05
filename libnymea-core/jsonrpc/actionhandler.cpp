@@ -28,33 +28,20 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*!
-    \class nymeaserver::ActionHandler
-    \brief This subclass of \l{JsonHandler} processes the JSON requests for the \tt Actions namespace.
-
-    \ingroup json
-    \inmodule core
-
-    This \l{JsonHandler} will be created in the \l{JsonRPCServer} and used to handle JSON-RPC requests
-    for the \tt {Action} namespace of the API.
-
-    \sa Action, JsonHandler, JsonRPCServer
-*/
-
 #include "actionhandler.h"
+#include "devicehandler.h"
 
 #include "nymeacore.h"
-#include "devices/devicemanager.h"
-#include "devices/deviceactioninfo.h"
-#include "devices/browseractioninfo.h"
-#include "devices/browseritemactioninfo.h"
+#include "integrations/thingmanager.h"
+#include "integrations/thingactioninfo.h"
+#include "integrations/browseractioninfo.h"
+#include "integrations/browseritemactioninfo.h"
 #include "types/action.h"
 #include "types/actiontype.h"
 #include "loggingcategories.h"
 
 namespace nymeaserver {
 
-/*! Constructs a new \l ActionHandler with the given \a parent. */
 ActionHandler::ActionHandler(QObject *parent) :
     JsonHandler(parent)
 {
@@ -76,21 +63,21 @@ ActionHandler::ActionHandler(QObject *parent) :
     params.insert("o:params", objectRef<ParamList>());
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:displayMessage", enumValueName(String));
-    registerMethod("ExecuteAction", description, params, returns, "Please use Devices.ExecuteAction instead.");
+    registerMethod("ExecuteAction", description, params, returns, "Please use Integrations.ExecuteAction instead.");
 
     params.clear(); returns.clear();
     description = "Get the ActionType for the given ActionTypeId.";
     params.insert("actionTypeId", enumValueName(Uuid));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:actionType", objectRef<ActionType>());
-    registerMethod("GetActionType", description, params, returns, "Please use the Devices namespace instead.");
+    registerMethod("GetActionType", description, params, returns, "Please use the Integrations namespace instead.");
 
     params.clear(); returns.clear();
     description = "Execute the item identified by itemId on the given device.";
     params.insert("deviceId", enumValueName(Uuid));
     params.insert("itemId", enumValueName(String));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
-    registerMethod("ExecuteBrowserItem", description, params, returns, "Please use Devices.ExecuteBrowserItem instead.");
+    registerMethod("ExecuteBrowserItem", description, params, returns, "Please use Integrations.ExecuteBrowserItem instead.");
 
     params.clear(); returns.clear();
     description = "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.";
@@ -99,11 +86,10 @@ ActionHandler::ActionHandler(QObject *parent) :
     params.insert("actionTypeId", enumValueName(Uuid));
     params.insert("o:params", objectRef<ParamList>());
     returns.insert("deviceError", enumRef<Device::DeviceError>());
-    registerMethod("ExecuteBrowserItemAction", description, params, returns, "Please use Devices.ExecuteBrowserItem instead.");
+    registerMethod("ExecuteBrowserItemAction", description, params, returns, "Please use Integrations.ExecuteBrowserItem instead.");
 
 }
 
-/*! Returns the name of the \l{ActionHandler}. In this case \b Actions.*/
 QString ActionHandler::name() const
 {
     return "Actions";
@@ -111,20 +97,20 @@ QString ActionHandler::name() const
 
 JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params, const JsonContext &context)
 {
-    DeviceId deviceId(params.value("deviceId").toString());
+    ThingId thingId(params.value("deviceId").toString());
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     ParamList actionParams = unpack<ParamList>(params.value("params"));
     QLocale locale = context.locale();
 
-    Action action(actionTypeId, deviceId);
+    Action action(actionTypeId, thingId);
     action.setParams(actionParams);
 
     JsonReply *jsonReply = createAsyncReply("ExecuteAction");
 
-    DeviceActionInfo *info = NymeaCore::instance()->executeAction(action);
-    connect(info, &DeviceActionInfo::finished, jsonReply, [info, jsonReply, locale](){
+    ThingActionInfo *info = NymeaCore::instance()->executeAction(action);
+    connect(info, &ThingActionInfo::finished, jsonReply, [info, jsonReply, locale](){
         QVariantMap data;
-        data.insert("deviceError", enumValueName(info->status()));
+        data.insert("deviceError", enumValueName(info->status()).replace("Thing", "Device"));
         if (!info->displayMessage().isEmpty()) {
             data.insert("displayMessage", info->translatedDisplayMessage(locale));
         }
@@ -140,36 +126,36 @@ JsonReply *ActionHandler::GetActionType(const QVariantMap &params, const JsonCon
     QLocale locale = context.locale();
     qCDebug(dcJsonRpc) << "asked for action type" << params;
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
-    foreach (const DeviceClass &deviceClass, NymeaCore::instance()->deviceManager()->supportedDevices()) {
+    foreach (const ThingClass &deviceClass, NymeaCore::instance()->thingManager()->supportedThings()) {
         foreach (const ActionType &actionType, deviceClass.actionTypes()) {
             if (actionType.id() == actionTypeId) {
                 ActionType translatedActionType = actionType;
-                translatedActionType.setDisplayName(NymeaCore::instance()->deviceManager()->translate(deviceClass.pluginId(), actionType.displayName(), locale));
+                translatedActionType.setDisplayName(NymeaCore::instance()->thingManager()->translate(deviceClass.pluginId(), actionType.displayName(), locale));
 
                 QVariantMap data;
-                data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorNoError));
+                data.insert("deviceError", enumValueName<Thing::ThingError>(Thing::ThingErrorNoError).replace("ThingError", "DeviceError"));
                 data.insert("actionType", pack(translatedActionType));
                 return createReply(data);
             }
         }
     }
     QVariantMap data;
-    data.insert("deviceError", enumValueName<Device::DeviceError>(Device::DeviceErrorActionTypeNotFound));
+    data.insert("deviceError", enumValueName<Thing::ThingError>(Thing::ThingErrorActionTypeNotFound).replace("ThingError", "DeviceError"));
     return createReply(data);
 }
 
 JsonReply *ActionHandler::ExecuteBrowserItem(const QVariantMap &params)
 {
-    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+    ThingId thingId = ThingId(params.value("deviceId").toString());
     QString itemId = params.value("itemId").toString();
-    BrowserAction action(deviceId, itemId);
+    BrowserAction action(thingId, itemId);
 
     JsonReply *jsonReply = createAsyncReply("ExecuteBrowserItem");
 
     BrowserActionInfo *info = NymeaCore::instance()->executeBrowserItem(action);
     connect(info, &BrowserActionInfo::finished, jsonReply, [info, jsonReply](){
         QVariantMap data;
-        data.insert("deviceError", enumValueName<Device::DeviceError>(info->status()));
+        data.insert("deviceError", enumValueName<Thing::ThingError>(info->status()).replace("ThingError", "DeviceError"));
         jsonReply->setData(data);
         jsonReply->finished();
     });
@@ -179,18 +165,18 @@ JsonReply *ActionHandler::ExecuteBrowserItem(const QVariantMap &params)
 
 JsonReply *ActionHandler::ExecuteBrowserItemAction(const QVariantMap &params)
 {
-    DeviceId deviceId = DeviceId(params.value("deviceId").toString());
+    ThingId thingId = ThingId(params.value("deviceId").toString());
     QString itemId = params.value("itemId").toString();
     ActionTypeId actionTypeId = ActionTypeId(params.value("actionTypeId").toString());
     ParamList paramList = unpack<ParamList>(params.value("params"));
-    BrowserItemAction browserItemAction(deviceId, itemId, actionTypeId, paramList);
+    BrowserItemAction browserItemAction(thingId, itemId, actionTypeId, paramList);
 
     JsonReply *jsonReply = createAsyncReply("ExecuteBrowserItemAction");
 
     BrowserItemActionInfo *info = NymeaCore::instance()->executeBrowserItemAction(browserItemAction);
     connect(info, &BrowserItemActionInfo::finished, jsonReply, [info, jsonReply](){
         QVariantMap data;
-        data.insert("deviceError", enumValueName<Device::DeviceError>(info->status()));
+        data.insert("deviceError", enumValueName<Thing::ThingError>(info->status()).replace("ThingError", "DeviceError"));
         jsonReply->setData(data);
         jsonReply->finished();
     });

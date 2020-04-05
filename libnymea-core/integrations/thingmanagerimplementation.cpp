@@ -742,7 +742,12 @@ Thing::ThingError ThingManagerImplementation::removeConfiguredThing(const ThingI
     if (!thing) {
         return Thing::ThingErrorThingNotFound;
     }
-    m_integrationPlugins.value(thing->pluginId())->thingRemoved(thing);
+    IntegrationPlugin *plugin = m_integrationPlugins.value(thing->pluginId());
+    if (!plugin) {
+        qCWarning(dcThingManager()).nospace() << "Plugin not loaded for thing " << thing->name() << ". Not calling thingRemoved on plugin.";
+    } else {
+        plugin->thingRemoved(thing);
+    }
 
     thing->deleteLater();
 

@@ -47,6 +47,13 @@ void ScriptState::classBegin()
 {
     m_thingManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("thingManager").toULongLong());
     connect(m_thingManager, &ThingManager::thingStateChanged, this, &ScriptState::onThingStateChanged);
+
+    connect(m_thingManager, &ThingManager::thingAdded, this, [this](Thing *newThing){
+        if (newThing->id() == ThingId(m_thingId)) {
+            qCDebug(dcScriptEngine()) << "Thing" << newThing->name() << "appeared in system";
+            connectToThing();
+        }
+    });
 }
 
 void ScriptState::componentComplete()
@@ -65,6 +72,11 @@ void ScriptState::setThingId(const QString &thingId)
         m_thingId = thingId;
         emit thingIdChanged();
         store();
+        if (!m_valueCache.isNull()) {
+            setValue(m_valueCache);
+        }
+
+        connectToThing();
     }
 }
 
@@ -79,6 +91,9 @@ void ScriptState::setStateTypeId(const QString &stateTypeId)
         m_stateTypeId = stateTypeId;
         emit stateTypeChanged();
         store();
+        if (!m_valueCache.isNull()) {
+            setValue(m_valueCache);
+        }
     }
 }
 
@@ -93,6 +108,9 @@ void ScriptState::setStateName(const QString &stateName)
         m_stateName = stateName;
         emit stateTypeChanged();
         store();
+        if (!m_valueCache.isNull()) {
+            setValue(m_valueCache);
+        }
     }
 }
 
@@ -119,7 +137,14 @@ void ScriptState::setValue(const QVariant &value)
 
     Thing* thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
     if (!thing) {
-        qCWarning(dcScriptEngine()) << "No thing with id" << m_thingId << "found.";
+        m_valueCache = value;
+        qCDebug(dcScriptEngine()) << "No thing with id" << m_thingId << "found.";
+        return;
+    }
+
+    if (thing->setupStatus() != Thing::ThingSetupStatusComplete) {
+        m_valueCache = value;
+        qCDebug(dcScriptEngine()) << "Thing is not ready yet...";
         return;
     }
 
@@ -127,18 +152,19 @@ void ScriptState::setValue(const QVariant &value)
     if (!m_stateTypeId.isNull()) {
         actionTypeId = thing->thingClass().stateTypes().findById(StateTypeId(m_stateTypeId)).id();
         if (actionTypeId.isNull()) {
-            qCWarning(dcScriptEngine) << "Thing" << thing->name() << "does not have a state with type id" << m_stateTypeId;
+            qCDebug(dcScriptEngine) << "Thing" << thing->name() << "does not have a state with type id" << m_stateTypeId;
         }
     }
     if (actionTypeId.isNull()) {
         actionTypeId = thing->thingClass().stateTypes().findByName(stateName()).id();
         if (actionTypeId.isNull()) {
-            qCWarning(dcScriptEngine) << "Thing" << thing->name() << "does not have a state named" << m_stateName;
+            qCDebug(dcScriptEngine) << "Thing" << thing->name() << "does not have a state named" << m_stateName;
         }
     }
 
     if (actionTypeId.isNull()) {
-        qCWarning(dcScriptEngine()) << "Either stateTypeId or stateName is required to be valid.";
+        m_valueCache = value;
+        qCDebug(dcScriptEngine()) << "Either stateTypeId or stateName is required to be valid.";
         return;
     }
 
@@ -148,6 +174,7 @@ void ScriptState::setValue(const QVariant &value)
     ParamList params = ParamList() << Param(ParamTypeId(actionTypeId), value);
     action.setParams(params);
 
+    qCDebug(dcScriptEngine()) << "Executing action on" << thing->name();
     m_valueCache = QVariant();
     m_pendingActionInfo = m_thingManager->executeAction(action);
     connect(m_pendingActionInfo, &ThingActionInfo::finished, this, [this](){
@@ -209,6 +236,32 @@ void ScriptState::onThingStateChanged(Thing *thing, const StateTypeId &stateType
     if (stateTypeId == localStateTypeId) {
         emit valueChanged();
     }
+}
+
+void ScriptState::connectToThing()
+{
+    Thing *thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
+    if (!thing) {
+        qCDebug(dcScriptEngine()) << "Can't find thing with id" << m_thingId << "(yet)";
+        return;
+    }
+
+    if (thing->setupStatus() == Thing::ThingSetupStatusComplete) {
+        if (!m_valueCache.isNull()) {
+            setValue(m_valueCache);
+        }
+    } else {
+        qCDebug(dcScriptEngine()) << "Thing setup for" << thing->name() << "not complete yet";
+    }
+
+    connect(thing, &Thing::setupStatusChanged, this, [this, thing](){
+        if (thing->setupStatus() == Thing::ThingSetupStatusComplete) {
+            qCDebug(dcScriptEngine()) << "Thing setup for" << thing->name() << "completed";
+            if (!m_valueCache.isNull()) {
+                setValue(m_valueCache);
+            }
+        }
+    });
 }
 
 }

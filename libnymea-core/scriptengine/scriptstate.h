@@ -84,12 +84,15 @@ signals:
 private slots:
     void onThingStateChanged(Thing *thing, const StateTypeId &stateTypeId);
 
+    void connectToThing();
+
 private:
     ThingManager *m_thingManager = nullptr;
 
     QString m_thingId;
     QString m_stateTypeId;
     QString m_stateName;
+
 
     ThingActionInfo *m_pendingActionInfo = nullptr;
     QVariant m_valueCache;

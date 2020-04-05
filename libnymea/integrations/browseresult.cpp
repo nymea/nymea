@@ -29,14 +29,16 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "browseresult.h"
+#include "thingmanager.h"
 
 #include <QTimer>
 
-BrowseResult::BrowseResult(Thing *thing, const QString &itemId, const QLocale &locale, QObject *parent, quint32 timeout):
+BrowseResult::BrowseResult(Thing *thing, ThingManager *thingManager, const QString &itemId, const QLocale &locale, QObject *parent, quint32 timeout):
     QObject(parent),
     m_thing(thing),
     m_itemId(itemId),
-    m_locale(locale)
+    m_locale(locale),
+    m_thingManager(thingManager)
 {
     connect(this, &BrowseResult::finished, this, &BrowseResult::deleteLater, Qt::QueuedConnection);
 
@@ -78,6 +80,20 @@ Thing::ThingError BrowseResult::status() const
     return m_status;
 }
 
+QString BrowseResult::displayMessage() const
+{
+    return m_displayMessage;
+}
+
+QString BrowseResult::translatedDisplayMessage(const QLocale &locale)
+{
+    if (!m_thingManager || !m_thing) {
+        return m_displayMessage;
+    }
+
+    return m_thingManager->translate(m_thing->pluginId(), m_displayMessage.toUtf8(), locale);
+}
+
 void BrowseResult::addItem(const BrowserItem &item)
 {
     m_items.append(item);
@@ -88,9 +104,10 @@ void BrowseResult::addItems(const BrowserItems &items)
     m_items.append(items);
 }
 
-void BrowseResult::finish(Thing::ThingError status)
+void BrowseResult::finish(Thing::ThingError status, const QString &displayMessage)
 {
     m_finished = true;
     m_status = status;
+    m_displayMessage = displayMessage;
     staticMetaObject.invokeMethod(this, "finished", Qt::QueuedConnection);
 }

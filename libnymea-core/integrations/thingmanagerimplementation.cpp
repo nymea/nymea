@@ -764,7 +764,7 @@ BrowseResult *ThingManagerImplementation::browseThing(const ThingId &thingId, co
 {
     Thing *thing = m_configuredThings.value(thingId);
 
-    BrowseResult *result = new BrowseResult(thing, itemId, locale, this, 30000);
+    BrowseResult *result = new BrowseResult(thing, this, itemId, locale, this, 30000);
 
     if (!thing) {
         qCWarning(dcThingManager()) << "Cannot browse thing. No such thing:" << thingId.toString();
@@ -802,7 +802,7 @@ BrowserItemResult *ThingManagerImplementation::browserItemDetails(const ThingId 
 {
     Thing *thing = m_configuredThings.value(thingId);
 
-    BrowserItemResult *result = new BrowserItemResult(thing, itemId, locale, this, 30000);
+    BrowserItemResult *result = new BrowserItemResult(thing, this, itemId, locale, this, 30000);
 
     if (!thing) {
         qCWarning(dcThingManager()) << "Cannot browse thing. No such thing:" << thingId.toString();
@@ -840,7 +840,7 @@ BrowserActionInfo* ThingManagerImplementation::executeBrowserItem(const BrowserA
 {
     Thing *thing = m_configuredThings.value(browserAction.thingId());
 
-    BrowserActionInfo *info = new BrowserActionInfo(thing, browserAction, this, 30000);
+    BrowserActionInfo *info = new BrowserActionInfo(thing, this, browserAction, this, 30000);
 
     if (!thing) {
         info->finish(Thing::ThingErrorThingNotFound);
@@ -872,7 +872,7 @@ BrowserItemActionInfo* ThingManagerImplementation::executeBrowserItemAction(cons
 {
     Thing *thing = m_configuredThings.value(browserItemAction.thingId());
 
-    BrowserItemActionInfo *info = new BrowserItemActionInfo(thing, browserItemAction, this, 30000);
+    BrowserItemActionInfo *info = new BrowserItemActionInfo(thing, this, browserItemAction, this, 30000);
 
     if (!thing) {
         info->finish(Thing::ThingErrorThingNotFound);

@@ -32,6 +32,7 @@
 
 #include <qqml.h>
 #include <QQmlEngine>
+#include <QJsonDocument>
 
 namespace nymeaserver {
 
@@ -104,16 +105,15 @@ void ScriptEvent::onEventTriggered(const Event &event)
         return;
     }
 
-//    ScriptParams *params = new ScriptParams(event.params());
-//    qmlEngine(this)->setObjectOwnership(params, QQmlEngine::JavaScriptOwnership);
     QVariantMap params;
     foreach (const Param &param, event.params()) {
-        params.insert(param.paramTypeId().toString().remove(QRegExp("[{}]")), param.value());
+        params.insert(param.paramTypeId().toString().remove(QRegExp("[{}]")), param.value().toByteArray());
         QString paramName = thing->thingClass().eventTypes().findById(event.eventTypeId()).paramTypes().findById(param.paramTypeId()).name();
-        params.insert(paramName, param.value());
+        params.insert(paramName, param.value().toByteArray());
     }
 
-    emit triggered(params);
+    // Note: Explicitly convert the params to a Json document because auto-casting from QVariantMap to the JS engine might drop some values.
+    emit triggered(QJsonDocument::fromVariant(params).toVariant().toMap());
 }
 
 }

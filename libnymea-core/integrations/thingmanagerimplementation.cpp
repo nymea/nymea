@@ -100,7 +100,7 @@ ThingManagerImplementation::~ThingManagerImplementation()
 {
     delete m_translator;
 
-    foreach (Thing *thing, m_configuredThing) {
+    foreach (Thing *thing, m_configuredThings) {
         storeThingStates(thing);
         delete thing;
     }
@@ -573,7 +573,7 @@ ThingPairingInfo *ThingManagerImplementation::confirmPairing(const PairingTransa
 
     ThingId thingId = context.thingId;
     // If we already have a thing for this ID, we're reconfiguring an existing thing, else we're adding a new one.
-    bool addNewThing = !m_configuredThing.contains(context.thingId);
+    bool addNewThing = !m_configuredThings.contains(context.thingId);
 
     // We're using two different info objects here, one to hand over to the plugin for the pairing, the other we give out
     // to the user. After the internal one has finished, we'll start a setupThing job and finish the external pairingInfo only after
@@ -592,7 +592,7 @@ ThingPairingInfo *ThingManagerImplementation::confirmPairing(const PairingTransa
         }
 
         // Internal pairing succeeded, set up the thing.
-        if (!addNewThing && !m_configuredThing.contains(internalInfo->thingId())) {
+        if (!addNewThing && !m_configuredThings.contains(internalInfo->thingId())) {
             qCWarning(dcThingManager) << "The thing to be reconfigured has disappeared!";
             externalInfo->finish(Thing::ThingErrorThingNotFound);
             return;
@@ -609,7 +609,7 @@ ThingPairingInfo *ThingManagerImplementation::confirmPairing(const PairingTransa
                 thing->setName(internalInfo->thingName());
             }
         } else {
-            thing = m_configuredThing.value(internalInfo->thingId());
+            thing = m_configuredThings.value(internalInfo->thingId());
             thing->setSetupStatus(Thing::ThingSetupStatusInProgress, Thing::ThingErrorNoError);
             qCDebug(dcThingManager()) << "Reconfiguring thing" << thing;
         }
@@ -645,7 +645,7 @@ ThingPairingInfo *ThingManagerImplementation::confirmPairing(const PairingTransa
 
             if (addNewThing) {
                 qCDebug(dcThingManager()) << "Thing added:" << info->thing();
-                m_configuredThing.insert(info->thing()->id(), info->thing());
+                m_configuredThings.insert(info->thing()->id(), info->thing());
                 emit thingAdded(info->thing());
             } else {
                 emit thingChanged(info->thing());
@@ -679,7 +679,7 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
 
     ThingId thingId = ThingId::createThingId();
     // Chances are like 0, but...
-    while (m_configuredThing.contains(thingId)) {
+    while (m_configuredThings.contains(thingId)) {
         thingId = ThingId::createThingId();
     }
 
@@ -726,7 +726,7 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
         info->thing()->setSetupStatus(Thing::ThingSetupStatusComplete, Thing::ThingErrorNoError);
 
         qCDebug(dcThingManager) << "Thing setup complete.";
-        m_configuredThing.insert(info->thing()->id(), info->thing());
+        m_configuredThings.insert(info->thing()->id(), info->thing());
         storeConfiguredThings();
         postSetupThing(info->thing());
 
@@ -738,7 +738,7 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
 
 Thing::ThingError ThingManagerImplementation::removeConfiguredThing(const ThingId &thingId)
 {
-    Thing *thing = m_configuredThing.take(thingId);
+    Thing *thing = m_configuredThings.take(thingId);
     if (!thing) {
         return Thing::ThingErrorThingNotFound;
     }
@@ -762,7 +762,7 @@ Thing::ThingError ThingManagerImplementation::removeConfiguredThing(const ThingI
 
 BrowseResult *ThingManagerImplementation::browseThing(const ThingId &thingId, const QString &itemId, const QLocale &locale)
 {
-    Thing *thing = m_configuredThing.value(thingId);
+    Thing *thing = m_configuredThings.value(thingId);
 
     BrowseResult *result = new BrowseResult(thing, itemId, locale, this, 30000);
 
@@ -800,7 +800,7 @@ BrowseResult *ThingManagerImplementation::browseThing(const ThingId &thingId, co
 
 BrowserItemResult *ThingManagerImplementation::browserItemDetails(const ThingId &thingId, const QString &itemId, const QLocale &locale)
 {
-    Thing *thing = m_configuredThing.value(thingId);
+    Thing *thing = m_configuredThings.value(thingId);
 
     BrowserItemResult *result = new BrowserItemResult(thing, itemId, locale, this, 30000);
 
@@ -838,7 +838,7 @@ BrowserItemResult *ThingManagerImplementation::browserItemDetails(const ThingId 
 
 BrowserActionInfo* ThingManagerImplementation::executeBrowserItem(const BrowserAction &browserAction)
 {
-    Thing *thing = m_configuredThing.value(browserAction.thingId());
+    Thing *thing = m_configuredThings.value(browserAction.thingId());
 
     BrowserActionInfo *info = new BrowserActionInfo(thing, browserAction, this, 30000);
 
@@ -870,7 +870,7 @@ BrowserActionInfo* ThingManagerImplementation::executeBrowserItem(const BrowserA
 
 BrowserItemActionInfo* ThingManagerImplementation::executeBrowserItemAction(const BrowserItemAction &browserItemAction)
 {
-    Thing *thing = m_configuredThing.value(browserItemAction.thingId());
+    Thing *thing = m_configuredThings.value(browserItemAction.thingId());
 
     BrowserItemActionInfo *info = new BrowserItemActionInfo(thing, browserItemAction, this, 30000);
 
@@ -946,7 +946,7 @@ Vendor ThingManagerImplementation::translateVendor(const Vendor &vendor, const Q
 
 Thing *ThingManagerImplementation::findConfiguredThing(const ThingId &id) const
 {
-    foreach (Thing *thing, m_configuredThing) {
+    foreach (Thing *thing, m_configuredThings) {
         if (thing->id() == id) {
             return thing;
         }
@@ -956,13 +956,13 @@ Thing *ThingManagerImplementation::findConfiguredThing(const ThingId &id) const
 
 Things ThingManagerImplementation::configuredThings() const
 {
-    return m_configuredThing.values();
+    return m_configuredThings.values();
 }
 
 Things ThingManagerImplementation::findConfiguredThings(const ThingClassId &thingClassId) const
 {
     QList<Thing*> ret;
-    foreach (Thing *thing, m_configuredThing) {
+    foreach (Thing *thing, m_configuredThings) {
         if (thing->thingClassId() == thingClassId) {
             ret << thing;
         }
@@ -973,7 +973,7 @@ Things ThingManagerImplementation::findConfiguredThings(const ThingClassId &thin
 Things ThingManagerImplementation::findConfiguredThings(const QString &interface) const
 {
     QList<Thing*> ret;
-    foreach (Thing *thing, m_configuredThing) {
+    foreach (Thing *thing, m_configuredThings) {
         ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
         if (thingClass.interfaces().contains(interface)) {
             ret.append(thing);
@@ -985,7 +985,7 @@ Things ThingManagerImplementation::findConfiguredThings(const QString &interface
 Things ThingManagerImplementation::findChilds(const ThingId &id) const
 {
     QList<Thing *> ret;
-    foreach (Thing *d, m_configuredThing) {
+    foreach (Thing *d, m_configuredThings) {
         if (d->parentId() == id) {
             ret.append(d);
         }
@@ -1006,7 +1006,7 @@ ThingClass ThingManagerImplementation::findThingClass(const ThingClassId &thingC
 ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
 {
     Action finalAction = action;
-    Thing *thing = m_configuredThing.value(action.thingId());
+    Thing *thing = m_configuredThings.value(action.thingId());
     if (!thing) {
         qCWarning(dcThingManager()) << "Cannot execute action. No such thing:" << action.thingId();
         ThingActionInfo *info = new ThingActionInfo(nullptr, action, this);
@@ -1374,7 +1374,7 @@ void ThingManagerImplementation::loadConfiguredThings()
         // We always add the thing to the list in this case. If it's in the stored things
         // it means that it was working at some point so lets still add it as there might
         // be rules associated with this thing.
-        m_configuredThing.insert(thing->id(), thing);
+        m_configuredThings.insert(thing->id(), thing);
     }
     settings.endGroup();
 
@@ -1384,7 +1384,7 @@ void ThingManagerImplementation::loadConfiguredThings()
     }
 
 
-    QHash<ThingId, Thing*> setupList = m_configuredThing;
+    QHash<ThingId, Thing*> setupList = m_configuredThings;
     while (!setupList.isEmpty()) {
         Thing *thing = nullptr;
         foreach (Thing *d, setupList) {
@@ -1422,7 +1422,7 @@ void ThingManagerImplementation::storeConfiguredThings()
 {
     NymeaSettings settings(NymeaSettings::SettingsRoleThings);
     settings.beginGroup("ThingConfig");
-    foreach (Thing *thing, m_configuredThing) {
+    foreach (Thing *thing, m_configuredThings) {
         settings.beginGroup(thing->id().toString());
         // Note: clean thing settings before storing it for clean up
         settings.remove("");
@@ -1479,7 +1479,7 @@ void ThingManagerImplementation::onAutoThingsAppeared(const ThingDescriptors &th
             return;
         }
 
-        if (!thingDescriptor.parentId().isNull() && !m_configuredThing.contains(thingDescriptor.parentId())) {
+        if (!thingDescriptor.parentId().isNull() && !m_configuredThings.contains(thingDescriptor.parentId())) {
             qCWarning(dcThingManager()) << "Invalid parent thing id. Not adding thing to the system.";
             continue;
         }
@@ -1519,7 +1519,7 @@ void ThingManagerImplementation::onAutoThingsAppeared(const ThingDescriptors &th
             }
 
             info->thing()->setSetupStatus(Thing::ThingSetupStatusComplete, Thing::ThingErrorNoError);
-            m_configuredThing.insert(info->thing()->id(), info->thing());
+            m_configuredThings.insert(info->thing()->id(), info->thing());
             storeConfiguredThings();
 
             emit thingAdded(info->thing());
@@ -1532,7 +1532,7 @@ void ThingManagerImplementation::onAutoThingsAppeared(const ThingDescriptors &th
 void ThingManagerImplementation::onAutoThingDisappeared(const ThingId &thingId)
 {
     IntegrationPlugin *plugin = static_cast<IntegrationPlugin*>(sender());
-    Thing *thing = m_configuredThing.value(thingId);
+    Thing *thing = m_configuredThings.value(thingId);
 
     if (!thing) {
         qWarning(dcThingManager) << "Received an autoThingDisappeared signal but this thing is unknown:" << thingId;
@@ -1568,7 +1568,7 @@ void ThingManagerImplementation::cleanupThingStateCache()
     NymeaSettings settings(NymeaSettings::SettingsRoleThingStates);
     foreach (const QString &entry, settings.childGroups()) {
         ThingId thingId(entry);
-        if (!m_configuredThing.contains(thingId)) {
+        if (!m_configuredThings.contains(thingId)) {
             qCDebug(dcThingManager()) << "Thing ID" << thingId << "not found in configured things. Cleaning up stale thing state cache.";
             settings.remove(entry);
         }
@@ -1578,7 +1578,7 @@ void ThingManagerImplementation::cleanupThingStateCache()
 void ThingManagerImplementation::onEventTriggered(const Event &event)
 {
     // Doing some sanity checks here...
-    Thing *thing = m_configuredThing.value(event.thingId());
+    Thing *thing = m_configuredThings.value(event.thingId());
     if (!thing) {
         qCWarning(dcThingManager()) << "Invalid thing id in emitted event. Not forwarding event. Thing setup not complete yet?";
         return;
@@ -1595,7 +1595,7 @@ void ThingManagerImplementation::onEventTriggered(const Event &event)
 void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value)
 {
     Thing *thing = qobject_cast<Thing*>(sender());
-    if (!thing || !m_configuredThing.contains(thing->id())) {
+    if (!thing || !m_configuredThings.contains(thing->id())) {
         qCWarning(dcThingManager()) << "Invalid thing id in state change. Not forwarding event. Thing setup not complete yet?";
         return;
     }

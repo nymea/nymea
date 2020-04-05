@@ -159,7 +159,7 @@ private:
     QHash<QString, Interface> m_supportedInterfaces;
     QHash<VendorId, QList<ThingClassId> > m_vendorThingMap;
     QHash<ThingClassId, ThingClass> m_supportedThings;
-    QHash<ThingId, Thing*> m_configuredThing;
+    QHash<ThingId, Thing*> m_configuredThings;
     QHash<ThingDescriptorId, ThingDescriptor> m_discoveredThings;
 
     QHash<PluginId, IntegrationPlugin*> m_integrationPlugins;

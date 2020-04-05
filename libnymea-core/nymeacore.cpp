@@ -211,8 +211,8 @@ QPair<Thing::ThingError, QList<RuleId> > NymeaCore::removeConfiguredThing(const 
     }
 
     // Check if this is a child
-    if (!thing->parentId().isNull()) {
-        qCWarning(dcThingManager) << "Thing is a child of" << thing->parentId().toString() << ". Please remove the parent.";
+    if (!thing->parentId().isNull() && thing->autoCreated()) {
+        qCWarning(dcThingManager) << "Thing is an autocreated child of" << thing->parentId().toString() << ". Please remove the parent.";
         return QPair<Thing::ThingError, QList<RuleId> > (Thing::ThingErrorThingIsChild, QList<RuleId>());
     }
 
@@ -307,8 +307,8 @@ Thing::ThingError NymeaCore::removeConfiguredThing(const ThingId &thingId, const
     }
 
     // Check if this is a child
-    if (!thing->parentId().isNull()) {
-        qCWarning(dcThingManager) << "Thing is a child of" << thing->parentId().toString() << ". Please remove the parent.";
+    if (!thing->parentId().isNull() && thing->autoCreated()) {
+        qCWarning(dcThingManager) << "Thing is an autocreated child of" << thing->parentId().toString() << ". Please remove the parent.";
         return Thing::ThingErrorThingIsChild;
     }
 

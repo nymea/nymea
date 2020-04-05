@@ -64,6 +64,7 @@ public:
         MediaBrowserIconDeezer = 207,
         MediaBrowserIconNapster = 208,
         MediaBrowserIconSoundCloud = 209,
+        MediaBrowserIconRadioParadise = 210,
     };
     Q_ENUM(MediaBrowserIcon)
 

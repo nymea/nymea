@@ -140,7 +140,8 @@
             "MediaBrowserIconAirable",
             "MediaBrowserIconDeezer",
             "MediaBrowserIconNapster",
-            "MediaBrowserIconSoundCloud"
+            "MediaBrowserIconSoundCloud",
+            "MediaBrowserIconRadioParadise"
         ],
         "NetworkDeviceState": [
             "NetworkDeviceStateUnknown",

@@ -36,6 +36,7 @@
 #include "integrations/thing.h"
 #include "integrations/thingdescriptor.h"
 #include "integrations/pluginmetadata.h"
+#include "integrations/ioconnection.h"
 
 #include "types/thingclass.h"
 #include "types/interface.h"
@@ -113,6 +114,10 @@ public:
     BrowserActionInfo *executeBrowserItem(const BrowserAction &browserAction) override;
     BrowserItemActionInfo *executeBrowserItemAction(const BrowserItemAction &browserItemAction) override;
 
+    IOConnections ioConnections(const ThingId &thingId = ThingId()) const override;
+    Thing::ThingError connectIO(const IOConnection &connection) override;
+    Thing::ThingError disconnectIO(const IOConnectionId &ioConnectionId) override;
+
     QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) override;
     ParamType translateParamType(const PluginId &pluginId, const ParamType &paramType, const QLocale &locale) override;
     ThingClass translateThingClass(const ThingClass &thingClass, const QLocale &locale) override;
@@ -149,6 +154,10 @@ private:
     void postSetupThing(Thing *thing);
     void storeThingStates(Thing *thing);
     void loadThingStates(Thing *thing);
+    void storeIOConnections();
+    void loadIOConnections();
+
+    QVariant mapValue(const QVariant &value, const StateType &fromStateType, const StateType &toStateType) const;
 
 private:
     HardwareManager *m_hardwareManager;
@@ -173,6 +182,8 @@ private:
         QString thingName;
     };
     QHash<PairingTransactionId, PairingContext> m_pendingPairings;
+
+    QHash<IOConnectionId, IOConnection> m_ioConnections;
 };
 
 #endif // THINGMANAGERIMPLEMENTATION_H

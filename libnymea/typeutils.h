@@ -56,14 +56,12 @@ DECLARE_TYPE_ID(ThingDescriptor)
 DECLARE_TYPE_ID(ParamType)
 DECLARE_TYPE_ID(Param)
 DECLARE_TYPE_ID(EventType)
-DECLARE_TYPE_ID(Event)
 DECLARE_TYPE_ID(StateType)
-DECLARE_TYPE_ID(State)
 DECLARE_TYPE_ID(ActionType)
-DECLARE_TYPE_ID(Action)
 DECLARE_TYPE_ID(Plugin)
 DECLARE_TYPE_ID(Rule)
 DECLARE_TYPE_ID(Browser)
+DECLARE_TYPE_ID(IOConnection)
 
 DECLARE_TYPE_ID(PairingTransaction)
 
@@ -165,6 +163,15 @@ public:
         BrowserTypeGeneric,
     };
     Q_ENUM(BrowserType)
+
+    enum IOType {
+        IOTypeNone,
+        IOTypeDigitalInput,
+        IOTypeDigitalOutput,
+        IOTypeAnalogInput,
+        IOTypeAnalogOutput
+    };
+    Q_ENUM(IOType)
 };
 
 Q_DECLARE_METATYPE(Types::InputType)

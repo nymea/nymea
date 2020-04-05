@@ -31,7 +31,6 @@
 #include "browseraction.h"
 
 BrowserAction::BrowserAction(const ThingId &thingId, const QString &itemId):
-    m_id(ActionId::createActionId()),
     m_thingId(thingId),
     m_itemId(itemId)
 {
@@ -39,21 +38,15 @@ BrowserAction::BrowserAction(const ThingId &thingId, const QString &itemId):
 }
 
 BrowserAction::BrowserAction(const BrowserAction &other):
-    m_id(other.id()),
     m_thingId(other.thingId()),
     m_itemId(other.itemId())
 {
 
 }
 
-ActionId BrowserAction::id() const
-{
-    return m_id;
-}
-
 bool BrowserAction::isValid() const
 {
-    return !m_id.isNull() && !m_thingId.isNull() && !m_itemId.isNull();
+    return !m_thingId.isNull() && !m_itemId.isNull();
 }
 
 ThingId BrowserAction::thingId() const
@@ -68,7 +61,6 @@ QString BrowserAction::itemId() const
 
 void BrowserAction::operator=(const BrowserAction &other)
 {
-    m_id = other.id();
     m_thingId = other.thingId();
     m_itemId = other.itemId();
 }

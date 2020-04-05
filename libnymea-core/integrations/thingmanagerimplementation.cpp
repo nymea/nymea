@@ -760,6 +760,13 @@ Thing::ThingError ThingManagerImplementation::removeConfiguredThing(const ThingI
     NymeaSettings stateCache(NymeaSettings::SettingsRoleThingStates);
     stateCache.remove(thingId.toString());
 
+    foreach (const IOConnectionId &ioConnectionId, m_ioConnections.keys()) {
+        IOConnection ioConnection = m_ioConnections.value(ioConnectionId);
+        if (ioConnection.inputThingId() == thing->id() || ioConnection.outputThingId() == thing->id()) {
+            disconnectIO(ioConnectionId);
+        }
+    }
+
     emit thingRemoved(thingId);
 
     return Thing::ThingErrorNoError;
@@ -905,6 +912,108 @@ BrowserItemActionInfo* ThingManagerImplementation::executeBrowserItemAction(cons
 
     plugin->executeBrowserItemAction(info);
     return info;
+}
+
+IOConnections ThingManagerImplementation::ioConnections(const ThingId &thingId) const
+{
+    if (thingId.isNull()) {
+        return m_ioConnections.values();
+    }
+    IOConnections ioConnections;
+    foreach (const IOConnection &ioConnection, m_ioConnections) {
+        if (ioConnection.inputThingId() == thingId || ioConnection.outputThingId() == thingId) {
+            ioConnections.append(ioConnection);
+        }
+    }
+    return ioConnections;
+}
+
+Thing::ThingError ThingManagerImplementation::connectIO(const IOConnection &connection)
+{
+    // Do some sanity checks
+    Thing *inputThing = m_configuredThings.value(connection.inputThingId());
+    if (!inputThing) {
+        qCWarning(dcThingManager()) << "Could not find inputThing" << connection.inputThingId() << "configured things. Not adding IO connection.";
+        return Thing::ThingErrorThingNotFound;
+    }
+    if (!inputThing->thingClass().stateTypes().contains(connection.inputStateTypeId())) {
+        qCWarning(dcThingManager()) << "Input thing" << inputThing->name() << "does not have a state with id" << connection.inputStateTypeId();
+        return Thing::ThingErrorStateTypeNotFound;
+    }
+    StateType inputStateType = inputThing->thingClass().stateTypes().findById(connection.inputStateTypeId());
+
+    // Check if this is actually an input
+    if (inputStateType.ioType() != Types::IOTypeDigitalInput && inputStateType.ioType() != Types::IOTypeAnalogInput) {
+        qCWarning(dcThingManager()) << "The given input state is neither a digital nor an analog input.";
+        return Thing::ThingErrorInvalidParameter;
+    }
+
+    Thing *outputThing = m_configuredThings.value(connection.outputThingId());
+    if (!outputThing) {
+        qCWarning(dcThingManager()) << "Could not find outputThing" << connection.outputThingId() << "configured things. Not adding IO connection.";
+        return Thing::ThingErrorThingNotFound;
+    }
+    if (!outputThing->thingClass().stateTypes().contains(connection.outputStateTypeId())) {
+        qCWarning(dcThingManager()) << "Output thing" << outputThing->name() << "does not have a state with id" << connection.outputStateTypeId();
+        return Thing::ThingErrorStateTypeNotFound;
+    }
+    StateType outputStateType = outputThing->thingClass().stateTypes().findById(connection.outputStateTypeId());
+
+    // Check if this is actually an output
+    if (outputStateType.ioType() != Types::IOTypeDigitalOutput && outputStateType.ioType() != Types::IOTypeAnalogOutput) {
+        qCWarning(dcThingManager()) << "The given output state is neither a digital nor an analog output.";
+        return Thing::ThingErrorInvalidParameter;
+    }
+
+    // Check if io types are compatible
+    if (inputStateType.ioType() == Types::IOTypeDigitalInput && outputStateType.ioType() != Types::IOTypeDigitalOutput) {
+        qCWarning(dcThingManager()) << "Cannot connect IOs of different type:" << inputStateType.ioType() << "is not compatible with" << outputStateType.ioType();
+        return Thing::ThingErrorInvalidParameter;
+    }
+    if (inputStateType.ioType() == Types::IOTypeAnalogInput && outputStateType.ioType() != Types::IOTypeAnalogOutput) {
+        qCWarning(dcThingManager()) << "Cannot connect IOs of different type:" << inputStateType.ioType() << "is not compatible with" << outputStateType.ioType();
+        return Thing::ThingErrorInvalidParameter;
+    }
+
+    // Check if either input or output is already connected
+    foreach (const IOConnectionId &id, m_ioConnections.keys()) {
+        if (m_ioConnections.value(id).inputThingId() == connection.inputThingId() && m_ioConnections.value(id).inputStateTypeId() == connection.inputStateTypeId()) {
+            qCDebug(dcThingManager()).nospace() << "Thing " << inputThing->name() << " already has an IO connection on " << inputStateType.displayName() << ". Replacing old connection.";
+            disconnectIO(id);
+            continue;
+        }
+        if (m_ioConnections.value(id).outputThingId() == connection.outputThingId() && m_ioConnections.value(id).outputStateTypeId() == connection.outputStateTypeId()) {
+            qCDebug(dcThingManager()).nospace() << "Thing " << inputThing->name() << " already has an IO connection on " << inputStateType.displayName() << ". Replacing old connection.";
+            disconnectIO(id);
+        }
+    }
+
+    // Finally add the connection
+    m_ioConnections.insert(connection.id(), connection);
+
+    storeIOConnections();
+
+    emit ioConnectionAdded(connection);
+    return Thing::ThingErrorNoError;
+}
+
+Thing::ThingError ThingManagerImplementation::disconnectIO(const IOConnectionId &ioConnectionId)
+{
+    if (!m_ioConnections.contains(ioConnectionId)) {
+        qCWarning(dcThingManager()) << "IO connection" << ioConnectionId << "not found. Cannot disconnect.";
+        return Thing::ThingErrorItemNotFound;
+    }
+    m_ioConnections.remove(ioConnectionId);
+
+    NymeaSettings settings(NymeaSettings::SettingsRoleIOConnections);
+    settings.beginGroup("IOConnections");
+    settings.remove(ioConnectionId.toString());
+    settings.endGroup();
+
+    qCDebug(dcThingManager()) << "IO connection disconnected:" << ioConnectionId;
+
+    emit ioConnectionRemoved(ioConnectionId);
+    return Thing::ThingErrorNoError;
 }
 
 QString ThingManagerImplementation::translate(const PluginId &pluginId, const QString &string, const QLocale &locale)
@@ -1423,6 +1532,8 @@ void ThingManagerImplementation::loadConfiguredThings()
             postSetupThing(info->thing());
         });
     }
+
+    loadIOConnections();
 }
 
 void ThingManagerImplementation::storeConfiguredThings()
@@ -1611,6 +1722,115 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
     Param valueParam(ParamTypeId(stateTypeId.toString()), value);
     Event event(EventTypeId(stateTypeId.toString()), thing->id(), ParamList() << valueParam, true);
     emit eventTriggered(event);
+
+    foreach (const IOConnection &ioConnection, m_ioConnections) {
+        // Check if this state is an input to an IO connection.
+        if (ioConnection.inputThingId() == thing->id() && ioConnection.inputStateTypeId() == stateTypeId) {
+            Thing *outputThing = m_configuredThings.value(ioConnection.outputThingId());
+            if (!outputThing) {
+                qCWarning(dcThingManager()) << "IO connection contains invalid output thing!";
+                continue;
+            }
+            IntegrationPlugin *plugin = m_integrationPlugins.value(outputThing->pluginId());
+            if (!plugin) {
+                qCWarning(dcThingManager()) << "Plugin not found for IO connection's output action.";
+                continue;
+            }
+            StateType inputStateType = thing->thingClass().getStateType(stateTypeId);
+
+            StateType outputStateType = outputThing->thingClass().getStateType(ioConnection.outputStateTypeId());
+            if (outputStateType.id().isNull()) {
+                qCWarning(dcThingManager()) << "Could not find output state type for IO connection.";
+                continue;
+            }
+            QVariant outputValue;
+            if (outputStateType.ioType() == Types::IOTypeDigitalOutput) {
+                // Digital IOs are mapped as-is
+                outputValue = value;
+
+                // We're already in sync! Skipping action.
+                if (outputThing->stateValue(outputStateType.id()) == outputValue) {
+                    continue;
+                }
+            } else {
+                // Analog IOs are mapped within the according min/max ranges
+                outputValue = mapValue(value, inputStateType, outputStateType);
+
+                // We're already in sync (fuzzy, good enough)! Skipping action.
+                if (qFuzzyCompare(outputThing->stateValue(outputStateType.id()).toDouble(), outputValue.toDouble())) {
+                    continue;
+                }
+            }
+            Action outputAction(ActionTypeId(ioConnection.outputStateTypeId()), ioConnection.outputThingId());
+
+            Param outputParam(ioConnection.outputStateTypeId(), outputValue);
+            outputAction.setParams(ParamList() << outputParam);
+            qCDebug(dcThingManager()) << "Executing IO connection action on" << outputThing->name() << outputParam;
+            ThingActionInfo* info = executeAction(outputAction);
+            connect(info, &ThingActionInfo::finished, this, [=](){
+                if (info->status() != Thing::ThingErrorNoError) {
+                    // An error happened... let's switch the input back to be in sync with the output
+                    qCWarning(dcThingManager()) << "Error syncing IO connection state. Reverting input back to old value.";
+                    if (inputStateType.ioType() == Types::IOTypeDigitalInput) {
+                        thing->setStateValue(inputStateType.id(), outputThing->stateValue(outputStateType.id()));
+                    } else {
+                        thing->setStateValue(inputStateType.id(), mapValue(outputThing->stateValue(outputStateType.id()), outputStateType, inputStateType));
+                    }
+                }
+            });
+        }
+
+        // Now check if this is an output state type and - if possible - update the inputs for bidirectional connections
+        if (ioConnection.outputThingId() == thing->id() && ioConnection.outputStateTypeId() == stateTypeId) {
+            Thing *inputThing = m_configuredThings.value(ioConnection.inputThingId());
+            if (!inputThing) {
+                qCWarning(dcThingManager()) << "IO connection contains invalid input thing!";
+                continue;
+            }
+            IntegrationPlugin *plugin = m_integrationPlugins.value(inputThing->pluginId());
+            if (!plugin) {
+                qCWarning(dcThingManager()) << "Plugin not found for IO connection's input action.";
+                continue;
+            }
+            StateType outputStateType = thing->thingClass().getStateType(stateTypeId);
+
+            StateType inputStateType = inputThing->thingClass().getStateType(ioConnection.inputStateTypeId());
+            if (inputStateType.id().isNull()) {
+                qCWarning(dcThingManager()) << "Could not find input state type for IO connection.";
+                continue;
+            }
+
+            if (!inputStateType.writable()) {
+                qCDebug(dcThingManager()) << "Input state is not writable. This connection is unidirectional.";
+                continue;
+            }
+
+            QVariant inputValue;
+            if (inputStateType.ioType() == Types::IOTypeDigitalInput) {
+                // Digital IOs are mapped as-is
+                inputValue = value;
+
+                // Prevent looping
+                if (inputThing->stateValue(inputStateType.id()) == inputValue) {
+                    continue;
+                }
+            } else {
+                // Analog IOs are mapped within the according min/max ranges
+                inputValue = mapValue(value, outputStateType, inputStateType);
+
+                // Prevent looping even if the above calculation has rounding errors... Just skip this action if we're close enough already
+                if (qFuzzyCompare(inputThing->stateValue(inputStateType.id()).toDouble(), inputValue.toDouble())) {
+                    continue;
+                }
+            }
+            Action inputAction(ActionTypeId(ioConnection.inputStateTypeId()), ioConnection.inputThingId());
+
+            Param inputParam(ioConnection.inputStateTypeId(), inputValue);
+            inputAction.setParams(ParamList() << inputParam);
+            qCDebug(dcThingManager()) << "Executing reverse IO connection action on" << inputThing->name() << inputParam;
+            executeAction(inputAction);
+        }
+    }
 }
 
 void ThingManagerImplementation::slotThingSettingChanged(const ParamTypeId &paramTypeId, const QVariant &value)
@@ -1754,6 +1974,53 @@ void ThingManagerImplementation::loadThingStates(Thing *thing)
         }
     }
     settings.endGroup();
+}
+
+void ThingManagerImplementation::storeIOConnections()
+{
+    NymeaSettings connectionSettings(NymeaSettings::SettingsRoleIOConnections);
+    connectionSettings.beginGroup("IOConnections");
+    foreach (const IOConnection &ioConnection, m_ioConnections) {
+        connectionSettings.beginGroup(ioConnection.id().toString());
+
+        connectionSettings.setValue("inputThingId", ioConnection.inputThingId().toString());
+        connectionSettings.setValue("inputStateTypeId", ioConnection.inputStateTypeId().toString());
+        connectionSettings.setValue("outputThingId", ioConnection.outputThingId().toString());
+        connectionSettings.setValue("outputStateTypeId", ioConnection.outputStateTypeId().toString());
+
+        connectionSettings.endGroup();
+    }
+    connectionSettings.endGroup();
+}
+
+void ThingManagerImplementation::loadIOConnections()
+{
+    NymeaSettings connectionSettings(NymeaSettings::SettingsRoleIOConnections);
+    connectionSettings.beginGroup("IOConnections");
+    foreach (const QString &idString, connectionSettings.childGroups()) {
+        connectionSettings.beginGroup(idString);
+        IOConnectionId id(idString);
+        ThingId inputThingId = connectionSettings.value("inputThingId").toUuid();
+        StateTypeId inputStateTypeId = connectionSettings.value("inputStateTypeId").toUuid();
+        ThingId outputThingId = connectionSettings.value("outputThingId").toUuid();
+        StateTypeId outputStateTypeId = connectionSettings.value("outputStateTypeId").toUuid();
+        IOConnection ioConnection(id, inputThingId, inputStateTypeId, outputThingId, outputStateTypeId);
+        m_ioConnections.insert(id, ioConnection);
+        connectionSettings.endGroup();
+    }
+    connectionSettings.endGroup();
+}
+
+QVariant ThingManagerImplementation::mapValue(const QVariant &value, const StateType &fromStateType, const StateType &toStateType) const
+{
+    double fromMin = fromStateType.minValue().toDouble();
+    double fromMax = fromStateType.maxValue().toDouble();
+    double toMin = toStateType.minValue().toDouble();
+    double toMax = toStateType.maxValue().toDouble();
+    double fromValue = value.toDouble();
+    double fromPercent = (fromValue - fromMin) / (fromMax - fromMin);
+    double toValue = toMin + (toMax - toMin) * fromPercent;
+    return toValue;
 }
 
 void ThingManagerImplementation::storeThingStates(Thing *thing)

@@ -381,6 +381,68 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 if (st.contains("cached")) {
                     stateType.setCached(st.value("cached").toBool());
                 }
+                if (st.contains("writable")) {
+                    stateType.setWritable(st.value("writable").toBool());
+                }
+
+                if (st.contains("ioType")) {
+                    QString ioTypeString = st.value("ioType").toString();
+                    Types::IOType ioType = Types::IOTypeNone;
+                    if (ioTypeString == "digitalInput") {
+                        if (stateType.type() != QVariant::Bool) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as digital input but type is not \"bool\"");
+                            hasError = true;
+                            break;
+                        }
+                        ioType = Types::IOTypeDigitalInput;
+                    } else if (ioTypeString == "digitalOutput") {
+                        if (stateType.type() != QVariant::Bool) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as digital output but type is not \"bool\"");
+                            hasError = true;
+                            break;
+                        }
+                        if (!stateType.writable()) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as digital output but is not writable");
+                            hasError = true;
+                            break;
+                        }
+                        ioType = Types::IOTypeDigitalOutput;
+                    } else if (ioTypeString == "analogInput") {
+                        if (stateType.type() != QVariant::Double) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog input but type is not \"double\"");
+                            hasError = true;
+                            break;
+                        }
+                        if (stateType.minValue().isNull() || stateType.maxValue().isNull()) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog input but it does not define \"minValue\" and \"maxValue\"");
+                            hasError = true;
+                            break;
+                        }
+                        ioType = Types::IOTypeAnalogInput;
+                    } else if (ioTypeString == "analogOutput") {
+                        if (stateType.type() != QVariant::Double) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog output but type is not \"double\"");
+                            hasError = true;
+                            break;
+                        }
+                        if (!stateType.writable()) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog output but is not writable");
+                            hasError = true;
+                            break;
+                        }
+                        if (stateType.minValue().isNull() || stateType.maxValue().isNull()) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog output but it does not define \"minValue\" and \"maxValue\"");
+                            hasError = true;
+                            break;
+                        }
+                        ioType = Types::IOTypeAnalogOutput;
+                    } else {
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid ioType value \"" + ioType + "\" which is not any of \"digitalInput\", \"digitalOutput\", \"analogInput\" or \"analogOutput\"");
+                        hasError = true;
+                        break;
+                    }
+                    stateType.setIOType(ioType);
+                }
                 stateTypes.append(stateType);
 
                 // Events for state changed (Not checking for duplicate UUID, this is expected to be the same as the state!)

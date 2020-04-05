@@ -868,6 +868,168 @@
                     "displayName": "Mocked Thing (User & Password)",
                     "createMethods": ["discovery", "user"],
                     "setupMethod": "userandpassword"
+                },
+                {
+                    "id": "7cbd729a-465b-4ccb-b59c-5733039dbbed",
+                    "name": "genericIoMock",
+                    "displayName": "Generic IO pins",
+                    "createMethods": ["user"],
+                    "setupMethod": "justAdd",
+                    "stateTypes": [
+                        {
+                            "id": "07165c12-4d53-45c0-8bf1-34618443b706",
+                            "name": "digitalInput1",
+                            "displayName": "Digital input 1",
+                            "displayNameEvent": "Digital input 1 changed",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "ioType": "digitalInput"
+                        },
+                        {
+                            "id": "0a4362ba-a086-4540-84ba-107ef7b99ed8",
+                            "name": "digitalInput2",
+                            "displayName": "Digital input 2",
+                            "displayNameEvent": "Digital input 2 changed",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "ioType": "digitalInput"
+                        },
+                        {
+                            "id": "d6fcdb52-f7c3-423b-b9f5-1e29f164c42e",
+                            "name": "digitalOutput1",
+                            "displayName": "Digital Output 1",
+                            "displayNameEvent": "Digital Output 1 changed",
+                            "displayNameAction": "Set Digital Output 1",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "ioType": "digitalOutput",
+                            "writable": true
+                        },
+                        {
+                            "id": "35de8b68-0cf3-4850-a27d-cf9c4a26921f",
+                            "name": "digitalOutput2",
+                            "displayName": "Digital Output 2",
+                            "displayNameEvent": "Digital Output 2 changed",
+                            "displayNameAction": "Set Digital Output 2",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "ioType": "digitalOutput",
+                            "writable": true
+                        },
+                        {
+                            "id": "ac56977c-cbba-47c6-a827-5735d8b0aed6",
+                            "name": "analogInput1",
+                            "displayName": "Analog Input 1",
+                            "displayNameEvent": "Analog Input 1 changed",
+                            "type": "double",
+                            "defaultValue": 0,
+                            "ioType": "analogInput",
+                            "minValue": 0,
+                            "maxValue": 3.3,
+                            "writable": true,
+                            "displayNameAction": "Set analog input 1"
+                        },
+                        {
+                            "id": "8e07e57e-ba4e-42df-81ee-5b72ed074532",
+                            "name": "analogInput2",
+                            "displayName": "Analog Input 2",
+                            "displayNameEvent": "Analog Input 2 changed",
+                            "type": "double",
+                            "defaultValue": 0,
+                            "ioType": "analogInput",
+                            "minValue": 0,
+                            "maxValue": 5
+                        },
+                        {
+                            "id": "70cf053e-4abc-4d88-8e1e-2bd9a62256c7",
+                            "name": "analogOutput1",
+                            "displayName": "Analog Output 1",
+                            "displayNameEvent": "Analog Output 1 changed",
+                            "displayNameAction": "Set Output Input 1",
+                            "type": "double",
+                            "defaultValue": 0,
+                            "ioType": "analogOutput",
+                            "minValue": 0,
+                            "maxValue": 3.3,
+                            "writable": true
+                        },
+                        {
+                            "id": "e40bcf7d-47b8-41fa-b213-3652a905b376",
+                            "name": "analogOutput2",
+                            "displayName": "Analog Output 2",
+                            "displayNameEvent": "Analog Output 2 changed",
+                            "displayNameAction": "Set Output Input 2",
+                            "type": "double",
+                            "defaultValue": 0,
+                            "ioType": "analogOutput",
+                            "minValue": 0,
+                            "maxValue": 5,
+                            "writable": true
+                        }
+                    ]
+                },
+                {
+                    "id": "98ab137e-757e-43f8-9d9b-5d50d990242a",
+                    "name": "virtualIoLightMock",
+                    "displayName": "Generic Light (Mock)",
+                    "createMethods": ["user"],
+                    "setupMethod": "justAdd",
+                    "interfaces": ["light"],
+                    "stateTypes": [
+                        {
+                            "id": "d1917b3d-1530-4cf9-90f7-263ee88e714b",
+                            "name": "power",
+                            "displayName": "Power",
+                            "displayNameEvent": "Power changed",
+                            "displayNameAction": "Set power",
+                            "type": "bool",
+                            "defaultValue": false,
+                            "ioType": "digitalInput",
+                            "writable": true
+                        }
+                    ]
+                },
+                {
+                    "id": "f8917e12-c9cb-4ea1-a06e-1ce6db2194f3",
+                    "name": "virtualIoTemperatureSensorMock",
+                    "displayName": "Generic Temperature Sensor (Mock)",
+                    "createMethods": ["user"],
+                    "setupMethod": "justAdd",
+                    "interfaces": ["temperaturesensor"],
+                    "settingsTypes": [
+                        {
+                            "id": "803cddbf-94c7-4f35-bc7a-18698b03b942",
+                            "name": "minTemp",
+                            "displayName": "Minimum temperature",
+                            "type": "double",
+                            "defaultValue": -20,
+                            "unit": "DegreeCelsius"
+                        },
+                        {
+                            "id": "7077c56f-c35b-4252-8c15-8fb549be04ce",
+                            "name": "maxTemp",
+                            "displayName": "Maximum temperature",
+                            "type": "double",
+                            "defaultValue": 50,
+                            "unit": "DegreeCelsius"
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "db9cc518-1012-47e2-8212-6e616fed07a6",
+                            "name": "temperature",
+                            "displayName": "Temperature",
+                            "displayNameEvent": "Temperature changed",
+                            "displayNameAction": "Set temperature",
+                            "type": "double",
+                            "unit": "DegreeCelsius",
+                            "defaultValue": 0,
+                            "ioType": "analogOutput",
+                            "writable": true,
+                            "minValue": 0,
+                            "maxValue": 1
+                        }
+                    ]
                 }
             ]
         }

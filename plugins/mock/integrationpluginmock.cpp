@@ -233,6 +233,24 @@ void IntegrationPluginMock::setupThing(ThingSetupInfo *info)
         return;
     }
 
+    if (info->thing()->thingClassId() == genericIoMockThingClassId) {
+        qCDebug(dcMock()) << "Generic IO mock setup complete";
+        info->finish(Thing::ThingErrorNoError);
+        return;
+    }
+
+    if (info->thing()->thingClassId() == virtualIoLightMockThingClassId) {
+        qCDebug(dcMock()) << "Virtual IO mock light setup complete";
+        info->finish(Thing::ThingErrorNoError);
+        return;
+    }
+
+    if (info->thing()->thingClassId() == virtualIoTemperatureSensorMockThingClassId) {
+        qCDebug(dcMock()) << "Virtual IO mock temperature sensor setup complete";
+        info->finish(Thing::ThingErrorNoError);
+        return;
+    }
+
     qCWarning(dcMock()) << "Unhandled thing class" << info->thing()->thingClass();
     info->finish(Thing::ThingErrorThingClassNotFound);
 }
@@ -689,9 +707,59 @@ void IntegrationPluginMock::executeAction(ThingActionInfo *info)
             info->thing()->setStateValue(inputTypeMockWritableTimestampUIntStateTypeId, info->action().param(inputTypeMockWritableTimestampUIntActionWritableTimestampUIntParamTypeId).value().toULongLong());
         }
         return;
-
     }
-    info->finish(Thing::ThingErrorThingClassNotFound);
+
+    if (info->thing()->thingClassId() == virtualIoLightMockThingClassId) {
+        if (info->action().actionTypeId() == virtualIoLightMockPowerActionTypeId) {
+            qCDebug(dcMock()) << "ExecuteAction for virtual light power action with param" << info->action().param(virtualIoLightMockPowerActionPowerParamTypeId).value();
+            info->thing()->setStateValue(virtualIoLightMockPowerStateTypeId, info->action().param(virtualIoLightMockPowerActionPowerParamTypeId).value());
+            info->finish(Thing::ThingErrorNoError);
+            return;
+        }
+    }
+
+    if (info->thing()->thingClassId() == genericIoMockThingClassId) {
+        if (info->action().actionTypeId() == genericIoMockDigitalOutput1ActionTypeId) {
+            info->thing()->setStateValue(genericIoMockDigitalOutput1StateTypeId, info->action().param(genericIoMockDigitalOutput1ActionDigitalOutput1ParamTypeId).value());
+            info->finish(Thing::ThingErrorNoError);
+            return;
+        }
+        if (info->action().actionTypeId() == genericIoMockDigitalOutput2ActionTypeId) {
+            info->thing()->setStateValue(genericIoMockDigitalOutput2StateTypeId, info->action().param(genericIoMockDigitalOutput2ActionDigitalOutput2ParamTypeId).value());
+            info->finish(Thing::ThingErrorNoError);
+            return;
+        }
+        if (info->action().actionTypeId() == genericIoMockAnalogInput1ActionTypeId) {
+            qCDebug(dcMock()) << "ExecuteAction for virtual io analog in 1 action with param" << info->action().param(genericIoMockAnalogInput1ActionAnalogInput1ParamTypeId).value();
+            info->thing()->setStateValue(genericIoMockAnalogInput1StateTypeId, info->action().param(genericIoMockAnalogInput1ActionAnalogInput1ParamTypeId).value());
+            info->finish(Thing::ThingErrorNoError);
+            return;
+        }
+        if (info->action().actionTypeId() == genericIoMockAnalogOutput1ActionTypeId) {
+            info->thing()->setStateValue(genericIoMockAnalogOutput1StateTypeId, info->action().param(genericIoMockAnalogOutput1ActionAnalogOutput1ParamTypeId).value());
+            info->finish(Thing::ThingErrorNoError);
+            return;
+        }
+        if (info->action().actionTypeId() == genericIoMockAnalogOutput2ActionTypeId) {
+            info->thing()->setStateValue(genericIoMockAnalogOutput2StateTypeId, info->action().param(genericIoMockAnalogOutput2ActionAnalogOutput2ParamTypeId).value());
+            info->finish(Thing::ThingErrorNoError);
+            return;
+        }
+    }
+
+    if (info->thing()->thingClassId() == virtualIoTemperatureSensorMockThingClassId) {
+        if (info->action().actionTypeId() == virtualIoTemperatureSensorMockTemperatureActionTypeId) {
+            double minTemp = info->thing()->setting(virtualIoTemperatureSensorMockSettingsMinTempParamTypeId).toDouble();
+            double maxTemp = info->thing()->setting(virtualIoTemperatureSensorMockSettingsMaxTempParamTypeId).toDouble();
+            double value = info->action().param(virtualIoTemperatureSensorMockTemperatureActionTemperatureParamTypeId).value().toDouble();
+            double temp = minTemp + (maxTemp - minTemp) * value;
+            info->thing()->setStateValue(virtualIoTemperatureSensorMockTemperatureStateTypeId, temp);
+            info->finish(Thing::ThingErrorNoError);
+            return;
+        }
+    }
+
+    qCWarning(dcMock()) << "Unhandled executeAction call in mock plugin!";
 }
 
 void IntegrationPluginMock::executeBrowserItem(BrowserActionInfo *info)
@@ -728,7 +796,6 @@ void IntegrationPluginMock::executeBrowserItem(BrowserActionInfo *info)
 
 void IntegrationPluginMock::executeBrowserItemAction(BrowserItemActionInfo *info)
 {
-    qCDebug(dcMock()) << "TODO" << info << info->browserItemAction().id();
     if (info->browserItemAction().actionTypeId() == mockAddToFavoritesBrowserItemActionTypeId) {
 
         VirtualFsNode *node = m_virtualFs->findNode(info->browserItemAction().itemId());

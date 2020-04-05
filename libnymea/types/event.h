@@ -50,8 +50,6 @@ public:
     Event();
     Event(const EventTypeId &eventTypeId, const ThingId &thingId, const ParamList &params = ParamList(), bool isStateChangeEvent = false);
 
-    EventId eventId() const;
-
     EventTypeId eventTypeId() const;
     void setEventTypeId(const EventTypeId &eventTypeId);
 
@@ -67,7 +65,6 @@ public:
     bool isStateChangeEvent() const;
 
 private:
-    EventId m_id;
     EventTypeId m_eventTypeId;
     ThingId m_thingId;
     ParamList m_params;

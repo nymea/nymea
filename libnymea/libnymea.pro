@@ -14,6 +14,7 @@ HEADERS += \
     integrations/browseritemactioninfo.h \
     integrations/browseritemresult.h \
     integrations/integrationplugin.h \
+    integrations/ioconnection.h \
     integrations/pluginmetadata.h \
     integrations/browseresult.h \
     integrations/thing.h \
@@ -97,6 +98,7 @@ SOURCES += \
     integrations/browseritemactioninfo.cpp \
     integrations/browseritemresult.cpp \
     integrations/integrationplugin.cpp \
+    integrations/ioconnection.cpp \
     integrations/pluginmetadata.cpp \
     integrations/browseresult.cpp \
     integrations/thing.cpp \

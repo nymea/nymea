@@ -115,6 +115,9 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     case SettingsRoleMqttPolicies:
         fileName = "mqttpolicies.conf";
         break;
+    case SettingsRoleIOConnections:
+        fileName = "ioconnections.conf";
+        break;
     }
     m_settings = new QSettings(basePath + settingsPrefix + fileName, QSettings::IniFormat, this);
 }

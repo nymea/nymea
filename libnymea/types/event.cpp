@@ -46,8 +46,7 @@
 #include "event.h"
 
 /*! Constructs an Event. */
-Event::Event():
-    m_id(EventId::createEventId())
+Event::Event()
 {
 }
 
@@ -56,19 +55,11 @@ Event::Event():
  *  specifies if the \l{Event} will be autogeneratet or not. The parameters must
  *  match the description in the reflecting \l{Event}.  */
 Event::Event(const EventTypeId &eventTypeId, const ThingId &thingId, const ParamList &params, bool isStateChangeEvent):
-    m_id(EventId::createEventId()),
     m_eventTypeId(eventTypeId),
     m_thingId(thingId),
     m_params(params),
     m_isStateChangeEvent(isStateChangeEvent)
 {
-}
-
-/*! Returns the Id of this Event. Each newly created Event will have a new UUID generated. The id will be copied
- *  in the copy constructor. */
-EventId Event::eventId() const
-{
-    return m_id;
 }
 
 /*! Returns the id of the \l{EventType} which describes this Event. */

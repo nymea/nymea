@@ -39,8 +39,6 @@ public:
     explicit BrowserAction(const ThingId &thingId = ThingId(), const QString &itemId = QString());
     BrowserAction(const BrowserAction &other);
 
-    ActionId id() const;
-
     bool isValid() const;
 
     ThingId thingId() const;
@@ -48,7 +46,6 @@ public:
 
     void operator=(const BrowserAction &other);
 private:
-    ActionId m_id;
     ThingId m_thingId;
     QString m_itemId;
 };

@@ -250,10 +250,104 @@ ParamTypeId inputTypeMockWritableTimestampUIntActionWritableTimestampUIntParamTy
 ThingClassId oAuthGoogleMockThingClassId = ThingClassId("{805d1692-7bd0-449a-9d5c-43a332ff58f4}");
 ThingClassId oAuthSonosMockThingClassId = ThingClassId("{783c615b-7bd6-49a4-98b0-8d1deb3c7156}");
 ThingClassId userAndPassMockThingClassId = ThingClassId("{6fe07a77-9c07-4736-81e2-d504314bbcb9}");
+ThingClassId genericIoMockThingClassId = ThingClassId("{7cbd729a-465b-4ccb-b59c-5733039dbbed}");
+StateTypeId genericIoMockDigitalInput1StateTypeId = StateTypeId("{07165c12-4d53-45c0-8bf1-34618443b706}");
+StateTypeId genericIoMockDigitalInput2StateTypeId = StateTypeId("{0a4362ba-a086-4540-84ba-107ef7b99ed8}");
+StateTypeId genericIoMockDigitalOutput1StateTypeId = StateTypeId("{d6fcdb52-f7c3-423b-b9f5-1e29f164c42e}");
+StateTypeId genericIoMockDigitalOutput2StateTypeId = StateTypeId("{35de8b68-0cf3-4850-a27d-cf9c4a26921f}");
+StateTypeId genericIoMockAnalogInput1StateTypeId = StateTypeId("{ac56977c-cbba-47c6-a827-5735d8b0aed6}");
+StateTypeId genericIoMockAnalogInput2StateTypeId = StateTypeId("{8e07e57e-ba4e-42df-81ee-5b72ed074532}");
+StateTypeId genericIoMockAnalogOutput1StateTypeId = StateTypeId("{70cf053e-4abc-4d88-8e1e-2bd9a62256c7}");
+StateTypeId genericIoMockAnalogOutput2StateTypeId = StateTypeId("{e40bcf7d-47b8-41fa-b213-3652a905b376}");
+EventTypeId genericIoMockDigitalInput1EventTypeId = EventTypeId("{07165c12-4d53-45c0-8bf1-34618443b706}");
+ParamTypeId genericIoMockDigitalInput1EventDigitalInput1ParamTypeId = ParamTypeId("{07165c12-4d53-45c0-8bf1-34618443b706}");
+EventTypeId genericIoMockDigitalInput2EventTypeId = EventTypeId("{0a4362ba-a086-4540-84ba-107ef7b99ed8}");
+ParamTypeId genericIoMockDigitalInput2EventDigitalInput2ParamTypeId = ParamTypeId("{0a4362ba-a086-4540-84ba-107ef7b99ed8}");
+EventTypeId genericIoMockDigitalOutput1EventTypeId = EventTypeId("{d6fcdb52-f7c3-423b-b9f5-1e29f164c42e}");
+ParamTypeId genericIoMockDigitalOutput1EventDigitalOutput1ParamTypeId = ParamTypeId("{d6fcdb52-f7c3-423b-b9f5-1e29f164c42e}");
+EventTypeId genericIoMockDigitalOutput2EventTypeId = EventTypeId("{35de8b68-0cf3-4850-a27d-cf9c4a26921f}");
+ParamTypeId genericIoMockDigitalOutput2EventDigitalOutput2ParamTypeId = ParamTypeId("{35de8b68-0cf3-4850-a27d-cf9c4a26921f}");
+EventTypeId genericIoMockAnalogInput1EventTypeId = EventTypeId("{ac56977c-cbba-47c6-a827-5735d8b0aed6}");
+ParamTypeId genericIoMockAnalogInput1EventAnalogInput1ParamTypeId = ParamTypeId("{ac56977c-cbba-47c6-a827-5735d8b0aed6}");
+EventTypeId genericIoMockAnalogInput2EventTypeId = EventTypeId("{8e07e57e-ba4e-42df-81ee-5b72ed074532}");
+ParamTypeId genericIoMockAnalogInput2EventAnalogInput2ParamTypeId = ParamTypeId("{8e07e57e-ba4e-42df-81ee-5b72ed074532}");
+EventTypeId genericIoMockAnalogOutput1EventTypeId = EventTypeId("{70cf053e-4abc-4d88-8e1e-2bd9a62256c7}");
+ParamTypeId genericIoMockAnalogOutput1EventAnalogOutput1ParamTypeId = ParamTypeId("{70cf053e-4abc-4d88-8e1e-2bd9a62256c7}");
+EventTypeId genericIoMockAnalogOutput2EventTypeId = EventTypeId("{e40bcf7d-47b8-41fa-b213-3652a905b376}");
+ParamTypeId genericIoMockAnalogOutput2EventAnalogOutput2ParamTypeId = ParamTypeId("{e40bcf7d-47b8-41fa-b213-3652a905b376}");
+ActionTypeId genericIoMockDigitalOutput1ActionTypeId = ActionTypeId("{d6fcdb52-f7c3-423b-b9f5-1e29f164c42e}");
+ParamTypeId genericIoMockDigitalOutput1ActionDigitalOutput1ParamTypeId = ParamTypeId("{d6fcdb52-f7c3-423b-b9f5-1e29f164c42e}");
+ActionTypeId genericIoMockDigitalOutput2ActionTypeId = ActionTypeId("{35de8b68-0cf3-4850-a27d-cf9c4a26921f}");
+ParamTypeId genericIoMockDigitalOutput2ActionDigitalOutput2ParamTypeId = ParamTypeId("{35de8b68-0cf3-4850-a27d-cf9c4a26921f}");
+ActionTypeId genericIoMockAnalogInput1ActionTypeId = ActionTypeId("{ac56977c-cbba-47c6-a827-5735d8b0aed6}");
+ParamTypeId genericIoMockAnalogInput1ActionAnalogInput1ParamTypeId = ParamTypeId("{ac56977c-cbba-47c6-a827-5735d8b0aed6}");
+ActionTypeId genericIoMockAnalogOutput1ActionTypeId = ActionTypeId("{70cf053e-4abc-4d88-8e1e-2bd9a62256c7}");
+ParamTypeId genericIoMockAnalogOutput1ActionAnalogOutput1ParamTypeId = ParamTypeId("{70cf053e-4abc-4d88-8e1e-2bd9a62256c7}");
+ActionTypeId genericIoMockAnalogOutput2ActionTypeId = ActionTypeId("{e40bcf7d-47b8-41fa-b213-3652a905b376}");
+ParamTypeId genericIoMockAnalogOutput2ActionAnalogOutput2ParamTypeId = ParamTypeId("{e40bcf7d-47b8-41fa-b213-3652a905b376}");
+ThingClassId virtualIoLightMockThingClassId = ThingClassId("{98ab137e-757e-43f8-9d9b-5d50d990242a}");
+StateTypeId virtualIoLightMockPowerStateTypeId = StateTypeId("{d1917b3d-1530-4cf9-90f7-263ee88e714b}");
+EventTypeId virtualIoLightMockPowerEventTypeId = EventTypeId("{d1917b3d-1530-4cf9-90f7-263ee88e714b}");
+ParamTypeId virtualIoLightMockPowerEventPowerParamTypeId = ParamTypeId("{d1917b3d-1530-4cf9-90f7-263ee88e714b}");
+ActionTypeId virtualIoLightMockPowerActionTypeId = ActionTypeId("{d1917b3d-1530-4cf9-90f7-263ee88e714b}");
+ParamTypeId virtualIoLightMockPowerActionPowerParamTypeId = ParamTypeId("{d1917b3d-1530-4cf9-90f7-263ee88e714b}");
+ThingClassId virtualIoTemperatureSensorMockThingClassId = ThingClassId("{f8917e12-c9cb-4ea1-a06e-1ce6db2194f3}");
+ParamTypeId virtualIoTemperatureSensorMockSettingsMinTempParamTypeId = ParamTypeId("{803cddbf-94c7-4f35-bc7a-18698b03b942}");
+ParamTypeId virtualIoTemperatureSensorMockSettingsMaxTempParamTypeId = ParamTypeId("{7077c56f-c35b-4252-8c15-8fb549be04ce}");
+StateTypeId virtualIoTemperatureSensorMockTemperatureStateTypeId = StateTypeId("{db9cc518-1012-47e2-8212-6e616fed07a6}");
+EventTypeId virtualIoTemperatureSensorMockTemperatureEventTypeId = EventTypeId("{db9cc518-1012-47e2-8212-6e616fed07a6}");
+ParamTypeId virtualIoTemperatureSensorMockTemperatureEventTemperatureParamTypeId = ParamTypeId("{db9cc518-1012-47e2-8212-6e616fed07a6}");
+ActionTypeId virtualIoTemperatureSensorMockTemperatureActionTypeId = ActionTypeId("{db9cc518-1012-47e2-8212-6e616fed07a6}");
+ParamTypeId virtualIoTemperatureSensorMockTemperatureActionTemperatureParamTypeId = ParamTypeId("{db9cc518-1012-47e2-8212-6e616fed07a6}");
 
 const QString translations[] {
     //: The name of the Browser Item ActionType ({00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3}) of ThingClass mock
     QT_TRANSLATE_NOOP("mock", "Add to favorites"),
+
+    //: The name of the ParamType (ThingClass: genericIoMock, ActionType: analogInput1, ID: {ac56977c-cbba-47c6-a827-5735d8b0aed6})
+    QT_TRANSLATE_NOOP("mock", "Analog Input 1"),
+
+    //: The name of the ParamType (ThingClass: genericIoMock, EventType: analogInput1, ID: {ac56977c-cbba-47c6-a827-5735d8b0aed6})
+    QT_TRANSLATE_NOOP("mock", "Analog Input 1"),
+
+    //: The name of the StateType ({ac56977c-cbba-47c6-a827-5735d8b0aed6}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Analog Input 1"),
+
+    //: The name of the EventType ({ac56977c-cbba-47c6-a827-5735d8b0aed6}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Analog Input 1 changed"),
+
+    //: The name of the ParamType (ThingClass: genericIoMock, EventType: analogInput2, ID: {8e07e57e-ba4e-42df-81ee-5b72ed074532})
+    QT_TRANSLATE_NOOP("mock", "Analog Input 2"),
+
+    //: The name of the StateType ({8e07e57e-ba4e-42df-81ee-5b72ed074532}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Analog Input 2"),
+
+    //: The name of the EventType ({8e07e57e-ba4e-42df-81ee-5b72ed074532}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Analog Input 2 changed"),
+
+    //: The name of the ParamType (ThingClass: genericIoMock, ActionType: analogOutput1, ID: {70cf053e-4abc-4d88-8e1e-2bd9a62256c7})
+    QT_TRANSLATE_NOOP("mock", "Analog Output 1"),
+
+    //: The name of the ParamType (ThingClass: genericIoMock, EventType: analogOutput1, ID: {70cf053e-4abc-4d88-8e1e-2bd9a62256c7})
+    QT_TRANSLATE_NOOP("mock", "Analog Output 1"),
+
+    //: The name of the StateType ({70cf053e-4abc-4d88-8e1e-2bd9a62256c7}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Analog Output 1"),
+
+    //: The name of the EventType ({70cf053e-4abc-4d88-8e1e-2bd9a62256c7}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Analog Output 1 changed"),
+
+    //: The name of the ParamType (ThingClass: genericIoMock, ActionType: analogOutput2, ID: {e40bcf7d-47b8-41fa-b213-3652a905b376})
+    QT_TRANSLATE_NOOP("mock", "Analog Output 2"),
+
+    //: The name of the ParamType (ThingClass: genericIoMock, EventType: analogOutput2, ID: {e40bcf7d-47b8-41fa-b213-3652a905b376})
+    QT_TRANSLATE_NOOP("mock", "Analog Output 2"),
+
+    //: The name of the StateType ({e40bcf7d-47b8-41fa-b213-3652a905b376}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Analog Output 2"),
+
+    //: The name of the EventType ({e40bcf7d-47b8-41fa-b213-3652a905b376}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Analog Output 2 changed"),
 
     //: The name of the ParamType (ThingClass: inputTypeMock, EventType: bool, ID: {3bad3a09-5826-4ed7-a832-10e3e2ee2a7d})
     QT_TRANSLATE_NOOP("mock", "Bool"),
@@ -272,6 +366,48 @@ const QString translations[] {
 
     //: The name of the EventType ({4507d5c6-b692-4bd6-87f2-00364bc0cb4d}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "Color changed"),
+
+    //: The name of the ParamType (ThingClass: genericIoMock, ActionType: digitalOutput1, ID: {d6fcdb52-f7c3-423b-b9f5-1e29f164c42e})
+    QT_TRANSLATE_NOOP("mock", "Digital Output 1"),
+
+    //: The name of the ParamType (ThingClass: genericIoMock, EventType: digitalOutput1, ID: {d6fcdb52-f7c3-423b-b9f5-1e29f164c42e})
+    QT_TRANSLATE_NOOP("mock", "Digital Output 1"),
+
+    //: The name of the StateType ({d6fcdb52-f7c3-423b-b9f5-1e29f164c42e}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Digital Output 1"),
+
+    //: The name of the EventType ({d6fcdb52-f7c3-423b-b9f5-1e29f164c42e}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Digital Output 1 changed"),
+
+    //: The name of the ParamType (ThingClass: genericIoMock, ActionType: digitalOutput2, ID: {35de8b68-0cf3-4850-a27d-cf9c4a26921f})
+    QT_TRANSLATE_NOOP("mock", "Digital Output 2"),
+
+    //: The name of the ParamType (ThingClass: genericIoMock, EventType: digitalOutput2, ID: {35de8b68-0cf3-4850-a27d-cf9c4a26921f})
+    QT_TRANSLATE_NOOP("mock", "Digital Output 2"),
+
+    //: The name of the StateType ({35de8b68-0cf3-4850-a27d-cf9c4a26921f}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Digital Output 2"),
+
+    //: The name of the EventType ({35de8b68-0cf3-4850-a27d-cf9c4a26921f}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Digital Output 2 changed"),
+
+    //: The name of the ParamType (ThingClass: genericIoMock, EventType: digitalInput1, ID: {07165c12-4d53-45c0-8bf1-34618443b706})
+    QT_TRANSLATE_NOOP("mock", "Digital input 1"),
+
+    //: The name of the StateType ({07165c12-4d53-45c0-8bf1-34618443b706}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Digital input 1"),
+
+    //: The name of the EventType ({07165c12-4d53-45c0-8bf1-34618443b706}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Digital input 1 changed"),
+
+    //: The name of the ParamType (ThingClass: genericIoMock, EventType: digitalInput2, ID: {0a4362ba-a086-4540-84ba-107ef7b99ed8})
+    QT_TRANSLATE_NOOP("mock", "Digital input 2"),
+
+    //: The name of the StateType ({0a4362ba-a086-4540-84ba-107ef7b99ed8}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Digital input 2"),
+
+    //: The name of the EventType ({0a4362ba-a086-4540-84ba-107ef7b99ed8}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Digital input 2 changed"),
 
     //: The name of the ParamType (ThingClass: inputTypeMock, EventType: double, ID: {f7d2063d-959e-46ac-8568-8b99722d3b22})
     QT_TRANSLATE_NOOP("mock", "Double"),
@@ -327,6 +463,15 @@ const QString translations[] {
     //: The name of the EventType ({80baec19-54de-4948-ac46-31eabfaceb83}) of ThingClass mock
     QT_TRANSLATE_NOOP("mock", "Dummy int state changed"),
 
+    //: The name of the ThingClass ({7cbd729a-465b-4ccb-b59c-5733039dbbed})
+    QT_TRANSLATE_NOOP("mock", "Generic IO pins"),
+
+    //: The name of the ThingClass ({98ab137e-757e-43f8-9d9b-5d50d990242a})
+    QT_TRANSLATE_NOOP("mock", "Generic Light (Mock)"),
+
+    //: The name of the ThingClass ({f8917e12-c9cb-4ea1-a06e-1ce6db2194f3})
+    QT_TRANSLATE_NOOP("mock", "Generic Temperature Sensor (Mock)"),
+
     //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {9e5f86a0-4bb3-4892-bff8-3fc4032af6e2})
     QT_TRANSLATE_NOOP("mock", "IPv4 address"),
 
@@ -347,6 +492,12 @@ const QString translations[] {
 
     //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {a8494faf-3a0f-4cf3-84b7-4b39148a838d})
     QT_TRANSLATE_NOOP("mock", "Mail address"),
+
+    //: The name of the ParamType (ThingClass: virtualIoTemperatureSensorMock, Type: settings, ID: {7077c56f-c35b-4252-8c15-8fb549be04ce})
+    QT_TRANSLATE_NOOP("mock", "Maximum temperature"),
+
+    //: The name of the ParamType (ThingClass: virtualIoTemperatureSensorMock, Type: settings, ID: {803cddbf-94c7-4f35-bc7a-18698b03b942})
+    QT_TRANSLATE_NOOP("mock", "Minimum temperature"),
 
     //: The name of the ActionType ({07cd8d5f-2f65-4955-b1f9-05d7f4da488a}) of ThingClass autoMock
     QT_TRANSLATE_NOOP("mock", "Mock Action 1 (with params)"),
@@ -426,11 +577,35 @@ const QString translations[] {
     //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {e5c0d14b-c9f1-4aca-a56e-85bfa6977150})
     QT_TRANSLATE_NOOP("mock", "Password text"),
 
+    //: The name of the ParamType (ThingClass: virtualIoLightMock, ActionType: power, ID: {d1917b3d-1530-4cf9-90f7-263ee88e714b})
+    QT_TRANSLATE_NOOP("mock", "Power"),
+
+    //: The name of the ParamType (ThingClass: virtualIoLightMock, EventType: power, ID: {d1917b3d-1530-4cf9-90f7-263ee88e714b})
+    QT_TRANSLATE_NOOP("mock", "Power"),
+
+    //: The name of the StateType ({d1917b3d-1530-4cf9-90f7-263ee88e714b}) of ThingClass virtualIoLightMock
+    QT_TRANSLATE_NOOP("mock", "Power"),
+
+    //: The name of the EventType ({d1917b3d-1530-4cf9-90f7-263ee88e714b}) of ThingClass virtualIoLightMock
+    QT_TRANSLATE_NOOP("mock", "Power changed"),
+
     //: The name of the Browser Item ActionType ({da6faef8-2816-430e-93bb-57e8f9582d29}) of ThingClass mock
     QT_TRANSLATE_NOOP("mock", "Remove from favorites"),
 
     //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {22add8c9-ee4f-43ad-8931-58e999313ac3})
     QT_TRANSLATE_NOOP("mock", "Search text"),
+
+    //: The name of the ActionType ({d6fcdb52-f7c3-423b-b9f5-1e29f164c42e}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Set Digital Output 1"),
+
+    //: The name of the ActionType ({35de8b68-0cf3-4850-a27d-cf9c4a26921f}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Set Digital Output 2"),
+
+    //: The name of the ActionType ({70cf053e-4abc-4d88-8e1e-2bd9a62256c7}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Set Output Input 1"),
+
+    //: The name of the ActionType ({e40bcf7d-47b8-41fa-b213-3652a905b376}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Set Output Input 2"),
 
     //: The name of the ActionType ({a7c11774-f31f-4d64-99d1-e0ae5fb35a5c}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "Set Writable Bool"),
@@ -477,6 +652,9 @@ const QString translations[] {
     //: The name of the ActionType ({05f63f9c-f61e-4dcf-ad55-3f13fde2765b}) of ThingClass pushButtonMock
     QT_TRANSLATE_NOOP("mock", "Set allowed values"),
 
+    //: The name of the ActionType ({ac56977c-cbba-47c6-a827-5735d8b0aed6}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Set analog input 1"),
+
     //: The name of the ActionType ({80ba1449-b485-47d4-a067-6bf306e2a568}) of ThingClass childMock
     QT_TRANSLATE_NOOP("mock", "Set bool value"),
 
@@ -507,6 +685,12 @@ const QString translations[] {
     //: The name of the ActionType ({72981c04-267a-4ba0-a59e-9921d2f3af9c}) of ThingClass pushButtonMock
     QT_TRANSLATE_NOOP("mock", "Set percentage"),
 
+    //: The name of the ActionType ({d1917b3d-1530-4cf9-90f7-263ee88e714b}) of ThingClass virtualIoLightMock
+    QT_TRANSLATE_NOOP("mock", "Set power"),
+
+    //: The name of the ActionType ({db9cc518-1012-47e2-8212-6e616fed07a6}) of ThingClass virtualIoTemperatureSensorMock
+    QT_TRANSLATE_NOOP("mock", "Set temperature"),
+
     //: The name of the ParamType (ThingClass: mock, Type: settings, ID: {367f7ba4-5039-47be-abd8-59cc8eaf4b9a})
     QT_TRANSLATE_NOOP("mock", "Setting 1"),
 
@@ -518,6 +702,18 @@ const QString translations[] {
 
     //: The name of the EventType ({27f69ca9-a321-40ff-bfee-4b0272a671b4}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "String changed"),
+
+    //: The name of the ParamType (ThingClass: virtualIoTemperatureSensorMock, ActionType: temperature, ID: {db9cc518-1012-47e2-8212-6e616fed07a6})
+    QT_TRANSLATE_NOOP("mock", "Temperature"),
+
+    //: The name of the ParamType (ThingClass: virtualIoTemperatureSensorMock, EventType: temperature, ID: {db9cc518-1012-47e2-8212-6e616fed07a6})
+    QT_TRANSLATE_NOOP("mock", "Temperature"),
+
+    //: The name of the StateType ({db9cc518-1012-47e2-8212-6e616fed07a6}) of ThingClass virtualIoTemperatureSensorMock
+    QT_TRANSLATE_NOOP("mock", "Temperature"),
+
+    //: The name of the EventType ({db9cc518-1012-47e2-8212-6e616fed07a6}) of ThingClass virtualIoTemperatureSensorMock
+    QT_TRANSLATE_NOOP("mock", "Temperature changed"),
 
     //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {716f0994-bc01-42b0-b64d-59236f7320d2})
     QT_TRANSLATE_NOOP("mock", "Text area"),

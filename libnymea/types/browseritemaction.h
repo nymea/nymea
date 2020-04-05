@@ -40,8 +40,6 @@ public:
     explicit BrowserItemAction(const ThingId &thingId = ThingId(), const QString &itemId = QString(), const ActionTypeId &actionTypeId = ActionTypeId(), const ParamList &params = ParamList());
     BrowserItemAction(const BrowserItemAction &other);
 
-    ActionId id() const;
-
     bool isValid() const;
 
     ThingId thingId() const;
@@ -54,7 +52,6 @@ public:
 
     void operator=(const BrowserItemAction &other);
 private:
-    ActionId m_id;
     ThingId m_thingId;
     QString m_itemId;
     ActionTypeId m_actionTypeId;

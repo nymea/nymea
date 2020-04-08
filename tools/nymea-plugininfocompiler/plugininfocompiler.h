@@ -42,7 +42,7 @@ class PluginInfoCompiler
 public:
     PluginInfoCompiler();
 
-    int compile(const QString &inputFile, const QString &outputFile, const QString outputFileExtern, const QString &translationsPath);
+    int compile(const QString &inputFile, const QString &outputFile, const QString outputFileExtern, const QString &translationsPath, bool strictMode);
 
 
 private:

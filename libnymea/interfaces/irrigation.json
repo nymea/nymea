@@ -1,0 +1,4 @@
+{
+    "extends": "power",
+    "description": "The irrigation interface is used for irrigation systems. It is used for water pumps or valves that supply any sort of irrigation. The power state turns irrigation on and off."
+}

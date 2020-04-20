@@ -61,7 +61,7 @@ public:
     ~LogEngine();
 
     LogEntriesFetchJob *fetchLogEntries(const LogFilter &filter = LogFilter());
-    ThingsFetchJob *fetchDevices();
+    ThingsFetchJob *fetchThings();
 
     bool jobsRunning() const;
 
@@ -78,7 +78,7 @@ public:
     void logRuleEnabledChanged(const Rule &rule, const bool &enabled);
     void logRuleActionsExecuted(const Rule &rule);
     void logRuleExitActionsExecuted(const Rule &rule);
-    void removeDeviceLogs(const ThingId &thingId);
+    void removeThingLogs(const ThingId &thingId);
     void removeRuleLogs(const RuleId &ruleId);
 
 signals:
@@ -92,8 +92,9 @@ private:
     void appendLogEntry(const LogEntry &entry);
     void rotate(const QString &dbName);
 
-
-    bool migrateDatabaseVersion2to3();
+    bool migrateDatabaseVersion3to4();
+    void migrateEntries3to4();
+    void finalizeMigration3To4();
 
 private slots:
     void checkDBSize();
@@ -110,6 +111,7 @@ private:
     int m_dbMaxSize;
     int m_trimSize;
     int m_entryCount = 0;
+    bool m_initialized = false;
     bool m_dbMalformed = false;
 
     // When maxQueueLength is exceeded, jobs will be flagged and discarded if this source logs more events

@@ -284,14 +284,14 @@ QPair<Thing::ThingError, QList<RuleId> > NymeaCore::removeConfiguredThing(const 
     foreach (Thing *d, childs) {
         Thing::ThingError removeError = m_thingManager->removeConfiguredThing(d->id());
         if (removeError == Thing::ThingErrorNoError) {
-            m_logger->removeDeviceLogs(d->id());
+            m_logger->removeThingLogs(d->id());
         }
     }
 
     // delete the things
     Thing::ThingError removeError = m_thingManager->removeConfiguredThing(thingId);
     if (removeError == Thing::ThingErrorNoError) {
-        m_logger->removeDeviceLogs(thingId);
+        m_logger->removeThingLogs(thingId);
     }
 
     return QPair<Thing::ThingError, QList<RuleId> > (Thing::ThingErrorNoError, QList<RuleId>());
@@ -358,14 +358,14 @@ Thing::ThingError NymeaCore::removeConfiguredThing(const ThingId &thingId, const
     foreach (Thing *d, childs) {
         Thing::ThingError removeError = m_thingManager->removeConfiguredThing(d->id());
         if (removeError == Thing::ThingErrorNoError) {
-            m_logger->removeDeviceLogs(d->id());
+            m_logger->removeThingLogs(d->id());
         }
     }
 
     // delete the things
     Thing::ThingError removeError = m_thingManager->removeConfiguredThing(thingId);
     if (removeError == Thing::ThingErrorNoError) {
-        m_logger->removeDeviceLogs(thingId);
+        m_logger->removeThingLogs(thingId);
     }
 
     return removeError;
@@ -837,14 +837,14 @@ void NymeaCore::onThingDisappeared(const ThingId &thingId)
     foreach (Thing *d, childs) {
         Thing::ThingError removeError = m_thingManager->removeConfiguredThing(d->id());
         if (removeError == Thing::ThingErrorNoError) {
-            m_logger->removeDeviceLogs(d->id());
+            m_logger->removeThingLogs(d->id());
         }
     }
 
     // delete the thing
     Thing::ThingError removeError = m_thingManager->removeConfiguredThing(thingId);
     if (removeError == Thing::ThingErrorNoError) {
-        m_logger->removeDeviceLogs(thingId);
+        m_logger->removeThingLogs(thingId);
     }
 }
 
@@ -859,12 +859,12 @@ void NymeaCore::thingManagerLoaded()
     // Do some houskeeping...
     qCDebug(dcApplication()) << "Starting housekeeping...";
     QDateTime startTime = QDateTime::currentDateTime();
-    ThingsFetchJob *job = m_logger->fetchDevices();
+    ThingsFetchJob *job = m_logger->fetchThings();
     connect(job, &ThingsFetchJob::finished, m_thingManager, [this, job, startTime](){
         foreach (const ThingId &thingId, job->results()) {
             if (!m_thingManager->findConfiguredThing(thingId)) {
                 qCDebug(dcApplication()) << "Cleaning stale thing entries from log DB for thing id" << thingId;
-                m_logger->removeDeviceLogs(thingId);
+                m_logger->removeThingLogs(thingId);
             }
         }
         qCDebug(dcApplication()) << "Housekeeping done in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";

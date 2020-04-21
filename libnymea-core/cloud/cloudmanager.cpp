@@ -37,6 +37,8 @@
 #include "nymeaconfiguration.h"
 #include "nymeasettings.h"
 
+#include <networkmanager.h>
+
 #include "nymea-remoteproxyclient/remoteproxyconnection.h"
 #include <QDir>
 

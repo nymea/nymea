@@ -58,6 +58,7 @@
 #include "loggingcategories.h"
 #include "platform/platform.h"
 #include "version.h"
+#include "cloud/cloudmanager.h"
 
 #include "devicehandler.h"
 #include "integrationshandler.h"

@@ -33,7 +33,6 @@
 #include "platform/platform.h"
 #include "jsonrpc/jsonrpcserverimplementation.h"
 #include "ruleengine/ruleengine.h"
-#include "networkmanager/networkmanager.h"
 #include "nymeasettings.h"
 #include "tagging/tagsstorage.h"
 #include "platform/platform.h"
@@ -48,8 +47,11 @@
 #include "integrations/thingactioninfo.h"
 #include "integrations/browseractioninfo.h"
 #include "integrations/browseritemactioninfo.h"
+#include "cloud/cloudmanager.h"
 #include "cloud/cloudnotifications.h"
 #include "cloud/cloudtransport.h"
+
+#include <networkmanager.h>
 
 #include <QDir>
 #include <QCoreApplication>
@@ -120,6 +122,7 @@ void NymeaCore::init() {
 
     qCDebug(dcApplication) << "Creating Network Manager";
     m_networkManager = new NetworkManager(this);
+    m_networkManager->start();
 
     qCDebug(dcApplication) << "Creating Debug Server Handler";
     m_debugServerHandler = new DebugServerHandler(this);

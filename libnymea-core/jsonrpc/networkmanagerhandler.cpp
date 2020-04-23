@@ -95,20 +95,20 @@ NetworkManagerHandler::NetworkManagerHandler(QObject *parent) :
 
     // Objects
     QVariantMap wirelessAccessPoint;
-    wirelessAccessPoint.insert("ssid", enumValueName(String));
-    wirelessAccessPoint.insert("macAddress", enumValueName(String));
-    wirelessAccessPoint.insert("frequency", enumValueName(Double));
-    wirelessAccessPoint.insert("signalStrength", enumValueName(Int));
-    wirelessAccessPoint.insert("protected", enumValueName(Bool));
+    wirelessAccessPoint.insert("r:ssid", enumValueName(String));
+    wirelessAccessPoint.insert("r:macAddress", enumValueName(String));
+    wirelessAccessPoint.insert("r:frequency", enumValueName(Double));
+    wirelessAccessPoint.insert("r:signalStrength", enumValueName(Int));
+    wirelessAccessPoint.insert("r:protected", enumValueName(Bool));
     registerObject("WirelessAccessPoint", wirelessAccessPoint);
 
 
     QVariantMap wiredNetworkDevice;
-    wiredNetworkDevice.insert("interface", enumValueName(String));
-    wiredNetworkDevice.insert("macAddress", enumValueName(String));
-    wiredNetworkDevice.insert("state", enumRef<NetworkDevice::NetworkDeviceState>());
-    wiredNetworkDevice.insert("bitRate", enumValueName(String));
-    wiredNetworkDevice.insert("pluggedIn", enumValueName(Bool));
+    wiredNetworkDevice.insert("r:interface", enumValueName(String));
+    wiredNetworkDevice.insert("r:macAddress", enumValueName(String));
+    wiredNetworkDevice.insert("r:state", enumRef<NetworkDevice::NetworkDeviceState>());
+    wiredNetworkDevice.insert("r:bitRate", enumValueName(String));
+    wiredNetworkDevice.insert("r:pluggedIn", enumValueName(Bool));
     registerObject("WiredNetworkDevice", wiredNetworkDevice);
 
     QVariantMap wirelessNetworkDevice;

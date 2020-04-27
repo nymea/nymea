@@ -42,7 +42,7 @@ class NetworkManagerHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit NetworkManagerHandler(QObject *parent = nullptr);
+    explicit NetworkManagerHandler(NetworkManager *networkManager, QObject *parent = nullptr);
 
     QString name() const;
 
@@ -54,6 +54,7 @@ public:
     Q_INVOKABLE JsonReply *ScanWifiNetworks(const QVariantMap &params);
     Q_INVOKABLE JsonReply *ConnectWifiNetwork(const QVariantMap &params);
     Q_INVOKABLE JsonReply *DisconnectInterface(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *StartAccessPoint(const QVariantMap &params);
 
 private:
     QVariantMap packNetworkManagerStatus();
@@ -90,6 +91,8 @@ private:
     QVariantMap packWirelessNetworkDevice(WirelessNetworkDevice *networkDevice);
 
     QVariantMap statusToReply(NetworkManager::NetworkManagerError status) const;
+
+    NetworkManager* m_networkManager = nullptr;
 
 };
 

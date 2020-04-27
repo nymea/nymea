@@ -1,4 +1,4 @@
-5.0
+5.1
 {
     "enums": {
         "BasicType": [
@@ -351,6 +351,12 @@
             "ValueOperatorGreater",
             "ValueOperatorLessOrEqual",
             "ValueOperatorGreaterOrEqual"
+        ],
+        "WirelessMode": [
+            "WirelessModeUnknown",
+            "WirelessModeAdhoc",
+            "WirelessModeInfrastructure",
+            "WirelessModeAccessPoint"
         ]
     },
     "flags": {
@@ -1443,6 +1449,17 @@
             "description": "Start a wifi scan for searching new networks.",
             "params": {
                 "interface": "String"
+            },
+            "returns": {
+                "networkManagerError": "$ref:NetworkManagerError"
+            }
+        },
+        "NetworkManager.StartAccessPoint": {
+            "description": "Start a WiFi Access point on the given interface with the given SSID and password. Use DisconnectInterface to stop it again.",
+            "params": {
+                "interface": "String",
+                "password": "String",
+                "ssid": "String"
             },
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError"
@@ -2702,6 +2719,8 @@
         "WiredNetworkDevice": {
             "r:bitRate": "String",
             "r:interface": "String",
+            "r:ipv4Addresses": "StringList",
+            "r:ipv6Addresses": "StringList",
             "r:macAddress": "String",
             "r:pluggedIn": "Bool",
             "r:state": "$ref:NetworkDeviceState"
@@ -2714,11 +2733,14 @@
             "r:ssid": "String"
         },
         "WirelessNetworkDevice": {
-            "bitRate": "String",
-            "interface": "String",
-            "macAddress": "String",
-            "o:currentAccessPoint": "$ref:WirelessAccessPoint",
-            "state": "$ref:NetworkDeviceState"
+            "r:bitRate": "String",
+            "r:interface": "String",
+            "r:ipv4Addresses": "StringList",
+            "r:ipv6Addresses": "StringList",
+            "r:macAddress": "String",
+            "r:mode": "$ref:WirelessMode",
+            "r:o:currentAccessPoint": "$ref:WirelessAccessPoint",
+            "r:state": "$ref:NetworkDeviceState"
         }
     }
 }

@@ -41,6 +41,7 @@
 #include "hardware/radio433/radio433brennenstuhl.h"
 #include "hardware/bluetoothlowenergy/bluetoothlowenergymanagerimplementation.h"
 #include "hardware/network/mqtt/mqttproviderimplementation.h"
+#include "hardware/i2c/i2cmanagerimplementation.h"
 
 namespace nymeaserver {
 
@@ -67,7 +68,10 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
     // Bluetooth LE
     m_bluetoothLowEnergyManager = new BluetoothLowEnergyManagerImplementation(m_pluginTimerManager->registerTimer(10), this);
 
+    m_i2cManager = new I2CManagerImplementation(this);
+
     qCDebug(dcHardware()) << "Hardware manager initialized successfully";
+
 
     // Enable all the resources
     setResourceEnabled(m_pluginTimerManager, true);
@@ -125,6 +129,11 @@ BluetoothLowEnergyManager *HardwareManagerImplementation::bluetoothLowEnergyMana
 MqttProvider *HardwareManagerImplementation::mqttProvider()
 {
     return m_mqttProvider;
+}
+
+I2CManager *HardwareManagerImplementation::i2cManager()
+{
+    return m_i2cManager;
 }
 
 }

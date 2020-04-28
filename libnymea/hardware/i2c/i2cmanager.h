@@ -28,42 +28,33 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#ifndef I2CMANAGER_H
+#define I2CMANAGER_H
 
 #include <QObject>
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class HardwareResource;
+class I2CDevice;
 
-class HardwareManager : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
-
-public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
-
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
-
-protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+struct I2CScanResult {
+    QString portName;
+    int address;
 };
 
-#endif // HARDWAREMANAGER_H
+class I2CManager : public QObject
+{
+    Q_OBJECT
+public:
+    I2CManager(QObject *parent = nullptr);
+    virtual ~I2CManager() = default;
+
+    virtual QStringList availablePorts() const = 0;
+    virtual QList<I2CScanResult> scanRegisters(const QString &portName = QString()) = 0;
+
+    virtual bool open(I2CDevice *i2cDevice) = 0;
+    virtual bool startReading(I2CDevice *i2cDevice, int interval = 1000) = 0;
+    virtual void stopReading(I2CDevice *i2cDevice) = 0;
+    virtual bool writeData(I2CDevice *i2cDevice, const QByteArray &data) = 0;
+    virtual void close(I2CDevice *i2cDevice) = 0;
+};
+
+#endif // I2CMANAGER_H

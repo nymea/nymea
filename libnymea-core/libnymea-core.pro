@@ -93,6 +93,7 @@ HEADERS += nymeacore.h \
     hardware/network/upnp/upnpdiscoveryreplyimplementation.h \
     hardware/network/mqtt/mqttproviderimplementation.h \
     hardware/network/mqtt/mqttchannelimplementation.h \
+    hardware/i2c/i2cmanagerimplementation.h \
     debugserverhandler.h \
     tagging/tagsstorage.h \
     tagging/tag.h \
@@ -177,6 +178,7 @@ SOURCES += nymeacore.cpp \
     hardware/network/upnp/upnpdiscoveryreplyimplementation.cpp \
     hardware/network/mqtt/mqttproviderimplementation.cpp \
     hardware/network/mqtt/mqttchannelimplementation.cpp \
+    hardware/i2c/i2cmanagerimplementation.cpp \
     debugserverhandler.cpp \
     tagging/tagsstorage.cpp \
     tagging/tag.cpp \

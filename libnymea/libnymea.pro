@@ -55,6 +55,8 @@ HEADERS += \
     hardware/bluetoothlowenergy/bluetoothlowenergydevice.h \
     hardware/bluetoothlowenergy/bluetoothdiscoveryreply.h \
     hardware/bluetoothlowenergy/bluetoothlowenergymanager.h \
+    hardware/i2c/i2cmanager.h \
+    hardware/i2c/i2cdevice.h \
     coap/coap.h \
     coap/coappdu.h \
     coap/coapoption.h \
@@ -131,6 +133,8 @@ SOURCES += \
     hardware/bluetoothlowenergy/bluetoothlowenergymanager.cpp \
     hardware/bluetoothlowenergy/bluetoothlowenergydevice.cpp \
     hardware/bluetoothlowenergy/bluetoothdiscoveryreply.cpp \
+    hardware/i2c/i2cmanager.cpp \
+    hardware/i2c/i2cdevice.cpp \
     coap/coap.cpp \
     coap/coappdu.cpp \
     coap/coapoption.cpp \

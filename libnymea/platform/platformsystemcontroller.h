@@ -42,6 +42,7 @@ public:
     virtual ~PlatformSystemController() = default;
 
     virtual bool powerManagementAvailable() const;
+    virtual bool restart();
     virtual bool reboot();
     virtual bool shutdown();
 

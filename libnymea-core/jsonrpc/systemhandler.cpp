@@ -47,7 +47,7 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     // Methods
     QString description; QVariantMap params; QVariantMap returns;
     description = "Get the list of capabilites on this system. The property \"powerManagement\" indicates whether "
-                  "rebooting or shutting down is supported on this system. The property \"updateManagement indicates "
+                  "restarting nymea and rebooting or shutting down is supported on this system. The property \"updateManagement indicates "
                   "whether system update features are available in this system. The property \"timeManagement\" "
                   "indicates whether the system time can be configured on this system. Note that GetTime will be "
                   "available in any case.";
@@ -55,6 +55,11 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     returns.insert("updateManagement", enumValueName(Bool));
     returns.insert("timeManagement", enumValueName(Bool));
     registerMethod("GetCapabilities", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Initiate a restart of the nymea service. The return value will indicate whether the procedure has been initiated successfully.";
+    returns.insert("success", enumValueName(Bool));
+    registerMethod("Restart", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Initiate a reboot of the system. The return value will indicate whether the procedure has been initiated successfully.";
@@ -281,6 +286,15 @@ JsonReply *SystemHandler::GetCapabilities(const QVariantMap &params)
     data.insert("updateManagement", m_platform->updateController()->updateManagementAvailable());
     data.insert("timeManagement", m_platform->systemController()->timeManagementAvailable());
     return createReply(data);
+}
+
+JsonReply *SystemHandler::Restart(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    bool status = m_platform->systemController()->restart();
+    QVariantMap returns;
+    returns.insert("success", status);
+    return createReply(returns);
 }
 
 JsonReply *SystemHandler::Reboot(const QVariantMap &params) const

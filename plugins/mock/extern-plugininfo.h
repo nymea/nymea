@@ -56,6 +56,7 @@ extern ThingClassId autoMockThingClassId;
 extern ParamTypeId autoMockThingHttpportParamTypeId;
 extern ParamTypeId autoMockThingAsyncParamTypeId;
 extern ParamTypeId autoMockThingBrokenParamTypeId;
+extern ParamTypeId autoMockSettingsMockSettingParamTypeId;
 extern StateTypeId autoMockIntStateTypeId;
 extern StateTypeId autoMockBoolValueStateTypeId;
 extern EventTypeId autoMockIntEventTypeId;

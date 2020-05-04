@@ -237,6 +237,15 @@
                             "defaultValue": false
                         }
                     ],
+                    "settingsTypes": [
+                        {
+                            "id": "da0b9106-03cf-4631-87e9-26ade3360182",
+                            "name": "mockSetting",
+                            "displayName": "Mock setting",
+                            "type": "int",
+                            "defaultValue": 5
+                        }
+                    ],
                     "stateTypes": [
                         {
                             "id": "74b24296-ba0b-4fbd-87f3-1b09a8bc3e8c",

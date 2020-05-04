@@ -60,6 +60,7 @@ ThingClassId autoMockThingClassId = ThingClassId("{ab4257b3-7548-47ee-9bd4-7dc30
 ParamTypeId autoMockThingHttpportParamTypeId = ParamTypeId("{bfeb0613-dab6-408c-aa27-c362c921d0d1}");
 ParamTypeId autoMockThingAsyncParamTypeId = ParamTypeId("{a5c4315f-0624-4971-87c1-4bbfbfdbd16e}");
 ParamTypeId autoMockThingBrokenParamTypeId = ParamTypeId("{66179395-ef7a-4013-9fc6-2084104eea09}");
+ParamTypeId autoMockSettingsMockSettingParamTypeId = ParamTypeId("{da0b9106-03cf-4631-87e9-26ade3360182}");
 StateTypeId autoMockIntStateTypeId = StateTypeId("{74b24296-ba0b-4fbd-87f3-1b09a8bc3e8c}");
 StateTypeId autoMockBoolValueStateTypeId = StateTypeId("{978b0ba5-d008-41bd-b63d-a3bd23cb6469}");
 EventTypeId autoMockIntEventTypeId = EventTypeId("{74b24296-ba0b-4fbd-87f3-1b09a8bc3e8c}");
@@ -392,6 +393,9 @@ const QString translations[] {
 
     //: The name of the ThingClass ({753f0d32-0468-4d08-82ed-1964aab03298})
     QT_TRANSLATE_NOOP("mock", "Mock Thing"),
+
+    //: The name of the ParamType (ThingClass: autoMock, Type: settings, ID: {da0b9106-03cf-4631-87e9-26ade3360182})
+    QT_TRANSLATE_NOOP("mock", "Mock setting"),
 
     //: The name of the ThingClass ({ab4257b3-7548-47ee-9bd4-7dc3004fd197})
     QT_TRANSLATE_NOOP("mock", "Mocked Thing (Auto created)"),

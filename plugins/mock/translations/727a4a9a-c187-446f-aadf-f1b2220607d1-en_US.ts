@@ -2,13 +2,25 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en_US">
 <context>
-    <name>DevicePluginMock</name>
+    <name>IntegrationPluginMock</name>
+    <message>
+        <source>This mocked thing is intentionally broken.</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message>
         <source>Failed to open HTTP port. Port in use?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Wait 3 second before you continue, the push button will be pressed automatically.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please enter the secret which normaly will be displayed on the device. For this mocked thing the pin is 243681.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please enter login credentials for the mocked thing (&quot;user&quot; and &quot;password&quot;).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -25,18 +37,6 @@
     </message>
     <message>
         <source>This mock action is intentionally broken.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>This mocked thing is intentionally broken.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Please enter the secret which normaly will be displayed on the device. For this mocked thing the pin is 243681.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Please enter login credentials for the mocked thing (&quot;user&quot; and &quot;password&quot;).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -891,6 +891,11 @@ The name of the ParamType (ThingClass: mock, Type: discovery, ID: {d222adb4-2f9c
     <message>
         <source>set power</source>
         <extracomment>The name of the ActionType ({064aed0d-da4c-49d4-b236-60f97e98ff84}) of ThingClass mock</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mock setting</source>
+        <extracomment>The name of the ParamType (ThingClass: autoMock, Type: settings, ID: {da0b9106-03cf-4631-87e9-26ade3360182})</extracomment>
         <translation type="unfinished"></translation>
     </message>
 </context>

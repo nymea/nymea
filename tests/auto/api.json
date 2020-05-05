@@ -945,7 +945,7 @@
             }
         },
         "Integrations.ConnectIO": {
-            "description": "Connect two generic IO states.",
+            "description": "Connect two generic IO states. Input and output need to be compatible, that is, either a digital input and a digital output, or an analog input and an analog output. If successful, the connectionId will be returned.",
             "params": {
                 "inputStateTypeId": "Uuid",
                 "inputThingId": "Uuid",
@@ -953,6 +953,7 @@
                 "outputThingId": "Uuid"
             },
             "returns": {
+                "o:ioConnectionId": "Uuid",
                 "thingError": "$ref:ThingError"
             }
         },

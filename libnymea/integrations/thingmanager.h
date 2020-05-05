@@ -91,7 +91,7 @@ public:
     virtual BrowserItemActionInfo* executeBrowserItemAction(const BrowserItemAction &browserItemAction) = 0;
 
     virtual IOConnections ioConnections(const ThingId &thingId = ThingId()) const = 0;
-    Thing::ThingError connectIO(const ThingId &inputThing, const StateTypeId &inputState, const ThingId &outputThing, const StateTypeId &outputState);
+    IOConnectionResult connectIO(const ThingId &inputThing, const StateTypeId &inputState, const ThingId &outputThing, const StateTypeId &outputState);
     virtual Thing::ThingError disconnectIO(const IOConnectionId &ioConnectionId) = 0;
 
     virtual QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) = 0;
@@ -100,7 +100,7 @@ public:
     virtual Vendor translateVendor(const Vendor &vendor, const QLocale &locale) = 0;
 
 protected:
-    virtual Thing::ThingError connectIO(const IOConnection &connection) = 0;
+    virtual IOConnectionResult connectIO(const IOConnection &connection) = 0;
 
 signals:
     void pluginConfigChanged(const PluginId &id, const ParamList &config);

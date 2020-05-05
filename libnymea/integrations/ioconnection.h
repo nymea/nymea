@@ -6,6 +6,12 @@
 #include <QVariant>
 
 #include "typeutils.h"
+#include "thing.h"
+
+struct IOConnectionResult {
+    Thing::ThingError error = Thing::ThingErrorNoError;
+    IOConnectionId ioConnectionId;
+};
 
 class IOConnection
 {

@@ -115,7 +115,7 @@ public:
     BrowserItemActionInfo *executeBrowserItemAction(const BrowserItemAction &browserItemAction) override;
 
     IOConnections ioConnections(const ThingId &thingId = ThingId()) const override;
-    Thing::ThingError connectIO(const IOConnection &connection) override;
+    IOConnectionResult connectIO(const IOConnection &connection) override;
     Thing::ThingError disconnectIO(const IOConnectionId &ioConnectionId) override;
 
     QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) override;

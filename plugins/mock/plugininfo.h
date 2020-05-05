@@ -294,11 +294,14 @@ ParamTypeId virtualIoLightMockPowerActionPowerParamTypeId = ParamTypeId("{d1917b
 ThingClassId virtualIoTemperatureSensorMockThingClassId = ThingClassId("{f8917e12-c9cb-4ea1-a06e-1ce6db2194f3}");
 ParamTypeId virtualIoTemperatureSensorMockSettingsMinTempParamTypeId = ParamTypeId("{803cddbf-94c7-4f35-bc7a-18698b03b942}");
 ParamTypeId virtualIoTemperatureSensorMockSettingsMaxTempParamTypeId = ParamTypeId("{7077c56f-c35b-4252-8c15-8fb549be04ce}");
+StateTypeId virtualIoTemperatureSensorMockInputStateTypeId = StateTypeId("{fd341f72-6d9a-4812-9f66-47197c48a935}");
 StateTypeId virtualIoTemperatureSensorMockTemperatureStateTypeId = StateTypeId("{db9cc518-1012-47e2-8212-6e616fed07a6}");
+EventTypeId virtualIoTemperatureSensorMockInputEventTypeId = EventTypeId("{fd341f72-6d9a-4812-9f66-47197c48a935}");
+ParamTypeId virtualIoTemperatureSensorMockInputEventInputParamTypeId = ParamTypeId("{fd341f72-6d9a-4812-9f66-47197c48a935}");
 EventTypeId virtualIoTemperatureSensorMockTemperatureEventTypeId = EventTypeId("{db9cc518-1012-47e2-8212-6e616fed07a6}");
 ParamTypeId virtualIoTemperatureSensorMockTemperatureEventTemperatureParamTypeId = ParamTypeId("{db9cc518-1012-47e2-8212-6e616fed07a6}");
-ActionTypeId virtualIoTemperatureSensorMockTemperatureActionTypeId = ActionTypeId("{db9cc518-1012-47e2-8212-6e616fed07a6}");
-ParamTypeId virtualIoTemperatureSensorMockTemperatureActionTemperatureParamTypeId = ParamTypeId("{db9cc518-1012-47e2-8212-6e616fed07a6}");
+ActionTypeId virtualIoTemperatureSensorMockInputActionTypeId = ActionTypeId("{fd341f72-6d9a-4812-9f66-47197c48a935}");
+ParamTypeId virtualIoTemperatureSensorMockInputActionInputParamTypeId = ParamTypeId("{fd341f72-6d9a-4812-9f66-47197c48a935}");
 
 const QString translations[] {
     //: The name of the Browser Item ActionType ({00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3}) of ThingClass mock
@@ -477,6 +480,18 @@ const QString translations[] {
 
     //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {43bf3832-dd48-4090-a836-656e8b60216e})
     QT_TRANSLATE_NOOP("mock", "IPv6 address"),
+
+    //: The name of the ParamType (ThingClass: virtualIoTemperatureSensorMock, ActionType: input, ID: {fd341f72-6d9a-4812-9f66-47197c48a935})
+    QT_TRANSLATE_NOOP("mock", "Input"),
+
+    //: The name of the ParamType (ThingClass: virtualIoTemperatureSensorMock, EventType: input, ID: {fd341f72-6d9a-4812-9f66-47197c48a935})
+    QT_TRANSLATE_NOOP("mock", "Input"),
+
+    //: The name of the StateType ({fd341f72-6d9a-4812-9f66-47197c48a935}) of ThingClass virtualIoTemperatureSensorMock
+    QT_TRANSLATE_NOOP("mock", "Input"),
+
+    //: The name of the EventType ({fd341f72-6d9a-4812-9f66-47197c48a935}) of ThingClass virtualIoTemperatureSensorMock
+    QT_TRANSLATE_NOOP("mock", "Input changed"),
 
     //: The name of the ParamType (ThingClass: inputTypeMock, EventType: int, ID: {d0fc56ae-5791-4e91-b76c-dadfbc7e7dbb})
     QT_TRANSLATE_NOOP("mock", "Int"),
@@ -679,6 +694,9 @@ const QString translations[] {
     //: The name of the ActionType ({53cd7c55-49b7-441b-b970-9048f20f0e2c}) of ThingClass pushButtonMock
     QT_TRANSLATE_NOOP("mock", "Set double value"),
 
+    //: The name of the ActionType ({fd341f72-6d9a-4812-9f66-47197c48a935}) of ThingClass virtualIoTemperatureSensorMock
+    QT_TRANSLATE_NOOP("mock", "Set input"),
+
     //: The name of the ActionType ({527f0687-0b28-4c26-852c-25b8f83e4797}) of ThingClass displayPinMock
     QT_TRANSLATE_NOOP("mock", "Set percentage"),
 
@@ -687,9 +705,6 @@ const QString translations[] {
 
     //: The name of the ActionType ({d1917b3d-1530-4cf9-90f7-263ee88e714b}) of ThingClass virtualIoLightMock
     QT_TRANSLATE_NOOP("mock", "Set power"),
-
-    //: The name of the ActionType ({db9cc518-1012-47e2-8212-6e616fed07a6}) of ThingClass virtualIoTemperatureSensorMock
-    QT_TRANSLATE_NOOP("mock", "Set temperature"),
 
     //: The name of the ParamType (ThingClass: mock, Type: settings, ID: {367f7ba4-5039-47be-abd8-59cc8eaf4b9a})
     QT_TRANSLATE_NOOP("mock", "Setting 1"),
@@ -702,9 +717,6 @@ const QString translations[] {
 
     //: The name of the EventType ({27f69ca9-a321-40ff-bfee-4b0272a671b4}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "String changed"),
-
-    //: The name of the ParamType (ThingClass: virtualIoTemperatureSensorMock, ActionType: temperature, ID: {db9cc518-1012-47e2-8212-6e616fed07a6})
-    QT_TRANSLATE_NOOP("mock", "Temperature"),
 
     //: The name of the ParamType (ThingClass: virtualIoTemperatureSensorMock, EventType: temperature, ID: {db9cc518-1012-47e2-8212-6e616fed07a6})
     QT_TRANSLATE_NOOP("mock", "Temperature"),

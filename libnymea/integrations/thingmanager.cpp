@@ -51,7 +51,7 @@ ThingManager::ThingManager(QObject *parent) : QObject(parent)
     qRegisterMetaType<ParamTypes>();
 }
 
-Thing::ThingError ThingManager::connectIO(const ThingId &inputThing, const StateTypeId &inputState, const ThingId &outputThing, const StateTypeId &outputState)
+IOConnectionResult ThingManager::connectIO(const ThingId &inputThing, const StateTypeId &inputState, const ThingId &outputThing, const StateTypeId &outputState)
 {
     IOConnection connection(IOConnectionId::createIOConnectionId(), inputThing, inputState, outputThing, outputState);
     return connectIO(connection);

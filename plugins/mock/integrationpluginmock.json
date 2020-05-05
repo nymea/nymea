@@ -1016,18 +1016,26 @@
                     ],
                     "stateTypes": [
                         {
-                            "id": "db9cc518-1012-47e2-8212-6e616fed07a6",
-                            "name": "temperature",
-                            "displayName": "Temperature",
-                            "displayNameEvent": "Temperature changed",
-                            "displayNameAction": "Set temperature",
+                            "id": "fd341f72-6d9a-4812-9f66-47197c48a935",
+                            "name": "input",
+                            "displayName": "Input",
+                            "displayNameEvent": "Input changed",
+                            "displayNameAction": "Set input",
                             "type": "double",
-                            "unit": "DegreeCelsius",
                             "defaultValue": 0,
                             "ioType": "analogOutput",
                             "writable": true,
                             "minValue": 0,
                             "maxValue": 1
+                        },
+                        {
+                            "id": "db9cc518-1012-47e2-8212-6e616fed07a6",
+                            "name": "temperature",
+                            "displayName": "Temperature",
+                            "displayNameEvent": "Temperature changed",
+                            "type": "double",
+                            "unit": "DegreeCelsius",
+                            "defaultValue": 0
                         }
                     ]
                 }

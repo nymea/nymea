@@ -928,51 +928,61 @@ IOConnections ThingManagerImplementation::ioConnections(const ThingId &thingId) 
     return ioConnections;
 }
 
-Thing::ThingError ThingManagerImplementation::connectIO(const IOConnection &connection)
+IOConnectionResult ThingManagerImplementation::connectIO(const IOConnection &connection)
 {
+    IOConnectionResult result;
+
     // Do some sanity checks
     Thing *inputThing = m_configuredThings.value(connection.inputThingId());
     if (!inputThing) {
-        qCWarning(dcThingManager()) << "Could not find inputThing" << connection.inputThingId() << "configured things. Not adding IO connection.";
-        return Thing::ThingErrorThingNotFound;
+        qCWarning(dcThingManager()) << "Could not find inputThing" << connection.inputThingId() << "in configured things. Not adding IO connection.";
+        result.error = Thing::ThingErrorThingNotFound;
+        return result;
     }
     if (!inputThing->thingClass().stateTypes().contains(connection.inputStateTypeId())) {
         qCWarning(dcThingManager()) << "Input thing" << inputThing->name() << "does not have a state with id" << connection.inputStateTypeId();
-        return Thing::ThingErrorStateTypeNotFound;
+        result.error = Thing::ThingErrorStateTypeNotFound;
+        return result;
     }
     StateType inputStateType = inputThing->thingClass().stateTypes().findById(connection.inputStateTypeId());
 
     // Check if this is actually an input
     if (inputStateType.ioType() != Types::IOTypeDigitalInput && inputStateType.ioType() != Types::IOTypeAnalogInput) {
         qCWarning(dcThingManager()) << "The given input state is neither a digital nor an analog input.";
-        return Thing::ThingErrorInvalidParameter;
+        result.error = Thing::ThingErrorInvalidParameter;
+        return result;
     }
 
     Thing *outputThing = m_configuredThings.value(connection.outputThingId());
     if (!outputThing) {
-        qCWarning(dcThingManager()) << "Could not find outputThing" << connection.outputThingId() << "configured things. Not adding IO connection.";
-        return Thing::ThingErrorThingNotFound;
+        qCWarning(dcThingManager()) << "Could not find outputThing" << connection.outputThingId() << "in configured things. Not adding IO connection.";
+        result.error = Thing::ThingErrorThingNotFound;
+        return result;
     }
     if (!outputThing->thingClass().stateTypes().contains(connection.outputStateTypeId())) {
         qCWarning(dcThingManager()) << "Output thing" << outputThing->name() << "does not have a state with id" << connection.outputStateTypeId();
-        return Thing::ThingErrorStateTypeNotFound;
+        result.error = Thing::ThingErrorStateTypeNotFound;
+        return result;
     }
     StateType outputStateType = outputThing->thingClass().stateTypes().findById(connection.outputStateTypeId());
 
     // Check if this is actually an output
     if (outputStateType.ioType() != Types::IOTypeDigitalOutput && outputStateType.ioType() != Types::IOTypeAnalogOutput) {
         qCWarning(dcThingManager()) << "The given output state is neither a digital nor an analog output.";
-        return Thing::ThingErrorInvalidParameter;
+        result.error = Thing::ThingErrorInvalidParameter;
+        return result;
     }
 
     // Check if io types are compatible
     if (inputStateType.ioType() == Types::IOTypeDigitalInput && outputStateType.ioType() != Types::IOTypeDigitalOutput) {
         qCWarning(dcThingManager()) << "Cannot connect IOs of different type:" << inputStateType.ioType() << "is not compatible with" << outputStateType.ioType();
-        return Thing::ThingErrorInvalidParameter;
+        result.error = Thing::ThingErrorInvalidParameter;
+        return result;
     }
     if (inputStateType.ioType() == Types::IOTypeAnalogInput && outputStateType.ioType() != Types::IOTypeAnalogOutput) {
         qCWarning(dcThingManager()) << "Cannot connect IOs of different type:" << inputStateType.ioType() << "is not compatible with" << outputStateType.ioType();
-        return Thing::ThingErrorInvalidParameter;
+        result.error = Thing::ThingErrorInvalidParameter;
+        return result;
     }
 
     // Check if either input or output is already connected
@@ -994,7 +1004,10 @@ Thing::ThingError ThingManagerImplementation::connectIO(const IOConnection &conn
     storeIOConnections();
 
     emit ioConnectionAdded(connection);
-    return Thing::ThingErrorNoError;
+
+    result.error = Thing::ThingErrorNoError;
+    result.ioConnectionId = connection.id();
+    return result;
 }
 
 Thing::ThingError ThingManagerImplementation::disconnectIO(const IOConnectionId &ioConnectionId)

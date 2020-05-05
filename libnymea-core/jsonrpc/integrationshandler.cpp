@@ -355,12 +355,14 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     registerMethod("GetIOConnections", description, params, returns);
 
     params.clear(); returns.clear();
-    description = "Connect two generic IO states.";
+    description = "Connect two generic IO states. Input and output need to be compatible, that is, either a digital input "
+                  "and a digital output, or an analog input and an analog output. If successful, the connectionId will be returned.";
     params.insert("inputThingId", enumValueName(Uuid));
     params.insert("inputStateTypeId", enumValueName(Uuid));
     params.insert("outputThingId", enumValueName(Uuid));
     params.insert("outputStateTypeId", enumValueName(Uuid));
     returns.insert("thingError", enumRef<Thing::ThingError>());
+    returns.insert("o:ioConnectionId", enumValueName(Uuid));
     registerMethod("ConnectIO", description, params, returns);
 
     params.clear(); returns.clear();
@@ -990,8 +992,12 @@ JsonReply *IntegrationsHandler::ConnectIO(const QVariantMap &params)
     StateTypeId inputStateTypeId = params.value("inputStateTypeId").toUuid();
     ThingId outputThingId = params.value("outputThingId").toUuid();
     StateTypeId outputStateTypeId = params.value("outputStateTypeId").toUuid();
-    Thing::ThingError error = m_thingManager->connectIO(inputThingId, inputStateTypeId, outputThingId, outputStateTypeId);
-    return createReply(statusToReply(error));
+    IOConnectionResult result = m_thingManager->connectIO(inputThingId, inputStateTypeId, outputThingId, outputStateTypeId);
+    QVariantMap reply = statusToReply(result.error);
+    if (result.error == Thing::ThingErrorNoError) {
+        reply.insert("ioConnectionId", result.ioConnectionId);
+    }
+    return createReply(reply);
 }
 
 JsonReply *IntegrationsHandler::DisconnectIO(const QVariantMap &params)

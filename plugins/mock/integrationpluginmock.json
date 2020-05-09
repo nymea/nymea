@@ -1035,7 +1035,7 @@
                             "displayNameEvent": "Temperature changed",
                             "type": "double",
                             "unit": "DegreeCelsius",
-                            "defaultValue": 0
+                            "defaultValue": -20
                         }
                     ]
                 }

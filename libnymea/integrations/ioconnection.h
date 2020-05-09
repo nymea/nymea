@@ -21,10 +21,11 @@ class IOConnection
     Q_PROPERTY(QUuid inputStateTypeId READ inputStateTypeId)
     Q_PROPERTY(QUuid outputThingId READ outputThingId)
     Q_PROPERTY(QUuid outputStateTypeId READ outputStateTypeId)
+    Q_PROPERTY(bool inverted READ inverted)
 
 public:
     IOConnection();
-    IOConnection(const IOConnectionId &id, const ThingId &inputThingId, const StateTypeId &inputStateTypeId, const ThingId &outputThingId, const StateTypeId &outputStateTypeId);
+    IOConnection(const IOConnectionId &id, const ThingId &inputThingId, const StateTypeId &inputStateTypeId, const ThingId &outputThingId, const StateTypeId &outputStateTypeId, bool inverted = false);
 
     IOConnectionId id() const;
 
@@ -34,12 +35,15 @@ public:
     ThingId outputThingId() const;
     StateTypeId outputStateTypeId() const;
 
+    bool inverted() const;
+
 private:
     IOConnectionId m_id;
     ThingId m_inputThingId;
     StateTypeId m_inputStateTypeId;
     ThingId m_outputThingId;
     StateTypeId m_outputStateTypeId;
+    bool m_inverted = false;
 };
 
 class IOConnections: public QList<IOConnection>

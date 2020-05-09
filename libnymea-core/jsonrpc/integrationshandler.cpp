@@ -361,6 +361,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.insert("inputStateTypeId", enumValueName(Uuid));
     params.insert("outputThingId", enumValueName(Uuid));
     params.insert("outputStateTypeId", enumValueName(Uuid));
+    params.insert("o:inverted", enumValueName(Bool));
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:ioConnectionId", enumValueName(Uuid));
     registerMethod("ConnectIO", description, params, returns);
@@ -992,7 +993,8 @@ JsonReply *IntegrationsHandler::ConnectIO(const QVariantMap &params)
     StateTypeId inputStateTypeId = params.value("inputStateTypeId").toUuid();
     ThingId outputThingId = params.value("outputThingId").toUuid();
     StateTypeId outputStateTypeId = params.value("outputStateTypeId").toUuid();
-    IOConnectionResult result = m_thingManager->connectIO(inputThingId, inputStateTypeId, outputThingId, outputStateTypeId);
+    bool inverted = params.value("inverted", false).toBool();
+    IOConnectionResult result = m_thingManager->connectIO(inputThingId, inputStateTypeId, outputThingId, outputStateTypeId, inverted);
     QVariantMap reply = statusToReply(result.error);
     if (result.error == Thing::ThingErrorNoError) {
         reply.insert("ioConnectionId", result.ioConnectionId);

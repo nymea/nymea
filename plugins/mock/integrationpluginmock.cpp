@@ -749,11 +749,11 @@ void IntegrationPluginMock::executeAction(ThingActionInfo *info)
 
     if (info->thing()->thingClassId() == virtualIoTemperatureSensorMockThingClassId) {
         if (info->action().actionTypeId() == virtualIoTemperatureSensorMockInputActionTypeId) {
+            double value = info->action().param(virtualIoTemperatureSensorMockInputActionInputParamTypeId).value().toDouble();
+            info->thing()->setStateValue(virtualIoTemperatureSensorMockInputStateTypeId, value);
             double minTemp = info->thing()->setting(virtualIoTemperatureSensorMockSettingsMinTempParamTypeId).toDouble();
             double maxTemp = info->thing()->setting(virtualIoTemperatureSensorMockSettingsMaxTempParamTypeId).toDouble();
-            double value = info->action().param(virtualIoTemperatureSensorMockInputActionInputParamTypeId).value().toDouble();
             double temp = minTemp + (maxTemp - minTemp) * value;
-            qCDebug(dcMock()) << "Min:" << minTemp << "Max:" << maxTemp << "value:" << value << "temp:" << temp;
             info->thing()->setStateValue(virtualIoTemperatureSensorMockTemperatureStateTypeId, temp);
             info->finish(Thing::ThingErrorNoError);
             return;

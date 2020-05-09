@@ -1005,6 +1005,11 @@ IOConnectionResult ThingManagerImplementation::connectIO(const IOConnection &con
 
     emit ioConnectionAdded(connection);
 
+    qCDebug(dcThingManager()) << "IO connected added:" << inputThing << "->" << outputThing;
+
+    // Sync initial state
+    syncIOConnection(inputThing, connection.inputStateTypeId());
+
     result.error = Thing::ThingErrorNoError;
     result.ioConnectionId = connection.id();
     return result;
@@ -1736,9 +1741,18 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
     Event event(EventTypeId(stateTypeId.toString()), thing->id(), ParamList() << valueParam, true);
     emit eventTriggered(event);
 
+    syncIOConnection(thing, stateTypeId);
+}
+
+void ThingManagerImplementation::syncIOConnection(Thing *thing, const StateTypeId &stateTypeId)
+{
+
     foreach (const IOConnection &ioConnection, m_ioConnections) {
         // Check if this state is an input to an IO connection.
         if (ioConnection.inputThingId() == thing->id() && ioConnection.inputStateTypeId() == stateTypeId) {
+            Thing *inputThing = thing;
+            QVariant inputValue = inputThing->stateValue(stateTypeId);
+
             Thing *outputThing = m_configuredThings.value(ioConnection.outputThingId());
             if (!outputThing) {
                 qCWarning(dcThingManager()) << "IO connection contains invalid output thing!";
@@ -1749,7 +1763,7 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
                 qCWarning(dcThingManager()) << "Plugin not found for IO connection's output action.";
                 continue;
             }
-            StateType inputStateType = thing->thingClass().getStateType(stateTypeId);
+            StateType inputStateType = inputThing->thingClass().getStateType(stateTypeId);
 
             StateType outputStateType = outputThing->thingClass().getStateType(ioConnection.outputStateTypeId());
             if (outputStateType.id().isNull()) {
@@ -1759,7 +1773,7 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
             QVariant outputValue;
             if (outputStateType.ioType() == Types::IOTypeDigitalOutput) {
                 // Digital IOs are mapped as-is
-                outputValue = value;
+                outputValue = ioConnection.inverted() xor inputValue.toBool();
 
                 // We're already in sync! Skipping action.
                 if (outputThing->stateValue(outputStateType.id()) == outputValue) {
@@ -1767,10 +1781,10 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
                 }
             } else {
                 // Analog IOs are mapped within the according min/max ranges
-                outputValue = mapValue(value, inputStateType, outputStateType);
+                outputValue = mapValue(inputValue, inputStateType, outputStateType, ioConnection.inverted());
 
                 // We're already in sync (fuzzy, good enough)! Skipping action.
-                if (qFuzzyCompare(outputThing->stateValue(outputStateType.id()).toDouble(), outputValue.toDouble())) {
+                if (qFuzzyCompare(1.0 + outputThing->stateValue(outputStateType.id()).toDouble(), 1.0 + outputValue.toDouble())) {
                     continue;
                 }
             }
@@ -1785,9 +1799,9 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
                     // An error happened... let's switch the input back to be in sync with the output
                     qCWarning(dcThingManager()) << "Error syncing IO connection state. Reverting input back to old value.";
                     if (inputStateType.ioType() == Types::IOTypeDigitalInput) {
-                        thing->setStateValue(inputStateType.id(), outputThing->stateValue(outputStateType.id()));
+                        inputThing->setStateValue(inputStateType.id(), outputThing->stateValue(outputStateType.id()));
                     } else {
-                        thing->setStateValue(inputStateType.id(), mapValue(outputThing->stateValue(outputStateType.id()), outputStateType, inputStateType));
+                        inputThing->setStateValue(inputStateType.id(), mapValue(outputThing->stateValue(outputStateType.id()), outputStateType, inputStateType, ioConnection.inverted()));
                     }
                 }
             });
@@ -1795,6 +1809,9 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
 
         // Now check if this is an output state type and - if possible - update the inputs for bidirectional connections
         if (ioConnection.outputThingId() == thing->id() && ioConnection.outputStateTypeId() == stateTypeId) {
+            Thing *outputThing = thing;
+            QVariant outputValue = outputThing->stateValue(stateTypeId);
+
             Thing *inputThing = m_configuredThings.value(ioConnection.inputThingId());
             if (!inputThing) {
                 qCWarning(dcThingManager()) << "IO connection contains invalid input thing!";
@@ -1805,7 +1822,7 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
                 qCWarning(dcThingManager()) << "Plugin not found for IO connection's input action.";
                 continue;
             }
-            StateType outputStateType = thing->thingClass().getStateType(stateTypeId);
+            StateType outputStateType = outputThing->thingClass().getStateType(stateTypeId);
 
             StateType inputStateType = inputThing->thingClass().getStateType(ioConnection.inputStateTypeId());
             if (inputStateType.id().isNull()) {
@@ -1821,7 +1838,7 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
             QVariant inputValue;
             if (inputStateType.ioType() == Types::IOTypeDigitalInput) {
                 // Digital IOs are mapped as-is
-                inputValue = value;
+                inputValue = ioConnection.inverted() xor outputValue.toBool();
 
                 // Prevent looping
                 if (inputThing->stateValue(inputStateType.id()) == inputValue) {
@@ -1829,10 +1846,10 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
                 }
             } else {
                 // Analog IOs are mapped within the according min/max ranges
-                inputValue = mapValue(value, outputStateType, inputStateType);
+                inputValue = mapValue(outputValue, outputStateType, inputStateType, ioConnection.inverted());
 
                 // Prevent looping even if the above calculation has rounding errors... Just skip this action if we're close enough already
-                if (qFuzzyCompare(inputThing->stateValue(inputStateType.id()).toDouble(), inputValue.toDouble())) {
+                if (qFuzzyCompare(1.0 + inputThing->stateValue(inputStateType.id()).toDouble(), 1.0 + inputValue.toDouble())) {
                     continue;
                 }
             }
@@ -2000,6 +2017,7 @@ void ThingManagerImplementation::storeIOConnections()
         connectionSettings.setValue("inputStateTypeId", ioConnection.inputStateTypeId().toString());
         connectionSettings.setValue("outputThingId", ioConnection.outputThingId().toString());
         connectionSettings.setValue("outputStateTypeId", ioConnection.outputStateTypeId().toString());
+        connectionSettings.setValue("inverted", ioConnection.inverted());
 
         connectionSettings.endGroup();
     }
@@ -2017,14 +2035,15 @@ void ThingManagerImplementation::loadIOConnections()
         StateTypeId inputStateTypeId = connectionSettings.value("inputStateTypeId").toUuid();
         ThingId outputThingId = connectionSettings.value("outputThingId").toUuid();
         StateTypeId outputStateTypeId = connectionSettings.value("outputStateTypeId").toUuid();
-        IOConnection ioConnection(id, inputThingId, inputStateTypeId, outputThingId, outputStateTypeId);
+        bool inverted = connectionSettings.value("inverted").toBool();
+        IOConnection ioConnection(id, inputThingId, inputStateTypeId, outputThingId, outputStateTypeId, inverted);
         m_ioConnections.insert(id, ioConnection);
         connectionSettings.endGroup();
     }
     connectionSettings.endGroup();
 }
 
-QVariant ThingManagerImplementation::mapValue(const QVariant &value, const StateType &fromStateType, const StateType &toStateType) const
+QVariant ThingManagerImplementation::mapValue(const QVariant &value, const StateType &fromStateType, const StateType &toStateType, bool inverted) const
 {
     double fromMin = fromStateType.minValue().toDouble();
     double fromMax = fromStateType.maxValue().toDouble();
@@ -2032,6 +2051,7 @@ QVariant ThingManagerImplementation::mapValue(const QVariant &value, const State
     double toMax = toStateType.maxValue().toDouble();
     double fromValue = value.toDouble();
     double fromPercent = (fromValue - fromMin) / (fromMax - fromMin);
+    fromPercent = inverted ? 1 - fromPercent : fromPercent;
     double toValue = toMin + (toMax - toMin) * fromPercent;
     return toValue;
 }

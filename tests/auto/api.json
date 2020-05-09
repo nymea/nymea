@@ -949,6 +949,7 @@
             "params": {
                 "inputStateTypeId": "Uuid",
                 "inputThingId": "Uuid",
+                "o:inverted": "Bool",
                 "outputStateTypeId": "Uuid",
                 "outputThingId": "Uuid"
             },
@@ -2456,6 +2457,7 @@
             "r:id": "Uuid",
             "r:inputStateTypeId": "Uuid",
             "r:inputThingId": "Uuid",
+            "r:inverted": "Bool",
             "r:outputStateTypeId": "Uuid",
             "r:outputThingId": "Uuid"
         },

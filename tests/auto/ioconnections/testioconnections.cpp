@@ -60,8 +60,10 @@ private slots:
     void testConnectionCompatibility_data();
     void testConnectionCompatibility();
 
+    void testDigitalIO_data();
     void testDigitalIO();
 
+    void testAnalogIO_data();
     void testAnalogIO();
 };
 
@@ -71,6 +73,7 @@ void TestIOConnections::initTestCase()
     QLoggingCategory::setFilterRules("*.debug=false\n"
                                      "Tests.debug=true\n"
                                      "Mock.debug=true\n"
+                                     "ThingManager.debug=true\n"
                                      );
 
     // Adding generic IO mock
@@ -151,33 +154,47 @@ void TestIOConnections::testConnectionCompatibility()
 
 }
 
+void TestIOConnections::testDigitalIO_data()
+{
+    QTest::addColumn<bool>("inverted");
+
+    QTest::newRow("normal") << false;
+    QTest::newRow("inverted") << true;
+}
+
 void TestIOConnections::testDigitalIO()
 {
+    QFETCH(bool, inverted);
+
     QVariantMap params;
     params.insert("inputThingId", m_lightThingId);
     params.insert("inputStateTypeId", virtualIoLightMockPowerStateTypeId);
     params.insert("outputThingId", m_ioThingId);
     params.insert("outputStateTypeId", genericIoMockDigitalOutput1StateTypeId);
+    params.insert("inverted", inverted);
     QVariant response = injectAndWait("Integrations.ConnectIO", params);
     verifyThingError(response);
     IOConnectionId ioConnectionId = response.toMap().value("params").toMap().value("ioConnectionId").toUuid();
 
-    // verify both, input and out are off
+    // verify input is off
+    bool expectedValue = false;
     params.clear();
     params.insert("thingId", m_lightThingId);
     params.insert("stateTypeId", virtualIoLightMockPowerStateTypeId);
     response = injectAndWait("Integrations.GetStateValue", params);
     verifyThingError(response);
-    QVERIFY2(response.toMap().value("params").toMap().value("value").toBool() == false, "Light isn't turned off");
+    QVERIFY2(response.toMap().value("params").toMap().value("value").toBool() == expectedValue, "Light isn't turned off");
 
+    // verify output is off (or inverted)
     params.clear();
     params.insert("thingId", m_ioThingId);
     params.insert("stateTypeId", genericIoMockDigitalOutput1StateTypeId);
     response = injectAndWait("Integrations.GetStateValue", params);
     verifyThingError(response);
-    QVERIFY2(response.toMap().value("params").toMap().value("value").toBool() == false, "Digital output isn't turned off");
+    QVERIFY2(response.toMap().value("params").toMap().value("value").toBool() == (expectedValue xor inverted), "Digital output isn't turned off");
 
     // Turn on light and verify digital output went on
+    expectedValue = true;
     params.clear();
     params.insert("thingId", m_lightThingId);
     params.insert("actionTypeId", virtualIoLightMockPowerActionTypeId);
@@ -193,7 +210,7 @@ void TestIOConnections::testDigitalIO()
     params.insert("stateTypeId", genericIoMockDigitalOutput1StateTypeId);
     response = injectAndWait("Integrations.GetStateValue", params);
     verifyThingError(response);
-    QVERIFY2(response.toMap().value("params").toMap().value("value").toBool() == true, "Digital output isn't turned on");
+    QVERIFY2(response.toMap().value("params").toMap().value("value").toBool() == (expectedValue xor inverted), "Digital output isn't turned on");
 
     // Disconnect IO again
     params.clear();
@@ -202,6 +219,7 @@ void TestIOConnections::testDigitalIO()
     verifyThingError(response);
 
     // Turn off the light and verify digital output is still on
+    expectedValue = true;
     params.clear();
     params.insert("thingId", m_lightThingId);
     params.insert("actionTypeId", virtualIoLightMockPowerActionTypeId);
@@ -217,41 +235,59 @@ void TestIOConnections::testDigitalIO()
     params.insert("stateTypeId", genericIoMockDigitalOutput1StateTypeId);
     response = injectAndWait("Integrations.GetStateValue", params);
     verifyThingError(response);
-    QVERIFY2(response.toMap().value("params").toMap().value("value").toBool() == true, "Digital output turned off while it should not");
+    QVERIFY2(response.toMap().value("params").toMap().value("value").toBool() == (expectedValue xor inverted), "Digital output turned off while it should not");
+}
+
+void TestIOConnections::testAnalogIO_data()
+{
+    QTest::addColumn<bool>("inverted");
+
+    QTest::newRow("normal") << false;
+    QTest::newRow("inverted") << true;
 }
 
 void TestIOConnections::testAnalogIO()
 {
+    QFETCH(bool, inverted);
+
+    // Set input to 0
     QVariantMap params;
+    params.insert("thingId", m_ioThingId);
+    params.insert("actionTypeId", genericIoMockAnalogInput1StateTypeId);
+    QVariantMap actionParam;
+    actionParam.insert("paramTypeId", genericIoMockAnalogInput1ActionAnalogInput1ParamTypeId);
+    actionParam.insert("value", 0); // goes from 0 to 3.3
+    params.insert("params", QVariantList() << actionParam);
+    QVariant response = injectAndWait("Integrations.ExecuteAction", params);
+    verifyThingError(response);
+
+    // Connect IO to it
+    params.clear();
     params.insert("inputThingId", m_ioThingId);
     params.insert("inputStateTypeId", genericIoMockAnalogInput1StateTypeId);
     params.insert("outputThingId", m_tempSensorThingId);
     params.insert("outputStateTypeId", virtualIoTemperatureSensorMockInputStateTypeId);
-    QVariant response = injectAndWait("Integrations.ConnectIO", params);
+    params.insert("inverted", inverted);
+
+    response = injectAndWait("Integrations.ConnectIO", params);
     verifyThingError(response);
     IOConnectionId ioConnectionId = response.toMap().value("params").toMap().value("ioConnectionId").toUuid();
 
-    // verify input is at 0, temp at 0 too
-    params.clear();
-    params.insert("thingId", m_ioThingId);
-    params.insert("stateTypeId", genericIoMockAnalogInput1StateTypeId);
-    response = injectAndWait("Integrations.GetStateValue", params);
-    verifyThingError(response);
-    QVERIFY2(qFuzzyCompare(response.toMap().value("params").toMap().value("value").toDouble(), 0), "Input isn't at 0");
-
+    // and check temp senser
+    double expectedTemp = inverted ? 50 : -20;
     params.clear();
     params.insert("thingId", m_tempSensorThingId);
     params.insert("stateTypeId", virtualIoTemperatureSensorMockTemperatureStateTypeId);
     response = injectAndWait("Integrations.GetStateValue", params);
     verifyThingError(response);
-    QVERIFY2(qFuzzyCompare(response.toMap().value("params").toMap().value("value").toDouble(), 0), QString("Temp sensor is not at 0 but at %1").arg(response.toMap().value("params").toMap().value("value").toDouble()).toUtf8());
+    QVERIFY2(qFuzzyCompare(response.toMap().value("params").toMap().value("value").toDouble(), expectedTemp), QString("Temp sensor is not at %1 but at %2").arg(expectedTemp).arg(response.toMap().value("params").toMap().value("value").toDouble()).toUtf8());
 
 
     // set analog input to 0.5 and verify temp aligned
     params.clear();
     params.insert("thingId", m_ioThingId);
     params.insert("actionTypeId", genericIoMockAnalogInput1StateTypeId);
-    QVariantMap actionParam;
+    actionParam.clear();
     actionParam.insert("paramTypeId", genericIoMockAnalogInput1ActionAnalogInput1ParamTypeId);
     actionParam.insert("value", 1.65); // goes from 0 to 3.3
     params.insert("params", QVariantList() << actionParam);
@@ -265,7 +301,7 @@ void TestIOConnections::testAnalogIO()
     verifyThingError(response);
     // generic IO output goes from 0 to 3.3. We're setting 1.65V which 50%
     // temp goes from -20 to 50. A input of 1.65 should output a temperature of 15°C
-    double expectedTemp = 70.0 / 2 - 20;
+    expectedTemp = 70.0 / 2 - 20;
     QVERIFY2(qFuzzyCompare(response.toMap().value("params").toMap().value("value").toDouble(), expectedTemp), QString("Temp sensor is not at %1 but at %2").arg(expectedTemp).arg(response.toMap().value("params").toMap().value("value").toDouble()).toUtf8());
 
     // Disconnect IO again

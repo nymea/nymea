@@ -157,7 +157,8 @@ private:
     void storeIOConnections();
     void loadIOConnections();
 
-    QVariant mapValue(const QVariant &value, const StateType &fromStateType, const StateType &toStateType) const;
+    void syncIOConnection(Thing *inputThing, const StateTypeId &stateTypeId);
+    QVariant mapValue(const QVariant &value, const StateType &fromStateType, const StateType &toStateType, bool inverted) const;
 
 private:
     HardwareManager *m_hardwareManager;

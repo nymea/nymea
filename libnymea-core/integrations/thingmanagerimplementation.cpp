@@ -1565,25 +1565,7 @@ void ThingManagerImplementation::loadConfiguredThings()
         }
         Q_ASSERT(thing != nullptr);
 
-        thing->setSetupStatus(Thing::ThingSetupStatusInProgress, Thing::ThingErrorNoError);
-        ThingSetupInfo *info = setupThing(thing);
-        // Set receiving object to "thing" because at startup we load it in any case, knowing that it worked at
-        // some point. However, it'll be marked as non-working until the setup succeeds so the user might delete
-        // it in the meantime... In that case we don't want to call postsetup on it.
-        connect(info, &ThingSetupInfo::finished, thing, [this, info](){
-
-            if (info->status() != Thing::ThingErrorNoError) {
-                qCWarning(dcThingManager()) << "Error setting up thing" << info->thing()->name() << info->thing()->id().toString() << info->status() << info->displayMessage();
-                info->thing()->setSetupStatus(Thing::ThingSetupStatusFailed, info->status(), info->displayMessage());
-                emit thingChanged(info->thing());
-                return;
-            }
-
-            qCDebug(dcThingManager()) << "Setup complete for thing" << info->thing();
-            info->thing()->setSetupStatus(Thing::ThingSetupStatusComplete, Thing::ThingErrorNoError);
-            emit thingChanged(info->thing());
-            postSetupThing(info->thing());
-        });
+        trySetupThing(thing);
     }
 
     loadIOConnections();
@@ -2099,6 +2081,37 @@ QVariant ThingManagerImplementation::mapValue(const QVariant &value, const State
     fromPercent = inverted ? 1 - fromPercent : fromPercent;
     double toValue = toMin + (toMax - toMin) * fromPercent;
     return toValue;
+}
+
+void ThingManagerImplementation::trySetupThing(Thing *thing)
+{
+    thing->setSetupStatus(Thing::ThingSetupStatusInProgress, Thing::ThingErrorNoError);
+    ThingSetupInfo *info = setupThing(thing);
+    // Set receiving object to "thing" because at startup we load it in any case, knowing that it worked at
+    // some point. However, it'll be marked as non-working until the setup succeeds so the user might delete
+    // it in the meantime... In that case we don't want to call postsetup on it.
+    connect(info, &ThingSetupInfo::finished, thing, [this, info, thing](){
+
+        if (info->status() != Thing::ThingErrorNoError) {
+            qCWarning(dcThingManager()) << "Error setting up thing" << info->thing()->name() << info->thing()->id().toString() << info->status() << info->displayMessage();
+            info->thing()->setSetupStatus(Thing::ThingSetupStatusFailed, info->status(), info->displayMessage());
+            emit thingChanged(info->thing());
+
+            // We know this used to work at some point... try again in a bit unless we don't have a plugin for it...
+            if (info->status() != Thing::ThingErrorPluginNotFound) {
+                QTimer::singleShot(10000, thing, [this, thing]() {
+                    trySetupThing(thing);
+                });
+            }
+
+            return;
+        }
+
+        qCDebug(dcThingManager()) << "Setup complete for thing" << info->thing();
+        info->thing()->setSetupStatus(Thing::ThingSetupStatusComplete, Thing::ThingErrorNoError);
+        emit thingChanged(info->thing());
+        postSetupThing(info->thing());
+    });
 }
 
 void ThingManagerImplementation::storeThingStates(Thing *thing)

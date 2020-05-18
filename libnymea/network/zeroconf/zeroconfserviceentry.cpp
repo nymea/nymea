@@ -116,6 +116,18 @@ QStringList ZeroConfServiceEntry::txt() const
     return m_txt;
 }
 
+/*! Returns the txt entry of the given \a key of this \l{ZeroConfServiceEntry}.*/
+QString ZeroConfServiceEntry::txt(const QString &key) const
+{
+    foreach (const QString &txtEntry, m_txt) {
+        QStringList parts = txtEntry.split('=');
+        if (parts.length() == 2 && parts.first() == key) {
+            return parts.last();
+        }
+    }
+    return QString();
+}
+
 /*! Returns true if this \l{ZeroConfServiceEntry} is valid.*/
 bool ZeroConfServiceEntry::isValid() const
 {

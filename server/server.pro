@@ -12,7 +12,7 @@ QT *= sql xml websockets bluetooth dbus network
 
 LIBS += -L$$top_builddir/libnymea/ -lnymea \
         -L$$top_builddir/libnymea-core -lnymea-core \
-        -lssl -lcrypto -lnymea-remoteproxyclient
+        -lnymea-remoteproxyclient
 
 # Server files
 include(qtservice/qtservice.pri)

@@ -105,4 +105,3 @@ coverage {
 ccache {
     message("Using ccache.")
 }
-

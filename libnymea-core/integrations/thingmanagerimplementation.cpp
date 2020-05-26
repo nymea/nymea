@@ -33,6 +33,7 @@
 #if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
 #include "scriptintegrationplugin.h"
 #endif
+#include "pythonintegrationplugin.h"
 
 #include "loggingcategories.h"
 #include "typeutils.h"
@@ -1333,12 +1334,26 @@ void ThingManagerImplementation::loadPlugins()
                 qCWarning(dcThingManager()) << "Not loading JS plugin. Invalid metadata.";
                 foreach (const QString &error, metaData.validationErrors()) {
                     qCWarning(dcThingManager()) << error;
+                    delete plugin;
+                    continue;
                 }
             }
             loadPlugin(plugin, metaData);
         }
     }
 #endif
+
+    PythonIntegrationPlugin *p = new PythonIntegrationPlugin(this);
+    p->loadScript("/home/micha/Develop/nymea-plugin-pytest/pytest.py");
+    PluginMetadata metaData(p->metaData());
+    if (!metaData.isValid()) {
+        qCWarning(dcThingManager()) << "Not loading Python plugin. Invalid metadata.";
+        foreach (const QString &error, metaData.validationErrors()) {
+            qCWarning(dcThingManager()) << error;
+        }
+        return;
+    }
+    loadPlugin(p, metaData);
 }
 
 void ThingManagerImplementation::loadPlugin(IntegrationPlugin *pluginIface, const PluginMetadata &metaData)

@@ -420,7 +420,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     });
 
     params.clear(); returns.clear();
-    description = "Emitted whenever a IO connection is added.";
+    description = "Emitted whenever an IO connection has been added.";
     params.insert("ioConnection", objectRef<IOConnection>());
     registerNotification("IOConnectionAdded", description, params);
     connect(m_thingManager, &ThingManager::ioConnectionAdded, this, [this](const IOConnection &connection) {
@@ -430,7 +430,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     });
 
     params.clear(); returns.clear();
-    description = "Emitted whenever a IO connection is removed.";
+    description = "Emitted whenever an IO connection has been removed.";
     params.insert("ioConnectionId", enumValueName(Uuid));
     registerNotification("IOConnectionRemoved", description, params);
     connect(m_thingManager, &ThingManager::ioConnectionRemoved, this, [this](const IOConnectionId &ioConnectionId) {

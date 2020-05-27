@@ -60,6 +60,10 @@
         This role will create the \b{device-states.conf} file and is used to store the configured \l{Device} \l{State}{States}.
     \value SettingsRoleTags
         This role will create the \b{tags.conf} file and is used to store the \l{Tag}{Tags}.
+    \value SettingsRoleMqttPolicies
+        This role will create the \b{mqttpolicies.conf} file and is used to store the \l{MqttPolicy}{MqttPolicies}.
+    \value SettingsRoleIOConnections
+        This role will create the \b{ioconnections.conf} file and is used to store the \l{IOConnection}{IOConnections}.
 
 */
 

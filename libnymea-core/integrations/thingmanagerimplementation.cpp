@@ -2039,6 +2039,12 @@ void ThingManagerImplementation::loadIOConnections()
         IOConnection ioConnection(id, inputThingId, inputStateTypeId, outputThingId, outputStateTypeId, inverted);
         m_ioConnections.insert(id, ioConnection);
         connectionSettings.endGroup();
+
+        Thing *inputThing = m_configuredThings.value(inputThingId);
+        if (!inputThing) {
+            continue;
+        }
+        syncIOConnection(inputThing, inputStateTypeId);
     }
     connectionSettings.endGroup();
 }

@@ -2055,13 +2055,13 @@
             }
         },
         "Integrations.IOConnectionAdded": {
-            "description": "Emitted whenever a IO connection is added.",
+            "description": "Emitted whenever an IO connection has been added.",
             "params": {
                 "ioConnection": "$ref:IOConnection"
             }
         },
         "Integrations.IOConnectionRemoved": {
-            "description": "Emitted whenever a IO connection is removed.",
+            "description": "Emitted whenever an IO connection has been removed.",
             "params": {
                 "ioConnectionId": "Uuid"
             }

@@ -1606,6 +1606,8 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
         qCWarning(dcThingManager()) << "Invalid thing id in state change. Not forwarding event. Thing setup not complete yet?";
         return;
     }
+    storeThingStates(thing);
+
     emit thingStateChanged(thing, stateTypeId, value);
 
     Param valueParam(ParamTypeId(stateTypeId.toString()), value);

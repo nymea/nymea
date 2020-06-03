@@ -1343,17 +1343,43 @@ void ThingManagerImplementation::loadPlugins()
     }
 #endif
 
-    PythonIntegrationPlugin *p = new PythonIntegrationPlugin(this);
-    p->loadScript("/home/micha/Develop/nymea-plugin-pytest/pytest.py");
-    PluginMetadata metaData(p->metaData());
-    if (!metaData.isValid()) {
-        qCWarning(dcThingManager()) << "Not loading Python plugin. Invalid metadata.";
-        foreach (const QString &error, metaData.validationErrors()) {
-            qCWarning(dcThingManager()) << error;
+    PythonIntegrationPlugin::initPython();
+
+    {
+        PythonIntegrationPlugin *p = new PythonIntegrationPlugin(this);
+        bool ok = p->loadScript("/home/micha/Develop/nymea-plugin-pytest/integrationpluginpytest.py");
+        if (!ok) {
+            qCWarning(dcThingManager()) << "Error loading plugin";
+            return;
         }
-        return;
+        PluginMetadata metaData(p->metaData());
+        if (!metaData.isValid()) {
+            qCWarning(dcThingManager()) << "Not loading Python plugin. Invalid metadata.";
+            foreach (const QString &error, metaData.validationErrors()) {
+                qCWarning(dcThingManager()) << error;
+            }
+            return;
+        }
+        loadPlugin(p, metaData);
     }
-    loadPlugin(p, metaData);
+//    {
+//        PythonIntegrationPlugin *p = new PythonIntegrationPlugin(this);
+//        bool ok = p->loadScript("/home/micha/Develop/nymea-plugin-pytest2/integrationpluginpytest2.py");
+//        if (!ok) {
+//            qCWarning(dcThingManager()) << "Error loading plugin";
+//            return;
+//        }
+//        PluginMetadata metaData(p->metaData());
+//        if (!metaData.isValid()) {
+//            qCWarning(dcThingManager()) << "Not loading Python plugin. Invalid metadata.";
+//            foreach (const QString &error, metaData.validationErrors()) {
+//                qCWarning(dcThingManager()) << error;
+//            }
+//            return;
+//        }
+//        loadPlugin(p, metaData);
+
+//    }
 }
 
 void ThingManagerImplementation::loadPlugin(IntegrationPlugin *pluginIface, const PluginMetadata &metaData)

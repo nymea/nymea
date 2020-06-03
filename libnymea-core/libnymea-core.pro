@@ -20,7 +20,9 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 HEADERS += nymeacore.h \
     integrations/plugininfocache.h \
-    integrations/python/PyThingDiscoveryInfo.h \
+    integrations/python/pything.h \
+    integrations/python/pythingdiscoveryinfo.h \
+    integrations/python/pythingsetupinfo.h \
     integrations/thingmanagerimplementation.h \
     integrations/translator.h \
     integrations/pythonintegrationplugin.h \

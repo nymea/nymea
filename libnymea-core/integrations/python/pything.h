@@ -1,27 +1,29 @@
-#ifndef PYTHINGDISCOVERYINFO_H
-#define PYTHINGDISCOVERYINFO_H
-
+#ifndef PYTHING_H
+#define PYTHING_H
 
 #include <Python.h>
+#include "structmember.h"
 
-#include "integrations/thingdiscoveryinfo.h"
+#include "integrations/thing.h"
 
-#include <QDebug>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#pragma GCC diagnostic ignored "-Wwrite-strings"
 
 typedef struct {
     PyObject_HEAD
-    ThingDiscoveryInfo* ptrObj;
-} PyThingDiscoveryInfo;
+    Thing* ptrObj;
+} PyThing;
 
 
-static int PyThingDiscoveryInfo_init(PyThingDiscoveryInfo */*self*/, PyObject */*args*/, PyObject */*kwds*/)
+static int PyThing_init(PyThing */*self*/, PyObject */*args*/, PyObject */*kwds*/)
 // initialize PyVoice Object
 {
     return 0;
 }
 
 
-static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo * self)
+static void PyThing_dealloc(PyThing * self)
 // destruct the object
 {
     // FIXME: Why is this not called? Seems we're leaking...
@@ -29,33 +31,17 @@ static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo * self)
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject * PyThingDiscoveryInfo_finish(PyThingDiscoveryInfo* self, PyObject* args)
-{
-    int status;
-    char *message;
 
-    if (PyArg_ParseTuple(args, "is", &status, &message)) {
-        (self->ptrObj)->finish(static_cast<Thing::ThingError>(status), QString(message));
-        return Py_BuildValue("");
-    }
-
-    if (PyArg_ParseTuple(args, "i", &status)) {
-        (self->ptrObj)->finish(static_cast<Thing::ThingError>(status));
-        return Py_BuildValue("");
-    }
-
-    return Py_False;
-}
-
-static PyMethodDef PyThingDiscoveryInfo_methods[] = {
-    { "finish", (PyCFunction)PyThingDiscoveryInfo_finish,    METH_VARARGS,       "finish a discovery" },
+static PyMethodDef PyThing_methods[] = {
+//    { "addDescriptor", (PyCFunction)PyThing_addDescriptor,    METH_VARARGS,       "Add a new descriptor to the discovery" },
+//    { "finish", (PyCFunction)PyThing_finish,    METH_VARARGS,       "finish a discovery" },
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
 static PyTypeObject PyThingDiscoveryInfoType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.ThingDiscoveryInfo",   /* tp_name */
-    sizeof(PyThingDiscoveryInfo), /* tp_basicsize */
+    "nymea.Thing",             /* tp_name */
+    sizeof(PyThing),           /* tp_basicsize */
     0,                         /* tp_itemsize */
     0,                         /* tp_dealloc */
     0,                         /* tp_print */
@@ -76,4 +62,8 @@ static PyTypeObject PyThingDiscoveryInfoType = {
     "Noddy objects",           /* tp_doc */
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
-#endif // PYTHINGDISCOVERYINFO_H
+
+
+#pragma GCC diagnostic pop
+
+#endif // PYTHING_H

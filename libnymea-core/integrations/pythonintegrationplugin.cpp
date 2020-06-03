@@ -1,15 +1,20 @@
 #include <Python.h>
-#include "python/PyThingDiscoveryInfo.h"
+#include "python/pythingdiscoveryinfo.h"
 
 #include "pythonintegrationplugin.h"
 
 #include "loggingcategories.h"
 
 #include <QFileInfo>
+#include <QMetaEnum>
+#include <QJsonDocument>
+
+QHash<PyObject*, PyThreadState*> s_modules;
 
 // Write to stdout/stderr
-PyObject* nymea_write(PyObject* /*self*/, PyObject* args)
+PyObject* nymea_write(PyObject* self, PyObject* args)
 {
+    qWarning() << "write called" << self;
     const char *what;
     if (!PyArg_ParseTuple(args, "s", &what))
         return nullptr;
@@ -50,19 +55,40 @@ PyMODINIT_FUNC PyInit_nymea(void)
     PySys_SetObject("stderr", m);
 
 
+    QMetaEnum thingErrorEnum = QMetaEnum::fromType<Thing::ThingError>();
+    for (int i = 0; i < thingErrorEnum.keyCount(); i++) {
+        PyModule_AddObject(m, thingErrorEnum.key(i), PyLong_FromLong(thingErrorEnum.value(i)));
+    }
+
+
     PyThingDiscoveryInfoType.tp_new = PyType_GenericNew;
     PyThingDiscoveryInfoType.tp_basicsize=sizeof(PyThingDiscoveryInfo);
     PyThingDiscoveryInfoType.tp_dealloc=(destructor) PyThingDiscoveryInfo_dealloc;
     PyThingDiscoveryInfoType.tp_flags=Py_TPFLAGS_DEFAULT;
     PyThingDiscoveryInfoType.tp_doc="ThingDiscoveryInfo class";
     PyThingDiscoveryInfoType.tp_methods=PyThingDiscoveryInfo_methods;
-    //~ PyVoiceType.tp_members=Noddy_members;
     PyThingDiscoveryInfoType.tp_init=(initproc)PyThingDiscoveryInfo_init;
 
-    if (PyType_Ready(&PyThingDiscoveryInfoType) < 0)
-        return NULL;
+    if (PyType_Ready(&PyThingDiscoveryInfoType) < 0) {
+        qCWarning(dcThingManager()) << "Error creating PyThingDiscoveryInfo";
+        return nullptr;
+    }
+    PyModule_AddObject(m, "ThingDiscoveryInfo", (PyObject *)&PyThingDiscoveryInfoType);
 
-    PyModule_AddObject(m, "ThingDiscoveryInfo", (PyObject *)&PyThingDiscoveryInfoType); // Add Voice object to the module
+    PyThingDescriptorType.tp_new = PyType_GenericNew;
+    PyThingDescriptorType.tp_basicsize = sizeof(PyThingDescriptor);
+    PyThingDescriptorType.tp_flags = Py_TPFLAGS_DEFAULT;
+    PyThingDescriptorType.tp_doc = "ThingDescriptor class";
+    PyThingDescriptorType.tp_methods = PyThingDescriptor_methods;
+    PyThingDescriptorType.tp_members = PyThingDescriptor_members;
+    PyThingDescriptorType.tp_init = (initproc)PyThingDescriptor_init;
+
+    if (PyType_Ready(&PyThingDescriptorType) < 0) {
+        qCWarning(dcThingManager()) << "Error creating PyThingDescriptor";
+        return nullptr;
+    }
+    PyModule_AddObject(m, "ThingDescriptor", (PyObject *)&PyThingDescriptorType);
+
 
     return m;
 }
@@ -72,114 +98,87 @@ PythonIntegrationPlugin::PythonIntegrationPlugin(QObject *parent) : IntegrationP
 
 }
 
-bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
+void PythonIntegrationPlugin::initPython()
 {
     // TODO: Call this just once and call Py_Finalize()
     PyImport_AppendInittab("nymea", PyInit_nymea);
-    Py_Initialize();
+    Py_InitializeEx(0);
+
+}
+
+bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
+{
+    QFileInfo fi(scriptFile);
+
+    QFile metaData(fi.absolutePath() + "/" + fi.baseName() + ".json");
+    if (!metaData.open(QFile::ReadOnly)) {
+        qCWarning(dcThingManager()) << "Error opening metadata file:" << metaData.fileName();
+        return false;
+    }
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(metaData.readAll(), &error);
+    if (error.error != QJsonParseError::NoError) {
+        qCWarning(dcThingManager()) << "Error parsing metadata file:" << error.errorString();
+        return false;
+    }
+    m_metaData = jsonDoc.toVariant().toMap();
+
+
+    // Create a new sub-interpreter for this plugin
+    m_interpreter = Py_NewInterpreter();
+    PyThreadState_Swap(m_interpreter);
+
+
+    // Import nymea module into this interpreter
     PyImport_ImportModule("nymea");
 
-    QFileInfo fi(scriptFile);
-    qCDebug(dcThingManager()) << "Importing" << fi.absolutePath() << fi.fileName() << fi.baseName();
-
+    // Add this plugin's locatioon to the import path
     PyObject* sysPath = PySys_GetObject("path");
     PyList_Append(sysPath, PyUnicode_FromString(fi.absolutePath().toUtf8()));
 
-
-    PyObject *pName = PyUnicode_FromString(fi.baseName().toUtf8());
-    qCDebug(dcThingManager()) << "Importing python plugin from" << scriptFile;
-    m_module = PyImport_Import(pName);
+    // Finally, import the plugin
+    m_module = PyImport_ImportModule(fi.baseName().toUtf8());
 
     if (!m_module) {
-        qCWarning(dcThingManager()) << "Error importing plugin";
+        dumpError();
+        qCWarning(dcThingManager()) << "Error importing python plugin from:" << fi.absoluteFilePath();
         return false;
     }
+    qCDebug(dcThingManager()) << "Imported python plugin from" << fi.absoluteFilePath();
+
+
+    exportIds();
+
+
+    s_modules.insert(m_module, m_interpreter);
+
     return true;
 }
 
 QJsonObject PythonIntegrationPlugin::metaData() const
 {
-    QVariantMap pluginMetaData;
-    pluginMetaData.insert("id", "ccc6dbc8-e352-48a1-8e87-3c89a4669fc2");
-    pluginMetaData.insert("name", "CloudNotifications");
-    pluginMetaData.insert("displayName", tr("Cloud Notifications"));
-
-    QVariantList interfaces;
-//    interfaces.append("notifications");
-    interfaces.append("connectable");
-
-    QVariantList createMethods;
-    createMethods.append("discovery");
-
-    QVariantMap testActionParamTitle;
-    testActionParamTitle.insert("id", "c9545e1c-55cd-42ca-a00f-43f21dfdf05a");
-    testActionParamTitle.insert("name", "title");
-    testActionParamTitle.insert("displayName", tr("Title"));
-    testActionParamTitle.insert("type", "QString");
-
-    QVariantList notifyActionParamTypes;
-    notifyActionParamTypes.append(testActionParamTitle);
-
-    QVariantMap notifyAction;
-    notifyAction.insert("id", "cc6ad463-0a63-4570-ae13-956f50faa3a6");
-    notifyAction.insert("name", "notify");
-    notifyAction.insert("displayName", tr("Send notification"));
-    notifyAction.insert("paramTypes", notifyActionParamTypes);
-
-    QVariantList actionTypes;
-    actionTypes.append(notifyAction);
-
-    QVariantMap connectedState;
-    connectedState.insert("id", "292b5c5d-a6fc-43b6-a59e-f3e1a3ab42b4");
-    connectedState.insert("name", "connected");
-    connectedState.insert("displayName", tr("connected"));
-    connectedState.insert("type", "bool");
-    connectedState.insert("displayNameEvent", tr("Connected changed"));
-    connectedState.insert("defaultValue", false);
-
-    QVariantList stateTypes;
-    stateTypes.append(connectedState);
-
-
-    QVariantMap cloudNotificationsThingClass;
-    cloudNotificationsThingClass.insert("id", "0f1a441a-3793-4a1c-91fc-35d752443aff");
-    cloudNotificationsThingClass.insert("name", "PyTest");
-    cloudNotificationsThingClass.insert("displayName", tr("Python test"));
-    cloudNotificationsThingClass.insert("createMethods", createMethods);
-    cloudNotificationsThingClass.insert("interfaces", interfaces);
-    cloudNotificationsThingClass.insert("actionTypes", actionTypes);
-    cloudNotificationsThingClass.insert("stateTypes", stateTypes);
-
-    QVariantList thingClasses;
-    thingClasses.append(cloudNotificationsThingClass);
-
-    QVariantMap guhVendor;
-    guhVendor.insert("id", "2062d64d-3232-433c-88bc-0d33c0ba2ba6"); // nymea's id
-    guhVendor.insert("name", "nymea");
-    guhVendor.insert("displayName", "nymea");
-    guhVendor.insert("thingClasses", thingClasses);
-
-    QVariantList vendors;
-    vendors.append(guhVendor);
-    pluginMetaData.insert("vendors", vendors);
-
-    return QJsonObject::fromVariantMap(pluginMetaData);
+    return QJsonObject::fromVariantMap(m_metaData);
 
 }
 
 void PythonIntegrationPlugin::init()
 {
-    qCDebug(dcThingManager()) << "Python wrapper: init()";
+    PyThreadState_Swap(m_interpreter);
+
+    qCDebug(dcThingManager()) << "Python wrapper: init()" << m_interpreter;
     PyObject *pFunc = PyObject_GetAttrString(m_module, "init");
     if(!pFunc || !PyCallable_Check(pFunc)) {
         qCDebug(dcThingManager()) << "Python plugin does not implement \"init()\" method.";
         return;
     }
     PyObject_CallObject(pFunc, nullptr);
+    dumpError();
 }
 
 void PythonIntegrationPlugin::discoverThings(ThingDiscoveryInfo *info)
 {
+    PyThreadState_Swap(m_interpreter);
+
     qCDebug(dcThingManager()) << "Python wrapper: discoverThings()" << info;
     PyObject *pFunc = PyObject_GetAttrString(m_module, "discoverThings");
     if(!pFunc || !PyCallable_Check(pFunc)) {
@@ -194,21 +193,64 @@ void PythonIntegrationPlugin::discoverThings(ThingDiscoveryInfo *info)
         PyObject_Free(pyInfo);
     });
 
-    PyObject_CallFunction(pFunc, "O", pyInfo);
 
-    if (PyErr_Occurred()) {
-        PyObject *ptype, *pvalue, *ptraceback;
-        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
-        if(pvalue) {
-            PyObject *pstr = PyObject_Str(pvalue);
-            if(pstr) {
-                const char* err_msg = PyUnicode_AsUTF8(pstr);
-                if(pstr) {
-                    qWarning() << QString(err_msg);
-                }
+//    PyObject *loop = PyObject_GetAttrString(m_module, "_loop");
+//    dumpError();
+//    qWarning() << "loop:" << loop;
 
+
+    PyObject *future = PyObject_CallFunctionObjArgs(pFunc, pyInfo, nullptr);
+    dumpError();
+
+    qWarning() << "future:" << future;
+
+    PyObject *asyncio = PyObject_GetAttrString(m_module, "asyncio");
+    qWarning() << "ayncio:" << asyncio;
+
+    PyObject *loop = PyObject_GetAttrString(m_module, "loop");
+    PyObject *create_task = PyObject_GetAttrString(loop, "create_task");
+    PyObject *task = PyObject_CallFunctionObjArgs(create_task, future, nullptr);
+
+    dumpError();
+    qWarning() << "Create task:" << task;
+
+}
+
+void PythonIntegrationPlugin::dumpError()
+{
+    if (!PyErr_Occurred()) {
+        return;
+    }
+
+    PyObject *ptype, *pvalue, *ptraceback;
+    PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+    if (pvalue) {
+        PyObject *pstr = PyObject_Str(pvalue);
+        if (pstr) {
+            const char* err_msg = PyUnicode_AsUTF8(pstr);
+            if (pstr) {
+                qCWarning(dcThingManager()) << QString(err_msg);
             }
-            PyErr_Restore(ptype, pvalue, ptraceback);
+
+        }
+        PyErr_Restore(ptype, pvalue, ptraceback);
+    }
+}
+
+void PythonIntegrationPlugin::exportIds()
+{
+    foreach (const QVariant &vendorVariant, m_metaData.value("vendors").toList()) {
+        QVariantMap vendor = vendorVariant.toMap();
+        QString vendorIdName = vendor.value("name").toString() + "VendorId";
+        QString vendorId = vendor.value("id").toString();
+        qCDebug(dcThingManager()) << "Exporting:" << vendorIdName;
+        PyModule_AddStringConstant(m_module, vendorIdName.toUtf8(), vendorId.toUtf8());
+
+        foreach (const QVariant &thingClassVariant, vendor.value("thingClasses").toList()) {
+            QVariantMap thingClass = thingClassVariant.toMap();
+            QString thingClassIdName = thingClass.value("name").toString() + "ThingClassId";
+            QString thingClassId = thingClass.value("id").toString();
+            PyModule_AddStringConstant(m_module, thingClassIdName.toUtf8(), thingClassId.toUtf8());
         }
     }
 

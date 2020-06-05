@@ -1,4 +1,6 @@
 #include <Python.h>
+
+#include "python/pything.h"
 #include "python/pythingdiscoveryinfo.h"
 #include "python/pythingsetupinfo.h"
 
@@ -57,40 +59,10 @@ PyMODINIT_FUNC PyInit_nymea(void)
     PySys_SetObject("stderr", m);
 
 
-    QMetaEnum thingErrorEnum = QMetaEnum::fromType<Thing::ThingError>();
-    for (int i = 0; i < thingErrorEnum.keyCount(); i++) {
-        PyModule_AddObject(m, thingErrorEnum.key(i), PyLong_FromLong(thingErrorEnum.value(i)));
-    }
-
-
-    PyThingDiscoveryInfoType.tp_new = PyType_GenericNew;
-    PyThingDiscoveryInfoType.tp_basicsize=sizeof(PyThingDiscoveryInfo);
-    PyThingDiscoveryInfoType.tp_dealloc=(destructor) PyThingDiscoveryInfo_dealloc;
-    PyThingDiscoveryInfoType.tp_flags=Py_TPFLAGS_DEFAULT;
-    PyThingDiscoveryInfoType.tp_doc="ThingDiscoveryInfo class";
-    PyThingDiscoveryInfoType.tp_methods=PyThingDiscoveryInfo_methods;
-    PyThingDiscoveryInfoType.tp_init=(initproc)PyThingDiscoveryInfo_init;
-
-    if (PyType_Ready(&PyThingDiscoveryInfoType) < 0) {
-        qCWarning(dcThingManager()) << "Error creating PyThingDiscoveryInfo";
-        return nullptr;
-    }
-    PyModule_AddObject(m, "ThingDiscoveryInfo", (PyObject *)&PyThingDiscoveryInfoType);
-
-    PyThingDescriptorType.tp_new = PyType_GenericNew;
-    PyThingDescriptorType.tp_basicsize = sizeof(PyThingDescriptor);
-    PyThingDescriptorType.tp_flags = Py_TPFLAGS_DEFAULT;
-    PyThingDescriptorType.tp_doc = "ThingDescriptor class";
-    PyThingDescriptorType.tp_methods = PyThingDescriptor_methods;
-    PyThingDescriptorType.tp_members = PyThingDescriptor_members;
-    PyThingDescriptorType.tp_init = (initproc)PyThingDescriptor_init;
-
-    if (PyType_Ready(&PyThingDescriptorType) < 0) {
-        qCWarning(dcThingManager()) << "Error creating PyThingDescriptor";
-        return nullptr;
-    }
-    PyModule_AddObject(m, "ThingDescriptor", (PyObject *)&PyThingDescriptorType);
-
+    registerThingType(m);
+    registerThingDescriptorType(m);
+    registerThingDiscoveryInfoType(m);
+    registerThingSetupInfoType(m);
 
     return m;
 }
@@ -100,12 +72,16 @@ PythonIntegrationPlugin::PythonIntegrationPlugin(QObject *parent) : IntegrationP
 
 }
 
+PythonIntegrationPlugin::~PythonIntegrationPlugin()
+{
+    m_eventLoop.cancel();
+    m_eventLoop.waitForFinished();
+}
+
 void PythonIntegrationPlugin::initPython()
 {
-    // TODO: Call this just once and call Py_Finalize()
     PyImport_AppendInittab("nymea", PyInit_nymea);
     Py_InitializeEx(0);
-
 }
 
 bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
@@ -154,19 +130,14 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
 
     s_modules.insert(m_module, m_interpreter);
 
-    QtConcurrent::run([=](){
+    // Start an event loop for this plugin in its own thread
+    m_eventLoop = QtConcurrent::run([=](){
         PyObject *loop = PyObject_GetAttrString(m_module, "loop");
         dumpError();
-//        PyObject *stop = PyObject_GetAttrString(loop, "stop");
-//        PyObject *call_soon = PyObject_GetAttrString(loop, "call_soon");
         PyObject *run_forever = PyObject_GetAttrString(loop, "run_forever");
-//        PyObject *run_until_complete = PyObject_GetAttrString(loop, "run_until_complete");
-        qCDebug(dcThingManager()) << "Starting python event loop";
         dumpError();
         PyObject_CallFunctionObjArgs(run_forever, nullptr);
-        qCDebug(dcThingManager()) << "stopped python event loop";
         dumpError();
-
     });
 
 
@@ -176,7 +147,6 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
 QJsonObject PythonIntegrationPlugin::metaData() const
 {
     return QJsonObject::fromVariantMap(m_metaData);
-
 }
 
 void PythonIntegrationPlugin::init()
@@ -208,7 +178,7 @@ void PythonIntegrationPlugin::discoverThings(ThingDiscoveryInfo *info)
         return;
     }
 
-    PyThingDiscoveryInfo *pyInfo = (PyThingDiscoveryInfo*)_PyObject_New(&PyThingDiscoveryInfoType);
+    PyThingDiscoveryInfo *pyInfo = reinterpret_cast<PyThingDiscoveryInfo*>(_PyObject_New(&PyThingDiscoveryInfoType));
     pyInfo->ptrObj = info;
 
     connect(info, &ThingDiscoveryInfo::finished, this, [=](){
@@ -241,7 +211,7 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
         return;
     }
 
-    PyThingSetupInfo *pyInfo = (PyThingSetupInfo*)_PyObject_New(&PyThingSetupInfoType);
+    PyThingSetupInfo *pyInfo = reinterpret_cast<PyThingSetupInfo*>(_PyObject_New(&PyThingSetupInfoType));
     pyInfo->ptrObj = info;
 
     connect(info, &ThingSetupInfo::finished, this, [=](){
@@ -287,7 +257,6 @@ void PythonIntegrationPlugin::exportIds()
         QVariantMap vendor = vendorVariant.toMap();
         QString vendorIdName = vendor.value("name").toString() + "VendorId";
         QString vendorId = vendor.value("id").toString();
-        qCDebug(dcThingManager()) << "Exporting:" << vendorIdName;
         PyModule_AddStringConstant(m_module, vendorIdName.toUtf8(), vendorId.toUtf8());
 
         foreach (const QVariant &thingClassVariant, vendor.value("thingClasses").toList()) {
@@ -297,6 +266,5 @@ void PythonIntegrationPlugin::exportIds()
             PyModule_AddStringConstant(m_module, thingClassIdName.toUtf8(), thingClassId.toUtf8());
         }
     }
-
 }
 

@@ -63,10 +63,10 @@ static PyTypeObject PyThingSetupInfoType = {
     sizeof(PyThingSetupInfo), /* tp_basicsize */
     0,                         /* tp_itemsize */
     0,                         /* tp_dealloc */
-    0,                         /* tp_print */
+    0,                         /* tp_vectorcall_offset */
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */
-    0,                         /* tp_reserved */
+    0,                         /* tp_as_async */
     0,                         /* tp_repr */
     0,                         /* tp_as_number */
     0,                         /* tp_as_sequence */
@@ -78,9 +78,26 @@ static PyTypeObject PyThingSetupInfoType = {
     0,                         /* tp_setattro */
     0,                         /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,        /* tp_flags */
-    "Noddy objects",           /* tp_doc */
+    "Noddy objects",           /* tp_doc */ 
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
+
+static void registerThingSetupInfoType(PyObject *module) {
+    PyThingSetupInfoType.tp_new = PyType_GenericNew;
+    PyThingSetupInfoType.tp_dealloc=(destructor) PyThingSetupInfo_dealloc;
+    PyThingSetupInfoType.tp_basicsize = sizeof(PyThingSetupInfo);
+    PyThingSetupInfoType.tp_flags = Py_TPFLAGS_DEFAULT;
+    PyThingSetupInfoType.tp_doc = "ThingSetupInfo class";
+    PyThingSetupInfoType.tp_methods = PyThingSetupInfo_methods;
+//    PyThingSetupInfoType.tp_members = PyThingSetupInfo_members;
+    PyThingSetupInfoType.tp_init = (initproc)PyThingSetupInfo_init;
+
+    if (PyType_Ready(&PyThingSetupInfoType) < 0) {
+        return;
+    }
+    PyModule_AddObject(module, "ThingSetupInfo", (PyObject *)&PyThingSetupInfoType);
+}
+
 
 
 

@@ -63,6 +63,23 @@ static PyTypeObject PyThingType = {
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
 
+static void registerThingType(PyObject *module)
+{
+    PyThingType.tp_new = PyType_GenericNew;
+    PyThingType.tp_dealloc= reinterpret_cast<destructor>(PyThing_dealloc);
+    PyThingType.tp_basicsize = sizeof(PyThing);
+    PyThingType.tp_flags = Py_TPFLAGS_DEFAULT;
+    PyThingType.tp_doc = "Thing class";
+    PyThingType.tp_methods = PyThing_methods;
+//    PyThingType.tp_members = PyThingSetupInfo_members;
+    PyThingType.tp_init = reinterpret_cast<initproc>(PyThing_init);
+
+    if (PyType_Ready(&PyThingType) < 0) {
+        return;
+    }
+    PyModule_AddObject(module, "Thing", reinterpret_cast<PyObject*>(&PyThingType));
+}
+
 
 #pragma GCC diagnostic pop
 

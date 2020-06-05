@@ -38,7 +38,7 @@ static PyMethodDef PyThing_methods[] = {
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
-static PyTypeObject PyThingDiscoveryInfoType = {
+static PyTypeObject PyThingType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "nymea.Thing",             /* tp_name */
     sizeof(PyThing),           /* tp_basicsize */

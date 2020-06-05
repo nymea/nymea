@@ -1,5 +1,6 @@
 #include <Python.h>
 #include "python/pythingdiscoveryinfo.h"
+#include "python/pythingsetupinfo.h"
 
 #include "pythonintegrationplugin.h"
 
@@ -8,6 +9,7 @@
 #include <QFileInfo>
 #include <QMetaEnum>
 #include <QJsonDocument>
+#include <QtConcurrent/QtConcurrentRun>
 
 QHash<PyObject*, PyThreadState*> s_modules;
 
@@ -152,6 +154,22 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
 
     s_modules.insert(m_module, m_interpreter);
 
+    QtConcurrent::run([=](){
+        PyObject *loop = PyObject_GetAttrString(m_module, "loop");
+        dumpError();
+//        PyObject *stop = PyObject_GetAttrString(loop, "stop");
+//        PyObject *call_soon = PyObject_GetAttrString(loop, "call_soon");
+        PyObject *run_forever = PyObject_GetAttrString(loop, "run_forever");
+//        PyObject *run_until_complete = PyObject_GetAttrString(loop, "run_until_complete");
+        qCDebug(dcThingManager()) << "Starting python event loop";
+        dumpError();
+        PyObject_CallFunctionObjArgs(run_forever, nullptr);
+        qCDebug(dcThingManager()) << "stopped python event loop";
+        dumpError();
+
+    });
+
+
     return true;
 }
 
@@ -177,7 +195,11 @@ void PythonIntegrationPlugin::init()
 
 void PythonIntegrationPlugin::discoverThings(ThingDiscoveryInfo *info)
 {
+
     PyThreadState_Swap(m_interpreter);
+
+    PyGILState_STATE s = PyGILState_Ensure();
+
 
     qCDebug(dcThingManager()) << "Python wrapper: discoverThings()" << info;
     PyObject *pFunc = PyObject_GetAttrString(m_module, "discoverThings");
@@ -194,26 +216,48 @@ void PythonIntegrationPlugin::discoverThings(ThingDiscoveryInfo *info)
     });
 
 
-//    PyObject *loop = PyObject_GetAttrString(m_module, "_loop");
-//    dumpError();
-//    qWarning() << "loop:" << loop;
+    PyObject *future = PyObject_CallFunctionObjArgs(pFunc, pyInfo, nullptr);
+    dumpError();
+
+    PyObject *asyncio = PyObject_GetAttrString(m_module, "asyncio");
+    PyObject *loop = PyObject_GetAttrString(m_module, "loop");
+    PyObject *run_coroutine_threadsafe = PyObject_GetAttrString(asyncio, "run_coroutine_threadsafe");
+    PyObject_CallFunctionObjArgs(run_coroutine_threadsafe, future, loop, nullptr);
+
+    PyGILState_Release(s);
+
+}
+
+void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
+{
+    PyThreadState_Swap(m_interpreter);
+
+    PyGILState_STATE s = PyGILState_Ensure();
+
+    qCDebug(dcThingManager()) << "Python wrapper: setupThing()" << info;
+    PyObject *pFunc = PyObject_GetAttrString(m_module, "setupThing");
+    if(!pFunc || !PyCallable_Check(pFunc)) {
+        qCWarning(dcThingManager()) << "Python plugin does not implement \"setThing()\" method.";
+        return;
+    }
+
+    PyThingSetupInfo *pyInfo = (PyThingSetupInfo*)_PyObject_New(&PyThingSetupInfoType);
+    pyInfo->ptrObj = info;
+
+    connect(info, &ThingSetupInfo::finished, this, [=](){
+        PyObject_Free(pyInfo);
+    });
 
 
     PyObject *future = PyObject_CallFunctionObjArgs(pFunc, pyInfo, nullptr);
     dumpError();
 
-    qWarning() << "future:" << future;
-
     PyObject *asyncio = PyObject_GetAttrString(m_module, "asyncio");
-    qWarning() << "ayncio:" << asyncio;
-
     PyObject *loop = PyObject_GetAttrString(m_module, "loop");
-    PyObject *create_task = PyObject_GetAttrString(loop, "create_task");
-    PyObject *task = PyObject_CallFunctionObjArgs(create_task, future, nullptr);
+    PyObject *run_coroutine_threadsafe = PyObject_GetAttrString(asyncio, "run_coroutine_threadsafe");
+    PyObject_CallFunctionObjArgs(run_coroutine_threadsafe, future, loop, nullptr);
 
-    dumpError();
-    qWarning() << "Create task:" << task;
-
+    PyGILState_Release(s);
 }
 
 void PythonIntegrationPlugin::dumpError()

@@ -52,8 +52,8 @@ static PyObject * PyThingSetupInfo_finish(PyThingSetupInfo* self, PyObject* args
 }
 
 
-static PyMethodDef PyThingDiscoveryInfo_methods[] = {
-    { "finish", (PyCFunction)PyThingDiscoveryInfo_finish,    METH_VARARGS,       "finish a discovery" },
+static PyMethodDef PyThingSetupInfo_methods[] = {
+    { "finish", (PyCFunction)PyThingSetupInfo_finish,    METH_VARARGS,       "finish a setup" },
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 

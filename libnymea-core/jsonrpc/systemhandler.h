@@ -51,6 +51,7 @@ public:
 
     Q_INVOKABLE JsonReply *GetCapabilities(const QVariantMap &params);
 
+    Q_INVOKABLE JsonReply *Restart(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *Reboot(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *Shutdown(const QVariantMap &params) const;
 

@@ -42,6 +42,11 @@ bool PlatformSystemController::powerManagementAvailable() const
     return false;
 }
 
+bool PlatformSystemController::restart()
+{
+    return false;
+}
+
 bool PlatformSystemController::reboot()
 {
     return false;

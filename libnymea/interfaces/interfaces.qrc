@@ -76,5 +76,6 @@
         <file>powerswitch.json</file>
         <file>barcodescanner.json</file>
         <file>irrigation.json</file>
+        <file>venetianblind.json</file>
     </qresource>
 </RCC>

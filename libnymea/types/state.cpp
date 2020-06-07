@@ -51,16 +51,9 @@ State::State()
 /*! Constructs a State reflecting the \l{StateType} given by \a stateTypeId
  *  and associated with the \l{Device} given by \a deviceId */
 State::State(const StateTypeId &stateTypeId, const ThingId &deviceId):
-    m_id(StateId::createStateId()),
     m_stateTypeId(stateTypeId),
     m_thingId(deviceId)
 {
-}
-
-/*! Returns the id of this State. */
-StateId State::id() const
-{
-    return m_id;
 }
 
 /*! Returns the id of the StateType describing this State. */

@@ -50,3 +50,21 @@ ThingManager::ThingManager(QObject *parent) : QObject(parent)
     qRegisterMetaType<ParamType>();
     qRegisterMetaType<ParamTypes>();
 }
+
+/*! Connect two states.
+    When two states are connected, any state changes will be synced between those. A connection
+    is made from an \a inputThing and its \a inputState to an \a outputThing and its \a outputState.
+    Whenever the input state changes, the output state is set accordingly. If the input state is
+    writable, the connection will be bidirectional, that is, a change of the output state will also
+    reflect on the input state.
+    Connections can be logically inverted.
+    Connections need to be compatible. This means, only states which have a defined ioState of type "input"
+    can be connected to states which habe a defined ioState of type "output". Additionally, the digital/analog
+    type needs to match. In other words, states with ioType "digitalInput" can be connected to states with ioType
+    "digitaOutput" and states with ioType "analogInput" can be connected to states with ioType "analogOutput".
+ */
+IOConnectionResult ThingManager::connectIO(const ThingId &inputThing, const StateTypeId &inputState, const ThingId &outputThing, const StateTypeId &outputState, bool inverted)
+{
+    IOConnection connection(IOConnectionId::createIOConnectionId(), inputThing, inputState, outputThing, outputState, inverted);
+    return connectIO(connection);
+}

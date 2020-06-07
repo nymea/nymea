@@ -60,6 +60,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     registerEnum<DeviceClass::CreateMethod, DeviceClass::CreateMethods>();
     registerEnum<Types::Unit>();
     registerEnum<Types::InputType>();
+    registerEnum<Types::IOType>();
     registerEnum<RuleEngine::RemovePolicy>();
     registerEnum<BrowserItem::BrowserIcon>();
     registerEnum<MediaBrowserItem::MediaBrowserIcon>();

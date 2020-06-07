@@ -59,6 +59,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     registerEnum<ThingClass::CreateMethod, ThingClass::CreateMethods>();
     registerEnum<Types::Unit>();
     registerEnum<Types::InputType>();
+    registerEnum<Types::IOType>();
     registerEnum<RuleEngine::RemovePolicy>();
     registerEnum<BrowserItem::BrowserIcon>();
     registerEnum<MediaBrowserItem::MediaBrowserIcon>();
@@ -77,6 +78,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     registerObject<Action>();
     registerObject<State, States>();
     registerUncreatableObject<Thing, Things>();
+    registerObject<IOConnection, IOConnections>();
 
     // Registering browseritem manually for now. Not sure how to deal with the
     // polymorphism in it (e.g MediaBrowserItem)
@@ -346,6 +348,31 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     returns.insert("o:displayMessage", enumValueName(String));
     registerMethod("ExecuteBrowserItemAction", description, params, returns);
 
+    params.clear(); returns.clear();
+    description = "Fetch IO connections. Optionally filtered by thingId and stateTypeId.";
+    params.insert("o:thingId", enumValueName(Uuid));
+    returns.insert("ioConnections", objectRef<IOConnections>());
+    registerMethod("GetIOConnections", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Connect two generic IO states. Input and output need to be compatible, that is, either a digital input "
+                  "and a digital output, or an analog input and an analog output. If successful, the connectionId will be returned.";
+    params.insert("inputThingId", enumValueName(Uuid));
+    params.insert("inputStateTypeId", enumValueName(Uuid));
+    params.insert("outputThingId", enumValueName(Uuid));
+    params.insert("outputStateTypeId", enumValueName(Uuid));
+    params.insert("o:inverted", enumValueName(Bool));
+    returns.insert("thingError", enumRef<Thing::ThingError>());
+    returns.insert("o:ioConnectionId", enumValueName(Uuid));
+    registerMethod("ConnectIO", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Disconnect an existing IO connection.";
+    params.insert("ioConnectionId", enumValueName(Uuid));
+    returns.insert("thingError", enumRef<Thing::ThingError>());
+    registerMethod("DisconnectIO", description, params, returns);
+
+
     // Notifications
     params.clear(); returns.clear();
     description = "Emitted whenever a state of a thing changes.";
@@ -390,6 +417,26 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
         QVariantMap params;
         params.insert("event", pack(event));
         emit EventTriggered(params);
+    });
+
+    params.clear(); returns.clear();
+    description = "Emitted whenever an IO connection has been added.";
+    params.insert("ioConnection", objectRef<IOConnection>());
+    registerNotification("IOConnectionAdded", description, params);
+    connect(m_thingManager, &ThingManager::ioConnectionAdded, this, [this](const IOConnection &connection) {
+        QVariantMap params;
+        params.insert("ioConnection", pack(connection));
+        emit IOConnectionAdded(params);
+    });
+
+    params.clear(); returns.clear();
+    description = "Emitted whenever an IO connection has been removed.";
+    params.insert("ioConnectionId", enumValueName(Uuid));
+    registerNotification("IOConnectionRemoved", description, params);
+    connect(m_thingManager, &ThingManager::ioConnectionRemoved, this, [this](const IOConnectionId &ioConnectionId) {
+        QVariantMap params;
+        params.insert("ioConnectionId", ioConnectionId);
+        emit IOConnectionRemoved(params);
     });
 
     connect(NymeaCore::instance(), &NymeaCore::pluginConfigChanged, this, &IntegrationsHandler::pluginConfigChanged);
@@ -928,6 +975,38 @@ JsonReply *IntegrationsHandler::ExecuteBrowserItemAction(const QVariantMap &para
     });
 
     return jsonReply;
+}
+
+JsonReply *IntegrationsHandler::GetIOConnections(const QVariantMap &params)
+{
+    ThingId thingId = params.value("thingId").toUuid();
+    IOConnections ioConnections = m_thingManager->ioConnections(thingId);
+    QVariantMap returns;
+    QVariant bla = pack(ioConnections);
+    returns.insert("ioConnections", pack(ioConnections));
+    return createReply(returns);
+}
+
+JsonReply *IntegrationsHandler::ConnectIO(const QVariantMap &params)
+{
+    ThingId inputThingId = params.value("inputThingId").toUuid();
+    StateTypeId inputStateTypeId = params.value("inputStateTypeId").toUuid();
+    ThingId outputThingId = params.value("outputThingId").toUuid();
+    StateTypeId outputStateTypeId = params.value("outputStateTypeId").toUuid();
+    bool inverted = params.value("inverted", false).toBool();
+    IOConnectionResult result = m_thingManager->connectIO(inputThingId, inputStateTypeId, outputThingId, outputStateTypeId, inverted);
+    QVariantMap reply = statusToReply(result.error);
+    if (result.error == Thing::ThingErrorNoError) {
+        reply.insert("ioConnectionId", result.ioConnectionId);
+    }
+    return createReply(reply);
+}
+
+JsonReply *IntegrationsHandler::DisconnectIO(const QVariantMap &params)
+{
+    IOConnectionId ioConnectionId = params.value("ioConnectionId").toUuid();
+    Thing::ThingError error = m_thingManager->disconnectIO(ioConnectionId);
+    return createReply(statusToReply(error));
 }
 
 QVariantMap IntegrationsHandler::packBrowserItem(const BrowserItem &item)

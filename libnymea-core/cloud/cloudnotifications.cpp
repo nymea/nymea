@@ -168,7 +168,7 @@ void CloudNotifications::startMonitoringAutoThings()
 
 void CloudNotifications::executeAction(ThingActionInfo *info)
 {
-    qCDebug(dcCloud()) << "executeAction" << info->thing() << info->action().id() << info->action().params();
+    qCDebug(dcCloud()) << "executeAction" << info->thing() << info->action().params();
     QString userId = info->thing()->paramValue(cloudNotificationsThingClassUserParamId).toString();
     QString endpointId = info->thing()->paramValue(cloudNotificationsThingClassEndpointParamId).toString();
     int id = m_awsConnector->sendPushNotification(userId, endpointId, info->action().param(notifyActionParamTitleId).value().toString(), info->action().param(notifyActionParamBodyId).value().toString());

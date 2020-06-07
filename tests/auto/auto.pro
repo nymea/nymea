@@ -1,26 +1,27 @@
 TEMPLATE = subdirs
 
 SUBDIRS = \
-        versioning \
-        devices \
-        integrations \
-        jsonrpc \
-        events \
-        states \
         actions \
-        rules \
-        plugins \
-        webserver \
-        websocketserver \
+        configurations \
+        devices \
+        events \
+        integrations \
+        ioconnections \
+        jsonrpc \
         logging \
         loggingdirect \
         loggingloading \
-        #coap \ # temporary removed until fixed
-        configurations \
+        mqttbroker \
+        plugins \
+        rules \
+        scripts \
+        states \
+        tags \
         timemanager \
         userloading \
         usermanager \
-        mqttbroker \
-        tags \
-        scripts \
+        versioning \
+        webserver \
+        websocketserver \
+        #coap \ # temporary removed until fixed
 

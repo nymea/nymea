@@ -58,7 +58,6 @@ public:
     explicit RuleAction(const ThingId &thingId, const QString &browserItemId);
     RuleAction(const RuleAction &other);
 
-    ActionId id() const;
     bool isValid() const;
 
     Type type() const;
@@ -92,7 +91,6 @@ public:
     void operator=(const RuleAction &other);
 
 private:
-    ActionId m_id;
     ThingId m_thingId;
     ActionTypeId m_actionTypeId;
     QString m_browserItemId;

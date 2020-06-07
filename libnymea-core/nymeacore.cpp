@@ -424,7 +424,7 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
                 } else if (ruleActionParam.isStateBased()) {
                     Thing *stateThing = m_thingManager->findConfiguredThing(ruleActionParam.stateThingId());
                     if (!stateThing) {
-                        qCWarning(dcRuleEngine()) << "Cannot find thing" << ruleActionParam.stateThingId() << "required by rule action" << ruleAction.id();
+                        qCWarning(dcRuleEngine()) << "Cannot find thing" << ruleActionParam.stateThingId() << "required by rule action";
                         ok = false;
                         break;
                     }
@@ -438,7 +438,7 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
                 }
             }
             if (!ok) {
-                qCWarning(dcRuleEngine()) << "Not executing rule action" << ruleAction.id();
+                qCWarning(dcRuleEngine()) << "Not executing rule action";
                 continue;
             }
             Action action(actionTypeId, thing->id());
@@ -476,7 +476,7 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
                     } else if (ruleActionParam.isStateBased()) {
                         Thing *stateThing = m_thingManager->findConfiguredThing(ruleActionParam.stateThingId());
                         if (!stateThing) {
-                            qCWarning(dcRuleEngine()) << "Cannot find thing" << ruleActionParam.stateThingId() << "required by rule action" << ruleAction.id();
+                            qCWarning(dcRuleEngine()) << "Cannot find thing" << ruleActionParam.stateThingId() << "required by rule action";
                             ok = false;
                             break;
                         }
@@ -490,7 +490,7 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
                     }
                 }
                 if (!ok) {
-                    qCWarning(dcRuleEngine()) << "Not executing rule action" << ruleAction.id();
+                    qCWarning(dcRuleEngine()) << "Not executing rule action";
                     continue;
                 }
 

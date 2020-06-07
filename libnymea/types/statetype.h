@@ -46,6 +46,7 @@ class LIBNYMEA_EXPORT StateType
     Q_PROPERTY(int index READ index WRITE setIndex)
     Q_PROPERTY(QVariant defaultValue READ defaultValue WRITE setDefaultValue)
     Q_PROPERTY(Types::Unit unit READ unit WRITE setUnit USER true)
+    Q_PROPERTY(Types::IOType ioType READ ioType WRITE setIOType USER true)
     Q_PROPERTY(QVariant minValue READ minValue WRITE setMinValue USER true)
     Q_PROPERTY(QVariant maxValue READ maxValue WRITE setMaxValue USER true)
     Q_PROPERTY(QVariantList possibleValues READ possibleValues WRITE setPossibleValues USER true)
@@ -83,6 +84,12 @@ public:
     Types::Unit unit() const;
     void setUnit(const Types::Unit &unit);
 
+    Types::IOType ioType() const;
+    void setIOType(Types::IOType ioType);
+
+    bool writable() const;
+    void setWritable(bool writable);
+
     bool cached() const;
     void setCached(bool cached);
 
@@ -100,6 +107,8 @@ private:
     QVariant m_maxValue;
     QVariantList m_possibleValues;
     Types::Unit m_unit = Types::UnitNone;
+    Types::IOType m_ioType = Types::IOTypeNone;
+    bool m_writable = false;
     bool m_cached = true;
 };
 Q_DECLARE_METATYPE(StateType)
@@ -111,6 +120,7 @@ class StateTypes: public QList<StateType>
 public:
     StateTypes() = default;
     StateTypes(const QList<StateType> &other);
+    bool contains(const StateTypeId &stateTypeId);
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
     StateType findByName(const QString &name);

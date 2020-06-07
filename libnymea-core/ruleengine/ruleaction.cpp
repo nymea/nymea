@@ -31,7 +31,6 @@
 #include "ruleaction.h"
 
 RuleAction::RuleAction(const ActionTypeId &actionTypeId, const ThingId &thingId, const RuleActionParams &params):
-    m_id(ActionId::createActionId()),
     m_thingId(thingId),
     m_actionTypeId(actionTypeId),
     m_ruleActionParams(params)
@@ -55,7 +54,6 @@ RuleAction::RuleAction(const ThingId &thingId, const QString &browserItemId):
 }
 
 RuleAction::RuleAction(const RuleAction &other) :
-    m_id(other.id()),
     m_thingId(other.thingId()),
     m_actionTypeId(other.actionTypeId()),
     m_browserItemId(other.browserItemId()),
@@ -64,11 +62,6 @@ RuleAction::RuleAction(const RuleAction &other) :
     m_ruleActionParams(other.ruleActionParams())
 {
 
-}
-
-ActionId RuleAction::id() const
-{
-    return m_id;
 }
 
 bool RuleAction::isValid() const
@@ -211,7 +204,6 @@ RuleActionParam RuleAction::ruleActionParam(const QString &ruleActionParamName) 
 
 void RuleAction::operator=(const RuleAction &other)
 {
-    m_id = other.id();
     m_actionTypeId = other.actionTypeId();
     m_ruleActionParams = other.ruleActionParams();
 }

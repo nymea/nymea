@@ -49,8 +49,6 @@ public:
     explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const ThingId &thingId = ThingId());
     Action(const Action &other);
 
-    ActionId id() const;
-
     bool isValid() const;
 
     ActionTypeId actionTypeId() const;
@@ -64,7 +62,6 @@ public:
 
     void operator=(const Action &other);
 private:
-    ActionId m_id;
     ActionTypeId m_actionTypeId;
     ThingId m_thingId;
     ParamList m_params;

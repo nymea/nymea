@@ -35,6 +35,7 @@
 
 #include "thing.h"
 #include "integrationplugin.h"
+#include "ioconnection.h"
 #include "types/interface.h"
 #include "types/vendor.h"
 #include "types/browseritem.h"
@@ -89,10 +90,18 @@ public:
     virtual BrowserActionInfo* executeBrowserItem(const BrowserAction &browserAction) = 0;
     virtual BrowserItemActionInfo* executeBrowserItemAction(const BrowserItemAction &browserItemAction) = 0;
 
+    virtual IOConnections ioConnections(const ThingId &thingId = ThingId()) const = 0;
+    IOConnectionResult connectIO(const ThingId &inputThing, const StateTypeId &inputState, const ThingId &outputThing, const StateTypeId &outputState, bool inverted = false);
+    virtual Thing::ThingError disconnectIO(const IOConnectionId &ioConnectionId) = 0;
+
     virtual QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) = 0;
     virtual ParamType translateParamType(const PluginId &pluginId, const ParamType &paramType, const QLocale &locale) = 0;
     virtual ThingClass translateThingClass(const ThingClass &thingClass, const QLocale &locale) = 0;
     virtual Vendor translateVendor(const Vendor &vendor, const QLocale &locale) = 0;
+
+protected:
+    virtual IOConnectionResult connectIO(const IOConnection &connection) = 0;
+
 signals:
     void pluginConfigChanged(const PluginId &id, const ParamList &config);
     void eventTriggered(const Event &event);
@@ -102,6 +111,8 @@ signals:
     void thingAdded(Thing *thing);
     void thingChanged(Thing *device);
     void thingSettingChanged(const ThingId &thingId, const ParamTypeId &settingParamTypeId, const QVariant &value);
+    void ioConnectionAdded(const IOConnection &ioConnection);
+    void ioConnectionRemoved(const IOConnectionId &ioConnectionId);
 };
 
 #endif // THINGMANAGER_H

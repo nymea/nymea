@@ -32,7 +32,6 @@
 
 
 BrowserItemAction::BrowserItemAction(const ThingId &thingId, const QString &itemId, const ActionTypeId &actionTypeId, const ParamList &params):
-    m_id(ActionId::createActionId()),
     m_thingId(thingId),
     m_itemId(itemId),
     m_actionTypeId(actionTypeId),
@@ -42,7 +41,6 @@ BrowserItemAction::BrowserItemAction(const ThingId &thingId, const QString &item
 }
 
 BrowserItemAction::BrowserItemAction(const BrowserItemAction &other):
-    m_id(other.id()),
     m_thingId(other.thingId()),
     m_itemId(other.itemId()),
     m_actionTypeId(other.actionTypeId()),
@@ -51,14 +49,9 @@ BrowserItemAction::BrowserItemAction(const BrowserItemAction &other):
 
 }
 
-ActionId BrowserItemAction::id() const
-{
-    return m_id;
-}
-
 bool BrowserItemAction::isValid() const
 {
-    return !m_id.isNull() && !m_thingId.isNull() && !m_itemId.isNull();
+    return !m_thingId.isNull() && !m_itemId.isNull();
 }
 
 ThingId BrowserItemAction::thingId() const
@@ -83,7 +76,6 @@ ParamList BrowserItemAction::params() const
 
 void BrowserItemAction::operator=(const BrowserItemAction &other)
 {
-    m_id = other.id();
     m_thingId = other.thingId();
     m_itemId = other.itemId();
     m_actionTypeId = other.actionTypeId();

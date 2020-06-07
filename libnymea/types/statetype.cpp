@@ -172,6 +172,30 @@ void StateType::setUnit(const Types::Unit &unit)
     m_unit = unit;
 }
 
+/*! Returns the IO type of this StateType. */
+Types::IOType StateType::ioType() const
+{
+    return m_ioType;
+}
+
+/*! Sets the IO type of this StateType. */
+void StateType::setIOType(Types::IOType ioType)
+{
+    m_ioType = ioType;
+}
+
+/*! Returns whether the StateType is writable or not. A writable StateType will have an according ActionType defined.*/
+bool StateType::writable() const
+{
+    return m_writable;
+}
+
+/*! Sets the writable property to true */
+void StateType::setWritable(bool writable)
+{
+    m_writable = writable;
+}
+
 /*! Returns true if this StateType is to be cached. This means, the last state value will be stored to disk upon shutdown and restored on reboot. If this is false, states will be initialized with the default value on each boot. By default all states are cached by the system. */
 bool StateType::cached() const
 {
@@ -189,7 +213,7 @@ QStringList StateType::typeProperties()
 {
     return QStringList() << "id" << "name" << "displayName" << "displayNameEvent" << "type" << "defaultValue"
                          << "cached" << "unit" << "minValue" << "maxValue" << "possibleValues" << "writable"
-                         << "displayNameAction";
+                         << "displayNameAction" << "ioType";
 }
 
 /*! Returns a list of mandatory properties a DeviceClass definition must have. */
@@ -203,6 +227,16 @@ StateTypes::StateTypes(const QList<StateType> &other)
     foreach (const StateType &st, other) {
         append(st);
     }
+}
+
+bool StateTypes::contains(const StateTypeId &stateTypeId)
+{
+    foreach (const StateType &stateType, *this) {
+        if (stateType.id() == stateTypeId) {
+            return true;
+        }
+    }
+    return false;
 }
 
 QVariant StateTypes::get(int index) const

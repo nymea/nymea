@@ -1,4 +1,4 @@
-5.0
+5.1
 {
     "enums": {
         "BasicType": [
@@ -81,6 +81,13 @@
             "DeviceSetupStatusInProgress",
             "DeviceSetupStatusComplete",
             "DeviceSetupStatusFailed"
+        ],
+        "IOType": [
+            "IOTypeNone",
+            "IOTypeDigitalInput",
+            "IOTypeDigitalOutput",
+            "IOTypeAnalogInput",
+            "IOTypeAnalogOutput"
         ],
         "InputType": [
             "InputTypeNone",
@@ -937,6 +944,29 @@
                 "thingError": "$ref:ThingError"
             }
         },
+        "Integrations.ConnectIO": {
+            "description": "Connect two generic IO states. Input and output need to be compatible, that is, either a digital input and a digital output, or an analog input and an analog output. If successful, the connectionId will be returned.",
+            "params": {
+                "inputStateTypeId": "Uuid",
+                "inputThingId": "Uuid",
+                "o:inverted": "Bool",
+                "outputStateTypeId": "Uuid",
+                "outputThingId": "Uuid"
+            },
+            "returns": {
+                "o:ioConnectionId": "Uuid",
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.DisconnectIO": {
+            "description": "Disconnect an existing IO connection.",
+            "params": {
+                "ioConnectionId": "Uuid"
+            },
+            "returns": {
+                "thingError": "$ref:ThingError"
+            }
+        },
         "Integrations.DiscoverThings": {
             "description": "Performs a thing discovery for things of the given thingClassId and returns the results. This function may take a while to return. Note that this method will include all the found things, that is, including things that may already have been added. Those things will have thingId set to the id of the already added thing. Such results may be used to reconfigure existing things and might be filtered in cases where only unknown things are of interest.",
             "params": {
@@ -1023,6 +1053,15 @@
             },
             "returns": {
                 "eventTypes": "$ref:EventTypes"
+            }
+        },
+        "Integrations.GetIOConnections": {
+            "description": "Fetch IO connections. Optionally filtered by thingId and stateTypeId.",
+            "params": {
+                "o:thingId": "Uuid"
+            },
+            "returns": {
+                "ioConnections": "$ref:IOConnections"
             }
         },
         "Integrations.GetPluginConfiguration": {
@@ -2015,6 +2054,18 @@
                 "event": "$ref:Event"
             }
         },
+        "Integrations.IOConnectionAdded": {
+            "description": "Emitted whenever an IO connection has been added.",
+            "params": {
+                "ioConnection": "$ref:IOConnection"
+            }
+        },
+        "Integrations.IOConnectionRemoved": {
+            "description": "Emitted whenever an IO connection has been removed.",
+            "params": {
+                "ioConnectionId": "Uuid"
+            }
+        },
         "Integrations.PluginConfigurationChanged": {
             "description": "Emitted whenever a plugin's configuration is changed.",
             "params": {
@@ -2402,6 +2453,17 @@
             "name": "String",
             "version": "String"
         },
+        "IOConnection": {
+            "r:id": "Uuid",
+            "r:inputStateTypeId": "Uuid",
+            "r:inputThingId": "Uuid",
+            "r:inverted": "Bool",
+            "r:outputStateTypeId": "Uuid",
+            "r:outputThingId": "Uuid"
+        },
+        "IOConnections": [
+            "$ref:IOConnection"
+        ],
         "IntegrationPlugin": {
             "r:displayName": "String",
             "r:id": "Uuid",
@@ -2586,6 +2648,7 @@
             "displayName": "String",
             "index": "Int",
             "name": "String",
+            "o:ioType": "$ref:IOType",
             "o:maxValue": "Variant",
             "o:minValue": "Variant",
             "o:possibleValues": [

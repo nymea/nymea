@@ -176,7 +176,7 @@ JsonReply *ActionHandler::ExecuteBrowserItemAction(const QVariantMap &params)
     BrowserItemActionInfo *info = NymeaCore::instance()->executeBrowserItemAction(browserItemAction);
     connect(info, &BrowserItemActionInfo::finished, jsonReply, [info, jsonReply](){
         QVariantMap data;
-        data.insert("deviceError", enumValueName<Thing::ThingError>(info->status()).replace("ThingError", "DeviceError"));
+        data.insert("deviceError", enumValueName<Thing::ThingError>(info->status()).replace("Thing", "Device"));
         jsonReply->setData(data);
         jsonReply->finished();
     });

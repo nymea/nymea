@@ -343,6 +343,35 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         return reply;
     }
 
+    if (requestPath.startsWith("/debug/settings/ioconnections")) {
+        QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleIOConnections).fileName();
+        qCDebug(dcDebugServer()) << "Loading" << settingsFileName;
+        QFile settingsFile(settingsFileName);
+        if (!settingsFile.exists()) {
+            qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
+            HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
+            reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
+            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
+            return reply;
+        }
+
+        if (!settingsFile.open(QFile::ReadOnly)) {
+            qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
+            HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
+            reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
+            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
+            return reply;
+        }
+
+        QByteArray settingsFileData = settingsFile.readAll();
+        settingsFile.close();
+
+        HttpReply *reply = HttpReply::createSuccessReply();
+        reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
+        reply->setPayload(settingsFileData);
+        return reply;
+    }
+
     if (requestPath.startsWith("/debug/ping")) {
         // Only one ping process should run
         if (m_pingProcess || m_pingReply)
@@ -1601,6 +1630,56 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
         writer.writeAttribute("disabled", "true");
     }
     writer.writeAttribute("onClick", "showFile('/debug/settings/mqttpolicies')");
+    writer.writeCharacters(tr("Show"));
+    writer.writeEndElement(); // button
+    writer.writeEndElement(); // form
+    writer.writeEndElement(); // div show-button-column
+
+    writer.writeEndElement(); // div download-row
+
+
+    // Download row IO connections
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-row");
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-name-column");
+    //: The MQTT policies download description of the debug interface
+    writer.writeTextElement("p", tr("IO Connections"));
+    writer.writeEndElement(); // div download-name-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-path-column");
+    writer.writeTextElement("p", NymeaSettings(NymeaSettings::SettingsRoleIOConnections).fileName());
+    writer.writeEndElement(); // div download-path-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "download-button-column");
+    writer.writeStartElement("form");
+    writer.writeAttribute("class", "download-button");
+    writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
+    writer.writeAttribute("type", "button");
+    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleMqttPolicies).fileName())) {
+        writer.writeAttribute("disabled", "true");
+    }
+    writer.writeAttribute("onClick", "downloadFile('/debug/settings/ioconnections', 'ioconnections.conf')");
+    writer.writeCharacters(tr("Download"));
+    writer.writeEndElement(); // button
+    writer.writeEndElement(); // form
+    writer.writeEndElement(); // div download-button-column
+
+    writer.writeStartElement("div");
+    writer.writeAttribute("class", "show-button-column");
+    writer.writeStartElement("form");
+    writer.writeAttribute("class", "show-button");
+    writer.writeStartElement("button");
+    writer.writeAttribute("class", "button");
+    writer.writeAttribute("type", "button");
+    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleMqttPolicies).fileName())) {
+        writer.writeAttribute("disabled", "true");
+    }
+    writer.writeAttribute("onClick", "showFile('/debug/settings/ioconnections')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form

@@ -47,7 +47,6 @@
 
 /*! Construct an Action with the given \a deviceId and \a actionTypeId. */
 Action::Action(const ActionTypeId &actionTypeId, const ThingId &thingId) :
-    m_id(ActionId::createActionId()),
     m_actionTypeId(actionTypeId),
     m_thingId(thingId)
 {
@@ -55,17 +54,10 @@ Action::Action(const ActionTypeId &actionTypeId, const ThingId &thingId) :
 
 /*! Construct a copy of an \a other Action. */
 Action::Action(const Action &other):
-    m_id(other.id()),
     m_actionTypeId(other.actionTypeId()),
     m_thingId(other.thingId()),
     m_params(other.params())
 {
-}
-
-/*! Returns the actionId for this Action. */
-ActionId Action::id() const
-{
-    return m_id;
 }
 
 /*! An Action is valid if actionTypeId and deviceId are valid uuids. Returns true if valid, false if not. */
@@ -123,7 +115,6 @@ Param Action::param(const ParamTypeId &paramTypeId) const
 /*! Copy the data to an \l{Action} from an \a other action. */
 void Action::operator =(const Action &other)
 {
-    m_id = other.id();
     m_actionTypeId = other.actionTypeId();
     m_params = other.params();
 }

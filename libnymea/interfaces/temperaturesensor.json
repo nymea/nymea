@@ -3,7 +3,8 @@
     "states": [
         {
             "name": "temperature",
-            "type": "double"
+            "type": "double",
+            "unit": "DegreeCelsius"
         }
     ]
 }

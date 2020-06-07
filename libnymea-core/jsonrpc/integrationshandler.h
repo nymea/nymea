@@ -72,6 +72,10 @@ public:
     Q_INVOKABLE JsonReply *ExecuteBrowserItem(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *ExecuteBrowserItemAction(const QVariantMap &params, const JsonContext &context);
 
+    Q_INVOKABLE JsonReply *GetIOConnections(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *ConnectIO(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *DisconnectIO(const QVariantMap &params);
+
     static QVariantMap packBrowserItem(const BrowserItem &item);
 
 signals:
@@ -82,6 +86,8 @@ signals:
     void ThingChanged(const QVariantMap &params);
     void ThingSettingChanged(const QVariantMap &params);
     void EventTriggered(const QVariantMap &params);
+    void IOConnectionAdded(const QVariantMap &params);
+    void IOConnectionRemoved(const QVariantMap &params);
 
 private slots:
     void pluginConfigChanged(const PluginId &id, const ParamList &config);

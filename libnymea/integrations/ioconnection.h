@@ -28,51 +28,68 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef STATE_H
-#define STATE_H
+#ifndef IOCONNECTION_H
+#define IOCONNECTION_H
 
-#include "libnymea.h"
-#include "typeutils.h"
-
+#include <QObject>
+#include <QList>
 #include <QVariant>
-#include <QDebug>
 
-class LIBNYMEA_EXPORT State
+#include "typeutils.h"
+#include "thing.h"
+
+struct IOConnectionResult {
+    Thing::ThingError error = Thing::ThingErrorNoError;
+    IOConnectionId ioConnectionId;
+};
+
+class IOConnection
 {
     Q_GADGET
-    Q_PROPERTY(QUuid stateTypeId READ stateTypeId)
-    Q_PROPERTY(QVariant value READ value)
+    Q_PROPERTY(QUuid id READ id)
+    Q_PROPERTY(QUuid inputThingId READ inputThingId)
+    Q_PROPERTY(QUuid inputStateTypeId READ inputStateTypeId)
+    Q_PROPERTY(QUuid outputThingId READ outputThingId)
+    Q_PROPERTY(QUuid outputStateTypeId READ outputStateTypeId)
+    Q_PROPERTY(bool inverted READ inverted)
 
 public:
-    State();
-    State(const StateTypeId &stateTypeId, const ThingId &deviceId);
+    IOConnection();
+    IOConnection(const IOConnectionId &id, const ThingId &inputThingId, const StateTypeId &inputStateTypeId, const ThingId &outputThingId, const StateTypeId &outputStateTypeId, bool inverted = false);
 
-    StateTypeId stateTypeId() const;
-    ThingId thingId() const;
+    IOConnectionId id() const;
 
-    QVariant value() const;
-    void setValue(const QVariant &value);
+    ThingId inputThingId() const;
+    StateTypeId inputStateTypeId() const;
+
+    ThingId outputThingId() const;
+    StateTypeId outputStateTypeId() const;
+
+    bool inverted() const;
 
 private:
-    StateTypeId m_stateTypeId;
-    ThingId m_thingId;
-    QVariant m_value;
+    IOConnectionId m_id;
+    ThingId m_inputThingId;
+    StateTypeId m_inputStateTypeId;
+    ThingId m_outputThingId;
+    StateTypeId m_outputStateTypeId;
+    bool m_inverted = false;
 };
-Q_DECLARE_METATYPE(State)
 
-class States: public QList<State>
+class IOConnections: public QList<IOConnection>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
 public:
-    States();
-    States(const QList<State> &other);
+    IOConnections() {}
+    inline IOConnections(std::initializer_list<IOConnection> args): QList(args) {}
+    IOConnections(const QList<IOConnection> &other): QList<IOConnection>(other) {}
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
 };
-Q_DECLARE_METATYPE(States)
 
-QDebug operator<<(QDebug dbg, const State &event);
-QDebug operator<<(QDebug dbg, const QList<State> &events);
+Q_DECLARE_METATYPE(IOConnection)
+Q_DECLARE_METATYPE(IOConnections)
 
-#endif // STATE_H
+
+#endif // IOCONNECTION_H

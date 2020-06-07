@@ -287,8 +287,8 @@ void TestIntegrations::getThingClasses_data()
     QTest::addColumn<VendorId>("vendorId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("vendor nymea") << nymeaVendorId << 11;
-    QTest::newRow("no filter") << VendorId() << 11;
+    QTest::newRow("vendor nymea") << nymeaVendorId << 14;
+    QTest::newRow("no filter") << VendorId() << 14;
     QTest::newRow("invalid vendor") << VendorId("93e7d361-8025-4354-b17e-b68406c800bc") << 0;
 }
 

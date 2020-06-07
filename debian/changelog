@@ -1,6 +1,23 @@
-nymea (0.21.0) UNRELEASED; urgency=medium
+nymea (0.21.0) xenial; urgency=medium
+  [ Michael Zanetti ]
+  * Improve error messages when a plugin fails to load
+  * Add support for generic IO connections
+  * Reject duplicate ids in plugin json
+  * Add an irrigation interface
+  * Log DB schema 4
+  * Drop internal networkmanager and use libnymea-networkmanager instead
+  * Improve networking API
+  * Add an I2C hardware resource
+  * Add support for restarting nymea in the system api
+  * Fix thing class translations
+  * Check for cloud certificate file before trying to connect
+  * Add a helper function to more easily access ZeroConf txt records
+  * Cleanup license headers/files
+  * Don't directly link to libssl, we're using the Qt wrappers
+  * Fix UPnP discovery if wifi comes up late
+  * Add ventilation interface
 
- -- Michael Zanetti <michael.zanetti@guh.io>  Thu, 09 Apr 2020 18:19:52 +0200
+ -- Jenkins <jenkins@nymea.io>  Sun, 07 Jun 2020 19:16:28 +0200
 
 nymea (0.20.0) xenial; urgency=medium
 

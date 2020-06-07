@@ -28,42 +28,68 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#ifndef I2CMANAGERIMPLEMENTATION_H
+#define I2CMANAGERIMPLEMENTATION_H
+
+#include "hardware/i2c/i2cmanager.h"
 
 #include <QObject>
+#include <QMutex>
+#include <QTimer>
+#include <QHash>
+#include <QFuture>
+#include <QFutureWatcher>
+#include <QDateTime>
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class HardwareResource;
+class QFile;
 
-class HardwareManager : public QObject
+namespace nymeaserver {
+
+class I2CManagerImplementation : public I2CManager
 {
     Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
-
 public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
 
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
+    explicit I2CManagerImplementation(QObject *parent = nullptr);
+    ~I2CManagerImplementation();
 
-protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+    QStringList availablePorts() const override;
+    QList<I2CScanResult> scanRegisters(const QString &portName) override;
+
+    bool open(I2CDevice *i2cDevice) override;
+    bool startReading(I2CDevice *i2cDevice, int interval = 1000) override;
+    void stopReading(I2CDevice *i2cDevice) override;
+    bool writeData(I2CDevice *i2cDevice, const QByteArray &data) override;
+    void close(I2CDevice *i2cDevice) override;
+
+private slots:
+    void nextCycle();
+
+private:
+    class ReadingInfo {
+    public:
+        int interval;
+        QDateTime lastReading;
+    };
+    class WritingInfo {
+    public:
+        QByteArray data;
+        I2CDevice *device;
+    };
+
+    QMutex m_mutex;
+    QHash<I2CDevice*, ReadingInfo> m_readers;
+    QHash<I2CDevice*, QFile*> m_openFiles;
+
+    QMutex m_writeQueueMutex;
+    QList<WritingInfo> m_writeQueue;
+
+    QFutureWatcher<void> m_watcher;
+
+    QTimer m_pollTimer;
+
 };
 
-#endif // HARDWAREMANAGER_H
+}
+
+#endif // I2CMANAGERIMPLEMENTATION_H

@@ -28,42 +28,34 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#ifndef I2CDEVICE_H
+#define I2CDEVICE_H
 
 #include <QObject>
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class HardwareResource;
-
-class HardwareManager : public QObject
+class I2CDevice : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
-
 public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
+    explicit I2CDevice(const QString &portName, int address, QObject *parent = nullptr);
+    virtual ~I2CDevice();
 
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
+    QString portName() const;
+    int address() const;
 
-protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+    virtual QByteArray readData(int fileDescriptor);
+    virtual bool writeData(int fileDescriptor, const QByteArray &data);
+
+signals:
+    void readingAvailable(const QByteArray &data);
+    void dataWritten(bool success);
+
+private:
+    QString m_portName;
+    int m_address;
 };
 
-#endif // HARDWAREMANAGER_H
+QDebug operator<<(QDebug debug, const I2CDevice *i2cDevice);
+
+
+#endif // I2CDEVICE_H

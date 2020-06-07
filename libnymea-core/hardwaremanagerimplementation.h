@@ -37,14 +37,6 @@
 
 #include "hardwaremanager.h"
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-
 namespace nymeaserver {
 
 class Platform;
@@ -65,6 +57,7 @@ public:
     PlatformZeroConfController *zeroConfController() override;
     BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
     MqttProvider *mqttProvider() override;
+    I2CManager * i2cManager() override;
 
 private:
     QNetworkAccessManager *m_networkAccessManager = nullptr;
@@ -78,6 +71,7 @@ private:
     UpnpDiscovery *m_upnpDiscovery = nullptr;
     BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
     MqttProvider *m_mqttProvider = nullptr;
+    I2CManager *m_i2cManager = nullptr;
 };
 
 }

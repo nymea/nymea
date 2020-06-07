@@ -72,6 +72,7 @@ Q_LOGGING_CATEGORY(dcBluetoothServer, "BluetoothServer")
 Q_LOGGING_CATEGORY(dcBluetoothServerTraffic, "BluetoothServerTraffic")
 Q_LOGGING_CATEGORY(dcMqtt, "Mqtt")
 Q_LOGGING_CATEGORY(dcTranslations, "Translations")
+Q_LOGGING_CATEGORY(dcI2C, "I2C")
 
 
 static QFile s_logFile;

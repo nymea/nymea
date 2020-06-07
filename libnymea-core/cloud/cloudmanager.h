@@ -36,7 +36,7 @@
 #include <QNetworkSession>
 #include <QUuid>
 
-#include "networkmanager/networkmanager.h"
+class NetworkManager;
 
 class AWSConnector;
 class CloudNotifications;

@@ -34,7 +34,7 @@
 #include <QObject>
 
 #include "jsonrpc/jsonhandler.h"
-#include "networkmanager/networkmanager.h"
+#include <networkmanager.h>
 
 namespace nymeaserver {
 

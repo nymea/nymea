@@ -1445,10 +1445,10 @@
             },
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError",
-                "wiredNetworkDevices": [
+                "o:wiredNetworkDevices": [
                     "$ref:WiredNetworkDevice"
                 ],
-                "wirelessNetworkDevices": [
+                "o:wirelessNetworkDevices": [
                     "$ref:WirelessNetworkDevice"
                 ]
             }

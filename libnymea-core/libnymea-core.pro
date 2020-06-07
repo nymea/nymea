@@ -5,7 +5,10 @@ include(../nymea.pri)
 
 QT += sql qml
 INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
-LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto -lnymea-mqtt
+LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
+
+CONFIG += link_pkgconfig
+PKGCONFIG += nymea-mqtt nymea-networkmanager
 
 target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target
@@ -63,14 +66,6 @@ HEADERS += nymeacore.h \
     logging/logentry.h \
     logging/logvaluetool.h \
     time/timemanager.h \
-    networkmanager/dbus-interfaces.h \
-    networkmanager/networkmanager.h \
-    networkmanager/networkdevice.h \
-    networkmanager/wirelessaccesspoint.h \
-    networkmanager/wirelessnetworkdevice.h \
-    networkmanager/networksettings.h \
-    networkmanager/networkconnection.h \
-    networkmanager/wirednetworkdevice.h \
     usermanager/userinfo.h \
     usermanager/usermanager.h \
     usermanager/tokeninfo.h \
@@ -148,13 +143,6 @@ SOURCES += nymeacore.cpp \
     logging/logentry.cpp \
     logging/logvaluetool.cpp \
     time/timemanager.cpp \
-    networkmanager/networkmanager.cpp \
-    networkmanager/networkdevice.cpp \
-    networkmanager/wirelessaccesspoint.cpp \
-    networkmanager/wirelessnetworkdevice.cpp \
-    networkmanager/networksettings.cpp \
-    networkmanager/networkconnection.cpp \
-    networkmanager/wirednetworkdevice.cpp \
     usermanager/userinfo.cpp \
     usermanager/usermanager.cpp \
     usermanager/tokeninfo.cpp \

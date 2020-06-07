@@ -42,7 +42,6 @@
 
 #include "logging/logengine.h"
 #include "servermanager.h"
-#include "cloud/cloudmanager.h"
 
 #include "time/timemanager.h"
 #include "hardwaremanagerimplementation.h"
@@ -53,11 +52,12 @@
 
 class Thing;
 
+class NetworkManager;
+
 namespace nymeaserver {
 
 class JsonRPCServerImplementation;
 class LogEngine;
-class NetworkManager;
 class NymeaConfiguration;
 class TagsStorage;
 class UserManager;
@@ -65,6 +65,7 @@ class Platform;
 class System;
 class ExperienceManager;
 class ScriptEngine;
+class CloudManager;
 
 class NymeaCore : public QObject
 {

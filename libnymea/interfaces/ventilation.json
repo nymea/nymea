@@ -1,0 +1,4 @@
+{
+    "description": "The ventilation interface is used for any sort of ventilation. It extends the \"power\" interface and thus can be turned on or off.",
+    "extends": "power"
+}

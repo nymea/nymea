@@ -85,7 +85,7 @@ QString LogFilter::queryString() const
     if (!query.isEmpty() && !thingIds().isEmpty()) {
         query.append("AND ");
     }
-    query.append(createDeviceIdString());
+    query.append(createThingIdString());
 
     if (!query.isEmpty() && !values().isEmpty()) {
         query.append("AND ");
@@ -161,7 +161,7 @@ QList<QUuid> LogFilter::typeIds() const
     return m_typeIds;
 }
 
-/*! Add a new \a deviceId to this \l{LogFilter}. */
+/*! Add a new \a thingId to this \l{LogFilter}. */
 void LogFilter::addThingId(const ThingId &thingId)
 {
     if (!m_thingIds.contains(thingId))
@@ -366,16 +366,16 @@ QString LogFilter::createTypeIdsString() const
     return query;
 }
 
-QString LogFilter::createDeviceIdString() const
+QString LogFilter::createThingIdString() const
 {
     QString query;
     if (!m_thingIds.isEmpty()) {
         if (m_thingIds.count() == 1) {
-            query.append(QString("deviceId = '%1' ").arg(m_thingIds.first().toString()));
+            query.append(QString("thingId = '%1' ").arg(m_thingIds.first().toString()));
         } else {
             query.append("( ");
             foreach (const ThingId &thingId, m_thingIds) {
-                query.append(QString("deviceId = '%1' ").arg(thingId.toString()));
+                query.append(QString("thingId = '%1' ").arg(thingId.toString()));
                 if (thingId != m_thingIds.last())
                     query.append("OR ");
             }
@@ -387,8 +387,6 @@ QString LogFilter::createDeviceIdString() const
 
 QString LogFilter::createValuesString() const
 {
-    // FIXME: check how to filter for serialized values
-
     QString query;
     if (!m_values.isEmpty()) {
         if (m_values.count() == 1) {

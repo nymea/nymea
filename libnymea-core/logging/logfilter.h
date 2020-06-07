@@ -96,7 +96,7 @@ private:
     QString createLevelsString() const;
     QString createEventTypesString() const;
     QString createTypeIdsString() const;
-    QString createDeviceIdString() const;
+    QString createThingIdString() const;
     QString createValuesString() const;
 };
 

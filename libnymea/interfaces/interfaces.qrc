@@ -74,5 +74,6 @@
         <file>closablesensor.json</file>
         <file>powerswitch.json</file>
         <file>barcodescanner.json</file>
+        <file>irrigation.json</file>
     </qresource>
 </RCC>

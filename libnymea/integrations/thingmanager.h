@@ -96,6 +96,9 @@ public:
 
     virtual QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) = 0;
     virtual ParamType translateParamType(const PluginId &pluginId, const ParamType &paramType, const QLocale &locale) = 0;
+    virtual StateType translateStateType(const PluginId &pluginId, const StateType &stateType, const QLocale &locale) = 0;
+    virtual EventType translateEventType(const PluginId &pluginId, const EventType &eventType, const QLocale &locale) = 0;
+    virtual ActionType translateActionType(const PluginId &pluginId, const ActionType &actionType, const QLocale &locale) = 0;
     virtual ThingClass translateThingClass(const ThingClass &thingClass, const QLocale &locale) = 0;
     virtual Vendor translateVendor(const Vendor &vendor, const QLocale &locale) = 0;
 

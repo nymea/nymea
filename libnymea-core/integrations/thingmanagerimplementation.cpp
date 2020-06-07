@@ -1046,6 +1046,27 @@ ParamType ThingManagerImplementation::translateParamType(const PluginId &pluginI
     return translatedParamType;
 }
 
+StateType ThingManagerImplementation::translateStateType(const PluginId &pluginId, const StateType &stateType, const QLocale &locale)
+{
+    StateType translatedStateType = stateType;
+    translatedStateType.setDisplayName(translate(pluginId, stateType.displayName(), locale));
+    return translatedStateType;
+}
+
+EventType ThingManagerImplementation::translateEventType(const PluginId &pluginId, const EventType &eventType, const QLocale &locale)
+{
+    EventType translatedEventType = eventType;
+    translatedEventType.setDisplayName(translate(pluginId, eventType.displayName(), locale));
+    return translatedEventType;
+}
+
+ActionType ThingManagerImplementation::translateActionType(const PluginId &pluginId, const ActionType &actionType, const QLocale &locale)
+{
+    ActionType translatedActionType = actionType;
+    translatedActionType.setDisplayName(translate(pluginId, actionType.displayName(), locale));
+    return translatedActionType;
+}
+
 ThingClass ThingManagerImplementation::translateThingClass(const ThingClass &thingClass, const QLocale &locale)
 {
     ThingClass translatedThingClass = thingClass;
@@ -1056,6 +1077,31 @@ ThingClass ThingManagerImplementation::translateThingClass(const ThingClass &thi
         translatedSettingsTypes.append(translateParamType(thingClass.pluginId(), paramType, locale));
     }
     translatedThingClass.setSettingsTypes(translatedSettingsTypes);
+
+    ParamTypes translatedParamTypes;
+    foreach (const ParamType &paramType, thingClass.paramTypes()) {
+        translatedParamTypes.append(translateParamType(thingClass.pluginId(), paramType, locale));
+    }
+    translatedThingClass.setParamTypes(translatedParamTypes);
+
+    StateTypes translatedStateTypes;
+    foreach (const StateType &stateType, thingClass.stateTypes()) {
+        translatedStateTypes.append(translateStateType(thingClass.pluginId(), stateType, locale));
+    }
+    translatedThingClass.setStateTypes(translatedStateTypes);
+
+    EventTypes translatedEventTypes;
+    foreach (const EventType &eventType, thingClass.eventTypes()) {
+        translatedEventTypes.append(translateEventType(thingClass.pluginId(), eventType, locale));
+    }
+    translatedThingClass.setEventTypes(translatedEventTypes);
+
+    ActionTypes translatedActionTypes;
+    foreach (const ActionType &actionType, thingClass.actionTypes()) {
+        translatedActionTypes.append(translateActionType(thingClass.pluginId(), actionType, locale));
+    }
+    translatedThingClass.setActionTypes(translatedActionTypes);
+
     return translatedThingClass;
 }
 

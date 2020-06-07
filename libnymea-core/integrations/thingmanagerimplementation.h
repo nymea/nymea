@@ -120,6 +120,9 @@ public:
 
     QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) override;
     ParamType translateParamType(const PluginId &pluginId, const ParamType &paramType, const QLocale &locale) override;
+    StateType translateStateType(const PluginId &pluginId, const StateType &stateType, const QLocale &locale) override;
+    EventType translateEventType(const PluginId &pluginId, const EventType &eventType, const QLocale &locale) override;
+    ActionType translateActionType(const PluginId &pluginId, const ActionType &actionType, const QLocale &locale) override;
     ThingClass translateThingClass(const ThingClass &thingClass, const QLocale &locale) override;
     Vendor translateVendor(const Vendor &vendor, const QLocale &locale) override;
 

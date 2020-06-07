@@ -143,6 +143,8 @@ private slots:
 
     void asyncSetupEmitsSetupStatusUpdate();
 
+    void testTranslations();
+
     // Keep those at last as they will remove things
     void removeThing_data();
     void removeThing();
@@ -158,6 +160,7 @@ void TestIntegrations::initTestCase()
     QLoggingCategory::setFilterRules("*.debug=false\n"
                                      "Tests.debug=true\n"
                                      "Mock.debug=true\n"
+                                     "Translations.debug=true\n"
                                      );
 
     // Adding an async mock to be used in tests below
@@ -2146,6 +2149,85 @@ void TestIntegrations::asyncSetupEmitsSetupStatusUpdate()
     }
 
     QVERIFY2(thingsWithSetupInProgress.isEmpty(), "Some things did not finish the setup!");
+}
+
+void TestIntegrations::testTranslations()
+{
+    // switch language to de_AT
+    QVariantMap params;
+    params.insert("locale", "de_AT");
+    QVariantMap handShake = injectAndWait("JSONRPC.Hello", params).toMap();
+    QCOMPARE(handShake.value("params").toMap().value("locale").toString(), QString("de_AT"));
+
+    QVariantMap thingClasses = injectAndWait("Integrations.GetThingClasses").toMap();
+    bool found = false;
+    foreach (const QVariant &tcVariant, thingClasses.value("params").toMap().value("thingClasses").toList()) {
+        QVariantMap tcMap = tcVariant.toMap();
+        if (tcMap.value("id").toUuid() == autoMockThingClassId) {
+            found = true;
+
+            // Verify thingClass' displayName is translated
+            QCOMPARE(tcMap.value("displayName").toString(), QString("Mock \"Thing\" (automatisch erstellt)"));
+
+            // Verify paramTypes are translated
+            bool ptFound = false;
+            foreach (const QVariant &ptVariant, tcMap.value("paramTypes").toList()) {
+                QVariantMap ptMap = ptVariant.toMap();
+                if (ptMap.value("id").toUuid() == autoMockThingAsyncParamTypeId) {
+                    ptFound = true;
+                    QCOMPARE(ptMap.value("displayName").toString(), QString("asynchron"));
+                }
+            }
+            QVERIFY2(ptFound, "ParamType not found in mock thing class.");
+
+
+            // Verify settings are translated
+            bool sFound = false;
+            foreach (const QVariant &sVariant, tcMap.value("settingsTypes").toList()) {
+                QVariantMap sMap = sVariant.toMap();
+                if (sMap.value("id").toUuid() == autoMockSettingsMockSettingParamTypeId) {
+                    sFound = true;
+                    QCOMPARE(sMap.value("displayName").toString(), QString("Mock-Einstellung"));
+                }
+            }
+            QVERIFY2(sFound, "SettingsType not found in mock thing class.");
+
+            // Verify stateTypes are translated
+            bool stFound = false;
+            foreach (const QVariant &stVariant, tcMap.value("stateTypes").toList()) {
+                QVariantMap stMap = stVariant.toMap();
+                if (stMap.value("id").toUuid() == autoMockIntStateTypeId) {
+                    stFound = true;
+                    QCOMPARE(stMap.value("displayName").toString(), QString("Simulierter Integer Zustand"));
+                }
+            }
+            QVERIFY2(stFound, "StateType not found in mock thing class.");
+
+            // Verify eventTypes are translated
+            bool etFound = false;
+            foreach (const QVariant &etVariant, tcMap.value("eventTypes").toList()) {
+                QVariantMap etMap = etVariant.toMap();
+                if (etMap.value("id").toUuid() == autoMockIntEventTypeId) {
+                    etFound = true;
+                    QCOMPARE(etMap.value("displayName").toString(), QString("Simulierter Integer Zustand geändert"));
+                }
+            }
+            QVERIFY2(etFound, "EventType not found in mock thing class.");
+
+            // Verify actionTypes are translated
+            bool atFound = false;
+            foreach (const QVariant &atVariant, tcMap.value("actionTypes").toList()) {
+                QVariantMap atMap = atVariant.toMap();
+                if (atMap.value("id").toUuid() == autoMockWithParamsActionTypeId) {
+                    atFound = true;
+                    QCOMPARE(atMap.value("displayName").toString(), QString("Mock Aktion 1 (mit Parameter)"));
+                }
+            }
+            QVERIFY2(atFound, "ActionType not found in mock thing class.");
+        }
+    }
+    QVERIFY2(found, "Mock thing class not found.");
+
 }
 
 #include "testintegrations.moc"

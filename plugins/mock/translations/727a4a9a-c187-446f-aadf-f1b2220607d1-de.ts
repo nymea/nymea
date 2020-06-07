@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="de_DE">
+<TS version="2.1" language="de">
 <context>
-    <name>DevicePluginMock</name>
+    <name>IntegrationPluginMock</name>
+    <message>
+        <source>This mocked thing is intentionally broken.</source>
+        <translation>Dieses Mock ist absichtlich kaputt.</translation>
+    </message>
     <message>
         <source>Failed to open HTTP port. Port in use?</source>
         <translation>Fehler beim Öffnen des HTTP Ports. Wird der Port bereits benutzt?</translation>
@@ -10,6 +14,14 @@
     <message>
         <source>Wait 3 second before you continue, the push button will be pressed automatically.</source>
         <translation>Warte 3 Sekunden bevor du forfährst, der Push Button wird automatisch gedrückt.</translation>
+    </message>
+    <message>
+        <source>Please enter the secret which normaly will be displayed on the device. For this mocked thing the pin is 243681.</source>
+        <translation>Bitte den geheimen PIN eingeben welcher normalerweise auf dem Gerät angezeigt wird. Für dieses Mock ist die PIN 243681.</translation>
+    </message>
+    <message>
+        <source>Please enter login credentials for the mocked thing (&quot;user&quot; and &quot;password&quot;).</source>
+        <translation>Bitte die Login-Daten für dieses Mock eingeben (&quot;user&quot; und &quot;password&quot;).</translation>
     </message>
     <message>
         <source>The push button has not been pressed.</source>
@@ -26,18 +38,6 @@
     <message>
         <source>This mock action is intentionally broken.</source>
         <translation>Diese Mock-Aktion ist absichtlich kaputt.</translation>
-    </message>
-    <message>
-        <source>This mocked thing is intentionally broken.</source>
-        <translation>Dieses Mock ist absichtlich kaputt.</translation>
-    </message>
-    <message>
-        <source>Please enter the secret which normaly will be displayed on the device. For this mocked thing the pin is 243681.</source>
-        <translation>Bitte den geheimen PIN eingeben welcher normalerweise auf dem Gerät angezeigt wird. Für dieses Mock ist die PIN 243681.</translation>
-    </message>
-    <message>
-        <source>Please enter login credentials for the mocked thing (&quot;user&quot; and &quot;password&quot;).</source>
-        <translation>Bitte die Login-Daten für dieses Mock eingeben (&quot;user&quot; und &quot;password&quot;).</translation>
     </message>
     <message>
         <source>This thing will simulate a push button press in 3 seconds.</source>
@@ -349,14 +349,14 @@ The name of the EventType ({863d5920-b1cf-4eb9-88bd-8f7b8583b1cf}) of ThingClass
     <message>
         <source>Set Writable UInt (min/max)</source>
         <extracomment>The name of the ActionType ({79238998-eaab-4d71-b406-5d78f1749751}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Setze schreibbaren UInt (min/max)</translation>
     </message>
     <message>
         <source>Set allowed values</source>
         <extracomment>The name of the ActionType ({b463c5ae-4d55-402f-8480-a5cdb485c143}) of ThingClass displayPinMock
 ----------
 The name of the ActionType ({05f63f9c-f61e-4dcf-ad55-3f13fde2765b}) of ThingClass pushButtonMock</extracomment>
-        <translation type="unfinished">Mögliche Werte setzen</translation>
+        <translation>Mögliche Werte setzen</translation>
     </message>
     <message>
         <source>Set bool value</source>
@@ -367,115 +367,115 @@ The name of the ActionType ({d24ede5f-4064-4898-bb84-cfb533b1fbc0}) of ThingClas
 The name of the ActionType ({7ffe514f-7999-4998-8350-0e73e222a8c4}) of ThingClass displayPinMock
 ----------
 The name of the ActionType ({e680f7a4-b39e-46da-be41-fa3170fe3768}) of ThingClass pushButtonMock</extracomment>
-        <translation type="unfinished">Setze boolschen Wert</translation>
+        <translation>Setze boolschen Wert</translation>
     </message>
     <message>
         <source>Set color</source>
         <extracomment>The name of the ActionType ({3e161294-8a0d-4384-9676-6959e08cc2fa}) of ThingClass displayPinMock
 ----------
 The name of the ActionType ({20dc7c22-c50e-42db-837c-2bbced939f8e}) of ThingClass pushButtonMock</extracomment>
-        <translation type="unfinished">Setze Farbe</translation>
+        <translation>Setze Farbe</translation>
     </message>
     <message>
         <source>Set double value</source>
         <extracomment>The name of the ActionType ({17635624-7c19-4bae-8429-2f7aa5d2f843}) of ThingClass displayPinMock
 ----------
 The name of the ActionType ({53cd7c55-49b7-441b-b970-9048f20f0e2c}) of ThingClass pushButtonMock</extracomment>
-        <translation type="unfinished">Setze Gleitkommazahl</translation>
+        <translation>Setze Gleitkommazahl</translation>
     </message>
     <message>
         <source>Set percentage</source>
         <extracomment>The name of the ActionType ({527f0687-0b28-4c26-852c-25b8f83e4797}) of ThingClass displayPinMock
 ----------
 The name of the ActionType ({72981c04-267a-4ba0-a59e-9921d2f3af9c}) of ThingClass pushButtonMock</extracomment>
-        <translation type="unfinished">Setze Prozent</translation>
+        <translation>Setze Prozent</translation>
     </message>
     <message>
         <source>Setting 1</source>
         <extracomment>The name of the ParamType (ThingClass: mock, Type: settings, ID: {367f7ba4-5039-47be-abd8-59cc8eaf4b9a})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Einstellung 1</translation>
     </message>
     <message>
         <source>String</source>
         <extracomment>The name of the ParamType (ThingClass: inputTypeMock, EventType: string, ID: {27f69ca9-a321-40ff-bfee-4b0272a671b4})
 ----------
 The name of the StateType ({27f69ca9-a321-40ff-bfee-4b0272a671b4}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Zeichenkette</translation>
     </message>
     <message>
         <source>String changed</source>
         <extracomment>The name of the EventType ({27f69ca9-a321-40ff-bfee-4b0272a671b4}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Zeichenkette gändert</translation>
     </message>
     <message>
         <source>Text area</source>
         <extracomment>The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {716f0994-bc01-42b0-b64d-59236f7320d2})</extracomment>
-        <translation type="unfinished">Textfeld</translation>
+        <translation>Textfeld</translation>
     </message>
     <message>
         <source>Text line</source>
         <extracomment>The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {e6acf0c7-4b8e-4296-ac62-855d20deb816})</extracomment>
-        <translation type="unfinished">Textzeile</translation>
+        <translation>Textzeile</translation>
     </message>
     <message>
         <source>Time</source>
         <extracomment>The name of the ParamType (ThingClass: inputTypeMock, EventType: time, ID: {8250c71e-59bc-41ab-b576-99fcfc34e8d1})
 ----------
 The name of the StateType ({8250c71e-59bc-41ab-b576-99fcfc34e8d1}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Zeit</translation>
     </message>
     <message>
         <source>Time changed</source>
         <extracomment>The name of the EventType ({8250c71e-59bc-41ab-b576-99fcfc34e8d1}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Zeit geändert</translation>
     </message>
     <message>
         <source>Timeout action</source>
         <extracomment>The name of the ActionType ({854a0a4a-803f-4b7f-9dce-b07794f9011b}) of ThingClass displayPinMock
 ----------
 The name of the ActionType ({54646e7c-bc54-4895-81a2-590d72d120f9}) of ThingClass pushButtonMock</extracomment>
-        <translation type="unfinished">Timeout Aktion</translation>
+        <translation>Timeout Aktion</translation>
     </message>
     <message>
         <source>Timestamp (Int)</source>
         <extracomment>The name of the ParamType (ThingClass: inputTypeMock, EventType: timestampInt, ID: {2c91b5ef-c2d1-4367-bc65-5a13abf69641})
 ----------
 The name of the StateType ({2c91b5ef-c2d1-4367-bc65-5a13abf69641}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Zeitstempel (Int)</translation>
     </message>
     <message>
         <source>Timestamp (Int) changed</source>
         <extracomment>The name of the EventType ({2c91b5ef-c2d1-4367-bc65-5a13abf69641}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Zeitstempel (Int) geändert</translation>
     </message>
     <message>
         <source>Timestamp (UInt)</source>
         <extracomment>The name of the ParamType (ThingClass: inputTypeMock, EventType: timestampUInt, ID: {6c9a96e8-0d48-4f42-8967-848358fd7f79})
 ----------
 The name of the StateType ({6c9a96e8-0d48-4f42-8967-848358fd7f79}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Zeitstempel (UInt)</translation>
     </message>
     <message>
         <source>Timestamp (UInt) changed</source>
         <extracomment>The name of the EventType ({6c9a96e8-0d48-4f42-8967-848358fd7f79}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Zeitstempel (UInt) geändert</translation>
     </message>
     <message>
         <source>UInt</source>
         <extracomment>The name of the ParamType (ThingClass: inputTypeMock, EventType: uint, ID: {19e74fcc-bfd5-491f-8eb6-af128e8f1162})
 ----------
 The name of the StateType ({19e74fcc-bfd5-491f-8eb6-af128e8f1162}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>UInt</translation>
     </message>
     <message>
         <source>UInt changed</source>
         <extracomment>The name of the EventType ({19e74fcc-bfd5-491f-8eb6-af128e8f1162}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>UInt geändert</translation>
     </message>
     <message>
         <source>URL</source>
         <extracomment>The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {fa67229f-fcef-496f-b671-59a4b48f3ab5})</extracomment>
-        <translation type="unfinished">URL</translation>
+        <translation>URL</translation>
     </message>
     <message>
         <source>Writable Bool</source>
@@ -484,12 +484,12 @@ The name of the StateType ({19e74fcc-bfd5-491f-8eb6-af128e8f1162}) of ThingClass
 The name of the ParamType (ThingClass: inputTypeMock, EventType: writableBool, ID: {a7c11774-f31f-4d64-99d1-e0ae5fb35a5c})
 ----------
 The name of the StateType ({a7c11774-f31f-4d64-99d1-e0ae5fb35a5c}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished">Schreibbarer boolscher Wert</translation>
+        <translation>Schreibbarer boolscher Wert</translation>
     </message>
     <message>
         <source>Writable Bool changed</source>
         <extracomment>The name of the EventType ({a7c11774-f31f-4d64-99d1-e0ae5fb35a5c}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished">Schreibbarer Boolscher Wert geändert</translation>
+        <translation>Schreibbarer Boolscher Wert geändert</translation>
     </message>
     <message>
         <source>Writable Color</source>
@@ -498,12 +498,12 @@ The name of the StateType ({a7c11774-f31f-4d64-99d1-e0ae5fb35a5c}) of ThingClass
 The name of the ParamType (ThingClass: inputTypeMock, EventType: writableColor, ID: {455f4f68-3cb0-4e8a-a707-62e4a2a8035c})
 ----------
 The name of the StateType ({455f4f68-3cb0-4e8a-a707-62e4a2a8035c}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbare Farbe</translation>
     </message>
     <message>
         <source>Writable Color changed</source>
         <extracomment>The name of the EventType ({455f4f68-3cb0-4e8a-a707-62e4a2a8035c}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbare Farbe geändert</translation>
     </message>
     <message>
         <source>Writable Double</source>
@@ -512,7 +512,7 @@ The name of the StateType ({455f4f68-3cb0-4e8a-a707-62e4a2a8035c}) of ThingClass
 The name of the ParamType (ThingClass: inputTypeMock, EventType: writableDouble, ID: {8e2eb91b-d60b-4461-9a50-d7b8ad263170})
 ----------
 The name of the StateType ({8e2eb91b-d60b-4461-9a50-d7b8ad263170}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbare Gleitkommazahl</translation>
     </message>
     <message>
         <source>Writable Double (min/max)</source>
@@ -521,17 +521,17 @@ The name of the StateType ({8e2eb91b-d60b-4461-9a50-d7b8ad263170}) of ThingClass
 The name of the ParamType (ThingClass: inputTypeMock, EventType: writableDoubleMinMax, ID: {00d3425e-1da6-4748-8906-4555ceefb136})
 ----------
 The name of the StateType ({00d3425e-1da6-4748-8906-4555ceefb136}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbare Gleitkommazah (min/max)</translation>
     </message>
     <message>
         <source>Writable Double (min/max) changed</source>
         <extracomment>The name of the EventType ({00d3425e-1da6-4748-8906-4555ceefb136}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbare Gleitkommazahl (min/max) geändert</translation>
     </message>
     <message>
         <source>Writable Double changed</source>
         <extracomment>The name of the EventType ({8e2eb91b-d60b-4461-9a50-d7b8ad263170}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbare Gleitkommazahl geändert</translation>
     </message>
     <message>
         <source>Writable Int</source>
@@ -540,7 +540,7 @@ The name of the StateType ({00d3425e-1da6-4748-8906-4555ceefb136}) of ThingClass
 The name of the ParamType (ThingClass: inputTypeMock, EventType: writableInt, ID: {857a8422-983c-47d6-a15f-d8450b3162f7})
 ----------
 The name of the StateType ({857a8422-983c-47d6-a15f-d8450b3162f7}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished">Schreibbare Ganzzahl</translation>
+        <translation>Schreibbare Ganzzahl</translation>
     </message>
     <message>
         <source>Writable Int (min/max)</source>
@@ -549,17 +549,17 @@ The name of the StateType ({857a8422-983c-47d6-a15f-d8450b3162f7}) of ThingClass
 The name of the ParamType (ThingClass: inputTypeMock, EventType: writableIntMinMax, ID: {86a107bc-510a-4d38-bfeb-0a9c2b6d8d87})
 ----------
 The name of the StateType ({86a107bc-510a-4d38-bfeb-0a9c2b6d8d87}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished">Schreibbare Ganzzahl (min/max)</translation>
+        <translation>Schreibbare Ganzzahl (min/max)</translation>
     </message>
     <message>
         <source>Writable Int (min/max) changed</source>
         <extracomment>The name of the EventType ({86a107bc-510a-4d38-bfeb-0a9c2b6d8d87}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished">Schreibbare Ganzzahl (min/max) geändert</translation>
+        <translation>Schreibbare Ganzzahl (min/max) geändert</translation>
     </message>
     <message>
         <source>Writable Int changed</source>
         <extracomment>The name of the EventType ({857a8422-983c-47d6-a15f-d8450b3162f7}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished">Schreibbare Ganzzahl geändert</translation>
+        <translation>Schreibbare Ganzzahl geändert</translation>
     </message>
     <message>
         <source>Writable String</source>
@@ -568,7 +568,7 @@ The name of the StateType ({86a107bc-510a-4d38-bfeb-0a9c2b6d8d87}) of ThingClass
 The name of the ParamType (ThingClass: inputTypeMock, EventType: writableString, ID: {ef511043-bd1a-4a5f-984c-222b7da43f38})
 ----------
 The name of the StateType ({ef511043-bd1a-4a5f-984c-222b7da43f38}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbbare Zeichenkette</translation>
     </message>
     <message>
         <source>Writable String (selection)</source>
@@ -577,17 +577,17 @@ The name of the StateType ({ef511043-bd1a-4a5f-984c-222b7da43f38}) of ThingClass
 The name of the ParamType (ThingClass: inputTypeMock, EventType: writableStringSelection, ID: {209d7afc-6fe9-4fe9-939b-e472ea0ad639})
 ----------
 The name of the StateType ({209d7afc-6fe9-4fe9-939b-e472ea0ad639}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbare Zeichenkette (Auswahl)</translation>
     </message>
     <message>
         <source>Writable String (selection) changed</source>
         <extracomment>The name of the EventType ({209d7afc-6fe9-4fe9-939b-e472ea0ad639}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbare Zeichenkette (Auswahl) geändert</translation>
     </message>
     <message>
         <source>Writable String changed</source>
         <extracomment>The name of the EventType ({ef511043-bd1a-4a5f-984c-222b7da43f38}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbare Zeichenkette geändert</translation>
     </message>
     <message>
         <source>Writable Time</source>
@@ -596,12 +596,12 @@ The name of the StateType ({209d7afc-6fe9-4fe9-939b-e472ea0ad639}) of ThingClass
 The name of the ParamType (ThingClass: inputTypeMock, EventType: writableTime, ID: {d64c8b3f-ca7d-47f6-b271-867ffd80a4d4})
 ----------
 The name of the StateType ({d64c8b3f-ca7d-47f6-b271-867ffd80a4d4}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbare Zeit</translation>
     </message>
     <message>
         <source>Writable Time changed</source>
         <extracomment>The name of the EventType ({d64c8b3f-ca7d-47f6-b271-867ffd80a4d4}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbare Zeit geändert</translation>
     </message>
     <message>
         <source>Writable Timestamp (Int)</source>
@@ -610,12 +610,12 @@ The name of the StateType ({d64c8b3f-ca7d-47f6-b271-867ffd80a4d4}) of ThingClass
 The name of the ParamType (ThingClass: inputTypeMock, EventType: writableTimestampInt, ID: {88b6746a-b009-4df6-8986-d7884ffd94b2})
 ----------
 The name of the StateType ({88b6746a-b009-4df6-8986-d7884ffd94b2}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbarer Zeitstempel (Int)</translation>
     </message>
     <message>
         <source>Writable Timestamp (Int) changed</source>
         <extracomment>The name of the EventType ({88b6746a-b009-4df6-8986-d7884ffd94b2}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbarer Zeitstempel (Int) geändert</translation>
     </message>
     <message>
         <source>Writable Timestamp (UInt)</source>
@@ -624,12 +624,12 @@ The name of the StateType ({88b6746a-b009-4df6-8986-d7884ffd94b2}) of ThingClass
 The name of the ParamType (ThingClass: inputTypeMock, EventType: writableTimestampUInt, ID: {45d0069a-63ac-4265-8170-8152778608ee})
 ----------
 The name of the StateType ({45d0069a-63ac-4265-8170-8152778608ee}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbarer Zeitstempel (UInt)</translation>
     </message>
     <message>
         <source>Writable Timestamp (UInt) changed</source>
         <extracomment>The name of the EventType ({45d0069a-63ac-4265-8170-8152778608ee}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbarer Zeitstempel (UInt) geändert</translation>
     </message>
     <message>
         <source>Writable UInt</source>
@@ -638,7 +638,7 @@ The name of the StateType ({45d0069a-63ac-4265-8170-8152778608ee}) of ThingClass
 The name of the ParamType (ThingClass: inputTypeMock, EventType: writableUInt, ID: {563e9c4c-5198-400a-9f6c-358f4752af58})
 ----------
 The name of the StateType ({563e9c4c-5198-400a-9f6c-358f4752af58}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schreibbarer UInt</translation>
     </message>
     <message>
         <source>Writable UInt (min/max)</source>
@@ -647,7 +647,7 @@ The name of the StateType ({563e9c4c-5198-400a-9f6c-358f4752af58}) of ThingClass
 The name of the ParamType (ThingClass: inputTypeMock, EventType: writableUIntMinMax, ID: {79238998-eaab-4d71-b406-5d78f1749751})
 ----------
 The name of the StateType ({79238998-eaab-4d71-b406-5d78f1749751}) of ThingClass inputTypeMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Schriebbarer UInt (min/max)</translation>
     </message>
     <message>
         <source>Writable UInt (min/max) changed</source>
@@ -892,6 +892,11 @@ The name of the ParamType (ThingClass: mock, Type: discovery, ID: {d222adb4-2f9c
         <source>set power</source>
         <extracomment>The name of the ActionType ({064aed0d-da4c-49d4-b236-60f97e98ff84}) of ThingClass mock</extracomment>
         <translation type="unfinished">Ein-/Ausschalten</translation>
+    </message>
+    <message>
+        <source>Mock setting</source>
+        <extracomment>The name of the ParamType (ThingClass: autoMock, Type: settings, ID: {da0b9106-03cf-4631-87e9-26ade3360182})</extracomment>
+        <translation>Mock-Einstellung</translation>
     </message>
 </context>
 </TS>

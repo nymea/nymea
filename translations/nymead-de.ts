@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="de_DE">
+<TS version="2.1" language="de">
 <context>
     <name>CloudNotifications</name>
     <message>
@@ -49,9 +49,9 @@
     <name>ThingManagerImplementation</name>
     <message>
         <location filename="../libnymea-core/integrations/thingmanagerimplementation.cpp" line="258"/>
-        <location filename="../libnymea-core/integrations/thingmanagerimplementation.cpp" line="1696"/>
+        <location filename="../libnymea-core/integrations/thingmanagerimplementation.cpp" line="1749"/>
         <source>The plugin for this thing is not loaded.</source>
-        <translation type="unfinished"></translation>
+        <translation>Das Plugin für dieses \&quot;Thing\&quot; konnte nicht geladen werden.</translation>
     </message>
 </context>
 <context>
@@ -100,7 +100,7 @@ Categories are:</source>
     <message>
         <location filename="../server/main.cpp" line="119"/>
         <source>Log output is colorized by default. Use this option to disable colors.</source>
-        <translation type="unfinished"></translation>
+        <translation>Die Log-Ausgabe ist normalerweise eingefärbt. Diese Option ermöglicht das Ausschalten der Farbe.</translation>
     </message>
     <message>
         <location filename="../server/main.cpp" line="122"/>
@@ -127,7 +127,7 @@ Categories are:</source>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="877"/>
         <source>Information</source>
         <extracomment>The name of the section tab in the debug server interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Imformationen</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="893"/>
@@ -136,7 +136,7 @@ Categories are:</source>
         <extracomment>The name of the section tab in the debug server interface
 ----------
 The network section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Netzwerk</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="916"/>
@@ -273,7 +273,7 @@ The network section of the debug interface</extracomment>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1115"/>
         <source>Generate report</source>
         <extracomment>In the server information section of the debug interface</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Bericht generieren</translation>
     </message>
     <message>
         <location filename="../libnymea-core/debugserverhandler.cpp" line="1118"/>

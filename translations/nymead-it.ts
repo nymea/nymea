@@ -49,7 +49,7 @@
     <name>ThingManagerImplementation</name>
     <message>
         <location filename="../libnymea-core/integrations/thingmanagerimplementation.cpp" line="258"/>
-        <location filename="../libnymea-core/integrations/thingmanagerimplementation.cpp" line="1696"/>
+        <location filename="../libnymea-core/integrations/thingmanagerimplementation.cpp" line="1749"/>
         <source>The plugin for this thing is not loaded.</source>
         <translation type="unfinished"></translation>
     </message>

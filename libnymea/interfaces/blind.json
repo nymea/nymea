@@ -1,3 +1,4 @@
 {
+    "description": "Simple blinds which can be opened and closed.",
     "extends": "closable"
 }

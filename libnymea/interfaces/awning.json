@@ -1,3 +1,4 @@
 {
+    "description": "Simple awnings which can be opened and closed. Note that awnings operate inverted compared to other closables.",
     "extends": "closable"
 }

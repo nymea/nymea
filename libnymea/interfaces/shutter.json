@@ -1,3 +1,4 @@
 {
+    "description": "Simple roller shutters which can be opened and closed.",
     "extends": "closable"
 }

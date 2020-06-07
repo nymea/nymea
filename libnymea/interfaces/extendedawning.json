@@ -1,3 +1,4 @@
 {
+    "description": "Awnings that support indicating their position and the moving state. Note that awnings operate inverted compared to other closables.",
     "extends": ["awning", "extendedclosable"]
 }

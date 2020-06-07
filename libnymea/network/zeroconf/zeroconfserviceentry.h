@@ -52,6 +52,7 @@ public:
     quint16 port() const;
     QAbstractSocket::NetworkLayerProtocol protocol() const;
     QStringList txt() const;
+    QString txt(const QString &key) const;
 
     bool isValid() const;
 

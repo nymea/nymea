@@ -46,7 +46,9 @@ PluginMetadata::PluginMetadata()
 
 }
 
-PluginMetadata::PluginMetadata(const QJsonObject &jsonObject, bool isBuiltIn): m_isBuiltIn(isBuiltIn)
+PluginMetadata::PluginMetadata(const QJsonObject &jsonObject, bool isBuiltIn, bool strict):
+    m_isBuiltIn(isBuiltIn),
+    m_strictRun(strict)
 {
     parse(jsonObject);
 }
@@ -896,9 +898,12 @@ QPair<bool, Types::InputType> PluginMetadata::loadAndVerifyInputType(const QStri
 bool PluginMetadata::verifyDuplicateUuid(const QUuid &uuid)
 {
     if (m_allUuids.contains(uuid)) {
-        // FIXME: Drop debug, activate return! (see .h for more context)
-        qCWarning(dcPluginMetadata()) << "THIS PLUGIN USES DUPLICATE UUID" << uuid.toString() << "! THIS WILL STOP WORKING SOON.";
-//        return false;
+        // FIXME: Drop non-strict run! (see .h for more context)
+        if (m_strictRun) {
+            return false;
+        } else {
+            qCWarning(dcPluginMetadata()) << "THIS PLUGIN USES DUPLICATE UUID" << uuid.toString() << "! THIS IS NOT SUPPORTED AND MAY CAUSE RUNTIME ISSUES.";
+        }
     }
     if (m_currentScopUuids.contains(uuid)) {
         return false;

@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
     parser.addOption({{"o", "output"}, "Write generated output header to <file>.", "file"});
     parser.addOption({{"e", "extern"}, "Write generated output header (extern definitions) to <file>.", "file"});
     parser.addOption({{"t", "translations"}, "Write generated translations file stub to <directory>.", "directory"});
+    parser.addOption({{"n", "non-strict"}, "Non-strict run. Don't exit on duplicate UUID warnings."});
     parser.addPositionalArgument("input", "The input json file");
 
     parser.process(a);
@@ -54,9 +55,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    bool strictMode = !parser.isSet("non-strict");
+
     PluginInfoCompiler pic;
 
-    int ret = pic.compile(parser.positionalArguments().first(), parser.value("output"), parser.value("extern"), parser.value("translations"));
+    int ret = pic.compile(parser.positionalArguments().first(), parser.value("output"), parser.value("extern"), parser.value("translations"), strictMode);
 
     return ret;
 

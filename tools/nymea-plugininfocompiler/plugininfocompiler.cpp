@@ -43,7 +43,7 @@ PluginInfoCompiler::PluginInfoCompiler()
 
 }
 
-int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputFile, const QString outputFileExtern, const QString &translationsPath)
+int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputFile, const QString outputFileExtern, const QString &translationsPath, bool strictMode)
 {
     // First, process the input json...
     QFile jsonFile(inputFile);
@@ -81,7 +81,7 @@ int PluginInfoCompiler::compile(const QString &inputFile, const QString &outputF
     }
     QJsonObject jsonObject = QJsonObject::fromVariantMap(jsonDoc.toVariant().toMap());
 
-    PluginMetadata metadata(jsonObject);
+    PluginMetadata metadata(jsonObject, false, strictMode);
     if (!metadata.isValid()) {
         foreach (const QString &error, metadata.validationErrors()) {
             QDebug dbg = qWarning().noquote().nospace();

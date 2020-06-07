@@ -1238,7 +1238,7 @@ void ThingManagerImplementation::loadPlugins()
             }
 
             QJsonObject pluginInfo = loader.metaData().value("MetaData").toObject();
-            PluginMetadata metaData(pluginInfo);
+            PluginMetadata metaData(pluginInfo, false, false);
             if (!metaData.isValid()) {
                 foreach (const QString &error, metaData.validationErrors()) {
                     qCWarning(dcThingManager()) << error;
@@ -1413,7 +1413,7 @@ void ThingManagerImplementation::loadConfiguredThings()
             // Try to load the device class from the cache
             QJsonObject pluginInfo = PluginInfoCache::loadPluginInfo(pluginId);
             if (!pluginInfo.empty()) {
-                PluginMetadata pluginMetadata(pluginInfo);
+                PluginMetadata pluginMetadata(pluginInfo, false, false);
                 thingClass = pluginMetadata.thingClasses().findById(thingClassId);
                 if (thingClass.isValid()) {
                     m_supportedThings.insert(thingClassId, thingClass);

@@ -1078,9 +1078,14 @@ void ThingManagerImplementation::loadPlugins()
 
             // Check plugin API version compatibility
             QLibrary lib(fi.absoluteFilePath());
+            if (!lib.load()) {
+                qCWarning(dcThingManager()).nospace() << "Error loading plugin " << fi.absoluteFilePath() << ": " << lib.errorString();
+                continue;
+            }
+
             QFunctionPointer versionFunc = lib.resolve("libnymea_api_version");
             if (!versionFunc) {
-                qCWarning(dcThingManager()).nospace() << "Unable to resolve version in plugin " << entry << ". Not loading plugin.";
+                qCWarning(dcThingManager()).nospace() << "Unable to resolve version in plugin " << fi.absoluteFilePath() << ". Not loading plugin.";
                 lib.unload();
                 continue;
             }
@@ -1090,7 +1095,7 @@ void ThingManagerImplementation::loadPlugins()
             QStringList parts = version.split('.');
             QStringList coreParts = QString(LIBNYMEA_API_VERSION).split('.');
             if (parts.length() != 3 || parts.at(0).toInt() != coreParts.at(0).toInt() || parts.at(1).toInt() > coreParts.at(1).toInt()) {
-                qCWarning(dcThingManager()).nospace() << "Libnymea API mismatch for " << entry << ". Core API: " << LIBNYMEA_API_VERSION << ", Plugin API: " << version;
+                qCWarning(dcThingManager()).nospace() << "Libnymea API mismatch for " << fi.absoluteFilePath() << ". Core API: " << LIBNYMEA_API_VERSION << ", Plugin API: " << version;
                 continue;
             }
 

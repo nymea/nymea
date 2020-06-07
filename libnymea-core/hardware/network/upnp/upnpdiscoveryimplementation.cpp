@@ -528,6 +528,9 @@ bool UpnpDiscoveryImplementation::enable()
         return false;
     }
 
+    m_available = true;
+    emit availableChanged(true);
+
     connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(error(QAbstractSocket::SocketError)));
     connect(m_socket, &QUdpSocket::readyRead, this, &UpnpDiscoveryImplementation::readData);
 

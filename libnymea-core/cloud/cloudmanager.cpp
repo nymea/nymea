@@ -116,12 +116,24 @@ void CloudManager::setEnabled(bool enabled)
             qCWarning(dcCloud()) << "Cloud certificate not set.";
             missingConfig = true;
         }
+        if (!QFile::exists(m_clientCertificate)) {
+            qCWarning(dcCloud()) << "Cloud certificate file not existing.";
+            missingConfig = true;
+        }
         if (m_clientCertificateKey.isEmpty()) {
             qCWarning(dcCloud()) << "Cloud certificate key not set.";
             missingConfig = true;
         }
+        if (!QFile::exists(m_clientCertificateKey)) {
+            qCWarning(dcCloud()) << "Cloud certificate key file not existing.";
+            missingConfig = true;
+        }
         if (m_caCertificate.isEmpty()) {
             qCWarning(dcCloud()) << "Cloud certificate CA not set.";
+            missingConfig = true;
+        }
+        if (!QFile::exists(m_caCertificate)) {
+            qCWarning(dcCloud()) << "Cloud CA certificate file not existing.";
             missingConfig = true;
         }
         if (missingConfig) {

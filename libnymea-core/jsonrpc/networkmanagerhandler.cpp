@@ -76,22 +76,21 @@
     The \a params contains the map for the notification.
 */
 
-
-#include "nymeacore.h"
 #include "loggingcategories.h"
 #include "networkmanagerhandler.h"
-
 
 namespace nymeaserver {
 
 /*! Constructs a new \l{NetworkManagerHandler} with the given \a parent. */
-NetworkManagerHandler::NetworkManagerHandler(QObject *parent) :
-    JsonHandler(parent)
+NetworkManagerHandler::NetworkManagerHandler(NetworkManager *networkManager, QObject *parent) :
+    JsonHandler(parent),
+    m_networkManager(networkManager)
 {
     // Enums
     registerEnum<NetworkManager::NetworkManagerError>();
     registerEnum<NetworkManager::NetworkManagerState>();
     registerEnum<NetworkDevice::NetworkDeviceState>();
+    registerEnum<WirelessNetworkDevice::WirelessMode>();
 
     // Objects
     QVariantMap wirelessAccessPoint;
@@ -106,17 +105,22 @@ NetworkManagerHandler::NetworkManagerHandler(QObject *parent) :
     QVariantMap wiredNetworkDevice;
     wiredNetworkDevice.insert("r:interface", enumValueName(String));
     wiredNetworkDevice.insert("r:macAddress", enumValueName(String));
+    wiredNetworkDevice.insert("r:ipv4Addresses", enumValueName(StringList));
+    wiredNetworkDevice.insert("r:ipv6Addresses", enumValueName(StringList));
     wiredNetworkDevice.insert("r:state", enumRef<NetworkDevice::NetworkDeviceState>());
     wiredNetworkDevice.insert("r:bitRate", enumValueName(String));
     wiredNetworkDevice.insert("r:pluggedIn", enumValueName(Bool));
     registerObject("WiredNetworkDevice", wiredNetworkDevice);
 
     QVariantMap wirelessNetworkDevice;
-    wirelessNetworkDevice.insert("interface", enumValueName(String));
-    wirelessNetworkDevice.insert("macAddress", enumValueName(String));
-    wirelessNetworkDevice.insert("state", enumRef<NetworkDevice::NetworkDeviceState>());
-    wirelessNetworkDevice.insert("bitRate", enumValueName(String));
-    wirelessNetworkDevice.insert("o:currentAccessPoint", objectRef<WirelessAccessPoint>());
+    wirelessNetworkDevice.insert("r:interface", enumValueName(String));
+    wirelessNetworkDevice.insert("r:macAddress", enumValueName(String));
+    wirelessNetworkDevice.insert("r:ipv4Addresses", enumValueName(StringList));
+    wirelessNetworkDevice.insert("r:ipv6Addresses", enumValueName(StringList));
+    wirelessNetworkDevice.insert("r:state", enumRef<NetworkDevice::NetworkDeviceState>());
+    wirelessNetworkDevice.insert("r:bitRate", enumValueName(String));
+    wirelessNetworkDevice.insert("r:mode", enumRef<WirelessNetworkDevice::WirelessMode>());
+    wirelessNetworkDevice.insert("r:o:currentAccessPoint", objectRef<WirelessAccessPoint>());
     registerObject("WirelessNetworkDevice", wirelessNetworkDevice);
 
     // Methods
@@ -176,6 +180,15 @@ NetworkManagerHandler::NetworkManagerHandler(QObject *parent) :
     returns.insert("networkManagerError", enumRef<NetworkManager::NetworkManagerError>());
     registerMethod("ConnectWifiNetwork", description, params, returns);
 
+    params.clear(); returns.clear();
+    description = "Start a WiFi Access point on the given interface with the given SSID and "
+                  "password. Use DisconnectInterface to stop it again.";
+    params.insert("interface", enumValueName(String));
+    params.insert("ssid", enumValueName(String));
+    params.insert("password", enumValueName(String));
+    returns.insert("networkManagerError", enumRef<NetworkManager::NetworkManagerError>());
+    registerMethod("StartAccessPoint", description, params, returns);
+
     // Notifications
     params.clear(); returns.clear();
     description = "Emitted whenever a status of a NetworkManager changes.";
@@ -212,17 +225,17 @@ NetworkManagerHandler::NetworkManagerHandler(QObject *parent) :
     params.insert("wiredNetworkDevice", objectRef("WiredNetworkDevice"));
     registerNotification("WiredNetworkDeviceChanged", description, params);
 
-    connect(NymeaCore::instance()->networkManager(), &NetworkManager::stateChanged, this, &NetworkManagerHandler::onNetworkManagerStatusChanged);
-    connect(NymeaCore::instance()->networkManager(), &NetworkManager::networkingEnabledChanged, this, &NetworkManagerHandler::onNetworkManagerStatusChanged);
-    connect(NymeaCore::instance()->networkManager(), &NetworkManager::wirelessEnabledChanged, this, &NetworkManagerHandler::onNetworkManagerStatusChanged);
+    connect(m_networkManager, &NetworkManager::stateChanged, this, &NetworkManagerHandler::onNetworkManagerStatusChanged);
+    connect(m_networkManager, &NetworkManager::networkingEnabledChanged, this, &NetworkManagerHandler::onNetworkManagerStatusChanged);
+    connect(m_networkManager, &NetworkManager::wirelessEnabledChanged, this, &NetworkManagerHandler::onNetworkManagerStatusChanged);
 
-    connect(NymeaCore::instance()->networkManager(), &NetworkManager::wirelessDeviceAdded, this, &NetworkManagerHandler::onWirelessNetworkDeviceAdded);
-    connect(NymeaCore::instance()->networkManager(), &NetworkManager::wirelessDeviceRemoved, this, &NetworkManagerHandler::onWirelessNetworkDeviceRemoved);
-    connect(NymeaCore::instance()->networkManager(), &NetworkManager::wirelessDeviceChanged, this, &NetworkManagerHandler::onWirelessNetworkDeviceChanged);
+    connect(m_networkManager, &NetworkManager::wirelessDeviceAdded, this, &NetworkManagerHandler::onWirelessNetworkDeviceAdded);
+    connect(m_networkManager, &NetworkManager::wirelessDeviceRemoved, this, &NetworkManagerHandler::onWirelessNetworkDeviceRemoved);
+    connect(m_networkManager, &NetworkManager::wirelessDeviceChanged, this, &NetworkManagerHandler::onWirelessNetworkDeviceChanged);
 
-    connect(NymeaCore::instance()->networkManager(), &NetworkManager::wiredDeviceAdded, this, &NetworkManagerHandler::onWiredNetworkDeviceAdded);
-    connect(NymeaCore::instance()->networkManager(), &NetworkManager::wiredDeviceRemoved, this, &NetworkManagerHandler::onWiredNetworkDeviceRemoved);
-    connect(NymeaCore::instance()->networkManager(), &NetworkManager::wiredDeviceChanged, this, &NetworkManagerHandler::onWiredNetworkDeviceChanged);
+    connect(m_networkManager, &NetworkManager::wiredDeviceAdded, this, &NetworkManagerHandler::onWiredNetworkDeviceAdded);
+    connect(m_networkManager, &NetworkManager::wiredDeviceRemoved, this, &NetworkManagerHandler::onWiredNetworkDeviceRemoved);
+    connect(m_networkManager, &NetworkManager::wiredDeviceChanged, this, &NetworkManagerHandler::onWiredNetworkDeviceChanged);
 }
 
 /*! Returns the name of the \l{NetworkManagerHandler}. In this case \b NetworkManager. */
@@ -236,7 +249,7 @@ JsonReply *NetworkManagerHandler::GetNetworkStatus(const QVariantMap &params)
     Q_UNUSED(params)
 
     // Check available
-    if (!NymeaCore::instance()->networkManager()->available())
+    if (!m_networkManager->available())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
 
     // Pack network manager status
@@ -247,12 +260,12 @@ JsonReply *NetworkManagerHandler::GetNetworkStatus(const QVariantMap &params)
 
 JsonReply *NetworkManagerHandler::EnableNetworking(const QVariantMap &params)
 {
-    if (!NymeaCore::instance()->networkManager()->available())
+    if (!m_networkManager->available())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
 
     bool enable = params.value("enable").toBool();
 
-    if (!NymeaCore::instance()->networkManager()->enableNetworking(enable))
+    if (!m_networkManager->enableNetworking(enable))
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorUnknownError));
 
     return createReply(statusToReply(NetworkManager::NetworkManagerErrorNoError));
@@ -260,13 +273,13 @@ JsonReply *NetworkManagerHandler::EnableNetworking(const QVariantMap &params)
 
 JsonReply *NetworkManagerHandler::EnableWirelessNetworking(const QVariantMap &params)
 {
-    if (!NymeaCore::instance()->networkManager()->available())
+    if (!m_networkManager->available())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
 
-    if (!NymeaCore::instance()->networkManager()->wirelessAvailable())
+    if (!m_networkManager->wirelessAvailable())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorWirelessNotAvailable));
 
-    if (!NymeaCore::instance()->networkManager()->enableWireless(params.value("enable").toBool()))
+    if (!m_networkManager->enableWireless(params.value("enable").toBool()))
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorUnknownError));
 
     return createReply(statusToReply(NetworkManager::NetworkManagerErrorNoError));
@@ -274,24 +287,24 @@ JsonReply *NetworkManagerHandler::EnableWirelessNetworking(const QVariantMap &pa
 
 JsonReply *NetworkManagerHandler::GetWirelessAccessPoints(const QVariantMap &params)
 {
-    if (!NymeaCore::instance()->networkManager()->available())
+    if (!m_networkManager->available())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
 
-    if (!NymeaCore::instance()->networkManager()->wirelessAvailable())
+    if (!m_networkManager->wirelessAvailable())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorWirelessNotAvailable));
 
-    if (!NymeaCore::instance()->networkManager()->networkingEnabled())
+    if (!m_networkManager->networkingEnabled())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkingDisabled));
 
-    if (!NymeaCore::instance()->networkManager()->wirelessEnabled())
+    if (!m_networkManager->wirelessEnabled())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorWirelessNetworkingDisabled));
 
     QString interface = params.value("interface").toString();
 
-    if (!NymeaCore::instance()->networkManager()->getNetworkDevice(interface))
+    if (!m_networkManager->getNetworkDevice(interface))
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkInterfaceNotFound));
 
-    foreach (WirelessNetworkDevice *networkDevice, NymeaCore::instance()->networkManager()->wirelessNetworkDevices()) {
+    foreach (WirelessNetworkDevice *networkDevice, m_networkManager->wirelessNetworkDevices()) {
         if (networkDevice->interface() == interface) {
             QVariantList wirelessAccessPoints;
             foreach (WirelessAccessPoint *wirelessAccessPoint, networkDevice->accessPoints())
@@ -311,15 +324,15 @@ JsonReply *NetworkManagerHandler::GetNetworkDevices(const QVariantMap &params)
 {
     Q_UNUSED(params)
 
-    if (!NymeaCore::instance()->networkManager()->available())
+    if (!m_networkManager->available())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
 
     QVariantList wirelessNetworkDevices;
-    foreach (WirelessNetworkDevice *networkDevice, NymeaCore::instance()->networkManager()->wirelessNetworkDevices())
+    foreach (WirelessNetworkDevice *networkDevice, m_networkManager->wirelessNetworkDevices())
         wirelessNetworkDevices.append(packWirelessNetworkDevice(networkDevice));
 
     QVariantList wiredNetworkDevices;
-    foreach (WiredNetworkDevice *networkDevice, NymeaCore::instance()->networkManager()->wiredNetworkDevices())
+    foreach (WiredNetworkDevice *networkDevice, m_networkManager->wiredNetworkDevices())
         wiredNetworkDevices.append(packWiredNetworkDevice(networkDevice));
 
     QVariantMap returns = statusToReply(NetworkManager::NetworkManagerErrorNoError);
@@ -332,25 +345,25 @@ JsonReply *NetworkManagerHandler::ScanWifiNetworks(const QVariantMap &params)
 {
     Q_UNUSED(params)
 
-    if (!NymeaCore::instance()->networkManager()->available())
+    if (!m_networkManager->available())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
 
-    if (!NymeaCore::instance()->networkManager()->wirelessAvailable())
+    if (!m_networkManager->wirelessAvailable())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorWirelessNotAvailable));
 
-    if (!NymeaCore::instance()->networkManager()->networkingEnabled())
+    if (!m_networkManager->networkingEnabled())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkingDisabled));
 
-    if (!NymeaCore::instance()->networkManager()->wirelessEnabled())
+    if (!m_networkManager->wirelessEnabled())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorWirelessNetworkingDisabled));
 
 
     QString interface = params.value("interface").toString();
 
-    if (!NymeaCore::instance()->networkManager()->getNetworkDevice(interface))
+    if (!m_networkManager->getNetworkDevice(interface))
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkInterfaceNotFound));
 
-    foreach (WirelessNetworkDevice *networkDevice, NymeaCore::instance()->networkManager()->wirelessNetworkDevices()) {
+    foreach (WirelessNetworkDevice *networkDevice, m_networkManager->wirelessNetworkDevices()) {
         if (networkDevice->interface() == interface) {
             networkDevice->scanWirelessNetworks();
             return createReply(statusToReply(NetworkManager::NetworkManagerErrorNoError));
@@ -362,16 +375,16 @@ JsonReply *NetworkManagerHandler::ScanWifiNetworks(const QVariantMap &params)
 
 JsonReply *NetworkManagerHandler::ConnectWifiNetwork(const QVariantMap &params)
 {
-    if (!NymeaCore::instance()->networkManager()->available())
+    if (!m_networkManager->available())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
 
-    if (!NymeaCore::instance()->networkManager()->wirelessAvailable())
+    if (!m_networkManager->wirelessAvailable())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorWirelessNotAvailable));
 
-    if (!NymeaCore::instance()->networkManager()->networkingEnabled())
+    if (!m_networkManager->networkingEnabled())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkingDisabled));
 
-    if (!NymeaCore::instance()->networkManager()->wirelessEnabled())
+    if (!m_networkManager->wirelessEnabled())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorWirelessNetworkingDisabled));
 
 
@@ -379,16 +392,16 @@ JsonReply *NetworkManagerHandler::ConnectWifiNetwork(const QVariantMap &params)
     QString password = params.value("password").toString();
     QString interface = params.value("interface").toString();
 
-    return createReply(statusToReply(NymeaCore::instance()->networkManager()->connectWifi(interface, ssid, password)));
+    return createReply(statusToReply(m_networkManager->connectWifi(interface, ssid, password)));
 }
 
 JsonReply *NetworkManagerHandler::DisconnectInterface(const QVariantMap &params)
 {
-    if (!NymeaCore::instance()->networkManager()->available())
+    if (!m_networkManager->available())
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
 
     QString interface = params.value("interface").toString();
-    NetworkDevice *networkDevice = NymeaCore::instance()->networkManager()->getNetworkDevice(interface);
+    NetworkDevice *networkDevice = m_networkManager->getNetworkDevice(interface);
     if (!networkDevice)
         return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkInterfaceNotFound));
 
@@ -396,12 +409,25 @@ JsonReply *NetworkManagerHandler::DisconnectInterface(const QVariantMap &params)
     return createReply(statusToReply(NetworkManager::NetworkManagerErrorNoError));
 }
 
+JsonReply *NetworkManagerHandler::StartAccessPoint(const QVariantMap &params)
+{
+    if (!m_networkManager->available()) {
+        return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
+    }
+
+    QString interface = params.value("interface").toString();
+    QString ssid = params.value("ssid").toString();
+    QString password = params.value("password").toString();
+    NetworkManager::NetworkManagerError status = m_networkManager->startAccessPoint(interface, ssid, password);
+    return createReply(statusToReply(status));
+}
+
 QVariantMap NetworkManagerHandler::packNetworkManagerStatus()
 {
     QVariantMap status;
-    status.insert("networkingEnabled", NymeaCore::instance()->networkManager()->networkingEnabled());
-    status.insert("wirelessNetworkingEnabled", NymeaCore::instance()->networkManager()->wirelessEnabled());
-    status.insert("state", NymeaCore::instance()->networkManager()->stateString());
+    status.insert("networkingEnabled", m_networkManager->networkingEnabled());
+    status.insert("wirelessNetworkingEnabled", m_networkManager->wirelessEnabled());
+    status.insert("state", m_networkManager->stateString());
     return status;
 }
 
@@ -470,6 +496,8 @@ QVariantMap NetworkManagerHandler::packWiredNetworkDevice(WiredNetworkDevice *ne
     QVariantMap networkDeviceVariant;
     networkDeviceVariant.insert("interface", networkDevice->interface());
     networkDeviceVariant.insert("macAddress", networkDevice->macAddress());
+    networkDeviceVariant.insert("ipv4Addresses", networkDevice->ipv4Addresses());
+    networkDeviceVariant.insert("ipv6Addresses", networkDevice->ipv6Addresses());
     networkDeviceVariant.insert("state", networkDevice->deviceStateString());
     networkDeviceVariant.insert("bitRate", QString("%1 [Mb/s]").arg(QString::number(networkDevice->bitRate())));
     networkDeviceVariant.insert("pluggedIn", networkDevice->pluggedIn());
@@ -481,7 +509,10 @@ QVariantMap NetworkManagerHandler::packWirelessNetworkDevice(WirelessNetworkDevi
     QVariantMap networkDeviceVariant;
     networkDeviceVariant.insert("interface", networkDevice->interface());
     networkDeviceVariant.insert("macAddress", networkDevice->macAddress());
+    networkDeviceVariant.insert("ipv4Addresses", networkDevice->ipv4Addresses());
+    networkDeviceVariant.insert("ipv6Addresses", networkDevice->ipv6Addresses());
     networkDeviceVariant.insert("state", networkDevice->deviceStateString());
+    networkDeviceVariant.insert("mode", enumValueName(networkDevice->wirelessMode()));
     networkDeviceVariant.insert("bitRate", QString("%1 [Mb/s]").arg(QString::number(networkDevice->bitRate())));
     if (networkDevice->activeAccessPoint())
         networkDeviceVariant.insert("currentAccessPoint", packWirelessAccessPoint(networkDevice->activeAccessPoint()));

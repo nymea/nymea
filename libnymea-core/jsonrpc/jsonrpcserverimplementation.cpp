@@ -569,7 +569,7 @@ void JsonRPCServerImplementation::setup()
     registerHandler(new LoggingHandler(this));
     registerHandler(new StateHandler(this));
     registerHandler(new ConfigurationHandler(this));
-    registerHandler(new NetworkManagerHandler(this));
+    registerHandler(new NetworkManagerHandler(NymeaCore::instance()->networkManager(), this));
     registerHandler(new TagsHandler(this));
     registerHandler(new SystemHandler(NymeaCore::instance()->platform(), this));
     registerHandler(new UsersHandler(NymeaCore::instance()->userManager(), this));

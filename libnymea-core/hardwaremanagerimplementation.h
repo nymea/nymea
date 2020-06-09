@@ -72,6 +72,7 @@ private:
     BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
     MqttProvider *m_mqttProvider = nullptr;
     I2CManager *m_i2cManager = nullptr;
+    SPIManager *m_spiManager = nullptr;
 };
 
 }

@@ -10,7 +10,7 @@
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-typedef struct {
+typedef struct _thing {
     PyObject_HEAD
     Thing* ptrObj;
 } PyThing;
@@ -31,9 +31,48 @@ static void PyThing_dealloc(PyThing * self)
     Py_TYPE(self)->tp_free(self);
 }
 
+static PyObject *PyThing_getName(PyThing *self, void */*closure*/)
+{
+    if (!self->ptrObj) {
+        PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
+        return nullptr;
+    }
+    PyObject *ret = PyUnicode_FromString(self->ptrObj->name().toUtf8().data());
+    Py_INCREF(ret);
+    return ret;
+}
+
+static int PyThing_setName(PyThing *self, PyObject *value, void */*closure*/){
+    self->ptrObj->setName(QString(PyUnicode_AsUTF8(value)));
+    return 0;
+}
+
+static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
+{
+    char *stateTypeId;
+    int status;
+
+    if (PyArg_ParseTuple(args, "ss", &stateTypeId, &message)) {
+        (self->ptrObj)->finish(static_cast<Thing::ThingError>(status), QString(message));
+        Py_RETURN_NONE;
+    }
+    PyErr_Clear();
+
+    if (PyArg_ParseTuple(args, "i", &status)) {
+        (self->ptrObj)->finish(static_cast<Thing::ThingError>(status));
+        Py_RETURN_NONE;
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyGetSetDef PyThing_getseters[] = {
+    {"name", (getter)PyThing_getName, (setter)PyThing_setName, "Thingname", nullptr},
+    {nullptr , nullptr, nullptr, nullptr, nullptr} /* Sentinel */
+};
 
 static PyMethodDef PyThing_methods[] = {
-//    { "addDescriptor", (PyCFunction)PyThing_addDescriptor,    METH_VARARGS,       "Add a new descriptor to the discovery" },
+    { "setStateValue", (PyCFunction)PyThing_setStateValue,    METH_VARARGS,       "Set a things state value" },
 //    { "finish", (PyCFunction)PyThing_finish,    METH_VARARGS,       "finish a discovery" },
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
@@ -71,6 +110,7 @@ static void registerThingType(PyObject *module)
     PyThingType.tp_flags = Py_TPFLAGS_DEFAULT;
     PyThingType.tp_doc = "Thing class";
     PyThingType.tp_methods = PyThing_methods;
+    PyThingType.tp_getset = PyThing_getseters;
 //    PyThingType.tp_members = PyThingSetupInfo_members;
     PyThingType.tp_init = reinterpret_cast<initproc>(PyThing_init);
 

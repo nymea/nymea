@@ -15,18 +15,17 @@
 typedef struct {
     PyObject_HEAD
     ThingSetupInfo* ptrObj;
+    PyThing *thing;
 } PyThingSetupInfo;
 
 
 static int PyThingSetupInfo_init(PyThingSetupInfo */*self*/, PyObject */*args*/, PyObject */*kwds*/)
-// initialize PyVoice Object
 {
     return 0;
 }
 
 
 static void PyThingSetupInfo_dealloc(PyThingSetupInfo * self)
-// destruct the object
 {
     // FIXME: Why is this not called? Seems we're leaking...
     Q_ASSERT(false);
@@ -40,17 +39,22 @@ static PyObject * PyThingSetupInfo_finish(PyThingSetupInfo* self, PyObject* args
 
     if (PyArg_ParseTuple(args, "is", &status, &message)) {
         (self->ptrObj)->finish(static_cast<Thing::ThingError>(status), QString(message));
-        return Py_BuildValue("");
+        Py_RETURN_NONE;
     }
+    PyErr_Clear();
 
     if (PyArg_ParseTuple(args, "i", &status)) {
         (self->ptrObj)->finish(static_cast<Thing::ThingError>(status));
-        return Py_BuildValue("");
+        Py_RETURN_NONE;
     }
 
-    return nullptr;
+    Py_RETURN_NONE;
 }
 
+static PyMemberDef PyThingSetupInfo_members[] = {
+    {"thing", T_OBJECT_EX, offsetof(PyThingSetupInfo, thing), 0, "Thing being setup in this setup transaction"},
+    {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
+};
 
 static PyMethodDef PyThingSetupInfo_methods[] = {
     { "finish", (PyCFunction)PyThingSetupInfo_finish,    METH_VARARGS,       "finish a setup" },
@@ -89,7 +93,7 @@ static void registerThingSetupInfoType(PyObject *module) {
     PyThingSetupInfoType.tp_flags = Py_TPFLAGS_DEFAULT;
     PyThingSetupInfoType.tp_doc = "ThingSetupInfo class";
     PyThingSetupInfoType.tp_methods = PyThingSetupInfo_methods;
-//    PyThingSetupInfoType.tp_members = PyThingSetupInfo_members;
+    PyThingSetupInfoType.tp_members = PyThingSetupInfo_members;
     PyThingSetupInfoType.tp_init = (initproc)PyThingSetupInfo_init;
 
     if (PyType_Ready(&PyThingSetupInfoType) < 0) {

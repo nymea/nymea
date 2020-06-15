@@ -10,6 +10,7 @@
 extern "C" {
 typedef struct _object PyObject;
 typedef struct _ts PyThreadState;
+typedef struct _thing PyThing;
 }
 
 
@@ -30,20 +31,28 @@ public:
     void init() override;
     void discoverThings(ThingDiscoveryInfo *info) override;
     void setupThing(ThingSetupInfo *info) override;
+    void postSetupThing(Thing *thing) override;
+    void thingRemoved(Thing *thing) override;
 
 
+    static void dumpError();
 private:
-    void dumpError();
-
     void exportIds();
+
+    void callPluginFunction(const QString &function, PyObject *param);
 
 private:
 //    static QHash<PyObject*, PyThreadState*> s_modules;
 
+    static PyThreadState* s_mainThread;
+    static PyObject *s_nymeaModule;
+    static PyObject *s_asyncio;
+
     QVariantMap m_metaData;
     PyObject *m_module = nullptr;
-    PyThreadState *m_interpreter = nullptr;
     QFuture<void> m_eventLoop;
+
+    QHash<Thing*, PyThing*> m_things;
 
 };
 

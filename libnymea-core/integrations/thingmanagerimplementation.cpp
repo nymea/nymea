@@ -1362,24 +1362,24 @@ void ThingManagerImplementation::loadPlugins()
         }
         loadPlugin(p, metaData);
     }
-//    {
-//        PythonIntegrationPlugin *p = new PythonIntegrationPlugin(this);
-//        bool ok = p->loadScript("/home/micha/Develop/nymea-plugin-pytest2/integrationpluginpytest2.py");
-//        if (!ok) {
-//            qCWarning(dcThingManager()) << "Error loading plugin";
-//            return;
-//        }
-//        PluginMetadata metaData(p->metaData());
-//        if (!metaData.isValid()) {
-//            qCWarning(dcThingManager()) << "Not loading Python plugin. Invalid metadata.";
-//            foreach (const QString &error, metaData.validationErrors()) {
-//                qCWarning(dcThingManager()) << error;
-//            }
-//            return;
-//        }
-//        loadPlugin(p, metaData);
+    {
+        PythonIntegrationPlugin *p = new PythonIntegrationPlugin(this);
+        bool ok = p->loadScript("/home/micha/Develop/nymea-plugin-pytest2/integrationpluginpytest2.py");
+        if (!ok) {
+            qCWarning(dcThingManager()) << "Error loading plugin";
+            return;
+        }
+        PluginMetadata metaData(p->metaData());
+        if (!metaData.isValid()) {
+            qCWarning(dcThingManager()) << "Not loading Python plugin. Invalid metadata.";
+            foreach (const QString &error, metaData.validationErrors()) {
+                qCWarning(dcThingManager()) << error;
+            }
+            return;
+        }
+        loadPlugin(p, metaData);
 
-//    }
+    }
 }
 
 void ThingManagerImplementation::loadPlugin(IntegrationPlugin *pluginIface, const PluginMetadata &metaData)

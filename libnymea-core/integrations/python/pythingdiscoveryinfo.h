@@ -45,14 +45,15 @@ static PyObject * PyThingDiscoveryInfo_finish(PyThingDiscoveryInfo* self, PyObje
 
     if (PyArg_ParseTuple(args, "is", &status, &message)) {
         (self->ptrObj)->finish(static_cast<Thing::ThingError>(status), QString(message));
-        return Py_BuildValue("");
+        Py_RETURN_NONE;
     }
 
     if (PyArg_ParseTuple(args, "i", &status)) {
         (self->ptrObj)->finish(static_cast<Thing::ThingError>(status));
-        return Py_BuildValue("");
+        Py_RETURN_NONE;
     }
 
+    PyErr_SetString(PyExc_TypeError, "Invalid arguments in finish call. Expected: finish(ThingError, message = \"\"");
     return nullptr;
 }
 

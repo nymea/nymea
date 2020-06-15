@@ -175,6 +175,16 @@ SOURCES += nymeacore.cpp \
     platform/platform.cpp \
 
 
+versionAtLeast(QT_VERSION, 5.8.0) {
+QT += serialbus
+
+HEADERS += \
+    hardware/modbus/modbusclientimpl.h
+
+SOURCES += \
+    hardware/modbus/modbusclientimpl.cpp
+}
+
 versionAtLeast(QT_VERSION, 5.12.0) {
 HEADERS += \
     integrations/scriptintegrationplugin.h

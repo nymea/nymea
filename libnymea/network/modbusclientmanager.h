@@ -28,44 +28,32 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#ifndef MODBUSCLIENTMANAGER_H
+#define MODBUSCLIENTMANAGER_H
+
+#include "libnymea.h"
+#include "typeutils.h"
+#include "hardwareresource.h"
 
 #include <QObject>
+#include <QModbusClient>
+#include <QModbusReply>
+#include <QModbusDataUnit>
+#include <QModbusRequest>
+#include <QDebug>
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class ModbusClientManager;
-class HardwareResource;
-
-class HardwareManager : public QObject
+class LIBNYMEA_EXPORT ModbusClientManager : public HardwareResource
 {
     Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
 
 public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
+    ModbusClientManager(QObject *parent = nullptr);
+    virtual ~ModbusClientManager() = default;
 
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
-    virtual ModbusClientManager *modbusClientManager() = 0;
-
-protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+    virtual QModbusReply *sendReadRequest(const QModbusDataUnit &read, int serverAddress) = 0;
+    virtual QModbusReply *sendWriteRequest(const QModbusDataUnit &write, int serverAddress) = 0;
+    virtual QModbusReply *sendReadWriteRequest(const QModbusDataUnit &read, const QModbusDataUnit &write, int serverAddress) = 0;
+    virtual QModbusReply *sendRawRequest(const QModbusRequest &request, int serverAddress) = 0;
 };
 
-#endif // HARDWAREMANAGER_H
+#endif // MODBUSCLINTMANAGER_H

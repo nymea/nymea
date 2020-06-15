@@ -30,6 +30,7 @@ HEADERS += \
     jsonrpc/jsonreply.h \
     jsonrpc/jsonrpcserver.h \
     libnymea.h \
+    network/modbusclientmanager.h \
     platform/package.h \
     platform/repository.h \
     types/browseritem.h \
@@ -116,6 +117,7 @@ SOURCES += \
     jsonrpc/jsonreply.cpp \
     jsonrpc/jsonrpcserver.cpp \
     loggingcategories.cpp \
+    network/modbusclientmanager.cpp \
     nymeasettings.cpp \
     platform/package.cpp \
     platform/repository.cpp \
@@ -179,6 +181,15 @@ SOURCES += \
     platform/platformzeroconfcontroller.cpp \
     experiences/experienceplugin.cpp \
 
+versionAtLeast(QT_VERSION, 5.8.0) {
+QT += serialbus
+
+HEADERS += \
+    hardware/modbus/modbusclientmanager.h
+
+SOURCES += \
+    hardware/modbus/modbusclientmanager.cpp
+}
 
 RESOURCES += \
     interfaces/interfaces.qrc

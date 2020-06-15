@@ -28,54 +28,55 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGERIMPLEMENTATION_H
-#define HARDWAREMANAGERIMPLEMENTATION_H
+#ifndef MODBUSCLIENTMANAGERIMPL_H
+#define MODBUSCLIENTMANAGERIMPL_H
+
+#include "libnymea.h"
+#include "typeutils.h"
+#include "network/modbusclientmanager.h"
 
 #include <QObject>
-#include <QDBusConnection>
-#include <QNetworkAccessManager>
-
-#include "hardwaremanager.h"
+#include <QModbusClient>
+#include <QModbusReply>
+#include <QModbusRequest>
+#include <QModbusDataUnit>
+#include <QDebug>
+#include <QUrl>
+#include <QTimer>
 
 namespace nymeaserver {
 
-class Platform;
-class MqttBroker;
-
-class HardwareManagerImplementation : public HardwareManager
+class NetworkAccessManagerImpl : public ModbusClientManager
 {
     Q_OBJECT
 
 public:
-    explicit HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, QObject *parent = nullptr);
-    ~HardwareManagerImplementation() override;
+    ModbusClientManagerImpl(QModbusClient *modbusClient, QObject *parent = nullptr);
 
-    Radio433 *radio433() override;
-    PluginTimerManager *pluginTimerManager() override;
-    NetworkAccessManager *networkManager() override;
-    UpnpDiscovery *upnpDiscovery() override;
-    PlatformZeroConfController *zeroConfController() override;
-    BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
-    MqttProvider *mqttProvider() override;
-    I2CManager * i2cManager() override;
-    ModbusClientManager * modbusClientManager() override;
+    QModbusReply *sendReadRequest(const QModbusDataUnit &read, int serverAddress) override;
+    QModbusReply *sendWriteRequest(const QModbusDataUnit &write, int serverAddress) override;
+    QModbusReply *sendReadWriteRequest(const QModbusDataUnit &read, const QModbusDataUnit &write, int serverAddress) override;
+    QModbusReply *sendRawRequest(const QModbusRequest &request, int serverAddress) override;
+    bool enabled() const override;
+
+protected:
+    void setEnabled(bool enabled) override;
 
 private:
-    QNetworkAccessManager *m_networkAccessManager = nullptr;
+    bool m_available = false;
+    bool m_enabled = false;
 
-    Platform *m_platform = nullptr;
+    QModbusClient *m_modbusClient;
+    QHash<QModbusReply*, QTimer*> m_timeoutTimers;
 
-    // Hardware Resources
-    PluginTimerManager *m_pluginTimerManager = nullptr;
-    Radio433 *m_radio433 = nullptr;
-    NetworkAccessManager *m_networkManager = nullptr;
-    UpnpDiscovery *m_upnpDiscovery = nullptr;
-    BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
-    MqttProvider *m_mqttProvider = nullptr;
-    I2CManager *m_i2cManager = nullptr;
-    ModbusClientManager *m_modbusClientManager = nullptr;
+    void hookupTimeoutTimer(QNetworkReply* reply);
+
+private slots:
+    void networkReplyFinished();
+    void networkTimeout();
+
 };
 
 }
 
-#endif // HARDWAREMANAGERIMPLEMENTATION_H
+#endif // MODBUSCLIENTMANAGER_H

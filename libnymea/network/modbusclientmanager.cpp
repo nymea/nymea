@@ -28,44 +28,20 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+/*!
+    \class ModbusClientManager
+    \brief Allows to read and write modbus registers.
 
-#include <QObject>
+    \ingroup hardware
+    \inmodule libnymea
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class ModbusClientManager;
-class HardwareResource;
+    The modbus client manager class is a reimplementation of the \l{http://doc.qt.io/qt-5/qmodbusclient.html}{QModbusClient}
+    and allows plugins to read and write Modbus RTU and TCP registers.
 
-class HardwareManager : public QObject
+*/
+
+/*! Construct the hardware resource NetworkAccessManager with the given \a parent. */
+ModbusClientManager::ModbusClientManager(QObject *parent) :
+    HardwareResource("Modbus client manager" , parent)
 {
-    Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
-
-public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
-
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
-    virtual ModbusClientManager *modbusClientManager() = 0;
-
-protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
-};
-
-#endif // HARDWAREMANAGER_H
+}

@@ -42,6 +42,7 @@
 #include "hardware/bluetoothlowenergy/bluetoothlowenergymanagerimplementation.h"
 #include "hardware/network/mqtt/mqttproviderimplementation.h"
 #include "hardware/i2c/i2cmanagerimplementation.h"
+#include "hardware/modbus/modbusclientimpl.h"
 
 namespace nymeaserver {
 
@@ -70,6 +71,8 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
 
     m_i2cManager = new I2CManagerImplementation(this);
 
+    m_modbusClientManager = new modbusClientManagerImpl(this);
+
     qCDebug(dcHardware()) << "Hardware manager initialized successfully";
 
 
@@ -79,6 +82,10 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
 
     if (m_networkManager->available())
         setResourceEnabled(m_networkManager, true);
+
+
+    if (m_modbusClientManager->available())
+        setResourceEnabled(m_modbusClientManager, true);
 
     if (m_upnpDiscovery->available())
         setResourceEnabled(m_upnpDiscovery, true);
@@ -135,5 +142,11 @@ I2CManager *HardwareManagerImplementation::i2cManager()
 {
     return m_i2cManager;
 }
+
+ModbusClientManager *HardwareManagerImplementation::modbusClientManager()
+{
+    return m_modbusClientManager;
+}
+
 
 }

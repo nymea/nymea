@@ -51,6 +51,7 @@
 #include "loggingcategories.h"
 #include "version.h"
 
+Q_DECLARE_LOGGING_CATEGORY(dcApplication)
 
 namespace nymeaserver {
 

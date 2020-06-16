@@ -56,6 +56,8 @@
 #include <QDir>
 #include <QCoreApplication>
 
+NYMEA_LOGGING_CATEGORY(dcCore, "Core")
+
 namespace nymeaserver {
 
 NymeaCore* NymeaCore::s_instance = nullptr;
@@ -77,15 +79,15 @@ NymeaCore::NymeaCore(QObject *parent) :
 }
 
 void NymeaCore::init() {
-    qCDebug(dcApplication()) << "Initializing NymeaCore";
+    qCDebug(dcCore()) << "Initializing NymeaCore";
 
     qCDebug(dcPlatform()) << "Loading platform abstraction";
     m_platform = new Platform(this);
 
-    qCDebug(dcApplication()) << "Loading nymea configurations" << NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName();
+    qCDebug(dcCore()) << "Loading nymea configurations" << NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName();
     m_configuration = new NymeaConfiguration(this);
 
-    qCDebug(dcApplication()) << "Creating Time Manager";
+    qCDebug(dcCore()) << "Creating Time Manager";
     // Migration path: nymea < 0.18 doesn't use system time zone but stores its own time zone in the config
     // For migration, let's set the system's time zone to the config now to upgrade to the system time zone based nymea >= 0.18
     if (QTimeZone(m_configuration->timeZone()).isValid()) {
@@ -95,42 +97,42 @@ void NymeaCore::init() {
     }
     m_timeManager = new TimeManager(this);
 
-    qCDebug(dcApplication) << "Creating Log Engine";
+    qCDebug(dcCore) << "Creating Log Engine";
     m_logger = new LogEngine(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), m_configuration->logDBMaxEntries(), this);
 
-    qCDebug(dcApplication()) << "Creating User Manager";
+    qCDebug(dcCore()) << "Creating User Manager";
     m_userManager = new UserManager(NymeaSettings::settingsPath() + "/user-db.sqlite", this);
 
-    qCDebug(dcApplication) << "Creating Server Manager";
+    qCDebug(dcCore) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_platform, m_configuration, this);
 
-    qCDebug(dcApplication) << "Creating Hardware Manager";
+    qCDebug(dcCore) << "Creating Hardware Manager";
     m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), this);
 
-    qCDebug(dcApplication) << "Creating Thing Manager (locale:" << m_configuration->locale() << ")";
+    qCDebug(dcCore) << "Creating Thing Manager (locale:" << m_configuration->locale() << ")";
     m_thingManager = new ThingManagerImplementation(m_hardwareManager, m_configuration->locale(), this);
 
-    qCDebug(dcApplication) << "Creating Rule Engine";
+    qCDebug(dcCore) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);
 
-    qCDebug(dcApplication()) << "Creating Script Engine";
+    qCDebug(dcCore()) << "Creating Script Engine";
     m_scriptEngine = new ScriptEngine(m_thingManager, this);
     m_serverManager->jsonServer()->registerHandler(new ScriptsHandler(m_scriptEngine, m_scriptEngine));
 
-    qCDebug(dcApplication()) << "Creating Tags Storage";
+    qCDebug(dcCore()) << "Creating Tags Storage";
     m_tagsStorage = new TagsStorage(m_thingManager, m_ruleEngine, this);
 
-    qCDebug(dcApplication) << "Creating Network Manager";
+    qCDebug(dcCore) << "Creating Network Manager";
     m_networkManager = new NetworkManager(this);
     m_networkManager->start();
 
-    qCDebug(dcApplication) << "Creating Debug Server Handler";
+    qCDebug(dcCore) << "Creating Debug Server Handler";
     m_debugServerHandler = new DebugServerHandler(this);
 
-    qCDebug(dcApplication) << "Creating Cloud Manager";
+    qCDebug(dcCore) << "Creating Cloud Manager";
     m_cloudManager = new CloudManager(m_configuration, m_networkManager, this);
 
-    qCDebug(dcApplication()) << "Loading experiences";
+    qCDebug(dcCore()) << "Loading experiences";
     m_experienceManager = new ExperienceManager(m_thingManager, m_serverManager->jsonServer(), this);
 
 
@@ -164,7 +166,7 @@ void NymeaCore::init() {
 /*! Destructor of the \l{NymeaCore}. */
 NymeaCore::~NymeaCore()
 {
-    qCDebug(dcApplication()) << "Shutting down NymeaCore";
+    qCDebug(dcCore()) << "Shutting down NymeaCore";
     m_logger->logSystemEvent(m_timeManager->currentDateTime(), false);
 
     // Disconnect all signals/slots, we're going down now
@@ -173,27 +175,27 @@ NymeaCore::~NymeaCore()
     m_ruleEngine->disconnect(this);
 
     // At very first, cut off the outside world
-    qCDebug(dcApplication) << "Shutting down \"Server Manager\"";
+    qCDebug(dcCore) << "Shutting down \"Server Manager\"";
     delete m_serverManager;
-    qCDebug(dcApplication) << "Shutting down \"CloudManager\"";
+    qCDebug(dcCore) << "Shutting down \"CloudManager\"";
     delete m_cloudManager;
 
     // Then stop magic from happening
-    qCDebug(dcApplication) << "Shutting down \"Rule Engine\"";
+    qCDebug(dcCore) << "Shutting down \"Rule Engine\"";
     delete m_ruleEngine;
 
     // Next, ThingManager, so plugins don't access any resources any more.
-    qCDebug(dcApplication) << "Shutting down \"Thing Manager\"";
+    qCDebug(dcCore) << "Shutting down \"Thing Manager\"";
     delete m_thingManager;
 
     // Now go ahead and clean up stuff.
-    qCDebug(dcApplication) << "Shutting down \"Log Engine\"";
+    qCDebug(dcCore) << "Shutting down \"Log Engine\"";
     delete m_logger;
 
-    qCDebug(dcApplication()) << "Shutting down \"Hardware Manager\"";
+    qCDebug(dcCore()) << "Shutting down \"Hardware Manager\"";
     delete m_hardwareManager;
 
-    qCDebug(dcApplication) << "Done shutting down NymeaCore";
+    qCDebug(dcCore) << "Done shutting down NymeaCore";
 }
 
 void NymeaCore::destroy()
@@ -567,7 +569,7 @@ ServerManager *NymeaCore::serverManager() const
 
 QStringList NymeaCore::getAvailableLanguages()
 {
-    qCDebug(dcApplication()) << "Loading translations from" << NymeaSettings::translationsPath();
+    qCDebug(dcCore()) << "Loading translations from" << NymeaSettings::translationsPath();
 
     QStringList searchPaths;
     searchPaths << QCoreApplication::applicationDirPath() + "/../translations";
@@ -599,52 +601,7 @@ QStringList NymeaCore::getAvailableLanguages()
 
 QStringList NymeaCore::loggingFilters()
 {
-    QStringList loggingFilters = {
-        "Warnings",
-        "Application",
-        "System",
-        "Platform",
-        "PlatformUpdate",
-        "PlatformZeroConf",
-        "Experiences",
-        "Thing",
-        "ThingManager",
-        "RuleEngine",
-        "RuleEngineDebug",
-        "ScriptEngine",
-        "Hardware",
-        "Bluetooth",
-        "LogEngine",
-        "ServerManager",
-        "TcpServer",
-        "TcpServerTraffic",
-        "WebServer",
-        "WebServerTraffic",
-        "DebugServer",
-        "WebSocketServer",
-        "WebSocketServerTraffic",
-        "JsonRpc",
-        "JsonRpcTraffic",
-        "Rest",
-        "OAuth2",
-        "TimeManager",
-        "Coap",
-        "Avahi",
-        "AvahiDebug",
-        "UPnP",
-        "Cloud",
-        "CloudTraffic",
-        "NetworkManager",
-        "UserManager",
-        "AWS",
-        "AWSTraffic",
-        "BluetoothServer",
-        "BluetoothServerTraffic",
-        "Mqtt",
-        "Translations"
-    };
-
-    return loggingFilters;
+    return s_nymeaLoggingCategories;
 }
 
 QStringList NymeaCore::loggingFiltersPlugins()
@@ -860,22 +817,22 @@ void NymeaCore::thingManagerLoaded()
     emit initialized();
 
     // Do some houskeeping...
-    qCDebug(dcApplication()) << "Starting housekeeping...";
+    qCDebug(dcCore()) << "Starting housekeeping...";
     QDateTime startTime = QDateTime::currentDateTime();
     ThingsFetchJob *job = m_logger->fetchThings();
     connect(job, &ThingsFetchJob::finished, m_thingManager, [this, job, startTime](){
         foreach (const ThingId &thingId, job->results()) {
             if (!m_thingManager->findConfiguredThing(thingId)) {
-                qCDebug(dcApplication()) << "Cleaning stale thing entries from log DB for thing id" << thingId;
+                qCDebug(dcCore()) << "Cleaning stale thing entries from log DB for thing id" << thingId;
                 m_logger->removeThingLogs(thingId);
             }
         }
-        qCDebug(dcApplication()) << "Housekeeping done in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";
+        qCDebug(dcCore()) << "Housekeeping done in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";
     });
 
     foreach (const ThingId &thingId, m_ruleEngine->thingsInRules()) {
         if (!m_thingManager->findConfiguredThing(thingId)) {
-            qCDebug(dcApplication()) << "Cleaning stale rule entries for thing id" << thingId;
+            qCDebug(dcCore()) << "Cleaning stale rule entries for thing id" << thingId;
             foreach (const RuleId &ruleId, m_ruleEngine->findRules(thingId)) {
                 m_ruleEngine->removeThingFromRule(ruleId, thingId);
             }

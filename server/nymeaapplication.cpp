@@ -56,6 +56,8 @@
 #include <unistd.h>
 #include <cxxabi.h>
 
+Q_DECLARE_LOGGING_CATEGORY(dcApplication)
+
 namespace nymeaserver {
 
 static bool s_aboutToShutdown = false;

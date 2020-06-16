@@ -12,8 +12,11 @@ LIBS += -L$$top_builddir/libnymea/ -lnymea \
         -L$$top_builddir/libnymea-core/ -lnymea-core \
         -lssl -lcrypto -lnymea-remoteproxyclient
 
-HEADERS += nymeatestbase.h
-SOURCES += nymeatestbase.cpp
+HEADERS += nymeatestbase.h \
+           plugintestbase.h
+
+SOURCES += nymeatestbase.cpp \
+           plugintestbase.cpp
 
 target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target

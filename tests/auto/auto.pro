@@ -12,7 +12,6 @@ SUBDIRS = \
         loggingdirect \
         loggingloading \
         mqttbroker \
-        plugins \
         rules \
         scripts \
         states \

@@ -162,7 +162,7 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
         qCWarning(dcThingManager()) << "Error parsing metadata file:" << error.errorString();
         return false;
     }
-    m_metaData = jsonDoc.toVariant().toMap();
+    m_metaData = PluginMetadata(jsonDoc.object());
 
 
     PyGILState_STATE s = PyGILState_Ensure();
@@ -183,8 +183,8 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
 
     // Set up logger with appropriate logging category
     PyNymeaLoggingHandler *logger = reinterpret_cast<PyNymeaLoggingHandler*>(_PyObject_New(&PyNymeaLoggingHandlerType));
-    QString category = m_metaData.value("name").toString();
-    category = category.left(1).toUpper() + category.right(category.length() - 1);
+    QString category = m_metaData.pluginName();
+    category.replace(0, 1, category[0].toUpper());
     logger->category = static_cast<char*>(malloc(category.length() + 1));
     memset(logger->category, '0', category.length() +1);
     strcpy(logger->category, category.toUtf8().data());
@@ -196,11 +196,6 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
 
     PyGILState_Release(s);
     return true;
-}
-
-QJsonObject PythonIntegrationPlugin::metaData() const
-{
-    return QJsonObject::fromVariantMap(m_metaData);
 }
 
 void PythonIntegrationPlugin::init()
@@ -250,8 +245,13 @@ void PythonIntegrationPlugin::thingRemoved(Thing *thing)
 
     callPluginFunction("thingRemoved", reinterpret_cast<PyObject*>(pyThing));
 
+    PyGILState_STATE s = PyGILState_Ensure();
+
     pyThing->ptrObj = nullptr;
     Py_DECREF(pyThing);
+
+
+    PyGILState_Release(s);
 
     m_things.remove(thing);
 }
@@ -279,20 +279,114 @@ void PythonIntegrationPlugin::dumpError()
 
 void PythonIntegrationPlugin::exportIds()
 {
-    foreach (const QVariant &vendorVariant, m_metaData.value("vendors").toList()) {
-        QVariantMap vendor = vendorVariant.toMap();
-        QString vendorIdName = vendor.value("name").toString() + "VendorId";
-        QString vendorId = vendor.value("id").toString();
-        PyModule_AddStringConstant(m_module, vendorIdName.toUtf8(), vendorId.toUtf8());
+    qCDebug(dcThingManager()) << "Exporting plugin IDs:";
+    QString pluginName = "pluginId";
+    QString pluginId = m_metaData.pluginId().toString();
+    qCDebug(dcThingManager()) << "- Plugin:" << pluginName << pluginId;
+    PyModule_AddStringConstant(m_module, pluginName.toUtf8(), pluginId.toUtf8());
 
-        foreach (const QVariant &thingClassVariant, vendor.value("thingClasses").toList()) {
-            QVariantMap thingClass = thingClassVariant.toMap();
-            QString thingClassIdName = thingClass.value("name").toString() + "ThingClassId";
-            QString thingClassId = thingClass.value("id").toString();
-            PyModule_AddStringConstant(m_module, thingClassIdName.toUtf8(), thingClassId.toUtf8());
-        }
+    foreach (const ThingClass &thingClass, supportedThings()) {
+        exportThingClass(thingClass);
     }
 }
+
+void PythonIntegrationPlugin::exportThingClass(const ThingClass &thingClass)
+{
+    QString variableName = QString("%1ThingClassId").arg(thingClass.name());
+    if (m_variableNames.contains(variableName)) {
+        qWarning().nospace() << "Error: Duplicate name " << variableName << " for ThingClass " << thingClass.id() << ". Skipping entry.";
+        return;
+    }
+    m_variableNames.append(variableName);
+
+    qCDebug(dcThingManager()) << "|- ThingClass:" << variableName << thingClass.id();
+    PyModule_AddStringConstant(m_module, variableName.toUtf8(), thingClass.id().toString().toUtf8());
+
+    exportParamTypes(thingClass.paramTypes(), thingClass.name(), "", "thing");
+    exportParamTypes(thingClass.settingsTypes(), thingClass.name(), "", "settings");
+    exportParamTypes(thingClass.discoveryParamTypes(), thingClass.name(), "", "discovery");
+
+    exportStateTypes(thingClass.stateTypes(), thingClass.name());
+    exportEventTypes(thingClass.eventTypes(), thingClass.name());
+    exportActionTypes(thingClass.actionTypes(), thingClass.name());
+    exportBrowserItemActionTypes(thingClass.browserItemActionTypes(), thingClass.name());
+}
+
+void PythonIntegrationPlugin::exportParamTypes(const ParamTypes &paramTypes, const QString &thingClassName, const QString &typeClass, const QString &typeName)
+{
+    foreach (const ParamType &paramType, paramTypes) {
+        QString variableName = QString("%1ParamTypeId").arg(thingClassName + typeName[0].toUpper() + typeName.right(typeName.length()-1) + typeClass + paramType.name()[0].toUpper() + paramType.name().right(paramType.name().length() -1 ));
+        if (m_variableNames.contains(variableName)) {
+            qWarning().nospace() << "Error: Duplicate name " << variableName << " for ParamTypeId " << paramType.id() << ". Skipping entry.";
+            continue;
+        }
+        m_variableNames.append(variableName);
+
+        PyModule_AddStringConstant(m_module, variableName.toUtf8(), paramType.id().toString().toUtf8());
+    }
+}
+
+void PythonIntegrationPlugin::exportStateTypes(const StateTypes &stateTypes, const QString &thingClassName)
+{
+    foreach (const StateType &stateType, stateTypes) {
+        QString variableName = QString("%1%2StateTypeId").arg(thingClassName, stateType.name()[0].toUpper() + stateType.name().right(stateType.name().length() - 1));
+        if (m_variableNames.contains(variableName)) {
+            qWarning().nospace() << "Error: Duplicate name " << variableName << " for StateType " << stateType.name() << " in ThingClass " << thingClassName << ". Skipping entry.";
+            return;
+        }
+        m_variableNames.append(variableName);
+        qCDebug(dcThingManager()) << "|- StateType:" << variableName << stateType.id();
+        PyModule_AddStringConstant(m_module, variableName.toUtf8(), stateType.id().toString().toUtf8());
+    }
+}
+
+void PythonIntegrationPlugin::exportEventTypes(const EventTypes &eventTypes, const QString &thingClassName)
+{
+    foreach (const EventType &eventType, eventTypes) {
+        QString variableName = QString("%1%2EventTypeId").arg(thingClassName, eventType.name()[0].toUpper() + eventType.name().right(eventType.name().length() - 1));
+        if (m_variableNames.contains(variableName)) {
+            qWarning().nospace() << "Error: Duplicate name " << variableName << " for EventType " << eventType.name() << " in ThingClass " << thingClassName << ". Skipping entry.";
+            return;
+        }
+        m_variableNames.append(variableName);
+        PyModule_AddStringConstant(m_module, variableName.toUtf8(), eventType.id().toString().toUtf8());
+
+        exportParamTypes(eventType.paramTypes(), thingClassName, "Event", eventType.name());
+    }
+
+}
+
+void PythonIntegrationPlugin::exportActionTypes(const ActionTypes &actionTypes, const QString &thingClassName)
+{
+    foreach (const ActionType &actionType, actionTypes) {
+        QString variableName = QString("%1%2ActionTypeId").arg(thingClassName, actionType.name()[0].toUpper() + actionType.name().right(actionType.name().length() - 1));
+        if (m_variableNames.contains(variableName)) {
+            qWarning().nospace() << "Error: Duplicate name " << variableName << " for ActionType " << actionType.name() << " in ThingClass " << thingClassName << ". Skipping entry.";
+            return;
+        }
+        m_variableNames.append(variableName);
+        PyModule_AddStringConstant(m_module, variableName.toUtf8(), actionType.id().toString().toUtf8());
+
+        exportParamTypes(actionType.paramTypes(), thingClassName, "Action", actionType.name());
+    }
+}
+
+void PythonIntegrationPlugin::exportBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &thingClassName)
+{
+    foreach (const ActionType &actionType, actionTypes) {
+        QString variableName = QString("%1%2BrowserItemActionTypeId").arg(thingClassName, actionType.name()[0].toUpper() + actionType.name().right(actionType.name().length() - 1));
+        if (m_variableNames.contains(variableName)) {
+            qWarning().nospace() << "Error: Duplicate name " << variableName << " for Browser Item ActionType " << actionType.name() << " in ThingClass " << thingClassName << ". Skipping entry.";
+            return;
+        }
+        m_variableNames.append(variableName);
+        PyModule_AddStringConstant(m_module, variableName.toUtf8(), actionType.id().toString().toUtf8());
+
+        exportParamTypes(actionType.paramTypes(), thingClassName, "BrowserItemAction", actionType.name());
+    }
+
+}
+
 
 void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObject *param)
 {
@@ -303,6 +397,7 @@ void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     if(!pFunc || !PyCallable_Check(pFunc)) {
         Py_XDECREF(pFunc);
         qCWarning(dcThingManager()) << "Python plugin does not implement" << function;
+        PyGILState_Release(s);
         return;
     }
 

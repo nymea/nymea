@@ -6,13 +6,15 @@
 
 #include "integrations/thing.h"
 
+#include <QPointer>
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 typedef struct _thing {
     PyObject_HEAD
-    Thing* ptrObj;
+    Thing *ptrObj;
 } PyThing;
 
 
@@ -37,31 +39,44 @@ static PyObject *PyThing_getName(PyThing *self, void */*closure*/)
         PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
         return nullptr;
     }
+    // FIXME: Needs blocking queued connection
     PyObject *ret = PyUnicode_FromString(self->ptrObj->name().toUtf8().data());
     Py_INCREF(ret);
     return ret;
 }
 
 static int PyThing_setName(PyThing *self, PyObject *value, void */*closure*/){
+    // FIXME: Needs queued connection
     self->ptrObj->setName(QString(PyUnicode_AsUTF8(value)));
     return 0;
 }
 
 static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
 {
-    char *stateTypeId;
-    int status;
+    char *stateTypeIdStr;
+    PyObject *valueObj;
 
-    if (PyArg_ParseTuple(args, "ss", &stateTypeId, &message)) {
-        (self->ptrObj)->finish(static_cast<Thing::ThingError>(status), QString(message));
-        Py_RETURN_NONE;
+    // FIXME: is there any better way to do this? Value is a variant
+    if (!PyArg_ParseTuple(args, "sO", &stateTypeIdStr, &valueObj)) {
+        qWarning() << "error parsing parameters";
+        return nullptr;
     }
-    PyErr_Clear();
 
-    if (PyArg_ParseTuple(args, "i", &status)) {
-        (self->ptrObj)->finish(static_cast<Thing::ThingError>(status));
-        Py_RETURN_NONE;
+    StateTypeId stateTypeId = StateTypeId(stateTypeIdStr);
+
+    PyObject* repr = PyObject_Repr(valueObj);
+    PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+    const char *bytes = PyBytes_AS_STRING(str);
+
+    qWarning() << "params:" << stateTypeId << bytes << self;
+    QVariant value(bytes);
+
+    if (self->ptrObj != nullptr) {
+        QMetaObject::invokeMethod(self->ptrObj, "setStateValue", Qt::QueuedConnection, Q_ARG(StateTypeId, stateTypeId), Q_ARG(QVariant, value));
     }
+
+    Py_XDECREF(repr);
+    Py_XDECREF(str);
 
     Py_RETURN_NONE;
 }

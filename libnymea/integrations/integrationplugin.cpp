@@ -110,6 +110,11 @@ IntegrationPlugin::~IntegrationPlugin()
 
 }
 
+PluginMetadata IntegrationPlugin::metadata()
+{
+    return m_metaData;
+}
+
 /*! Returns the name of this IntegrationPlugin. It returns the name value defined in the plugin's JSON file. */
 QString IntegrationPlugin::pluginName() const
 {

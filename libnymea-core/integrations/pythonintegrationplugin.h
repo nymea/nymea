@@ -25,9 +25,6 @@ public:
 
     bool loadScript(const QString &scriptFile);
 
-    QJsonObject metaData() const;
-
-
     void init() override;
     void discoverThings(ThingDiscoveryInfo *info) override;
     void setupThing(ThingSetupInfo *info) override;
@@ -38,6 +35,13 @@ public:
     static void dumpError();
 private:
     void exportIds();
+    void exportThingClass(const ThingClass &thingClass);
+    void exportParamTypes(const ParamTypes &paramTypes, const QString &thingClassName, const QString &typeClass, const QString &typeName);
+    void exportStateTypes(const StateTypes &stateTypes, const QString &thingClassName);
+    void exportEventTypes(const EventTypes &eventTypes, const QString &thingClassName);
+    void exportActionTypes(const ActionTypes &actionTypes, const QString &thingClassName);
+    void exportBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &thingClassName);
+
 
     void callPluginFunction(const QString &function, PyObject *param);
 
@@ -48,11 +52,12 @@ private:
     static PyObject *s_nymeaModule;
     static PyObject *s_asyncio;
 
-    QVariantMap m_metaData;
     PyObject *m_module = nullptr;
     QFuture<void> m_eventLoop;
 
     QHash<Thing*, PyThing*> m_things;
+
+    QStringList m_variableNames;
 
 };
 

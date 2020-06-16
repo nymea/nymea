@@ -79,6 +79,8 @@ public:
     IntegrationPlugin(QObject *parent = nullptr);
     virtual ~IntegrationPlugin();
 
+    PluginMetadata metadata();
+
     virtual void init() {}
 
     PluginId pluginId() const;
@@ -124,6 +126,8 @@ protected:
     HardwareManager *hardwareManager() const;
     QSettings *pluginStorage() const;
 
+    PluginMetadata m_metaData;
+
 private:
     friend class ThingManager;
     friend class ThingManagerImplementation;
@@ -145,7 +149,6 @@ private:
     HardwareManager *m_hardwareManager = nullptr;
     QSettings *m_storage = nullptr;
 
-    PluginMetadata m_metaData;
     ParamList m_config;
 };
 Q_DECLARE_INTERFACE(IntegrationPlugin, "io.nymea.IntegrationPlugin")

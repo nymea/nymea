@@ -1352,15 +1352,14 @@ void ThingManagerImplementation::loadPlugins()
             qCWarning(dcThingManager()) << "Error loading plugin";
             return;
         }
-        PluginMetadata metaData(p->metaData());
-        if (!metaData.isValid()) {
+        if (!p->metadata().isValid()) {
             qCWarning(dcThingManager()) << "Not loading Python plugin. Invalid metadata.";
-            foreach (const QString &error, metaData.validationErrors()) {
+            foreach (const QString &error, p->metadata().validationErrors()) {
                 qCWarning(dcThingManager()) << error;
             }
             return;
         }
-        loadPlugin(p, metaData);
+        loadPlugin(p, p->metadata());
     }
     {
         PythonIntegrationPlugin *p = new PythonIntegrationPlugin(this);
@@ -1369,7 +1368,7 @@ void ThingManagerImplementation::loadPlugins()
             qCWarning(dcThingManager()) << "Error loading plugin";
             return;
         }
-        PluginMetadata metaData(p->metaData());
+        PluginMetadata metaData(p->metadata());
         if (!metaData.isValid()) {
             qCWarning(dcThingManager()) << "Not loading Python plugin. Invalid metadata.";
             foreach (const QString &error, metaData.validationErrors()) {

@@ -8,26 +8,9 @@
 
 nymea (/[n'aiːmea:]/ - is an open source IoT edge server. The plug-in based architecture allows to integrate protocols and APIs. With the build-in rule engine you are able to interconnect devices or services available in the system and create individual scenes and behaviours for your environment.
 
-## Quick Install on Ubuntu 
+## Quick start
 
-<p align="center">
-<img src="https://nymea.io/downloads/img/nymea-ubuntu.svg" width=300 >
-</p>
-
-In order to install nymea on Ubuntu, you simply need to download this bash script:
-
-```
-wget https://downloads.nymea.io/install-nymea.sh
-```
-Extract into your Home folder and just run
-
-```
-chmod +x install-nymea.sh
-sudo ./install-nymea.sh
-```
-Once the success message has printed on your screen, simply run: *sudo nymead -n* to start nymea!
-
-## Quick Install on a Raspberry Pi
+### Install nymea on a Raspberry Pi
 
 <p align="center">
 <img src="https://nymea.io/downloads/img/nymea-pi.svg" width=300 >
@@ -36,11 +19,23 @@ Once the success message has printed on your screen, simply run: *sudo nymead -n
 We have created an image for your Raspberry Pi (all models) that comes with an array of plugins for different smart devices!
  [Download](https://downloads.nymea.io/images/raspberrypi/latest)
 
-## Get the nymea mobile app here:
+### Get nymea:app here:
 
-<p align="center">
-  <img src="https://nymea.io/downloads/img/community/app-shots/ios-app.png" width=300>
-</p>
+<table align="middle">
+  <tr>
+    <td> 
+      <p align="center">
+        <img src="https://nymea.io/downloads/img/community/app-shots/ios-app.png" width=300>
+      </p>
+    </td>
+    <td> 
+      <p align="center">
+        <img src="https://nymea.io/downloads/img/community/app-shots/desktop-app.png?v=1555314733">
+      </p>
+    </td>
+  </tr>
+</table>
+
 
 <table align="middle">
   <tr>
@@ -56,17 +51,6 @@ We have created an image for your Raspberry Pi (all models) that comes with an a
          <img border="0" align="middle" alt="Android Badge" src="https://nymea.io/downloads/img/app-store/playstore.png" width=200>
      </p>
     </td>
-   </tr>
-</table>
-
-
-## Get the nymea desktop app here:
-<p align="center">
-   <img src="https://nymea.io/downloads/img/community/app-shots/desktop-app.png?v=1555314733">
-</p>
-
-<table align="center">
-  <tr>
     <td> 
       <p>
          <a href="https://downloads.nymea.io/nymea-app/nymea-app-osx-bundle.dmg">
@@ -88,23 +72,20 @@ We have created an image for your Raspberry Pi (all models) that comes with an a
   </tr>
 </table>
 
+A detailed description how to install and getting started with *nymea* can be found in the [nymea | user documentation](https://nymea.io/documentation/users/installation/getting-started).
+
+
 ## Getting help
 
 If you want to present your project or want to share your newest developments you can share it in
 [Our Forum](https://forum.nymea.io)
 
 If you are facing any troubles, don't hesitate to reach out for us or the community members, we will be pleased to help you:
-Chat with us on [Telegram](http://t.me/nymeacommunity)
+Chat with us on [Telegram](http://t.me/nymeacommunity) or [Discord](https://discord.com/channels/652494572298960926/652494572298960929)
 
-## Wiki and Documentation
+## Developing with nymea
 
-* A detailed description how to install and getting started with the *nymea* can be found in the
-
-    [nymea | github wiki](https://wiki.nymea.io).
-
-* A detailed documentation of the source code can be found in the
-
-    [nymea | developer documentation](https://doc.nymea.io).
+A detailed documentation on how to develop with *nymea* is available on the [nymea | developer documentation](https://nymea.io/documentation/developers/).
 
 
 ## License

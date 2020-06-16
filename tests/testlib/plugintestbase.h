@@ -30,9 +30,14 @@ QT_END_NAMESPACE \
 int main(int argc, char *argv[]) \
 { \
     QGuiApplication app(argc, argv); \
+    QCommandLineParser p; \
+    p.addHelpOption(); \
+    p.addPositionalArgument("pluginPath", "The path to the plugin ib to be tested."); \
+    p.process(app); \
+    if (parser.positionalArguments().count() != 1) qWarning() << qUtf8Printable(parser.helpText()); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     QTEST_ADD_GPU_BLACKLIST_SUPPORT \
-    TestObject tc; \
+    TestObject tc(p.positionalArguments().first()); \
     QTEST_SET_MAIN_SOURCE_PATH \
     return QTest::qExec(&tc, argc, argv); \
 }

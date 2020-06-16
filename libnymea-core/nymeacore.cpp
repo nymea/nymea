@@ -444,7 +444,7 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
                 qCWarning(dcRuleEngine()) << "Not executing rule action";
                 continue;
             }
-            Action action(actionTypeId, thing->id());
+            Action action(actionTypeId, thing->id(), Action::TriggeredByRule);
             action.setParams(params);
             actions.append(action);
         } else if (ruleAction.type() == RuleAction::TypeBrowser) {
@@ -497,7 +497,7 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
                     continue;
                 }
 
-                Action action = Action(actionType.id(), thing->id());
+                Action action = Action(actionType.id(), thing->id(), Action::TriggeredByRule);
                 action.setParams(params);
                 actions.append(action);
             }

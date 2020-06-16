@@ -46,9 +46,10 @@
 #include "action.h"
 
 /*! Construct an Action with the given \a deviceId and \a actionTypeId. */
-Action::Action(const ActionTypeId &actionTypeId, const ThingId &thingId) :
+Action::Action(const ActionTypeId &actionTypeId, const ThingId &thingId, TriggeredBy triggeredBy) :
     m_actionTypeId(actionTypeId),
-    m_thingId(thingId)
+    m_thingId(thingId),
+    m_triggeredBy(triggeredBy)
 {
 }
 
@@ -110,6 +111,24 @@ Param Action::param(const ParamTypeId &paramTypeId) const
         }
     }
     return Param(ParamTypeId(), QString());
+}
+
+/*! Gives an indication of the origin of this action.
+    Normally a plugin should treat all actions the same. There might be
+    rare exceptions tho:
+
+    - This might be important to know for some devices, e.g. garage doors which are required to
+      not close in some circumstances. I.e. if a garage door does not have a light sensor bar, it
+      must never close automatically by a rule to prevent damage and fulfill legal requirements.
+
+    - Other use cases might be to prioritize a single request by a user over a queue of automated
+      ones. I.e. if a script animation animates a color light, the plugin might build up a queue of
+      pending commands. To still react timely to a user interaction (e.g. power off), this
+      information might be of use to a plugin.
+*/
+Action::TriggeredBy Action::triggeredBy() const
+{
+    return m_triggeredBy;
 }
 
 /*! Copy the data to an \l{Action} from an \a other action. */

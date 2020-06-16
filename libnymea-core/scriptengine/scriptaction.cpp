@@ -111,9 +111,7 @@ void ScriptAction::execute(const QVariantMap &params)
         qCWarning(dcScriptEngine()) << "Either a valid actionTypeId or actionName is required";
         return;
     }
-    Action action;
-    action.setActionTypeId(actionType.id());
-    action.setThingId(ThingId(m_thingId));
+    Action action(actionType.id(), ThingId(m_thingId), Action::TriggeredByScript);
     ParamList paramList;
     foreach (const QString &paramNameOrId, params.keys()) {
         ParamType paramType;

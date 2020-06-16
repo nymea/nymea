@@ -853,10 +853,8 @@ void IntegrationPluginMock::triggerEvent(const EventTypeId &id)
 
     Thing *device = m_daemons.key(daemon);
 
-    Event event(id, device->id());
-
-    qCDebug(dcMock) << "Emitting event " << event.eventTypeId();
-    emit emitEvent(event);
+    qCDebug(dcMock) << "Emitting event " << id;
+    device->emitEvent(id);
 }
 
 void IntegrationPluginMock::onDisappear()

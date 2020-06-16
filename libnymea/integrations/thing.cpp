@@ -385,6 +385,12 @@ QString Thing::setupDisplayMessage() const
     return m_setupDisplayMessage;
 }
 
+/*! Emits an event from this thing to the system. */
+void Thing::emitEvent(const EventTypeId &eventTypeId, const ParamList &params)
+{
+    emit eventTriggered(Event(eventTypeId, m_id, params));
+}
+
 /*! Returns true if this thing has been auto-created (not created by the user) */
 bool Thing::autoCreated() const
 {

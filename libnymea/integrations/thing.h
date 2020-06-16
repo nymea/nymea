@@ -37,6 +37,7 @@
 #include "types/thingclass.h"
 #include "types/state.h"
 #include "types/param.h"
+#include "types/event.h"
 #include "types/browseritem.h"
 
 #include <QObject>
@@ -127,10 +128,10 @@ public:
     bool hasState(const StateTypeId &stateTypeId) const;
     void setStates(const States &states);
 
-    QVariant stateValue(const StateTypeId &stateTypeId) const;
-    void setStateValue(const StateTypeId &stateTypeId, const QVariant &value);
+    Q_INVOKABLE QVariant stateValue(const StateTypeId &stateTypeId) const;
+    Q_INVOKABLE void setStateValue(const StateTypeId &stateTypeId, const QVariant &value);
 
-    State state(const StateTypeId &stateTypeId) const;
+    Q_INVOKABLE State state(const StateTypeId &stateTypeId) const;
 
     ThingId parentId() const;
     void setParentId(const ThingId &parentId);
@@ -143,11 +144,15 @@ public:
     ThingError setupError() const;
     QString setupDisplayMessage() const;
 
+public slots:
+    void emitEvent(const EventTypeId &eventTypeId, const ParamList &params = ParamList());
+
 signals:
     void stateValueChanged(const StateTypeId &stateTypeId, const QVariant &value);
     void settingChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     void nameChanged();
     void setupStatusChanged();
+    void eventTriggered(const Event &event);
 
 private:
     friend class ThingManager;

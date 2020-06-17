@@ -402,9 +402,6 @@ ThingSetupInfo *ThingManagerImplementation::reconfigureThingInternal(Thing *thin
     }
     ParamList finalParams = buildParams(thing->thingClass().paramTypes(), params);
 
-    // first remove the thing in the plugin
-    plugin->thingRemoved(thing);
-
     // mark setup as incomplete
     thing->setSetupStatus(Thing::ThingSetupStatusInProgress, Thing::ThingErrorNoError);
 

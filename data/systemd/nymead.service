@@ -5,6 +5,9 @@ After=network.target
 Wants=network-online.target
 
 [Service]
+# FIXME: This should be moved to /var/lib eventually
+Environment=XDG_DATA_DIR=/etc
+Environment=XDG_CACHE_HOME=/var/cache
 ExecStart=/usr/bin/nymead -n
 StandardOutput=journal
 StandardError=journal

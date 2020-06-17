@@ -5,6 +5,7 @@
 #include "structmember.h"
 
 #include "integrations/thing.h"
+#include "loggingcategories.h"
 
 #include <QPointer>
 
@@ -18,16 +19,12 @@ typedef struct _thing {
 } PyThing;
 
 
-static int PyThing_init(PyThing */*self*/, PyObject */*args*/, PyObject */*kwds*/)
-// initialize PyVoice Object
-{
+static int PyThing_init(PyThing */*self*/, PyObject */*args*/, PyObject */*kwds*/) {
     return 0;
 }
 
 
-static void PyThing_dealloc(PyThing * self)
-// destruct the object
-{
+static void PyThing_dealloc(PyThing * self) {
     // FIXME: Why is this not called? Seems we're leaking...
     Q_ASSERT(false);
     Py_TYPE(self)->tp_free(self);
@@ -53,12 +50,12 @@ static int PyThing_setName(PyThing *self, PyObject *value, void */*closure*/){
 
 static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
 {
-    char *stateTypeIdStr;
-    PyObject *valueObj;
+    char *stateTypeIdStr = nullptr;
+    PyObject *valueObj = nullptr;
 
     // FIXME: is there any better way to do this? Value is a variant
     if (!PyArg_ParseTuple(args, "sO", &stateTypeIdStr, &valueObj)) {
-        qWarning() << "error parsing parameters";
+        qCWarning(dcThingManager) << "Error parsing parameters";
         return nullptr;
     }
 
@@ -68,7 +65,6 @@ static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
     PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
     const char *bytes = PyBytes_AS_STRING(str);
 
-    qWarning() << "params:" << stateTypeId << bytes << self;
     QVariant value(bytes);
 
     if (self->ptrObj != nullptr) {
@@ -81,6 +77,37 @@ static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
+static PyObject * PyThing_emitEvent(PyThing* self, PyObject* args)
+{
+    char *eventTypeIdStr = nullptr;
+    PyObject *valueObj = nullptr;
+
+    if (!PyArg_ParseTuple(args, "s|O", &eventTypeIdStr, &valueObj)) {
+        qCWarning(dcThingManager) << "Error parsing parameters";
+        return nullptr;
+    }
+
+    EventTypeId eventTypeId = EventTypeId(eventTypeIdStr);
+
+//    if (valueObj != nullptr) {
+//        PyObject* repr = PyObject_Repr(valueObj);
+//        PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+//        const char *bytes = PyBytes_AS_STRING(str);
+
+//        QVariant value(bytes);
+//    }
+
+
+    if (self->ptrObj != nullptr) {
+        QMetaObject::invokeMethod(self->ptrObj, "emitEvent", Qt::QueuedConnection, Q_ARG(EventTypeId, eventTypeId));
+    }
+
+//    Py_XDECREF(repr);
+//    Py_XDECREF(str);
+
+    Py_RETURN_NONE;
+}
+
 static PyGetSetDef PyThing_getseters[] = {
     {"name", (getter)PyThing_getName, (setter)PyThing_setName, "Thingname", nullptr},
     {nullptr , nullptr, nullptr, nullptr, nullptr} /* Sentinel */
@@ -88,7 +115,7 @@ static PyGetSetDef PyThing_getseters[] = {
 
 static PyMethodDef PyThing_methods[] = {
     { "setStateValue", (PyCFunction)PyThing_setStateValue,    METH_VARARGS,       "Set a things state value" },
-//    { "finish", (PyCFunction)PyThing_finish,    METH_VARARGS,       "finish a discovery" },
+    { "emitEvent", (PyCFunction)PyThing_emitEvent,    METH_VARARGS,       "Emits an event" },
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 

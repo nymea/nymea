@@ -126,23 +126,10 @@ void PythonIntegrationPlugin::initPython()
     // Import nymea module into this interpreter
     s_nymeaModule = PyImport_ImportModule("nymea");
 
-
-
-//    // Spawn a event loop for python
+    // We'll be using asyncio everywhere, so let's import it right away
     s_asyncio = PyImport_ImportModule("asyncio");
-//    PyObject *get_event_loop = PyObject_GetAttrString(s_asyncio, "get_event_loop");
-//    PyObject *loop = PyObject_CallFunctionObjArgs(get_event_loop, nullptr);
-//    PyObject *run_forever = PyObject_GetAttrString(loop, "run_forever");
 
-
-//    QtConcurrent::run([=](){
-//        PyGILState_STATE s = PyGILState_Ensure();
-//        PyObject_CallFunctionObjArgs(run_forever, nullptr);
-//        PyGILState_Release(s);
-//    });
-
-
-    // Need to release ths lock from the main thread before spawning the new thread
+    // Need to release ths lock from the main thread before spawning new threads
     s_mainThread = PyEval_SaveThread();
 }
 
@@ -408,14 +395,14 @@ void PythonIntegrationPlugin::exportBrowserItemActionTypes(const ActionTypes &ac
 
 void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObject *param)
 {
-    PyEval_RestoreThread(s_mainThread);
+    PyGILState_STATE s = PyGILState_Ensure();
 
     qCDebug(dcThingManager()) << "Calling python plugin function" << function;
     PyObject *pFunc = PyObject_GetAttrString(m_module, function.toUtf8());
     if(!pFunc || !PyCallable_Check(pFunc)) {
         Py_XDECREF(pFunc);
         qCWarning(dcThingManager()) << "Python plugin does not implement" << function;
-        s_mainThread = PyEval_SaveThread();
+        PyGILState_Release(s);
         return;
     }
 
@@ -429,12 +416,12 @@ void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     if (PyErr_Occurred()) {
         qCWarning(dcThingManager()) << "Error calling python method:";
         dumpError();
-        s_mainThread = PyEval_SaveThread();
+        PyGILState_Release(s);
         return;
     }
 
     if (QByteArray(future->ob_type->tp_name) != "coroutine") {
-        s_mainThread = PyEval_SaveThread();
+        PyGILState_Release(s);
         return;
     }
 
@@ -453,10 +440,10 @@ void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     PyObject *result = PyObject_CallFunctionObjArgs(add_done_callback, task_done, nullptr);
     dumpError();
 
-    PyObject *run_forever = PyObject_GetAttrString(loop, "run_until_complete");
+    PyObject *run_until_complete = PyObject_GetAttrString(loop, "run_until_complete");
     QtConcurrent::run([=](){
         PyGILState_STATE s = PyGILState_Ensure();
-        PyObject_CallFunctionObjArgs(run_forever, task, nullptr);
+        PyObject_CallFunctionObjArgs(run_until_complete, task, nullptr);
         PyGILState_Release(s);
     });
 
@@ -467,6 +454,6 @@ void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     Py_DECREF(add_done_callback);
     Py_DECREF(result);
 
-    s_mainThread = PyEval_SaveThread();
+    PyGILState_Release(s);
 }
 

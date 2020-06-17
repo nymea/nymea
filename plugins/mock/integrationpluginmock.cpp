@@ -133,6 +133,11 @@ void IntegrationPluginMock::discoverThings(ThingDiscoveryInfo *info)
 void IntegrationPluginMock::setupThing(ThingSetupInfo *info)
 {
     if (info->thing()->thingClassId() == mockThingClassId || info->thing()->thingClassId() == autoMockThingClassId) {
+        if (m_daemons.contains(info->thing())) {
+            // We already have a daemon, seem's we're reconfiguring
+            delete m_daemons.take(info->thing());
+        }
+
         bool async = false;
         bool broken = false;
         if (info->thing()->thingClassId() == mockThingClassId) {

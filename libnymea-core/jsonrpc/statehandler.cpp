@@ -54,6 +54,7 @@ StateHandler::StateHandler(QObject *parent) :
     JsonHandler(parent)
 {
     registerEnum<Types::Unit>();
+    registerEnum<Types::IOType>();
     registerObject<State>();
     registerObject<StateType>();
 

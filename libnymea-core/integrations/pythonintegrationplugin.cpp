@@ -128,23 +128,22 @@ void PythonIntegrationPlugin::initPython()
 
 
 
-
-
-    // Spawn a event loop for python
+//    // Spawn a event loop for python
     s_asyncio = PyImport_ImportModule("asyncio");
-    PyObject *get_event_loop = PyObject_GetAttrString(s_asyncio, "get_event_loop");
-    PyObject *loop = PyObject_CallFunctionObjArgs(get_event_loop, nullptr);
-    PyObject *run_forever = PyObject_GetAttrString(loop, "run_forever");
+//    PyObject *get_event_loop = PyObject_GetAttrString(s_asyncio, "get_event_loop");
+//    PyObject *loop = PyObject_CallFunctionObjArgs(get_event_loop, nullptr);
+//    PyObject *run_forever = PyObject_GetAttrString(loop, "run_forever");
+
+
+//    QtConcurrent::run([=](){
+//        PyGILState_STATE s = PyGILState_Ensure();
+//        PyObject_CallFunctionObjArgs(run_forever, nullptr);
+//        PyGILState_Release(s);
+//    });
+
 
     // Need to release ths lock from the main thread before spawning the new thread
     s_mainThread = PyEval_SaveThread();
-
-    QtConcurrent::run([=](){
-        PyGILState_STATE s = PyGILState_Ensure();
-        PyObject_CallFunctionObjArgs(run_forever, nullptr);
-        PyGILState_Release(s);
-    });
-
 }
 
 bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
@@ -205,11 +204,14 @@ void PythonIntegrationPlugin::init()
 
 void PythonIntegrationPlugin::discoverThings(ThingDiscoveryInfo *info)
 {
-    PyThingDiscoveryInfo *pyInfo = reinterpret_cast<PyThingDiscoveryInfo*>(_PyObject_New(&PyThingDiscoveryInfoType));
+    PyThingDiscoveryInfo *pyInfo = PyObject_New(PyThingDiscoveryInfo, &PyThingDiscoveryInfoType);
     pyInfo->ptrObj = info;
 
-    connect(info, &ThingDiscoveryInfo::finished, this, [=](){
-        PyObject_Free(pyInfo);
+    connect(info, &ThingDiscoveryInfo::destroyed, this, [=](){
+        PyGILState_STATE s = PyGILState_Ensure();
+        pyInfo->ptrObj = nullptr;
+        PyObject_Del(pyInfo);
+        PyGILState_Release(s);
     });
 
     callPluginFunction("discoverThings", reinterpret_cast<PyObject*>(pyInfo));
@@ -217,18 +219,34 @@ void PythonIntegrationPlugin::discoverThings(ThingDiscoveryInfo *info)
 
 void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
 {
-    PyThing *pyThing = reinterpret_cast<PyThing*>(_PyObject_New(&PyThingType));
+    PyThing *pyThing = PyObject_New(PyThing, &PyThingType);
     pyThing->ptrObj = info->thing();
-    m_things.insert(info->thing(), pyThing);
-    Py_INCREF(pyThing);
 
-    PyThingSetupInfo *pyInfo = reinterpret_cast<PyThingSetupInfo*>(_PyObject_New(&PyThingSetupInfoType));
+    PyThingSetupInfo *pyInfo = PyObject_New(PyThingSetupInfo, &PyThingSetupInfoType);
     pyInfo->ptrObj = info;
     pyInfo->thing = pyThing;
 
+
     connect(info, &ThingSetupInfo::finished, this, [=](){
-        PyObject_Free(pyInfo);
+        if (info->status() == Thing::ThingErrorNoError) {
+            m_things.insert(info->thing(), pyThing);
+        } else {
+            PyGILState_STATE s = PyGILState_Ensure();
+            Py_DECREF(pyThing);
+            PyGILState_Release(s);
+        }
     });
+    connect(info, &ThingSetupInfo::aborted, this, [=](){
+        PyGILState_STATE s = PyGILState_Ensure();
+        Py_DECREF(pyThing);
+        PyGILState_Release(s);
+    });
+    connect(info, &ThingSetupInfo::destroyed, this, [=](){
+        PyGILState_STATE s = PyGILState_Ensure();
+        PyObject_Del(pyInfo);
+        PyGILState_Release(s);
+    });
+
 
     callPluginFunction("setupThing", reinterpret_cast<PyObject*>(pyInfo));
 }
@@ -390,14 +408,14 @@ void PythonIntegrationPlugin::exportBrowserItemActionTypes(const ActionTypes &ac
 
 void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObject *param)
 {
-    PyGILState_STATE s = PyGILState_Ensure();
+    PyEval_RestoreThread(s_mainThread);
 
     qCDebug(dcThingManager()) << "Calling python plugin function" << function;
     PyObject *pFunc = PyObject_GetAttrString(m_module, function.toUtf8());
     if(!pFunc || !PyCallable_Check(pFunc)) {
         Py_XDECREF(pFunc);
         qCWarning(dcThingManager()) << "Python plugin does not implement" << function;
-        PyGILState_Release(s);
+        s_mainThread = PyEval_SaveThread();
         return;
     }
 
@@ -411,20 +429,21 @@ void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     if (PyErr_Occurred()) {
         qCWarning(dcThingManager()) << "Error calling python method:";
         dumpError();
-        PyGILState_Release(s);
+        s_mainThread = PyEval_SaveThread();
         return;
     }
 
     if (QByteArray(future->ob_type->tp_name) != "coroutine") {
-        PyGILState_Release(s);
+        s_mainThread = PyEval_SaveThread();
         return;
     }
 
-    PyObject *get_event_loop = PyObject_GetAttrString(s_asyncio, "get_event_loop");
-    PyObject *loop = PyObject_CallFunctionObjArgs(get_event_loop, nullptr);
+    // Spawn a event loop for python
+    PyObject *new_event_loop = PyObject_GetAttrString(s_asyncio, "new_event_loop");
+    PyObject *loop = PyObject_CallFunctionObjArgs(new_event_loop, nullptr);
 
-    PyObject *run_coroutine_threadsafe = PyObject_GetAttrString(s_asyncio, "run_coroutine_threadsafe");
-    PyObject *task = PyObject_CallFunctionObjArgs(run_coroutine_threadsafe, future, loop, nullptr);
+    PyObject *run_coroutine_threadsafe = PyObject_GetAttrString(loop, "create_task");
+    PyObject *task = PyObject_CallFunctionObjArgs(run_coroutine_threadsafe, future, nullptr);
     dumpError();
 
     PyObject *add_done_callback = PyObject_GetAttrString(task, "add_done_callback");
@@ -434,14 +453,20 @@ void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     PyObject *result = PyObject_CallFunctionObjArgs(add_done_callback, task_done, nullptr);
     dumpError();
 
-    Py_DECREF(get_event_loop);
+    PyObject *run_forever = PyObject_GetAttrString(loop, "run_until_complete");
+    QtConcurrent::run([=](){
+        PyGILState_STATE s = PyGILState_Ensure();
+        PyObject_CallFunctionObjArgs(run_forever, task, nullptr);
+        PyGILState_Release(s);
+    });
+
+    Py_DECREF(new_event_loop);
     Py_DECREF(loop);
     Py_DECREF(run_coroutine_threadsafe);
     Py_DECREF(task);
     Py_DECREF(add_done_callback);
-    Py_DECREF(get_event_loop);
     Py_DECREF(result);
 
-    PyGILState_Release(s);
+    s_mainThread = PyEval_SaveThread();
 }
 

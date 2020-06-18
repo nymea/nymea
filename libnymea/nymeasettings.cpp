@@ -74,56 +74,52 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QDebug>
+#include <QStandardPaths>
 
 /*! Constructs a \l{NymeaSettings} instance with the given \a role and \a parent. */
 NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     QObject(parent),
     m_role(role)
 {
-    QString settingsPrefix = QCoreApplication::instance()->organizationName() + "/";
-
     QString basePath;
-    if (!qgetenv("SNAP").isEmpty()) {
-        basePath = QString(qgetenv("SNAP_DATA")) + "/";
-        settingsPrefix.clear(); // We don't want that in the snappy case...
-    } else if (settingsPrefix == "nymea-test/") {
-        basePath = "/tmp/";
-    } else if (isRoot()) {
-        basePath = "/etc/";
-    } else {
-        basePath = QDir::homePath() + "/.config/";
-    }
-
     QString fileName;
     switch (role) {
     case SettingsRoleNone:
         break;
     case SettingsRoleThings:
+        basePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
         fileName = "things.conf";
         break;
     case SettingsRoleRules:
+        basePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
         fileName = "rules.conf";
         break;
     case SettingsRolePlugins:
+        basePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
         fileName = "plugins.conf";
         break;
     case SettingsRoleGlobal:
+        basePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
         fileName = "nymead.conf";
         break;
-    case SettingsRoleThingStates:
-        fileName = "thingstates.conf";
-        break;
     case SettingsRoleTags:
+        basePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
         fileName = "tags.conf";
         break;
     case SettingsRoleMqttPolicies:
+        basePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
         fileName = "mqttpolicies.conf";
         break;
     case SettingsRoleIOConnections:
+        basePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
         fileName = "ioconnections.conf";
         break;
+    case SettingsRoleThingStates:
+        basePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+        fileName = "thingstates.conf";
+        break;
     }
-    m_settings = new QSettings(basePath + settingsPrefix + fileName, QSettings::IniFormat, this);
+    m_settings = new QSettings(basePath + '/' + fileName, QSettings::IniFormat, this);
 }
 
 /*! Destructor of the NymeaSettings.*/

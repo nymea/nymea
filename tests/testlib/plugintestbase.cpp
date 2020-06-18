@@ -28,17 +28,27 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "nymeatestbase.h"
+#include "plugintestbase.h"
 
-using namespace nymeaserver;
+#include <QDebug>
 
-class TestPlugins: public NymeaTestBase
+
+
+TestPlugins::TestPlugins(const QString &pluginPath)
 {
-    Q_OBJECT
 
-private slots:
+    qDebug() << "fooo";
+    m_hardwareManager = new HardwareManagerMock(this);
+    qputenv("NYMEA_PLUGINS_PATH", pluginPath.toUtf8());
+    m_thingManager = new ThingManagerImplementation(m_hardwareManager, QLocale("en_EN"), this);
+}
 
-};
+void TestPlugins::init()
+{
+}
 
-#include "testplugins.moc"
-QTEST_MAIN(TestPlugins)
+void TestPlugins::testTest()
+{
+
+}
+

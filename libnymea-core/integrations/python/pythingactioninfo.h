@@ -1,12 +1,12 @@
-#ifndef PYTHINGSETUPINFO_H
-#define PYTHINGSETUPINFO_H
+#ifndef PYTHINGACTIONINFO_H
+#define PYTHINGACTIONINFO_H
 
 #include <Python.h>
 #include "structmember.h"
 
 #include "pything.h"
 
-#include "integrations/thingsetupinfo.h"
+#include "integrations/thingactioninfo.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -14,21 +14,25 @@
 
 typedef struct {
     PyObject_HEAD
-    ThingSetupInfo* info;
+    ThingActionInfo* info;
     PyThing *pyThing;
-} PyThingSetupInfo;
+    PyObject *pyActionTypeId;
+    PyObject *pyParams;
+} PyThingActionInfo;
 
 
-static int PyThingSetupInfo_init(PyThingSetupInfo */*self*/, PyObject */*args*/, PyObject */*kwds*/) {
+static int PyThingActionInfo_init(PyThingActionInfo */*self*/, PyObject */*args*/, PyObject */*kwds*/) {
     return 0;
 }
 
 
-static void PyThingSetupInfo_dealloc(PyThingSetupInfo * self) {
+static void PyThingActionInfo_dealloc(PyThingActionInfo * self) {
+    // FIXME: Why is this not called? Seems we're leaking...
+    Q_ASSERT(false);
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject * PyThingSetupInfo_finish(PyThingSetupInfo* self, PyObject* args) {
+static PyObject * PyThingActionInfo_finish(PyThingActionInfo* self, PyObject* args) {
     int status;
     char *message = nullptr;
 
@@ -47,20 +51,21 @@ static PyObject * PyThingSetupInfo_finish(PyThingSetupInfo* self, PyObject* args
     Py_RETURN_NONE;
 }
 
-static PyMemberDef PyThingSetupInfo_members[] = {
-    {"thing", T_OBJECT_EX, offsetof(PyThingSetupInfo, pyThing), 0, "Thing being setup in this setup transaction"},
+static PyMemberDef PyThingActionInfo_members[] = {
+    {"thing", T_OBJECT_EX, offsetof(PyThingActionInfo, pyThing), 0, "Thing this action is for"},
+    {"actionTypeId", T_OBJECT_EX, offsetof(PyThingActionInfo, pyActionTypeId), 0, "The action type id for this action"},
     {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
 };
 
-static PyMethodDef PyThingSetupInfo_methods[] = {
-    { "finish", (PyCFunction)PyThingSetupInfo_finish,    METH_VARARGS,       "finish a setup" },
+static PyMethodDef PyThingActionInfo_methods[] = {
+    { "finish", (PyCFunction)PyThingActionInfo_finish,    METH_VARARGS,       "finish an action" },
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
-static PyTypeObject PyThingSetupInfoType = {
+static PyTypeObject PyThingActionInfoType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.ThingSetupInfo",   /* tp_name */
-    sizeof(PyThingSetupInfo), /* tp_basicsize */
+    "nymea.ThingActionInfo",   /* tp_name */
+    sizeof(PyThingActionInfo), /* tp_basicsize */
     0,                         /* tp_itemsize */
     0,                         /* tp_dealloc */
     0,                         /* tp_vectorcall_offset */
@@ -78,24 +83,24 @@ static PyTypeObject PyThingSetupInfoType = {
     0,                         /* tp_setattro */
     0,                         /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,        /* tp_flags */
-    "Noddy objects",           /* tp_doc */ 
+    "Noddy objects",           /* tp_doc */
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
 
-static void registerThingSetupInfoType(PyObject *module) {
-    PyThingSetupInfoType.tp_new = PyType_GenericNew;
-    PyThingSetupInfoType.tp_dealloc=(destructor) PyThingSetupInfo_dealloc;
-    PyThingSetupInfoType.tp_basicsize = sizeof(PyThingSetupInfo);
-    PyThingSetupInfoType.tp_flags = Py_TPFLAGS_DEFAULT;
-    PyThingSetupInfoType.tp_doc = "ThingSetupInfo class";
-    PyThingSetupInfoType.tp_methods = PyThingSetupInfo_methods;
-    PyThingSetupInfoType.tp_members = PyThingSetupInfo_members;
-    PyThingSetupInfoType.tp_init = (initproc)PyThingSetupInfo_init;
+static void registerThingActionInfoType(PyObject *module) {
+    PyThingActionInfoType.tp_new = PyType_GenericNew;
+    PyThingActionInfoType.tp_dealloc=(destructor) PyThingActionInfo_dealloc;
+    PyThingActionInfoType.tp_basicsize = sizeof(PyThingActionInfo);
+    PyThingActionInfoType.tp_flags = Py_TPFLAGS_DEFAULT;
+    PyThingActionInfoType.tp_doc = "ThingActionInfo class";
+    PyThingActionInfoType.tp_methods = PyThingActionInfo_methods;
+    PyThingActionInfoType.tp_members = PyThingActionInfo_members;
+    PyThingActionInfoType.tp_init = (initproc)PyThingActionInfo_init;
 
-    if (PyType_Ready(&PyThingSetupInfoType) < 0) {
+    if (PyType_Ready(&PyThingActionInfoType) < 0) {
         return;
     }
-    PyModule_AddObject(module, "ThingSetupInfo", (PyObject *)&PyThingSetupInfoType);
+    PyModule_AddObject(module, "ThingActionInfo", (PyObject *)&PyThingActionInfoType);
 }
 
 
@@ -103,4 +108,4 @@ static void registerThingSetupInfoType(PyObject *module) {
 
 #pragma GCC diagnostic pop
 
-#endif // PYTHINGSETUPINFO_H
+#endif // PYTHINGACTIONINFO_H

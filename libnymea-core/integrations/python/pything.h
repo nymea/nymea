@@ -4,6 +4,8 @@
 #include <Python.h>
 #include "structmember.h"
 
+#include "pyparam.h"
+
 #include "integrations/thing.h"
 #include "loggingcategories.h"
 
@@ -15,7 +17,7 @@
 
 typedef struct _thing {
     PyObject_HEAD
-    Thing *ptrObj;
+    Thing *thing;
 } PyThing;
 
 
@@ -25,26 +27,24 @@ static int PyThing_init(PyThing */*self*/, PyObject */*args*/, PyObject */*kwds*
 
 
 static void PyThing_dealloc(PyThing * self) {
-    // FIXME: Why is this not called? Seems we're leaking...
-    Q_ASSERT(false);
     Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *PyThing_getName(PyThing *self, void */*closure*/)
 {
-    if (!self->ptrObj) {
+    if (!self->thing) {
         PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
         return nullptr;
     }
     // FIXME: Needs blocking queued connection
-    PyObject *ret = PyUnicode_FromString(self->ptrObj->name().toUtf8().data());
+    PyObject *ret = PyUnicode_FromString(self->thing->name().toUtf8().data());
     Py_INCREF(ret);
     return ret;
 }
 
 static int PyThing_setName(PyThing *self, PyObject *value, void */*closure*/){
     // FIXME: Needs queued connection
-    self->ptrObj->setName(QString(PyUnicode_AsUTF8(value)));
+    self->thing->setName(QString(PyUnicode_AsUTF8(value)));
     return 0;
 }
 
@@ -67,8 +67,8 @@ static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
 
     QVariant value(bytes);
 
-    if (self->ptrObj != nullptr) {
-        QMetaObject::invokeMethod(self->ptrObj, "setStateValue", Qt::QueuedConnection, Q_ARG(StateTypeId, stateTypeId), Q_ARG(QVariant, value));
+    if (self->thing != nullptr) {
+        QMetaObject::invokeMethod(self->thing, "setStateValue", Qt::QueuedConnection, Q_ARG(StateTypeId, stateTypeId), Q_ARG(QVariant, value));
     }
 
     Py_XDECREF(repr);
@@ -88,22 +88,39 @@ static PyObject * PyThing_emitEvent(PyThing* self, PyObject* args)
     }
 
     EventTypeId eventTypeId = EventTypeId(eventTypeIdStr);
+    ParamList params;
 
-//    if (valueObj != nullptr) {
-//        PyObject* repr = PyObject_Repr(valueObj);
-//        PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
-//        const char *bytes = PyBytes_AS_STRING(str);
+    if (valueObj != nullptr) {
+        PyObject *iter = PyObject_GetIter(valueObj);
 
-//        QVariant value(bytes);
-//    }
+        while (iter) {
+            PyObject *next = PyIter_Next(iter);
+            if (!next) {
+                break;
+            }
+            if (next->ob_type != &PyParamType) {
+                qCWarning(dcThingManager()) << "Invalid parameter passed in param list";
+                continue;
+            }
 
+            PyParam *pyParam = reinterpret_cast<PyParam*>(next);
+            ParamTypeId paramTypeId = ParamTypeId(PyUnicode_AsUTF8(pyParam->pyParamTypeId));
 
-    if (self->ptrObj != nullptr) {
-        QMetaObject::invokeMethod(self->ptrObj, "emitEvent", Qt::QueuedConnection, Q_ARG(EventTypeId, eventTypeId));
+            // Is there a better way to convert a PyObject to a QVariant?
+            PyObject* repr = PyObject_Repr(pyParam->pyValue);
+            PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+            const char *bytes = PyBytes_AS_STRING(str);
+            Py_XDECREF(repr);
+            Py_XDECREF(str);
+
+            QVariant value(bytes);
+            params.append(Param(paramTypeId, value));
+        }
     }
 
-//    Py_XDECREF(repr);
-//    Py_XDECREF(str);
+    if (self->thing != nullptr) {
+        QMetaObject::invokeMethod(self->thing, "emitEvent", Qt::QueuedConnection, Q_ARG(EventTypeId, eventTypeId), Q_ARG(ParamList, params));
+    }
 
     Py_RETURN_NONE;
 }
@@ -153,7 +170,7 @@ static void registerThingType(PyObject *module)
     PyThingType.tp_doc = "Thing class";
     PyThingType.tp_methods = PyThing_methods;
     PyThingType.tp_getset = PyThing_getseters;
-//    PyThingType.tp_members = PyThingSetupInfo_members;
+    //    PyThingType.tp_members = PyThingSetupInfo_members;
     PyThingType.tp_init = reinterpret_cast<initproc>(PyThing_init);
 
     if (PyType_Ready(&PyThingType) < 0) {

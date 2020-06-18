@@ -4,6 +4,8 @@
 #include "python/pything.h"
 #include "python/pythingdiscoveryinfo.h"
 #include "python/pythingsetupinfo.h"
+#include "python/pyparam.h"
+#include "python/pythingactioninfo.h"
 
 #include "pythonintegrationplugin.h"
 
@@ -14,13 +16,9 @@
 #include <QJsonDocument>
 #include <QtConcurrent/QtConcurrentRun>
 
-QHash<PyObject*, PyThreadState*> s_modules;
 PyThreadState* PythonIntegrationPlugin::s_mainThread = nullptr;
 PyObject* PythonIntegrationPlugin::s_nymeaModule = nullptr;
 PyObject* PythonIntegrationPlugin::s_asyncio = nullptr;
-
-
-
 
 
 // Write to stdout/stderr
@@ -98,10 +96,12 @@ PyMODINIT_FUNC PyInit_nymea(void)
 
 
     registerNymeaLoggingHandler(m);
+    registerParamType(m);
     registerThingType(m);
     registerThingDescriptorType(m);
     registerThingDiscoveryInfoType(m);
     registerThingSetupInfoType(m);
+    registerThingActionInfoType(m);
 
     return m;
 }
@@ -192,11 +192,11 @@ void PythonIntegrationPlugin::init()
 void PythonIntegrationPlugin::discoverThings(ThingDiscoveryInfo *info)
 {
     PyThingDiscoveryInfo *pyInfo = PyObject_New(PyThingDiscoveryInfo, &PyThingDiscoveryInfoType);
-    pyInfo->ptrObj = info;
+    pyInfo->info = info;
 
     connect(info, &ThingDiscoveryInfo::destroyed, this, [=](){
         PyGILState_STATE s = PyGILState_Ensure();
-        pyInfo->ptrObj = nullptr;
+        pyInfo->info = nullptr;
         PyObject_Del(pyInfo);
         PyGILState_Release(s);
     });
@@ -207,11 +207,11 @@ void PythonIntegrationPlugin::discoverThings(ThingDiscoveryInfo *info)
 void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
 {
     PyThing *pyThing = PyObject_New(PyThing, &PyThingType);
-    pyThing->ptrObj = info->thing();
+    pyThing->thing = info->thing();
 
     PyThingSetupInfo *pyInfo = PyObject_New(PyThingSetupInfo, &PyThingSetupInfoType);
-    pyInfo->ptrObj = info;
-    pyInfo->thing = pyThing;
+    pyInfo->info = info;
+    pyInfo->pyThing = pyThing;
 
 
     connect(info, &ThingSetupInfo::finished, this, [=](){
@@ -230,7 +230,8 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
     });
     connect(info, &ThingSetupInfo::destroyed, this, [=](){
         PyGILState_STATE s = PyGILState_Ensure();
-        PyObject_Del(pyInfo);
+        pyInfo->info = nullptr;
+        Py_DECREF(pyInfo);
         PyGILState_Release(s);
     });
 
@@ -244,6 +245,32 @@ void PythonIntegrationPlugin::postSetupThing(Thing *thing)
     callPluginFunction("postSetupThing", reinterpret_cast<PyObject*>(pyThing));
 }
 
+void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
+{
+    PyThing *pyThing = m_things.value(info->thing());
+
+    PyGILState_STATE s = PyGILState_Ensure();
+
+    PyThingActionInfo *pyInfo = PyObject_New(PyThingActionInfo, &PyThingActionInfoType);
+    pyInfo->info = info;
+    pyInfo->pyThing = pyThing;
+    pyInfo->pyActionTypeId = PyUnicode_FromString(info->action().actionTypeId().toString().toUtf8());
+    pyInfo->pyParams = PyParam_FromParamList(info->action().params());
+
+    PyGILState_Release(s);
+
+    connect(info, &ThingActionInfo::destroyed, this, [=](){
+        PyGILState_STATE s = PyGILState_Ensure();
+        pyInfo->pyActionTypeId = nullptr;
+        Py_DECREF(pyInfo->pyActionTypeId);
+        pyInfo->info = nullptr;
+        Py_DECREF(pyInfo);
+        PyGILState_Release(s);
+    });
+
+    callPluginFunction("executeAction", reinterpret_cast<PyObject*>(pyInfo));
+}
+
 void PythonIntegrationPlugin::thingRemoved(Thing *thing)
 {
     PyThing *pyThing = m_things.value(thing);
@@ -252,9 +279,8 @@ void PythonIntegrationPlugin::thingRemoved(Thing *thing)
 
     PyGILState_STATE s = PyGILState_Ensure();
 
-    pyThing->ptrObj = nullptr;
+    pyThing->thing = nullptr;
     Py_DECREF(pyThing);
-
 
     PyGILState_Release(s);
 

@@ -19,20 +19,16 @@
 
 typedef struct {
     PyObject_HEAD
-    ThingDiscoveryInfo* ptrObj;
+    ThingDiscoveryInfo* info;
 } PyThingDiscoveryInfo;
 
 
-static int PyThingDiscoveryInfo_init(PyThingDiscoveryInfo */*self*/, PyObject */*args*/, PyObject */*kwds*/)
-// initialize PyVoice Object
-{
+static int PyThingDiscoveryInfo_init(PyThingDiscoveryInfo */*self*/, PyObject */*args*/, PyObject */*kwds*/) {
     return 0;
 }
 
 
-static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo * self)
-// destruct the object
-{
+static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo * self) {
     // FIXME: Why is this not called? Seems we're leaking...
     Q_ASSERT(false);
     Py_TYPE(self)->tp_free(self);
@@ -41,20 +37,20 @@ static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo * self)
 static PyObject * PyThingDiscoveryInfo_finish(PyThingDiscoveryInfo* self, PyObject* args)
 {
     int status;
-    char *message;
+    char *message = nullptr;
 
-    if (PyArg_ParseTuple(args, "is", &status, &message)) {
-        (self->ptrObj)->finish(static_cast<Thing::ThingError>(status), QString(message));
-        Py_RETURN_NONE;
+    if (!PyArg_ParseTuple(args, "i|s", &status, &message)) {
+        PyErr_SetString(PyExc_TypeError, "Invalid arguments in finish call. Expected: finish(ThingError, message = \"\"");
+        return nullptr;
     }
 
-    if (PyArg_ParseTuple(args, "i", &status)) {
-        (self->ptrObj)->finish(static_cast<Thing::ThingError>(status));
-        Py_RETURN_NONE;
-    }
+    Thing::ThingError thingError = static_cast<Thing::ThingError>(status);
+    QString displayMessage = message != nullptr ? QString(message) : QString();
 
-    PyErr_SetString(PyExc_TypeError, "Invalid arguments in finish call. Expected: finish(ThingError, message = \"\"");
-    return nullptr;
+    if (self->info) {
+        QMetaObject::invokeMethod(self->info, "finish", Qt::QueuedConnection, Q_ARG(Thing::ThingError, thingError), Q_ARG(QString, displayMessage));
+    }
+    Py_RETURN_NONE;
 }
 
 static PyObject * PyThingDiscoveryInfo_addDescriptor(PyThingDiscoveryInfo* self, PyObject* args) {
@@ -72,21 +68,23 @@ static PyObject * PyThingDiscoveryInfo_addDescriptor(PyThingDiscoveryInfo* self,
     PyThingDescriptor *pyDescriptor = (PyThingDescriptor*)pyObj;
 
     ThingClassId thingClassId;
-    if (pyDescriptor->thingClassId) {
-        thingClassId = ThingClassId(PyUnicode_AsUTF8(pyDescriptor->thingClassId));
+    if (pyDescriptor->pyThingClassId) {
+        thingClassId = ThingClassId(PyUnicode_AsUTF8(pyDescriptor->pyThingClassId));
     }
     QString name;
-    if (pyDescriptor->name) {
-        name = QString::fromUtf8(PyUnicode_AsUTF8(pyDescriptor->name));
+    if (pyDescriptor->pyName) {
+        name = QString::fromUtf8(PyUnicode_AsUTF8(pyDescriptor->pyName));
     }
     QString description;
-    if (pyDescriptor->description) {
-        description = QString::fromUtf8(PyUnicode_AsUTF8(pyDescriptor->description));
+    if (pyDescriptor->pyDescription) {
+        description = QString::fromUtf8(PyUnicode_AsUTF8(pyDescriptor->pyDescription));
     }
 
     ThingDescriptor descriptor(thingClassId, name, description);
 
-    self->ptrObj->addThingDescriptor(descriptor);
+    if (self->info) {
+        QMetaObject::invokeMethod(self->info, "addThingDescriptor", Qt::QueuedConnection, Q_ARG(ThingDescriptor, descriptor));
+    }
 
     return Py_BuildValue("");
 }

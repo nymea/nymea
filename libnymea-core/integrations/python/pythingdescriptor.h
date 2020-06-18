@@ -13,10 +13,9 @@
 
 typedef struct {
     PyObject_HEAD
-    PyObject* thingClassId;
-    PyObject* name;
-    PyObject* description;
-    ThingDescriptor descriptor;
+    PyObject* pyThingClassId;
+    PyObject* pyName;
+    PyObject* pyDescription;
 } PyThingDescriptor;
 
 static PyMethodDef PyThingDescriptor_methods[] = {
@@ -25,9 +24,9 @@ static PyMethodDef PyThingDescriptor_methods[] = {
 };
 
 static PyMemberDef PyThingDescriptor_members[] = {
-    {"thingClassId", T_OBJECT_EX, offsetof(PyThingDescriptor, thingClassId), 0, "Descriptor thingClassId"},
-    {"name", T_OBJECT_EX, offsetof(PyThingDescriptor, name), 0, "Descriptor name"},
-    {"description", T_OBJECT_EX, offsetof(PyThingDescriptor, description), 0, "Descriptor description"},
+    {"thingClassId", T_OBJECT_EX, offsetof(PyThingDescriptor, pyThingClassId), 0, "Descriptor thingClassId"},
+    {"name", T_OBJECT_EX, offsetof(PyThingDescriptor, pyName), 0, "Descriptor name"},
+    {"description", T_OBJECT_EX, offsetof(PyThingDescriptor, pyDescription), 0, "Descriptor description"},
     {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
 };
 
@@ -35,28 +34,25 @@ static PyMemberDef PyThingDescriptor_members[] = {
 static int PyThingDescriptor_init(PyThingDescriptor *self, PyObject *args, PyObject *kwds)
 {
     static char *kwlist[] = {"thingClassId", "name", "description", nullptr};
-    PyObject *thingClassId = nullptr, *name = nullptr, *description = nullptr, *tmp = nullptr;
+    PyObject *thingClassId = nullptr, *name = nullptr, *description = nullptr;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist, &thingClassId, &name, &description))
         return -1;
 
     if (thingClassId) {
-        tmp = self->thingClassId;
+        Py_XDECREF(self->pyThingClassId);
         Py_INCREF(thingClassId);
-        self->thingClassId = thingClassId;
-        Py_XDECREF(tmp);
+        self->pyThingClassId = thingClassId;
     }
     if (name) {
-        tmp = self->name;
+        Py_XDECREF(self->pyName);
         Py_INCREF(name);
-        self->name = name;
-        Py_XDECREF(tmp);
+        self->pyName = name;
     }
     if (description) {
-        tmp = self->description;
+        Py_XDECREF(self->pyDescription);
         Py_INCREF(description);
-        self->description = description;
-        Py_XDECREF(tmp);
+        self->pyDescription = description;
     }
     return 0;
 }

@@ -10,6 +10,7 @@ DEFINES += LIBNYMEA_LIBRARY
 QMAKE_LFLAGS += -fPIC
 
 HEADERS += \
+    hardware/zigbee/zigbeehardwarereource.h \
     integrations/browseractioninfo.h \
     integrations/browseritemactioninfo.h \
     integrations/browseritemresult.h \
@@ -102,6 +103,7 @@ HEADERS += \
     experiences/experienceplugin.h \
 
 SOURCES += \
+    hardware/zigbee/zigbeehardwarereource.cpp \
     integrations/browseractioninfo.cpp \
     integrations/browseritemactioninfo.cpp \
     integrations/browseritemresult.cpp \

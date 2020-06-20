@@ -46,6 +46,8 @@
 #include "time/timemanager.h"
 #include "hardwaremanagerimplementation.h"
 
+#include "zigbee/zigbeemanager.h"
+
 #include "debugserverhandler.h"
 
 #include <QObject>
@@ -66,6 +68,7 @@ class System;
 class ExperienceManager;
 class ScriptEngine;
 class CloudManager;
+class ZigbeeManager;
 
 class NymeaCore : public QObject
 {
@@ -106,6 +109,7 @@ public:
     DebugServerHandler *debugServerHandler() const;
     TagsStorage *tagsStorage() const;
     Platform *platform() const;
+    ZigbeeManager *zigbeeManager() const;
 
     static QStringList getAvailableLanguages();
     static QStringList loggingFilters();
@@ -149,6 +153,7 @@ private:
     UserManager *m_userManager;
     System *m_system;
     ExperienceManager *m_experienceManager;
+    ZigbeeManager *m_zigbeeManager;
 
     QList<RuleId> m_executingRules;
 

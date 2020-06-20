@@ -106,6 +106,9 @@ void NymeaCore::init() {
     qCDebug(dcCore) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_platform, m_configuration, this);
 
+    qCDebug(dcCore()) << "Create Zigbee Manager";
+    m_zigbeeManager = new ZigbeeManager(this);
+
     qCDebug(dcCore) << "Creating Hardware Manager";
     m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), this);
 
@@ -647,6 +650,11 @@ TagsStorage *NymeaCore::tagsStorage() const
 Platform *NymeaCore::platform() const
 {
     return m_platform;
+}
+
+ZigbeeManager *NymeaCore::zigbeeManager() const
+{
+    return m_zigbeeManager;
 }
 
 void NymeaCore::gotEvent(const Event &event)

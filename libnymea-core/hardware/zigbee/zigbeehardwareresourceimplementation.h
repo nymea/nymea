@@ -28,54 +28,46 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGERIMPLEMENTATION_H
-#define HARDWAREMANAGERIMPLEMENTATION_H
+#ifndef ZIGBEEHARDWARERESOURCEIMPLEMENTATION_H
+#define ZIGBEEHARDWARERESOURCEIMPLEMENTATION_H
 
 #include <QObject>
-#include <QDBusConnection>
-#include <QNetworkAccessManager>
 
-#include "hardwaremanager.h"
+#include "zigbeenetwork.h"
+#include "hardware/zigbee/zigbeehardwarereource.h"
 
 namespace nymeaserver {
 
-class Platform;
-class MqttBroker;
-
-class HardwareManagerImplementation : public HardwareManager
+class ZigbeeHardwareResourceImplementation : public ZigbeeHardwareResource
 {
     Q_OBJECT
 
 public:
-    explicit HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, QObject *parent = nullptr);
-    ~HardwareManagerImplementation() override;
+    explicit ZigbeeHardwareResourceImplementation(QObject *parent = nullptr);
 
-    Radio433 *radio433() override;
-    PluginTimerManager *pluginTimerManager() override;
-    NetworkAccessManager *networkManager() override;
-    UpnpDiscovery *upnpDiscovery() override;
-    PlatformZeroConfController *zeroConfController() override;
-    BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
-    MqttProvider *mqttProvider() override;
-    I2CManager *i2cManager() override;
-    ZigbeeHardwareResource *zigbeeManager() override;
+    bool available() const override;
+    bool enabled() const override;
+
+    void setZigbeeNetwork(ZigbeeNetwork *network);
 
 private:
-    QNetworkAccessManager *m_networkAccessManager = nullptr;
+    bool m_available = false;
+    bool m_enabled = false;
 
-    Platform *m_platform = nullptr;
+    ZigbeeNetwork *m_zigbeeNetwork = nullptr;
 
-    // Hardware Resources
-    PluginTimerManager *m_pluginTimerManager = nullptr;
-    Radio433 *m_radio433 = nullptr;
-    NetworkAccessManager *m_networkManager = nullptr;
-    UpnpDiscovery *m_upnpDiscovery = nullptr;
-    BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
-    MqttProvider *m_mqttProvider = nullptr;
-    I2CManager *m_i2cManager = nullptr;
-    ZigbeeHardwareResource *m_zigbeeManager = nullptr;
+protected:
+    void setEnabled(bool enabled) override;
+
+private slots:
+    void onZigbeeNetworkStateChanged(ZigbeeNetwork::State state);
+
+public slots:
+    bool enable();
+    bool disable();
+
 };
 
 }
 
-#endif // HARDWAREMANAGERIMPLEMENTATION_H
+#endif // ZIGBEEHARDWARERESOURCEIMPLEMENTATION_H

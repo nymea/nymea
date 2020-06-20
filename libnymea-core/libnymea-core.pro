@@ -8,7 +8,7 @@ INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 
 CONFIG += link_pkgconfig
-PKGCONFIG += nymea-mqtt nymea-networkmanager
+PKGCONFIG += nymea-mqtt nymea-networkmanager nymea-zigbee
 
 target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target
@@ -19,10 +19,12 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 
 HEADERS += nymeacore.h \
+    hardware/zigbee/zigbeehardwareresourceimplementation.h \
     integrations/plugininfocache.h \
     integrations/thingmanagerimplementation.h \
     integrations/translator.h \
     experiences/experiencemanager.h \
+    jsonrpc/zigbeehandler.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
     ruleengine/stateevaluator.h \
@@ -94,14 +96,17 @@ HEADERS += nymeacore.h \
     tagging/tag.h \
     cloud/cloudtransport.h \
     debugreportgenerator.h \
-    platform/platform.h \
+    platform/platform.h \ \
+    zigbee/zigbeemanager.h
 
 
 SOURCES += nymeacore.cpp \
+    hardware/zigbee/zigbeehardwareresourceimplementation.cpp \
     integrations/plugininfocache.cpp \
     integrations/thingmanagerimplementation.cpp \
     integrations/translator.cpp \
     experiences/experiencemanager.cpp \
+    jsonrpc/zigbeehandler.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \
     ruleengine/stateevaluator.cpp \
@@ -172,7 +177,8 @@ SOURCES += nymeacore.cpp \
     tagging/tag.cpp \
     cloud/cloudtransport.cpp \
     debugreportgenerator.cpp \
-    platform/platform.cpp \
+    platform/platform.cpp \ \
+    zigbee/zigbeemanager.cpp
 
 
 versionAtLeast(QT_VERSION, 5.12.0) {

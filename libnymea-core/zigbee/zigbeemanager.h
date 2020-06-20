@@ -28,54 +28,33 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGERIMPLEMENTATION_H
-#define HARDWAREMANAGERIMPLEMENTATION_H
+#ifndef ZIGBEEMANAGER_H
+#define ZIGBEEMANAGER_H
 
 #include <QObject>
-#include <QDBusConnection>
-#include <QNetworkAccessManager>
 
-#include "hardwaremanager.h"
+#include <nymea-zigbee/zigbeenetworkmanager.h>
 
 namespace nymeaserver {
 
-class Platform;
-class MqttBroker;
-
-class HardwareManagerImplementation : public HardwareManager
+class ZigbeeManager : public QObject
 {
     Q_OBJECT
-
 public:
-    explicit HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, QObject *parent = nullptr);
-    ~HardwareManagerImplementation() override;
+    explicit ZigbeeManager(QObject *parent = nullptr);
 
-    Radio433 *radio433() override;
-    PluginTimerManager *pluginTimerManager() override;
-    NetworkAccessManager *networkManager() override;
-    UpnpDiscovery *upnpDiscovery() override;
-    PlatformZeroConfController *zeroConfController() override;
-    BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
-    MqttProvider *mqttProvider() override;
-    I2CManager *i2cManager() override;
-    ZigbeeHardwareResource *zigbeeManager() override;
+    bool available() const;
+
+    void setupNetwork(const QString serialPort, qint32 baudrate, ZigbeeNetworkManager::BackendType);
 
 private:
-    QNetworkAccessManager *m_networkAccessManager = nullptr;
+    ZigbeeNetwork *m_zigbeeNetwork = nullptr;
 
-    Platform *m_platform = nullptr;
+signals:
+    void zigbeeNetworkChanged(ZigbeeNetwork *zigbeeNetwork);
 
-    // Hardware Resources
-    PluginTimerManager *m_pluginTimerManager = nullptr;
-    Radio433 *m_radio433 = nullptr;
-    NetworkAccessManager *m_networkManager = nullptr;
-    UpnpDiscovery *m_upnpDiscovery = nullptr;
-    BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
-    MqttProvider *m_mqttProvider = nullptr;
-    I2CManager *m_i2cManager = nullptr;
-    ZigbeeHardwareResource *m_zigbeeManager = nullptr;
 };
 
 }
 
-#endif // HARDWAREMANAGERIMPLEMENTATION_H
+#endif // ZIGBEEMANAGER_H

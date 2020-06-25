@@ -161,11 +161,11 @@ void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int 
     globalSettings.endGroup();
 
     if (serverPort == -1) {
-        qCWarning(dcUpnp()) << "No matching WebServer configuration found. Discarding UPnP request! UPnP requires a plaintext webserver.";
+        qCDebug(dcUpnp()) << "No matching WebServer configuration found. Discarding UPnP request! UPnP requires a plaintext webserver.";
         return;
     }
     if (useSSL) {
-        qCWarning(dcUpnp()) << "Could not find a WebServer without SSL. Using one with SSL. This will not work with many clients.";
+        qCDebug(dcUpnp()) << "Could not find a WebServer without SSL. Using one with SSL. This will not work with many clients.";
     }
 
     foreach (const QNetworkInterface &interface,  QNetworkInterface::allInterfaces()) {

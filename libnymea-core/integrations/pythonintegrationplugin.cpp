@@ -129,7 +129,7 @@ void PythonIntegrationPlugin::initPython()
     // We'll be using asyncio everywhere, so let's import it right away
     s_asyncio = PyImport_ImportModule("asyncio");
 
-    // Need to release ths lock from the main thread before spawning new threads
+    // Need to release the lock from the main thread before spawning new threads
     s_mainThread = PyEval_SaveThread();
 }
 
@@ -149,6 +149,8 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
         return false;
     }
     m_metaData = PluginMetadata(jsonDoc.object());
+
+    qWarning() << "main thread" << QThread::currentThread();
 
 
     PyGILState_STATE s = PyGILState_Ensure();
@@ -229,10 +231,13 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
         PyGILState_Release(s);
     });
     connect(info, &ThingSetupInfo::destroyed, this, [=](){
-        PyGILState_STATE s = PyGILState_Ensure();
+        PyEval_RestoreThread(s_mainThread);
+
+//        PyGILState_STATE s = PyGILState_Ensure();
         pyInfo->info = nullptr;
         Py_DECREF(pyInfo);
-        PyGILState_Release(s);
+//        PyGILState_Release(s);
+        s_mainThread = PyEval_SaveThread();
     });
 
 
@@ -262,7 +267,7 @@ void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
     connect(info, &ThingActionInfo::destroyed, this, [=](){
         PyGILState_STATE s = PyGILState_Ensure();
         pyInfo->pyActionTypeId = nullptr;
-        Py_DECREF(pyInfo->pyActionTypeId);
+        Py_XDECREF(pyInfo->pyActionTypeId);
         pyInfo->info = nullptr;
         Py_DECREF(pyInfo);
         PyGILState_Release(s);
@@ -435,7 +440,7 @@ void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
 
     dumpError();
 
-    PyObject *future = PyObject_CallFunctionObjArgs(pFunc, param, nullptr);
+    PyObject *result = PyObject_CallFunctionObjArgs(pFunc, param, nullptr);
 
     Py_XDECREF(pFunc);
 
@@ -446,36 +451,51 @@ void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
         return;
     }
 
-    if (QByteArray(future->ob_type->tp_name) != "coroutine") {
+    if (QByteArray(result->ob_type->tp_name) != "coroutine") {
+        Py_DECREF(result);
         PyGILState_Release(s);
         return;
     }
+//    PyObject *coro = result;
+
+//    PyObject *get_running_loop = PyObject_GetAttrString(s_asyncio, "get_event_loop");
+//    PyObject *loop = PyObject_CallFunctionObjArgs(get_running_loop, nullptr);
+//    Py_DECREF(get_running_loop);
+//    PyObject *run_in_executor = PyObject_GetAttrString(loop, "run_in_executor");
+//    result = PyObject_CallFunctionObjArgs(run_in_executor, Py_None, coro);
+
+//    Py_DECREF(result);
+//    Py_DECREF(coro);
 
     // Spawn a event loop for python
     PyObject *new_event_loop = PyObject_GetAttrString(s_asyncio, "new_event_loop");
     PyObject *loop = PyObject_CallFunctionObjArgs(new_event_loop, nullptr);
 
-    PyObject *run_coroutine_threadsafe = PyObject_GetAttrString(loop, "create_task");
-    PyObject *task = PyObject_CallFunctionObjArgs(run_coroutine_threadsafe, future, nullptr);
+    Py_DECREF(new_event_loop);
+
+    PyObject *create_task = PyObject_GetAttrString(loop, "create_task");
+    PyObject *task = PyObject_CallFunctionObjArgs(create_task, result, nullptr);
     dumpError();
+
+    Py_DECREF(result);
 
     PyObject *add_done_callback = PyObject_GetAttrString(task, "add_done_callback");
     dumpError();
 
     PyObject *task_done = PyObject_GetAttrString(s_nymeaModule, "task_done");
-    PyObject *result = PyObject_CallFunctionObjArgs(add_done_callback, task_done, nullptr);
+    result = PyObject_CallFunctionObjArgs(add_done_callback, task_done, nullptr);
     dumpError();
 
     PyObject *run_until_complete = PyObject_GetAttrString(loop, "run_until_complete");
     QtConcurrent::run([=](){
+        qWarning() << "new thread for func" << function << QThread::currentThread();
         PyGILState_STATE s = PyGILState_Ensure();
         PyObject_CallFunctionObjArgs(run_until_complete, task, nullptr);
         PyGILState_Release(s);
     });
 
-    Py_DECREF(new_event_loop);
     Py_DECREF(loop);
-    Py_DECREF(run_coroutine_threadsafe);
+    Py_DECREF(create_task);
     Py_DECREF(task);
     Py_DECREF(add_done_callback);
     Py_DECREF(result);

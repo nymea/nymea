@@ -183,6 +183,7 @@ ThingClass Thing::thingClass() const
 /*! Returns the name of this Thing. This is visible to the user. */
 QString Thing::name() const
 {
+    qWarning() << "thing name called";
     return m_name;
 }
 
@@ -233,6 +234,7 @@ void Thing::setParamValue(const ParamTypeId &paramTypeId, const QVariant &value)
 
 ParamList Thing::settings() const
 {
+    qWarning() << "thing settings called";
     return m_settings;
 }
 

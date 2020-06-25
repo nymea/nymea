@@ -27,8 +27,6 @@ static int PyThingActionInfo_init(PyThingActionInfo */*self*/, PyObject */*args*
 
 
 static void PyThingActionInfo_dealloc(PyThingActionInfo * self) {
-    // FIXME: Why is this not called? Seems we're leaking...
-    Q_ASSERT(false);
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -54,6 +52,7 @@ static PyObject * PyThingActionInfo_finish(PyThingActionInfo* self, PyObject* ar
 static PyMemberDef PyThingActionInfo_members[] = {
     {"thing", T_OBJECT_EX, offsetof(PyThingActionInfo, pyThing), 0, "Thing this action is for"},
     {"actionTypeId", T_OBJECT_EX, offsetof(PyThingActionInfo, pyActionTypeId), 0, "The action type id for this action"},
+    {"params", T_OBJECT_EX, offsetof(PyThingActionInfo, pyParams), 0, "The params for this action"},
     {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
 };
 

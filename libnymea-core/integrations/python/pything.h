@@ -10,6 +10,7 @@
 #include "loggingcategories.h"
 
 #include <QPointer>
+#include <QThread>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -36,15 +37,37 @@ static PyObject *PyThing_getName(PyThing *self, void */*closure*/)
         PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
         return nullptr;
     }
-    // FIXME: Needs blocking queued connection
-    PyObject *ret = PyUnicode_FromString(self->thing->name().toUtf8().data());
+    QString name;
+    // FIXME: Should not be a direct connection!
+    qWarning() << "name thread" << QThread::currentThread();
+    QMetaObject::invokeMethod(self->thing, "name", Qt::DirectConnection, Q_RETURN_ARG(QString, name));
+    PyObject *ret = PyUnicode_FromString(name.toUtf8().data());
     Py_INCREF(ret);
     return ret;
 }
 
 static int PyThing_setName(PyThing *self, PyObject *value, void */*closure*/){
-    // FIXME: Needs queued connection
-    self->thing->setName(QString(PyUnicode_AsUTF8(value)));
+    QString name = QString(PyUnicode_AsUTF8(value));
+    QMetaObject::invokeMethod(self->thing, "setName", Qt::QueuedConnection, Q_ARG(QString, name));
+    return 0;
+}
+
+static PyObject *PyThing_getSettings(PyThing *self, void */*closure*/)
+{
+    if (!self->thing) {
+        PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
+        return nullptr;
+    }
+    qWarning() << "setting thread" << QThread::currentThread();
+    ParamList settings;
+    QMetaObject::invokeMethod(self->thing, "settings", Qt::BlockingQueuedConnection, Q_RETURN_ARG(ParamList, settings));
+    PyObject *ret = PyParam_FromParamList(settings);
+    Py_INCREF(ret);
+    return ret;
+}
+
+static int PyThing_setSettings(PyThing */*self*/, PyObject */*value*/, void */*closure*/){
+    //    self->thing->setName(QString(PyUnicode_AsUTF8(value)));
     return 0;
 }
 
@@ -75,6 +98,19 @@ static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
     Py_XDECREF(str);
 
     Py_RETURN_NONE;
+}
+
+static PyObject *PyThing_settingChanged(PyThing *self, void */*closure*/)
+{
+    if (!self->thing) {
+        PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
+        return nullptr;
+    }
+    ParamList settings;
+    QMetaObject::invokeMethod(self->thing, "settings", Qt::BlockingQueuedConnection, Q_RETURN_ARG(ParamList, settings));
+    PyObject *ret = PyParam_FromParamList(settings);
+    Py_INCREF(ret);
+    return ret;
 }
 
 static PyObject * PyThing_emitEvent(PyThing* self, PyObject* args)
@@ -126,7 +162,9 @@ static PyObject * PyThing_emitEvent(PyThing* self, PyObject* args)
 }
 
 static PyGetSetDef PyThing_getseters[] = {
-    {"name", (getter)PyThing_getName, (setter)PyThing_setName, "Thingname", nullptr},
+    {"name", (getter)PyThing_getName, (setter)PyThing_setName, "Thing name", nullptr},
+    {"settings", (getter)PyThing_getSettings, (setter)PyThing_setSettings, "Thing settings", nullptr},
+    {"settingChanged", (getter)PyThing_settingChanged, nullptr, "Signal for changed settings", nullptr},
     {nullptr , nullptr, nullptr, nullptr, nullptr} /* Sentinel */
 };
 

@@ -3,7 +3,7 @@
     \title libnymea documentation
 
     \chapter Device releated classes
-    \annotatedlist devices
+    \annotatedlist integrations
 
     \chapter Types
     \annotatedlist nymea-types

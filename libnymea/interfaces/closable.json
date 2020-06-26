@@ -1,4 +1,5 @@
 {
+    "description": "Interface for generic devices that can be opened and closed. The process of opening or closing can be interrupted by the stop action.",
     "extends": "simpleclosable",
     "actions": [
         {

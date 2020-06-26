@@ -1,3 +1,4 @@
 {
+    "description": "Advanced roller shutters that support indicating their position and the moving state.",
     "extends": ["shutter", "extendedclosable"]
 }

@@ -1,0 +1,14 @@
+{
+    "description": "Venetian blinds that can be tilted. Venetian blinds must support an angle and specify the minimum and maximum supported angle. For instance, if a venetian blinds supports tilting from horizontal to vertical by 90°, the minValue should be set to 0° and the maxValue to 90°. For venetian blinds that support tilting both direction, that is, a total of 180°, the minValue should be -90° and the maxValue should be 90°. 0° is always the horizontal position. Note that the \"moving\" state should be true when either the percentage or the angle are moving.",
+    "extends": "extendedblind",
+    "states": [
+        {
+            "name": "angle",
+            "type": "int",
+            "unit": "Degree",
+            "minValue": "any",
+            "maxValue": "any",
+            "writable": true
+        }
+    ]
+}

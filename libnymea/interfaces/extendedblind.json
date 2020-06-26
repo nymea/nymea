@@ -1,3 +1,4 @@
 {
+    "description": "Blinds that support indicating their position and the moving state.",
     "extends": ["blind", "extendedclosable"]
 }

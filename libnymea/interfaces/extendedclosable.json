@@ -1,4 +1,5 @@
 {
+    "description": "A more advanced form of devices that support opening and closing in a more fine grained manner. They can report whether the opening/closing is currently in progress and provide a percentage of the opening/closing position. 0% means fully opened, while 100% indicates the device is fully closed",
     "extends": "closable",
     "states": [
         {

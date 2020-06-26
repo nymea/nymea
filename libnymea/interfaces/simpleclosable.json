@@ -1,4 +1,5 @@
 {
+    "description": "Interface for very basic devices that support opening and closing.",
     "actions": [
         {
             "name": "open"

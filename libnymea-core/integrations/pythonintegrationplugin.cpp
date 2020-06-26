@@ -208,36 +208,32 @@ void PythonIntegrationPlugin::discoverThings(ThingDiscoveryInfo *info)
 
 void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
 {
-    PyThing *pyThing = PyObject_New(PyThing, &PyThingType);
+    PyGILState_STATE s = PyGILState_Ensure();
+    PyThing *pyThing = (PyThing*)PyObject_CallObject((PyObject*)&PyThingType, NULL);
+
     pyThing->thing = info->thing();
 
-    PyThingSetupInfo *pyInfo = PyObject_New(PyThingSetupInfo, &PyThingSetupInfoType);
+    PyThingSetupInfo *pyInfo = (PyThingSetupInfo*)PyObject_CallObject((PyObject*)&PyThingSetupInfoType, NULL);
     pyInfo->info = info;
     pyInfo->pyThing = pyThing;
+
+    PyGILState_Release(s);
 
 
     connect(info, &ThingSetupInfo::finished, this, [=](){
         if (info->status() == Thing::ThingErrorNoError) {
             m_things.insert(info->thing(), pyThing);
         } else {
-            PyGILState_STATE s = PyGILState_Ensure();
             Py_DECREF(pyThing);
-            PyGILState_Release(s);
         }
     });
     connect(info, &ThingSetupInfo::aborted, this, [=](){
-        PyGILState_STATE s = PyGILState_Ensure();
         Py_DECREF(pyThing);
-        PyGILState_Release(s);
     });
     connect(info, &ThingSetupInfo::destroyed, this, [=](){
-        PyEval_RestoreThread(s_mainThread);
-
-//        PyGILState_STATE s = PyGILState_Ensure();
+        QMutexLocker(pyInfo->mutex);
         pyInfo->info = nullptr;
         Py_DECREF(pyInfo);
-//        PyGILState_Release(s);
-        s_mainThread = PyEval_SaveThread();
     });
 
 
@@ -282,12 +278,9 @@ void PythonIntegrationPlugin::thingRemoved(Thing *thing)
 
     callPluginFunction("thingRemoved", reinterpret_cast<PyObject*>(pyThing));
 
-    PyGILState_STATE s = PyGILState_Ensure();
-
+    QMutexLocker(pyThing->mutex);
     pyThing->thing = nullptr;
     Py_DECREF(pyThing);
-
-    PyGILState_Release(s);
 
     m_things.remove(thing);
 }
@@ -456,16 +449,6 @@ void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
         PyGILState_Release(s);
         return;
     }
-//    PyObject *coro = result;
-
-//    PyObject *get_running_loop = PyObject_GetAttrString(s_asyncio, "get_event_loop");
-//    PyObject *loop = PyObject_CallFunctionObjArgs(get_running_loop, nullptr);
-//    Py_DECREF(get_running_loop);
-//    PyObject *run_in_executor = PyObject_GetAttrString(loop, "run_in_executor");
-//    result = PyObject_CallFunctionObjArgs(run_in_executor, Py_None, coro);
-
-//    Py_DECREF(result);
-//    Py_DECREF(coro);
 
     // Spawn a event loop for python
     PyObject *new_event_loop = PyObject_GetAttrString(s_asyncio, "new_event_loop");
@@ -488,7 +471,6 @@ void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
 
     PyObject *run_until_complete = PyObject_GetAttrString(loop, "run_until_complete");
     QtConcurrent::run([=](){
-        qWarning() << "new thread for func" << function << QThread::currentThread();
         PyGILState_STATE s = PyGILState_Ensure();
         PyObject_CallFunctionObjArgs(run_until_complete, task, nullptr);
         PyGILState_Release(s);

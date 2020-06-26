@@ -11,6 +11,7 @@
 
 #include <QPointer>
 #include <QThread>
+#include <QMutexLocker>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -19,28 +20,34 @@
 typedef struct _thing {
     PyObject_HEAD
     Thing *thing;
+    QMutex *mutex;
 } PyThing;
 
 
-static int PyThing_init(PyThing */*self*/, PyObject */*args*/, PyObject */*kwds*/) {
-    return 0;
+static PyObject* PyThing_new(PyTypeObject *type, PyObject */*args*/, PyObject */*kwds*/) {
+    PyThing *self = (PyThing*)type->tp_alloc(type, 0);
+    if (self == NULL) {
+        return nullptr;
+    }
+    self->mutex = new QMutex();
+    return (PyObject*)self;
 }
 
 
 static void PyThing_dealloc(PyThing * self) {
     Py_TYPE(self)->tp_free(self);
+    delete self->mutex;
 }
 
 static PyObject *PyThing_getName(PyThing *self, void */*closure*/)
 {
+    QMutexLocker(self->mutex);
     if (!self->thing) {
         PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
         return nullptr;
     }
     QString name;
-    // FIXME: Should not be a direct connection!
-    qWarning() << "name thread" << QThread::currentThread();
-    QMetaObject::invokeMethod(self->thing, "name", Qt::DirectConnection, Q_RETURN_ARG(QString, name));
+    QMetaObject::invokeMethod(self->thing, "name", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QString, name));
     PyObject *ret = PyUnicode_FromString(name.toUtf8().data());
     Py_INCREF(ret);
     return ret;
@@ -48,12 +55,14 @@ static PyObject *PyThing_getName(PyThing *self, void */*closure*/)
 
 static int PyThing_setName(PyThing *self, PyObject *value, void */*closure*/){
     QString name = QString(PyUnicode_AsUTF8(value));
+    QMutexLocker(self->mutex);
     QMetaObject::invokeMethod(self->thing, "setName", Qt::QueuedConnection, Q_ARG(QString, name));
     return 0;
 }
 
 static PyObject *PyThing_getSettings(PyThing *self, void */*closure*/)
 {
+    QMutexLocker(self->mutex);
     if (!self->thing) {
         PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
         return nullptr;
@@ -90,6 +99,7 @@ static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
 
     QVariant value(bytes);
 
+    QMutexLocker(self->mutex);
     if (self->thing != nullptr) {
         QMetaObject::invokeMethod(self->thing, "setStateValue", Qt::QueuedConnection, Q_ARG(StateTypeId, stateTypeId), Q_ARG(QVariant, value));
     }
@@ -102,6 +112,7 @@ static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
 
 static PyObject *PyThing_settingChanged(PyThing *self, void */*closure*/)
 {
+    QMutexLocker(self->mutex);
     if (!self->thing) {
         PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
         return nullptr;
@@ -154,6 +165,7 @@ static PyObject * PyThing_emitEvent(PyThing* self, PyObject* args)
         }
     }
 
+    QMutexLocker(self->mutex);
     if (self->thing != nullptr) {
         QMetaObject::invokeMethod(self->thing, "emitEvent", Qt::QueuedConnection, Q_ARG(EventTypeId, eventTypeId), Q_ARG(ParamList, params));
     }
@@ -161,7 +173,7 @@ static PyObject * PyThing_emitEvent(PyThing* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
-static PyGetSetDef PyThing_getseters[] = {
+static PyGetSetDef PyThing_getset[] = {
     {"name", (getter)PyThing_getName, (setter)PyThing_setName, "Thing name", nullptr},
     {"settings", (getter)PyThing_getSettings, (setter)PyThing_setSettings, "Thing settings", nullptr},
     {"settingChanged", (getter)PyThing_settingChanged, nullptr, "Signal for changed settings", nullptr},
@@ -176,41 +188,59 @@ static PyMethodDef PyThing_methods[] = {
 
 static PyTypeObject PyThingType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.Thing",             /* tp_name */
-    sizeof(PyThing),           /* tp_basicsize */
-    0,                         /* tp_itemsize */
-    0,                         /* tp_dealloc */
-    0,                         /* tp_print */
-    0,                         /* tp_getattr */
-    0,                         /* tp_setattr */
-    0,                         /* tp_reserved */
-    0,                         /* tp_repr */
-    0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
-    0,                         /* tp_as_mapping */
-    0,                         /* tp_hash  */
-    0,                         /* tp_call */
-    0,                         /* tp_str */
-    0,                         /* tp_getattro */
-    0,                         /* tp_setattro */
-    0,                         /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,        /* tp_flags */
-    "Noddy objects",           /* tp_doc */
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    "nymea.Thing",              /* tp_name */
+    sizeof(PyThing),            /* tp_basicsize */
+    0,                          /* tp_itemsize */
+    (destructor)PyThing_dealloc, /* tp_dealloc */
+    0,                          /* tp_print */
+    0,                          /* tp_getattr */
+    0,                          /* tp_setattr */
+    0,                          /* tp_reserved */
+    0,                          /* tp_repr */
+    0,                          /* tp_as_number */
+    0,                          /* tp_as_sequence */
+    0,                          /* tp_as_mapping */
+    0,                          /* tp_hash  */
+    0,                          /* tp_call */
+    0,                          /* tp_str */
+    0,                          /* tp_getattro */
+    0,                          /* tp_setattro */
+    0,                          /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,         /* tp_flags */
+    "Thing",                    /* tp_doc */
+    0,                          /* tp_traverse */
+    0,                          /* tp_clear */
+    0,                          /* tp_richcompare */
+    0,                          /* tp_weaklistoffset */
+    0,                          /* tp_iter */
+    0,                          /* tp_iternext */
+    PyThing_methods,            /* tp_methods */
+    0,                          /* tp_members */
+    PyThing_getset,             /* tp_getset */
+    0,                          /* tp_base */
+    0,                          /* tp_dict */
+    0,                          /* tp_descr_get */
+    0,                          /* tp_descr_set */
+    0,                          /* tp_dictoffset */
+    0,                          /* tp_init */
+    0,                          /* tp_alloc */
+    (newfunc)PyThing_new,       /* tp_new */
+    0,                          /* tp_free */
+    0,                          /* tp_is_gc */
+    0,                          /* tp_bases */
+    0,                          /* tp_mro */
+    0,                          /* tp_cache */
+    0,                          /* tp_subclasses */
+    0,                          /* tp_weaklist */
+    0,                          /* tp_del */
+    0,                          /* tp_version_tag */
+    0,                          /* tp_finalize */
+    0,                          /* tp_vectorcall */
+    0,                          /* tp_print DEPRECATED*/
 };
 
 static void registerThingType(PyObject *module)
 {
-    PyThingType.tp_new = PyType_GenericNew;
-    PyThingType.tp_dealloc= reinterpret_cast<destructor>(PyThing_dealloc);
-    PyThingType.tp_basicsize = sizeof(PyThing);
-    PyThingType.tp_flags = Py_TPFLAGS_DEFAULT;
-    PyThingType.tp_doc = "Thing class";
-    PyThingType.tp_methods = PyThing_methods;
-    PyThingType.tp_getset = PyThing_getseters;
-    //    PyThingType.tp_members = PyThingSetupInfo_members;
-    PyThingType.tp_init = reinterpret_cast<initproc>(PyThing_init);
-
     if (PyType_Ready(&PyThingType) < 0) {
         return;
     }

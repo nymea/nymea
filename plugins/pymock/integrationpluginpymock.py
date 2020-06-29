@@ -10,7 +10,7 @@ def configValueChanged(paramTypeId, value):
 
 
 def startMonitoringAutoThings():
-    logger.log("Start monitoring auto things. Already have", len(myThings()))
+    logger.log("Start monitoring auto things. Already have", len(myThings()), configValue(pyMockPluginAutoThingCountParamTypeId))
     for i in range(configValue(pyMockPluginAutoThingCountParamTypeId), len(myThings())):
         logger.log("auto thing")
 #        descriptor = nymea.

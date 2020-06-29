@@ -8,7 +8,7 @@
             "name": "autoThingCount",
             "displayName": "Number of auto things",
             "type": "int",
-            "defaultValue": 0
+            "defaultValue": "fds"
         }
     ],
     "vendors": [

@@ -14,13 +14,13 @@ PyObject *QVariantToPyObject(const QVariant &value)
 
     switch (value.type()) {
     case QVariant::Bool:
-        pyValue = PyBool_FromLong(*(long*)value.data());
+        pyValue = PyBool_FromLong(value.toBool());
         break;
     case QVariant::Int:
     case QVariant::UInt:
     case QVariant::LongLong:
     case QVariant::ULongLong:
-        pyValue = PyLong_FromLong(*(long*)value.data());
+        pyValue = PyLong_FromLong(value.toLongLong());
         break;
     case QVariant::String:
     case QVariant::ByteArray:

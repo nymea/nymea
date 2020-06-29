@@ -26,6 +26,7 @@ public:
     bool loadScript(const QString &scriptFile);
 
     void init() override;
+    void startMonitoringAutoThings() override;
     void discoverThings(ThingDiscoveryInfo *info) override;
     void setupThing(ThingSetupInfo *info) override;
     void postSetupThing(Thing *thing) override;
@@ -34,6 +35,12 @@ public:
 
 
     static void dumpError();
+    static PyObject* pyConfiguration(PyObject* self, PyObject* args);
+    static PyObject* pyConfigValue(PyObject* self, PyObject* args);
+    static PyObject* pySetConfigValue(PyObject* self, PyObject* args);
+    static PyObject* pyMyThings(PyObject *self, PyObject* args);
+    static PyObject* pyAutoThingsAppeared(PyObject *self, PyObject* args);
+
 private:
     void exportIds();
     void exportThingClass(const ThingClass &thingClass);
@@ -44,22 +51,31 @@ private:
     void exportBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &thingClassName);
 
 
-    void callPluginFunction(const QString &function, PyObject *param);
+    void callPluginFunction(const QString &function, PyObject *param1 = nullptr, PyObject *param2 = nullptr);
+    void cleanupPyThing(PyThing *pyThing);
 
 private:
-//    static QHash<PyObject*, PyThreadState*> s_modules;
-
     static PyThreadState* s_mainThread;
+
+    // Modules imported into the global context
     static PyObject *s_nymeaModule;
     static PyObject *s_asyncio;
 
-    PyObject *m_module = nullptr;
-    QFuture<void> m_eventLoop;
+    // A map of plugin instances to plugin python scripts/modules
+    // Make sure to hold the GIL when accessing this.
+    static QHash<PythonIntegrationPlugin*, PyObject*> s_plugins;
 
+    // Used for guarding access from the python threads to the plugin instance
+    QMutex m_mutex;
+
+    // The imported plugin module
+    PyObject *m_module = nullptr;
+
+    // Things held by this plugin instance
     QHash<Thing*, PyThing*> m_things;
 
-    QStringList m_variableNames;
-
+    // Need to keep a copy of plugin params and sync that in a thread-safe manner
+    ParamList m_pluginConfigCopy;
 };
 
 #endif // PYTHONINTEGRATIONPLUGIN_H

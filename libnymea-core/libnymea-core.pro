@@ -27,6 +27,7 @@ HEADERS += nymeacore.h \
     integrations/python/pythingdescriptor.h \
     integrations/python/pythingdiscoveryinfo.h \
     integrations/python/pythingsetupinfo.h \
+    integrations/python/pyutils.h \
     integrations/thingmanagerimplementation.h \
     integrations/translator.h \
     integrations/pythonintegrationplugin.h \

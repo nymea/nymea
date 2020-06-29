@@ -15,11 +15,14 @@
 #include <QMetaEnum>
 #include <QJsonDocument>
 #include <QtConcurrent/QtConcurrentRun>
+#include <QCoreApplication>
+#include <QMutex>
 
 PyThreadState* PythonIntegrationPlugin::s_mainThread = nullptr;
 PyObject* PythonIntegrationPlugin::s_nymeaModule = nullptr;
 PyObject* PythonIntegrationPlugin::s_asyncio = nullptr;
 
+QHash<PythonIntegrationPlugin*, PyObject*> PythonIntegrationPlugin::s_plugins;
 
 // Write to stdout/stderr
 PyObject* nymea_write(PyObject* /*self*/, PyObject* args)
@@ -106,6 +109,147 @@ PyMODINIT_FUNC PyInit_nymea(void)
     return m;
 }
 
+PyObject* PythonIntegrationPlugin::pyConfiguration(PyObject* self, PyObject* /*args*/)
+{
+    PythonIntegrationPlugin *plugin = s_plugins.key(self);
+    if (!plugin) {
+        qCWarning(dcThingManager()) << "Cannot find plugin instance for this python module.";
+        return nullptr;
+    }
+    plugin->m_mutex.lock();
+    PyObject *params = PyParams_FromParamList(plugin->configuration());
+    plugin->m_mutex.unlock();
+    return params;
+}
+
+PyObject *PythonIntegrationPlugin::pyConfigValue(PyObject *self, PyObject *args)
+{
+    char *paramTypeIdStr = nullptr;
+
+    if (!PyArg_ParseTuple(args, "s", &paramTypeIdStr)) {
+        qCWarning(dcThingManager) << "Error parsing parameters";
+        return nullptr;
+    }
+
+    ParamTypeId paramTypeId = ParamTypeId(paramTypeIdStr);
+
+    PythonIntegrationPlugin *plugin = s_plugins.key(self);
+    if (!plugin) {
+        qCWarning(dcThingManager()) << "Cannot find plugin instance for this python module.";
+        return nullptr;
+    }
+
+    plugin->m_mutex.lock();
+    QVariant value = plugin->m_pluginConfigCopy.paramValue(paramTypeId);
+    plugin->m_mutex.unlock();
+    return QVariantToPyObject(value);
+}
+
+PyObject *PythonIntegrationPlugin::pySetConfigValue(PyObject *self, PyObject *args)
+{
+    char *paramTypeIdStr = nullptr;
+    PyObject *valueObj = nullptr;
+
+    if (!PyArg_ParseTuple(args, "sO", &paramTypeIdStr, &valueObj)) {
+        qCWarning(dcThingManager) << "Error parsing parameters";
+        return nullptr;
+    }
+
+    ParamTypeId paramTypeId = EventTypeId(paramTypeIdStr);
+    QVariant value = PyObjectToQVariant(valueObj);
+
+    PythonIntegrationPlugin *plugin = s_plugins.key(self);
+    if (!plugin) {
+        qCWarning(dcThingManager()) << "Cannot find plugin instance for this python module.";
+        return nullptr;
+    }
+
+    QMetaObject::invokeMethod(plugin, "setConfigValue", Qt::QueuedConnection, Q_ARG(ParamTypeId, paramTypeId), Q_ARG(QVariant, value));
+
+    Py_RETURN_NONE;
+}
+
+PyObject *PythonIntegrationPlugin::pyMyThings(PyObject *self, PyObject */*args*/)
+{
+    PythonIntegrationPlugin *plugin = s_plugins.key(self);
+    if (!plugin) {
+        qCWarning(dcThingManager()) << "Cannot find plugin instance for this python module.";
+        return nullptr;
+    }
+    
+    plugin->m_mutex.lock();
+    PyObject* result = PyTuple_New(plugin->m_things.count());
+    for (int i = 0; i < plugin->m_things.count(); i++) {
+        Thing *thing = plugin->m_things.keys().at(i);
+        PyTuple_SET_ITEM(result, i, (PyObject*)plugin->m_things.value(thing));
+    }
+    plugin->m_mutex.unlock();
+    return result;
+}
+
+PyObject *PythonIntegrationPlugin::pyAutoThingsAppeared(PyObject *self, PyObject *args)
+{
+    PyObject *pyParams;
+
+    if (!PyArg_ParseTuple(args, "O", &pyParams)) {
+        qCWarning(dcThingManager()) << "Error parsing args. Not a param list";
+        return nullptr;
+    }
+
+    PyObject *iter = PyObject_GetIter(pyParams);
+    if (!iter) {
+        qCWarning(dcThingManager()) << "Error parsing args. Not a param list";
+        return nullptr;
+    }
+
+    ThingDescriptors descriptors;
+
+    while (true) {
+        PyObject *next = PyIter_Next(iter);
+        if (!next) {
+            // nothing left in the iterator
+            break;
+        }
+
+        if (next->ob_type != &PyThingDescriptorType) {
+            PyErr_SetString(PyExc_ValueError, "Invalid argument. Not a ThingDescriptor.");
+            return nullptr;
+        }
+        PyThingDescriptor *pyDescriptor = (PyThingDescriptor*)next;
+
+        ThingClassId thingClassId;
+        if (pyDescriptor->pyThingClassId) {
+            thingClassId = ThingClassId(PyUnicode_AsUTF8(pyDescriptor->pyThingClassId));
+        }
+        QString name;
+        if (pyDescriptor->pyName) {
+            name = QString::fromUtf8(PyUnicode_AsUTF8(pyDescriptor->pyName));
+        }
+        QString description;
+        if (pyDescriptor->pyDescription) {
+            description = QString::fromUtf8(PyUnicode_AsUTF8(pyDescriptor->pyDescription));
+        }
+
+        ThingDescriptor descriptor(thingClassId, name, description);
+        descriptors.append(descriptor);
+    }
+
+    PythonIntegrationPlugin *plugin = s_plugins.key(self);
+    QMetaObject::invokeMethod(plugin, "autoThingsAppeared", Qt::QueuedConnection, Q_ARG(ThingDescriptors, descriptors));
+
+    Py_RETURN_NONE;
+}
+
+static PyMethodDef plugin_methods[] =
+{
+    {"configuration", PythonIntegrationPlugin::pyConfiguration, METH_VARARGS, "Get the plugin configuration."},
+    {"configValue", PythonIntegrationPlugin::pyConfigValue, METH_VARARGS, "Get the plugin configuration value for a given config paramTypeId."},
+    {"setConfigValue", PythonIntegrationPlugin::pySetConfigValue, METH_VARARGS, "Set the plugin configuration value for a given config paramTypeId."},
+    {"myThings", PythonIntegrationPlugin::pyMyThings, METH_VARARGS, "Obtain a list of things owned by this plugin."},
+    {"autoThingsAppeared", PythonIntegrationPlugin::pyAutoThingsAppeared, METH_VARARGS, "Inform the system about auto setup things having appeared."},
+    {nullptr, nullptr, 0, nullptr} // sentinel
+};
+
 PythonIntegrationPlugin::PythonIntegrationPlugin(QObject *parent) : IntegrationPlugin(parent)
 {
 
@@ -113,8 +257,9 @@ PythonIntegrationPlugin::PythonIntegrationPlugin(QObject *parent) : IntegrationP
 
 PythonIntegrationPlugin::~PythonIntegrationPlugin()
 {
-    m_eventLoop.cancel();
-    m_eventLoop.waitForFinished();
+    PyGILState_STATE s = PyGILState_Ensure();
+    Py_XDECREF(s_plugins.take(this));
+    PyGILState_Release(s);
 }
 
 void PythonIntegrationPlugin::initPython()
@@ -148,10 +293,11 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
         qCWarning(dcThingManager()) << "Error parsing metadata file:" << error.errorString();
         return false;
     }
-    m_metaData = PluginMetadata(jsonDoc.object());
-
-    qWarning() << "main thread" << QThread::currentThread();
-
+    setMetaData(PluginMetadata(jsonDoc.object()));
+    if (!metadata().isValid()) {
+        qCWarning(dcThingManager()) << "Plugin metadata not valid for plugin:" << scriptFile;
+        return false;
+    }
 
     PyGILState_STATE s = PyGILState_Ensure();
 
@@ -168,10 +314,11 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     }
     qCDebug(dcThingManager()) << "Imported python plugin from" << fi.absoluteFilePath();
 
+    s_plugins.insert(this, m_module);
 
     // Set up logger with appropriate logging category
     PyNymeaLoggingHandler *logger = reinterpret_cast<PyNymeaLoggingHandler*>(_PyObject_New(&PyNymeaLoggingHandlerType));
-    QString category = m_metaData.pluginName();
+    QString category = metadata().pluginName();
     category.replace(0, 1, category[0].toUpper());
     logger->category = static_cast<char*>(malloc(category.length() + 1));
     memset(logger->category, '0', category.length() +1);
@@ -182,25 +329,55 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     // Export metadata ids into module
     exportIds();
 
+    // Register config access methods
+    PyModule_AddFunctions(m_module, plugin_methods);
+
     PyGILState_Release(s);
+
+    // Set up connections to be forwareded into the plugin
+    connect(this, &PythonIntegrationPlugin::configValueChanged, this, [this](const ParamTypeId &paramTypeId, const QVariant &value){
+        // Sync changed value to the thread-safe copy
+        m_mutex.lock();
+        m_pluginConfigCopy.setParamValue(paramTypeId, value);
+        m_mutex.unlock();
+
+        // And call the handler - if any
+        PyObject *pyParamTypeId = PyUnicode_FromString(paramTypeId.toString().toUtf8());
+        PyObject *pyValue = QVariantToPyObject(value);
+        callPluginFunction("configValueChanged", pyParamTypeId, pyValue);
+    });
+
     return true;
 }
 
 void PythonIntegrationPlugin::init()
 {
-    callPluginFunction("init", nullptr);
+    m_mutex.lock();
+    m_pluginConfigCopy = configuration();
+    m_mutex.unlock();
+
+    callPluginFunction("init");
+}
+
+void PythonIntegrationPlugin::startMonitoringAutoThings()
+{
+    callPluginFunction("startMonitoringAutoThings");
 }
 
 void PythonIntegrationPlugin::discoverThings(ThingDiscoveryInfo *info)
 {
-    PyThingDiscoveryInfo *pyInfo = PyObject_New(PyThingDiscoveryInfo, &PyThingDiscoveryInfoType);
+    PyGILState_STATE s = PyGILState_Ensure();
+
+    PyThingDiscoveryInfo *pyInfo = (PyThingDiscoveryInfo*)PyObject_CallObject((PyObject*)&PyThingDiscoveryInfoType, NULL);
     pyInfo->info = info;
 
+    PyGILState_Release(s);
+
+
     connect(info, &ThingDiscoveryInfo::destroyed, this, [=](){
-        PyGILState_STATE s = PyGILState_Ensure();
+        QMutexLocker(pyInfo->mutex);
         pyInfo->info = nullptr;
-        PyObject_Del(pyInfo);
-        PyGILState_Release(s);
+        Py_DECREF(pyInfo);
     });
 
     callPluginFunction("discoverThings", reinterpret_cast<PyObject*>(pyInfo));
@@ -209,9 +386,9 @@ void PythonIntegrationPlugin::discoverThings(ThingDiscoveryInfo *info)
 void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
 {
     PyGILState_STATE s = PyGILState_Ensure();
-    PyThing *pyThing = (PyThing*)PyObject_CallObject((PyObject*)&PyThingType, NULL);
 
-    pyThing->thing = info->thing();
+    PyThing *pyThing = (PyThing*)PyObject_CallObject((PyObject*)&PyThingType, NULL);
+    PyThing_setThing(pyThing, info->thing());
 
     PyThingSetupInfo *pyInfo = (PyThingSetupInfo*)PyObject_CallObject((PyObject*)&PyThingSetupInfoType, NULL);
     pyInfo->info = info;
@@ -222,13 +399,15 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
 
     connect(info, &ThingSetupInfo::finished, this, [=](){
         if (info->status() == Thing::ThingErrorNoError) {
+            m_mutex.lock();
             m_things.insert(info->thing(), pyThing);
+            m_mutex.unlock();
         } else {
-            Py_DECREF(pyThing);
+            cleanupPyThing(pyThing);
         }
     });
     connect(info, &ThingSetupInfo::aborted, this, [=](){
-        Py_DECREF(pyThing);
+        cleanupPyThing(pyThing);
     });
     connect(info, &ThingSetupInfo::destroyed, this, [=](){
         QMutexLocker(pyInfo->mutex);
@@ -252,21 +431,20 @@ void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
 
     PyGILState_STATE s = PyGILState_Ensure();
 
-    PyThingActionInfo *pyInfo = PyObject_New(PyThingActionInfo, &PyThingActionInfoType);
+    PyThingActionInfo *pyInfo = (PyThingActionInfo*)PyObject_CallObject((PyObject*)&PyThingActionInfoType, NULL);
     pyInfo->info = info;
     pyInfo->pyThing = pyThing;
     pyInfo->pyActionTypeId = PyUnicode_FromString(info->action().actionTypeId().toString().toUtf8());
-    pyInfo->pyParams = PyParam_FromParamList(info->action().params());
+    pyInfo->pyParams = PyParams_FromParamList(info->action().params());
 
     PyGILState_Release(s);
 
-    connect(info, &ThingActionInfo::destroyed, this, [=](){
-        PyGILState_STATE s = PyGILState_Ensure();
+    connect(info, &ThingActionInfo::destroyed, this, [=](){        
+        QMutexLocker(pyInfo->mutex);
         pyInfo->pyActionTypeId = nullptr;
         Py_XDECREF(pyInfo->pyActionTypeId);
         pyInfo->info = nullptr;
         Py_DECREF(pyInfo);
-        PyGILState_Release(s);
     });
 
     callPluginFunction("executeAction", reinterpret_cast<PyObject*>(pyInfo));
@@ -278,11 +456,11 @@ void PythonIntegrationPlugin::thingRemoved(Thing *thing)
 
     callPluginFunction("thingRemoved", reinterpret_cast<PyObject*>(pyThing));
 
-    QMutexLocker(pyThing->mutex);
-    pyThing->thing = nullptr;
-    Py_DECREF(pyThing);
+    cleanupPyThing(pyThing);
 
+    m_mutex.lock();
     m_things.remove(thing);
+    m_mutex.unlock();
 }
 
 void PythonIntegrationPlugin::dumpError()
@@ -309,10 +487,17 @@ void PythonIntegrationPlugin::dumpError()
 void PythonIntegrationPlugin::exportIds()
 {
     qCDebug(dcThingManager()) << "Exporting plugin IDs:";
-    QString pluginName = "pluginId";
-    QString pluginId = m_metaData.pluginId().toString();
+    QString pluginName = metadata().pluginName();
+    QString pluginId = metadata().pluginId().toString();
     qCDebug(dcThingManager()) << "- Plugin:" << pluginName << pluginId;
-    PyModule_AddStringConstant(m_module, pluginName.toUtf8(), pluginId.toUtf8());
+    PyModule_AddStringConstant(m_module, "pluginId", pluginId.toUtf8());
+
+    exportParamTypes(configurationDescription(), pluginName, "", "plugin");
+
+    foreach (const Vendor &vendor, supportedVendors()) {
+        qCDebug(dcThingManager()) << "|- Vendor:" << vendor.name() << vendor.id().toString();
+        PyModule_AddStringConstant(m_module, vendor.name().toUtf8(), vendor.id().toString().toUtf8());
+    }
 
     foreach (const ThingClass &thingClass, supportedThings()) {
         exportThingClass(thingClass);
@@ -322,13 +507,8 @@ void PythonIntegrationPlugin::exportIds()
 void PythonIntegrationPlugin::exportThingClass(const ThingClass &thingClass)
 {
     QString variableName = QString("%1ThingClassId").arg(thingClass.name());
-    if (m_variableNames.contains(variableName)) {
-        qWarning().nospace() << "Error: Duplicate name " << variableName << " for ThingClass " << thingClass.id() << ". Skipping entry.";
-        return;
-    }
-    m_variableNames.append(variableName);
 
-    qCDebug(dcThingManager()) << "|- ThingClass:" << variableName << thingClass.id();
+    qCDebug(dcThingManager()) << "|- ThingClass:" << variableName << thingClass.id().toString();
     PyModule_AddStringConstant(m_module, variableName.toUtf8(), thingClass.id().toString().toUtf8());
 
     exportParamTypes(thingClass.paramTypes(), thingClass.name(), "", "thing");
@@ -345,12 +525,7 @@ void PythonIntegrationPlugin::exportParamTypes(const ParamTypes &paramTypes, con
 {
     foreach (const ParamType &paramType, paramTypes) {
         QString variableName = QString("%1ParamTypeId").arg(thingClassName + typeName[0].toUpper() + typeName.right(typeName.length()-1) + typeClass + paramType.name()[0].toUpper() + paramType.name().right(paramType.name().length() -1 ));
-        if (m_variableNames.contains(variableName)) {
-            qWarning().nospace() << "Error: Duplicate name " << variableName << " for ParamTypeId " << paramType.id() << ". Skipping entry.";
-            continue;
-        }
-        m_variableNames.append(variableName);
-
+        qCDebug(dcThingManager()) << "  |- ParamType:" << variableName << paramType.id().toString();
         PyModule_AddStringConstant(m_module, variableName.toUtf8(), paramType.id().toString().toUtf8());
     }
 }
@@ -359,12 +534,7 @@ void PythonIntegrationPlugin::exportStateTypes(const StateTypes &stateTypes, con
 {
     foreach (const StateType &stateType, stateTypes) {
         QString variableName = QString("%1%2StateTypeId").arg(thingClassName, stateType.name()[0].toUpper() + stateType.name().right(stateType.name().length() - 1));
-        if (m_variableNames.contains(variableName)) {
-            qWarning().nospace() << "Error: Duplicate name " << variableName << " for StateType " << stateType.name() << " in ThingClass " << thingClassName << ". Skipping entry.";
-            return;
-        }
-        m_variableNames.append(variableName);
-        qCDebug(dcThingManager()) << "|- StateType:" << variableName << stateType.id();
+        qCDebug(dcThingManager()) << " |- StateType:" << variableName << stateType.id().toString();
         PyModule_AddStringConstant(m_module, variableName.toUtf8(), stateType.id().toString().toUtf8());
     }
 }
@@ -373,13 +543,8 @@ void PythonIntegrationPlugin::exportEventTypes(const EventTypes &eventTypes, con
 {
     foreach (const EventType &eventType, eventTypes) {
         QString variableName = QString("%1%2EventTypeId").arg(thingClassName, eventType.name()[0].toUpper() + eventType.name().right(eventType.name().length() - 1));
-        if (m_variableNames.contains(variableName)) {
-            qWarning().nospace() << "Error: Duplicate name " << variableName << " for EventType " << eventType.name() << " in ThingClass " << thingClassName << ". Skipping entry.";
-            return;
-        }
-        m_variableNames.append(variableName);
+        qCDebug(dcThingManager()) << " |- EventType:" << variableName << eventType.id().toString();
         PyModule_AddStringConstant(m_module, variableName.toUtf8(), eventType.id().toString().toUtf8());
-
         exportParamTypes(eventType.paramTypes(), thingClassName, "Event", eventType.name());
     }
 
@@ -389,13 +554,8 @@ void PythonIntegrationPlugin::exportActionTypes(const ActionTypes &actionTypes, 
 {
     foreach (const ActionType &actionType, actionTypes) {
         QString variableName = QString("%1%2ActionTypeId").arg(thingClassName, actionType.name()[0].toUpper() + actionType.name().right(actionType.name().length() - 1));
-        if (m_variableNames.contains(variableName)) {
-            qWarning().nospace() << "Error: Duplicate name " << variableName << " for ActionType " << actionType.name() << " in ThingClass " << thingClassName << ". Skipping entry.";
-            return;
-        }
-        m_variableNames.append(variableName);
+        qCDebug(dcThingManager()) << " |- ActionType:" << variableName << actionType.id().toString();
         PyModule_AddStringConstant(m_module, variableName.toUtf8(), actionType.id().toString().toUtf8());
-
         exportParamTypes(actionType.paramTypes(), thingClassName, "Action", actionType.name());
     }
 }
@@ -404,20 +564,15 @@ void PythonIntegrationPlugin::exportBrowserItemActionTypes(const ActionTypes &ac
 {
     foreach (const ActionType &actionType, actionTypes) {
         QString variableName = QString("%1%2BrowserItemActionTypeId").arg(thingClassName, actionType.name()[0].toUpper() + actionType.name().right(actionType.name().length() - 1));
-        if (m_variableNames.contains(variableName)) {
-            qWarning().nospace() << "Error: Duplicate name " << variableName << " for Browser Item ActionType " << actionType.name() << " in ThingClass " << thingClassName << ". Skipping entry.";
-            return;
-        }
-        m_variableNames.append(variableName);
+        qCDebug(dcThingManager()) << " |- BrowserActionType:" << variableName << actionType.id().toString();
         PyModule_AddStringConstant(m_module, variableName.toUtf8(), actionType.id().toString().toUtf8());
-
         exportParamTypes(actionType.paramTypes(), thingClassName, "BrowserItemAction", actionType.name());
     }
 
 }
 
 
-void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObject *param)
+void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObject *param1, PyObject *param2)
 {
     PyGILState_STATE s = PyGILState_Ensure();
 
@@ -433,7 +588,7 @@ void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
 
     dumpError();
 
-    PyObject *result = PyObject_CallFunctionObjArgs(pFunc, param, nullptr);
+    PyObject *result = PyObject_CallFunctionObjArgs(pFunc, param1, param2, nullptr);
 
     Py_XDECREF(pFunc);
 
@@ -483,5 +638,20 @@ void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     Py_DECREF(result);
 
     PyGILState_Release(s);
+}
+
+void PythonIntegrationPlugin::cleanupPyThing(PyThing *pyThing)
+{
+    // It could happen that the python thread is currently holding the mutex
+    // whike waiting on a blocking queued connection on the thing (e.g. PyThing_name).
+    // We'd deadlock if we wait for the mutex forever here. So let's process events
+    // while waiting for it...
+    while (!pyThing->mutex->tryLock()) {
+        qApp->processEvents(QEventLoop::EventLoopExec);
+    }
+
+    pyThing->thing = nullptr;
+    pyThing->mutex->unlock();
+    Py_DECREF(pyThing);
 }
 

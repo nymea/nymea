@@ -47,6 +47,7 @@ PluginMetadata::PluginMetadata()
 }
 
 PluginMetadata::PluginMetadata(const QJsonObject &jsonObject, bool isBuiltIn, bool strict):
+    m_jsonObject(jsonObject),
     m_isBuiltIn(isBuiltIn),
     m_strictRun(strict)
 {
@@ -96,6 +97,11 @@ Vendors PluginMetadata::vendors() const
 ThingClasses PluginMetadata::thingClasses() const
 {
     return m_thingClasses;
+}
+
+QJsonObject PluginMetadata::jsonObject() const
+{
+    return m_jsonObject;
 }
 
 void PluginMetadata::parse(const QJsonObject &jsonObject)

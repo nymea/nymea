@@ -11,6 +11,7 @@
 
 #include <QDebug>
 #include <QMetaEnum>
+#include <QMutex>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -20,17 +21,24 @@
 typedef struct {
     PyObject_HEAD
     ThingDiscoveryInfo* info;
+    QMutex *mutex;
 } PyThingDiscoveryInfo;
 
-
-static int PyThingDiscoveryInfo_init(PyThingDiscoveryInfo */*self*/, PyObject */*args*/, PyObject */*kwds*/) {
-    return 0;
+static PyObject* PyThingDiscoveryInfo_new(PyTypeObject *type, PyObject */*args*/, PyObject */*kwds*/)
+{
+    PyThingDiscoveryInfo *self = (PyThingDiscoveryInfo*)type->tp_alloc(type, 0);
+    if (self == NULL) {
+        return nullptr;
+    }
+    self->mutex = new QMutex();
+    return (PyObject*)self;
 }
 
-
-static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo * self) {
+static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo * self)
+{
     // FIXME: Why is this not called? Seems we're leaking...
     Q_ASSERT(false);
+    delete self->mutex;
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -53,8 +61,8 @@ static PyObject * PyThingDiscoveryInfo_finish(PyThingDiscoveryInfo* self, PyObje
     Py_RETURN_NONE;
 }
 
-static PyObject * PyThingDiscoveryInfo_addDescriptor(PyThingDiscoveryInfo* self, PyObject* args) {
-
+static PyObject * PyThingDiscoveryInfo_addDescriptor(PyThingDiscoveryInfo* self, PyObject* args)
+{
     PyObject *pyObj = nullptr;
 
     if (!PyArg_ParseTuple(args, "O", &pyObj)) {
@@ -90,47 +98,68 @@ static PyObject * PyThingDiscoveryInfo_addDescriptor(PyThingDiscoveryInfo* self,
 }
 
 static PyMethodDef PyThingDiscoveryInfo_methods[] = {
-    { "addDescriptor", (PyCFunction)PyThingDiscoveryInfo_addDescriptor,    METH_VARARGS,       "Add a new descriptor to the discovery" },
-    { "finish", (PyCFunction)PyThingDiscoveryInfo_finish,    METH_VARARGS,       "finish a discovery" },
+    { "addDescriptor", (PyCFunction)PyThingDiscoveryInfo_addDescriptor, METH_VARARGS, "Add a new descriptor to the discovery" },
+    { "finish", (PyCFunction)PyThingDiscoveryInfo_finish, METH_VARARGS, "Finish a discovery" },
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
 static PyTypeObject PyThingDiscoveryInfoType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "nymea.ThingDiscoveryInfo",   /* tp_name */
+    "nymea.ThingDiscoveryInfo", /* tp_name */
     sizeof(PyThingDiscoveryInfo), /* tp_basicsize */
-    0,                         /* tp_itemsize */
-    0,                         /* tp_dealloc */
-    0,                         /* tp_print */
-    0,                         /* tp_getattr */
-    0,                         /* tp_setattr */
-    0,                         /* tp_reserved */
-    0,                         /* tp_repr */
-    0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
-    0,                         /* tp_as_mapping */
-    0,                         /* tp_hash  */
-    0,                         /* tp_call */
-    0,                         /* tp_str */
-    0,                         /* tp_getattro */
-    0,                         /* tp_setattro */
-    0,                         /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,        /* tp_flags */
-    "Noddy objects",           /* tp_doc */
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    0,                          /* tp_itemsize */
+    (destructor)PyThingDiscoveryInfo_dealloc, /* tp_dealloc */
+    0,                          /* tp_print */
+    0,                          /* tp_getattr */
+    0,                          /* tp_setattr */
+    0,                          /* tp_reserved */
+    0,                          /* tp_repr */
+    0,                          /* tp_as_number */
+    0,                          /* tp_as_sequence */
+    0,                          /* tp_as_mapping */
+    0,                          /* tp_hash  */
+    0,                          /* tp_call */
+    0,                          /* tp_str */
+    0,                          /* tp_getattro */
+    0,                          /* tp_setattro */
+    0,                          /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,         /* tp_flags */
+    "ThingDiscoveryInfo",       /* tp_doc */
+    0,                          /* tp_traverse */
+    0,                          /* tp_clear */
+    0,                          /* tp_richcompare */
+    0,                          /* tp_weaklistoffset */
+    0,                          /* tp_iter */
+    0,                          /* tp_iternext */
+    PyThingDiscoveryInfo_methods, /* tp_methods */
+    0, //PyThingDiscoveryInfo_members, /* tp_members */
+    0,                          /* tp_getset */
+    0,                          /* tp_base */
+    0,                          /* tp_dict */
+    0,                          /* tp_descr_get */
+    0,                          /* tp_descr_set */
+    0,                          /* tp_dictoffset */
+    0,                          /* tp_init */
+    0,                          /* tp_alloc */
+    (newfunc)PyThingDiscoveryInfo_new, /* tp_new */
+    0,                          /* tp_free */
+    0,                          /* tp_is_gc */
+    0,                          /* tp_bases */
+    0,                          /* tp_mro */
+    0,                          /* tp_cache */
+    0,                          /* tp_subclasses */
+    0,                          /* tp_weaklist */
+    0,                          /* tp_del */
+    0,                          /* tp_version_tag */
+    0,                          /* tp_finalize */
+    0,                          /* tp_vectorcall */
+    0,                          /* tp_print DEPRECATED*/
 };
 
 
 
 static void registerThingDiscoveryInfoType(PyObject *module)
 {
-    PyThingDiscoveryInfoType.tp_new = PyType_GenericNew;
-    PyThingDiscoveryInfoType.tp_basicsize = sizeof(PyThingDiscoveryInfo);
-    PyThingDiscoveryInfoType.tp_dealloc = reinterpret_cast<destructor>(PyThingDiscoveryInfo_dealloc);
-    PyThingDiscoveryInfoType.tp_flags = Py_TPFLAGS_DEFAULT;
-    PyThingDiscoveryInfoType.tp_doc = "ThingDiscoveryInfo class";
-    PyThingDiscoveryInfoType.tp_methods = PyThingDiscoveryInfo_methods;
-    PyThingDiscoveryInfoType.tp_init = reinterpret_cast<initproc>(PyThingDiscoveryInfo_init);
 
     if (PyType_Ready(&PyThingDiscoveryInfoType) < 0) {
         return;

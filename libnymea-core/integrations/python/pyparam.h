@@ -2,7 +2,9 @@
 #define PYPARAM_H
 
 #include <Python.h>
-#include "structmember.h"
+#include <structmember.h>
+
+#include "pyutils.h"
 
 #include "types/param.h"
 
@@ -20,8 +22,6 @@ typedef struct _pyparam {
 } PyParam;
 
 static void PyParam_dealloc(PyParam * self) {
-    // FIXME: Why is this not called? Seems we're leaking...
-    Q_ASSERT(false);
     Py_XDECREF(self->pyParamTypeId);
     Py_XDECREF(self->pyValue);
     Py_TYPE(self)->tp_free(self);
@@ -88,38 +88,18 @@ static PyParam* PyParam_fromParam(const Param &param)
 {
     PyParam *pyParam = PyObject_New(PyParam, &PyParamType);
     pyParam->pyParamTypeId = PyUnicode_FromString(param.paramTypeId().toString().toUtf8());
-
-    switch (param.value().type()) {
-    case QVariant::Bool:
-        pyParam->pyValue = PyBool_FromLong(*(long*)param.value().data());
-        break;
-    case QVariant::Int:
-    case QVariant::UInt:
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
-        pyParam->pyValue = PyLong_FromLong(*(long*)param.value().data());
-        break;
-    case QVariant::String:
-    case QVariant::ByteArray:
-        pyParam->pyValue = PyUnicode_FromString(param.value().toString().toUtf8());
-        break;
-    case QVariant::Double:
-        pyParam->pyValue = PyFloat_FromDouble(param.value().toDouble());
-        break;
-    case QVariant::Invalid:
-        pyParam->pyValue = Py_None;
-        Py_INCREF(pyParam->pyValue);
-        break;
-    default:
-        qCWarning(dcThingManager) << "Unhandled data type in conversion from Param to PyParam!";
-        pyParam->pyValue = Py_None;
-        Py_INCREF(pyParam->pyValue);
-        break;
-    }
+    pyParam->pyValue = QVariantToPyObject(param.value());
     return pyParam;
 }
 
-static PyObject* PyParam_FromParamList(const ParamList &params)
+static Param PyParam_ToParam(PyParam *pyParam)
+{
+    ParamTypeId paramTypeId = ParamTypeId(PyUnicode_AsUTF8(pyParam->pyParamTypeId));
+    QVariant value = PyObjectToQVariant(pyParam->pyValue);
+    return Param(paramTypeId, value);
+}
+
+static PyObject* PyParams_FromParamList(const ParamList &params)
 {
     PyObject* result = PyTuple_New(params.count());
     for (int i = 0; i < params.count(); i++) {
@@ -128,6 +108,31 @@ static PyObject* PyParam_FromParamList(const ParamList &params)
     return result;
 }
 
+static ParamList PyParams_ToParamList(PyObject *pyParams)
+{
+    ParamList params;
+
+    if (pyParams != nullptr) {
+        return params;
+    }
+
+    PyObject *iter = PyObject_GetIter(pyParams);
+
+    while (iter) {
+        PyObject *next = PyIter_Next(iter);
+        if (!next) {
+            break;
+        }
+        if (next->ob_type != &PyParamType) {
+            qCWarning(dcThingManager()) << "Invalid parameter passed in param list";
+            continue;
+        }
+
+        PyParam *pyParam = reinterpret_cast<PyParam*>(next);
+        params.append(PyParam_ToParam(pyParam));
+    }
+    return params;
+}
 
 static void registerParamType(PyObject *module)
 {

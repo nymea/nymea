@@ -30,8 +30,8 @@ static PyObject* PyThingSetupInfo_new(PyTypeObject *type, PyObject */*args*/, Py
 }
 
 static void PyThingSetupInfo_dealloc(PyThingSetupInfo * self) {
-    Py_TYPE(self)->tp_free(self);
     delete self->mutex;
+    Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject * PyThingSetupInfo_finish(PyThingSetupInfo* self, PyObject* args) {
@@ -117,7 +117,8 @@ static PyTypeObject PyThingSetupInfoType = {
     0,                          /* tp_print DEPRECATED*/
 };
 
-static void registerThingSetupInfoType(PyObject *module) {
+static void registerThingSetupInfoType(PyObject *module)
+{
     if (PyType_Ready(&PyThingSetupInfoType) < 0) {
         return;
     }

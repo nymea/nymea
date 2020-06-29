@@ -18,10 +18,6 @@ typedef struct {
     PyObject* pyDescription;
 } PyThingDescriptor;
 
-static PyMethodDef PyThingDescriptor_methods[] = {
-//    { "finish", (PyCFunction)PyThingDiscoveryInfo_finish,    METH_VARARGS,       "finish a discovery" },
-    {nullptr, nullptr, 0, nullptr} // sentinel
-};
 
 static PyMemberDef PyThingDescriptor_members[] = {
     {"thingClassId", T_OBJECT_EX, offsetof(PyThingDescriptor, pyThingClassId), 0, "Descriptor thingClassId"},
@@ -29,7 +25,6 @@ static PyMemberDef PyThingDescriptor_members[] = {
     {"description", T_OBJECT_EX, offsetof(PyThingDescriptor, pyDescription), 0, "Descriptor description"},
     {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
 };
-
 
 static int PyThingDescriptor_init(PyThingDescriptor *self, PyObject *args, PyObject *kwds)
 {
@@ -57,14 +52,6 @@ static int PyThingDescriptor_init(PyThingDescriptor *self, PyObject *args, PyObj
     return 0;
 }
 
-//static PyGetSetDef PyThingDescriptor_getsetters[] = {
-//    {"name", (getter) PyThingDescriptor_getName, (setter) PyThingDescriptir_setName,
-//     "Descriptor name", NULL},
-//    {"last", (getter) Custom_getlast, (setter) Custom_setlast,
-//     "last name", NULL},
-//    {NULL}  /* Sentinel */
-//};
-
 static PyTypeObject PyThingDescriptorType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "nymea.ThingDescriptor",   /* tp_name */
@@ -86,7 +73,7 @@ static PyTypeObject PyThingDescriptorType = {
     0,                         /* tp_setattro */
     0,                         /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,        /* tp_flags */
-    "Noddy objects",           /* tp_doc */
+    "ThingDescriptor",         /* tp_doc */
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
 
@@ -95,10 +82,6 @@ static PyTypeObject PyThingDescriptorType = {
 static void registerThingDescriptorType(PyObject *module)
 {
     PyThingDescriptorType.tp_new = PyType_GenericNew;
-    PyThingDescriptorType.tp_basicsize = sizeof(PyThingDescriptor);
-    PyThingDescriptorType.tp_flags = Py_TPFLAGS_DEFAULT;
-    PyThingDescriptorType.tp_doc = "ThingDescriptor class";
-    PyThingDescriptorType.tp_methods = PyThingDescriptor_methods;
     PyThingDescriptorType.tp_members = PyThingDescriptor_members;
     PyThingDescriptorType.tp_init = reinterpret_cast<initproc>(PyThingDescriptor_init);
 

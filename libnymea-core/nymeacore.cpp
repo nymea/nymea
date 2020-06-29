@@ -137,7 +137,7 @@ void NymeaCore::init() {
 
 
     CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
-    m_thingManager->registerStaticPlugin(cloudNotifications, cloudNotifications->metaData());
+    m_thingManager->registerStaticPlugin(cloudNotifications);
 
     CloudTransport *cloudTransport = m_cloudManager->createTransportInterface();
     m_serverManager->jsonServer()->registerTransportInterface(cloudTransport, false);

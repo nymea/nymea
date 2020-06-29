@@ -1,0 +1,76 @@
+{
+    "id": "9be90b21-778c-4080-93c9-84ae1ab60734",
+    "name": "pyMock",
+    "displayName": "Python mock plugin",
+    "paramTypes": [
+        {
+            "id": "1d3422cb-fcdd-4ab5-ac6e-056288439343",
+            "name": "autoThingCount",
+            "displayName": "Number of auto things",
+            "type": "int",
+            "defaultValue": 0
+        }
+    ],
+    "vendors": [
+        {
+            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
+            "name": "nymea",
+            "displayName": "nymea GmbH",
+            "thingClasses": [
+                {
+                    "id": "727d3e73-505d-4118-adf4-6408b46a5d48",
+                    "name": "pyMockAuto",
+                    "displayName": "Auto Python mock thing",
+                    "createMethods": ["auto"],
+                    "setupMethod": "justAdd",
+                    "stateTypes": [
+                        {
+                            "id": "12c82472-56b0-4229-b324-4aaa6850320e",
+                            "name": "state1",
+                            "displayName": "State 1",
+                            "displayNameEvent": "State 1 changed",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ]
+                },
+                {
+                    "id": "1761c256-99b1-41bd-988a-a76087f6a4f1",
+                    "name": "pyMock",
+                    "displayName": "Python mock thing",
+                    "createMethods": ["user"],
+                    "setupMethod": "justAdd",
+                    "stateTypes": [
+                        {
+                            "id": "24714828-93ec-41a7-875e-6a0b5b57d25c",
+                            "name": "state1",
+                            "displayName": "State 1",
+                            "displayNameEvent": "State 1 changed",
+                            "displayNameAction": "Set state 1",
+                            "type": "int",
+                            "defaultValue": 0
+                        }
+                    ]
+                },
+                {
+                    "id": "248c5046-847b-44d0-ab7c-684ff79197dc",
+                    "name": "pyMockDiscoveryPairing",
+                    "displayName": "Python mock thing with discovery and pairing",
+                    "createMethods": ["discovery"],
+                    "setupMethod": "userAndPassword",
+                    "stateTypes": [
+                        {
+                            "id": "99d0af17-9e8c-42bb-bece-a5d114f051d3",
+                            "name": "state1",
+                            "displayName": "State 1",
+                            "displayNameEvent": "State 1 changed",
+                            "displayNameAction": "Set state 1",
+                            "type": "int",
+                            "defaultValue": 0
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

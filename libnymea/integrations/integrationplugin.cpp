@@ -374,9 +374,8 @@ ParamTypes IntegrationPlugin::configurationDescription() const
     return m_metaData.pluginSettings();
 }
 
-void IntegrationPlugin::initPlugin(const PluginMetadata &metadata, ThingManager *thingManager, HardwareManager *hardwareManager)
+void IntegrationPlugin::initPlugin(ThingManager *thingManager, HardwareManager *hardwareManager)
 {
-    m_metaData = metadata;
     m_thingManager = thingManager;
     m_hardwareManager = hardwareManager;
     m_storage = new QSettings(NymeaSettings::settingsPath() + "/pluginconfig-" + pluginId().toString().remove(QRegExp("[{}]")) + ".conf", QSettings::IniFormat, this);

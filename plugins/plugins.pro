@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
 !disabletesting: {
-  SUBDIRS += mock
+  SUBDIRS += mock pymock
 }
 

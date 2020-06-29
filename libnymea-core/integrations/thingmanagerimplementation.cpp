@@ -95,6 +95,8 @@ ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardware
 
     // Make sure this is always emitted after plugins and things are loaded
     QMetaObject::invokeMethod(this, "onLoaded", Qt::QueuedConnection);
+
+    PythonIntegrationPlugin::initPython();
 }
 
 ThingManagerImplementation::~ThingManagerImplementation()
@@ -159,13 +161,13 @@ QList<QJsonObject> ThingManagerImplementation::pluginsMetadata()
     return pluginList;
 }
 
-void ThingManagerImplementation::registerStaticPlugin(IntegrationPlugin *plugin, const PluginMetadata &metaData)
+void ThingManagerImplementation::registerStaticPlugin(IntegrationPlugin *plugin)
 {
-    if (!metaData.isValid()) {
+    if (!plugin->metadata().isValid()) {
         qCWarning(dcThingManager()) << "Plugin metadata not valid. Not loading static plugin:" << plugin->pluginName();
         return;
     }
-    loadPlugin(plugin, metaData);
+    loadPlugin(plugin);
 }
 
 IntegrationPlugins ThingManagerImplementation::plugins() const
@@ -1230,161 +1232,73 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
 }
 
 void ThingManagerImplementation::loadPlugins()
-{
+{    
+    QStringList searchDirs;
+    // Add first level of subdirectories to the plugin search dirs so we can point to a collection of plugins
     foreach (const QString &path, pluginSearchDirs()) {
+        searchDirs.append(path);
+        QDir dir(path);
+        foreach (const QString &subdir, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+            searchDirs.append(path + '/' + subdir);
+        }
+    }
+
+    foreach (const QString &path, searchDirs) {
         QDir dir(path);
         qCDebug(dcThingManager) << "Loading plugins from:" << dir.absolutePath();
-        foreach (const QString &entry, dir.entryList()) {
-            QFileInfo fi;
+        foreach (const QString &entry, dir.entryList({"*.so", "*.js", "*.py"}, QDir::Files)) {
+
+            IntegrationPlugin *plugin = nullptr;
+
+            QFileInfo fi(path + '/' + entry);
             if (entry.startsWith("libnymea_integrationplugin") && entry.endsWith(".so")) {
-                fi.setFile(path + "/" + entry);
-            } else {
-                fi.setFile(path + "/" + entry + "/libnymea_integrationplugin" + entry + ".so");
-            }
+                plugin = createCppIntegrationPlugin(fi.absoluteFilePath());
 
-            if (!fi.exists())
-                continue;
-
-            // Check plugin API version compatibility
-            QLibrary lib(fi.absoluteFilePath());
-            if (!lib.load()) {
-                qCWarning(dcThingManager()).nospace() << "Error loading plugin " << fi.absoluteFilePath() << ": " << lib.errorString();
-                continue;
-            }
-
-            QFunctionPointer versionFunc = lib.resolve("libnymea_api_version");
-            if (!versionFunc) {
-                qCWarning(dcThingManager()).nospace() << "Unable to resolve version in plugin " << fi.absoluteFilePath() << ". Not loading plugin.";
-                lib.unload();
-                continue;
-            }
-
-            QString version = reinterpret_cast<QString(*)()>(versionFunc)();
-            lib.unload();
-            QStringList parts = version.split('.');
-            QStringList coreParts = QString(LIBNYMEA_API_VERSION).split('.');
-            if (parts.length() != 3 || parts.at(0).toInt() != coreParts.at(0).toInt() || parts.at(1).toInt() > coreParts.at(1).toInt()) {
-                qCWarning(dcThingManager()).nospace() << "Libnymea API mismatch for " << fi.absoluteFilePath() << ". Core API: " << LIBNYMEA_API_VERSION << ", Plugin API: " << version;
-                continue;
-            }
-
-            // Version is ok. Now load the plugin
-            QPluginLoader loader;
-            loader.setFileName(fi.absoluteFilePath());
-            loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
-
-            qCDebug(dcThingManager()) << "Loading plugin from:" << fi.absoluteFilePath();
-            if (!loader.load()) {
-                qCWarning(dcThingManager) << "Could not load plugin data of" << entry << "\n" << loader.errorString();
-                continue;
-            }
-
-            QJsonObject pluginInfo = loader.metaData().value("MetaData").toObject();
-            PluginMetadata metaData(pluginInfo, false, false);
-            if (!metaData.isValid()) {
-                foreach (const QString &error, metaData.validationErrors()) {
-                    qCWarning(dcThingManager()) << error;
-                }
-                loader.unload();
-                continue;
-            }
-
-            IntegrationPlugin *pluginIface = qobject_cast<IntegrationPlugin *>(loader.instance());
-            if (!pluginIface) {
-                qCWarning(dcThingManager) << "Could not get plugin instance of" << entry;
-                loader.unload();
-                continue;
-            }
-            if (m_integrationPlugins.contains(pluginIface->pluginId())) {
-                qCWarning(dcThingManager()) << "A plugin with this ID is already loaded. Not loading" << entry;
-                continue;
-            }
-            loadPlugin(pluginIface, metaData);
-            PluginInfoCache::cachePluginInfo(pluginInfo);
-        }
-    }
-
+            } else if (entry.startsWith("integrationplugin") && entry.endsWith(".js")) {
 #if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
-    foreach (const QString &path, pluginSearchDirs()) {
-        QDir dir(path);
-        qCDebug(dcThingManager) << "Loading JS plugins from:" << dir.absolutePath();
-        foreach (const QString &entry, dir.entryList()) {
-            QFileInfo jsFi;
-            QFileInfo jsonFi;
-
-            if (entry.endsWith(".js")) {
-                jsFi.setFile(path + "/" + entry);
-            } else {
-                jsFi.setFile(path + "/" + entry + "/" + entry + ".js");
-            }
-
-            if (!jsFi.exists()) {
-                continue;
-            }
-
-            ScriptIntegrationPlugin *plugin = new ScriptIntegrationPlugin(this);
-            bool ret = plugin->loadScript(jsFi.absoluteFilePath());
-            if (!ret) {
-                delete plugin;
-                qCWarning(dcThingManager()) << "JS plugin failed to load";
-                continue;
-            }
-            PluginMetadata metaData(plugin->metaData());
-            if (!metaData.isValid()) {
-                qCWarning(dcThingManager()) << "Not loading JS plugin. Invalid metadata.";
-                foreach (const QString &error, metaData.validationErrors()) {
-                    qCWarning(dcThingManager()) << error;
-                    delete plugin;
-                    continue;
+                ScriptIntegrationPlugin *p = new ScriptIntegrationPlugin(this);
+                bool ok = p->loadScript(fi.absoluteFilePath());
+                if (ok) {
+                    plugin = p;
+                } else {
+                    delete p;
                 }
-            }
-            loadPlugin(plugin, metaData);
-        }
-    }
+#else
+                qCWarning(dcThingManager()) << "Not loading JS plugin as JS plugin support is not included in this nymea instance."
 #endif
-
-    PythonIntegrationPlugin::initPython();
-
-    {
-        PythonIntegrationPlugin *p = new PythonIntegrationPlugin(this);
-        bool ok = p->loadScript("/home/micha/Develop/nymea-plugin-pytest/integrationpluginpytest.py");
-        if (!ok) {
-            qCWarning(dcThingManager()) << "Error loading plugin";
-            return;
-        }
-        if (!p->metadata().isValid()) {
-            qCWarning(dcThingManager()) << "Not loading Python plugin. Invalid metadata.";
-            foreach (const QString &error, p->metadata().validationErrors()) {
-                qCWarning(dcThingManager()) << error;
+            } else if (entry.startsWith("integrationplugin") && entry.endsWith(".py")) {
+                PythonIntegrationPlugin *p = new PythonIntegrationPlugin(this);
+                bool ok = p->loadScript(fi.absoluteFilePath());
+                if (ok) {
+                    plugin = p;
+                } else {
+                    delete p;
+                }
+            } else {
+                // Not a known plugin type
+                continue;
             }
-            return;
-        }
-        loadPlugin(p, p->metadata());
-    }
-    {
-        PythonIntegrationPlugin *p = new PythonIntegrationPlugin(this);
-        bool ok = p->loadScript("/home/micha/Develop/nymea-plugin-pytest2/integrationpluginpytest2.py");
-        if (!ok) {
-            qCWarning(dcThingManager()) << "Error loading plugin";
-            return;
-        }
-        PluginMetadata metaData(p->metadata());
-        if (!metaData.isValid()) {
-            qCWarning(dcThingManager()) << "Not loading Python plugin. Invalid metadata.";
-            foreach (const QString &error, metaData.validationErrors()) {
-                qCWarning(dcThingManager()) << error;
-            }
-            return;
-        }
-        loadPlugin(p, metaData);
 
+            if (!plugin) {
+                qCWarning(dcThingManager()) << "Error loading plugin:" << fi.absoluteFilePath();
+                continue;
+            }
+
+            if (m_integrationPlugins.contains(plugin->pluginId())) {
+                qCWarning(dcThingManager()) << "A plugin with this ID is already loaded. Not loading" << entry << plugin->pluginId();
+                delete plugin;
+                continue;
+            }
+            loadPlugin(plugin);
+            PluginInfoCache::cachePluginInfo(plugin->metadata().jsonObject());
+        }
     }
 }
 
-void ThingManagerImplementation::loadPlugin(IntegrationPlugin *pluginIface, const PluginMetadata &metaData)
+void ThingManagerImplementation::loadPlugin(IntegrationPlugin *pluginIface)
 {
     pluginIface->setParent(this);
-    pluginIface->initPlugin(metaData, this, m_hardwareManager);
+    pluginIface->initPlugin(this, m_hardwareManager);
 
     qCDebug(dcThingManager) << "**** Loaded plugin" << pluginIface->pluginName();
     foreach (const Vendor &vendor, pluginIface->supportedVendors()) {
@@ -2150,6 +2064,68 @@ void ThingManagerImplementation::registerThing(Thing *thing)
     connect(thing, &Thing::stateValueChanged, this, &ThingManagerImplementation::slotThingStateValueChanged);
     connect(thing, &Thing::settingChanged, this, &ThingManagerImplementation::slotThingSettingChanged);
     connect(thing, &Thing::nameChanged, this, &ThingManagerImplementation::slotThingNameChanged);
+}
+
+IntegrationPlugin *ThingManagerImplementation::createCppIntegrationPlugin(const QString &absoluteFilePath)
+{
+    // Check plugin API version compatibility
+    QLibrary lib(absoluteFilePath);
+    if (!lib.load()) {
+        qCWarning(dcThingManager()).nospace() << "Error loading plugin " << absoluteFilePath << ": " << lib.errorString();
+        return nullptr;
+    }
+
+    QFunctionPointer versionFunc = lib.resolve("libnymea_api_version");
+    if (!versionFunc) {
+        qCWarning(dcThingManager()).nospace() << "Unable to resolve version in plugin " << absoluteFilePath << ". Not loading plugin.";
+        lib.unload();
+        return nullptr;
+    }
+
+    QString version = reinterpret_cast<QString(*)()>(versionFunc)();
+    lib.unload();
+    QStringList parts = version.split('.');
+    QStringList coreParts = QString(LIBNYMEA_API_VERSION).split('.');
+    if (parts.length() != 3 || parts.at(0).toInt() != coreParts.at(0).toInt() || parts.at(1).toInt() > coreParts.at(1).toInt()) {
+        qCWarning(dcThingManager()).nospace() << "Libnymea API mismatch for " << absoluteFilePath << ". Core API: " << LIBNYMEA_API_VERSION << ", Plugin API: " << version;
+        return nullptr;
+    }
+
+    // Version is ok. Now load the plugin
+    QPluginLoader loader;
+    loader.setFileName(absoluteFilePath);
+    loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+
+    qCDebug(dcThingManager()) << "Loading plugin from:" << absoluteFilePath;
+    if (!loader.load()) {
+        qCWarning(dcThingManager) << "Could not load plugin data of" << absoluteFilePath << "\n" << loader.errorString();
+        return nullptr;
+    }
+
+    QJsonObject pluginInfo = loader.metaData().value("MetaData").toObject();
+    PluginMetadata metaData(pluginInfo, false, false);
+    if (!metaData.isValid()) {
+        foreach (const QString &error, metaData.validationErrors()) {
+            qCWarning(dcThingManager()) << error;
+        }
+        loader.unload();
+        return nullptr;
+    }
+
+    QObject *p = loader.instance();
+    if (!p) {
+        qCWarning(dcThingManager()) << "Error loading plugin:" << loader.errorString();
+        return nullptr;
+    }
+    IntegrationPlugin *pluginIface = qobject_cast<IntegrationPlugin *>(p);
+    if (!pluginIface) {
+        qCWarning(dcThingManager) << "Could not get plugin instance of" << absoluteFilePath;
+        return nullptr;
+    }
+
+    pluginIface->setMetaData(PluginMetadata(pluginInfo));
+
+    return pluginIface;
 }
 
 void ThingManagerImplementation::storeThingStates(Thing *thing)

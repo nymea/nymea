@@ -359,17 +359,28 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     stateType.setUnit(unitVerification.second);
                 }
 
-                stateType.setDefaultValue(st.value("defaultValue").toVariant());
-                if (st.contains("minValue"))
-                    stateType.setMinValue(st.value("minValue").toVariant());
+                QVariant defaultValue = st.value("defaultValue").toVariant();
+                defaultValue.convert(stateType.type());
+                stateType.setDefaultValue(defaultValue);
 
-                if (st.contains("maxValue"))
-                    stateType.setMaxValue(st.value("maxValue").toVariant());
+                if (st.contains("minValue")) {
+                    QVariant minValue = st.value("minValue").toVariant();
+                    minValue.convert(stateType.type());
+                    stateType.setMinValue(minValue);
+                }
+
+                if (st.contains("maxValue")) {
+                    QVariant maxValue = st.value("maxValue").toVariant();
+                    maxValue.convert(stateType.type());
+                    stateType.setMaxValue(maxValue);
+                }
 
                 if (st.contains("possibleValues")) {
                     QVariantList possibleValues;
                     foreach (const QJsonValue &possibleValueJson, st.value("possibleValues").toArray()) {
-                        possibleValues.append(possibleValueJson.toVariant());
+                        QVariant possibleValue = possibleValueJson.toVariant();
+                        possibleValue.convert(stateType.type());
+                        possibleValues.append(possibleValue);
                     }
                     stateType.setPossibleValues(possibleValues);
 
@@ -824,7 +835,13 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
             m_validationErrors.append("Param type \"" + paramName + "\" has duplicate UUID: " + paramTypeId.toString());
             hasErrors = true;
         }
-        ParamType paramType(paramTypeId, paramName, t, pt.value("defaultValue").toVariant());
+        QVariant defaultValue = pt.value("defaultValue").toVariant();
+        if (!defaultValue.isNull()) {
+            // Only convert if there actually is a value as we want it to be null if it isn't specced
+            // explicitly and convert() would initialize it to the variant's default value
+            defaultValue.convert(t);
+        }
+        ParamType paramType(paramTypeId, paramName, t, defaultValue);
         paramType.setDisplayName(pt.value("displayName").toString());
 
 
@@ -861,7 +878,19 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
             paramType.setReadOnly(pt.value("readOnly").toBool());
 
         paramType.setAllowedValues(allowedValues);
-        paramType.setLimits(pt.value("minValue").toVariant(), pt.value("maxValue").toVariant());
+        QVariant minValue = pt.value("minValue").toVariant();
+        if (!minValue.isNull()) {
+            // Only convert if there actually is a value as we want it to be null if it isn't specced
+            // explicitly and convert() would initialize it to the variant's default value
+            minValue.convert(t);
+        }
+        QVariant maxValue = pt.value("maxValue").toVariant();
+        if (!maxValue.isNull()) {
+            // Only convert if there actually is a value as we want it to be null if it isn't specced
+            // explicitly and convert() would initialize it to the variant's default value
+            maxValue.convert(t);
+        }
+        paramType.setLimits(minValue, maxValue);
         paramType.setIndex(index++);
         paramTypes.append(paramType);
     }

@@ -85,7 +85,6 @@ void TestActions::executeAction()
     params.insert("deviceId", deviceId);
     params.insert("params", actionParams);
     QVariant response = injectAndWait("Actions.ExecuteAction", params);
-    qDebug() << "executeActionresponse" << response;
     verifyError(response, "deviceError", enumValueName(error));
 
     // Fetch action execution history from mock device

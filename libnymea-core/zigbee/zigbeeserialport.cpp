@@ -28,40 +28,53 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ZIGBEEMANAGER_H
-#define ZIGBEEMANAGER_H
-
-#include <QObject>
-
-#include <nymea-zigbee/zigbeenetworkmanager.h>
-
 #include "zigbeeserialport.h"
 
 namespace nymeaserver {
 
-class ZigbeeManager : public QObject
+ZigbeeSerialPort::ZigbeeSerialPort()
 {
-    Q_OBJECT
-public:
-    explicit ZigbeeManager(QObject *parent = nullptr);
-
-    bool available() const;
-    bool enabled() const;
-
-    ZigbeeNetwork *zigbeeNetwork() const;
-
-    ZigbeeSerialPortList availablePorts();
-
-    void createZigbeeNetwork(const QString &serialPort, qint32 baudrate, ZigbeeNetworkManager::BackendType backend);
-
-private:
-    ZigbeeNetwork *m_zigbeeNetwork = nullptr;
-
-signals:
-    void zigbeeNetworkChanged(ZigbeeNetwork *zigbeeNetwork);
-
-};
 
 }
 
-#endif // ZIGBEEMANAGER_H
+QString ZigbeeSerialPort::name() const
+{
+    return m_name;
+}
+
+void ZigbeeSerialPort::setName(const QString &name)
+{
+    m_name = name;
+}
+
+QString ZigbeeSerialPort::description() const
+{
+    return m_description;
+}
+
+void ZigbeeSerialPort::setDescription(const QString &description)
+{
+    m_description = description;
+}
+
+QString ZigbeeSerialPort::systemLocation() const
+{
+    return m_systemLocation;
+}
+
+void ZigbeeSerialPort::setSystemLocation(const QString &systemLocation)
+{
+    m_systemLocation = systemLocation;
+}
+
+QVariant ZigbeeSerialPortList::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
+void ZigbeeSerialPortList::put(const QVariant &variant)
+{
+    append(variant.value<ZigbeeSerialPort>());
+}
+
+}

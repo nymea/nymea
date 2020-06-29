@@ -3,7 +3,7 @@ TARGET = nymea-core
 
 include(../nymea.pri)
 
-QT += sql qml
+QT += sql qml serialport
 INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 
@@ -129,7 +129,8 @@ HEADERS += nymeacore.h \
     cloud/cloudtransport.h \
     debugreportgenerator.h \
     platform/platform.h \ \
-    zigbee/zigbeemanager.h
+    zigbee/zigbeemanager.h \
+    zigbee/zigbeeserialport.h
 
 
 SOURCES += nymeacore.cpp \
@@ -214,7 +215,8 @@ SOURCES += nymeacore.cpp \
     cloud/cloudtransport.cpp \
     debugreportgenerator.cpp \
     platform/platform.cpp \ \
-    zigbee/zigbeemanager.cpp
+    zigbee/zigbeemanager.cpp \
+    zigbee/zigbeeserialport.cpp
 
 
 versionAtLeast(QT_VERSION, 5.12.0) {

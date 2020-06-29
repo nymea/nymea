@@ -38,9 +38,9 @@
 
 class TimeEventItem
 {
-//    Q_GADGET
-//    Q_PROPERTY(QDateTime datetime READ dateTime WRITE setDateTime USER true)
-//    Q_PROPERTY(QTime time READ time WRITE setTime USER true)
+    Q_GADGET
+    Q_PROPERTY(QDateTime datetime READ dateTime WRITE setDateTime USER true)
+    Q_PROPERTY(QTime time READ time WRITE setTime USER true)
     Q_PROPERTY(RepeatingOption repeating READ repeatingOption WRITE setRepeatingOption USER true)
 
 public:

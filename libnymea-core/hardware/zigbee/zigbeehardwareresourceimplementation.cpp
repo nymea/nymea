@@ -28,7 +28,7 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "zigbeemanagerimplementation.h"
+#include "zigbeehardwareresourceimplementation.h"
 #include "loggingcategories.h"
 #include "nymeasettings.h"
 

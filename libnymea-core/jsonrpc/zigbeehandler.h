@@ -39,13 +39,22 @@
 
 namespace nymeaserver {
 
+class ZigbeeManager;
+
 class ZigbeeHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit ZigbeeHandler(QObject *parent = nullptr);
+    explicit ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent = nullptr);
 
     QString name() const override;
+
+    Q_INVOKABLE JsonReply *GetNetworkStatus(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetUartInterfaces(const QVariantMap &params);
+
+
+private:
+    ZigbeeManager *m_zigbeeManager = nullptr;
 
 signals:
 

@@ -29,46 +29,108 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "zigbeehandler.h"
+#include "zigbee/zigbeemanager.h"
 
 namespace nymeaserver {
 
-ZigbeeHandler::ZigbeeHandler(QObject *parent) :
-    JsonHandler(parent)
+ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
+    JsonHandler(parent),
+    m_zigbeeManager(zigbeeManager)
 {
     registerEnum<ZigbeeNetwork::State>();
     registerEnum<ZigbeeNetworkManager::BackendType>();
 
+    registerObject<ZigbeeSerialPort>();
+    registerObject<ZigbeeSerialPort, ZigbeeSerialPortList>();
+
     QVariantMap params, returns;
     QString description;
+
+    /* 1. GetNetworkStatus
+     * 2. Setup network if the is no network configured
+     *      - GetUartInterfaces
+     *      - Setup network with given UART interface and backend type
+     *      -
+     */
 
     params.clear(); returns.clear();
     description = "Get the status of the current network.";
     returns.insert("available", enumValueName(Bool));
     returns.insert("enabled", enumValueName(Bool));
     returns.insert("configured", enumValueName(Bool));
-    returns.insert("state", enumRef<ZigbeeNetwork::State>());
+    returns.insert("serialPort", enumValueName(String));
+    returns.insert("baudRate", enumValueName(Uint));
+    returns.insert("backend", enumRef<ZigbeeNetworkManager::BackendType>());
+    returns.insert("firmwareVersion", enumValueName(String));
+    returns.insert("networkIeeeeAddress", enumValueName(String));
+    returns.insert("networkPanId", enumValueName(Uint));
+    returns.insert("channel", enumValueName(Uint));
+    returns.insert("permitJoin", enumValueName(Bool));
+    returns.insert("networkState", enumRef<ZigbeeNetwork::State>());
     registerMethod("GetNetworkStatus", description, params, returns);
-
 
     // GetUartInterfaces
     params.clear(); returns.clear();
     description = "Get the available UART interfaces in order to set up the zigbee network on the approriate serial interface.";
-    returns.insert("available", enumValueName(Bool));
-    returns.insert("enabled", enumValueName(Bool));
-    returns.insert("configured", enumValueName(Bool));
-    returns.insert("state", enumRef<ZigbeeNetwork::State>());
+    returns.insert("uartInterfaces", objectRef<ZigbeeSerialPortList>());
     registerMethod("GetUartInterfaces", description, params, returns);
 
+    // GetNetworkStatus
+    // NetworkStatusChanged
+    // SetupNetwork(network, uart, baudrate, backendtype)
+    // PermitJoin(time, o:nwk address)
+    // FactoryResetNetwork
 
-    // Setup network, uart, baudrate, backendtype
+    // GetNodes [Node(mac, nwkAddress, name, manufacturer, type, descriptors, associacted device, state, reachable)]
+    // NodeAdded
+    // NodeChanged (state, node base information, associated deviceId)
+    // RemoveNode
+    // NodeRemoved
 
-
+    // GetGroups
+    // GroupChanged
+    // AddGroup
+    // GroupAdded
+    // RemoveGroup
+    // GroupRemoved
 
 }
 
 QString ZigbeeHandler::name() const
 {
     return "Zigbee";
+}
+
+JsonReply *ZigbeeHandler::GetNetworkStatus(const QVariantMap &params)
+{
+    Q_UNUSED(params)
+
+    QVariantMap ret;
+//    if (m_zigbeeManager->zigbeeNetwork()) {
+//        ret.insert("available", m_zigbeeManager->available());
+//        ret.insert("enabled", m_zigbeeManager->enabled());
+//        ret.insert("configured", true);
+//        ret.insert("networkState", m_zigbeeManager->zigbeeNetwork()->state());
+//    } else {
+//        ret.insert("available", m_zigbeeManager->available());
+//        ret.insert("enabled", m_zigbeeManager->enabled());
+//        ret.insert("configured", false);
+//        ret.insert("state", ZigbeeNetwork::StateUninitialized);
+//    }
+
+    return createReply(ret);
+}
+
+JsonReply *ZigbeeHandler::GetUartInterfaces(const QVariantMap &params)
+{
+    Q_UNUSED(params)
+    QVariantMap ret;
+    QVariantList portList;
+    foreach (const ZigbeeSerialPort &serialPort, m_zigbeeManager->availablePorts()) {
+        portList << pack(serialPort);
+    }
+    ret.insert("uartInterfaces", portList);
+    return createReply(ret);
 }
 
 }

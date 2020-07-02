@@ -44,6 +44,7 @@ static PyObject* PyThing_new(PyTypeObject *type, PyObject */*args*/, PyObject */
     if (self == NULL) {
         return nullptr;
     }
+    qWarning() << "*creating pyThing" << self;
     self->mutex = new QMutex();
 
     return (PyObject*)self;
@@ -86,6 +87,7 @@ static void PyThing_setThing(PyThing *self, Thing *thing)
 
 
 static void PyThing_dealloc(PyThing * self) {
+    qWarning() << "destryoing pything" << self;
     Py_XDECREF(self->name);
     Py_XDECREF(self->id);
     Py_XDECREF(self->thingClassId);
@@ -213,7 +215,6 @@ static PyMethodDef PyThing_methods[] = {
 };
 
 static PyMemberDef PyThing_members[] = {
-    {"nameChangedHandler", T_OBJECT_EX, offsetof(PyThing, nameChangedHandler), READONLY, "Set a callback for when the thing name changes"},
     {"nameChangedHandler", T_OBJECT_EX, offsetof(PyThing, nameChangedHandler), 0, "Set a callback for when the thing name changes"},
     {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
 };

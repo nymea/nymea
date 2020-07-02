@@ -21,9 +21,11 @@ def startMonitoringAutoThings():
         logger.log("Creating new auto thing")
         descriptor = nymea.ThingDescriptor(pyMockAutoThingClassId, "Python Mock auto thing")
         autoThingsAppeared([descriptor])
+    logger.log("Done start monitoring auto things")
 
 
 async def setupThing(info):
+    logger.log("setupThing for", info.thing.name)
     info.finish(nymea.ThingErrorNoError)
 
 

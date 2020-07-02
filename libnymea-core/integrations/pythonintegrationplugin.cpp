@@ -43,8 +43,9 @@ PyObject* nymea_flush(PyObject* /*self*/, PyObject* /*args*/)
     Py_RETURN_NONE;
 }
 
-PyObject* task_done(PyObject* /*self*/, PyObject* args)
+PyObject* PythonIntegrationPlugin::task_done(PyObject* self, PyObject* args)
 {
+    Q_UNUSED(self)
 
     PyObject *result = nullptr;
 
@@ -63,8 +64,9 @@ PyObject* task_done(PyObject* /*self*/, PyObject* args)
         Py_XDECREF(repr);
         Py_XDECREF(str);
 
-        qCWarning(dcThingManager()) << "Exception:" << bytes;
+        qCWarning(dcThingManager()) << "Exception in plugin:" << bytes;
 
+        PyErr_Clear();
     }
 
     Py_RETURN_NONE;
@@ -75,7 +77,7 @@ static PyMethodDef nymea_methods[] =
 {
     {"write", nymea_write, METH_VARARGS, "write to stdout through qDebug()"},
     {"flush", nymea_flush, METH_VARARGS, "flush stdout (no-op)"},
-    {"task_done", task_done, METH_VARARGS, "callback to clean up after asyc coroutines"},
+    {"task_done", PythonIntegrationPlugin::task_done, METH_VARARGS, "callback to clean up after asyc coroutines"},
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
@@ -181,7 +183,9 @@ PyObject *PythonIntegrationPlugin::pyMyThings(PyObject *self, PyObject */*args*/
     PyObject* result = PyTuple_New(plugin->m_things.count());
     for (int i = 0; i < plugin->m_things.count(); i++) {
         Thing *thing = plugin->m_things.keys().at(i);
-        PyTuple_SET_ITEM(result, i, (PyObject*)plugin->m_things.value(thing));
+        PyThing *pyThing = plugin->m_things.value(thing);
+        Py_INCREF(pyThing);
+        PyTuple_SET_ITEM(result, i, (PyObject*)pyThing);
     }
     plugin->m_mutex.unlock();
     return result;
@@ -395,6 +399,7 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
     PyThingSetupInfo *pyInfo = (PyThingSetupInfo*)PyObject_CallObject((PyObject*)&PyThingSetupInfoType, NULL);
     pyInfo->info = info;
     pyInfo->pyThing = pyThing;
+    Py_INCREF(pyThing);
 
     m_things.insert(info->thing(), pyThing);
 
@@ -572,7 +577,7 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
 {
     PyGILState_STATE s = PyGILState_Ensure();
 
-    qCDebug(dcThingManager()) << "Calling python plugin function" << function;
+    qCDebug(dcThingManager()) << "Calling python plugin function" << function << "on plugin" << s_plugins.key(m_module)->pluginName();
     PyObject *pFunc = PyObject_GetAttrString(m_module, function.toUtf8());
     if(!pFunc || !PyCallable_Check(pFunc)) {
         PyErr_Clear();
@@ -643,9 +648,10 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
 void PythonIntegrationPlugin::cleanupPyThing(PyThing *pyThing)
 {
     // It could happen that the python thread is currently holding the mutex
-    // whike waiting on a blocking queued connection on the thing (e.g. PyThing_name).
+    // on the thing (e.g. PyThing_name).
     // We'd deadlock if we wait for the mutex forever here. So let's process events
     // while waiting for it...
+    qWarning() << "Locking cleanup";
     while (!pyThing->mutex->tryLock()) {
         qApp->processEvents(QEventLoop::EventLoopExec);
     }

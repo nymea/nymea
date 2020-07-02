@@ -41,6 +41,10 @@ public:
     static PyObject* pyMyThings(PyObject *self, PyObject* args);
     static PyObject* pyAutoThingsAppeared(PyObject *self, PyObject* args);
 
+public:
+    // python callbacks
+    static PyObject* task_done(PyObject* self, PyObject* args);
+
 private:
     void exportIds();
     void exportThingClass(const ThingClass &thingClass);

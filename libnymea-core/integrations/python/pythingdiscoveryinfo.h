@@ -165,11 +165,6 @@ static void registerThingDiscoveryInfoType(PyObject *module)
         return;
     }
     PyModule_AddObject(module, "ThingDiscoveryInfo", (PyObject *)&PyThingDiscoveryInfoType);
-
-    QMetaEnum thingErrorEnum = QMetaEnum::fromType<Thing::ThingError>();
-    for (int i = 0; i < thingErrorEnum.keyCount(); i++) {
-        PyModule_AddObject(module, thingErrorEnum.key(i), PyLong_FromLong(thingErrorEnum.value(i)));
-    }
 }
 
 

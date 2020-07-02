@@ -51,7 +51,7 @@ private:
     void exportBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &thingClassName);
 
 
-    void callPluginFunction(const QString &function, PyObject *param1 = nullptr, PyObject *param2 = nullptr);
+    bool callPluginFunction(const QString &function, PyObject *param1 = nullptr, PyObject *param2 = nullptr);
     void cleanupPyThing(PyThing *pyThing);
 
 private:

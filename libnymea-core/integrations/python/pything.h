@@ -12,6 +12,7 @@
 #include <QPointer>
 #include <QThread>
 #include <QMutexLocker>
+#include <QMetaEnum>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -29,6 +30,8 @@ typedef struct _thing {
     PyObject_HEAD
     Thing *thing = nullptr;
     PyObject *name = nullptr;
+    PyObject *id = nullptr;
+    PyObject *thingClassId = nullptr;
     PyObject *params = nullptr;
     PyObject *settings = nullptr;
     PyObject *nameChangedHandler = nullptr;
@@ -51,7 +54,8 @@ static void PyThing_setThing(PyThing *self, Thing *thing)
     self->thing = thing;
 
     self->name = PyUnicode_FromString(self->thing->name().toUtf8().data());
-    Py_INCREF(self->name);
+    self->id = PyUnicode_FromString(self->thing->id().toString().toUtf8().data());
+    self->thingClassId = PyUnicode_FromString(self->thing->thingClassId().toString().toUtf8().data());
 
     QObject::connect(thing, &Thing::nameChanged, [=](){
         self->mutex->lock();
@@ -67,29 +71,12 @@ static void PyThing_setThing(PyThing *self, Thing *thing)
         PyGILState_STATE s = PyGILState_Ensure();
         PyObject_CallFunctionObjArgs(self->nameChangedHandler, self, nullptr);
 
-        if (PyErr_Occurred()) {
-            PyObject *ptype, *pvalue, *ptraceback;
-            PyErr_Fetch(&ptype, &pvalue, &ptraceback);
-            if (pvalue) {
-                PyObject *pstr = PyObject_Str(pvalue);
-                if (pstr) {
-                    const char* err_msg = PyUnicode_AsUTF8(pstr);
-                    if (pstr) {
-                        qCWarning(dcThingManager()) << QString(err_msg);
-                    }
-                }
-                PyErr_Restore(ptype, pvalue, ptraceback);
-            }
-        }
-
         PyGILState_Release(s);
     });
 
     self->params = PyParams_FromParamList(self->thing->params());
-    Py_INCREF(self->params);
 
     self->settings = PyParams_FromParamList(self->thing->settings());
-    Py_INCREF(self->settings);
     QObject::connect(thing, &Thing::settingChanged, [=](){
         QMutexLocker(self->mutex);
         Py_XDECREF(self->settings);
@@ -99,6 +86,9 @@ static void PyThing_setThing(PyThing *self, Thing *thing)
 
 
 static void PyThing_dealloc(PyThing * self) {
+    Py_XDECREF(self->name);
+    Py_XDECREF(self->id);
+    Py_XDECREF(self->thingClassId);
     Py_XDECREF(self->name);
     Py_XDECREF(self->params);
     Py_XDECREF(self->settings);
@@ -117,6 +107,30 @@ static PyObject *PyThing_getName(PyThing *self, void */*closure*/)
 
     Py_INCREF(self->name);
     return self->name;
+}
+
+static PyObject *PyThing_getId(PyThing *self, void */*closure*/)
+{
+    QMutexLocker(self->mutex);
+    if (!self->thing) {
+        PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
+        return nullptr;
+    }
+
+    Py_INCREF(self->id);
+    return self->id;
+}
+
+static PyObject *PyThing_getThingClassId(PyThing *self, void */*closure*/)
+{
+    QMutexLocker(self->mutex);
+    if (!self->thing) {
+        PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
+        return nullptr;
+    }
+
+    Py_INCREF(self->thingClassId);
+    return self->thingClassId;
 }
 
 static int PyThing_setName(PyThing *self, PyObject *value, void */*closure*/){
@@ -186,6 +200,8 @@ static PyObject * PyThing_emitEvent(PyThing* self, PyObject* args)
 
 static PyGetSetDef PyThing_getset[] = {
     {"name", (getter)PyThing_getName, (setter)PyThing_setName, "Thing name", nullptr},
+    {"id", (getter)PyThing_getId, 0, "ThingId", nullptr},
+    {"thingClassId", (getter)PyThing_getThingClassId, 0, "ThingClassId", nullptr},
     {"settings", (getter)PyThing_getSettings, (setter)PyThing_setSettings, "Thing settings", nullptr},
     {nullptr , nullptr, nullptr, nullptr, nullptr} /* Sentinel */
 };
@@ -197,6 +213,7 @@ static PyMethodDef PyThing_methods[] = {
 };
 
 static PyMemberDef PyThing_members[] = {
+    {"nameChangedHandler", T_OBJECT_EX, offsetof(PyThing, nameChangedHandler), READONLY, "Set a callback for when the thing name changes"},
     {"nameChangedHandler", T_OBJECT_EX, offsetof(PyThing, nameChangedHandler), 0, "Set a callback for when the thing name changes"},
     {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
 };
@@ -238,7 +255,7 @@ static PyTypeObject PyThingType = {
     0,                          /* tp_descr_set */
     0,                          /* tp_dictoffset */
     0,                          /* tp_init */
-    0,                          /* tp_alloc */
+    PyType_GenericAlloc,        /* tp_alloc */
     (newfunc)PyThing_new,       /* tp_new */
     0,                          /* tp_free */
     0,                          /* tp_is_gc */
@@ -260,6 +277,12 @@ static void registerThingType(PyObject *module)
         return;
     }
     PyModule_AddObject(module, "Thing", reinterpret_cast<PyObject*>(&PyThingType));
+
+    QMetaEnum thingErrorEnum = QMetaEnum::fromType<Thing::ThingError>();
+    for (int i = 0; i < thingErrorEnum.keyCount(); i++) {
+        PyModule_AddObject(module, thingErrorEnum.key(i), PyLong_FromLong(thingErrorEnum.value(i)));
+    }
+
 }
 
 

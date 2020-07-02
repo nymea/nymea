@@ -308,6 +308,7 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
 
     if (!m_module) {
         dumpError();
+        PyErr_Clear();
         qCWarning(dcThingManager()) << "Error importing python plugin from:" << fi.absoluteFilePath();
         PyGILState_Release(s);
         return false;
@@ -388,25 +389,18 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
     PyGILState_STATE s = PyGILState_Ensure();
 
     PyThing *pyThing = (PyThing*)PyObject_CallObject((PyObject*)&PyThingType, NULL);
+    dumpError();
     PyThing_setThing(pyThing, info->thing());
 
     PyThingSetupInfo *pyInfo = (PyThingSetupInfo*)PyObject_CallObject((PyObject*)&PyThingSetupInfoType, NULL);
     pyInfo->info = info;
     pyInfo->pyThing = pyThing;
 
+    m_things.insert(info->thing(), pyThing);
+
     PyGILState_Release(s);
 
-
-    connect(info, &ThingSetupInfo::finished, this, [=](){
-        if (info->status() == Thing::ThingErrorNoError) {
-            m_mutex.lock();
-            m_things.insert(info->thing(), pyThing);
-            m_mutex.unlock();
-        } else {
-            cleanupPyThing(pyThing);
-        }
-    });
-    connect(info, &ThingSetupInfo::aborted, this, [=](){
+    connect(info->thing(), &Thing::destroyed, this, [=](){
         cleanupPyThing(pyThing);
     });
     connect(info, &ThingSetupInfo::destroyed, this, [=](){
@@ -416,7 +410,11 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
     });
 
 
-    callPluginFunction("setupThing", reinterpret_cast<PyObject*>(pyInfo));
+    bool result = callPluginFunction("setupThing", reinterpret_cast<PyObject*>(pyInfo));
+    if (!result) {
+        // The python code did not even start, so let's finish (fail) the setup right away
+        info->finish(Thing::ThingErrorSetupFailed);
+    }
 }
 
 void PythonIntegrationPlugin::postSetupThing(Thing *thing)
@@ -456,8 +454,6 @@ void PythonIntegrationPlugin::thingRemoved(Thing *thing)
 
     callPluginFunction("thingRemoved", reinterpret_cast<PyObject*>(pyThing));
 
-    cleanupPyThing(pyThing);
-
     m_mutex.lock();
     m_things.remove(thing);
     m_mutex.unlock();
@@ -496,7 +492,7 @@ void PythonIntegrationPlugin::exportIds()
 
     foreach (const Vendor &vendor, supportedVendors()) {
         qCDebug(dcThingManager()) << "|- Vendor:" << vendor.name() << vendor.id().toString();
-        PyModule_AddStringConstant(m_module, vendor.name().toUtf8(), vendor.id().toString().toUtf8());
+        PyModule_AddStringConstant(m_module, QString("%1VendorId").arg(vendor.name()).toUtf8(), vendor.id().toString().toUtf8());
     }
 
     foreach (const ThingClass &thingClass, supportedThings()) {
@@ -572,17 +568,18 @@ void PythonIntegrationPlugin::exportBrowserItemActionTypes(const ActionTypes &ac
 }
 
 
-void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObject *param1, PyObject *param2)
+bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObject *param1, PyObject *param2)
 {
     PyGILState_STATE s = PyGILState_Ensure();
 
     qCDebug(dcThingManager()) << "Calling python plugin function" << function;
     PyObject *pFunc = PyObject_GetAttrString(m_module, function.toUtf8());
     if(!pFunc || !PyCallable_Check(pFunc)) {
+        PyErr_Clear();
         Py_XDECREF(pFunc);
         qCWarning(dcThingManager()) << "Python plugin does not implement" << function;
         PyGILState_Release(s);
-        return;
+        return false;
     }
 
 
@@ -595,14 +592,15 @@ void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     if (PyErr_Occurred()) {
         qCWarning(dcThingManager()) << "Error calling python method:";
         dumpError();
+        PyErr_Clear();
         PyGILState_Release(s);
-        return;
+        return false;
     }
 
     if (QByteArray(result->ob_type->tp_name) != "coroutine") {
         Py_DECREF(result);
         PyGILState_Release(s);
-        return;
+        return true;
     }
 
     // Spawn a event loop for python
@@ -638,6 +636,8 @@ void PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     Py_DECREF(result);
 
     PyGILState_Release(s);
+
+    return true;
 }
 
 void PythonIntegrationPlugin::cleanupPyThing(PyThing *pyThing)

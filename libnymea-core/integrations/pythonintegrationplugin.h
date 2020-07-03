@@ -40,6 +40,7 @@ public:
     static PyObject* pySetConfigValue(PyObject* self, PyObject* args);
     static PyObject* pyMyThings(PyObject *self, PyObject* args);
     static PyObject* pyAutoThingsAppeared(PyObject *self, PyObject* args);
+    static PyObject* pyAutoThingDisappeared(PyObject *self, PyObject* args);
 
 public:
     // python callbacks

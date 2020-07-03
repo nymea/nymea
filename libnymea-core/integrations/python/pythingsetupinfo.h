@@ -25,11 +25,13 @@ static PyObject* PyThingSetupInfo_new(PyTypeObject *type, PyObject */*args*/, Py
     if (self == NULL) {
         return nullptr;
     }
+    qWarning() << "++++ PyThingSetupInfo";
     self->mutex = new QMutex();
     return (PyObject*)self;
 }
 
 static void PyThingSetupInfo_dealloc(PyThingSetupInfo * self) {
+    qWarning() << "--- PyThingSetupInfo";
     delete self->mutex;
     Py_TYPE(self)->tp_free(self);
 }

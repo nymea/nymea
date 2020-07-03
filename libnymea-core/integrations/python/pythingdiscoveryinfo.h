@@ -36,8 +36,6 @@ static PyObject* PyThingDiscoveryInfo_new(PyTypeObject *type, PyObject */*args*/
 
 static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo * self)
 {
-    // FIXME: Why is this not called? Seems we're leaking...
-    Q_ASSERT(false);
     delete self->mutex;
     Py_TYPE(self)->tp_free(self);
 }

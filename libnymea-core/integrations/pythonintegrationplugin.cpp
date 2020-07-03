@@ -24,24 +24,6 @@ PyObject* PythonIntegrationPlugin::s_asyncio = nullptr;
 
 QHash<PythonIntegrationPlugin*, PyObject*> PythonIntegrationPlugin::s_plugins;
 
-// Write to stdout/stderr
-PyObject* nymea_write(PyObject* /*self*/, PyObject* args)
-{
-    const char *what;
-    if (!PyArg_ParseTuple(args, "s", &what))
-        return nullptr;
-    if (!QByteArray(what).trimmed().isEmpty()) {
-        qCDebug(dcThingManager()) << what;
-    }
-    Py_RETURN_NONE;
-}
-
-// Flush stdout/stderr
-PyObject* nymea_flush(PyObject* /*self*/, PyObject* /*args*/)
-{
-    // Not really needed... qDebug() flushes already on its own
-    Py_RETURN_NONE;
-}
 
 PyObject* PythonIntegrationPlugin::task_done(PyObject* self, PyObject* args)
 {
@@ -75,8 +57,6 @@ PyObject* PythonIntegrationPlugin::task_done(PyObject* self, PyObject* args)
 
 static PyMethodDef nymea_methods[] =
 {
-    {"write", nymea_write, METH_VARARGS, "write to stdout through qDebug()"},
-    {"flush", nymea_flush, METH_VARARGS, "flush stdout (no-op)"},
     {"task_done", PythonIntegrationPlugin::task_done, METH_VARARGS, "callback to clean up after asyc coroutines"},
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
@@ -94,12 +74,15 @@ static PyModuleDef nymea_module =
 
 PyMODINIT_FUNC PyInit_nymea(void)
 {
-    PyObject* m = PyModule_Create(&nymea_module);
     // Overrride stdout/stderr to use qDebug instead
-    PySys_SetObject("stdout", m);
-    PySys_SetObject("stderr", m);
+    PyObject* pyLog = PyModule_Create(&pyLog_module);
+    PySys_SetObject("stdout", pyLog);
+    PyObject* pyWarn = PyModule_Create(&pyWarn_module);
+    PySys_SetObject("stderr", pyWarn);
 
 
+    // Register nymea types
+    PyObject* m = PyModule_Create(&nymea_module);
     registerNymeaLoggingHandler(m);
     registerParamType(m);
     registerThingType(m);
@@ -244,6 +227,21 @@ PyObject *PythonIntegrationPlugin::pyAutoThingsAppeared(PyObject *self, PyObject
     Py_RETURN_NONE;
 }
 
+PyObject *PythonIntegrationPlugin::pyAutoThingDisappeared(PyObject *self, PyObject *args)
+{
+    char *thingIdStr = nullptr;
+
+    if (!PyArg_ParseTuple(args, "s", &thingIdStr)) {
+        qCWarning(dcThingManager) << "Error parsing parameters";
+        return nullptr;
+    }
+    ThingId thingId(thingIdStr);
+    PythonIntegrationPlugin *plugin = s_plugins.key(self);
+    QMetaObject::invokeMethod(plugin, "autoThingDisappeared", Qt::QueuedConnection, Q_ARG(ThingId, thingId));
+
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef plugin_methods[] =
 {
     {"configuration", PythonIntegrationPlugin::pyConfiguration, METH_VARARGS, "Get the plugin configuration."},
@@ -251,6 +249,7 @@ static PyMethodDef plugin_methods[] =
     {"setConfigValue", PythonIntegrationPlugin::pySetConfigValue, METH_VARARGS, "Set the plugin configuration value for a given config paramTypeId."},
     {"myThings", PythonIntegrationPlugin::pyMyThings, METH_VARARGS, "Obtain a list of things owned by this plugin."},
     {"autoThingsAppeared", PythonIntegrationPlugin::pyAutoThingsAppeared, METH_VARARGS, "Inform the system about auto setup things having appeared."},
+    {"autoThingDisappeared", PythonIntegrationPlugin::pyAutoThingDisappeared, METH_VARARGS, "Inform the system about auto setup things having disappeared."},
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
@@ -311,9 +310,9 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     m_module = PyImport_ImportModule(fi.baseName().toUtf8());
 
     if (!m_module) {
-        dumpError();
-        PyErr_Clear();
         qCWarning(dcThingManager()) << "Error importing python plugin from:" << fi.absoluteFilePath();
+        PyErr_Print();
+        PyErr_Clear();
         PyGILState_Release(s);
         return false;
     }
@@ -399,7 +398,6 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
     PyThingSetupInfo *pyInfo = (PyThingSetupInfo*)PyObject_CallObject((PyObject*)&PyThingSetupInfoType, NULL);
     pyInfo->info = info;
     pyInfo->pyThing = pyThing;
-    Py_INCREF(pyThing);
 
     m_things.insert(info->thing(), pyThing);
 
@@ -417,6 +415,7 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
 
     bool result = callPluginFunction("setupThing", reinterpret_cast<PyObject*>(pyInfo));
     if (!result) {
+        Py_DECREF(pyThing);
         // The python code did not even start, so let's finish (fail) the setup right away
         info->finish(Thing::ThingErrorSetupFailed);
     }
@@ -425,7 +424,11 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
 void PythonIntegrationPlugin::postSetupThing(Thing *thing)
 {
     PyThing* pyThing = m_things.value(thing);
-    callPluginFunction("postSetupThing", reinterpret_cast<PyObject*>(pyThing));
+    Py_INCREF(pyThing);
+    bool success = callPluginFunction("postSetupThing", reinterpret_cast<PyObject*>(pyThing));
+    if (!success) {
+        Py_DECREF(pyThing);
+    }
 }
 
 void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
@@ -456,8 +459,12 @@ void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
 void PythonIntegrationPlugin::thingRemoved(Thing *thing)
 {
     PyThing *pyThing = m_things.value(thing);
+    Py_INCREF(pyThing);
 
-    callPluginFunction("thingRemoved", reinterpret_cast<PyObject*>(pyThing));
+    bool success = callPluginFunction("thingRemoved", reinterpret_cast<PyObject*>(pyThing));
+    if (!success) {
+        Py_DECREF(pyThing);
+    }
 
     m_mutex.lock();
     m_things.remove(thing);
@@ -577,12 +584,12 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
 {
     PyGILState_STATE s = PyGILState_Ensure();
 
-    qCDebug(dcThingManager()) << "Calling python plugin function" << function << "on plugin" << s_plugins.key(m_module)->pluginName();
+    qCDebug(dcThingManager()) << "Calling python plugin function" << function << "on plugin" << pluginName();
     PyObject *pFunc = PyObject_GetAttrString(m_module, function.toUtf8());
     if(!pFunc || !PyCallable_Check(pFunc)) {
         PyErr_Clear();
         Py_XDECREF(pFunc);
-        qCWarning(dcThingManager()) << "Python plugin does not implement" << function;
+        qCWarning(dcThingManager()) << "Python plugin" << pluginName() << "does not implement" << function;
         PyGILState_Release(s);
         return false;
     }
@@ -595,8 +602,8 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     Py_XDECREF(pFunc);
 
     if (PyErr_Occurred()) {
-        qCWarning(dcThingManager()) << "Error calling python method:";
-        dumpError();
+        qCWarning(dcThingManager()) << "Error calling python method:" << function << "on plugin" << pluginName();
+        PyErr_Print();
         PyErr_Clear();
         PyGILState_Release(s);
         return false;
@@ -651,7 +658,6 @@ void PythonIntegrationPlugin::cleanupPyThing(PyThing *pyThing)
     // on the thing (e.g. PyThing_name).
     // We'd deadlock if we wait for the mutex forever here. So let's process events
     // while waiting for it...
-    qWarning() << "Locking cleanup";
     while (!pyThing->mutex->tryLock()) {
         qApp->processEvents(QEventLoop::EventLoopExec);
     }

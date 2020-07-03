@@ -5,6 +5,7 @@
 #include "structmember.h"
 
 #include "integrations/thingdescriptor.h"
+#include "loggingcategories.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -31,6 +32,7 @@ static int PyThingDescriptor_init(PyThingDescriptor *self, PyObject *args, PyObj
     static char *kwlist[] = {"thingClassId", "name", "description", nullptr};
     PyObject *thingClassId = nullptr, *name = nullptr, *description = nullptr;
 
+    qWarning() << "++++ PyThingDescriptor";
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist, &thingClassId, &name, &description))
         return -1;
 
@@ -52,12 +54,18 @@ static int PyThingDescriptor_init(PyThingDescriptor *self, PyObject *args, PyObj
     return 0;
 }
 
+static void PyThingDescriptor_dealloc(PyThingDescriptor * self)
+{
+    qWarning() << "---- PyThingDescriptor";
+    Py_TYPE(self)->tp_free(self);
+}
+
 static PyTypeObject PyThingDescriptorType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "nymea.ThingDescriptor",   /* tp_name */
     sizeof(PyThingDescriptor), /* tp_basicsize */
     0,                         /* tp_itemsize */
-    0,                         /* tp_dealloc */
+    (destructor)PyThingDescriptor_dealloc, /* tp_dealloc */
     0,                         /* tp_print */
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */

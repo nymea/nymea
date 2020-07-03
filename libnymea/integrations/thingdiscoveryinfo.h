@@ -53,15 +53,15 @@ public:
 
     Thing::ThingError status() const;
 
-    void addThingDescriptor(const ThingDescriptor &thingDescriptor);
-    void addThingDescriptors(const ThingDescriptors &thingDescriptors);
-
     ThingDescriptors thingDescriptors() const;
 
     QString displayMessage() const;
     QString translatedDisplayMessage(const QLocale &locale);
 
 public slots:
+    void addThingDescriptor(const ThingDescriptor &thingDescriptor);
+    void addThingDescriptors(const ThingDescriptors &thingDescriptors);
+
     void finish(Thing::ThingError status,  const QString &displayMessage = QString());
 
 signals:

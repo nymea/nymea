@@ -23,6 +23,15 @@
                     "displayName": "Auto Python mock thing",
                     "createMethods": ["auto"],
                     "setupMethod": "justAdd",
+                    "paramTypes": [
+                        {
+                            "id": "8733557e-c599-4169-bcfa-5cc033c17b85",
+                            "name": "param1",
+                            "displayName": "Param 1",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ],
                     "stateTypes": [
                         {
                             "id": "12c82472-56b0-4229-b324-4aaa6850320e",
@@ -58,6 +67,24 @@
                     "displayName": "Python mock thing with discovery and pairing",
                     "createMethods": ["discovery"],
                     "setupMethod": "userAndPassword",
+                    "discoveryParamTypes": [
+                        {
+                            "id": "ef5f6b90-e9d8-4e77-a14d-6725cfb07116",
+                            "name": "resultCount",
+                            "displayName": "Result count",
+                            "type": "int",
+                            "defaultValue": 2
+                        }
+                    ],
+                    "paramTypes": [
+                        {
+                            "id": "69328949-13ad-4bf4-b664-e7ee409ee51d",
+                            "name": "param1",
+                            "displayName": "Param 1",
+                            "type": "int",
+                            "defaultValue": 0
+                        }
+                    ],
                     "stateTypes": [
                         {
                             "id": "99d0af17-9e8c-42bb-bece-a5d114f051d3",

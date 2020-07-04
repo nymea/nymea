@@ -12,27 +12,56 @@
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
+/* Note:
+ *
+ * When using this, make sure to call PyThingSetupInfo_setInfo() while holding the GIL to initialize
+ * stuff after constructing it. Also set info to nullptr while holding the GIL when the info object vanishes.
+ *
+ * The ThingSetupInfo class is not threadsafe and self->info is owned by nymeas main thread.
+ * So we must never directly access anything of it in here.
+ *
+ * For writing to it, invoking methods with QueuedConnections will thread-decouple stuff.
+ * Make sure to check if the info object is still valid (it might not be if nymea finished
+ * the setup and destroyed it but the PyThingSetupInfo is not garbage collected yet.
+ *
+ * For reading access, we keep copies of the thing properties here and sync them
+ * over to the according py* members when they change.
+ *
+ */
+
 typedef struct {
     PyObject_HEAD
     ThingSetupInfo* info;
     PyThing *pyThing;
-    QMutex *mutex;
 } PyThingSetupInfo;
 
 
-static PyObject* PyThingSetupInfo_new(PyTypeObject *type, PyObject */*args*/, PyObject */*kwds*/) {
+static PyObject* PyThingSetupInfo_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
     PyThingSetupInfo *self = (PyThingSetupInfo*)type->tp_alloc(type, 0);
     if (self == NULL) {
         return nullptr;
     }
     qWarning() << "++++ PyThingSetupInfo";
-    self->mutex = new QMutex();
+
+
+    static char *kwlist[] = {"thing", nullptr};
+    PyObject *pyThing = nullptr;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyThing)) {
+        PyErr_Print();
+        PyErr_SetString(PyExc_ValueError, "Invalid arguments.");
+        return nullptr;
+    }
+
+    self->pyThing = (PyThing*)pyThing;
+    Py_INCREF(self->pyThing);
+
     return (PyObject*)self;
 }
 
 static void PyThingSetupInfo_dealloc(PyThingSetupInfo * self) {
     qWarning() << "--- PyThingSetupInfo";
-    delete self->mutex;
+    Py_DECREF(self->pyThing);
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -48,7 +77,6 @@ static PyObject * PyThingSetupInfo_finish(PyThingSetupInfo* self, PyObject* args
     Thing::ThingError thingError = static_cast<Thing::ThingError>(status);
     QString displayMessage = message != nullptr ? QString(message) : QString();
 
-    QMutexLocker(self->mutex);
     if (self->info) {
         QMetaObject::invokeMethod(self->info, "finish", Qt::QueuedConnection, Q_ARG(Thing::ThingError, thingError), Q_ARG(QString, displayMessage));
     }

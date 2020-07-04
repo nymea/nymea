@@ -7,7 +7,7 @@
 
 #include <QVariant>
 
-/* Returns a PyObject. RefCount will be 1 */
+/* Returns a new reference to PyObject*. */
 PyObject *QVariantToPyObject(const QVariant &value)
 {
     PyObject *pyValue = nullptr;
@@ -20,7 +20,7 @@ PyObject *QVariantToPyObject(const QVariant &value)
     case QVariant::UInt:
     case QVariant::LongLong:
     case QVariant::ULongLong:
-        pyValue = PyLong_FromLong(value.toLongLong());
+        pyValue = PyLong_FromLongLong(value.toLongLong());
         break;
     case QVariant::String:
     case QVariant::ByteArray:
@@ -34,7 +34,7 @@ PyObject *QVariantToPyObject(const QVariant &value)
         Py_INCREF(pyValue);
         break;
     default:
-        qCWarning(dcThingManager) << "Unhandled data type in conversion from Param to PyParam!";
+        qCWarning(dcPythonIntegrations()) << "Unhandled data type in conversion from Param to PyParam!";
         pyValue = Py_None;
         Py_INCREF(pyValue);
         break;
@@ -46,6 +46,7 @@ PyObject *QVariantToPyObject(const QVariant &value)
 QVariant PyObjectToQVariant(PyObject *pyObject)
 {
     // FIXME: is there any better way to do this?
+    qWarning() << "Error:" << PyErr_CheckSignals();
     PyObject* repr = PyObject_Repr(pyObject);
     PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
     const char *bytes = PyBytes_AS_STRING(str);
@@ -58,13 +59,6 @@ QVariant PyObjectToQVariant(PyObject *pyObject)
     return value;
 }
 
-void PyDumpError()
-{
-    if (!PyErr_Occurred()) {
-        return;
-    }
-
-}
 
 // Write to stdout
 PyObject* pyLog_write(PyObject* /*self*/, PyObject* args)

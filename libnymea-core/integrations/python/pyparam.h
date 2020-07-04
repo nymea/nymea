@@ -21,12 +21,6 @@ typedef struct _pyparam {
     PyObject* pyValue = nullptr;
 } PyParam;
 
-static void PyParam_dealloc(PyParam * self) {
-    Py_XDECREF(self->pyParamTypeId);
-    Py_XDECREF(self->pyValue);
-    Py_TYPE(self)->tp_free(self);
-}
-
 static PyMethodDef PyParam_methods[] = {
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
@@ -40,6 +34,7 @@ static PyMemberDef PyParam_members[] = {
 
 static int PyParam_init(PyParam *self, PyObject *args, PyObject *kwds)
 {
+    qWarning() << "++++ PyParam";
     static char *kwlist[] = {"paramTypeId", "value", nullptr};
     PyObject *paramTypeId = nullptr, *value = nullptr;
 
@@ -47,16 +42,21 @@ static int PyParam_init(PyParam *self, PyObject *args, PyObject *kwds)
         return -1;
 
     if (paramTypeId) {
-        Py_XDECREF(self->pyParamTypeId);
         Py_INCREF(paramTypeId);
         self->pyParamTypeId = paramTypeId;
     }
     if (value) {
-        Py_XDECREF(self->pyValue);
         Py_INCREF(value);
         self->pyValue = value;
     }
     return 0;
+}
+
+static void PyParam_dealloc(PyParam * self) {
+    qWarning() << "---- PyParam";
+    Py_XDECREF(self->pyParamTypeId);
+    Py_XDECREF(self->pyValue);
+    Py_TYPE(self)->tp_free(self);
 }
 
 static PyTypeObject PyParamType = {
@@ -86,9 +86,14 @@ static PyTypeObject PyParamType = {
 
 static PyParam* PyParam_fromParam(const Param &param)
 {
-    PyParam *pyParam = PyObject_New(PyParam, &PyParamType);
-    pyParam->pyParamTypeId = PyUnicode_FromString(param.paramTypeId().toString().toUtf8());
-    pyParam->pyValue = QVariantToPyObject(param.value());
+    PyObject *pyParamValue = QVariantToPyObject(param.value());
+    PyObject *args = Py_BuildValue("(sO)", param.paramTypeId().toString().toUtf8().data(), pyParamValue);
+
+    PyParam *pyParam = (PyParam*)PyObject_CallObject((PyObject*)&PyParamType, args);
+
+    Py_DECREF(pyParamValue);
+    Py_DECREF(args);
+
     return pyParam;
 }
 
@@ -101,9 +106,10 @@ static Param PyParam_ToParam(PyParam *pyParam)
 
 static PyObject* PyParams_FromParamList(const ParamList &params)
 {
-    PyObject* result = PyTuple_New(params.count());
+    PyObject* result = PyTuple_New(params.length());
     for (int i = 0; i < params.count(); i++) {
-        PyTuple_SET_ITEM(result, i, (PyObject*)PyParam_fromParam(params.at(i)));
+        PyParam *pyParam = PyParam_fromParam(params.at(i));
+        PyTuple_SetItem(result, i, (PyObject*)pyParam);
     }
     return result;
 }
@@ -112,7 +118,7 @@ static ParamList PyParams_ToParamList(PyObject *pyParams)
 {
     ParamList params;
 
-    if (pyParams != nullptr) {
+    if (pyParams == nullptr) {
         return params;
     }
 
@@ -130,7 +136,10 @@ static ParamList PyParams_ToParamList(PyObject *pyParams)
 
         PyParam *pyParam = reinterpret_cast<PyParam*>(next);
         params.append(PyParam_ToParam(pyParam));
+        Py_DECREF(next);
     }
+
+    Py_DECREF(iter);
     return params;
 }
 

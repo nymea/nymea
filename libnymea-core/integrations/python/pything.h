@@ -18,24 +18,34 @@
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-/* Note: Thing is not threadsafe so we must never access thing directly in here.
- * For writing access, invoking with QueuedConnections will decouple stuff
- * For reading access, we keep a cache of the thing properties here and sync them
- * over to the cache when they change.
- * When using this, make sure to call PyThing_setThing() after constructing it.
+/* Note:
+ * When using this, make sure to call PyThing_setThing() while holding the GIL to initialize
+ * stuff after constructing it.
+ *
+ * The Thing class is not threadsafe and self->thing is owned by nymeas main thread.
+ * So we must never directly access anything of it in here.
+ *
+ * For writing to it, invoking methods with QueuedConnections will thread-decouple stuff.
+ * Make sure to lock the self->mutex while using the pointer to it for invoking stuff.
+ *
+ * For reading access, we keep copies of the thing properties here and sync them
+ * over to the according py* members when they change.
+ *
  */
 
 
 typedef struct _thing {
     PyObject_HEAD
-    Thing *thing = nullptr;
-    PyObject *name = nullptr;
-    PyObject *id = nullptr;
-    PyObject *thingClassId = nullptr;
-    PyObject *params = nullptr;
-    PyObject *settings = nullptr;
-    PyObject *nameChangedHandler = nullptr;
-    QMutex *mutex = nullptr;
+    Thing *thing = nullptr; // the actual thing in nymea (not thread-safe!)
+    QMutex *mutex = nullptr; // The mutex for accessing the thing pointer
+    PyObject *pyId = nullptr;
+    PyObject *pyThingClassId = nullptr;
+    PyObject *pyName = nullptr;
+    PyObject *pyParams = nullptr;
+    PyObject *pySettings = nullptr;
+    PyObject *pyNameChangedHandler = nullptr;
+    PyObject *pySettingChangedHandler = nullptr;
+    PyObject *pyStates = nullptr; // A copy of the things states
 } PyThing;
 
 
@@ -44,7 +54,7 @@ static PyObject* PyThing_new(PyTypeObject *type, PyObject */*args*/, PyObject */
     if (self == NULL) {
         return nullptr;
     }
-    qWarning() << "*creating pyThing" << self;
+    qWarning() << "*++++ PyThing" << self;
     self->mutex = new QMutex();
 
     return (PyObject*)self;
@@ -54,108 +64,145 @@ static void PyThing_setThing(PyThing *self, Thing *thing)
 {
     self->thing = thing;
 
-    self->name = PyUnicode_FromString(self->thing->name().toUtf8().data());
-    self->id = PyUnicode_FromString(self->thing->id().toString().toUtf8().data());
-    self->thingClassId = PyUnicode_FromString(self->thing->thingClassId().toString().toUtf8().data());
+    self->pyId = PyUnicode_FromString(self->thing->id().toString().toUtf8().data());
+    self->pyThingClassId = PyUnicode_FromString(self->thing->thingClassId().toString().toUtf8().data());
+    self->pyName = PyUnicode_FromString(self->thing->name().toUtf8().data());
+    self->pyParams = PyParams_FromParamList(self->thing->params());
+    self->pySettings = PyParams_FromParamList(self->thing->settings());
 
+    self->pyStates = PyList_New(thing->states().count());
+    for (int i = 0; i < thing->states().count(); i++) {
+        qWarning() << "i" << i;
+        State state = thing->states().at(i);
+        PyObject *pyState = Py_BuildValue("{s:s, s:O}",
+                                          "stateTypeId", state.stateTypeId().toString().toUtf8().data(),
+                                          "value", QVariantToPyObject(state.value()));
+        PyList_SetItem(self->pyStates, i, pyState);
+    }
+
+
+    // Connects signal handlers from the Thing to sync stuff over to the pyThing in a
+    // thread-safe manner.
+
+    // Those lambdas Will be executed in the main thread context. This means we
+    // can access self->thing, but need to hold the GIL for interacting with python
     QObject::connect(thing, &Thing::nameChanged, [=](){
-        self->mutex->lock();
-        Py_XDECREF(self->name);
-        self->name = PyUnicode_FromString(self->thing->name().toUtf8().data());
-
-        if (!self->nameChangedHandler) {
-            self->mutex->unlock();
-            return;
-        }
-        self->mutex->unlock();
-
         PyGILState_STATE s = PyGILState_Ensure();
-        PyObject_CallFunctionObjArgs(self->nameChangedHandler, self, nullptr);
-
+        Py_XDECREF(self->pyName);
+        self->pyName = PyUnicode_FromString(self->thing->name().toUtf8().data());
+        if (self->pyNameChangedHandler) {
+            PyObject_CallFunctionObjArgs(self->pyNameChangedHandler, self, nullptr);
+        }
         PyGILState_Release(s);
     });
 
-    self->params = PyParams_FromParamList(self->thing->params());
 
-    self->settings = PyParams_FromParamList(self->thing->settings());
-    QObject::connect(thing, &Thing::settingChanged, [=](){
-        QMutexLocker(self->mutex);
-        Py_XDECREF(self->settings);
-        self->settings = PyParams_FromParamList(self->thing->settings());
+    QObject::connect(thing, &Thing::settingChanged, [=](const ParamTypeId &paramTypeId, const QVariant &value){
+        PyGILState_STATE s = PyGILState_Ensure();
+        Py_XDECREF(self->pySettings);
+        self->pySettings = PyParams_FromParamList(self->thing->settings());
+        if (self->pySettingChangedHandler) {
+            PyObject_CallFunctionObjArgs(self->pySettingChangedHandler, self, PyUnicode_FromString(paramTypeId.toString().toUtf8().data()), QVariantToPyObject(value), nullptr);
+        }
+        PyGILState_Release(s);
     });
 }
 
 
 static void PyThing_dealloc(PyThing * self) {
-    qWarning() << "destryoing pything" << self;
-    Py_XDECREF(self->name);
-    Py_XDECREF(self->id);
-    Py_XDECREF(self->thingClassId);
-    Py_XDECREF(self->name);
-    Py_XDECREF(self->params);
-    Py_XDECREF(self->settings);
-    Py_XDECREF(self->nameChangedHandler);
+    qWarning() << "----- PyThing" << self;
+    Py_XDECREF(self->pyId);
+    Py_XDECREF(self->pyThingClassId);
+    Py_XDECREF(self->pyName);
+    Py_XDECREF(self->pyParams);
+    Py_XDECREF(self->pySettings);
+    Py_XDECREF(self->pyStates);
+    Py_XDECREF(self->pyNameChangedHandler);
+    Py_XDECREF(self->pySettingChangedHandler);
     delete self->mutex;
-    Py_TYPE(self)->tp_free(self);
+        Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *PyThing_getName(PyThing *self, void */*closure*/)
 {
-    QMutexLocker(self->mutex);
-    if (!self->thing) {
-        PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
-        return nullptr;
-    }
-
-    Py_INCREF(self->name);
-    return self->name;
+    Py_INCREF(self->pyName);
+    return self->pyName;
 }
 
 static PyObject *PyThing_getId(PyThing *self, void */*closure*/)
 {
-    QMutexLocker(self->mutex);
-    if (!self->thing) {
-        PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
-        return nullptr;
-    }
-
-    Py_INCREF(self->id);
-    return self->id;
+    Py_INCREF(self->pyId);
+    return self->pyId;
 }
 
 static PyObject *PyThing_getThingClassId(PyThing *self, void */*closure*/)
 {
-    QMutexLocker(self->mutex);
-    if (!self->thing) {
-        PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
-        return nullptr;
-    }
-
-    Py_INCREF(self->thingClassId);
-    return self->thingClassId;
+    Py_INCREF(self->pyThingClassId);
+    return self->pyThingClassId;
 }
 
 static int PyThing_setName(PyThing *self, PyObject *value, void */*closure*/){
     QString name = QString(PyUnicode_AsUTF8(value));
     QMutexLocker(self->mutex);
+    if (!self->thing) {
+        return -1;
+    }
     QMetaObject::invokeMethod(self->thing, "setName", Qt::QueuedConnection, Q_ARG(QString, name));
     return 0;
 }
 
 static PyObject *PyThing_getSettings(PyThing *self, void */*closure*/)
 {
-    QMutexLocker(self->mutex);
-    if (!self->thing) {
-        PyErr_SetString(PyExc_ValueError, "Thing has been removed from the system.");
-        return nullptr;
-    }
-    Py_INCREF(self->settings);
-    return self->settings;
+    Py_INCREF(self->pySettings);
+    return self->pySettings;
 }
 
 static int PyThing_setSettings(PyThing */*self*/, PyObject */*value*/, void */*closure*/){
     //    self->thing->setName(QString(PyUnicode_AsUTF8(value)));
     return 0;
+}
+
+static PyObject * PyThing_stateValue(PyThing* self, PyObject* args)
+{
+    char *stateTypeIdStr = nullptr;
+
+    if (!PyArg_ParseTuple(args, "s", &stateTypeIdStr)) {
+        qCWarning(dcThingManager) << "Error parsing parameters";
+        return nullptr;
+    }
+
+    StateTypeId stateTypeId = StateTypeId(stateTypeIdStr);
+    PyObject *iterator = PyObject_GetIter(self->pyStates);
+    while (iterator) {
+        PyObject *pyState = PyIter_Next(iterator);
+        if (!pyState) {
+            break;
+        }
+
+        PyObject *pyStateTypeId = PyDict_GetItemString(pyState, "stateTypeId");
+        PyObject *tmp = PyUnicode_AsEncodedString(pyStateTypeId, "UTF-8", "strict");
+
+        StateTypeId stid = StateTypeId(PyBytes_AS_STRING(tmp));
+
+        Py_DECREF(pyStateTypeId);
+        Py_XDECREF(tmp);
+
+        if (stid != stateTypeId) {
+            Py_DECREF(pyState);
+            continue;
+        }
+
+        PyObject *pyStateValue = PyDict_GetItemString(pyState, "value");
+
+        Py_DECREF(pyState);
+        Py_DECREF(iterator);
+
+        return pyStateValue;
+    }
+
+    Py_DECREF(iterator);
+    qCWarning(dcPythonIntegrations()) << "No state for stateTypeId:" << stateTypeId;
+    Py_RETURN_NONE;
 }
 
 static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
@@ -209,13 +256,15 @@ static PyGetSetDef PyThing_getset[] = {
 };
 
 static PyMethodDef PyThing_methods[] = {
-    { "setStateValue", (PyCFunction)PyThing_setStateValue,    METH_VARARGS,       "Set a things state value" },
+    { "stateValue", (PyCFunction)PyThing_stateValue,    METH_VARARGS,       "Get a things state value by stateTypeId" },
+    { "setStateValue", (PyCFunction)PyThing_setStateValue,    METH_VARARGS,       "Set a certain things state value by stateTypeIp" },
     { "emitEvent", (PyCFunction)PyThing_emitEvent,    METH_VARARGS,       "Emits an event" },
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
 static PyMemberDef PyThing_members[] = {
-    {"nameChangedHandler", T_OBJECT_EX, offsetof(PyThing, nameChangedHandler), 0, "Set a callback for when the thing name changes"},
+    {"params", T_OBJECT_EX, offsetof(PyThing, pyParams), READONLY, "Thing params"},
+    {"nameChangedHandler", T_OBJECT_EX, offsetof(PyThing, pyNameChangedHandler), 0, "Set a callback for when the thing name changes"},
     {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
 };
 

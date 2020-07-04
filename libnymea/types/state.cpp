@@ -117,3 +117,13 @@ void States::put(const QVariant &variant)
 {
     append(variant.value<State>());
 }
+
+QVariant States::stateValue(const StateTypeId &stateTypeId)
+{
+    foreach (const State & state, *this) {
+        if (state.stateTypeId() == stateTypeId) {
+            return state.value();
+        }
+    }
+    return QVariant();
+}

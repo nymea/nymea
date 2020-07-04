@@ -28,6 +28,8 @@ public:
     void init() override;
     void startMonitoringAutoThings() override;
     void discoverThings(ThingDiscoveryInfo *info) override;
+    void startPairing(ThingPairingInfo *info) override;
+    void confirmPairing(ThingPairingInfo *info, const QString &username, const QString &secret) override;
     void setupThing(ThingSetupInfo *info) override;
     void postSetupThing(Thing *thing) override;
     void executeAction(ThingActionInfo *info) override;
@@ -56,8 +58,7 @@ private:
     void exportBrowserItemActionTypes(const ActionTypes &actionTypes, const QString &thingClassName);
 
 
-    bool callPluginFunction(const QString &function, PyObject *param1 = nullptr, PyObject *param2 = nullptr);
-    void cleanupPyThing(PyThing *pyThing);
+    bool callPluginFunction(const QString &function, PyObject *param1 = nullptr, PyObject *param2 = nullptr, PyObject *param3 = nullptr);
 
 private:
     static PyThreadState* s_mainThread;

@@ -6,6 +6,7 @@
 #include "python/pythingsetupinfo.h"
 #include "python/pyparam.h"
 #include "python/pythingactioninfo.h"
+#include "python/pythingpairinginfo.h"
 
 #include "pythonintegrationplugin.h"
 
@@ -45,6 +46,8 @@ PyObject* PythonIntegrationPlugin::task_done(PyObject* self, PyObject* args)
         const char *bytes = PyBytes_AS_STRING(str);
         Py_XDECREF(repr);
         Py_XDECREF(str);
+
+//        PyObject *traceback = PyObject_CallMethodObjArgs(exception, "__traceback__", nullptr);
 
         qCWarning(dcThingManager()) << "Exception in plugin:" << bytes;
 
@@ -88,6 +91,7 @@ PyMODINIT_FUNC PyInit_nymea(void)
     registerThingType(m);
     registerThingDescriptorType(m);
     registerThingDiscoveryInfoType(m);
+    registerThingPairingInfoType(m);
     registerThingSetupInfoType(m);
     registerThingActionInfoType(m);
 
@@ -176,15 +180,16 @@ PyObject *PythonIntegrationPlugin::pyMyThings(PyObject *self, PyObject */*args*/
 
 PyObject *PythonIntegrationPlugin::pyAutoThingsAppeared(PyObject *self, PyObject *args)
 {
-    PyObject *pyParams;
+    PyObject *pyDescriptors;
 
-    if (!PyArg_ParseTuple(args, "O", &pyParams)) {
+    if (!PyArg_ParseTuple(args, "O", &pyDescriptors)) {
         qCWarning(dcThingManager()) << "Error parsing args. Not a param list";
         return nullptr;
     }
 
-    PyObject *iter = PyObject_GetIter(pyParams);
+    PyObject *iter = PyObject_GetIter(pyDescriptors);
     if (!iter) {
+        Py_DECREF(pyDescriptors);
         qCWarning(dcThingManager()) << "Error parsing args. Not a param list";
         return nullptr;
     }
@@ -200,7 +205,7 @@ PyObject *PythonIntegrationPlugin::pyAutoThingsAppeared(PyObject *self, PyObject
 
         if (next->ob_type != &PyThingDescriptorType) {
             PyErr_SetString(PyExc_ValueError, "Invalid argument. Not a ThingDescriptor.");
-            return nullptr;
+            continue;
         }
         PyThingDescriptor *pyDescriptor = (PyThingDescriptor*)next;
 
@@ -218,11 +223,20 @@ PyObject *PythonIntegrationPlugin::pyAutoThingsAppeared(PyObject *self, PyObject
         }
 
         ThingDescriptor descriptor(thingClassId, name, description);
+
+        if (pyDescriptor->pyParams) {
+            descriptor.setParams(PyParams_ToParamList(pyDescriptor->pyParams));
+        }
+
         descriptors.append(descriptor);
+        Py_DECREF(next);
     }
 
     PythonIntegrationPlugin *plugin = s_plugins.key(self);
     QMetaObject::invokeMethod(plugin, "autoThingsAppeared", Qt::QueuedConnection, Q_ARG(ThingDescriptors, descriptors));
+
+    Py_DECREF(iter);
+    Py_DECREF(pyDescriptors);
 
     Py_RETURN_NONE;
 }
@@ -306,7 +320,9 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
 
     // Finally, import the plugin
     PyObject* sysPath = PySys_GetObject("path");
-    PyList_Append(sysPath, PyUnicode_FromString(fi.absolutePath().toUtf8()));
+    PyObject* importPath = PyUnicode_FromString(fi.absolutePath().toUtf8());
+    PyList_Append(sysPath, importPath);
+    Py_DECREF(importPath);
     m_module = PyImport_ImportModule(fi.baseName().toUtf8());
 
     if (!m_module) {
@@ -349,6 +365,8 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
         PyObject *pyParamTypeId = PyUnicode_FromString(paramTypeId.toString().toUtf8());
         PyObject *pyValue = QVariantToPyObject(value);
         callPluginFunction("configValueChanged", pyParamTypeId, pyValue);
+        Py_DECREF(pyParamTypeId);
+        Py_DECREF(pyValue);
     });
 
     return true;
@@ -373,49 +391,110 @@ void PythonIntegrationPlugin::discoverThings(ThingDiscoveryInfo *info)
     PyGILState_STATE s = PyGILState_Ensure();
 
     PyThingDiscoveryInfo *pyInfo = (PyThingDiscoveryInfo*)PyObject_CallObject((PyObject*)&PyThingDiscoveryInfoType, NULL);
-    pyInfo->info = info;
+    PyThingDiscoveryInfo_setInfo(pyInfo, info);
+
+    PyGILState_Release(s);
+
+    connect(info, &ThingDiscoveryInfo::destroyed, this, [=](){
+        auto s = PyGILState_Ensure();
+        pyInfo->info = nullptr;
+        Py_DECREF(pyInfo);
+        PyGILState_Release(s);
+    });
+
+    callPluginFunction("discoverThings", reinterpret_cast<PyObject*>(pyInfo));
+}
+
+void PythonIntegrationPlugin::startPairing(ThingPairingInfo *info)
+{
+    PyGILState_STATE s = PyGILState_Ensure();
+
+    PyThingPairingInfo *pyInfo = (PyThingPairingInfo*)PyObject_CallObject((PyObject*)&PyThingPairingInfoType, nullptr);
+    PyThingPairingInfo_setInfo(pyInfo, info);
 
     PyGILState_Release(s);
 
 
-    connect(info, &ThingDiscoveryInfo::destroyed, this, [=](){
-        QMutexLocker(pyInfo->mutex);
+    connect(info, &ThingPairingInfo::destroyed, this, [=](){
+        auto s = PyGILState_Ensure();
         pyInfo->info = nullptr;
         Py_DECREF(pyInfo);
+        PyGILState_Release(s);
     });
 
-    callPluginFunction("discoverThings", reinterpret_cast<PyObject*>(pyInfo));
+    bool result = callPluginFunction("startPairing", reinterpret_cast<PyObject*>(pyInfo));
+    if (!result) {
+        info->finish(Thing::ThingErrorHardwareFailure, "Plugin error: " + pluginName());
+    }
+}
+
+void PythonIntegrationPlugin::confirmPairing(ThingPairingInfo *info, const QString &username, const QString &secret)
+{
+    PyGILState_STATE s = PyGILState_Ensure();
+
+    PyThingPairingInfo *pyInfo = (PyThingPairingInfo*)PyObject_CallObject((PyObject*)&PyThingPairingInfoType, nullptr);
+    PyThingPairingInfo_setInfo(pyInfo, info);
+
+    PyGILState_Release(s);
+
+
+    connect(info, &ThingPairingInfo::destroyed, this, [=](){
+        auto s = PyGILState_Ensure();
+        pyInfo->info = nullptr;
+        Py_DECREF(pyInfo);
+        PyGILState_Release(s);
+    });
+
+    PyObject *pyUsername = PyUnicode_FromString(username.toUtf8().data());
+    PyObject *pySecret = PyUnicode_FromString(secret.toUtf8().data());
+    bool result = callPluginFunction("confirmPairing", reinterpret_cast<PyObject*>(pyInfo), pyUsername, pySecret);
+    if (!result) {
+        info->finish(Thing::ThingErrorHardwareFailure, "Plugin error: " + pluginName());
+    }
+
+    Py_DECREF(pyUsername);
+    Py_DECREF(pySecret);
 }
 
 void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
 {
     PyGILState_STATE s = PyGILState_Ensure();
 
-    PyThing *pyThing = (PyThing*)PyObject_CallObject((PyObject*)&PyThingType, NULL);
-    dumpError();
-    PyThing_setThing(pyThing, info->thing());
+    PyThing *pyThing = nullptr;
+    if (m_things.contains(info->thing())) {
+        pyThing = m_things.value(info->thing());
+    } else {
+        pyThing = (PyThing*)PyObject_CallObject((PyObject*)&PyThingType, NULL);
+        PyThing_setThing(pyThing, info->thing());
+        m_things.insert(info->thing(), pyThing);
+    }
 
-    PyThingSetupInfo *pyInfo = (PyThingSetupInfo*)PyObject_CallObject((PyObject*)&PyThingSetupInfoType, NULL);
+    PyObject *args = PyTuple_New(1);
+    PyTuple_SetItem(args, 0, (PyObject*)pyThing);
+
+    PyThingSetupInfo *pyInfo = (PyThingSetupInfo*)PyObject_CallObject((PyObject*)&PyThingSetupInfoType, args);
+    Py_DECREF(args);
+
     pyInfo->info = info;
-    pyInfo->pyThing = pyThing;
-
-    m_things.insert(info->thing(), pyThing);
 
     PyGILState_Release(s);
 
     connect(info->thing(), &Thing::destroyed, this, [=](){
-        cleanupPyThing(pyThing);
+        auto s = PyGILState_Ensure();
+        pyThing->thing = nullptr;
+        Py_DECREF(pyThing);
+        PyGILState_Release(s);
     });
     connect(info, &ThingSetupInfo::destroyed, this, [=](){
-        QMutexLocker(pyInfo->mutex);
+        auto s = PyGILState_Ensure();
         pyInfo->info = nullptr;
         Py_DECREF(pyInfo);
+        PyGILState_Release(s);
     });
 
 
     bool result = callPluginFunction("setupThing", reinterpret_cast<PyObject*>(pyInfo));
     if (!result) {
-        Py_DECREF(pyThing);
         // The python code did not even start, so let's finish (fail) the setup right away
         info->finish(Thing::ThingErrorSetupFailed);
     }
@@ -425,10 +504,12 @@ void PythonIntegrationPlugin::postSetupThing(Thing *thing)
 {
     PyThing* pyThing = m_things.value(thing);
     Py_INCREF(pyThing);
+
     bool success = callPluginFunction("postSetupThing", reinterpret_cast<PyObject*>(pyThing));
     if (!success) {
         Py_DECREF(pyThing);
     }
+
 }
 
 void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
@@ -438,19 +519,15 @@ void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
     PyGILState_STATE s = PyGILState_Ensure();
 
     PyThingActionInfo *pyInfo = (PyThingActionInfo*)PyObject_CallObject((PyObject*)&PyThingActionInfoType, NULL);
-    pyInfo->info = info;
-    pyInfo->pyThing = pyThing;
-    pyInfo->pyActionTypeId = PyUnicode_FromString(info->action().actionTypeId().toString().toUtf8());
-    pyInfo->pyParams = PyParams_FromParamList(info->action().params());
+    PyThingActionInfo_setInfo(pyInfo, info, pyThing);
 
     PyGILState_Release(s);
 
     connect(info, &ThingActionInfo::destroyed, this, [=](){        
-        QMutexLocker(pyInfo->mutex);
-        pyInfo->pyActionTypeId = nullptr;
-        Py_XDECREF(pyInfo->pyActionTypeId);
+        auto s = PyGILState_Ensure();
         pyInfo->info = nullptr;
         Py_DECREF(pyInfo);
+        PyGILState_Release(s);
     });
 
     callPluginFunction("executeAction", reinterpret_cast<PyObject*>(pyInfo));
@@ -580,7 +657,7 @@ void PythonIntegrationPlugin::exportBrowserItemActionTypes(const ActionTypes &ac
 }
 
 
-bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObject *param1, PyObject *param2)
+bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObject *param1, PyObject *param2, PyObject *param3)
 {
     PyGILState_STATE s = PyGILState_Ensure();
 
@@ -595,9 +672,7 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     }
 
 
-    dumpError();
-
-    PyObject *result = PyObject_CallFunctionObjArgs(pFunc, param1, param2, nullptr);
+    PyObject *result = PyObject_CallFunctionObjArgs(pFunc, param1, param2, param3, nullptr);
 
     Py_XDECREF(pFunc);
 
@@ -615,7 +690,7 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
         return true;
     }
 
-    // Spawn a event loop for python
+    // Spawn a event loop for the thread
     PyObject *new_event_loop = PyObject_GetAttrString(s_asyncio, "new_event_loop");
     PyObject *loop = PyObject_CallFunctionObjArgs(new_event_loop, nullptr);
 
@@ -650,20 +725,5 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     PyGILState_Release(s);
 
     return true;
-}
-
-void PythonIntegrationPlugin::cleanupPyThing(PyThing *pyThing)
-{
-    // It could happen that the python thread is currently holding the mutex
-    // on the thing (e.g. PyThing_name).
-    // We'd deadlock if we wait for the mutex forever here. So let's process events
-    // while waiting for it...
-    while (!pyThing->mutex->tryLock()) {
-        qApp->processEvents(QEventLoop::EventLoopExec);
-    }
-
-    pyThing->thing = nullptr;
-    pyThing->mutex->unlock();
-    Py_DECREF(pyThing);
 }
 

@@ -6,6 +6,7 @@
 #include "structmember.h"
 
 #include "pythingdescriptor.h"
+#include "pyparam.h"
 
 #include "integrations/thingdiscoveryinfo.h"
 
@@ -18,10 +19,28 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 
+/* Note:
+ * When using this, make sure to call PyThingDiscoveryInfo_setInfo() while holding the GIL to initialize
+ * stuff after constructing it. Also set info to nullptr while holding the GIL when the info object vanishes.
+ *
+ * The ThingDiscoveryInfo class is not threadsafe and self->info is owned by nymeas main thread.
+ * So we must never directly access anything of it in here.
+ *
+ * For writing to it, invoking methods with QueuedConnections will thread-decouple stuff.
+ * Make sure to check if the info object is still valid (it might not be if nymea finished
+ * the discovery and destroyed it but the PyThingDiscoveryInfo is not garbage collected yet.
+ *
+ * For reading access, we keep copies of the thing properties here and sync them
+ * over to the according py* members when they change.
+ *
+ */
+
+
 typedef struct {
     PyObject_HEAD
     ThingDiscoveryInfo* info;
-    QMutex *mutex;
+//    PyObject* pyThingClassId = nullptr;
+//    PyObject *pyParams = nullptr;
 } PyThingDiscoveryInfo;
 
 static PyObject* PyThingDiscoveryInfo_new(PyTypeObject *type, PyObject */*args*/, PyObject */*kwds*/)
@@ -30,13 +49,22 @@ static PyObject* PyThingDiscoveryInfo_new(PyTypeObject *type, PyObject */*args*/
     if (self == NULL) {
         return nullptr;
     }
-    self->mutex = new QMutex();
+    qWarning() << "++++ PyThingDiscoveryInfo";
     return (PyObject*)self;
+}
+
+void PyThingDiscoveryInfo_setInfo(PyThingDiscoveryInfo *self, ThingDiscoveryInfo *info)
+{
+    self->info = info;
+//    self->pyThingClassId = PyUnicode_FromString(info->thingClassId().toString().toUtf8().data());
+//    self->pyParams = PyParams_FromParamList(info->params());
 }
 
 static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo * self)
 {
-    delete self->mutex;
+    qWarning() << "---- PyThingDiscoveryInfo";
+//    Py_DECREF(self->pyThingClassId);
+//    Py_DECREF(self->pyParams);
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -64,11 +92,11 @@ static PyObject * PyThingDiscoveryInfo_addDescriptor(PyThingDiscoveryInfo* self,
     PyObject *pyObj = nullptr;
 
     if (!PyArg_ParseTuple(args, "O", &pyObj)) {
-        PyErr_SetString(PyExc_ValueError, "Invalid argument. Not a ThingDescriptor.");
+        PyErr_SetString(PyExc_ValueError, "Invalid argument to ThingDiscoveryInfo.addDescriptor(). Not a ThingDescriptor.");
         return nullptr;
     }
     if (pyObj->ob_type != &PyThingDescriptorType) {
-        PyErr_SetString(PyExc_ValueError, "Invalid argument. Not a ThingDescriptor.");
+        PyErr_SetString(PyExc_ValueError, "Invalid argument to ThingDiscoveryInfo.addDescriptor(). Not a ThingDescriptor.");
         return nullptr;
     }
     PyThingDescriptor *pyDescriptor = (PyThingDescriptor*)pyObj;
@@ -87,13 +115,27 @@ static PyObject * PyThingDiscoveryInfo_addDescriptor(PyThingDiscoveryInfo* self,
     }
 
     ThingDescriptor descriptor(thingClassId, name, description);
+    if (pyDescriptor->pyThingId) {
+        descriptor.setThingId(ThingId(QString::fromUtf8(PyUnicode_AsUTF8(pyDescriptor->pyThingId))));
+    }
+
+    if (pyDescriptor->pyParams) {
+        descriptor.setParams(PyParams_ToParamList(pyDescriptor->pyParams));
+    }
 
     if (self->info) {
         QMetaObject::invokeMethod(self->info, "addThingDescriptor", Qt::QueuedConnection, Q_ARG(ThingDescriptor, descriptor));
     }
 
-    return Py_BuildValue("");
+    Py_DECREF(pyDescriptor);
+    Py_RETURN_NONE;
 }
+
+//static PyMemberDef PyThingDiscoveryInfo_members[] = {
+//    {"thingClassId", T_OBJECT_EX, offsetof(PyThingDiscoveryInfo, pyThingClassId), READONLY, "The ThingClassId this discovery is for."},
+////    {"params", T_OBJECT_EX, offsetof(PyThingDiscoveryInfo, pyParams), READONLY, "The params for this discovery"},
+//    {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
+//};
 
 static PyMethodDef PyThingDiscoveryInfo_methods[] = {
     { "addDescriptor", (PyCFunction)PyThingDiscoveryInfo_addDescriptor, METH_VARARGS, "Add a new descriptor to the discovery" },

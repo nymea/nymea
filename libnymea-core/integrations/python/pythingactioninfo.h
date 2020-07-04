@@ -12,13 +12,29 @@
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
+/* Note:
+ *
+ * When using this, make sure to call PyThingActionInfo_setInfo() while holding the GIL to initialize
+ * stuff after constructing it. Also set info to nullptr while holding the GIL when the info object vanishes.
+ *
+ * The ThingActionInfo class is not threadsafe and self->info is owned by nymeas main thread.
+ * So we must never directly access anything of it in here.
+ *
+ * For writing to it, invoking methods with QueuedConnections will thread-decouple stuff.
+ * Make sure to check if the info object is still valid (it might not be if nymea finished
+ * the setup and destroyed it but the PyThingSetupInfo is not garbage collected yet.
+ *
+ * For reading access, we keep copies of the thing properties here and sync them
+ * over to the according py* members when they change.
+ *
+ */
+
 typedef struct {
     PyObject_HEAD
     ThingActionInfo* info;
     PyThing *pyThing;
     PyObject *pyActionTypeId;
     PyObject *pyParams;
-    QMutex *mutex;
 } PyThingActionInfo;
 
 
@@ -27,14 +43,26 @@ static PyObject* PyThingActionInfo_new(PyTypeObject *type, PyObject */*args*/, P
     if (self == NULL) {
         return nullptr;
     }
-    self->mutex = new QMutex();
+    qWarning() << "+++ PyThingActionInfo";
     return (PyObject*)self;
+}
+
+void PyThingActionInfo_setInfo(PyThingActionInfo *self, ThingActionInfo *info, PyThing *pyThing)
+{
+    self->info = info;
+    self->pyThing = pyThing;
+    Py_INCREF(pyThing);
+    self->pyActionTypeId = PyUnicode_FromString(info->action().actionTypeId().toString().toUtf8());
+    self->pyParams = PyParams_FromParamList(info->action().params());
 }
 
 
 static void PyThingActionInfo_dealloc(PyThingActionInfo * self)
 {
-    delete self->mutex;
+    qWarning() << "---- PyThingActionInfo";
+    Py_DECREF(self->pyThing);
+    Py_DECREF(self->pyActionTypeId);
+    Py_DECREF(self->pyParams);
     Py_TYPE(self)->tp_free(self);
 }
 

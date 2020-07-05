@@ -272,7 +272,7 @@ void ParamTypes::put(const QVariant &variant)
     append(variant.value<ParamType>());
 }
 
-ParamType ParamTypes::findByName(const QString &name)
+ParamType ParamTypes::findByName(const QString &name) const
 {
     foreach (const ParamType &paramType, *this) {
         if (paramType.name() == name) {
@@ -282,7 +282,7 @@ ParamType ParamTypes::findByName(const QString &name)
     return ParamType();
 }
 
-ParamType ParamTypes::findById(const ParamTypeId &id)
+ParamType ParamTypes::findById(const ParamTypeId &id) const
 {
     foreach (const ParamType &paramType, *this) {
         if (paramType.id() == id) {

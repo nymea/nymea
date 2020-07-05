@@ -8,7 +8,7 @@
             "name": "autoThingCount",
             "displayName": "Number of auto things",
             "type": "int",
-            "defaultValue": "fds"
+            "defaultValue": 0
         }
     ],
     "vendors": [
@@ -92,6 +92,21 @@
                             "displayName": "Setting 1",
                             "type": "QString",
                             "defaultValue": "hello"
+                        }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "e6b98ef6-7922-48e6-b508-238d178b86ca",
+                            "name": "event1",
+                            "displayName": "Event 1",
+                            "paramTypes": [
+                                {
+                                    "id": "7c265a6a-f0ae-4822-a14f-e6a090f5a310",
+                                    "name": "param1",
+                                    "displayName": "Event param 1",
+                                    "type": "QString"
+                                }
+                            ]
                         }
                     ],
                     "stateTypes": [

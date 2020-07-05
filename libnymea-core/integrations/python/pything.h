@@ -11,7 +11,6 @@
 
 #include <QPointer>
 #include <QThread>
-#include <QMutexLocker>
 #include <QMetaEnum>
 
 #pragma GCC diagnostic push
@@ -26,7 +25,7 @@
  * So we must never directly access anything of it in here.
  *
  * For writing to it, invoking methods with QueuedConnections will thread-decouple stuff.
- * Make sure to lock the self->mutex while using the pointer to it for invoking stuff.
+ * Make sure to hold the GIL whenver accessing the pointer value for invoking stuff.
  *
  * For reading access, we keep copies of the thing properties here and sync them
  * over to the according py* members when they change.
@@ -37,7 +36,7 @@
 typedef struct _thing {
     PyObject_HEAD
     Thing *thing = nullptr; // the actual thing in nymea (not thread-safe!)
-    QMutex *mutex = nullptr; // The mutex for accessing the thing pointer
+    ThingClass *thingClass = nullptr; // A copy of the thing class. This is owned by the python thread
     PyObject *pyId = nullptr;
     PyObject *pyThingClassId = nullptr;
     PyObject *pyName = nullptr;
@@ -55,7 +54,6 @@ static PyObject* PyThing_new(PyTypeObject *type, PyObject */*args*/, PyObject */
         return nullptr;
     }
     qWarning() << "*++++ PyThing" << self;
-    self->mutex = new QMutex();
 
     return (PyObject*)self;
 }
@@ -63,6 +61,9 @@ static PyObject* PyThing_new(PyTypeObject *type, PyObject */*args*/, PyObject */
 static void PyThing_setThing(PyThing *self, Thing *thing)
 {
     self->thing = thing;
+
+    // Creating a copy because we cannot access the actual thing from the python thread
+    self->thingClass = new ThingClass(thing->thingClass());
 
     self->pyId = PyUnicode_FromString(self->thing->id().toString().toUtf8().data());
     self->pyThingClassId = PyUnicode_FromString(self->thing->thingClassId().toString().toUtf8().data());
@@ -106,6 +107,24 @@ static void PyThing_setThing(PyThing *self, Thing *thing)
         }
         PyGILState_Release(s);
     });
+
+    QObject::connect(thing, &Thing::stateValueChanged, [=](const StateTypeId &stateTypeId, const QVariant &value){
+        PyGILState_STATE s = PyGILState_Ensure();
+        for (int i = 0; i < PyList_Size(self->pyStates); i++) {
+            PyObject *pyState = PyList_GetItem(self->pyStates, i);
+            PyObject *pyStateTypeId = PyDict_GetItemString(pyState, "stateTypeId");
+            StateTypeId stid = StateTypeId(PyUnicode_AsUTF8AndSize(pyStateTypeId, nullptr));
+            if (stid == stateTypeId) {
+                qWarning() << "Updating state" << stateTypeId << value;
+                pyState = Py_BuildValue("{s:s, s:O}",
+                                  "stateTypeId", stateTypeId.toString().toUtf8().data(),
+                                  "value", QVariantToPyObject(value));
+                PyList_SetItem(self->pyStates, i, pyState);
+                break;
+            }
+        }
+        PyGILState_Release(s);
+    });
 }
 
 
@@ -119,8 +138,8 @@ static void PyThing_dealloc(PyThing * self) {
     Py_XDECREF(self->pyStates);
     Py_XDECREF(self->pyNameChangedHandler);
     Py_XDECREF(self->pySettingChangedHandler);
-    delete self->mutex;
-        Py_TYPE(self)->tp_free(self);
+    delete self->thingClass;
+    Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *PyThing_getName(PyThing *self, void */*closure*/)
@@ -143,12 +162,79 @@ static PyObject *PyThing_getThingClassId(PyThing *self, void */*closure*/)
 
 static int PyThing_setName(PyThing *self, PyObject *value, void */*closure*/){
     QString name = QString(PyUnicode_AsUTF8(value));
-    QMutexLocker(self->mutex);
     if (!self->thing) {
         return -1;
     }
     QMetaObject::invokeMethod(self->thing, "setName", Qt::QueuedConnection, Q_ARG(QString, name));
     return 0;
+}
+
+static PyObject * PyThing_paramValue(PyThing* self, PyObject* args)
+{
+    char *paramTypeIdStr = nullptr;
+
+    if (!PyArg_ParseTuple(args, "s", &paramTypeIdStr)) {
+        qCWarning(dcThingManager) << "Error parsing parameters";
+        return nullptr;
+    }
+
+    ParamTypeId paramTypeId = ParamTypeId(paramTypeIdStr);
+    PyObject *iterator = PyObject_GetIter(self->pyParams);
+    while (iterator) {
+        PyObject *pyParam = PyIter_Next(iterator);
+        if (!pyParam) {
+            break;
+        }
+
+        Param param = PyParam_ToParam((PyParam*)pyParam);
+        Py_DECREF(pyParam);
+
+        if (param.paramTypeId() != paramTypeId) {
+            continue;
+        }
+
+        Py_DECREF(iterator);
+
+        return QVariantToPyObject(param.value());
+    }
+
+    Py_DECREF(iterator);
+    qCWarning(dcPythonIntegrations()) << "No param for paramTypeId:" << paramTypeId;
+    Py_RETURN_NONE;
+}
+
+static PyObject * PyThing_setting(PyThing* self, PyObject* args)
+{
+    char *paramTypeIdStr = nullptr;
+
+    if (!PyArg_ParseTuple(args, "s", &paramTypeIdStr)) {
+        qCWarning(dcThingManager) << "Error parsing parameters";
+        return nullptr;
+    }
+
+    ParamTypeId paramTypeId = ParamTypeId(paramTypeIdStr);
+    PyObject *iterator = PyObject_GetIter(self->pySettings);
+    while (iterator) {
+        PyObject *pyParam = PyIter_Next(iterator);
+        if (!pyParam) {
+            break;
+        }
+
+        Param param = PyParam_ToParam((PyParam*)pyParam);
+        Py_DECREF(pyParam);
+
+        if (param.paramTypeId() != paramTypeId) {
+            continue;
+        }
+
+        Py_DECREF(iterator);
+
+        return QVariantToPyObject(param.value());
+    }
+
+    Py_DECREF(iterator);
+    qCWarning(dcPythonIntegrations()) << "No setting for paramTypeId:" << paramTypeId;
+    Py_RETURN_NONE;
 }
 
 static PyObject *PyThing_getSettings(PyThing *self, void */*closure*/)
@@ -167,42 +253,25 @@ static PyObject * PyThing_stateValue(PyThing* self, PyObject* args)
     char *stateTypeIdStr = nullptr;
 
     if (!PyArg_ParseTuple(args, "s", &stateTypeIdStr)) {
-        qCWarning(dcThingManager) << "Error parsing parameters";
+        PyErr_SetString(PyExc_ValueError, "Error parsing arguments. Signature is 's'");
         return nullptr;
     }
 
     StateTypeId stateTypeId = StateTypeId(stateTypeIdStr);
-    PyObject *iterator = PyObject_GetIter(self->pyStates);
-    while (iterator) {
-        PyObject *pyState = PyIter_Next(iterator);
-        if (!pyState) {
-            break;
-        }
 
+    for (int i = 0; i < PyList_Size(self->pyStates); i++) {
+        PyObject *pyState = PyList_GetItem(self->pyStates, i);
         PyObject *pyStateTypeId = PyDict_GetItemString(pyState, "stateTypeId");
-        PyObject *tmp = PyUnicode_AsEncodedString(pyStateTypeId, "UTF-8", "strict");
-
-        StateTypeId stid = StateTypeId(PyBytes_AS_STRING(tmp));
-
-        Py_DECREF(pyStateTypeId);
-        Py_XDECREF(tmp);
-
-        if (stid != stateTypeId) {
-            Py_DECREF(pyState);
-            continue;
+        StateTypeId stid = StateTypeId(PyUnicode_AsUTF8AndSize(pyStateTypeId, nullptr));
+        if (stid == stateTypeId) {
+            PyObject *value = PyDict_GetItemString(pyState, "value");
+            Py_INCREF(value);
+            return value;
         }
-
-        PyObject *pyStateValue = PyDict_GetItemString(pyState, "value");
-
-        Py_DECREF(pyState);
-        Py_DECREF(iterator);
-
-        return pyStateValue;
     }
 
-    Py_DECREF(iterator);
-    qCWarning(dcPythonIntegrations()) << "No state for stateTypeId:" << stateTypeId;
-    Py_RETURN_NONE;
+    PyErr_SetString(PyExc_ValueError, QString("No state type %1 in thing class %2").arg(stateTypeId.toString()).arg(self->thingClass->name()).toUtf8());
+    return nullptr;
 }
 
 static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
@@ -211,14 +280,18 @@ static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
     PyObject *valueObj = nullptr;
 
     if (!PyArg_ParseTuple(args, "sO", &stateTypeIdStr, &valueObj)) {
-        qCWarning(dcThingManager) << "Error parsing parameters";
+        PyErr_SetString(PyExc_ValueError, "Error parsing arguments. Signature is 'sO'");
         return nullptr;
     }
 
     StateTypeId stateTypeId = StateTypeId(stateTypeIdStr);
+    StateType stateType = self->thingClass->stateTypes().findById(stateTypeId);
+    if (!stateType.isValid()) {
+        PyErr_SetString(PyExc_ValueError, QString("No state type %1 in thing class %2").arg(stateTypeId.toString()).arg(self->thingClass->name()).toUtf8());
+        return nullptr;
+    }
     QVariant value = PyObjectToQVariant(valueObj);
 
-    QMutexLocker(self->mutex);
     if (self->thing != nullptr) {
         QMetaObject::invokeMethod(self->thing, "setStateValue", Qt::QueuedConnection, Q_ARG(StateTypeId, stateTypeId), Q_ARG(QVariant, value));
     }
@@ -232,14 +305,23 @@ static PyObject * PyThing_emitEvent(PyThing* self, PyObject* args)
     PyObject *valueObj = nullptr;
 
     if (!PyArg_ParseTuple(args, "s|O", &eventTypeIdStr, &valueObj)) {
-        qCWarning(dcThingManager) << "Error parsing parameters";
+        PyErr_SetString(PyExc_TypeError, "Supplied arguments for emitEvent must be a ParamList");
+        return nullptr;
+    }
+    if (qstrcmp(valueObj->ob_type->tp_name, "list") != 0) {
+        PyErr_SetString(PyExc_TypeError, "Supplied arguments for emitEvent must be a ParamList");
         return nullptr;
     }
 
     EventTypeId eventTypeId = EventTypeId(eventTypeIdStr);
+    EventType eventType = self->thingClass->eventTypes().findById(eventTypeId);
+    if (!eventType.isValid()) {
+        PyErr_SetString(PyExc_ValueError, QString("No event type %1 in thing class %2").arg(eventTypeId.toString()).arg(self->thingClass->name()).toUtf8());
+        return nullptr;
+    }
+
     ParamList params = PyParams_ToParamList(valueObj);
 
-    QMutexLocker(self->mutex);
     if (self->thing != nullptr) {
         QMetaObject::invokeMethod(self->thing, "emitEvent", Qt::QueuedConnection, Q_ARG(EventTypeId, eventTypeId), Q_ARG(ParamList, params));
     }
@@ -256,9 +338,11 @@ static PyGetSetDef PyThing_getset[] = {
 };
 
 static PyMethodDef PyThing_methods[] = {
-    { "stateValue", (PyCFunction)PyThing_stateValue,    METH_VARARGS,       "Get a things state value by stateTypeId" },
-    { "setStateValue", (PyCFunction)PyThing_setStateValue,    METH_VARARGS,       "Set a certain things state value by stateTypeIp" },
-    { "emitEvent", (PyCFunction)PyThing_emitEvent,    METH_VARARGS,       "Emits an event" },
+    { "paramValue", (PyCFunction)PyThing_paramValue, METH_VARARGS, "Get a things param value by paramTypeId" },
+    { "setting", (PyCFunction)PyThing_setting, METH_VARARGS, "Get a things setting value by paramTypeId" },
+    { "stateValue", (PyCFunction)PyThing_stateValue, METH_VARARGS, "Get a things state value by stateTypeId" },
+    { "setStateValue", (PyCFunction)PyThing_setStateValue, METH_VARARGS, "Set a certain things state value by stateTypeIp" },
+    { "emitEvent", (PyCFunction)PyThing_emitEvent, METH_VARARGS, "Emits an event" },
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 

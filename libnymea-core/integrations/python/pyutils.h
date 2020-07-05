@@ -45,18 +45,21 @@ PyObject *QVariantToPyObject(const QVariant &value)
 
 QVariant PyObjectToQVariant(PyObject *pyObject)
 {
-    // FIXME: is there any better way to do this?
-    qWarning() << "Error:" << PyErr_CheckSignals();
-    PyObject* repr = PyObject_Repr(pyObject);
-    PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
-    const char *bytes = PyBytes_AS_STRING(str);
+    qWarning() << "**************** type" << pyObject->ob_type->tp_name;
 
-    QVariant value(bytes);
+    if (qstrcmp(pyObject->ob_type->tp_name, "int") == 0) {
+        return QVariant(PyLong_AsLongLong(pyObject));
+    }
 
-    Py_XDECREF(repr);
-    Py_XDECREF(str);
+    if (qstrcmp(pyObject->ob_type->tp_name, "str") == 0) {
+        return QVariant(PyUnicode_AsUTF8AndSize(pyObject, nullptr));
+    }
 
-    return value;
+    if (qstrcmp(pyObject->ob_type->tp_name, "double") == 0) {
+        return QVariant(PyFloat_AsDouble(pyObject));
+    }
+    Q_ASSERT_X(false, "pyutils.h", "Unhandled data type in conversion from Param to PyParam!");
+    return QVariant();
 }
 
 

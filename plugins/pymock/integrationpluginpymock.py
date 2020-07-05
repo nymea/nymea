@@ -3,8 +3,18 @@ import asyncio
 
 watchingAutoThings = False
 
-def init():
+async def init():
     logger.log("Python mock plugin init")
+
+    while True:
+        await asyncio.sleep(2);
+        logger.log("Updating stuff")
+        for thing in myThings():
+            if thing.thingClassId == pyMockDiscoveryPairingThingClassId:
+                logger.log("Emitting event 1 for", thing.name)
+#                thing.emitEvent(pyMockDiscoveryPairingEvent1EventTypeId, [nymea.Param(pyMockDiscoveryPairingEvent1EventParam1ParamTypeId, "Im an event")])
+                logger.log("Setting state 1 for", thing.name, "Old value is:", thing.stateValue(pyMockDiscoveryPairingState1StateTypeId))
+                thing.setStateValue(pyMockDiscoveryPairingState1StateTypeId, thing.stateValue(pyMockDiscoveryPairingState1StateTypeId) + 1)
 
 
 def configValueChanged(paramTypeId, value):
@@ -74,7 +84,7 @@ async def setupThing(info):
     info.finish(nymea.ThingErrorNoError)
 
 
-def postSetupThing(thing):
+async def postSetupThing(thing):
     logger.log("postSetupThing for", thing.name, thing.params[0].value)
     thing.nameChangedHandler = lambda thing : logger.log("Thing name changed", thing.name)
 
@@ -82,7 +92,9 @@ def postSetupThing(thing):
         logger.log("State 1 value:", thing.stateValue(pyMockAutoState1StateTypeId))
 
     if thing.thingClassId == pyMockDiscoveryPairingThingClassId:
-        logger.log("Setting 1 value:", thing.settingsValue(pyMockDiscoveryPairingSettingsSetting1ParamTypeId))
+        logger.log("Param 1 value:", thing.paramValue(pyMockDiscoveryPairingThingParam1ParamTypeId))
+        logger.log("Setting 1 value:", thing.setting(pyMockDiscoveryPairingSettingsSetting1ParamTypeId))
+
 
 
 def autoThings():

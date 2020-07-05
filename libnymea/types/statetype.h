@@ -103,7 +103,7 @@ private:
     QString m_name;
     QString m_displayName;
     int m_index = 0;
-    QVariant::Type m_type;
+    QVariant::Type m_type = QVariant::Invalid;
     QVariant m_defaultValue;
     QVariant m_minValue;
     QVariant m_maxValue;

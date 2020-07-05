@@ -7,6 +7,7 @@
 #include "pyutils.h"
 
 #include "types/param.h"
+#include "types/paramtype.h"
 
 #include "loggingcategories.h"
 
@@ -99,7 +100,7 @@ static PyParam* PyParam_fromParam(const Param &param)
 
 static Param PyParam_ToParam(PyParam *pyParam)
 {
-    ParamTypeId paramTypeId = ParamTypeId(PyUnicode_AsUTF8(pyParam->pyParamTypeId));
+    ParamTypeId paramTypeId = ParamTypeId(PyUnicode_AsUTF8AndSize(pyParam->pyParamTypeId, nullptr));
     QVariant value = PyObjectToQVariant(pyParam->pyValue);
     return Param(paramTypeId, value);
 }

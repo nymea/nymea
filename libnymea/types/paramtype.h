@@ -124,8 +124,8 @@ public:
     ParamTypes(const QList<ParamType> &other);
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
-    ParamType findByName(const QString &name);
-    ParamType findById(const ParamTypeId &id);
+    ParamType findByName(const QString &name) const;
+    ParamType findById(const ParamTypeId &id) const;
 };
 Q_DECLARE_METATYPE(QList<ParamType>)
 Q_DECLARE_METATYPE(ParamTypes)

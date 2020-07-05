@@ -85,6 +85,15 @@
                             "defaultValue": 0
                         }
                     ],
+                    "settingsTypes": [
+                        {
+                            "id": "d2312d00-22f5-4e2c-a6cc-8e4cade2d58b",
+                            "name": "setting1",
+                            "displayName": "Setting 1",
+                            "type": "QString",
+                            "defaultValue": "hello"
+                        }
+                    ],
                     "stateTypes": [
                         {
                             "id": "99d0af17-9e8c-42bb-bece-a5d114f051d3",

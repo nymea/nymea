@@ -41,25 +41,17 @@ def startMonitoringAutoThings():
 
 
 async def discoverThings(info):
-    logger.log("Discovery started for") #, info.thingClassId, "with result count:") #, info.params[0].value)
-    logger.log("a")
+    logger.log("Discovery started for", info.thingClassId, "with result count:", info.params[0].value)
     await asyncio.sleep(1) # Some delay for giving a feeling of a discovery
     # Add 2 new discovery results
-    logger.log("b")
-    info.addDescriptor(nymea.ThingDescriptor(pyMockDiscoveryPairingThingClassId, "Python mock thing 1"))
-    info.addDescriptor(nymea.ThingDescriptor(pyMockDiscoveryPairingThingClassId, "Python mock thing 2"))
-    logger.log("c")
+    for i in range(0, info.params[0].value):
+        info.addDescriptor(nymea.ThingDescriptor(pyMockDiscoveryPairingThingClassId, "Python mock thing %i" % i))
     # Also add existing ones again so reconfiguration is possible
     for thing in myThings():
-        logger.log("d")
         if thing.thingClassId == pyMockDiscoveryPairingThingClassId:
-            logger.log("e")
             info.addDescriptor(nymea.ThingDescriptor(pyMockDiscoveryPairingThingClassId, thing.name, thingId=thing.id))
-            logger.log("f")
 
-    logger.log("g")
     info.finish(nymea.ThingErrorNoError)
-    logger.log("h")
 
 
 async def startPairing(info):
@@ -88,6 +80,9 @@ def postSetupThing(thing):
 
     if thing.thingClassId == pyMockAutoThingClassId:
         logger.log("State 1 value:", thing.stateValue(pyMockAutoState1StateTypeId))
+
+    if thing.thingClassId == pyMockDiscoveryPairingThingClassId:
+        logger.log("Setting 1 value:", thing.settingsValue(pyMockDiscoveryPairingSettingsSetting1ParamTypeId))
 
 
 def autoThings():

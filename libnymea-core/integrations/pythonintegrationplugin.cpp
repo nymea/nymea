@@ -316,6 +316,10 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
         return false;
     }
 
+//    PyThreadState *m_thread = Py_NewInterpreter();
+//    PyInterpreterState *m_interpreter = PyInterpreterState_New();
+
+//    PyEval_RestoreThread(s_mainThread);
     PyGILState_STATE s = PyGILState_Ensure();
 
     // Finally, import the plugin
@@ -329,6 +333,7 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
         qCWarning(dcThingManager()) << "Error importing python plugin from:" << fi.absoluteFilePath();
         PyErr_Print();
         PyErr_Clear();
+//        PyEval_SaveThread();
         PyGILState_Release(s);
         return false;
     }
@@ -352,6 +357,7 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     // Register config access methods
     PyModule_AddFunctions(m_module, plugin_methods);
 
+//    PyEval_SaveThread();
     PyGILState_Release(s);
 
     // Set up connections to be forwareded into the plugin
@@ -660,6 +666,7 @@ void PythonIntegrationPlugin::exportBrowserItemActionTypes(const ActionTypes &ac
 bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObject *param1, PyObject *param2, PyObject *param3)
 {
     PyGILState_STATE s = PyGILState_Ensure();
+//    PyEval_RestoreThread(s_mainThread);
 
     qCDebug(dcThingManager()) << "Calling python plugin function" << function << "on plugin" << pluginName();
     PyObject *pFunc = PyObject_GetAttrString(m_module, function.toUtf8());
@@ -668,6 +675,7 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
         Py_XDECREF(pFunc);
         qCWarning(dcThingManager()) << "Python plugin" << pluginName() << "does not implement" << function;
         PyGILState_Release(s);
+//        PyEval_SaveThread();
         return false;
     }
 
@@ -680,12 +688,14 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
         qCWarning(dcThingManager()) << "Error calling python method:" << function << "on plugin" << pluginName();
         PyErr_Print();
         PyErr_Clear();
+//        PyEval_SaveThread();
         PyGILState_Release(s);
         return false;
     }
 
     if (QByteArray(result->ob_type->tp_name) != "coroutine") {
         Py_DECREF(result);
+//        PyEval_SaveThread();
         PyGILState_Release(s);
         return true;
     }
@@ -710,19 +720,26 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     dumpError();
 
     PyObject *run_until_complete = PyObject_GetAttrString(loop, "run_until_complete");
-    QtConcurrent::run([=](){
-        PyGILState_STATE s = PyGILState_Ensure();
+    QtConcurrent::run([run_until_complete, task, loop, result](){
+        PyGILState_STATE g = PyGILState_Ensure();
+//        auto s = PyThreadState_New(PyInterpreterState_Main());
+//        PyThreadState *previousThreadState = PyThreadState_Swap(s);
         PyObject_CallFunctionObjArgs(run_until_complete, task, nullptr);
-        PyGILState_Release(s);
+        Py_DECREF(loop);
+        Py_DECREF(task);
+        Py_DECREF(run_until_complete);
+        Py_DECREF(result);
+//        PyThreadState_Swap(previousThreadState);
+//        PyThreadState_Clear(s);
+//        PyThreadState_Delete(s);
+        PyGILState_Release(g);
     });
 
-    Py_DECREF(loop);
     Py_DECREF(create_task);
-    Py_DECREF(task);
     Py_DECREF(add_done_callback);
-    Py_DECREF(result);
 
     PyGILState_Release(s);
+//    PyEval_SaveThread();
 
     return true;
 }

@@ -39,8 +39,8 @@
 typedef struct {
     PyObject_HEAD
     ThingDiscoveryInfo* info;
-//    PyObject* pyThingClassId = nullptr;
-//    PyObject *pyParams = nullptr;
+    PyObject* pyThingClassId = nullptr;
+    PyObject *pyParams = nullptr;
 } PyThingDiscoveryInfo;
 
 static PyObject* PyThingDiscoveryInfo_new(PyTypeObject *type, PyObject */*args*/, PyObject */*kwds*/)
@@ -56,15 +56,15 @@ static PyObject* PyThingDiscoveryInfo_new(PyTypeObject *type, PyObject */*args*/
 void PyThingDiscoveryInfo_setInfo(PyThingDiscoveryInfo *self, ThingDiscoveryInfo *info)
 {
     self->info = info;
-//    self->pyThingClassId = PyUnicode_FromString(info->thingClassId().toString().toUtf8().data());
-//    self->pyParams = PyParams_FromParamList(info->params());
+    self->pyThingClassId = PyUnicode_FromString(info->thingClassId().toString().toUtf8().data());
+    self->pyParams = PyParams_FromParamList(info->params());
 }
 
 static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo * self)
 {
     qWarning() << "---- PyThingDiscoveryInfo";
-//    Py_DECREF(self->pyThingClassId);
-//    Py_DECREF(self->pyParams);
+    Py_DECREF(self->pyThingClassId);
+    Py_DECREF(self->pyParams);
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -127,15 +127,14 @@ static PyObject * PyThingDiscoveryInfo_addDescriptor(PyThingDiscoveryInfo* self,
         QMetaObject::invokeMethod(self->info, "addThingDescriptor", Qt::QueuedConnection, Q_ARG(ThingDescriptor, descriptor));
     }
 
-    Py_DECREF(pyDescriptor);
     Py_RETURN_NONE;
 }
 
-//static PyMemberDef PyThingDiscoveryInfo_members[] = {
-//    {"thingClassId", T_OBJECT_EX, offsetof(PyThingDiscoveryInfo, pyThingClassId), READONLY, "The ThingClassId this discovery is for."},
-////    {"params", T_OBJECT_EX, offsetof(PyThingDiscoveryInfo, pyParams), READONLY, "The params for this discovery"},
-//    {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
-//};
+static PyMemberDef PyThingDiscoveryInfo_members[] = {
+    {"thingClassId", T_OBJECT_EX, offsetof(PyThingDiscoveryInfo, pyThingClassId), READONLY, "The ThingClassId this discovery is for."},
+    {"params", T_OBJECT_EX, offsetof(PyThingDiscoveryInfo, pyParams), READONLY, "The params for this discovery"},
+    {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
+};
 
 static PyMethodDef PyThingDiscoveryInfo_methods[] = {
     { "addDescriptor", (PyCFunction)PyThingDiscoveryInfo_addDescriptor, METH_VARARGS, "Add a new descriptor to the discovery" },
@@ -172,7 +171,7 @@ static PyTypeObject PyThingDiscoveryInfoType = {
     0,                          /* tp_iter */
     0,                          /* tp_iternext */
     PyThingDiscoveryInfo_methods, /* tp_methods */
-    0, //PyThingDiscoveryInfo_members, /* tp_members */
+    PyThingDiscoveryInfo_members, /* tp_members */
     0,                          /* tp_getset */
     0,                          /* tp_base */
     0,                          /* tp_dict */

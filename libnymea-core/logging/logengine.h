@@ -127,7 +127,7 @@ class DatabaseJob: public QObject
 {
     Q_OBJECT
 public:
-    DatabaseJob(const QSqlDatabase &db, const QString &queryString, const QStringList &bindValues = QStringList()):
+    DatabaseJob(const QSqlDatabase &db, const QString &queryString, const QVariantList &bindValues = QVariantList()):
         m_db(db),
         m_queryString(queryString),
         m_bindValues(bindValues)
@@ -144,7 +144,7 @@ signals:
 private:
     QSqlDatabase m_db;
     QString m_queryString;
-    QStringList m_bindValues;
+    QVariantList m_bindValues;
 
     QString m_executedQuery;
     QSqlError m_error;

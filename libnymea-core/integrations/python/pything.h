@@ -285,11 +285,6 @@ static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
     }
 
     StateTypeId stateTypeId = StateTypeId(stateTypeIdStr);
-    StateType stateType = self->thingClass->stateTypes().findById(stateTypeId);
-    if (!stateType.isValid()) {
-        PyErr_SetString(PyExc_ValueError, QString("No state type %1 in thing class %2").arg(stateTypeId.toString()).arg(self->thingClass->name()).toUtf8());
-        return nullptr;
-    }
     QVariant value = PyObjectToQVariant(valueObj);
 
     if (self->thing != nullptr) {

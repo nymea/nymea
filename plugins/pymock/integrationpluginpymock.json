@@ -65,15 +65,17 @@
                     "id": "248c5046-847b-44d0-ab7c-684ff79197dc",
                     "name": "pyMockDiscoveryPairing",
                     "displayName": "Python mock thing with discovery and pairing",
-                    "createMethods": ["discovery"],
+                    "createMethods": ["discovery", "user"],
                     "setupMethod": "userAndPassword",
                     "discoveryParamTypes": [
                         {
                             "id": "ef5f6b90-e9d8-4e77-a14d-6725cfb07116",
                             "name": "resultCount",
                             "displayName": "Result count",
-                            "type": "int",
-                            "defaultValue": 2
+                            "type": "uint",
+                            "defaultValue": 2,
+                            "minValue": 0,
+                            "maxValue": 20
                         }
                     ],
                     "paramTypes": [

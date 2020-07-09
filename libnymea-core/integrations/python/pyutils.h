@@ -45,8 +45,6 @@ PyObject *QVariantToPyObject(const QVariant &value)
 
 QVariant PyObjectToQVariant(PyObject *pyObject)
 {
-    qWarning() << "**************** type" << pyObject->ob_type->tp_name;
-
     if (qstrcmp(pyObject->ob_type->tp_name, "int") == 0) {
         return QVariant(PyLong_AsLongLong(pyObject));
     }

@@ -115,7 +115,6 @@ static void PyThing_setThing(PyThing *self, Thing *thing)
             PyObject *pyStateTypeId = PyDict_GetItemString(pyState, "stateTypeId");
             StateTypeId stid = StateTypeId(PyUnicode_AsUTF8AndSize(pyStateTypeId, nullptr));
             if (stid == stateTypeId) {
-                qWarning() << "Updating state" << stateTypeId << value;
                 pyState = Py_BuildValue("{s:s, s:O}",
                                   "stateTypeId", stateTypeId.toString().toUtf8().data(),
                                   "value", QVariantToPyObject(value));

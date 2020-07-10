@@ -49,6 +49,21 @@
                     "displayName": "Python mock thing",
                     "createMethods": ["user"],
                     "setupMethod": "justAdd",
+                    "eventTypes": [
+                        {
+                            "id": "de6c2425-0dee-413f-8f4c-bb0929e83c0d",
+                            "name": "event1",
+                            "displayName": "Event 1",
+                            "paramTypes": [
+                                {
+                                    "id": "9f6aef52-dcde-4ee1-8ae3-4823594bf153",
+                                    "name": "param1",
+                                    "displayName": "Event param 1",
+                                    "type": "QString"
+                                }
+                            ]
+                        }
+                    ],
                     "stateTypes": [
                         {
                             "id": "24714828-93ec-41a7-875e-6a0b5b57d25c",
@@ -58,6 +73,22 @@
                             "displayNameAction": "Set state 1",
                             "type": "int",
                             "defaultValue": 0
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "a504933a-2b86-41c1-b188-8998d445adf8",
+                            "name": "action1",
+                            "displayName": "Action 1",
+                            "paramTypes": [
+                                {
+                                    "id": "5a824a21-3e97-49a5-8b4d-2a5bc3ea99ef",
+                                    "name": "param1",
+                                    "displayName": "Action param 1",
+                                    "type": "QString",
+                                    "defaultValue": "hello"
+                                }
+                            ]
                         }
                     ]
                 },
@@ -120,6 +151,22 @@
                             "displayNameAction": "Set state 1",
                             "type": "int",
                             "defaultValue": 0
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "9bcc17ee-52a4-48ef-9a76-b2df4433dac5",
+                            "name": "action1",
+                            "displayName": "Action 1",
+                            "paramTypes": [
+                                {
+                                    "id": "2e86cb76-e1a9-4afd-8fd3-e900cbb738f5",
+                                    "name": "param1",
+                                    "displayName": "Action param 1",
+                                    "type": "QString",
+                                    "defaultValue": "hello"
+                                }
+                            ]
                         }
                     ]
                 }

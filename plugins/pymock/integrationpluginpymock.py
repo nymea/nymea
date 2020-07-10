@@ -10,9 +10,14 @@ async def init():
         await asyncio.sleep(2);
         logger.log("Updating stuff")
         for thing in myThings():
+            if thing.thingClassId == pyMockThingClassId:
+                logger.log("Emitting event 1 for", thing.name, "eventTypeId", pyMockEvent1EventTypeId)
+                thing.emitEvent(pyMockEvent1EventTypeId, [nymea.Param(pyMockEvent1EventParam1ParamTypeId, "Im an event")])
+                logger.log("Setting state 1 for", thing.name, "to", thing.stateValue(pyMockState1StateTypeId) + 1)
+                thing.setStateValue(pyMockState1StateTypeId, thing.stateValue(pyMockState1StateTypeId) + 1)
             if thing.thingClassId == pyMockDiscoveryPairingThingClassId:
                 logger.log("Emitting event 1 for", thing.name)
-#                thing.emitEvent(pyMockDiscoveryPairingEvent1EventTypeId, [nymea.Param(pyMockDiscoveryPairingEvent1EventParam1ParamTypeId, "Im an event")])
+                thing.emitEvent(pyMockDiscoveryPairingEvent1EventTypeId, [nymea.Param(pyMockDiscoveryPairingEvent1EventParam1ParamTypeId, "Im an event")])
                 logger.log("Setting state 1 for", thing.name, "Old value is:", thing.stateValue(pyMockDiscoveryPairingState1StateTypeId))
                 thing.setStateValue(pyMockDiscoveryPairingState1StateTypeId, thing.stateValue(pyMockDiscoveryPairingState1StateTypeId) + 1)
 
@@ -79,7 +84,6 @@ async def confirmPairing(info, username, secret):
 
 
 async def setupThing(info):
-#    logger.log("setupThing for", info.thing.name, info.thing.params)
     logger.log("setupThing for", info.thing.name)
     info.finish(nymea.ThingErrorNoError)
 
@@ -95,6 +99,10 @@ async def postSetupThing(thing):
         logger.log("Param 1 value:", thing.paramValue(pyMockDiscoveryPairingThingParam1ParamTypeId))
         logger.log("Setting 1 value:", thing.setting(pyMockDiscoveryPairingSettingsSetting1ParamTypeId))
 
+
+async def executeAction(info):
+    logger.log("executeAction for", info.thing.name, info.actionTypeId, "with params", info.params[0].value)
+    info.finish(nymea.ThingErrorNoError)
 
 
 def autoThings():

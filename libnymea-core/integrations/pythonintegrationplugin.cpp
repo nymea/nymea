@@ -536,7 +536,10 @@ void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
         PyGILState_Release(s);
     });
 
-    callPluginFunction("executeAction", reinterpret_cast<PyObject*>(pyInfo));
+    bool success = callPluginFunction("executeAction", reinterpret_cast<PyObject*>(pyInfo));
+    if (!success) {
+        info->finish(Thing::ThingErrorUnsupportedFeature);
+    }
 }
 
 void PythonIntegrationPlugin::thingRemoved(Thing *thing)

@@ -18,6 +18,7 @@
 #include <QtConcurrent/QtConcurrentRun>
 #include <QCoreApplication>
 #include <QMutex>
+#include <QFuture>
 
 PyThreadState* PythonIntegrationPlugin::s_mainThread = nullptr;
 PyObject* PythonIntegrationPlugin::s_nymeaModule = nullptr;
@@ -71,7 +72,6 @@ static PyModuleDef nymea_module =
     "nymea module for python based integration plugins",       // const char* m_doc;
     -1,                    // Py_ssize_t m_size;
     nymea_methods,        // PyMethodDef *m_methods
-    //  inquiry m_reload;  traverseproc m_traverse;  inquiry m_clear;  freefunc m_free;
     nullptr, nullptr, nullptr, nullptr
 };
 
@@ -274,9 +274,16 @@ PythonIntegrationPlugin::PythonIntegrationPlugin(QObject *parent) : IntegrationP
 
 PythonIntegrationPlugin::~PythonIntegrationPlugin()
 {
-    PyGILState_STATE s = PyGILState_Ensure();
+    PyGILState_Ensure();
+
+    while (!m_runningThreads.isEmpty()) {
+        PyObject *loop = m_runningThreads.keys().first();
+        PyObject *stop = PyObject_GetAttrString(loop, "stop");
+        PyObject_CallFunctionObjArgs(stop, nullptr);
+    }
+
     Py_XDECREF(s_plugins.take(this));
-    PyGILState_Release(s);
+    Py_FinalizeEx();
 }
 
 void PythonIntegrationPlugin::initPython()
@@ -723,7 +730,7 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
     dumpError();
 
     PyObject *run_until_complete = PyObject_GetAttrString(loop, "run_until_complete");
-    QtConcurrent::run([run_until_complete, task, loop, result](){
+    QFuture<void> future = QtConcurrent::run([this, run_until_complete, task, loop, result](){
         PyGILState_STATE g = PyGILState_Ensure();
 //        auto s = PyThreadState_New(PyInterpreterState_Main());
 //        PyThreadState *previousThreadState = PyThreadState_Swap(s);
@@ -732,11 +739,13 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
         Py_DECREF(task);
         Py_DECREF(run_until_complete);
         Py_DECREF(result);
+        m_runningThreads.remove(loop);
 //        PyThreadState_Swap(previousThreadState);
 //        PyThreadState_Clear(s);
 //        PyThreadState_Delete(s);
         PyGILState_Release(g);
     });
+    m_runningThreads.insert(loop, future);
 
     Py_DECREF(create_task);
     Py_DECREF(add_done_callback);

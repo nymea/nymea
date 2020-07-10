@@ -89,7 +89,7 @@ async def setupThing(info):
 
 
 async def postSetupThing(thing):
-    logger.log("postSetupThing for", thing.name, thing.params[0].value)
+    logger.log("postSetupThing for", thing.name)
     thing.nameChangedHandler = lambda thing : logger.log("Thing name changed", thing.name)
 
     if thing.thingClassId == pyMockAutoThingClassId:
@@ -111,3 +111,8 @@ def autoThings():
         if thing.thingClassId == pyMockAutoThingClassId:
             autoThings.append(thing)
     return autoThings
+
+
+# Intentionally commented out to also have a test case for unimplmented functions
+# def thingRemoved(thing):
+#    logger.log("thingRemoved for", thing.name)

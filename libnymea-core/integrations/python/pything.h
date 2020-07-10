@@ -73,7 +73,6 @@ static void PyThing_setThing(PyThing *self, Thing *thing)
 
     self->pyStates = PyList_New(thing->states().count());
     for (int i = 0; i < thing->states().count(); i++) {
-        qWarning() << "i" << i;
         State state = thing->states().at(i);
         PyObject *pyState = Py_BuildValue("{s:s, s:O}",
                                           "stateTypeId", state.stateTypeId().toString().toUtf8().data(),

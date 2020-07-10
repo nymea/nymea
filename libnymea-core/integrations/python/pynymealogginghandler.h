@@ -24,8 +24,6 @@ static int PyNymeaLoggingHandler_init(PyNymeaLoggingHandler */*self*/, PyObject 
 static void PyNymeaLoggingHandler_dealloc(PyNymeaLoggingHandler * self)
 // destruct the object
 {
-    // FIXME: Why is this not called? Seems we're leaking...
-    Q_ASSERT(false);
     Py_TYPE(self)->tp_free(self);
 }
 

@@ -82,6 +82,8 @@ private:
 
     // Need to keep a copy of plugin params and sync that in a thread-safe manner
     ParamList m_pluginConfigCopy;
+
+    QHash<PyObject*, QFuture<void>> m_runningThreads;
 };
 
 #endif // PYTHONINTEGRATIONPLUGIN_H

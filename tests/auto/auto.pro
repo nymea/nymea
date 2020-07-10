@@ -13,6 +13,7 @@ SUBDIRS = \
         loggingloading \
         mqttbroker \
         plugins \
+        pythonplugins \
         rules \
         scripts \
         states \

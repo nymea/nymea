@@ -372,6 +372,7 @@ void LogEngine::removeRuleLogs(const RuleId &ruleId)
 
 void LogEngine::appendLogEntry(const LogEntry &entry)
 {
+    qCDebug(dcLogEngine()) << "Adding log entry:" << entry;
     QString queryString = QString("INSERT INTO entries (timestamp, loggingEventType, loggingLevel, sourceType, typeId, thingId, value, active, errorCode) values (?, ?, ?, ?, ?, ?, ?, ?, ?);");
     QVariantList bindValues;
     bindValues.append(entry.timestamp().toMSecsSinceEpoch());
@@ -380,7 +381,7 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
     bindValues.append(entry.source());
     bindValues.append(entry.typeId().toString());
     bindValues.append(entry.thingId().toString());
-    bindValues.append(entry.value());
+    bindValues.append(LogValueTool::convertVariantToString(entry.value()));
     bindValues.append(entry.active());
     bindValues.append(entry.errorCode());
 

@@ -44,7 +44,6 @@ QString LogValueTool::convertVariantToString(const QVariant &value)
     switch (value.type()) {
     case QVariant::Double:
         return QString::number(value.toDouble());
-        break;
     case QVariant::List: {
         QStringList valueStringList;
         foreach (const QVariant &variantValue, value.toList()) {
@@ -54,7 +53,6 @@ QString LogValueTool::convertVariantToString(const QVariant &value)
     }
     default:
         return value.toString();
-        break;
     }
 }
 

@@ -108,7 +108,7 @@ bool RuleAction::isStateBased() const
 
 Action RuleAction::toAction() const
 {
-    Action action(m_actionTypeId, m_thingId);
+    Action action(m_actionTypeId, m_thingId, Action::TriggeredByRule);
     ParamList params;
     foreach (const RuleActionParam &ruleActionParam, m_ruleActionParams) {
         params.append(Param(ruleActionParam.paramTypeId(), ruleActionParam.value()));

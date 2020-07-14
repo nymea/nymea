@@ -46,7 +46,12 @@ class LIBNYMEA_EXPORT Action
     Q_PROPERTY(ParamList params READ params WRITE setParams USER true)
 
 public:
-    explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const ThingId &thingId = ThingId());
+    enum TriggeredBy {
+        TriggeredByUser,
+        TriggeredByRule,
+        TriggeredByScript
+    };
+    explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const ThingId &thingId = ThingId(), TriggeredBy triggeredBy = TriggeredByUser);
     Action(const Action &other);
 
     bool isValid() const;
@@ -60,11 +65,14 @@ public:
     void setParams(const ParamList &params);
     Param param(const ParamTypeId &paramTypeId) const;
 
+    TriggeredBy triggeredBy() const;
+
     void operator=(const Action &other);
 private:
     ActionTypeId m_actionTypeId;
     ThingId m_thingId;
     ParamList m_params;
+    TriggeredBy m_triggeredBy = TriggeredByUser;
 };
 
 #endif // ACTION_H

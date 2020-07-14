@@ -168,9 +168,7 @@ void ScriptState::setValue(const QVariant &value)
         return;
     }
 
-    Action action;
-    action.setThingId(ThingId(m_thingId));
-    action.setActionTypeId(ActionTypeId(actionTypeId));
+    Action action(ActionTypeId(actionTypeId), ThingId(m_thingId), Action::TriggeredByScript);
     ParamList params = ParamList() << Param(ParamTypeId(actionTypeId), value);
     action.setParams(params);
 

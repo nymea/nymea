@@ -647,6 +647,7 @@ ThingPairingInfo *ThingManagerImplementation::confirmPairing(const PairingTransa
                 qCDebug(dcThingManager()) << "Thing added:" << info->thing();
                 m_configuredThings.insert(info->thing()->id(), info->thing());
                 emit thingAdded(info->thing());
+                connect(info->thing(), &Thing::eventTriggered, this, &ThingManagerImplementation::onEventTriggered);
             } else {
                 emit thingChanged(info->thing());
             }
@@ -728,9 +729,10 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
         qCDebug(dcThingManager) << "Thing setup complete.";
         m_configuredThings.insert(info->thing()->id(), info->thing());
         storeConfiguredThings();
-        postSetupThing(info->thing());
 
         emit thingAdded(info->thing());
+        connect(info->thing(), &Thing::eventTriggered, this, &ThingManagerImplementation::onEventTriggered);
+        postSetupThing(info->thing());
     });
 
     return info;
@@ -1560,6 +1562,8 @@ void ThingManagerImplementation::loadConfiguredThings()
         m_configuredThings.insert(thing->id(), thing);
 
         emit thingAdded(thing);
+
+        connect(thing, &Thing::eventTriggered, this, &ThingManagerImplementation::onEventTriggered);
     }
     settings.endGroup();
 
@@ -1710,7 +1714,7 @@ void ThingManagerImplementation::onAutoThingsAppeared(const ThingDescriptors &th
             storeConfiguredThings();
 
             emit thingAdded(info->thing());
-
+            connect(info->thing(), &Thing::eventTriggered, this, &ThingManagerImplementation::onEventTriggered);
             postSetupThing(info->thing());
         });
     }

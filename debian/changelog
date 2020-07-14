@@ -1,7 +1,13 @@
-nymea (0.22.0) UNRELEASED; urgency=medium
+nymea (0.22.0) xenial; urgency=medium
 
+  [ Michael Zanetti ]
+  * Store state changes immediately when they change
+  * 0.22
+  * Allow emitting events from things directly
+  * Vaguely inform the plugin about the origin of actions.
+  * Fix time filter
 
- -- Michael Zanetti <michael.zanetti@nymea.io>  Fri, 05 Jun 2020 19:41:09 +0200
+ -- Jenkins <jenkins@nymea.io>  Tue, 14 Jul 2020 11:26:15 +0200
 
 nymea (0.21.1) xenial; urgency=medium
 

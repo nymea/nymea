@@ -273,18 +273,18 @@ QString LogFilter::createTimeFilterString(QPair<QDateTime, QDateTime> timeFilter
     if (startDate.isValid() && !endDate.isValid()) {
         // only start date is valid
         query.append(QString("timestamp BETWEEN '%1' AND '%2' ")
-                     .arg(startDate.toTime_t())
-                     .arg(QDateTime::currentDateTime().toTime_t()));
+                     .arg(startDate.toMSecsSinceEpoch())
+                     .arg(QDateTime::currentDateTime().toMSecsSinceEpoch()));
     } else if (!startDate.isValid() && endDate.isValid()) {
         // only end date is valid
         query.append(QString("timestamp NOT BETWEEN '%1' AND '%2' ")
-                     .arg(endDate.toTime_t())
-                     .arg(QDateTime::currentDateTime().toTime_t()));
+                     .arg(endDate.toMSecsSinceEpoch())
+                     .arg(QDateTime::currentDateTime().toMSecsSinceEpoch()));
     } else if (startDate.isValid() && endDate.isValid()) {
         // both dates are valid
         query.append(QString("timestamp BETWEEN '%1' AND '%2' ")
-                     .arg(startDate.toTime_t())
-                     .arg(endDate.toTime_t()));
+                     .arg(startDate.toMSecsSinceEpoch())
+                     .arg(endDate.toMSecsSinceEpoch()));
     }
     query.append(") ");
     return query;

@@ -274,7 +274,7 @@ PythonIntegrationPlugin::PythonIntegrationPlugin(QObject *parent) : IntegrationP
 
 PythonIntegrationPlugin::~PythonIntegrationPlugin()
 {
-    PyGILState_Ensure();
+    PyGILState_STATE s = PyGILState_Ensure();
 
     while (!m_runningThreads.isEmpty()) {
         PyObject *loop = m_runningThreads.keys().first();
@@ -283,7 +283,7 @@ PythonIntegrationPlugin::~PythonIntegrationPlugin()
     }
 
     Py_XDECREF(s_plugins.take(this));
-    Py_FinalizeEx();
+    PyGILState_Release(s);
 }
 
 void PythonIntegrationPlugin::initPython()
@@ -300,6 +300,13 @@ void PythonIntegrationPlugin::initPython()
 
     // Need to release the lock from the main thread before spawning new threads
     s_mainThread = PyEval_SaveThread();
+}
+
+void PythonIntegrationPlugin::deinitPython()
+{
+    PyEval_RestoreThread(s_mainThread);
+
+    Py_FinalizeEx();
 }
 
 bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)

@@ -101,6 +101,7 @@ ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardware
 
 ThingManagerImplementation::~ThingManagerImplementation()
 {
+
     delete m_translator;
 
     foreach (Thing *thing, m_configuredThings) {
@@ -116,6 +117,8 @@ ThingManagerImplementation::~ThingManagerImplementation()
             qCDebug(dcThingManager()) << "Not deleting plugin" << plugin->pluginName();
         }
     }
+
+    PythonIntegrationPlugin::deinitPython();
 }
 
 QStringList ThingManagerImplementation::pluginSearchDirs()
@@ -1951,7 +1954,7 @@ void ThingManagerImplementation::loadThingStates(Thing *thing)
     ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
     foreach (const StateType &stateType, thingClass.stateTypes()) {
         if (stateType.cached()) {
-            QVariant value(stateType.defaultValue());
+            QVariant value = stateType.defaultValue();
 
             if (settings.contains(stateType.id().toString())) {
                 value = settings.value(stateType.id().toString());
@@ -1963,6 +1966,7 @@ void ThingManagerImplementation::loadThingStates(Thing *thing)
             }
             value.convert(stateType.type());
             thing->setStateValue(stateType.id(), value);
+            qWarning() << "**** loaded state" << stateType.name() << value;
         } else {
             thing->setStateValue(stateType.id(), stateType.defaultValue());
         }

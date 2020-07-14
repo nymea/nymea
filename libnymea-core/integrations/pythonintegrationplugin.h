@@ -22,6 +22,7 @@ public:
     ~PythonIntegrationPlugin();
 
     static void initPython();
+    static void deinitPython();
 
     bool loadScript(const QString &scriptFile);
 

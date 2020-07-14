@@ -1,3 +1,8 @@
+nymea (0.22.0) UNRELEASED; urgency=medium
+
+
+ -- Michael Zanetti <michael.zanetti@nymea.io>  Fri, 05 Jun 2020 19:41:09 +0200
+
 nymea (0.21.1) xenial; urgency=medium
 
   [ Michael Zanetti ]

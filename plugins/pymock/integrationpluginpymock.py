@@ -7,8 +7,7 @@ async def init():
     logger.log("Python mock plugin init")
 
     while True:
-        await asyncio.sleep(2);
-        logger.log("Updating stuff")
+        await asyncio.sleep(5);
         for thing in myThings():
             if thing.thingClassId == pyMockThingClassId:
                 logger.log("Emitting event 1 for", thing.name, "eventTypeId", pyMockEvent1EventTypeId)

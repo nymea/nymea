@@ -56,7 +56,16 @@ QVariant PyObjectToQVariant(PyObject *pyObject)
     if (qstrcmp(pyObject->ob_type->tp_name, "double") == 0) {
         return QVariant(PyFloat_AsDouble(pyObject));
     }
-    Q_ASSERT_X(false, "pyutils.h", "Unhandled data type in conversion from Param to PyParam!");
+
+    if (qstrcmp(pyObject->ob_type->tp_name, "float") == 0) {
+        return QVariant(PyFloat_AsDouble(pyObject));
+    }
+
+    if (qstrcmp(pyObject->ob_type->tp_name, "bool") == 0) {
+        return QVariant(PyObject_IsTrue(pyObject));
+    }
+
+    Q_ASSERT_X(false, "pyutils.h", "Unhandled data type in conversion PyObject to QVariant!");
     return QVariant();
 }
 

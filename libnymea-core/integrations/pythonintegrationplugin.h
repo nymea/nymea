@@ -6,11 +6,13 @@
 #include <QObject>
 #include <QJsonObject>
 #include <QFuture>
+#include <QThreadPool>
 
 extern "C" {
 typedef struct _object PyObject;
 typedef struct _ts PyThreadState;
 typedef struct _thing PyThing;
+typedef struct _is PyInterpreterState;
 }
 
 
@@ -62,11 +64,19 @@ private:
     bool callPluginFunction(const QString &function, PyObject *param1 = nullptr, PyObject *param2 = nullptr, PyObject *param3 = nullptr);
 
 private:
-    static PyThreadState* s_mainThread;
+    // The main thread state in which we create an interpreter per plugin
+    static PyThreadState* s_mainThreadState;
+    static QThreadPool *s_threadPool;
 
-    // Modules imported into the global context
-    static PyObject *s_nymeaModule;
-    static PyObject *s_asyncio;
+    // A per plugin thread state and interpreter
+    PyThreadState *m_threadState = nullptr;
+
+    // Modules imported into the interpreter
+    PyObject *m_nymeaModule;
+    PyObject *m_asyncio;
+
+    // The imported plugin module (the plugin.py)
+    PyObject *m_module = nullptr;
 
     // A map of plugin instances to plugin python scripts/modules
     // Make sure to hold the GIL when accessing this.
@@ -75,16 +85,14 @@ private:
     // Used for guarding access from the python threads to the plugin instance
     QMutex m_mutex;
 
-    // The imported plugin module
-    PyObject *m_module = nullptr;
-
     // Things held by this plugin instance
     QHash<Thing*, PyThing*> m_things;
 
     // Need to keep a copy of plugin params and sync that in a thread-safe manner
     ParamList m_pluginConfigCopy;
 
-    QHash<PyObject*, QFuture<void>> m_runningThreads;
+    // Running concurrent tasks in this plugin
+    QSet<QFutureWatcher<void>*> m_runningTasks;
 };
 
 #endif // PYTHONINTEGRATIONPLUGIN_H

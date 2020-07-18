@@ -1,5 +1,6 @@
 import nymea
 import asyncio
+#from fastdotcom import fast_com
 
 watchingAutoThings = False
 
@@ -56,7 +57,7 @@ def startMonitoringAutoThings():
 
 async def discoverThings(info):
     logger.log("Discovery started for", info.thingClassId, "with result count:", info.params[0].value)
-    await asyncio.sleep(1) # Some delay for giving a feeling of a discovery
+    await asyncio.sleep(10) # Some delay for giving a feeling of a discovery
     # Add 2 new discovery results
     for i in range(0, info.params[0].value):
         info.addDescriptor(nymea.ThingDescriptor(pyMockDiscoveryPairingThingClassId, "Python mock thing %i" % i))

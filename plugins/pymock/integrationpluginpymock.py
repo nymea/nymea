@@ -1,14 +1,17 @@
 import nymea
-import asyncio
+import time
 #from fastdotcom import fast_com
 
 watchingAutoThings = False
+loopRunning = False
 
-async def init():
+def init():
     logger.log("Python mock plugin init")
+    global loopRunning
+    loopRunning = True
 
-    while True:
-        await asyncio.sleep(5);
+    while loopRunning:
+        time.sleep(5);
         for thing in myThings():
             if thing.thingClassId == pyMockThingClassId:
                 logger.log("Emitting event 1 for", thing.name, "eventTypeId", pyMockEvent1EventTypeId)
@@ -20,6 +23,13 @@ async def init():
                 thing.emitEvent(pyMockDiscoveryPairingEvent1EventTypeId, [nymea.Param(pyMockDiscoveryPairingEvent1EventParam1ParamTypeId, "Im an event")])
                 logger.log("Setting state 1 for", thing.name, "Old value is:", thing.stateValue(pyMockDiscoveryPairingState1StateTypeId))
                 thing.setStateValue(pyMockDiscoveryPairingState1StateTypeId, thing.stateValue(pyMockDiscoveryPairingState1StateTypeId) + 1)
+    logger.log("Bye bye")
+
+
+def deinit():
+    logger.log("shutting down")
+    global loopRunning
+    loopRunning = False
 
 
 def configValueChanged(paramTypeId, value):
@@ -55,9 +65,9 @@ def startMonitoringAutoThings():
     logger.log("Done start monitoring auto things")
 
 
-async def discoverThings(info):
+def discoverThings(info):
     logger.log("Discovery started for", info.thingClassId, "with result count:", info.params[0].value)
-    await asyncio.sleep(10) # Some delay for giving a feeling of a discovery
+    time.sleep(10) # Some delay for giving a feeling of a discovery
     # Add 2 new discovery results
     for i in range(0, info.params[0].value):
         info.addDescriptor(nymea.ThingDescriptor(pyMockDiscoveryPairingThingClassId, "Python mock thing %i" % i))
@@ -69,26 +79,26 @@ async def discoverThings(info):
     info.finish(nymea.ThingErrorNoError)
 
 
-async def startPairing(info):
+def startPairing(info):
     logger.log("startPairing for", info.thingName, info.thingId, info.params)
     info.finish(nymea.ThingErrorNoError, "Log in as user \"john\" with password \"smith\".")
 
 
-async def confirmPairing(info, username, secret):
+def confirmPairing(info, username, secret):
     logger.log("confirming pairing for", info.thingName, username, secret)
-    await asyncio.sleep(1)
+    time.sleep(1)
     if username == "john" and secret == "smith":
         info.finish(nymea.ThingErrorNoError)
     else:
         info.finish(nymea.ThingErrorAuthenticationFailure, "Error logging in here!")
 
 
-async def setupThing(info):
+def setupThing(info):
     logger.log("setupThing for", info.thing.name)
     info.finish(nymea.ThingErrorNoError)
 
 
-async def postSetupThing(thing):
+def postSetupThing(thing):
     logger.log("postSetupThing for", thing.name)
     thing.nameChangedHandler = lambda thing : logger.log("Thing name changed", thing.name)
 

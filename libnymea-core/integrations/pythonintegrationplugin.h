@@ -47,10 +47,6 @@ public:
     static PyObject* pyAutoThingsAppeared(PyObject *self, PyObject* args);
     static PyObject* pyAutoThingDisappeared(PyObject *self, PyObject* args);
 
-public:
-    // python callbacks
-    static PyObject* task_done(PyObject* self, PyObject* args);
-
 private:
     void exportIds();
     void exportThingClass(const ThingClass &thingClass);
@@ -66,17 +62,22 @@ private:
 private:
     // The main thread state in which we create an interpreter per plugin
     static PyThreadState* s_mainThreadState;
-    static QThreadPool *s_threadPool;
 
     // A per plugin thread state and interpreter
     PyThreadState *m_threadState = nullptr;
 
-    // Modules imported into the interpreter
-    PyObject *m_nymeaModule;
-    PyObject *m_asyncio;
+    // A per plugin thread pool
+    QThreadPool *m_threadPool = nullptr;
 
+    // Running concurrent tasks in this plugins thread pool
+    QHash<QFutureWatcher<void>*, QString> m_runningTasks;
+
+    // The nymea module we import into the interpreter
+    PyObject *m_nymeaModule = nullptr;
     // The imported plugin module (the plugin.py)
-    PyObject *m_module = nullptr;
+    PyObject *m_pluginModule = nullptr;
+
+    PyObject *m_logger = nullptr;
 
     // A map of plugin instances to plugin python scripts/modules
     // Make sure to hold the GIL when accessing this.
@@ -91,8 +92,6 @@ private:
     // Need to keep a copy of plugin params and sync that in a thread-safe manner
     ParamList m_pluginConfigCopy;
 
-    // Running concurrent tasks in this plugin
-    QSet<QFutureWatcher<void>*> m_runningTasks;
 };
 
 #endif // PYTHONINTEGRATIONPLUGIN_H

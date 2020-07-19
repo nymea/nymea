@@ -43,7 +43,7 @@ static PyObject* PyThingActionInfo_new(PyTypeObject *type, PyObject */*args*/, P
     if (self == NULL) {
         return nullptr;
     }
-    qWarning() << "+++ PyThingActionInfo";
+    qCDebug(dcPythonIntegrations()) << "+++ PyThingActionInfo";
     return (PyObject*)self;
 }
 
@@ -59,7 +59,7 @@ void PyThingActionInfo_setInfo(PyThingActionInfo *self, ThingActionInfo *info, P
 
 static void PyThingActionInfo_dealloc(PyThingActionInfo * self)
 {
-    qWarning() << "---- PyThingActionInfo";
+    qCDebug(dcPythonIntegrations()) << "--- PyThingActionInfo";
     Py_DECREF(self->pyThing);
     Py_DECREF(self->pyActionTypeId);
     Py_DECREF(self->pyParams);

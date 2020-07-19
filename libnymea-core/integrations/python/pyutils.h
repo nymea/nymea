@@ -65,7 +65,7 @@ QVariant PyObjectToQVariant(PyObject *pyObject)
         return QVariant(PyObject_IsTrue(pyObject));
     }
 
-    Q_ASSERT_X(false, "pyutils.h", "Unhandled data type in conversion PyObject to QVariant!");
+    Q_ASSERT_X(false, "pyutils.h", QString("Unhandled data type in conversion PyObject to QVariant: %1").arg(pyObject->ob_type->tp_name).toUtf8());
     return QVariant();
 }
 

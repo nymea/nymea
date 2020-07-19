@@ -41,7 +41,7 @@ static PyObject* PyThingSetupInfo_new(PyTypeObject *type, PyObject *args, PyObje
     if (self == NULL) {
         return nullptr;
     }
-    qWarning() << "++++ PyThingSetupInfo";
+    qCDebug(dcPythonIntegrations()) << "+++ PyThingSetupInfo";
 
 
     static char *kwlist[] = {"thing", nullptr};
@@ -60,7 +60,7 @@ static PyObject* PyThingSetupInfo_new(PyTypeObject *type, PyObject *args, PyObje
 }
 
 static void PyThingSetupInfo_dealloc(PyThingSetupInfo * self) {
-    qWarning() << "--- PyThingSetupInfo";
+    qCDebug(dcPythonIntegrations()) << "--- PyThingSetupInfo";
     Py_DECREF(self->pyThing);
     Py_TYPE(self)->tp_free(self);
 }

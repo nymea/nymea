@@ -35,7 +35,7 @@ static PyMemberDef PyParam_members[] = {
 
 static int PyParam_init(PyParam *self, PyObject *args, PyObject *kwds)
 {
-    qWarning() << "++++ PyParam";
+    qCDebug(dcPythonIntegrations()) << "+++ PyParam";
     static char *kwlist[] = {"paramTypeId", "value", nullptr};
     PyObject *paramTypeId = nullptr, *value = nullptr;
 
@@ -54,7 +54,7 @@ static int PyParam_init(PyParam *self, PyObject *args, PyObject *kwds)
 }
 
 static void PyParam_dealloc(PyParam * self) {
-    qWarning() << "---- PyParam";
+    qCDebug(dcPythonIntegrations()) << "--- PyParam";
     Py_XDECREF(self->pyParamTypeId);
     Py_XDECREF(self->pyValue);
     Py_TYPE(self)->tp_free(self);

@@ -53,7 +53,7 @@ static PyObject* PyThing_new(PyTypeObject *type, PyObject */*args*/, PyObject */
     if (self == NULL) {
         return nullptr;
     }
-    qWarning() << "*++++ PyThing" << self;
+    qCDebug(dcPythonIntegrations()) << "+++ PyThing" << self;
 
     return (PyObject*)self;
 }
@@ -127,7 +127,7 @@ static void PyThing_setThing(PyThing *self, Thing *thing)
 
 
 static void PyThing_dealloc(PyThing * self) {
-    qWarning() << "----- PyThing" << self;
+    qCDebug(dcPythonIntegrations()) << "--- PyThing" << self;
     Py_XDECREF(self->pyId);
     Py_XDECREF(self->pyThingClassId);
     Py_XDECREF(self->pyName);

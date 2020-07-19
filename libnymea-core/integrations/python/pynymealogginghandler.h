@@ -7,6 +7,8 @@
 #include <QStringList>
 #include <QLoggingCategory>
 
+Q_DECLARE_LOGGING_CATEGORY(dcPythonIntegrations)
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
@@ -16,14 +18,23 @@ typedef struct {
     char *category;
 } PyNymeaLoggingHandler;
 
-static int PyNymeaLoggingHandler_init(PyNymeaLoggingHandler */*self*/, PyObject */*args*/, PyObject */*kwds*/)
+static int PyNymeaLoggingHandler_init(PyNymeaLoggingHandler *self, PyObject *args, PyObject */*kwds*/)
 {
+    char *category = nullptr;
+    if (!PyArg_ParseTuple(args, "s", &category)) {
+        qCWarning(dcPythonIntegrations()) << "PyNymeaLoggingHandler: Error parsing parameters";
+        return -1;
+    }
+
+    self->category = (char*)malloc(qstrlen(category));
+    qstrcpy(self->category, category);
+
     return 0;
 }
 
 static void PyNymeaLoggingHandler_dealloc(PyNymeaLoggingHandler * self)
-// destruct the object
 {
+    free(self->category);
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -106,5 +117,6 @@ static void registerNymeaLoggingHandler(PyObject *module)
     }
 }
 
+#pragma GCC diagnostic pop
 
 #endif // PYNYMEALOGGINGHANDLER_H

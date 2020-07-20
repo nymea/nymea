@@ -39,7 +39,6 @@ public:
     void thingRemoved(Thing *thing) override;
 
 
-    static void dumpError();
     static PyObject* pyConfiguration(PyObject* self, PyObject* args);
     static PyObject* pyConfigValue(PyObject* self, PyObject* args);
     static PyObject* pySetConfigValue(PyObject* self, PyObject* args);

@@ -45,6 +45,7 @@ typedef struct _thing {
     PyObject *pyNameChangedHandler = nullptr;
     PyObject *pySettingChangedHandler = nullptr;
     PyObject *pyStates = nullptr; // A copy of the things states
+    PyThreadState *threadState = nullptr; // The python threadstate this thing belongs to
 } PyThing;
 
 
@@ -58,9 +59,10 @@ static PyObject* PyThing_new(PyTypeObject *type, PyObject */*args*/, PyObject */
     return (PyObject*)self;
 }
 
-static void PyThing_setThing(PyThing *self, Thing *thing)
+static void PyThing_setThing(PyThing *self, Thing *thing, PyThreadState *threadState)
 {
     self->thing = thing;
+    self->threadState = threadState;
 
     // Creating a copy because we cannot access the actual thing from the python thread
     self->thingClass = new ThingClass(thing->thingClass());
@@ -87,28 +89,36 @@ static void PyThing_setThing(PyThing *self, Thing *thing)
     // Those lambdas Will be executed in the main thread context. This means we
     // can access self->thing, but need to hold the GIL for interacting with python
     QObject::connect(thing, &Thing::nameChanged, [=](){
-        PyGILState_STATE s = PyGILState_Ensure();
+        PyEval_RestoreThread(self->threadState);
         Py_XDECREF(self->pyName);
         self->pyName = PyUnicode_FromString(self->thing->name().toUtf8().data());
         if (self->pyNameChangedHandler) {
-            PyObject_CallFunctionObjArgs(self->pyNameChangedHandler, self, nullptr);
+            PyObject *ret = PyObject_CallFunctionObjArgs(self->pyNameChangedHandler, self, nullptr);
+            if (PyErr_Occurred()) {
+                PyErr_Print();
+            }
+            Py_XDECREF(ret);
         }
-        PyGILState_Release(s);
+        PyEval_ReleaseThread(self->threadState);
     });
 
 
     QObject::connect(thing, &Thing::settingChanged, [=](const ParamTypeId &paramTypeId, const QVariant &value){
-        PyGILState_STATE s = PyGILState_Ensure();
+        PyEval_RestoreThread(self->threadState);
         Py_XDECREF(self->pySettings);
         self->pySettings = PyParams_FromParamList(self->thing->settings());
         if (self->pySettingChangedHandler) {
-            PyObject_CallFunctionObjArgs(self->pySettingChangedHandler, self, PyUnicode_FromString(paramTypeId.toString().toUtf8().data()), QVariantToPyObject(value), nullptr);
+            PyObject * ret = PyObject_CallFunctionObjArgs(self->pySettingChangedHandler, self, PyUnicode_FromString(paramTypeId.toString().toUtf8().data()), QVariantToPyObject(value), nullptr);
+            if (PyErr_Occurred()) {
+                PyErr_Print();
+            }
+            Py_XDECREF(ret);
         }
-        PyGILState_Release(s);
+        PyEval_ReleaseThread(self->threadState);
     });
 
     QObject::connect(thing, &Thing::stateValueChanged, [=](const StateTypeId &stateTypeId, const QVariant &value){
-        PyGILState_STATE s = PyGILState_Ensure();
+        PyEval_RestoreThread(self->threadState);
         for (int i = 0; i < PyList_Size(self->pyStates); i++) {
             PyObject *pyState = PyList_GetItem(self->pyStates, i);
             PyObject *pyStateTypeId = PyDict_GetItemString(pyState, "stateTypeId");
@@ -121,7 +131,7 @@ static void PyThing_setThing(PyThing *self, Thing *thing)
                 break;
             }
         }
-        PyGILState_Release(s);
+        PyEval_ReleaseThread(self->threadState);
     });
 }
 
@@ -342,6 +352,7 @@ static PyMethodDef PyThing_methods[] = {
 static PyMemberDef PyThing_members[] = {
     {"params", T_OBJECT_EX, offsetof(PyThing, pyParams), READONLY, "Thing params"},
     {"nameChangedHandler", T_OBJECT_EX, offsetof(PyThing, pyNameChangedHandler), 0, "Set a callback for when the thing name changes"},
+    {"settingChangedHandler", T_OBJECT_EX, offsetof(PyThing, pySettingChangedHandler), 0, "Set a callback for when a thing setting changes"},
     {nullptr, 0, 0, 0, nullptr}  /* Sentinel */
 };
 
@@ -409,7 +420,6 @@ static void registerThingType(PyObject *module)
     for (int i = 0; i < thingErrorEnum.keyCount(); i++) {
         PyModule_AddObject(module, thingErrorEnum.key(i), PyLong_FromLong(thingErrorEnum.value(i)));
     }
-
 }
 
 

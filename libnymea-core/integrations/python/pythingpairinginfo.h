@@ -60,7 +60,7 @@ static PyMemberDef PyThingPairingInfo_members[] = {
 
 static int PyThingPairingInfo_init(PyThingPairingInfo */*self*/, PyObject */*args*/, PyObject */*kwds*/)
 {
-    qWarning() << "++++ ThingPairingInfo";
+    qCDebug(dcPythonIntegrations()) << "+++ ThingPairingInfo";
     return 0;
 }
 
@@ -77,7 +77,7 @@ void PyThingPairingInfo_setInfo(PyThingPairingInfo *self, ThingPairingInfo *info
 
 static void PyThingPairingInfo_dealloc(PyThingPairingInfo * self)
 {
-    qWarning() << "---- ThingPairingInfo";
+    qCDebug(dcPythonIntegrations()) << "--- ThingPairingInfo";
     Py_XDECREF(self->pyTransactionId);
     Py_XDECREF(self->pyThingClassId);
     Py_XDECREF(self->pyThingId);

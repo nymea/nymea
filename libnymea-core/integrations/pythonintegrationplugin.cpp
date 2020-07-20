@@ -108,7 +108,6 @@ PyObject *PythonIntegrationPlugin::pyAutoThingsAppeared(PyObject *self, PyObject
 
     PyObject *iter = PyObject_GetIter(pyDescriptors);
     if (!iter) {
-        Py_DECREF(pyDescriptors);
         qCWarning(dcThingManager()) << "Error parsing args. Not a param list";
         return nullptr;
     }
@@ -124,6 +123,7 @@ PyObject *PythonIntegrationPlugin::pyAutoThingsAppeared(PyObject *self, PyObject
 
         if (next->ob_type != &PyThingDescriptorType) {
             PyErr_SetString(PyExc_ValueError, "Invalid argument. Not a ThingDescriptor.");
+            Py_DECREF(next);
             continue;
         }
         PyThingDescriptor *pyDescriptor = (PyThingDescriptor*)next;
@@ -155,8 +155,6 @@ PyObject *PythonIntegrationPlugin::pyAutoThingsAppeared(PyObject *self, PyObject
     QMetaObject::invokeMethod(plugin, "autoThingsAppeared", Qt::QueuedConnection, Q_ARG(ThingDescriptors, descriptors));
 
     Py_DECREF(iter);
-    Py_DECREF(pyDescriptors);
-
     Py_RETURN_NONE;
 }
 
@@ -432,13 +430,15 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
 {
     PyEval_RestoreThread(m_threadState);
 
+    Thing *thing = info->thing();
+
     PyThing *pyThing = nullptr;
-    if (m_things.contains(info->thing())) {
-        pyThing = m_things.value(info->thing());
+    if (m_things.contains(thing)) {
+        pyThing = m_things.value(thing);
     } else {
         pyThing = (PyThing*)PyObject_CallObject((PyObject*)&PyThingType, NULL);
-        PyThing_setThing(pyThing, info->thing());
-        m_things.insert(info->thing(), pyThing);
+        PyThing_setThing(pyThing, thing, m_threadState);
+        m_things.insert(thing, pyThing);
     }
 
     PyObject *args = PyTuple_New(1);
@@ -457,6 +457,7 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
 
     connect(info->thing(), &Thing::destroyed, this, [=](){
         PyEval_RestoreThread(m_threadState);
+        m_things.remove(thing);
         pyThing->thing = nullptr;
         Py_DECREF(pyThing);
         m_threadPool->setMaxThreadCount(m_threadPool->maxThreadCount() - 1);
@@ -515,31 +516,6 @@ void PythonIntegrationPlugin::thingRemoved(Thing *thing)
 {
     PyThing *pyThing = m_things.value(thing);
     callPluginFunction("thingRemoved", reinterpret_cast<PyObject*>(pyThing));
-
-    m_mutex.lock();
-    m_things.remove(thing);
-    m_mutex.unlock();
-}
-
-void PythonIntegrationPlugin::dumpError()
-{
-    if (!PyErr_Occurred()) {
-        return;
-    }
-
-    PyObject *ptype, *pvalue, *ptraceback;
-    PyErr_Fetch(&ptype, &pvalue, &ptraceback);
-    if (pvalue) {
-        PyObject *pstr = PyObject_Str(pvalue);
-        if (pstr) {
-            const char* err_msg = PyUnicode_AsUTF8(pstr);
-            if (pstr) {
-                qCWarning(dcThingManager()) << QString(err_msg);
-            }
-
-        }
-        PyErr_Restore(ptype, pvalue, ptraceback);
-    }
 }
 
 void PythonIntegrationPlugin::exportIds()
@@ -658,10 +634,10 @@ bool PythonIntegrationPlugin::callPluginFunction(const QString &function, PyObje
         PyEval_RestoreThread(threadState);
 
         PyObject *pluginFunctionResult = PyObject_CallFunctionObjArgs(pluginFunction, param1, param2, param3, nullptr);
-        dumpError();
 
         if (PyErr_Occurred()) {
             qCWarning(dcThingManager()) << "Error calling python method:" << function << "on plugin" << pluginName();
+            PyErr_Print();
         }
 
         Py_DECREF(pluginFunction);

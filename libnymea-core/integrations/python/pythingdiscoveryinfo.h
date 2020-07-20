@@ -49,7 +49,7 @@ static PyObject* PyThingDiscoveryInfo_new(PyTypeObject *type, PyObject */*args*/
     if (self == NULL) {
         return nullptr;
     }
-    qWarning() << "++++ PyThingDiscoveryInfo";
+    qCDebug(dcPythonIntegrations()) << "+++ PyThingDiscoveryInfo";
     return (PyObject*)self;
 }
 
@@ -62,7 +62,7 @@ void PyThingDiscoveryInfo_setInfo(PyThingDiscoveryInfo *self, ThingDiscoveryInfo
 
 static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo * self)
 {
-    qWarning() << "---- PyThingDiscoveryInfo";
+    qCDebug(dcPythonIntegrations()) << "--- PyThingDiscoveryInfo";
     Py_DECREF(self->pyThingClassId);
     Py_DECREF(self->pyParams);
     Py_TYPE(self)->tp_free(self);

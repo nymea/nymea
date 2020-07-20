@@ -96,6 +96,8 @@ def confirmPairing(info, username, secret):
 def setupThing(info):
     logger.log("setupThing for", info.thing.name)
     info.finish(nymea.ThingErrorNoError)
+    info.thing.nameChangedHandler = thingNameChanged
+    info.thing.settingChangedHandler = thingSettingChanged
 
 
 def postSetupThing(thing):
@@ -121,6 +123,14 @@ def autoThings():
         if thing.thingClassId == pyMockAutoThingClassId:
             autoThings.append(thing)
     return autoThings
+
+
+def thingNameChanged(thing, name):
+    logger.log("Thing name changed:", thing.name)
+
+
+def thingSettingChanged(thing, paramTypeId, value):
+    logger.log("Thing setting changed:", thing.name, paramTypeId, value)
 
 
 # Intentionally commented out to also have a test case for unimplmented functions

@@ -36,7 +36,7 @@ static int PyThingDescriptor_init(PyThingDescriptor *self, PyObject *args, PyObj
     static char *kwlist[] = {"thingClassId", "name", "description", "thingId", "params", nullptr};
     PyObject *thingClassId = nullptr, *name = nullptr, *description = nullptr, *thingId = nullptr, *params = nullptr;
 
-    qWarning() << "++++ PyThingDescriptor";
+    qCDebug(dcPythonIntegrations()) << "+++ PyThingDescriptor";
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOOO", kwlist, &thingClassId, &name, &description, &thingId, &params))
         return -1;
 
@@ -65,7 +65,7 @@ static int PyThingDescriptor_init(PyThingDescriptor *self, PyObject *args, PyObj
 
 static void PyThingDescriptor_dealloc(PyThingDescriptor * self)
 {
-    qWarning() << "---- PyThingDescriptor";
+    qCDebug(dcPythonIntegrations()) << "--- PyThingDescriptor";
     Py_XDECREF(self->pyThingClassId);
     Py_XDECREF(self->pyName);
     Py_XDECREF(self->pyDescription);

@@ -69,7 +69,6 @@ QVariant PyObjectToQVariant(PyObject *pyObject)
     return QVariant();
 }
 
-
 // Write to stdout
 PyObject* pyLog_write(PyObject* /*self*/, PyObject* args)
 {

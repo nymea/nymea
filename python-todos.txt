@@ -1,0 +1,3 @@
+
+* thing.settingChangedHandler missing
+* pluginStorage missing

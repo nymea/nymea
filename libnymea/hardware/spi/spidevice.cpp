@@ -35,7 +35,7 @@
 
 /*! \fn QByteArray SPIDevice::readData(int fileDescriptor);
         Reimplement this when implementing reading communication with an SPI device.
-        This method will be called repeatedly as soon as the I2CManager is instructed to start
+        This method will be called repeatedly as soon as the SPIManager is instructed to start
         reading from this device. Read the current value from the device, e.g. a sensor reading
         and return the value.
 
@@ -51,11 +51,11 @@
 */
 
 /*! \fn bool SPIDevice::writeData(int fileDescriptor, const QByteArray &data);
-        Reimplement this when implementing writing communication with an I2C device.
-        This method will be called when SPIManager::writeData(I2CDevice *device, const QByteArray &data)
+        Reimplement this when implementing writing communication with an SPI device.
+        This method will be called when SPIManager::writeData(SPIDevice *device, const QByteArray &data)
         is called. The data to be written is copied and passed on to this method.
 
-        The given file descriptor will already be opened, the I2C slave address already be
+        The given file descriptor will already be opened, the SPI slave address already be
         selected. The only task is to write the data to it. Often that consists of a
         write operation to configure registers on the device followed by another write operation
         to write the actual data.
@@ -111,7 +111,7 @@ bool SPIDevice::writeData(int fileDescriptor, const QByteArray &data)
     return false;
 }
 
-QDebug operator<<(QDebug debug, const SPIDevice *i2cDevice)
+QDebug operator<<(QDebug debug, const SPIDevice *spiDevice)
 {
     debug.nospace() << "SPIDevice(Port: " << spiDevice->portName() << ", Address: 0x" << QString::number(spiDevice->address(), 16) << ")";
     return debug.space();

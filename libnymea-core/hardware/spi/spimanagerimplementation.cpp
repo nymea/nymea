@@ -38,7 +38,9 @@
 
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <linux/spi-dev.h>
+#include <linux/spi/spidev.h>
+
+#define SPI_SLAVE 0
 
 namespace nymeaserver {
 
@@ -59,84 +61,39 @@ QStringList nymeaserver::SPIManagerImplementation::availablePorts() const
     return QDir("/sys/class/spi-adapter/").entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
 }
 
-QList<SPIScanResult> nymeaserver::I2CManagerImplementation::scanRegisters(const QString &portName)
+bool SPIManagerImplementation::open(SPIDevice *spiDevice)
 {
-    QList<I2CScanResult> ret;
-
-    QList<QString> portsToBeScanned = {portName};
-    if (portName.isEmpty()) {
-        portsToBeScanned = availablePorts();
-    }
-
-    m_mutex.lock();
-
-    foreach (const QString &p, portsToBeScanned) {
-        QFile f("/dev/" + p);
-        if (!f.open(QFile::ReadWrite)) {
-            qCWarning(dcI2C()) << "Failed to open I2C port" << p << "for scanning";
-            continue;
-        }
-
-        for (int address = 0x03; address <= 0x77; address++) {
-            // First check if selecting the slave address is possible at all
-            if (ioctl(f.handle(), I2C_SLAVE, address) >= 0) {
-                char probe = 0x00;
-                long res = 0;
-                // This is how the kernels i2cdetect scans:
-                // Try to read from address 0x30 - 0x35 and 0x50 to 0x5F and write to the others.
-                if ((address >= 0x30 && address <= 0x37)
-                        || (address >= 0x50 && address <= 0x5F)) {
-                    res  = read(f.handle(), &probe, 1);
-                } else {
-                    res = write(f.handle(), &probe, 1);
-                }
-                if (res == 1) {
-                    qCDebug(dcI2C()) << QString("Found slave device at address 0x%1").arg(address, 0, 16);
-                    I2CScanResult result;
-                    result.portName = p;
-                    result.address = address;
-                    ret.append(result);
-                }
-            }
-        }
-    }
-    m_mutex.unlock();
-    return ret;
-}
-
-bool I2CManagerImplementation::open(I2CDevice *i2cDevice)
-{
-    if (m_openFiles.contains(i2cDevice)) {
-        qCWarning(dcI2C()) << "I2C device" << i2cDevice << "already opened.";
+    if (m_openFiles.contains(spiDevice)) {
+        qCWarning(dcSPI()) << "SPI device" << spiDevice << "already opened.";
         return false;
     }
 
-    QString fileName = "/dev/" + i2cDevice->portName();
+    QString fileName = "/dev/" + spiDevice->portName();
 
-    foreach (I2CDevice *d, m_openFiles.keys()) {
-        if (d->portName() == i2cDevice->portName()) {
-            // Another I2CDevice opened this file already. We'll hook into that.
+    foreach (SPIDevice *d, m_openFiles.keys()) {
+        if (d->portName() == spiDevice->portName()) {
+            // Another SPIDevice opened this file already. We'll hook into that.
             m_mutex.lock();
-            m_openFiles.insert(i2cDevice, m_openFiles.value(d));
+            m_openFiles.insert(spiDevice, m_openFiles.value(d));
             m_mutex.unlock();
             return true;
         }
     }
 
     if (!QFile::exists(fileName)) {
-        qCWarning(dcI2C()) << "The I2C port does not exist:" << i2cDevice->portName();
+        qCWarning(dcSPI()) << "The SPI port does not exist:" << spiDevice->portName();
         return false;
     }
 
-    QFile *file = new QFile("/dev/" + i2cDevice->portName(), this);
+    QFile *file = new QFile("/dev/" + spiDevice->portName(), this);
     if (!file->open(QFile::ReadWrite)) {
-        qCWarning(dcI2C()) << "Error opening I2C port" << i2cDevice << "Error:" << file->errorString();
+        qCWarning(dcSPI()) << "Error opening SPI port" << spiDevice << "Error:" << file->errorString();
         delete file;
         return false;
     }
 
     m_mutex.lock();
-    m_openFiles.insert(i2cDevice, file);
+    m_openFiles.insert(spiDevice, file);
     m_mutex.unlock();
     return true;
 }
@@ -145,14 +102,14 @@ bool SPIManagerImplementation::startReading(SPIDevice *spiDevice, int interval)
 {
     QMutexLocker locker(&m_mutex);
 
-    if (!m_openFiles.contains(i2cDevice)) {
-        qCWarning(dcI2C()) << "I2CDevice not open. Cannot start reading.";
+    if (!m_openFiles.contains(spiDevice)) {
+        qCWarning(dcSPI()) << "SPIDevice not open. Cannot start reading.";
         return false;
     }
-    qCDebug(dcI2C()) << "Starting to poll I2C device" << i2cDevice;
+    qCDebug(dcSPI()) << "Starting to poll SPI device" << spiDevice;
     ReadingInfo readingInfo;
     readingInfo.interval = interval;
-    m_readers.insert(i2cDevice, readingInfo);
+    m_readers.insert(spiDevice, readingInfo);
 
     if (!m_pollTimer.isActive()) {
         m_pollTimer.start();
@@ -161,21 +118,21 @@ bool SPIManagerImplementation::startReading(SPIDevice *spiDevice, int interval)
 }
 
 
-void I2CManagerImplementation::stopReading(I2CDevice *i2cDevice)
+void SPIManagerImplementation::stopReading(SPIDevice *spiDevice)
 {
     QMutexLocker locker(&m_mutex);
-    m_readers.remove(i2cDevice);
+    m_readers.remove(spiDevice);
 
     if (m_readers.count() == 0) {
         m_pollTimer.stop();
     }
 }
 
-bool I2CManagerImplementation::writeData(I2CDevice *i2cDevice, const QByteArray &data)
+bool SPIManagerImplementation::writeData(SPIDevice *spiDevice, const QByteArray &data)
 {
     m_writeQueueMutex.lock();
     WritingInfo info;
-    info.device = i2cDevice;
+    info.device = spiDevice;
     info.data = data;
     m_writeQueue.append(info);
     m_writeQueueMutex.unlock();
@@ -186,25 +143,25 @@ void SPIManagerImplementation::close(SPIDevice *spiDevice)
 {
     bool isInUse = false;
     m_mutex.lock();
-    if (m_readers.contains(i2cDevice)) {
+    if (m_readers.contains(spiDevice)) {
         isInUse = true;
     }
     m_mutex.unlock();
 
     if (isInUse) {
-        stopReading(i2cDevice);
+        stopReading(spiDevice);
     }
 
     int refCount = 0;
-    foreach (I2CDevice* d, m_openFiles.keys()) {
-        if (d->portName() == i2cDevice->portName()) {
+    foreach (SPIDevice* d, m_openFiles.keys()) {
+        if (d->portName() == spiDevice->portName()) {
             refCount++;
         }
     }
     if (refCount == 0) {
 
         m_mutex.lock();
-        QFile *f = m_openFiles.take(i2cDevice);
+        QFile *f = m_openFiles.take(spiDevice);
         m_mutex.unlock();
 
         f->close();
@@ -212,7 +169,7 @@ void SPIManagerImplementation::close(SPIDevice *spiDevice)
     }
 }
 
-void I2CManagerImplementation::nextCycle()
+void SPIManagerImplementation::nextCycle()
 {
     QFuture<void> future = QtConcurrent::run([this](){
         // Copy the write queue to open it up as fast as possible for others to append new entries
@@ -224,48 +181,48 @@ void I2CManagerImplementation::nextCycle()
         m_mutex.lock();
 
         foreach (const WritingInfo &info, writeQueue) {
-            I2CDevice *i2cDevice = info.device;
+            SPIDevice *spiDevice = info.device;
 
-            int fd = m_openFiles.value(i2cDevice)->handle();
+            int fd = m_openFiles.value(spiDevice)->handle();
             if (fd == -1) {
-                qCWarning(dcI2C()) << "I2C device" << i2cDevice << "not opened. Cannot write to it.";
+                qCWarning(dcSPI()) << "SPI device" << spiDevice << "not opened. Cannot write to it.";
                 continue;
             }
 
-            if (ioctl(fd, I2C_SLAVE, i2cDevice->address()) < 0) {
-                qCWarning(dcI2C()) << "Cannot select I2C slave address for I2C device" << i2cDevice;
+            if (ioctl(fd, SPI_SLAVE, spiDevice->address()) < 0) {
+                qCWarning(dcSPI()) << "Cannot select SPI slave address for SPI device" << spiDevice;
                 continue;
             }
 
-            qCDebug(dcI2C()) << "Writing to I2C device" << i2cDevice;
-            bool success = i2cDevice->writeData(fd, info.data);
+            qCDebug(dcSPI()) << "Writing to SPI device" << spiDevice;
+            bool success = spiDevice->writeData(fd, info.data);
 
-            QMetaObject::invokeMethod(i2cDevice, "dataWritten", Qt::QueuedConnection, Q_ARG(bool, success));
+            QMetaObject::invokeMethod(spiDevice, "dataWritten", Qt::QueuedConnection, Q_ARG(bool, success));
 
         }
 
-        foreach (I2CDevice *i2cDevice, m_readers.keys()) {
-            ReadingInfo readingInfo = m_readers.value(i2cDevice);
+        foreach (SPIDevice *spiDevice, m_readers.keys()) {
+            ReadingInfo readingInfo = m_readers.value(spiDevice);
             if (readingInfo.lastReading.addMSecs(readingInfo.interval) > QDateTime::currentDateTime()) {
                 continue;
             }
-            int fd = m_openFiles.value(i2cDevice)->handle();
+            int fd = m_openFiles.value(spiDevice)->handle();
             if (fd == -1) {
-                qCWarning(dcI2C()) << "I2C device" << i2cDevice << "not opened. Cannot read.";
+                qCWarning(dcSPI()) << "SPI device" << spiDevice << "not opened. Cannot read.";
                 continue;
             }
 
-            if (ioctl(fd, I2C_SLAVE, i2cDevice->address()) < 0) {
-                qCWarning(dcI2C()) << "Cannot select I2C slave address for I2C device" << i2cDevice;
+            if (ioctl(fd, SPI_SLAVE, spiDevice->address()) < 0) {
+                qCWarning(dcSPI()) << "Cannot select SPI slave address for SPI device" << spiDevice;
                 continue;
             }
 
-            qCDebug(dcI2C()) << "Reading I2C device" << i2cDevice;
-            QByteArray data = i2cDevice->readData(fd);
+            qCDebug(dcSPI()) << "Reading SPI device" << spiDevice;
+            QByteArray data = spiDevice->readData(fd);
 
-            m_readers[i2cDevice].lastReading = QDateTime::currentDateTime();
+            m_readers[spiDevice].lastReading = QDateTime::currentDateTime();
 
-            QMetaObject::invokeMethod(i2cDevice, "readingAvailable", Qt::QueuedConnection, Q_ARG(QByteArray, data));
+            QMetaObject::invokeMethod(spiDevice, "readingAvailable", Qt::QueuedConnection, Q_ARG(QByteArray, data));
         }
 
         m_mutex.unlock();

@@ -42,6 +42,7 @@ class PlatformZeroConfController;
 class BluetoothLowEnergyManager;
 class MqttProvider;
 class I2CManager;
+class SPIManager;
 class HardwareResource;
 
 class HardwareManager : public QObject
@@ -61,6 +62,7 @@ public:
     virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
     virtual MqttProvider *mqttProvider() = 0;
     virtual I2CManager *i2cManager() = 0;
+    virtual SPIManager *spiManager() = 0;
 
 protected:
     void setResourceEnabled(HardwareResource* resource, bool enabled);

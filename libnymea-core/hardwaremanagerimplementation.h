@@ -58,6 +58,7 @@ public:
     BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
     MqttProvider *mqttProvider() override;
     I2CManager * i2cManager() override;
+    SPIManager * spiManager() override;
 
 private:
     QNetworkAccessManager *m_networkAccessManager = nullptr;

@@ -14,6 +14,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
 
 typedef struct _pyparam {
@@ -66,23 +67,7 @@ static PyTypeObject PyParamType = {
     sizeof(PyParam), /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)PyParam_dealloc,/* tp_dealloc */
-    0,                         /* tp_print */
-    0,                         /* tp_getattr */
-    0,                         /* tp_setattr */
-    0,                         /* tp_reserved */
-    0,                         /* tp_repr */
-    0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
-    0,                         /* tp_as_mapping */
-    0,                         /* tp_hash  */
-    0,                         /* tp_call */
-    0,                         /* tp_str */
-    0,                         /* tp_getattro */
-    0,                         /* tp_setattro */
-    0,                         /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,        /* tp_flags */
-    0,                         /* tp_doc */
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
 };
 
 static PyParam* PyParam_fromParam(const Param &param)
@@ -147,13 +132,11 @@ static ParamList PyParams_ToParamList(PyObject *pyParams)
 static void registerParamType(PyObject *module)
 {
     PyParamType.tp_new = PyType_GenericNew;
-    PyParamType.tp_basicsize = sizeof(PyParam);
-    PyParamType.tp_dealloc=(destructor) PyParam_dealloc;
+    PyParamType.tp_init = reinterpret_cast<initproc>(PyParam_init);
     PyParamType.tp_flags = Py_TPFLAGS_DEFAULT;
-    PyParamType.tp_doc = "Param class";
     PyParamType.tp_methods = PyParam_methods;
     PyParamType.tp_members = PyParam_members;
-    PyParamType.tp_init = reinterpret_cast<initproc>(PyParam_init);
+    PyParamType.tp_doc = "Param class";
 
     if (PyType_Ready(&PyParamType) < 0) {
         return;

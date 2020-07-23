@@ -1267,7 +1267,7 @@ void ThingManagerImplementation::loadPlugins()
                     delete p;
                 }
 #else
-                qCWarning(dcThingManager()) << "Not loading JS plugin as JS plugin support is not included in this nymea instance."
+                qCWarning(dcThingManager()) << "Not loading JS plugin as JS plugin support is not included in this nymea instance.";
 #endif
             } else if (entry.startsWith("integrationplugin") && entry.endsWith(".py")) {
                 PythonIntegrationPlugin *p = new PythonIntegrationPlugin(this);

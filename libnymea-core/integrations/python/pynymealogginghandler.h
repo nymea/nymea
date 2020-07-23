@@ -12,6 +12,7 @@ Q_DECLARE_LOGGING_CATEGORY(dcPythonIntegrations)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
 typedef struct {
     PyObject_HEAD
@@ -82,24 +83,7 @@ static PyTypeObject PyNymeaLoggingHandlerType = {
     "nymea.NymeaLoggingHandler",   /* tp_name */
     sizeof(PyNymeaLoggingHandler), /* tp_basicsize */
     0,                         /* tp_itemsize */
-    0,                         /* tp_dealloc */
-    0,                         /* tp_print */
-    0,                         /* tp_getattr */
-    0,                         /* tp_setattr */
-    0,                         /* tp_reserved */
-    0,                         /* tp_repr */
-    0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
-    0,                         /* tp_as_mapping */
-    0,                         /* tp_hash  */
-    0,                         /* tp_call */
-    0,                         /* tp_str */
-    0,                         /* tp_getattro */
-    0,                         /* tp_setattro */
-    0,                         /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,        /* tp_flags */
-    "Logging handler for nymea", /* tp_doc */
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    (destructor)PyNymeaLoggingHandler_dealloc,/* tp_dealloc */
 };
 
 
@@ -107,11 +91,11 @@ static void registerNymeaLoggingHandler(PyObject *module)
 {
 
     PyNymeaLoggingHandlerType.tp_new = PyType_GenericNew;
-    PyNymeaLoggingHandlerType.tp_dealloc = reinterpret_cast<destructor>(PyNymeaLoggingHandler_dealloc);
-    PyNymeaLoggingHandlerType.tp_flags = Py_TPFLAGS_DEFAULT;
-    PyNymeaLoggingHandlerType.tp_doc = "NymeaLoggingHandler class";
-    PyNymeaLoggingHandlerType.tp_methods = PyNymeaLoggingHandler_methods;
     PyNymeaLoggingHandlerType.tp_init = reinterpret_cast<initproc>(PyNymeaLoggingHandler_init);
+    PyNymeaLoggingHandlerType.tp_flags = Py_TPFLAGS_DEFAULT;
+    PyNymeaLoggingHandlerType.tp_methods = PyNymeaLoggingHandler_methods;
+    PyNymeaLoggingHandlerType.tp_doc = "Logging handler for nymea.";
+
     if (PyType_Ready(&PyNymeaLoggingHandlerType) == 0) {
         PyModule_AddObject(module, "NymeaLoggingHandler", (PyObject *)&PyNymeaLoggingHandlerType);
     }

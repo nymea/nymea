@@ -8,7 +8,15 @@ INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 
 CONFIG += link_pkgconfig
-PKGCONFIG += nymea-mqtt nymea-networkmanager python3-embed
+PKGCONFIG += nymea-mqtt nymea-networkmanager
+
+packagesExist(python3-embed) {
+    PKGCONFIG += python3-embed
+} else:packagesExist(python-3.5) {
+    PKGCONFIG += python-3.5
+} else {
+    error("Python development package not found.")
+}
 
 target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target

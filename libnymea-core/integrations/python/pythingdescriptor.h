@@ -10,6 +10,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
 
 typedef struct {
@@ -80,23 +81,6 @@ static PyTypeObject PyThingDescriptorType = {
     sizeof(PyThingDescriptor), /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)PyThingDescriptor_dealloc, /* tp_dealloc */
-    0,                         /* tp_print */
-    0,                         /* tp_getattr */
-    0,                         /* tp_setattr */
-    0,                         /* tp_reserved */
-    0,                         /* tp_repr */
-    0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
-    0,                         /* tp_as_mapping */
-    0,                         /* tp_hash  */
-    0,                         /* tp_call */
-    0,                         /* tp_str */
-    0,                         /* tp_getattro */
-    0,                         /* tp_setattro */
-    0,                         /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,        /* tp_flags */
-    "ThingDescriptor",         /* tp_doc */
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
 
 
@@ -106,6 +90,8 @@ static void registerThingDescriptorType(PyObject *module)
     PyThingDescriptorType.tp_new = PyType_GenericNew;
     PyThingDescriptorType.tp_members = PyThingDescriptor_members;
     PyThingDescriptorType.tp_init = reinterpret_cast<initproc>(PyThingDescriptor_init);
+    PyThingDescriptorType.tp_doc = "ThingDescriptors are used to inform the system about things that may be added.";
+    PyThingDescriptorType.tp_flags = Py_TPFLAGS_DEFAULT;
 
     if (PyType_Ready(&PyThingDescriptorType) < 0) {
         return;

@@ -233,7 +233,7 @@ void PythonIntegrationPlugin::initPython()
 void PythonIntegrationPlugin::deinitPython()
 {
     PyEval_RestoreThread(s_mainThreadState);
-    Py_FinalizeEx();
+    Py_Finalize();
 }
 
 bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)

@@ -11,6 +11,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
 /* Note:
  *
@@ -100,55 +101,16 @@ static PyTypeObject PyThingSetupInfoType = {
     sizeof(PyThingSetupInfo),   /* tp_basicsize */
     0,                          /* tp_itemsize */
     (destructor)PyThingSetupInfo_dealloc, /* tp_dealloc */
-    0,                          /* tp_print */
-    0,                          /* tp_getattr */
-    0,                          /* tp_setattr */
-    0,                          /* tp_reserved */
-    0,                          /* tp_repr */
-    0,                          /* tp_as_number */
-    0,                          /* tp_as_sequence */
-    0,                          /* tp_as_mapping */
-    0,                          /* tp_hash  */
-    0,                          /* tp_call */
-    0,                          /* tp_str */
-    0,                          /* tp_getattro */
-    0,                          /* tp_setattro */
-    0,                          /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,         /* tp_flags */
-    "ThingSetupInfo",           /* tp_doc */
-    0,                          /* tp_traverse */
-    0,                          /* tp_clear */
-    0,                          /* tp_richcompare */
-    0,                          /* tp_weaklistoffset */
-    0,                          /* tp_iter */
-    0,                          /* tp_iternext */
-    PyThingSetupInfo_methods,   /* tp_methods */
-    PyThingSetupInfo_members,   /* tp_members */
-    0,                          /* tp_getset */
-    0,                          /* tp_base */
-    0,                          /* tp_dict */
-    0,                          /* tp_descr_get */
-    0,                          /* tp_descr_set */
-    0,                          /* tp_dictoffset */
-    0,                          /* tp_init */
-    0,                          /* tp_alloc */
-    (newfunc)PyThingSetupInfo_new, /* tp_new */
-    0,                          /* tp_free */
-    0,                          /* tp_is_gc */
-    0,                          /* tp_bases */
-    0,                          /* tp_mro */
-    0,                          /* tp_cache */
-    0,                          /* tp_subclasses */
-    0,                          /* tp_weaklist */
-    0,                          /* tp_del */
-    0,                          /* tp_version_tag */
-    0,                          /* tp_finalize */
-    0,                          /* tp_vectorcall */
-    0,                          /* tp_print DEPRECATED*/
 };
 
 static void registerThingSetupInfoType(PyObject *module)
 {
+    PyThingSetupInfoType.tp_new = (newfunc)PyThingSetupInfo_new;
+    PyThingSetupInfoType.tp_flags = Py_TPFLAGS_DEFAULT;
+    PyThingSetupInfoType.tp_methods = PyThingSetupInfo_methods;
+    PyThingSetupInfoType.tp_members = PyThingSetupInfo_members;
+    PyThingSetupInfoType.tp_doc = "The ThingSetupInfo is used to set up a thing.";
+
     if (PyType_Ready(&PyThingSetupInfoType) < 0) {
         return;
     }

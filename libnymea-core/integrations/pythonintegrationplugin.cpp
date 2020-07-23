@@ -270,15 +270,27 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     m_nymeaModule = PyImport_ImportModule("nymea");
 
     // Set up import path for the plugin directory
+    // We intentionally strip site-packages and dist-packages because
+    // that's too unpredictive in distribution. Instead all dependencies
+    // should be installed into the plugins "modules" subdir.
     PyObject* sysPath = PySys_GetObject("path");
-    PyObject* pluginImportPath = PyUnicode_FromString(fi.absolutePath().toUtf8());
-    PyList_Append(sysPath, pluginImportPath);
-    Py_DECREF(pluginImportPath);
+    QStringList importPaths;
+    for (int i = 0; i < PyList_Size(sysPath); i++) {
+        QString path = QString::fromUtf8(PyUnicode_AsUTF8(PyList_GetItem(sysPath, i)));
+        if (!path.contains("site-packages") && !path.contains("dist-packages")) {
+            importPaths.append(path);
+        }
+    }
+    importPaths.append(fi.absolutePath());
+    importPaths.append(QString("%1/modules/").arg(fi.absolutePath()));
 
-    // Set up import path for the "modules" subdir in the plugin directory
-    PyObject* pluginModulesImportPath = PyUnicode_FromString(QString("%1/modules/").arg(fi.absolutePath()).toUtf8());
-    PyList_Append(sysPath, pluginModulesImportPath);
-    Py_DECREF(pluginModulesImportPath);
+    PyObject* pluginPaths = PyList_New(importPaths.length());
+    for (int i = 0; i < importPaths.length(); i++) {
+        const QString &path = importPaths.at(i);
+        PyObject *pyPath = PyUnicode_FromString(path.toUtf8());
+        PyList_SetItem(pluginPaths, i, pyPath);
+    }
+    PySys_SetObject("path", pluginPaths);
 
     // Import the plugin
     m_pluginModule = PyImport_ImportModule(fi.baseName().toUtf8());

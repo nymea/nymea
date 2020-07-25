@@ -382,10 +382,10 @@ void TestDevices::addConfiguredDevice_data()
     QTest::newRow("User, JustAdd, wrong param") << mockThingClassId << invalidDeviceParams << true << Device::DeviceErrorInvalidParameter;
 
     deviceParams.clear(); deviceParams << httpportParam << fakeparam;
-    QTest::newRow("USer, JustAdd, additional invalid param") << mockThingClassId << deviceParams << false << Device::DeviceErrorNoError;
+    QTest::newRow("User, JustAdd, additional invalid param") << mockThingClassId << deviceParams << false << Device::DeviceErrorInvalidParameter;
 
     deviceParams.clear(); deviceParams << httpportParam << fakeparam2;
-    QTest::newRow("USer, JustAdd, additional param, valid but unused") << mockThingClassId << deviceParams << true << Device::DeviceErrorNoError;
+    QTest::newRow("User, JustAdd, duplicate param") << mockThingClassId << deviceParams << true << Device::DeviceErrorInvalidParameter;
 
 }
 

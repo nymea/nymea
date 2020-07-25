@@ -185,10 +185,10 @@ Thing::ThingError ThingManagerImplementation::setPluginConfig(const PluginId &pl
         return Thing::ThingErrorPluginNotFound;
     }
 
-    ParamList params = buildParams(plugin->configurationDescription(), pluginConfig);
-    Thing::ThingError verify = ThingUtils::verifyParams(plugin->configurationDescription(), params);
+    Thing::ThingError verify = ThingUtils::verifyParams(plugin->configurationDescription(), pluginConfig);
     if (verify != Thing::ThingErrorNoError)
         return verify;
+    ParamList params = buildParams(plugin->configurationDescription(), pluginConfig);
 
     Thing::ThingError result = plugin->setConfiguration(params);
     if (result != Thing::ThingErrorNoError)
@@ -256,14 +256,14 @@ ThingDiscoveryInfo* ThingManagerImplementation::discoverThings(const ThingClassI
         return discoveryInfo;
     }
 
-    ParamList effectiveParams = buildParams(thingClass.discoveryParamTypes(), params);
-    Thing::ThingError result = ThingUtils::verifyParams(thingClass.discoveryParamTypes(), effectiveParams);
+    Thing::ThingError result = ThingUtils::verifyParams(thingClass.discoveryParamTypes(), params);
     if (result != Thing::ThingErrorNoError) {
         qCWarning(dcThingManager) << "Thing discovery failed. Parameter verification failed.";
         ThingDiscoveryInfo *discoveryInfo = new ThingDiscoveryInfo(thingClassId, params, this);
         discoveryInfo->finish(result);
         return discoveryInfo;
     }
+    ParamList effectiveParams = buildParams(thingClass.discoveryParamTypes(), params);
 
     ThingDiscoveryInfo *discoveryInfo = new ThingDiscoveryInfo(thingClassId, effectiveParams, this, 30000);
     connect(discoveryInfo, &ThingDiscoveryInfo::finished, this, [this, discoveryInfo](){
@@ -393,14 +393,14 @@ ThingSetupInfo *ThingManagerImplementation::reconfigureThingInternal(Thing *thin
         return info;
     }
 
-    ParamList finalParams = buildParams(thing->thingClass().paramTypes(), params);
-    Thing::ThingError result = ThingUtils::verifyParams(thing->thingClass().paramTypes(), finalParams);
+    Thing::ThingError result = ThingUtils::verifyParams(thing->thingClass().paramTypes(), params);
     if (result != Thing::ThingErrorNoError) {
         qCWarning(dcThingManager()) << "Cannot reconfigure thing. Params failed validation.";
         ThingSetupInfo *info = new ThingSetupInfo(nullptr, this);
         info->finish(result);
         return info;
     }
+    ParamList finalParams = buildParams(thing->thingClass().paramTypes(), params);
 
     // first remove the thing in the plugin
     plugin->thingRemoved(thing);
@@ -460,13 +460,13 @@ Thing::ThingError ThingManagerImplementation::setThingSettings(const ThingId &th
         qCWarning(dcThingManager()) << "Cannot set thing settings. Thing" << thingId.toString() << "not found";
         return Thing::ThingErrorThingNotFound;
     }
-    // build a list of settings using: a) provided new settings b) previous settings and c) default values
-    ParamList effectiveSettings = buildParams(thing->thingClass().settingsTypes(), settings, thing->settings());
-    Thing::ThingError status = ThingUtils::verifyParams(thing->thingClass().settingsTypes(), effectiveSettings);
+    Thing::ThingError status = ThingUtils::verifyParams(thing->thingClass().settingsTypes(), settings);
     if (status != Thing::ThingErrorNoError) {
         qCWarning(dcThingManager()) << "Error setting thing settings for" << thing->name() << thing->id().toString();
         return status;
     }
+    // build a list of settings using: a) provided new settings b) previous settings and c) default values
+    ParamList effectiveSettings = buildParams(thing->thingClass().settingsTypes(), settings, thing->settings());
     thing->setSettings(effectiveSettings);
     return Thing::ThingErrorNoError;
 }
@@ -689,8 +689,7 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
     }
 
     // set params
-    ParamList effectiveParams = buildParams(thingClass.paramTypes(), params);
-    Thing::ThingError paramsResult = ThingUtils::verifyParams(thingClass.paramTypes(), effectiveParams);
+    Thing::ThingError paramsResult = ThingUtils::verifyParams(thingClass.paramTypes(), params);
     if (paramsResult != Thing::ThingErrorNoError) {
         qCWarning(dcThingManager()) << "Cannot add thing. Parameter verification failed.";
         ThingSetupInfo *info = new ThingSetupInfo(nullptr, this);
@@ -698,6 +697,7 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
         return info;
     }
 
+    ParamList effectiveParams = buildParams(thingClass.paramTypes(), params);
     Thing *thing = new Thing(plugin->pluginId(), thingClass, thingId, this);
     thing->setParentId(parentId);
     if (name.isEmpty()) {
@@ -1206,14 +1206,14 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
         return info;
     }
 
-    ParamList finalParams = buildParams(actionType.paramTypes(), action.params());
-    Thing::ThingError paramCheck = ThingUtils::verifyParams(actionType.paramTypes(), finalParams);
+    Thing::ThingError paramCheck = ThingUtils::verifyParams(actionType.paramTypes(), action.params());
     if (paramCheck != Thing::ThingErrorNoError) {
         qCWarning(dcThingManager()) << "Cannot execute action. Parameter verification failed.";
         ThingActionInfo *info = new ThingActionInfo(thing, action, this);
         info->finish(paramCheck);
         return info;
     }
+    ParamList finalParams = buildParams(actionType.paramTypes(), action.params());
     finalAction.setParams(finalParams);
 
     ThingActionInfo *info = new ThingActionInfo(thing, finalAction, this, 30000);
@@ -1909,9 +1909,9 @@ void ThingManagerImplementation::slotThingNameChanged()
     emit thingChanged(thing);
 }
 
+// Merges params from first and second. First has higher priority than second. If neither are given, the default is used - if any
 ParamList ThingManagerImplementation::buildParams(const ParamTypes &types, const ParamList &first, const ParamList &second)
 {
-    // Merge params from discovered descriptor and additional overrides provided on API call. User provided params have higher priority than discovery params.
     ParamList finalParams;
     foreach (const ParamType &paramType, types) {
         QVariant value;
@@ -1927,8 +1927,8 @@ ParamList ThingManagerImplementation::buildParams(const ParamTypes &types, const
             if (!success) {
                 qCWarning(dcThingManager()) << "Type mismatch in param" << paramType.name() << "for value" << value;
             }
+            finalParams.append(Param(paramType.id(), value));
         }
-        finalParams.append(Param(paramType.id(), value));
     }
     return finalParams;
 }

@@ -31,7 +31,7 @@
 #include "nymeadbusservice.h"
 #include "loggingcategories.h"
 
-Q_DECLARE_LOGGING_CATEGORY(dcCore)
+NYMEA_LOGGING_CATEGORY(dcDBus, "DBus")
 
 QDBusConnection::BusType NymeaDBusService::s_busType = QDBusConnection::SystemBus;
 
@@ -41,7 +41,7 @@ NymeaDBusService::NymeaDBusService(const QString &objectPath, QObject *parent):
 {
     bool status = m_connection.registerService("io.guh.nymead");
     if (!status) {
-        qCWarning(dcCore()) << "Failed to register D-Bus service.";
+        qCWarning(dcDBus()) << "Failed to register D-Bus service.";
         return;
     }
     QString finalObjectPath;
@@ -51,7 +51,7 @@ NymeaDBusService::NymeaDBusService(const QString &objectPath, QObject *parent):
     }
     status = m_connection.registerObject(finalObjectPath, "io.guh.nymead", parent, QDBusConnection::ExportScriptableSlots);
     if (!status) {
-        qCWarning(dcCore()) << "Failed to register D-Bus object:" << finalObjectPath;
+        qCWarning(dcDBus()) << "Failed to register D-Bus object:" << finalObjectPath;
         return;
     }
     m_isValid = true;

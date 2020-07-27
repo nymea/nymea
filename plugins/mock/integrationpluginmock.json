@@ -98,7 +98,7 @@
                             "name": "double",
                             "displayName": "Dummy double state",
                             "displayNameEvent": "Dummy double state changed",
-                            "type": "int",
+                            "type": "double",
                             "minValue": 0,
                             "maxValue": 100,
                             "defaultValue": 2.7

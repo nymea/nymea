@@ -265,13 +265,14 @@ void TestRules::setWritableStateValue(const ThingId &thingId, const StateTypeId 
         QVariantList stateChangedVariants = checkNotifications(stateSpy, "Integrations.StateChanged");
         QVERIFY2(stateChangedVariants.count() == 1, "Did not get Integrations.StateChanged notification.");
 
+        qCDebug(dcTests()) << "Notification content:" << qUtf8Printable(QJsonDocument::fromVariant(stateChangedVariants).toJson());
         QVariantMap notification = stateChangedVariants.first().toMap().value("params").toMap();
         QVERIFY2(notification.contains("thingId"), "Integrations.StateChanged notification does not contain thingId");
         QVERIFY2(ThingId(notification.value("thingId").toString()) == thingId, "Integrations.StateChanged notification does not contain the correct thingId");
         QVERIFY2(notification.contains("stateTypeId"), "Integrations.StateChanged notification does not contain stateTypeId");
         QVERIFY2(StateTypeId(notification.value("stateTypeId").toString()) == stateTypeId, "Integrations.StateChanged notification does not contain the correct stateTypeId");
         QVERIFY2(notification.contains("value"), "Integrations.StateChanged notification does not contain new state value");
-        QVERIFY2(notification.value("value") == QVariant(value), "Integrations.StateChanged notification does not contain the new value");
+        QVERIFY2(notification.value("value") == QVariant(value), QString("Integrations.StateChanged notification does not contain the new value. Got: %1, Expected: %2").arg(notification.value("value").toString()).arg(QVariant(value).toString()).toUtf8());
     }
 
 }
@@ -1990,11 +1991,11 @@ void TestRules::testChildEvaluator_data()
     QTest::addColumn<bool>("trigger");
     QTest::addColumn<bool>("active");
 
-    QTest::newRow("Unchanged | 2 | 2.5 | String value 1 | #FF0000") << testThingId << ruleMap << 2 << 2.5 << "String value 1" << "#FF0000" << false << false;
-    QTest::newRow("Unchanged | 60 | 2.5 | String value 2 | #FF0000") << testThingId << ruleMap << 60 << 2.5 << "String value 2" << "#FF0000" << false << false;
-    QTest::newRow("Unchanged | 60 | 20.5 | String value 2 | #FF0000") << testThingId << ruleMap << 60 << 20.5 << "String value 2" << "#FF0000" << false << false;
-    QTest::newRow("Active | 60 | 20.5 | String value 2 | #00FF00") << testThingId << ruleMap << 60 << 20.5 << "String value 2" << "#00FF00" << true << true;
-    QTest::newRow("Active | 60 | 20.5 | String value 2 | #00FF00") << testThingId << ruleMap << 60 << 20.5 << "String value 2" << "#00FF00" << true << true;
+    QTest::newRow("Unchanged | 2 | 2.5 | String value 1 | #FF0000") << testThingId << ruleMap << 2 << 2.5 << "String value 1" << "#ff0000" << false << false;
+    QTest::newRow("Unchanged | 60 | 2.5 | String value 2 | #FF0000") << testThingId << ruleMap << 60 << 2.5 << "String value 2" << "#ff0000" << false << false;
+    QTest::newRow("Unchanged | 60 | 20.5 | String value 2 | #FF0000") << testThingId << ruleMap << 60 << 20.5 << "String value 2" << "#ff0000" << false << false;
+    QTest::newRow("Active | 60 | 20.5 | String value 2 | #00FF00") << testThingId << ruleMap << 60 << 20.5 << "String value 2" << "#00ff00" << true << true;
+    QTest::newRow("Active | 60 | 20.5 | String value 2 | #00FF00") << testThingId << ruleMap << 60 << 20.5 << "String value 2" << "#00ff00" << true << true;
 }
 
 void TestRules::testChildEvaluator()

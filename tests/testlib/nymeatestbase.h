@@ -118,7 +118,7 @@ protected:
     // just for debugging
     inline void printJson(const QVariant &response) {
         QJsonDocument jsonDoc = QJsonDocument::fromVariant(response);
-        qDebug() << jsonDoc.toJson();
+        qCDebug(dcTests()) << jsonDoc.toJson();
     }
 
     void waitForDBSync();

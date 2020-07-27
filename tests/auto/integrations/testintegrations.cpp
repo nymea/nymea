@@ -382,10 +382,10 @@ void TestIntegrations::addThing_data()
     QTest::newRow("User, JustAdd, wrong param") << mockThingClassId << invalidThingParams << true << Thing::ThingErrorInvalidParameter;
 
     thingParams.clear(); thingParams << httpportParam << fakeparam;
-    QTest::newRow("USer, JustAdd, additional invalid param") << mockThingClassId << thingParams << false << Thing::ThingErrorNoError;
+    QTest::newRow("USer, JustAdd, additional invalid param") << mockThingClassId << thingParams << false << Thing::ThingErrorInvalidParameter;
 
     thingParams.clear(); thingParams << httpportParam << fakeparam2;
-    QTest::newRow("USer, JustAdd, additional param, valid but unused") << mockThingClassId << thingParams << true << Thing::ThingErrorNoError;
+    QTest::newRow("USer, JustAdd, duplicate param") << mockThingClassId << thingParams << true << Thing::ThingErrorInvalidParameter;
 
 }
 

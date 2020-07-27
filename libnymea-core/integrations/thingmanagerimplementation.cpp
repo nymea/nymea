@@ -1697,19 +1697,19 @@ void ThingManagerImplementation::onAutoThingDisappeared(const ThingId &thingId)
     Thing *thing = m_configuredThings.value(thingId);
 
     if (!thing) {
-        qWarning(dcThingManager) << "Received an autoThingDisappeared signal but this thing is unknown:" << thingId;
+        qCWarning(dcThingManager) << "Received an autoThingDisappeared signal but this thing is unknown:" << thingId;
         return;
     }
 
     ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
 
     if (thingClass.pluginId() != plugin->pluginId()) {
-        qWarning(dcThingManager) << "Received a autoThingDisappeared signal but emitting plugin does not own the thing";
+        qCWarning(dcThingManager) << "Received a autoThingDisappeared signal but emitting plugin does not own the thing";
         return;
     }
 
     if (!thing->autoCreated()) {
-        qWarning(dcThingManager) << "Received an autoThingDisappeared signal but thing creationMethod is not CreateMothodAuto";
+        qCWarning(dcThingManager) << "Received an autoThingDisappeared signal but thing creationMethod is not CreateMothodAuto";
         return;
     }
 

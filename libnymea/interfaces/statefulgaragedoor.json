@@ -1,0 +1,11 @@
+{
+    "description": "A garagedoor which can be controller like a closable, with open and close actions. It can report whether it's opened or closed or standing still something in between (intermediate position) as well as reporting that it's moving (opening/closing).",
+    "extends": ["garagedoor", "closable"],
+    "states": [
+        {
+            "name": "state",
+            "type": "QString",
+            "allowedValues": ["open", "closed", "opening", "closing", "intermediate"]
+        }
+    ]
+}

@@ -10,7 +10,8 @@
             "name": "percentage",
             "type": "int",
             "minimumValue": 0,
-            "maximumValue": 100
+            "maximumValue": 100,
+            "writable": true
         }
     ]
 }

@@ -1,5 +1,6 @@
 {
-    "extends": "closable",
+    "deprecated": "Use statefulgaragedoor instead",
+    "extends": ["garagedoor", "closable"],
     "states": [
         {
             "name": "state",

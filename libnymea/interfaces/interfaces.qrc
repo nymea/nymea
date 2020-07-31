@@ -10,6 +10,7 @@
         <file>colorlight.json</file>
         <file>garagedoor.json</file>
         <file>impulsegaragedoor.json</file>
+        <file>simplegaragedoor.json</file>
         <file>statefulgaragedoor.json</file>
         <file>extendedstatefulgaragedoor.json</file>
         <file>garagegate.json</file>

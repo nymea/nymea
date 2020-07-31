@@ -8,6 +8,10 @@
         <file>colortemperaturelight.json</file>
         <file>doorbell.json</file>
         <file>colorlight.json</file>
+        <file>garagedoor.json</file>
+        <file>impulsegaragedoor.json</file>
+        <file>statefulgaragedoor.json</file>
+        <file>extendedstatefulgaragedoor.json</file>
         <file>garagegate.json</file>
         <file>gateway.json</file>
         <file>notifications.json</file>

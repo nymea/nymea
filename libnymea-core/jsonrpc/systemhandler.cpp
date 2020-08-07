@@ -319,7 +319,7 @@ JsonReply *SystemHandler::GetUpdateStatus(const QVariantMap &params) const
 {
     Q_UNUSED(params)
     QVariantMap ret;
-    ret.insert("busy", m_platform->updateController()->updateRunning());
+    ret.insert("busy", m_platform->updateController()->busy());
     ret.insert("updateRunning", m_platform->updateController()->updateRunning());
     return createReply(ret);
 }

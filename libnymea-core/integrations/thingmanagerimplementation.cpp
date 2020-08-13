@@ -712,7 +712,6 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
 
     // set settings (init with defaults)
     ParamList settings = buildParams(thingClass.settingsTypes(), ParamList());
-    qCDebug(dcThingManager()) << "Adding thing settings" << settings << thingId;
     thing->setSettings(settings);
 
     ThingSetupInfo *info = setupThing(thing);

@@ -838,6 +838,17 @@ void NymeaCore::thingManagerLoaded()
             }
         }
     }
+
+    foreach (const Tag &tag, m_tagsStorage->tags()) {
+        if (!tag.ruleId().isNull() && !m_ruleEngine->findRule(tag.ruleId()).isValid()) {
+            qCDebug(dcCore()) << "Cleaning up stale rule tag" << tag;
+            m_tagsStorage->removeTag(tag);
+        }
+        if (!tag.thingId().isNull() && !m_thingManager->findConfiguredThing(tag.thingId())) {
+            qCDebug(dcCore()) << "Cleaning up stale thing tag" << tag.tagId();
+            m_tagsStorage->removeTag(tag);
+        }
+    }    
 }
 
 }

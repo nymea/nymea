@@ -41,6 +41,7 @@ TagsStorage::TagsStorage(ThingManager *thingManager, RuleEngine *ruleEngine, QOb
     m_ruleEngine(ruleEngine)
 {
     connect(thingManager, &ThingManager::thingRemoved, this, &TagsStorage::thingRemoved);
+    connect(ruleEngine, &RuleEngine::ruleRemoved, this, &TagsStorage::ruleRemoved);
 
     NymeaSettings settings(NymeaSettings::SettingsRoleTags);
 

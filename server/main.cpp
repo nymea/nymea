@@ -54,6 +54,7 @@
 #include "loggingcategories.h"
 #include "version.h"
 
+NYMEA_LOGGING_CATEGORY(dcApplication, "Application")
 
 using namespace nymeaserver;
 

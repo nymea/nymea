@@ -37,6 +37,8 @@
 #include <QFile>
 #include <QDir>
 
+NYMEA_LOGGING_CATEGORY(dcConfiguration, "Configuration")
+
 namespace nymeaserver {
 
 NymeaConfiguration::NymeaConfiguration(QObject *parent) :
@@ -55,11 +57,11 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
             tmpId.insert(23, "-");
             setServerUuid(QUuid(tmpId));
         } else {
-            qWarning(dcApplication()) << "Failed to open /etc/machine-id for reading. Generating a new UUID for this server instance.";
+            qWarning(dcConfiguration()) << "Failed to open /etc/machine-id for reading. Generating a new UUID for this server instance.";
             setServerUuid(QUuid::createUuid());
         }
     }
-    qCDebug(dcApplication()) << "System UUID is:" << serverUuid().toString();
+    qCDebug(dcConfiguration()) << "System UUID is:" << serverUuid().toString();
 
     // Make sure default values are in configuration file so that it's easier for users to modify
     setServerName(serverName());
@@ -76,7 +78,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
     if (settings.childGroups().contains("TcpServer")) {
         settings.beginGroup("TcpServer");
         if (settings.value("disabled").toBool()) {
-            qCDebug(dcApplication) << "TCP server disabled by configuration";
+            qCDebug(dcConfiguration) << "TCP server disabled by configuration";
         } else if (!settings.childGroups().isEmpty()) {
             foreach (const QString &key, settings.childGroups()) {
                 ServerConfiguration config = readServerConfig("TcpServer", key);
@@ -88,7 +90,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         settings.endGroup();
     }
     if (createDefaults) {
-        qCWarning(dcApplication) << "No TCP server configuration found. Generating default of nymeas://0.0.0.0:2222";
+        qCWarning(dcConfiguration) << "No TCP server configuration found. Generating default of nymeas://0.0.0.0:2222";
         ServerConfiguration config;
         config.id = "default";
         config.address = QHostAddress("0.0.0.0");
@@ -104,7 +106,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
     if (settings.childGroups().contains("WebServer")) {
         settings.beginGroup("WebServer");
         if (settings.value("disabled").toBool()) {
-            qCDebug(dcApplication) << "Web server disabled by configuration";
+            qCDebug(dcConfiguration) << "Web server disabled by configuration";
         } else if (!settings.childGroups().isEmpty()) {
             foreach (const QString &key, settings.childGroups()) {
                 WebServerConfiguration config = readWebServerConfig(key);
@@ -116,7 +118,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         settings.endGroup();
     }
     if (createDefaults) {
-        qCWarning(dcApplication) << "No Web server configuration found. Generating defaults of http://0.0.0.0:80 and https://0.0.0.0:443";
+        qCWarning(dcConfiguration) << "No Web server configuration found. Generating defaults of http://0.0.0.0:80 and https://0.0.0.0:443";
         WebServerConfiguration insecureConfig;
         insecureConfig.id = "insecure";
         insecureConfig.address = QHostAddress("0.0.0.0");
@@ -145,7 +147,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
     if (settings.childGroups().contains("WebSocketServer")) {
         settings.beginGroup("WebSocketServer");
         if (settings.value("disabled").toBool()) {
-            qCDebug(dcApplication) << "WebSocket server disabled by configuration.";
+            qCDebug(dcConfiguration) << "WebSocket server disabled by configuration.";
         } else if (!settings.childGroups().isEmpty()) {
             foreach (const QString &key, settings.childGroups()) {
                 ServerConfiguration config = readServerConfig("WebSocketServer", key);
@@ -157,7 +159,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         settings.endGroup();
     }
     if (createDefaults) {
-        qCWarning(dcApplication) << "No WebSocket server configuration found. Generating default of wss://0.0.0.0:4444";
+        qCWarning(dcConfiguration) << "No WebSocket server configuration found. Generating default of wss://0.0.0.0:4444";
         ServerConfiguration config;
         config.id = "default";
         config.address = QHostAddress("0.0.0.0");
@@ -173,7 +175,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
     if (settings.childGroups().contains("MqttServer")) {
         settings.beginGroup("MqttServer");
         if (settings.value("disabled").toBool()) {
-            qCDebug(dcApplication) << "MQTT server disabled by configuration.";
+            qCDebug(dcConfiguration) << "MQTT server disabled by configuration.";
         } else if (!settings.childGroups().isEmpty()) {
             foreach (const QString &key, settings.childGroups()) {
                 ServerConfiguration config = readServerConfig("MqttServer", key);
@@ -185,7 +187,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         settings.endGroup();
     }
     if (createDefaults) {
-        qCWarning(dcApplication) << "No MQTT server configuration found. Generating default of 0.0.0.0:1883";
+        qCWarning(dcConfiguration) << "No MQTT server configuration found. Generating default of 0.0.0.0:1883";
         ServerConfiguration config;
         config.id = "default";
         config.address = QHostAddress("0.0.0.0");
@@ -236,12 +238,12 @@ QString NymeaConfiguration::serverName() const
 
 void NymeaConfiguration::setServerName(const QString &serverName)
 {
-    qCDebug(dcApplication()) << "Configuration: Server name:" << serverName;
+    qCDebug(dcConfiguration()) << "Configuration: Server name:" << serverName;
 
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("nymead");
     if (settings.value("name").toString() == serverName) {
-        qCDebug(dcApplication()) << "Configuration: Server name unchanged.";
+        qCDebug(dcConfiguration()) << "Configuration: Server name unchanged.";
         settings.endGroup();
     } else {
         settings.setValue("name", serverName);
@@ -259,12 +261,12 @@ QByteArray NymeaConfiguration::timeZone() const
 
 void NymeaConfiguration::setTimeZone(const QByteArray &timeZone)
 {
-    qCDebug(dcApplication()) << "Configuration: Time zone:" << QString::fromUtf8(timeZone);
+    qCDebug(dcConfiguration()) << "Configuration: Time zone:" << QString::fromUtf8(timeZone);
 
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("nymead");
     if (settings.value("timeZone").toByteArray() == timeZone) {
-        qCDebug(dcApplication()) << "Configuration: Time zone unchanged.";
+        qCDebug(dcConfiguration()) << "Configuration: Time zone unchanged.";
         settings.endGroup();
     } else {
         settings.setValue("timeZone", timeZone);
@@ -282,12 +284,12 @@ QLocale NymeaConfiguration::locale() const
 
 void NymeaConfiguration::setLocale(const QLocale &locale)
 {
-    qCDebug(dcApplication()) << "Configuration: Set system locale:" << locale.name() << locale.nativeCountryName() << locale.nativeLanguageName();
+    qCDebug(dcConfiguration()) << "Configuration: Set system locale:" << locale.name() << locale.nativeCountryName() << locale.nativeLanguageName();
 
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("nymead");
     if (settings.value("language").toString() == locale.name()) {
-        qCDebug(dcApplication()) << "Configuration: Language unchanged.";
+        qCDebug(dcConfiguration()) << "Configuration: Language unchanged.";
         settings.endGroup();
     } else {
         settings.setValue("language", locale.name());
@@ -415,7 +417,7 @@ bool NymeaConfiguration::bluetoothServerEnabled() const
 
 void NymeaConfiguration::setBluetoothServerEnabled(bool enabled)
 {
-    qCDebug(dcApplication()) << "Configuration: Bluetooth server" << (enabled ? "enabled" : "disabled");
+    qCDebug(dcConfiguration()) << "Configuration: Bluetooth server" << (enabled ? "enabled" : "disabled");
 
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("BluetoothServer");
@@ -585,7 +587,7 @@ bool NymeaConfiguration::debugServerEnabled() const
 
 void NymeaConfiguration::setDebugServerEnabled(bool enabled)
 {
-    qCDebug(dcApplication()) << "Configuration: Set debug server" << (enabled ? "enabled" : "disabled");
+    qCDebug(dcConfiguration()) << "Configuration: Set debug server" << (enabled ? "enabled" : "disabled");
     bool currentValue = debugServerEnabled();
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("nymead");
@@ -599,7 +601,7 @@ void NymeaConfiguration::setDebugServerEnabled(bool enabled)
 
 void NymeaConfiguration::setServerUuid(const QUuid &uuid)
 {
-    qCDebug(dcApplication()) << "Configuration: Server uuid:" << uuid.toString();
+    qCDebug(dcConfiguration()) << "Configuration: Server uuid:" << uuid.toString();
 
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("nymead");

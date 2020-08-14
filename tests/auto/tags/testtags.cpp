@@ -51,6 +51,8 @@ private slots:
 
     void removeTag();
 
+    void ruleTagIsRemovedOnRuleRemove();
+
 private:
     QVariantMap createThingTag(const QString &thingId, const QString &appId, const QString &tagId, const QString &value);
     bool compareThingTag(const QVariantMap &tag, const QUuid &thingId, const QString &appId, const QString &tagId, const QString &value);
@@ -246,6 +248,58 @@ void TestTags::removeTag()
     response = injectAndWait("Tags.GetTags", params);
     tagsList = response.toMap().value("params").toMap().value("tags").toList();
     QCOMPARE(tagsList.count(), 0);
+}
+
+void TestTags::ruleTagIsRemovedOnRuleRemove()
+{
+    // Create a rule
+    QVariantMap params;
+    params.insert("name", "testrule");
+    QVariantMap action;
+    action.insert("thingId", m_mockThingId);
+    action.insert("actionTypeId", mockWithoutParamsActionTypeId);
+    QVariantList actions = {action};
+    params.insert("actions", actions);
+    QVariant response = injectAndWait("Rules.AddRule", params);
+    verifyError(response, "ruleError", "RuleErrorNoError");
+    QUuid ruleId = response.toMap().value("params").toMap().value("ruleId").toUuid();
+
+    // Tag the rule
+    params.clear();
+    QVariantMap tag;
+    tag.insert("appId", "testtags");
+    tag.insert("ruleId", ruleId);
+    tag.insert("tagId", "testtag");
+    tag.insert("value", "blabla");
+    params.insert("tag", tag);
+    response = injectAndWait("Tags.AddTag", params);
+    verifyTagError(response, TagsStorage::TagErrorNoError);
+
+    // Make sure the tag is here
+    params.clear();
+    params.insert("appId", "testtags");
+    params.insert("ruleId", ruleId);
+    params.insert("tagId", "testtag");
+    response = injectAndWait("Tags.GetTags", params);
+    verifyTagError(response, TagsStorage::TagErrorNoError);
+    QVERIFY2(response.toMap().value("params").toMap().value("tags").toList().count() == 1, "Tag not found!");
+    qCDebug(dcTests()) << "Get tag reply" << qUtf8Printable(QJsonDocument::fromVariant(response).toJson());
+
+    // Remove the rule
+    params.clear();
+    params.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.RemoveRule", params);
+    verifyError(response, "ruleError", "RuleErrorNoError");
+
+    // Make sure the tag disappeared
+    params.clear();
+    params.insert("appId", "testtags");
+    params.insert("ruleId", ruleId);
+    params.insert("tagId", "testtag");
+    response = injectAndWait("Tags.GetTags", params);
+    verifyTagError(response, TagsStorage::TagErrorNoError);
+    QVERIFY2(response.toMap().value("params").toMap().value("tags").toList().count() == 0, "Tag has not been cleaned up!");
+    qCDebug(dcTests()) << "Get tag reply" << qUtf8Printable(QJsonDocument::fromVariant(response).toJson());
 }
 
 #include "testtags.moc"

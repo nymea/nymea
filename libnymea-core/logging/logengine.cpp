@@ -372,18 +372,20 @@ void LogEngine::removeRuleLogs(const RuleId &ruleId)
 
 void LogEngine::appendLogEntry(const LogEntry &entry)
 {
-    QString queryString = QString("INSERT INTO entries (timestamp, loggingEventType, loggingLevel, sourceType, typeId, thingId, value, active, errorCode) values ('%1', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9');")
-            .arg(entry.timestamp().toMSecsSinceEpoch())
-            .arg(entry.eventType())
-            .arg(entry.level())
-            .arg(entry.source())
-            .arg(entry.typeId().toString())
-            .arg(entry.thingId().toString())
-            .arg(entry.value().toString())
-            .arg(entry.active())
-            .arg(entry.errorCode());
+    qCDebug(dcLogEngine()) << "Adding log entry:" << entry;
+    QString queryString = QString("INSERT INTO entries (timestamp, loggingEventType, loggingLevel, sourceType, typeId, thingId, value, active, errorCode) values (?, ?, ?, ?, ?, ?, ?, ?, ?);");
+    QVariantList bindValues;
+    bindValues.append(entry.timestamp().toMSecsSinceEpoch());
+    bindValues.append(entry.eventType());
+    bindValues.append(entry.level());
+    bindValues.append(entry.source());
+    bindValues.append(entry.typeId().toString());
+    bindValues.append(entry.thingId().toString());
+    bindValues.append(LogValueTool::convertVariantToString(entry.value()));
+    bindValues.append(entry.active());
+    bindValues.append(entry.errorCode());
 
-    DatabaseJob *job = new DatabaseJob(m_db, queryString);
+    DatabaseJob *job = new DatabaseJob(m_db, queryString, bindValues);
 
     // Check for log flooding. If we are exceeding the queue we'll start flagging log events of a certain type.
     // If we'll get more log events of the same type while the queue is still exceededd, we'll discard the old
@@ -508,7 +510,7 @@ void LogEngine::processQueue()
         QSqlQuery query(job->m_db);
         query.prepare(job->m_queryString);
 
-        foreach (const QString &value, job->m_bindValues) {
+        foreach (const QVariant &value, job->m_bindValues) {
             query.addBindValue(value);
         }
 

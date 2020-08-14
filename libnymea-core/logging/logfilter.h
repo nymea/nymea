@@ -69,7 +69,7 @@ public:
 
     // Valid for LoggingSourceStates
     void addValue(const QString &value);
-    QList<QString> values() const;
+    QVariantList values() const;
 
     void setLimit(int limit);
     int limit() const;
@@ -86,7 +86,7 @@ private:
     QList<Logging::LoggingEventType> m_eventTypes;
     QList<QUuid> m_typeIds;
     QList<ThingId> m_thingIds;
-    QList<QString> m_values;
+    QVariantList m_values;
     int m_limit = -1;
     int m_offset = 0;
 

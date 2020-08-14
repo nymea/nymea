@@ -182,7 +182,7 @@ void LogFilter::addValue(const QString &value)
 }
 
 /*! Returns the list of values from this \l{LogFilter}. */
-QList<QString> LogFilter::values() const
+QVariantList LogFilter::values() const
 {
     return m_values;
 }
@@ -393,7 +393,7 @@ QString LogFilter::createValuesString() const
             query.append("value = ? ");
         } else {
             query.append("( ");
-            foreach (const QString &value, m_values) {
+            foreach (const QVariant &value, m_values) {
                 query.append("value = ? ");
                 if (value != m_values.last())
                     query.append("OR ");

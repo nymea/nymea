@@ -1,0 +1,3 @@
+{
+    "description": "The base for all garage door interfaces. Can be used by the client to filter for garage doors in the system."
+}

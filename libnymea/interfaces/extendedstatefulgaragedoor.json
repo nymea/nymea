@@ -1,0 +1,4 @@
+{
+    "description": "A garage door which can be controlled like an extended closable, that is, by reporting and taking a percentage of the position",
+    "extends": ["statefulgaragedoor", "extendedclosable"]
+}

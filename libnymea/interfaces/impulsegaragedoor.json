@@ -1,0 +1,9 @@
+{
+    "extends": "garagedoor",
+    "description": "This interface is for the simplest form of garage doors which can be controlled only via an impulse. Triggering the impulse will start moving the door, triggering it again will stop the movement. Triggering it yet another time will start movement in the reverse direction. Note that there is no feedback channel on such devices. The system has no chance of knowing the current state this device is actually in.",
+    "actions": [
+        {
+            "name": "triggerImpulse"
+        }
+    ]
+}

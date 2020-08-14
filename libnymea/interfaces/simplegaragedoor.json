@@ -1,0 +1,4 @@
+{
+    "description": "A Garage door that can take up and down as commands but cannot provide state information",
+    "extends": ["garagedoor", "closable"]
+}

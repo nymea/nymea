@@ -327,23 +327,49 @@ QVariant Thing::stateValue(const StateTypeId &stateTypeId) const
 /*! For convenience, this finds the \l{State} matching the given \a stateTypeId in this thing and sets the current value to \a value. */
 void Thing::setStateValue(const StateTypeId &stateTypeId, const QVariant &value)
 {
+    StateType stateType = m_thingClass.stateTypes().findById(stateTypeId);
+    if (!stateType.isValid()) {
+        qCWarning(dcThing()) << "No such state type" << stateTypeId.toString() << "in" << m_name << "(" + thingClass().name() + ")";
+        return;
+    }
     for (int i = 0; i < m_states.count(); ++i) {
         if (m_states.at(i).stateTypeId() == stateTypeId) {
             if (m_states.at(i).value() == value)
                 return;
 
+            QVariant newValue = value;
+            if (!newValue.convert(stateType.type())) {
+                qCWarning(dcThing()).nospace() << m_name << ": Invalid value " << value << " for state " << stateType.name() << ". Type mismatch. Expected type: " << QVariant::typeToName(stateType.type()) << " (Discarding change)";
+                return;
+            }
+            if (stateType.minValue().isValid() && value < stateType.minValue()) {
+                qCWarning(dcThing()).nospace() << m_name << ": Invalid value " << value << " for state " << stateType.name() << ". Out of range: " << stateType.minValue() << " - " << stateType.maxValue() << " (Correcting to closest value within range)";
+                newValue = stateType.minValue();
+            }
+            if (stateType.maxValue().isValid() && value > stateType.maxValue()) {
+                qCWarning(dcThing()).nospace() << m_name << ": Invalid value " << value << " for state " << stateType.name() << ". Out of range: " << stateType.minValue() << " - " << stateType.maxValue() << " (Correcting to closest value within range)";
+                newValue = stateType.maxValue();
+            }
+            if (!stateType.possibleValues().isEmpty() && !stateType.possibleValues().contains(value)) {
+                qCWarning(dcThing()).nospace() << m_name << ": Invalid value " << value << " for state " << stateType.name() << ". Not an accepted value. Possible values: " << stateType.possibleValues() << " (Discarding change)";
+                return;
+            }
 
-            // TODO: check min/max value + possible values
-            //       to prevent an invalid state type from the plugin side
+            QVariant oldValue = m_states.at(i).value();
 
-            State newState(stateTypeId, m_id);
-            newState.setValue(value);
-            m_states[i] = newState;
+            if (oldValue == newValue) {
+                qCDebug(dcThing()).nospace() << m_name << ": Discarding state change for " << stateType.name() << " as the value did not actually change. Old value:" << oldValue << "New value:" << newValue;
+                return;
+            }
+
+            qCDebug(dcThing()).nospace() << m_name << ": State " << stateType.name() << " changed from " << oldValue << " to " << newValue;
+            m_states[i].setValue(newValue);
             emit stateValueChanged(stateTypeId, value);
             return;
         }
     }
-    qCWarning(dcThingManager) << "Failed setting state for" << m_name << value;
+    Q_ASSERT_X(false, m_name.toUtf8(), QString("Failed setting state %1 to %2").arg(stateType.name()).arg(value.toString()).toUtf8());
+    qCWarning(dcThing).nospace() << m_name << ": Failed setting state " << stateType.name() << "to" << value;
 }
 
 /*! Returns the \l{State} with the given \a stateTypeId of this thing. */

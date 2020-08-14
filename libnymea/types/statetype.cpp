@@ -222,6 +222,12 @@ QStringList StateType::mandatoryTypeProperties()
     return QStringList() << "id" << "name" << "displayName" << "displayNameEvent" << "type" << "defaultValue";
 }
 
+/*! Returns true if this state type has an ID, a type and a name set. */
+bool StateType::isValid() const
+{
+    return !m_id.isNull() && m_type != QVariant::Invalid && !m_name.isEmpty();
+}
+
 StateTypes::StateTypes(const QList<StateType> &other)
 {
     foreach (const StateType &st, other) {

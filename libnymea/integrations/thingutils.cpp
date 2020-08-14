@@ -41,8 +41,7 @@ ThingUtils::ThingUtils()
 
 }
 
-/*! Verify if the given \a params matches the given \a paramTypes. Ith \a requireAll
- *  is true, all \l{ParamList}{Params} has to be valid. Returns \l{Device::DeviceError} to inform about the result.*/
+/*! Verify if the given \a params matches the given \a paramTypes.*/
 Thing::ThingError ThingUtils::verifyParams(const QList<ParamType> paramTypes, const ParamList &params)
 {
     foreach (const Param &param, params) {
@@ -52,7 +51,7 @@ Thing::ThingError ThingUtils::verifyParams(const QList<ParamType> paramTypes, co
         }
     }
     foreach (const ParamType &paramType, paramTypes) {
-        bool found = false;
+        bool found = !paramType.defaultValue().isNull();
         foreach (const Param &param, params) {
             if (paramType.id() == param.paramTypeId()) {
                 found = true;

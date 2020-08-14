@@ -96,6 +96,8 @@ public:
     static QStringList typeProperties();
     static QStringList mandatoryTypeProperties();
 
+    bool isValid() const;
+
 private:
     StateTypeId m_id;
     QString m_name;

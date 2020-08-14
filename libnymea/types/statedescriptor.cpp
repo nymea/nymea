@@ -171,11 +171,11 @@ bool StateDescriptor::operator ==(const State &state) const
     if ((m_stateTypeId != state.stateTypeId()) || (m_thingId != state.thingId())) {
         return false;
     }
-    if (!m_stateValue.canConvert(state.value().type())) {
+    QVariant convertedValue = m_stateValue;
+    bool res = convertedValue.convert(state.value().type());
+    if (!res) {
         return false;
     }
-    QVariant convertedValue = m_stateValue;
-    convertedValue.convert(state.value().type());
     switch (m_operatorType) {
     case Types::ValueOperatorEquals:
         return convertedValue == state.value();

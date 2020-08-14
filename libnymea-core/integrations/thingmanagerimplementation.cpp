@@ -185,10 +185,10 @@ Thing::ThingError ThingManagerImplementation::setPluginConfig(const PluginId &pl
         return Thing::ThingErrorPluginNotFound;
     }
 
-    ParamList params = buildParams(plugin->configurationDescription(), pluginConfig);
-    Thing::ThingError verify = ThingUtils::verifyParams(plugin->configurationDescription(), params);
+    Thing::ThingError verify = ThingUtils::verifyParams(plugin->configurationDescription(), pluginConfig);
     if (verify != Thing::ThingErrorNoError)
         return verify;
+    ParamList params = buildParams(plugin->configurationDescription(), pluginConfig);
 
     Thing::ThingError result = plugin->setConfiguration(params);
     if (result != Thing::ThingErrorNoError)
@@ -199,10 +199,7 @@ Thing::ThingError ThingManagerImplementation::setPluginConfig(const PluginId &pl
     settings.beginGroup(plugin->pluginId().toString());
 
     foreach (const Param &param, pluginConfig) {
-        settings.beginGroup(param.paramTypeId().toString());
-        settings.setValue("type", static_cast<int>(param.value().type()));
-        settings.setValue("value", param.value());
-        settings.endGroup();
+        settings.setValue(param.paramTypeId().toString(), param.value());
     }
 
     settings.endGroup();
@@ -259,14 +256,14 @@ ThingDiscoveryInfo* ThingManagerImplementation::discoverThings(const ThingClassI
         return discoveryInfo;
     }
 
-    ParamList effectiveParams = buildParams(thingClass.discoveryParamTypes(), params);
-    Thing::ThingError result = ThingUtils::verifyParams(thingClass.discoveryParamTypes(), effectiveParams);
+    Thing::ThingError result = ThingUtils::verifyParams(thingClass.discoveryParamTypes(), params);
     if (result != Thing::ThingErrorNoError) {
         qCWarning(dcThingManager) << "Thing discovery failed. Parameter verification failed.";
         ThingDiscoveryInfo *discoveryInfo = new ThingDiscoveryInfo(thingClassId, params, this);
         discoveryInfo->finish(result);
         return discoveryInfo;
     }
+    ParamList effectiveParams = buildParams(thingClass.discoveryParamTypes(), params);
 
     ThingDiscoveryInfo *discoveryInfo = new ThingDiscoveryInfo(thingClassId, effectiveParams, this, 30000);
     connect(discoveryInfo, &ThingDiscoveryInfo::finished, this, [this, discoveryInfo](){
@@ -396,14 +393,14 @@ ThingSetupInfo *ThingManagerImplementation::reconfigureThingInternal(Thing *thin
         return info;
     }
 
-    ParamList finalParams = buildParams(thing->thingClass().paramTypes(), params);
-    Thing::ThingError result = ThingUtils::verifyParams(thing->thingClass().paramTypes(), finalParams);
+    Thing::ThingError result = ThingUtils::verifyParams(thing->thingClass().paramTypes(), params);
     if (result != Thing::ThingErrorNoError) {
         qCWarning(dcThingManager()) << "Cannot reconfigure thing. Params failed validation.";
         ThingSetupInfo *info = new ThingSetupInfo(nullptr, this);
         info->finish(result);
         return info;
     }
+    ParamList finalParams = buildParams(thing->thingClass().paramTypes(), params);
 
     // first remove the thing in the plugin
     plugin->thingRemoved(thing);
@@ -463,13 +460,13 @@ Thing::ThingError ThingManagerImplementation::setThingSettings(const ThingId &th
         qCWarning(dcThingManager()) << "Cannot set thing settings. Thing" << thingId.toString() << "not found";
         return Thing::ThingErrorThingNotFound;
     }
-    // build a list of settings using: a) provided new settings b) previous settings and c) default values
-    ParamList effectiveSettings = buildParams(thing->thingClass().settingsTypes(), settings, thing->settings());
-    Thing::ThingError status = ThingUtils::verifyParams(thing->thingClass().settingsTypes(), effectiveSettings);
+    Thing::ThingError status = ThingUtils::verifyParams(thing->thingClass().settingsTypes(), settings);
     if (status != Thing::ThingErrorNoError) {
         qCWarning(dcThingManager()) << "Error setting thing settings for" << thing->name() << thing->id().toString();
         return status;
     }
+    // build a list of settings using: a) provided new settings b) previous settings and c) default values
+    ParamList effectiveSettings = buildParams(thing->thingClass().settingsTypes(), settings, thing->settings());
     thing->setSettings(effectiveSettings);
     return Thing::ThingErrorNoError;
 }
@@ -693,8 +690,7 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
     }
 
     // set params
-    ParamList effectiveParams = buildParams(thingClass.paramTypes(), params);
-    Thing::ThingError paramsResult = ThingUtils::verifyParams(thingClass.paramTypes(), effectiveParams);
+    Thing::ThingError paramsResult = ThingUtils::verifyParams(thingClass.paramTypes(), params);
     if (paramsResult != Thing::ThingErrorNoError) {
         qCWarning(dcThingManager()) << "Cannot add thing. Parameter verification failed.";
         ThingSetupInfo *info = new ThingSetupInfo(nullptr, this);
@@ -702,6 +698,7 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
         return info;
     }
 
+    ParamList effectiveParams = buildParams(thingClass.paramTypes(), params);
     Thing *thing = new Thing(plugin->pluginId(), thingClass, thingId, this);
     thing->setParentId(parentId);
     if (name.isEmpty()) {
@@ -1211,14 +1208,14 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
         return info;
     }
 
-    ParamList finalParams = buildParams(actionType.paramTypes(), action.params());
-    Thing::ThingError paramCheck = ThingUtils::verifyParams(actionType.paramTypes(), finalParams);
+    Thing::ThingError paramCheck = ThingUtils::verifyParams(actionType.paramTypes(), action.params());
     if (paramCheck != Thing::ThingErrorNoError) {
         qCWarning(dcThingManager()) << "Cannot execute action. Parameter verification failed.";
         ThingActionInfo *info = new ThingActionInfo(thing, action, this);
         info->finish(paramCheck);
         return info;
     }
+    ParamList finalParams = buildParams(actionType.paramTypes(), action.params());
     finalAction.setParams(finalParams);
 
     ThingActionInfo *info = new ThingActionInfo(thing, finalAction, this, 30000);
@@ -1375,42 +1372,25 @@ void ThingManagerImplementation::loadPlugin(IntegrationPlugin *pluginIface, cons
     NymeaSettings settings(NymeaSettings::SettingsRolePlugins);
     settings.beginGroup("PluginConfig");
     ParamList params;
-    if (settings.childGroups().contains(pluginIface->pluginId().toString())) {
-        settings.beginGroup(pluginIface->pluginId().toString());
 
-        if (!settings.childGroups().isEmpty()) {
-            // Note: since nymea 0.12.2 the param type gets saved too for better data converting
-            foreach (const QString &paramTypeIdString, settings.childGroups()) {
-                ParamTypeId paramTypeId(paramTypeIdString);
-                ParamType paramType = pluginIface->configurationDescription().findById(paramTypeId);
-                if (!paramType.isValid()) {
-                    qCWarning(dcThingManager()) << "Not loading Param for plugin" << pluginIface->pluginName() << "because the ParamType for the saved Param" << ParamTypeId(paramTypeIdString).toString() << "could not be found.";
-                    continue;
-                }
-
-                QVariant paramValue;
-                settings.beginGroup(paramTypeIdString);
-                paramValue = settings.value("value", paramType.defaultValue());
-                paramValue.convert(settings.value("type").toInt());
-                params.append(Param(paramTypeId, paramValue));
-                settings.endGroup();
-            }
-        } else {
-            // Note: < nymea 0.12.2
-            foreach (const QString &paramTypeIdString, settings.allKeys()) {
-                params.append(Param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString)));
-            }
+    settings.beginGroup(pluginIface->pluginId().toString());
+    foreach (const ParamType &paramType, pluginIface->configurationDescription()) {
+        QVariant value = paramType.defaultValue();
+        if (settings.contains(paramType.id().toString())) {
+            value = settings.value(paramType.id().toString());
+        } else if (settings.childGroups().contains(paramType.id().toString())) {
+            // 0.12.2 - 0.22 used to store it in subgroups
+            settings.beginGroup(paramType.id().toString());
+            value = settings.value("value");
+            settings.endGroup();
         }
-
-        settings.endGroup();
-    } else if (!pluginIface->configurationDescription().isEmpty()){
-        // plugin requires config but none stored. Init with defaults
-        foreach (const ParamType &paramType, pluginIface->configurationDescription()) {
-            Param param(paramType.id(), paramType.defaultValue());
-            params.append(param);
-        }
+        value.convert(paramType.type());
+        Param param(paramType.id(), value);
+        params.append(param);
     }
-    settings.endGroup();
+    settings.endGroup(); // pluginId
+
+    settings.endGroup(); // PluginConfig
 
     if (params.count() > 0) {
         Thing::ThingError status = pluginIface->setConfiguration(params);
@@ -1491,69 +1471,70 @@ void ThingManagerImplementation::loadConfiguredThings()
 
         ParamList params;
         settings.beginGroup("Params");
-        if (!settings.childGroups().isEmpty()) {
-            foreach (const QString &paramTypeIdString, settings.childGroups()) {
-                ParamTypeId paramTypeId(paramTypeIdString);
-                ParamType paramType = thingClass.paramTypes().findById(paramTypeId);
-                QVariant defaultValue;
-                if (!paramType.isValid()) {
-                    // NOTE: We're not skipping unknown parameters to give plugins a chance to still access old values if they change their config and migrate things over.
-                    qCWarning(dcThingManager()) << "Unknown param" << paramTypeIdString << "for" << thing << ". ParamType could not be found in device class.";
-                }
 
-                // Note: since nymea 0.12.2
-                QVariant paramValue;
-                settings.beginGroup(paramTypeIdString);
-                paramValue = settings.value("value", paramType.defaultValue());
-                paramValue.convert(settings.value("type").toInt());
-                params.append(Param(paramTypeId, paramValue));
-                settings.endGroup(); // ParamId
-            }
-        } else {
-            foreach (const QString &paramTypeIdString, settings.allKeys()) {
-                params.append(Param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString)));
-            }
-        }
-        // Make sure all params are around. if they aren't initialize with default values
         foreach (const ParamType &paramType, thingClass.paramTypes()) {
-            if (!params.hasParam(paramType.id())) {
-                params.append(Param(paramType.id(), paramType.defaultValue()));
+            QVariant value = paramType.defaultValue();
+            if (settings.contains(paramType.id().toString())) {
+                value = settings.value(paramType.id().toString());
+            } else if (settings.childGroups().contains(paramType.id().toString())) {
+                // 0.12.2 - 0.22 used to store in subgroups
+                settings.beginGroup(paramType.id().toString());
+                value = settings.value("value");
+                settings.endGroup(); // paramTypeId
+            }
+            value.convert(paramType.type());
+            Param param(paramType.id(), value);
+            params.append(param);
+        }
+
+        // In order to give plugins a chance to migrate stuff stored in the params (to e.g. pluginStorage()) we'll load
+        // params that might have disappeared from the ParamTypes but still have stuff stored in the config
+        foreach (const QString paramTypeIdString, settings.childKeys()) {
+            ParamTypeId paramTypeId(paramTypeIdString);
+            if (!params.hasParam(paramTypeId)) {
+                qCDebug(dcThingManager()) << "Loading legacy param" << paramTypeIdString << "for thing" << thing->name();
+                Param param(paramTypeId, settings.value(paramTypeIdString));
+                params.append(param);
             }
         }
-        thing->setParams(params);
+        // 0.12.2 - 0.22 used to store in subgroups
+        foreach (const QString &paramTypeIdString, settings.childGroups()) {
+            settings.beginGroup(paramTypeIdString);
+            ParamTypeId paramTypeId(paramTypeIdString);
+            if (!params.hasParam(paramTypeId)) {
+                qCDebug(dcThingManager()) << "Loading legacy param" << paramTypeIdString << "for thing" << thing->name();
+                Param param(paramTypeId, settings.value("value"));
+                params.append(param);
+            }
+            settings.endGroup(); // paramTypeId
+        }
+
         settings.endGroup(); // Params
+
+        thing->setParams(params);
 
         ParamList thingSettings;
         settings.beginGroup("Settings");
-        if (!settings.childGroups().isEmpty()) {
-            foreach (const QString &paramTypeIdString, settings.childGroups()) {
-                ParamTypeId paramTypeId(paramTypeIdString);
-                ParamType paramType = thingClass.settingsTypes().findById(paramTypeId);
-                if (!paramType.isValid()) {
-                    qCWarning(dcThingManager()) << "Not loading Setting for thing" << thing << "because the ParamType for the saved Setting" << ParamTypeId(paramTypeIdString).toString() << "could not be found.";
-                    continue;
-                }
 
-                // Note: since nymea 0.12.2
-                QVariant paramValue;
-                settings.beginGroup(paramTypeIdString);
-                paramValue = settings.value("value", paramType.defaultValue());
-                paramValue.convert(settings.value("type").toInt());
-                thingSettings.append(Param(paramTypeId, paramValue));
-                settings.endGroup(); // ParamId
+        foreach (const ParamType &paramType, thingClass.settingsTypes()) {
+            QVariant value = paramType.defaultValue();
+            if (settings.contains(paramType.id().toString())) {
+                value = settings.value(paramType.id().toString());
+            } else if (settings.childGroups().contains(paramType.id().toString())) {
+                // 0.12.2 - 0.22 used to store in subgroups
+                settings.beginGroup(paramType.id().toString());
+                value = settings.value("value");
+                settings.endGroup(); // paramTypeId
             }
-        } else {
-            foreach (const QString &paramTypeIdString, settings.allKeys()) {
-                params.append(Param(ParamTypeId(paramTypeIdString), settings.value(paramTypeIdString)));
-            }
+            value.convert(paramType.type());
+            Param param(paramType.id(), value);
+            thingSettings.append(param);
         }
 
-        // Fill in any missing params with defaults
-        thingSettings = buildParams(thingClass.settingsTypes(), thingSettings);
+        settings.endGroup(); // Settings
 
         thing->setSettings(thingSettings);
 
-        settings.endGroup(); // Settings
         settings.endGroup(); // ThingId
 
         // We always add the thing to the list in this case. If it's in the stored things
@@ -1626,19 +1607,13 @@ void ThingManagerImplementation::storeConfiguredThings()
 
         settings.beginGroup("Params");
         foreach (const Param &param, thing->params()) {
-            settings.beginGroup(param.paramTypeId().toString());
-            settings.setValue("type", static_cast<int>(param.value().type()));
-            settings.setValue("value", param.value());
-            settings.endGroup(); // ParamTypeId
+            settings.setValue(param.paramTypeId().toString(), param.value());
         }
         settings.endGroup(); // Params
 
         settings.beginGroup("Settings");
         foreach (const Param &param, thing->settings()) {
-            settings.beginGroup(param.paramTypeId().toString());
-            settings.setValue("type", static_cast<int>(param.value().type()));
-            settings.setValue("value", param.value());
-            settings.endGroup(); // ParamTypeId
+            settings.setValue(param.paramTypeId().toString(), param.value());
         }
         settings.endGroup(); // Settings
 
@@ -1726,19 +1701,19 @@ void ThingManagerImplementation::onAutoThingDisappeared(const ThingId &thingId)
     Thing *thing = m_configuredThings.value(thingId);
 
     if (!thing) {
-        qWarning(dcThingManager) << "Received an autoThingDisappeared signal but this thing is unknown:" << thingId;
+        qCWarning(dcThingManager) << "Received an autoThingDisappeared signal but this thing is unknown:" << thingId;
         return;
     }
 
     ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
 
     if (thingClass.pluginId() != plugin->pluginId()) {
-        qWarning(dcThingManager) << "Received a autoThingDisappeared signal but emitting plugin does not own the thing";
+        qCWarning(dcThingManager) << "Received a autoThingDisappeared signal but emitting plugin does not own the thing";
         return;
     }
 
     if (!thing->autoCreated()) {
-        qWarning(dcThingManager) << "Received an autoThingDisappeared signal but thing creationMethod is not CreateMothodAuto";
+        qCWarning(dcThingManager) << "Received an autoThingDisappeared signal but thing creationMethod is not CreateMothodAuto";
         return;
     }
 
@@ -1940,17 +1915,25 @@ void ThingManagerImplementation::slotThingNameChanged()
     emit thingChanged(thing);
 }
 
+// Merges params from first and second. First has higher priority than second. If neither are given, the default is used - if any
 ParamList ThingManagerImplementation::buildParams(const ParamTypes &types, const ParamList &first, const ParamList &second)
 {
-    // Merge params from discovered descriptor and additional overrides provided on API call. User provided params have higher priority than discovery params.
     ParamList finalParams;
     foreach (const ParamType &paramType, types) {
+        QVariant value;
         if (first.hasParam(paramType.id())) {
-            finalParams.append(Param(paramType.id(), first.paramValue(paramType.id())));
+            value = first.paramValue(paramType.id());
         } else if (second.hasParam(paramType.id())) {
-            finalParams.append(Param(paramType.id(), second.paramValue(paramType.id())));
+            value = second.paramValue(paramType.id());
         } else if (paramType.defaultValue().isValid()){
-            finalParams.append(Param(paramType.id(), paramType.defaultValue()));
+            value = paramType.defaultValue();
+        }
+        if (!value.isNull()) {
+            bool success = value.convert(paramType.type());
+            if (!success) {
+                qCWarning(dcThingManager()) << "Type mismatch in param" << paramType.name() << "for value" << value;
+            }
+            finalParams.append(Param(paramType.id(), value));
         }
     }
     return finalParams;
@@ -2004,13 +1987,6 @@ ThingSetupInfo* ThingManagerImplementation::setupThing(Thing *thing)
     ThingClass thingClass = findThingClass(thing->thingClassId());
     IntegrationPlugin *plugin = m_integrationPlugins.value(thingClass.pluginId());
 
-    if (!plugin) {
-        qCWarning(dcThingManager) << "Can't find a plugin for this thing" << thing;
-        ThingSetupInfo *info = new ThingSetupInfo(thing, this);
-        info->finish(Thing::ThingErrorPluginNotFound, tr("The plugin for this thing is not loaded."));
-        return info;
-    }
-
     QList<State> states;
     foreach (const StateType &stateType, thingClass.stateTypes()) {
         State state(stateType.id(), thing->id());
@@ -2023,8 +1999,14 @@ ThingSetupInfo* ThingManagerImplementation::setupThing(Thing *thing)
     connect(thing, &Thing::settingChanged, this, &ThingManagerImplementation::slotThingSettingChanged);
     connect(thing, &Thing::nameChanged, this, &ThingManagerImplementation::slotThingNameChanged);
 
-
     ThingSetupInfo *info = new ThingSetupInfo(thing, this, 30000);
+
+    if (!plugin) {
+        qCWarning(dcThingManager) << "Can't find a plugin for this thing" << thing;
+        info->finish(Thing::ThingErrorPluginNotFound, tr("The plugin for this thing is not loaded."));
+        return info;
+    }
+
     plugin->setupThing(info);
 
     return info;
@@ -2045,16 +2027,17 @@ void ThingManagerImplementation::loadThingStates(Thing *thing)
     ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
     foreach (const StateType &stateType, thingClass.stateTypes()) {
         if (stateType.cached()) {
-            QVariant value;
-            // First try to load new style
-            if (settings.childGroups().contains(stateType.id().toString())) {
+            QVariant value(stateType.defaultValue());
+
+            if (settings.contains(stateType.id().toString())) {
+                value = settings.value(stateType.id().toString());
+            } else if (settings.childGroups().contains(stateType.id().toString())) {
+                // 0.9 - 0.22 used to store in a subgroup
                 settings.beginGroup(stateType.id().toString());
-                value = settings.value("value", stateType.defaultValue());
-                value.convert(settings.value("type").toInt());
+                value = settings.value("value");
                 settings.endGroup();
-            } else { // Try to fall back to the pre 0.9.0 way of storing states
-                value = settings.value(stateType.id().toString(), stateType.defaultValue());
             }
+            value.convert(stateType.type());
             thing->setStateValue(stateType.id(), value);
         } else {
             thing->setStateValue(stateType.id(), stateType.defaultValue());
@@ -2125,12 +2108,7 @@ void ThingManagerImplementation::storeThingStates(Thing *thing)
     settings.beginGroup(thing->id().toString());
     ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
     foreach (const StateType &stateType, thingClass.stateTypes()) {
-        if (stateType.cached()) {
-            settings.beginGroup(stateType.id().toString());
-            settings.setValue("type", static_cast<int>(thing->stateValue(stateType.id()).type()));
-            settings.setValue("value", thing->stateValue(stateType.id()));
-            settings.endGroup();
-        }
+        settings.setValue(stateType.id().toString(), thing->stateValue(stateType.id()));
     }
     settings.endGroup();
 }

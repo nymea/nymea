@@ -44,7 +44,7 @@ class NetworkManagerHandler : public JsonHandler
 public:
     explicit NetworkManagerHandler(NetworkManager *networkManager, QObject *parent = nullptr);
 
-    QString name() const;
+    QString name() const override;
 
     Q_INVOKABLE JsonReply *GetNetworkStatus(const QVariantMap &params);
     Q_INVOKABLE JsonReply *EnableNetworking(const QVariantMap &params);

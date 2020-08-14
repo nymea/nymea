@@ -42,7 +42,7 @@ class ActionHandler : public JsonHandler
 public:
     explicit ActionHandler(QObject *parent = nullptr);
 
-    QString name() const;
+    QString name() const override;
 
     Q_INVOKABLE JsonReply *ExecuteAction(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *GetActionType(const QVariantMap &params, const JsonContext &context) const;

@@ -44,7 +44,7 @@ class ConfigurationHandler : public JsonHandler
 
 public:
     ConfigurationHandler(QObject *parent = nullptr);
-    QString name() const;
+    QString name() const override;
 
     Q_INVOKABLE JsonReply *GetConfigurations(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetTimeZones(const QVariantMap &params) const;

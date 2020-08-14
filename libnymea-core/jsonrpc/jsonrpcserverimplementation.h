@@ -56,7 +56,7 @@ public:
     JsonRPCServerImplementation(const QSslConfiguration &sslConfiguration = QSslConfiguration(), QObject *parent = nullptr);
 
     // JsonHandler API implementation
-    QString name() const;
+    QString name() const override;
     Q_INVOKABLE JsonReply *Hello(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *Introspect(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *Version(const QVariantMap &params) const;

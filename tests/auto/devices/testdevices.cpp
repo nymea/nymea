@@ -2071,7 +2071,7 @@ void TestDevices::triggerEvent()
     // Check for the notification on JSON API
     QVariantList notifications;
     notifications = checkNotifications(notificationSpy, "Devices.EventTriggered");
-    QVERIFY2(notifications.count() == 1, "Should get Devices.EventTriggered notification");
+    QVERIFY2(notifications.count() == 1, QString("Should get Devices.EventTriggered notification but got: %1").arg(qUtf8Printable(QJsonDocument::fromVariant(notifications).toJson())).toUtf8());
     QVariantMap notificationContent = notifications.first().toMap().value("params").toMap();
 
     QCOMPARE(notificationContent.value("event").toMap().value("deviceId").toUuid().toString(), device->id().toString());

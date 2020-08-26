@@ -642,14 +642,13 @@ ThingPairingInfo *ThingManagerImplementation::confirmPairing(const PairingTransa
 
             if (addNewThing) {
                 qCDebug(dcThingManager()) << "Thing added:" << info->thing();
-                m_configuredThings.insert(info->thing()->id(), info->thing());
+                registerThing(info->thing());
                 emit thingAdded(info->thing());
-                connect(info->thing(), &Thing::eventTriggered, this, &ThingManagerImplementation::onEventTriggered);
             } else {
                 emit thingChanged(info->thing());
             }
-
             storeConfiguredThings();
+
             postSetupThing(info->thing());
         });
 
@@ -723,11 +722,9 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
         info->thing()->setSetupStatus(Thing::ThingSetupStatusComplete, Thing::ThingErrorNoError);
 
         qCDebug(dcThingManager) << "Thing setup complete.";
-        m_configuredThings.insert(info->thing()->id(), info->thing());
+        registerThing(info->thing());
         storeConfiguredThings();
-
         emit thingAdded(info->thing());
-        connect(info->thing(), &Thing::eventTriggered, this, &ThingManagerImplementation::onEventTriggered);
         postSetupThing(info->thing());
     });
 
@@ -1539,11 +1536,9 @@ void ThingManagerImplementation::loadConfiguredThings()
         // We always add the thing to the list in this case. If it's in the stored things
         // it means that it was working at some point so lets still add it as there might
         // be rules associated with this thing.
-        m_configuredThings.insert(thing->id(), thing);
+        registerThing(thing);
 
         emit thingAdded(thing);
-
-        connect(thing, &Thing::eventTriggered, this, &ThingManagerImplementation::onEventTriggered);
     }
     settings.endGroup();
 
@@ -1666,11 +1661,9 @@ void ThingManagerImplementation::onAutoThingsAppeared(const ThingDescriptors &th
             }
 
             info->thing()->setSetupStatus(Thing::ThingSetupStatusComplete, Thing::ThingErrorNoError);
-            m_configuredThings.insert(info->thing()->id(), info->thing());
+            registerThing(info->thing());
             storeConfiguredThings();
-
             emit thingAdded(info->thing());
-            connect(info->thing(), &Thing::eventTriggered, this, &ThingManagerImplementation::onEventTriggered);
             postSetupThing(info->thing());
         });
     }
@@ -1746,7 +1739,7 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
         qCWarning(dcThingManager()) << "Invalid thing id in state change. Not forwarding event. Thing setup not complete yet?";
         return;
     }
-    storeThingStates(thing);
+    storeThingState(thing, stateTypeId);
 
     emit thingStateChanged(thing, stateTypeId, value);
 
@@ -1976,10 +1969,6 @@ ThingSetupInfo* ThingManagerImplementation::setupThing(Thing *thing)
     thing->setStates(states);
     loadThingStates(thing);
 
-    connect(thing, &Thing::stateValueChanged, this, &ThingManagerImplementation::slotThingStateValueChanged);
-    connect(thing, &Thing::settingChanged, this, &ThingManagerImplementation::slotThingSettingChanged);
-    connect(thing, &Thing::nameChanged, this, &ThingManagerImplementation::slotThingNameChanged);
-
     ThingSetupInfo *info = new ThingSetupInfo(thing, this, 30000);
 
     if (!plugin) {
@@ -2114,14 +2103,28 @@ void ThingManagerImplementation::trySetupThing(Thing *thing)
     });
 }
 
+void ThingManagerImplementation::registerThing(Thing *thing)
+{
+    m_configuredThings.insert(thing->id(), thing);
+    connect(thing, &Thing::eventTriggered, this, &ThingManagerImplementation::onEventTriggered);
+    connect(thing, &Thing::stateValueChanged, this, &ThingManagerImplementation::slotThingStateValueChanged);
+    connect(thing, &Thing::settingChanged, this, &ThingManagerImplementation::slotThingSettingChanged);
+    connect(thing, &Thing::nameChanged, this, &ThingManagerImplementation::slotThingNameChanged);
+}
+
 void ThingManagerImplementation::storeThingStates(Thing *thing)
+{
+    ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
+    foreach (const StateType &stateType, thingClass.stateTypes()) {
+        storeThingState(thing,  stateType.id());
+    }
+}
+
+void ThingManagerImplementation::storeThingState(Thing *thing, const StateTypeId &stateTypeId)
 {
     NymeaSettings settings(NymeaSettings::SettingsRoleThingStates);
     settings.beginGroup(thing->id().toString());
-    ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
-    foreach (const StateType &stateType, thingClass.stateTypes()) {
-        settings.setValue(stateType.id().toString(), thing->stateValue(stateType.id()));
-    }
+    settings.setValue(stateTypeId.toString(), thing->stateValue(stateTypeId));
     settings.endGroup();
 }
 

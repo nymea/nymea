@@ -14,6 +14,8 @@
 #include <QFuture>
 #include <QFutureWatcher>
 
+NYMEA_LOGGING_CATEGORY(dcPythonIntegrations, "PythonIntegrations")
+
 PyThreadState* PythonIntegrationPlugin::s_mainThreadState = nullptr;
 QHash<PythonIntegrationPlugin*, PyObject*> PythonIntegrationPlugin::s_plugins;
 

@@ -3,9 +3,10 @@
 
 #include <Python.h>
 
-#include "loggingcategories.h"
-
+#include <QLoggingCategory>
 #include <QVariant>
+
+Q_DECLARE_LOGGING_CATEGORY(dcPythonIntegrations)
 
 /* Returns a new reference to PyObject*. */
 PyObject *QVariantToPyObject(const QVariant &value)
@@ -76,7 +77,7 @@ PyObject* pyLog_write(PyObject* /*self*/, PyObject* args)
     if (!PyArg_ParseTuple(args, "s", &what))
         return nullptr;
     if (!QByteArray(what).trimmed().isEmpty()) {
-        qCDebug(dcThingManager()) << what;
+        qCDebug(dcPythonIntegrations()) << what;
     }
     Py_RETURN_NONE;
 }
@@ -111,7 +112,7 @@ PyObject* pyWarn_write(PyObject* /*self*/, PyObject* args)
     if (!PyArg_ParseTuple(args, "s", &what))
         return nullptr;
     if (!QByteArray(what).trimmed().isEmpty()) {
-        qCWarning(dcThingManager()) << what;
+        qCWarning(dcPythonIntegrations()) << what;
     }
     Py_RETURN_NONE;
 }

@@ -414,7 +414,9 @@ void NymeaTestBase::waitForDBSync()
 void NymeaTestBase::restartServer()
 {
     // Destroy and recreate the core instance...
+    qCDebug(dcTests()) << "Tearing down server instance";
     NymeaCore::instance()->destroy();
+    qCDebug(dcTests()) << "Restarting server instance";
     NymeaCore::instance()->init();
     QSignalSpy coreSpy(NymeaCore::instance(), SIGNAL(initialized()));
     coreSpy.wait();

@@ -161,6 +161,7 @@ void TestIntegrations::initTestCase()
                                      "Tests.debug=true\n"
                                      "Mock.debug=true\n"
                                      "Translations.debug=true\n"
+                                     "PythonIntegrations.debug=true\n"
                                      );
 
     // Adding an async mock to be used in tests below

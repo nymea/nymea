@@ -76,8 +76,6 @@ private:
     // The imported plugin module (the plugin.py)
     PyObject *m_pluginModule = nullptr;
 
-    PyObject *m_logger = nullptr;
-
     // A map of plugin instances to plugin python scripts/modules
     // Make sure to hold the GIL when accessing this.
     static QHash<PythonIntegrationPlugin*, PyObject*> s_plugins;

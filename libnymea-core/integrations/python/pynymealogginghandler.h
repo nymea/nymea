@@ -21,6 +21,7 @@ typedef struct {
 
 static int PyNymeaLoggingHandler_init(PyNymeaLoggingHandler *self, PyObject *args, PyObject */*kwds*/)
 {
+    qCDebug(dcPythonIntegrations()) << "+++ PyNymeaLoggingHandler";
     char *category = nullptr;
     if (!PyArg_ParseTuple(args, "s", &category)) {
         qCWarning(dcPythonIntegrations()) << "PyNymeaLoggingHandler: Error parsing parameters";
@@ -35,10 +36,10 @@ static int PyNymeaLoggingHandler_init(PyNymeaLoggingHandler *self, PyObject *arg
 
 static void PyNymeaLoggingHandler_dealloc(PyNymeaLoggingHandler * self)
 {
+    qCDebug(dcPythonIntegrations()) << "--- PyNymeaLoggingHandler";
     free(self->category);
     Py_TYPE(self)->tp_free(self);
 }
-
 
 static PyObject * PyNymeaLoggingHandler_log(PyNymeaLoggingHandler* self, PyObject* args)
 {

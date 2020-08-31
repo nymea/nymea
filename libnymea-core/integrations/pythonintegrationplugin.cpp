@@ -212,7 +212,6 @@ PythonIntegrationPlugin::~PythonIntegrationPlugin()
 
     s_plugins.take(this);
     Py_XDECREF(m_pluginModule);
-    Py_XDECREF(m_logger);
     Py_DECREF(m_nymeaModule);
 
     Py_EndInterpreter(m_threadState);
@@ -223,19 +222,33 @@ PythonIntegrationPlugin::~PythonIntegrationPlugin()
 
 void PythonIntegrationPlugin::initPython()
 {
-    Q_ASSERT_X(s_mainThreadState == nullptr, "PythonIntegrationPlugin::initPython()", "initPython() must be called exactly once.");
+    Q_ASSERT_X(s_mainThreadState == nullptr, "PythonIntegrationPlugin::initPython()", "initPython() must be called exactly once before calling deinitPython().");
 
-    PyImport_AppendInittab("nymea", PyInit_nymea);
+    // Only modify the init tab once (initPython() might be called again after calling deinitPython())
+    static bool initTabPrepared = false;
+    if (!initTabPrepared) {
+        PyImport_AppendInittab("nymea", PyInit_nymea);
+        initTabPrepared = true;
+    }
+
+    // Initialize the python engine and fire up threading support
     Py_InitializeEx(0);
     PyEval_InitThreads();
+
     // Store the main thread state and release the GIL
     s_mainThreadState = PyEval_SaveThread();
 }
 
 void PythonIntegrationPlugin::deinitPython()
 {
+    // Restore our main thread state
     PyEval_RestoreThread(s_mainThreadState);
-    Py_Finalize();
+
+    // Tear down the python engine
+    Py_FinalizeEx();
+
+    // Our main thread state is destroyed now
+    s_mainThreadState = nullptr;
 }
 
 bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
@@ -244,18 +257,18 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
 
     QFile metaDataFile(fi.absolutePath() + "/" + fi.baseName() + ".json");
     if (!metaDataFile.open(QFile::ReadOnly)) {
-        qCWarning(dcThingManager()) << "Error opening metadata file:" << metaDataFile.fileName();
+        qCWarning(dcPythonIntegrations()) << "Error opening metadata file:" << metaDataFile.fileName();
         return false;
     }
     QJsonParseError error;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(metaDataFile.readAll(), &error);
     if (error.error != QJsonParseError::NoError) {
-        qCWarning(dcThingManager()) << "Error parsing metadata file:" << error.errorString();
+        qCWarning(dcPythonIntegrations()) << "Error parsing metadata file:" << error.errorString();
         return false;
     }
     setMetaData(PluginMetadata(jsonDoc.object()));
     if (!metadata().isValid()) {
-        qCWarning(dcThingManager()) << "Plugin metadata not valid for plugin:" << scriptFile;
+        qCWarning(dcPythonIntegrations()) << "Plugin metadata not valid for plugin:" << scriptFile;
         return false;
     }
 
@@ -314,8 +327,11 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     PyObject *args = Py_BuildValue("(s)", category.toUtf8().data());
     PyNymeaLoggingHandler *logger = reinterpret_cast<PyNymeaLoggingHandler*>(PyObject_CallObject((PyObject*)&PyNymeaLoggingHandlerType, args));
     Py_DECREF(args);
-    PyModule_AddObject(m_pluginModule, "logger", reinterpret_cast<PyObject*>(logger));
-    m_logger = (PyObject*)logger;
+    int loggerAdded = PyModule_AddObject(m_pluginModule, "logger", reinterpret_cast<PyObject*>(logger));
+    if (loggerAdded != 0) {
+        qCWarning(dcPythonIntegrations()) << "Failed to add the logger object";
+        Py_DECREF(logger);
+    }
 
     // Export metadata ids into module
     exportIds();

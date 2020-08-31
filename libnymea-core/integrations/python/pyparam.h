@@ -67,7 +67,6 @@ static PyTypeObject PyParamType = {
     sizeof(PyParam), /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)PyParam_dealloc,/* tp_dealloc */
-
 };
 
 static PyParam* PyParam_fromParam(const Param &param)

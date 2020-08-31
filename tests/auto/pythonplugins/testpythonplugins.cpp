@@ -64,6 +64,7 @@ void TestPythonPlugins::initTestCase()
     QLoggingCategory::setFilterRules("*.debug=false\n"
                                      "Tests.debug=true\n"
                                      "PyMock.debug=true\n"
+                                     "PythonIntegrations.debug=true\n"
                                      );
 }
 

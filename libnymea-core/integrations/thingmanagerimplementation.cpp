@@ -71,9 +71,6 @@ ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardware
     m_locale(locale),
     m_translator(new Translator(this))
 {
-    qRegisterMetaType<ThingClassId>();
-    qRegisterMetaType<ThingDescriptor>();
-
     foreach (const Interface &interface, ThingUtils::allInterfaces()) {
         m_supportedInterfaces.insert(interface.name(), interface);
     }

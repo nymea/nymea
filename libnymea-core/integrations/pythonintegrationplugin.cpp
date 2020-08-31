@@ -245,7 +245,7 @@ void PythonIntegrationPlugin::deinitPython()
     PyEval_RestoreThread(s_mainThreadState);
 
     // Tear down the python engine
-    Py_FinalizeEx();
+    Py_Finalize();
 
     // Our main thread state is destroyed now
     s_mainThreadState = nullptr;

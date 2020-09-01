@@ -11,9 +11,14 @@ CONFIG += link_pkgconfig
 PKGCONFIG += nymea-mqtt nymea-networkmanager
 
 packagesExist(python3-embed) {
+    # Ubuntu focal
     PKGCONFIG += python3-embed
 } else:packagesExist(python-3.5) {
+    # Ubuntu xenial
     PKGCONFIG += python-3.5
+} else:packagesExist(python-3.7) {
+    # Debian buster
+    PKGCONFIG += python-3.7
 } else {
     error("Python development package not found.")
 }

@@ -10,14 +10,18 @@ LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 CONFIG += link_pkgconfig
 PKGCONFIG += nymea-mqtt nymea-networkmanager
 
+# As of Ubuntu focal, there's a commonly named python3-embed pointing to the distro version of python
+# For everything below python 3.8 we need to manually select one
 packagesExist(python3-embed) {
-    # Ubuntu focal
     PKGCONFIG += python3-embed
 } else:packagesExist(python-3.5) {
-    # Ubuntu xenial
+    # xenial, stretch
     PKGCONFIG += python-3.5
+} else:packagesExist(python-3.6) {
+    # bionic
+    PKGCONFIG += python-3.6
 } else:packagesExist(python-3.7) {
-    # Debian buster
+    # buster, eoan
     PKGCONFIG += python-3.7
 } else {
     error("Python development package not found.")

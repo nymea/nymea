@@ -72,7 +72,7 @@ static PyObject * PyThingActionInfo_finish(PyThingActionInfo* self, PyObject* ar
     char *message = nullptr;
 
     if (!PyArg_ParseTuple(args, "i|s", &status, &message)) {
-        PyErr_SetString(PyExc_TypeError, "Invalid arguments in finish call. Expected: finish(ThingError, message = \"\"");
+        PyErr_SetString(PyExc_TypeError, "Invalid arguments in finish call. Expected: finish(ThingError, message = \"\")");
         return nullptr;
     }
 
@@ -86,6 +86,27 @@ static PyObject * PyThingActionInfo_finish(PyThingActionInfo* self, PyObject* ar
     Py_RETURN_NONE;
 }
 
+static PyObject * PyThingActionInfo_paramValue(PyThingActionInfo* self, PyObject* args) {
+    char *paramTypeIdStr = nullptr;
+    if (!PyArg_ParseTuple(args, "s", &paramTypeIdStr)) {
+        PyErr_SetString(PyExc_TypeError, "Invalid arguments in paramValue call. Expected: paramValue(paramTypeId)");
+        return nullptr;
+    }
+
+    ParamTypeId paramTypeId = ParamTypeId(paramTypeIdStr);
+    for (int i = 0; i < PyTuple_Size(self->pyParams); i++) {
+        PyParam *pyParam = reinterpret_cast<PyParam*>(PyTuple_GetItem(self->pyParams, i));
+        // We're intentionally converting both ids to QUuid here in order to be more flexible with different UUID notations
+        ParamTypeId ptid = StateTypeId(PyUnicode_AsUTF8AndSize(pyParam->pyParamTypeId, nullptr));
+        if (ptid == paramTypeId) {
+            Py_INCREF(pyParam->pyValue);
+            return pyParam->pyValue;
+        }
+    }
+    qCWarning(dcPythonIntegrations()) << "No such ParamTypeId in action params" << paramTypeId;
+    Py_RETURN_NONE;
+};
+
 static PyMemberDef PyThingActionInfo_members[] = {
     {"thing", T_OBJECT_EX, offsetof(PyThingActionInfo, pyThing), 0, "Thing this action is for"},
     {"actionTypeId", T_OBJECT_EX, offsetof(PyThingActionInfo, pyActionTypeId), 0, "The action type id for this action"},
@@ -95,6 +116,7 @@ static PyMemberDef PyThingActionInfo_members[] = {
 
 static PyMethodDef PyThingActionInfo_methods[] = {
     { "finish", (PyCFunction)PyThingActionInfo_finish,    METH_VARARGS,       "finish an action" },
+    { "paramValue", (PyCFunction)PyThingActionInfo_paramValue, METH_VARARGS, "Get an actions param value"},
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 

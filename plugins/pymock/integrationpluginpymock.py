@@ -112,8 +112,11 @@ def postSetupThing(thing):
         logger.log("Setting 1 value:", thing.setting(pyMockDiscoveryPairingSettingsSetting1ParamTypeId))
 
 
-async def executeAction(info):
-    logger.log("executeAction for", info.thing.name, info.actionTypeId, "with params", info.params[0].value)
+def executeAction(info):
+    logger.log("executeAction for", info.thing.name, info.actionTypeId, "with params", info.params)
+    paramValueByIndex = info.params[0].value
+    paramValueById = info.paramValue(pyMockAction1ActionParam1ParamTypeId)
+    logger.log("Param by index:", paramValueByIndex, "by ID:", paramValueById)
     info.finish(nymea.ThingErrorNoError)
 
 

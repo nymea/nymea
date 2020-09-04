@@ -30,7 +30,7 @@
                     "id": "753f0d32-0468-4d08-82ed-1964aab03298",
                     "name": "mock",
                     "displayName": "Mock Thing",
-                    "interfaces": ["system", "light", "battery"],
+                    "interfaces": ["system", "light", "batterylevel", "wirelessconnectable"],
                     "createMethods": ["user", "discovery"],
                     "browsable": true,
                     "discoveryParamTypes": [
@@ -106,12 +106,14 @@
                         {
                             "id": "6c8ab9a6-0164-4795-b829-f4394fe4edc4",
                             "name": "batteryLevel",
-                            "displayName": "battery level",
-                            "displayNameEvent": "battery level",
+                            "displayName": "Battery level",
+                            "displayNameEvent": "Battery level",
+                            "displayNameAction": "Set battery level",
                             "type": "int",
                             "minValue": 0,
                             "maxValue": 100,
-                            "defaultValue": 0
+                            "defaultValue": 0,
+                            "writable": true
                         },
                         {
                             "id": "580bc611-1a55-41f3-996f-8d3ccf543db3",
@@ -130,8 +132,28 @@
                             "type": "bool",
                             "defaultValue": false,
                             "writable": true
+                        },
+                        {
+                            "id": "9860d105-2bd9-4651-9bc9-13ff4b9039a7",
+                            "name": "connected",
+                            "displayName": "Connected",
+                            "displayNameEvent": "Connected changed",
+                            "type": "bool",
+                            "defaultValue": true
+                        },
+                        {
+                            "id": "2a0213bf-4af3-4384-904e-3376348a597e",
+                            "name": "signalStrength",
+                            "displayName": "Signal strength",
+                            "displayNameEvent": "Signal strength changed",
+                            "displayNameAction": "Set signal strength",
+                            "type": "uint",
+                            "unit": "Percentage",
+                            "minValue": 0,
+                            "maxValue": 100,
+                            "defaultValue": 50,
+                            "writable": true
                         }
-
                     ],
                     "eventTypes": [
                         {

@@ -82,5 +82,6 @@
         <file>barcodescanner.json</file>
         <file>irrigation.json</file>
         <file>venetianblind.json</file>
+        <file>update.json</file>
     </qresource>
 </RCC>

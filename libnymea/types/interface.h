@@ -31,28 +31,29 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#include "eventtype.h"
-#include "actiontype.h"
-#include "statetype.h"
+#include "interfaceeventtype.h"
+#include "interfaceactiontype.h"
+#include "interfacestatetype.h"
 
 class Interface{
 public:
     Interface() = default;
-    Interface(const QString &name, const ActionTypes &actionTypes, const EventTypes &eventTypes, const StateTypes &stateTypes);
+    Interface(const QString &name, const InterfaceActionTypes &actionTypes, const InterfaceEventTypes &eventTypes, const InterfaceStateTypes &stateTypes);
 
     QString name() const;
 
-    ActionTypes actionTypes() const;
-    EventTypes eventTypes() const;
-    StateTypes stateTypes() const;
+    InterfaceActionTypes actionTypes() const;
+    InterfaceEventTypes eventTypes() const;
+    InterfaceStateTypes stateTypes() const;
 
     bool isValid() const;
 private:
     QUuid m_id;
     QString m_name;
-    ActionTypes m_actionTypes;
-    EventTypes m_eventTypes;
-    StateTypes m_stateTypes;
+    InterfaceActionTypes m_actionTypes;
+    InterfaceEventTypes m_eventTypes;
+    InterfaceStateTypes m_stateTypes;
+    bool m_optional = false;
 };
 
 class LIBNYMEA_EXPORT Interfaces: public QList<Interface>

@@ -30,7 +30,7 @@
 
 #include "interface.h"
 
-Interface::Interface(const QString &name, const ActionTypes &actionTypes, const EventTypes &eventTypes, const StateTypes &stateTypes):
+Interface::Interface(const QString &name, const InterfaceActionTypes &actionTypes, const InterfaceEventTypes &eventTypes, const InterfaceStateTypes &stateTypes):
     m_name(name),
     m_actionTypes(actionTypes),
     m_eventTypes(eventTypes),
@@ -44,17 +44,17 @@ QString Interface::name() const
     return m_name;
 }
 
-ActionTypes Interface::actionTypes() const
+InterfaceActionTypes Interface::actionTypes() const
 {
     return m_actionTypes;
 }
 
-EventTypes Interface::eventTypes() const
+InterfaceEventTypes Interface::eventTypes() const
 {
     return m_eventTypes;
 }
 
-StateTypes Interface::stateTypes() const
+InterfaceStateTypes Interface::stateTypes() const
 {
     return m_stateTypes;
 }

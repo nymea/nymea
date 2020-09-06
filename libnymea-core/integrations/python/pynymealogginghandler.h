@@ -41,7 +41,23 @@ static void PyNymeaLoggingHandler_dealloc(PyNymeaLoggingHandler * self)
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject * PyNymeaLoggingHandler_log(PyNymeaLoggingHandler* self, PyObject* args)
+static PyObject * PyNymeaLoggingHandler_info(PyNymeaLoggingHandler* self, PyObject* args)
+{
+    QStringList strings;
+    for (int i = 0; i < PyTuple_GET_SIZE(args); i++) {
+        PyObject *obj = PyTuple_GET_ITEM(args, i);
+        PyObject* repr = PyObject_Repr(obj);
+        PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+        const char *bytes = PyBytes_AS_STRING(str);
+        Py_XDECREF(repr);
+        Py_XDECREF(str);
+        strings.append(bytes);
+    }
+    qCInfo(QLoggingCategory(self->category)).noquote() << strings.join(' ');
+    Py_RETURN_NONE;
+}
+
+static PyObject * PyNymeaLoggingHandler_debug(PyNymeaLoggingHandler* self, PyObject* args)
 {
     QStringList strings;
     for (int i = 0; i < PyTuple_GET_SIZE(args); i++) {
@@ -73,9 +89,12 @@ static PyObject * PyNymeaLoggingHandler_warn(PyNymeaLoggingHandler* self, PyObje
     Py_RETURN_NONE;
 }
 
+
 static PyMethodDef PyNymeaLoggingHandler_methods[] = {
-    { "log", (PyCFunction)PyNymeaLoggingHandler_log,    METH_VARARGS,       "Add a new descriptor to the discovery" },
-    { "warn", (PyCFunction)PyNymeaLoggingHandler_warn,    METH_VARARGS,       "Add a new descriptor to the discovery" },
+    { "log", (PyCFunction)PyNymeaLoggingHandler_info,    METH_VARARGS, "Log an info message to the nymea log. Same as info()." },
+    { "info", (PyCFunction)PyNymeaLoggingHandler_info,   METH_VARARGS, "Log an info message to the nymea log." },
+    { "debug", (PyCFunction)PyNymeaLoggingHandler_debug,   METH_VARARGS, "Log a debug message to the nymea log." },
+    { "warn", (PyCFunction)PyNymeaLoggingHandler_warn,   METH_VARARGS, "Log a warning message to the nymea log." },
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 

@@ -6,9 +6,12 @@ watchingAutoThings = False
 loopRunning = False
 
 def init():
-    logger.log("Python mock plugin init")
     global loopRunning
     loopRunning = True
+
+    logger.log("Python mock plugin init")
+    logger.warn("Python mock warning")
+    print("python stdout")
 
     while loopRunning:
         time.sleep(5);

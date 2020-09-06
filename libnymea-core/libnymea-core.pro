@@ -40,6 +40,7 @@ HEADERS += nymeacore.h \
     integrations/python/pynymealogginghandler.h \
     integrations/python/pynymeamodule.h \
     integrations/python/pyparam.h \
+    integrations/python/pystdouthandler.h \
     integrations/python/pything.h \
     integrations/python/pythingactioninfo.h \
     integrations/python/pythingdescriptor.h \

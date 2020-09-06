@@ -3,6 +3,7 @@
 
 #include <Python.h>
 
+#include "pystdouthandler.h"
 #include "pynymealogginghandler.h"
 #include "pything.h"
 #include "pythingdiscoveryinfo.h"
@@ -17,12 +18,7 @@
 
 static int nymea_exec(PyObject *m) {
 
-    // Override stdout/stderr to use qDebug instead
-    PyObject* pyLog = PyModule_Create(&pyLog_module);
-    PySys_SetObject("stdout", pyLog);
-    PyObject* pyWarn = PyModule_Create(&pyWarn_module);
-    PySys_SetObject("stderr", pyWarn);
-
+    registerStdOutHandler(m);
     registerNymeaLoggingHandler(m);
     registerParamType(m);
     registerThingType(m);

@@ -2,6 +2,7 @@
 
 #include "pythonintegrationplugin.h"
 #include "python/pynymeamodule.h"
+#include "python/pystdouthandler.h"
 
 #include "loggingcategories.h"
 
@@ -327,6 +328,18 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     PyObject *args = Py_BuildValue("(s)", category.toUtf8().data());
     PyNymeaLoggingHandler *logger = reinterpret_cast<PyNymeaLoggingHandler*>(PyObject_CallObject((PyObject*)&PyNymeaLoggingHandlerType, args));
     Py_DECREF(args);
+
+    // Override stdout and stderr
+
+    args = Py_BuildValue("(si)", category.toUtf8().data(), QtMsgType::QtInfoMsg);
+    PyStdOutHandler*stdOutHandler = reinterpret_cast<PyStdOutHandler*>(PyObject_CallObject((PyObject*)&PyStdOutHandlerType, args));
+    Py_DECREF(args);
+    PySys_SetObject("stdout", (PyObject*)stdOutHandler);
+    args = Py_BuildValue("(si)", category.toUtf8().data(), QtMsgType::QtWarningMsg);
+    PyStdOutHandler*stdErrHandler = reinterpret_cast<PyStdOutHandler*>(PyObject_CallObject((PyObject*)&PyStdOutHandlerType, args));
+    PySys_SetObject("stderr", (PyObject*)stdErrHandler);
+    Py_DECREF(args);
+
     int loggerAdded = PyModule_AddObject(m_pluginModule, "logger", reinterpret_cast<PyObject*>(logger));
     if (loggerAdded != 0) {
         qCWarning(dcPythonIntegrations()) << "Failed to add the logger object";

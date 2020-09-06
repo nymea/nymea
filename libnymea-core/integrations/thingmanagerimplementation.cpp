@@ -64,6 +64,7 @@
 #include <QCoreApplication>
 #include <QStandardPaths>
 #include <QDir>
+#include <QJsonDocument>
 
 ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardwareManager, const QLocale &locale, QObject *parent) :
     ThingManager(parent),
@@ -142,20 +143,44 @@ QStringList ThingManagerImplementation::pluginSearchDirs()
 QList<QJsonObject> ThingManagerImplementation::pluginsMetadata()
 {
     QList<QJsonObject> pluginList;
+    QStringList searchDirs;
+    // Add first level of subdirectories to the plugin search dirs so we can point to a collection of plugins
     foreach (const QString &path, pluginSearchDirs()) {
+        searchDirs.append(path);
         QDir dir(path);
-        foreach (const QString &entry, dir.entryList()) {
-            QFileInfo fi;
+        foreach (const QString &subdir, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+            searchDirs.append(path + '/' + subdir);
+        }
+    }
+
+    foreach (const QString &path, searchDirs) {
+        QDir dir(path);
+        qCDebug(dcThingManager) << "Loading plugins from:" << dir.absolutePath();
+        foreach (const QString &entry, dir.entryList({"*.so", "*.js", "*.py"}, QDir::Files)) {
+
+            QFileInfo fi(path + '/' + entry);
             if (entry.startsWith("libnymea_integrationplugin") && entry.endsWith(".so")) {
-                fi.setFile(path + "/" + entry);
-            } else {
-                fi.setFile(path + "/" + entry + "/libnymea_integrationplugin" + entry + ".so");
+                QPluginLoader loader(fi.absoluteFilePath());
+                pluginList.append(loader.metaData().value("MetaData").toObject());
+#if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
+            } else if (entry.startsWith("integrationplugin") && entry.endsWith(".js")) {
+                QFile jsonFile(fi.absolutePath() + "/" + fi.baseName() + ".json");
+                if (!jsonFile.open(QFile::ReadOnly)) {
+                    qCDebug(dcThingManager()) << "Failed to open json file for:" << entry;
+                    continue;
+                }
+                QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonFile.readAll());
+                pluginList.append(jsonDoc.object());
+#endif
+            } else if (entry.startsWith("integrationplugin") && entry.endsWith(".py")) {
+                QFile jsonFile(fi.absolutePath() + "/" + fi.baseName() + ".json");
+                if (!jsonFile.open(QFile::ReadOnly)) {
+                    qCDebug(dcThingManager()) << "Failed to open json file for:" << entry;
+                    continue;
+                }
+                QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonFile.readAll());
+                pluginList.append(jsonDoc.object());
             }
-            if (!fi.exists()) {
-                continue;
-            }
-            QPluginLoader loader(fi.absoluteFilePath());
-            pluginList.append(loader.metaData().value("MetaData").toObject());
         }
     }
     return pluginList;

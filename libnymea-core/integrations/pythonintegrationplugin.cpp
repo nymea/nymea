@@ -330,7 +330,7 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     Py_DECREF(args);
 
     // Override stdout and stderr
-    args = Py_BuildValue("(si)", category.toUtf8().data(), QtMsgType::QtInfoMsg);
+    args = Py_BuildValue("(si)", category.toUtf8().data(), QtMsgType::QtDebugMsg);
     PyStdOutHandler*stdOutHandler = reinterpret_cast<PyStdOutHandler*>(PyObject_CallObject((PyObject*)&PyStdOutHandlerType, args));
     Py_DECREF(args);
     PySys_SetObject("stdout", (PyObject*)stdOutHandler);

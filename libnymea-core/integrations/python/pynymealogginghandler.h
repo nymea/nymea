@@ -53,7 +53,9 @@ static PyObject * PyNymeaLoggingHandler_info(PyNymeaLoggingHandler* self, PyObje
         Py_XDECREF(str);
         strings.append(bytes);
     }
-    qCInfo(QLoggingCategory(self->category)).noquote() << strings.join(' ');
+    // FIXME: We'll want to use qCInfo() here but the system can't really deal with that yet
+    // Move from qCDebug() to qCInfo() when we support controlling that
+    qCDebug(QLoggingCategory(self->category)).noquote() << strings.join(' ');
     Py_RETURN_NONE;
 }
 

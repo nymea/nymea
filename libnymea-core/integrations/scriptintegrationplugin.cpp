@@ -105,8 +105,9 @@ QJsonObject ScriptIntegrationPlugin::metaData() const
 
 void ScriptIntegrationPlugin::init()
 {
-    qmlRegisterType<PluginTimerManager>();
-    qmlRegisterType<PluginTimer>();
+    //Couldn't find an non-qml way to register abstract classes in the JS engine as qRegisterMetatype doesn't deal so well with abstract classes
+    qmlRegisterUncreatableType<PluginTimerManager>("nymea", 1, 0, "PluginTimerManager", "Get it from hardwareManager");
+    qmlRegisterUncreatableType<PluginTimer>("nymea", 1, 0, "PluginTimer", "Get it from PluginTimerManager");
 
     QJSValue hardwareManagerObject = m_engine->newQObject(hardwareManager());
     m_engine->globalObject().setProperty("hardwareManager", hardwareManagerObject);

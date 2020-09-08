@@ -1,3 +1,16 @@
+nymea (0.23.1) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Make it build with Qt 5.14 and -Wno-deprecated
+
+  [ Radek Dostál ]
+  * README.md: fix license version
+
+  [ Michael Zanetti ]
+  * Silence the warning about not being able to translate plugins
+
+ -- Jenkins <jenkins@nymea.io>  Tue, 08 Sep 2020 13:53:53 +0200
+
 nymea (0.23.0) xenial; urgency=medium
 
   [ Michael Zanetti ]

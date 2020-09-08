@@ -57,7 +57,7 @@ QString Translator::translate(const PluginId &pluginId, const QString &string, c
 {
     IntegrationPlugin *plugin = m_thingManager->plugins().findById(pluginId);
     if (!plugin) {
-        qCWarning(dcThingManager()) << "Unable to translate" << string << "Plugin not found";
+        qCDebug(dcThingManager()) << "Unable to translate" << string << "Plugin not found";
         return string;
     }
 

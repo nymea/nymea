@@ -36,6 +36,7 @@
 #include <QProcess>
 #include <QUrlQuery>
 #include <QWebSocketServer>
+#include <QMutex>
 
 #include "debugreportgenerator.h"
 #include "servers/httpreply.h"
@@ -53,6 +54,7 @@ public:
 private:
     static QList<QWebSocket*> s_websocketClients;
     static void logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message);
+    static QMutex s_loggingMutex;
 
     QWebSocketServer *m_websocketServer = nullptr;
 

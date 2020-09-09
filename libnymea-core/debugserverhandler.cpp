@@ -53,6 +53,7 @@
 namespace nymeaserver {
 
 QList<QWebSocket*> DebugServerHandler::s_websocketClients;
+QMutex DebugServerHandler::s_loggingMutex;
 
 DebugServerHandler::DebugServerHandler(QObject *parent) :
     QObject(parent)
@@ -572,6 +573,7 @@ void DebugServerHandler::logMessageHandler(QtMsgType type, const QMessageLogCont
         break;
     }
 
+    QMutexLocker locker(&s_loggingMutex);
     foreach (QWebSocket *client, s_websocketClients) {
         client->sendTextMessage(finalMessage);
     }

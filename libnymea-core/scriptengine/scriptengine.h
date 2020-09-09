@@ -36,6 +36,7 @@
 #include <QQmlEngine>
 #include <QJsonValue>
 #include <QLoggingCategory>
+#include <QMutex>
 
 #include "integrations/thingmanager.h"
 #include "script.h"
@@ -111,6 +112,7 @@ private:
     static QLoggingCategory::CategoryFilter s_oldCategoryFilter;
     static void logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message);
     static void logCategoryFilter(QLoggingCategory *category);
+    static QMutex s_loggerMutex;
 };
 
 }

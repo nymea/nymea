@@ -32,6 +32,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QDateTime>
+#include <QMutex>
 
 QStringList s_nymeaLoggingCategories;
 
@@ -80,6 +81,7 @@ NYMEA_LOGGING_CATEGORY(dcI2C, "I2C")
 static QFile s_logFile;
 static bool s_useColors;
 static QList<QtMessageHandler> s_handlers;
+static QMutex s_loggerMutex;
 
 static const char *const normal = "\033[0m";
 static const char *const warning = "\033[33m";
@@ -130,6 +132,7 @@ void nymeaLogMessageHandler(QtMsgType type, const QMessageLogContext &context, c
     }
     fflush(stdout);
 
+    QMutexLocker locker(&s_loggerMutex);
     if (s_logFile.isOpen()) {
         QTextStream textStream(&s_logFile);
         textStream << messageString << endl;

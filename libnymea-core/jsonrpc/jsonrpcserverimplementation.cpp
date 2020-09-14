@@ -101,6 +101,11 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     experiece.insert("version", enumValueName(String));
     registerObject("Experience", experiece);
 
+    QVariantMap cacheHash;
+    cacheHash.insert("method", enumValueName(String));
+    cacheHash.insert("hash", enumValueName(String));
+    registerObject("CacheHash", cacheHash);
+
     // Methods
     QString description; QVariantMap returns; QVariantMap params;
     description = "Initiates a connection. Use this method to perform an initial handshake of the "
@@ -111,7 +116,10 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
                             "about this core instance such as version information, uuid and its name. The locale value"
                             "indicates the locale used for this connection. Note: This method can be called multiple "
                             "times. The locale used in the last call for this connection will be used. Other values, "
-                            "like initialSetupRequired might change if the setup has been performed in the meantime.";
+                            "like initialSetupRequired might change if the setup has been performed in the meantime.\n "
+                            "The field cacheHashes may contain a map of methods and MD5 hashes. As long as the hash for "
+                            "a method does not change, a client may use a previously cached copy of the call instead of "
+                            "fetching the content again.";
     params.insert("o:locale", enumValueName(String));
     returns.insert("server", enumValueName(String));
     returns.insert("name", enumValueName(String));
@@ -124,6 +132,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     returns.insert("authenticationRequired", enumValueName(Bool));
     returns.insert("pushButtonAuthAvailable", enumValueName(Bool));
     returns.insert("o:experiences", QVariantList() << objectRef("Experience"));
+    returns.insert("o:cacheHashes", QVariantList() << objectRef("CacheHash"));
     registerMethod("Hello", description, params, returns);
 
     params.clear(); returns.clear();
@@ -554,6 +563,19 @@ QVariantMap JsonRPCServerImplementation::createWelcomeMessage(TransportInterface
             experiences.append(experience);
         }
         handshake.insert("experiences", experiences);
+    }
+    QVariantList cacheHashes;
+    foreach (const QString &handlerName, m_handlers.keys()) {
+        QHash<QString, QString> hashes = m_handlers.value(handlerName)->cacheHashes();
+        foreach (const QString &hashName, hashes.keys()) {
+            QVariantMap cacheHash;
+            cacheHash.insert("method", handlerName + "." + hashName);
+            cacheHash.insert("hash", hashes.value(hashName));
+            cacheHashes.append(cacheHash);
+        }
+    }
+    if (!cacheHashes.isEmpty()) {
+        handshake.insert("cacheHashes", cacheHashes);
     }
     return handshake;
 }

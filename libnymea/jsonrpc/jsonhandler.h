@@ -64,6 +64,7 @@ public:
     virtual ~JsonHandler() = default;
 
     virtual QString name() const = 0;
+    virtual QHash<QString, QString> cacheHashes() const;
 
     virtual QVariantMap translateNotification(const QString &notification, const QVariantMap &params, const QLocale &locale);
 

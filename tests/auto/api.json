@@ -1,4 +1,4 @@
-5.1
+5.2
 {
     "enums": {
         "BasicType": [
@@ -1240,7 +1240,7 @@
             }
         },
         "JSONRPC.Hello": {
-            "description": "Initiates a connection. Use this method to perform an initial handshake of the connection. Optionally, a parameter \"locale\" is can be passed to set up the used locale for this connection. Strings such as ThingClass displayNames etc will be localized to this locale. If this parameter is omitted, the default system locale (depending on the configuration) is used. The reply of this method contains information about this core instance such as version information, uuid and its name. The locale valueindicates the locale used for this connection. Note: This method can be called multiple times. The locale used in the last call for this connection will be used. Other values, like initialSetupRequired might change if the setup has been performed in the meantime.",
+            "description": "Initiates a connection. Use this method to perform an initial handshake of the connection. Optionally, a parameter \"locale\" is can be passed to set up the used locale for this connection. Strings such as ThingClass displayNames etc will be localized to this locale. If this parameter is omitted, the default system locale (depending on the configuration) is used. The reply of this method contains information about this core instance such as version information, uuid and its name. The locale valueindicates the locale used for this connection. Note: This method can be called multiple times. The locale used in the last call for this connection will be used. Other values, like initialSetupRequired might change if the setup has been performed in the meantime.\n The field cacheHashes may contain a map of methods and MD5 hashes. As long as the hash for a method does not change, a client may use a previously cached copy of the call instead of fetching the content again.",
             "params": {
                 "o:locale": "String"
             },
@@ -1250,6 +1250,9 @@
                 "language": "String",
                 "locale": "String",
                 "name": "String",
+                "o:cacheHashes": [
+                    "$ref:CacheHash"
+                ],
                 "o:experiences": [
                     "$ref:Experience"
                 ],
@@ -2379,6 +2382,10 @@
             "id": "String",
             "o:mediaIcon": "$ref:MediaBrowserIcon",
             "thumbnail": "String"
+        },
+        "CacheHash": {
+            "hash": "String",
+            "method": "String"
         },
         "CalendarItem": {
             "duration": "Uint",

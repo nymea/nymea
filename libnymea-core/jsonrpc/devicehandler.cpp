@@ -45,6 +45,7 @@
 #include "integrations/browseritemresult.h"
 
 #include <QDebug>
+#include <QJsonDocument>
 
 namespace nymeaserver {
 
@@ -400,12 +401,48 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     connect(NymeaCore::instance(), &NymeaCore::thingAdded, this, &DeviceHandler::deviceAddedNotification);
     connect(NymeaCore::instance(), &NymeaCore::thingChanged, this, &DeviceHandler::deviceChangedNotification);
     connect(NymeaCore::instance(), &NymeaCore::thingSettingChanged, this, &DeviceHandler::deviceSettingChangedNotification);
+
+    connect(NymeaCore::instance(), &NymeaCore::initialized, this, [=](){
+        // Generating cache hashes.
+        // NOTE: We need to sort the lists to get a stable result
+        QHash<ThingClassId, ThingClass> thingClassesMap;
+        foreach (const ThingClass &tc, NymeaCore::instance()->thingManager()->supportedThings()) {
+            thingClassesMap.insert(tc.id(), tc);
+        }
+        QList<ThingClassId> thingClassIds = thingClassesMap.keys();
+        std::sort(thingClassIds.begin(), thingClassIds.end());
+        DeviceClasses thingClasses;
+        foreach (const ThingClassId &id, thingClassIds) {
+            thingClasses.append(thingClassesMap.value(id));
+        }
+        QByteArray hash = QCryptographicHash::hash(QJsonDocument::fromVariant(pack(thingClasses)).toJson(), QCryptographicHash::Md5).toHex();
+        m_cacheHashes.insert("GetSupportedDevices", hash);
+
+        QHash<VendorId, Vendor> vendorsMap;
+        foreach (const Vendor &v, NymeaCore::instance()->thingManager()->supportedVendors()) {
+            vendorsMap.insert(v.id(), v);
+        }
+        QList<VendorId> vendorIds = vendorsMap.keys();
+        std::sort(vendorIds.begin(), vendorIds.end());
+        Vendors vendors;
+        foreach (const VendorId &id, vendorIds) {
+            vendors.append(vendorsMap.value(id));
+        }
+        hash = QCryptographicHash::hash(QJsonDocument::fromVariant(pack(vendors)).toJson(), QCryptographicHash::Md5).toHex();
+        m_cacheHashes.insert("GetSupportedVendors", hash);
+    });
+
 }
 
 /*! Returns the name of the \l{DeviceHandler}. In this case \b Devices.*/
 QString DeviceHandler::name() const
 {
     return "Devices";
+}
+
+QHash<QString, QString> DeviceHandler::cacheHashes() const
+{
+    return m_cacheHashes;
 }
 
 JsonReply* DeviceHandler::GetSupportedVendors(const QVariantMap &params, const JsonContext &context) const

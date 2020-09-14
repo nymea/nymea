@@ -139,6 +139,8 @@ public:
     explicit DeviceHandler(QObject *parent = nullptr);
 
     QString name() const override;
+    QHash<QString, QString> cacheHashes() const override;
+
     QVariantMap translateNotification(const QString &notification, const QVariantMap &params, const QLocale &locale) override;
 
     Q_INVOKABLE JsonReply *GetSupportedVendors(const QVariantMap &params, const JsonContext &context) const;
@@ -196,6 +198,8 @@ private slots:
 
 private:
     QVariantMap statusToReply(Device::ThingError status) const;
+
+    QHash<QString, QString> m_cacheHashes;
 };
 
 }

@@ -15,6 +15,16 @@ void InterfaceEventType::setOptional(bool optional)
     m_optional = optional;
 }
 
+bool InterfaceEventType::logged() const
+{
+    return m_logged;
+}
+
+void InterfaceEventType::setLogged(bool logged)
+{
+    m_logged = logged;
+}
+
 InterfaceEventTypes::InterfaceEventTypes(const QList<InterfaceEventType> &other):
     QList<InterfaceEventType>(other)
 {

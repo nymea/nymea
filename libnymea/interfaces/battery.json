@@ -2,7 +2,8 @@
     "states": [
         {
             "name": "batteryCritical",
-            "type": "bool"
+            "type": "bool",
+            "logged": true
         }
     ]
 }

@@ -3,7 +3,8 @@
     "extends": "button",
     "events": [
         {
-            "name": "longPressed"
+            "name": "longPressed",
+            "logged": true
         }
     ]
 }

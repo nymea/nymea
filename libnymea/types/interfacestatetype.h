@@ -11,8 +11,12 @@ public:
     bool optional() const;
     void setOptional(bool optional);
 
+    bool logged() const;
+    void setLogged(bool logged);
+
 private:
     bool m_optional = false;
+    bool m_logged = false;
 };
 
 class InterfaceStateTypes: public QList<InterfaceStateType>

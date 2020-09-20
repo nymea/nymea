@@ -4,7 +4,8 @@
         {
             "name": "pressure",
             "type": "double",
-            "unit": "MilliBar"
+            "unit": "MilliBar",
+            "logged": true
         }
     ]
 }

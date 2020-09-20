@@ -9,7 +9,8 @@
                     "name": "buttonName",
                     "type": "QString"
                 }
-            ]
+            ],
+            "logged": true
         }
     ]
 }

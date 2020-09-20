@@ -4,7 +4,8 @@
         {
             "name": "conductivity",
             "type": "double",
-            "unit": "MicroSiemensPerCentimeter"
+            "unit": "MicroSiemensPerCentimeter",
+            "logged": true
         }
     ]
 }

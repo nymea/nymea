@@ -4,7 +4,8 @@
         {
             "name": "lightIntensity",
             "type": "double",
-            "unit": "Lux"
+            "unit": "Lux",
+            "logged": true
         }
     ]
 }

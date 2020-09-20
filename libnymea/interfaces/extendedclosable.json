@@ -4,7 +4,8 @@
     "states": [
         {
             "name": "moving",
-            "type": "bool"
+            "type": "bool",
+            "logged": true
         },
         {
             "name": "percentage",

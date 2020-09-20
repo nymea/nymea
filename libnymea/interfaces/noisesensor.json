@@ -5,7 +5,8 @@
         {
             "name": "noise",
             "type": "double",
-            "unit": "Dezibel"
+            "unit": "Dezibel",
+            "logged": true
         }
     ]
 }

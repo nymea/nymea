@@ -14,7 +14,8 @@
                     "name": "userId",
                     "type": "QString"
                 }
-            ]
+            ],
+            "logged": true
         }
     ],
     "actions": [
@@ -25,8 +26,8 @@
                     "name": "userId",
                     "type": "QString"
                 }
-
-            ]
+            ],
+            "logged": true
         },
         {
             "name": "removeUser",
@@ -36,7 +37,8 @@
                     "type": "QString"
                 }
 
-            ]
+            ],
+            "logged": true
         }
     ]
 }

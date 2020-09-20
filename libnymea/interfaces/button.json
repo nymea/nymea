@@ -2,7 +2,8 @@
     "description": "The base for all buttons that emit a pressed event.",
     "events": [
         {
-            "name": "pressed"
+            "name": "pressed",
+            "logged": true
         }
     ]
 }

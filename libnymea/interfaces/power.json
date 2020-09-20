@@ -3,7 +3,8 @@
         {
             "name": "power",
             "type": "bool",
-            "writable": true
+            "writable": true,
+            "logged": true
         }
     ]
 }

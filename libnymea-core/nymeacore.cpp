@@ -660,7 +660,17 @@ ZigbeeManager *NymeaCore::zigbeeManager() const
 
 void NymeaCore::gotEvent(const Event &event)
 {
-    m_logger->logEvent(event);
+    Thing *thing = m_thingManager->findConfiguredThing(event.thingId());
+    ThingClass thingClass = thing ? thing->thingClass() : ThingClass();
+    EventType eventType = thingClass.eventTypes().findById(event.eventTypeId());
+    foreach (const QString &interfaceName, thingClass.interfaces()) {
+        Interface iface = m_thingManager->supportedInterfaces().findByName(interfaceName);
+        if (iface.eventTypes().findByName(eventType.name()).logged()) {
+            m_logger->logEvent(event);
+            break;
+        }
+    }
+
     emit eventTriggered(event);
 
     QList<RuleAction> actions;

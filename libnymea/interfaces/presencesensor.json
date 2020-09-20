@@ -4,7 +4,8 @@
     "states": [
         {
             "name": "isPresent",
-            "type": "bool"
+            "type": "bool",
+            "logged": true
         },
         {
             "name": "lastSeenTime",

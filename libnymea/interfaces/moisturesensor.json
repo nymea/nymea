@@ -3,7 +3,8 @@
     "states": [
         {
             "name": "moisture",
-            "type": "double"
+            "type": "double",
+            "logged": true
         }
     ]
 }

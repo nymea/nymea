@@ -264,7 +264,7 @@ void ServerManager::webServerConfigurationChanged(const QString &id)
         qDebug(dcServerManager()) << "Restarting Web server for" << config.address << config.port << "SSL" << (config.sslEnabled ? "enabled" : "disabled") << "Authentication" << (config.authenticationEnabled ? "enabled" : "disabled");
         unregisterZeroConfService(id, "http");
         server->stopServer();
-        server->reconfigureServer(config);
+        server->setConfiguration(config);
     } else {
         qDebug(dcServerManager()) << "Received a Web Server config change event but don't have a Web Server instance for it. Creating new WebServer instance on" << config.address.toString() << config.port << "(SSL:" << config.sslEnabled << ")";
         server = new WebServer(config, m_sslConfiguration, this);

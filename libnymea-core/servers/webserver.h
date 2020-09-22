@@ -123,7 +123,7 @@ private slots:
     void onAsyncReplyFinished();
 
 public slots:
-    void reconfigureServer(const WebServerConfiguration &config);
+    void setConfiguration(const WebServerConfiguration &config);
     void setServerName(const QString &serverName);
     bool startServer();
     bool stopServer();

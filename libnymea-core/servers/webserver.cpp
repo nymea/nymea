@@ -433,7 +433,7 @@ void WebServer::readClient()
             return;
 
         QFile file(path);
-        if (file.open(QFile::ReadOnly | QFile::Truncate)) {
+        if (file.open(QFile::ReadOnly)) {
             qCDebug(dcWebServer()) << "Load file" << file.fileName();
             HttpReply *reply = HttpReply::createSuccessReply();
 
@@ -487,7 +487,6 @@ void WebServer::onDisconnected()
         if (client->address() == socket->peerAddress()) {
             client->removeConnection(socket);
             if (client->connections().isEmpty()) {
-                qCDebug(dcWebServer()) << "Delete client" << client->address().toString();
                 m_webServerClients.removeAll(client);
                 client->deleteLater();
             }
@@ -549,19 +548,9 @@ void WebServer::onAsyncReplyFinished()
  *
  * \sa WebServerConfiguration
  */
-void WebServer::reconfigureServer(const WebServerConfiguration &config)
+void WebServer::setConfiguration(const WebServerConfiguration &config)
 {
-    if (m_configuration.address == config.address &&
-            m_configuration.port == config.port &&
-            m_configuration.sslEnabled == config.sslEnabled &&
-            m_configuration.authenticationEnabled == config.authenticationEnabled &&
-            m_configuration.publicFolder == config.publicFolder &&
-            isListening())
-        return;
-
-    stopServer();
     m_configuration = config;
-    startServer();
 }
 
 /*! Sets the server name to the given \a serverName. */

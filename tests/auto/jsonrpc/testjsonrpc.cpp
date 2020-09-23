@@ -852,22 +852,6 @@ void TestJSONRPC::ruleActiveChangedNotifications()
 
     clientSpy.wait();
 
-    waitForDBSync();
-
-    // Make sure the logg notification contains all the stuff we expect
-    QVariantList logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
-    QVERIFY2(!logEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
-    bool found = false;
-    foreach (const QVariant &loggEntryAddedVariant, logEntryAddedVariants) {
-        if (loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid() == mockIntStateTypeId) {
-            found = true;
-            QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("source").toString(), QString("LoggingSourceStates"));
-            QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("value").toInt(), 20);
-            break;
-        }
-    }
-    QVERIFY2(found, "LogEntryAdded notification not received");
-
     spy.clear(); clientSpy.clear();
 
     // set the rule inactive
@@ -889,22 +873,6 @@ void TestJSONRPC::ruleActiveChangedNotifications()
         clientSpy.wait();
     }
 
-    // Make sure the logg notification contains all the stuff we expect
-    logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
-    QVERIFY2(!logEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
-    found = false;
-    foreach (const QVariant &logEntryAddedVariant, logEntryAddedVariants) {
-        qCDebug(dcTests()) << "Checking log entry" << mockIntStateTypeId << qUtf8Printable(QJsonDocument::fromVariant(logEntryAddedVariant).toJson());
-        if (logEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid() == mockIntStateTypeId) {
-            found = true;
-            QCOMPARE(logEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("source").toString(), QString("LoggingSourceStates"));
-            QCOMPARE(logEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("value").toInt(), 42);
-            break;
-        }
-    }
-    QVERIFY2(found, "LogEntryAdded notification not received");
-
-    if (clientSpy.count() == 0) clientSpy.wait();
     notificationVariant = checkNotification(clientSpy, "Rules.RuleActiveChanged");
     verifyRuleError(response);
 
@@ -960,25 +928,9 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     // Devices.StateChanged
     // Devices.EventTriggered
     // Events.EventTriggered <-- deprecated
-    // Logging.LogEntryAdded
-    while (clientSpy.count() < 4) {
+    while (clientSpy.count() < 3) {
         clientSpy.wait();
     }
-
-    // Make sure the logg notification contains all the stuff we expect
-    QVariantList logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
-    QVERIFY2(!logEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
-    found = false;
-    foreach (const QVariant &loggEntryAddedVariant, logEntryAddedVariants) {
-        if (loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("typeId").toUuid() == stateTypeId) {
-            found = true;
-            QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("source").toString(), QString("LoggingSourceStates"));
-            QCOMPARE(loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap().value("value").toInt(), newVal);
-            break;
-        }
-    }
-
-    QVERIFY2(found, "Could not find the corresponding Logging.LogEntryAdded notification");
 
     // Make sure the notification contains all the stuff we expect
     QVariantList eventTriggeredVariants = checkNotifications(clientSpy, "Events.EventTriggered");

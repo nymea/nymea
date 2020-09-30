@@ -374,10 +374,11 @@ ParamTypes IntegrationPlugin::configurationDescription() const
     return m_metaData.pluginSettings();
 }
 
-void IntegrationPlugin::initPlugin(ThingManager *thingManager, HardwareManager *hardwareManager)
+void IntegrationPlugin::initPlugin(ThingManager *thingManager, HardwareManager *hardwareManager, ApiKeyStorage *apiKeyStorage)
 {
     m_thingManager = thingManager;
     m_hardwareManager = hardwareManager;
+    m_apiKeyStorage = apiKeyStorage;
     m_storage = new QSettings(NymeaSettings::settingsPath() + "/pluginconfig-" + pluginId().toString().remove(QRegExp("[{}]")) + ".conf", QSettings::IniFormat, this);
 }
 
@@ -476,6 +477,15 @@ HardwareManager *IntegrationPlugin::hardwareManager() const
 QSettings* IntegrationPlugin::pluginStorage() const
 {
     return m_storage;
+}
+
+/*!
+ * \brief IntegrationPlugin::apiKeyStorage
+ * \return Returns the api key storage for this plugin. A plugin needs to list required API keys in the plugins JSON file.
+ */
+ApiKeyStorage *IntegrationPlugin::apiKeyStorage() const
+{
+    return m_apiKeyStorage;
 }
 
 void IntegrationPlugin::setMetaData(const PluginMetadata &metaData)

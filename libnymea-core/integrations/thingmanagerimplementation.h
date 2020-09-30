@@ -59,6 +59,7 @@ class IntegrationPlugin;
 class ThingPairingInfo;
 class HardwareManager;
 class Translator;
+class ApiKeysProvidersLoader;
 
 class ThingManagerImplementation: public ThingManager
 {
@@ -192,6 +193,8 @@ private:
     QHash<PairingTransactionId, PairingContext> m_pendingPairings;
 
     QHash<IOConnectionId, IOConnection> m_ioConnections;
+
+    ApiKeysProvidersLoader *m_apiKeysProvidersLoader = nullptr;
 };
 
 #endif // THINGMANAGERIMPLEMENTATION_H

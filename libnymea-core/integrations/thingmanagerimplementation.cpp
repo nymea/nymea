@@ -52,6 +52,8 @@
 #include "integrations/browseractioninfo.h"
 #include "integrations/browseritemactioninfo.h"
 
+#include "apikeysprovidersloader.h"
+
 //#include "unistd.h"
 
 #include "plugintimer.h"
@@ -85,6 +87,8 @@ ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardware
         QFile oldStateFile(settingsPath + "/devicestates.conf");
         oldStateFile.copy(settingsPath + "/thingstates.conf");
     }
+
+    m_apiKeysProvidersLoader = new ApiKeysProvidersLoader(this);
 
     // Give hardware a chance to start up before loading plugins etc.
     QMetaObject::invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
@@ -1322,8 +1326,28 @@ void ThingManagerImplementation::loadPlugins()
 
 void ThingManagerImplementation::loadPlugin(IntegrationPlugin *pluginIface)
 {
+    // Populate the API storage for the plugin.
+    // NOTE:
+    // Right now we grant access to every api key requested in the JSON file. This means, an attacker could just
+    // write a plugin requesting a certain key and load it. This is not an actual problem right now as
+    // deployments that allow loading random plugins don't ship any high security keys. Once nymea supports
+    // a "plugin store" and allows loading 3rd party plugins along with a more sensitive api key provider,
+    // the plugins JSON needs to be reviewd by the store owner and signed with a store key. Only signed plugins
+    // should be granted access to their requested keys.
+    ApiKeyStorage *apiKeyStorage = new ApiKeyStorage(pluginIface);
+    QStringList requestedKeys = pluginIface->metadata().apiKeys();
+    foreach (const QString &apiKeyName, pluginIface->metadata().apiKeys()) {
+        if (m_apiKeysProvidersLoader->allApiKeys().contains(apiKeyName)) {
+            ApiKey apiKey = m_apiKeysProvidersLoader->allApiKeys().value(apiKeyName);
+            apiKeyStorage->insertKey(apiKeyName, apiKey);
+            requestedKeys.removeAll(apiKeyName);
+        }
+    }
+    if (!requestedKeys.isEmpty()) {
+        qCWarning(dcThingManager()).nospace() << "Unable to load API keys for plugin " << pluginIface->metadata().pluginName() << ": " << requestedKeys;
+    }
     pluginIface->setParent(this);
-    pluginIface->initPlugin(this, m_hardwareManager);
+    pluginIface->initPlugin(this, m_hardwareManager, apiKeyStorage);
 
     qCDebug(dcThingManager) << "**** Loaded plugin" << pluginIface->pluginName();
     foreach (const Vendor &vendor, pluginIface->supportedVendors()) {

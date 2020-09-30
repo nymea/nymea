@@ -36,6 +36,7 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 
 HEADERS += nymeacore.h \
+    integrations/apikeysprovidersloader.h \
     integrations/plugininfocache.h \
     integrations/python/pynymealogginghandler.h \
     integrations/python/pynymeamodule.h \
@@ -127,6 +128,7 @@ HEADERS += nymeacore.h \
 
 
 SOURCES += nymeacore.cpp \
+    integrations/apikeysprovidersloader.cpp \
     integrations/plugininfocache.cpp \
     integrations/thingmanagerimplementation.cpp \
     integrations/translator.cpp \

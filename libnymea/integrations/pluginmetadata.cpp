@@ -84,6 +84,11 @@ bool PluginMetadata::isBuiltIn() const
     return m_isBuiltIn;
 }
 
+QStringList PluginMetadata::apiKeys() const
+{
+    return m_apiKeys;
+}
+
 ParamTypes PluginMetadata::pluginSettings() const
 {
     return m_pluginSettings;
@@ -110,7 +115,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
     // General plugin info
     QStringList pluginMandatoryJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors";
-    QStringList pluginJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors" << "paramTypes" << "builtIn";
+    QStringList pluginJsonProperties = QStringList() << "id" << "name" << "displayName" << "vendors" << "paramTypes" << "builtIn" << "apiKeys";
     QPair<QStringList, QStringList> verificationResult = verifyFields(pluginJsonProperties, pluginMandatoryJsonProperties, jsonObject);
     if (!verificationResult.first.isEmpty()) {
         m_validationErrors.append("Plugin metadata has missing fields: " + verificationResult.first.join(", "));
@@ -122,6 +127,9 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
     m_pluginId = PluginId(jsonObject.value("id").toString());
     m_pluginName = jsonObject.value("name").toString();
     m_pluginDisplayName = jsonObject.value("displayName").toString();
+    foreach (const QVariant &apiKeyVariant, jsonObject.value("apiKeys").toArray().toVariantList()) {
+        m_apiKeys.append(apiKeyVariant.toString());
+    }
 
     if (!verificationResult.second.isEmpty()) {
         m_validationErrors.append("Plugin \"" + m_pluginName + "\" has unknown fields: \"" + verificationResult.second.join("\", \"") + "\"");

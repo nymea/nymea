@@ -28,8 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef SCRIPTACTION_H
-#define SCRIPTACTION_H
+#ifndef SCRIPTINTERFACEACTION_H
+#define SCRIPTINTERFACEACTION_H
 
 #include <QObject>
 #include <QQmlParserStatus>
@@ -38,28 +38,19 @@ class ThingManager;
 
 namespace nymeaserver {
 
-class ScriptAction : public QObject, public QQmlParserStatus
+class ScriptInterfaceAction : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
-    Q_PROPERTY(QString thingId READ thingId WRITE setThingId NOTIFY thingIdChanged)
     Q_PROPERTY(QString interfaceName READ interfaceName WRITE setInterfaceName NOTIFY interfaceNameChanged)
-    Q_PROPERTY(QString deviceId READ thingId WRITE setThingId NOTIFY thingIdChanged) // DEPRECATED
-    Q_PROPERTY(QString actionTypeId READ actionTypeId WRITE setActionTypeId NOTIFY actionTypeIdChanged)
     Q_PROPERTY(QString actionName READ actionName WRITE setActionName NOTIFY actionNameChanged)
 public:
-    explicit ScriptAction(QObject *parent = nullptr);
+    explicit ScriptInterfaceAction(QObject *parent = nullptr);
     void classBegin() override;
     void componentComplete() override;
 
-    QString thingId() const;
-    void setThingId(const QString &thingId);
-
     QString interfaceName() const;
     void setInterfaceName(const QString &interfaceName);
-
-    QString actionTypeId() const;
-    void setActionTypeId(const QString &actionTypeId);
 
     QString actionName() const;
     void setActionName(const QString &actionName);
@@ -68,19 +59,15 @@ public slots:
     void execute(const QVariantMap &params);
 
 signals:
-    void thingIdChanged();
     void interfaceNameChanged();
-    void actionTypeIdChanged();
     void actionNameChanged();
 
 public:
     ThingManager *m_thingManager = nullptr;
-    QString m_thingId;
     QString m_interfaceName;
-    QString m_actionTypeId;
     QString m_actionName;
 };
 
 }
 
-#endif // SCRIPTACTION_H
+#endif // SCRIPTINTERFACEACTION_H

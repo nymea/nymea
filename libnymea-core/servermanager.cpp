@@ -66,8 +66,7 @@
 
 namespace nymeaserver {
 
-/*! Constructs a \l{ServerManager} with the given \a configuration and \a parent. */
-ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configuration, QObject *parent) :
+ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configuration, const QStringList &additionalInterfaces, QObject *parent) :
     QObject(parent),
     m_platform(platform),
     m_sslConfiguration(QSslConfiguration())
@@ -115,6 +114,33 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     MockTcpServer *tcpServer = new MockTcpServer(this);
     m_jsonServer->registerTransportInterface(tcpServer, true);
     tcpServer->startServer();
+
+    foreach (const QString &interfaceString, additionalInterfaces) {
+        QUrl additionalInterface(interfaceString);
+        ServerConfiguration config;
+        config.id = "tmp-" + additionalInterface.host();
+        config.address = QHostAddress(additionalInterface.host());
+        config.port = additionalInterface.port();
+        TransportInterface *server = nullptr;
+        QString serverType, serviceType;
+        if (additionalInterface.scheme().startsWith("nymea")) {
+            config.sslEnabled = additionalInterface.scheme().startsWith("nymeas");
+            server = new TcpServer(config, m_sslConfiguration, this);
+            m_tcpServers.insert(config.id, qobject_cast<TcpServer*>(server));
+            serverType = "tcp";
+            serviceType = "_jsonrpc._tcp";
+        } else if (additionalInterface.scheme().startsWith("ws")) {
+            config.sslEnabled = additionalInterface.scheme().startsWith("wss");
+            server = new WebSocketServer(config, m_sslConfiguration, this);
+            m_webSocketServers.insert(config.id, qobject_cast<WebSocketServer*>(server));
+            serverType = "ws";
+            serviceType = "_ws._tcp";
+        }
+        if (server && server->startServer()) {
+            registerZeroConfService(config, serverType, serviceType);
+        }
+    }
+
     foreach (const ServerConfiguration &config, configuration->tcpServerConfigurations()) {
         TcpServer *tcpServer = new TcpServer(config, m_sslConfiguration, this);
         m_jsonServer->registerTransportInterface(tcpServer, config.authenticationEnabled);

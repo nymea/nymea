@@ -78,7 +78,7 @@ NymeaCore::NymeaCore(QObject *parent) :
 {
 }
 
-void NymeaCore::init() {
+void NymeaCore::init(const QStringList &additionalInterfaces) {
     qCDebug(dcCore()) << "Initializing NymeaCore";
 
     qCDebug(dcPlatform()) << "Loading platform abstraction";
@@ -104,7 +104,7 @@ void NymeaCore::init() {
     m_userManager = new UserManager(NymeaSettings::settingsPath() + "/user-db.sqlite", this);
 
     qCDebug(dcCore) << "Creating Server Manager";
-    m_serverManager = new ServerManager(m_platform, m_configuration, this);
+    m_serverManager = new ServerManager(m_platform, m_configuration, additionalInterfaces, this);
 
     qCDebug(dcCore) << "Creating Hardware Manager";
     m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), this);

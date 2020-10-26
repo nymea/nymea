@@ -57,7 +57,7 @@ class ServerManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ServerManager(Platform *platform, NymeaConfiguration *configuration, QObject *parent = nullptr);
+    explicit ServerManager(Platform *platform, NymeaConfiguration *configuration, const QStringList &additionalInterfaces = QStringList(), QObject *parent = nullptr);
 
     // Interfaces
     JsonRPCServerImplementation *jsonServer() const;

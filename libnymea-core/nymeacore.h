@@ -76,7 +76,7 @@ public:
     static NymeaCore* instance();
     ~NymeaCore();
 
-    void init();
+    void init(const QStringList &additionalInterfaces = QStringList());
     void destroy();
 
     // Thing handling

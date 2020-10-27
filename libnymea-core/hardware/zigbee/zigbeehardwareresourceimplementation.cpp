@@ -35,7 +35,7 @@
 #include <QDir>
 #include <QFileInfo>
 
-#include "nymea-zigbee/zigbeenetworkmanager.h"
+#include <zigbeenetworkmanager.h>
 
 namespace nymeaserver {
 

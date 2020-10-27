@@ -33,7 +33,7 @@
 
 #include <QObject>
 
-#include <nymea-zigbee/zigbeenetworkmanager.h>
+#include <zigbeenetworkmanager.h>
 
 #include "zigbeeserialport.h"
 

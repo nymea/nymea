@@ -178,7 +178,7 @@ SOURCES += nymeacore.cpp \
     tagging/tag.cpp \
     cloud/cloudtransport.cpp \
     debugreportgenerator.cpp \
-    platform/platform.cpp \ \
+    platform/platform.cpp \
     zigbee/zigbeemanager.cpp \
     zigbee/zigbeeserialport.cpp
 

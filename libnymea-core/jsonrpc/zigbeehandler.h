@@ -35,7 +35,7 @@
 
 #include "jsonrpc/jsonhandler.h"
 
-#include <nymea-zigbee/zigbeenetworkmanager.h>
+#include <zigbeenetworkmanager.h>
 
 namespace nymeaserver {
 

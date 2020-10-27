@@ -19,7 +19,6 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 
 HEADERS += nymeacore.h \
-    hardware/zigbee/zigbeehardwareresourceimplementation.h \
     integrations/plugininfocache.h \
     integrations/thingmanagerimplementation.h \
     integrations/translator.h \
@@ -91,6 +90,7 @@ HEADERS += nymeacore.h \
     hardware/network/mqtt/mqttproviderimplementation.h \
     hardware/network/mqtt/mqttchannelimplementation.h \
     hardware/i2c/i2cmanagerimplementation.h \
+    hardware/zigbee/zigbeehardwareresourceimplementation.h \
     debugserverhandler.h \
     tagging/tagsstorage.h \
     tagging/tag.h \
@@ -102,7 +102,6 @@ HEADERS += nymeacore.h \
 
 
 SOURCES += nymeacore.cpp \
-    hardware/zigbee/zigbeehardwareresourceimplementation.cpp \
     integrations/plugininfocache.cpp \
     integrations/thingmanagerimplementation.cpp \
     integrations/translator.cpp \
@@ -173,6 +172,7 @@ SOURCES += nymeacore.cpp \
     hardware/network/mqtt/mqttproviderimplementation.cpp \
     hardware/network/mqtt/mqttchannelimplementation.cpp \
     hardware/i2c/i2cmanagerimplementation.cpp \
+    hardware/zigbee/zigbeehardwareresourceimplementation.cpp \
     debugserverhandler.cpp \
     tagging/tagsstorage.cpp \
     tagging/tag.cpp \

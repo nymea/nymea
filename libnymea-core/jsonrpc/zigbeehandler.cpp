@@ -37,11 +37,8 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     JsonHandler(parent),
     m_zigbeeManager(zigbeeManager)
 {
-    registerEnum<ZigbeeNetwork::State>();
-    registerEnum<Zigbee::BackendType>();
-
-//    registerObject<ZigbeeSerialPort>();
-//    registerObject<ZigbeeSerialPort, ZigbeeSerialPortList>();
+    registerEnum<ZigbeeManager::ZigbeeNetworkState>();
+    registerEnum<Zigbee::ZigbeeBackendType>();
 
     QVariantMap params, returns;
     QString description;
@@ -60,13 +57,13 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     returns.insert("configured", enumValueName(Bool));
     returns.insert("serialPort", enumValueName(String));
     returns.insert("baudRate", enumValueName(Uint));
-    returns.insert("backend", enumRef<Zigbee::BackendType>());
+    returns.insert("backend", enumRef<Zigbee::ZigbeeBackendType>());
     returns.insert("firmwareVersion", enumValueName(String));
     returns.insert("networkIeeeeAddress", enumValueName(String));
     returns.insert("networkPanId", enumValueName(Uint));
     returns.insert("channel", enumValueName(Uint));
     returns.insert("permitJoin", enumValueName(Bool));
-    returns.insert("networkState", enumRef<ZigbeeNetwork::State>());
+    returns.insert("networkState", enumRef<ZigbeeManager::ZigbeeNetworkState>());
     registerMethod("GetNetworkStatus", description, params, returns);
 
     // GetUartInterfaces

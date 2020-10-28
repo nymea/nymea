@@ -34,9 +34,8 @@
 
 NYMEA_LOGGING_CATEGORY(dcZigbee, "Zigbee")
 
-// Register debug category from the libnymea-zigbee.
-// Do not use this category within nymea!
-NYMEA_LOGGING_CATEGORY(dcZigbeeNetwork, "ZigbeeNetwork")
+// Register debug category from the libnymea-zigbee
+NYMEA_LOGGING_CATEGORY(dcZigbeeNetworkLibNymeaZigbee, "ZigbeeNetwork")
 
 namespace nymeaserver {
 

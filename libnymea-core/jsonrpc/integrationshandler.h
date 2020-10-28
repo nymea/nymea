@@ -43,6 +43,7 @@ public:
     explicit IntegrationsHandler(ThingManager *thingManager, QObject *parent = nullptr);
 
     QString name() const override;
+    QHash<QString, QString> cacheHashes() const override;
 
     Q_INVOKABLE JsonReply *GetVendors(const QVariantMap &params, const JsonContext &context) const;
     Q_INVOKABLE JsonReply *GetThingClasses(const QVariantMap &params, const JsonContext &context) const;
@@ -105,6 +106,8 @@ private slots:
 private:
     ThingManager *m_thingManager = nullptr;
     QVariantMap statusToReply(Thing::ThingError status) const;
+
+    QHash<QString, QString> m_cacheHashes;
 };
 
 }

@@ -45,6 +45,7 @@
 #include "integrations/browseritemresult.h"
 
 #include <QDebug>
+#include <QJsonDocument>
 
 namespace nymeaserver {
 
@@ -445,11 +446,46 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     connect(NymeaCore::instance(), &NymeaCore::thingAdded, this, &IntegrationsHandler::thingAddedNotification);
     connect(NymeaCore::instance(), &NymeaCore::thingChanged, this, &IntegrationsHandler::thingChangedNotification);
     connect(NymeaCore::instance(), &NymeaCore::thingSettingChanged, this, &IntegrationsHandler::thingSettingChangedNotification);
+
+    connect(NymeaCore::instance(), &NymeaCore::initialized, this, [=](){
+        // Generating cache hashes.
+        // NOTE: We need to sort the lists to get a stable result
+        QHash<ThingClassId, ThingClass> thingClassesMap;
+        foreach (const ThingClass &tc, m_thingManager->supportedThings()) {
+            thingClassesMap.insert(tc.id(), tc);
+        }
+        QList<ThingClassId> thingClassIds = thingClassesMap.keys();
+        std::sort(thingClassIds.begin(), thingClassIds.end());
+        ThingClasses thingClasses;
+        foreach (const ThingClassId &id, thingClassIds) {
+            thingClasses.append(thingClassesMap.value(id));
+        }
+        QByteArray hash = QCryptographicHash::hash(QJsonDocument::fromVariant(pack(thingClasses)).toJson(), QCryptographicHash::Md5).toHex();
+        m_cacheHashes.insert("GetThingClasses", hash);
+
+        QHash<VendorId, Vendor> vendorsMap;
+        foreach (const Vendor &v, m_thingManager->supportedVendors()) {
+            vendorsMap.insert(v.id(), v);
+        }
+        QList<VendorId> vendorIds = vendorsMap.keys();
+        std::sort(vendorIds.begin(), vendorIds.end());
+        Vendors vendors;
+        foreach (const VendorId &id, vendorIds) {
+            vendors.append(vendorsMap.value(id));
+        }
+        hash = QCryptographicHash::hash(QJsonDocument::fromVariant(pack(vendors)).toJson(), QCryptographicHash::Md5).toHex();
+        m_cacheHashes.insert("GetVendors", hash);
+    });
 }
 
 QString IntegrationsHandler::name() const
 {
     return "Integrations";
+}
+
+QHash<QString, QString> IntegrationsHandler::cacheHashes() const
+{
+    return m_cacheHashes;
 }
 
 JsonReply* IntegrationsHandler::GetVendors(const QVariantMap &params, const JsonContext &context) const

@@ -41,6 +41,11 @@ JsonHandler::JsonHandler(QObject *parent) : QObject(parent)
     registerEnum<BasicType>();
 }
 
+QHash<QString, QString> JsonHandler::cacheHashes() const
+{
+    return QHash<QString, QString>();
+}
+
 QVariantMap JsonHandler::translateNotification(const QString &notification, const QVariantMap &params, const QLocale &locale)
 {
     Q_UNUSED(notification)

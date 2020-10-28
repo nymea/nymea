@@ -75,6 +75,7 @@ Recommends: nymea-cli,
             nymea-update-plugin-impl,
             nymea-system-plugin-impl,
             nymea-zeroconf-plugin-impl,
+            nymea-apikeysprovider-plugin-impl,
 Replaces: guhd
 Description: An open source IoT server - daemon
  The nymea daemon is a plugin based IoT (Internet of Things) server. The

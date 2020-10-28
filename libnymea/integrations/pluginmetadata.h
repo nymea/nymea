@@ -49,6 +49,7 @@ public:
     QString pluginName() const;
     QString pluginDisplayName() const;
     bool isBuiltIn() const;
+    QStringList apiKeys() const;
 
     ParamTypes pluginSettings() const;
 
@@ -76,6 +77,7 @@ private:
     ParamTypes m_pluginSettings;
     Vendors m_vendors;
     ThingClasses m_thingClasses;
+    QStringList m_apiKeys;
 
     QList<QUuid> m_allUuids;
 

@@ -49,6 +49,8 @@
 
 #include "hardwaremanager.h"
 
+#include "network/apikeys/apikeystorage.h"
+
 #include "thingdiscoveryinfo.h"
 #include "thingpairinginfo.h"
 #include "thingsetupinfo.h"
@@ -125,6 +127,7 @@ protected:
     Things myThings() const;
     HardwareManager *hardwareManager() const;
     QSettings *pluginStorage() const;
+    ApiKeyStorage *apiKeyStorage() const;
 
     void setMetaData(const PluginMetadata &metaData);
 
@@ -132,12 +135,13 @@ private:
     friend class ThingManager;
     friend class ThingManagerImplementation;
 
-    void initPlugin(ThingManager *thingManager, HardwareManager *hardwareManager);
+    void initPlugin(ThingManager *thingManager, HardwareManager *hardwareManager, ApiKeyStorage *apiKeyStorage);
 
     PluginMetadata m_metaData;
     ThingManager *m_thingManager = nullptr;
     HardwareManager *m_hardwareManager = nullptr;
     QSettings *m_storage = nullptr;
+    ApiKeyStorage *m_apiKeyStorage;
 
     ParamList m_config;
 };

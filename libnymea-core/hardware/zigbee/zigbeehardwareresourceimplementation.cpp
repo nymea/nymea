@@ -69,12 +69,12 @@ void ZigbeeHardwareResourceImplementation::setZigbeeNetwork(ZigbeeNetwork *netwo
 
 void ZigbeeHardwareResourceImplementation::setEnabled(bool enabled)
 {
-    qCDebug(dcZigbeeHardwareResource()) << "Set" << (enabled ? "enabled" : "disabled");
+    qCDebug(dcZigbeeResource()) << "Set" << (enabled ? "enabled" : "disabled");
     if (m_enabled && enabled) {
-        qCDebug(dcZigbeeHardwareResource()) << "Already enabled.";
+        qCDebug(dcZigbeeResource()) << "Already enabled.";
         return;
     } else if (!m_enabled && !enabled) {
-        qCDebug(dcZigbeeHardwareResource()) << "Already disabled.";
+        qCDebug(dcZigbeeResource()) << "Already disabled.";
         return;
     }
 
@@ -93,15 +93,15 @@ void ZigbeeHardwareResourceImplementation::setEnabled(bool enabled)
 
 void ZigbeeHardwareResourceImplementation::onZigbeeNetworkStateChanged(ZigbeeNetwork::State state)
 {
-    qCDebug(dcZigbeeHardwareResource()) << "Network state changed" << state;
+    qCDebug(dcZigbeeResource()) << "Network state changed" << state;
 }
 
 bool ZigbeeHardwareResourceImplementation::enable()
 {
-    qCDebug(dcZigbeeHardwareResource()) << "Enable hardware resource";
+    qCDebug(dcZigbeeResource()) << "Enable hardware resource";
 
     if (!m_zigbeeNetwork) {
-        qCDebug(dcZigbeeHardwareResource()) << "There is no zigbee network configured as hardware resource";
+        qCDebug(dcZigbeeResource()) << "There is no zigbee network configured as hardware resource";
     } else {
         // TODO: start network
     }
@@ -111,9 +111,9 @@ bool ZigbeeHardwareResourceImplementation::enable()
 
 bool ZigbeeHardwareResourceImplementation::disable()
 {
-    qCDebug(dcZigbeeHardwareResource()) << "Disable hardware resource";
+    qCDebug(dcZigbeeResource()) << "Disable hardware resource";
     if (!m_zigbeeNetwork) {
-        qCDebug(dcZigbeeHardwareResource()) << "There is no zigbee network configured as hardware resource";
+        qCDebug(dcZigbeeResource()) << "There is no zigbee network configured as hardware resource";
     }
 
     // TODO: stop network

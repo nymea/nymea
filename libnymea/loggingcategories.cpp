@@ -76,7 +76,8 @@ NYMEA_LOGGING_CATEGORY(dcBluetoothServerTraffic, "BluetoothServerTraffic")
 NYMEA_LOGGING_CATEGORY(dcMqtt, "Mqtt")
 NYMEA_LOGGING_CATEGORY(dcTranslations, "Translations")
 NYMEA_LOGGING_CATEGORY(dcI2C, "I2C")
-NYMEA_LOGGING_CATEGORY(dcZigbeeHardwareResource, "ZigbeeHardwareResource")
+NYMEA_LOGGING_CATEGORY(dcZigbee, "Zigbee")
+NYMEA_LOGGING_CATEGORY(dcZigbeeResource, "ZigbeeResource")
 
 
 static QFile s_logFile;

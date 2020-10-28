@@ -189,16 +189,17 @@ Interface ThingUtils::loadInterface(const QString &name)
         }
     }
 
-    StateTypes stateTypes;
-    ActionTypes actionTypes;
-    EventTypes eventTypes;
+    InterfaceStateTypes stateTypes;
+    InterfaceActionTypes actionTypes;
+    InterfaceEventTypes eventTypes;
     foreach (const QVariant &stateVariant, content.value("states").toList()) {
-        StateType stateType;
+        InterfaceStateType stateType;
         stateType.setName(stateVariant.toMap().value("name").toString());
         stateType.setType(QVariant::nameToType(stateVariant.toMap().value("type").toByteArray()));
         stateType.setPossibleValues(stateVariant.toMap().value("allowedValues").toList());
         stateType.setMinValue(stateVariant.toMap().value("minValue"));
         stateType.setMaxValue(stateVariant.toMap().value("maxValue"));
+        stateType.setOptional(stateVariant.toMap().value("optional", false).toBool());
         if (stateVariant.toMap().contains("unit")) {
             QMetaEnum unitEnum = QMetaEnum::fromType<Types::Unit>();
             int enumValue = unitEnum.keyToValue("Unit" + stateVariant.toMap().value("unit").toByteArray());
@@ -210,8 +211,9 @@ Interface ThingUtils::loadInterface(const QString &name)
         }
         stateTypes.append(stateType);
 
-        EventType stateChangeEventType;
+        InterfaceEventType stateChangeEventType;
         stateChangeEventType.setName(stateType.name());
+        stateChangeEventType.setOptional(stateType.optional());
         ParamType stateChangeEventParamType;
         stateChangeEventParamType.setName(stateType.name());
         stateChangeEventParamType.setType(stateType.type());
@@ -222,16 +224,18 @@ Interface ThingUtils::loadInterface(const QString &name)
         eventTypes.append(stateChangeEventType);
 
         if (stateVariant.toMap().value("writable", false).toBool()) {
-            ActionType stateChangeActionType;
+            InterfaceActionType stateChangeActionType;
             stateChangeActionType.setName(stateType.name());
+            stateChangeActionType.setOptional(stateType.optional());
             stateChangeActionType.setParamTypes(ParamTypes() << stateChangeEventParamType);
             actionTypes.append(stateChangeActionType);
         }
     }
 
     foreach (const QVariant &actionVariant, content.value("actions").toList()) {
-        ActionType actionType;
+        InterfaceActionType actionType;
         actionType.setName(actionVariant.toMap().value("name").toString());
+        actionType.setOptional(actionVariant.toMap().value("optional").toBool());
         ParamTypes paramTypes;
         foreach (const QVariant &actionParamVariant, actionVariant.toMap().value("params").toList()) {
             ParamType paramType;
@@ -246,8 +250,9 @@ Interface ThingUtils::loadInterface(const QString &name)
     }
 
     foreach (const QVariant &eventVariant, content.value("events").toList()) {
-        EventType eventType;
+        InterfaceEventType eventType;
         eventType.setName(eventVariant.toMap().value("name").toString());
+        eventType.setOptional(eventVariant.toMap().value("optional").toBool());
         ParamTypes paramTypes;
         foreach (const QVariant &eventParamVariant, eventVariant.toMap().value("params").toList()) {
             ParamType paramType;
@@ -267,20 +272,20 @@ Interface ThingUtils::loadInterface(const QString &name)
 
 Interface ThingUtils::mergeInterfaces(const Interface &iface1, const Interface &iface2)
 {
-    EventTypes eventTypes = iface1.eventTypes();
-    foreach (const EventType &et, iface2.eventTypes()) {
+    InterfaceEventTypes eventTypes = iface1.eventTypes();
+    foreach (const InterfaceEventType &et, iface2.eventTypes()) {
         if (eventTypes.findByName(et.name()).name().isEmpty()) {
             eventTypes.append(et);
         }
     }
-    StateTypes stateTypes = iface1.stateTypes();
-    foreach (const StateType &st, iface2.stateTypes()) {
+    InterfaceStateTypes stateTypes = iface1.stateTypes();
+    foreach (const InterfaceStateType &st, iface2.stateTypes()) {
         if (stateTypes.findByName(st.name()).name().isEmpty()) {
             stateTypes.append(st);
         }
     }
-    ActionTypes actionTypes = iface1.actionTypes();
-    foreach (const ActionType &at, iface2.actionTypes()) {
+    InterfaceActionTypes actionTypes = iface1.actionTypes();
+    foreach (const InterfaceActionType &at, iface2.actionTypes()) {
         if (actionTypes.findByName(at.name()).name().isEmpty()) {
             actionTypes.append(at);
         }

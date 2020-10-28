@@ -35,6 +35,9 @@ HEADERS += \
     types/browseritem.h \
     types/browseritemaction.h \
     types/browseraction.h \
+    types/interfaceactiontype.h \
+    types/interfaceeventtype.h \
+    types/interfacestatetype.h \
     types/mediabrowseritem.h \
     types/thingclass.h \
     typeutils.h \
@@ -149,6 +152,9 @@ SOURCES += \
     types/browseritem.cpp \
     types/browseritemaction.cpp \
     types/browseraction.cpp \
+    types/interfaceactiontype.cpp \
+    types/interfaceeventtype.cpp \
+    types/interfacestatetype.cpp \
     types/mediabrowseritem.cpp \
     types/action.cpp \
     types/actiontype.cpp \

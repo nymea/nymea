@@ -640,29 +640,29 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 ActionTypes actionTypes(thingClass.actionTypes());
                 EventTypes eventTypes(thingClass.eventTypes());
 
-                foreach (const StateType &ifaceStateType, iface.stateTypes()) {
+                foreach (const InterfaceStateType &ifaceStateType, iface.stateTypes()) {
                     StateType stateType = stateTypes.findByName(ifaceStateType.name());
                     if (stateType.id().isNull()) {
-                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement state \"" + ifaceStateType.name() + "\"");
-                        hasError = true;
-                        continue;
+                        if (!ifaceStateType.optional()) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement state \"" + ifaceStateType.name() + "\"");
+                            hasError = true;
+                        } else {
+                            continue;
+                        }
                     }
                     if (ifaceStateType.type() != stateType.type()) {
                         m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching type: \"" + QVariant::typeToName(stateType.type()) + "\" != \"" + QVariant::typeToName(ifaceStateType.type()) + "\"");
                         hasError = true;
-                        continue;
                     }
                     if (ifaceStateType.minValue().isValid() && !ifaceStateType.minValue().isNull()) {
                         if (ifaceStateType.minValue().toString() == "any") {
                             if (stateType.minValue().isNull()) {
                                 m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has no minimum value defined.");
                                 hasError = true;
-                                continue;
                             }
                         } else if (ifaceStateType.minValue() != stateType.minValue()) {
                             m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching minimum value: \"" + ifaceStateType.minValue().toString() + "\" != \"" + stateType.minValue().toString() + "\"");
                             hasError = true;
-                            continue;
                         }
                     }
                     if (ifaceStateType.maxValue().isValid() && !ifaceStateType.maxValue().isNull()) {
@@ -670,32 +670,32 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                             if (stateType.maxValue().isNull()) {
                                 m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has no maximum value defined.");
                                 hasError = true;
-                                continue;
                             }
                         } else if (ifaceStateType.maxValue() != stateType.maxValue()) {
                             m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching maximum value: \"" + ifaceStateType.maxValue().toString() + "\" != \"" + stateType.minValue().toString() + "\"");
                             hasError = true;
-                            continue;
                         }
                     }
                     if (!ifaceStateType.possibleValues().isEmpty() && ifaceStateType.possibleValues() != stateType.possibleValues()) {
                         m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching allowed values.");
                         hasError = true;
-                        continue;
                     }
                     if (ifaceStateType.unit() != Types::UnitNone && ifaceStateType.unit() != stateType.unit()) {
                         QMetaEnum unitEnum = QMetaEnum::fromType<Types::Unit>();
                         m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching unit: \"" + unitEnum.valueToKey(ifaceStateType.unit()) + "\" != \"" + unitEnum.valueToKey(stateType.unit()));
                         hasError = true;
-                        continue;
                     }
                 }
 
-                foreach (const ActionType &ifaceActionType, iface.actionTypes()) {
+                foreach (const InterfaceActionType &ifaceActionType, iface.actionTypes()) {
                     ActionType actionType = actionTypes.findByName(ifaceActionType.name());
                     if (actionType.id().isNull()) {
-                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement action \"" + ifaceActionType.name() + "\"");
-                        hasError = true;
+                        if (!ifaceActionType.optional()) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement action \"" + ifaceActionType.name() + "\"");
+                            hasError = true;
+                        } else {
+                            continue;
+                        }
                     }
                     foreach (const ParamType &ifaceActionParamType, ifaceActionType.paramTypes()) {
                         ParamType paramType = actionType.paramTypes().findByName(ifaceActionParamType.name());
@@ -717,11 +717,15 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     }
                 }
 
-                foreach (const EventType &ifaceEventType, iface.eventTypes()) {
+                foreach (const InterfaceEventType &ifaceEventType, iface.eventTypes()) {
                     EventType eventType = eventTypes.findByName(ifaceEventType.name());
                     if (!eventType.isValid()) {
-                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement event \"" + ifaceEventType.name() + "\"");
-                        hasError = true;
+                        if (!ifaceEventType.optional()) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement event \"" + ifaceEventType.name() + "\"");
+                            hasError = true;
+                        } else {
+                            continue;
+                        }
                     }
                     foreach (const ParamType &ifaceEventParamType, ifaceEventType.paramTypes()) {
                         ParamType paramType = eventType.paramTypes().findByName(ifaceEventParamType.name());

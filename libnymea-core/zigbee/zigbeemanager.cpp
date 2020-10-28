@@ -56,34 +56,7 @@ ZigbeeNetwork *ZigbeeManager::zigbeeNetwork() const
     return m_zigbeeNetwork;
 }
 
-ZigbeeSerialPortList ZigbeeManager::availablePorts()
-{
-    ZigbeeSerialPortList ports;
-    foreach (const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts()) {
-        qCDebug(dcZigbee()) << "Found serial port" << serialPortInfo.portName();
-        qCDebug(dcZigbee()) << "   Description:" << serialPortInfo.description();
-        qCDebug(dcZigbee()) << "   System location:" << serialPortInfo.systemLocation();
-        qCDebug(dcZigbee()) << "   Manufacturer:" << serialPortInfo.manufacturer();
-        qCDebug(dcZigbee()) << "   Serialnumber:" << serialPortInfo.serialNumber();
-
-        if (serialPortInfo.hasProductIdentifier()) {
-            qCDebug(dcZigbee()) << "   Product identifier:" << serialPortInfo.productIdentifier();
-        }
-        if (serialPortInfo.hasVendorIdentifier()) {
-            qCDebug(dcZigbee()) << "   Vendor identifier:" << serialPortInfo.vendorIdentifier();
-        }
-
-        ZigbeeSerialPort port;
-        port.setName(serialPortInfo.portName());
-        port.setDescription(serialPortInfo.description());
-        port.setSystemLocation(serialPortInfo.systemLocation());
-        ports.append(port);
-    }
-
-    return ports;
-}
-
-void ZigbeeManager::createZigbeeNetwork(const QString &serialPort, qint32 baudrate, ZigbeeNetworkManager::BackendType backend)
+void ZigbeeManager::createZigbeeNetwork(const QString &serialPort, qint32 baudrate, Zigbee::BackendType backend)
 {
     if (m_zigbeeNetwork) {
         delete m_zigbeeNetwork;

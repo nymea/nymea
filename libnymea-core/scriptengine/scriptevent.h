@@ -28,8 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef EVENTLISTENER_H
-#define EVENTLISTENER_H
+#ifndef SCRIPTEVENT_H
+#define SCRIPTEVENT_H
 
 #include <QObject>
 #include <QUuid>
@@ -72,7 +72,6 @@ signals:
     void eventTypeIdChanged();
     void eventNameChanged();
 
-//    void triggered(ScriptParams *params);
     void triggered(const QVariantMap &params);
 
 private:
@@ -85,4 +84,4 @@ private:
 
 }
 
-#endif // EVENTLISTENER_H
+#endif // SCRIPTEVENT_H

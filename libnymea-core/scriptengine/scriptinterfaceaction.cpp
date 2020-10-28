@@ -28,7 +28,7 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "scriptaction.h"
+#include "scriptinterfaceaction.h"
 
 #include "integrations/thingmanager.h"
 #include "types/action.h"
@@ -40,40 +40,27 @@
 
 namespace nymeaserver {
 
-ScriptAction::ScriptAction(QObject *parent) : QObject(parent)
+ScriptInterfaceAction::ScriptInterfaceAction(QObject *parent) : QObject(parent)
 {
 
 }
 
-void ScriptAction::classBegin()
+void ScriptInterfaceAction::classBegin()
 {
     m_thingManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("thingManager").toULongLong());
 }
 
-void ScriptAction::componentComplete()
+void ScriptInterfaceAction::componentComplete()
 {
 
 }
 
-QString ScriptAction::thingId() const
-{
-    return m_thingId;
-}
-
-void ScriptAction::setThingId(const QString &thingId)
-{
-    if (m_thingId != thingId) {
-        m_thingId = thingId;
-        emit thingIdChanged();
-    }
-}
-
-QString ScriptAction::interfaceName() const
+QString ScriptInterfaceAction::interfaceName() const
 {
     return m_interfaceName;
 }
 
-void ScriptAction::setInterfaceName(const QString &interfaceName)
+void ScriptInterfaceAction::setInterfaceName(const QString &interfaceName)
 {
     if (m_interfaceName != interfaceName) {
         m_interfaceName = interfaceName;
@@ -81,25 +68,12 @@ void ScriptAction::setInterfaceName(const QString &interfaceName)
     }
 }
 
-QString ScriptAction::actionTypeId() const
-{
-    return m_actionTypeId;
-}
-
-void ScriptAction::setActionTypeId(const QString &actionTypeId)
-{
-    if (m_actionTypeId != actionTypeId) {
-        m_actionTypeId = actionTypeId;
-        emit actionTypeIdChanged();
-    }
-}
-
-QString ScriptAction::actionName() const
+QString ScriptInterfaceAction::actionName() const
 {
     return m_actionName;
 }
 
-void ScriptAction::setActionName(const QString &actionName)
+void ScriptInterfaceAction::setActionName(const QString &actionName)
 {
     if (m_actionName != actionName) {
         m_actionName = actionName;
@@ -107,34 +81,25 @@ void ScriptAction::setActionName(const QString &actionName)
     }
 }
 
-void ScriptAction::execute(const QVariantMap &params)
+void ScriptInterfaceAction::execute(const QVariantMap &params)
 {
     Things things;
-    if (m_thingId.isEmpty() && !m_interfaceName.isEmpty()) {
+    if (!m_interfaceName.isEmpty()) {
         foreach (Thing *thing, m_thingManager->configuredThings()) {
             if (thing->thingClass().interfaces().contains(m_interfaceName)) {
                 things.append(thing);
             }
         }
     }
-    Thing *thing = m_thingManager->configuredThings().findById(ThingId(m_thingId));
-    if (thing && !things.contains(thing)) {
-        things.append(thing);
-    }
     if (things.isEmpty()) {
-        qCWarning(dcScriptEngine) << "No things matching by id" << m_thingId << "and interface" << m_interfaceName;
+        qCWarning(dcScriptEngine) << "No things matching by interface" << m_interfaceName;
         return;
     }
 
     foreach (Thing *thing, things) {
-        ActionType actionType;
-        if (!ActionTypeId(m_actionTypeId).isNull()) {
-            actionType = thing->thingClass().actionTypes().findById(ActionTypeId(m_actionTypeId));
-        } else {
-            actionType = thing->thingClass().actionTypes().findByName(m_actionName);
-        }
+        ActionType actionType = thing->thingClass().actionTypes().findByName(m_actionName);
         if (actionType.id().isNull()) {
-            qCWarning(dcScriptEngine()) << "Thing" << thing->name() << "does not have actionTypeId" << m_actionTypeId << "or actionName" << m_actionName;
+            qCWarning(dcScriptEngine()) << "Thing" << thing->name() << "does not have action" << m_actionName;
             continue;
         }
         Action action(actionType.id(), thing->id(), Action::TriggeredByScript);

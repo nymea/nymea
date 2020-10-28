@@ -28,59 +28,53 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef SCRIPTACTION_H
-#define SCRIPTACTION_H
+#ifndef SCRIPTINTERFACEEVENT_H
+#define SCRIPTINTERFACEEVENT_H
 
 #include <QObject>
+#include <QUuid>
 #include <QQmlParserStatus>
 
-class ThingManager;
+#include "types/event.h"
+#include "integrations/thingmanager.h"
 
 namespace nymeaserver {
 
-class ScriptAction : public QObject, public QQmlParserStatus
+class ScriptParams;
+
+class ScriptInterfaceEvent: public QObject, public QQmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
-    Q_PROPERTY(QString thingId READ thingId WRITE setThingId NOTIFY thingIdChanged)
     Q_PROPERTY(QString interfaceName READ interfaceName WRITE setInterfaceName NOTIFY interfaceNameChanged)
-    Q_PROPERTY(QString deviceId READ thingId WRITE setThingId NOTIFY thingIdChanged) // DEPRECATED
-    Q_PROPERTY(QString actionTypeId READ actionTypeId WRITE setActionTypeId NOTIFY actionTypeIdChanged)
-    Q_PROPERTY(QString actionName READ actionName WRITE setActionName NOTIFY actionNameChanged)
+    Q_PROPERTY(QString eventName READ eventName WRITE setEventName NOTIFY eventNameChanged)
 public:
-    explicit ScriptAction(QObject *parent = nullptr);
+    ScriptInterfaceEvent(QObject *parent = nullptr);
     void classBegin() override;
     void componentComplete() override;
-
-    QString thingId() const;
-    void setThingId(const QString &thingId);
 
     QString interfaceName() const;
     void setInterfaceName(const QString &interfaceName);
 
-    QString actionTypeId() const;
-    void setActionTypeId(const QString &actionTypeId);
+    QString eventName() const;
+    void setEventName(const QString &eventName);
 
-    QString actionName() const;
-    void setActionName(const QString &actionName);
-
-public slots:
-    void execute(const QVariantMap &params);
+private slots:
+    void onEventTriggered(const Event &event);
 
 signals:
-    void thingIdChanged();
     void interfaceNameChanged();
-    void actionTypeIdChanged();
-    void actionNameChanged();
+    void eventNameChanged();
 
-public:
+    void triggered(const QString &thingId, const QVariantMap &params);
+
+private:
     ThingManager *m_thingManager = nullptr;
-    QString m_thingId;
+
     QString m_interfaceName;
-    QString m_actionTypeId;
-    QString m_actionName;
+    QString m_eventName;
 };
 
 }
 
-#endif // SCRIPTACTION_H
+#endif // SCRIPTINTERFACEEVENT_H

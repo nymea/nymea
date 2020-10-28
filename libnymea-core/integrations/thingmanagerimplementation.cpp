@@ -642,14 +642,13 @@ ThingPairingInfo *ThingManagerImplementation::confirmPairing(const PairingTransa
 
             if (addNewThing) {
                 qCDebug(dcThingManager()) << "Thing added:" << info->thing();
-                m_configuredThings.insert(info->thing()->id(), info->thing());
+                registerThing(info->thing());
                 emit thingAdded(info->thing());
-                connect(info->thing(), &Thing::eventTriggered, this, &ThingManagerImplementation::onEventTriggered);
             } else {
                 emit thingChanged(info->thing());
             }
-
             storeConfiguredThings();
+
             postSetupThing(info->thing());
         });
 
@@ -723,11 +722,9 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
         info->thing()->setSetupStatus(Thing::ThingSetupStatusComplete, Thing::ThingErrorNoError);
 
         qCDebug(dcThingManager) << "Thing setup complete.";
-        m_configuredThings.insert(info->thing()->id(), info->thing());
+        registerThing(info->thing());
         storeConfiguredThings();
-
         emit thingAdded(info->thing());
-        connect(info->thing(), &Thing::eventTriggered, this, &ThingManagerImplementation::onEventTriggered);
         postSetupThing(info->thing());
     });
 
@@ -1539,11 +1536,9 @@ void ThingManagerImplementation::loadConfiguredThings()
         // We always add the thing to the list in this case. If it's in the stored things
         // it means that it was working at some point so lets still add it as there might
         // be rules associated with this thing.
-        m_configuredThings.insert(thing->id(), thing);
+        registerThing(thing);
 
         emit thingAdded(thing);
-
-        connect(thing, &Thing::eventTriggered, this, &ThingManagerImplementation::onEventTriggered);
     }
     settings.endGroup();
 
@@ -1565,25 +1560,7 @@ void ThingManagerImplementation::loadConfiguredThings()
         }
         Q_ASSERT(thing != nullptr);
 
-        thing->setSetupStatus(Thing::ThingSetupStatusInProgress, Thing::ThingErrorNoError);
-        ThingSetupInfo *info = setupThing(thing);
-        // Set receiving object to "thing" because at startup we load it in any case, knowing that it worked at
-        // some point. However, it'll be marked as non-working until the setup succeeds so the user might delete
-        // it in the meantime... In that case we don't want to call postsetup on it.
-        connect(info, &ThingSetupInfo::finished, thing, [this, info](){
-
-            if (info->status() != Thing::ThingErrorNoError) {
-                qCWarning(dcThingManager()) << "Error setting up thing" << info->thing()->name() << info->thing()->id().toString() << info->status() << info->displayMessage();
-                info->thing()->setSetupStatus(Thing::ThingSetupStatusFailed, info->status(), info->displayMessage());
-                emit thingChanged(info->thing());
-                return;
-            }
-
-            qCDebug(dcThingManager()) << "Setup complete for thing" << info->thing();
-            info->thing()->setSetupStatus(Thing::ThingSetupStatusComplete, Thing::ThingErrorNoError);
-            emit thingChanged(info->thing());
-            postSetupThing(info->thing());
-        });
+        trySetupThing(thing);
     }
 
     loadIOConnections();
@@ -1684,11 +1661,9 @@ void ThingManagerImplementation::onAutoThingsAppeared(const ThingDescriptors &th
             }
 
             info->thing()->setSetupStatus(Thing::ThingSetupStatusComplete, Thing::ThingErrorNoError);
-            m_configuredThings.insert(info->thing()->id(), info->thing());
+            registerThing(info->thing());
             storeConfiguredThings();
-
             emit thingAdded(info->thing());
-            connect(info->thing(), &Thing::eventTriggered, this, &ThingManagerImplementation::onEventTriggered);
             postSetupThing(info->thing());
         });
     }
@@ -1764,7 +1739,7 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
         qCWarning(dcThingManager()) << "Invalid thing id in state change. Not forwarding event. Thing setup not complete yet?";
         return;
     }
-    storeThingStates(thing);
+    storeThingState(thing, stateTypeId);
 
     emit thingStateChanged(thing, stateTypeId, value);
 
@@ -1994,10 +1969,6 @@ ThingSetupInfo* ThingManagerImplementation::setupThing(Thing *thing)
     thing->setStates(states);
     loadThingStates(thing);
 
-    connect(thing, &Thing::stateValueChanged, this, &ThingManagerImplementation::slotThingStateValueChanged);
-    connect(thing, &Thing::settingChanged, this, &ThingManagerImplementation::slotThingSettingChanged);
-    connect(thing, &Thing::nameChanged, this, &ThingManagerImplementation::slotThingNameChanged);
-
     ThingSetupInfo *info = new ThingSetupInfo(thing, this, 30000);
 
     if (!plugin) {
@@ -2101,14 +2072,59 @@ QVariant ThingManagerImplementation::mapValue(const QVariant &value, const State
     return toValue;
 }
 
+void ThingManagerImplementation::trySetupThing(Thing *thing)
+{
+    thing->setSetupStatus(Thing::ThingSetupStatusInProgress, Thing::ThingErrorNoError);
+    ThingSetupInfo *info = setupThing(thing);
+    // Set receiving object to "thing" because at startup we load it in any case, knowing that it worked at
+    // some point. However, it'll be marked as non-working until the setup succeeds so the user might delete
+    // it in the meantime... In that case we don't want to call postsetup on it.
+    connect(info, &ThingSetupInfo::finished, thing, [this, info, thing](){
+
+        if (info->status() != Thing::ThingErrorNoError) {
+            qCWarning(dcThingManager()) << "Error setting up thing" << info->thing()->name() << info->thing()->id().toString() << info->status() << info->displayMessage();
+            info->thing()->setSetupStatus(Thing::ThingSetupStatusFailed, info->status(), info->displayMessage());
+            emit thingChanged(info->thing());
+
+            // We know this used to work at some point... try again in a bit unless we don't have a plugin for it...
+            if (info->status() != Thing::ThingErrorPluginNotFound) {
+                QTimer::singleShot(10000, thing, [this, thing]() {
+                    trySetupThing(thing);
+                });
+            }
+
+            return;
+        }
+
+        qCDebug(dcThingManager()) << "Setup complete for thing" << info->thing();
+        info->thing()->setSetupStatus(Thing::ThingSetupStatusComplete, Thing::ThingErrorNoError);
+        emit thingChanged(info->thing());
+        postSetupThing(info->thing());
+    });
+}
+
+void ThingManagerImplementation::registerThing(Thing *thing)
+{
+    m_configuredThings.insert(thing->id(), thing);
+    connect(thing, &Thing::eventTriggered, this, &ThingManagerImplementation::onEventTriggered);
+    connect(thing, &Thing::stateValueChanged, this, &ThingManagerImplementation::slotThingStateValueChanged);
+    connect(thing, &Thing::settingChanged, this, &ThingManagerImplementation::slotThingSettingChanged);
+    connect(thing, &Thing::nameChanged, this, &ThingManagerImplementation::slotThingNameChanged);
+}
+
 void ThingManagerImplementation::storeThingStates(Thing *thing)
+{
+    ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
+    foreach (const StateType &stateType, thingClass.stateTypes()) {
+        storeThingState(thing,  stateType.id());
+    }
+}
+
+void ThingManagerImplementation::storeThingState(Thing *thing, const StateTypeId &stateTypeId)
 {
     NymeaSettings settings(NymeaSettings::SettingsRoleThingStates);
     settings.beginGroup(thing->id().toString());
-    ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
-    foreach (const StateType &stateType, thingClass.stateTypes()) {
-        settings.setValue(stateType.id().toString(), thing->stateValue(stateType.id()));
-    }
+    settings.setValue(stateTypeId.toString(), thing->stateValue(stateTypeId));
     settings.endGroup();
 }
 

@@ -154,12 +154,14 @@ private:
     ThingSetupInfo *addConfiguredThingInternal(const ThingClassId &thingClassId, const QString &name, const ParamList &params, const ThingId &parentId = ThingId());
     ThingSetupInfo *reconfigureThingInternal(Thing *thing, const ParamList &params, const QString &name = QString());
     ThingSetupInfo *setupThing(Thing *thing);
+    void trySetupThing(Thing *thing);
+    void registerThing(Thing *thing);
     void postSetupThing(Thing *thing);
     void storeThingStates(Thing *thing);
+    void storeThingState(Thing *thing, const StateTypeId &stateTypeId);
     void loadThingStates(Thing *thing);
     void storeIOConnections();
     void loadIOConnections();
-
     void syncIOConnection(Thing *inputThing, const StateTypeId &stateTypeId);
     QVariant mapValue(const QVariant &value, const StateType &fromStateType, const StateType &toStateType, bool inverted) const;
 

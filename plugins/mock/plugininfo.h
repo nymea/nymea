@@ -30,6 +30,8 @@ StateTypeId mockDoubleStateTypeId = StateTypeId("{7cac53ee-7048-4dc9-b000-7b5853
 StateTypeId mockBatteryLevelStateTypeId = StateTypeId("{6c8ab9a6-0164-4795-b829-f4394fe4edc4}");
 StateTypeId mockBatteryCriticalStateTypeId = StateTypeId("{580bc611-1a55-41f3-996f-8d3ccf543db3}");
 StateTypeId mockPowerStateTypeId = StateTypeId("{064aed0d-da4c-49d4-b236-60f97e98ff84}");
+StateTypeId mockConnectedStateTypeId = StateTypeId("{9860d105-2bd9-4651-9bc9-13ff4b9039a7}");
+StateTypeId mockSignalStrengthStateTypeId = StateTypeId("{2a0213bf-4af3-4384-904e-3376348a597e}");
 EventTypeId mockIntEventTypeId = EventTypeId("{80baec19-54de-4948-ac46-31eabfaceb83}");
 ParamTypeId mockIntEventIntParamTypeId = ParamTypeId("{80baec19-54de-4948-ac46-31eabfaceb83}");
 EventTypeId mockBoolEventTypeId = EventTypeId("{9dd6a97c-dfd1-43dc-acbd-367932742310}");
@@ -42,11 +44,19 @@ EventTypeId mockBatteryCriticalEventTypeId = EventTypeId("{580bc611-1a55-41f3-99
 ParamTypeId mockBatteryCriticalEventBatteryCriticalParamTypeId = ParamTypeId("{580bc611-1a55-41f3-996f-8d3ccf543db3}");
 EventTypeId mockPowerEventTypeId = EventTypeId("{064aed0d-da4c-49d4-b236-60f97e98ff84}");
 ParamTypeId mockPowerEventPowerParamTypeId = ParamTypeId("{064aed0d-da4c-49d4-b236-60f97e98ff84}");
+EventTypeId mockConnectedEventTypeId = EventTypeId("{9860d105-2bd9-4651-9bc9-13ff4b9039a7}");
+ParamTypeId mockConnectedEventConnectedParamTypeId = ParamTypeId("{9860d105-2bd9-4651-9bc9-13ff4b9039a7}");
+EventTypeId mockSignalStrengthEventTypeId = EventTypeId("{2a0213bf-4af3-4384-904e-3376348a597e}");
+ParamTypeId mockSignalStrengthEventSignalStrengthParamTypeId = ParamTypeId("{2a0213bf-4af3-4384-904e-3376348a597e}");
 EventTypeId mockEvent1EventTypeId = EventTypeId("{45bf3752-0fc6-46b9-89fd-ffd878b5b22b}");
 EventTypeId mockEvent2EventTypeId = EventTypeId("{863d5920-b1cf-4eb9-88bd-8f7b8583b1cf}");
 ParamTypeId mockEvent2EventIntParamParamTypeId = ParamTypeId("{0550e16d-60b9-4ba5-83f4-4d3cee656121}");
+ActionTypeId mockBatteryLevelActionTypeId = ActionTypeId("{6c8ab9a6-0164-4795-b829-f4394fe4edc4}");
+ParamTypeId mockBatteryLevelActionBatteryLevelParamTypeId = ParamTypeId("{6c8ab9a6-0164-4795-b829-f4394fe4edc4}");
 ActionTypeId mockPowerActionTypeId = ActionTypeId("{064aed0d-da4c-49d4-b236-60f97e98ff84}");
 ParamTypeId mockPowerActionPowerParamTypeId = ParamTypeId("{064aed0d-da4c-49d4-b236-60f97e98ff84}");
+ActionTypeId mockSignalStrengthActionTypeId = ActionTypeId("{2a0213bf-4af3-4384-904e-3376348a597e}");
+ParamTypeId mockSignalStrengthActionSignalStrengthParamTypeId = ParamTypeId("{2a0213bf-4af3-4384-904e-3376348a597e}");
 ActionTypeId mockWithParamsActionTypeId = ActionTypeId("{dea0f4e1-65e3-4981-8eaa-2701c53a9185}");
 ParamTypeId mockWithParamsActionParam1ParamTypeId = ParamTypeId("{a2d3a256-a551-4712-a65b-ecd5a436a1cb}");
 ParamTypeId mockWithParamsActionParam2ParamTypeId = ParamTypeId("{304a4899-18be-4e3b-94f4-d03be52f3233}");
@@ -353,6 +363,18 @@ const QString translations[] {
     //: The name of the EventType ({e40bcf7d-47b8-41fa-b213-3652a905b376}) of ThingClass genericIoMock
     QT_TRANSLATE_NOOP("mock", "Analog Output 2 changed"),
 
+    //: The name of the ParamType (ThingClass: mock, ActionType: batteryLevel, ID: {6c8ab9a6-0164-4795-b829-f4394fe4edc4})
+    QT_TRANSLATE_NOOP("mock", "Battery level"),
+
+    //: The name of the ParamType (ThingClass: mock, EventType: batteryLevel, ID: {6c8ab9a6-0164-4795-b829-f4394fe4edc4})
+    QT_TRANSLATE_NOOP("mock", "Battery level"),
+
+    //: The name of the EventType ({6c8ab9a6-0164-4795-b829-f4394fe4edc4}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Battery level"),
+
+    //: The name of the StateType ({6c8ab9a6-0164-4795-b829-f4394fe4edc4}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Battery level"),
+
     //: The name of the ParamType (ThingClass: inputTypeMock, EventType: bool, ID: {3bad3a09-5826-4ed7-a832-10e3e2ee2a7d})
     QT_TRANSLATE_NOOP("mock", "Bool"),
 
@@ -370,6 +392,15 @@ const QString translations[] {
 
     //: The name of the EventType ({4507d5c6-b692-4bd6-87f2-00364bc0cb4d}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "Color changed"),
+
+    //: The name of the ParamType (ThingClass: mock, EventType: connected, ID: {9860d105-2bd9-4651-9bc9-13ff4b9039a7})
+    QT_TRANSLATE_NOOP("mock", "Connected"),
+
+    //: The name of the StateType ({9860d105-2bd9-4651-9bc9-13ff4b9039a7}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Connected"),
+
+    //: The name of the EventType ({9860d105-2bd9-4651-9bc9-13ff4b9039a7}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Connected changed"),
 
     //: The name of the ParamType (ThingClass: genericIoMock, ActionType: digitalOutput1, ID: {d6fcdb52-f7c3-423b-b9f5-1e29f164c42e})
     QT_TRANSLATE_NOOP("mock", "Digital Output 1"),
@@ -674,6 +705,9 @@ const QString translations[] {
     //: The name of the ActionType ({ac56977c-cbba-47c6-a827-5735d8b0aed6}) of ThingClass genericIoMock
     QT_TRANSLATE_NOOP("mock", "Set analog input 1"),
 
+    //: The name of the ActionType ({6c8ab9a6-0164-4795-b829-f4394fe4edc4}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Set battery level"),
+
     //: The name of the ActionType ({80ba1449-b485-47d4-a067-6bf306e2a568}) of ThingClass childMock
     QT_TRANSLATE_NOOP("mock", "Set bool value"),
 
@@ -710,8 +744,23 @@ const QString translations[] {
     //: The name of the ActionType ({d1917b3d-1530-4cf9-90f7-263ee88e714b}) of ThingClass virtualIoLightMock
     QT_TRANSLATE_NOOP("mock", "Set power"),
 
+    //: The name of the ActionType ({2a0213bf-4af3-4384-904e-3376348a597e}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Set signal strength"),
+
     //: The name of the ParamType (ThingClass: mock, Type: settings, ID: {367f7ba4-5039-47be-abd8-59cc8eaf4b9a})
     QT_TRANSLATE_NOOP("mock", "Setting 1"),
+
+    //: The name of the ParamType (ThingClass: mock, ActionType: signalStrength, ID: {2a0213bf-4af3-4384-904e-3376348a597e})
+    QT_TRANSLATE_NOOP("mock", "Signal strength"),
+
+    //: The name of the ParamType (ThingClass: mock, EventType: signalStrength, ID: {2a0213bf-4af3-4384-904e-3376348a597e})
+    QT_TRANSLATE_NOOP("mock", "Signal strength"),
+
+    //: The name of the StateType ({2a0213bf-4af3-4384-904e-3376348a597e}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Signal strength"),
+
+    //: The name of the EventType ({2a0213bf-4af3-4384-904e-3376348a597e}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Signal strength changed"),
 
     //: The name of the ParamType (ThingClass: inputTypeMock, EventType: string, ID: {27f69ca9-a321-40ff-bfee-4b0272a671b4})
     QT_TRANSLATE_NOOP("mock", "String"),
@@ -967,15 +1016,6 @@ const QString translations[] {
 
     //: The name of the ParamType (ThingClass: mock, Type: thing, ID: {f2977061-4dd0-4ef5-85aa-3b7134743be3})
     QT_TRANSLATE_NOOP("mock", "async"),
-
-    //: The name of the ParamType (ThingClass: mock, EventType: batteryLevel, ID: {6c8ab9a6-0164-4795-b829-f4394fe4edc4})
-    QT_TRANSLATE_NOOP("mock", "battery level"),
-
-    //: The name of the EventType ({6c8ab9a6-0164-4795-b829-f4394fe4edc4}) of ThingClass mock
-    QT_TRANSLATE_NOOP("mock", "battery level"),
-
-    //: The name of the StateType ({6c8ab9a6-0164-4795-b829-f4394fe4edc4}) of ThingClass mock
-    QT_TRANSLATE_NOOP("mock", "battery level"),
 
     //: The name of the ParamType (ThingClass: mock, EventType: batteryCritical, ID: {580bc611-1a55-41f3-996f-8d3ccf543db3})
     QT_TRANSLATE_NOOP("mock", "battery level critical"),

@@ -576,6 +576,20 @@ void IntegrationPluginMock::executeAction(ThingActionInfo *info)
             qCDebug(dcMock()) << "Setting power to" << info->action().param(mockPowerActionPowerParamTypeId).value().toBool();
             info->thing()->setStateValue(mockPowerStateTypeId, info->action().param(mockPowerActionPowerParamTypeId).value().toBool());
         }
+
+        if (info->action().actionTypeId() == mockBatteryLevelActionTypeId) {
+            int newLevel = info->action().param(mockBatteryLevelActionBatteryLevelParamTypeId).value().toInt();
+            qCDebug(dcMock()) << "Setting battery level to" << newLevel;
+            info->thing()->setStateValue(mockBatteryLevelStateTypeId, newLevel);
+            info->thing()->setStateValue(mockBatteryCriticalStateTypeId, newLevel < 10);
+        }
+
+        if (info->action().actionTypeId() == mockSignalStrengthActionTypeId) {
+            int newStrength = info->action().param(mockSignalStrengthActionSignalStrengthParamTypeId).value().toInt();
+            qCDebug(dcMock()) << "Setting signal strength to" << newStrength;
+            info->thing()->setStateValue(mockSignalStrengthStateTypeId, newStrength);
+            info->thing()->setStateValue(mockConnectedStateTypeId, newStrength != 0);
+        }
         m_daemons.value(info->thing())->actionExecuted(info->action().actionTypeId());
         info->finish(Thing::ThingErrorNoError);
         return;

@@ -1,5 +1,5 @@
 {
-    "description": "This interface should be used for device which have the signal strength available. If the signal is to weak, the thing is not connected any more.",
+    "description": "Interface for wireless connectable devices. If reporting the signal strength is supported, the optional signalStrength state should be implemented.",
     "extends": "connectable",
     "states": [
         {
@@ -8,7 +8,7 @@
             "unit": "Percentage",
             "minValue": 0,
             "maxValue": 100,
-            "defaultValue": 0
+            "optional": true
         }
     ]
 }

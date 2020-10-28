@@ -42,6 +42,7 @@
         <file>lightsensor.json</file>
         <file>thermostat.json</file>
         <file>connectable.json</file>
+        <file>wirelessconnectable.json</file>
         <file>inputtrigger.json</file>
         <file>outputtrigger.json</file>
         <file>power.json</file>
@@ -74,7 +75,6 @@
         <file>windspeedsensor.json</file>
         <file>co2sensor.json</file>
         <file>presencesensor.json</file>
-        <file>wirelessconnectable.json</file>
         <file>navigationpad.json</file>
         <file>extendednavigationpad.json</file>
         <file>closablesensor.json</file>

@@ -328,14 +328,10 @@ void TestIntegrations::verifyInterfaces()
     QVERIFY(!mock.isEmpty());
 
     QVariantList interfaces = mock.value("interfaces").toList();
-    // Must contain system, power, light and battery, but must not contain gateway as the thing manager should filter
-    // that away because it doesn't implement all the required states.
-    QCOMPARE(interfaces.count(), 4);
-    QVERIFY(interfaces.contains("system"));
-    QVERIFY(interfaces.contains("battery"));
-    QVERIFY(interfaces.contains("power"));
-    QVERIFY(interfaces.contains("light"));
-    QVERIFY(!interfaces.contains("gateway"));
+    QVariantList expectedInterfaces = {"system", "light", "power", "batterylevel", "battery", "wirelesssignalstrength", "wirelessconnectable", "connectable"};
+    qCDebug(dcTests()) << interfaces;
+    qCDebug(dcTests()) << expectedInterfaces;
+    QCOMPARE(interfaces, expectedInterfaces);
 }
 
 void TestIntegrations::addThing_data()
@@ -899,7 +895,7 @@ void TestIntegrations::getActionTypes_data()
     QTest::addColumn<QList<ActionTypeId> >("actionTypeTestData");
 
     QTest::newRow("valid thingClass") << mockThingClassId
-                                       << (QList<ActionTypeId>() << mockAsyncActionTypeId << mockAsyncFailingActionTypeId << mockFailingActionTypeId << mockWithoutParamsActionTypeId << mockPowerActionTypeId << mockWithoutParamsActionTypeId);
+                                       << (QList<ActionTypeId>() << mockAsyncActionTypeId << mockAsyncFailingActionTypeId << mockFailingActionTypeId << mockWithoutParamsActionTypeId << mockPowerActionTypeId << mockWithoutParamsActionTypeId << mockBatteryLevelActionTypeId << mockSignalStrengthActionTypeId);
     QTest::newRow("invalid thingClass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << QList<ActionTypeId>();
 }
 
@@ -931,7 +927,7 @@ void TestIntegrations::getEventTypes_data()
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("valid thingClass") << mockThingClassId << 8;
+    QTest::newRow("valid thingClass") << mockThingClassId << 10;
     QTest::newRow("invalid thingClass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
@@ -956,7 +952,7 @@ void TestIntegrations::getStateTypes_data()
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("valid thingClass") << mockThingClassId << 6;
+    QTest::newRow("valid thingClass") << mockThingClassId << 8;
     QTest::newRow("invalid thingClass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
@@ -1026,7 +1022,7 @@ void TestIntegrations::getStateValues()
     QCOMPARE(response.toMap().value("params").toMap().value("thingError").toString(), enumValueName(statusCode));
     if (statusCode == Thing::ThingErrorNoError) {
         QVariantList values = response.toMap().value("params").toMap().value("values").toList();
-        QCOMPARE(values.count(), 6); // Mock has 6 states...
+        QCOMPARE(values.count(), 8); // Mock has 8 states...
     }
 }
 

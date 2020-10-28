@@ -1,7 +1,26 @@
-nymea (0.24.0) UNRELEASED; urgency=medium
+nymea (0.24.0) xenial; urgency=medium
 
+  [ Michael Zanetti ]
+  * Retry setup if it fails at startup (e.g. network isn't up yet)
+  * Don't call thingRemoved() on the plugin in case of reconfiguring
+  * Add support for Python plugins
+  * 0.24
+  * Introduce nymea-sdk meta package
+  * Make the signalStrength state in wirelessconnectable interface
+    optional
+  * Add update interface
+  * Allow states, events and actions in interfaces to be optional
+  * Fix a potential crash in logging handlers
+  * Add caching information to client API
+  * Fix the webserver for serving static files
+  * Add support for interface based script events and actions
+  * Add an API keys provider plugin mechanism
+  * Force full linking of plugins at build time
+  * Suppress recurring warning about missing user agents in http
+    requests
+  * Don't use deprecated QString::sprintf and qVariantFromValue
 
- -- Michael Zanetti <michael.zanetti@nymea.io>  Wed, 30 Sep 2020 17:26:50 +0200
+ -- Jenkins <jenkins@nymea.io>  Wed, 28 Oct 2020 19:07:45 +0100
 
 nymea (0.23.1) xenial; urgency=medium
 

@@ -1,0 +1,24 @@
+{
+    "description": "The update interface is used for things that support being updated by nymea.",
+    "states": [
+        {
+            "name": "updateStatus",
+            "type": "QString",
+            "allowedValues": ["idle", "available", "updating"]
+        },
+        {
+            "name": "currentVersion",
+            "type": "QString"
+        },
+        {
+            "name": "availableVersion",
+            "type": "QString",
+            "optional": true
+        }
+    ],
+    "actions": [
+        {
+            "name": "performUpdate"
+        }
+    ]
+}

@@ -590,6 +590,13 @@ void IntegrationPluginMock::executeAction(ThingActionInfo *info)
             info->thing()->setStateValue(mockSignalStrengthStateTypeId, newStrength);
             info->thing()->setStateValue(mockConnectedStateTypeId, newStrength != 0);
         }
+
+        if (info->action().actionTypeId() == mockUpdateStatusActionTypeId) {
+            QString newUpdateStatus = info->action().param(mockUpdateStatusActionUpdateStatusParamTypeId).value().toString();
+            qCDebug(dcMock()) << "Setting update status to" << newUpdateStatus;
+            info->thing()->setStateValue(mockUpdateStatusStateTypeId, newUpdateStatus);
+            info->thing()->setStateValue(mockAvailableVersionStateTypeId, newUpdateStatus == "available" ? "2.0" : "1.0");
+        }
         m_daemons.value(info->thing())->actionExecuted(info->action().actionTypeId());
         info->finish(Thing::ThingErrorNoError);
         return;

@@ -32,6 +32,9 @@ StateTypeId mockBatteryCriticalStateTypeId = StateTypeId("{580bc611-1a55-41f3-99
 StateTypeId mockPowerStateTypeId = StateTypeId("{064aed0d-da4c-49d4-b236-60f97e98ff84}");
 StateTypeId mockConnectedStateTypeId = StateTypeId("{9860d105-2bd9-4651-9bc9-13ff4b9039a7}");
 StateTypeId mockSignalStrengthStateTypeId = StateTypeId("{2a0213bf-4af3-4384-904e-3376348a597e}");
+StateTypeId mockUpdateStatusStateTypeId = StateTypeId("{ebc41327-53d5-40c2-8e7b-1164a8ff359e}");
+StateTypeId mockCurrentVersionStateTypeId = StateTypeId("{9f2e1e5d-3f1f-4794-aca3-4e05b7a48842}");
+StateTypeId mockAvailableVersionStateTypeId = StateTypeId("{060d7947-2b70-4a2b-b33b-a3577f71faeb}");
 EventTypeId mockIntEventTypeId = EventTypeId("{80baec19-54de-4948-ac46-31eabfaceb83}");
 ParamTypeId mockIntEventIntParamTypeId = ParamTypeId("{80baec19-54de-4948-ac46-31eabfaceb83}");
 EventTypeId mockBoolEventTypeId = EventTypeId("{9dd6a97c-dfd1-43dc-acbd-367932742310}");
@@ -48,6 +51,12 @@ EventTypeId mockConnectedEventTypeId = EventTypeId("{9860d105-2bd9-4651-9bc9-13f
 ParamTypeId mockConnectedEventConnectedParamTypeId = ParamTypeId("{9860d105-2bd9-4651-9bc9-13ff4b9039a7}");
 EventTypeId mockSignalStrengthEventTypeId = EventTypeId("{2a0213bf-4af3-4384-904e-3376348a597e}");
 ParamTypeId mockSignalStrengthEventSignalStrengthParamTypeId = ParamTypeId("{2a0213bf-4af3-4384-904e-3376348a597e}");
+EventTypeId mockUpdateStatusEventTypeId = EventTypeId("{ebc41327-53d5-40c2-8e7b-1164a8ff359e}");
+ParamTypeId mockUpdateStatusEventUpdateStatusParamTypeId = ParamTypeId("{ebc41327-53d5-40c2-8e7b-1164a8ff359e}");
+EventTypeId mockCurrentVersionEventTypeId = EventTypeId("{9f2e1e5d-3f1f-4794-aca3-4e05b7a48842}");
+ParamTypeId mockCurrentVersionEventCurrentVersionParamTypeId = ParamTypeId("{9f2e1e5d-3f1f-4794-aca3-4e05b7a48842}");
+EventTypeId mockAvailableVersionEventTypeId = EventTypeId("{060d7947-2b70-4a2b-b33b-a3577f71faeb}");
+ParamTypeId mockAvailableVersionEventAvailableVersionParamTypeId = ParamTypeId("{060d7947-2b70-4a2b-b33b-a3577f71faeb}");
 EventTypeId mockEvent1EventTypeId = EventTypeId("{45bf3752-0fc6-46b9-89fd-ffd878b5b22b}");
 EventTypeId mockEvent2EventTypeId = EventTypeId("{863d5920-b1cf-4eb9-88bd-8f7b8583b1cf}");
 ParamTypeId mockEvent2EventIntParamParamTypeId = ParamTypeId("{0550e16d-60b9-4ba5-83f4-4d3cee656121}");
@@ -57,6 +66,8 @@ ActionTypeId mockPowerActionTypeId = ActionTypeId("{064aed0d-da4c-49d4-b236-60f9
 ParamTypeId mockPowerActionPowerParamTypeId = ParamTypeId("{064aed0d-da4c-49d4-b236-60f97e98ff84}");
 ActionTypeId mockSignalStrengthActionTypeId = ActionTypeId("{2a0213bf-4af3-4384-904e-3376348a597e}");
 ParamTypeId mockSignalStrengthActionSignalStrengthParamTypeId = ParamTypeId("{2a0213bf-4af3-4384-904e-3376348a597e}");
+ActionTypeId mockUpdateStatusActionTypeId = ActionTypeId("{ebc41327-53d5-40c2-8e7b-1164a8ff359e}");
+ParamTypeId mockUpdateStatusActionUpdateStatusParamTypeId = ParamTypeId("{ebc41327-53d5-40c2-8e7b-1164a8ff359e}");
 ActionTypeId mockWithParamsActionTypeId = ActionTypeId("{dea0f4e1-65e3-4981-8eaa-2701c53a9185}");
 ParamTypeId mockWithParamsActionParam1ParamTypeId = ParamTypeId("{a2d3a256-a551-4712-a65b-ecd5a436a1cb}");
 ParamTypeId mockWithParamsActionParam2ParamTypeId = ParamTypeId("{304a4899-18be-4e3b-94f4-d03be52f3233}");
@@ -64,6 +75,7 @@ ActionTypeId mockWithoutParamsActionTypeId = ActionTypeId("{defd3ed6-1a0d-400b-8
 ActionTypeId mockAsyncActionTypeId = ActionTypeId("{fbae06d3-7666-483e-a39e-ec50fe89054e}");
 ActionTypeId mockFailingActionTypeId = ActionTypeId("{df3cf33d-26d5-4577-9132-9823bd33fad0}");
 ActionTypeId mockAsyncFailingActionTypeId = ActionTypeId("{bfe89a1d-3497-4121-8318-e77c37537219}");
+ActionTypeId mockPerformUpdateActionTypeId = ActionTypeId("{f2b847dd-ab40-4278-940b-3615f1d7dfd3}");
 ActionTypeId mockAddToFavoritesBrowserItemActionTypeId = ActionTypeId("{00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3}");
 ActionTypeId mockRemoveFromFavoritesBrowserItemActionTypeId = ActionTypeId("{da6faef8-2816-430e-93bb-57e8f9582d29}");
 ThingClassId autoMockThingClassId = ThingClassId("{ab4257b3-7548-47ee-9bd4-7dc3004fd197}");
@@ -363,6 +375,15 @@ const QString translations[] {
     //: The name of the EventType ({e40bcf7d-47b8-41fa-b213-3652a905b376}) of ThingClass genericIoMock
     QT_TRANSLATE_NOOP("mock", "Analog Output 2 changed"),
 
+    //: The name of the ParamType (ThingClass: mock, EventType: availableVersion, ID: {060d7947-2b70-4a2b-b33b-a3577f71faeb})
+    QT_TRANSLATE_NOOP("mock", "Available firmware version"),
+
+    //: The name of the StateType ({060d7947-2b70-4a2b-b33b-a3577f71faeb}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Available firmware version"),
+
+    //: The name of the EventType ({060d7947-2b70-4a2b-b33b-a3577f71faeb}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Available firmware version changed"),
+
     //: The name of the ParamType (ThingClass: mock, ActionType: batteryLevel, ID: {6c8ab9a6-0164-4795-b829-f4394fe4edc4})
     QT_TRANSLATE_NOOP("mock", "Battery level"),
 
@@ -497,6 +518,15 @@ const QString translations[] {
 
     //: The name of the EventType ({80baec19-54de-4948-ac46-31eabfaceb83}) of ThingClass mock
     QT_TRANSLATE_NOOP("mock", "Dummy int state changed"),
+
+    //: The name of the ParamType (ThingClass: mock, EventType: currentVersion, ID: {9f2e1e5d-3f1f-4794-aca3-4e05b7a48842})
+    QT_TRANSLATE_NOOP("mock", "Firmware version"),
+
+    //: The name of the StateType ({9f2e1e5d-3f1f-4794-aca3-4e05b7a48842}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Firmware version"),
+
+    //: The name of the EventType ({9f2e1e5d-3f1f-4794-aca3-4e05b7a48842}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Firmware version changed"),
 
     //: The name of the ThingClass ({7cbd729a-465b-4ccb-b59c-5733039dbbed})
     QT_TRANSLATE_NOOP("mock", "Generic IO pins"),
@@ -747,6 +777,9 @@ const QString translations[] {
     //: The name of the ActionType ({2a0213bf-4af3-4384-904e-3376348a597e}) of ThingClass mock
     QT_TRANSLATE_NOOP("mock", "Set signal strength"),
 
+    //: The name of the ActionType ({ebc41327-53d5-40c2-8e7b-1164a8ff359e}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Set update status"),
+
     //: The name of the ParamType (ThingClass: mock, Type: settings, ID: {367f7ba4-5039-47be-abd8-59cc8eaf4b9a})
     QT_TRANSLATE_NOOP("mock", "Setting 1"),
 
@@ -830,6 +863,21 @@ const QString translations[] {
 
     //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {fa67229f-fcef-496f-b671-59a4b48f3ab5})
     QT_TRANSLATE_NOOP("mock", "URL"),
+
+    //: The name of the ActionType ({f2b847dd-ab40-4278-940b-3615f1d7dfd3}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Update firmware"),
+
+    //: The name of the ParamType (ThingClass: mock, ActionType: updateStatus, ID: {ebc41327-53d5-40c2-8e7b-1164a8ff359e})
+    QT_TRANSLATE_NOOP("mock", "Update status"),
+
+    //: The name of the ParamType (ThingClass: mock, EventType: updateStatus, ID: {ebc41327-53d5-40c2-8e7b-1164a8ff359e})
+    QT_TRANSLATE_NOOP("mock", "Update status"),
+
+    //: The name of the StateType ({ebc41327-53d5-40c2-8e7b-1164a8ff359e}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Update status"),
+
+    //: The name of the EventType ({ebc41327-53d5-40c2-8e7b-1164a8ff359e}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Update status changed"),
 
     //: The name of the ParamType (ThingClass: inputTypeMock, ActionType: writableBool, ID: {a7c11774-f31f-4d64-99d1-e0ae5fb35a5c})
     QT_TRANSLATE_NOOP("mock", "Writable Bool"),

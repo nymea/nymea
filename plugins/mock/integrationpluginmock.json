@@ -30,7 +30,7 @@
                     "id": "753f0d32-0468-4d08-82ed-1964aab03298",
                     "name": "mock",
                     "displayName": "Mock Thing",
-                    "interfaces": ["system", "light", "batterylevel", "wirelessconnectable"],
+                    "interfaces": ["system", "light", "batterylevel", "wirelessconnectable", "update"],
                     "createMethods": ["user", "discovery"],
                     "browsable": true,
                     "discoveryParamTypes": [
@@ -153,6 +153,33 @@
                             "maxValue": 100,
                             "defaultValue": 50,
                             "writable": true
+                        },
+                        {
+                            "id": "ebc41327-53d5-40c2-8e7b-1164a8ff359e",
+                            "name": "updateStatus",
+                            "displayName": "Update status",
+                            "displayNameEvent": "Update status changed",
+                            "displayNameAction": "Set update status",
+                            "type": "QString",
+                            "possibleValues": ["idle", "available", "updating"],
+                            "defaultValue": "idle",
+                            "writable": true
+                        },
+                        {
+                            "id": "9f2e1e5d-3f1f-4794-aca3-4e05b7a48842",
+                            "name": "currentVersion",
+                            "displayName": "Firmware version",
+                            "displayNameEvent": "Firmware version changed",
+                            "type": "QString",
+                            "defaultValue": ""
+                        },
+                        {
+                            "id": "060d7947-2b70-4a2b-b33b-a3577f71faeb",
+                            "name": "availableVersion",
+                            "displayName": "Available firmware version",
+                            "displayNameEvent": "Available firmware version changed",
+                            "type": "QString",
+                            "defaultValue": ""
                         }
                     ],
                     "eventTypes": [
@@ -215,6 +242,11 @@
                             "id": "bfe89a1d-3497-4121-8318-e77c37537219",
                             "name": "asyncFailing",
                             "displayName": "Mock Action 5 (async, broken)"
+                        },
+                        {
+                            "id": "f2b847dd-ab40-4278-940b-3615f1d7dfd3",
+                            "name": "performUpdate",
+                            "displayName": "Update firmware"
                         }
                     ],
                     "browserItemActionTypes": [

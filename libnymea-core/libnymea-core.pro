@@ -10,6 +10,23 @@ LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 CONFIG += link_pkgconfig
 PKGCONFIG += nymea-mqtt nymea-networkmanager
 
+# As of Ubuntu focal, there's a commonly named python3-embed pointing to the distro version of python
+# For everything below python 3.8 we need to manually select one
+packagesExist(python3-embed) {
+    PKGCONFIG += python3-embed
+} else:packagesExist(python-3.5) {
+    # xenial, stretch
+    PKGCONFIG += python-3.5
+} else:packagesExist(python-3.6) {
+    # bionic
+    PKGCONFIG += python-3.6
+} else:packagesExist(python-3.7) {
+    # buster, eoan
+    PKGCONFIG += python-3.7
+} else {
+    error("Python development package not found.")
+}
+
 target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target
 
@@ -20,8 +37,20 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 HEADERS += nymeacore.h \
     integrations/plugininfocache.h \
+    integrations/python/pynymealogginghandler.h \
+    integrations/python/pynymeamodule.h \
+    integrations/python/pyparam.h \
+    integrations/python/pystdouthandler.h \
+    integrations/python/pything.h \
+    integrations/python/pythingactioninfo.h \
+    integrations/python/pythingdescriptor.h \
+    integrations/python/pythingdiscoveryinfo.h \
+    integrations/python/pythingpairinginfo.h \
+    integrations/python/pythingsetupinfo.h \
+    integrations/python/pyutils.h \
     integrations/thingmanagerimplementation.h \
     integrations/translator.h \
+    integrations/pythonintegrationplugin.h \
     experiences/experiencemanager.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
@@ -101,6 +130,7 @@ SOURCES += nymeacore.cpp \
     integrations/plugininfocache.cpp \
     integrations/thingmanagerimplementation.cpp \
     integrations/translator.cpp \
+    integrations/pythonintegrationplugin.cpp \
     experiences/experiencemanager.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \

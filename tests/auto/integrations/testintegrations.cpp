@@ -161,6 +161,7 @@ void TestIntegrations::initTestCase()
                                      "Tests.debug=true\n"
                                      "Mock.debug=true\n"
                                      "Translations.debug=true\n"
+                                     "PythonIntegrations.debug=true\n"
                                      );
 
     // Adding an async mock to be used in tests below
@@ -290,8 +291,8 @@ void TestIntegrations::getThingClasses_data()
     QTest::addColumn<VendorId>("vendorId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("vendor nymea") << nymeaVendorId << 14;
-    QTest::newRow("no filter") << VendorId() << 14;
+    QTest::newRow("vendor nymea") << nymeaVendorId << 17;
+    QTest::newRow("no filter") << VendorId() << 17;
     QTest::newRow("invalid vendor") << VendorId("93e7d361-8025-4354-b17e-b68406c800bc") << 0;
 }
 

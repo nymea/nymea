@@ -107,8 +107,8 @@ public:
 
     ThingClass thingClass() const;
 
-    QString name() const;
-    void setName(const QString &name);
+    Q_INVOKABLE QString name() const;
+    Q_INVOKABLE void setName(const QString &name);
 
     ParamList params() const;
     bool hasParam(const ParamTypeId &paramTypeId) const;
@@ -117,12 +117,12 @@ public:
     QVariant paramValue(const ParamTypeId &paramTypeId) const;
     void setParamValue(const ParamTypeId &paramName, const QVariant &value);
 
-    ParamList settings() const;
-    bool hasSetting(const ParamTypeId &paramTypeId) const;
-    void setSettings(const ParamList &settings);
+    Q_INVOKABLE ParamList settings() const;
+    Q_INVOKABLE bool hasSetting(const ParamTypeId &paramTypeId) const;
+    Q_INVOKABLE void setSettings(const ParamList &settings);
 
-    QVariant setting(const ParamTypeId &paramTypeId) const;
-    void setSettingValue(const ParamTypeId &paramTypeId, const QVariant &value);
+    Q_INVOKABLE QVariant setting(const ParamTypeId &paramTypeId) const;
+    Q_INVOKABLE void setSettingValue(const ParamTypeId &paramTypeId, const QVariant &value);
 
     States states() const;
     bool hasState(const StateTypeId &stateTypeId) const;

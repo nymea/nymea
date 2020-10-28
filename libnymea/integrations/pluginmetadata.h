@@ -34,6 +34,8 @@
 #include "types/paramtype.h"
 #include "types/thingclass.h"
 
+#include <QJsonObject>
+
 class PluginMetadata
 {
 public:
@@ -53,6 +55,7 @@ public:
     Vendors vendors() const;
     ThingClasses thingClasses() const;
 
+    QJsonObject jsonObject() const;
 
 private:
     void parse(const QJsonObject &jsonObject);
@@ -64,6 +67,7 @@ private:
     bool verifyDuplicateUuid(const QUuid &uuid);
 
 private:
+    QJsonObject m_jsonObject;
     bool m_isValid = false;
     bool m_isBuiltIn = false;
     PluginId m_pluginId;

@@ -4,7 +4,7 @@ QT+= network
 
 TARGET = $$qtLibraryTarget(nymea_integrationpluginmock)
 
-OTHER_FILES += interationpluginmock.json
+OTHER_FILES += integrationpluginmock.json
 
 SOURCES += \
     integrationpluginmock.cpp \

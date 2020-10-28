@@ -1,0 +1,176 @@
+{
+    "id": "9be90b21-778c-4080-93c9-84ae1ab60734",
+    "name": "pyMock",
+    "displayName": "Python mock plugin",
+    "paramTypes": [
+        {
+            "id": "1d3422cb-fcdd-4ab5-ac6e-056288439343",
+            "name": "autoThingCount",
+            "displayName": "Number of auto things",
+            "type": "int",
+            "defaultValue": 0
+        }
+    ],
+    "vendors": [
+        {
+            "id": "2062d64d-3232-433c-88bc-0d33c0ba2ba6",
+            "name": "nymea",
+            "displayName": "nymea GmbH",
+            "thingClasses": [
+                {
+                    "id": "727d3e73-505d-4118-adf4-6408b46a5d48",
+                    "name": "pyMockAuto",
+                    "displayName": "Auto Python mock thing",
+                    "createMethods": ["auto"],
+                    "setupMethod": "justAdd",
+                    "paramTypes": [
+                        {
+                            "id": "8733557e-c599-4169-bcfa-5cc033c17b85",
+                            "name": "param1",
+                            "displayName": "Param 1",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "12c82472-56b0-4229-b324-4aaa6850320e",
+                            "name": "state1",
+                            "displayName": "State 1",
+                            "displayNameEvent": "State 1 changed",
+                            "type": "bool",
+                            "defaultValue": false
+                        }
+                    ]
+                },
+                {
+                    "id": "1761c256-99b1-41bd-988a-a76087f6a4f1",
+                    "name": "pyMock",
+                    "displayName": "Python mock thing",
+                    "createMethods": ["user"],
+                    "setupMethod": "justAdd",
+                    "eventTypes": [
+                        {
+                            "id": "de6c2425-0dee-413f-8f4c-bb0929e83c0d",
+                            "name": "event1",
+                            "displayName": "Event 1",
+                            "paramTypes": [
+                                {
+                                    "id": "9f6aef52-dcde-4ee1-8ae3-4823594bf153",
+                                    "name": "param1",
+                                    "displayName": "Event param 1",
+                                    "type": "QString"
+                                }
+                            ]
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "24714828-93ec-41a7-875e-6a0b5b57d25c",
+                            "name": "state1",
+                            "displayName": "State 1",
+                            "displayNameEvent": "State 1 changed",
+                            "displayNameAction": "Set state 1",
+                            "type": "int",
+                            "defaultValue": 0
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "a504933a-2b86-41c1-b188-8998d445adf8",
+                            "name": "action1",
+                            "displayName": "Action 1",
+                            "paramTypes": [
+                                {
+                                    "id": "5a824a21-3e97-49a5-8b4d-2a5bc3ea99ef",
+                                    "name": "param1",
+                                    "displayName": "Action param 1",
+                                    "type": "QString",
+                                    "defaultValue": "hello"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "248c5046-847b-44d0-ab7c-684ff79197dc",
+                    "name": "pyMockDiscoveryPairing",
+                    "displayName": "Python mock thing with discovery and pairing",
+                    "createMethods": ["discovery", "user"],
+                    "setupMethod": "userAndPassword",
+                    "discoveryParamTypes": [
+                        {
+                            "id": "ef5f6b90-e9d8-4e77-a14d-6725cfb07116",
+                            "name": "resultCount",
+                            "displayName": "Result count",
+                            "type": "uint",
+                            "defaultValue": 2,
+                            "minValue": 0,
+                            "maxValue": 20
+                        }
+                    ],
+                    "paramTypes": [
+                        {
+                            "id": "69328949-13ad-4bf4-b664-e7ee409ee51d",
+                            "name": "param1",
+                            "displayName": "Param 1",
+                            "type": "int",
+                            "defaultValue": 0
+                        }
+                    ],
+                    "settingsTypes": [
+                        {
+                            "id": "d2312d00-22f5-4e2c-a6cc-8e4cade2d58b",
+                            "name": "setting1",
+                            "displayName": "Setting 1",
+                            "type": "QString",
+                            "defaultValue": "hello"
+                        }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "e6b98ef6-7922-48e6-b508-238d178b86ca",
+                            "name": "event1",
+                            "displayName": "Event 1",
+                            "paramTypes": [
+                                {
+                                    "id": "7c265a6a-f0ae-4822-a14f-e6a090f5a310",
+                                    "name": "param1",
+                                    "displayName": "Event param 1",
+                                    "type": "QString"
+                                }
+                            ]
+                        }
+                    ],
+                    "stateTypes": [
+                        {
+                            "id": "99d0af17-9e8c-42bb-bece-a5d114f051d3",
+                            "name": "state1",
+                            "displayName": "State 1",
+                            "displayNameEvent": "State 1 changed",
+                            "displayNameAction": "Set state 1",
+                            "type": "int",
+                            "defaultValue": 0
+                        }
+                    ],
+                    "actionTypes": [
+                        {
+                            "id": "9bcc17ee-52a4-48ef-9a76-b2df4433dac5",
+                            "name": "action1",
+                            "displayName": "Action 1",
+                            "paramTypes": [
+                                {
+                                    "id": "2e86cb76-e1a9-4afd-8fd3-e900cbb738f5",
+                                    "name": "param1",
+                                    "displayName": "Action param 1",
+                                    "type": "QString",
+                                    "defaultValue": "hello"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

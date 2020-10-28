@@ -53,10 +53,7 @@ CloudNotifications::CloudNotifications(AWSConnector* awsConnector, QObject *pare
     connect(m_awsConnector, &AWSConnector::pushNotificationEndpointsUpdated, this, &CloudNotifications::pushNotificationEndpointsUpdated);
     connect(m_awsConnector, &AWSConnector::pushNotificationEndpointAdded, this, &CloudNotifications::pushNotificationEndpointAdded);
     connect(m_awsConnector, &AWSConnector::pushNotificationSent, this, &CloudNotifications::pushNotificationSent);
-}
 
-PluginMetadata CloudNotifications::metaData() const
-{
     QVariantMap pluginMetaData;
     pluginMetaData.insert("id", "ccc6dbc8-e352-48a1-8e87-3c89a4669fc2");
     pluginMetaData.insert("name", "CloudNotifications");
@@ -145,7 +142,8 @@ PluginMetadata CloudNotifications::metaData() const
     vendors.append(guhVendor);
     pluginMetaData.insert("vendors", vendors);
 
-    return PluginMetadata(QJsonObject::fromVariantMap(pluginMetaData), true);
+    setMetaData(PluginMetadata(QJsonObject::fromVariantMap(pluginMetaData), true));
+
 }
 
 void CloudNotifications::setupThing(ThingSetupInfo *info)

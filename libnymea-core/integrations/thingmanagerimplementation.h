@@ -72,7 +72,7 @@ public:
 
     static QStringList pluginSearchDirs();
     static QList<QJsonObject> pluginsMetadata();
-    void registerStaticPlugin(IntegrationPlugin* plugin, const PluginMetadata &metaData);
+    void registerStaticPlugin(IntegrationPlugin* plugin);
 
     IntegrationPlugins plugins() const override;
     IntegrationPlugin *plugin(const PluginId &pluginId) const override;
@@ -131,7 +131,7 @@ signals:
 
 private slots:
     void loadPlugins();
-    void loadPlugin(IntegrationPlugin *pluginIface, const PluginMetadata &metaData);
+    void loadPlugin(IntegrationPlugin *pluginIface);
     void loadConfiguredThings();
     void storeConfiguredThings();
     void startMonitoringAutoThings();
@@ -164,6 +164,8 @@ private:
     void loadIOConnections();
     void syncIOConnection(Thing *inputThing, const StateTypeId &stateTypeId);
     QVariant mapValue(const QVariant &value, const StateType &fromStateType, const StateType &toStateType, bool inverted) const;
+
+    IntegrationPlugin *createCppIntegrationPlugin(const QString &absoluteFilePath);
 
 private:
     HardwareManager *m_hardwareManager;

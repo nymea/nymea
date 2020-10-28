@@ -79,6 +79,8 @@ public:
     IntegrationPlugin(QObject *parent = nullptr);
     virtual ~IntegrationPlugin();
 
+    PluginMetadata metadata();
+
     virtual void init() {}
 
     PluginId pluginId() const;
@@ -105,11 +107,11 @@ public:
     virtual void executeBrowserItemAction(BrowserItemActionInfo *info);
 
     // Configuration
-    ParamTypes configurationDescription() const;
-    Thing::ThingError setConfiguration(const ParamList &configuration);
-    ParamList configuration() const;
-    QVariant configValue(const ParamTypeId &paramTypeId) const;
-    Thing::ThingError setConfigValue(const ParamTypeId &paramTypeId, const QVariant &value);
+    Q_INVOKABLE ParamTypes configurationDescription() const;
+    Q_INVOKABLE Thing::ThingError setConfiguration(const ParamList &configuration);
+    Q_INVOKABLE ParamList configuration() const;
+    Q_INVOKABLE QVariant configValue(const ParamTypeId &paramTypeId) const;
+    Q_INVOKABLE Thing::ThingError setConfigValue(const ParamTypeId &paramTypeId, const QVariant &value);
 
     bool isBuiltIn() const;
 
@@ -124,28 +126,19 @@ protected:
     HardwareManager *hardwareManager() const;
     QSettings *pluginStorage() const;
 
+    void setMetaData(const PluginMetadata &metaData);
+
 private:
     friend class ThingManager;
     friend class ThingManagerImplementation;
 
+    void initPlugin(ThingManager *thingManager, HardwareManager *hardwareManager);
 
-    void setMetaData(const PluginMetadata &metaData);
-    void initPlugin(const PluginMetadata &metadata, ThingManager *thingManager, HardwareManager *hardwareManager);
-
-    QPair<bool, QList<ParamType> > parseParamTypes(const QJsonArray &array) const;
-
-    // Returns <missingFields, unknownFields>
-    QPair<QStringList, QStringList> verifyFields(const QStringList &possibleFields, const QStringList &mandatoryFields, const QJsonObject &value) const;
-
-    // load and verify enum values
-    QPair<bool, Types::Unit> loadAndVerifyUnit(const QString &unitString) const;
-    QPair<bool, Types::InputType> loadAndVerifyInputType(const QString &inputType) const;
-
+    PluginMetadata m_metaData;
     ThingManager *m_thingManager = nullptr;
     HardwareManager *m_hardwareManager = nullptr;
     QSettings *m_storage = nullptr;
 
-    PluginMetadata m_metaData;
     ParamList m_config;
 };
 Q_DECLARE_INTERFACE(IntegrationPlugin, "io.nymea.IntegrationPlugin")

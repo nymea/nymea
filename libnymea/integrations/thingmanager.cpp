@@ -47,8 +47,25 @@ ThingManager::ThingManager(QObject *parent) : QObject(parent)
 {
     qRegisterMetaType<Param>();
     qRegisterMetaType<ParamList>();
+    qRegisterMetaType<ParamTypeId>();
     qRegisterMetaType<ParamType>();
     qRegisterMetaType<ParamTypes>();
+    qRegisterMetaType<StateTypeId>();
+    qRegisterMetaType<StateType>();
+    qRegisterMetaType<StateTypes>();
+    qRegisterMetaType<EventTypeId>();
+    qRegisterMetaType<EventType>();
+    qRegisterMetaType<EventTypes>();
+    qRegisterMetaType<ActionTypeId>();
+    qRegisterMetaType<ActionType>();
+    qRegisterMetaType<ActionTypes>();
+    qRegisterMetaType<ThingClassId>();
+    qRegisterMetaType<ThingClass>();
+    qRegisterMetaType<ThingClasses>();
+    qRegisterMetaType<ThingDescriptorId>();
+    qRegisterMetaType<ThingDescriptor>();
+    qRegisterMetaType<ThingDescriptors>();
+    qRegisterMetaType<Thing::ThingError>();
 }
 
 /*! Connect two states.

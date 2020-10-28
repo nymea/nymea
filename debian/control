@@ -182,8 +182,9 @@ Depends: ${shlibs:Depends},
          ${misc:Depends},
          libnymea1 (= ${binary:Version}),
          pkg-config,
+         qtbase5-dev,
 Replaces: libguh1-dev
-Description: An open source IoT server - development files
+Description: The main libraries and header files for developing with nymea.
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
  allows them to interact.
@@ -201,11 +202,18 @@ Depends: ${shlibs:Depends},
          libnymea1 (= ${binary:Version}),
          qttools5-dev-tools,
          rsync,
-Description: An open source IoT server - development files
- The nymea daemon is a plugin based IoT (Internet of Things) server. The
- server works like a translator for devices, things and services and
- allows them to interact.
- With the powerful rule engine you are able to connect any device available
- in the system and create individual scenes and behaviors for your environment.
+Description: Tools for developing nymea plugins.
  .
- This package will install the development tools for nymea.
+ This package will install the nymea-plugininfocompiler.
+
+Package: nymea-sdk
+Section: devel
+Architecture: all
+Multi-Arch: allowed
+Depends: crossbuilder,
+         libnymea1-dev,
+         nymea-dev-tools,
+         nymea-qtcreator-wizards,
+Description: The nymea SDK.
+ .
+ Meta-Package for everything required to develop on nymea.

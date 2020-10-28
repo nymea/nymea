@@ -32,7 +32,11 @@
 #include "nymeasettings.h"
 #include "loggingcategories.h"
 
-#include <QSerialPortInfo>
+NYMEA_LOGGING_CATEGORY(dcZigbee, "Zigbee")
+
+// Register debug category from the libnymea-zigbee.
+// Do not use this category within nymea!
+NYMEA_LOGGING_CATEGORY(dcZigbeeNetwork, "ZigbeeNetwork")
 
 namespace nymeaserver {
 

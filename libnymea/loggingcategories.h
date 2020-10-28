@@ -89,9 +89,6 @@ Q_DECLARE_LOGGING_CATEGORY(dcMqtt)
 Q_DECLARE_LOGGING_CATEGORY(dcTranslations)
 Q_DECLARE_LOGGING_CATEGORY(dcCoap)
 Q_DECLARE_LOGGING_CATEGORY(dcI2C)
-Q_DECLARE_LOGGING_CATEGORY(dcZigbee)
-Q_DECLARE_LOGGING_CATEGORY(dcZigbeeResource)
-
 
 /*
   Installs a nymea log message handler in the system.

@@ -35,8 +35,6 @@
 
 #include <zigbeenetworkmanager.h>
 
-#include "zigbeeserialport.h"
-
 namespace nymeaserver {
 
 class ZigbeeManager : public QObject
@@ -50,9 +48,7 @@ public:
 
     ZigbeeNetwork *zigbeeNetwork() const;
 
-    ZigbeeSerialPortList availablePorts();
-
-    void createZigbeeNetwork(const QString &serialPort, qint32 baudrate, ZigbeeNetworkManager::BackendType backend);
+    void createZigbeeNetwork(const QString &serialPort, qint32 baudrate, Zigbee::BackendType backend);
 
 private:
     ZigbeeNetwork *m_zigbeeNetwork = nullptr;

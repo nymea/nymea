@@ -38,10 +38,10 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     m_zigbeeManager(zigbeeManager)
 {
     registerEnum<ZigbeeNetwork::State>();
-    registerEnum<ZigbeeNetworkManager::BackendType>();
+    registerEnum<Zigbee::BackendType>();
 
-    registerObject<ZigbeeSerialPort>();
-    registerObject<ZigbeeSerialPort, ZigbeeSerialPortList>();
+//    registerObject<ZigbeeSerialPort>();
+//    registerObject<ZigbeeSerialPort, ZigbeeSerialPortList>();
 
     QVariantMap params, returns;
     QString description;
@@ -60,7 +60,7 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     returns.insert("configured", enumValueName(Bool));
     returns.insert("serialPort", enumValueName(String));
     returns.insert("baudRate", enumValueName(Uint));
-    returns.insert("backend", enumRef<ZigbeeNetworkManager::BackendType>());
+    returns.insert("backend", enumRef<Zigbee::BackendType>());
     returns.insert("firmwareVersion", enumValueName(String));
     returns.insert("networkIeeeeAddress", enumValueName(String));
     returns.insert("networkPanId", enumValueName(Uint));
@@ -70,10 +70,10 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     registerMethod("GetNetworkStatus", description, params, returns);
 
     // GetUartInterfaces
-    params.clear(); returns.clear();
-    description = "Get the available UART interfaces in order to set up the zigbee network on the approriate serial interface.";
-    returns.insert("uartInterfaces", objectRef<ZigbeeSerialPortList>());
-    registerMethod("GetUartInterfaces", description, params, returns);
+//    params.clear(); returns.clear();
+//    description = "Get the available UART interfaces in order to set up the zigbee network on the approriate serial interface.";
+//    returns.insert("uartInterfaces", objectRef<ZigbeeSerialPortList>());
+//    registerMethod("GetUartInterfaces", description, params, returns);
 
     // GetNetworkStatus
     // NetworkStatusChanged
@@ -125,11 +125,11 @@ JsonReply *ZigbeeHandler::GetUartInterfaces(const QVariantMap &params)
 {
     Q_UNUSED(params)
     QVariantMap ret;
-    QVariantList portList;
-    foreach (const ZigbeeSerialPort &serialPort, m_zigbeeManager->availablePorts()) {
-        portList << pack(serialPort);
-    }
-    ret.insert("uartInterfaces", portList);
+//    QVariantList portList;
+//    foreach (const ZigbeeSerialPort &serialPort, m_zigbeeManager->availablePorts()) {
+//        portList << pack(serialPort);
+//    }
+//    ret.insert("uartInterfaces", portList);
     return createReply(ret);
 }
 

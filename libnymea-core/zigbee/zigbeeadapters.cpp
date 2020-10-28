@@ -28,47 +28,29 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ZIGBEEMANAGER_H
-#define ZIGBEEMANAGER_H
-
-#include <QObject>
-
-#include <zigbeenetworkmanager.h>
-
 #include "zigbeeadapters.h"
 
 namespace nymeaserver {
 
-class ZigbeeManager : public QObject
+ZigbeeAdapters::ZigbeeAdapters()
 {
-    Q_OBJECT
-public:
-    enum ZigbeeNetworkState {
-        ZigbeeNetworkStateOffline,
-        ZigbeeNetworkStateUpdating,
-        ZigbeeNetworkStateOnline,
-        ZigbeeNetworkStateError
-    };
-    Q_ENUM(ZigbeeNetworkState)
-
-    explicit ZigbeeManager(QObject *parent = nullptr);
-
-    bool available() const;
-    bool enabled() const;
-
-    ZigbeeNetwork *zigbeeNetwork() const;
-    ZigbeeAdapters availableAdapters();
-
-    void createZigbeeNetwork(const QString &serialPort, qint32 baudrate, Zigbee::ZigbeeBackendType backend);
-
-private:
-    ZigbeeNetwork *m_zigbeeNetwork = nullptr;
-
-signals:
-    void zigbeeNetworkChanged(ZigbeeNetwork *zigbeeNetwork);
-
-};
 
 }
 
-#endif // ZIGBEEMANAGER_H
+ZigbeeAdapters::ZigbeeAdapters(const QList<ZigbeeAdapter> &other) :
+    QList<ZigbeeAdapter>(other)
+{
+
+}
+
+QVariant ZigbeeAdapters::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
+void ZigbeeAdapters::put(const QVariant &variant)
+{
+    append(variant.value<ZigbeeAdapter>());
+}
+
+}

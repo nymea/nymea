@@ -59,6 +59,11 @@ ZigbeeNetwork *ZigbeeManager::zigbeeNetwork() const
     return m_zigbeeNetwork;
 }
 
+ZigbeeAdapters ZigbeeManager::availableAdapters()
+{
+    return ZigbeeNetworkManager::availableAdapters();
+}
+
 void ZigbeeManager::createZigbeeNetwork(const QString &serialPort, qint32 baudrate, Zigbee::ZigbeeBackendType backend)
 {
     if (m_zigbeeNetwork) {

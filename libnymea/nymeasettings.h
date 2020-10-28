@@ -52,6 +52,7 @@ public:
         SettingsRoleTags,
         SettingsRoleMqttPolicies,
         SettingsRoleIOConnections,
+        SettingsRoleZigbee,
     };
 
     explicit NymeaSettings(const SettingsRole &role = SettingsRoleNone, QObject *parent = nullptr);

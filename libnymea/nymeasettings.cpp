@@ -122,6 +122,9 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     case SettingsRoleIOConnections:
         fileName = "ioconnections.conf";
         break;
+    case SettingsRoleZigbee:
+        fileName = "zigbee.conf";
+        break;
     }
     m_settings = new QSettings(basePath + settingsPrefix + fileName, QSettings::IniFormat, this);
 }

@@ -97,6 +97,7 @@ HEADERS += nymeacore.h \
     cloud/cloudtransport.h \
     debugreportgenerator.h \
     platform/platform.h \ \
+    zigbee/zigbeeadapter.h \
     zigbee/zigbeeadapters.h \
     zigbee/zigbeemanager.h
 
@@ -179,6 +180,7 @@ SOURCES += nymeacore.cpp \
     cloud/cloudtransport.cpp \
     debugreportgenerator.cpp \
     platform/platform.cpp \
+    zigbee/zigbeeadapter.cpp \
     zigbee/zigbeeadapters.cpp \
     zigbee/zigbeemanager.cpp
 

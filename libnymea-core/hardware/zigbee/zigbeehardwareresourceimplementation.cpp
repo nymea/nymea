@@ -37,6 +37,8 @@
 
 #include <zigbeenetworkmanager.h>
 
+NYMEA_LOGGING_CATEGORY(dcZigbeeResource, "ZigbeeResource")
+
 namespace nymeaserver {
 
 ZigbeeHardwareResourceImplementation::ZigbeeHardwareResourceImplementation(QObject *parent) :

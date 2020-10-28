@@ -32,7 +32,8 @@
 #define ZIGBEEADAPTERS_H
 
 #include <QObject>
-#include <zigbeeadapter.h>
+
+#include "zigbeeadapter.h"
 
 namespace nymeaserver {
 

@@ -41,7 +41,39 @@ namespace nymeaserver {
 
 ZigbeeManager::ZigbeeManager(QObject *parent) : QObject(parent)
 {
+    // Adapter monitor
+    qCDebug(dcZigbee()) << "Initialize the ZigBee manager";
+    m_adapterMonitor = new ZigbeeUartAdapterMonitor(this);
+    if (!m_adapterMonitor->isValid()) {
+        qCWarning(dcZigbee()) << "Could not initialize the ZigBee adapter monitor.";
+        // Lets continue anyways, maybe we can set up existing networks right the way.
+    }
 
+    foreach(const ZigbeeUartAdapter &uartAdapter, m_adapterMonitor->availableAdapters()) {
+        m_adapters.append(createAdapterFromUartAdapter(uartAdapter));
+    }
+
+    connect(m_adapterMonitor, &ZigbeeUartAdapterMonitor::adapterAdded, this, [this](const ZigbeeUartAdapter &uartAdapter){
+        ZigbeeAdapter adapter = createAdapterFromUartAdapter(uartAdapter);
+        m_adapters.append(adapter);
+        emit availableAdapterAdded(adapter);
+    });
+
+    connect(m_adapterMonitor, &ZigbeeUartAdapterMonitor::adapterRemoved, this, [this](const ZigbeeUartAdapter &uartAdapter){
+        foreach (const ZigbeeAdapter &adapter, m_adapters) {
+            if (adapter.systemLocation() == uartAdapter.systemLocation()) {
+                m_adapters.removeAll(adapter);
+                emit availableAdapterRemoved(adapter);
+            }
+        }
+    });
+
+    // Load zigbee networks from settings
+    NymeaSettings settings(NymeaSettings::SettingsRoleZigbee);
+
+
+
+    // TODO: load platform configuration for networks we know for sure how they work
 }
 
 bool ZigbeeManager::available() const
@@ -61,7 +93,7 @@ ZigbeeNetwork *ZigbeeManager::zigbeeNetwork() const
 
 ZigbeeAdapters ZigbeeManager::availableAdapters()
 {
-    return ZigbeeNetworkManager::availableAdapters();
+    return m_adapters;
 }
 
 void ZigbeeManager::createZigbeeNetwork(const QString &serialPort, qint32 baudrate, Zigbee::ZigbeeBackendType backend)
@@ -75,10 +107,21 @@ void ZigbeeManager::createZigbeeNetwork(const QString &serialPort, qint32 baudra
     m_zigbeeNetwork->setSerialPortName(serialPort);
     m_zigbeeNetwork->setSerialBaudrate(baudrate);
     m_zigbeeNetwork->setSettingsFileName(NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName());
-
     m_zigbeeNetwork->startNetwork();
 
     emit zigbeeNetworkChanged(m_zigbeeNetwork);
+}
+
+ZigbeeAdapter ZigbeeManager::createAdapterFromUartAdapter(const ZigbeeUartAdapter &uartAdapter)
+{
+    ZigbeeAdapter adapter;
+    adapter.setName(uartAdapter.name());
+    adapter.setSystemLocation(uartAdapter.systemLocation());
+    adapter.setDescription(uartAdapter.description());
+    adapter.setBackendSuggestionAvailable(uartAdapter.backendSuggestionAvailable());
+    adapter.setSuggestedZigbeeBackendType(uartAdapter.suggestedZigbeeBackendType());
+    adapter.setSuggestedBaudRate(uartAdapter.suggestedBaudRate());
+    return adapter;
 }
 
 }

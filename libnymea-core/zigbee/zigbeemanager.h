@@ -34,6 +34,7 @@
 #include <QObject>
 
 #include <zigbeenetworkmanager.h>
+#include <zigbeeuartadaptermonitor.h>
 
 #include "zigbeeadapters.h"
 
@@ -43,6 +44,12 @@ class ZigbeeManager : public QObject
 {
     Q_OBJECT
 public:
+    enum ZigbeeBackendType {
+        ZigbeeBackendTypeDconz,
+        ZigbeeBackendTypeNxp
+    };
+    Q_ENUM(ZigbeeBackendType)
+
     enum ZigbeeNetworkState {
         ZigbeeNetworkStateOffline,
         ZigbeeNetworkStateUpdating,
@@ -50,6 +57,13 @@ public:
         ZigbeeNetworkStateError
     };
     Q_ENUM(ZigbeeNetworkState)
+
+    enum ZigbeeError {
+        ZigbeeErrorNoError,
+        ZigbeeErrorAdapterNotAvailable,
+        ZigbeeErrorAdapterAlreadyInUse
+    };
+    Q_ENUM(ZigbeeError)
 
     explicit ZigbeeManager(QObject *parent = nullptr);
 
@@ -62,9 +76,17 @@ public:
     void createZigbeeNetwork(const QString &serialPort, qint32 baudrate, Zigbee::ZigbeeBackendType backend);
 
 private:
+    ZigbeeAdapters m_adapters;
+    ZigbeeUartAdapterMonitor *m_adapterMonitor = nullptr;
+
     ZigbeeNetwork *m_zigbeeNetwork = nullptr;
 
+    ZigbeeAdapter createAdapterFromUartAdapter(const ZigbeeUartAdapter &uartAdapter);
+
 signals:
+    void availableAdapterAdded(const ZigbeeAdapter &adapter);
+    void availableAdapterRemoved(const ZigbeeAdapter &adapter);
+
     void zigbeeNetworkChanged(ZigbeeNetwork *zigbeeNetwork);
 
 };

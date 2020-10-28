@@ -55,13 +55,6 @@ CoapObserveResource::CoapObserveResource(const QUrl &url, const QByteArray &toke
 {
 }
 
-/*! Constructs a copy of the given \a other \l{CoapObserveResource}. */
-CoapObserveResource::CoapObserveResource(const CoapObserveResource &other)
-{
-    m_url = other.url();
-    m_token = other.token();
-}
-
 /*! Returns the url of this \l{CoapObserveResource}. */
 QUrl CoapObserveResource::url() const
 {

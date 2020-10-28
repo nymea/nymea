@@ -42,7 +42,6 @@ class LIBNYMEA_EXPORT CoapObserveResource
 public:
     CoapObserveResource();
     CoapObserveResource(const QUrl &url, const QByteArray &token);
-    CoapObserveResource(const CoapObserveResource &other);
 
     QUrl url() const;
     QByteArray token() const;

@@ -53,6 +53,7 @@ namespace nymeaserver {
 QList<ScriptEngine*> ScriptEngine::s_engines;
 QtMessageHandler ScriptEngine::s_upstreamMessageHandler;
 QLoggingCategory::CategoryFilter ScriptEngine::s_oldCategoryFilter = nullptr;
+QMutex ScriptEngine::s_loggerMutex;
 
 ScriptEngine::ScriptEngine(ThingManager *deviceManager, QObject *parent) : QObject(parent),
     m_deviceManager(deviceManager)
@@ -446,6 +447,7 @@ void ScriptEngine::logMessageHandler(QtMsgType type, const QMessageLogContext &c
         return;
     }
 
+    QMutexLocker locker(&s_loggerMutex);
     // Copy the message to the script engine
     foreach (ScriptEngine *engine, s_engines) {
         engine->onScriptMessage(type, context, message);

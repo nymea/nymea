@@ -197,25 +197,6 @@ void WebSocketServer::onPing(quint64 elapsedTime, const QByteArray &payload)
     qCDebug(dcWebSocketServer) << "Ping response from" << clientId.toString() << elapsedTime << payload;
 }
 
-
-/*! Returns true if this \l{WebSocketServer} could be reconfigured with the given \a config. */
-void WebSocketServer::reconfigureServer(const ServerConfiguration &config)
-{
-    if (configuration() == config && m_server->isListening()) {
-        qCDebug(dcWebSocketServer()) << "Configuration unchanged. Not restarting the server.";
-        return;
-    }
-
-    stopServer();
-    qCDebug(dcWebSocketServer()) << "Stopped server for reconfiguration.";
-
-    setConfiguration(config);
-
-    // Start server with new configuration
-    qCDebug(dcWebSocketServer()) << "Restart server with new configuration.";
-    startServer();
-}
-
 /*! Sets the server name to the given \a serverName. */
 void WebSocketServer::setServerName(const QString &serverName)
 {

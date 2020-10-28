@@ -163,22 +163,6 @@ void TcpServer::onDataAvailable(QSslSocket * socket, const QByteArray &data)
     emit dataAvailable(clientId, data);
 }
 
-
-/*! Returns true if this \l{TcpServer} could be reconfigured with the given \a config. */
-void TcpServer::reconfigureServer(const ServerConfiguration &config)
-{
-    if (configuration().address == config.address &&
-            configuration().port == config.port &&
-            configuration().sslEnabled == config.sslEnabled &&
-            configuration().authenticationEnabled == config.authenticationEnabled &&
-            m_server->isListening())
-        return;
-
-    stopServer();
-    setConfiguration(config);
-    startServer();
-}
-
 /*! Sets the name of this server to the given \a serverName. */
 void TcpServer::setServerName(const QString &serverName)
 {

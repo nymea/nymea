@@ -104,7 +104,6 @@ private slots:
     void onError(QAbstractSocket::SocketError error);
 
 public slots:
-    void reconfigureServer(const ServerConfiguration &configuration);
     void setServerName(const QString &serverName) override;
     bool startServer() override;
     bool stopServer() override;

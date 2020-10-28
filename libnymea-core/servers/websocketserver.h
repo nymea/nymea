@@ -77,7 +77,6 @@ private slots:
     void onPing(quint64 elapsedTime, const QByteArray & payload);
 
 public slots:
-    void reconfigureServer(const ServerConfiguration &config);
     void setServerName(const QString &serverName) override;
     bool startServer() override;
     bool stopServer() override;

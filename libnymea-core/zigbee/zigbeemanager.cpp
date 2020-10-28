@@ -59,7 +59,7 @@ ZigbeeNetwork *ZigbeeManager::zigbeeNetwork() const
     return m_zigbeeNetwork;
 }
 
-void ZigbeeManager::createZigbeeNetwork(const QString &serialPort, qint32 baudrate, Zigbee::BackendType backend)
+void ZigbeeManager::createZigbeeNetwork(const QString &serialPort, qint32 baudrate, Zigbee::ZigbeeBackendType backend)
 {
     if (m_zigbeeNetwork) {
         delete m_zigbeeNetwork;

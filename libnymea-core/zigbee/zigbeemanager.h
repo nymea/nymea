@@ -41,6 +41,14 @@ class ZigbeeManager : public QObject
 {
     Q_OBJECT
 public:
+    enum ZigbeeNetworkState {
+        ZigbeeNetworkStateOffline,
+        ZigbeeNetworkStateUpdating,
+        ZigbeeNetworkStateOnline,
+        ZigbeeNetworkStateError
+    };
+    Q_ENUM(ZigbeeNetworkState)
+
     explicit ZigbeeManager(QObject *parent = nullptr);
 
     bool available() const;
@@ -48,7 +56,7 @@ public:
 
     ZigbeeNetwork *zigbeeNetwork() const;
 
-    void createZigbeeNetwork(const QString &serialPort, qint32 baudrate, Zigbee::BackendType backend);
+    void createZigbeeNetwork(const QString &serialPort, qint32 baudrate, Zigbee::ZigbeeBackendType backend);
 
 private:
     ZigbeeNetwork *m_zigbeeNetwork = nullptr;

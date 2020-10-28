@@ -2,32 +2,39 @@
     "states": [
         {
             "name": "weatherDescription",
-            "type": "QString"
+            "type": "QString",
+            "logged": true
         },
         {
             "name": "weatherCondition",
             "type": "QString",
-            "allowedValues": ["clear-day", "clear-night", "few-clouds-day", "few-clouds-night", "clouds", "overcast", "light-rain", "shower-rain", "thunderstorm", "snow", "fog"]
+            "allowedValues": ["clear-day", "clear-night", "few-clouds-day", "few-clouds-night", "clouds", "overcast", "light-rain", "shower-rain", "thunderstorm", "snow", "fog"],
+            "logged": true
         },
         {
             "name": "temperature",
-            "type": "double"
+            "type": "double",
+            "logged": true
         },
         {
             "name": "humidity",
-            "type": "int"
+            "type": "int",
+            "logged": true
         },
         {
             "name": "pressure",
-            "type": "double"
+            "type": "double",
+            "logged": true
         },
         {
             "name": "windSpeed",
-            "type": "double"
+            "type": "double",
+            "logged": true
         },
         {
             "name": "windDirection",
-            "type": "int"
+            "type": "int",
+            "logged": true
         }
     ]
 }

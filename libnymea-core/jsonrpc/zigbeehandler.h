@@ -50,7 +50,7 @@ public:
     QString name() const override;
 
     Q_INVOKABLE JsonReply *GetNetworkStatus(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *GetUartInterfaces(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetAvailableAdapters(const QVariantMap &params);
 
 
 private:

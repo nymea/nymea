@@ -28,47 +28,28 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ZIGBEEMANAGER_H
-#define ZIGBEEMANAGER_H
+#ifndef ZIGBEEADAPTERS_H
+#define ZIGBEEADAPTERS_H
 
 #include <QObject>
-
-#include <zigbeenetworkmanager.h>
-
-#include "zigbeeadapters.h"
+#include <zigbeeadapter.h>
 
 namespace nymeaserver {
 
-class ZigbeeManager : public QObject
+class ZigbeeAdapters : public QList<ZigbeeAdapter>
 {
-    Q_OBJECT
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+
 public:
-    enum ZigbeeNetworkState {
-        ZigbeeNetworkStateOffline,
-        ZigbeeNetworkStateUpdating,
-        ZigbeeNetworkStateOnline,
-        ZigbeeNetworkStateError
-    };
-    Q_ENUM(ZigbeeNetworkState)
-
-    explicit ZigbeeManager(QObject *parent = nullptr);
-
-    bool available() const;
-    bool enabled() const;
-
-    ZigbeeNetwork *zigbeeNetwork() const;
-    ZigbeeAdapters availableAdapters();
-
-    void createZigbeeNetwork(const QString &serialPort, qint32 baudrate, Zigbee::ZigbeeBackendType backend);
-
-private:
-    ZigbeeNetwork *m_zigbeeNetwork = nullptr;
-
-signals:
-    void zigbeeNetworkChanged(ZigbeeNetwork *zigbeeNetwork);
-
+    ZigbeeAdapters();
+    ZigbeeAdapters(const QList<ZigbeeAdapter> &other);
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
 };
 
 }
 
-#endif // ZIGBEEMANAGER_H
+Q_DECLARE_METATYPE(nymeaserver::ZigbeeAdapters)
+
+#endif // ZIGBEEADAPTERS_H

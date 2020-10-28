@@ -30,6 +30,9 @@
 
 #include "zigbeehandler.h"
 #include "zigbee/zigbeemanager.h"
+#include "zigbee/zigbeeadapters.h"
+
+#include <zigbeeadapter.h>
 
 namespace nymeaserver {
 
@@ -40,12 +43,14 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     registerEnum<ZigbeeManager::ZigbeeNetworkState>();
     registerEnum<Zigbee::ZigbeeBackendType>();
 
+    registerObject<ZigbeeAdapter, ZigbeeAdapters>();
+
     QVariantMap params, returns;
     QString description;
 
     /* 1. GetNetworkStatus
      * 2. Setup network if the is no network configured
-     *      - GetUartInterfaces
+     *      - GetAvailableAdapters
      *      - Setup network with given UART interface and backend type
      *      -
      */
@@ -66,11 +71,11 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     returns.insert("networkState", enumRef<ZigbeeManager::ZigbeeNetworkState>());
     registerMethod("GetNetworkStatus", description, params, returns);
 
-    // GetUartInterfaces
-//    params.clear(); returns.clear();
-//    description = "Get the available UART interfaces in order to set up the zigbee network on the approriate serial interface.";
-//    returns.insert("uartInterfaces", objectRef<ZigbeeSerialPortList>());
-//    registerMethod("GetUartInterfaces", description, params, returns);
+    // GetAvailableAdapters
+    params.clear(); returns.clear();
+    description = "Get the available ZigBee adapters in order to set up the zigbee network on the approriate serial interface. If the adapter has been recognized correctly, the \"backendSuggestionAvailable\" will be true and the configurations can be used as they where given, otherwise the user might set the backend type and baud rate manually.";
+    returns.insert("zigbeeAdapters", objectRef<ZigbeeAdapters>());
+    registerMethod("GetAvailableAdapters", description, params, returns);
 
     // GetNetworkStatus
     // NetworkStatusChanged
@@ -118,15 +123,15 @@ JsonReply *ZigbeeHandler::GetNetworkStatus(const QVariantMap &params)
     return createReply(ret);
 }
 
-JsonReply *ZigbeeHandler::GetUartInterfaces(const QVariantMap &params)
+JsonReply *ZigbeeHandler::GetAvailableAdapters(const QVariantMap &params)
 {
     Q_UNUSED(params)
-    QVariantMap ret;
-//    QVariantList portList;
-//    foreach (const ZigbeeSerialPort &serialPort, m_zigbeeManager->availablePorts()) {
-//        portList << pack(serialPort);
-//    }
-//    ret.insert("uartInterfaces", portList);
+
+    QVariantMap ret; QVariantList adapterList;
+    foreach (const ZigbeeAdapter &adapter, m_zigbeeManager->availableAdapters()) {
+        adapterList << pack(adapter);
+    }
+    ret.insert("zigbeeAdapters", adapterList);
     return createReply(ret);
 }
 

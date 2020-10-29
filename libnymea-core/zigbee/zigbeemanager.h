@@ -44,12 +44,6 @@ class ZigbeeManager : public QObject
 {
     Q_OBJECT
 public:
-    enum ZigbeeBackendType {
-        ZigbeeBackendTypeDconz,
-        ZigbeeBackendTypeNxp
-    };
-    Q_ENUM(ZigbeeBackendType)
-
     enum ZigbeeNetworkState {
         ZigbeeNetworkStateOffline,
         ZigbeeNetworkStateUpdating,
@@ -70,16 +64,21 @@ public:
     bool available() const;
     bool enabled() const;
 
-    ZigbeeNetwork *zigbeeNetwork() const;
-    ZigbeeAdapters availableAdapters();
+    ZigbeeAdapters availableAdapters() const;
 
-    void createZigbeeNetwork(const QString &serialPort, qint32 baudrate, Zigbee::ZigbeeBackendType backend);
+    ZigbeeError createZigbeeNetwork(const ZigbeeAdapter &adapter, const ZigbeeChannelMask channelMask = ZigbeeChannelMask());
 
 private:
     ZigbeeAdapters m_adapters;
     ZigbeeUartAdapterMonitor *m_adapterMonitor = nullptr;
 
-    ZigbeeNetwork *m_zigbeeNetwork = nullptr;
+    QHash<QUuid, ZigbeeNetwork *> m_zigbeeNetworks;
+
+    void saveNetwork(ZigbeeNetwork *network);
+    void loadZigbeeNetworks();
+
+    ZigbeeNetwork *buildNetworkObject(const QUuid &networkId, ZigbeeAdapter::ZigbeeBackendType backendType);
+    void addNetwork(ZigbeeNetwork *network);
 
     ZigbeeAdapter createAdapterFromUartAdapter(const ZigbeeUartAdapter &uartAdapter);
 
@@ -87,6 +86,8 @@ signals:
     void availableAdapterAdded(const ZigbeeAdapter &adapter);
     void availableAdapterRemoved(const ZigbeeAdapter &adapter);
 
+    void zigbeeNetworkAdded(ZigbeeNetwork *zigbeeNetwork);
+    void zigbeeNetworkRemoved(ZigbeeNetwork *zigbeeNetwork);
     void zigbeeNetworkChanged(ZigbeeNetwork *zigbeeNetwork);
 
 };

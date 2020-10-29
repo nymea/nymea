@@ -67,34 +67,34 @@ void ZigbeeAdapter::setSystemLocation(const QString &systemLocation)
     m_systemLocation = systemLocation;
 }
 
-bool ZigbeeAdapter::backendSuggestionAvailable() const
+bool ZigbeeAdapter::hardwareRecognized() const
 {
-    return m_backendSuggestionAvailable;
+    return m_hardwareRecognized;
 }
 
-void ZigbeeAdapter::setBackendSuggestionAvailable(bool backendSuggestionAvailable)
+void ZigbeeAdapter::setHardwareRecognized(bool hardwareRecognized)
 {
-    m_backendSuggestionAvailable = backendSuggestionAvailable;
+    m_hardwareRecognized = hardwareRecognized;
 }
 
-Zigbee::ZigbeeBackendType ZigbeeAdapter::suggestedZigbeeBackendType() const
+ZigbeeAdapter::ZigbeeBackendType ZigbeeAdapter::backendType() const
 {
-    return m_suggestedZigbeeBackendType;
+    return m_backendType;
 }
 
-void ZigbeeAdapter::setSuggestedZigbeeBackendType(Zigbee::ZigbeeBackendType backendType)
+void ZigbeeAdapter::setBackendType(ZigbeeAdapter::ZigbeeBackendType backendType)
 {
-    m_suggestedZigbeeBackendType = backendType;
+    m_backendType = backendType;
 }
 
-qint32 ZigbeeAdapter::suggestedBaudRate() const
+qint32 ZigbeeAdapter::baudRate() const
 {
-    return m_suggestedBaudRate;
+    return m_baudRate;
 }
 
-void ZigbeeAdapter::setSuggestedBaudRate(qint32 baudRate)
+void ZigbeeAdapter::setBaudRate(qint32 baudRate)
 {
-    m_suggestedBaudRate = baudRate;
+    m_baudRate = baudRate;
 }
 
 bool ZigbeeAdapter::operator==(const ZigbeeAdapter &other) const
@@ -102,9 +102,9 @@ bool ZigbeeAdapter::operator==(const ZigbeeAdapter &other) const
     return m_systemLocation == other.systemLocation()
             && m_name == other.name()
             && m_description == other.description()
-            && m_backendSuggestionAvailable == other.backendSuggestionAvailable()
-            && m_suggestedZigbeeBackendType == other.suggestedZigbeeBackendType()
-            && m_suggestedBaudRate == other.suggestedBaudRate();
+            && m_hardwareRecognized == other.hardwareRecognized()
+            && m_backendType == other.backendType()
+            && m_baudRate == other.baudRate();
 }
 
 
@@ -112,9 +112,9 @@ QDebug operator<<(QDebug debug, const ZigbeeAdapter &adapter)
 {
     debug.nospace() << "ZigbeeAdapter(" << adapter.name() << " - " << adapter.description();
     debug.nospace() << ", " << adapter.systemLocation();
-    if (adapter.backendSuggestionAvailable()) {
-        debug.nospace() << "Suggested backend: " << adapter.suggestedZigbeeBackendType();
-        debug.nospace() << ", " << adapter.suggestedBaudRate();
+    if (adapter.hardwareRecognized()) {
+        debug.nospace() << "Hardware recognized: " << adapter.backendType();
+        debug.nospace() << ", " << adapter.baudRate();
     }
 
     debug.nospace() << ")";

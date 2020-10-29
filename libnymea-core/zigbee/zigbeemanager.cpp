@@ -39,7 +39,8 @@ NYMEA_LOGGING_CATEGORY(dcZigbeeNetworkLibNymeaZigbee, "ZigbeeNetwork")
 
 namespace nymeaserver {
 
-ZigbeeManager::ZigbeeManager(QObject *parent) : QObject(parent)
+ZigbeeManager::ZigbeeManager(QObject *parent) :
+    QObject(parent)
 {
     // Adapter monitor
     qCDebug(dcZigbee()) << "Initialize the ZigBee manager";
@@ -49,12 +50,16 @@ ZigbeeManager::ZigbeeManager(QObject *parent) : QObject(parent)
         // Lets continue anyways, maybe we can set up existing networks right the way.
     }
 
+    qCDebug(dcZigbee()) << "Loading initial adapter list";
     foreach(const ZigbeeUartAdapter &uartAdapter, m_adapterMonitor->availableAdapters()) {
-        m_adapters.append(createAdapterFromUartAdapter(uartAdapter));
+        ZigbeeAdapter adapter = createAdapterFromUartAdapter(uartAdapter);
+        qCDebug(dcZigbee()) << "Adapter added" << adapter;
+        m_adapters.append(adapter);
     }
 
     connect(m_adapterMonitor, &ZigbeeUartAdapterMonitor::adapterAdded, this, [this](const ZigbeeUartAdapter &uartAdapter){
         ZigbeeAdapter adapter = createAdapterFromUartAdapter(uartAdapter);
+        qCDebug(dcZigbee()) << "Adapter added" << adapter;
         m_adapters.append(adapter);
         emit availableAdapterAdded(adapter);
     });
@@ -62,6 +67,7 @@ ZigbeeManager::ZigbeeManager(QObject *parent) : QObject(parent)
     connect(m_adapterMonitor, &ZigbeeUartAdapterMonitor::adapterRemoved, this, [this](const ZigbeeUartAdapter &uartAdapter){
         foreach (const ZigbeeAdapter &adapter, m_adapters) {
             if (adapter.systemLocation() == uartAdapter.systemLocation()) {
+                qCDebug(dcZigbee()) << "Adapter removed" << adapter;
                 m_adapters.removeAll(adapter);
                 emit availableAdapterRemoved(adapter);
             }
@@ -69,47 +75,189 @@ ZigbeeManager::ZigbeeManager(QObject *parent) : QObject(parent)
     });
 
     // Load zigbee networks from settings
-    NymeaSettings settings(NymeaSettings::SettingsRoleZigbee);
-
-
+    loadZigbeeNetworks();
 
     // TODO: load platform configuration for networks we know for sure how they work
 }
 
 bool ZigbeeManager::available() const
 {
-    return m_zigbeeNetwork != nullptr;
+    return !m_zigbeeNetworks.isEmpty();
 }
 
 bool ZigbeeManager::enabled() const
 {
-    return m_zigbeeNetwork && m_zigbeeNetwork->state() != ZigbeeNetwork::StateUninitialized;
+    return true;//m_zigbeeNetwork && m_zigbeeNetwork->state() != ZigbeeNetwork::StateUninitialized;
 }
 
-ZigbeeNetwork *ZigbeeManager::zigbeeNetwork() const
-{
-    return m_zigbeeNetwork;
-}
-
-ZigbeeAdapters ZigbeeManager::availableAdapters()
+ZigbeeAdapters ZigbeeManager::availableAdapters() const
 {
     return m_adapters;
 }
 
-void ZigbeeManager::createZigbeeNetwork(const QString &serialPort, qint32 baudrate, Zigbee::ZigbeeBackendType backend)
+ZigbeeManager::ZigbeeError ZigbeeManager::createZigbeeNetwork(const ZigbeeAdapter &adapter, const ZigbeeChannelMask channelMask)
 {
-    if (m_zigbeeNetwork) {
-        delete m_zigbeeNetwork;
-        m_zigbeeNetwork = nullptr;
+    qCDebug(dcZigbee()) << "Start creating network for" << adapter << channelMask;
+
+    // Make sure we don't have aleardy a network for this adapter
+    foreach (ZigbeeNetwork *existingNetwork, m_zigbeeNetworks.values()) {
+        if (existingNetwork->serialPortName() == adapter.systemLocation()) {
+            qCWarning(dcZigbee()) << "Failed to create a network for" << adapter << "which is already in use for network" << existingNetwork->networkUuid().toString();
+            return ZigbeeManager::ZigbeeErrorAdapterAlreadyInUse;
+        }
     }
 
-    m_zigbeeNetwork = ZigbeeNetworkManager::createZigbeeNetwork(backend, this);
-    m_zigbeeNetwork->setSerialPortName(serialPort);
-    m_zigbeeNetwork->setSerialBaudrate(baudrate);
-    m_zigbeeNetwork->setSettingsFileName(NymeaSettings(NymeaSettings::SettingsRoleGlobal).fileName());
-    m_zigbeeNetwork->startNetwork();
+    if (!m_adapters.contains(adapter)) {
+        qCWarning(dcZigbee()) << "Failed to create a network for" << adapter << "because the adapter is not available any more";
+        return ZigbeeManager::ZigbeeErrorAdapterNotAvailable;
+    }
 
-    emit zigbeeNetworkChanged(m_zigbeeNetwork);
+    ZigbeeNetwork *network = buildNetworkObject(QUuid::createUuid(), adapter.backendType());
+    network->setChannelMask(channelMask);
+    network->setSerialPortName(adapter.systemLocation());
+    network->setSerialBaudrate(adapter.baudRate());
+    addNetwork(network);
+
+    qCDebug(dcZigbee()) << "Starting zigbee network" << network->networkUuid().toString();
+    network->startNetwork();
+
+    return ZigbeeErrorNoError;
+}
+
+void ZigbeeManager::saveNetwork(ZigbeeNetwork *network)
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleZigbee);
+    settings.beginGroup("ZigbeeNetworks");
+    settings.beginGroup(network->networkUuid().toString());
+    settings.setValue("serialPort", network->serialPortName());
+    settings.setValue("baudRate", network->serialBaudrate());
+    switch (network->backendType()) {
+    case Zigbee::ZigbeeBackendTypeDeconz:
+        settings.setValue("backendType", static_cast<int>(ZigbeeAdapter::ZigbeeBackendTypeDeconz));
+        break;
+    case Zigbee::ZigbeeBackendTypeNxp:
+        settings.setValue("backendType", static_cast<int>(ZigbeeAdapter::ZigbeeBackendTypeNxp));
+        break;
+    default:
+        qCWarning(dcZigbee()) << "Unhandled backend type" << network->backendType() << "which is not implemented in nymea yet.";
+        break;
+    }
+    settings.setValue("panId", network->panId());
+    settings.setValue("channel", network->channel());
+
+    settings.setValue("channelMask", network->channelMask().toUInt32());
+    settings.setValue("networkKey", network->securityConfiguration().networkKey().toString());
+    settings.setValue("trustCenterLinkKey", network->securityConfiguration().globalTrustCenterLinkKey().toString());
+
+    settings.endGroup(); // networkUuid
+    settings.endGroup(); // ZigbeeNetworks
+}
+
+void ZigbeeManager::loadZigbeeNetworks()
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleZigbee);
+    settings.beginGroup("ZigbeeNetworks");
+
+    foreach (const QString networkUuidGroupString, settings.childGroups()) {
+        settings.beginGroup(networkUuidGroupString);
+
+        QUuid networkUuid = QUuid(networkUuidGroupString);
+        QString serialPortName = settings.value("serialPort").toString();
+        qint32 serialBaudRate = settings.value("baudRate").toInt();
+        ZigbeeAdapter::ZigbeeBackendType backendType = static_cast<ZigbeeAdapter::ZigbeeBackendType>(settings.value("backendType").toInt());
+        quint16 panId = static_cast<quint16>(settings.value("panId", 0).toUInt());
+        quint8 channel = settings.value("channel", 0).toUInt();
+        ZigbeeChannelMask channelMask = ZigbeeChannelMask(static_cast<quint32>(settings.value("channelMask").toUInt()));
+
+        ZigbeeSecurityConfiguration securityConfiguration;
+        ZigbeeNetworkKey netKey(settings.value("networkKey", QString()).toString());
+        if (netKey.isValid()) {
+            securityConfiguration.setNetworkKey(netKey);
+        }
+
+        ZigbeeNetworkKey tcKey(settings.value("trustCenterLinkKey", QString("5A6967426565416C6C69616E63653039")).toString());
+        if (!tcKey.isValid()) {
+            securityConfiguration.setGlobalTrustCenterlinkKey(tcKey);
+        }
+
+        ZigbeeNetwork *network = buildNetworkObject(networkUuid, backendType);
+        network->setSerialPortName(serialPortName);
+        network->setSerialBaudrate(serialBaudRate);
+        network->setPanId(panId);
+        network->setChannel(channel);
+        network->setChannelMask(channelMask);
+        network->setSecurityConfiguration(securityConfiguration);
+        addNetwork(network);
+        settings.endGroup(); // networkUuid
+    }
+    settings.endGroup(); // ZigbeeNetworks
+
+    if (m_zigbeeNetworks.isEmpty()) {
+        qCDebug(dcZigbee()) << "There are no zigbee networks configured yet.";
+    }
+
+    // Start all loaded networks
+    foreach (ZigbeeNetwork *network, m_zigbeeNetworks.values()) {
+        network->startNetwork();
+    }
+}
+
+ZigbeeNetwork *ZigbeeManager::buildNetworkObject(const QUuid &networkId, ZigbeeAdapter::ZigbeeBackendType backendType)
+{
+    ZigbeeNetwork *network = nullptr;
+    switch (backendType) {
+    case ZigbeeAdapter::ZigbeeBackendTypeDeconz:
+        network = ZigbeeNetworkManager::createZigbeeNetwork(networkId, Zigbee::ZigbeeBackendTypeDeconz, this);
+        break;
+    case ZigbeeAdapter::ZigbeeBackendTypeNxp:
+        network = ZigbeeNetworkManager::createZigbeeNetwork(networkId, Zigbee::ZigbeeBackendTypeNxp, this);
+        break;
+    }
+    network->setSettingsDirectory(QDir(NymeaSettings::settingsPath()));
+    return network;
+}
+
+void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
+{
+    connect(network, &ZigbeeNetwork::stateChanged, this, [this, network](ZigbeeNetwork::State state){
+        qCDebug(dcZigbee()) << "Network state changed" << network->networkUuid().toString() << state;
+
+        // TODO: set state of zigbee resource depending on the state
+
+        emit zigbeeNetworkChanged(network);
+    });
+
+    connect(network, &ZigbeeNetwork::errorOccured, this, [network](ZigbeeNetwork::Error error){
+        qCDebug(dcZigbee()) << "Network error occured for network" << network->networkUuid().toString() << error;
+
+        // TODO: handle error
+    });
+
+    connect(network, &ZigbeeNetwork::panIdChanged, this, [this, network](quint16 panId){
+        qCDebug(dcZigbee()) << "Network PAN ID changed" << network->networkUuid().toString() << panId;
+        saveNetwork(network);
+        emit zigbeeNetworkChanged(network);
+    });
+
+    connect(network, &ZigbeeNetwork::channelChanged, this, [this, network](quint8 channel){
+        qCDebug(dcZigbee()) << "Network channel changed" << network->networkUuid().toString() << channel;
+        saveNetwork(network);
+        emit zigbeeNetworkChanged(network);
+    });
+
+    connect(network, &ZigbeeNetwork::securityConfigurationChanged, this, [this, network](const ZigbeeSecurityConfiguration &securityConfiguration){
+        qCDebug(dcZigbee()) << "Network security configuration changed" << network->networkUuid().toString() << securityConfiguration.networkKey().toString();
+        saveNetwork(network);
+    });
+
+    connect(network, &ZigbeeNetwork::channelMaskChanged, this, [this, network](const ZigbeeChannelMask &channelMask){
+        qCDebug(dcZigbee()) << "Network channel mask changed" << network->networkUuid().toString() << channelMask;
+        saveNetwork(network);
+        emit zigbeeNetworkChanged(network);
+    });
+
+    m_zigbeeNetworks.insert(network->networkUuid(), network);
+    emit zigbeeNetworkAdded(network);
 }
 
 ZigbeeAdapter ZigbeeManager::createAdapterFromUartAdapter(const ZigbeeUartAdapter &uartAdapter)
@@ -118,9 +266,19 @@ ZigbeeAdapter ZigbeeManager::createAdapterFromUartAdapter(const ZigbeeUartAdapte
     adapter.setName(uartAdapter.name());
     adapter.setSystemLocation(uartAdapter.systemLocation());
     adapter.setDescription(uartAdapter.description());
-    adapter.setBackendSuggestionAvailable(uartAdapter.backendSuggestionAvailable());
-    adapter.setSuggestedZigbeeBackendType(uartAdapter.suggestedZigbeeBackendType());
-    adapter.setSuggestedBaudRate(uartAdapter.suggestedBaudRate());
+    adapter.setHardwareRecognized(uartAdapter.backendSuggestionAvailable());
+    adapter.setBaudRate(uartAdapter.suggestedBaudRate());
+    switch (uartAdapter.suggestedZigbeeBackendType()) {
+    case Zigbee::ZigbeeBackendTypeDeconz:
+        adapter.setBackendType(ZigbeeAdapter::ZigbeeBackendTypeDeconz);
+        break;
+    case Zigbee::ZigbeeBackendTypeNxp:
+        adapter.setBackendType(ZigbeeAdapter::ZigbeeBackendTypeNxp);
+        break;
+    default:
+        qCWarning(dcZigbee()) << "Unhandled backend type" << uartAdapter.suggestedZigbeeBackendType() << "which is not implemented in nymea yet.";
+        break;
+    }
     return adapter;
 }
 

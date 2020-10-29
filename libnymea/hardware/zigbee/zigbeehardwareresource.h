@@ -28,10 +28,40 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "zigbeehardwarereource.h"
+#ifndef ZIGBEEHARDWARERESOURCE_H
+#define ZIGBEEHARDWARERESOURCE_H
 
-ZigbeeHardwareResource::ZigbeeHardwareResource(QObject *parent) :
-    HardwareResource("Zigbee hardware resource", parent)
+#include <QObject>
+
+#include "hardwareresource.h"
+
+#include <zigbeeaddress.h>
+#include <zigbeenetwork.h>
+
+class ZigbeeHandler;
+class ZigbeeNode;
+
+class ZigbeeHardwareResource : public HardwareResource
 {
+    Q_OBJECT
+public:
+    enum HandlerType {
+        HandlerTypeBranding,
+        HandlerTypeVendor,
+        HandlerTypeCatchAll
+    };
+    Q_ENUM(HandlerType)
+    explicit ZigbeeHardwareResource(QObject *parent = nullptr);
+    virtual ~ZigbeeHardwareResource() = default;
 
-}
+    virtual void registerHandler(ZigbeeHandler *handler, HandlerType type = HandlerTypeVendor) = 0;
+    virtual ZigbeeNode* getNode(const QUuid &networkUuid, const ZigbeeAddress &extendedAddress) = 0;
+
+    virtual ZigbeeNetwork::State networkState(const QUuid &networkUuid) = 0;
+
+signals:
+    void networkStateChanged(const QUuid &networkUuid, ZigbeeNetwork::State state);
+
+};
+
+#endif // ZIGBEEHARDWARERESOURCE_H

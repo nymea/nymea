@@ -34,7 +34,7 @@
 #include <QObject>
 
 #include "zigbee/zigbeemanager.h"
-#include "hardware/zigbee/zigbeehardwarereource.h"
+#include "hardware/zigbee/zigbeehardwareresource.h"
 
 namespace nymeaserver {
 
@@ -48,22 +48,29 @@ public:
     bool available() const override;
     bool enabled() const override;
 
-private:
-    bool m_available = false;
-    bool m_enabled = false;
-    ZigbeeManager *m_zigbeeManager = nullptr;
+    void registerHandler(ZigbeeHandler *handler, HandlerType type = HandlerTypeVendor) override;
 
-protected:
-    void setEnabled(bool enabled) override;
+    ZigbeeNode* getNode(const QUuid &networkUuid, const ZigbeeAddress &extendedAddress) override;
+    ZigbeeNetwork::State networkState(const QUuid &networkUuid) override;
 
 public slots:
     bool enable();
     bool disable();
 
+protected:
+    void setEnabled(bool enabled) override;
+
 private slots:
     void onZigbeeAvailableChanged(bool available);
     void onZigbeeNodeAdded(const QUuid &networkUuid, ZigbeeNode *node);
     void onZigbeeNodeRemoved(const QUuid &networkUuid, ZigbeeNode *node);
+
+private:
+    bool m_available = false;
+    bool m_enabled = false;
+    ZigbeeManager *m_zigbeeManager = nullptr;
+
+    QMultiMap<ZigbeeHardwareResource::HandlerType, ZigbeeHandler*> m_handlers;
 
 };
 

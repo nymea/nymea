@@ -44,11 +44,17 @@ class ZigbeeAdapter
     Q_PROPERTY(QString name READ name)
     Q_PROPERTY(QString description READ description)
     Q_PROPERTY(QString systemLocation READ systemLocation)
-    Q_PROPERTY(bool backendSuggestionAvailable READ backendSuggestionAvailable)
-    Q_PROPERTY(Zigbee::ZigbeeBackendType suggestedZigbeeBackendType READ suggestedZigbeeBackendType)
-    Q_PROPERTY(qint32 suggestedBaudRate READ suggestedBaudRate)
+    Q_PROPERTY(bool hardwareRecognized READ hardwareRecognized)
+    Q_PROPERTY(ZigbeeAdapter::ZigbeeBackendType backendType READ backendType)
+    Q_PROPERTY(qint32 baudRate READ baudRate)
 
 public:
+    enum ZigbeeBackendType {
+        ZigbeeBackendTypeDeconz,
+        ZigbeeBackendTypeNxp
+    };
+    Q_ENUM(ZigbeeBackendType)
+
     explicit ZigbeeAdapter();
 
     QString name() const;
@@ -60,14 +66,14 @@ public:
     QString systemLocation() const;
     void setSystemLocation(const QString &systemLocation);
 
-    bool backendSuggestionAvailable() const;
-    void setBackendSuggestionAvailable(bool backendSuggestionAvailable);
+    bool hardwareRecognized() const;
+    void setHardwareRecognized(bool hardwareRecognized);
 
-    Zigbee::ZigbeeBackendType suggestedZigbeeBackendType() const;
-    void setSuggestedZigbeeBackendType(Zigbee::ZigbeeBackendType backendType);
+    ZigbeeAdapter::ZigbeeBackendType backendType() const;
+    void setBackendType(ZigbeeAdapter::ZigbeeBackendType backendType);
 
-    qint32 suggestedBaudRate() const;
-    void setSuggestedBaudRate(qint32 baudRate);
+    qint32 baudRate() const;
+    void setBaudRate(qint32 baudRate);
 
     bool operator==(const ZigbeeAdapter &other) const;
 
@@ -75,10 +81,9 @@ private:
     QString m_name;
     QString m_description;
     QString m_systemLocation;
-
-    bool m_backendSuggestionAvailable = false;
-    Zigbee::ZigbeeBackendType m_suggestedZigbeeBackendType = Zigbee::ZigbeeBackendTypeDeconz;
-    qint32 m_suggestedBaudRate = 38400;
+    bool m_hardwareRecognized = false;
+    ZigbeeAdapter::ZigbeeBackendType m_backendType = ZigbeeAdapter::ZigbeeBackendTypeDeconz;
+    qint32 m_baudRate = 38400;
 };
 
 QDebug operator<<(QDebug debug, const ZigbeeAdapter &adapter);

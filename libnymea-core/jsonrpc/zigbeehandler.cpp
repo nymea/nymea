@@ -41,14 +41,14 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     m_zigbeeManager(zigbeeManager)
 {
     registerEnum<ZigbeeManager::ZigbeeNetworkState>();
-    registerEnum<ZigbeeManager::ZigbeeBackendType>();
+    registerEnum<ZigbeeAdapter::ZigbeeBackendType>();
     registerEnum<ZigbeeManager::ZigbeeError>();
 
     registerObject<ZigbeeAdapter, ZigbeeAdapters>();
 
     // Network object describing a network instance
     QVariantMap zigbeeNetworkDescription;
-    zigbeeNetworkDescription.insert("id", enumValueName(Uuid));
+    zigbeeNetworkDescription.insert("uuid", enumValueName(Uuid));
     registerObject("ZigbeeNetwork", zigbeeNetworkDescription);
 
     QVariantMap params, returns;
@@ -56,7 +56,7 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
 
     // GetAdapters
     params.clear(); returns.clear();
-    description = "Get the list of available ZigBee adapter candidates in order to set up the zigbee network on the desired serial interface. If an adapter has been recognized correctly as a supported hardware, the backendSuggestionAvailable property will be true and the configurations can be used as they where given, otherwise the user might set the backend type and baud rate manually.";
+    description = "Get the list of available ZigBee adapter candidates in order to set up the zigbee network on the desired serial interface. If an adapter hardware has been recognized as a supported hardware, the \'hardwareRecognized\' property will be true and the configurations can be used as they where given, otherwise the user might set the backend type and baud rate manually.";
     returns.insert("adapters", objectRef<ZigbeeAdapters>());
     registerMethod("GetAdapters", description, params, returns);
 
@@ -100,13 +100,12 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
         emit AdapterRemoved(params);
     });
 
-    /* 1. GetNetworkStatus
+    /* 1. GetNetworks
      * 2. Setup network if the is no network configured
-     *      - GetAvailableAdapters
-     *      - Setup network with given UART interface and backend type
+     *      - GetAdapters
+     *      - AddNetwork (adapter, channelmask)
      *      -
      */
-
 
     // GetNetworkStatus
     // NetworkStatusChanged

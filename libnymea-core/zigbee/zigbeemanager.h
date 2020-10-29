@@ -46,6 +46,7 @@ class ZigbeeManager : public QObject
 public:
     enum ZigbeeNetworkState {
         ZigbeeNetworkStateOffline,
+        ZigbeeNetworkStateStarting,
         ZigbeeNetworkStateUpdating,
         ZigbeeNetworkStateOnline,
         ZigbeeNetworkStateError
@@ -55,7 +56,8 @@ public:
     enum ZigbeeError {
         ZigbeeErrorNoError,
         ZigbeeErrorAdapterNotAvailable,
-        ZigbeeErrorAdapterAlreadyInUse
+        ZigbeeErrorAdapterAlreadyInUse,
+        ZigbeeErrorNetworkUuidNotFound
     };
     Q_ENUM(ZigbeeError)
 
@@ -65,13 +67,14 @@ public:
     bool enabled() const;
 
     ZigbeeAdapters availableAdapters() const;
+    QHash<QUuid, ZigbeeNetwork *> zigbeeNetworks() const;
 
-    ZigbeeError createZigbeeNetwork(const ZigbeeAdapter &adapter, const ZigbeeChannelMask channelMask = ZigbeeChannelMask());
+    ZigbeeError createZigbeeNetwork(const ZigbeeAdapter &adapter, const ZigbeeChannelMask channelMask = ZigbeeChannelMask(ZigbeeChannelMask::ChannelConfigurationAllChannels));
+    ZigbeeError removeZigbeeNetwork(const QUuid &networkUuid);
 
 private:
     ZigbeeAdapters m_adapters;
     ZigbeeUartAdapterMonitor *m_adapterMonitor = nullptr;
-
     QHash<QUuid, ZigbeeNetwork *> m_zigbeeNetworks;
 
     void saveNetwork(ZigbeeNetwork *network);
@@ -87,7 +90,7 @@ signals:
     void availableAdapterRemoved(const ZigbeeAdapter &adapter);
 
     void zigbeeNetworkAdded(ZigbeeNetwork *zigbeeNetwork);
-    void zigbeeNetworkRemoved(ZigbeeNetwork *zigbeeNetwork);
+    void zigbeeNetworkRemoved(const QUuid networkUuid);
     void zigbeeNetworkChanged(ZigbeeNetwork *zigbeeNetwork);
 
 };

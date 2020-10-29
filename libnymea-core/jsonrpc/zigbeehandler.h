@@ -49,8 +49,12 @@ public:
 
     QString name() const override;
 
-    Q_INVOKABLE JsonReply *GetNetworkStatus(const QVariantMap &params);
     Q_INVOKABLE JsonReply *GetAdapters(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetNetworks(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *AddNetwork(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *RemoveNetwork(const QVariantMap &params);
+
+    QVariantMap packNetwork(ZigbeeNetwork *network);
 
 private:
     ZigbeeManager *m_zigbeeManager = nullptr;
@@ -58,6 +62,9 @@ private:
 signals:
     void AdapterAdded(const QVariantMap &params);
     void AdapterRemoved(const QVariantMap &params);
+    void NetworkAdded(const QVariantMap &params);
+    void NetworkRemoved(const QVariantMap &params);
+    void NetworkChanged(const QVariantMap &params);
 
 };
 

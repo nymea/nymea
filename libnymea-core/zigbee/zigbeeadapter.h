@@ -41,12 +41,12 @@ namespace nymeaserver {
 class ZigbeeAdapter
 {
     Q_GADGET
-    Q_PROPERTY(QString name READ name)
-    Q_PROPERTY(QString description READ description)
-    Q_PROPERTY(QString systemLocation READ systemLocation)
-    Q_PROPERTY(bool hardwareRecognized READ hardwareRecognized)
-    Q_PROPERTY(ZigbeeAdapter::ZigbeeBackendType backendType READ backendType)
-    Q_PROPERTY(qint32 baudRate READ baudRate)
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString description READ description WRITE setDescription)
+    Q_PROPERTY(QString systemLocation READ systemLocation WRITE setSystemLocation)
+    Q_PROPERTY(bool hardwareRecognized READ hardwareRecognized WRITE setHardwareRecognized)
+    Q_PROPERTY(nymeaserver::ZigbeeAdapter::ZigbeeBackendType backendType READ backendType WRITE setBackendType)
+    Q_PROPERTY(qint32 baudRate READ baudRate WRITE setBaudRate)
 
 public:
     enum ZigbeeBackendType {
@@ -91,6 +91,7 @@ QDebug operator<<(QDebug debug, const ZigbeeAdapter &adapter);
 }
 
 Q_DECLARE_METATYPE(nymeaserver::ZigbeeAdapter)
+Q_DECLARE_METATYPE(nymeaserver::ZigbeeAdapter::ZigbeeBackendType)
 
 #endif // ZIGBEEADAPTER_H
 

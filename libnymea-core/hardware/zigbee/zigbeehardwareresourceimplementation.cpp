@@ -31,6 +31,7 @@
 #include "zigbeehardwareresourceimplementation.h"
 #include "loggingcategories.h"
 #include "nymeasettings.h"
+#include "hardware/zigbee/zigbeehandler.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -58,6 +59,33 @@ bool ZigbeeHardwareResourceImplementation::available() const
 bool ZigbeeHardwareResourceImplementation::enabled() const
 {
     return m_enabled;
+}
+
+
+void ZigbeeHardwareResourceImplementation::registerHandler(ZigbeeHandler *handler, HandlerType type)
+{
+    qCDebug(dcZigbeeResource()) << "Registering new zigbee handler" << handler->name() << "with type" << type;
+    m_handlers.insert(type, handler);
+}
+
+ZigbeeNode *ZigbeeHardwareResourceImplementation::getNode(const QUuid &networkUuid, const ZigbeeAddress &extendedAddress)
+{
+    ZigbeeNetwork *network = m_zigbeeManager->zigbeeNetworks().value(networkUuid);
+    if (!network) {
+        qCWarning(dcZigbeeResource()) << "Network" << networkUuid << "not found.";
+        return nullptr;
+    }
+    return network->getZigbeeNode(extendedAddress);
+}
+
+ZigbeeNetwork::State ZigbeeHardwareResourceImplementation::networkState(const QUuid &networkUuid)
+{
+    ZigbeeNetwork *network = m_zigbeeManager->zigbeeNetworks().value(networkUuid);
+    if (!network) {
+        qCWarning(dcZigbeeResource()) << "Network" << networkUuid << "not found.";
+        return ZigbeeNetwork::StateUninitialized;
+    }
+    return network->state();
 }
 
 void ZigbeeHardwareResourceImplementation::setEnabled(bool enabled)
@@ -116,6 +144,18 @@ void ZigbeeHardwareResourceImplementation::onZigbeeAvailableChanged(bool availab
 void ZigbeeHardwareResourceImplementation::onZigbeeNodeAdded(const QUuid &networkUuid, ZigbeeNode *node)
 {
     qCDebug(dcZigbeeResource()) << node << "joined the network" << m_zigbeeManager->zigbeeNetworks().value(networkUuid);
+    ZigbeeHandler *handler = nullptr;
+    foreach (ZigbeeHandler *tmp, m_handlers) {
+        if (tmp->handleNode(node, networkUuid)) {
+            handler = tmp;
+            qCDebug(dcZigbeeResource()) << "Node" << node << "taken by handler" << handler->name();
+            break;
+        }
+    }
+    if (!handler) {
+        qCWarning(dcZigbeeResource()) << "No zigbee handler available to handle node" << node;
+        return;
+    }
 }
 
 void ZigbeeHardwareResourceImplementation::onZigbeeNodeRemoved(const QUuid &networkUuid, ZigbeeNode *node)

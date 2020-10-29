@@ -28,22 +28,10 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ZIGBEEHARDWARERESOURCE_H
-#define ZIGBEEHARDWARERESOURCE_H
+#include "zigbeehardwareresource.h"
 
-#include <QObject>
-
-#include "hardwareresource.h"
-
-class ZigbeeHardwareResource : public HardwareResource
+ZigbeeHardwareResource::ZigbeeHardwareResource(QObject *parent) :
+    HardwareResource("Zigbee hardware resource", parent)
 {
-    Q_OBJECT
-public:
-    explicit ZigbeeHardwareResource(QObject *parent = nullptr);
-    virtual ~ZigbeeHardwareResource() = default;
 
-
-
-};
-
-#endif // ZIGBEEHARDWARERESOURCE_H
+}

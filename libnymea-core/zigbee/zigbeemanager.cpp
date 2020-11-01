@@ -32,6 +32,8 @@
 #include "nymeasettings.h"
 #include "loggingcategories.h"
 
+#include <zigbeeutils.h>
+
 NYMEA_LOGGING_CATEGORY(dcZigbee, "Zigbee")
 
 // Register debug category from the libnymea-zigbee
@@ -52,13 +54,13 @@ ZigbeeManager::ZigbeeManager(QObject *parent) :
 
     qCDebug(dcZigbee()) << "Loading initial adapter list";
     foreach(const ZigbeeUartAdapter &uartAdapter, m_adapterMonitor->availableAdapters()) {
-        ZigbeeAdapter adapter = createAdapterFromUartAdapter(uartAdapter);
+        ZigbeeAdapter adapter = convertUartAdapterToAdapter(uartAdapter);
         qCDebug(dcZigbee()) << "Adapter added" << adapter;
         m_adapters.append(adapter);
     }
 
     connect(m_adapterMonitor, &ZigbeeUartAdapterMonitor::adapterAdded, this, [this](const ZigbeeUartAdapter &uartAdapter){
-        ZigbeeAdapter adapter = createAdapterFromUartAdapter(uartAdapter);
+        ZigbeeAdapter adapter = convertUartAdapterToAdapter(uartAdapter);
         qCDebug(dcZigbee()) << "Adapter added" << adapter;
         m_adapters.append(adapter);
         emit availableAdapterAdded(adapter);
@@ -107,7 +109,7 @@ ZigbeeManager::ZigbeeError ZigbeeManager::createZigbeeNetwork(const ZigbeeAdapte
     // Make sure we don't have aleardy a network for this adapter
     foreach (ZigbeeNetwork *existingNetwork, m_zigbeeNetworks.values()) {
         if (existingNetwork->serialPortName() == adapter.systemLocation()) {
-            qCWarning(dcZigbee()) << "Failed to create a network for" << adapter << "which is already in use for network" << existingNetwork->networkUuid().toString();
+            qCWarning(dcZigbee()) << "Failed to create a network for" << adapter << "because this adapter is already in use for network" << existingNetwork->networkUuid().toString();
             return ZigbeeManager::ZigbeeErrorAdapterAlreadyInUse;
         }
     }
@@ -132,7 +134,7 @@ ZigbeeManager::ZigbeeError ZigbeeManager::createZigbeeNetwork(const ZigbeeAdapte
 ZigbeeManager::ZigbeeError ZigbeeManager::removeZigbeeNetwork(const QUuid &networkUuid)
 {
     if (!m_zigbeeNetworks.keys().contains(networkUuid)) {
-        qCDebug(dcZigbee()) << "Could not remove network with uuid" << networkUuid.toString() << "because there is no network with this uuid.";
+        qCWarning(dcZigbee()) << "Could not remove network with uuid" << networkUuid.toString() << "because there is no network with this uuid.";
         return ZigbeeManager::ZigbeeErrorNetworkUuidNotFound;
     }
 
@@ -144,6 +146,7 @@ ZigbeeManager::ZigbeeError ZigbeeManager::removeZigbeeNetwork(const QUuid &netwo
     // Make sure to delete later, so all node removed signals can be processed
     network->deleteLater();
 
+    // Delete network settings
     NymeaSettings settings(NymeaSettings::SettingsRoleZigbee);
     settings.beginGroup("ZigbeeNetworks");
     settings.beginGroup(network->networkUuid().toString());
@@ -152,6 +155,37 @@ ZigbeeManager::ZigbeeError ZigbeeManager::removeZigbeeNetwork(const QUuid &netwo
     settings.endGroup();
 
     qCDebug(dcZigbee()) << "Network removed successfully" << networkUuid.toString();
+    return ZigbeeManager::ZigbeeErrorNoError;
+}
+
+ZigbeeManager::ZigbeeError ZigbeeManager::setZigbeeNetworkPermitJoin(const QUuid &networkUuid, quint16 shortAddress, int duration)
+{
+    if (!m_zigbeeNetworks.keys().contains(networkUuid)) {
+        qCWarning(dcZigbee()) << "Could not set permit join network" << networkUuid.toString() << "because there is no network with this uuid.";
+        return ZigbeeManager::ZigbeeErrorNetworkUuidNotFound;
+    }
+
+    ZigbeeNetwork *network = m_zigbeeNetworks.value(networkUuid);
+    if (network->state() != ZigbeeNetwork::StateRunning) {
+        qCWarning(dcZigbee()) << "Could not set permit join network" << networkUuid.toString() << "because the network is not running.";
+        return ZigbeeManager::ZigbeeErrorNetworkOffline;
+    }
+
+    // TODO: set permit join
+
+    qCDebug(dcZigbee()) << "Set permit join for network" << networkUuid.toString() << ZigbeeUtils::convertUint16ToHexString(shortAddress) << "to" << duration << "[s] successfully.";
+    return ZigbeeManager::ZigbeeErrorNoError;
+}
+
+ZigbeeManager::ZigbeeError ZigbeeManager::factoryResetNetwork(const QUuid &networkUuid)
+{
+    if (!m_zigbeeNetworks.keys().contains(networkUuid)) {
+        qCWarning(dcZigbee()) << "Could not factory reset network with uuid" << networkUuid.toString() << "because there is no network with this uuid.";
+        return ZigbeeManager::ZigbeeErrorNetworkUuidNotFound;
+    }
+
+    ZigbeeNetwork *network = m_zigbeeNetworks.value(networkUuid);
+    network->factoryResetNetwork();
     return ZigbeeManager::ZigbeeErrorNoError;
 }
 
@@ -260,7 +294,7 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
     });
 
     connect(network, &ZigbeeNetwork::errorOccured, this, [network](ZigbeeNetwork::Error error){
-        qCDebug(dcZigbee()) << "Network error occured for network" << network->networkUuid().toString() << error;
+        qCWarning(dcZigbee()) << "Network error occured for network" << network->networkUuid().toString() << error;
 
         // TODO: handle error
     });
@@ -307,19 +341,24 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
         qCDebug(dcZigbee()) << "Network node removed from network" << network->networkUuid().toString() << node;
     });
 
+    connect(network, &ZigbeeNetwork::firmwareVersionChanged, this, [this, network](const QString &firmwareVersion){
+        qCDebug(dcZigbee()) << "Network adapter firmware version changed" << network->networkUuid().toString() << firmwareVersion;
+        emit zigbeeNetworkChanged(network);
+    });
+
     m_zigbeeNetworks.insert(network->networkUuid(), network);
     emit zigbeeNetworkAdded(network);
 }
 
-ZigbeeAdapter ZigbeeManager::createAdapterFromUartAdapter(const ZigbeeUartAdapter &uartAdapter)
+ZigbeeAdapter ZigbeeManager::convertUartAdapterToAdapter(const ZigbeeUartAdapter &uartAdapter)
 {
     ZigbeeAdapter adapter;
     adapter.setName(uartAdapter.name());
     adapter.setSystemLocation(uartAdapter.systemLocation());
     adapter.setDescription(uartAdapter.description());
-    adapter.setHardwareRecognized(uartAdapter.backendSuggestionAvailable());
-    adapter.setBaudRate(uartAdapter.suggestedBaudRate());
-    switch (uartAdapter.suggestedZigbeeBackendType()) {
+    adapter.setHardwareRecognized(uartAdapter.hardwareRecognized());
+    adapter.setBaudRate(uartAdapter.baudRate());
+    switch (uartAdapter.zigbeeBackend()) {
     case Zigbee::ZigbeeBackendTypeDeconz:
         adapter.setBackendType(ZigbeeAdapter::ZigbeeBackendTypeDeconz);
         break;
@@ -327,7 +366,7 @@ ZigbeeAdapter ZigbeeManager::createAdapterFromUartAdapter(const ZigbeeUartAdapte
         adapter.setBackendType(ZigbeeAdapter::ZigbeeBackendTypeNxp);
         break;
     default:
-        qCWarning(dcZigbee()) << "Unhandled backend type" << uartAdapter.suggestedZigbeeBackendType() << "which is not implemented in nymea yet.";
+        qCWarning(dcZigbee()) << "Unhandled backend type" << uartAdapter.zigbeeBackend() << "which is not implemented in nymea yet.";
         break;
     }
     return adapter;

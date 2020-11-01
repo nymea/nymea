@@ -53,6 +53,8 @@ public:
     Q_INVOKABLE JsonReply *GetNetworks(const QVariantMap &params);
     Q_INVOKABLE JsonReply *AddNetwork(const QVariantMap &params);
     Q_INVOKABLE JsonReply *RemoveNetwork(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *FactoryResetNetwork(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *SetPermitJoin(const QVariantMap &params);
 
     QVariantMap packNetwork(ZigbeeNetwork *network);
 

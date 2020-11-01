@@ -56,6 +56,7 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     zigbeeNetworkDescription.insert("serialPort", enumValueName(String));
     zigbeeNetworkDescription.insert("baudRate", enumValueName(Uint));
     zigbeeNetworkDescription.insert("macAddress", enumValueName(String));
+    zigbeeNetworkDescription.insert("firmwareVersion", enumValueName(String));
     zigbeeNetworkDescription.insert("panId", enumValueName(Uint));
     zigbeeNetworkDescription.insert("channel", enumValueName(Uint));
     zigbeeNetworkDescription.insert("channelMask", enumValueName(Uint));
@@ -69,9 +70,11 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
 
     // GetAdapters
     params.clear(); returns.clear();
-    description = "Get the list of available ZigBee adapter candidates in order to set up the zigbee network on the desired serial interface."
-                  "If an adapter hardware has been recognized as a supported hardware, the \'hardwareRecognized\' property will be true and "
-                  "the configurations can be used as they where given, otherwise the user might set the backend type and baud rate manually.";
+    description = "Get the list of available ZigBee adapter candidates in order to set up the zigbee network "
+                  "on the desired serial interface. If an adapter hardware has been recognized as a supported "
+                  "hardware, the \'hardwareRecognized\' property will be true and the serial port and backend "
+                  "configurations can be used as they where given, otherwise the user might set the backend "
+                  "type and baud rate manually.";
     returns.insert("adapters", objectRef<ZigbeeAdapters>());
     registerMethod("GetAdapters", description, params, returns);
 
@@ -84,19 +87,22 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     // AdapterRemoved notification
     params.clear();
     description = "Emitted whenever a ZigBee adapter has been removed from the system (i.e. unplugged).";
-    params.insert("adapters", objectRef<ZigbeeAdapter>());
+    params.insert("adapter", objectRef<ZigbeeAdapter>());
     registerNotification("AdapterRemoved", description, params);
 
     // GetNetworks
     params.clear(); returns.clear();
-    description = "Returns the list of current configured zigbee networks.";
+    description = "Returns the list of zigbee networks configured in the system.";
     returns.insert("zigbeeNetworks", QVariantList() << objectRef("ZigbeeNetwork"));
     registerMethod("GetNetworks", description, params, returns);
 
     // AddNetwork
     params.clear(); returns.clear();
-    description = "Create a new zigbee network for the given zigbee adapter. The channel mask is optional and defaults to all channels. "
-            "The quietest channel will be picked. The channel mask type is a TODO and will probably be a flag.";
+    description = "Create a new zigbee network for the given zigbee adapter. "
+                  "The channel mask is optional and defaults to all channels [11, 26]. "
+                  "The quietest channel will be picked after a channel scan. "
+                  "The channel mask is a uint32 flag and the the bit number represents the channel which should "
+                  "enabled for scanning. All channels would be the value 0x07fff800.";
     params.insert("adapter", objectRef<ZigbeeAdapter>());
     params.insert("o:channelMask", enumValueName(Uint));
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
@@ -126,6 +132,28 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     description = "Emitted whenever a new ZigBee network has changed.";
     params.insert("network", objectRef("ZigbeeNetwork"));
     registerNotification("NetworkChanged", description, params);
+
+    // FactoryResetNetwork
+    params.clear(); returns.clear();
+    description = "Factory reset the network with the given networkUuid. The network does not have "
+                  "to be Online for this procedure, and all associated nodes and things will be removed permanently. "
+                  "Make sure the user realy wants to do this because this can not be undone.";
+    params.insert("networkUuid", enumValueName(Uuid));
+    returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
+    registerMethod("FactoryResetNetwork", description, params, returns);
+
+    // SetPermitJoin
+    params.clear(); returns.clear();
+    description = "Allow or deny nodes to join the network with the given networkUuid for a specific duration in seconds. "
+                  "If the duration is set to 0 seconds, joining will be disabled immediatly for the entire network. "
+                  "The shortAddress is optional and defaults to the broadcast address (0xfffc) for all routers in the network. "
+                  "If the short address matches the address of a router node in the network, only that router will "
+                  "be able to allow new nodes to join the network. A new node will join to the router with the best LQI.";
+    params.insert("networkUuid", enumValueName(Uuid));
+    params.insert("timeout", enumValueName(Uint));
+    params.insert("o:shortAddress", enumValueName(Uint));
+    returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
+    registerMethod("SetPermitJoin", description, params, returns);
 
 
     connect(m_zigbeeManager, &ZigbeeManager::availableAdapterAdded, this, [this](const ZigbeeAdapter &adapter){
@@ -195,6 +223,29 @@ JsonReply *ZigbeeHandler::RemoveNetwork(const QVariantMap &params)
     return createReply(returnMap);
 }
 
+JsonReply *ZigbeeHandler::FactoryResetNetwork(const QVariantMap &params)
+{
+    QUuid networkUuid = params.value("networkUuid").toUuid();
+    ZigbeeManager::ZigbeeError error = m_zigbeeManager->factoryResetNetwork(networkUuid);
+    QVariantMap returnMap;
+    returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(error));
+    return createReply(returnMap);
+}
+
+JsonReply *ZigbeeHandler::SetPermitJoin(const QVariantMap &params)
+{
+    QUuid networkUuid = params.value("networkUuid").toUuid();
+    uint duration = params.value("duration").toUInt();
+    quint16 shortAddress = static_cast<quint16>(Zigbee::BroadcastAddressAllRouters);
+    if (params.contains("shortAddress")) {
+        shortAddress = static_cast<quint16>(params.value("shortAddress").toUInt());
+    }
+    ZigbeeManager::ZigbeeError error = m_zigbeeManager->setZigbeeNetworkPermitJoin(networkUuid, shortAddress, duration);
+    QVariantMap returnMap;
+    returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(error));
+    return createReply(returnMap);
+}
+
 JsonReply *ZigbeeHandler::GetNetworks(const QVariantMap &params)
 {
     Q_UNUSED(params)
@@ -215,6 +266,7 @@ QVariantMap ZigbeeHandler::packNetwork(ZigbeeNetwork *network)
     networkMap.insert("serialPort", network->serialPortName());
     networkMap.insert("baudRate", network->serialBaudrate());
     networkMap.insert("macAddress", network->macAddress().toString());
+    networkMap.insert("firmwareVersion", network->firmwareVersion());
     networkMap.insert("panId", network->panId());
     networkMap.insert("channel", network->channel());
     networkMap.insert("channelMask", network->channelMask().toUInt32());

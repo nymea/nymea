@@ -99,6 +99,8 @@ void HttpDaemon::readClient()
                 stateValue.convert(QVariant::Bool);
             } else if (stateTypeId == mockIntStateTypeId) {
                 stateValue.convert(QVariant::Int);
+            } else if (stateTypeId == mockSignalStrengthStateTypeId) {
+                stateValue.convert(QVariant::UInt);
             } else if (stateTypeId == mockDoubleStateTypeId) {
                 stateValue.convert(QVariant::Double);
             }

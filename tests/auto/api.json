@@ -1,4 +1,4 @@
-5.2
+5.3
 {
     "enums": {
         "BasicType": [
@@ -2664,8 +2664,10 @@
             "o:interfaceState": "String",
             "o:stateTypeId": "Uuid",
             "o:thingId": "Uuid",
-            "operator": "$ref:ValueOperator",
-            "value": "Variant"
+            "o:value": "Variant",
+            "o:valueStateTypeId": "Uuid",
+            "o:valueThingId": "Uuid",
+            "operator": "$ref:ValueOperator"
         },
         "StateEvaluator": {
             "o:childEvaluators": "$ref:StateEvaluators",

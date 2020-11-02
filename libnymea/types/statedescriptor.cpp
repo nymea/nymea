@@ -141,6 +141,26 @@ void StateDescriptor::setStateValue(const QVariant &value)
     m_stateValue = value;
 }
 
+ThingId StateDescriptor::valueThingId() const
+{
+    return m_valueThingId;
+}
+
+void StateDescriptor::setValueThingId(const ThingId &valueThingId)
+{
+    m_valueThingId = valueThingId;
+}
+
+StateTypeId StateDescriptor::valueStateTypeId() const
+{
+    return m_valueStateTypeId;
+}
+
+void StateDescriptor::setValueStateTypeId(const StateTypeId &valueStateTypeId)
+{
+    m_valueStateTypeId = valueStateTypeId;
+}
+
 /*! Returns the ValueOperator of this \l{State}.*/
 Types::ValueOperator StateDescriptor::operatorType() const
 {
@@ -164,49 +184,14 @@ bool StateDescriptor::operator ==(const StateDescriptor &other) const
             m_operatorType == other.operatorType();
 }
 
-/*! Compare this StateDescriptor to the \l{State} given by \a state.
- *  Returns true if the given \a state matches the definition of the StateDescriptor */
-bool StateDescriptor::operator ==(const State &state) const
-{
-    if ((m_stateTypeId != state.stateTypeId()) || (m_thingId != state.thingId())) {
-        return false;
-    }
-    QVariant convertedValue = m_stateValue;
-    bool res = convertedValue.convert(state.value().type());
-    if (!res) {
-        return false;
-    }
-    switch (m_operatorType) {
-    case Types::ValueOperatorEquals:
-        return convertedValue == state.value();
-    case Types::ValueOperatorGreater:
-        return state.value() > convertedValue;
-    case Types::ValueOperatorGreaterOrEqual:
-        return state.value() >= convertedValue;
-    case Types::ValueOperatorLess:
-        return state.value() < convertedValue;
-    case Types::ValueOperatorLessOrEqual:
-        return state.value() <= convertedValue;
-    case Types::ValueOperatorNotEquals:
-        return convertedValue != state.value();
-    }
-    return false;
-}
-
-/*! Compare this StateDescriptor to the \l{State} given by \a state.
- *  Returns true if the given \a state does not match the definition of the StateDescriptor */
-bool StateDescriptor::operator !=(const State &state) const
-{
-    return !(operator==(state));
-}
-
 /*! Returns the true if this \l{StateDescriptor} is valid. A valid \l{StateDescriptor} must
  *  have a valid stateValue along with either a DeviceId/StateTypeId pair or an interface/interfaceState pair.
  * \sa StateDescriptor(), deviceId(), stateValue()
  */
 bool StateDescriptor::isValid() const
 {
-    return ((!m_thingId.isNull() && !m_stateTypeId.isNull()) || (!m_interface.isNull() && !m_interfaceState.isNull())) && m_stateValue.isValid();
+    return ((!m_thingId.isNull() && !m_stateTypeId.isNull()) || (!m_interface.isNull() && !m_interfaceState.isNull()))
+            && (m_stateValue.isValid() || (!m_valueThingId.isNull() && !m_valueStateTypeId.isNull()));
 }
 
 /*! Print a StateDescriptor with all its contents to QDebug. */
@@ -214,6 +199,7 @@ QDebug operator<<(QDebug dbg, const StateDescriptor &stateDescriptor)
 {
     dbg.nospace() << "StateDescriptor(ThingId:" << stateDescriptor.thingId().toString() << ", StateTypeId:"
                   << stateDescriptor.stateTypeId().toString() << ", Interface:" << stateDescriptor.interface()
-                  << ", InterfaceState:" << stateDescriptor.interfaceState() << ", Operator:" << stateDescriptor.operatorType() << ", Value:" << stateDescriptor.stateValue();
+                  << ", InterfaceState:" << stateDescriptor.interfaceState() << ", Operator:" << stateDescriptor.operatorType() << ", Value:" << stateDescriptor.stateValue()
+                  << ", ValueThing:" << stateDescriptor.valueThingId().toString() << ", ValueStateTypeId:" << stateDescriptor.valueStateTypeId().toString();
     return dbg;
 }

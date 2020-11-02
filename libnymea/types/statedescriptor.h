@@ -49,7 +49,9 @@ class LIBNYMEA_EXPORT StateDescriptor
     Q_PROPERTY(QUuid deviceId READ thingId WRITE setThingId USER true REVISION 1)
     Q_PROPERTY(QString interface READ interface WRITE setInterface USER true)
     Q_PROPERTY(QString interfaceState READ interfaceState WRITE setInterfaceState USER true)
-    Q_PROPERTY(QVariant value READ stateValue WRITE setStateValue)
+    Q_PROPERTY(QVariant value READ stateValue WRITE setStateValue USER true)
+    Q_PROPERTY(QUuid valueThingId READ valueThingId WRITE setValueThingId USER true)
+    Q_PROPERTY(QUuid valueStateTypeId READ valueStateTypeId WRITE setValueStateTypeId USER true)
     Q_PROPERTY(Types::ValueOperator operator READ operatorType WRITE setOperatorType)
 public:
     enum Type {
@@ -78,6 +80,12 @@ public:
     QVariant stateValue() const;
     void setStateValue(const QVariant &value);
 
+    ThingId valueThingId() const;
+    void setValueThingId(const ThingId &valueThingId);
+
+    StateTypeId valueStateTypeId() const;
+    void setValueStateTypeId(const StateTypeId &valueStateTypeId);
+
     Types::ValueOperator operatorType() const;
     void setOperatorType(Types::ValueOperator opertatorType);
 
@@ -85,15 +93,14 @@ public:
 
     bool operator ==(const StateDescriptor &other) const;
 
-    bool operator ==(const State &state) const;
-    bool operator !=(const State &state) const;
-
 private:
     StateTypeId m_stateTypeId;
     ThingId m_thingId;
     QString m_interface;
     QString m_interfaceState;
     QVariant m_stateValue;
+    ThingId m_valueThingId;
+    StateTypeId m_valueStateTypeId;
     Types::ValueOperator m_operatorType = Types::ValueOperatorEquals;
 };
 Q_DECLARE_METATYPE(StateDescriptor)

@@ -90,41 +90,7 @@ bool StateEvaluator::evaluate() const
     qCDebug(dcRuleEngineDebug()) << "StateEvaluator:" << this << "Evaluating: Operator type" << m_operatorType << "Valid descriptor:" << m_stateDescriptor.isValid() << "Childs:" << m_childEvaluators.count();
     bool descriptorMatching = true;
     if (m_stateDescriptor.isValid()) {
-        descriptorMatching = false;
-        if (m_stateDescriptor.type() == StateDescriptor::TypeThing) {
-            Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(m_stateDescriptor.thingId());
-            if (thing) {
-                ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(thing->thingClassId());
-                if (thing->hasState(m_stateDescriptor.stateTypeId())) {
-                    if (m_stateDescriptor == thing->state(m_stateDescriptor.stateTypeId())) {
-                        qCDebug(dcRuleEngineDebug()) << "StateEvaluator:" << this << "State" << thing->name() << thingClass.stateTypes().findById(m_stateDescriptor.stateTypeId()).name() << (descriptorMatching ? "is" : "not") << "matching:" << m_stateDescriptor.stateValue() << m_stateDescriptor.operatorType() << thing->stateValue(m_stateDescriptor.stateTypeId());
-                        descriptorMatching = true;
-                    }
-                } else {
-                    qCWarning(dcRuleEngine) << "StateEvaluator:" << this << "Thing found, but it does not appear to have such a state!";
-                }
-            } else {
-                qCWarning(dcRuleEngine) << "StateEvaluator:" << this << "Thing not existing!";
-            }
-        } else { // interface
-            foreach (Thing* thing, NymeaCore::instance()->thingManager()->configuredThings()) {
-                ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(thing->thingClassId());
-                if (!thingClass.isValid()) {
-                    qCWarning(dcRuleEngine()) << "Could not find ThingClass for Thing" << thing->name() << thing->id();
-                    continue;
-                }
-                if (thingClass.interfaces().contains(m_stateDescriptor.interface())) {
-                    StateType stateType = thingClass.stateTypes().findByName(m_stateDescriptor.interfaceState());
-                    State state = thing->state(stateType.id());
-                    // As the StateDescriptor can't compare on it's own against interfaces, generate custom one, matching the device
-                    StateDescriptor temporaryDescriptor(stateType.id(), thing->id(), m_stateDescriptor.stateValue(), m_stateDescriptor.operatorType());
-                    if (temporaryDescriptor == state) {
-                        descriptorMatching = true;
-                        break;
-                    }
-                }
-            }
-        }
+        descriptorMatching = evaluateDescriptor(m_stateDescriptor);
     }
 
     if (m_operatorType == Types::StateOperatorOr) {
@@ -159,7 +125,7 @@ bool StateEvaluator::evaluate() const
 
 bool StateEvaluator::containsThing(const ThingId &thingId) const
 {
-    if (m_stateDescriptor.thingId() == thingId)
+    if (m_stateDescriptor.thingId() == thingId || m_stateDescriptor.valueThingId() == thingId)
         return true;
 
     foreach (const StateEvaluator &childEvaluator, m_childEvaluators) {
@@ -172,7 +138,7 @@ bool StateEvaluator::containsThing(const ThingId &thingId) const
 
 void StateEvaluator::removeThing(const ThingId &thingId)
 {
-    if (m_stateDescriptor.thingId() == thingId)
+    if (m_stateDescriptor.thingId() == thingId || m_stateDescriptor.valueThingId() == thingId)
         m_stateDescriptor = StateDescriptor();
 
     for (int i = 0; i < m_childEvaluators.count(); i++) {
@@ -185,6 +151,9 @@ QList<ThingId> StateEvaluator::containedThings() const
     QList<ThingId> ret;
     if (!m_stateDescriptor.thingId().isNull()) {
         ret.append(m_stateDescriptor.thingId());
+    }
+    if (!m_stateDescriptor.valueThingId().isNull()) {
+        ret.append(m_stateDescriptor.valueThingId());
     }
     foreach (const StateEvaluator &childEvaluator, m_childEvaluators) {
         ret.append(childEvaluator.containedThings());
@@ -203,6 +172,8 @@ void StateEvaluator::dumpToSettings(NymeaSettings &settings, const QString &grou
     settings.setValue("interfaceState", m_stateDescriptor.interfaceState());
     settings.setValue("value", m_stateDescriptor.stateValue());
     settings.setValue("valueType", (int)m_stateDescriptor.stateValue().type());
+    settings.setValue("valueThingId", m_stateDescriptor.valueThingId().toString());
+    settings.setValue("valueStateTypeId", m_stateDescriptor.valueStateTypeId().toString());
     settings.setValue("operator", m_stateDescriptor.operatorType());
     settings.endGroup();
 
@@ -239,6 +210,9 @@ StateEvaluator StateEvaluator::loadFromSettings(NymeaSettings &settings, const Q
         }
     }
 
+    ThingId valueThingId = settings.value("valueThingId").toUuid();
+    StateTypeId valueStateTypeId = settings.value("valueStateTypeId").toUuid();
+
     QString interface = settings.value("interface").toString();
     QString interfaceState = settings.value("interfaceState").toString();
     Types::ValueOperator valueOperator = (Types::ValueOperator)settings.value("operator").toInt();
@@ -248,6 +222,8 @@ StateEvaluator StateEvaluator::loadFromSettings(NymeaSettings &settings, const Q
     } else {
         stateDescriptor = StateDescriptor(interface, interfaceState, stateValue, valueOperator);
     }
+    stateDescriptor.setValueThingId(valueThingId);
+    stateDescriptor.setValueStateTypeId(valueStateTypeId);
 
     settings.endGroup();
 
@@ -282,29 +258,48 @@ bool StateEvaluator::isValid() const
             foreach (const StateType &stateType, thingClass.stateTypes()) {
                 if (stateType.id() == m_stateDescriptor.stateTypeId()) {
 
-                    QVariant stateValue = m_stateDescriptor.stateValue();
-                    if (!stateValue.convert(stateType.type())) {
-                        qCWarning(dcRuleEngine) << "Could not convert value of state descriptor" << m_stateDescriptor.stateTypeId() << " to:" << QVariant::typeToName(stateType.type()) << " Got:" << m_stateDescriptor.stateValue();
-                        return false;
-                    }
+                    // If comparing to a static value
+                    if (!m_stateDescriptor.stateValue().isNull()) {
 
-                    if (stateType.maxValue().isValid() && stateValue > stateType.maxValue()) {
-                        qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Max:" << stateType.maxValue();
-                        return false;
-                    }
-
-                    if (stateType.minValue().isValid() && stateValue < stateType.minValue()) {
-                        qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Min:" << stateType.minValue();
-                        return false;
-                    }
-
-                    if (!stateType.possibleValues().isEmpty() && !stateType.possibleValues().contains(stateValue)) {
-                        QStringList possibleValues;
-                        foreach (const QVariant &value, stateType.possibleValues()) {
-                            possibleValues.append(value.toString());
+                        QVariant stateValue = m_stateDescriptor.stateValue();
+                        if (!stateValue.convert(stateType.type())) {
+                            qCWarning(dcRuleEngine) << "Could not convert value of state descriptor" << m_stateDescriptor.stateTypeId() << " to:" << QVariant::typeToName(stateType.type()) << " Got:" << m_stateDescriptor.stateValue();
+                            return false;
+                        }
+                        if (stateType.maxValue().isValid() && stateValue > stateType.maxValue()) {
+                            qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Max:" << stateType.maxValue();
+                            return false;
                         }
 
-                        qCWarning(dcRuleEngine) << "Value not in possible values for state type" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Possible values:" << possibleValues.join(", ");
+                        if (stateType.minValue().isValid() && stateValue < stateType.minValue()) {
+                            qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Min:" << stateType.minValue();
+                            return false;
+                        }
+
+                        if (!stateType.possibleValues().isEmpty() && !stateType.possibleValues().contains(stateValue)) {
+                            QStringList possibleValues;
+                            foreach (const QVariant &value, stateType.possibleValues()) {
+                                possibleValues.append(value.toString());
+                            }
+
+                            qCWarning(dcRuleEngine) << "Value not in possible values for state type" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Possible values:" << possibleValues.join(", ");
+                            return false;
+                        }
+
+                    // if comparing to another state
+                    } else if (!m_stateDescriptor.valueThingId().isNull() && !m_stateDescriptor.valueStateTypeId().isNull()) {
+                        Thing *valueThing = NymeaCore::instance()->thingManager()->findConfiguredThing(m_stateDescriptor.valueThingId());
+                        if (!valueThing) {
+                            qCWarning(dcRuleEngine()) << "State descriptor valueThing does not exist" << m_stateDescriptor.valueThingId().toString();
+                            return false;
+                        }
+                        StateType valueStateType = valueThing->thingClass().stateTypes().findById(m_stateDescriptor.valueStateTypeId());
+                        if (!valueStateType.isValid()) {
+                            qCWarning(dcRuleEngine()) << "State descriptor value state type" << m_stateDescriptor.valueStateTypeId().toString() << "does not exist in thing" << valueThing->name();
+                            return false;
+                        }
+                    } else {
+                        qCWarning(dcRuleEngine()) << "State descriptor contains neither stateValue nor valueThingId and valueStateTypeId";
                         return false;
                     }
                 }
@@ -342,6 +337,94 @@ bool StateEvaluator::isValid() const
 bool StateEvaluator::isEmpty() const
 {
     return !m_stateDescriptor.isValid() && m_childEvaluators.isEmpty();
+}
+
+bool StateEvaluator::evaluateDescriptor(const StateDescriptor &descriptor) const
+{
+    if (descriptor.type() == StateDescriptor::TypeThing) {
+        qCDebug(dcRuleEngineDebug()) << "Evaluating thing based state descriptor";
+
+        Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(descriptor.thingId());
+        if (!thing) {
+            qCWarning(dcRuleEngine()) << "Thing listed in state descriptor not found in system.";
+            return false;
+        }
+        State state = thing->state(descriptor.stateTypeId());
+        if (state.stateTypeId().isNull()) {
+            qCWarning(dcRuleEngine()) << "State" << descriptor.stateTypeId() << "not found in thing" << thing->name() << thing->id().toString();
+            return false;
+        }
+
+        if (!descriptor.stateValue().isNull()) {
+            QVariant convertedValue = descriptor.stateValue();
+            bool res = convertedValue.convert(state.value().type());
+            if (!res) {
+                return false;
+            }
+            switch (descriptor.operatorType()) {
+            case Types::ValueOperatorEquals:
+                return state.value() == convertedValue;
+            case Types::ValueOperatorGreater:
+                return state.value() > convertedValue;
+            case Types::ValueOperatorGreaterOrEqual:
+                return state.value() >= convertedValue;
+            case Types::ValueOperatorLess:
+                return state.value() < convertedValue;
+            case Types::ValueOperatorLessOrEqual:
+                return state.value() <= convertedValue;
+            case Types::ValueOperatorNotEquals:
+                return state.value() != convertedValue;
+            }
+
+        } else if (!descriptor.valueThingId().isNull() && !descriptor.valueStateTypeId().isNull()) {
+            Thing *valueThing = NymeaCore::instance()->thingManager()->findConfiguredThing(descriptor.valueThingId());
+            if (!valueThing) {
+                qCWarning(dcRuleEngine()) << "Thing" << descriptor.valueThingId().toString() << "defined in statedescriptor value but not found in system.";
+                return false;
+            }
+            State valueState = valueThing->state(descriptor.valueStateTypeId());
+            if (valueState.stateTypeId().isNull()) {
+                qCWarning(dcRuleEngine()) << "State" << descriptor.valueStateTypeId().toString() << "defined in statedescriptor value not found in thing" << thing->name() << thing->id().toString();
+                return false;
+            }
+
+            qCDebug(dcRuleEngineDebug()) << "Comparing" << state.value() << "to" << valueState.value() << "with operator" << descriptor.operatorType();
+            switch (descriptor.operatorType()) {
+            case Types::ValueOperatorEquals:
+                return state.value() == valueState.value();
+            case Types::ValueOperatorGreater:
+                return state.value() > valueState.value();
+            case Types::ValueOperatorGreaterOrEqual:
+                return state.value() >= valueState.value();
+            case Types::ValueOperatorLess:
+                return state.value() < valueState.value();
+            case Types::ValueOperatorLessOrEqual:
+                return state.value() <= valueState.value();
+            case Types::ValueOperatorNotEquals:
+                return state.value() != valueState.value();
+            }
+        }
+
+    } else { // Interface based
+        qCDebug(dcRuleEngineDebug()) << "Evaluating interface based state descriptor" << descriptor.interface();
+
+        foreach (Thing* thing, NymeaCore::instance()->thingManager()->configuredThings()) {
+            if (thing->thingClass().interfaces().contains(descriptor.interface())) {
+                qCDebug(dcRuleEngineDebug()) << "Thing" << thing->name() << "has matching interface";
+                StateType stateType = thing->thingClass().stateTypes().findByName(descriptor.interfaceState());
+                State state = thing->state(stateType.id());
+                // Generate a thing based state descriptor and run again
+                StateDescriptor temporaryDescriptor(stateType.id(), thing->id(), descriptor.stateValue(), descriptor.operatorType());
+                temporaryDescriptor.setValueThingId(descriptor.valueThingId());
+                temporaryDescriptor.setValueStateTypeId(descriptor.valueStateTypeId());
+                if (evaluateDescriptor(temporaryDescriptor)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 QDebug operator<<(QDebug dbg, const StateEvaluator &stateEvaluator)

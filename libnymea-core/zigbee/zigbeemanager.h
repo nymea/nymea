@@ -80,6 +80,7 @@ private:
     ZigbeeAdapters m_adapters;
     ZigbeeUartAdapterMonitor *m_adapterMonitor = nullptr;
     QHash<QUuid, ZigbeeNetwork *> m_zigbeeNetworks;
+    bool m_available = false;
 
     void saveNetwork(ZigbeeNetwork *network);
     void loadZigbeeNetworks();
@@ -88,8 +89,11 @@ private:
     void addNetwork(ZigbeeNetwork *network);
 
     ZigbeeAdapter convertUartAdapterToAdapter(const ZigbeeUartAdapter &uartAdapter);
+    void evaluateZigbeeAvailable();
 
 signals:
+    void availableChanged(bool available);
+
     void availableAdapterAdded(const ZigbeeAdapter &adapter);
     void availableAdapterRemoved(const ZigbeeAdapter &adapter);
 
@@ -97,6 +101,8 @@ signals:
     void zigbeeNetworkRemoved(const QUuid networkUuid);
     void zigbeeNetworkChanged(ZigbeeNetwork *zigbeeNetwork);
 
+    void nodeAdded(const QUuid &networkUuid, ZigbeeNode *node);
+    void nodeRemoved(const QUuid &networkUuid, ZigbeeNode *node);
 };
 
 }

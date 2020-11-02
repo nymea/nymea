@@ -46,7 +46,7 @@
 
 namespace nymeaserver {
 
-HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, QObject *parent) :
+HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, QObject *parent) :
     HardwareManager(parent),
     m_platform(platform)
 {
@@ -71,10 +71,7 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
 
     m_i2cManager = new I2CManagerImplementation(this);
 
-    m_zigbeeManager = new ZigbeeHardwareResourceImplementation(this);
-
-    qCDebug(dcHardware()) << "Hardware manager initialized successfully";
-
+    m_zigbeeResource = new ZigbeeHardwareResourceImplementation(zigbeeManager, this);
 
     // Enable all the resources
     setResourceEnabled(m_pluginTimerManager, true);
@@ -93,6 +90,7 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
         setResourceEnabled(m_bluetoothLowEnergyManager, true);
 
     m_mqttProvider = new MqttProviderImplementation(mqttBroker, this);
+    qCDebug(dcHardware()) << "Hardware manager initialized successfully";
 }
 
 HardwareManagerImplementation::~HardwareManagerImplementation()
@@ -139,9 +137,9 @@ I2CManager *HardwareManagerImplementation::i2cManager()
     return m_i2cManager;
 }
 
-ZigbeeHardwareResource *HardwareManagerImplementation::zigbeeManager()
+ZigbeeHardwareResource *HardwareManagerImplementation::zigbeeResource()
 {
-    return m_zigbeeManager;
+    return m_zigbeeResource;
 }
 
 }

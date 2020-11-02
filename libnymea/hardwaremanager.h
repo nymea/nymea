@@ -62,7 +62,7 @@ public:
     virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
     virtual MqttProvider *mqttProvider() = 0;
     virtual I2CManager *i2cManager() = 0;
-    virtual ZigbeeHardwareResource *zigbeeManager() = 0;
+    virtual ZigbeeHardwareResource *zigbeeResource() = 0;
 
 protected:
     void setResourceEnabled(HardwareResource* resource, bool enabled);

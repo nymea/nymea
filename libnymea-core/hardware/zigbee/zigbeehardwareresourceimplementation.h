@@ -33,7 +33,7 @@
 
 #include <QObject>
 
-#include "zigbeenetwork.h"
+#include "zigbee/zigbeemanager.h"
 #include "hardware/zigbee/zigbeehardwarereource.h"
 
 namespace nymeaserver {
@@ -43,28 +43,27 @@ class ZigbeeHardwareResourceImplementation : public ZigbeeHardwareResource
     Q_OBJECT
 
 public:
-    explicit ZigbeeHardwareResourceImplementation(QObject *parent = nullptr);
+    explicit ZigbeeHardwareResourceImplementation(ZigbeeManager *zigbeeManager, QObject *parent = nullptr);
 
     bool available() const override;
     bool enabled() const override;
 
-    void setZigbeeNetwork(ZigbeeNetwork *network);
-
 private:
     bool m_available = false;
     bool m_enabled = false;
-
-    ZigbeeNetwork *m_zigbeeNetwork = nullptr;
+    ZigbeeManager *m_zigbeeManager = nullptr;
 
 protected:
     void setEnabled(bool enabled) override;
 
-private slots:
-    void onZigbeeNetworkStateChanged(ZigbeeNetwork::State state);
-
 public slots:
     bool enable();
     bool disable();
+
+private slots:
+    void onZigbeeAvailableChanged(bool available);
+    void onZigbeeNodeAdded(const QUuid &networkUuid, ZigbeeNode *node);
+    void onZigbeeNodeRemoved(const QUuid &networkUuid, ZigbeeNode *node);
 
 };
 

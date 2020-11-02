@@ -120,7 +120,7 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     // NetworkAdded notification
     params.clear();
     description = "Emitted whenever a new ZigBee network has been added.";
-    params.insert("network", objectRef("ZigbeeNetwork"));
+    params.insert("zigbeeNetwork", objectRef("ZigbeeNetwork"));
     registerNotification("NetworkAdded", description, params);
 
     // NetworkRemoved notification
@@ -132,7 +132,7 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     // NetworkChanged notification
     params.clear();
     description = "Emitted whenever a new ZigBee network has changed.";
-    params.insert("network", objectRef("ZigbeeNetwork"));
+    params.insert("zigbeeNetwork", objectRef("ZigbeeNetwork"));
     registerNotification("NetworkChanged", description, params);
 
     // FactoryResetNetwork

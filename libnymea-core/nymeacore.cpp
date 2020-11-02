@@ -110,7 +110,7 @@ void NymeaCore::init() {
     m_zigbeeManager = new ZigbeeManager(this);
 
     qCDebug(dcCore) << "Creating Hardware Manager";
-    m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), this);
+    m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), m_zigbeeManager, this);
 
     qCDebug(dcCore) << "Creating Thing Manager (locale:" << m_configuration->locale() << ")";
     m_thingManager = new ThingManagerImplementation(m_hardwareManager, m_configuration->locale(), this);

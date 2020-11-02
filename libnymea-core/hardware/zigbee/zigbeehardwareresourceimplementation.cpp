@@ -41,32 +41,23 @@ NYMEA_LOGGING_CATEGORY(dcZigbeeResource, "ZigbeeResource")
 
 namespace nymeaserver {
 
-ZigbeeHardwareResourceImplementation::ZigbeeHardwareResourceImplementation(QObject *parent) :
-    ZigbeeHardwareResource(parent)
+ZigbeeHardwareResourceImplementation::ZigbeeHardwareResourceImplementation(ZigbeeManager *zigbeeManager, QObject *parent) :
+    ZigbeeHardwareResource(parent),
+    m_zigbeeManager(zigbeeManager)
 {
-
+    connect(m_zigbeeManager, &ZigbeeManager::nodeAdded, this, &ZigbeeHardwareResourceImplementation::onZigbeeNodeAdded);
+    connect(m_zigbeeManager, &ZigbeeManager::nodeRemoved, this, &ZigbeeHardwareResourceImplementation::onZigbeeNodeRemoved);
+    connect(m_zigbeeManager, &ZigbeeManager::availableChanged, this, &ZigbeeHardwareResourceImplementation::onZigbeeAvailableChanged);
 }
 
 bool ZigbeeHardwareResourceImplementation::available() const
 {
-    return m_available;
+    return m_zigbeeManager->available();
 }
 
 bool ZigbeeHardwareResourceImplementation::enabled() const
 {
     return m_enabled;
-}
-
-void ZigbeeHardwareResourceImplementation::setZigbeeNetwork(ZigbeeNetwork *network)
-{
-    // Clean up
-    if (m_zigbeeNetwork) {
-        disconnect(m_zigbeeNetwork, &ZigbeeNetwork::stateChanged, this, &ZigbeeHardwareResourceImplementation::onZigbeeNetworkStateChanged);
-    }
-
-    // Set new network
-    m_zigbeeNetwork = network;
-    connect(m_zigbeeNetwork, &ZigbeeNetwork::stateChanged, this, &ZigbeeHardwareResourceImplementation::onZigbeeNetworkStateChanged);
 }
 
 void ZigbeeHardwareResourceImplementation::setEnabled(bool enabled)
@@ -93,33 +84,43 @@ void ZigbeeHardwareResourceImplementation::setEnabled(bool enabled)
     }
 }
 
-void ZigbeeHardwareResourceImplementation::onZigbeeNetworkStateChanged(ZigbeeNetwork::State state)
-{
-    qCDebug(dcZigbeeResource()) << "Network state changed" << state;
-}
-
 bool ZigbeeHardwareResourceImplementation::enable()
 {
-    qCDebug(dcZigbeeResource()) << "Enable hardware resource";
+    qCDebug(dcZigbeeResource()) << "Enable hardware resource. Not implemented yet.";
 
-    if (!m_zigbeeNetwork) {
-        qCDebug(dcZigbeeResource()) << "There is no zigbee network configured as hardware resource";
-    } else {
-        // TODO: start network
-    }
+    // TODO: enable all networks in the zigbee manager
 
     return true;
 }
 
 bool ZigbeeHardwareResourceImplementation::disable()
 {
-    qCDebug(dcZigbeeResource()) << "Disable hardware resource";
-    if (!m_zigbeeNetwork) {
-        qCDebug(dcZigbeeResource()) << "There is no zigbee network configured as hardware resource";
+    qCDebug(dcZigbeeResource()) << "Disable hardware resource. Not implemented yet.";
+
+    // TODO: disable all networks in the zigbee manager
+
+    return true;
+}
+
+void ZigbeeHardwareResourceImplementation::onZigbeeAvailableChanged(bool available)
+{
+    if (available) {
+        qCDebug(dcZigbeeResource()) << "Zigbee is now available";
+    } else {
+        qCWarning(dcZigbeeResource()) << "Zigbee is not available any more";
     }
 
-    // TODO: stop network
-    return true;
+    emit availableChanged(available);
+}
+
+void ZigbeeHardwareResourceImplementation::onZigbeeNodeAdded(const QUuid &networkUuid, ZigbeeNode *node)
+{
+    qCDebug(dcZigbeeResource()) << node << "joined the network" << m_zigbeeManager->zigbeeNetworks().value(networkUuid);
+}
+
+void ZigbeeHardwareResourceImplementation::onZigbeeNodeRemoved(const QUuid &networkUuid, ZigbeeNode *node)
+{
+    qCDebug(dcZigbeeResource()) << node << "left the network" << m_zigbeeManager->zigbeeNetworks().value(networkUuid);
 }
 
 }

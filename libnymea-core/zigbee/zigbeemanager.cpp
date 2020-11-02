@@ -84,7 +84,7 @@ ZigbeeManager::ZigbeeManager(QObject *parent) :
 
 bool ZigbeeManager::available() const
 {
-    return !m_zigbeeNetworks.isEmpty();
+    return m_available;
 }
 
 bool ZigbeeManager::enabled() const
@@ -296,16 +296,15 @@ ZigbeeNetwork *ZigbeeManager::buildNetworkObject(const QUuid &networkId, ZigbeeA
 void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
 {
     connect(network, &ZigbeeNetwork::stateChanged, this, [this, network](ZigbeeNetwork::State state){
-        qCDebug(dcZigbee()) << "Network state changed" << network->networkUuid().toString() << state;
-
-        // TODO: set state of zigbee resource depending on the state
-
+        Q_UNUSED(state)
+        qCDebug(dcZigbee()) << "Network state changed" << network;
+        evaluateZigbeeAvailable();
         emit zigbeeNetworkChanged(network);
     });
 
-    connect(network, &ZigbeeNetwork::errorOccured, this, [network](ZigbeeNetwork::Error error){
+    connect(network, &ZigbeeNetwork::errorOccured, this, [this, network](ZigbeeNetwork::Error error){
         qCWarning(dcZigbee()) << "Network error occured for" << network << error;
-
+        evaluateZigbeeAvailable();
         // TODO: handle error
     });
 
@@ -380,6 +379,26 @@ ZigbeeAdapter ZigbeeManager::convertUartAdapterToAdapter(const ZigbeeUartAdapter
         break;
     }
     return adapter;
+}
+
+void ZigbeeManager::evaluateZigbeeAvailable()
+{
+    bool zigbeeAvailable = false;
+    if (!m_zigbeeNetworks.isEmpty()) {
+        foreach (ZigbeeNetwork *network, m_zigbeeNetworks.values()) {
+            if (network->state() == ZigbeeNetwork::StateRunning) {
+                zigbeeAvailable = true;
+                break;
+            }
+        }
+    }
+
+    if (m_available == zigbeeAvailable)
+        return;
+
+    qCDebug(dcZigbee()) << "Zigbee is" << (zigbeeAvailable ? "now available" : "not available any more.");
+    m_available = zigbeeAvailable;
+    emit availableChanged(m_available);
 }
 
 }

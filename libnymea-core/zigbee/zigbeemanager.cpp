@@ -342,12 +342,22 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
         emit zigbeeNetworkChanged(network);
     });
 
-    connect(network, &ZigbeeNetwork::nodeAdded, this, [network](ZigbeeNode *node){
+    connect(network, &ZigbeeNetwork::nodeAdded, this, [this, network](ZigbeeNode *node){
         qCDebug(dcZigbee()) << "Node added to" << network << node;
+        // The plugin don't need to see the coordinator node
+        if (node->shortAddress() == 0) {
+            return;
+        }
+        emit nodeAdded(network->networkUuid(), node);
     });
 
-    connect(network, &ZigbeeNetwork::nodeRemoved, this, [network](ZigbeeNode *node){
+    connect(network, &ZigbeeNetwork::nodeRemoved, this, [this, network](ZigbeeNode *node){
         qCDebug(dcZigbee()) << "Node removed from" << network->networkUuid().toString() << node;
+        // The plugin don't need to see the coordinator node
+        if (node->shortAddress() == 0) {
+            return;
+        }
+        emit nodeRemoved(network->networkUuid(), node);
     });
 
     connect(network, &ZigbeeNetwork::firmwareVersionChanged, this, [this, network](const QString &firmwareVersion){

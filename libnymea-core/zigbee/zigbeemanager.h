@@ -58,6 +58,7 @@ public:
         ZigbeeErrorAdapterNotAvailable,
         ZigbeeErrorAdapterAlreadyInUse,
         ZigbeeErrorNetworkUuidNotFound,
+        ZigbeeErrorDurationOutOfRange,
         ZigbeeErrorNetworkOffline
     };
     Q_ENUM(ZigbeeError)
@@ -72,7 +73,7 @@ public:
 
     ZigbeeError createZigbeeNetwork(const ZigbeeAdapter &adapter, const ZigbeeChannelMask channelMask = ZigbeeChannelMask(ZigbeeChannelMask::ChannelConfigurationAllChannels));
     ZigbeeError removeZigbeeNetwork(const QUuid &networkUuid);
-    ZigbeeError setZigbeeNetworkPermitJoin(const QUuid &networkUuid, quint16 shortAddress = Zigbee::BroadcastAddressAllRouters, int duration = 120);
+    ZigbeeError setZigbeeNetworkPermitJoin(const QUuid &networkUuid, quint16 shortAddress = Zigbee::BroadcastAddressAllRouters, uint duration = 120);
     ZigbeeError factoryResetNetwork(const QUuid &networkUuid);
 
 private:

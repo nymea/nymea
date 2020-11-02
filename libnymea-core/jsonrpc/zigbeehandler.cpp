@@ -60,7 +60,9 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     zigbeeNetworkDescription.insert("panId", enumValueName(Uint));
     zigbeeNetworkDescription.insert("channel", enumValueName(Uint));
     zigbeeNetworkDescription.insert("channelMask", enumValueName(Uint));
-    zigbeeNetworkDescription.insert("permitJoin", enumValueName(Bool));
+    zigbeeNetworkDescription.insert("permitJoinEnabled", enumValueName(Bool));
+    zigbeeNetworkDescription.insert("permitJoinDuration", enumValueName(Uint));
+    zigbeeNetworkDescription.insert("permitJoinRemaining", enumValueName(Uint));
     zigbeeNetworkDescription.insert("backendType", enumRef<ZigbeeAdapter::ZigbeeBackendType>());
     zigbeeNetworkDescription.insert("networkState", enumRef<ZigbeeManager::ZigbeeNetworkState>());
     registerObject("ZigbeeNetwork", zigbeeNetworkDescription);
@@ -145,12 +147,15 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     // SetPermitJoin
     params.clear(); returns.clear();
     description = "Allow or deny nodes to join the network with the given networkUuid for a specific duration in seconds. "
+                  "The duration values has to be between 0 and 255 seconds. The permitJoinDuration indicates how long permit "
+                  "has been enabled and the permitJoinDuration indicates the rest of the time. Those values can be used to "
+                  "show a countdown or progressbar. This method can be recalled for resetting the timeout. "
                   "If the duration is set to 0 seconds, joining will be disabled immediatly for the entire network. "
                   "The shortAddress is optional and defaults to the broadcast address (0xfffc) for all routers in the network. "
                   "If the short address matches the address of a router node in the network, only that router will "
-                  "be able to allow new nodes to join the network. A new node will join to the router with the best LQI.";
+                  "be able to allow new nodes to join the network. A new node will join to the router with the best link quality index (LQI).";
     params.insert("networkUuid", enumValueName(Uuid));
-    params.insert("timeout", enumValueName(Uint));
+    params.insert("duration", enumValueName(Uint));
     params.insert("o:shortAddress", enumValueName(Uint));
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
     registerMethod("SetPermitJoin", description, params, returns);
@@ -270,7 +275,10 @@ QVariantMap ZigbeeHandler::packNetwork(ZigbeeNetwork *network)
     networkMap.insert("panId", network->panId());
     networkMap.insert("channel", network->channel());
     networkMap.insert("channelMask", network->channelMask().toUInt32());
-    networkMap.insert("permitJoin", network->permitJoining());
+    networkMap.insert("permitJoinEnabled", network->permitJoiningEnabled());
+    networkMap.insert("permitJoinDuration", network->permitJoiningDuration());
+    networkMap.insert("permitJoinRemaining", network->permitJoiningRemaining());
+
     switch (network->backendType()) {
     case Zigbee::ZigbeeBackendTypeDeconz:
         networkMap.insert("backendType", enumValueName<ZigbeeAdapter::ZigbeeBackendType>(ZigbeeAdapter::ZigbeeBackendTypeDeconz));

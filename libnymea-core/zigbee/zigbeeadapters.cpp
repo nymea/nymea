@@ -43,6 +43,17 @@ ZigbeeAdapters::ZigbeeAdapters(const QList<ZigbeeAdapter> &other) :
 
 }
 
+bool ZigbeeAdapters::hasSerialPort(const QString &serialPort)
+{
+    for (int i = 0; i < count(); i++) {
+        if (at(i).serialPort() == serialPort) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 QVariant ZigbeeAdapters::get(int index) const
 {
     return QVariant::fromValue(at(index));

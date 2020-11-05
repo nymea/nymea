@@ -45,10 +45,10 @@ ZigbeeManager::ZigbeeManager(QObject *parent) :
     QObject(parent)
 {
     // Adapter monitor
-    qCDebug(dcZigbee()) << "Initialize the ZigBee manager";
+    qCDebug(dcZigbee()) << "Initialize the Zigbee manager";
     m_adapterMonitor = new ZigbeeUartAdapterMonitor(this);
     if (!m_adapterMonitor->isValid()) {
-        qCWarning(dcZigbee()) << "Could not initialize the ZigBee adapter monitor.";
+        qCWarning(dcZigbee()) << "Could not initialize the Zigbee adapter monitor.";
         // Lets continue anyways, maybe we can set up existing networks right the way.
     }
 
@@ -63,12 +63,15 @@ ZigbeeManager::ZigbeeManager(QObject *parent) :
         ZigbeeAdapter adapter = convertUartAdapterToAdapter(uartAdapter);
         qCDebug(dcZigbee()) << "Adapter added" << adapter;
         m_adapters.append(adapter);
+
+        // FIXME: check if serial number available and gets used by a network (adjust serial port if changed)
+
         emit availableAdapterAdded(adapter);
     });
 
     connect(m_adapterMonitor, &ZigbeeUartAdapterMonitor::adapterRemoved, this, [this](const ZigbeeUartAdapter &uartAdapter){
         foreach (const ZigbeeAdapter &adapter, m_adapters) {
-            if (adapter.systemLocation() == uartAdapter.systemLocation()) {
+            if (adapter.serialPort() == uartAdapter.serialPort()) {
                 qCDebug(dcZigbee()) << "Adapter removed" << adapter;
                 m_adapters.removeAll(adapter);
                 emit availableAdapterRemoved(adapter);
@@ -102,33 +105,33 @@ QHash<QUuid, ZigbeeNetwork *> ZigbeeManager::zigbeeNetworks() const
     return m_zigbeeNetworks;
 }
 
-ZigbeeManager::ZigbeeError ZigbeeManager::createZigbeeNetwork(const ZigbeeAdapter &adapter, const ZigbeeChannelMask channelMask)
+QPair<ZigbeeManager::ZigbeeError, QUuid> ZigbeeManager::createZigbeeNetwork(const QString &serialPort, const uint baudRate, const ZigbeeAdapter::ZigbeeBackendType backendType, const ZigbeeChannelMask channelMask)
 {
-    qCDebug(dcZigbee()) << "Start creating network for" << adapter << channelMask;
+    qCDebug(dcZigbee()) << "Start creating network for" << serialPort << baudRate << backendType << channelMask;
 
     // Make sure we don't have aleardy a network for this adapter
     foreach (ZigbeeNetwork *existingNetwork, m_zigbeeNetworks.values()) {
-        if (existingNetwork->serialPortName() == adapter.systemLocation()) {
-            qCWarning(dcZigbee()) << "Failed to create a network for" << adapter << "because this adapter is already in use for network" << existingNetwork;
-            return ZigbeeManager::ZigbeeErrorAdapterAlreadyInUse;
+        if (existingNetwork->serialPortName() == serialPort) {
+            qCWarning(dcZigbee()) << "Failed to create a network for" << serialPort << "because this adapter is already in use for network" << existingNetwork;
+            return QPair<ZigbeeManager::ZigbeeError, QUuid>(ZigbeeManager::ZigbeeErrorAdapterAlreadyInUse, QUuid());
         }
     }
 
-    if (!m_adapters.contains(adapter)) {
-        qCWarning(dcZigbee()) << "Failed to create a network for" << adapter << "because the adapter is not available any more";
-        return ZigbeeManager::ZigbeeErrorAdapterNotAvailable;
+
+    if (!m_adapters.hasSerialPort(serialPort)) {
+        qCWarning(dcZigbee()) << "Failed to create a network for" << serialPort << "because the adapter is not available any more";
+        return QPair<ZigbeeManager::ZigbeeError, QUuid>(ZigbeeManager::ZigbeeErrorAdapterNotAvailable, QUuid());
     }
 
-    ZigbeeNetwork *network = buildNetworkObject(QUuid::createUuid(), adapter.backendType());
+    ZigbeeNetwork *network = buildNetworkObject(QUuid::createUuid(), backendType);
     network->setChannelMask(channelMask);
-    network->setSerialPortName(adapter.systemLocation());
-    network->setSerialBaudrate(adapter.baudRate());
+    network->setSerialPortName(serialPort);
+    network->setSerialBaudrate(baudRate);
     addNetwork(network);
 
     qCDebug(dcZigbee()) << "Starting" << network;
     network->startNetwork();
-
-    return ZigbeeErrorNoError;
+    return QPair<ZigbeeManager::ZigbeeError, QUuid>(ZigbeeManager::ZigbeeErrorNoError, network->networkUuid());
 }
 
 ZigbeeManager::ZigbeeError ZigbeeManager::removeZigbeeNetwork(const QUuid &networkUuid)
@@ -138,12 +141,14 @@ ZigbeeManager::ZigbeeError ZigbeeManager::removeZigbeeNetwork(const QUuid &netwo
         return ZigbeeManager::ZigbeeErrorNetworkUuidNotFound;
     }
 
-    ZigbeeNetwork *network = m_zigbeeNetworks.take(networkUuid);
+    ZigbeeNetwork *network = m_zigbeeNetworks.value(networkUuid);
     qCDebug(dcZigbee()) << "Removing" << network;
     // Note: destroy will remove all nodes from the network and wipe/delete the database
     network->destroyNetwork();
     emit zigbeeNetworkRemoved(network->networkUuid());
+
     // Make sure to delete later, so all node removed signals can be processed
+    m_zigbeeNetworks.remove(networkUuid);
     network->deleteLater();
 
     // Delete network settings
@@ -223,6 +228,8 @@ void ZigbeeManager::saveNetwork(ZigbeeNetwork *network)
     settings.setValue("networkKey", network->securityConfiguration().networkKey().toString());
     settings.setValue("trustCenterLinkKey", network->securityConfiguration().globalTrustCenterLinkKey().toString());
 
+    // FIXME: save also the serial number of the port if available.
+
     settings.endGroup(); // networkUuid
     settings.endGroup(); // ZigbeeNetworks
 }
@@ -234,6 +241,8 @@ void ZigbeeManager::loadZigbeeNetworks()
     settings.beginGroup("ZigbeeNetworks");
     foreach (const QString networkUuidGroupString, settings.childGroups()) {
         settings.beginGroup(networkUuidGroupString);
+
+        // FIXME: load also the serial number of the port if available and search that serial port
 
         QUuid networkUuid = QUuid(networkUuidGroupString);
         QString serialPortName = settings.value("serialPort").toString();
@@ -373,8 +382,9 @@ ZigbeeAdapter ZigbeeManager::convertUartAdapterToAdapter(const ZigbeeUartAdapter
 {
     ZigbeeAdapter adapter;
     adapter.setName(uartAdapter.name());
-    adapter.setSystemLocation(uartAdapter.systemLocation());
+    adapter.setSerialPort(uartAdapter.serialPort());
     adapter.setDescription(uartAdapter.description());
+    adapter.setSerialNumber(uartAdapter.serialNumber());
     adapter.setHardwareRecognized(uartAdapter.hardwareRecognized());
     adapter.setBaudRate(uartAdapter.baudRate());
     switch (uartAdapter.zigbeeBackend()) {

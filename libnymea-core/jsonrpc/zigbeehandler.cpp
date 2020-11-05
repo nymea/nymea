@@ -60,9 +60,9 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     zigbeeNetworkDescription.insert("panId", enumValueName(Uint));
     zigbeeNetworkDescription.insert("channel", enumValueName(Uint));
     zigbeeNetworkDescription.insert("channelMask", enumValueName(Uint));
-    zigbeeNetworkDescription.insert("permitJoinEnabled", enumValueName(Bool));
-    zigbeeNetworkDescription.insert("permitJoinDuration", enumValueName(Uint));
-    zigbeeNetworkDescription.insert("permitJoinRemaining", enumValueName(Uint));
+    zigbeeNetworkDescription.insert("permitJoiningEnabled", enumValueName(Bool));
+    zigbeeNetworkDescription.insert("permitJoiningDuration", enumValueName(Uint));
+    zigbeeNetworkDescription.insert("permitJoiningRemaining", enumValueName(Uint));
     zigbeeNetworkDescription.insert("backendType", enumRef<ZigbeeAdapter::ZigbeeBackendType>());
     zigbeeNetworkDescription.insert("networkState", enumRef<ZigbeeManager::ZigbeeNetworkState>());
     registerObject("ZigbeeNetwork", zigbeeNetworkDescription);
@@ -72,9 +72,10 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
 
     // GetAdapters
     params.clear(); returns.clear();
-    description = "Get the list of available ZigBee adapter candidates in order to set up the zigbee network "
-                  "on the desired serial interface. If an adapter hardware has been recognized as a supported "
-                  "hardware, the \'hardwareRecognized\' property will be true and the serial port and backend "
+    description = "Get the list of available Zigbee adapter candidates in order to set up the zigbee network "
+                  "on the desired serial interface. The serialPort property can be used as unique identifier. "
+                  "If an adapter hardware has been recognized as a supported "
+                  "hardware, the \'hardwareRecognized\' property will be true and the baud rate and backend "
                   "configurations can be used as they where given, otherwise the user might set the backend "
                   "type and baud rate manually.";
     returns.insert("adapters", objectRef<ZigbeeAdapters>());
@@ -82,13 +83,13 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
 
     // AdapterAdded notification
     params.clear();
-    description = "Emitted whenever a new ZigBee adapter candidate has been detected in the system.";
+    description = "Emitted whenever a new Zigbee adapter candidate has been detected in the system.";
     params.insert("adapter", objectRef<ZigbeeAdapter>());
     registerNotification("AdapterAdded", description, params);
 
     // AdapterRemoved notification
     params.clear();
-    description = "Emitted whenever a ZigBee adapter has been removed from the system (i.e. unplugged).";
+    description = "Emitted whenever a Zigbee adapter has been removed from the system (i.e. unplugged).";
     params.insert("adapter", objectRef<ZigbeeAdapter>());
     registerNotification("AdapterRemoved", description, params);
 
@@ -100,38 +101,42 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
 
     // AddNetwork
     params.clear(); returns.clear();
-    description = "Create a new zigbee network for the given zigbee adapter. "
+    description = "Create a new Zigbee network for the given serialPort, baud rate and backend type. "
+                  "Get those information from the available Zigbee adapters."
                   "The channel mask is optional and defaults to all channels [11, 26]. "
-                  "The quietest channel will be picked after a channel scan. "
+                  "The quietest channel from the given channel mask will be picked during network creation. "
                   "The channel mask is a uint32 flag and the the bit number represents the channel which should "
                   "enabled for scanning. All channels would be the value 0x07fff800.";
-    params.insert("adapter", objectRef<ZigbeeAdapter>());
+    params.insert("serialPort", enumValueName(String));
+    params.insert("baudRate", enumValueName(Uint));
+    params.insert("backendType", enumRef<ZigbeeAdapter::ZigbeeBackendType>());
     params.insert("o:channelMask", enumValueName(Uint));
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
+    returns.insert("o:networkUuid", enumValueName(Uuid));
     registerMethod("AddNetwork", description, params, returns);
 
     // RemoveNetwork
     params.clear(); returns.clear();
-    description = "Remove the zigbee network with the given network uuid";
+    description = "Remove the zigbee network with the given network uuid.";
     params.insert("networkUuid", enumValueName(Uuid));
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
     registerMethod("RemoveNetwork", description, params, returns);
 
     // NetworkAdded notification
     params.clear();
-    description = "Emitted whenever a new ZigBee network has been added.";
+    description = "Emitted whenever a new Zigbee network has been added.";
     params.insert("zigbeeNetwork", objectRef("ZigbeeNetwork"));
     registerNotification("NetworkAdded", description, params);
 
     // NetworkRemoved notification
     params.clear();
-    description = "Emitted whenever a new ZigBee network has been removed.";
+    description = "Emitted whenever a new Zigbee network has been removed.";
     params.insert("networkUuid", enumValueName(Uuid));
     registerNotification("NetworkRemoved", description, params);
 
     // NetworkChanged notification
     params.clear();
-    description = "Emitted whenever a new ZigBee network has changed.";
+    description = "Emitted whenever a new Zigbee network has changed.";
     params.insert("zigbeeNetwork", objectRef("ZigbeeNetwork"));
     registerNotification("NetworkChanged", description, params);
 
@@ -187,7 +192,7 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
 
     connect(m_zigbeeManager, &ZigbeeManager::zigbeeNetworkRemoved, this, [this](const QUuid &networkUuid){
         QVariantMap params;
-        params.insert("networkUuid", networkUuid.toString());
+        params.insert("networkUuid", networkUuid);
         emit NetworkRemoved(params);
     });
 }
@@ -212,10 +217,15 @@ JsonReply *ZigbeeHandler::GetAdapters(const QVariantMap &params)
 
 JsonReply *ZigbeeHandler::AddNetwork(const QVariantMap &params)
 {
-    ZigbeeAdapter adapter = unpack<ZigbeeAdapter>(params.value("adapter"));
-    ZigbeeManager::ZigbeeError error = m_zigbeeManager->createZigbeeNetwork(adapter);
+    QString serialPort = params.value("serialPort").toString();
+    uint baudRate = params.value("baudRate").toUInt();
+    ZigbeeAdapter::ZigbeeBackendType backendType = enumNameToValue<ZigbeeAdapter::ZigbeeBackendType>(params.value("backendType").toString());
+    QPair<ZigbeeManager::ZigbeeError, QUuid> result = m_zigbeeManager->createZigbeeNetwork(serialPort, baudRate, backendType);
     QVariantMap returnMap;
-    returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(error));
+    if (result.first == ZigbeeManager::ZigbeeErrorNoError) {
+        returnMap.insert("networkUuid", result.second);
+    }
+    returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(result.first));
     return createReply(returnMap);
 }
 
@@ -275,9 +285,9 @@ QVariantMap ZigbeeHandler::packNetwork(ZigbeeNetwork *network)
     networkMap.insert("panId", network->panId());
     networkMap.insert("channel", network->channel());
     networkMap.insert("channelMask", network->channelMask().toUInt32());
-    networkMap.insert("permitJoinEnabled", network->permitJoiningEnabled());
-    networkMap.insert("permitJoinDuration", network->permitJoiningDuration());
-    networkMap.insert("permitJoinRemaining", network->permitJoiningRemaining());
+    networkMap.insert("permitJoiningEnabled", network->permitJoiningEnabled());
+    networkMap.insert("permitJoiningDuration", network->permitJoiningDuration());
+    networkMap.insert("permitJoiningRemaining", network->permitJoiningRemaining());
 
     switch (network->backendType()) {
     case Zigbee::ZigbeeBackendTypeDeconz:

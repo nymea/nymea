@@ -43,7 +43,8 @@ class ZigbeeAdapter
     Q_GADGET
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QString description READ description WRITE setDescription)
-    Q_PROPERTY(QString systemLocation READ systemLocation WRITE setSystemLocation)
+    Q_PROPERTY(QString serialPort READ serialPort WRITE setSerialPort)
+    Q_PROPERTY(QString serialNumber READ serialNumber WRITE setSerialNumber)
     Q_PROPERTY(bool hardwareRecognized READ hardwareRecognized WRITE setHardwareRecognized)
     Q_PROPERTY(nymeaserver::ZigbeeAdapter::ZigbeeBackendType backendType READ backendType WRITE setBackendType)
     Q_PROPERTY(qint32 baudRate READ baudRate WRITE setBaudRate)
@@ -63,8 +64,11 @@ public:
     QString description() const;
     void setDescription(const QString &description);
 
-    QString systemLocation() const;
-    void setSystemLocation(const QString &systemLocation);
+    QString serialPort() const;
+    void setSerialPort(const QString &serialPort);
+
+    QString serialNumber() const;
+    void setSerialNumber(const QString &serialNumber);
 
     bool hardwareRecognized() const;
     void setHardwareRecognized(bool hardwareRecognized);
@@ -80,7 +84,8 @@ public:
 private:
     QString m_name;
     QString m_description;
-    QString m_systemLocation;
+    QString m_serialPort;
+    QString m_serialNumber;
     bool m_hardwareRecognized = false;
     ZigbeeAdapter::ZigbeeBackendType m_backendType = ZigbeeAdapter::ZigbeeBackendTypeDeconz;
     qint32 m_baudRate = 38400;

@@ -45,6 +45,7 @@ class ZigbeeAdapters : public QList<ZigbeeAdapter>
 public:
     ZigbeeAdapters();
     ZigbeeAdapters(const QList<ZigbeeAdapter> &other);
+    bool hasSerialPort(const QString &serialPort);
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
 };

@@ -53,6 +53,7 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     // Network object describing a network instance
     QVariantMap zigbeeNetworkDescription;
     zigbeeNetworkDescription.insert("networkUuid", enumValueName(Uuid));
+    zigbeeNetworkDescription.insert("enabled", enumValueName(Bool));
     zigbeeNetworkDescription.insert("serialPort", enumValueName(String));
     zigbeeNetworkDescription.insert("baudRate", enumValueName(Uint));
     zigbeeNetworkDescription.insert("macAddress", enumValueName(String));
@@ -278,6 +279,7 @@ QVariantMap ZigbeeHandler::packNetwork(ZigbeeNetwork *network)
 {
     QVariantMap networkMap;
     networkMap.insert("networkUuid", network->networkUuid());
+    networkMap.insert("enabled", true); // FIXME: set actual value once supported
     networkMap.insert("serialPort", network->serialPortName());
     networkMap.insert("baudRate", network->serialBaudrate());
     networkMap.insert("macAddress", network->macAddress().toString());

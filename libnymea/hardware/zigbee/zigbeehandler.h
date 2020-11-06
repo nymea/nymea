@@ -2,8 +2,9 @@
 #define ZIGBEEHANDLER_H
 
 #include "zigbeenode.h"
+#include "libnymea.h"
 
-class ZigbeeHandler
+class LIBNYMEA_EXPORT ZigbeeHandler
 {
 public:
     ZigbeeHandler();

@@ -362,7 +362,7 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
         ZigbeeNodeInitializer *nodeInitializer = m_zigbeeNodeInitializers.value(network->networkUuid());
         nodeInitializer->initializeNode(node);
 
-        //emit nodeAdded(network->networkUuid(), node);
+        emit nodeAdded(network->networkUuid(), node);
     });
 
     connect(network, &ZigbeeNetwork::nodeRemoved, this, [this, network](ZigbeeNode *node){

@@ -1,3 +1,4 @@
+
 TEMPLATE = lib
 TARGET = nymea-core
 
@@ -37,7 +38,6 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 HEADERS += nymeacore.h \
     integrations/apikeysprovidersloader.h \
-    hardware/zigbee/zigbeehardwareresourceimplementation.h \
     integrations/plugininfocache.h \
     integrations/python/pynymealogginghandler.h \
     integrations/python/pynymeamodule.h \
@@ -138,7 +138,6 @@ HEADERS += nymeacore.h \
 
 SOURCES += nymeacore.cpp \
     integrations/apikeysprovidersloader.cpp \
-    hardware/zigbee/zigbeehardwareresourceimplementation.cpp \
     integrations/plugininfocache.cpp \
     integrations/thingmanagerimplementation.cpp \
     integrations/translator.cpp \

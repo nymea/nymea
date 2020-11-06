@@ -132,7 +132,8 @@ HEADERS += nymeacore.h \
     platform/platform.h \ \
     zigbee/zigbeeadapter.h \
     zigbee/zigbeeadapters.h \
-    zigbee/zigbeemanager.h
+    zigbee/zigbeemanager.h \
+    zigbee/zigbeenodeinitializer.h
 
 
 SOURCES += nymeacore.cpp \
@@ -220,7 +221,8 @@ SOURCES += nymeacore.cpp \
     platform/platform.cpp \
     zigbee/zigbeeadapter.cpp \
     zigbee/zigbeeadapters.cpp \
-    zigbee/zigbeemanager.cpp
+    zigbee/zigbeemanager.cpp \
+    zigbee/zigbeenodeinitializer.cpp
 
 
 versionAtLeast(QT_VERSION, 5.12.0) {

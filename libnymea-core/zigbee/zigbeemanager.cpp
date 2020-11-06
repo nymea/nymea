@@ -82,7 +82,8 @@ ZigbeeManager::ZigbeeManager(QObject *parent) :
     // Load zigbee networks from settings
     loadZigbeeNetworks();
 
-    // TODO: load platform configuration for networks we know for sure how they work
+    // TODO: load platform configuration for networks we know for sure how they work after loading already configured networks
+
 }
 
 bool ZigbeeManager::available() const
@@ -357,7 +358,11 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
         if (node->shortAddress() == 0) {
             return;
         }
-        emit nodeAdded(network->networkUuid(), node);
+
+        ZigbeeNodeInitializer *nodeInitializer = m_zigbeeNodeInitializers.value(network->networkUuid());
+        nodeInitializer->initializeNode(node);
+
+        //emit nodeAdded(network->networkUuid(), node);
     });
 
     connect(network, &ZigbeeNetwork::nodeRemoved, this, [this, network](ZigbeeNode *node){
@@ -376,6 +381,15 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
 
     m_zigbeeNetworks.insert(network->networkUuid(), network);
     emit zigbeeNetworkAdded(network);
+
+    // Create node initializer when a new node joins the network
+    ZigbeeNodeInitializer *nodeInitializer = new ZigbeeNodeInitializer(network, this);
+    connect(nodeInitializer, &ZigbeeNodeInitializer::nodeInitialized, this, [this, network](ZigbeeNode *node){
+        qCDebug(dcZigbee()) << "Node initialied from nymea" << node;
+        emit nodeAdded(network->networkUuid(), node);
+    });
+
+    m_zigbeeNodeInitializers.insert(network->networkUuid(), nodeInitializer);
 }
 
 ZigbeeAdapter ZigbeeManager::convertUartAdapterToAdapter(const ZigbeeUartAdapter &uartAdapter)

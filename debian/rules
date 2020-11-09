@@ -49,9 +49,6 @@ override_dh_install: $(PREPROCESS_FILES:.in=)
 override_dh_auto_test:
 	dh_auto_test -- -k TESTARGS="-m 120 -p -o -p -,txt -p -o -p test-results.xml,xunitxml" TESTRUNNER="dbus-test-runner --bus-type=both --task"
 
-override_dh_strip:
-	dh_strip --dbg-package=nymea-dbg
-
 override_dh_auto_clean:
 	dh_auto_clean
 	find . -name *.qm -exec rm {} \;

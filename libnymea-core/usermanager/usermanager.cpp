@@ -486,7 +486,7 @@ void UserManager::rotate(const QString &dbName)
 
 bool UserManager::validateUsername(const QString &username) const
 {
-    QRegExp validator("(^[a-zA-Z0-9_\\.+-]+@[a-zA-Z0-9-_]+\\.[a-zA-Z]+$)");
+    QRegExp validator("(^[a-zA-Z0-9_\\.+-]+@[a-zA-Z0-9-_]+(\\.[a-zA-Z]+){1,2}$)");
     return validator.exactMatch(username);
 }
 

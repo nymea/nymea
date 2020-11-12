@@ -51,6 +51,8 @@ public:
     void registerHandler(ZigbeeHandler *handler, HandlerType type = HandlerTypeVendor) override;
 
     ZigbeeNode* getNode(const QUuid &networkUuid, const ZigbeeAddress &extendedAddress) override;
+    void removeNodeFromNetwork(const QUuid &networkUuid, ZigbeeNode *node) override;
+
     ZigbeeNetwork::State networkState(const QUuid &networkUuid) override;
 
 public slots:
@@ -62,6 +64,7 @@ protected:
 
 private slots:
     void onZigbeeAvailableChanged(bool available);
+    void onZigbeeNetworkChanged(ZigbeeNetwork *network);
     void onZigbeeNodeAdded(const QUuid &networkUuid, ZigbeeNode *node);
     void onZigbeeNodeRemoved(const QUuid &networkUuid, ZigbeeNode *node);
 

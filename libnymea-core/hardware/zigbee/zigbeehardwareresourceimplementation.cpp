@@ -46,6 +46,7 @@ ZigbeeHardwareResourceImplementation::ZigbeeHardwareResourceImplementation(Zigbe
     ZigbeeHardwareResource(parent),
     m_zigbeeManager(zigbeeManager)
 {
+    connect(m_zigbeeManager, &ZigbeeManager::zigbeeNetworkChanged, this, &ZigbeeHardwareResourceImplementation::onZigbeeNetworkChanged);
     connect(m_zigbeeManager, &ZigbeeManager::nodeAdded, this, &ZigbeeHardwareResourceImplementation::onZigbeeNodeAdded);
     connect(m_zigbeeManager, &ZigbeeManager::nodeRemoved, this, &ZigbeeHardwareResourceImplementation::onZigbeeNodeRemoved);
     connect(m_zigbeeManager, &ZigbeeManager::availableChanged, this, &ZigbeeHardwareResourceImplementation::onZigbeeAvailableChanged);
@@ -76,6 +77,17 @@ ZigbeeNode *ZigbeeHardwareResourceImplementation::getNode(const QUuid &networkUu
         return nullptr;
     }
     return network->getZigbeeNode(extendedAddress);
+}
+
+void ZigbeeHardwareResourceImplementation::removeNodeFromNetwork(const QUuid &networkUuid, ZigbeeNode *node)
+{
+    ZigbeeNetwork *network = m_zigbeeManager->zigbeeNetworks().value(networkUuid);
+    if (!network) {
+        qCWarning(dcZigbeeResource()) << "Can not remove note from network" << networkUuid << "because there is no network with this uuid.";
+        return;
+    }
+
+    network->removeZigbeeNode(node->extendedAddress());
 }
 
 ZigbeeNetwork::State ZigbeeHardwareResourceImplementation::networkState(const QUuid &networkUuid)
@@ -139,6 +151,11 @@ void ZigbeeHardwareResourceImplementation::onZigbeeAvailableChanged(bool availab
     }
 
     emit availableChanged(available);
+}
+
+void ZigbeeHardwareResourceImplementation::onZigbeeNetworkChanged(ZigbeeNetwork *network)
+{
+    emit networkStateChanged(network->networkUuid(), network->state());
 }
 
 void ZigbeeHardwareResourceImplementation::onZigbeeNodeAdded(const QUuid &networkUuid, ZigbeeNode *node)

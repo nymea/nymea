@@ -272,8 +272,13 @@ void ZigbeeManager::loadZigbeeNetworks()
         network->setChannel(channel);
         network->setChannelMask(channelMask);
         network->setSecurityConfiguration(securityConfiguration);
-        addNetwork(network);
         settings.endGroup(); // networkUuid
+
+        // Load the nodes before adding the network internally, so the loaded nodes will not generate added signals
+        network->loadNetwork();
+
+        // Add the network internally
+        addNetwork(network);
     }
     settings.endGroup(); // ZigbeeNetworks
 
@@ -359,10 +364,36 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
             return;
         }
 
-        ZigbeeNodeInitializer *nodeInitializer = m_zigbeeNodeInitializers.value(network->networkUuid());
-        nodeInitializer->initializeNode(node);
+        qCDebug(dcZigbee()) << "-->" << node;
+        foreach (ZigbeeNodeEndpoint *endpoint, node->endpoints()) {
+            qCDebug(dcZigbee()) << " " << endpoint;
+            if (!endpoint->manufacturerName().isEmpty()) {
+                qCDebug(dcZigbee()) << "  Manufacturer" << endpoint->manufacturerName();
+                qCDebug(dcZigbee()) << "  Model" << endpoint->modelIdentifier();
+                qCDebug(dcZigbee()) << "  Version" << endpoint->softwareBuildId();
+            }
+            qCDebug(dcZigbee()) << "    Input clusters (" << endpoint->inputClusters().count() << ")";
+            foreach (ZigbeeCluster *cluster, endpoint->inputClusters()) {
+                qCDebug(dcZigbee()) << "     -" << cluster;
+                foreach(const ZigbeeClusterAttribute &attribute, cluster->attributes()) {
+                    qCDebug(dcZigbee()) << "       - " << attribute;
+                }
+            }
 
-        //emit nodeAdded(network->networkUuid(), node);
+            qCDebug(dcZigbee()) << "    Output clusters (" << endpoint->outputClusters().count() << ")";
+            foreach (ZigbeeCluster *cluster, endpoint->outputClusters()) {
+                qCDebug(dcZigbee()) << "     -" << cluster;
+                foreach(const ZigbeeClusterAttribute &attribute, cluster->attributes()) {
+                    qCDebug(dcZigbee()) << "       - " << attribute;
+                }
+            }
+        }
+
+
+//        ZigbeeNodeInitializer *nodeInitializer = m_zigbeeNodeInitializers.value(network->networkUuid());
+//        nodeInitializer->initializeNode(node);
+        // TODO: emit node added once initialized so the plugins can use it
+        emit nodeAdded(network->networkUuid(), node);
     });
 
     connect(network, &ZigbeeNetwork::nodeRemoved, this, [this, network](ZigbeeNode *node){
@@ -388,6 +419,34 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
         qCDebug(dcZigbee()) << "Node initialied from nymea" << node;
         emit nodeAdded(network->networkUuid(), node);
     });
+
+    qCDebug(dcZigbee()) << "Network added" << network;
+    foreach (ZigbeeNode *node, network->nodes()) {
+        qCDebug(dcZigbee()) << "-->" << node;
+        foreach (ZigbeeNodeEndpoint *endpoint, node->endpoints()) {
+            qCDebug(dcZigbee()) << " " << endpoint;
+            if (!endpoint->manufacturerName().isEmpty()) {
+                qCDebug(dcZigbee()) << "  Manufacturer" << endpoint->manufacturerName();
+                qCDebug(dcZigbee()) << "  Model" << endpoint->modelIdentifier();
+                qCDebug(dcZigbee()) << "  Version" << endpoint->softwareBuildId();
+            }
+            qCDebug(dcZigbee()) << "    Input clusters (" << endpoint->inputClusters().count() << ")";
+            foreach (ZigbeeCluster *cluster, endpoint->inputClusters()) {
+                qCDebug(dcZigbee()) << "     -" << cluster;
+                foreach(const ZigbeeClusterAttribute &attribute, cluster->attributes()) {
+                    qCDebug(dcZigbee()) << "       - " << attribute;
+                }
+            }
+
+            qCDebug(dcZigbee()) << "    Output clusters (" << endpoint->outputClusters().count() << ")";
+            foreach (ZigbeeCluster *cluster, endpoint->outputClusters()) {
+                qCDebug(dcZigbee()) << "     -" << cluster;
+                foreach(const ZigbeeClusterAttribute &attribute, cluster->attributes()) {
+                    qCDebug(dcZigbee()) << "       - " << attribute;
+                }
+            }
+        }
+    }
 
     m_zigbeeNodeInitializers.insert(network->networkUuid(), nodeInitializer);
 }

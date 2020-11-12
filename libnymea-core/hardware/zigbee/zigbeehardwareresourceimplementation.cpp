@@ -161,6 +161,11 @@ void ZigbeeHardwareResourceImplementation::onZigbeeNodeAdded(const QUuid &networ
 void ZigbeeHardwareResourceImplementation::onZigbeeNodeRemoved(const QUuid &networkUuid, ZigbeeNode *node)
 {
     qCDebug(dcZigbeeResource()) << node << "left the network" << m_zigbeeManager->zigbeeNetworks().value(networkUuid);
+
+    foreach (ZigbeeHandler *tmp, m_handlers) {
+        tmp->handleRemoveNode(node, networkUuid);
+    }
+
 }
 
 }

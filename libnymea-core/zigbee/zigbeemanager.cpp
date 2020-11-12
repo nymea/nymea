@@ -393,6 +393,7 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
 //        ZigbeeNodeInitializer *nodeInitializer = m_zigbeeNodeInitializers.value(network->networkUuid());
 //        nodeInitializer->initializeNode(node);
         // TODO: emit node added once initialized so the plugins can use it
+
         emit nodeAdded(network->networkUuid(), node);
     });
 

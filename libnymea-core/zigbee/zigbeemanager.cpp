@@ -313,6 +313,16 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
     connect(network, &ZigbeeNetwork::stateChanged, this, [this, network](ZigbeeNetwork::State state){
         Q_UNUSED(state)
         qCDebug(dcZigbee()) << "Network state changed" << network;
+        if (state == ZigbeeNetwork::StateRunning) {
+
+            // Send a broadcast request to all powered nodes
+            foreach (ZigbeeNode *node, network->nodes()) {
+                if (node->macCapabilities().receiverOnWhenIdle && node->shortAddress() != 0x0000) {
+                    node->deviceObject()->requestMgmtLqi();
+                }
+            }
+        }
+
         evaluateZigbeeAvailable();
         emit zigbeeNetworkChanged(network);
     });

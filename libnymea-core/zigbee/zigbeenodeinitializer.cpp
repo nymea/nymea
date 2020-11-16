@@ -39,7 +39,6 @@ ZigbeeNodeInitializer::ZigbeeNodeInitializer(ZigbeeNetwork *network, QObject *pa
     QObject(parent),
     m_network(network)
 {
-    // Bind the coordinator to group 0x0000
 
 }
 
@@ -47,8 +46,8 @@ void ZigbeeNodeInitializer::initializeNode(ZigbeeNode *node)
 {
     qCDebug(dcZigbee()) << "Start initializing node internally" << node;
 
-    m_network->coordinatorNode()->deviceObject()->requestBindShortAddress(0x01, ZigbeeClusterLibrary::ClusterIdOnOff, 0x0000);
-
+    // Bind the coordinator to group 0x0000
+    //m_network->coordinatorNode()->deviceObject()->requestBindShortAddress(0x01, ZigbeeClusterLibrary::ClusterIdOnOff, 0x0000);
 
     // Initialize and configure server clusters
     foreach (ZigbeeNodeEndpoint *endpoint, node->endpoints()) {

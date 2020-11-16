@@ -364,6 +364,25 @@
             "WirelessModeAdhoc",
             "WirelessModeInfrastructure",
             "WirelessModeAccessPoint"
+        ],
+        "ZigbeeBackendType": [
+            "ZigbeeBackendTypeDeconz",
+            "ZigbeeBackendTypeNxp"
+        ],
+        "ZigbeeError": [
+            "ZigbeeErrorNoError",
+            "ZigbeeErrorAdapterNotAvailable",
+            "ZigbeeErrorAdapterAlreadyInUse",
+            "ZigbeeErrorNetworkUuidNotFound",
+            "ZigbeeErrorDurationOutOfRange",
+            "ZigbeeErrorNetworkOffline"
+        ],
+        "ZigbeeNetworkState": [
+            "ZigbeeNetworkStateOffline",
+            "ZigbeeNetworkStateStarting",
+            "ZigbeeNetworkStateUpdating",
+            "ZigbeeNetworkStateOnline",
+            "ZigbeeNetworkStateError"
         ]
     },
     "flags": {
@@ -1932,6 +1951,66 @@
                 "success": "Bool",
                 "transactionId": "Int"
             }
+        },
+        "Zigbee.AddNetwork": {
+            "description": "Create a new Zigbee network for the given serialPort, baud rate and backend type. Get those information from the available Zigbee adapters.The channel mask is optional and defaults to all channels [11, 26]. The quietest channel from the given channel mask will be picked during network creation. The channel mask is a uint32 flag and the the bit number represents the channel which should enabled for scanning. All channels would be the value 0x07fff800.",
+            "params": {
+                "backendType": "$ref:ZigbeeBackendType",
+                "baudRate": "Uint",
+                "o:channelMask": "Uint",
+                "serialPort": "String"
+            },
+            "returns": {
+                "o:networkUuid": "Uuid",
+                "zigbeeError": "$ref:ZigbeeError"
+            }
+        },
+        "Zigbee.FactoryResetNetwork": {
+            "description": "Factory reset the network with the given networkUuid. The network does not have to be Online for this procedure, and all associated nodes and things will be removed permanently. Make sure the user realy wants to do this because this can not be undone.",
+            "params": {
+                "networkUuid": "Uuid"
+            },
+            "returns": {
+                "zigbeeError": "$ref:ZigbeeError"
+            }
+        },
+        "Zigbee.GetAdapters": {
+            "description": "Get the list of available Zigbee adapter candidates in order to set up the zigbee network on the desired serial interface. The serialPort property can be used as unique identifier. If an adapter hardware has been recognized as a supported hardware, the 'hardwareRecognized' property will be true and the baud rate and backend configurations can be used as they where given, otherwise the user might set the backend type and baud rate manually.",
+            "params": {
+            },
+            "returns": {
+                "adapters": "$ref:ZigbeeAdapters"
+            }
+        },
+        "Zigbee.GetNetworks": {
+            "description": "Returns the list of zigbee networks configured in the system.",
+            "params": {
+            },
+            "returns": {
+                "zigbeeNetworks": [
+                    "$ref:ZigbeeNetwork"
+                ]
+            }
+        },
+        "Zigbee.RemoveNetwork": {
+            "description": "Remove the zigbee network with the given network uuid.",
+            "params": {
+                "networkUuid": "Uuid"
+            },
+            "returns": {
+                "zigbeeError": "$ref:ZigbeeError"
+            }
+        },
+        "Zigbee.SetPermitJoin": {
+            "description": "Allow or deny nodes to join the network with the given networkUuid for a specific duration in seconds. The duration values has to be between 0 and 255 seconds. The permitJoinDuration indicates how long permit has been enabled and the permitJoinDuration indicates the rest of the time. Those values can be used to show a countdown or progressbar. This method can be recalled for resetting the timeout. If the duration is set to 0 seconds, joining will be disabled immediatly for the entire network. The shortAddress is optional and defaults to the broadcast address (0xfffc) for all routers in the network. If the short address matches the address of a router node in the network, only that router will be able to allow new nodes to join the network. A new node will join to the router with the best link quality index (LQI).",
+            "params": {
+                "duration": "Uint",
+                "networkUuid": "Uuid",
+                "o:shortAddress": "Uint"
+            },
+            "returns": {
+                "zigbeeError": "$ref:ZigbeeError"
+            }
         }
     },
     "notifications": {
@@ -2349,6 +2428,36 @@
                 "o:token": "String",
                 "success": "Bool",
                 "transactionId": "Int"
+            }
+        },
+        "Zigbee.AdapterAdded": {
+            "description": "Emitted whenever a new Zigbee adapter candidate has been detected in the system.",
+            "params": {
+                "adapter": "$ref:ZigbeeAdapter"
+            }
+        },
+        "Zigbee.AdapterRemoved": {
+            "description": "Emitted whenever a Zigbee adapter has been removed from the system (i.e. unplugged).",
+            "params": {
+                "adapter": "$ref:ZigbeeAdapter"
+            }
+        },
+        "Zigbee.NetworkAdded": {
+            "description": "Emitted whenever a new Zigbee network has been added.",
+            "params": {
+                "zigbeeNetwork": "$ref:ZigbeeNetwork"
+            }
+        },
+        "Zigbee.NetworkChanged": {
+            "description": "Emitted whenever a new Zigbee network has changed.",
+            "params": {
+                "zigbeeNetwork": "$ref:ZigbeeNetwork"
+            }
+        },
+        "Zigbee.NetworkRemoved": {
+            "description": "Emitted whenever a new Zigbee network has been removed.",
+            "params": {
+                "networkUuid": "Uuid"
             }
         }
     },
@@ -2819,6 +2928,34 @@
             "r:mode": "$ref:WirelessMode",
             "r:o:currentAccessPoint": "$ref:WirelessAccessPoint",
             "r:state": "$ref:NetworkDeviceState"
+        },
+        "ZigbeeAdapter": {
+            "backendType": "$ref:ZigbeeBackendType",
+            "baudRate": "Int",
+            "description": "String",
+            "hardwareRecognized": "Bool",
+            "name": "String",
+            "serialNumber": "String",
+            "serialPort": "String"
+        },
+        "ZigbeeAdapters": [
+            "$ref:ZigbeeAdapter"
+        ],
+        "ZigbeeNetwork": {
+            "backendType": "$ref:ZigbeeBackendType",
+            "baudRate": "Uint",
+            "channel": "Uint",
+            "channelMask": "Uint",
+            "enabled": "Bool",
+            "firmwareVersion": "String",
+            "macAddress": "String",
+            "networkState": "$ref:ZigbeeNetworkState",
+            "networkUuid": "Uuid",
+            "panId": "Uint",
+            "permitJoiningDuration": "Uint",
+            "permitJoiningEnabled": "Bool",
+            "permitJoiningRemaining": "Uint",
+            "serialPort": "String"
         }
     }
 }

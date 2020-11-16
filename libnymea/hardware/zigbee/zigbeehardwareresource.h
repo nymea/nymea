@@ -55,7 +55,7 @@ public:
     virtual ~ZigbeeHardwareResource() = default;
 
     virtual void registerHandler(ZigbeeHandler *handler, HandlerType type = HandlerTypeVendor) = 0;
-    virtual ZigbeeNode* getNode(const QUuid &networkUuid, const ZigbeeAddress &extendedAddress) = 0;
+    virtual ZigbeeNode* claimNode(ZigbeeHandler *hanlder, const QUuid &networkUuid, const ZigbeeAddress &extendedAddress) = 0;
     virtual void removeNodeFromNetwork(const QUuid &networkUuid, ZigbeeNode *node) = 0;
 
     virtual ZigbeeNetwork::State networkState(const QUuid &networkUuid) = 0;

@@ -69,14 +69,32 @@ void ZigbeeHardwareResourceImplementation::registerHandler(ZigbeeHandler *handle
     m_handlers.insert(type, handler);
 }
 
-ZigbeeNode *ZigbeeHardwareResourceImplementation::getNode(const QUuid &networkUuid, const ZigbeeAddress &extendedAddress)
+ZigbeeNode *ZigbeeHardwareResourceImplementation::claimNode(ZigbeeHandler *handler, const QUuid &networkUuid, const ZigbeeAddress &extendedAddress)
 {
+    if (!m_handlers.values().contains(handler)) {
+        qCWarning(dcZigbeeResource()) << "Handler" << handler->name() << "is not registered. Not allowing node to be claimed.";
+        return nullptr;
+    }
+
     ZigbeeNetwork *network = m_zigbeeManager->zigbeeNetworks().value(networkUuid);
     if (!network) {
         qCWarning(dcZigbeeResource()) << "Network" << networkUuid << "not found.";
         return nullptr;
     }
-    return network->getZigbeeNode(extendedAddress);
+
+    ZigbeeNode *node = network->getZigbeeNode(extendedAddress);
+    if (!node) {
+        qCWarning(dcZigbeeResource()) << "Node with address" << extendedAddress << "not found in Zigbee network" << networkUuid.toString();
+        return nullptr;
+    }
+
+    if (m_nodeHandlers.contains(node)) {
+        qCWarning(dcZigbeeResource()) << "Node with address" << extendedAddress << "is already claimed by another handler (" << m_nodeHandlers.value(node)->name() << "). Not allowing node to be reclaimed.";
+        return nullptr;
+    }
+
+    m_nodeHandlers.insert(node, handler);
+    return node;
 }
 
 void ZigbeeHardwareResourceImplementation::removeNodeFromNetwork(const QUuid &networkUuid, ZigbeeNode *node)
@@ -142,6 +160,24 @@ bool ZigbeeHardwareResourceImplementation::disable()
     return true;
 }
 
+void ZigbeeHardwareResourceImplementation::thingsLoaded()
+{
+    m_thingsLoaded = true;
+
+    // We can assume here that all handled nodes have been claimed by plugins
+    // In case we started up and loaded new zigbee plugins, let's try to get all previously joined nodes handled now...
+    foreach (ZigbeeNetwork *network, m_zigbeeManager->zigbeeNetworks()) {
+        if (network->state() == ZigbeeNetwork::StateRunning) {
+            foreach (ZigbeeNode *node, network->nodes()) {
+                if (!m_nodeHandlers.contains(node)) {
+                    qCDebug(dcZigbeeResource()) << "Node" << node << "is not yet handled by any plugin. Trying to find a suitable plugin.";
+                    onZigbeeNodeAdded(network->networkUuid(), node);
+                }
+            }
+        }
+    }
+}
+
 void ZigbeeHardwareResourceImplementation::onZigbeeAvailableChanged(bool available)
 {
     if (available) {
@@ -156,6 +192,18 @@ void ZigbeeHardwareResourceImplementation::onZigbeeAvailableChanged(bool availab
 void ZigbeeHardwareResourceImplementation::onZigbeeNetworkChanged(ZigbeeNetwork *network)
 {
     emit networkStateChanged(network->networkUuid(), network->state());
+
+    // If the network is now ready and things have been loaded already, check if there are
+    // unclaimed nodes that might be handled now. This might happen if a node joins the network
+    // but no appropriate plugin had been installed at the time. If additional plugins have
+    // been installed now, such nodes might be handled by them now.
+    if (network->state() == ZigbeeNetwork::StateRunning && m_thingsLoaded) {
+        foreach (ZigbeeNode *node, network->nodes()) {
+            if (!m_nodeHandlers.contains(node)) {
+                onZigbeeNodeAdded(network->networkUuid(), node);
+            }
+        }
+    }
 }
 
 void ZigbeeHardwareResourceImplementation::onZigbeeNodeAdded(const QUuid &networkUuid, ZigbeeNode *node)
@@ -165,6 +213,7 @@ void ZigbeeHardwareResourceImplementation::onZigbeeNodeAdded(const QUuid &networ
     foreach (ZigbeeHandler *tmp, m_handlers) {
         if (tmp->handleNode(node, networkUuid)) {
             handler = tmp;
+            m_nodeHandlers.insert(node, handler);
             qCDebug(dcZigbeeResource()) << "Node" << node << "taken by handler" << handler->name();
             break;
         }
@@ -179,10 +228,10 @@ void ZigbeeHardwareResourceImplementation::onZigbeeNodeRemoved(const QUuid &netw
 {
     qCDebug(dcZigbeeResource()) << node << "left the network" << m_zigbeeManager->zigbeeNetworks().value(networkUuid);
 
-    foreach (ZigbeeHandler *tmp, m_handlers) {
-        tmp->handleRemoveNode(node, networkUuid);
+    ZigbeeHandler *handler = m_nodeHandlers.value(node);
+    if (handler) {
+        handler->handleRemoveNode(node, networkUuid);
     }
-
 }
 
 }

@@ -88,12 +88,12 @@ ZigbeeNode *ZigbeeHardwareResourceImplementation::claimNode(ZigbeeHandler *handl
         return nullptr;
     }
 
-    if (m_nodeHandlers.contains(node)) {
+    if (m_nodeHandlers.contains(node) && m_nodeHandlers.value(node) != handler) {
         qCWarning(dcZigbeeResource()) << "Node with address" << extendedAddress << "is already claimed by another handler (" << m_nodeHandlers.value(node)->name() << "). Not allowing node to be reclaimed.";
         return nullptr;
     }
 
-    m_nodeHandlers.insert(node, handler);
+    m_nodeHandlers[node] = handler;
     return node;
 }
 

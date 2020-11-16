@@ -39,6 +39,7 @@ ZigbeeNodeInitializer::ZigbeeNodeInitializer(ZigbeeNetwork *network, QObject *pa
     QObject(parent),
     m_network(network)
 {
+    // Bind the coordinator to group 0x0000
 
 }
 
@@ -46,38 +47,54 @@ void ZigbeeNodeInitializer::initializeNode(ZigbeeNode *node)
 {
     qCDebug(dcZigbee()) << "Start initializing node internally" << node;
 
+    m_network->coordinatorNode()->deviceObject()->requestBindShortAddress(0x01, ZigbeeClusterLibrary::ClusterIdOnOff, 0x0000);
+
+
     // Initialize and configure server clusters
     foreach (ZigbeeNodeEndpoint *endpoint, node->endpoints()) {
         // Configure attribute reporting
         if (endpoint->hasInputCluster(ZigbeeClusterLibrary::ClusterIdPowerConfiguration)) {
 
             // Read current battery remaining
+            qCDebug(dcZigbee()) << "Read power configuration cluster attributes" << node;
             ZigbeeClusterReply *readAttributeReply = endpoint->getInputCluster(ZigbeeClusterLibrary::ClusterIdPowerConfiguration)->readAttributes({ZigbeeClusterPowerConfiguration::AttributeBatteryPercentageRemaining});
-            connect(readAttributeReply, &ZigbeeClusterReply::finished, this, [this, node, readAttributeReply](){
+            connect(readAttributeReply, &ZigbeeClusterReply::finished, node, [=](){
                 if (readAttributeReply->error() != ZigbeeClusterReply::ErrorNoError) {
                     qCWarning(dcZigbee()) << "Failed to read power cluster attributes" << readAttributeReply->error();
-                    emit nodeInitialized(node);
+                    //emit nodeInitialized(node);
                     return;
                 }
-            });
+                qCDebug(dcZigbee()) << "Read power configuration cluster attributes finished successfully";
 
+                // Bind the cluster to the coordinator
+                qCDebug(dcZigbee()) << "Bind power configuration cluster to coordinaotr";
+                ZigbeeDeviceObjectReply * zdoReply = node->deviceObject()->requestBindIeeeAddress(endpoint->endpointId(), ZigbeeClusterLibrary::ClusterIdPowerConfiguration, m_network->coordinatorNode()->extendedAddress(), 0x01);
+                connect(zdoReply, &ZigbeeDeviceObjectReply::finished, node, [=](){
+                    if (zdoReply->error() != ZigbeeDeviceObjectReply::ErrorNoError) {
+                        qCWarning(dcZigbee()) << "Failed to bind power cluster to coordinator" << readAttributeReply->error();
+                        return;
+                    }
+                    qCDebug(dcZigbee()) << "Bind power configuration cluster to coordinaotr finished successfully";
 
-            // Configure attribute rporting for battery remaining
-            ZigbeeClusterLibrary::AttributeReportingConfiguration reportingConfig;
-            reportingConfig.attributeId = ZigbeeClusterPowerConfiguration::AttributeBatteryPercentageRemaining;
-            reportingConfig.dataType = Zigbee::Uint8;
-            reportingConfig.minReportingInterval = 300;
-            reportingConfig.maxReportingInterval = 2700;
-            reportingConfig.reportableChange = ZigbeeDataType(static_cast<quint8>(1)).data();
+                    // Configure attribute rporting for battery remaining
+                    ZigbeeClusterLibrary::AttributeReportingConfiguration reportingConfig;
+                    reportingConfig.attributeId = ZigbeeClusterPowerConfiguration::AttributeBatteryPercentageRemaining;
+                    reportingConfig.dataType = Zigbee::Uint8;
+                    reportingConfig.minReportingInterval = 300;
+                    reportingConfig.maxReportingInterval = 2700;
+                    reportingConfig.reportableChange = ZigbeeDataType(static_cast<quint8>(14)).data();
 
-            ZigbeeClusterReply *reportingReply = endpoint->getInputCluster(ZigbeeClusterLibrary::ClusterIdPowerConfiguration)->configureReporting({reportingConfig});
-            connect(reportingReply, &ZigbeeClusterReply::finished, this, [reportingReply](){
-                if (reportingReply->error() != ZigbeeClusterReply::ErrorNoError) {
-                    qCWarning(dcZigbee()) << "Failed to read power cluster attributes" << reportingReply->error();
-                    return;
-                }
+                    qCDebug(dcZigbee()) << "Configure attribute reporting for power configuration cluster to coordinator";
+                    ZigbeeClusterReply *reportingReply = endpoint->getInputCluster(ZigbeeClusterLibrary::ClusterIdPowerConfiguration)->configureReporting({reportingConfig});
+                    connect(reportingReply, &ZigbeeClusterReply::finished, this, [reportingReply](){
+                        if (reportingReply->error() != ZigbeeClusterReply::ErrorNoError) {
+                            qCWarning(dcZigbee()) << "Failed to read power cluster attributes" << reportingReply->error();
+                            return;
+                        }
 
-                qCDebug(dcZigbee()) << "Reporting config finished" << ZigbeeClusterLibrary::parseAttributeReportingStatusRecords(reportingReply->responseFrame().payload);
+                        qCDebug(dcZigbee()) << "Reporting config finished" << ZigbeeClusterLibrary::parseAttributeReportingStatusRecords(reportingReply->responseFrame().payload);
+                    });
+                });
             });
         }
     }
@@ -88,7 +105,7 @@ void ZigbeeNodeInitializer::initializeNode(ZigbeeNode *node)
 
         if (endpoint->hasOutputCluster(ZigbeeClusterLibrary::ClusterIdOnOff)) {
             // Bind command
-            ZigbeeDeviceObjectReply *zdoReply = node->deviceObject()->requestBindIeeeAddress(endpoint->endpointId(), ZigbeeClusterLibrary::ClusterIdOnOff, m_network->coordinatorNode()->extendedAddress(), 0x01);
+            ZigbeeDeviceObjectReply *zdoReply = node->deviceObject()->requestBindShortAddress(endpoint->endpointId(), ZigbeeClusterLibrary::ClusterIdOnOff, m_network->coordinatorNode()->shortAddress());
             connect(zdoReply, &ZigbeeDeviceObjectReply::finished, this, [zdoReply](){
                 if (zdoReply->error() != ZigbeeDeviceObjectReply::ErrorNoError) {
                     qCWarning(dcZigbee()) << "Failed to bind OnOff cluster attributes" << zdoReply->error();
@@ -99,7 +116,7 @@ void ZigbeeNodeInitializer::initializeNode(ZigbeeNode *node)
 
         if (endpoint->hasOutputCluster(ZigbeeClusterLibrary::ClusterIdLevelControl)) {
             // Bind command
-            ZigbeeDeviceObjectReply *zdoReply = node->deviceObject()->requestBindIeeeAddress(endpoint->endpointId(), ZigbeeClusterLibrary::ClusterIdLevelControl, m_network->coordinatorNode()->extendedAddress(), 0x01);
+            ZigbeeDeviceObjectReply *zdoReply = node->deviceObject()->requestBindShortAddress(endpoint->endpointId(), ZigbeeClusterLibrary::ClusterIdLevelControl, m_network->coordinatorNode()->shortAddress());
             connect(zdoReply, &ZigbeeDeviceObjectReply::finished, this, [this, node, zdoReply](){
                 if (zdoReply->error() != ZigbeeDeviceObjectReply::ErrorNoError) {
                     qCWarning(dcZigbee()) << "Failed to bind Level cluster attributes" << zdoReply->error();

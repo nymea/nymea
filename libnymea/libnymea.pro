@@ -7,6 +7,9 @@ QT += network bluetooth dbus
 QT -= gui
 DEFINES += LIBNYMEA_LIBRARY
 
+CONFIG += link_pkgconfig
+PKGCONFIG += nymea-zigbee
+
 QMAKE_LFLAGS += -fPIC
 
 HEADERS += \

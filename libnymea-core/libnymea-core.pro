@@ -4,7 +4,7 @@ TARGET = nymea-core
 
 include(../nymea.pri)
 
-QT += sql qml serialport
+QT += sql qml
 INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 

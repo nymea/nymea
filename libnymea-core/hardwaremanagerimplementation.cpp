@@ -142,4 +142,9 @@ ZigbeeHardwareResource *HardwareManagerImplementation::zigbeeResource()
     return m_zigbeeResource;
 }
 
+void HardwareManagerImplementation::thingsLoaded()
+{
+    m_zigbeeResource->thingsLoaded();
+}
+
 }

@@ -824,6 +824,9 @@ void NymeaCore::thingManagerLoaded()
     // Evaluate rules on current time
     onDateTimeChanged(m_timeManager->currentDateTime());
 
+    // Tell zigbee we're done with loading stuff...
+    m_hardwareManager->thingsLoaded();
+
     emit initialized();
 
     // Do some houskeeping...

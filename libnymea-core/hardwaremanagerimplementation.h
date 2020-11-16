@@ -42,6 +42,7 @@ namespace nymeaserver {
 class Platform;
 class MqttBroker;
 class ZigbeeManager;
+class ZigbeeHardwareResourceImplementation;
 
 class HardwareManagerImplementation : public HardwareManager
 {
@@ -61,6 +62,9 @@ public:
     I2CManager *i2cManager() override;
     ZigbeeHardwareResource *zigbeeResource() override;
 
+public slots:
+    void thingsLoaded();
+
 private:
     QNetworkAccessManager *m_networkAccessManager = nullptr;
 
@@ -74,7 +78,7 @@ private:
     BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
     MqttProvider *m_mqttProvider = nullptr;
     I2CManager *m_i2cManager = nullptr;
-    ZigbeeHardwareResource *m_zigbeeResource = nullptr;
+    ZigbeeHardwareResourceImplementation *m_zigbeeResource = nullptr;
 };
 
 }

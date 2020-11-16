@@ -119,11 +119,12 @@ void ZigbeeNodeInitializer::initializeNode(ZigbeeNode *node)
             connect(zdoReply, &ZigbeeDeviceObjectReply::finished, this, [this, node, zdoReply](){
                 if (zdoReply->error() != ZigbeeDeviceObjectReply::ErrorNoError) {
                     qCWarning(dcZigbee()) << "Failed to bind Level cluster attributes" << zdoReply->error();
-                    emit nodeInitialized(node);
+                    //emit nodeInitialized(node);
                     return;
                 }
-                emit nodeInitialized(node);
             });
         }
     }
+
+    //emit nodeInitialized(node);
 }

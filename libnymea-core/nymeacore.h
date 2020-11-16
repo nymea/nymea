@@ -46,8 +46,6 @@
 #include "time/timemanager.h"
 #include "hardwaremanagerimplementation.h"
 
-#include "zigbee/zigbeemanager.h"
-
 #include "debugserverhandler.h"
 
 #include <QObject>

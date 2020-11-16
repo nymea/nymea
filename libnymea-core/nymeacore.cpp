@@ -51,6 +51,8 @@
 #include "cloud/cloudnotifications.h"
 #include "cloud/cloudtransport.h"
 
+#include "zigbee/zigbeemanager.h"
+
 #include <networkmanager.h>
 
 #include <QDir>

@@ -1,4 +1,3 @@
-
 TEMPLATE = lib
 TARGET = nymea-core
 
@@ -129,7 +128,7 @@ HEADERS += nymeacore.h \
     tagging/tag.h \
     cloud/cloudtransport.h \
     debugreportgenerator.h \
-    platform/platform.h \ \
+    platform/platform.h \
     zigbee/zigbeeadapter.h \
     zigbee/zigbeeadapters.h \
     zigbee/zigbeemanager.h \

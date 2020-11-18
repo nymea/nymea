@@ -32,6 +32,9 @@
 #include "nymeasettings.h"
 #include "loggingcategories.h"
 
+#include <QDir>
+#include <QFileInfo>
+
 #include <zigbeeutils.h>
 
 NYMEA_LOGGING_CATEGORY(dcZigbee, "Zigbee")
@@ -82,8 +85,13 @@ ZigbeeManager::ZigbeeManager(QObject *parent) :
     // Load zigbee networks from settings
     loadZigbeeNetworks();
 
-    // TODO: load platform configuration for networks we know for sure how they work after loading already configured networks
+    // Check if we have a zigbee platform configuration and if we have to create the platform network automatically
+    checkPlatformConfiguration();
 
+    // Start all loaded networks
+    foreach (ZigbeeNetwork *network, m_zigbeeNetworks.values()) {
+        network->startNetwork();
+    }
 }
 
 bool ZigbeeManager::available() const
@@ -106,7 +114,7 @@ QHash<QUuid, ZigbeeNetwork *> ZigbeeManager::zigbeeNetworks() const
     return m_zigbeeNetworks;
 }
 
-QPair<ZigbeeManager::ZigbeeError, QUuid> ZigbeeManager::createZigbeeNetwork(const QString &serialPort, const uint baudRate, const ZigbeeAdapter::ZigbeeBackendType backendType, const ZigbeeChannelMask channelMask)
+QPair<ZigbeeManager::ZigbeeError, QUuid> ZigbeeManager::createZigbeeNetwork(const QString &serialPort, uint baudRate, ZigbeeAdapter::ZigbeeBackendType backendType, ZigbeeChannelMask channelMask)
 {
     qCDebug(dcZigbee()) << "Start creating network for" << serialPort << baudRate << backendType << channelMask;
 
@@ -287,10 +295,61 @@ void ZigbeeManager::loadZigbeeNetworks()
         return;
     }
 
-    // Start all loaded networks
-    foreach (ZigbeeNetwork *network, m_zigbeeNetworks.values()) {
-        network->startNetwork();
+}
+
+void ZigbeeManager::checkPlatformConfiguration()
+{
+    QFileInfo platformConfigurationFileInfo(NymeaSettings::settingsPath() + QDir::separator() + "zigbee-platform.conf");
+    if (platformConfigurationFileInfo.exists()) {
+        qCDebug(dcZigbee()) << "Found zigbee platform configuration" << platformConfigurationFileInfo.absoluteFilePath();
+        QSettings platformSettings(platformConfigurationFileInfo.absoluteFilePath(), QSettings::IniFormat);
+        QString serialPort = platformSettings.value("serialPort").toString();
+        if (serialPort.isEmpty()) {
+            qCWarning(dcZigbee()) << "The serial port is not specified correctly in the platform configuration file" << platformConfigurationFileInfo.absoluteFilePath() << "The platform based network will not be created.";
+            return;
+        }
+
+        if (!m_adapterMonitor->hasAdapter(serialPort)) {
+            qCWarning(dcZigbee()) << "Could not find platform specific serial port" << serialPort << "on this system. Please check the wiring or the port configuration. The platform based network will not be created.";
+            return;
+        }
+
+        qint32 baudRate = platformSettings.value("baudRate").toUInt();
+        QString backendString = platformSettings.value("backend").toString();
+        Zigbee::ZigbeeBackendType backenType = Zigbee::ZigbeeBackendTypeNxp;
+        if (backendString.toLower().contains("deconz")) {
+            backenType = Zigbee::ZigbeeBackendTypeDeconz;
+        }
+
+        bool alreadyCreated = false;
+        foreach (ZigbeeNetwork *network, m_zigbeeNetworks.values()) {
+            if (network->serialPortName() == serialPort && network->serialBaudrate() == baudRate && network->backendType() == backenType) {
+                qCDebug(dcZigbee()) << "Network based on platform configuration already created" << network;
+                alreadyCreated = true;
+                break;
+            }
+        }
+
+        if (!alreadyCreated) {
+            qCDebug(dcZigbee()) << "Network based on platform configuration has not been created yet.";
+            ZigbeeNetwork *network = createPlatformNetwork(serialPort, baudRate, backenType);
+            addNetwork(network);
+            // Note: it will be saved once the network has started successfully
+        }
+    } else {
+        qCDebug(dcZigbee()) << "No platform configuration specified.";
     }
+}
+
+ZigbeeNetwork *ZigbeeManager::createPlatformNetwork(const QString &serialPort, uint baudRate, Zigbee::ZigbeeBackendType backendType, ZigbeeChannelMask channelMask)
+{
+    qCDebug(dcZigbee()) << "Creating platform network on" << serialPort << baudRate << backendType << channelMask;
+    ZigbeeNetwork *network = ZigbeeNetworkManager::createZigbeeNetwork(QUuid::createUuid(), backendType);
+    network->setSettingsDirectory(QDir(NymeaSettings::settingsPath()));
+    network->setChannelMask(channelMask);
+    network->setSerialPortName(serialPort);
+    network->setSerialBaudrate(baudRate);
+    return network;
 }
 
 ZigbeeNetwork *ZigbeeManager::buildNetworkObject(const QUuid &networkId, ZigbeeAdapter::ZigbeeBackendType backendType)

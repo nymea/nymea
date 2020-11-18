@@ -72,7 +72,7 @@ public:
     ZigbeeAdapters availableAdapters() const;
     QHash<QUuid, ZigbeeNetwork *> zigbeeNetworks() const;
 
-    QPair<ZigbeeError, QUuid> createZigbeeNetwork(const QString &serialPort, const uint baudRate, const ZigbeeAdapter::ZigbeeBackendType backendType, const ZigbeeChannelMask channelMask = ZigbeeChannelMask(ZigbeeChannelMask::ChannelConfigurationAllChannels));
+    QPair<ZigbeeError, QUuid> createZigbeeNetwork(const QString &serialPort, uint baudRate, ZigbeeAdapter::ZigbeeBackendType backendType, ZigbeeChannelMask channelMask = ZigbeeChannelMask(ZigbeeChannelMask::ChannelConfigurationAllChannels));
     ZigbeeError removeZigbeeNetwork(const QUuid &networkUuid);
     ZigbeeError setZigbeeNetworkPermitJoin(const QUuid &networkUuid, quint16 shortAddress = Zigbee::BroadcastAddressAllRouters, uint duration = 120);
     ZigbeeError factoryResetNetwork(const QUuid &networkUuid);
@@ -87,6 +87,8 @@ private:
 
     void saveNetwork(ZigbeeNetwork *network);
     void loadZigbeeNetworks();
+    void checkPlatformConfiguration();
+    ZigbeeNetwork *createPlatformNetwork(const QString &serialPort, uint baudRate, Zigbee::ZigbeeBackendType backendType, ZigbeeChannelMask channelMask = ZigbeeChannelMask(ZigbeeChannelMask::ChannelConfigurationAllChannels));
 
     ZigbeeNetwork *buildNetworkObject(const QUuid &networkId, ZigbeeAdapter::ZigbeeBackendType backendType);
     void addNetwork(ZigbeeNetwork *network);

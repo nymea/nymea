@@ -42,12 +42,8 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     m_zigbeeManager(zigbeeManager)
 {
     qRegisterMetaType<nymeaserver::ZigbeeAdapter>();
-    qRegisterMetaType<nymeaserver::ZigbeeAdapter::ZigbeeBackendType>();
-
     registerEnum<ZigbeeManager::ZigbeeNetworkState>();
-    registerEnum<ZigbeeAdapter::ZigbeeBackendType>();
     registerEnum<ZigbeeManager::ZigbeeError>();
-
     registerObject<ZigbeeAdapter, ZigbeeAdapters>();
 
     // Network object describing a network instance
@@ -64,54 +60,56 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     zigbeeNetworkDescription.insert("permitJoiningEnabled", enumValueName(Bool));
     zigbeeNetworkDescription.insert("permitJoiningDuration", enumValueName(Uint));
     zigbeeNetworkDescription.insert("permitJoiningRemaining", enumValueName(Uint));
-    zigbeeNetworkDescription.insert("backendType", enumRef<ZigbeeAdapter::ZigbeeBackendType>());
+    zigbeeNetworkDescription.insert("backend", enumValueName(String));
     zigbeeNetworkDescription.insert("networkState", enumRef<ZigbeeManager::ZigbeeNetworkState>());
     registerObject("ZigbeeNetwork", zigbeeNetworkDescription);
 
     QVariantMap params, returns;
     QString description;
 
+    // GetAvailableBackends
+    params.clear(); returns.clear();
+    description = "Get the list of available Zigbee backends.";
+    returns.insert("backends", QVariantList() << enumValueName(String));
+    registerMethod("GetAvailableBackends", description, params, returns);
+
     // GetAdapters
     params.clear(); returns.clear();
-    description = "Get the list of available Zigbee adapter candidates in order to set up the zigbee network "
-                  "on the desired serial interface. The serialPort property can be used as unique identifier. "
-                  "If an adapter hardware has been recognized as a supported "
-                  "hardware, the \'hardwareRecognized\' property will be true and the baud rate and backend "
+    description = "Get the list of available Zigbee adapters and serial ports in order to set up the Zigbee network "
+                  "on the desired interface. The \'serialPort\' property can be used as unique identifier for an adapter. "
+                  "If an adapter hardware has been recognized as a well known Zigbee adapter, "
+                  "the \'hardwareRecognized\' property will be true and the \'baudRate\' and \'backend\' "
                   "configurations can be used as they where given, otherwise the user might set the backend "
-                  "type and baud rate manually.";
+                  "and baud rate manually. The available backends can be fetched using the GetAvailableBackends method.";
     returns.insert("adapters", objectRef<ZigbeeAdapters>());
     registerMethod("GetAdapters", description, params, returns);
 
     // AdapterAdded notification
     params.clear();
-    description = "Emitted whenever a new Zigbee adapter candidate has been detected in the system.";
+    description = "Emitted whenever a new Zigbee adapter or serial port has been detected in the system.";
     params.insert("adapter", objectRef<ZigbeeAdapter>());
     registerNotification("AdapterAdded", description, params);
 
     // AdapterRemoved notification
     params.clear();
-    description = "Emitted whenever a Zigbee adapter has been removed from the system (i.e. unplugged).";
+    description = "Emitted whenever a Zigbee adapter or serial port has been removed from the system (i.e. unplugged).";
     params.insert("adapter", objectRef<ZigbeeAdapter>());
     registerNotification("AdapterRemoved", description, params);
 
     // GetNetworks
     params.clear(); returns.clear();
-    description = "Returns the list of zigbee networks configured in the system.";
+    description = "Returns the list of configured Zigbee networks in the system.";
     returns.insert("zigbeeNetworks", QVariantList() << objectRef("ZigbeeNetwork"));
     registerMethod("GetNetworks", description, params, returns);
 
     // AddNetwork
     params.clear(); returns.clear();
-    description = "Create a new Zigbee network for the given serialPort, baud rate and backend type. "
-                  "Get those information from the available Zigbee adapters."
-                  "The channel mask is optional and defaults to all channels [11, 26]. "
-                  "The quietest channel from the given channel mask will be picked during network creation. "
-                  "The channel mask is a uint32 flag and the the bit number represents the channel which should "
-                  "enabled for scanning. All channels would be the value 0x07fff800.";
+    description = "Create a new Zigbee network for the given \'serialPort\', \'baudRate\' and \'backend\'. "
+                  "The serial ports can be fetched from the available adapters. See \'GetAdapters\' for more information. "
+                  "The available backends can be fetched using the \'GetAvailableBackends\' method.";
     params.insert("serialPort", enumValueName(String));
     params.insert("baudRate", enumValueName(Uint));
-    params.insert("backendType", enumRef<ZigbeeAdapter::ZigbeeBackendType>());
-    params.insert("o:channelMask", enumValueName(Uint));
+    params.insert("backend", enumValueName(String));
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
     returns.insert("o:networkUuid", enumValueName(Uuid));
     registerMethod("AddNetwork", description, params, returns);
@@ -143,22 +141,21 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
 
     // FactoryResetNetwork
     params.clear(); returns.clear();
-    description = "Factory reset the network with the given networkUuid. The network does not have "
-                  "to be Online for this procedure, and all associated nodes and things will be removed permanently. "
-                  "Make sure the user realy wants to do this because this can not be undone.";
+    description = "Factory reset the network with the given \'networkUuid\'. The network does not have "
+                  "to be online for this procedure, and all associated nodes and things will be removed permanently.";
     params.insert("networkUuid", enumValueName(Uuid));
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
     registerMethod("FactoryResetNetwork", description, params, returns);
 
     // SetPermitJoin
     params.clear(); returns.clear();
-    description = "Allow or deny nodes to join the network with the given networkUuid for a specific duration in seconds. "
-                  "The duration values has to be between 0 and 255 seconds. The permitJoinDuration indicates how long permit "
-                  "has been enabled and the permitJoinDuration indicates the rest of the time. Those values can be used to "
-                  "show a countdown or progressbar. This method can be recalled for resetting the timeout. "
+    description = "Allow or deny nodes to join the network with the given \'networkUuid\' for a specific \'duration\' in seconds. "
+                  "The duration value has to be between 0 and 255 seconds. The \'permitJoinDuration\' property of Zigbee network "
+                  "object indicates how long permit has been enabled and the \'permitJoiningRemaining\' indicates the rest of the time. "
+                  "Those values can be used to show a countdown or progressbar. This method can be recalled for resetting the timeout. "
                   "If the duration is set to 0 seconds, joining will be disabled immediatly for the entire network. "
-                  "The shortAddress is optional and defaults to the broadcast address (0xfffc) for all routers in the network. "
-                  "If the short address matches the address of a router node in the network, only that router will "
+                  "The \'shortAddress\' is optional and defaults to the broadcast address 0xfffc for all routers in the network. "
+                  "If the short address matches the address of a router node in the network, only that specific router will "
                   "be able to allow new nodes to join the network. A new node will join to the router with the best link quality index (LQI).";
     params.insert("networkUuid", enumValueName(Uuid));
     params.insert("duration", enumValueName(Uint));
@@ -203,6 +200,19 @@ QString ZigbeeHandler::name() const
     return "Zigbee";
 }
 
+JsonReply *ZigbeeHandler::GetAvailableBackends(const QVariantMap &params)
+{
+    Q_UNUSED(params)
+
+    QVariantMap returnMap;
+    QVariantList backendsList;
+    foreach (const QString &backendName, ZigbeeAdapter::backendNames().values())
+        backendsList << backendName;
+
+    returnMap.insert("backends", backendsList);
+    return createReply(returnMap);
+}
+
 JsonReply *ZigbeeHandler::GetAdapters(const QVariantMap &params)
 {
     Q_UNUSED(params)
@@ -218,11 +228,17 @@ JsonReply *ZigbeeHandler::GetAdapters(const QVariantMap &params)
 
 JsonReply *ZigbeeHandler::AddNetwork(const QVariantMap &params)
 {
+    QVariantMap returnMap;
+
     QString serialPort = params.value("serialPort").toString();
     uint baudRate = params.value("baudRate").toUInt();
-    ZigbeeAdapter::ZigbeeBackendType backendType = enumNameToValue<ZigbeeAdapter::ZigbeeBackendType>(params.value("backendType").toString());
-    QPair<ZigbeeManager::ZigbeeError, QUuid> result = m_zigbeeManager->createZigbeeNetwork(serialPort, baudRate, backendType);
-    QVariantMap returnMap;
+    QString backendString = params.value("backend").toString();
+    if (!ZigbeeAdapter::backendNames().values().contains(backendString)) {
+        returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(ZigbeeManager::ZigbeeErrorUnknownBackend));
+        return createReply(returnMap);
+    }
+
+    QPair<ZigbeeManager::ZigbeeError, QUuid> result = m_zigbeeManager->createZigbeeNetwork(serialPort, baudRate, ZigbeeAdapter::backendNames().key(backendString));
     if (result.first == ZigbeeManager::ZigbeeErrorNoError) {
         returnMap.insert("networkUuid", result.second);
     }
@@ -293,10 +309,10 @@ QVariantMap ZigbeeHandler::packNetwork(ZigbeeNetwork *network)
 
     switch (network->backendType()) {
     case Zigbee::ZigbeeBackendTypeDeconz:
-        networkMap.insert("backendType", enumValueName<ZigbeeAdapter::ZigbeeBackendType>(ZigbeeAdapter::ZigbeeBackendTypeDeconz));
+        networkMap.insert("backend", ZigbeeAdapter::backendNames().value(ZigbeeAdapter::ZigbeeBackendTypeDeconz));
         break;
     case Zigbee::ZigbeeBackendTypeNxp:
-        networkMap.insert("backendType", enumValueName<ZigbeeAdapter::ZigbeeBackendType>(ZigbeeAdapter::ZigbeeBackendTypeNxp));
+        networkMap.insert("backend", ZigbeeAdapter::backendNames().value(ZigbeeAdapter::ZigbeeBackendTypeNxp));
         break;
     }
 

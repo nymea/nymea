@@ -97,6 +97,11 @@ void ZigbeeAdapter::setBackendType(ZigbeeAdapter::ZigbeeBackendType backendType)
     m_backendType = backendType;
 }
 
+QString ZigbeeAdapter::backend() const
+{
+    return backendNames().value(m_backendType);
+}
+
 qint32 ZigbeeAdapter::baudRate() const
 {
     return m_baudRate;
@@ -117,6 +122,13 @@ bool ZigbeeAdapter::operator==(const ZigbeeAdapter &other) const
             && m_baudRate == other.baudRate();
 }
 
+QHash<ZigbeeAdapter::ZigbeeBackendType, QString> ZigbeeAdapter::backendNames()
+{
+    QHash<ZigbeeAdapter::ZigbeeBackendType, QString> backendNameHash;
+    backendNameHash.insert(ZigbeeBackendTypeDeconz, "deCONZ");
+    backendNameHash.insert(ZigbeeBackendTypeNxp, "NXP");
+    return backendNameHash;
+}
 
 QDebug operator<<(QDebug debug, const ZigbeeAdapter &adapter)
 {

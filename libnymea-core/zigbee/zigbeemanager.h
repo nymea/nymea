@@ -60,7 +60,8 @@ public:
         ZigbeeErrorAdapterAlreadyInUse,
         ZigbeeErrorNetworkUuidNotFound,
         ZigbeeErrorDurationOutOfRange,
-        ZigbeeErrorNetworkOffline
+        ZigbeeErrorNetworkOffline,
+        ZigbeeErrorUnknownBackend
     };
     Q_ENUM(ZigbeeError)
 

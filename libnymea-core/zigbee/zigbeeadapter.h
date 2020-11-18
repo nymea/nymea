@@ -41,13 +41,13 @@ namespace nymeaserver {
 class ZigbeeAdapter
 {
     Q_GADGET
-    Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(QString description READ description WRITE setDescription)
-    Q_PROPERTY(QString serialPort READ serialPort WRITE setSerialPort)
-    Q_PROPERTY(QString serialNumber READ serialNumber WRITE setSerialNumber)
-    Q_PROPERTY(bool hardwareRecognized READ hardwareRecognized WRITE setHardwareRecognized)
-    Q_PROPERTY(nymeaserver::ZigbeeAdapter::ZigbeeBackendType backendType READ backendType WRITE setBackendType)
-    Q_PROPERTY(qint32 baudRate READ baudRate WRITE setBaudRate)
+    Q_PROPERTY(QString name READ name)
+    Q_PROPERTY(QString description READ description)
+    Q_PROPERTY(QString serialPort READ serialPort)
+    Q_PROPERTY(QString serialNumber READ serialNumber)
+    Q_PROPERTY(bool hardwareRecognized READ hardwareRecognized)
+    Q_PROPERTY(QString backend READ backend)
+    Q_PROPERTY(qint32 baudRate READ baudRate)
 
 public:
     enum ZigbeeBackendType {
@@ -75,11 +75,14 @@ public:
 
     ZigbeeAdapter::ZigbeeBackendType backendType() const;
     void setBackendType(ZigbeeAdapter::ZigbeeBackendType backendType);
+    QString backend() const;
 
     qint32 baudRate() const;
     void setBaudRate(qint32 baudRate);
 
     bool operator==(const ZigbeeAdapter &other) const;
+
+    static QHash<ZigbeeBackendType, QString> backendNames();
 
 private:
     QString m_name;

@@ -49,6 +49,7 @@ public:
 
     QString name() const override;
 
+    Q_INVOKABLE JsonReply *GetAvailableBackends(const QVariantMap &params);
     Q_INVOKABLE JsonReply *GetAdapters(const QVariantMap &params);
     Q_INVOKABLE JsonReply *GetNetworks(const QVariantMap &params);
     Q_INVOKABLE JsonReply *AddNetwork(const QVariantMap &params);

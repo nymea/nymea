@@ -169,6 +169,10 @@ void ZigbeeHardwareResourceImplementation::thingsLoaded()
     foreach (ZigbeeNetwork *network, m_zigbeeManager->zigbeeNetworks()) {
         if (network->state() == ZigbeeNetwork::StateRunning) {
             foreach (ZigbeeNode *node, network->nodes()) {
+                // Ignore the coordinator node
+                if (node->shortAddress() == 0x0000)
+                    continue;
+
                 if (!m_nodeHandlers.contains(node)) {
                     qCDebug(dcZigbeeResource()) << "Node" << node << "is not yet handled by any plugin. Trying to find a suitable plugin.";
                     onZigbeeNodeAdded(network->networkUuid(), node);
@@ -199,6 +203,10 @@ void ZigbeeHardwareResourceImplementation::onZigbeeNetworkChanged(ZigbeeNetwork 
     // been installed now, such nodes might be handled by them now.
     if (network->state() == ZigbeeNetwork::StateRunning && m_thingsLoaded) {
         foreach (ZigbeeNode *node, network->nodes()) {
+            // Ignore the coordinator node
+            if (node->shortAddress() == 0x0000)
+                continue;
+
             if (!m_nodeHandlers.contains(node)) {
                 onZigbeeNodeAdded(network->networkUuid(), node);
             }

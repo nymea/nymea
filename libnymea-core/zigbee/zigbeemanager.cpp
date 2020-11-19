@@ -299,6 +299,17 @@ void ZigbeeManager::loadZigbeeNetworks()
 
 void ZigbeeManager::checkPlatformConfiguration()
 {
+    /* Example platform configurations
+     *
+     * serialPort=/dev/ttymxc2
+     * baudRate=115200
+     * backend=nxp
+     *
+     * serialPort=/dev/ttyS0
+     * baudRate=38400
+     * backend=deconz
+     */
+
     QFileInfo platformConfigurationFileInfo(NymeaSettings::settingsPath() + QDir::separator() + "zigbee-platform.conf");
     if (platformConfigurationFileInfo.exists()) {
         qCDebug(dcZigbee()) << "Found zigbee platform configuration" << platformConfigurationFileInfo.absoluteFilePath();

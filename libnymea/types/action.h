@@ -64,6 +64,7 @@ public:
     ParamList params() const;
     void setParams(const ParamList &params);
     Param param(const ParamTypeId &paramTypeId) const;
+    QVariant paramValue(const ParamTypeId &paramTypeId) const;
 
     TriggeredBy triggeredBy() const;
 

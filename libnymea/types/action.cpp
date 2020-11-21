@@ -102,7 +102,7 @@ void Action::setParams(const ParamList &params)
     m_params = params;
 }
 
-/*! Returns the parameter of this Action with a cetrain \a paramTypeId. */
+/*! Returns the parameter for the given \a paramTypeId. The returned \l{Param} will be invalid if this Action does not have such a \l{Param}. */
 Param Action::param(const ParamTypeId &paramTypeId) const
 {
     foreach (const Param &param, m_params) {
@@ -111,6 +111,17 @@ Param Action::param(const ParamTypeId &paramTypeId) const
         }
     }
     return Param(ParamTypeId(), QString());
+}
+
+/*! Returns the parameter value for the given \a paramTypeId. The returned \l{QVariant} will be null if this Action does not have such a \l{Param}. */
+QVariant Action::paramValue(const ParamTypeId &paramTypeId) const
+{
+    foreach (const Param &param, m_params) {
+        if (param.paramTypeId() == paramTypeId) {
+            return param.value();
+        }
+    }
+    return QVariant();
 }
 
 /*! Gives an indication of the origin of this action.

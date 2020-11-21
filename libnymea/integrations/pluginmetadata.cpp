@@ -643,6 +643,10 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             QStringList interfaces;
             foreach (const QJsonValue &value, thingClassObject.value("interfaces").toArray()) {
                 Interface iface = ThingUtils::loadInterface(value.toString());
+                if (!iface.isValid()) {
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" uses non-existing interface \"" + value.toString() + "\"");
+                    hasError = true;
+                }
 
                 StateTypes stateTypes(thingClass.stateTypes());
                 ActionTypes actionTypes(thingClass.actionTypes());
@@ -705,6 +709,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                             continue;
                         }
                     }
+                    // Verify the params as required by the interface are available
                     foreach (const ParamType &ifaceActionParamType, ifaceActionType.paramTypes()) {
                         ParamType paramType = actionType.paramTypes().findByName(ifaceActionParamType.name());
                         if (!paramType.isValid()) {
@@ -721,6 +726,54 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                                     hasError = true;
                                 }
                             }
+                            if (ifaceActionParamType.minValue() == "any") {
+                                if (paramType.minValue().isNull()) {
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" is missing a minimum value");
+                                    hasError = true;
+                                }
+                            } else if (!ifaceActionParamType.minValue().isNull()) {
+                                if (paramType.minValue() != ifaceActionParamType.minValue()) {
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" has not matching minimum value: \"" + paramType.minValue().toString() + "\" != \"" + ifaceActionParamType.minValue().toString() + "\"");
+                                    hasError = true;
+                                }
+                            }
+                            if (ifaceActionParamType.maxValue() == "any") {
+                                if (paramType.maxValue().isNull()) {
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" is missing a maximum value");
+                                    hasError = true;
+                                }
+                            } else if (!ifaceActionParamType.maxValue().isNull()) {
+                                if (paramType.maxValue() != ifaceActionParamType.maxValue()) {
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" has not matching maximum value: \"" + paramType.maxValue().toString() + "\" != \"" + ifaceActionParamType.maxValue().toString() + "\"");
+                                    hasError = true;
+                                }
+                            }
+                            if (ifaceActionParamType.defaultValue() == "any") {
+                                if (paramType.defaultValue().isNull()) {
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" is missing a default value");
+                                    hasError = true;
+                                }
+                            } else if (!ifaceActionParamType.defaultValue().isNull()) {
+                                if (paramType.defaultValue() != ifaceActionParamType.defaultValue()) {
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" is has incompatible default value: \"" + paramType.defaultValue().toString() + "\" != \"" + ifaceActionParamType.defaultValue().toString() + "\"");
+                                    hasError = true;
+                                }
+                            }
+                        }
+                    }
+
+                    // Verify that additional params don't "break" the interface
+                    // If there's an action without params in the interface, the actual action still can have params
+                    // but those params must have a default value so they still can be invoked without params
+                    foreach (const ParamType &paramType, actionType.paramTypes()) {
+                        // Note: We can't use ParamType::isValid() on ParamTypes from interfaces because the don't
+                        // have an ID set and aren't valid in any case. Let's instead check if the returned ParamType's
+                        // name is set or not.
+                        if (ifaceActionType.paramTypes().findByName(paramType.name()).name().isEmpty()) {
+                            if (paramType.defaultValue().isNull()) {
+                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but action \"" + actionType.name() + "\" param \"" + paramType.name() + "\" is missing a default value as the interface requires this action to be executable without params.");
+                                hasError = true;
+                            }
                         }
                     }
                 }
@@ -735,6 +788,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                             continue;
                         }
                     }
+
+                    // Verify all the params as required by the interface are available
                     foreach (const ParamType &ifaceEventParamType, ifaceEventType.paramTypes()) {
                         ParamType paramType = eventType.paramTypes().findByName(ifaceEventParamType.name());
                         if (!paramType.isValid()) {
@@ -745,8 +800,50 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                                 m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" is of wrong type: \"" + QVariant::typeToName(paramType.type()) + "\" expected: \"" + QVariant::typeToName(ifaceEventParamType.type()) + "\"");
                                 hasError = true;
                             }
+                            foreach (const QVariant &allowedValue, ifaceEventParamType.allowedValues()) {
+                                if (!paramType.allowedValues().contains(allowedValue)) {
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" is missing allowed value \"" + allowedValue.toString() + "\"");
+                                    hasError = true;
+                                }
+                            }
+                            if (ifaceEventParamType.minValue() == "any") {
+                                if (paramType.minValue().isNull()) {
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" is missing a minimum value");
+                                    hasError = true;
+                                }
+                            } else if (!ifaceEventParamType.minValue().isNull()) {
+                                if (paramType.minValue() != ifaceEventParamType.minValue()) {
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" has not matching minimum value: \"" + paramType.minValue().toString() + "\" != \"" + ifaceEventParamType.minValue().toString() + "\"");
+                                    hasError = true;
+                                }
+                            }
+                            if (ifaceEventParamType.maxValue() == "any") {
+                                if (paramType.maxValue().isNull()) {
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" is missing a maximum value");
+                                    hasError = true;
+                                }
+                            } else if (!ifaceEventParamType.maxValue().isNull()) {
+                                if (paramType.maxValue() != ifaceEventParamType.maxValue()) {
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" has not matching maximum value: \"" + paramType.maxValue().toString() + "\" != \"" + ifaceEventParamType.maxValue().toString() + "\"");
+                                    hasError = true;
+                                }
+                            }
+                            if (ifaceEventParamType.defaultValue().toString() == "any") {
+                                if (paramType.defaultValue().isNull()) {
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" is missing a default value");
+                                    hasError = true;
+                                }
+                            } else if (!ifaceEventParamType.defaultValue().isNull()) {
+                                if (paramType.defaultValue() != ifaceEventParamType.defaultValue()) {
+                                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but event \"" + eventType.name() + "\" param \"" + paramType.name() + "\" is has incompatible default value: \"" + paramType.defaultValue().toString() + "\" != \"" + ifaceEventParamType.defaultValue().toString() + "\"");
+                                    hasError = true;
+                                }
+                            }
                         }
                     }
+
+                    // Note: No need to check for default values (as with actions) for additional params as
+                    // an emitted event always needs to have params filled with values. The client might use them or not...
                 }
 
                 interfaces.append(ThingUtils::generateInterfaceParentList(value.toString()));

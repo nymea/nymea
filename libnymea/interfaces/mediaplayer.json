@@ -1,5 +1,5 @@
 {
-    "description": "Media player interface. Used by devices/services which can play back media.",
+    "description": "Media player interface. Used by devices/services which can play back media. Even if a device only supports e.g. audio, the playerType state must still be added to the metadata. It may default to a single value and never change in this case. Players supporting duration and play time should provide those values in seconds.",
     "extends": "media",
     "states": [
         {
@@ -11,6 +11,25 @@
             "name": "playerType",
             "type": "QString",
             "allowedValues": ["audio", "video"]
+        },
+        {
+            "name": "inputSource",
+            "type": "QString",
+            "allowedValues": "any",
+            "writable": true,
+            "optional": true
+        },
+        {
+            "name": "playDuration",
+            "type": "uint",
+            "unit": "Seconds",
+            "optional": true
+        },
+        {
+            "name": "playTime",
+            "type": "uint",
+            "unit": "Seconds",
+            "optional": true
         }
     ]
 }

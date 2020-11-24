@@ -621,8 +621,8 @@ void JsonRPCServerImplementation::processData(const QUuid &clientId, const QByte
     }
     m_clientBuffers[clientId] = buffer;
 
-    if (buffer.size() > 1024 * 10) {
-        qCWarning(dcJsonRpc()) << "Client buffer larger than 10KB and no valid data. Dropping client connection.";
+    if (buffer.size() > 1024 * 1024) {
+        qCWarning(dcJsonRpc()) << "Client buffer larger than 1MB and no valid data. Dropping client connection.";
         interface->terminateClientConnection(clientId);
     }
 }

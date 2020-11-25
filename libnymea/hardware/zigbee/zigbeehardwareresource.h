@@ -59,6 +59,7 @@ public:
     virtual void removeNodeFromNetwork(const QUuid &networkUuid, ZigbeeNode *node) = 0;
 
     virtual ZigbeeNetwork::State networkState(const QUuid &networkUuid) = 0;
+    virtual ZigbeeAddress coordinatorAddress(const QUuid &networkUuid) = 0;
 
 signals:
     void networkStateChanged(const QUuid &networkUuid, ZigbeeNetwork::State state);

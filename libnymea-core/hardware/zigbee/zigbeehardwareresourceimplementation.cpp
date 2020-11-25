@@ -118,6 +118,16 @@ ZigbeeNetwork::State ZigbeeHardwareResourceImplementation::networkState(const QU
     return network->state();
 }
 
+ZigbeeAddress ZigbeeHardwareResourceImplementation::coordinatorAddress(const QUuid &networkUuid)
+{
+    ZigbeeNetwork *network = m_zigbeeManager->zigbeeNetworks().value(networkUuid);
+    if (!network) {
+        qCWarning(dcZigbeeResource()) << "Network" << networkUuid << "not found.";
+        return ZigbeeAddress();
+    }
+    return network->coordinatorNode()->extendedAddress();
+}
+
 void ZigbeeHardwareResourceImplementation::setEnabled(bool enabled)
 {
     qCDebug(dcZigbeeResource()) << "Set" << (enabled ? "enabled" : "disabled");

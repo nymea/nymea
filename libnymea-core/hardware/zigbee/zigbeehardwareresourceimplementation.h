@@ -54,6 +54,7 @@ public:
     void removeNodeFromNetwork(const QUuid &networkUuid, ZigbeeNode *node) override;
 
     ZigbeeNetwork::State networkState(const QUuid &networkUuid) override;
+    ZigbeeAddress coordinatorAddress(const QUuid &networkUuid) override;
 
 public slots:
     bool enable();

@@ -132,6 +132,10 @@ QPair<ZigbeeManager::ZigbeeError, QUuid> ZigbeeManager::createZigbeeNetwork(cons
         return QPair<ZigbeeManager::ZigbeeError, QUuid>(ZigbeeManager::ZigbeeErrorAdapterNotAvailable, QUuid());
     }
 
+//    ZigbeeChannelMask testChannelMask = ZigbeeChannelMask(0);
+//    testChannelMask.setChannel(Zigbee::ZigbeeChannel13);
+//    qCWarning(dcZigbee()) << "Using test channel mask" << testChannelMask;
+
     ZigbeeNetwork *network = buildNetworkObject(QUuid::createUuid(), backendType);
     network->setChannelMask(channelMask);
     network->setSerialPortName(serialPort);
@@ -452,6 +456,7 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
                 qCDebug(dcZigbee()) << "  Model" << endpoint->modelIdentifier();
                 qCDebug(dcZigbee()) << "  Version" << endpoint->softwareBuildId();
             }
+
             qCDebug(dcZigbee()) << "    Input clusters (" << endpoint->inputClusters().count() << ")";
             foreach (ZigbeeCluster *cluster, endpoint->inputClusters()) {
                 qCDebug(dcZigbee()) << "     -" << cluster;

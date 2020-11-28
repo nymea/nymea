@@ -474,11 +474,6 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
             }
         }
 
-
-//        ZigbeeNodeInitializer *nodeInitializer = m_zigbeeNodeInitializers.value(network->networkUuid());
-//        nodeInitializer->initializeNode(node);
-        //TODO: emit node added once initialized so the plugins can use it
-
         emit nodeAdded(network->networkUuid(), node);
     });
 
@@ -498,13 +493,6 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
 
     m_zigbeeNetworks.insert(network->networkUuid(), network);
     emit zigbeeNetworkAdded(network);
-
-    // Create node initializer when a new node joins the network
-    ZigbeeNodeInitializer *nodeInitializer = new ZigbeeNodeInitializer(network, this);
-    connect(nodeInitializer, &ZigbeeNodeInitializer::nodeInitialized, this, [this, network](ZigbeeNode *node){
-        qCDebug(dcZigbee()) << "Node initialied from nymea" << node;
-        emit nodeAdded(network->networkUuid(), node);
-    });
 
     qCDebug(dcZigbee()) << "Network added" << network;
     foreach (ZigbeeNode *node, network->nodes()) {
@@ -533,8 +521,6 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
             }
         }
     }
-
-    m_zigbeeNodeInitializers.insert(network->networkUuid(), nodeInitializer);
 }
 
 ZigbeeAdapter ZigbeeManager::convertUartAdapterToAdapter(const ZigbeeUartAdapter &uartAdapter)

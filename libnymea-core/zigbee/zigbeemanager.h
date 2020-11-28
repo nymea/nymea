@@ -37,7 +37,6 @@
 #include <zigbeeuartadaptermonitor.h>
 
 #include "zigbeeadapters.h"
-#include "zigbeenodeinitializer.h"
 
 namespace nymeaserver {
 
@@ -82,7 +81,6 @@ private:
     ZigbeeAdapters m_adapters;
     ZigbeeUartAdapterMonitor *m_adapterMonitor = nullptr;
     QHash<QUuid, ZigbeeNetwork *> m_zigbeeNetworks;
-    QHash<QUuid, ZigbeeNodeInitializer *> m_zigbeeNodeInitializers;
 
     bool m_available = false;
 

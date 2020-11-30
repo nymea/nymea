@@ -3,7 +3,7 @@ TARGET = nymea-core
 
 include(../nymea.pri)
 
-QT += sql qml
+QT += bluetooth dbus qml sql websockets
 INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 

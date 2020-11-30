@@ -14,17 +14,22 @@ PKGCONFIG += nymea-mqtt nymea-networkmanager
 # For everything below python 3.8 we need to manually select one
 packagesExist(python3-embed) {
     PKGCONFIG += python3-embed
+    CONFIG += python
 } else:packagesExist(python-3.5) {
     # xenial, stretch
     PKGCONFIG += python-3.5
+    CONFIG += python
 } else:packagesExist(python-3.6) {
     # bionic
     PKGCONFIG += python-3.6
+    CONFIG += python
 } else:packagesExist(python-3.7) {
     # buster, eoan
     PKGCONFIG += python-3.7
+    CONFIG += python
 } else {
-    error("Python development package not found.")
+    message("Python development package not found. Building without python support.")
+    CONFIG -= python
 }
 
 target.path = $$[QT_INSTALL_LIBS]
@@ -38,20 +43,8 @@ RESOURCES += $$top_srcdir/icons.qrc \
 HEADERS += nymeacore.h \
     integrations/apikeysprovidersloader.h \
     integrations/plugininfocache.h \
-    integrations/python/pynymealogginghandler.h \
-    integrations/python/pynymeamodule.h \
-    integrations/python/pyparam.h \
-    integrations/python/pystdouthandler.h \
-    integrations/python/pything.h \
-    integrations/python/pythingactioninfo.h \
-    integrations/python/pythingdescriptor.h \
-    integrations/python/pythingdiscoveryinfo.h \
-    integrations/python/pythingpairinginfo.h \
-    integrations/python/pythingsetupinfo.h \
-    integrations/python/pyutils.h \
     integrations/thingmanagerimplementation.h \
     integrations/translator.h \
-    integrations/pythonintegrationplugin.h \
     experiences/experiencemanager.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
@@ -134,7 +127,6 @@ SOURCES += nymeacore.cpp \
     integrations/plugininfocache.cpp \
     integrations/thingmanagerimplementation.cpp \
     integrations/translator.cpp \
-    integrations/pythonintegrationplugin.cpp \
     experiences/experiencemanager.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \
@@ -210,11 +202,32 @@ SOURCES += nymeacore.cpp \
     debugreportgenerator.cpp \
     platform/platform.cpp \
 
-
 versionAtLeast(QT_VERSION, 5.12.0) {
+message("Building with JS plugin support")
 HEADERS += \
     integrations/scriptintegrationplugin.h
 
 SOURCES += \
     integrations/scriptintegrationplugin.cpp
+}
+
+CONFIG(python) {
+message("Building with Python plugin support")
+DEFINES += WITH_PYTHON
+HEADERS += \
+    integrations/pythonintegrationplugin.h \
+    integrations/python/pynymealogginghandler.h \
+    integrations/python/pynymeamodule.h \
+    integrations/python/pyparam.h \
+    integrations/python/pystdouthandler.h \
+    integrations/python/pything.h \
+    integrations/python/pythingactioninfo.h \
+    integrations/python/pythingdescriptor.h \
+    integrations/python/pythingdiscoveryinfo.h \
+    integrations/python/pythingpairinginfo.h \
+    integrations/python/pythingsetupinfo.h \
+    integrations/python/pyutils.h
+
+SOURCES += \
+    integrations/pythonintegrationplugin.cpp
 }

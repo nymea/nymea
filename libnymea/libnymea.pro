@@ -25,6 +25,7 @@ HEADERS += \
     integrations/thingpairinginfo.h \
     integrations/thingsetupinfo.h \
     integrations/thingutils.h \
+    integrations/servicedata.h \
     jsonrpc/jsoncontext.h \
     jsonrpc/jsonhandler.h \
     jsonrpc/jsonreply.h \
@@ -117,6 +118,7 @@ SOURCES += \
     integrations/thingpairinginfo.cpp \
     integrations/thingsetupinfo.cpp \
     integrations/thingutils.cpp \
+    integrations/servicedata.cpp \
     jsonrpc/jsoncontext.cpp \
     jsonrpc/jsonhandler.cpp \
     jsonrpc/jsonreply.cpp \

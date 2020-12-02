@@ -24,22 +24,6 @@ We have created an image for your Raspberry Pi (all models) that comes with an a
 <table align="middle">
   <tr>
     <td> 
-      <p align="center">
-        <img src="https://nymea.io/downloads/img/community/app-shots/ios-app.png" width=300>
-      </p>
-    </td>
-    <td> 
-      <p align="center">
-        <img src="https://nymea.io/downloads/img/community/app-shots/desktop-app.png?v=1555314733">
-      </p>
-    </td>
-  </tr>
-</table>
-
-
-<table align="middle">
-  <tr>
-    <td> 
       <p>
         <a href="https://itunes.apple.com/us/app/nymea-app/id1400810250?mt=8">
           <img border="0" align="middle" alt="iOS Badge" src="https://nymea.io/downloads/img/app-store/appstore.png" width=200>

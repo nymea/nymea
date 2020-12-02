@@ -81,7 +81,7 @@ If you want to present your project or want to share your newest developments yo
 [Our Forum](https://forum.nymea.io)
 
 If you are facing any troubles, don't hesitate to reach out for us or the community members, we will be pleased to help you:
-Chat with us on [Telegram](http://t.me/nymeacommunity) or [Discord](https://discord.com/channels/652494572298960926/652494572298960929)
+Chat with us on [Telegram](http://t.me/nymeacommunity) or [Discord](https://discord.gg/tX9YCpD)
 
 ## Developing with nymea
 

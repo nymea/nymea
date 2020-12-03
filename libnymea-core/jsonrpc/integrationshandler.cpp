@@ -104,8 +104,9 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     registerMethod("GetVendors", description, params, returns);
 
     params.clear(); returns.clear();
-    description = "Returns a list of supported thing classes, optionally filtered by vendorId.";
+    description = "Returns a list of supported thing classes, optionally filtered by vendorId or by a list of thing class ids.";
     params.insert("o:vendorId", enumValueName(Uuid));
+    params.insert("o:thingClassIds", QVariantList() << enumValueName(Uuid));
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:thingClasses", objectRef<ThingClasses>());
     registerMethod("GetThingClasses", description, params, returns);
@@ -507,21 +508,25 @@ JsonReply* IntegrationsHandler::GetThingClasses(const QVariantMap &params, const
     QVariantMap returns;
     QVariantList thingClasses;
 
-    if (params.contains("vendorId")) {
-        VendorId vendorId = VendorId(params.value("vendorId").toString());
-        if (m_thingManager->supportedVendors().findById(vendorId).id().isNull()) {
-            qCWarning(dcThingManager()) << "No such vendor:" << vendorId;
-            return createReply(statusToReply(Thing::ThingErrorVendorNotFound));
+    foreach (const ThingClass &thingClass, NymeaCore::instance()->thingManager()->supportedThings()) {
+        if (params.contains("vendorId") && thingClass.vendorId() != VendorId(params.value("vendorId").toUuid())) {
+            continue;
         }
-        foreach (const ThingClass &thingClass, NymeaCore::instance()->thingManager()->supportedThings(vendorId)) {
-            ThingClass translatedThingClass = NymeaCore::instance()->thingManager()->translateThingClass(thingClass, context.locale());
-            thingClasses.append(pack(translatedThingClass));
+        if (params.contains("thingClassIds")) {
+            bool found = false;
+            foreach (const QString &tcString, params.value("thingClassIds").toStringList()) {
+                if (ThingClassId(tcString) == thingClass.id()) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                continue;
+            }
         }
-    } else {
-        foreach (const ThingClass &thingClass, NymeaCore::instance()->thingManager()->supportedThings()) {
-            ThingClass translatedThingClass = NymeaCore::instance()->thingManager()->translateThingClass(thingClass, context.locale());
-            thingClasses.append(pack(translatedThingClass));
-        }
+
+        ThingClass translatedThingClass = NymeaCore::instance()->thingManager()->translateThingClass(thingClass, context.locale());
+        thingClasses.append(pack(translatedThingClass));
     }
 
     returns.insert("thingError", enumValueName(Thing::ThingErrorNoError));

@@ -441,11 +441,14 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
         qCDebug(dcZigbee()) << "-->" << node;
         foreach (ZigbeeNodeEndpoint *endpoint, node->endpoints()) {
             qCDebug(dcZigbee()) << " " << endpoint;
-            if (!endpoint->manufacturerName().isEmpty()) {
-                qCDebug(dcZigbee()) << "  Manufacturer" << endpoint->manufacturerName();
+            if (!endpoint->manufacturerName().isEmpty())
+                qCDebug(dcZigbee()) << "  Manufacturer:" << endpoint->manufacturerName();
+
+            if (!endpoint->modelIdentifier().isEmpty())
                 qCDebug(dcZigbee()) << "  Model" << endpoint->modelIdentifier();
+
+            if (!endpoint->softwareBuildId().isEmpty())
                 qCDebug(dcZigbee()) << "  Version" << endpoint->softwareBuildId();
-            }
 
             qCDebug(dcZigbee()) << "    Input clusters (" << endpoint->inputClusters().count() << ")";
             foreach (ZigbeeCluster *cluster, endpoint->inputClusters()) {
@@ -489,11 +492,15 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
         qCDebug(dcZigbee()) << "-->" << node;
         foreach (ZigbeeNodeEndpoint *endpoint, node->endpoints()) {
             qCDebug(dcZigbee()) << " " << endpoint;
-            if (!endpoint->manufacturerName().isEmpty()) {
-                qCDebug(dcZigbee()) << "  Manufacturer" << endpoint->manufacturerName();
+            if (!endpoint->manufacturerName().isEmpty())
+                qCDebug(dcZigbee()) << "  Manufacturer:" << endpoint->manufacturerName();
+
+            if (!endpoint->modelIdentifier().isEmpty())
                 qCDebug(dcZigbee()) << "  Model" << endpoint->modelIdentifier();
+
+            if (!endpoint->softwareBuildId().isEmpty())
                 qCDebug(dcZigbee()) << "  Version" << endpoint->softwareBuildId();
-            }
+
             qCDebug(dcZigbee()) << "    Input clusters (" << endpoint->inputClusters().count() << ")";
             foreach (ZigbeeCluster *cluster, endpoint->inputClusters()) {
                 qCDebug(dcZigbee()) << "     -" << cluster;

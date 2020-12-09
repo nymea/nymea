@@ -60,9 +60,27 @@ public:
         ZigbeeErrorNetworkUuidNotFound,
         ZigbeeErrorDurationOutOfRange,
         ZigbeeErrorNetworkOffline,
-        ZigbeeErrorUnknownBackend
+        ZigbeeErrorUnknownBackend,
+        ZigbeeErrorNodeNotFound,
+        ZigbeeErrorForbidden
     };
     Q_ENUM(ZigbeeError)
+
+    // Node information
+    enum ZigbeeNodeType {
+        ZigbeeNodeTypeCoordinator,
+        ZigbeeNodeTypeRouter,
+        ZigbeeNodeTypeEndDevice
+    };
+    Q_ENUM(ZigbeeNodeType)
+
+    enum ZigbeeNodeState {
+        ZigbeeNodeStateUninitialized,
+        ZigbeeNodeStateInitializing,
+        ZigbeeNodeStateInitialized,
+        ZigbeeNodeStateHandled
+    };
+    Q_ENUM(ZigbeeNodeState)
 
     explicit ZigbeeManager(QObject *parent = nullptr);
 

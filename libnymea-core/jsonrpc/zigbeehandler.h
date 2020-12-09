@@ -51,13 +51,18 @@ public:
 
     Q_INVOKABLE JsonReply *GetAvailableBackends(const QVariantMap &params);
     Q_INVOKABLE JsonReply *GetAdapters(const QVariantMap &params);
+
     Q_INVOKABLE JsonReply *GetNetworks(const QVariantMap &params);
     Q_INVOKABLE JsonReply *AddNetwork(const QVariantMap &params);
     Q_INVOKABLE JsonReply *RemoveNetwork(const QVariantMap &params);
     Q_INVOKABLE JsonReply *FactoryResetNetwork(const QVariantMap &params);
     Q_INVOKABLE JsonReply *SetPermitJoin(const QVariantMap &params);
 
+    Q_INVOKABLE JsonReply *GetNodes(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *RemoveNode(const QVariantMap &params);
+
     QVariantMap packNetwork(ZigbeeNetwork *network);
+    QVariantMap packNode(ZigbeeNode *node);
 
 private:
     ZigbeeManager *m_zigbeeManager = nullptr;
@@ -68,7 +73,9 @@ signals:
     void NetworkAdded(const QVariantMap &params);
     void NetworkRemoved(const QVariantMap &params);
     void NetworkChanged(const QVariantMap &params);
-
+    void NodeAdded(const QVariantMap &params);
+    void NodeRemoved(const QVariantMap &params);
+    void NodeChanged(const QVariantMap &params);
 };
 
 }

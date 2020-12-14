@@ -77,6 +77,7 @@ NYMEA_LOGGING_CATEGORY(dcMqtt, "Mqtt")
 NYMEA_LOGGING_CATEGORY(dcTranslations, "Translations")
 NYMEA_LOGGING_CATEGORY(dcI2C, "I2C")
 
+
 static QFile s_logFile;
 static bool s_useColors;
 static QList<QtMessageHandler> s_handlers;

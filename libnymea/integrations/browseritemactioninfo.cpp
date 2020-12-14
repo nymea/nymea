@@ -33,6 +33,8 @@
 
 #include <QTimer>
 
+Q_DECLARE_LOGGING_CATEGORY(dcIntegrations)
+
 BrowserItemActionInfo::BrowserItemActionInfo(Thing *thing, ThingManager *thingManager, const BrowserItemAction &browserItemAction, QObject *parent, quint32 timeout):
     QObject(parent),
     m_thing(thing),
@@ -85,6 +87,10 @@ QString BrowserItemActionInfo::translatedDisplayMessage(const QLocale &locale)
 
 void BrowserItemActionInfo::finish(Thing::ThingError status, const QString &displayMessage)
 {
+    if (m_finished) {
+        qCWarning(dcIntegrations()) << "BrowserItemActionInfo::finish() called on an already finished object.";
+        return;
+    }
     m_finished = true;
     m_status = status;
     m_displayMessage = displayMessage;

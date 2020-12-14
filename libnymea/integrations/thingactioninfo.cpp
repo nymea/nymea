@@ -34,6 +34,8 @@
 
 #include <QTimer>
 
+Q_DECLARE_LOGGING_CATEGORY(dcIntegrations)
+
 ThingActionInfo::ThingActionInfo(Thing *thing, const Action &action, ThingManager *parent, quint32 timeout):
     QObject(parent),
     m_thing(thing),
@@ -85,6 +87,10 @@ QString ThingActionInfo::translatedDisplayMessage(const QLocale &locale)
 
 void ThingActionInfo::finish(Thing::ThingError status, const QString &displayMessage)
 {
+    if (m_finished) {
+        qCWarning(dcIntegrations()) << "ThingActionInfo::finish() called on an already finished object.";
+        return;
+    }
     m_finished = true;
     m_status = status;
     m_displayMessage = displayMessage;

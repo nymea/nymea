@@ -33,6 +33,8 @@
 
 #include <QTimer>
 
+Q_DECLARE_LOGGING_CATEGORY(dcIntegrations)
+
 ThingPairingInfo::ThingPairingInfo(const PairingTransactionId &pairingTransactionId, const ThingClassId &thingClassId, const ThingId &thingId, const QString &deviceName, const ParamList &params, const ThingId &parentId, ThingManager *parent, quint32 timeout):
     QObject(parent),
     m_transactionId(pairingTransactionId),
@@ -113,6 +115,10 @@ QString ThingPairingInfo::translatedDisplayMessage(const QLocale &locale) const
 
 void ThingPairingInfo::finish(Thing::ThingError status, const QString &displayMessage)
 {
+    if (m_finished) {
+        qCWarning(dcIntegrations()) << "ThingPairingInfo::finish() called on an already finished object.";
+        return;
+    }
     m_finished = true;
     m_status = status;
     m_displayMessage = displayMessage;

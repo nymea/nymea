@@ -33,6 +33,8 @@
 
 #include <QTimer>
 
+Q_DECLARE_LOGGING_CATEGORY(dcIntegrations)
+
 BrowserItemResult::BrowserItemResult(Thing *thing, ThingManager *thingManager, const QString &itemId, const QLocale &locale, QObject *parent, quint32 timeout):
     QObject(parent),
     m_thing(thing),
@@ -102,6 +104,10 @@ void BrowserItemResult::finish(const BrowserItem &item)
 
 void BrowserItemResult::finish(Thing::ThingError status, const QString &displayMessage)
 {
+    if (m_finished) {
+        qCWarning(dcIntegrations()) << "BrowserItemResult::finish() called on an already finished object.";
+        return;
+    }
     m_finished = true;
     m_status = status;
     m_displayMessage = displayMessage;

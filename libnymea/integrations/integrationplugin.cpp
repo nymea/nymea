@@ -100,6 +100,9 @@
 /*! IntegrationPlugin constructor. IntegrationPlugins will be instantiated by the system.
     This should never be called manually by a plugin implementation.
 */
+
+NYMEA_LOGGING_CATEGORY(dcIntegrations, "Integrations")
+
 IntegrationPlugin::IntegrationPlugin(QObject *parent):
     QObject(parent)
 {

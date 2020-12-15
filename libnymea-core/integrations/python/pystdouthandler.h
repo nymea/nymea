@@ -30,9 +30,8 @@ static int PyStdOutHandler_init(PyStdOutHandler *self, PyObject *args, PyObject 
         return -1;
     }
 
-    self->category = (char*)malloc(qstrlen(category));
+    self->category = qstrdup(category);
     self->msgType = msgType;
-    qstrcpy(self->category, category);
 
     return 0;
 }
@@ -40,7 +39,7 @@ static int PyStdOutHandler_init(PyStdOutHandler *self, PyObject *args, PyObject 
 static void PyStdOutHandler_dealloc(PyStdOutHandler * self)
 {
     qCDebug(dcPythonIntegrations()) << "--- PyStdOutHandler";
-    free(self->category);
+    delete[] self->category;
     Py_TYPE(self)->tp_free(self);
 }
 

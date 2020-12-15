@@ -28,8 +28,7 @@ static int PyNymeaLoggingHandler_init(PyNymeaLoggingHandler *self, PyObject *arg
         return -1;
     }
 
-    self->category = (char*)malloc(qstrlen(category));
-    qstrcpy(self->category, category);
+    self->category = qstrdup(category);
 
     return 0;
 }
@@ -37,7 +36,7 @@ static int PyNymeaLoggingHandler_init(PyNymeaLoggingHandler *self, PyObject *arg
 static void PyNymeaLoggingHandler_dealloc(PyNymeaLoggingHandler * self)
 {
     qCDebug(dcPythonIntegrations()) << "--- PyNymeaLoggingHandler";
-    free(self->category);
+    delete[] self->category;
     Py_TYPE(self)->tp_free(self);
 }
 

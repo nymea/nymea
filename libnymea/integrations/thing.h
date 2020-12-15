@@ -133,6 +133,9 @@ public:
 
     Q_INVOKABLE State state(const StateTypeId &stateTypeId) const;
 
+    void setStateLogged(const StateTypeId &stateTypeId, bool logged);
+    void setStateFilter(const StateTypeId &stateTypeId, Types::StateValueFilter filter);
+
     ThingId parentId() const;
     void setParentId(const ThingId &parentId);
 

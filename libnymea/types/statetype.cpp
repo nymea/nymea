@@ -208,6 +208,16 @@ void StateType::setCached(bool cached)
     m_cached = cached;
 }
 
+Types::StateValueFilter StateType::filter() const
+{
+    return m_filter;
+}
+
+void StateType::setFilter(Types::StateValueFilter filter)
+{
+    m_filter = filter;
+}
+
 /*! Returns a list of all valid properties a DeviceClass definition can have. */
 QStringList StateType::typeProperties()
 {

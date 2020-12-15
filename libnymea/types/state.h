@@ -42,6 +42,8 @@ class LIBNYMEA_EXPORT State
     Q_GADGET
     Q_PROPERTY(QUuid stateTypeId READ stateTypeId)
     Q_PROPERTY(QVariant value READ value)
+    Q_PROPERTY(Types::StateValueFilter filter READ filter)
+    Q_PROPERTY(bool logged READ logged)
 
 public:
     State();
@@ -53,10 +55,18 @@ public:
     QVariant value() const;
     void setValue(const QVariant &value);
 
+    Types::StateValueFilter filter() const;
+    void setFilter(Types::StateValueFilter filter);
+
+    bool logged() const;
+    void setLogged(bool logged);
+
 private:
     StateTypeId m_stateTypeId;
     ThingId m_thingId;
     QVariant m_value;
+    Types::StateValueFilter m_filter;
+    bool m_logged = false;
 };
 Q_DECLARE_METATYPE(State)
 

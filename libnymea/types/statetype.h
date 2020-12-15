@@ -93,6 +93,12 @@ public:
     bool cached() const;
     void setCached(bool cached);
 
+    bool logged() const;
+    void setLogged(bool logged);
+
+    Types::StateValueFilter filter() const;
+    void setFilter(Types::StateValueFilter filter);
+
     static QStringList typeProperties();
     static QStringList mandatoryTypeProperties();
 
@@ -112,6 +118,8 @@ private:
     Types::IOType m_ioType = Types::IOTypeNone;
     bool m_writable = false;
     bool m_cached = true;
+    bool m_logged = false;
+    Types::StateValueFilter m_filter = Types::StateValueFilterNone;
 };
 Q_DECLARE_METATYPE(StateType)
 

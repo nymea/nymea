@@ -383,6 +383,24 @@ State Thing::state(const StateTypeId &stateTypeId) const
     return State(StateTypeId(), ThingId());
 }
 
+void Thing::setStateLogged(const StateTypeId &stateTypeId, bool logged)
+{
+    for (int i = 0; i < m_states.count(); i++) {
+        if (m_states.at(i).stateTypeId() == stateTypeId) {
+            m_states[i].setLogged(logged);
+        }
+    }
+}
+
+void Thing::setStateFilter(const StateTypeId &stateTypeId, Types::StateValueFilter filter)
+{
+    for (int i = 0; i < m_states.count(); i++) {
+        if (m_states.at(i).stateTypeId() == stateTypeId) {
+            m_states[i].setFilter(filter);
+        }
+    }
+}
+
 /*! Returns the \l{ThingId} of the parent of this thing. If the parentId
     is not set, this thing does not have a parent.
 */

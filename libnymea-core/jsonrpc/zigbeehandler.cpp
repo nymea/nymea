@@ -69,15 +69,15 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
 
     // GetAvailableBackends
     params.clear(); returns.clear();
-    description = "Get the list of available Zigbee backends.";
+    description = "Get the list of available ZigBee backends.";
     returns.insert("backends", QVariantList() << enumValueName(String));
     registerMethod("GetAvailableBackends", description, params, returns);
 
     // GetAdapters
     params.clear(); returns.clear();
-    description = "Get the list of available Zigbee adapters and serial ports in order to set up the Zigbee network "
+    description = "Get the list of available ZigBee adapters and serial ports in order to set up the ZigBee network "
                   "on the desired interface. The \'serialPort\' property can be used as unique identifier for an adapter. "
-                  "If an adapter hardware has been recognized as a well known Zigbee adapter, "
+                  "If an adapter hardware has been recognized as a well known ZigBee adapter, "
                   "the \'hardwareRecognized\' property will be true and the \'baudRate\' and \'backend\' "
                   "configurations can be used as they where given, otherwise the user might set the backend "
                   "and baud rate manually. The available backends can be fetched using the GetAvailableBackends method.";
@@ -86,25 +86,25 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
 
     // AdapterAdded notification
     params.clear();
-    description = "Emitted whenever a new Zigbee adapter or serial port has been detected in the system.";
+    description = "Emitted whenever a new ZigBee adapter or serial port has been detected in the system.";
     params.insert("adapter", objectRef<ZigbeeAdapter>());
     registerNotification("AdapterAdded", description, params);
 
     // AdapterRemoved notification
     params.clear();
-    description = "Emitted whenever a Zigbee adapter or serial port has been removed from the system (i.e. unplugged).";
+    description = "Emitted whenever a ZigBee adapter or serial port has been removed from the system (i.e. unplugged).";
     params.insert("adapter", objectRef<ZigbeeAdapter>());
     registerNotification("AdapterRemoved", description, params);
 
     // GetNetworks
     params.clear(); returns.clear();
-    description = "Returns the list of configured Zigbee networks in the system.";
+    description = "Returns the list of configured ZigBee networks in the system.";
     returns.insert("zigbeeNetworks", QVariantList() << objectRef("ZigbeeNetwork"));
     registerMethod("GetNetworks", description, params, returns);
 
     // AddNetwork
     params.clear(); returns.clear();
-    description = "Create a new Zigbee network for the given \'serialPort\', \'baudRate\' and \'backend\'. "
+    description = "Create a new ZigBee network for the given \'serialPort\', \'baudRate\' and \'backend\'. "
                   "The serial ports can be fetched from the available adapters. See \'GetAdapters\' for more information. "
                   "The available backends can be fetched using the \'GetAvailableBackends\' method.";
     params.insert("serialPort", enumValueName(String));
@@ -116,26 +116,26 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
 
     // RemoveNetwork
     params.clear(); returns.clear();
-    description = "Remove the zigbee network with the given network uuid.";
+    description = "Remove the ZigBee network with the given network uuid.";
     params.insert("networkUuid", enumValueName(Uuid));
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
     registerMethod("RemoveNetwork", description, params, returns);
 
     // NetworkAdded notification
     params.clear();
-    description = "Emitted whenever a new Zigbee network has been added.";
+    description = "Emitted whenever a new ZigBee network has been added.";
     params.insert("zigbeeNetwork", objectRef("ZigbeeNetwork"));
     registerNotification("NetworkAdded", description, params);
 
     // NetworkRemoved notification
     params.clear();
-    description = "Emitted whenever a new Zigbee network has been removed.";
+    description = "Emitted whenever a new ZigBee network has been removed.";
     params.insert("networkUuid", enumValueName(Uuid));
     registerNotification("NetworkRemoved", description, params);
 
     // NetworkChanged notification
     params.clear();
-    description = "Emitted whenever a new Zigbee network has changed.";
+    description = "Emitted whenever a new ZigBee network has changed.";
     params.insert("zigbeeNetwork", objectRef("ZigbeeNetwork"));
     registerNotification("NetworkChanged", description, params);
 
@@ -150,7 +150,7 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     // SetPermitJoin
     params.clear(); returns.clear();
     description = "Allow or deny nodes to join the network with the given \'networkUuid\' for a specific \'duration\' in seconds. "
-                  "The duration value has to be between 0 and 255 seconds. The \'permitJoinDuration\' property of Zigbee network "
+                  "The duration value has to be between 0 and 255 seconds. The \'permitJoinDuration\' property of ZigBee network "
                   "object indicates how long permit has been enabled and the \'permitJoiningRemaining\' indicates the rest of the time. "
                   "Those values can be used to show a countdown or progressbar. This method can be recalled for resetting the timeout. "
                   "If the duration is set to 0 seconds, joining will be disabled immediatly for the entire network. "

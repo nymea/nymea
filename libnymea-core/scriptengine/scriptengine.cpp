@@ -116,6 +116,10 @@ ScriptEngine::ScriptEngine(ThingManager *deviceManager, QObject *parent) : QObje
 
 ScriptEngine::~ScriptEngine()
 {
+    foreach (Script *script, m_scripts) {
+        unloadScript(script);
+        delete script;
+    }
     s_engines.removeAll(this);
     if (s_engines.isEmpty()) {
         qInstallMessageHandler(s_upstreamMessageHandler);

@@ -67,6 +67,22 @@ ZigbeeManager::ZigbeeManager(QObject *parent) :
         qCDebug(dcZigbee()) << "Adapter added" << adapter;
         m_adapters.append(adapter);
 
+
+
+        if (m_autoSetupAdapters) {
+            if (networkExistsForAdapter(uartAdapter)) {
+                qCDebug(dcZigbee()) << "Auto setup enabled. There is already a network configured for" << uartAdapter;
+            } else {
+                qCDebug(dcZigbee()) << "Auto setup enabled. No network for" << uartAdapter << "created yet. Creating network...";
+                ZigbeeNetwork *network = createPlatformNetwork(uartAdapter.serialPort(), uartAdapter.baudRate(), uartAdapter.zigbeeBackend());
+                if (!uartAdapter.serialNumber().isEmpty())
+                    network->setSerialNumber(uartAdapter.serialNumber());
+
+                addNetwork(network);
+                network->startNetwork();
+            }
+        }
+
         // FIXME: check if serial number available and gets used by a network (adjust serial port if changed)
 
         emit availableAdapterAdded(adapter);
@@ -87,6 +103,23 @@ ZigbeeManager::ZigbeeManager(QObject *parent) :
 
     // Check if we have a zigbee platform configuration and if we have to create the platform network automatically
     checkPlatformConfiguration();
+
+    // Check if auto setup recognized adapters is enabled
+    if (m_autoSetupAdapters) {
+        qCDebug(dcZigbee()) << "Auto setup enabled. Verify existing networks and adapters...";
+        foreach(const ZigbeeUartAdapter &uartAdapter, m_adapterMonitor->availableAdapters()) {
+            if (networkExistsForAdapter(uartAdapter)) {
+                qCDebug(dcZigbee()) << "Network for adapter" << uartAdapter << "already created.";
+            } else {
+                qCDebug(dcZigbee()) << "Auto setup enabled and there is no network for" << uartAdapter << "created yet. Creating network...";
+                ZigbeeNetwork *network = createPlatformNetwork(uartAdapter.serialPort(), uartAdapter.baudRate(), uartAdapter.zigbeeBackend());
+                if (!uartAdapter.serialNumber().isEmpty())
+                    network->setSerialNumber(uartAdapter.serialNumber());
+
+                addNetwork(network);
+            }
+        }
+    }
 
     // Start all loaded networks
     foreach (ZigbeeNetwork *network, m_zigbeeNetworks.values()) {
@@ -126,20 +159,23 @@ QPair<ZigbeeManager::ZigbeeError, QUuid> ZigbeeManager::createZigbeeNetwork(cons
         }
     }
 
-
     if (!m_adapters.hasSerialPort(serialPort)) {
         qCWarning(dcZigbee()) << "Failed to create a network for" << serialPort << "because the adapter is not available any more";
         return QPair<ZigbeeManager::ZigbeeError, QUuid>(ZigbeeManager::ZigbeeErrorAdapterNotAvailable, QUuid());
     }
 
-//    ZigbeeChannelMask testChannelMask = ZigbeeChannelMask(0);
-//    testChannelMask.setChannel(Zigbee::ZigbeeChannel13);
-//    qCWarning(dcZigbee()) << "Using test channel mask" << testChannelMask;
+    QString serialNumber;
+    foreach (const ZigbeeAdapter &adapter, m_adapters) {
+        if (adapter.serialPort() == serialPort && !adapter.serialNumber().isEmpty()) {
+            serialNumber = adapter.serialNumber();
+        }
+    }
 
     ZigbeeNetwork *network = buildNetworkObject(QUuid::createUuid(), backendType);
     network->setChannelMask(channelMask);
     network->setSerialPortName(serialPort);
     network->setSerialBaudrate(baudRate);
+    network->setSerialNumber(serialNumber);
     addNetwork(network);
 
     qCDebug(dcZigbee()) << "Starting" << network;
@@ -240,8 +276,9 @@ void ZigbeeManager::saveNetwork(ZigbeeNetwork *network)
     settings.setValue("channelMask", network->channelMask().toUInt32());
     settings.setValue("networkKey", network->securityConfiguration().networkKey().toString());
     settings.setValue("trustCenterLinkKey", network->securityConfiguration().globalTrustCenterLinkKey().toString());
-
-    // FIXME: save also the serial number of the port if available.
+    if (!network->serialNumber().isEmpty()) {
+        settings.setValue("serialNumber", network->serialNumber());
+    }
 
     settings.endGroup(); // networkUuid
     settings.endGroup(); // ZigbeeNetworks
@@ -259,6 +296,7 @@ void ZigbeeManager::loadZigbeeNetworks()
 
         QUuid networkUuid = QUuid(networkUuidGroupString);
         QString serialPortName = settings.value("serialPort").toString();
+        QString serialNumber = settings.value("serialNumber").toString();
         qint32 serialBaudRate = settings.value("baudRate").toInt();
         ZigbeeAdapter::ZigbeeBackendType backendType = static_cast<ZigbeeAdapter::ZigbeeBackendType>(settings.value("backendType").toInt());
         quint16 panId = static_cast<quint16>(settings.value("panId", 0).toUInt());
@@ -279,6 +317,7 @@ void ZigbeeManager::loadZigbeeNetworks()
         ZigbeeNetwork *network = buildNetworkObject(networkUuid, backendType);
         network->setSerialPortName(serialPortName);
         network->setSerialBaudrate(serialBaudRate);
+        network->setSerialNumber(serialNumber);
         network->setMacAddress(macAddress);
         network->setPanId(panId);
         network->setChannel(channel);
@@ -304,21 +343,33 @@ void ZigbeeManager::loadZigbeeNetworks()
 void ZigbeeManager::checkPlatformConfiguration()
 {
     /* Example platform configurations
-     *
-     * serialPort=/dev/ttymxc2
-     * baudRate=115200
-     * backend=nxp
-     *
-     * serialPort=/dev/ttyS0
-     * baudRate=38400
-     * backend=deconz
-     */
+ *
+ * serialPort=/dev/ttymxc2
+ * baudRate=115200
+ * backend=nxp
+ * autoSetup=false
+ *
+ * serialPort=/dev/ttyS0
+ * baudRate=38400
+ * backend=deconz
+ * autoSetup=false
+ *
+ * autoSetup=true
+ */
 
     QFileInfo platformConfigurationFileInfo(NymeaSettings::settingsPath() + QDir::separator() + "zigbee-platform.conf");
     if (platformConfigurationFileInfo.exists()) {
         qCDebug(dcZigbee()) << "Found zigbee platform configuration" << platformConfigurationFileInfo.absoluteFilePath();
         QSettings platformSettings(platformConfigurationFileInfo.absoluteFilePath(), QSettings::IniFormat);
         QString serialPort = platformSettings.value("serialPort").toString();
+        qint32 baudRate = platformSettings.value("baudRate").toUInt();
+        QString backendString = platformSettings.value("backend").toString();
+        m_autoSetupAdapters = platformSettings.value("autoSetup").toBool();
+        Zigbee::ZigbeeBackendType backenType = Zigbee::ZigbeeBackendTypeNxp;
+        if (backendString.toLower().contains("deconz")) {
+            backenType = Zigbee::ZigbeeBackendTypeDeconz;
+        }
+
         if (serialPort.isEmpty()) {
             qCWarning(dcZigbee()) << "The serial port is not specified correctly in the platform configuration file" << platformConfigurationFileInfo.absoluteFilePath() << "The platform based network will not be created.";
             return;
@@ -327,13 +378,6 @@ void ZigbeeManager::checkPlatformConfiguration()
         if (!m_adapterMonitor->hasAdapter(serialPort)) {
             qCWarning(dcZigbee()) << "Could not find platform specific serial port" << serialPort << "on this system. Please check the wiring or the port configuration. The platform based network will not be created.";
             return;
-        }
-
-        qint32 baudRate = platformSettings.value("baudRate").toUInt();
-        QString backendString = platformSettings.value("backend").toString();
-        Zigbee::ZigbeeBackendType backenType = Zigbee::ZigbeeBackendTypeNxp;
-        if (backendString.toLower().contains("deconz")) {
-            backenType = Zigbee::ZigbeeBackendTypeDeconz;
         }
 
         bool alreadyCreated = false;
@@ -354,6 +398,27 @@ void ZigbeeManager::checkPlatformConfiguration()
     } else {
         qCDebug(dcZigbee()) << "No platform configuration specified.";
     }
+}
+
+bool ZigbeeManager::networkExistsForAdapter(const ZigbeeUartAdapter &uartAdapter)
+{
+    bool networkCreated = false;
+    foreach (ZigbeeNetwork *network, m_zigbeeNetworks) {
+        // Use the serial number if possible as refference
+        if (!uartAdapter.serialNumber().isEmpty()) {
+            if (network->serialNumber() == uartAdapter.serialNumber()) {
+                networkCreated = true;
+                break;
+            }
+        }
+
+        // Otherwise check the serial port
+        if (network->serialPortName() == uartAdapter.serialPort()) {
+            networkCreated = true;
+            break;
+        }
+    }
+    return networkCreated;
 }
 
 ZigbeeNetwork *ZigbeeManager::createPlatformNetwork(const QString &serialPort, uint baudRate, Zigbee::ZigbeeBackendType backendType, ZigbeeChannelMask channelMask)

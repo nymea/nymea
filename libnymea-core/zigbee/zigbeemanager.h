@@ -83,10 +83,12 @@ private:
     QHash<QUuid, ZigbeeNetwork *> m_zigbeeNetworks;
 
     bool m_available = false;
+    bool m_autoSetupAdapters = false;
 
     void saveNetwork(ZigbeeNetwork *network);
     void loadZigbeeNetworks();
     void checkPlatformConfiguration();
+    bool networkExistsForAdapter(const ZigbeeUartAdapter &uartAdapter);
     ZigbeeNetwork *createPlatformNetwork(const QString &serialPort, uint baudRate, Zigbee::ZigbeeBackendType backendType, ZigbeeChannelMask channelMask = ZigbeeChannelMask(ZigbeeChannelMask::ChannelConfigurationAllChannels));
 
     ZigbeeNetwork *buildNetworkObject(const QUuid &networkId, ZigbeeAdapter::ZigbeeBackendType backendType);

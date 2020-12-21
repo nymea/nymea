@@ -33,7 +33,9 @@
 #if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
 #include "scriptintegrationplugin.h"
 #endif
+#ifdef WITH_PYTHON
 #include "pythonintegrationplugin.h"
+#endif
 
 #include "loggingcategories.h"
 #include "typeutils.h"
@@ -98,7 +100,9 @@ ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardware
     // Make sure this is always emitted after plugins and things are loaded
     QMetaObject::invokeMethod(this, "onLoaded", Qt::QueuedConnection);
 
+#ifdef WITH_PYTHON
     PythonIntegrationPlugin::initPython();
+#endif
 }
 
 ThingManagerImplementation::~ThingManagerImplementation()
@@ -120,7 +124,9 @@ ThingManagerImplementation::~ThingManagerImplementation()
         }
     }
 
+#ifdef WITH_PYTHON
     PythonIntegrationPlugin::deinitPython();
+#endif
 }
 
 QStringList ThingManagerImplementation::pluginSearchDirs()
@@ -1293,6 +1299,7 @@ void ThingManagerImplementation::loadPlugins()
                 qCWarning(dcThingManager()) << "Not loading JS plugin as JS plugin support is not included in this nymea instance.";
 #endif
             } else if (entry.startsWith("integrationplugin") && entry.endsWith(".py")) {
+#ifdef WITH_PYTHON
                 PythonIntegrationPlugin *p = new PythonIntegrationPlugin(this);
                 bool ok = p->loadScript(fi.absoluteFilePath());
                 if (ok) {
@@ -1300,6 +1307,9 @@ void ThingManagerImplementation::loadPlugins()
                 } else {
                     delete p;
                 }
+#else
+                qCWarning(dcThingManager()) << "Not loading Python plugin as Python plugin support is not included in this nymea instance.2";
+#endif
             } else {
                 // Not a known plugin type
                 continue;

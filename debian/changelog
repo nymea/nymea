@@ -1,7 +1,40 @@
-nymea (0.25.0) UNRELEASED; urgency=medium
+nymea (0.25.0) xenial; urgency=medium
 
+  [ Michael Zanetti ]
+  * Add a command line argument for additional server interfaces
 
- -- Michael Zanetti <michael.zanetti@nymea.io>  Sun, 08 Nov 2020 18:08:29 +0100
+  [ Simon Stürz ]
+  * Add ZigBee hardware resource and network management
+
+  [ Michael Zanetti ]
+  * Add state based value comparison in rules
+  * 0.25 version bump
+  * Drop the manually created -dbg package
+  * Add a note for including extern-plugininfo.h for plugin developers
+  * Improve parameter validation for interface actions and events
+  * Add paramValue() methods to Action and Event
+  * Simplify and extend media interfaces
+  * Fix state change signal
+  * Increase the maximum allowed message size in JSONRPC
+  * Make python plugins optional during the build process
+  * Allow building the plugininfocompiler standalone
+  * Add a rudimentary mechanism for plugins to provide service data
+  * Allow filtering GetThingClasses for thingClassIds
+  * Silence the webserver even more
+  * Add a UnitMilliSeconds
+  * Prevent multiple finish calls on API objects
+
+  [ Simon Stürz ]
+  * Remove SIGSEGV handling and backtrace printing for proper coredump
+    cr…
+  * Limit shutdown timeout of systemd service to 30 seconds
+
+  [ Michael Zanetti ]
+  * Fix memory off-by-one overflow
+  * Cleanup scripts on shutdown
+  * Reorder shutdown
+
+ -- Jenkins <jenkins@nymea.io>  Mon, 21 Dec 2020 18:01:11 +0100
 
 nymea (0.24.1) xenial; urgency=medium
 

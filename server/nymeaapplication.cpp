@@ -36,8 +36,7 @@
     \inmodule server
 
     The \l{NymeaApplication} is a subclass of the \{http://doc.qt.io/qt-5/qcoreapplication.html}{QCoreApplication}
-    and is responsable to catch system signals like SIGQUIT, SIGINT, SIGTERM, SIGHUP, SIGSEGV. This class
-    will provide a backtrace on a segmentation fault (SIGSEGV).
+    and is responsable to catch system signals like SIGQUIT, SIGINT, SIGTERM, SIGHUP..
 
 
     \sa NymeaService
@@ -64,79 +63,6 @@ static bool s_aboutToShutdown = false;
 static bool s_multipleShutdownDetected = false;
 static int s_shutdownCounter = 0;
 
-static void printBacktrace()
-{
-    void* trace[20];
-
-    int traceLength = backtrace(trace, sizeof(trace) / sizeof(void*));
-    if (traceLength == 0)
-        return;
-
-    char** symbolList = backtrace_symbols(trace, traceLength);
-    size_t funktionNameSize = 256;
-    char* functionName = (char*)malloc(funktionNameSize);
-    for (int i = 1; i < traceLength; i++) {
-        QString address = QString::asprintf("%p", trace[i]);
-        QString fileName = QString(symbolList[i]);
-        int fileIndex = fileName.indexOf("(");
-        QString lineCommand = QString("addr2line %1 -e %2").arg(address).arg(fileName.left(fileIndex));
-
-        // Read stdout from addr2line
-        char buffer[1024];
-        FILE *lineFile = popen(lineCommand.toLatin1().data(), "r");
-        QString line(fgets(buffer, sizeof(buffer), lineFile));
-        pclose(lineFile);
-
-        char *begin_name = 0, *begin_offset = 0, *end_offset = 0;
-        // find parentheses and +address offset surrounding the mangled name:
-        // ./module(function+0x15c) [0x8048a6d]
-        for (char *p = symbolList[i]; *p; ++p) {
-            if (*p == '(')
-                begin_name = p;
-            else if (*p == '+')
-                begin_offset = p;
-            else if (*p == ')' && begin_offset) {
-                end_offset = p;
-                break;
-            }
-        }
-
-        QString functionString;
-        if (begin_name && begin_offset && end_offset && begin_name < begin_offset) {
-            int status;
-            *begin_name++ = '\0';
-            *begin_offset++ = '\0';
-            *end_offset = '\0';
-            char* ret = abi::__cxa_demangle(begin_name, functionName, &funktionNameSize, &status);
-            if (status == 0) {
-                functionName = ret;
-                functionString = QString("    %1").arg(QString::asprintf("%s+%s", functionName, begin_offset));
-            } else {
-                functionString = QString("    %1").arg(QString::asprintf("%s()+%s", begin_name, begin_offset));
-            }
-        }
-
-#if (QT_VERSION < QT_VERSION_CHECK(5, 2, 0))
-        // qCCritical was introduced int Qt 5.2.0
-        qCWarning(dcApplication) << QString("[%1] %2").arg(i).arg(symbolList[i]);
-        if (!functionString.isEmpty())
-            qCWarning(dcApplication) << functionString;
-
-        qCWarning(dcApplication) << QString("    %1").arg(line.remove("\n"));
-#else
-        qCCritical(dcApplication) << QString("[%1] %2").arg(i).arg(symbolList[i]);
-        if (!functionString.isEmpty())
-            qCCritical(dcApplication) << functionString;
-
-        qCCritical(dcApplication) << QString("    %1").arg(line.remove("\n"));
-#endif // QT_VERSION
-
-    }
-
-    free(functionName);
-    free(symbolList);
-}
-
 static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vector<int>& ignoreSignals = std::vector<int>())
 {
     auto handler = [](int sig) ->void {
@@ -153,11 +79,6 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
         case SIGHUP:
             qCDebug(dcApplication) << "Cought SIGHUP quit signal...";
             break;
-        case SIGSEGV: {
-            qCWarning(dcApplication) << "Cought SIGSEGV signal. Segmentation fault!";
-            printBacktrace();
-            exit(1);
-        }
         default:
             break;
         }
@@ -223,7 +144,7 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
 NymeaApplication::NymeaApplication(int &argc, char **argv) :
     QCoreApplication(argc, argv)
 {
-    catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP, SIGSEGV});
+    catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
 }
 
 }

@@ -1,6 +1,40 @@
 {
-    "description": "The mediacontroller interface contains basic actions to control media streams. If a device supports fast forward and rewind, use extendedmediacontroller instead.",
+    "description": "The mediacontroller interface contains actions to control media streams.",
     "extends": "media",
+    "states": [
+        {
+            "name": "shuffle",
+            "type": "bool",
+            "writable": true,
+            "optional": true
+        },
+        {
+            "name": "repeat",
+            "type": "QString",
+            "allowedValues": ["None", "One", "All"],
+            "writable": true,
+            "optional": true
+        },
+        {
+            "name": "like",
+            "type": "bool",
+            "writable": true,
+            "optional": true
+        },
+        {
+            "name": "equalizerPreset",
+            "type": "QString",
+            "allowedValues": "any",
+            "writable": true,
+            "optional": true
+        },
+        {
+            "name": "nightMode",
+            "type": "bool",
+            "writable": true,
+            "optional": true
+        }
+    ],
     "actions": [
         {
             "name": "skipBack"
@@ -16,6 +50,14 @@
         },
         {
             "name": "skipNext"
+        },
+        {
+            "name": "fastForward",
+            "optional": true
+        },
+        {
+            "name": "fastRewind",
+            "optional": true
         }
     ]
 }

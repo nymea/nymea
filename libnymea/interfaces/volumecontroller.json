@@ -1,33 +1,28 @@
 {
+    "desciption": "A volume controller allows to control volume and mute. At the very least, increaseVolume and decreaseVolume are to be implemented for devices that don't have a way to fetch the current volume. For devices allowing to set an absolute volume value, the volume and mute states should be implemented as well.",
     "extends": "media",
+    "states": [
+        {
+            "name": "mute",
+            "type": "bool",
+            "writable": true,
+            "optional": true
+        },
+        {
+            "name": "volume",
+            "type": "int",
+            "minValue": "any",
+            "maxValue": "any",
+            "writable": true,
+            "optional": true
+        }
+    ],
     "actions": [
         {
-            "name": "increaseVolume",
-            "params": [
-                {
-                    "name": "step",
-                    "type": "int"
-                }
-            ]
+            "name": "increaseVolume"
         },
         {
-            "name": "decreaseVolume",
-            "params": [
-                {
-                    "name": "step",
-                    "type": "int"
-                }
-            ]
-        },
-        {
-            "name": "setMute",
-            "params": [
-                {
-                    "name": "mute",
-                    "type": "bool"
-                }
-
-            ]
+            "name": "decreaseVolume"
         }
     ]
 }

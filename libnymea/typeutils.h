@@ -86,6 +86,7 @@ public:
 
     enum Unit {
         UnitNone,
+        UnitMilliSeconds,
         UnitSeconds,
         UnitMinutes,
         UnitHours,

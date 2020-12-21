@@ -10,6 +10,7 @@ StandardOutput=journal
 StandardError=journal
 Restart=on-failure
 Type=simple
+TimeoutStopSec=30
 
 [Install]
 WantedBy=multi-user.target

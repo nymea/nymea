@@ -364,7 +364,7 @@ void Thing::setStateValue(const StateTypeId &stateTypeId, const QVariant &value)
 
             qCDebug(dcThing()).nospace() << m_name << ": State " << stateType.name() << " changed from " << oldValue << " to " << newValue;
             m_states[i].setValue(newValue);
-            emit stateValueChanged(stateTypeId, value);
+            emit stateValueChanged(stateTypeId, newValue);
             return;
         }
     }

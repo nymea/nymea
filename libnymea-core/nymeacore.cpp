@@ -179,12 +179,6 @@ NymeaCore::~NymeaCore()
     m_thingManager->disconnect(this);
     m_ruleEngine->disconnect(this);
 
-    // At very first, cut off the outside world
-    qCDebug(dcCore) << "Shutting down \"Server Manager\"";
-    delete m_serverManager;
-    qCDebug(dcCore) << "Shutting down \"CloudManager\"";
-    delete m_cloudManager;
-
     // Then stop magic from happening
     qCDebug(dcCore) << "Shutting down \"Rule Engine\"";
     delete m_ruleEngine;
@@ -193,12 +187,17 @@ NymeaCore::~NymeaCore()
     qCDebug(dcCore) << "Shutting down \"Thing Manager\"";
     delete m_thingManager;
 
+    // Destroy resources used by things
+    qCDebug(dcCore) << "Shutting down \"Server Manager\"";
+    delete m_serverManager;
+    qCDebug(dcCore) << "Shutting down \"CloudManager\"";
+    delete m_cloudManager;
+    qCDebug(dcCore()) << "Shutting down \"Hardware Manager\"";
+    delete m_hardwareManager;
+
     // Now go ahead and clean up stuff.
     qCDebug(dcCore) << "Shutting down \"Log Engine\"";
     delete m_logger;
-
-    qCDebug(dcCore()) << "Shutting down \"Hardware Manager\"";
-    delete m_hardwareManager;
 
     qCDebug(dcCore) << "Done shutting down NymeaCore";
 }

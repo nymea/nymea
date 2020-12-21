@@ -159,7 +159,7 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
 
     // make sure the file exists
     if (!file.exists()) {
-        qCWarning(dcWebServer()) << "requested file" << file.filePath() << "does not exist.";
+        qCDebug(dcWebServer()) << "requested file" << file.filePath() << "does not exist.";
         HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
         reply->setClientId(m_clientList.key(socket));
         sendHttpReply(reply);
@@ -169,7 +169,7 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
 
     // make sure the file is in the public directory
     if (!file.canonicalFilePath().startsWith(QDir(m_configuration.publicFolder).canonicalPath())) {
-        qCWarning(dcWebServer()) << "Requested file" << file.fileName() << "is outside the public folder.";
+        qCDebug(dcWebServer()) << "Requested file" << file.fileName() << "is outside the public folder.";
         HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
         reply->setClientId(m_clientList.key(socket));
         sendHttpReply(reply);
@@ -179,7 +179,7 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
 
     // make sure we can read the file
     if (!file.isReadable()) {
-        qCWarning(dcWebServer()) << "Requested file" << file.fileName() << "is not readable.";
+        qCDebug(dcWebServer()) << "Requested file" << file.fileName() << "is not readable.";
         HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
         reply->setClientId(m_clientList.key(socket));
         reply->setPayload("403 Forbidden. File not readable");
@@ -318,7 +318,7 @@ void WebServer::readClient()
 
     // Check if the request is valid
     if (!request.isValid()) {
-        qCWarning(dcWebServer()) << "Got invalid request:" << request.url().path();
+        qCDebug(dcWebServer()) << "Got invalid request:" << request.url().path();
         HttpReply *reply = HttpReply::createErrorReply(HttpReply::BadRequest);
         reply->setClientId(clientId);
         sendHttpReply(reply);
@@ -328,7 +328,7 @@ void WebServer::readClient()
 
     // Check HTTP version
     if (request.httpVersion() != "HTTP/1.1" && request.httpVersion() != "HTTP/1.0") {
-        qCWarning(dcWebServer()) << "HTTP version is not supported." << request.httpVersion();
+        qCDebug(dcWebServer()) << "HTTP version is not supported." << request.httpVersion();
         HttpReply *reply = HttpReply::createErrorReply(HttpReply::HttpVersionNotSupported);
         reply->setClientId(clientId);
         sendHttpReply(reply);
@@ -420,7 +420,7 @@ void WebServer::readClient()
         // Check if the webinterface dir does exist, otherwise a filerequest is not relevant
         // FIXME: return a default webpage containing server information
         if (!QDir(m_configuration.publicFolder).exists()) {
-            qCWarning(dcWebServer()) << "Webinterface folder" << m_configuration.publicFolder << "does not exist.";
+            qDebug(dcWebServer()) << "Webinterface folder" << m_configuration.publicFolder << "does not exist.";
             HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
             reply->setClientId(clientId);
             sendHttpReply(reply);
@@ -471,7 +471,7 @@ void WebServer::readClient()
     }
 
     // Reject everything else...
-    qCWarning(dcWebServer()) << "Unknown message received.";
+    qCDebug(dcWebServer()) << "Unknown message received.";
     HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotImplemented);
     reply->setClientId(clientId);
     sendHttpReply(reply);

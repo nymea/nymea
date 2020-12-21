@@ -69,6 +69,10 @@
     Returns the MqttProvider \l{HardwareResource}.
 */
 
+/*! \fn ZigbeeHardwareResource *HardwareManager::zigbeeResource();
+    Returns the Zigbee \l{HardwareResource}.
+*/
+
 
 #include "hardwaremanager.h"
 #include "hardwareresource.h"

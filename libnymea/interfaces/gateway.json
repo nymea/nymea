@@ -1,4 +1,4 @@
 {
-    "description": "The gateway interface is used for gateway devices like bridges to other networks. For instance Ethernet to ZigBee bridges, Ethernet to RF bridges or similar. Typically such device classes implement the actual functionality in child devices that will auto-appear after successful connection to the gateway/bridge.",
+    "description": "The gateway interface is used for gateway devices like bridges to other networks. For instance Ethernet to Zigbee bridges, Ethernet to RF bridges or similar. Typically such device classes implement the actual functionality in child devices that will auto-appear after successful connection to the gateway/bridge.",
     "extends": "connectable"
 }

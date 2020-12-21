@@ -51,6 +51,8 @@
 #include "cloud/cloudnotifications.h"
 #include "cloud/cloudtransport.h"
 
+#include "zigbee/zigbeemanager.h"
+
 #include <networkmanager.h>
 
 #include <QDir>
@@ -106,8 +108,11 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     qCDebug(dcCore) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_platform, m_configuration, additionalInterfaces, this);
 
+    qCDebug(dcCore()) << "Create Zigbee Manager";
+    m_zigbeeManager = new ZigbeeManager(this);
+
     qCDebug(dcCore) << "Creating Hardware Manager";
-    m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), this);
+    m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), m_zigbeeManager, this);
 
     qCDebug(dcCore) << "Creating Thing Manager (locale:" << m_configuration->locale() << ")";
     m_thingManager = new ThingManagerImplementation(m_hardwareManager, m_configuration->locale(), this);
@@ -649,6 +654,11 @@ Platform *NymeaCore::platform() const
     return m_platform;
 }
 
+ZigbeeManager *NymeaCore::zigbeeManager() const
+{
+    return m_zigbeeManager;
+}
+
 void NymeaCore::gotEvent(const Event &event)
 {
     m_logger->logEvent(event);
@@ -813,6 +823,9 @@ void NymeaCore::thingManagerLoaded()
     m_ruleEngine->init();
     // Evaluate rules on current time
     onDateTimeChanged(m_timeManager->currentDateTime());
+
+    // Tell hardare resources we're done with loading stuff...
+    m_hardwareManager->thingsLoaded();
 
     emit initialized();
 

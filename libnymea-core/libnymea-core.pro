@@ -8,7 +8,7 @@ INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 
 CONFIG += link_pkgconfig
-PKGCONFIG += nymea-mqtt nymea-networkmanager
+PKGCONFIG += nymea-mqtt nymea-networkmanager nymea-zigbee
 
 # As of Ubuntu focal, there's a commonly named python3-embed pointing to the distro version of python
 # For everything below python 3.8 we need to manually select one
@@ -53,6 +53,7 @@ HEADERS += nymeacore.h \
     integrations/translator.h \
     integrations/pythonintegrationplugin.h \
     experiences/experiencemanager.h \
+    jsonrpc/zigbeehandler.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
     ruleengine/stateevaluator.h \
@@ -121,12 +122,16 @@ HEADERS += nymeacore.h \
     hardware/network/mqtt/mqttproviderimplementation.h \
     hardware/network/mqtt/mqttchannelimplementation.h \
     hardware/i2c/i2cmanagerimplementation.h \
+    hardware/zigbee/zigbeehardwareresourceimplementation.h \
     debugserverhandler.h \
     tagging/tagsstorage.h \
     tagging/tag.h \
     cloud/cloudtransport.h \
     debugreportgenerator.h \
     platform/platform.h \
+    zigbee/zigbeeadapter.h \
+    zigbee/zigbeeadapters.h \
+    zigbee/zigbeemanager.h
 
 
 SOURCES += nymeacore.cpp \
@@ -136,6 +141,7 @@ SOURCES += nymeacore.cpp \
     integrations/translator.cpp \
     integrations/pythonintegrationplugin.cpp \
     experiences/experiencemanager.cpp \
+    jsonrpc/zigbeehandler.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \
     ruleengine/stateevaluator.cpp \
@@ -203,12 +209,16 @@ SOURCES += nymeacore.cpp \
     hardware/network/mqtt/mqttproviderimplementation.cpp \
     hardware/network/mqtt/mqttchannelimplementation.cpp \
     hardware/i2c/i2cmanagerimplementation.cpp \
+    hardware/zigbee/zigbeehardwareresourceimplementation.cpp \
     debugserverhandler.cpp \
     tagging/tagsstorage.cpp \
     tagging/tag.cpp \
     cloud/cloudtransport.cpp \
     debugreportgenerator.cpp \
     platform/platform.cpp \
+    zigbee/zigbeeadapter.cpp \
+    zigbee/zigbeeadapters.cpp \
+    zigbee/zigbeemanager.cpp
 
 
 versionAtLeast(QT_VERSION, 5.12.0) {

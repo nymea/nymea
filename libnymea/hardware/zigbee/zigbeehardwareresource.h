@@ -28,44 +28,42 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#ifndef ZIGBEEHARDWARERESOURCE_H
+#define ZIGBEEHARDWARERESOURCE_H
 
 #include <QObject>
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class ZigbeeHardwareResource;
-class HardwareResource;
+#include "hardwareresource.h"
 
-class HardwareManager : public QObject
+#include <zigbeeaddress.h>
+#include <zigbeenetwork.h>
+
+class ZigbeeHandler;
+class ZigbeeNode;
+
+class ZigbeeHardwareResource : public HardwareResource
 {
     Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
-
 public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
+    enum HandlerType {
+        HandlerTypeBranding,
+        HandlerTypeVendor,
+        HandlerTypeCatchAll
+    };
+    Q_ENUM(HandlerType)
+    explicit ZigbeeHardwareResource(QObject *parent = nullptr);
+    virtual ~ZigbeeHardwareResource() = default;
 
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
-    virtual ZigbeeHardwareResource *zigbeeResource() = 0;
+    virtual void registerHandler(ZigbeeHandler *handler, HandlerType type = HandlerTypeVendor) = 0;
+    virtual ZigbeeNode* claimNode(ZigbeeHandler *hanlder, const QUuid &networkUuid, const ZigbeeAddress &extendedAddress) = 0;
+    virtual void removeNodeFromNetwork(const QUuid &networkUuid, ZigbeeNode *node) = 0;
 
-protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+    virtual ZigbeeNetwork::State networkState(const QUuid &networkUuid) = 0;
+    virtual ZigbeeAddress coordinatorAddress(const QUuid &networkUuid) = 0;
+
+signals:
+    void networkStateChanged(const QUuid &networkUuid, ZigbeeNetwork::State state);
+
 };
 
-#endif // HARDWAREMANAGER_H
+#endif // ZIGBEEHARDWARERESOURCE_H

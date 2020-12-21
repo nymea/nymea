@@ -7,9 +7,14 @@ QT += network bluetooth dbus
 QT -= gui
 DEFINES += LIBNYMEA_LIBRARY
 
+CONFIG += link_pkgconfig
+PKGCONFIG += nymea-zigbee
+
 QMAKE_LFLAGS += -fPIC
 
 HEADERS += \
+    hardware/zigbee/zigbeehandler.h \
+    hardware/zigbee/zigbeehardwareresource.h \
     integrations/browseractioninfo.h \
     integrations/browseritemactioninfo.h \
     integrations/browseritemresult.h \
@@ -102,6 +107,8 @@ HEADERS += \
     experiences/experienceplugin.h \
 
 SOURCES += \
+    hardware/zigbee/zigbeehandler.cpp \
+    hardware/zigbee/zigbeehardwareresource.cpp \
     integrations/browseractioninfo.cpp \
     integrations/browseritemactioninfo.cpp \
     integrations/browseritemresult.cpp \

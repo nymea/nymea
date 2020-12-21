@@ -41,13 +41,15 @@ namespace nymeaserver {
 
 class Platform;
 class MqttBroker;
+class ZigbeeManager;
+class ZigbeeHardwareResourceImplementation;
 
 class HardwareManagerImplementation : public HardwareManager
 {
     Q_OBJECT
 
 public:
-    explicit HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, QObject *parent = nullptr);
+    explicit HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, QObject *parent = nullptr);
     ~HardwareManagerImplementation() override;
 
     Radio433 *radio433() override;
@@ -57,7 +59,11 @@ public:
     PlatformZeroConfController *zeroConfController() override;
     BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
     MqttProvider *mqttProvider() override;
-    I2CManager * i2cManager() override;
+    I2CManager *i2cManager() override;
+    ZigbeeHardwareResource *zigbeeResource() override;
+
+public slots:
+    void thingsLoaded();
 
 private:
     QNetworkAccessManager *m_networkAccessManager = nullptr;
@@ -72,6 +78,7 @@ private:
     BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
     MqttProvider *m_mqttProvider = nullptr;
     I2CManager *m_i2cManager = nullptr;
+    ZigbeeHardwareResourceImplementation *m_zigbeeResource = nullptr;
 };
 
 }

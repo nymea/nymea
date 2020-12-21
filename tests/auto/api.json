@@ -1,4 +1,4 @@
-5.2
+5.3
 {
     "enums": {
         "BasicType": [
@@ -364,6 +364,22 @@
             "WirelessModeAdhoc",
             "WirelessModeInfrastructure",
             "WirelessModeAccessPoint"
+        ],
+        "ZigbeeError": [
+            "ZigbeeErrorNoError",
+            "ZigbeeErrorAdapterNotAvailable",
+            "ZigbeeErrorAdapterAlreadyInUse",
+            "ZigbeeErrorNetworkUuidNotFound",
+            "ZigbeeErrorDurationOutOfRange",
+            "ZigbeeErrorNetworkOffline",
+            "ZigbeeErrorUnknownBackend"
+        ],
+        "ZigbeeNetworkState": [
+            "ZigbeeNetworkStateOffline",
+            "ZigbeeNetworkStateStarting",
+            "ZigbeeNetworkStateUpdating",
+            "ZigbeeNetworkStateOnline",
+            "ZigbeeNetworkStateError"
         ]
     },
     "flags": {
@@ -1932,6 +1948,75 @@
                 "success": "Bool",
                 "transactionId": "Int"
             }
+        },
+        "Zigbee.AddNetwork": {
+            "description": "Create a new ZigBee network for the given 'serialPort', 'baudRate' and 'backend'. The serial ports can be fetched from the available adapters. See 'GetAdapters' for more information. The available backends can be fetched using the 'GetAvailableBackends' method.",
+            "params": {
+                "backend": "String",
+                "baudRate": "Uint",
+                "serialPort": "String"
+            },
+            "returns": {
+                "o:networkUuid": "Uuid",
+                "zigbeeError": "$ref:ZigbeeError"
+            }
+        },
+        "Zigbee.FactoryResetNetwork": {
+            "description": "Factory reset the network with the given 'networkUuid'. The network does not have to be online for this procedure, and all associated nodes and things will be removed permanently.",
+            "params": {
+                "networkUuid": "Uuid"
+            },
+            "returns": {
+                "zigbeeError": "$ref:ZigbeeError"
+            }
+        },
+        "Zigbee.GetAdapters": {
+            "description": "Get the list of available ZigBee adapters and serial ports in order to set up the ZigBee network on the desired interface. The 'serialPort' property can be used as unique identifier for an adapter. If an adapter hardware has been recognized as a well known ZigBee adapter, the 'hardwareRecognized' property will be true and the 'baudRate' and 'backend' configurations can be used as they where given, otherwise the user might set the backend and baud rate manually. The available backends can be fetched using the GetAvailableBackends method.",
+            "params": {
+            },
+            "returns": {
+                "adapters": "$ref:ZigbeeAdapters"
+            }
+        },
+        "Zigbee.GetAvailableBackends": {
+            "description": "Get the list of available ZigBee backends.",
+            "params": {
+            },
+            "returns": {
+                "backends": [
+                    "String"
+                ]
+            }
+        },
+        "Zigbee.GetNetworks": {
+            "description": "Returns the list of configured ZigBee networks in the system.",
+            "params": {
+            },
+            "returns": {
+                "zigbeeNetworks": [
+                    "$ref:ZigbeeNetwork"
+                ]
+            }
+        },
+        "Zigbee.RemoveNetwork": {
+            "description": "Remove the ZigBee network with the given network uuid.",
+            "params": {
+                "networkUuid": "Uuid"
+            },
+            "returns": {
+                "zigbeeError": "$ref:ZigbeeError"
+            }
+        },
+        "Zigbee.SetPermitJoin": {
+            "description": "Allow or deny nodes to join the network with the given 'networkUuid' for a specific 'duration' in seconds. The duration value has to be between 0 and 255 seconds. The 'permitJoinDuration' property of ZigBee network object indicates how long permit has been enabled and the 'permitJoiningRemaining' indicates the rest of the time. Those values can be used to show a countdown or progressbar. This method can be recalled for resetting the timeout. If the duration is set to 0 seconds, joining will be disabled immediatly for the entire network. The 'shortAddress' is optional and defaults to the broadcast address 0xfffc for all routers in the network. If the short address matches the address of a router node in the network, only that specific router will be able to allow new nodes to join the network. A new node will join to the router with the best link quality index (LQI).",
+            "params": {
+                "duration": "Uint",
+                "networkUuid": "Uuid",
+                "o:shortAddress": "Uint"
+            },
+            "returns": {
+                "zigbeeError": "$ref:ZigbeeError"
+            }
         }
     },
     "notifications": {
@@ -2349,6 +2434,36 @@
                 "o:token": "String",
                 "success": "Bool",
                 "transactionId": "Int"
+            }
+        },
+        "Zigbee.AdapterAdded": {
+            "description": "Emitted whenever a new ZigBee adapter or serial port has been detected in the system.",
+            "params": {
+                "adapter": "$ref:ZigbeeAdapter"
+            }
+        },
+        "Zigbee.AdapterRemoved": {
+            "description": "Emitted whenever a ZigBee adapter or serial port has been removed from the system (i.e. unplugged).",
+            "params": {
+                "adapter": "$ref:ZigbeeAdapter"
+            }
+        },
+        "Zigbee.NetworkAdded": {
+            "description": "Emitted whenever a new ZigBee network has been added.",
+            "params": {
+                "zigbeeNetwork": "$ref:ZigbeeNetwork"
+            }
+        },
+        "Zigbee.NetworkChanged": {
+            "description": "Emitted whenever a new ZigBee network has changed.",
+            "params": {
+                "zigbeeNetwork": "$ref:ZigbeeNetwork"
+            }
+        },
+        "Zigbee.NetworkRemoved": {
+            "description": "Emitted whenever a new ZigBee network has been removed.",
+            "params": {
+                "networkUuid": "Uuid"
             }
         }
     },
@@ -2819,6 +2934,34 @@
             "r:mode": "$ref:WirelessMode",
             "r:o:currentAccessPoint": "$ref:WirelessAccessPoint",
             "r:state": "$ref:NetworkDeviceState"
+        },
+        "ZigbeeAdapter": {
+            "r:backend": "String",
+            "r:baudRate": "Int",
+            "r:description": "String",
+            "r:hardwareRecognized": "Bool",
+            "r:name": "String",
+            "r:serialNumber": "String",
+            "r:serialPort": "String"
+        },
+        "ZigbeeAdapters": [
+            "$ref:ZigbeeAdapter"
+        ],
+        "ZigbeeNetwork": {
+            "backend": "String",
+            "baudRate": "Uint",
+            "channel": "Uint",
+            "channelMask": "Uint",
+            "enabled": "Bool",
+            "firmwareVersion": "String",
+            "macAddress": "String",
+            "networkState": "$ref:ZigbeeNetworkState",
+            "networkUuid": "Uuid",
+            "panId": "Uint",
+            "permitJoiningDuration": "Uint",
+            "permitJoiningEnabled": "Bool",
+            "permitJoiningRemaining": "Uint",
+            "serialPort": "String"
         }
     }
 }

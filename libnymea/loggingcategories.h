@@ -49,7 +49,6 @@ extern QStringList s_nymeaLoggingCategories;
     } \
 
 // FIXME: Those should eventually disappear from here
-Q_DECLARE_LOGGING_CATEGORY(dcPluginMetadata)
 Q_DECLARE_LOGGING_CATEGORY(dcThing)
 Q_DECLARE_LOGGING_CATEGORY(dcThingManager)
 Q_DECLARE_LOGGING_CATEGORY(dcSystem)

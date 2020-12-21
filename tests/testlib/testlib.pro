@@ -3,7 +3,7 @@ TARGET = nymea-testlib
 
 include(../../nymea.pri)
 
-QT += testlib network sql
+QT += testlib dbus network sql websockets
 
 INCLUDEPATH += $$top_srcdir/libnymea \
                $$top_srcdir/libnymea-core

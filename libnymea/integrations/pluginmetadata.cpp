@@ -856,8 +856,6 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
     }
     if (!hasError) {
         m_isValid = true;
-    } else {
-        qCWarning(dcPluginMetadata()) << "Device metadata has errors.";
     }
 }
 
@@ -880,7 +878,6 @@ QPair<bool, Types::Unit> PluginMetadata::loadAndVerifyUnit(const QString &unitSt
 
     // inform the plugin developer about the error in the plugin json file
     if (enumValue == -1) {
-        qCWarning(dcPluginMetadata()) << QString("\"%1\" plugin:").arg(pluginName()).toLatin1().data() << QString("Invalid unit type \"%1\" in json file.").arg(unitString).toLatin1().data();
         return QPair<bool, Types::Unit>(false, Types::UnitNone);
     }
 
@@ -970,7 +967,7 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
         if (pt.contains("inputType")) {
             QPair<bool, Types::InputType> inputTypeVerification = loadAndVerifyInputType(pt.value("inputType").toString());
             if (!inputTypeVerification.first) {
-                qCWarning(dcPluginMetadata()) << pluginName() << QString("Invalid inputType for paramType") << pt;
+                m_validationErrors.append("Param type \"" + paramName + "\" has invalid inputType \"" + pt.value("type").toString() + "\"");
                 hasErrors = true;
             } else {
                 paramType.setInputType(inputTypeVerification.second);
@@ -981,7 +978,7 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
         if (pt.contains("unit")) {
             QPair<bool, Types::Unit> unitVerification = loadAndVerifyUnit(pt.value("unit").toString());
             if (!unitVerification.first) {
-                qCWarning(dcPluginMetadata()) << pluginName() << QString("Invalid unit type for paramType") << pt;
+                m_validationErrors.append("Param type \"" + paramName + "\" has invalid unit \"" + pt.value("type").toString() + "\"");
                 hasErrors = true;
             } else {
                 paramType.setUnit(unitVerification.second);
@@ -1032,7 +1029,6 @@ QPair<bool, Types::InputType> PluginMetadata::loadAndVerifyInputType(const QStri
 
     // inform the plugin developer about the error in the plugin json file
     if (enumValue == -1) {
-        qCWarning(dcPluginMetadata()) << QString("\"%1\" plugin:").arg(pluginName()).toLatin1().data() << QString("Invalid inputType \"%1\" in json file.").arg(inputType).toLatin1().data();
         return QPair<bool, Types::InputType>(false, Types::InputTypeNone);
     }
 
@@ -1046,7 +1042,9 @@ bool PluginMetadata::verifyDuplicateUuid(const QUuid &uuid)
         if (m_strictRun) {
             return false;
         } else {
-            qCWarning(dcPluginMetadata()) << "THIS PLUGIN USES DUPLICATE UUID" << uuid.toString() << "! THIS IS NOT SUPPORTED AND MAY CAUSE RUNTIME ISSUES.";
+            // Using regular qWarning here as I'm struggling with making the nymea debug categories work in a pic only build
+            // This is only used in special cirumstances and it's probably ok that one cannot filter away this warning
+            qWarning() << "THIS PLUGIN USES DUPLICATE UUID" << uuid.toString() << "! THIS IS NOT SUPPORTED AND MAY CAUSE RUNTIME ISSUES.";
         }
     }
     if (m_currentScopUuids.contains(uuid)) {

@@ -17,13 +17,14 @@ QMAKE_SUBSTITUTES += version.h.in
 
 TEMPLATE=subdirs
 
-SUBDIRS += libnymea tools
-tools.depends = libnymea
-
-minimal {
+piconly {
+    message("Plugininfocompiler build. Only nymea-plugininfocompiler will be built.")
+    SUBDIRS += tools
+} else:minimal {
     message("Minimal build. Only libraries required to build nymea-plugins will be built.")
+    SUBDIRS += libnymea tools
 } else {
-    SUBDIRS += server libnymea-core plugins
+    SUBDIRS += libnymea server libnymea-core plugins tools
     libnymea-core.depends = libnymea
     plugins.depends = libnymea tools
     server.depends = libnymea libnymea-core plugins

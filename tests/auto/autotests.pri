@@ -1,4 +1,4 @@
-QT += testlib network sql
+QT += dbus testlib network sql websockets
 CONFIG += testcase
 
 INCLUDEPATH += $$top_srcdir/libnymea \

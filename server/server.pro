@@ -8,7 +8,7 @@ INCLUDEPATH += ../libnymea ../libnymea-core $$top_builddir
 target.path = /usr/bin
 INSTALLS += target
 
-QT *= sql xml websockets bluetooth dbus network
+QT += sql xml websockets bluetooth dbus network
 
 LIBS += -L$$top_builddir/libnymea/ -lnymea \
         -L$$top_builddir/libnymea-core -lnymea-core \

@@ -1379,7 +1379,7 @@ void TestJSONRPC::testGarbageData()
     QSignalSpy spy(m_mockTcpServer, &MockTcpServer::connectionTerminated);
 
     QByteArray data;
-    for (int i = 0; i < 1024; i++) {
+    for (int i = 0; i < 1024 * 1024; i++) {
         data.append("a");
     }
     for (int i = 0; i < 11 && spy.count() == 0; i ++) {

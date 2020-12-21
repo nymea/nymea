@@ -1135,8 +1135,11 @@
             }
         },
         "Integrations.GetThingClasses": {
-            "description": "Returns a list of supported thing classes, optionally filtered by vendorId.",
+            "description": "Returns a list of supported thing classes, optionally filtered by vendorId or by a list of thing class ids.",
             "params": {
+                "o:thingClassIds": [
+                    "Uuid"
+                ],
                 "o:vendorId": "Uuid"
             },
             "returns": {

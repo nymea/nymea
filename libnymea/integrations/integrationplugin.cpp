@@ -256,7 +256,7 @@ void IntegrationPlugin::confirmPairing(ThingPairingInfo *info, const QString &us
     Q_UNUSED(username)
     Q_UNUSED(secret)
 
-    qCWarning(dcThingManager) << "Plugin does not implement pairing.";
+    qCWarning(dcIntegrations()) << "Plugin does not implement pairing.";
     info->finish(Thing::ThingErrorUnsupportedFeature);
 }
 
@@ -305,7 +305,7 @@ void IntegrationPlugin::executeAction(ThingActionInfo *info)
  */
 void IntegrationPlugin::browseThing(BrowseResult *result)
 {
-    qCWarning(dcThing()) << "Thing claims" << result->thing()->thingClass().name() << "to be browsable but plugin does not reimplement browseThing!";
+    qCWarning(dcIntegrations()) << "Thing claims" << result->thing()->thingClass().name() << "to be browsable but plugin does not reimplement browseThing!";
     result->finish(Thing::ThingErrorUnsupportedFeature);
 }
 
@@ -327,7 +327,7 @@ void IntegrationPlugin::browseThing(BrowseResult *result)
  */
 void IntegrationPlugin::browserItem(BrowserItemResult *result)
 {
-    qCWarning(dcThing()) << "Thing claims" << result->thing()->thingClass().name() << "to be browsable but plugin does not reimplement browserItem!";
+    qCWarning(dcIntegrations()) << "Thing claims" << result->thing()->thingClass().name() << "to be browsable but plugin does not reimplement browserItem!";
     result->finish(Thing::ThingErrorUnsupportedFeature);
 }
 
@@ -345,7 +345,7 @@ void IntegrationPlugin::browserItem(BrowserItemResult *result)
 */
 void IntegrationPlugin::executeBrowserItem(BrowserActionInfo *info)
 {
-    qCWarning(dcThing()) << "Thing claims" << info->thing()->thingClass().name() << "to be browsable but plugin does not reimplement browserItem!";
+    qCWarning(dcIntegrations()) << "Thing claims" << info->thing()->thingClass().name() << "to be browsable but plugin does not reimplement browserItem!";
     info->finish(Thing::ThingErrorUnsupportedFeature);
 }
 
@@ -364,8 +364,22 @@ void IntegrationPlugin::executeBrowserItem(BrowserActionInfo *info)
 */
 void IntegrationPlugin::executeBrowserItemAction(BrowserItemActionInfo *info)
 {
-    qCWarning(dcThing()) << "Thing claims" << info->thing()->thingClass().name() << "to be browsable but plugin does not reimplement browserItemAction!";
+    qCWarning(dcIntegrations()) << "Thing claims" << info->thing()->thingClass().name() << "to be browsable but plugin does not reimplement browserItemAction!";
     info->finish(Thing::ThingErrorUnsupportedFeature);
+}
+
+/*!
+ * \brief IntegrationPlugin::serviceInformation
+ * This method can provide service data for a plugin. A service entity may query this data, either a single time
+ * or repeatedly.
+ * \return Return a list of \l{ServiceData} objects.
+ *
+ * Note: This method is experimental and will likely change in the future. Please provide feedback on missing and required features for this mechanism.
+ */
+QList<ServiceData> IntegrationPlugin::serviceInformation() const
+{
+    qCWarning(dcIntegrations()) << "Plugin" << pluginName() << "does not support providing service information";
+    return QList<ServiceData>();
 }
 
 /*! Returns the configuration description of this IntegrationPlugin as a list of \l{ParamType}{ParamTypes}. */

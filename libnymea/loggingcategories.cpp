@@ -37,6 +37,7 @@
 QStringList s_nymeaLoggingCategories;
 
 // FIXME: Those should eventually disappear from here
+NYMEA_LOGGING_CATEGORY(dcIntegrations, "Integrations");
 NYMEA_LOGGING_CATEGORY(dcThing, "Thing")
 NYMEA_LOGGING_CATEGORY(dcThingManager, "ThingManager")
 NYMEA_LOGGING_CATEGORY(dcSystem, "System")

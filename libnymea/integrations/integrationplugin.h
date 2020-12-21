@@ -37,6 +37,7 @@
 #include "thing.h"
 #include "thingdescriptor.h"
 #include "pluginmetadata.h"
+#include "servicedata.h"
 
 #include "types/thingclass.h"
 #include "types/event.h"
@@ -65,6 +66,8 @@
 #include <QPair>
 #include <QSettings>
 #include <QMetaType>
+
+Q_DECLARE_LOGGING_CATEGORY(dcIntegrations);
 
 class ThingManager;
 
@@ -107,6 +110,8 @@ public:
     virtual void browserItem(BrowserItemResult *result);
     virtual void executeBrowserItem(BrowserActionInfo *info);
     virtual void executeBrowserItemAction(BrowserItemActionInfo *info);
+
+    virtual QList<ServiceData> serviceInformation() const;
 
     // Configuration
     Q_INVOKABLE ParamTypes configurationDescription() const;

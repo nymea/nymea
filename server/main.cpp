@@ -126,6 +126,9 @@ int main(int argc, char *argv[])
     QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory[Warnings]");
     parser.addOption(debugOption);
 
+    QCommandLineOption interfacesOption({"i", "interface"}, QCoreApplication::translate("nymea", "Additional interfaces to listen on. In nymea URI format (e.g. nymeas://127.0.0.2:7777)."));
+    parser.addOption(interfacesOption);
+
     parser.process(application);
 
     // Open the logfile, if any specified
@@ -216,7 +219,7 @@ int main(int argc, char *argv[])
         }
 
         // create core instance
-        NymeaCore::instance()->init();
+        NymeaCore::instance()->init(parser.values(interfacesOption));
         int ret = application.exec();
         closeLogFile();
         return ret;

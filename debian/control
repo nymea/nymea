@@ -87,23 +87,6 @@ Description: An open source IoT server - daemon
  .
  This package will install the daemon.
 
-Package: nymea-dbg
-Priority: extra
-Architecture: any
-Section: debug
-Multi-Arch: same
-Depends: nymea (= ${binary:Version}),
-         ${misc:Depends}
-Replaces: guh-dbg
-Description: An open source IoT server - debug symbols
- The nymea daemon is a plugin based IoT (Internet of Things) server. The
- server works like a translator for devices, things and services and
- allows them to interact.
- With the powerful rule engine you are able to connect any device available
- in the system and create individual scenes and behaviors for your environment.
- .
- This package provides all debug symbols for nymea.
-
 
 Package: nymea-doc
 Section: doc

@@ -130,6 +130,8 @@ private slots:
 
     void testInterfaceBasedStateRule();
 
+    void testThingBasedAndThingValueStateDescriptor();
+
     void testLoopingRules();
 
     void testScene();
@@ -409,7 +411,7 @@ void TestRules::initTestCase()
     QLoggingCategory::setFilterRules("*.debug=false\n"
                                      "Tests.debug=true\n"
                                      "RuleEngine.debug=true\n"
-//                                     "RuleEngineDebug.debug=true\n"
+                                     "RuleEngineDebug.debug=true\n"
                                      "JsonRpc.debug=true\n"
                                      "Mock.*=true");
 }
@@ -3012,6 +3014,116 @@ void TestRules::testInterfaceBasedStateRule()
     reply->deleteLater();
 
     verifyRuleExecuted(mockPowerActionTypeId);
+}
+
+void TestRules::testThingBasedAndThingValueStateDescriptor()
+{
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+    // set int state to 10 initially
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(10)));
+    QNetworkReply *reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // set signalStrength state to 20 initially
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockSignalStrengthStateTypeId.toString()).arg(20)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // set power to false intially
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockPowerStateTypeId.toString()).arg(false)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    // Create a new rule
+    QVariantMap addRuleParams;
+    addRuleParams.insert("name", "TestThingBasedAndThingValueStateRule");
+    addRuleParams.insert("enabled", true);
+
+    // with state descriptor "intState > signalStrength"
+    QVariantMap stateDescriptor;
+    stateDescriptor.insert("thingId", m_mockThingId);
+    stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
+    stateDescriptor.insert("operator", "ValueOperatorGreater");
+    stateDescriptor.insert("valueThingId", m_mockThingId);
+    stateDescriptor.insert("valueStateTypeId", mockSignalStrengthStateTypeId);
+
+    QVariantMap stateEvaluator;
+    stateEvaluator.insert("stateDescriptor", stateDescriptor);
+
+    addRuleParams.insert("stateEvaluator", stateEvaluator);
+
+    // action to turn on power if state matches
+    QVariantMap powerAction;
+    powerAction.insert("thingId", m_mockThingId);
+    powerAction.insert("actionTypeId", mockPowerActionTypeId);
+    QVariantMap powerActionParam;
+    powerActionParam.insert("paramTypeId", mockPowerActionPowerParamTypeId);
+    powerActionParam.insert("value", true);
+    powerAction.insert("ruleActionParams", QVariantList() << powerActionParam);
+
+    addRuleParams.insert("actions", QVariantList() << powerAction);
+
+    // and exit action to turn power off again when state doesn't match any more
+    powerActionParam["value"] = false;
+    powerAction["ruleActionParams"] = (QVariantList() << powerActionParam);
+
+    addRuleParams.insert("exitActions", QVariantList() << powerAction);
+
+    // Add the rule
+    QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleError").toString(), QString("RuleErrorNoError"));
+    RuleId ruleId = response.toMap().value("params").toMap().value("ruleId").toUuid();
+    QVERIFY(!ruleId.isNull());
+
+    // Verify the rule is not active
+    QVariantMap getRuleParams;
+    getRuleParams.insert("ruleId", ruleId);
+    response = injectAndWait("Rules.GetRuleDetails", getRuleParams);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleError").toString(), QString("RuleErrorNoError"));
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool(), false);
+
+    // Now set Int state to 30 => should cause rule to become active
+    qCDebug(dcTests()) << "Setting state to 30";
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(30)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    verifyRuleExecuted(mockPowerActionTypeId);
+
+    response = injectAndWait("Rules.GetRuleDetails", getRuleParams);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleError").toString(), QString("RuleErrorNoError"));
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool(), true);
+
+    // Set signalStrength to 40 => should cause rule to become inactive
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockSignalStrengthStateTypeId.toString()).arg(40)));
+    reply = nam.get(request);
+    spy.wait();
+    QCOMPARE(spy.count(), 1);
+    reply->deleteLater();
+
+    verifyRuleExecuted(mockPowerActionTypeId);
+
+    response = injectAndWait("Rules.GetRuleDetails", getRuleParams);
+    QCOMPARE(response.toMap().value("status").toString(), QString("success"));
+    QCOMPARE(response.toMap().value("params").toMap().value("ruleError").toString(), QString("RuleErrorNoError"));
+    QCOMPARE(response.toMap().value("params").toMap().value("rule").toMap().value("active").toBool(), false);
 }
 
 void TestRules::testLoopingRules()

@@ -85,6 +85,9 @@ public:
     bool isEmpty() const;
 
 private:
+    bool evaluateDescriptor(const StateDescriptor &descriptor) const;
+
+private:
     StateDescriptor m_stateDescriptor;
 
     QList<StateEvaluator> m_childEvaluators;

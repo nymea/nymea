@@ -898,7 +898,10 @@ bool RuleEngine::containsState(const StateEvaluator &stateEvaluator, const Event
 {
     if (stateEvaluator.stateDescriptor().isValid()) {
         if (stateEvaluator.stateDescriptor().type() == StateDescriptor::TypeThing) {
-            if (stateEvaluator.stateDescriptor().stateTypeId().toString() == stateChangeEvent.eventTypeId().toString()) {
+            if (stateEvaluator.stateDescriptor().thingId() == stateChangeEvent.thingId() && stateEvaluator.stateDescriptor().stateTypeId() == stateChangeEvent.eventTypeId()) {
+                return true;
+            }
+            if (stateEvaluator.stateDescriptor().valueThingId() == stateChangeEvent.thingId() && stateEvaluator.stateDescriptor().valueStateTypeId() == stateChangeEvent.eventTypeId()) {
                 return true;
             }
         } else {

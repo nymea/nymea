@@ -34,13 +34,12 @@
 #include <QLoggingCategory>
 #include <QDebug>
 
-extern QStringList s_nymeaLoggingCategories;
-
+QStringList& nymeaLoggingCategories();
 
 #define NYMEA_LOGGING_CATEGORY(name, string) \
     class NymeaLoggingCategory##name: public QLoggingCategory { \
     public: \
-    NymeaLoggingCategory##name(): QLoggingCategory(string) { s_nymeaLoggingCategories.append(string); } \
+    NymeaLoggingCategory##name(): QLoggingCategory(string) { nymeaLoggingCategories().append(string); } \
     }; \
     static NymeaLoggingCategory##name s_##name; \
     const QLoggingCategory &name() \

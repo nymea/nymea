@@ -606,7 +606,7 @@ QStringList NymeaCore::getAvailableLanguages()
 
 QStringList NymeaCore::loggingFilters()
 {
-    return s_nymeaLoggingCategories;
+    return nymeaLoggingCategories();
 }
 
 QStringList NymeaCore::loggingFiltersPlugins()

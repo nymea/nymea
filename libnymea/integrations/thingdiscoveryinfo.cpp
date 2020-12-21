@@ -33,6 +33,8 @@
 
 #include <QTimer>
 
+Q_DECLARE_LOGGING_CATEGORY(dcIntegrations)
+
 ThingDiscoveryInfo::ThingDiscoveryInfo(const ThingClassId &thingClassId, const ParamList &params, ThingManager *thingManager, quint32 timeout):
     QObject(thingManager),
     m_thingClassId(thingClassId),
@@ -100,6 +102,10 @@ QString ThingDiscoveryInfo::translatedDisplayMessage(const QLocale &locale)
 
 void ThingDiscoveryInfo::finish(Thing::ThingError status, const QString &displayMessage)
 {
+    if (m_finished) {
+        qCWarning(dcIntegrations()) << "ThingDiscoveryInfo::finish() called on an already finished object.";
+        return;
+    }
     m_finished = true;
     m_status = status;
     m_displayMessage = displayMessage;

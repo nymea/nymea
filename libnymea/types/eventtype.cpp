@@ -110,6 +110,16 @@ void EventType::setParamTypes(const ParamTypes &paramTypes)
     m_paramTypes = paramTypes;
 }
 
+bool EventType::suggestLogging() const
+{
+    return m_logged;
+}
+
+void EventType::setSuggestLogging(bool logged)
+{
+    m_logged = logged;
+}
+
 /*! Returns true if this EventType has a valid id and name */
 bool EventType::isValid() const
 {
@@ -130,9 +140,29 @@ QStringList EventType::mandatoryTypeProperties()
 
 EventTypes::EventTypes(const QList<EventType> &other)
 {
-    foreach (const EventType &at, other) {
-        append(at);
+    foreach (const EventType &et, other) {
+        append(et);
     }
+}
+
+bool EventTypes::contains(const EventTypeId &id) const
+{
+    foreach (const EventType &eventType, *this) {
+        if (eventType.id() == id) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool EventTypes::contains(const QString &name) const
+{
+    foreach (const EventType &eventType, *this) {
+        if (eventType.name() == name) {
+            return true;
+        }
+    }
+    return false;
 }
 
 QVariant EventTypes::get(int index) const
@@ -163,4 +193,16 @@ EventType EventTypes::findById(const EventTypeId &id)
         }
     }
     return EventType(EventTypeId());
+}
+
+EventType &EventTypes::operator[](const QString &name)
+{
+    int index = -1;
+    for (int i = 0; i < count(); i++) {
+        if (at(i).name() == name) {
+            index = i;
+            break;
+        }
+    }
+    return QList::operator[](index);
 }

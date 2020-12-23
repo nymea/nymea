@@ -46,6 +46,7 @@ class LIBNYMEA_EXPORT Event
     Q_PROPERTY(QUuid thingId READ thingId)
     Q_PROPERTY(QUuid deviceId READ thingId REVISION 1)
     Q_PROPERTY(ParamList params READ params)
+    Q_PROPERTY(bool logged READ logged)
 public:
     Event();
     Event(const EventTypeId &eventTypeId, const ThingId &thingId, const ParamList &params = ParamList(), bool isStateChangeEvent = false);
@@ -65,12 +66,16 @@ public:
 
     bool isStateChangeEvent() const;
 
+    bool logged() const;
+    void setLogged(bool logged);
+
 private:
     EventTypeId m_eventTypeId;
     ThingId m_thingId;
     ParamList m_params;
 
     bool m_isStateChangeEvent;
+    bool m_logged = false;
 };
 Q_DECLARE_METATYPE(Event)
 QDebug operator<<(QDebug dbg, const Event &event);

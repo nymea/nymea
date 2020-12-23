@@ -62,6 +62,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     registerEnum<Types::Unit>();
     registerEnum<Types::InputType>();
     registerEnum<Types::IOType>();
+    registerEnum<Types::StateValueFilter>();
     registerEnum<RuleEngine::RemovePolicy>();
     registerEnum<BrowserItem::BrowserIcon>();
     registerEnum<MediaBrowserItem::MediaBrowserIcon>();
@@ -900,7 +901,7 @@ JsonReply *DeviceHandler::ExecuteAction(const QVariantMap &params, const JsonCon
 
     JsonReply *jsonReply = createAsyncReply("ExecuteAction");
 
-    ThingActionInfo *info = NymeaCore::instance()->executeAction(action);
+    ThingActionInfo *info = NymeaCore::instance()->thingManager()->executeAction(action);
     connect(info, &ThingActionInfo::finished, jsonReply, [info, jsonReply, locale](){
         QVariantMap data;
         data.insert("deviceError", enumValueName(info->status()).replace("Thing", "Device"));

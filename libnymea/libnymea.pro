@@ -126,6 +126,8 @@ SOURCES += \
     integrations/thingsetupinfo.cpp \
     integrations/thingutils.cpp \
     integrations/servicedata.cpp \
+    integrations/statevaluefilters/statevaluefilter.cpp \
+    integrations/statevaluefilters/statevaluefilteradaptive.cpp \
     jsonrpc/jsoncontext.cpp \
     jsonrpc/jsonhandler.cpp \
     jsonrpc/jsonreply.cpp \

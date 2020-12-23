@@ -64,6 +64,9 @@ public:
     ParamTypes paramTypes() const;
     void setParamTypes(const ParamTypes &paramTypes);
 
+    bool suggestLogging() const;
+    void setSuggestLogging(bool logged);
+
     bool isValid() const;
 
     static QStringList typeProperties();
@@ -75,6 +78,7 @@ private:
     QString m_displayName;
     int m_index;
     QList<ParamType> m_paramTypes;
+    bool m_logged = false;
 };
 Q_DECLARE_METATYPE(EventType)
 
@@ -85,10 +89,13 @@ class EventTypes: public QList<EventType>
 public:
     EventTypes() = default;
     EventTypes(const QList<EventType> &other);
+    bool contains(const EventTypeId &id) const;
+    bool contains(const QString &name) const;
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
     EventType findByName(const QString &name);
     EventType findById(const EventTypeId &id);
+    EventType &operator[](const QString &name);
 };
 Q_DECLARE_METATYPE(EventTypes)
 

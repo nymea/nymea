@@ -84,7 +84,6 @@ public:
     QPair<Thing::ThingError, QList<RuleId> >removeConfiguredThing(const ThingId &thingId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
     Thing::ThingError removeConfiguredThing(const ThingId &thingId, const RuleEngine::RemovePolicy &removePolicy);
 
-    ThingActionInfo *executeAction(const Action &action);
     BrowserActionInfo* executeBrowserItem(const BrowserAction &browserAction);
     BrowserItemActionInfo* executeBrowserItemAction(const BrowserItemAction &browserItemAction);
 

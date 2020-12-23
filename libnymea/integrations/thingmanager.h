@@ -116,6 +116,7 @@ signals:
     void thingSettingChanged(const ThingId &thingId, const ParamTypeId &settingParamTypeId, const QVariant &value);
     void ioConnectionAdded(const IOConnection &ioConnection);
     void ioConnectionRemoved(const IOConnectionId &ioConnectionId);
+    void actionExecuted(const Action &action, Thing::ThingError status);
 };
 
 #endif // THINGMANAGER_H

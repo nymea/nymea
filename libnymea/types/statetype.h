@@ -93,8 +93,8 @@ public:
     bool cached() const;
     void setCached(bool cached);
 
-    bool logged() const;
-    void setLogged(bool logged);
+    bool suggestLogging() const;
+    void setSuggestLogging(bool logged);
 
     Types::StateValueFilter filter() const;
     void setFilter(Types::StateValueFilter filter);
@@ -131,10 +131,12 @@ public:
     StateTypes() = default;
     StateTypes(const QList<StateType> &other);
     bool contains(const StateTypeId &stateTypeId);
+    bool contains(const QString &name);
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
     StateType findByName(const QString &name);
     StateType findById(const StateTypeId &id);
+    StateType &operator[](const QString &name);
 };
 Q_DECLARE_METATYPE(StateTypes)
 

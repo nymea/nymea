@@ -15,14 +15,14 @@ void InterfaceEventType::setOptional(bool optional)
     m_optional = optional;
 }
 
-bool InterfaceEventType::logged() const
+bool InterfaceEventType::loggingOverride() const
 {
-    return m_logged;
+    return m_loggingOverride;
 }
 
-void InterfaceEventType::setLogged(bool logged)
+void InterfaceEventType::setLoggingOverride(bool loggingOverride)
 {
-    m_logged = logged;
+    m_loggingOverride = loggingOverride;
 }
 
 InterfaceEventTypes::InterfaceEventTypes(const QList<InterfaceEventType> &other):

@@ -43,7 +43,6 @@ class LIBNYMEA_EXPORT State
     Q_PROPERTY(QUuid stateTypeId READ stateTypeId)
     Q_PROPERTY(QVariant value READ value)
     Q_PROPERTY(Types::StateValueFilter filter READ filter)
-    Q_PROPERTY(bool logged READ logged)
 
 public:
     State();
@@ -58,15 +57,11 @@ public:
     Types::StateValueFilter filter() const;
     void setFilter(Types::StateValueFilter filter);
 
-    bool logged() const;
-    void setLogged(bool logged);
-
 private:
     StateTypeId m_stateTypeId;
     ThingId m_thingId;
     QVariant m_value;
-    Types::StateValueFilter m_filter;
-    bool m_logged = false;
+    Types::StateValueFilter m_filter = Types::StateValueFilterNone;
 };
 Q_DECLARE_METATYPE(State)
 

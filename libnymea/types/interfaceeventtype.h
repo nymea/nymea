@@ -11,12 +11,12 @@ public:
     bool optional() const;
     void setOptional(bool optional);
 
-    bool logged() const;
-    void setLogged(bool logged);
+    bool loggingOverride() const;
+    void setLoggingOverride(bool loggingOverride);
 
 private:
     bool m_optional = false;
-    bool m_logged = false;
+    bool m_loggingOverride = false;
 };
 
 class InterfaceEventTypes: public QList<InterfaceEventType>

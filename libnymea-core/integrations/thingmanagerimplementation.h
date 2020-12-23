@@ -140,7 +140,7 @@ private slots:
     void onAutoThingDisappeared(const ThingId &thingId);
     void onLoaded();
     void cleanupThingStateCache();
-    void onEventTriggered(const Event &event);
+    void onEventTriggered(Event event);
 
     // Only connect this to Things. It will query the sender()
     void slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value);

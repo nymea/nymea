@@ -61,6 +61,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     registerEnum<Types::Unit>();
     registerEnum<Types::InputType>();
     registerEnum<Types::IOType>();
+    registerEnum<Types::StateValueFilter>();
     registerEnum<RuleEngine::RemovePolicy>();
     registerEnum<BrowserItem::BrowserIcon>();
     registerEnum<MediaBrowserItem::MediaBrowserIcon>();
@@ -958,7 +959,7 @@ JsonReply *IntegrationsHandler::ExecuteAction(const QVariantMap &params, const J
 
     JsonReply *jsonReply = createAsyncReply("ExecuteAction");
 
-    ThingActionInfo *info = NymeaCore::instance()->executeAction(action);
+    ThingActionInfo *info = NymeaCore::instance()->thingManager()->executeAction(action);
     connect(info, &ThingActionInfo::finished, jsonReply, [info, jsonReply, locale](){
         QVariantMap data;
         data.insert("thingError", enumValueName(info->status()));

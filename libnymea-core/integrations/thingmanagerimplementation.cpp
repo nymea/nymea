@@ -650,6 +650,14 @@ ThingPairingInfo *ThingManagerImplementation::confirmPairing(const PairingTransa
         ParamList settings = buildParams(thingClass.settingsTypes(), ParamList());
         thing->setSettings(settings);
 
+        QList<EventTypeId> loggedEventTypeIds;
+        foreach (const EventType &eventType, thingClass.eventTypes()) {
+            if (eventType.suggestLogging()) {
+                loggedEventTypeIds.append(eventType.id());
+            }
+        }
+        thing->setLoggedEventTypeIds(loggedEventTypeIds);
+
         ThingSetupInfo *info = setupThing(thing);
         connect(info, &ThingSetupInfo::finished, thing, [this, info, externalInfo, addNewThing](){
 
@@ -745,6 +753,14 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
     // set settings (init with defaults)
     ParamList settings = buildParams(thingClass.settingsTypes(), ParamList());
     thing->setSettings(settings);
+
+    QList<EventTypeId> loggedEventTypeIds;
+    foreach (const EventType &eventType, thingClass.eventTypes()) {
+        if (eventType.suggestLogging()) {
+            loggedEventTypeIds.append(eventType.id());
+        }
+    }
+    thing->setLoggedEventTypeIds(loggedEventTypeIds);
 
     ThingSetupInfo *info = setupThing(thing);
     connect(info, &ThingSetupInfo::finished, this, [this, info](){
@@ -1258,6 +1274,10 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
         return info;
     }
 
+    connect(info, &ThingActionInfo::finished, this, [=](){
+        emit actionExecuted(action, info->status());
+    });
+
     plugin->executeAction(info);
 
     return info;
@@ -1541,6 +1561,14 @@ void ThingManagerImplementation::loadConfiguredThings()
 
         thing->setSettings(thingSettings);
 
+        QList<EventTypeId> loggedEventTypeIds;
+        foreach (const EventType &eventType, thingClass.eventTypes()) {
+            if (eventType.suggestLogging()) {
+                loggedEventTypeIds.append(eventType.id());
+            }
+        }
+        thing->setLoggedEventTypeIds(loggedEventTypeIds);
+
         settings.endGroup(); // ThingId
 
         // We always add the thing to the list in this case. If it's in the stored things
@@ -1659,6 +1687,14 @@ void ThingManagerImplementation::onAutoThingsAppeared(const ThingDescriptors &th
         thing->setSettings(settings);
         thing->setParentId(thingDescriptor.parentId());
 
+        QList<EventTypeId> loggedEventTypeIds;
+        foreach (const EventType &eventType, thingClass.eventTypes()) {
+            if (eventType.suggestLogging()) {
+                loggedEventTypeIds.append(eventType.id());
+            }
+        }
+        thing->setLoggedEventTypeIds(loggedEventTypeIds);
+
         qCDebug(dcThingManager()) << "Setting up auto thing:" << thing->name() << thing->id().toString();
 
         ThingSetupInfo *info = setupThing(thing);
@@ -1725,7 +1761,7 @@ void ThingManagerImplementation::cleanupThingStateCache()
     }
 }
 
-void ThingManagerImplementation::onEventTriggered(const Event &event)
+void ThingManagerImplementation::onEventTriggered(Event event)
 {
     // Doing some sanity checks here...
     Thing *thing = m_configuredThings.value(event.thingId());
@@ -1738,7 +1774,12 @@ void ThingManagerImplementation::onEventTriggered(const Event &event)
         qCWarning(dcThingManager()) << "The given thing does not have an event type of id " + event.eventTypeId().toString() + ". Not forwarding event.";
         return;
     }
-    // All good, forward the event
+    // configure logging
+    if (thing->loggedEventTypeIds().contains(event.eventTypeId())) {
+        event.setLogged(true);
+    }
+
+    // Forward the event
     emit eventTriggered(event);
 }
 

@@ -1,5 +1,5 @@
 {
-    "description": "The heating interface defines basic heating appliances.",
+    "description": "The cooling interface defines basic cooling appliances.",
     "extends": "power",
     "states": [
         {

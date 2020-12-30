@@ -109,6 +109,7 @@
                             "displayName": "battery level",
                             "displayNameEvent": "battery level",
                             "type": "int",
+                            "unit": "Percentage",
                             "minValue": 0,
                             "maxValue": 100,
                             "defaultValue": 0

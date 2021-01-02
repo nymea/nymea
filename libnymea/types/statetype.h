@@ -99,9 +99,6 @@ public:
     Types::StateValueFilter filter() const;
     void setFilter(Types::StateValueFilter filter);
 
-    static QStringList typeProperties();
-    static QStringList mandatoryTypeProperties();
-
     bool isValid() const;
 
 private:

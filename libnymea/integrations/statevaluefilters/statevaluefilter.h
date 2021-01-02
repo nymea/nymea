@@ -2,6 +2,9 @@
 #define STATEVALUEFILTER_H
 
 #include <QVariant>
+#include <QLoggingCategory>
+
+Q_DECLARE_LOGGING_CATEGORY(dcStateValueFilter)
 
 class StateValueFilter
 {

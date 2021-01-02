@@ -1796,7 +1796,7 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
 
     Param valueParam(ParamTypeId(stateTypeId.toString()), value);
     Event event(EventTypeId(stateTypeId.toString()), thing->id(), ParamList() << valueParam, true);
-    emit eventTriggered(event);
+    onEventTriggered(event);
 
     syncIOConnection(thing, stateTypeId);
 }
@@ -2063,6 +2063,8 @@ void ThingManagerImplementation::loadThingStates(Thing *thing)
         } else {
             thing->setStateValue(stateType.id(), stateType.defaultValue());
         }
+        qWarning() << "-----" << stateType.name() <<  stateType.filter();
+        thing->setStateValueFilter(stateType.id(), stateType.filter());
     }
     settings.endGroup();
 }
@@ -2220,7 +2222,7 @@ IntegrationPlugin *ThingManagerImplementation::createCppIntegrationPlugin(const 
         return nullptr;
     }
 
-    pluginIface->setMetaData(PluginMetadata(pluginInfo));
+    pluginIface->setMetaData(metaData);
 
     return pluginIface;
 }

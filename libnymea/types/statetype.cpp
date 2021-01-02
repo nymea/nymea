@@ -228,20 +228,6 @@ void StateType::setFilter(Types::StateValueFilter filter)
     m_filter = filter;
 }
 
-/*! Returns a list of all valid properties a DeviceClass definition can have. */
-QStringList StateType::typeProperties()
-{
-    return QStringList() << "id" << "name" << "displayName" << "displayNameEvent" << "type" << "defaultValue"
-                         << "cached" << "unit" << "minValue" << "maxValue" << "possibleValues" << "writable"
-                         << "displayNameAction" << "ioType" << "logged";
-}
-
-/*! Returns a list of mandatory properties a DeviceClass definition must have. */
-QStringList StateType::mandatoryTypeProperties()
-{
-    return QStringList() << "id" << "name" << "displayName" << "displayNameEvent" << "type" << "defaultValue";
-}
-
 /*! Returns true if this state type has an ID, a type and a name set. */
 bool StateType::isValid() const
 {

@@ -318,7 +318,11 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 QJsonObject st = stateTypesJson.toObject();
                 bool writableState = false;
 
-                QPair<QStringList, QStringList> verificationResult = verifyFields(StateType::typeProperties(), StateType::mandatoryTypeProperties(), st);
+                QStringList stateTypeProperties = {"id", "name", "displayName", "displayNameEvent", "type", "defaultValue", "cached",
+                                                   "unit", "minValue", "maxValue", "possibleValues", "writable", "displayNameAction",
+                                                   "ioType", "logged", "filter"};
+                QStringList mandatoryStateTypeProperties = {"id", "name", "displayName", "displayNameEvent", "type", "defaultValue"};
+                QPair<QStringList, QStringList> verificationResult = verifyFields(stateTypeProperties, mandatoryStateTypeProperties, st);
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
@@ -469,7 +473,19 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                         break;
                     }
                     stateType.setIOType(ioType);
-                    stateType.setSuggestLogging(st.value("suggestLogging").toBool());
+                }
+
+                stateType.setSuggestLogging(st.value("suggestLogging").toBool());
+
+                if (st.contains("filter")) {
+                    QString filter = st.value("filter").toString();
+                    if (filter == "adaptive") {
+                        qWarning() << "++++++++++++++++++++++++++++" << stateType.name();
+                        stateType.setFilter(Types::StateValueFilterAdaptive);
+                    } else if (!filter.isEmpty()) {
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid filter value \"" + filter + "\". Supported filters are: \"adaptive\"");
+                        hasError = true;
+                    }
                 }
                 stateTypes.append(stateType);
 

@@ -152,7 +152,8 @@
                             "minValue": 0,
                             "maxValue": 100,
                             "defaultValue": 50,
-                            "writable": true
+                            "writable": true,
+                            "filter": "adaptive"
                         },
                         {
                             "id": "ebc41327-53d5-40c2-8e7b-1164a8ff359e",

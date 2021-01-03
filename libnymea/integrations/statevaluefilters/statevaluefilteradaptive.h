@@ -15,18 +15,19 @@ private:
     void update();
 
 private:
-    QList<double> m_values;
+    QList<double> m_inputValues;
 
     int m_windowSize = 20;
     double m_standardDeviation = 0.05;
-    double m_maxTotalDeviation = 1;
+    double m_maxTotalDeviation = 0.4;
 
-    double m_filteredValue = 0;
     double m_totalDeviation = 0;
 
+    double m_outputValue = 0;
+
     // Stats for debugging
-    quint64 m_inputValues = 0;
-    quint64 m_outputValues = 0;
+    quint64 m_inputValueCount = 0;
+    quint64 m_outputValueCount = 0;
 
 
 };

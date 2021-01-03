@@ -480,7 +480,6 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 if (st.contains("filter")) {
                     QString filter = st.value("filter").toString();
                     if (filter == "adaptive") {
-                        qWarning() << "++++++++++++++++++++++++++++" << stateType.name();
                         stateType.setFilter(Types::StateValueFilterAdaptive);
                     } else if (!filter.isEmpty()) {
                         m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid filter value \"" + filter + "\". Supported filters are: \"adaptive\"");

@@ -2063,7 +2063,6 @@ void ThingManagerImplementation::loadThingStates(Thing *thing)
         } else {
             thing->setStateValue(stateType.id(), stateType.defaultValue());
         }
-        qWarning() << "-----" << stateType.name() <<  stateType.filter();
         thing->setStateValueFilter(stateType.id(), stateType.filter());
     }
     settings.endGroup();

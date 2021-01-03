@@ -10,161 +10,105 @@ StateValueFilterAdaptive::StateValueFilterAdaptive()
 void StateValueFilterAdaptive::addValue(const QVariant &value)
 {
     qCDebug(dcStateValueFilter()) << "Adding value:" << value.toDouble();
-    m_values.prepend(value.toDouble());
-    m_inputValues++;
+    m_inputValues.prepend(value.toDouble());
+    m_inputValueCount++;
     update();
 }
 
 QVariant StateValueFilterAdaptive::filteredValue() const
 {
-    return m_filteredValue;
+    return m_outputValue;
 }
 
 void StateValueFilterAdaptive::update()
 {
-
-//    while (m_values.count() > m_windowSize + 1) {
-//        m_values.removeLast();
-//    }
-
-//    if (m_values.isEmpty()) {
-//        m_filteredValue = 0;
-//        return;
-//    }
-
-//    if (m_values.count() == 1) {
-//        m_filteredValue = m_values.first();
-//        m_outputValues++;
-//        return;
-//    }
-
-
-
-////    m_filteredValue = m_values.first();
-////    m_outputValues++;
-
-
-//    double currentValue = m_values.first();
-//    if (currentValue == 0) {
-//        m_filteredValue = 0;
-//        return;
-//    }
-
-
-//    // Calculate average of history, for all values and for all but the last one
-//    double sum = 0;
-//    for (int i = 1; i < m_values.count(); i++) {
-//        sum += m_values.at(i);
-//    }
-//    double average = sum / (m_values.count() - 1);
-
-//    double absoluteJitter = currentValue - average;
-//    double relativeJitter = absoluteJitter / currentValue;
-
-
-//    // Outside of jitter window... Forward value directly
-//    if (qAbs(relativeJitter) > m_averageJitter * 3) {
-//        m_filteredValue = m_values.first();
-//        m_values.clear();
-//        m_values.prepend(m_filteredValue);
-//        m_outputValues++;
-//        qCDebug(dcStateValueFilter()) << "Updating output";
-//    } else {
-
-//    }
-//    // Adjust average jitter
-//    m_averageJitter = ((m_averageJitter * m_windowSize) + qAbs(relativeJitter)) / (m_windowSize + 1);
-
-
-//    qCDebug(dcStateValueFilter()) << "input" << currentValue << "output" << m_filteredValue << "average" << average << "jitter:" << absoluteJitter << "relative" << relativeJitter << "avg" << m_averageJitter;
-//    qCDebug(dcStateValueFilter()) << "Filter input values:" << m_inputValues << "output values:" << m_outputValues << "compression ratio:" << (1.0 * m_inputValues / m_outputValues);
-
-
-//    return;
-
-
-
-
-
-    while (m_values.count() > m_windowSize) {
-        m_values.removeLast();
+    while (m_inputValues.count() > m_windowSize) {
+        m_inputValues.removeLast();
     }
 
-    if (m_values.isEmpty()) {
-        m_filteredValue = 0;
+    if (m_inputValues.isEmpty()) {
+        m_outputValue = 0;
         return;
     }
 
-    if (m_values.count() == 1) {
+    if (m_inputValues.count() == 1) {
         // Not enough data
-        m_filteredValue = m_values.first();
-        m_outputValues++;
+        m_outputValue = m_inputValues.first();
+        m_outputValueCount++;
         return;
     }
 
+    double currentValue = m_inputValues.first();
+    if (qFuzzyCompare(currentValue, 0)) {
+        m_outputValue = 0;
+        return;
+    }
 
     // Calculate average of history, for all values and for all but the last one
     double sum = 0;
-    for (int i = 0; i < m_values.count(); i++) {
-        sum += m_values.at(i);
+    for (int i = 0; i < m_inputValues.count(); i++) {
+        sum += m_inputValues.at(i);
     }
 
-    double currentValue = m_values.first();
-    if (qFuzzyCompare(currentValue, 0)) {
-        m_filteredValue = 0;
-        return;
-    }
-
-    double filteredValue = sum / m_values.count();
-    double previousFilteredValue = (sum - m_values.first()) / (m_values.count() - 1);
+    double filteredValue = sum / m_inputValues.count();
+    double previousFilteredValue = (sum - m_inputValues.first()) / (m_inputValues.count() - 1);
 
     if (qFuzzyCompare(previousFilteredValue, 0)) {
-        m_filteredValue = m_values.first();
-        m_outputValues++;
+        m_outputValue = m_inputValues.first();
+        m_outputValueCount++;
         return;
     }
 
     // Calculate change ratio of the last value compared to the previous one, unflitered and filtered
-    double changeRatio = 1 - qAbs(currentValue / previousFilteredValue);
+    double changeRatioToAverage = 1 - qAbs(currentValue / previousFilteredValue);
+    double changeRatioToCurrentOutput = 1 - qAbs(currentValue / m_outputValue);
     double changeRatioFiltered = 1 - qAbs(filteredValue / previousFilteredValue);
-
-    // Add deviation of actual value vs filtered value up to have an idea how much we're off
-    m_totalDeviation += changeRatioFiltered - changeRatio;
 
 
     // If the unfiltered value changes for more than 3 times the standard deviation of the jittering values
     // it's a 99% chance a big change happened that's not jitter (e.g turned on/off)
     // Discard the history and follow the new value right away
-    if (qAbs(changeRatio) > m_standardDeviation * 3) {
-        m_values.clear();
-        m_values.prepend(currentValue);
+    if (qAbs(changeRatioToAverage) > m_standardDeviation * 3) {
+        m_inputValues.clear();
+        m_inputValues.prepend(currentValue);
         m_totalDeviation = 0;
-        if (!qFuzzyCompare(m_filteredValue, filteredValue)) {
-            m_filteredValue = currentValue;
-            qCDebug(dcStateValueFilter()) << "Updating output value:" << m_filteredValue << "(input exceeds max jitter)";
-            m_outputValues++;
+        if (!qFuzzyCompare(m_outputValue, filteredValue)) {
+            m_outputValue = currentValue;
+            qCDebug(dcStateValueFilter()) << "Updating output value:" << m_outputValue << "(input exceeds max jitter)";
+            m_outputValueCount++;
         }
 
-    // If the filtered value changed for 5 percent or more, follow slowly
-    // In order to not get stuck on being off for 5% forever, also move closer
-    // to the new value when the deviation exceeds max deviation
-    } else if (qAbs(changeRatioFiltered) > m_standardDeviation || qAbs(m_totalDeviation) > m_maxTotalDeviation) {
-        m_totalDeviation = 0;
-        if (!qFuzzyCompare(m_filteredValue, filteredValue)) {
-            qCDebug(dcStateValueFilter()) << "Updating output value:" << filteredValue << "(drift compensation)";
-            m_filteredValue = filteredValue;
-            m_outputValues++;
+    // We're considering it jitter
+    } else {
+        // Add up the deviation from the current actual value to the currently filtered value
+        m_totalDeviation += changeRatioToCurrentOutput;
+
+        // If the filtered value changed for more than the the standard deviation, follow slowly
+        // In order to not get stuck on being off for the standard deviation forever, also move closer
+        // to the new value when the summed up deviation exceeds the maximum allowed total deviation
+        if (qAbs(changeRatioFiltered) > m_standardDeviation || qAbs(m_totalDeviation) > m_maxTotalDeviation) {
+            m_totalDeviation = 0;
+            if (!qFuzzyCompare(m_outputValue, filteredValue)) {
+                qCDebug(dcStateValueFilter()) << "Updating output value:" << filteredValue << "(drift compensation)";
+                m_outputValue = filteredValue;
+                m_outputValueCount++;
+            }
         }
+
+        // Poor mans solution to calculate standard deviation. Not as precise, but much faster than looping over history again
+        m_standardDeviation = ((m_standardDeviation * m_windowSize) + qAbs(changeRatioToAverage)) / (m_windowSize + 1);
     }
 
-    // Poor mans solution to calculate standard deviation. Not as precise, but much faster than looping over history again
-    m_standardDeviation = ((m_standardDeviation * m_windowSize) + qAbs(changeRatio)) / (m_windowSize + 1);
-    qWarning(dcStateValueFilter()) << "New:" << currentValue << "Old:" << previousFilteredValue << "Filtered:" << filteredValue << "ratio:" << changeRatio << "filteredRatio" << changeRatioFiltered << "deviation" << m_totalDeviation << "averageJitter" << m_averageJitter;
+
 
     // correct stats on overflow of counters
-    if (m_inputValues < m_outputValues) {
-        m_outputValues = 0;
+    if (m_inputValueCount < m_outputValueCount) {
+        m_outputValueCount = 0;
     }
 
-    qCDebug(dcStateValueFilter()) << "Filter input values:" << m_inputValues << "output values:" << m_outputValues << "compression ratio:" << (1.0 * m_inputValues / m_outputValues);
+    qCDebug(dcStateValueFilter()) << "Filter statistics for" << this;
+    qCDebug(dcStateValueFilter()) << "Input:" << currentValue << "AVG:" << previousFilteredValue << "Filtered:" << filteredValue;
+    qCDebug(dcStateValueFilter()) << "Change ratios: Input/average:" << changeRatioToAverage << "Filtered/average:" << changeRatioFiltered  << "Input/output:" << changeRatioToCurrentOutput;
+    qCDebug(dcStateValueFilter()) << "Std deviation:" << m_standardDeviation << "Total deviation:" << m_totalDeviation;
+    qCDebug(dcStateValueFilter()) << "Compression ratio:" << (1.0 * m_inputValueCount / m_outputValueCount) << "(" << m_outputValueCount << "/" << m_inputValueCount << ")";
 }

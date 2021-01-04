@@ -81,6 +81,9 @@ public:
     virtual Thing::ThingError editThing(const ThingId &thingId, const QString &name) = 0;
     virtual Thing::ThingError setThingSettings(const ThingId &thingId, const ParamList &settings) = 0;
 
+    virtual Thing::ThingError setEventLogging(const ThingId &thingId, const EventTypeId &eventTypeId, bool enabled) = 0;
+    virtual Thing::ThingError setStateFilter(const ThingId &thingId, const StateTypeId &stateTypeId, Types::StateValueFilter filter) = 0;
+
     virtual Thing::ThingError removeConfiguredThing(const ThingId &thingId) = 0;
 
     virtual ThingActionInfo* executeAction(const Action &action) = 0;
@@ -112,7 +115,7 @@ signals:
     void thingRemoved(const ThingId &thingId);
     void thingDisappeared(const ThingId &thingId);
     void thingAdded(Thing *thing);
-    void thingChanged(Thing *device);
+    void thingChanged(Thing *thing);
     void thingSettingChanged(const ThingId &thingId, const ParamTypeId &settingParamTypeId, const QVariant &value);
     void ioConnectionAdded(const IOConnection &ioConnection);
     void ioConnectionRemoved(const IOConnectionId &ioConnectionId);

@@ -506,6 +506,47 @@ Thing::ThingError ThingManagerImplementation::setThingSettings(const ThingId &th
     return Thing::ThingErrorNoError;
 }
 
+Thing::ThingError ThingManagerImplementation::setEventLogging(const ThingId &thingId, const EventTypeId &eventTypeId, bool enabled)
+{
+    Thing *thing = m_configuredThings.value(thingId);
+    if (!thing) {
+        qCWarning(dcThingManager()) << "Cannot configure event logging. Thing" << thingId.toString() << "not found";
+        return Thing::ThingErrorThingNotFound;
+    }
+    if (!thing->thingClass().eventTypes().findById(eventTypeId).isValid()) {
+        qCWarning(dcThingManager()) << "Cannot configure event logging. Thing" << thingId.toString() << "has no event type with id" << eventTypeId;
+        return Thing::ThingErrorEventTypeNotFound;
+    }
+    QList<EventTypeId> loggedEventTypes = thing->loggedEventTypeIds();
+    if (enabled && !loggedEventTypes.contains(eventTypeId)) {
+        loggedEventTypes.append(eventTypeId);
+        thing->setLoggedEventTypeIds(loggedEventTypes);
+        emit thingChanged(thing);
+    } else if (!enabled && loggedEventTypes.contains(eventTypeId)) {
+        loggedEventTypes.removeAll(eventTypeId);
+        thing->setLoggedEventTypeIds(loggedEventTypes);
+        emit thingChanged(thing);
+    }
+    return Thing::ThingErrorNoError;
+}
+
+Thing::ThingError ThingManagerImplementation::setStateFilter(const ThingId &thingId, const StateTypeId &stateTypeId, Types::StateValueFilter filter)
+{
+    Thing *thing = m_configuredThings.value(thingId);
+    if (!thing) {
+        qCWarning(dcThingManager()) << "Cannot configure state filter. Thing" << thingId.toString() << "not found";
+        return Thing::ThingErrorThingNotFound;
+    }
+    if (!thing->thingClass().stateTypes().findById(stateTypeId).isValid()) {
+        qCWarning(dcThingManager()) << "Cannot configure state filter. Thing" << thingId.toString() << "has no state type with id" << stateTypeId;
+        return Thing::ThingErrorEventTypeNotFound;
+    }
+
+    thing->setStateValueFilter(stateTypeId, filter);
+    emit thingChanged(thing);
+    return Thing::ThingErrorNoError;
+}
+
 ThingPairingInfo* ThingManagerImplementation::pairThing(const ThingClassId &thingClassId, const ParamList &params, const QString &name)
 {
     PairingTransactionId transactionId = PairingTransactionId::createPairingTransactionId();

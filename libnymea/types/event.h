@@ -46,7 +46,6 @@ class LIBNYMEA_EXPORT Event
     Q_PROPERTY(QUuid thingId READ thingId)
     Q_PROPERTY(QUuid deviceId READ thingId REVISION 1)
     Q_PROPERTY(ParamList params READ params)
-    Q_PROPERTY(bool logged READ logged)
 public:
     Event();
     Event(const EventTypeId &eventTypeId, const ThingId &thingId, const ParamList &params = ParamList(), bool isStateChangeEvent = false);

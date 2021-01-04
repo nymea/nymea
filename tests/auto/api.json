@@ -1,4 +1,4 @@
-5.3
+5.4
 {
     "enums": {
         "BasicType": [
@@ -243,6 +243,10 @@
         "StateOperator": [
             "StateOperatorAnd",
             "StateOperatorOr"
+        ],
+        "StateValueFilter": [
+            "StateValueFilterNone",
+            "StateValueFilterAdaptive"
         ],
         "TagError": [
             "TagErrorNoError",
@@ -1215,11 +1219,33 @@
                 "thingError": "$ref:ThingError"
             }
         },
+        "Integrations.SetEventLogging": {
+            "description": "Enable/disable logging for the given event type on the given thing.",
+            "params": {
+                "enabled": "Bool",
+                "eventTypeId": "Uuid",
+                "thingId": "Uuid"
+            },
+            "returns": {
+                "thingError": "$ref:ThingError"
+            }
+        },
         "Integrations.SetPluginConfiguration": {
             "description": "Set a plugin's params.",
             "params": {
                 "configuration": "$ref:ParamList",
                 "pluginId": "Uuid"
+            },
+            "returns": {
+                "thingError": "$ref:ThingError"
+            }
+        },
+        "Integrations.SetStateFilter": {
+            "description": "Set the filter for the given state on the given thing.",
+            "params": {
+                "filter": "$ref:StateValueFilter",
+                "stateTypeId": "Uuid",
+                "thingId": "Uuid"
             },
             "returns": {
                 "thingError": "$ref:ThingError"
@@ -2521,6 +2547,9 @@
             "o:settings": "$ref:ParamList",
             "r:deviceClassId": "Uuid",
             "r:id": "Uuid",
+            "r:o:loggedEventTypeIds": [
+                "Uuid"
+            ],
             "r:o:parentId": "Uuid",
             "r:o:setupDisplayMessage": "String",
             "r:params": "$ref:ParamList",
@@ -2774,6 +2803,7 @@
             "sslEnabled": "Bool"
         },
         "State": {
+            "r:filter": "$ref:StateValueFilter",
             "r:stateTypeId": "Uuid",
             "r:value": "Variant"
         },
@@ -2833,6 +2863,9 @@
             "o:name": "String",
             "o:settings": "$ref:ParamList",
             "r:id": "Uuid",
+            "r:o:loggedEventTypeIds": [
+                "Uuid"
+            ],
             "r:o:parentId": "Uuid",
             "r:o:setupDisplayMessage": "String",
             "r:params": "$ref:ParamList",

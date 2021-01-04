@@ -199,6 +199,7 @@ void TestLogging::systemLogs()
     qWarning() << "Restarting server";
     restartServer();
     qWarning() << "Restart done";
+    waitForDBSync();
 
     // there should be 2 log entries, one for shutdown, one for startup (from server restart)
     response = injectAndWait("Logging.GetLogEntries", params);

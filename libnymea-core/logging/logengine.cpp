@@ -223,6 +223,7 @@ void LogEngine::clearDatabase()
 
 void LogEngine::logSystemEvent(const QDateTime &dateTime, bool active, Logging::LoggingLevel level)
 {
+    qCDebug(dcLogEngine()) << "Logging system event:" << active;
     LogEntry entry(dateTime, level, Logging::LoggingSourceSystem);
     entry.setEventType(Logging::LoggingEventTypeActiveChange);
     entry.setActive(active);

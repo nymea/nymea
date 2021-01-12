@@ -184,7 +184,7 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         libnymea1 (= ${binary:Version}),
+         libnymea1-dev (= ${binary:Version}),
          qttools5-dev-tools,
          rsync,
 Description: Tools for developing nymea plugins.
@@ -195,10 +195,9 @@ Package: nymea-sdk
 Section: devel
 Architecture: all
 Multi-Arch: allowed
-Depends: crossbuilder,
-         libnymea1-dev,
-         nymea-dev-tools,
-         nymea-qtcreator-wizards,
+Depends: nymea-dev-tools
+Recommends: nymea-qtcreator-wizards,
+            crossbuilder,
 Description: The nymea SDK.
  .
  Meta-Package for everything required to develop on nymea.

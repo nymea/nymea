@@ -4,9 +4,9 @@
     "states": [
         {
             "name": "maxChargingCurrent",
-            "type": "uint",
+            "type": "double",
             "writable": true,
-            "unit": "MilliAmpere"
+            "unit": "Ampere"
         }
     ]
 }

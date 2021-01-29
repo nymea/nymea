@@ -90,9 +90,9 @@ public:
     void terminateClientConnection(const QUuid &clientId) override;
 
 private:
-    QTimer *m_timer;
+    QTimer *m_timer = nullptr;
 
-    SslServer * m_server;
+    SslServer *m_server = nullptr;
     QHash<QUuid, QTcpSocket *> m_clientList;
 
     QSslConfiguration m_sslConfig;

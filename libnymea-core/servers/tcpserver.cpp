@@ -129,7 +129,7 @@ void TcpServer::sendData(const QUuid &clientId, const QByteArray &data)
         qCDebug(dcTcpServerTraffic()) << "Sending to client" << clientId.toString() << data;
         client->write(data + '\n');
     } else {
-        qCWarning(dcTcpServer()) << "Client" << clientId << "unknown to this transport";
+        qCWarning(dcTcpServer()) << "Client" << clientId.toString() << "unknown to this transport";
     }
 }
 

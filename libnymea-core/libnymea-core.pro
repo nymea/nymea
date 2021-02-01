@@ -35,6 +35,17 @@ CONFIG(withoutpython) {
     CONFIG -= python
 }
 
+# Qt serial bus module is officially available since Qt 5.8
+# but not all platforms host the qt serialbus package.
+# Let's check if the package exists, not the qt version
+packagesExist(Qt5SerialBus) {
+    DEFINES += WITH_QTSERIALBUS
+    Qt += serialbus
+} else {
+    message("Qt5SerialBus not available")
+}
+
+
 target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target
 
@@ -44,6 +55,7 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 
 HEADERS += nymeacore.h \
+    hardware/modbus/modbusrtuhardwareresourceimplementation.h \
     integrations/apikeysprovidersloader.h \
     integrations/plugininfocache.h \
     integrations/python/pyapikeystorage.h \
@@ -55,7 +67,10 @@ HEADERS += nymeacore.h \
     integrations/thingmanagerimplementation.h \
     integrations/translator.h \
     experiences/experiencemanager.h \
+    jsonrpc/modbusrtuhandler.h \
     jsonrpc/zigbeehandler.h \
+    modbus/modbusrtumanager.h \
+    modbus/modbusrtumaster.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
     ruleengine/stateevaluator.h \
@@ -138,12 +153,16 @@ HEADERS += nymeacore.h \
 
 
 SOURCES += nymeacore.cpp \
+    hardware/modbus/modbusrtuhardwareresourceimplementation.cpp \
     integrations/apikeysprovidersloader.cpp \
     integrations/plugininfocache.cpp \
     integrations/thingmanagerimplementation.cpp \
     integrations/translator.cpp \
     experiences/experiencemanager.cpp \
+    jsonrpc/modbusrtuhandler.cpp \
     jsonrpc/zigbeehandler.cpp \
+    modbus/modbusrtumanager.cpp \
+    modbus/modbusrtumaster.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \
     ruleengine/stateevaluator.cpp \

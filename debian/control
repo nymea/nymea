@@ -1,10 +1,10 @@
 Source: nymea
 Section: utils
 Priority: optional
-Maintainer: Simon Stuerz <simon.stuerz@guh.io>
+Maintainer: Nymea GmbH <developer@nymea.io>
 Standards-Version: 3.9.7
 Homepage: https://nymea.io
-Vcs-Git: https://github.com/guh/guh.git
+Vcs-Git: https://github.com/nymea/nymea.git
 Build-Depends: debhelper (>= 9.0.0),
                dbus-test-runner,
                dh-systemd,
@@ -37,7 +37,6 @@ Depends: nymead (= ${binary:Version}),
          ${misc:Depends}
 Recommends: qml-module-qtquick2
 Suggests: nymea-doc
-Replaces: guh
 Description: An open source IoT server - meta package
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
@@ -77,7 +76,6 @@ Recommends: nymea-cli,
             nymea-system-plugin-impl,
             nymea-zeroconf-plugin-impl,
             nymea-apikeysprovider-plugin-impl,
-Replaces: guhd
 Description: An open source IoT server - daemon
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
@@ -93,7 +91,6 @@ Section: doc
 Architecture: all
 Depends: ${misc:Depends}
 Recommends: nymea
-Replaces: guh-doc
 Build-Profiles: <!nodoc>
 Description: Documentation for the nymea package (on-site) - documentation
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
@@ -110,7 +107,6 @@ Section: misc
 Architecture: all
 Depends: ${misc:Depends}
 Recommends: nymea
-Replaces: guh-translations
 Description: Translation files for nymead and plugins - translations
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
@@ -128,7 +124,6 @@ Multi-Arch: same
 Depends: nymea (= ${binary:Version}),
          ${shlibs:Depends},
          ${misc:Depends}
-Replaces: guh-tests
 Description: Tests and mock plugin for the nymea daemon - tests
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and
@@ -145,7 +140,6 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-Replaces: libguh1
 Provides: nymea-update-plugin-api-1,
           nymea-zeroconf-plugin-api-1,
           nymea-system-plugin-api-2
@@ -159,7 +153,7 @@ Description: An open source IoT server - core library
  This package will install shared libraries for nymea.
 
 
-Package: libnymea1-dev
+Package: libnymea-dev
 Section: libdevel
 Architecture: any
 Multi-Arch: same
@@ -168,7 +162,7 @@ Depends: ${shlibs:Depends},
          libnymea1 (= ${binary:Version}),
          pkg-config,
          qtbase5-dev,
-Replaces: libguh1-dev
+Replaces: libnymea1-dev
 Description: The main libraries and header files for developing with nymea.
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and

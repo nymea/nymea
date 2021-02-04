@@ -32,6 +32,9 @@
 #define MODBUSRTUMANAGER_H
 
 #include <QObject>
+#include <QHash>
+
+#include "hardware/modbus/modbusrtumaster.h"
 
 namespace nymeaserver {
 
@@ -40,8 +43,21 @@ class ModbusRtuManager : public QObject
     Q_OBJECT
 public:
     explicit ModbusRtuManager(QObject *parent = nullptr);
+    ~ModbusRtuManager() = default;
+
+    QList<ModbusRtuMaster *> modbusRtuMasters() const;
+    bool hasModbusRtuMaster(const QUuid &modbusUuid) const;
+    ModbusRtuMaster *getModbusRtuMaster(const QUuid &modbusUuid);
+
+    void init();
 
 signals:
+    void modbusRtuMasterAdded(ModbusRtuMaster *modbusRtuMaster);
+    void modbusRtuMasterRemoved(ModbusRtuMaster *modbusRtuMaster);
+    void modbusRtuMasterChanged(ModbusRtuMaster *modbusRtuMaster);
+
+private:
+    QHash<QUuid, ModbusRtuMaster *> m_modbusRtuMasters;
 
 };
 

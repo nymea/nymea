@@ -32,19 +32,39 @@
 #define MODBUSRTUMASTER_H
 
 #include <QObject>
+#include <QUuid>
 
-namespace nymeaserver {
+#include "modbusrtureply.h"
 
 class ModbusRtuMaster : public QObject
 {
     Q_OBJECT
 public:
-    explicit ModbusRtuMaster(QObject *parent = nullptr);
+    // Properties
+    virtual QUuid modbusUuid() const = 0;
+    virtual QString serialPort() const = 0;
+
+    virtual bool connected() const = 0;
+
+    // Requests
+    virtual ModbusRtuReply *readCoil(uint slaveAddress, uint registerAddress, uint size = 1) = 0;
+    virtual ModbusRtuReply *readDiscreteInput(uint slaveAddress, uint registerAddress, uint size = 1) = 0;
+    virtual ModbusRtuReply *readInputRegister(uint slaveAddress, uint registerAddress, uint size = 1) = 0;
+    virtual ModbusRtuReply *readHoldingRegister(uint slaveAddress, uint registerAddress, uint size = 1) = 0;
+
+    virtual ModbusRtuReply *writeCoil(uint slaveAddress, uint registerAddress, bool status) = 0;
+    virtual ModbusRtuReply *writeCoils(uint slaveAddress, uint registerAddress, const QVector<quint16> &values) = 0;
+
+    virtual ModbusRtuReply *writeHoldingRegister(uint slaveAddress, uint registerAddress, quint16 value) = 0;
+    virtual ModbusRtuReply *writeHoldingRegisters(uint slaveAddress, uint registerAddress, const QVector<quint16> &values) = 0;
+
+protected:
+    explicit ModbusRtuMaster(QObject *parent = nullptr) : QObject(parent) { };
+    virtual ~ModbusRtuMaster() = default;
 
 signals:
+    void connectedChanged(bool connected);
 
 };
-
-}
 
 #endif // MODBUSRTUMASTER_H

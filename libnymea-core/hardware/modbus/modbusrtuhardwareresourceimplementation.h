@@ -33,6 +33,7 @@
 
 #include <QObject>
 
+#include "modbus/modbusrtumanager.h"
 #include "hardware/modbus/modbusrtuhardwareresource.h"
 
 namespace nymeaserver {
@@ -41,7 +42,9 @@ class ModbusRtuHardwareResourceImplementation : public ModbusRtuHardwareResource
 {
     Q_OBJECT
 public:
-    explicit ModbusRtuHardwareResourceImplementation(QObject *parent = nullptr);
+    explicit ModbusRtuHardwareResourceImplementation(ModbusRtuManager *modbusRtuManager, QObject *parent = nullptr);
+
+    //QList<ModbusRtuMaster *> modbusRtuMasters() const override;
 
     bool available() const override;
     bool enabled() const override;
@@ -50,11 +53,11 @@ public slots:
     bool enable();
     bool disable();
 
-
 protected:
     void setEnabled(bool enabled) override;
 
 private:
+    ModbusRtuManager *m_modbusRtuManager = nullptr;
     bool m_available = false;
     bool m_enabled = false;
 

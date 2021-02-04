@@ -28,27 +28,67 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef MODBUSRTUHARDWARERESOURCE_H
-#define MODBUSRTUHARDWARERESOURCE_H
+#include "modbusrtureplyimpl.h"
 
-#include <QList>
-#include <QObject>
 
-#include "modbusrtumaster.h"
-#include "hardwareresource.h"
+namespace nymeaserver {
 
-class ModbusRtuHardwareResource : public HardwareResource
+ModbusRtuReplyImpl::ModbusRtuReplyImpl(uint slaveAddress, uint registerAddress, QObject *parent) :
+    ModbusRtuReply(parent),
+    m_slaveAddress(slaveAddress),
+    m_registerAddress(registerAddress)
 {
-    Q_OBJECT
-public:
-    explicit ModbusRtuHardwareResource(QObject *parent = nullptr);
-    virtual ~ModbusRtuHardwareResource() = default;
-    //virtual QList<ModbusRtuMaster *> modbusRtuMasters() const = 0;
 
-protected:
+}
 
-signals:
+bool ModbusRtuReplyImpl::isFinished() const
+{
+    return m_finished;
+}
 
-};
+void ModbusRtuReplyImpl::setFinished(bool finished)
+{
+    m_finished = finished;
+}
 
-#endif // MODBUSRTUHARDWARERESOURCE_H
+uint ModbusRtuReplyImpl::slaveAddress() const
+{
+    return m_slaveAddress;
+}
+
+uint ModbusRtuReplyImpl::registerAddress() const
+{
+    return m_registerAddress;
+}
+
+QString ModbusRtuReplyImpl::errorString() const
+{
+    return m_errorString;
+}
+
+void ModbusRtuReplyImpl::setErrorString(const QString &errorString)
+{
+    m_errorString = errorString;
+}
+
+ModbusRtuReply::Error ModbusRtuReplyImpl::error() const
+{
+    return m_error;
+}
+
+void ModbusRtuReplyImpl::setError(ModbusRtuReply::Error error)
+{
+    m_error = error;
+}
+
+QVector<quint16> ModbusRtuReplyImpl::result() const
+{
+    return m_result;
+}
+
+void ModbusRtuReplyImpl::setResult(const QVector<quint16> &result)
+{
+    m_result = result;
+}
+
+}

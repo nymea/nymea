@@ -40,7 +40,7 @@ CONFIG(withoutpython) {
 # Let's check if the package exists, not the qt version
 packagesExist(Qt5SerialBus) {
     DEFINES += WITH_QTSERIALBUS
-    Qt += serialbus
+    Qt += serialbus serialport
 } else {
     message("Qt5SerialBus not available")
 }
@@ -55,7 +55,6 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 
 HEADERS += nymeacore.h \
-    hardware/modbus/modbusrtuhardwareresourceimplementation.h \
     integrations/apikeysprovidersloader.h \
     integrations/plugininfocache.h \
     integrations/python/pyapikeystorage.h \
@@ -70,7 +69,8 @@ HEADERS += nymeacore.h \
     jsonrpc/modbusrtuhandler.h \
     jsonrpc/zigbeehandler.h \
     modbus/modbusrtumanager.h \
-    modbus/modbusrtumaster.h \
+    modbus/modbusrtumasterimpl.h \
+    modbus/modbusrtureplyimpl.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
     ruleengine/stateevaluator.h \
@@ -133,6 +133,7 @@ HEADERS += nymeacore.h \
     hardware/bluetoothlowenergy/bluetoothlowenergymanagerimplementation.h \
     hardware/bluetoothlowenergy/bluetoothlowenergydeviceimplementation.h \
     hardware/bluetoothlowenergy/bluetoothdiscoveryreplyimplementation.h \
+    hardware/modbus/modbusrtuhardwareresourceimplementation.h \
     hardware/network/networkaccessmanagerimpl.h \
     hardware/network/upnp/upnpdiscoveryimplementation.h \
     hardware/network/upnp/upnpdiscoveryrequest.h \
@@ -153,7 +154,6 @@ HEADERS += nymeacore.h \
 
 
 SOURCES += nymeacore.cpp \
-    hardware/modbus/modbusrtuhardwareresourceimplementation.cpp \
     integrations/apikeysprovidersloader.cpp \
     integrations/plugininfocache.cpp \
     integrations/thingmanagerimplementation.cpp \
@@ -162,7 +162,8 @@ SOURCES += nymeacore.cpp \
     jsonrpc/modbusrtuhandler.cpp \
     jsonrpc/zigbeehandler.cpp \
     modbus/modbusrtumanager.cpp \
-    modbus/modbusrtumaster.cpp \
+    modbus/modbusrtumasterimpl.cpp \
+    modbus/modbusrtureplyimpl.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \
     ruleengine/stateevaluator.cpp \
@@ -224,6 +225,7 @@ SOURCES += nymeacore.cpp \
     hardware/bluetoothlowenergy/bluetoothlowenergymanagerimplementation.cpp \
     hardware/bluetoothlowenergy/bluetoothlowenergydeviceimplementation.cpp \
     hardware/bluetoothlowenergy/bluetoothdiscoveryreplyimplementation.cpp \
+    hardware/modbus/modbusrtuhardwareresourceimplementation.cpp \
     hardware/network/networkaccessmanagerimpl.cpp \
     hardware/network/upnp/upnpdiscoveryimplementation.cpp \
     hardware/network/upnp/upnpdiscoveryrequest.cpp \

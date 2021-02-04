@@ -31,7 +31,7 @@
 #include "modbusrtuhardwareresource.h"
 
 ModbusRtuHardwareResource::ModbusRtuHardwareResource(QObject *parent) :
-    HardwareResource("Modbus RTU client resource", parent)
+    HardwareResource("Modbus RTU resource", parent)
 {
 
 }

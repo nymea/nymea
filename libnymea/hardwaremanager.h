@@ -44,6 +44,7 @@ class MqttProvider;
 class I2CManager;
 class ZigbeeHardwareResource;
 class HardwareResource;
+class ModbusRtuHardwareResouce;
 
 class HardwareManager : public QObject
 {
@@ -63,6 +64,7 @@ public:
     virtual MqttProvider *mqttProvider() = 0;
     virtual I2CManager *i2cManager() = 0;
     virtual ZigbeeHardwareResource *zigbeeResource() = 0;
+    virtual ModbusRtuHardwareResouce *modbusRtuResource() = 0;
 
 protected:
     void setResourceEnabled(HardwareResource* resource, bool enabled);

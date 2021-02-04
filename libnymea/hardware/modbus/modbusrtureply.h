@@ -28,27 +28,47 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef MODBUSRTUHARDWARERESOURCE_H
-#define MODBUSRTUHARDWARERESOURCE_H
+#ifndef MODBUSRTUREPLY_H
+#define MODBUSRTUREPLY_H
 
-#include <QList>
 #include <QObject>
+#include <QVector>
 
-#include "modbusrtumaster.h"
-#include "hardwareresource.h"
-
-class ModbusRtuHardwareResource : public HardwareResource
+class ModbusRtuReply : public QObject
 {
     Q_OBJECT
 public:
-    explicit ModbusRtuHardwareResource(QObject *parent = nullptr);
-    virtual ~ModbusRtuHardwareResource() = default;
-    //virtual QList<ModbusRtuMaster *> modbusRtuMasters() const = 0;
+    enum Error {
+        NoError,
+        ReadError,
+        WriteError,
+        ConnectionError,
+        ConfigurationError,
+        TimeoutError,
+        ProtocolError,
+        ReplyAbortedError,
+        UnknownError
+    };
+    Q_ENUM(Error)
+
+    virtual bool isFinished() const = 0;
+
+    virtual uint slaveAddress() const = 0;
+    virtual uint registerAddress() const = 0;
+
+    virtual QString errorString() const = 0;
+    virtual ModbusRtuReply::Error error() const = 0;
+
+    virtual QVector<quint16> result() const = 0;
 
 protected:
+    explicit ModbusRtuReply(QObject *parent = nullptr) : QObject(parent) { };
+    virtual ~ModbusRtuReply() = default;
 
 signals:
+    void finished();
+    void errorOccurred(ModbusRtuReply::Error error);
 
 };
 
-#endif // MODBUSRTUHARDWARERESOURCE_H
+#endif // MODBUSRTUREPLY_H

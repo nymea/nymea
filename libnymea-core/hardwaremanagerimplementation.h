@@ -61,6 +61,7 @@ public:
     MqttProvider *mqttProvider() override;
     I2CManager *i2cManager() override;
     ZigbeeHardwareResource *zigbeeResource() override;
+    ModbusRtuHardwareResouce *modbusRtuResource() override;
 
 public slots:
     void thingsLoaded();
@@ -79,6 +80,7 @@ private:
     MqttProvider *m_mqttProvider = nullptr;
     I2CManager *m_i2cManager = nullptr;
     ZigbeeHardwareResourceImplementation *m_zigbeeResource = nullptr;
+    ModbusRtuHardwareResouce *m_modbusRtuResource = nullptr;
 };
 
 }

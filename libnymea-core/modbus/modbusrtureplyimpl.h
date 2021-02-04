@@ -28,13 +28,46 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "modbusrtumaster.h"
+#ifndef MODBUSRTUREPLYIMPL_H
+#define MODBUSRTUREPLYIMPL_H
+
+#include <QObject>
+
+#include "hardware/modbus/modbusrtureply.h"
 
 namespace nymeaserver {
 
-ModbusRtuMaster::ModbusRtuMaster(QObject *parent) : QObject(parent)
+class ModbusRtuReplyImpl : public ModbusRtuReply
 {
+    Q_OBJECT
+public:
+    explicit ModbusRtuReplyImpl(uint slaveAddress, uint registerAddress, QObject *parent = nullptr);
+
+    bool isFinished() const override;
+    void setFinished(bool finished);
+
+    uint slaveAddress() const override;
+    uint registerAddress() const override;
+
+    QString errorString() const override;
+    void setErrorString(const QString &errorString);
+
+    ModbusRtuReply::Error error() const override;
+    void setError(ModbusRtuReply::Error error);
+
+    QVector<quint16> result() const override;
+    void setResult(const QVector<quint16> &result);
+
+private:
+    bool m_finished = false;
+    uint m_slaveAddress;
+    uint m_registerAddress;
+    Error m_error = UnknownError;
+    QString m_errorString;
+    QVector<quint16> m_result;
+
+};
 
 }
 
-}
+#endif // MODBUSRTUREPLYIMPL_H

@@ -43,6 +43,7 @@
 #include "hardware/network/mqtt/mqttproviderimplementation.h"
 #include "hardware/i2c/i2cmanagerimplementation.h"
 #include "hardware/zigbee/zigbeehardwareresourceimplementation.h"
+#include "hardware/modbus/modbusrtuhardwareresourceimplementation.h"
 
 namespace nymeaserver {
 
@@ -140,6 +141,11 @@ I2CManager *HardwareManagerImplementation::i2cManager()
 ZigbeeHardwareResource *HardwareManagerImplementation::zigbeeResource()
 {
     return m_zigbeeResource;
+}
+
+ModbusRtuHardwareResouce *HardwareManagerImplementation::modbusRtuResource()
+{
+    return m_modbusRtuResource;
 }
 
 void HardwareManagerImplementation::thingsLoaded()

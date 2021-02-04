@@ -14,6 +14,8 @@ QMAKE_LFLAGS += -fPIC
 
 HEADERS += \
     hardware/modbus/modbusrtuhardwareresource.h \
+    hardware/modbus/modbusrtumaster.h \
+    hardware/modbus/modbusrtureply.h \
     hardware/zigbee/zigbeehandler.h \
     hardware/zigbee/zigbeehardwareresource.h \
     integrations/browseractioninfo.h \

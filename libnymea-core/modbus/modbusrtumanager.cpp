@@ -41,4 +41,32 @@ ModbusRtuManager::ModbusRtuManager(QObject *parent) : QObject(parent)
 
 }
 
+QList<ModbusRtuMaster *> ModbusRtuManager::modbusRtuMasters() const
+{
+    return m_modbusRtuMasters.values();
+}
+
+bool ModbusRtuManager::hasModbusRtuMaster(const QUuid &modbusUuid) const
+{
+    return m_modbusRtuMasters.value(modbusUuid) != nullptr;
+}
+
+ModbusRtuMaster *ModbusRtuManager::getModbusRtuMaster(const QUuid &modbusUuid)
+{
+    if (hasModbusRtuMaster(modbusUuid)) {
+        return m_modbusRtuMasters.value(modbusUuid);
+    }
+
+    return nullptr;
+}
+
+void ModbusRtuManager::init()
+{
+    // Load uart configurations
+
+    // Init modbus rtu masters
+
+    // Connect signals
+}
+
 }

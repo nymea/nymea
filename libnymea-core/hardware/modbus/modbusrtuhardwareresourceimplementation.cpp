@@ -31,16 +31,23 @@
 #include "modbusrtuhardwareresourceimplementation.h"
 #include "loggingcategories.h"
 #include "nymeasettings.h"
+#include "modbus/modbusrtumanager.h"
 
 NYMEA_LOGGING_CATEGORY(dcModbusRtuResource, "ModbusRtuResource")
 
 namespace nymeaserver {
 
-ModbusRtuHardwareResourceImplementation::ModbusRtuHardwareResourceImplementation(QObject *parent) :
-    ModbusRtuHardwareResource(parent)
+ModbusRtuHardwareResourceImplementation::ModbusRtuHardwareResourceImplementation(ModbusRtuManager *modbusRtuManager, QObject *parent) :
+    ModbusRtuHardwareResource(parent),
+    m_modbusRtuManager(modbusRtuManager)
 {
 
 }
+
+//QList<ModbusRtuMaster *> ModbusRtuHardwareResourceImplementation::modbusRtuMasters() const
+//{
+//    return m_modbusRtuManager->modbusRtuMasters();
+//}
 
 bool ModbusRtuHardwareResourceImplementation::available() const
 {

@@ -41,13 +41,18 @@ class ModbusRtuHardwareResource : public HardwareResource
 {
     Q_OBJECT
 public:
-    explicit ModbusRtuHardwareResource(QObject *parent = nullptr);
-    virtual ~ModbusRtuHardwareResource() = default;
-    //virtual QList<ModbusRtuMaster *> modbusRtuMasters() const = 0;
+    virtual QList<ModbusRtuMaster *> modbusRtuMasters() const = 0;
+    virtual bool hasModbusRtuMaster(const QUuid &modbusUuid) = 0;
+    virtual ModbusRtuMaster *getModbusRtuMaster(const QUuid &modbusUuid) = 0;
 
 protected:
+    explicit ModbusRtuHardwareResource(QObject *parent = nullptr);
+    virtual ~ModbusRtuHardwareResource() = default;
 
 signals:
+    void modbusRtuMasterAdded(const QUuid &modbusUuid);
+    void modbusRtuMasterRemoved(const QUuid &modbusUuid);
+    void modbusRtuMasterChanged(const QUuid &modbusUuid);
 
 };
 

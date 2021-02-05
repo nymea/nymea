@@ -31,8 +31,10 @@
 #ifndef MODBUSRTUMASTER_H
 #define MODBUSRTUMASTER_H
 
-#include <QObject>
 #include <QUuid>
+#include <QObject>
+#include <QSerialPort>
+#include <QDebug>
 
 #include "modbusrtureply.h"
 
@@ -43,20 +45,21 @@ public:
     // Properties
     virtual QUuid modbusUuid() const = 0;
     virtual QString serialPort() const = 0;
+    virtual qint32 baudrate() const = 0;
+    virtual QSerialPort::Parity parity() const = 0;
+    virtual QSerialPort::DataBits dataBits() const = 0;
+    virtual QSerialPort::StopBits stopBits() = 0;
 
     virtual bool connected() const = 0;
 
     // Requests
-    virtual ModbusRtuReply *readCoil(uint slaveAddress, uint registerAddress, uint size = 1) = 0;
-    virtual ModbusRtuReply *readDiscreteInput(uint slaveAddress, uint registerAddress, uint size = 1) = 0;
-    virtual ModbusRtuReply *readInputRegister(uint slaveAddress, uint registerAddress, uint size = 1) = 0;
-    virtual ModbusRtuReply *readHoldingRegister(uint slaveAddress, uint registerAddress, uint size = 1) = 0;
+    virtual ModbusRtuReply *readCoil(int slaveAddress, int registerAddress, quint16 size = 1) = 0;
+    virtual ModbusRtuReply *readDiscreteInput(int slaveAddress, int registerAddress, quint16 size = 1) = 0;
+    virtual ModbusRtuReply *readInputRegister(int slaveAddress, int registerAddress, quint16 size = 1) = 0;
+    virtual ModbusRtuReply *readHoldingRegister(int slaveAddress, int registerAddress, quint16 size = 1) = 0;
 
-    virtual ModbusRtuReply *writeCoil(uint slaveAddress, uint registerAddress, bool status) = 0;
-    virtual ModbusRtuReply *writeCoils(uint slaveAddress, uint registerAddress, const QVector<quint16> &values) = 0;
-
-    virtual ModbusRtuReply *writeHoldingRegister(uint slaveAddress, uint registerAddress, quint16 value) = 0;
-    virtual ModbusRtuReply *writeHoldingRegisters(uint slaveAddress, uint registerAddress, const QVector<quint16> &values) = 0;
+    virtual ModbusRtuReply *writeCoils(int slaveAddress, int registerAddress, const QVector<quint16> &values) = 0;
+    virtual ModbusRtuReply *writeHoldingRegisters(int slaveAddress, int registerAddress, const QVector<quint16> &values) = 0;
 
 protected:
     explicit ModbusRtuMaster(QObject *parent = nullptr) : QObject(parent) { };
@@ -66,5 +69,13 @@ signals:
     void connectedChanged(bool connected);
 
 };
+
+inline QDebug operator<<(QDebug debug, ModbusRtuMaster *modbusRtuMaster) {
+    debug.nospace() << "ModbusRtuMaster(" << modbusRtuMaster->modbusUuid().toString();
+    debug.nospace() << ", " << modbusRtuMaster->serialPort();
+    debug.nospace() << ", BaudRate: " << modbusRtuMaster->baudrate() << ") ";
+    return debug;
+};
+
 
 #endif // MODBUSRTUMASTER_H

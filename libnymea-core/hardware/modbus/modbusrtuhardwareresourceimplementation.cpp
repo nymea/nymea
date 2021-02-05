@@ -44,10 +44,20 @@ ModbusRtuHardwareResourceImplementation::ModbusRtuHardwareResourceImplementation
 
 }
 
-//QList<ModbusRtuMaster *> ModbusRtuHardwareResourceImplementation::modbusRtuMasters() const
-//{
-//    return m_modbusRtuManager->modbusRtuMasters();
-//}
+QList<ModbusRtuMaster *> ModbusRtuHardwareResourceImplementation::modbusRtuMasters() const
+{
+    return m_modbusRtuManager->modbusRtuMasters();
+}
+
+bool ModbusRtuHardwareResourceImplementation::hasModbusRtuMaster(const QUuid &modbusUuid)
+{
+    return m_modbusRtuManager->hasModbusRtuMaster(modbusUuid);
+}
+
+ModbusRtuMaster *ModbusRtuHardwareResourceImplementation::getModbusRtuMaster(const QUuid &modbusUuid)
+{
+    return m_modbusRtuManager->getModbusRtuMaster(modbusUuid);
+}
 
 bool ModbusRtuHardwareResourceImplementation::available() const
 {

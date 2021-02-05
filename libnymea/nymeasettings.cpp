@@ -64,6 +64,10 @@
         This role will create the \b{mqttpolicies.conf} file and is used to store the \l{MqttPolicy}{MqttPolicies}.
     \value SettingsRoleIOConnections
         This role will create the \b{ioconnections.conf} file and is used to store the \l{IOConnection}{IOConnections}.
+    \value SettingsRoleZigbee
+        This role will create the \b{zigbee.conf} file and is used to store the Zigbee networks.
+    \value SettingsRoleModbusRtu
+        This role will create the \b{modbusrtu.conf} file and is used to store the modbus RTU resources.
 
 */
 
@@ -83,7 +87,7 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     QString settingsPrefix = QCoreApplication::instance()->organizationName() + "/";
 
     QString basePath;
-    if (!qgetenv("SNAP").isEmpty()) {
+    if (!qEnvironmentVariableIsEmpty("SNAP")) {
         basePath = QString(qgetenv("SNAP_DATA")) + "/";
         settingsPrefix.clear(); // We don't want that in the snappy case...
     } else if (settingsPrefix == "nymea-test/") {
@@ -125,6 +129,9 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     case SettingsRoleZigbee:
         fileName = "zigbee.conf";
         break;
+    case SettingsRoleModbusRtu:
+        fileName = "modbusrtu.conf";
+        break;
     }
     m_settings = new QSettings(basePath + settingsPrefix + fileName, QSettings::IniFormat, this);
 }
@@ -157,7 +164,7 @@ QString NymeaSettings::settingsPath()
     QString path;
     QString organisationName = QCoreApplication::instance()->organizationName();
 
-    if (!qgetenv("SNAP").isEmpty()) {
+    if (!qEnvironmentVariableIsEmpty("SNAP")) {
         path = QString(qgetenv("SNAP_DATA"));
     } else if (organisationName == "nymea-test") {
         path = "/tmp/" + organisationName;
@@ -174,7 +181,7 @@ QString NymeaSettings::translationsPath()
 {
     QString organisationName = QCoreApplication::instance()->organizationName();
 
-    if (!qgetenv("SNAP").isEmpty()) {
+    if (!qEnvironmentVariableIsEmpty("SNAP")) {
         return QString(qgetenv("SNAP") + "/usr/share/nymea/translations");
     } else if (organisationName == "nymea-test") {
         return "/tmp/" + organisationName;
@@ -188,7 +195,7 @@ QString NymeaSettings::storagePath()
 {
     QString path;
     QString organisationName = QCoreApplication::instance()->organizationName();
-    if (!qgetenv("SNAP").isEmpty()) {
+    if (!qEnvironmentVariableIsEmpty("SNAP")) {
         path = QString(qgetenv("SNAP_DATA"));
     } else if (organisationName == "nymea-test") {
         path = "/tmp/" + organisationName;

@@ -41,13 +41,13 @@ class ModbusRtuReplyImpl : public ModbusRtuReply
 {
     Q_OBJECT
 public:
-    explicit ModbusRtuReplyImpl(uint slaveAddress, uint registerAddress, QObject *parent = nullptr);
+    explicit ModbusRtuReplyImpl(int slaveAddress, int registerAddress, QObject *parent = nullptr);
 
     bool isFinished() const override;
     void setFinished(bool finished);
 
-    uint slaveAddress() const override;
-    uint registerAddress() const override;
+    int slaveAddress() const override;
+    int registerAddress() const override;
 
     QString errorString() const override;
     void setErrorString(const QString &errorString);
@@ -60,8 +60,8 @@ public:
 
 private:
     bool m_finished = false;
-    uint m_slaveAddress;
-    uint m_registerAddress;
+    int m_slaveAddress;
+    int m_registerAddress;
     Error m_error = UnknownError;
     QString m_errorString;
     QVector<quint16> m_result;

@@ -32,10 +32,10 @@
 #define MODBUSRTUMASTERIMPL_H
 
 #include <QObject>
+#include <QSerialPort>
 
 #ifdef WITH_QTSERIALBUS
 #include <QtSerialBus/QtSerialBus>
-#include <QtSerialPort/QSerialPort>
 #endif
 
 #include "hardware/modbus/modbusrtumaster.h"
@@ -50,32 +50,36 @@ public:
     ~ModbusRtuMasterImpl() override = default;
 
     QUuid modbusUuid() const override;
-
     QString serialPort() const override;
+    qint32 baudrate() const override;
+    QSerialPort::Parity parity() const override;
+    QSerialPort::DataBits dataBits() const override;
+    QSerialPort::StopBits stopBits() override;
 
     bool connected() const override;
 
     // Requests
-    ModbusRtuReply *readCoil(uint slaveAddress, uint registerAddress, uint size = 1) override;
-    ModbusRtuReply *readDiscreteInput(uint slaveAddress, uint registerAddress, uint size = 1) override;
-    ModbusRtuReply *readInputRegister(uint slaveAddress, uint registerAddress, uint size = 1) override;
-    ModbusRtuReply *readHoldingRegister(uint slaveAddress, uint registerAddress, uint size = 1) override;
+    ModbusRtuReply *readCoil(int slaveAddress, int registerAddress, quint16 size = 1) override;
+    ModbusRtuReply *readDiscreteInput(int slaveAddress, int registerAddress, quint16 size = 1) override;
+    ModbusRtuReply *readInputRegister(int slaveAddress, int registerAddress, quint16 size = 1) override;
+    ModbusRtuReply *readHoldingRegister(int slaveAddress, int registerAddress, quint16 size = 1) override;
 
-    ModbusRtuReply *writeCoil(uint slaveAddress, uint registerAddress, bool status) override;
-    ModbusRtuReply *writeCoils(uint slaveAddress, uint registerAddress, const QVector<quint16> &values) override;
-
-    ModbusRtuReply *writeHoldingRegister(uint slaveAddress, uint registerAddress, quint16 value) override;
-    ModbusRtuReply *writeHoldingRegisters(uint slaveAddress, uint registerAddress, const QVector<quint16> &values) override;
+    ModbusRtuReply *writeCoils(int slaveAddress, int registerAddress, const QVector<quint16> &values) override;
+    ModbusRtuReply *writeHoldingRegisters(int slaveAddress, int registerAddress, const QVector<quint16> &values) override;
 
 private:
     QUuid m_modbusUuid;
+    bool m_connected = false;
 
 #ifdef WITH_QTSERIALBUS
     QModbusRtuSerialMaster *m_modbus = nullptr;
 #endif
 
     QString m_serialPort;
-    bool m_connected = false;
+    qint32 m_baudrate;
+    QSerialPort::Parity m_parity;
+    QSerialPort::DataBits m_dataBits;
+    QSerialPort::StopBits m_stopBits;
 };
 
 }

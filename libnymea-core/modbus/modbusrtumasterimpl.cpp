@@ -42,25 +42,36 @@ namespace nymeaserver {
 
 ModbusRtuMasterImpl::ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, QObject *parent) :
     ModbusRtuMaster(parent),
-    m_modbusUuid(modbusUuid)
+    m_modbusUuid(modbusUuid),
+    m_serialPort(serialPort),
+    m_baudrate(baudrate),
+    m_parity(parity),
+    m_dataBits(dataBits),
+    m_stopBits(stopBits)
 {
 #ifdef WITH_QTSERIALBUS
     m_modbus = new QModbusRtuSerialMaster(this);
-    m_modbus->setConnectionParameter(QModbusDevice::SerialPortNameParameter, serialPort);
-    m_modbus->setConnectionParameter(QModbusDevice::SerialBaudRateParameter, baudrate);
-    m_modbus->setConnectionParameter(QModbusDevice::SerialDataBitsParameter, dataBits);
-    m_modbus->setConnectionParameter(QModbusDevice::SerialStopBitsParameter, stopBits);
-    m_modbus->setConnectionParameter(QModbusDevice::SerialParityParameter, parity);
+    m_modbus->setConnectionParameter(QModbusDevice::SerialPortNameParameter, m_serialPort);
+    m_modbus->setConnectionParameter(QModbusDevice::SerialBaudRateParameter, m_baudrate);
+    m_modbus->setConnectionParameter(QModbusDevice::SerialDataBitsParameter, m_dataBits);
+    m_modbus->setConnectionParameter(QModbusDevice::SerialStopBitsParameter, m_stopBits);
+    m_modbus->setConnectionParameter(QModbusDevice::SerialParityParameter, m_parity);
 
     connect(m_modbus, &QModbusTcpClient::stateChanged, this, [=](QModbusDevice::State state){
-        qCDebug(dcModbusRtu()) << "Connection state changed" << m_modbusUuid.toString() << serialPort << state;
+        qCDebug(dcModbusRtu()) << "Connection state changed" << m_modbusUuid.toString() << m_serialPort << state;
+        if (state == QModbusDevice::ConnectedState) {
+            m_connected = true;
+            emit connectedChanged(m_connected);
+        } else {
+            m_connected = false;
+            emit connectedChanged(m_connected);
+        }
     });
-    //connect(m_modbus, &QModbusRtuSerialMaster::errorOccurred, this, &ModbusRtuMaster::onModbusErrorOccurred);
 
-//    m_reconnectTimer = new QTimer(this);
-//    m_reconnectTimer->setSingleShot(true);
-//    connect(m_reconnectTimer, &QTimer::timeout, this, &ModbusRTUMaster::onReconnectTimer);
-
+    connect(m_modbus, &QModbusRtuSerialMaster::errorOccurred, this, [=](QModbusDevice::Error error){
+        qCDebug(dcModbusRtu()) << "Error occured for modbus RTU master" << m_modbusUuid.toString() << m_serialPort << error << m_modbus->errorString();
+        // TODO: check if disconnected...
+    });
 #endif
 }
 
@@ -74,143 +85,344 @@ QString ModbusRtuMasterImpl::serialPort() const
     return m_serialPort;
 }
 
+qint32 ModbusRtuMasterImpl::baudrate() const
+{
+    return m_baudrate;
+}
+
+QSerialPort::Parity ModbusRtuMasterImpl::parity() const
+{
+    return m_parity;
+}
+
+QSerialPort::DataBits ModbusRtuMasterImpl::dataBits() const
+{
+    return m_dataBits;
+}
+
+QSerialPort::StopBits ModbusRtuMasterImpl::stopBits()
+{
+    return m_stopBits;
+}
+
 bool ModbusRtuMasterImpl::connected() const
 {
     return m_connected;
 }
 
-ModbusRtuReply *ModbusRtuMasterImpl::readCoil(uint slaveAddress, uint registerAddress, uint size)
+ModbusRtuReply *ModbusRtuMasterImpl::readCoil(int slaveAddress, int registerAddress, quint16 size)
 {
-#ifndef WITH_QTSERIALBUS
-    Q_UNUSED(slaveAddress)
-    Q_UNUSED(registerAddress)
-    Q_UNUSED(size)
-    return nullptr;
-#else
+#ifdef WITH_QTSERIALBUS
+    // Create the reply for the plugin
+    ModbusRtuReplyImpl *reply = new ModbusRtuReplyImpl(slaveAddress, registerAddress, this);
+    connect(reply, &ModbusRtuReplyImpl::finished, reply, &ModbusRtuReplyImpl::deleteLater);
 
+    // Create the actual modbus lib reply
     QModbusDataUnit request = QModbusDataUnit(QModbusDataUnit::RegisterType::Coils, registerAddress, size);
     QModbusReply *modbusReply = m_modbus->sendReadRequest(request, slaveAddress);
 
-    // TODO: fill data and return reply
-    ModbusRtuReplyImpl *reply = new ModbusRtuReplyImpl(slaveAddress, registerAddress, this);
     connect(modbusReply, &QModbusReply::finished, modbusReply, [=](){
+        modbusReply->deleteLater();
+
+        // Fill common reply data
+        reply->setFinished(true);
+        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
+        reply->setErrorString(modbusReply->errorString());
+
+        // Check if the reply finished with an error
         if (modbusReply->error() != QModbusDevice::NoError) {
             qCWarning(dcModbusRtu()) << "Read coil request finished with error" << modbusReply->error() << modbusReply->errorString();
-
+            emit reply->errorOccurred(reply->error());
+            emit reply->finished();
+            return;
         }
+
+        // Parse the data unit and set reply result
+        const QModbusDataUnit unit = modbusReply->result();
+        reply->setResult(unit.values());
+        emit reply->finished();
     });
+
+    connect(modbusReply, &QModbusReply::errorOccurred, modbusReply, [=](QModbusDevice::Error error){
+        qCWarning(dcModbusRtu()) << "Read coil request finished with error" << error << modbusReply->errorString();
+        reply->setFinished(true);
+        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
+        reply->setErrorString(modbusReply->errorString());
+        emit reply->errorOccurred(reply->error());
+        emit reply->finished();
+    });
+
     return qobject_cast<ModbusRtuReply *>(reply);
-#endif
-}
-
-ModbusRtuReply *ModbusRtuMasterImpl::readDiscreteInput(uint slaveAddress, uint registerAddress, uint size)
-{
-#ifndef WITH_QTSERIALBUS
-    Q_UNUSED(slaveAddress)
-    Q_UNUSED(registerAddress)
-    Q_UNUSED(size)
-    return nullptr;
 #else
-    // TODO:
     Q_UNUSED(slaveAddress)
     Q_UNUSED(registerAddress)
     Q_UNUSED(size)
+
     return nullptr;
 #endif
 }
 
-ModbusRtuReply *ModbusRtuMasterImpl::readInputRegister(uint slaveAddress, uint registerAddress, uint size)
+ModbusRtuReply *ModbusRtuMasterImpl::readDiscreteInput(int slaveAddress, int registerAddress, quint16 size)
 {
-#ifndef WITH_QTSERIALBUS
-    Q_UNUSED(slaveAddress)
-    Q_UNUSED(registerAddress)
-    Q_UNUSED(size)
-    return nullptr;
+#ifdef WITH_QTSERIALBUS
+    // Create the reply for the plugin
+    ModbusRtuReplyImpl *reply = new ModbusRtuReplyImpl(slaveAddress, registerAddress, this);
+    connect(reply, &ModbusRtuReplyImpl::finished, reply, &ModbusRtuReplyImpl::deleteLater);
+
+    // Create the actual modbus lib reply
+    QModbusDataUnit request = QModbusDataUnit(QModbusDataUnit::RegisterType::DiscreteInputs, registerAddress, size);
+    QModbusReply *modbusReply = m_modbus->sendReadRequest(request, slaveAddress);
+
+    connect(modbusReply, &QModbusReply::finished, modbusReply, [=](){
+        modbusReply->deleteLater();
+
+        // Fill common reply data
+        reply->setFinished(true);
+        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
+        reply->setErrorString(modbusReply->errorString());
+
+        // Check if the reply finished with an error
+        if (modbusReply->error() != QModbusDevice::NoError) {
+            qCWarning(dcModbusRtu()) << "Read descrete inputs request finished with error" << modbusReply->error() << modbusReply->errorString();
+            emit reply->errorOccurred(reply->error());
+            emit reply->finished();
+            return;
+        }
+
+        // Parse the data unit and set reply result
+        const QModbusDataUnit unit = modbusReply->result();
+        reply->setResult(unit.values());
+        emit reply->finished();
+    });
+
+    connect(modbusReply, &QModbusReply::errorOccurred, modbusReply, [=](QModbusDevice::Error error){
+        qCWarning(dcModbusRtu()) << "Read descrete inputs request finished with error" << error << modbusReply->errorString();
+        reply->setFinished(true);
+        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
+        reply->setErrorString(modbusReply->errorString());
+        emit reply->errorOccurred(reply->error());
+        emit reply->finished();
+    });
+
+    return qobject_cast<ModbusRtuReply *>(reply);
 #else
-    // TODO:
     Q_UNUSED(slaveAddress)
     Q_UNUSED(registerAddress)
     Q_UNUSED(size)
+
     return nullptr;
 #endif
 }
 
-ModbusRtuReply *ModbusRtuMasterImpl::readHoldingRegister(uint slaveAddress, uint registerAddress, uint size)
+ModbusRtuReply *ModbusRtuMasterImpl::readInputRegister(int slaveAddress, int registerAddress, quint16 size)
 {
-#ifndef WITH_QTSERIALBUS
-    Q_UNUSED(slaveAddress)
-    Q_UNUSED(registerAddress)
-    Q_UNUSED(size)
-    return nullptr;
+#ifdef WITH_QTSERIALBUS
+    // Create the reply for the plugin
+    ModbusRtuReplyImpl *reply = new ModbusRtuReplyImpl(slaveAddress, registerAddress, this);
+    connect(reply, &ModbusRtuReplyImpl::finished, reply, &ModbusRtuReplyImpl::deleteLater);
+
+    // Create the actual modbus lib reply
+    QModbusDataUnit request = QModbusDataUnit(QModbusDataUnit::RegisterType::InputRegisters, registerAddress, size);
+    QModbusReply *modbusReply = m_modbus->sendReadRequest(request, slaveAddress);
+
+    connect(modbusReply, &QModbusReply::finished, modbusReply, [=](){
+        modbusReply->deleteLater();
+
+        // Fill common reply data
+        reply->setFinished(true);
+        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
+        reply->setErrorString(modbusReply->errorString());
+
+        // Check if the reply finished with an error
+        if (modbusReply->error() != QModbusDevice::NoError) {
+            qCWarning(dcModbusRtu()) << "Read input registers request finished with error" << modbusReply->error() << modbusReply->errorString();
+            emit reply->errorOccurred(reply->error());
+            emit reply->finished();
+            return;
+        }
+
+        // Parse the data unit and set reply result
+        const QModbusDataUnit unit = modbusReply->result();
+        reply->setResult(unit.values());
+        emit reply->finished();
+    });
+
+    connect(modbusReply, &QModbusReply::errorOccurred, modbusReply, [=](QModbusDevice::Error error){
+        qCWarning(dcModbusRtu()) << "Read input registers request finished with error" << error << modbusReply->errorString();
+        reply->setFinished(true);
+        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
+        reply->setErrorString(modbusReply->errorString());
+        emit reply->errorOccurred(reply->error());
+        emit reply->finished();
+    });
+
+    return qobject_cast<ModbusRtuReply *>(reply);
 #else
-    // TODO:
     Q_UNUSED(slaveAddress)
     Q_UNUSED(registerAddress)
     Q_UNUSED(size)
+
     return nullptr;
 #endif
 }
 
-ModbusRtuReply *ModbusRtuMasterImpl::writeCoil(uint slaveAddress, uint registerAddress, bool status)
+ModbusRtuReply *ModbusRtuMasterImpl::readHoldingRegister(int slaveAddress, int registerAddress, quint16 size)
 {
-#ifndef WITH_QTSERIALBUS
-    Q_UNUSED(slaveAddress)
-    Q_UNUSED(registerAddress)
-    Q_UNUSED(size)
-    return nullptr;
+#ifdef WITH_QTSERIALBUS
+    // Create the reply for the plugin
+    ModbusRtuReplyImpl *reply = new ModbusRtuReplyImpl(slaveAddress, registerAddress, this);
+    connect(reply, &ModbusRtuReplyImpl::finished, reply, &ModbusRtuReplyImpl::deleteLater);
+
+    // Create the actual modbus lib reply
+    QModbusDataUnit request = QModbusDataUnit(QModbusDataUnit::RegisterType::HoldingRegisters, registerAddress, size);
+    QModbusReply *modbusReply = m_modbus->sendReadRequest(request, slaveAddress);
+
+    connect(modbusReply, &QModbusReply::finished, modbusReply, [=](){
+        modbusReply->deleteLater();
+
+        // Fill common reply data
+        reply->setFinished(true);
+        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
+        reply->setErrorString(modbusReply->errorString());
+
+        // Check if the reply finished with an error
+        if (modbusReply->error() != QModbusDevice::NoError) {
+            qCWarning(dcModbusRtu()) << "Read holding registers request finished with error" << modbusReply->error() << modbusReply->errorString();
+            emit reply->errorOccurred(reply->error());
+            emit reply->finished();
+            return;
+        }
+
+        // Parse the data unit and set reply result
+        const QModbusDataUnit unit = modbusReply->result();
+        reply->setResult(unit.values());
+        emit reply->finished();
+    });
+
+    connect(modbusReply, &QModbusReply::errorOccurred, modbusReply, [=](QModbusDevice::Error error){
+        qCWarning(dcModbusRtu()) << "Read holding registers request finished with error" << error << modbusReply->errorString();
+        reply->setFinished(true);
+        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
+        reply->setErrorString(modbusReply->errorString());
+        emit reply->errorOccurred(reply->error());
+        emit reply->finished();
+    });
+
+    return qobject_cast<ModbusRtuReply *>(reply);
 #else
-    // TODO:
     Q_UNUSED(slaveAddress)
     Q_UNUSED(registerAddress)
-    Q_UNUSED(status)
+    Q_UNUSED(size)
+
     return nullptr;
 #endif
 }
 
-ModbusRtuReply *ModbusRtuMasterImpl::writeCoils(uint slaveAddress, uint registerAddress, const QVector<quint16> &values)
+ModbusRtuReply *ModbusRtuMasterImpl::writeCoils(int slaveAddress, int registerAddress, const QVector<quint16> &values)
 {
-#ifndef WITH_QTSERIALBUS
+#ifdef WITH_QTSERIALBUS
+    // Create the reply for the plugin
+    ModbusRtuReplyImpl *reply = new ModbusRtuReplyImpl(slaveAddress, registerAddress, this);
+    connect(reply, &ModbusRtuReplyImpl::finished, reply, &ModbusRtuReplyImpl::deleteLater);
+
+    // Create the actual modbus lib reply
+    QModbusDataUnit request = QModbusDataUnit(QModbusDataUnit::RegisterType::Coils, registerAddress, values.length());
+    request.setValues(values);
+
+    QModbusReply *modbusReply = m_modbus->sendWriteRequest(request, slaveAddress);
+
+    connect(modbusReply, &QModbusReply::finished, modbusReply, [=](){
+        modbusReply->deleteLater();
+
+        // Fill common reply data
+        reply->setFinished(true);
+        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
+        reply->setErrorString(modbusReply->errorString());
+
+        // Check if the reply finished with an error
+        if (modbusReply->error() != QModbusDevice::NoError) {
+            qCWarning(dcModbusRtu()) << "Read coil request finished with error" << modbusReply->error() << modbusReply->errorString();
+            emit reply->errorOccurred(reply->error());
+            emit reply->finished();
+            return;
+        }
+
+        // Parse the data unit and set reply result
+        const QModbusDataUnit unit = modbusReply->result();
+        reply->setResult(unit.values());
+        emit reply->finished();
+    });
+
+    connect(modbusReply, &QModbusReply::errorOccurred, modbusReply, [=](QModbusDevice::Error error){
+        qCWarning(dcModbusRtu()) << "Read coil request finished with error" << error << modbusReply->errorString();
+        reply->setFinished(true);
+        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
+        reply->setErrorString(modbusReply->errorString());
+        emit reply->errorOccurred(reply->error());
+        emit reply->finished();
+    });
+
+    return qobject_cast<ModbusRtuReply *>(reply);
+#else
     Q_UNUSED(slaveAddress)
     Q_UNUSED(registerAddress)
     Q_UNUSED(values)
-    return nullptr;
-#else
-    // TODO:
-    Q_UNUSED(slaveAddress)
-    Q_UNUSED(registerAddress)
-    Q_UNUSED(values)
+
     return nullptr;
 #endif
 }
 
-ModbusRtuReply *ModbusRtuMasterImpl::writeHoldingRegister(uint slaveAddress, uint registerAddress, quint16 value)
-{
-#ifndef WITH_QTSERIALBUS
-    Q_UNUSED(slaveAddress)
-    Q_UNUSED(registerAddress)
-    Q_UNUSED(value)
-    return nullptr;
-#else
-    // TODO:
-    Q_UNUSED(slaveAddress)
-    Q_UNUSED(registerAddress)
-    Q_UNUSED(value)
-    return nullptr;
-#endif
-}
 
-ModbusRtuReply *ModbusRtuMasterImpl::writeHoldingRegisters(uint slaveAddress, uint registerAddress, const QVector<quint16> &values)
+ModbusRtuReply *ModbusRtuMasterImpl::writeHoldingRegisters(int slaveAddress, int registerAddress, const QVector<quint16> &values)
 {
-#ifndef WITH_QTSERIALBUS
-    Q_UNUSED(slaveAddress)
-    Q_UNUSED(registerAddress)
-    Q_UNUSED(values)
-    return nullptr;
+#ifdef WITH_QTSERIALBUS
+    // Create the reply for the plugin
+    ModbusRtuReplyImpl *reply = new ModbusRtuReplyImpl(slaveAddress, registerAddress, this);
+    connect(reply, &ModbusRtuReplyImpl::finished, reply, &ModbusRtuReplyImpl::deleteLater);
+
+    // Create the actual modbus lib reply
+    QModbusDataUnit request = QModbusDataUnit(QModbusDataUnit::RegisterType::HoldingRegisters, registerAddress, values.length());
+    request.setValues(values);
+
+    QModbusReply *modbusReply = m_modbus->sendWriteRequest(request, slaveAddress);
+
+    connect(modbusReply, &QModbusReply::finished, modbusReply, [=](){
+        modbusReply->deleteLater();
+
+        // Fill common reply data
+        reply->setFinished(true);
+        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
+        reply->setErrorString(modbusReply->errorString());
+
+        // Check if the reply finished with an error
+        if (modbusReply->error() != QModbusDevice::NoError) {
+            qCWarning(dcModbusRtu()) << "Read coil request finished with error" << modbusReply->error() << modbusReply->errorString();
+            emit reply->errorOccurred(reply->error());
+            emit reply->finished();
+            return;
+        }
+
+        // Parse the data unit and set reply result
+        const QModbusDataUnit unit = modbusReply->result();
+        reply->setResult(unit.values());
+        emit reply->finished();
+    });
+
+    connect(modbusReply, &QModbusReply::errorOccurred, modbusReply, [=](QModbusDevice::Error error){
+        qCWarning(dcModbusRtu()) << "Read coil request finished with error" << error << modbusReply->errorString();
+        reply->setFinished(true);
+        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
+        reply->setErrorString(modbusReply->errorString());
+        emit reply->errorOccurred(reply->error());
+        emit reply->finished();
+    });
+
+    return qobject_cast<ModbusRtuReply *>(reply);
 #else
-    // TODO:
     Q_UNUSED(slaveAddress)
     Q_UNUSED(registerAddress)
     Q_UNUSED(values)
+
     return nullptr;
 #endif
 }

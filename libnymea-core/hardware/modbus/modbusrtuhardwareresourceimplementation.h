@@ -44,7 +44,9 @@ class ModbusRtuHardwareResourceImplementation : public ModbusRtuHardwareResource
 public:
     explicit ModbusRtuHardwareResourceImplementation(ModbusRtuManager *modbusRtuManager, QObject *parent = nullptr);
 
-    //QList<ModbusRtuMaster *> modbusRtuMasters() const override;
+    QList<ModbusRtuMaster *> modbusRtuMasters() const override;
+    bool hasModbusRtuMaster(const QUuid &modbusUuid) override;
+    ModbusRtuMaster *getModbusRtuMaster(const QUuid &modbusUuid) override;
 
     bool available() const override;
     bool enabled() const override;

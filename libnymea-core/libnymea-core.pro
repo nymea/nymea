@@ -3,7 +3,7 @@ TARGET = nymea-core
 
 include(../nymea.pri)
 
-QT += bluetooth dbus qml sql websockets
+QT += bluetooth dbus qml sql websockets serialport
 INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 
@@ -40,9 +40,9 @@ CONFIG(withoutpython) {
 # Let's check if the package exists, not the qt version
 packagesExist(Qt5SerialBus) {
     DEFINES += WITH_QTSERIALBUS
-    Qt += serialbus serialport
+    Qt += serialbus
 } else {
-    message("Qt5SerialBus not available")
+    message("Qt5SerialBus library is not available. Modbus resource disabled.")
 }
 
 

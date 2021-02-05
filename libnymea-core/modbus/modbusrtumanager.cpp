@@ -31,6 +31,7 @@
 #include "modbusrtumanager.h"
 #include "nymeasettings.h"
 #include "loggingcategories.h"
+#include "modbusrtumasterimpl.h"
 
 NYMEA_LOGGING_CATEGORY(dcModbusRtu, "ModbusRtu")
 
@@ -63,10 +64,46 @@ ModbusRtuMaster *ModbusRtuManager::getModbusRtuMaster(const QUuid &modbusUuid)
 void ModbusRtuManager::init()
 {
     // Load uart configurations
+    NymeaSettings settings(NymeaSettings::SettingsRoleModbusRtu);
+    qCDebug(dcModbusRtu()) << "Loading modbus RTU resources from" << settings.fileName();
 
-    // Init modbus rtu masters
+    settings.beginGroup("ModbusRtuMasters");
+    foreach (const QString &uuidString, settings.childGroups()) {
+        settings.beginGroup(uuidString);
+        QString serialPort = settings.value("serialPort").toString();
+        quint32 baudrate = settings.value("baudrate").toUInt();
+        QSerialPort::Parity parity = static_cast<QSerialPort::Parity>(settings.value("parity").toInt());
+        QSerialPort::DataBits dataBits = static_cast<QSerialPort::DataBits>(settings.value("dataBits").toInt());
+        QSerialPort::StopBits stopBits = static_cast<QSerialPort::StopBits>(settings.value("stopBits").toInt());
+        settings.endGroup(); // uuid
+
+        ModbusRtuMasterImpl *modbus = new ModbusRtuMasterImpl(QUuid(uuidString), serialPort, baudrate, parity, dataBits, stopBits, this);
+        ModbusRtuMaster *modbusRtuMaster = qobject_cast<ModbusRtuMaster *>(modbus);
+        qCDebug(dcModbusRtu()) << "Loaded" << modbusRtuMaster;
+        m_modbusRtuMasters.insert(modbusRtuMaster->modbusUuid(), modbusRtuMaster);
+        emit modbusRtuMasterAdded(modbusRtuMaster->modbusUuid());
+    }
+
+    settings.endGroup(); // ModbusRtuMasters
 
     // Connect signals
+
+    // Enable autoconnect for each modbus rtu master
+
+}
+
+void ModbusRtuManager::saveModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster)
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleModbusRtu);
+    settings.beginGroup("ModbusRtuMasters");
+    settings.beginGroup(modbusRtuMaster->modbusUuid().toString());
+    settings.setValue("serialPort", modbusRtuMaster->serialPort());
+    settings.setValue("baudrate", modbusRtuMaster->baudrate());
+    settings.setValue("parity", static_cast<int>(modbusRtuMaster->parity()));
+    settings.setValue("dataBits", static_cast<int>(modbusRtuMaster->dataBits()));
+    settings.setValue("stopBits", static_cast<int>(modbusRtuMaster->stopBits()));
+    settings.endGroup(); // uuid
+    settings.endGroup(); // ModbusRtuMasters
 }
 
 }

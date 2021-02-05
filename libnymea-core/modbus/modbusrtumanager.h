@@ -31,8 +31,9 @@
 #ifndef MODBUSRTUMANAGER_H
 #define MODBUSRTUMANAGER_H
 
-#include <QObject>
 #include <QHash>
+#include <QUuid>
+#include <QObject>
 
 #include "hardware/modbus/modbusrtumaster.h"
 
@@ -52,12 +53,14 @@ public:
     void init();
 
 signals:
-    void modbusRtuMasterAdded(ModbusRtuMaster *modbusRtuMaster);
-    void modbusRtuMasterRemoved(ModbusRtuMaster *modbusRtuMaster);
-    void modbusRtuMasterChanged(ModbusRtuMaster *modbusRtuMaster);
+    void modbusRtuMasterAdded(const QUuid &modbusUuid);
+    void modbusRtuMasterRemoved(const QUuid &modbusUuid);
+    void modbusRtuMasterChanged(const QUuid &modbusUuid);
 
 private:
     QHash<QUuid, ModbusRtuMaster *> m_modbusRtuMasters;
+
+    void saveModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster);
 
 };
 

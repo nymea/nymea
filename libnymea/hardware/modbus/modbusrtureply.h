@@ -53,8 +53,8 @@ public:
 
     virtual bool isFinished() const = 0;
 
-    virtual uint slaveAddress() const = 0;
-    virtual uint registerAddress() const = 0;
+    virtual int slaveAddress() const = 0;
+    virtual int registerAddress() const = 0;
 
     virtual QString errorString() const = 0;
     virtual ModbusRtuReply::Error error() const = 0;

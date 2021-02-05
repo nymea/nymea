@@ -33,7 +33,7 @@
 
 namespace nymeaserver {
 
-ModbusRtuReplyImpl::ModbusRtuReplyImpl(uint slaveAddress, uint registerAddress, QObject *parent) :
+ModbusRtuReplyImpl::ModbusRtuReplyImpl(int slaveAddress, int registerAddress, QObject *parent) :
     ModbusRtuReply(parent),
     m_slaveAddress(slaveAddress),
     m_registerAddress(registerAddress)
@@ -51,12 +51,12 @@ void ModbusRtuReplyImpl::setFinished(bool finished)
     m_finished = finished;
 }
 
-uint ModbusRtuReplyImpl::slaveAddress() const
+int ModbusRtuReplyImpl::slaveAddress() const
 {
     return m_slaveAddress;
 }
 
-uint ModbusRtuReplyImpl::registerAddress() const
+int ModbusRtuReplyImpl::registerAddress() const
 {
     return m_registerAddress;
 }

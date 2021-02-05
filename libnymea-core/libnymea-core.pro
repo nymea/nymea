@@ -39,10 +39,11 @@ CONFIG(withoutpython) {
 # but not all platforms host the qt serialbus package.
 # Let's check if the package exists, not the qt version
 packagesExist(Qt5SerialBus) {
-    DEFINES += WITH_QTSERIALBUS
+    message("Building with QtSerialBus support.")
     Qt += serialbus
+    DEFINES += WITH_QTSERIALBUS
 } else {
-    message("Qt5SerialBus library is not available. Modbus resource disabled.")
+    message("Qt5SerialBus package not found. Building without QtSerialBus support.")
 }
 
 

@@ -33,6 +33,7 @@
 
 #include <QObject>
 #include <QQmlParserStatus>
+#include <QVariantMap>
 
 class ThingManager;
 
@@ -65,7 +66,7 @@ public:
     void setActionName(const QString &actionName);
 
 public slots:
-    void execute(const QVariantMap &params);
+    void execute(const QVariantMap &params = QVariantMap());
 
 signals:
     void thingIdChanged();

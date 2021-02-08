@@ -85,9 +85,27 @@ QString ModbusRtuMasterImpl::serialPort() const
     return m_serialPort;
 }
 
+void ModbusRtuMasterImpl::setSerialPort(const QString &serialPort)
+{
+    if (m_serialPort == serialPort)
+        return;
+
+    m_serialPort = serialPort;
+    emit serialPortChanged(m_serialPort);
+}
+
 qint32 ModbusRtuMasterImpl::baudrate() const
 {
     return m_baudrate;
+}
+
+void ModbusRtuMasterImpl::setBaudrate(qint32 baudrate)
+{
+    if (m_baudrate == baudrate)
+        return;
+
+    m_baudrate = baudrate;
+    emit baudrateChanged(m_baudrate);
 }
 
 QSerialPort::Parity ModbusRtuMasterImpl::parity() const
@@ -95,9 +113,27 @@ QSerialPort::Parity ModbusRtuMasterImpl::parity() const
     return m_parity;
 }
 
+void ModbusRtuMasterImpl::setParity(QSerialPort::Parity parity)
+{
+    if (m_parity == parity)
+        return;
+
+    m_parity = parity;
+    emit parityChanged(m_parity);
+}
+
 QSerialPort::DataBits ModbusRtuMasterImpl::dataBits() const
 {
     return m_dataBits;
+}
+
+void ModbusRtuMasterImpl::setDataBits(QSerialPort::DataBits dataBits)
+{
+    if (m_dataBits == dataBits)
+        return;
+
+    m_dataBits = dataBits;
+    emit dataBitsChanged(m_dataBits);
 }
 
 QSerialPort::StopBits ModbusRtuMasterImpl::stopBits()
@@ -105,9 +141,33 @@ QSerialPort::StopBits ModbusRtuMasterImpl::stopBits()
     return m_stopBits;
 }
 
+void ModbusRtuMasterImpl::setStopBits(QSerialPort::StopBits stopBits)
+{
+    if (m_stopBits == stopBits)
+        return;
+
+    m_stopBits = stopBits;
+    emit stopBitsChanged(m_stopBits);
+}
+
 bool ModbusRtuMasterImpl::connected() const
 {
     return m_connected;
+}
+
+bool ModbusRtuMasterImpl::connectDevice()
+{
+    m_modbus->setConnectionParameter(QModbusDevice::SerialPortNameParameter, m_serialPort);
+    m_modbus->setConnectionParameter(QModbusDevice::SerialBaudRateParameter, m_baudrate);
+    m_modbus->setConnectionParameter(QModbusDevice::SerialDataBitsParameter, m_dataBits);
+    m_modbus->setConnectionParameter(QModbusDevice::SerialStopBitsParameter, m_stopBits);
+    m_modbus->setConnectionParameter(QModbusDevice::SerialParityParameter, m_parity);
+    return m_modbus->connectDevice();
+}
+
+void ModbusRtuMasterImpl::disconnectDevice()
+{
+    m_modbus->disconnectDevice();
 }
 
 ModbusRtuReply *ModbusRtuMasterImpl::readCoil(int slaveAddress, int registerAddress, quint16 size)

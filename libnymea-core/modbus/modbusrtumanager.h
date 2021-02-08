@@ -34,6 +34,7 @@
 #include <QHash>
 #include <QUuid>
 #include <QObject>
+#include <QTimer>
 
 #include "hardware/modbus/modbusrtumaster.h"
 
@@ -43,6 +44,13 @@ class ModbusRtuManager : public QObject
 {
     Q_OBJECT
 public:
+    enum Error {
+        ErrorNoError,
+        ErrorNotFound,
+        ErrorConnectionFailed
+    };
+    Q_ENUM(Error)
+
     explicit ModbusRtuManager(QObject *parent = nullptr);
     ~ModbusRtuManager() = default;
 
@@ -50,10 +58,14 @@ public:
     bool hasModbusRtuMaster(const QUuid &modbusUuid) const;
     ModbusRtuMaster *getModbusRtuMaster(const QUuid &modbusUuid);
 
+    QPair<Error, QUuid> addNewModbusRtuMaster(const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits);
+    Error reconfigureRtuMaster(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits);
+    Error removeModbusRtuMaster(const QUuid &modbusUuid);
+
 signals:
-    void modbusRtuMasterAdded(const QUuid &modbusUuid);
-    void modbusRtuMasterRemoved(const QUuid &modbusUuid);
-    void modbusRtuMasterChanged(const QUuid &modbusUuid);
+    void modbusRtuMasterAdded(ModbusRtuMaster *modbusRtuMaster);
+    void modbusRtuMasterRemoved(ModbusRtuMaster *modbusRtuMaster);
+    void modbusRtuMasterChanged(ModbusRtuMaster *modbusRtuMaster);
 
 private:
     QHash<QUuid, ModbusRtuMaster *> m_modbusRtuMasters;

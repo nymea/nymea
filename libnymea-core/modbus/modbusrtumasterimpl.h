@@ -50,13 +50,26 @@ public:
     ~ModbusRtuMasterImpl() override = default;
 
     QUuid modbusUuid() const override;
+
     QString serialPort() const override;
+    void setSerialPort(const QString &serialPort);
+
     qint32 baudrate() const override;
+    void setBaudrate(qint32 baudrate);
+
     QSerialPort::Parity parity() const override;
+    void setParity(QSerialPort::Parity parity);
+
     QSerialPort::DataBits dataBits() const override;
+    void setDataBits(QSerialPort::DataBits dataBits);
+
     QSerialPort::StopBits stopBits() override;
+    void setStopBits(QSerialPort::StopBits stopBits);
 
     bool connected() const override;
+
+    bool connectDevice();
+    void disconnectDevice();
 
     // Requests
     ModbusRtuReply *readCoil(int slaveAddress, int registerAddress, quint16 size = 1) override;

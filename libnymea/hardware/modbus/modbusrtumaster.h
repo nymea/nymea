@@ -67,6 +67,11 @@ protected:
 
 signals:
     void connectedChanged(bool connected);
+    void serialPortChanged(const QString &serialPort);
+    void baudrateChanged(quint32 baudrate);
+    void parityChanged(QSerialPort::Parity parity);
+    void dataBitsChanged(QSerialPort::DataBits dataBits);
+    void stopBitsChanged(QSerialPort::StopBits stopBits);
 
 };
 

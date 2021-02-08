@@ -43,13 +43,15 @@ class Platform;
 class MqttBroker;
 class ZigbeeManager;
 class ZigbeeHardwareResourceImplementation;
+class ModbusRtuManager;
+class ModbusRtuHardwareResourceImplementation;
 
 class HardwareManagerImplementation : public HardwareManager
 {
     Q_OBJECT
 
 public:
-    explicit HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, QObject *parent = nullptr);
+    explicit HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, ModbusRtuManager *modbusRtuManager, QObject *parent = nullptr);
     ~HardwareManagerImplementation() override;
 
     Radio433 *radio433() override;
@@ -61,7 +63,7 @@ public:
     MqttProvider *mqttProvider() override;
     I2CManager *i2cManager() override;
     ZigbeeHardwareResource *zigbeeResource() override;
-    ModbusRtuHardwareResouce *modbusRtuResource() override;
+    ModbusRtuHardwareResource *modbusRtuResource() override;
 
 public slots:
     void thingsLoaded();
@@ -80,7 +82,7 @@ private:
     MqttProvider *m_mqttProvider = nullptr;
     I2CManager *m_i2cManager = nullptr;
     ZigbeeHardwareResourceImplementation *m_zigbeeResource = nullptr;
-    ModbusRtuHardwareResouce *m_modbusRtuResource = nullptr;
+    ModbusRtuHardwareResourceImplementation *m_modbusRtuResource = nullptr;
 };
 
 }

@@ -67,6 +67,7 @@ class ExperienceManager;
 class ScriptEngine;
 class CloudManager;
 class ZigbeeManager;
+class ModbusRtuManager;
 
 class NymeaCore : public QObject
 {
@@ -107,6 +108,7 @@ public:
     TagsStorage *tagsStorage() const;
     Platform *platform() const;
     ZigbeeManager *zigbeeManager() const;
+    ModbusRtuManager *modbusRtuManager() const;
 
     static QStringList getAvailableLanguages();
     static QStringList loggingFilters();
@@ -151,6 +153,7 @@ private:
     System *m_system;
     ExperienceManager *m_experienceManager;
     ZigbeeManager *m_zigbeeManager;
+    ModbusRtuManager *m_modbusRtuManager;
 
     QList<RuleId> m_executingRules;
 

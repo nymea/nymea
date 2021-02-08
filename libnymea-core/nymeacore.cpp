@@ -53,6 +53,8 @@
 
 #include "zigbee/zigbeemanager.h"
 
+#include "modbus/modbusrtumanager.h"
+
 #include <networkmanager.h>
 
 #include <QDir>
@@ -108,8 +110,11 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     qCDebug(dcCore()) << "Create Zigbee Manager";
     m_zigbeeManager = new ZigbeeManager(this);
 
+    qCDebug(dcCore()) << "Create Modbus RTU Manager";
+    m_modbusRtuManager = new ModbusRtuManager(this);
+
     qCDebug(dcCore) << "Creating Hardware Manager";
-    m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), m_zigbeeManager, this);
+    m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), m_zigbeeManager, m_modbusRtuManager, this);
 
     qCDebug(dcCore) << "Creating Thing Manager (locale:" << m_configuration->locale() << ")";
     m_thingManager = new ThingManagerImplementation(m_hardwareManager, m_configuration->locale(), this);
@@ -643,6 +648,11 @@ Platform *NymeaCore::platform() const
 ZigbeeManager *NymeaCore::zigbeeManager() const
 {
     return m_zigbeeManager;
+}
+
+ModbusRtuManager *NymeaCore::modbusRtuManager() const
+{
+    return m_modbusRtuManager;
 }
 
 void NymeaCore::gotEvent(const Event &event)

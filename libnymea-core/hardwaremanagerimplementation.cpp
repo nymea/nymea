@@ -43,11 +43,13 @@
 #include "hardware/network/mqtt/mqttproviderimplementation.h"
 #include "hardware/i2c/i2cmanagerimplementation.h"
 #include "hardware/zigbee/zigbeehardwareresourceimplementation.h"
+
+#include "modbus/modbusrtumanager.h"
 #include "hardware/modbus/modbusrtuhardwareresourceimplementation.h"
 
 namespace nymeaserver {
 
-HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, QObject *parent) :
+HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, ModbusRtuManager *modbusRtuManager, QObject *parent) :
     HardwareManager(parent),
     m_platform(platform)
 {
@@ -73,6 +75,8 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
     m_i2cManager = new I2CManagerImplementation(this);
 
     m_zigbeeResource = new ZigbeeHardwareResourceImplementation(zigbeeManager, this);
+
+    m_modbusRtuResource = new ModbusRtuHardwareResourceImplementation(modbusRtuManager, this);
 
     // Enable all the resources
     setResourceEnabled(m_pluginTimerManager, true);
@@ -143,7 +147,7 @@ ZigbeeHardwareResource *HardwareManagerImplementation::zigbeeResource()
     return m_zigbeeResource;
 }
 
-ModbusRtuHardwareResouce *HardwareManagerImplementation::modbusRtuResource()
+ModbusRtuHardwareResource *HardwareManagerImplementation::modbusRtuResource()
 {
     return m_modbusRtuResource;
 }

@@ -31,6 +31,7 @@
 #include "modbusrtumanager.h"
 #include "nymeasettings.h"
 #include "loggingcategories.h"
+
 #include "modbusrtumasterimpl.h"
 
 NYMEA_LOGGING_CATEGORY(dcModbusRtu, "ModbusRtu")
@@ -39,6 +40,12 @@ namespace nymeaserver {
 
 ModbusRtuManager::ModbusRtuManager(QObject *parent) : QObject(parent)
 {
+    // Load uart configurations
+    loadRtuMasters();
+
+    // Connect signals
+
+    // Enable autoconnect for each modbus rtu master
 
 }
 
@@ -61,9 +68,8 @@ ModbusRtuMaster *ModbusRtuManager::getModbusRtuMaster(const QUuid &modbusUuid)
     return nullptr;
 }
 
-void ModbusRtuManager::init()
+void ModbusRtuManager::loadRtuMasters()
 {
-    // Load uart configurations
     NymeaSettings settings(NymeaSettings::SettingsRoleModbusRtu);
     qCDebug(dcModbusRtu()) << "Loading modbus RTU resources from" << settings.fileName();
 
@@ -85,11 +91,6 @@ void ModbusRtuManager::init()
     }
 
     settings.endGroup(); // ModbusRtuMasters
-
-    // Connect signals
-
-    // Enable autoconnect for each modbus rtu master
-
 }
 
 void ModbusRtuManager::saveModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster)

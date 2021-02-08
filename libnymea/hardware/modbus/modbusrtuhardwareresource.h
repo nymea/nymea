@@ -34,16 +34,16 @@
 #include <QList>
 #include <QObject>
 
-#include "modbusrtumaster.h"
 #include "hardwareresource.h"
+#include "modbusrtumaster.h"
 
 class ModbusRtuHardwareResource : public HardwareResource
 {
     Q_OBJECT
 public:
     virtual QList<ModbusRtuMaster *> modbusRtuMasters() const = 0;
-    virtual bool hasModbusRtuMaster(const QUuid &modbusUuid) = 0;
-    virtual ModbusRtuMaster *getModbusRtuMaster(const QUuid &modbusUuid) = 0;
+    virtual bool hasModbusRtuMaster(const QUuid &modbusUuid) const = 0;
+    virtual ModbusRtuMaster *getModbusRtuMaster(const QUuid &modbusUuid) const = 0;
 
 protected:
     explicit ModbusRtuHardwareResource(QObject *parent = nullptr);

@@ -49,12 +49,12 @@ QList<ModbusRtuMaster *> ModbusRtuHardwareResourceImplementation::modbusRtuMaste
     return m_modbusRtuManager->modbusRtuMasters();
 }
 
-bool ModbusRtuHardwareResourceImplementation::hasModbusRtuMaster(const QUuid &modbusUuid)
+bool ModbusRtuHardwareResourceImplementation::hasModbusRtuMaster(const QUuid &modbusUuid) const
 {
     return m_modbusRtuManager->hasModbusRtuMaster(modbusUuid);
 }
 
-ModbusRtuMaster *ModbusRtuHardwareResourceImplementation::getModbusRtuMaster(const QUuid &modbusUuid)
+ModbusRtuMaster *ModbusRtuHardwareResourceImplementation::getModbusRtuMaster(const QUuid &modbusUuid) const
 {
     return m_modbusRtuManager->getModbusRtuMaster(modbusUuid);
 }

@@ -34,6 +34,7 @@
 #include <QObject>
 
 #include "modbus/modbusrtumanager.h"
+#include "hardware/modbus/modbusrtumaster.h"
 #include "hardware/modbus/modbusrtuhardwareresource.h"
 
 namespace nymeaserver {
@@ -43,10 +44,11 @@ class ModbusRtuHardwareResourceImplementation : public ModbusRtuHardwareResource
     Q_OBJECT
 public:
     explicit ModbusRtuHardwareResourceImplementation(ModbusRtuManager *modbusRtuManager, QObject *parent = nullptr);
+    ~ModbusRtuHardwareResourceImplementation() override = default;
 
     QList<ModbusRtuMaster *> modbusRtuMasters() const override;
-    bool hasModbusRtuMaster(const QUuid &modbusUuid) override;
-    ModbusRtuMaster *getModbusRtuMaster(const QUuid &modbusUuid) override;
+    bool hasModbusRtuMaster(const QUuid &modbusUuid) const override;
+    ModbusRtuMaster *getModbusRtuMaster(const QUuid &modbusUuid) const override;
 
     bool available() const override;
     bool enabled() const override;

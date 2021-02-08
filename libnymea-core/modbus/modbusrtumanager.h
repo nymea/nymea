@@ -50,8 +50,6 @@ public:
     bool hasModbusRtuMaster(const QUuid &modbusUuid) const;
     ModbusRtuMaster *getModbusRtuMaster(const QUuid &modbusUuid);
 
-    void init();
-
 signals:
     void modbusRtuMasterAdded(const QUuid &modbusUuid);
     void modbusRtuMasterRemoved(const QUuid &modbusUuid);
@@ -60,6 +58,7 @@ signals:
 private:
     QHash<QUuid, ModbusRtuMaster *> m_modbusRtuMasters;
 
+    void loadRtuMasters();
     void saveModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster);
 
 };

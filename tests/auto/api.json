@@ -150,6 +150,12 @@
             "MediaBrowserIconSoundCloud",
             "MediaBrowserIconRadioParadise"
         ],
+        "ModbusRtuError": [
+            "ModbusRtuErrorNoError",
+            "ModbusRtuErrorUuidNotFound",
+            "ModbusRtuErrorHardwareNotFound",
+            "ModbusRtuErrorConnectionFailed"
+        ],
         "NetworkDeviceState": [
             "NetworkDeviceStateUnknown",
             "NetworkDeviceStateUnmanaged",
@@ -231,6 +237,27 @@
         "ScriptMessageType": [
             "ScriptMessageTypeLog",
             "ScriptMessageTypeWarning"
+        ],
+        "SerialPortDataBits": [
+            "SerialPortDataBitsData5",
+            "SerialPortDataBitsData6",
+            "SerialPortDataBitsData7",
+            "SerialPortDataBitsData8",
+            "SerialPortDataBitsUnknownDataBits"
+        ],
+        "SerialPortParity": [
+            "SerialPortParityNoParity",
+            "SerialPortParityEvenParity",
+            "SerialPortParityOddParity",
+            "SerialPortParitySpaceParity",
+            "SerialPortParityMarkParity",
+            "SerialPortParityUnknownParity"
+        ],
+        "SerialPortStopBits": [
+            "SerialPortStopBitsOneStop",
+            "SerialPortStopBitsOneAndHalfStop",
+            "SerialPortStopBitsTwoStop",
+            "SerialPortStopBitsUnknownStopBits"
         ],
         "SetupMethod": [
             "SetupMethodJustAdd",
@@ -1478,6 +1505,61 @@
                 "offset": "Int"
             }
         },
+        "ModbusRtu.AddModbusRtuMaster": {
+            "description": "Add a new modbus RTU master with the given configuration.",
+            "params": {
+                "baudrate": "Uint",
+                "dataBits": "$ref:SerialPortDataBits",
+                "parity": "$ref:SerialPortParity",
+                "serialPort": "String",
+                "stopBits": "$ref:SerialPortStopBits"
+            },
+            "returns": {
+                "modbusError": "$ref:ModbusRtuError",
+                "o:modbusUuid": "Uuid"
+            }
+        },
+        "ModbusRtu.GetModbusRtuMasters": {
+            "description": "Get the list of configured modbus RTU masters.",
+            "params": {
+            },
+            "returns": {
+                "modbusRtuMasters": [
+                    "$ref:ModbusRtuMaster"
+                ]
+            }
+        },
+        "ModbusRtu.GetSerialPorts": {
+            "description": "Get the list of available serial ports from the host system.",
+            "params": {
+            },
+            "returns": {
+                "serialPorts": "$ref:SerialPorts"
+            }
+        },
+        "ModbusRtu.ReconfigureModbusRtuMaster": {
+            "description": "Rconfigure the modbus RTU master with the given UUID and configuration.",
+            "params": {
+                "baudrate": "Uint",
+                "dataBits": "$ref:SerialPortDataBits",
+                "modbusUuid": "Uuid",
+                "parity": "$ref:SerialPortParity",
+                "serialPort": "String",
+                "stopBits": "$ref:SerialPortStopBits"
+            },
+            "returns": {
+                "modbusError": "$ref:ModbusRtuError"
+            }
+        },
+        "ModbusRtu.RemoveModbusRtuMaster": {
+            "description": "Remove the modbus RTU master with the given modbus UUID.",
+            "params": {
+                "modbusUuid": "Uuid"
+            },
+            "returns": {
+                "modbusError": "$ref:ModbusRtuError"
+            }
+        },
         "NetworkManager.ConnectWifiNetwork": {
             "description": "Connect to the wifi network with the given ssid and password.",
             "params": {
@@ -2316,6 +2398,36 @@
                 "logEntry": "$ref:LogEntry"
             }
         },
+        "ModbusRtu.ModbusRtuMasterAdded": {
+            "description": "Emitted whenever a new modbus RTU master has been added to the system.",
+            "params": {
+                "modbusRtuMaster": "$ref:ModbusRtuMaster"
+            }
+        },
+        "ModbusRtu.ModbusRtuMasterChanged": {
+            "description": "Emitted whenever a new modbus RTU master has been changed to the system.",
+            "params": {
+                "modbusRtuMaster": "$ref:ModbusRtuMaster"
+            }
+        },
+        "ModbusRtu.ModbusRtuMasterRemoved": {
+            "description": "Emitted whenever a new modbus RTU master has been removed from the system.",
+            "params": {
+                "modbusUuid": "Uuid"
+            }
+        },
+        "ModbusRtu.SerialPortAdded": {
+            "description": "Emitted whenever a serial port has been added to the system.",
+            "params": {
+                "serialPort": "$ref:SerialPort"
+            }
+        },
+        "ModbusRtu.SerialPortRemoved": {
+            "description": "Emitted whenever a serial port has been removed from the system.",
+            "params": {
+                "serialPort": "$ref:SerialPort"
+            }
+        },
         "NetworkManager.NetworkStatusChanged": {
             "description": "Emitted whenever a status of a NetworkManager changes.",
             "params": {
@@ -2709,6 +2821,15 @@
             "r:source": "$ref:LoggingSource",
             "r:timestamp": "Uint"
         },
+        "ModbusRtuMaster": {
+            "baudrate": "Uint",
+            "connected": "Bool",
+            "dataBits": "$ref:SerialPortDataBits",
+            "modbusUuid": "Uuid",
+            "parity": "$ref:SerialPortParity",
+            "serialPort": "String",
+            "stopBits": "$ref:SerialPortStopBits"
+        },
         "MqttPolicy": {
             "allowedPublishTopicFilters": "StringList",
             "allowedSubscribeTopicFilters": "StringList",
@@ -2835,6 +2956,15 @@
         },
         "Scripts": [
             "$ref:Script"
+        ],
+        "SerialPort": {
+            "r:description": "String",
+            "r:manufacturer": "String",
+            "r:serialNumber": "String",
+            "r:systemLocation": "String"
+        },
+        "SerialPorts": [
+            "$ref:SerialPort"
         ],
         "ServerConfiguration": {
             "address": "String",

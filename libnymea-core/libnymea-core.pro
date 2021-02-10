@@ -47,6 +47,14 @@ packagesExist(Qt5SerialBus) {
     message("Qt5SerialBus package not found. Building without QtSerialBus support.")
 }
 
+# Note: udev is not available on all platforms
+packagesExist(libudev) {
+    message("Build with udev support")
+    PKGCONFIG += libudev
+    DEFINES += WITH_UDEV
+} else {
+    message("Build without udev support.")
+}
 
 target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target
@@ -57,6 +65,7 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 
 HEADERS += nymeacore.h \
+    hardware/serialport/serialportmonitor.h \
     integrations/apikeysprovidersloader.h \
     integrations/plugininfocache.h \
     integrations/python/pyapikeystorage.h \
@@ -156,6 +165,7 @@ HEADERS += nymeacore.h \
 
 
 SOURCES += nymeacore.cpp \
+    hardware/serialport/serialportmonitor.cpp \
     integrations/apikeysprovidersloader.cpp \
     integrations/plugininfocache.cpp \
     integrations/thingmanagerimplementation.cpp \

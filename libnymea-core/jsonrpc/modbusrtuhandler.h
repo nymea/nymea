@@ -34,19 +34,39 @@
 #include <QObject>
 
 #include "jsonrpc/jsonhandler.h"
+#include "hardware/modbus/modbusrtumaster.h"
 
 namespace nymeaserver {
+
+class ModbusRtuManager;
 
 class ModbusRtuHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit ModbusRtuHandler(QObject *parent = nullptr);
+    explicit ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *parent = nullptr);
 
     QString name() const override;
 
-signals:
+    Q_INVOKABLE JsonReply *GetSerialPorts(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetModbusRtuMasters(const QVariantMap &params);
 
+    Q_INVOKABLE JsonReply *AddModbusRtuMaster(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *RemoveModbusRtuMaster(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *ReconfigureModbusRtuMaster(const QVariantMap &params);
+
+signals:
+    void SerialPortAdded(const QVariantMap &params);
+    void SerialPortRemoved(const QVariantMap &params);
+
+    void ModbusRtuMasterAdded(const QVariantMap &params);
+    void ModbusRtuMasterRemoved(const QVariantMap &params);
+    void ModbusRtuMasterChanged(const QVariantMap &params);
+
+private:
+    ModbusRtuManager *m_modbusRtuManager = nullptr;
+
+    QVariantMap packModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster);
 };
 
 }

@@ -33,32 +33,28 @@
 #include "loggingcategories.h"
 
 #include "modbusrtumasterimpl.h"
+#include "hardware/serialport/serialportmonitor.h"
 
 NYMEA_LOGGING_CATEGORY(dcModbusRtu, "ModbusRtu")
 
 namespace nymeaserver {
 
-ModbusRtuManager::ModbusRtuManager(QObject *parent) : QObject(parent)
+ModbusRtuManager::ModbusRtuManager(SerialPortMonitor *serialPortMonitor, QObject *parent) :
+    QObject(parent),
+    m_serialPortMonitor(serialPortMonitor)
 {
-    // Load available serial ports
-    updateSerialPorts();
-
     // Load uart configurations
     loadRtuMasters();
 
-    // Enable autoconnect for each modbus rtu master
-    m_timer = new QTimer(this);
-    m_timer->setInterval(5000);
-    m_timer->setSingleShot(false);
-    connect(m_timer, &QTimer::timeout, this, [=](){
-        // Update serial port list
-        updateSerialPorts();
+    connect(m_serialPortMonitor, &SerialPortMonitor::serialPortAdded, this, [=](const QSerialPortInfo &serialPortInfo){
+        qCDebug(dcModbusRtu()) << "Serial port added. Verify modbus RTU masters...";
 
-        // Check if we have to reconnect a device
+        // Check if we have to reconnect any modbus RTU masters
         foreach (ModbusRtuMaster *modbusMaster, m_modbusRtuMasters.values()) {
             ModbusRtuMasterImpl *modbusMasterImpl = qobject_cast<ModbusRtuMasterImpl *>(modbusMaster);
 
-            if (!modbusMasterImpl->connected()) {
+            // Try only to reconnect if the added serial port matches a disconnected modbus RTU master
+            if (!modbusMasterImpl->connected() && modbusMasterImpl->serialPort() == serialPortInfo.systemLocation()) {
                 if (!modbusMasterImpl->connectDevice()) {
                     qCDebug(dcModbusRtu()) << "Reconnect" << modbusMaster << "failed.";
                 } else {
@@ -67,8 +63,11 @@ ModbusRtuManager::ModbusRtuManager(QObject *parent) : QObject(parent)
             }
         }
     });
+}
 
-    m_timer->start();
+SerialPortMonitor *ModbusRtuManager::serialPortMonitor() const
+{
+    return m_serialPortMonitor;
 }
 
 QList<ModbusRtuMaster *> ModbusRtuManager::modbusRtuMasters() const
@@ -90,30 +89,37 @@ ModbusRtuMaster *ModbusRtuManager::getModbusRtuMaster(const QUuid &modbusUuid)
     return nullptr;
 }
 
-QPair<ModbusRtuManager::Error, QUuid>  ModbusRtuManager::addNewModbusRtuMaster(const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits)
+QPair<ModbusRtuManager::ModbusRtuError, QUuid>  ModbusRtuManager::addNewModbusRtuMaster(const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits)
 {
     // Check if the serial port exists
-
-    // Check if the serial port is not occupied
+    if (!m_serialPortMonitor->serialPortAvailable(serialPort)) {
+        qCWarning(dcModbusRtu()) << "Cannot add new modbus RTU master because the serial port" << serialPort << "is not available any more";
+        return QPair<ModbusRtuManager::ModbusRtuError, QUuid>(ModbusRtuErrorHardwareNotFound, QUuid());
+    }
 
     QUuid modbusUuid = QUuid::createUuid();
     ModbusRtuMasterImpl *modbusMaster = new ModbusRtuMasterImpl(modbusUuid, serialPort, baudrate, parity, dataBits, stopBits, this);
     ModbusRtuMaster *modbus = qobject_cast<ModbusRtuMaster *>(modbusMaster);
-    qCDebug(dcModbusRtu()) << "Adding new" << qobject_cast<ModbusRtuMaster *>(modbusMaster) << parity << dataBits << stopBits;
+    qCDebug(dcModbusRtu()) << "Adding new" << modbus << parity << dataBits << stopBits;
 
-    // Connect the modbus master bus;
-    m_modbusRtuMasters.insert(modbusUuid, modbus);
-    emit modbusRtuMasterAdded(modbus);
+    // Note: We could add the modbus master event if a connection is currently not possible...not sure yet
+    if (!modbusMaster->connectDevice()) {
+        qCWarning(dcModbusRtu()) << "Failed to add new modbus RTU master. Could not connect to" << modbus << parity << dataBits << stopBits;
+        modbusMaster->deleteLater();
+        return QPair<ModbusRtuError, QUuid>(ModbusRtuErrorConnectionFailed, QUuid());
+    }
+
+    addModbusRtuMasterInternally(modbusMaster);
     saveModbusRtuMaster(modbus);
 
-    return QPair<Error, QUuid>(ErrorNoError, modbusUuid);
+    return QPair<ModbusRtuError, QUuid>(ModbusRtuErrorNoError, modbusUuid);
 }
 
-ModbusRtuManager::Error ModbusRtuManager::reconfigureRtuMaster(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits)
+ModbusRtuManager::ModbusRtuError ModbusRtuManager::reconfigureModbusRtuMaster(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits)
 {
     if (!m_modbusRtuMasters.contains(modbusUuid)) {
         qCWarning(dcModbusRtu()) << "Could not reconfigure modbus RTU master because no resource could be found with uuid" << modbusUuid.toString();
-        return ErrorNotFound;
+        return ModbusRtuErrorUuidNotFound;
     }
 
     ModbusRtuMasterImpl *modbusMaster = qobject_cast<ModbusRtuMasterImpl *>(m_modbusRtuMasters.value(modbusUuid));
@@ -131,37 +137,32 @@ ModbusRtuManager::Error ModbusRtuManager::reconfigureRtuMaster(const QUuid &modb
     // Connect again
     if (!modbusMaster->connectDevice()) {
         qCWarning(dcModbusRtu()) << "Failed to connect to" << m_modbusRtuMasters.value(modbusUuid);
-        return ErrorConnectionFailed;
+        emit modbusRtuMasterChanged(m_modbusRtuMasters.value(modbusUuid));
+        return ModbusRtuErrorConnectionFailed;
     }
 
     emit modbusRtuMasterChanged(m_modbusRtuMasters.value(modbusUuid));
 
     qCDebug(dcModbusRtu()) << "Reconfigured successfully" << m_modbusRtuMasters.value(modbusUuid);
-    return ErrorNoError;
+    return ModbusRtuErrorNoError;
 }
 
-
-ModbusRtuManager::Error ModbusRtuManager::removeModbusRtuMaster(const QUuid &modbusUuid)
+ModbusRtuManager::ModbusRtuError ModbusRtuManager::removeModbusRtuMaster(const QUuid &modbusUuid)
 {
-    ModbusRtuMasterImpl *modbusMaster = qobject_cast<ModbusRtuMasterImpl *>(m_modbusRtuMasters.value(modbusUuid));
-    if (!modbusMaster) {
+    if (!m_modbusRtuMasters.contains(modbusUuid)) {
         qCWarning(dcModbusRtu()) << "Could not remove modbus RTU master because no resource could be found with uuid" << modbusUuid.toString();
-        return ErrorNotFound;
+        return ModbusRtuErrorUuidNotFound;
     }
 
+    ModbusRtuMasterImpl *modbusMaster = qobject_cast<ModbusRtuMasterImpl *>(m_modbusRtuMasters.take(modbusUuid));
     qCDebug(dcModbusRtu()) << "Removing modbus RTU master" << qobject_cast<ModbusRtuMaster *>(modbusMaster);
+    modbusMaster->disconnectDevice();
+    modbusMaster->deleteLater();
+
     emit modbusRtuMasterRemoved(modbusMaster);
 
-    modbusMaster->deleteLater();
-    return ErrorNoError;
+    return ModbusRtuErrorNoError;
 }
-
-void ModbusRtuManager::updateSerialPorts()
-{
-    // Check if serial port added or removed
-
-}
-
 
 void ModbusRtuManager::loadRtuMasters()
 {
@@ -178,11 +179,7 @@ void ModbusRtuManager::loadRtuMasters()
         QSerialPort::StopBits stopBits = static_cast<QSerialPort::StopBits>(settings.value("stopBits").toInt());
         settings.endGroup(); // uuid
 
-        ModbusRtuMasterImpl *modbus = new ModbusRtuMasterImpl(QUuid(uuidString), serialPort, baudrate, parity, dataBits, stopBits, this);
-        ModbusRtuMaster *modbusRtuMaster = qobject_cast<ModbusRtuMaster *>(modbus);
-        qCDebug(dcModbusRtu()) << "Loaded" << modbusRtuMaster;
-        m_modbusRtuMasters.insert(modbusRtuMaster->modbusUuid(), modbusRtuMaster);
-        emit modbusRtuMasterAdded(modbusRtuMaster);
+        addModbusRtuMasterInternally(new ModbusRtuMasterImpl(QUuid(uuidString), serialPort, baudrate, parity, dataBits, stopBits, this));
     }
 
     settings.endGroup(); // ModbusRtuMasters
@@ -191,6 +188,7 @@ void ModbusRtuManager::loadRtuMasters()
 void ModbusRtuManager::saveModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster)
 {
     NymeaSettings settings(NymeaSettings::SettingsRoleModbusRtu);
+    qCDebug(dcModbusRtu()) << "Saving" << modbusRtuMaster << "to" << settings.fileName();
     settings.beginGroup("ModbusRtuMasters");
     settings.beginGroup(modbusRtuMaster->modbusUuid().toString());
     settings.setValue("serialPort", modbusRtuMaster->serialPort());
@@ -200,6 +198,20 @@ void ModbusRtuManager::saveModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster)
     settings.setValue("stopBits", static_cast<int>(modbusRtuMaster->stopBits()));
     settings.endGroup(); // uuid
     settings.endGroup(); // ModbusRtuMasters
+}
+
+void ModbusRtuManager::addModbusRtuMasterInternally(ModbusRtuMasterImpl *modbusRtuMaster)
+{
+    ModbusRtuMaster *modbusMaster = qobject_cast<ModbusRtuMaster *>(modbusRtuMaster);
+    qCDebug(dcModbusRtu()) << "Adding" << modbusMaster;
+    m_modbusRtuMasters.insert(modbusMaster->modbusUuid(), modbusMaster);
+
+    connect(modbusMaster, &ModbusRtuMaster::connectedChanged, this, [=](bool connected){
+        qCDebug(dcModbusRtu()) << modbusMaster << (connected ? "connected" : "disconnected");
+        emit modbusRtuMasterChanged(modbusMaster);
+    });
+
+    emit modbusRtuMasterAdded(modbusMaster);
 }
 
 }

@@ -68,6 +68,7 @@ class ScriptEngine;
 class CloudManager;
 class ZigbeeManager;
 class ModbusRtuManager;
+class SerialPortMonitor;
 
 class NymeaCore : public QObject
 {
@@ -153,6 +154,7 @@ private:
     System *m_system;
     ExperienceManager *m_experienceManager;
     ZigbeeManager *m_zigbeeManager;
+    SerialPortMonitor *m_serialPortMonitor;
     ModbusRtuManager *m_modbusRtuManager;
 
     QList<RuleId> m_executingRules;

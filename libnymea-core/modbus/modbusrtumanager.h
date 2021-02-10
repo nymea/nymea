@@ -40,27 +40,33 @@
 
 namespace nymeaserver {
 
+class SerialPortMonitor;
+class ModbusRtuMasterImpl;
+
 class ModbusRtuManager : public QObject
 {
     Q_OBJECT
 public:
-    enum Error {
-        ErrorNoError,
-        ErrorNotFound,
-        ErrorConnectionFailed
+    enum ModbusRtuError {
+        ModbusRtuErrorNoError,
+        ModbusRtuErrorUuidNotFound,
+        ModbusRtuErrorHardwareNotFound,
+        ModbusRtuErrorConnectionFailed
     };
-    Q_ENUM(Error)
+    Q_ENUM(ModbusRtuError)
 
-    explicit ModbusRtuManager(QObject *parent = nullptr);
+    explicit ModbusRtuManager(SerialPortMonitor *serialPortMonitor, QObject *parent = nullptr);
     ~ModbusRtuManager() = default;
+
+    SerialPortMonitor *serialPortMonitor() const;
 
     QList<ModbusRtuMaster *> modbusRtuMasters() const;
     bool hasModbusRtuMaster(const QUuid &modbusUuid) const;
     ModbusRtuMaster *getModbusRtuMaster(const QUuid &modbusUuid);
 
-    QPair<Error, QUuid> addNewModbusRtuMaster(const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits);
-    Error reconfigureRtuMaster(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits);
-    Error removeModbusRtuMaster(const QUuid &modbusUuid);
+    QPair<ModbusRtuError, QUuid> addNewModbusRtuMaster(const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits);
+    ModbusRtuError reconfigureModbusRtuMaster(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits);
+    ModbusRtuError removeModbusRtuMaster(const QUuid &modbusUuid);
 
 signals:
     void modbusRtuMasterAdded(ModbusRtuMaster *modbusRtuMaster);
@@ -69,9 +75,12 @@ signals:
 
 private:
     QHash<QUuid, ModbusRtuMaster *> m_modbusRtuMasters;
+    SerialPortMonitor *m_serialPortMonitor = nullptr;
 
     void loadRtuMasters();
     void saveModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster);
+
+    void addModbusRtuMasterInternally(ModbusRtuMasterImpl *modbusRtuMaster);
 
 };
 

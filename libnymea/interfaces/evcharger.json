@@ -1,4 +1,12 @@
 {
-    "description": "An EV-charger. Extends the power interface for charging/not charging an electric vehicle.",
-    "extends": "power"
+    "description": "An EV-charger. Extends the power interface for charging/not charging an electric vehicle. Supports regulation of percentage in addition to be powered on or off.",
+    "extends": "power",
+    "states": [
+        {
+            "name": "maxChargingCurrent",
+            "type": "double",
+            "writable": true,
+            "unit": "Ampere"
+        }
+    ]
 }

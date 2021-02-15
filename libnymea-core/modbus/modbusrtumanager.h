@@ -49,6 +49,7 @@ class ModbusRtuManager : public QObject
 public:
     enum ModbusRtuError {
         ModbusRtuErrorNoError,
+        ModbusRtuErrorNotAvailable,
         ModbusRtuErrorUuidNotFound,
         ModbusRtuErrorHardwareNotFound,
         ModbusRtuErrorConnectionFailed

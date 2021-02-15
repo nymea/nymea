@@ -157,17 +157,26 @@ bool ModbusRtuMasterImpl::connected() const
 
 bool ModbusRtuMasterImpl::connectDevice()
 {
+#ifdef WITH_QTSERIALBUS
     m_modbus->setConnectionParameter(QModbusDevice::SerialPortNameParameter, m_serialPort);
     m_modbus->setConnectionParameter(QModbusDevice::SerialBaudRateParameter, m_baudrate);
     m_modbus->setConnectionParameter(QModbusDevice::SerialDataBitsParameter, m_dataBits);
     m_modbus->setConnectionParameter(QModbusDevice::SerialStopBitsParameter, m_stopBits);
     m_modbus->setConnectionParameter(QModbusDevice::SerialParityParameter, m_parity);
     return m_modbus->connectDevice();
+#else
+    qCWarning(dcModbusRtu()) << "Modbus is not available on this platform.";
+    return false;
+#endif
 }
 
 void ModbusRtuMasterImpl::disconnectDevice()
 {
+#ifdef WITH_QTSERIALBUS
     m_modbus->disconnectDevice();
+#else
+    qCWarning(dcModbusRtu()) << "Modbus is not available on this platform.";
+#endif
 }
 
 ModbusRtuReply *ModbusRtuMasterImpl::readCoil(int slaveAddress, int registerAddress, quint16 size)
@@ -217,6 +226,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::readCoil(int slaveAddress, int registerAddr
     Q_UNUSED(slaveAddress)
     Q_UNUSED(registerAddress)
     Q_UNUSED(size)
+    qCWarning(dcModbusRtu()) << "Modbus is not available on this platform.";
 
     return nullptr;
 #endif
@@ -269,6 +279,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::readDiscreteInput(int slaveAddress, int reg
     Q_UNUSED(slaveAddress)
     Q_UNUSED(registerAddress)
     Q_UNUSED(size)
+    qCWarning(dcModbusRtu()) << "Modbus is not available on this platform.";
 
     return nullptr;
 #endif
@@ -321,6 +332,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::readInputRegister(int slaveAddress, int reg
     Q_UNUSED(slaveAddress)
     Q_UNUSED(registerAddress)
     Q_UNUSED(size)
+    qCWarning(dcModbusRtu()) << "Modbus is not available on this platform.";
 
     return nullptr;
 #endif
@@ -373,6 +385,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::readHoldingRegister(int slaveAddress, int r
     Q_UNUSED(slaveAddress)
     Q_UNUSED(registerAddress)
     Q_UNUSED(size)
+    qCWarning(dcModbusRtu()) << "Modbus is not available on this platform.";
 
     return nullptr;
 #endif
@@ -427,6 +440,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::writeCoils(int slaveAddress, int registerAd
     Q_UNUSED(slaveAddress)
     Q_UNUSED(registerAddress)
     Q_UNUSED(values)
+    qCWarning(dcModbusRtu()) << "Modbus is not available on this platform.";
 
     return nullptr;
 #endif
@@ -482,6 +496,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::writeHoldingRegisters(int slaveAddress, int
     Q_UNUSED(slaveAddress)
     Q_UNUSED(registerAddress)
     Q_UNUSED(values)
+    qCWarning(dcModbusRtu()) << "Modbus is not available on this platform.";
 
     return nullptr;
 #endif

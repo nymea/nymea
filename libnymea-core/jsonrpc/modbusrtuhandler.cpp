@@ -121,7 +121,7 @@ ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *
 
     // ReconfigureModbusRtuMaster
     params.clear(); returns.clear();
-    description = "Rconfigure the modbus RTU master with the given UUID and configuration.";
+    description = "Reconfigure the modbus RTU master with the given UUID and configuration.";
     params.insert("modbusUuid", enumValueName(Uuid));
     params.insert("serialPort", enumValueName(String));
     params.insert("baudrate", enumValueName(Uint));
@@ -141,7 +141,7 @@ ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *
     connect(modbusRtuManager->serialPortMonitor(), &SerialPortMonitor::serialPortRemoved, this, [=](const SerialPort &serialPort){
         QVariantMap params;
         params.insert("serialPort", pack(serialPort));
-        emit SerialPortAdded(params);
+        emit SerialPortRemoved(params);
     });
 
 

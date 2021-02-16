@@ -70,6 +70,15 @@ SerialPortMonitor *ModbusRtuManager::serialPortMonitor() const
     return m_serialPortMonitor;
 }
 
+bool ModbusRtuManager::supported() const
+{
+#ifdef WITH_QTSERIALBUS
+    return true;
+#else
+    return false;
+#endif
+}
+
 QList<ModbusRtuMaster *> ModbusRtuManager::modbusRtuMasters() const
 {
     return m_modbusRtuMasters.values();
@@ -91,6 +100,11 @@ ModbusRtuMaster *ModbusRtuManager::getModbusRtuMaster(const QUuid &modbusUuid)
 
 QPair<ModbusRtuManager::ModbusRtuError, QUuid>  ModbusRtuManager::addNewModbusRtuMaster(const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits)
 {
+    if (!supported()) {
+        qCWarning(dcModbusRtu()) << "Cannot add new modbus RTU master because serialbus is not suppoerted on this platform.";
+        return QPair<ModbusRtuManager::ModbusRtuError, QUuid>(ModbusRtuErrorNotSupported, QUuid());
+    }
+
     // Check if the serial port exists
     if (!m_serialPortMonitor->serialPortAvailable(serialPort)) {
         qCWarning(dcModbusRtu()) << "Cannot add new modbus RTU master because the serial port" << serialPort << "is not available any more";
@@ -105,6 +119,7 @@ QPair<ModbusRtuManager::ModbusRtuError, QUuid>  ModbusRtuManager::addNewModbusRt
     // Note: We could add the modbus master event if a connection is currently not possible...not sure yet
     if (!modbusMaster->connectDevice()) {
         qCWarning(dcModbusRtu()) << "Failed to add new modbus RTU master. Could not connect to" << modbus << parity << dataBits << stopBits;
+
         modbusMaster->deleteLater();
         return QPair<ModbusRtuError, QUuid>(ModbusRtuErrorConnectionFailed, QUuid());
     }
@@ -117,6 +132,11 @@ QPair<ModbusRtuManager::ModbusRtuError, QUuid>  ModbusRtuManager::addNewModbusRt
 
 ModbusRtuManager::ModbusRtuError ModbusRtuManager::reconfigureModbusRtuMaster(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits)
 {
+    if (!supported()) {
+        qCWarning(dcModbusRtu()) << "Cannot reconfigure modbus RTU master because serialbus is not suppoerted on this platform.";
+        return ModbusRtuErrorNotSupported;
+    }
+
     if (!m_modbusRtuMasters.contains(modbusUuid)) {
         qCWarning(dcModbusRtu()) << "Could not reconfigure modbus RTU master because no resource could be found with uuid" << modbusUuid.toString();
         return ModbusRtuErrorUuidNotFound;
@@ -137,6 +157,7 @@ ModbusRtuManager::ModbusRtuError ModbusRtuManager::reconfigureModbusRtuMaster(co
     // Connect again
     if (!modbusMaster->connectDevice()) {
         qCWarning(dcModbusRtu()) << "Failed to connect to" << m_modbusRtuMasters.value(modbusUuid);
+        // FIXME: check if we should reload the old configuration
         emit modbusRtuMasterChanged(m_modbusRtuMasters.value(modbusUuid));
         return ModbusRtuErrorConnectionFailed;
     }
@@ -144,11 +165,17 @@ ModbusRtuManager::ModbusRtuError ModbusRtuManager::reconfigureModbusRtuMaster(co
     emit modbusRtuMasterChanged(m_modbusRtuMasters.value(modbusUuid));
 
     qCDebug(dcModbusRtu()) << "Reconfigured successfully" << m_modbusRtuMasters.value(modbusUuid);
+    saveModbusRtuMaster(modbusMaster);
     return ModbusRtuErrorNoError;
 }
 
 ModbusRtuManager::ModbusRtuError ModbusRtuManager::removeModbusRtuMaster(const QUuid &modbusUuid)
 {
+    if (!supported()) {
+        qCWarning(dcModbusRtu()) << "Cannot remove modbus RTU master because serialbus is not suppoerted on this platform.";
+        return ModbusRtuErrorNotSupported;
+    }
+
     if (!m_modbusRtuMasters.contains(modbusUuid)) {
         qCWarning(dcModbusRtu()) << "Could not remove modbus RTU master because no resource could be found with uuid" << modbusUuid.toString();
         return ModbusRtuErrorUuidNotFound;
@@ -159,6 +186,14 @@ ModbusRtuManager::ModbusRtuError ModbusRtuManager::removeModbusRtuMaster(const Q
     modbusMaster->disconnectDevice();
     modbusMaster->deleteLater();
 
+    // Remove from settings
+    NymeaSettings settings(NymeaSettings::SettingsRoleModbusRtu);
+    settings.beginGroup("ModbusRtuMasters");
+    settings.beginGroup(modbusUuid.toString());
+    settings.remove("");
+    settings.endGroup(); // modbusUuid
+    settings.endGroup(); // ModbusRtuMasters
+
     emit modbusRtuMasterRemoved(modbusMaster);
 
     return ModbusRtuErrorNoError;
@@ -166,9 +201,11 @@ ModbusRtuManager::ModbusRtuError ModbusRtuManager::removeModbusRtuMaster(const Q
 
 void ModbusRtuManager::loadRtuMasters()
 {
+    if (!supported())
+        return;
+
     NymeaSettings settings(NymeaSettings::SettingsRoleModbusRtu);
     qCDebug(dcModbusRtu()) << "Loading modbus RTU resources from" << settings.fileName();
-
     settings.beginGroup("ModbusRtuMasters");
     foreach (const QString &uuidString, settings.childGroups()) {
         settings.beginGroup(uuidString);

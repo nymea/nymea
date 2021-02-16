@@ -52,6 +52,8 @@ public:
         ModbusRtuErrorNotAvailable,
         ModbusRtuErrorUuidNotFound,
         ModbusRtuErrorHardwareNotFound,
+        ModbusRtuErrorResourceBusy,
+        ModbusRtuErrorNotSupported,
         ModbusRtuErrorConnectionFailed
     };
     Q_ENUM(ModbusRtuError)
@@ -60,6 +62,8 @@ public:
     ~ModbusRtuManager() = default;
 
     SerialPortMonitor *serialPortMonitor() const;
+
+    bool supported() const;
 
     QList<ModbusRtuMaster *> modbusRtuMasters() const;
     bool hasModbusRtuMaster(const QUuid &modbusUuid) const;

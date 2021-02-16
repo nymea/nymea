@@ -79,7 +79,8 @@ ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *
     // GetModbusRtuMasters
     params.clear(); returns.clear();
     description = "Get the list of configured modbus RTU masters.";
-    returns.insert("modbusRtuMasters", QVariantList() << objectRef("ModbusRtuMaster"));
+    returns.insert("o:modbusRtuMasters", QVariantList() << objectRef("ModbusRtuMaster"));
+    returns.insert("modbusError", enumRef<ModbusRtuManager::ModbusRtuError>());
     registerMethod("GetModbusRtuMasters", description, params, returns);
 
     // ModbusRtuMasterAdded notification
@@ -144,7 +145,6 @@ ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *
         emit SerialPortRemoved(params);
     });
 
-
     // Modbus manager
     connect(modbusRtuManager, &ModbusRtuManager::modbusRtuMasterAdded, this, [=](ModbusRtuMaster *modbusRtuMaster){
         QVariantMap params;
@@ -188,11 +188,19 @@ JsonReply *ModbusRtuHandler::GetModbusRtuMasters(const QVariantMap &params)
     Q_UNUSED(params)
 
     QVariantMap returnMap;
-    QVariantList modbusList;
-    foreach (ModbusRtuMaster *modbusMaster, m_modbusRtuManager->modbusRtuMasters()) {
-        modbusList << packModbusRtuMaster(modbusMaster);
+
+    if (m_modbusRtuManager->supported()) {
+        QVariantList modbusList;
+        foreach (ModbusRtuMaster *modbusMaster, m_modbusRtuManager->modbusRtuMasters()) {
+            modbusList << packModbusRtuMaster(modbusMaster);
+        }
+        returnMap.insert("modbusRtuMasters", modbusList);
+        returnMap.insert("modbusError", enumValueName<ModbusRtuManager::ModbusRtuError>(ModbusRtuManager::ModbusRtuErrorNoError));
+    } else {
+        returnMap.insert("modbusError", enumValueName<ModbusRtuManager::ModbusRtuError>(ModbusRtuManager::ModbusRtuErrorNotSupported));
     }
-    returnMap.insert("modbusRtuMasters", modbusList);
+
+
     return createReply(returnMap);
 }
 
@@ -211,7 +219,6 @@ JsonReply *ModbusRtuHandler::AddModbusRtuMaster(const QVariantMap &params)
     if (result.first == ModbusRtuManager::ModbusRtuErrorNoError) {
         returnMap.insert("modbusUuid", result.second);
     }
-
     return createReply(returnMap);
 }
 

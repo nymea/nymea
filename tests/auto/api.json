@@ -152,8 +152,11 @@
         ],
         "ModbusRtuError": [
             "ModbusRtuErrorNoError",
+            "ModbusRtuErrorNotAvailable",
             "ModbusRtuErrorUuidNotFound",
             "ModbusRtuErrorHardwareNotFound",
+            "ModbusRtuErrorResourceBusy",
+            "ModbusRtuErrorNotSupported",
             "ModbusRtuErrorConnectionFailed"
         ],
         "NetworkDeviceState": [
@@ -1524,7 +1527,8 @@
             "params": {
             },
             "returns": {
-                "modbusRtuMasters": [
+                "modbusError": "$ref:ModbusRtuError",
+                "o:modbusRtuMasters": [
                     "$ref:ModbusRtuMaster"
                 ]
             }
@@ -1538,7 +1542,7 @@
             }
         },
         "ModbusRtu.ReconfigureModbusRtuMaster": {
-            "description": "Rconfigure the modbus RTU master with the given UUID and configuration.",
+            "description": "Reconfigure the modbus RTU master with the given UUID and configuration.",
             "params": {
                 "baudrate": "Uint",
                 "dataBits": "$ref:SerialPortDataBits",

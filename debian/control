@@ -163,6 +163,8 @@ Depends: ${shlibs:Depends},
          pkg-config,
          qtbase5-dev,
 Replaces: libnymea1-dev
+Breaks: libnymea1-dev
+Provides: libnymea1-dev
 Description: The main libraries and header files for developing with nymea.
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and

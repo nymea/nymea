@@ -67,7 +67,6 @@
         <file>heating.json</file>
         <file>extendedheating.json</file>
         <file>evcharger.json</file>
-        <file>extendedevcharger.json</file>
         <file>noisesensor.json</file>
         <file>windspeedsensor.json</file>
         <file>co2sensor.json</file>

@@ -87,20 +87,23 @@ void Translator::loadTranslator(IntegrationPlugin *plugin, const QLocale &locale
     }
 
     bool loaded = false;
-    // check if there are local translations
     QTranslator* translator = new QTranslator();
 
+    // Use main nymea translations file for builtin plugins
     if (plugin->isBuiltIn()) {
+        // Check the path relative to the binary to prefer local translations if we're running from a build dir
         if (translator->load(locale, QCoreApplication::instance()->applicationName(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm")) {
             qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for plugin" << plugin->pluginName() << "from" << QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath() + "/" + QCoreApplication::applicationName() + "-[" + locale.name() + "].qm";
             loaded = true;
+        // Find system wide installed nymea translations
         } else if (translator->load(locale, QCoreApplication::instance()->applicationName(), "-", NymeaSettings::translationsPath(), ".qm")) {
             qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for plugin" << plugin->pluginName() << "from" << NymeaSettings::translationsPath()+ "/" + QCoreApplication::applicationName() + "-[" + locale.name() + "].qm";
             loaded = true;
         }
+    // Else search for translations coming with the plugin
     } else {
         QString pluginId = plugin->pluginId().toString().remove(QRegExp("[{}]"));
-
+        // Search plugin paths for translations in the build dirs
         foreach (const QString &pluginPath, m_thingManager->pluginSearchDirs()) {
             if (translator->load(locale, pluginId, "-", QDir(pluginPath + "/translations/").absolutePath(), ".qm")) {
                 qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for plugin" << plugin->pluginName() << "from" << QDir(pluginPath + "/translations/").absolutePath();
@@ -120,10 +123,22 @@ void Translator::loadTranslator(IntegrationPlugin *plugin, const QLocale &locale
             }
         }
 
-        // otherwise use the system translations
+        // Otherwise use the system translations
+        // Check main directory $PREFIX/share/nymea/translations
         if (!loaded && translator->load(locale, pluginId, "-", NymeaSettings::translationsPath(), ".qm")) {
             qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for" << plugin->pluginName() << "from" <<  NymeaSettings::translationsPath() + "/" + pluginId + "-[" + locale.name() + "].qm";
             loaded = true;
+        }
+        // Also allow subdirectories: $PREFIX/share/nymea/translations/*/
+        // NOTE: Yocto installs are problematic with generated files into one big shared directory, so yocto installs into subdirs.
+        if (!loaded) {
+            foreach (const QString &subdir, QDir(NymeaSettings::translationsPath()).entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+                if (!loaded && translator->load(locale, pluginId, "-", NymeaSettings::translationsPath() + "/" + subdir, ".qm")) {
+                    qCDebug(dcTranslations()) << "* Loaded translation" << locale.name() << "for" << plugin->pluginName() << "from" <<  NymeaSettings::translationsPath() + "/" + subdir + "/" + pluginId + "-[" + locale.name() + "].qm";
+                    loaded = true;
+                    break;
+                }
+            }
         }
 
         if (!loaded && locale.name() != "en_US") {

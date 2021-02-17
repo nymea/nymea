@@ -41,7 +41,17 @@ ModbusRtuHardwareResourceImplementation::ModbusRtuHardwareResourceImplementation
     ModbusRtuHardwareResource(parent),
     m_modbusRtuManager(modbusRtuManager)
 {
+    connect(m_modbusRtuManager, &ModbusRtuManager::modbusRtuMasterAdded, this, [=](ModbusRtuMaster *modbusRtuMaster){
+        emit modbusRtuMasterAdded(modbusRtuMaster->modbusUuid());
+    });
 
+    connect(m_modbusRtuManager, &ModbusRtuManager::modbusRtuMasterRemoved, this, [=](ModbusRtuMaster *modbusRtuMaster){
+        emit modbusRtuMasterRemoved(modbusRtuMaster->modbusUuid());
+    });
+
+    connect(m_modbusRtuManager, &ModbusRtuManager::modbusRtuMasterChanged, this, [=](ModbusRtuMaster *modbusRtuMaster){
+        emit modbusRtuMasterChanged(modbusRtuMaster->modbusUuid());
+    });
 }
 
 QList<ModbusRtuMaster *> ModbusRtuHardwareResourceImplementation::modbusRtuMasters() const
@@ -61,7 +71,7 @@ ModbusRtuMaster *ModbusRtuHardwareResourceImplementation::getModbusRtuMaster(con
 
 bool ModbusRtuHardwareResourceImplementation::available() const
 {
-    return m_available;
+    return m_modbusRtuManager->supported();
 }
 
 bool ModbusRtuHardwareResourceImplementation::enabled() const

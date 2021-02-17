@@ -60,11 +60,15 @@ ModbusRtuMasterImpl::ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString 
     connect(m_modbus, &QModbusTcpClient::stateChanged, this, [=](QModbusDevice::State state){
         qCDebug(dcModbusRtu()) << "Connection state changed" << m_modbusUuid.toString() << m_serialPort << state;
         if (state == QModbusDevice::ConnectedState) {
-            m_connected = true;
-            emit connectedChanged(m_connected);
+            if (m_connected != true) {
+                m_connected = true;
+                emit connectedChanged(m_connected);
+            }
         } else {
-            m_connected = false;
-            emit connectedChanged(m_connected);
+            if (m_connected != false) {
+                m_connected = false;
+                emit connectedChanged(m_connected);
+            }
         }
     });
 

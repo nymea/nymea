@@ -79,7 +79,7 @@ inline QDebug operator<<(QDebug debug, ModbusRtuMaster *modbusRtuMaster) {
     debug.nospace() << "ModbusRtuMaster(" << modbusRtuMaster->modbusUuid().toString();
     debug.nospace() << ", " << modbusRtuMaster->serialPort();
     debug.nospace() << ", BaudRate: " << modbusRtuMaster->baudrate() << ") ";
-    return debug;
+    return debug.space();
 };
 
 

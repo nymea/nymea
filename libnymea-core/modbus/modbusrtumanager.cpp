@@ -58,7 +58,7 @@ ModbusRtuManager::ModbusRtuManager(SerialPortMonitor *serialPortMonitor, QObject
                 if (!modbusMasterImpl->connectDevice()) {
                     qCDebug(dcModbusRtu()) << "Reconnect" << modbusMaster << "failed.";
                 } else {
-                    qCDebug(dcModbusRtu()) << "Reconnected" << modbusMaster << "sucessfully.";
+                    qCDebug(dcModbusRtu()) << "Reconnected" << modbusMaster << "successfully.";
                 }
             }
         }

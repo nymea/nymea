@@ -31,6 +31,8 @@
 #include "modbusrtumasterimpl.h"
 #include "modbusrtureplyimpl.h"
 
+#include <QLoggingCategory>
+
 #ifdef WITH_QTSERIALBUS
 #include <QtSerialBus/QModbusReply>
 #include <QtSerialBus/QModbusDataUnit>

@@ -45,7 +45,6 @@ class ScriptState : public QObject, public QQmlParserStatus
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(QString thingId READ thingId WRITE setThingId NOTIFY thingIdChanged)
-    Q_PROPERTY(QString deviceId READ thingId WRITE setThingId NOTIFY thingIdChanged) // DEPRECATED
     Q_PROPERTY(QString stateTypeId READ stateTypeId WRITE setStateTypeId NOTIFY stateTypeChanged)
     Q_PROPERTY(QString stateName READ stateName WRITE setStateName NOTIFY stateTypeChanged)
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)

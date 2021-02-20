@@ -191,6 +191,7 @@ private:
         QString thingName;
     };
     QHash<PairingTransactionId, PairingContext> m_pendingPairings;
+    QHash<ThingId, ThingSetupInfo*> m_pendingSetups;
 
     QHash<IOConnectionId, IOConnection> m_ioConnections;
 

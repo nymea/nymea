@@ -455,6 +455,10 @@ ThingSetupInfo *ThingManagerImplementation::reconfigureThingInternal(Thing *thin
     // try to setup the thing with the new params
     ThingSetupInfo *info = new ThingSetupInfo(thing, this, 30000);
     plugin->setupThing(info);
+    connect(info, &ThingSetupInfo::destroyed, thing, [=](){
+        m_pendingSetups.remove(thing->id());
+    });
+
     connect(info, &ThingSetupInfo::finished, this, [this, info](){
 
         if (info->status() != Thing::ThingErrorNoError) {
@@ -775,8 +779,11 @@ Thing::ThingError ThingManagerImplementation::removeConfiguredThing(const ThingI
     IntegrationPlugin *plugin = m_integrationPlugins.value(thing->pluginId());
     if (!plugin) {
         qCWarning(dcThingManager()).nospace() << "Plugin not loaded for thing " << thing->name() << ". Not calling thingRemoved on plugin.";
-    } else {
+    } else if (thing->setupStatus() == Thing::ThingSetupStatusComplete) {
         plugin->thingRemoved(thing);
+    } else if (thing->setupStatus() == Thing::ThingSetupStatusInProgress) {
+        ThingSetupInfo *setupInfo = m_pendingSetups.value(thingId);
+        emit setupInfo->aborted();
     }
 
     thing->deleteLater();
@@ -1988,6 +1995,11 @@ ThingSetupInfo* ThingManagerImplementation::setupThing(Thing *thing)
     }
 
     plugin->setupThing(info);
+
+    m_pendingSetups.insert(thing->id(), info);
+    connect(info, &ThingSetupInfo::destroyed, thing, [=](){
+        m_pendingSetups.remove(thing->id());
+    });
 
     return info;
 }

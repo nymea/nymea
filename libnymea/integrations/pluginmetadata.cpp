@@ -320,7 +320,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 QStringList stateTypeProperties = {"id", "name", "displayName", "displayNameEvent", "type", "defaultValue", "cached",
                                                    "unit", "minValue", "maxValue", "possibleValues", "writable", "displayNameAction",
-                                                   "ioType", "logged", "filter"};
+                                                   "ioType", "suggestLogging", "filter"};
                 QStringList mandatoryStateTypeProperties = {"id", "name", "displayName", "displayNameEvent", "type", "defaultValue"};
                 QPair<QStringList, QStringList> verificationResult = verifyFields(stateTypeProperties, mandatoryStateTypeProperties, st);
 

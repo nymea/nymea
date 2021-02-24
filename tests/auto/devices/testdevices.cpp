@@ -160,7 +160,7 @@ void TestDevices::initTestCase()
     NymeaTestBase::initTestCase();
     QLoggingCategory::setFilterRules("*.debug=false\n"
                                      "Tests.debug=true\n"
-                                     "MockDevice.debug=true\n"
+                                     "Mock.debug=true\n"
                                      );
 
     // Adding an async mock device to be used in tests below
@@ -619,6 +619,7 @@ void TestDevices::storedDevices()
 
     params.clear();
     params.insert("deviceId", addedDeviceId);
+    qCDebug(dcTests()) << "Cleaning up mock device again";
     response = injectAndWait("Devices.RemoveConfiguredDevice", params);
     verifyDeviceError(response);
 }

@@ -772,6 +772,11 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
 
 Thing::ThingError ThingManagerImplementation::removeConfiguredThing(const ThingId &thingId)
 {
+    // We're checking thingSetupStatus and abort any pending setup here. As setup finished()
+    // comes in as a QueuedConnection, make sure to process all events before going on so we
+    // don't end up aborting an already finished setup instead of calling thingRemoved() on it.
+    qApp->processEvents();
+
     Thing *thing = m_configuredThings.take(thingId);
     if (!thing) {
         return Thing::ThingErrorThingNotFound;
@@ -779,11 +784,12 @@ Thing::ThingError ThingManagerImplementation::removeConfiguredThing(const ThingI
     IntegrationPlugin *plugin = m_integrationPlugins.value(thing->pluginId());
     if (!plugin) {
         qCWarning(dcThingManager()).nospace() << "Plugin not loaded for thing " << thing->name() << ". Not calling thingRemoved on plugin.";
-    } else if (thing->setupStatus() == Thing::ThingSetupStatusComplete) {
-        plugin->thingRemoved(thing);
     } else if (thing->setupStatus() == Thing::ThingSetupStatusInProgress) {
+        qCWarning(dcThingManager()).nospace() << "Thing " << thing->name() << " is still being set up. Aborting setup.";
         ThingSetupInfo *setupInfo = m_pendingSetups.value(thingId);
         emit setupInfo->aborted();
+    } else if (thing->setupStatus() == Thing::ThingSetupStatusComplete) {
+        plugin->thingRemoved(thing);
     }
 
     thing->deleteLater();

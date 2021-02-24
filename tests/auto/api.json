@@ -1,4 +1,4 @@
-6.0
+6.1
 {
     "enums": {
         "BasicType": [
@@ -698,9 +698,9 @@
             "description": "Add a new thing to the system. Only things with a setupMethod of SetupMethodJustAdd can be added this way. For things with a setupMethod different than SetupMethodJustAdd, use PairThing. Things with CreateMethodJustAdd require all parameters to be supplied here. Things with CreateMethodDiscovery require the use of a thingDescriptorId. For discovered things, params are not required and will be taken from the ThingDescriptor, however, they may be overridden by supplying thingParams.",
             "params": {
                 "name": "String",
+                "o:thingClassId": "Uuid",
                 "o:thingDescriptorId": "Uuid",
-                "o:thingParams": "$ref:ParamList",
-                "thingClassId": "Uuid"
+                "o:thingParams": "$ref:ParamList"
             },
             "permissionScope": "PermissionScopeConfigureThings",
             "returns": {

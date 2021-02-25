@@ -201,14 +201,16 @@ PythonIntegrationPlugin::~PythonIntegrationPlugin()
     // Acquire GIL for this plugin's interpreter
     PyEval_RestoreThread(m_threadState);
 
-    while (!m_runningTasks.isEmpty()) {
-        QFutureWatcher<void> *watcher = m_runningTasks.keys().first();
-        QString function = m_runningTasks.value(watcher);
+    if (m_pluginModule) {
+        while (!m_runningTasks.isEmpty()) {
+            QFutureWatcher<void> *watcher = m_runningTasks.keys().first();
+            QString function = m_runningTasks.value(watcher);
 
-        Py_BEGIN_ALLOW_THREADS
-        qCDebug(dcPythonIntegrations()) << "Waiting for" << metadata().pluginName() << "to finish" << function;
-        watcher->waitForFinished();
-        Py_END_ALLOW_THREADS
+            Py_BEGIN_ALLOW_THREADS
+            qCDebug(dcPythonIntegrations()) << "Waiting for" << metadata().pluginName() << "to finish" << function;
+            watcher->waitForFinished();
+            Py_END_ALLOW_THREADS
+        }
     }
 
     s_plugins.take(this);
@@ -254,25 +256,6 @@ void PythonIntegrationPlugin::deinitPython()
 
 bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
 {
-    QFileInfo fi(scriptFile);
-
-    QFile metaDataFile(fi.absolutePath() + "/" + fi.baseName() + ".json");
-    if (!metaDataFile.open(QFile::ReadOnly)) {
-        qCWarning(dcPythonIntegrations()) << "Error opening metadata file:" << metaDataFile.fileName();
-        return false;
-    }
-    QJsonParseError error;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(metaDataFile.readAll(), &error);
-    if (error.error != QJsonParseError::NoError) {
-        qCWarning(dcPythonIntegrations()) << "Error parsing metadata file:" << error.errorString();
-        return false;
-    }
-    setMetaData(PluginMetadata(jsonDoc.object()));
-    if (!metadata().isValid()) {
-        qCWarning(dcPythonIntegrations()) << "Plugin metadata not valid for plugin:" << scriptFile;
-        return false;
-    }
-
     // Grab the main thread context and GIL
     PyEval_RestoreThread(s_mainThreadState);
 
@@ -284,6 +267,32 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
 
     // Import nymea module into this interpreter
     m_nymeaModule = PyImport_ImportModule("nymea");
+
+    QFileInfo fi(scriptFile);
+
+    QFile metaDataFile(fi.absolutePath() + "/" + fi.baseName() + ".json");
+    if (!metaDataFile.open(QFile::ReadOnly)) {
+        qCWarning(dcPythonIntegrations()) << "Error opening metadata file:" << metaDataFile.fileName();
+        PyEval_ReleaseThread(m_threadState);
+        return false;
+    }
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(metaDataFile.readAll(), &error);
+    if (error.error != QJsonParseError::NoError) {
+        qCWarning(dcPythonIntegrations()) << "Error parsing metadata file:" << error.errorString();
+        PyEval_ReleaseThread(m_threadState);
+        return false;
+    }
+    PluginMetadata metadata(jsonDoc.object());
+    if (!metadata.isValid()) {
+        qCWarning(dcPythonIntegrations()) << "Plugin metadata not valid for plugin:" << scriptFile;
+        foreach (const QString &error, metadata.validationErrors()) {
+            qCWarning(dcThingManager()) << error;
+        }
+        PyEval_ReleaseThread(m_threadState);
+        return false;
+    }
+    setMetaData(metadata);
 
     // Set up import path for the plugin directory
     // We intentionally strip site-packages and dist-packages because
@@ -323,7 +332,7 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     s_plugins.insert(this, m_pluginModule);
 
     // Set up logger with appropriate logging category
-    QString category = metadata().pluginName();
+    QString category = metadata.pluginName();
     category.replace(0, 1, category[0].toUpper());
     PyObject *args = Py_BuildValue("(s)", category.toUtf8().data());
     PyNymeaLoggingHandler *logger = reinterpret_cast<PyNymeaLoggingHandler*>(PyObject_CallObject((PyObject*)&PyNymeaLoggingHandlerType, args));
@@ -364,7 +373,7 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     // Plugins can still spawn more threads on their own if the need to but have to manage them on their own.
     m_threadPool = new QThreadPool(this);
     m_threadPool->setMaxThreadCount(2);
-    qCDebug(dcPythonIntegrations()) << "Created a thread pool with a maximum of" << m_threadPool->maxThreadCount() << "threads for python plugin" << metadata().pluginName();
+    qCDebug(dcPythonIntegrations()) << "Created a thread pool with a maximum of" << m_threadPool->maxThreadCount() << "threads for python plugin" << metadata.pluginName();
 
     PyEval_ReleaseThread(m_threadState);
 

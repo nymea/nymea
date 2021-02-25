@@ -1,7 +1,43 @@
-nymea (0.26.0) UNRELEASED; urgency=medium
+nymea (0.26.0) xenial; urgency=medium
 
+  [ Michael Zanetti ]
+  * Support for configuring logging and filtering states/events
+  * Add unit to batterylevel interface
 
- -- Michael Zanetti <michael.zanetti@nymea.io>  Mon, 04 Jan 2021 17:20:42 +0100
+  [ Bernhard Trinnes ]
+  * Username optional on account interface
+
+  [ Michael Zanetti ]
+  * Rework heating/cooling/thermostat interfaces
+  * 0.26
+  * Add a watersensor interface
+  * Don't crash when a python plugin fails to load
+  * Silence plugin dir debug print
+  * Restructure nymea-sdk meta package
+
+  [ Bernhard Trinnes ]
+  * Updated evcharger interface
+
+  [ Michael Zanetti ]
+  * Weather interface units
+
+  [ Bernhard Trinnes ]
+  * Plugininfocompiler: Add debug output for unknown units
+
+  [ Michael Zanetti ]
+  * Rename libnymea dev
+  * Allow calling ScriptAction::execute() without parameters
+
+  [ Simon Stürz ]
+  * Update copyright to 2021
+
+  [ Bernhard Trinnes ]
+  * Allow disabling python via CONFIG+=withoutpython
+
+  [ Michael Zanetti ]
+  * Fix loading of JS plugins
+
+ -- Jenkins <jenkins@nymea.io>  Thu, 25 Feb 2021 11:27:18 +0100
 
 nymea (0.25.1) xenial; urgency=medium
 

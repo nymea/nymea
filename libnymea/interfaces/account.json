@@ -8,8 +8,8 @@
         },
         {
             "name": "userDisplayName",
-            "type": "QString"
+            "type": "QString",
+            "optional": true
         }
-
     ]
 }

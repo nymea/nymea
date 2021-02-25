@@ -10,9 +10,12 @@ LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 CONFIG += link_pkgconfig
 PKGCONFIG += nymea-mqtt nymea-networkmanager nymea-zigbee
 
+CONFIG(withoutpython) {
+    message("Building without python support.")
+    CONFIG -= python
+} else:packagesExist(python3-embed) {
 # As of Ubuntu focal, there's a commonly named python3-embed pointing to the distro version of python
 # For everything below python 3.8 we need to manually select one
-packagesExist(python3-embed) {
     PKGCONFIG += python3-embed
     CONFIG += python
 } else:packagesExist(python-3.5) {

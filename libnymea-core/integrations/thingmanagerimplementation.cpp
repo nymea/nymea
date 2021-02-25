@@ -165,7 +165,6 @@ QList<QJsonObject> ThingManagerImplementation::pluginsMetadata()
 
     foreach (const QString &path, searchDirs) {
         QDir dir(path);
-        qCDebug(dcThingManager) << "Loading plugins from:" << dir.absolutePath();
         foreach (const QString &entry, dir.entryList({"*.so", "*.js", "*.py"}, QDir::Files)) {
 
             QFileInfo fi(path + '/' + entry);

@@ -372,6 +372,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 stateType.setType(t);
                 QPair<bool, Types::Unit> unitVerification = loadAndVerifyUnit(st.value("unit").toString());
                 if (!unitVerification.first) {
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid unit: " + st.value("unit").toString());
                     hasError = true;
                 } else {
                     stateType.setUnit(unitVerification.second);

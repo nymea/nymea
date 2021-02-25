@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/interfaces">
         <file>alert.json</file>
+        <file>cooling.json</file>
         <file>light.json</file>
         <file>dimmablelight.json</file>
         <file>account.json</file>
@@ -65,7 +66,6 @@
         <file>fingerprintreader.json</file>
         <file>useraccesscontrol.json</file>
         <file>heating.json</file>
-        <file>extendedheating.json</file>
         <file>evcharger.json</file>
         <file>extendedevcharger.json</file>
         <file>noisesensor.json</file>

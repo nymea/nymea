@@ -1,12 +1,29 @@
 {
-  "description": "The thermostat interface describes devices which have a target temperature value and regulate themselves to match that target temperature. Often combined with the power and temperaturesensor interfaces.",
-  "states": [
-    {
-      "name": "targetTemperature",
-      "type": "double",
-      "unit": "DegreeCelsius",
-      "minValue": "any",
-      "maxValue": "any"
-    }
-  ]
+    "description": "The thermostat interface describes devices which have a target temperature value and regulate themselves to match that target temperature.",
+    "states": [
+        {
+            "name": "targetTemperature",
+            "type": "double",
+            "unit": "DegreeCelsius",
+            "minValue": "any",
+            "maxValue": "any",
+            "writable": true
+        },
+        {
+            "name": "temperature",
+            "type": "double",
+            "unit": "DegreeCelsius",
+            "optional": true
+        },
+        {
+            "name": "heatingOn",
+            "type": "bool",
+            "optional": true
+        },
+        {
+            "name": "coolingOn",
+            "type": "bool",
+            "optional": true
+        }
+    ]
 }

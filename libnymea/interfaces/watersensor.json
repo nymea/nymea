@@ -1,0 +1,11 @@
+{
+    "description": "Interface for water sensors.",
+    "extends": "sensor",
+    "states": [
+        {
+            "name": "waterDetected",
+            "type": "bool",
+            "logged": true
+        }
+    ]
+}

@@ -80,5 +80,6 @@
         <file>irrigation.json</file>
         <file>venetianblind.json</file>
         <file>update.json</file>
+        <file>watersensor.json</file>
     </qresource>
 </RCC>

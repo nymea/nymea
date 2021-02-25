@@ -171,7 +171,6 @@ public:
     explicit ScriptIntegrationPlugin(QObject *parent = nullptr);
 
     bool loadScript(const QString &fileName);
-    QJsonObject metaData() const;
 
     void init() override;
     void startMonitoringAutoThings() override;
@@ -185,7 +184,6 @@ public:
 
 private:
     QQmlEngine *m_engine = nullptr;
-    QJsonObject m_metaData;
     QJSValue m_pluginImport;
     QHash<Thing*, ScriptThing*> m_things;
 };

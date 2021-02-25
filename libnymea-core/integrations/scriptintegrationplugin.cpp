@@ -81,7 +81,7 @@ bool ScriptIntegrationPlugin::loadScript(const QString &fileName)
         dbg << spacer << "^";
         return false;
     }
-    m_metaData = QJsonObject::fromVariantMap(jsonDoc.toVariant().toMap());
+    setMetaData(QJsonObject::fromVariantMap(jsonDoc.toVariant().toMap()));
 
     m_engine = new QQmlEngine(this);
     m_engine->installExtensions(QJSEngine::AllExtensions);
@@ -96,11 +96,6 @@ bool ScriptIntegrationPlugin::loadScript(const QString &fileName)
     }
 
     return true;
-}
-
-QJsonObject ScriptIntegrationPlugin::metaData() const
-{
-    return m_metaData;
 }
 
 void ScriptIntegrationPlugin::init()

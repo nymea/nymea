@@ -111,6 +111,7 @@
                             "displayNameEvent": "Battery level",
                             "displayNameAction": "Set battery level",
                             "type": "int",
+                            "unit": "Percentage",
                             "minValue": 0,
                             "maxValue": 100,
                             "defaultValue": 0,

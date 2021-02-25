@@ -99,9 +99,6 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     }
     m_timeManager = new TimeManager(this);
 
-    qCDebug(dcCore) << "Creating Log Engine";
-    m_logger = new LogEngine(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), m_configuration->logDBMaxEntries(), this);
-
     qCDebug(dcCore()) << "Creating User Manager";
     m_userManager = new UserManager(NymeaSettings::settingsPath() + "/user-db.sqlite", this);
 
@@ -119,6 +116,10 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
 
     qCDebug(dcCore) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);
+
+    qCDebug(dcCore) << "Creating Log Engine";
+    m_logger = new LogEngine(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), m_configuration->logDBMaxEntries(), this);
+    m_logger->setThingManager(m_thingManager);
 
     qCDebug(dcCore()) << "Creating Script Engine";
     m_scriptEngine = new ScriptEngine(m_thingManager, this);
@@ -380,20 +381,6 @@ Thing::ThingError NymeaCore::removeConfiguredThing(const ThingId &thingId, const
     return removeError;
 }
 
-ThingActionInfo* NymeaCore::executeAction(const Action &action)
-{
-    ThingActionInfo *info = m_thingManager->executeAction(action);
-    connect(info, &ThingActionInfo::finished, this, [this, info](){
-        if (info->status() == Thing::ThingErrorNoError) {
-            m_logger->logAction(info->action());
-        } else {
-            m_logger->logAction(info->action(), Logging::LoggingLevelAlert, info->status());
-        }
-    });
-
-    return info;
-}
-
 BrowserActionInfo* NymeaCore::executeBrowserItem(const BrowserAction &browserAction)
 {
     BrowserActionInfo *info = m_thingManager->executeBrowserItem(browserAction);
@@ -512,7 +499,7 @@ void NymeaCore::executeRuleActions(const QList<RuleAction> ruleActions)
 
     foreach (const Action &action, actions) {
         qCDebug(dcRuleEngine) << "Executing action" << action.actionTypeId() << action.params();
-        ThingActionInfo *info = executeAction(action);
+        ThingActionInfo *info = m_thingManager->executeAction(action);
         connect(info, &ThingActionInfo::finished, this, [info](){
             if (info->status() != Thing::ThingErrorNoError) {
                 qCWarning(dcRuleEngine) << "Error executing action:" << info->status() << info->displayMessage();
@@ -660,7 +647,6 @@ ZigbeeManager *NymeaCore::zigbeeManager() const
 
 void NymeaCore::gotEvent(const Event &event)
 {
-    m_logger->logEvent(event);
     emit eventTriggered(event);
 
     QList<RuleAction> actions;

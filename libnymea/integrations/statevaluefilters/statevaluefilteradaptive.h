@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2021, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,56 +28,38 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef EVENT_H
-#define EVENT_H
+#ifndef STATEVALUEFILTERADAPTIVE_H
+#define STATEVALUEFILTERADAPTIVE_H
 
-#include "libnymea.h"
-#include "typeutils.h"
-#include "types/param.h"
+#include "statevaluefilter.h"
 
-#include <QString>
-#include <QVariantList>
-#include <QDebug>
-
-class LIBNYMEA_EXPORT Event
+class StateValueFilterAdaptive : public StateValueFilter
 {
-    Q_GADGET
-    Q_PROPERTY(QUuid eventTypeId READ eventTypeId)
-    Q_PROPERTY(QUuid thingId READ thingId)
-    Q_PROPERTY(QUuid deviceId READ thingId REVISION 1)
-    Q_PROPERTY(ParamList params READ params)
 public:
-    Event();
-    Event(const EventTypeId &eventTypeId, const ThingId &thingId, const ParamList &params = ParamList(), bool isStateChangeEvent = false);
+    StateValueFilterAdaptive();
 
-    EventTypeId eventTypeId() const;
-    void setEventTypeId(const EventTypeId &eventTypeId);
-
-    ThingId thingId() const;
-    void setThingId(const ThingId &thingId);
-
-    ParamList params() const;
-    void setParams(const ParamList &params);
-    Param param(const ParamTypeId &paramTypeId) const;
-    QVariant paramValue(const ParamTypeId &paramTypeId) const;
-
-    bool operator ==(const Event &other) const;
-
-    bool isStateChangeEvent() const;
-
-    bool logged() const;
-    void setLogged(bool logged);
+    void addValue(const QVariant &value) override;
+    QVariant filteredValue() const override;
 
 private:
-    EventTypeId m_eventTypeId;
-    ThingId m_thingId;
-    ParamList m_params;
+    void update();
 
-    bool m_isStateChangeEvent;
-    bool m_logged = false;
+private:
+    QList<double> m_inputValues;
+
+    int m_windowSize = 20;
+    double m_standardDeviation = 0.05;
+    double m_maxTotalDeviation = 0.4;
+
+    double m_totalDeviation = 0;
+
+    double m_outputValue = 0;
+
+    // Stats for debugging
+    quint64 m_inputValueCount = 0;
+    quint64 m_outputValueCount = 0;
+
+
 };
-Q_DECLARE_METATYPE(Event)
-QDebug operator<<(QDebug dbg, const Event &event);
-QDebug operator<<(QDebug dbg, const QList<Event> &events);
 
-#endif // EVENT_H
+#endif // STATEVALUEFILTERADAPTIVE_H

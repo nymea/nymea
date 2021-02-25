@@ -200,6 +200,10 @@ Interface ThingUtils::loadInterface(const QString &name)
         stateType.setMinValue(stateVariant.toMap().value("minValue"));
         stateType.setMaxValue(stateVariant.toMap().value("maxValue"));
         stateType.setOptional(stateVariant.toMap().value("optional", false).toBool());
+        if (stateVariant.toMap().contains("logged")) {
+            stateType.setLoggingOverride(true);
+            stateType.setSuggestLogging(stateVariant.toMap().value("logged", false).toBool());
+        }
         if (stateVariant.toMap().contains("unit")) {
             QMetaEnum unitEnum = QMetaEnum::fromType<Types::Unit>();
             int enumValue = unitEnum.keyToValue("Unit" + stateVariant.toMap().value("unit").toByteArray());
@@ -214,6 +218,8 @@ Interface ThingUtils::loadInterface(const QString &name)
         InterfaceEventType stateChangeEventType;
         stateChangeEventType.setName(stateType.name());
         stateChangeEventType.setOptional(stateType.optional());
+        stateChangeEventType.setSuggestLogging(stateType.suggestLogging());
+        stateChangeEventType.setLoggingOverride(stateType.loggingOverride());
         ParamType stateChangeEventParamType;
         stateChangeEventParamType.setName(stateType.name());
         stateChangeEventParamType.setType(stateType.type());
@@ -236,6 +242,10 @@ Interface ThingUtils::loadInterface(const QString &name)
         InterfaceActionType actionType;
         actionType.setName(actionVariant.toMap().value("name").toString());
         actionType.setOptional(actionVariant.toMap().value("optional").toBool());
+//        if (actionVariant.toMap().contains("logged")) {
+//            actionType.setLoggingOverride(true);
+//            actionType.setSuggestLogging(actionVariant.toMap().value("logged").toBool());
+//        }
         ParamTypes paramTypes;
         foreach (const QVariant &actionParamVariant, actionVariant.toMap().value("params").toList()) {
             ParamType paramType;
@@ -254,6 +264,10 @@ Interface ThingUtils::loadInterface(const QString &name)
         InterfaceEventType eventType;
         eventType.setName(eventVariant.toMap().value("name").toString());
         eventType.setOptional(eventVariant.toMap().value("optional").toBool());
+        if (eventVariant.toMap().contains("logged")) {
+            eventType.setLoggingOverride(true);
+            eventType.setSuggestLogging(eventVariant.toMap().value("logged").toBool());
+        }
         ParamTypes paramTypes;
         foreach (const QVariant &eventParamVariant, eventVariant.toMap().value("params").toList()) {
             ParamType paramType;

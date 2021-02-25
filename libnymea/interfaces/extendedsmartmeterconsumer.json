@@ -5,7 +5,8 @@
         {
             "name": "currentPower",
             "type": "double",
-            "unit": "Watt"
+            "unit": "Watt",
+            "logged": true
         }
     ]
 }

@@ -3,7 +3,8 @@
         {
             "name": "connected",
             "type": "bool",
-            "defaultValue": false
+            "defaultValue": false,
+            "logged": true
         }
     ]
 }

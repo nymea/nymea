@@ -106,6 +106,9 @@ public:
     Thing::ThingError editThing(const ThingId &thingId, const QString &name) override;
     Thing::ThingError setThingSettings(const ThingId &thingId, const ParamList &settings) override;
 
+    Thing::ThingError setEventLogging(const ThingId &thingId, const EventTypeId &eventTypeId, bool enabled) override;
+    Thing::ThingError setStateFilter(const ThingId &thingId, const StateTypeId &stateTypeId, Types::StateValueFilter filter) override;
+
     Thing::ThingError removeConfiguredThing(const ThingId &thingId) override;
 
     ThingActionInfo* executeAction(const Action &action) override;
@@ -140,7 +143,7 @@ private slots:
     void onAutoThingDisappeared(const ThingId &thingId);
     void onLoaded();
     void cleanupThingStateCache();
-    void onEventTriggered(const Event &event);
+    void onEventTriggered(Event event);
 
     // Only connect this to Things. It will query the sender()
     void slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value);

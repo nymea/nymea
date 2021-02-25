@@ -34,6 +34,8 @@
 #include "logging.h"
 #include "logvaluetool.h"
 
+#include "integrations/thingmanager.h"
+
 #include <QCoreApplication>
 #include <QSqlDatabase>
 #include <QSqlDriver>
@@ -102,6 +104,13 @@ LogEngine::~LogEngine()
     }
     qCDebug(dcLogEngine()) << "Closing Database";
     m_db.close();
+}
+
+void LogEngine::setThingManager(ThingManager *thingManager)
+{
+    m_thingManager = thingManager;
+    connect(thingManager, &ThingManager::eventTriggered, this, &LogEngine::logEvent);
+    connect(thingManager, &ThingManager::actionExecuted, this, &LogEngine::logAction);
 }
 
 LogEntriesFetchJob *LogEngine::fetchLogEntries(const LogFilter &filter)
@@ -214,6 +223,7 @@ void LogEngine::clearDatabase()
 
 void LogEngine::logSystemEvent(const QDateTime &dateTime, bool active, Logging::LoggingLevel level)
 {
+    qCDebug(dcLogEngine()) << "Logging system event:" << active;
     LogEntry entry(dateTime, level, Logging::LoggingSourceSystem);
     entry.setEventType(Logging::LoggingEventTypeActiveChange);
     entry.setActive(active);
@@ -222,6 +232,10 @@ void LogEngine::logSystemEvent(const QDateTime &dateTime, bool active, Logging::
 
 void LogEngine::logEvent(const Event &event)
 {
+    if (!event.logged()) {
+        return;
+    }
+
     QVariantList valueList;
     Logging::LoggingSource sourceType;
     if (event.isStateChangeEvent()) {
@@ -249,9 +263,10 @@ void LogEngine::logEvent(const Event &event)
     appendLogEntry(entry);
 }
 
-void LogEngine::logAction(const Action &action, Logging::LoggingLevel level, int errorCode)
+void LogEngine::logAction(const Action &action, Thing::ThingError status)
 {
-    LogEntry entry(level, Logging::LoggingSourceActions, errorCode);
+    Logging::LoggingLevel level = status == Thing::ThingErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert;
+    LogEntry entry(QDateTime::currentDateTime(), level, Logging::LoggingSourceActions, status);
     entry.setTypeId(action.actionTypeId());
     entry.setThingId(action.thingId());
 

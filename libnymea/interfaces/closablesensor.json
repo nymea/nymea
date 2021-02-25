@@ -4,7 +4,8 @@
     "states": [
         {
             "name": "closed",
-            "type": "bool"
+            "type": "bool",
+            "logged": true
         }
     ]
 }

@@ -130,6 +130,26 @@ ActionTypes::ActionTypes(const QList<ActionType> &other)
     }
 }
 
+bool ActionTypes::contains(const ActionTypeId &id) const
+{
+    foreach (const ActionType &actionType, *this) {
+        if (actionType.id() == id) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ActionTypes::contains(const QString &name) const
+{
+    foreach (const ActionType &actionType, *this) {
+        if (actionType.name() == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
 QVariant ActionTypes::get(int index) const
 {
     return QVariant::fromValue(at(index));
@@ -160,8 +180,21 @@ ActionType ActionTypes::findById(const ActionTypeId &id)
     return ActionType(ActionTypeId());
 }
 
+ActionType &ActionTypes::operator[](const QString &name)
+{
+    int index = -1;
+    for (int i = 0; i < count(); i++) {
+        if (at(i).name() == name) {
+            index = i;
+            break;
+        }
+    }
+    return QList::operator[](index);
+}
+
 QDebug operator<<(QDebug dbg, const ActionType &actionType)
 {
     dbg.nospace().noquote() << "ActionType: " << actionType.name() << actionType.displayName() << actionType.id();
     return dbg;
 }
+

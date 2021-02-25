@@ -15,6 +15,16 @@ void InterfaceStateType::setOptional(bool optional)
     m_optional = optional;
 }
 
+bool InterfaceStateType::loggingOverride() const
+{
+    return m_loggingOverride;
+}
+
+void InterfaceStateType::setLoggingOverride(bool loggingOverride)
+{
+    m_loggingOverride = loggingOverride;
+}
+
 InterfaceStateTypes::InterfaceStateTypes(const QList<InterfaceStateType> &other):
     QList<InterfaceStateType>(other)
 {

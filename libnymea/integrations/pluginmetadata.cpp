@@ -318,7 +318,11 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 QJsonObject st = stateTypesJson.toObject();
                 bool writableState = false;
 
-                QPair<QStringList, QStringList> verificationResult = verifyFields(StateType::typeProperties(), StateType::mandatoryTypeProperties(), st);
+                QStringList stateTypeProperties = {"id", "name", "displayName", "displayNameEvent", "type", "defaultValue", "cached",
+                                                   "unit", "minValue", "maxValue", "possibleValues", "writable", "displayNameAction",
+                                                   "ioType", "suggestLogging", "filter"};
+                QStringList mandatoryStateTypeProperties = {"id", "name", "displayName", "displayNameEvent", "type", "defaultValue"};
+                QPair<QStringList, QStringList> verificationResult = verifyFields(stateTypeProperties, mandatoryStateTypeProperties, st);
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
@@ -470,6 +474,18 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     }
                     stateType.setIOType(ioType);
                 }
+
+                stateType.setSuggestLogging(st.value("suggestLogging").toBool());
+
+                if (st.contains("filter")) {
+                    QString filter = st.value("filter").toString();
+                    if (filter == "adaptive") {
+                        stateType.setFilter(Types::StateValueFilterAdaptive);
+                    } else if (!filter.isEmpty()) {
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid filter value \"" + filter + "\". Supported filters are: \"adaptive\"");
+                        hasError = true;
+                    }
+                }
                 stateTypes.append(stateType);
 
                 // Events for state changed (Not checking for duplicate UUID, this is expected to be the same as the state!)
@@ -485,6 +501,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 paramType.setUnit(stateType.unit());
                 eventType.setParamTypes(QList<ParamType>() << paramType);
                 eventType.setIndex(stateType.index());
+                eventType.setSuggestLogging(st.value("suggestLogging").toBool());
                 eventTypes.append(eventType);
 
                 // ActionTypes for writeable StateTypes
@@ -497,7 +514,6 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     actionTypes.append(actionType);
                 }
             }
-            thingClass.setStateTypes(stateTypes);
 
             // ActionTypes
             index = 0;
@@ -544,7 +560,6 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 actionTypes.append(actionType);
             }
-            thingClass.setActionTypes(actionTypes);
 
             // EventTypes
             index = 0;
@@ -580,6 +595,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 EventType eventType(eventTypeId);
                 eventType.setName(eventTypeName);
                 eventType.setDisplayName(et.value("displayName").toString());
+                eventType.setSuggestLogging(et.value("suggestLogging").toBool());
                 eventType.setIndex(index++);
 
                 QPair<bool, QList<ParamType> > paramVerification = parseParamTypes(et.value("paramTypes").toArray());
@@ -590,7 +606,6 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 }
                 eventTypes.append(eventType);
             }
-            thingClass.setEventTypes(eventTypes);
 
             // BrowserItemActionTypes
             index = 0;
@@ -637,7 +652,6 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 browserItemActionTypes.append(actionType);
             }
-            thingClass.setBrowserItemActionTypes(browserItemActionTypes);
 
             // Read interfaces
             QStringList interfaces;
@@ -646,22 +660,18 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 if (!iface.isValid()) {
                     m_validationErrors.append("Thing class \"" + thingClass.name() + "\" uses non-existing interface \"" + value.toString() + "\"");
                     hasError = true;
+                    continue;
                 }
 
-                StateTypes stateTypes(thingClass.stateTypes());
-                ActionTypes actionTypes(thingClass.actionTypes());
-                EventTypes eventTypes(thingClass.eventTypes());
-
                 foreach (const InterfaceStateType &ifaceStateType, iface.stateTypes()) {
-                    StateType stateType = stateTypes.findByName(ifaceStateType.name());
-                    if (stateType.id().isNull()) {
+                    if (!stateTypes.contains(ifaceStateType.name())) {
                         if (!ifaceStateType.optional()) {
                             m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement state \"" + ifaceStateType.name() + "\"");
                             hasError = true;
-                        } else {
-                            continue;
                         }
+                        continue;
                     }
+                    StateType &stateType = stateTypes[ifaceStateType.name()];
                     if (ifaceStateType.type() != stateType.type()) {
                         m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching type: \"" + QVariant::typeToName(stateType.type()) + "\" != \"" + QVariant::typeToName(ifaceStateType.type()) + "\"");
                         hasError = true;
@@ -697,18 +707,22 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                         m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but state \"" + stateType.name() + "\" has not matching unit: \"" + unitEnum.valueToKey(ifaceStateType.unit()) + "\" != \"" + unitEnum.valueToKey(stateType.unit()));
                         hasError = true;
                     }
+
+                    // Override logged property as the interface has higher priority than the plugin dev
+                    if (ifaceStateType.loggingOverride()) {
+                        stateType.setSuggestLogging(ifaceStateType.suggestLogging());
+                    }
                 }
 
                 foreach (const InterfaceActionType &ifaceActionType, iface.actionTypes()) {
-                    ActionType actionType = actionTypes.findByName(ifaceActionType.name());
-                    if (actionType.id().isNull()) {
+                    if (!actionTypes.contains(ifaceActionType.name())) {
                         if (!ifaceActionType.optional()) {
                             m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement action \"" + ifaceActionType.name() + "\"");
                             hasError = true;
-                        } else {
-                            continue;
                         }
+                        continue;
                     }
+                    ActionType &actionType = actionTypes[ifaceActionType.name()];
                     // Verify the params as required by the interface are available
                     foreach (const ParamType &ifaceActionParamType, ifaceActionType.paramTypes()) {
                         ParamType paramType = actionType.paramTypes().findByName(ifaceActionParamType.name());
@@ -779,15 +793,14 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 }
 
                 foreach (const InterfaceEventType &ifaceEventType, iface.eventTypes()) {
-                    EventType eventType = eventTypes.findByName(ifaceEventType.name());
-                    if (!eventType.isValid()) {
+                    if (!eventTypes.contains(ifaceEventType.name())) {
                         if (!ifaceEventType.optional()) {
                             m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but doesn't implement event \"" + ifaceEventType.name() + "\"");
                             hasError = true;
-                        } else {
-                            continue;
                         }
+                        continue;
                     }
+                    EventType &eventType = eventTypes[ifaceEventType.name()];
 
                     // Verify all the params as required by the interface are available
                     foreach (const ParamType &ifaceEventParamType, ifaceEventType.paramTypes()) {
@@ -842,6 +855,11 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                         }
                     }
 
+                    // Override logging
+                    if (ifaceEventType.loggingOverride()) {
+                        eventType.setSuggestLogging(ifaceEventType.suggestLogging());
+                    }
+
                     // Note: No need to check for default values (as with actions) for additional params as
                     // an emitted event always needs to have params filled with values. The client might use them or not...
                 }
@@ -850,6 +868,11 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             }
             interfaces.removeDuplicates();
             thingClass.setInterfaces(interfaces);
+
+            thingClass.setStateTypes(stateTypes);
+            thingClass.setActionTypes(actionTypes);
+            thingClass.setEventTypes(eventTypes);
+            thingClass.setBrowserItemActionTypes(browserItemActionTypes);
 
             m_thingClasses.append(thingClass);
         }

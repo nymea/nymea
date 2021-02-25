@@ -133,6 +133,7 @@
 #include "thing.h"
 #include "types/event.h"
 #include "loggingcategories.h"
+#include "statevaluefilters/statevaluefilteradaptive.h"
 
 #include <QDebug>
 
@@ -334,9 +335,6 @@ void Thing::setStateValue(const StateTypeId &stateTypeId, const QVariant &value)
     }
     for (int i = 0; i < m_states.count(); ++i) {
         if (m_states.at(i).stateTypeId() == stateTypeId) {
-            if (m_states.at(i).value() == value)
-                return;
-
             QVariant newValue = value;
             if (!newValue.convert(stateType.type())) {
                 qCWarning(dcThing()).nospace() << m_name << ": Invalid value " << value << " for state " << stateType.name() << ". Type mismatch. Expected type: " << QVariant::typeToName(stateType.type()) << " (Discarding change)";
@@ -355,8 +353,13 @@ void Thing::setStateValue(const StateTypeId &stateTypeId, const QVariant &value)
                 return;
             }
 
-            QVariant oldValue = m_states.at(i).value();
+            StateValueFilter *filter = m_stateValueFilters.value(stateTypeId);
+            if (filter) {
+                filter->addValue(newValue);
+                newValue = filter->filteredValue();
+            }
 
+            QVariant oldValue = m_states.at(i).value();
             if (oldValue == newValue) {
                 qCDebug(dcThing()).nospace() << m_name << ": Discarding state change for " << stateType.name() << " as the value did not actually change. Old value:" << oldValue << "New value:" << newValue;
                 return;
@@ -381,6 +384,11 @@ State Thing::state(const StateTypeId &stateTypeId) const
         }
     }
     return State(StateTypeId(), ThingId());
+}
+
+QList<EventTypeId> Thing::loggedEventTypeIds() const
+{
+    return m_loggedEventTypeIds;
 }
 
 /*! Returns the \l{ThingId} of the parent of this thing. If the parentId
@@ -440,6 +448,27 @@ void Thing::setSetupStatus(Thing::ThingSetupStatus status, Thing::ThingError set
     m_setupError = setupError;
     m_setupDisplayMessage = displayMessage;
     emit setupStatusChanged();
+}
+
+void Thing::setLoggedEventTypeIds(const QList<EventTypeId> loggedEventTypeIds)
+{
+    m_loggedEventTypeIds = loggedEventTypeIds;
+}
+
+void Thing::setStateValueFilter(const StateTypeId &stateTypeId, Types::StateValueFilter filter)
+{
+    for (int i = 0; i < m_states.count(); i++) {
+        if (m_states.at(i).stateTypeId() == stateTypeId) {
+            m_states[i].setFilter(filter);
+            StateValueFilter *stateValueFilter = m_stateValueFilters.take(stateTypeId);
+            if (stateValueFilter) {
+                delete stateValueFilter;
+            }
+            if (filter == Types::StateValueFilterAdaptive) {
+                m_stateValueFilters.insert(stateTypeId, new StateValueFilterAdaptive());
+            }
+        }
+    }
 }
 
 Things::Things(const QList<Thing*> &other)

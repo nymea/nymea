@@ -173,6 +173,12 @@ public:
         IOTypeAnalogOutput
     };
     Q_ENUM(IOType)
+
+    enum StateValueFilter {
+        StateValueFilterNone,
+        StateValueFilterAdaptive
+    };
+    Q_ENUM(StateValueFilter)
 };
 
 Q_DECLARE_METATYPE(Types::InputType)

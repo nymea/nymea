@@ -4,7 +4,8 @@
         {
             "name": "temperature",
             "type": "double",
-            "unit": "DegreeCelsius"
+            "unit": "DegreeCelsius",
+            "logged": true
         }
     ]
 }

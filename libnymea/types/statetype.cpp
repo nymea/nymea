@@ -208,18 +208,24 @@ void StateType::setCached(bool cached)
     m_cached = cached;
 }
 
-/*! Returns a list of all valid properties a DeviceClass definition can have. */
-QStringList StateType::typeProperties()
+bool StateType::suggestLogging() const
 {
-    return QStringList() << "id" << "name" << "displayName" << "displayNameEvent" << "type" << "defaultValue"
-                         << "cached" << "unit" << "minValue" << "maxValue" << "possibleValues" << "writable"
-                         << "displayNameAction" << "ioType";
+    return m_logged;
 }
 
-/*! Returns a list of mandatory properties a DeviceClass definition must have. */
-QStringList StateType::mandatoryTypeProperties()
+void StateType::setSuggestLogging(bool logged)
 {
-    return QStringList() << "id" << "name" << "displayName" << "displayNameEvent" << "type" << "defaultValue";
+    m_logged = logged;
+}
+
+Types::StateValueFilter StateType::filter() const
+{
+    return m_filter;
+}
+
+void StateType::setFilter(Types::StateValueFilter filter)
+{
+    m_filter = filter;
 }
 
 /*! Returns true if this state type has an ID, a type and a name set. */
@@ -239,6 +245,16 @@ bool StateTypes::contains(const StateTypeId &stateTypeId)
 {
     foreach (const StateType &stateType, *this) {
         if (stateType.id() == stateTypeId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool StateTypes::contains(const QString &name)
+{
+    foreach (const StateType &stateType, *this) {
+        if (stateType.name() == name) {
             return true;
         }
     }
@@ -273,4 +289,16 @@ StateType StateTypes::findById(const StateTypeId &id)
         }
     }
     return StateType(StateTypeId());
+}
+
+StateType &StateTypes::operator[](const QString &name)
+{
+    int index = -1;
+    for (int i = 0; i < count(); i++) {
+        if (at(i).name() == name) {
+            index = i;
+            break;
+        }
+    }
+    return QList::operator[](index);
 }

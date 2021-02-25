@@ -107,7 +107,7 @@ JsonReply* ActionHandler::ExecuteAction(const QVariantMap &params, const JsonCon
 
     JsonReply *jsonReply = createAsyncReply("ExecuteAction");
 
-    ThingActionInfo *info = NymeaCore::instance()->executeAction(action);
+    ThingActionInfo *info = NymeaCore::instance()->thingManager()->executeAction(action);
     connect(info, &ThingActionInfo::finished, jsonReply, [info, jsonReply, locale](){
         QVariantMap data;
         data.insert("deviceError", enumValueName(info->status()).replace("Thing", "Device"));

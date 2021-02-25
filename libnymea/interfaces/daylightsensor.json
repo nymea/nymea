@@ -4,7 +4,8 @@
     "states": [
         {
             "name": "daylight",
-            "type": "bool"
+            "type": "bool",
+            "logged": true
         },
         {
             "name": "sunriseTime",

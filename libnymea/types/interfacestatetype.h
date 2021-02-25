@@ -11,8 +11,12 @@ public:
     bool optional() const;
     void setOptional(bool optional);
 
+    bool loggingOverride() const;
+    void setLoggingOverride(bool loggingOverride);
+
 private:
     bool m_optional = false;
+    bool m_loggingOverride = false;
 };
 
 class InterfaceStateTypes: public QList<InterfaceStateType>

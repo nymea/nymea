@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2021, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,56 +28,18 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef EVENT_H
-#define EVENT_H
+#include "statevaluefilter.h"
 
-#include "libnymea.h"
-#include "typeutils.h"
-#include "types/param.h"
+#include "loggingcategories.h"
 
-#include <QString>
-#include <QVariantList>
-#include <QDebug>
+NYMEA_LOGGING_CATEGORY(dcStateValueFilter, "StateValueFilter")
 
-class LIBNYMEA_EXPORT Event
+StateValueFilter::StateValueFilter()
 {
-    Q_GADGET
-    Q_PROPERTY(QUuid eventTypeId READ eventTypeId)
-    Q_PROPERTY(QUuid thingId READ thingId)
-    Q_PROPERTY(QUuid deviceId READ thingId REVISION 1)
-    Q_PROPERTY(ParamList params READ params)
-public:
-    Event();
-    Event(const EventTypeId &eventTypeId, const ThingId &thingId, const ParamList &params = ParamList(), bool isStateChangeEvent = false);
 
-    EventTypeId eventTypeId() const;
-    void setEventTypeId(const EventTypeId &eventTypeId);
+}
 
-    ThingId thingId() const;
-    void setThingId(const ThingId &thingId);
+StateValueFilter::~StateValueFilter()
+{
 
-    ParamList params() const;
-    void setParams(const ParamList &params);
-    Param param(const ParamTypeId &paramTypeId) const;
-    QVariant paramValue(const ParamTypeId &paramTypeId) const;
-
-    bool operator ==(const Event &other) const;
-
-    bool isStateChangeEvent() const;
-
-    bool logged() const;
-    void setLogged(bool logged);
-
-private:
-    EventTypeId m_eventTypeId;
-    ThingId m_thingId;
-    ParamList m_params;
-
-    bool m_isStateChangeEvent;
-    bool m_logged = false;
-};
-Q_DECLARE_METATYPE(Event)
-QDebug operator<<(QDebug dbg, const Event &event);
-QDebug operator<<(QDebug dbg, const QList<Event> &events);
-
-#endif // EVENT_H
+}

@@ -80,6 +80,16 @@ void State::setValue(const QVariant &value)
     m_value = value;
 }
 
+Types::StateValueFilter State::filter() const
+{
+    return m_filter;
+}
+
+void State::setFilter(Types::StateValueFilter filter)
+{
+    m_filter = filter;
+}
+
 /*! Writes the stateTypeId, the deviceId and the value of the given \a state to \a dbg. */
 QDebug operator<<(QDebug dbg, const State &state)
 {

@@ -71,6 +71,7 @@ private slots:
     void invalidFilter_data();
     void invalidFilter();
 
+    void eventLogs_data();
     void eventLogs();
 
     void actionLog();
@@ -198,6 +199,7 @@ void TestLogging::systemLogs()
     qWarning() << "Restarting server";
     restartServer();
     qWarning() << "Restart done";
+    waitForDBSync();
 
     // there should be 2 log entries, one for shutdown, one for startup (from server restart)
     response = injectAndWait("Logging.GetLogEntries", params);
@@ -261,24 +263,53 @@ void TestLogging::invalidFilter()
     qDebug() << response.toMap().value("error").toString();
 }
 
+void TestLogging::eventLogs_data()
+{
+    QTest::addColumn<StateTypeId>("stateTypeId");
+    QTest::addColumn<QVariant>("initValue");
+    QTest::addColumn<QVariant>("newValue");
+    QTest::addColumn<bool>("expectLogEntry");
+
+    QTest::newRow("logged event") << mockConnectedStateTypeId << QVariant(false) << QVariant(true) << true;
+    QTest::newRow("not logged event") << mockSignalStrengthStateTypeId << QVariant(10) << QVariant(20) << false;
+}
 
 void TestLogging::eventLogs()
 {
+    QFETCH(StateTypeId, stateTypeId);
+    QFETCH(QVariant, initValue);
+    QFETCH(QVariant, newValue);
+    QFETCH(bool, expectLogEntry);
+
     QList<Thing*> devices = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
     QVERIFY2(devices.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Thing *device = devices.first();
 
-    enableNotifications({"Events", "Logging"});
-
     // Setup connection to mock client
     QNetworkAccessManager nam;
 
+    int port = device->paramValue(mockThingHttpportParamTypeId).toInt();
+
+    // init state in mock device
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(stateTypeId.toString()).arg(initValue.toString())));
+    QNetworkReply *reply = nam.get(request);
+    {
+    QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
+    finishedSpy.wait();
+    }
+
+    // Now snoop in for the events
+    clearLoggingDatabase();
+    enableNotifications({"Events", "Logging"});
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
-    // trigger event in mock device
-    int port = device->paramValue(mockThingHttpportParamTypeId).toInt();
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(port).arg(mockEvent1EventTypeId.toString())));
-    QNetworkReply *reply = nam.get(request);
+    // trigger state change in mock device
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(stateTypeId.toString()).arg(newValue.toString())));
+    reply = nam.get(request);
+    {
+    QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
+    finishedSpy.wait();
+    }
 
     // Lets wait for the notification
     QTest::qWait(200);
@@ -286,41 +317,42 @@ void TestLogging::eventLogs()
     reply->deleteLater();
 
     // Make sure the logg notification contains all the stuff we expect
-    QVariantList loggEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
-    QVERIFY2(!loggEntryAddedVariants.isEmpty(), "Did not get Logging.LogEntryAdded notification.");
-    qDebug() << "got" << loggEntryAddedVariants.count() << "Logging.LogEntryAdded notifications";
+    QVariantList logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");
+    qDebug() << "got" << logEntryAddedVariants.count() << "Logging.LogEntryAdded notifications";
 
     bool found = false;
-    qDebug() << "got" << loggEntryAddedVariants.count() << "Logging.LogEntryAdded";
-    foreach (const QVariant &loggEntryAddedVariant, loggEntryAddedVariants) {
-        QVariantMap logEntry = loggEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap();
+    qDebug() << "got" << logEntryAddedVariants.count() << "Logging.LogEntryAdded";
+    foreach (const QVariant &logEntryAddedVariant, logEntryAddedVariants) {
+        QVariantMap logEntry = logEntryAddedVariant.toMap().value("params").toMap().value("logEntry").toMap();
         if (logEntry.value("thingId").toUuid() == device->id()) {
             found = true;
             // Make sure the notification contains all the stuff we expect
-            QCOMPARE(logEntry.value("typeId").toUuid().toString(), mockEvent1EventTypeId.toString());
+            QCOMPARE(logEntry.value("typeId").toUuid().toString(), stateTypeId.toString());
             QCOMPARE(logEntry.value("eventType").toString(), enumValueName(Logging::LoggingEventTypeTrigger));
-            QCOMPARE(logEntry.value("source").toString(), enumValueName(Logging::LoggingSourceEvents));
+            QCOMPARE(logEntry.value("source").toString(), enumValueName(Logging::LoggingSourceStates));
             QCOMPARE(logEntry.value("loggingLevel").toString(), enumValueName(Logging::LoggingLevelInfo));
             break;
         }
     }
-    if (!found)
-        qDebug() << QJsonDocument::fromVariant(loggEntryAddedVariants).toJson();
 
-    QVERIFY2(found, "Could not find the corresponding Logging.LogEntryAdded notification");
+    QVERIFY2(found == expectLogEntry, "Could not find the corresponding Logging.LogEntryAdded notification");
 
-    // get this logentry with filter
-    QVariantMap params;
-    params.insert("thingIds", QVariantList() << device->id());
-    params.insert("loggingSources", QVariantList() << enumValueName(Logging::LoggingSourceEvents));
-    params.insert("eventTypes", QVariantList() << enumValueName(Logging::LoggingEventTypeTrigger));
-    params.insert("typeIds", QVariantList() << mockEvent1EventTypeId);
+    if (expectLogEntry) {
+        // get this logentry with filter
+        QVariantMap params;
+        params.insert("thingIds", QVariantList() << device->id());
+        params.insert("loggingSources", QVariantList() << enumValueName(Logging::LoggingSourceStates));
+        params.insert("eventTypes", QVariantList() << enumValueName(Logging::LoggingEventTypeTrigger));
+        params.insert("typeIds", QVariantList() << stateTypeId);
 
-    QVariant response = injectAndWait("Logging.GetLogEntries", params);
-    verifyLoggingError(response);
+        QVariant response = injectAndWait("Logging.GetLogEntries", params);
+        verifyLoggingError(response);
 
-    QVariantList logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
-    QVERIFY(logEntries.count() == 1);
+        QVariantList logEntries = response.toMap().value("params").toMap().value("logEntries").toList();
+        qCDebug(dcTests()) << qUtf8Printable(QJsonDocument::fromVariant(logEntries).toJson());
+        QCOMPARE(logEntries.count(), 1);
+    }
+
 
     // disable notifications
     QCOMPARE(disableNotifications(), true);
@@ -629,7 +661,7 @@ void TestLogging::testHouseKeeping()
     // Trigger something that creates a logging entry
     QNetworkAccessManager nam;
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(6667).arg(mockIntStateTypeId.toString()).arg(4321)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(6667).arg(mockConnectedStateTypeId.toString()).arg(false)));
     QNetworkReply *reply = nam.get(request);
     connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
     spy.wait();

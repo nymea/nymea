@@ -61,6 +61,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     registerEnum<Types::Unit>();
     registerEnum<Types::InputType>();
     registerEnum<Types::IOType>();
+    registerEnum<Types::StateValueFilter>();
     registerEnum<RuleEngine::RemovePolicy>();
     registerEnum<BrowserItem::BrowserIcon>();
     registerEnum<MediaBrowserItem::MediaBrowserIcon>();
@@ -240,6 +241,22 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.insert("settings", objectRef<ParamList>());
     returns.insert("thingError", enumRef<Thing::ThingError>());
     registerMethod("SetThingSettings", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Enable/disable logging for the given event type on the given thing.";
+    params.insert("thingId", enumValueName(Uuid));
+    params.insert("eventTypeId", enumValueName(Uuid));
+    params.insert("enabled", enumValueName(Bool));
+    returns.insert("thingError", enumRef<Thing::ThingError>());
+    registerMethod("SetEventLogging", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Set the filter for the given state on the given thing.";
+    params.insert("thingId", enumValueName(Uuid));
+    params.insert("stateTypeId", enumValueName(Uuid));
+    params.insert("filter", enumRef<Types::StateValueFilter>());
+    returns.insert("thingError", enumRef<Thing::ThingError>());
+    registerMethod("SetStateFilter", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Remove a thing from the system.";
@@ -838,6 +855,26 @@ JsonReply *IntegrationsHandler::SetThingSettings(const QVariantMap &params)
     return createReply(statusToReply(status));
 }
 
+JsonReply *IntegrationsHandler::SetEventLogging(const QVariantMap &params)
+{
+    ThingId thingId = ThingId(params.value("thingId").toString());
+    EventTypeId eventTypeId = EventTypeId(params.value("eventTypeId").toUuid());
+    bool enabled = params.value("enabled").toBool();
+    Thing::ThingError status = NymeaCore::instance()->thingManager()->setEventLogging(thingId, eventTypeId, enabled);
+    return createReply(statusToReply(status));
+}
+
+JsonReply *IntegrationsHandler::SetStateFilter(const QVariantMap &params)
+{
+    ThingId thingId = ThingId(params.value("thingId").toString());
+    StateTypeId stateTypeId = StateTypeId(params.value("stateTypeId").toUuid());
+    QString filterString = params.value("filter").toString();
+    QMetaEnum metaEnum = QMetaEnum::fromType<Types::StateValueFilter>();
+    Types::StateValueFilter filter = static_cast<Types::StateValueFilter>(metaEnum.keyToValue(filterString.toUtf8()));
+    Thing::ThingError status = NymeaCore::instance()->thingManager()->setStateFilter(thingId, stateTypeId, filter);
+    return createReply(statusToReply(status));
+}
+
 JsonReply* IntegrationsHandler::GetEventTypes(const QVariantMap &params, const JsonContext &context) const
 {
     ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(ThingClassId(params.value("thingClassId").toString()));
@@ -958,7 +995,7 @@ JsonReply *IntegrationsHandler::ExecuteAction(const QVariantMap &params, const J
 
     JsonReply *jsonReply = createAsyncReply("ExecuteAction");
 
-    ThingActionInfo *info = NymeaCore::instance()->executeAction(action);
+    ThingActionInfo *info = NymeaCore::instance()->thingManager()->executeAction(action);
     connect(info, &ThingActionInfo::finished, jsonReply, [info, jsonReply, locale](){
         QVariantMap data;
         data.insert("thingError", enumValueName(info->status()));

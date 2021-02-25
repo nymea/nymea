@@ -5,7 +5,8 @@
         {
             "name": "windSpeed",
             "type": "double",
-            "unit": "MeterPerSecond"
+            "unit": "MeterPerSecond",
+            "logged": true
         }
     ]
 }

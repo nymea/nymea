@@ -104,7 +104,7 @@ void HttpDaemon::readClient()
             } else if (stateTypeId == mockDoubleStateTypeId) {
                 stateValue.convert(QVariant::Double);
             }
-            qCDebug(dcMock()) << "Set state value" << stateValue;
+            qCDebug(dcMock()) << "Setting state value" << stateValue;
             emit setState(stateTypeId, stateValue);
         } else if (url.path() == "/generateevent") {
             emit triggerEvent(EventTypeId(query.queryItemValue("eventtypeid")));

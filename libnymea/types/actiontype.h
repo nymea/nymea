@@ -84,10 +84,13 @@ class ActionTypes: public QList<ActionType>
 public:
     ActionTypes() = default;
     ActionTypes(const QList<ActionType> &other);
+    bool contains(const ActionTypeId &id) const;
+    bool contains(const QString &name) const;
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
     ActionType findByName(const QString &name);
     ActionType findById(const ActionTypeId &id);
+    ActionType &operator[](const QString &name);
 };
 Q_DECLARE_METATYPE(ActionTypes)
 

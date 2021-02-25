@@ -29,7 +29,7 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "jsonhandler.h"
-
+#include "typeutils.h"
 #include "loggingcategories.h"
 
 #include <QDebug>
@@ -207,6 +207,9 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
                 typeName = QString("$ref:BasicType");
             } else if (QString(metaProperty.typeName()).startsWith("QList")) {
                 QString elementType = QString(metaProperty.typeName()).remove("QList<").remove(">");
+                if (elementType == "EventTypeId" || elementType == "StateTypeId" || elementType == "ActionTypeId") {
+                    elementType = "QUuid";
+                }
                 QVariant::Type variantType = QVariant::nameToType(elementType.toUtf8());
                 typeName = QVariantList() << enumValueName(variantTypeToBasicType(variantType));
             } else {
@@ -344,6 +347,18 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
                         foreach (const QUuid &entry, propertyValue.value<QList<QUuid>>()) {
                             list << entry;
                         }
+                    } else if (propertyTypeName == "QList<EventTypeId>") {
+                        foreach (const EventTypeId &entry, propertyValue.value<QList<EventTypeId>>()) {
+                            list << entry;
+                        }
+                    } else if (propertyTypeName == "QList<StateTypeId>") {
+                        foreach (const EventTypeId &entry, propertyValue.value<QList<EventTypeId>>()) {
+                            list << entry;
+                        }
+                    } else if (propertyTypeName == "QList<ActionTypeId>") {
+                        foreach (const EventTypeId &entry, propertyValue.value<QList<EventTypeId>>()) {
+                            list << entry;
+                        }
                     } else {
                         Q_ASSERT_X(false, this->metaObject()->className(), QString("Unhandled list type: %1").arg(propertyTypeName).toUtf8());
                         qCWarning(dcJsonRpc()) << "Cannot pack property of unhandled list type" << propertyTypeName;
@@ -455,7 +470,10 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
                             intList.append(val.toInt());
                         }
                         metaProperty.writeOnGadget(ptr, QVariant::fromValue(intList));
-                    } else if (metaProperty.typeName() == QStringLiteral("QList<QUuid>")) {
+                    } else if (metaProperty.typeName() == QStringLiteral("QList<QUuid>")
+                               || metaProperty.typeName() == QStringLiteral("QList<EventTypeId>")
+                               || metaProperty.typeName() == QStringLiteral("QList<StateTypeId>")
+                               || metaProperty.typeName() == QStringLiteral("QList<ActionTypeId>")) {
                         QList<QUuid> uuidList;
                         foreach (const QVariant &val, variant.toList()) {
                             uuidList.append(val.toUuid());

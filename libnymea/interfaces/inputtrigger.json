@@ -1,7 +1,8 @@
 {
     "events": [
         {
-            "name": "triggered"
+            "name": "triggered",
+            "logged": true
         }
     ]
 }

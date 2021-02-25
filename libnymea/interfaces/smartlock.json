@@ -4,7 +4,8 @@
         {
             "name": "state",
             "type": "QString",
-            "allowedValues": ["locked", "locking", "unlocked", "unlocking", "unlatched",  "unlatching"]
+            "allowedValues": ["locked", "locking", "unlocked", "unlocking", "unlatched",  "unlatching"],
+            "logged": true
         }
     ],
     "actions": [

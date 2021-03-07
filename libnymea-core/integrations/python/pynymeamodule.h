@@ -11,6 +11,7 @@
 #include "pyparam.h"
 #include "pythingactioninfo.h"
 #include "pythingpairinginfo.h"
+#include "pypluginstorage.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -27,6 +28,7 @@ static int nymea_exec(PyObject *m) {
     registerThingPairingInfoType(m);
     registerThingSetupInfoType(m);
     registerThingActionInfoType(m);
+    registerPluginStorageType(m);
 
     return 0;
 }

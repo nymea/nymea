@@ -3,6 +3,7 @@
 #include "pythonintegrationplugin.h"
 #include "python/pynymeamodule.h"
 #include "python/pystdouthandler.h"
+#include "python/pypluginstorage.h"
 
 #include "loggingcategories.h"
 
@@ -176,6 +177,14 @@ PyObject *PythonIntegrationPlugin::pyAutoThingDisappeared(PyObject *self, PyObje
     Py_RETURN_NONE;
 }
 
+PyObject *PythonIntegrationPlugin::pyPluginStorage(PyObject *self, PyObject *args)
+{
+    Q_UNUSED(args)
+    PyObject *pluginStorage = s_plugins.key(self)->m_pyPluginStorage;
+    Py_INCREF(pluginStorage);
+    return pluginStorage;
+}
+
 static PyMethodDef plugin_methods[] =
 {
     {"configuration", PythonIntegrationPlugin::pyConfiguration, METH_VARARGS, "Get the plugin configuration."},
@@ -184,6 +193,7 @@ static PyMethodDef plugin_methods[] =
     {"myThings", PythonIntegrationPlugin::pyMyThings, METH_VARARGS, "Obtain a list of things owned by this plugin."},
     {"autoThingsAppeared", PythonIntegrationPlugin::pyAutoThingsAppeared, METH_VARARGS, "Inform the system about auto setup things having appeared."},
     {"autoThingDisappeared", PythonIntegrationPlugin::pyAutoThingDisappeared, METH_VARARGS, "Inform the system about auto setup things having disappeared."},
+    {"pluginStorage", PythonIntegrationPlugin::pyPluginStorage, METH_VARARGS, "Obtain the plugin storage for this plugin."},
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 
@@ -215,6 +225,7 @@ PythonIntegrationPlugin::~PythonIntegrationPlugin()
 
     s_plugins.take(this);
     Py_XDECREF(m_pluginModule);
+    Py_DECREF(m_pyPluginStorage);
     Py_DECREF(m_nymeaModule);
 
     Py_EndInterpreter(m_threadState);
@@ -353,6 +364,11 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
         qCWarning(dcPythonIntegrations()) << "Failed to add the logger object";
         Py_DECREF(logger);
     }
+
+    args = Py_BuildValue("(s)", pluginId().toString().toUtf8().data());
+    m_pyPluginStorage = PyObject_CallObject((PyObject*)&PyPluginStorageType, args);
+    Py_DECREF(args);
+    Py_INCREF(m_pyPluginStorage);
 
     // Export metadata ids into module
     exportIds();

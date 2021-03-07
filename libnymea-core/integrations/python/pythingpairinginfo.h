@@ -105,7 +105,7 @@ static PyObject * PyThingPairingInfo_finish(PyThingPairingInfo* self, PyObject* 
     if (self->info) {
         if (self->pyOAuthUrl) {
             QString oAuthUrl = QString::fromUtf8(PyUnicode_AsUTF8AndSize(self->pyOAuthUrl, nullptr));
-            QMetaObject::invokeMethod(self->info, "setOAuthUrl", Qt::QueuedConnection, Q_ARG(QString, oAuthUrl));
+            QMetaObject::invokeMethod(self->info, "setOAuthUrl", Qt::QueuedConnection, Q_ARG(QUrl, oAuthUrl));
         }
         QMetaObject::invokeMethod(self->info, "finish", Qt::QueuedConnection, Q_ARG(Thing::ThingError, thingError), Q_ARG(QString, displayMessage));
     }

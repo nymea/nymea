@@ -127,7 +127,7 @@ void Translator::loadTranslator(IntegrationPlugin *plugin, const QLocale &locale
         }
 
         if (!loaded && locale.name() != "en_US") {
-            qCWarning(dcTranslations()) << "* Could not load translation" << locale.name() << "for plugin" << plugin->pluginName() << "(" << pluginId << ")";
+            qCDebug(dcTranslations()) << "* Could not load translation" << locale.name() << "for plugin" << plugin->pluginName() << "(" << pluginId << ")";
         }
     }
 

@@ -46,6 +46,7 @@ RESOURCES += $$top_srcdir/icons.qrc \
 HEADERS += nymeacore.h \
     integrations/apikeysprovidersloader.h \
     integrations/plugininfocache.h \
+    integrations/python/pypluginstorage.h \
     integrations/thingmanagerimplementation.h \
     integrations/translator.h \
     experiences/experiencemanager.h \

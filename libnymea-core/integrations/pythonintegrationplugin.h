@@ -46,6 +46,7 @@ public:
     static PyObject* pyAutoThingsAppeared(PyObject *self, PyObject* args);
     static PyObject* pyAutoThingDisappeared(PyObject *self, PyObject* args);
     static PyObject* pyPluginStorage(PyObject* self, PyObject* args);
+    static PyObject* pyApiKeyStorage(PyObject* self, PyObject* args);
 
 private:
     void exportIds();
@@ -89,10 +90,6 @@ private:
 
     // Need to keep a copy of plugin params and sync that in a thread-safe manner
     ParamList m_pluginConfigCopy;
-
-    // Keeping our own plugin storage for python
-    PyObject* m_pyPluginStorage = nullptr;
-
 };
 
 #endif // PYTHONINTEGRATIONPLUGIN_H

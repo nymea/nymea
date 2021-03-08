@@ -12,6 +12,7 @@
 #include "pythingactioninfo.h"
 #include "pythingpairinginfo.h"
 #include "pypluginstorage.h"
+#include "pyapikeystorage.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -29,6 +30,7 @@ static int nymea_exec(PyObject *m) {
     registerThingSetupInfoType(m);
     registerThingActionInfoType(m);
     registerPluginStorageType(m);
+    registerApiKeyStorageType(m);
 
     return 0;
 }

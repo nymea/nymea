@@ -1,0 +1,29 @@
+{
+    "description": "An interface for cleaning robots. A paused robot is unpaused by calling pauseCleaning again. Calling startCleaning on a paused robot should restart the activity (or start a different one) if possible, else it should unpause the current activity. Cleaning robots may be browsable for \"maps\" to return a list of maps with map images in their thumbnail urls and \"zones\" (as child items of maps) returning a list of zones that can be cleaned by executing the according browser items. Zone items should provide JSON objects in their description, containing \"vertices\" to draw the zones in the image and \"color\" properties",
+    "states": [
+        {
+            "name": "robotState",
+            "type": "QString",
+            "possibleValues": ["docked", "cleaning", "paused", "traveling", "stopped", "error"]
+        },
+        {
+            "name": "errorMessage",
+            "type": "QString",
+            "optional": true
+        }
+    ],
+    "actions": [
+        {
+            "name": "startCleaning"
+        },
+        {
+            "name": "pauseCleaning"
+        },
+        {
+            "name": "stopCleaning"
+        },
+        {
+            "name": "returnToBase"
+        }
+    ]
+}

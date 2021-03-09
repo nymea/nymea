@@ -30,7 +30,7 @@
                     "id": "753f0d32-0468-4d08-82ed-1964aab03298",
                     "name": "mock",
                     "displayName": "Mock Thing",
-                    "interfaces": ["system", "light", "batterylevel", "wirelessconnectable", "update"],
+                    "interfaces": ["system", "light", "battery", "wirelessconnectable", "update"],
                     "createMethods": ["user", "discovery"],
                     "browsable": true,
                     "discoveryParamTypes": [

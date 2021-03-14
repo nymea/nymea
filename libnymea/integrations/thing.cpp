@@ -157,6 +157,12 @@ Thing::Thing(const PluginId &pluginId, const ThingClass &thingClass, QObject *pa
 
 }
 
+Thing::~Thing()
+{
+    qDeleteAll(m_stateValueFilters);
+    m_stateValueFilters.clear();
+}
+
 /*! Returns the id of this thing. */
 ThingId Thing::id() const
 {

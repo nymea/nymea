@@ -71,4 +71,8 @@ coverage {
     QMAKE_CLEAN += *.gcda *.gcno coverage.info coverage.xml
 }
 
+asan: {
+    QMAKE_CXXFLAGS *= -fsanitize=address
+    QMAKE_LFLAGS *= -fsanitize=address
+}
 

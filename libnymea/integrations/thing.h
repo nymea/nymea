@@ -103,6 +103,8 @@ public:
     };
     Q_ENUM(ThingSetupStatus)
 
+    ~Thing() override;
+
     ThingId id() const;
     ThingClassId thingClassId() const;
     PluginId pluginId() const;

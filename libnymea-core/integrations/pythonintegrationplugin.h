@@ -75,6 +75,9 @@ private:
     PyObject *m_nymeaModule = nullptr;
     // The imported plugin module (the plugin.py)
     PyObject *m_pluginModule = nullptr;
+    PyObject *m_logger = nullptr;
+    PyObject *m_stdOutHandler = nullptr;
+    PyObject *m_stdErrHandler = nullptr;
 
     // A map of plugin instances to plugin python scripts/modules
     // Make sure to hold the GIL when accessing this.

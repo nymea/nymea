@@ -122,6 +122,7 @@ protected:
     QList<ActionTypeId> m_actionTypeIds;
 };
 
+Q_DECLARE_METATYPE(BrowserItem)
 Q_DECLARE_OPERATORS_FOR_FLAGS(BrowserItem::ExtendedPropertiesFlags)
 
 

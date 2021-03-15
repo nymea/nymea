@@ -1031,7 +1031,7 @@ void IntegrationPluginMock::generateBrowseItems()
     item = BrowserItem("004", "Item 3", false, true);
     item.setDescription("I have a nice thumbnail");
     item.setIcon(BrowserItem::BrowserIconFile);
-    item.setThumbnail("https://github.com/guh/nymea/raw/master/icons/nymea-logo-256x256.png");
+    item.setThumbnail("https://github.com/nymea/nymea/raw/master/icons/nymea-logo-256x256.png");
     item.setActionTypeIds({mockAddToFavoritesBrowserItemActionTypeId});
     m_virtualFs->addChild(new VirtualFsNode(item));
 

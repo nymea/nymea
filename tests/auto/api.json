@@ -1,4 +1,4 @@
-5.4
+5.5
 {
     "enums": {
         "BasicType": [
@@ -2580,11 +2580,13 @@
             "$ref:DeviceClass"
         ],
         "DeviceDescriptor": {
+            "d:r:deviceParams": "$ref:ParamList",
             "r:description": "String",
             "r:deviceParams": "$ref:ParamList",
             "r:id": "Uuid",
             "r:o:deviceId": "Uuid",
             "r:o:thingId": "Uuid",
+            "r:params": "$ref:ParamList",
             "r:title": "String"
         },
         "DeviceDescriptors": [
@@ -2896,10 +2898,11 @@
             "$ref:ThingClass"
         ],
         "ThingDescriptor": {
+            "d:r:deviceParams": "$ref:ParamList",
             "r:description": "String",
-            "r:deviceParams": "$ref:ParamList",
             "r:id": "Uuid",
             "r:o:thingId": "Uuid",
+            "r:params": "$ref:ParamList",
             "r:title": "String"
         },
         "ThingDescriptors": [

@@ -1,4 +1,4 @@
-5.4
+5.5
 {
     "enums": {
         "BasicType": [
@@ -1781,6 +1781,14 @@
             },
             "returns": {
                 "repositories": "$ref:Repositories"
+            }
+        },
+        "System.GetSystemInfo": {
+            "description": "Returns information about the system nymea is running on.",
+            "params": {
+            },
+            "returns": {
+                "deviceSerialNumber": "String"
             }
         },
         "System.GetTime": {

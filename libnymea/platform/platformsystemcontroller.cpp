@@ -92,3 +92,18 @@ bool PlatformSystemController::setTimeZone(const QTimeZone &timeZone)
     qCWarning(dcPlatform()) << "setTimeZone not implemented in platform plugin";
     return false;
 }
+
+QString PlatformSystemController::deviceSerialNumber() const
+{
+    // Sadly there is no real standardized way to read the device's serial number, especially when it comes to ARM platforms.
+    // Because of this, even the most common platforms (e.g. systemd, all standard linux) differ when it comes to this.
+    // In order to not being forced to write a new backend plugin just for this serial number, one can also set this by
+    // using the DEVICE_SERIAL environment variable.
+    QByteArray serial;
+    if (qEnvironmentVariableIsSet("DEVICE_SERIAL")) {
+        serial = qgetenv("DEVICE_SERIAL");
+    } else {
+        qCWarning(dcPlatform()) << "Platform plugin does not implement deviceSerialNumber and DEVICE_SERIAL is not set. Cannot determine device serial number.";
+    }
+    return serial;
+}

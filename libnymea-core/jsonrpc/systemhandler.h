@@ -68,6 +68,8 @@ public:
     Q_INVOKABLE JsonReply *SetTime(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *GetTimeZones(const QVariantMap &params) const;
 
+    Q_INVOKABLE JsonReply *GetSystemInfo(const QVariantMap &params) const;
+
 signals:
     void CapabilitiesChanged(const QVariantMap &params);
 

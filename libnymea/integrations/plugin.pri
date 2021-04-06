@@ -83,6 +83,8 @@ translations.files = $$[QT_SOURCE_TREE]/translations/*.qm
 # Redefine target to make output file suite the plugin filename schema
 TARGET = $$qtLibraryTarget(nymea_integrationplugin"$$TARGET")
 
+target.depends += $${JSONFILE}
+
 # Install plugin
 target.path = $$[QT_INSTALL_LIBS]/nymea/plugins/
 INSTALLS += target translations

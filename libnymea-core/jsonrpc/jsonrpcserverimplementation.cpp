@@ -71,6 +71,7 @@
 #include "configurationhandler.h"
 #include "networkmanagerhandler.h"
 #include "tagshandler.h"
+#include "appdatahandler.h"
 #include "systemhandler.h"
 #include "usershandler.h"
 #include "zigbeehandler.h"
@@ -594,6 +595,7 @@ void JsonRPCServerImplementation::setup()
     registerHandler(new ConfigurationHandler(this));
     registerHandler(new NetworkManagerHandler(NymeaCore::instance()->networkManager(), this));
     registerHandler(new TagsHandler(this));
+    registerHandler(new AppDataHandler(this));
     registerHandler(new SystemHandler(NymeaCore::instance()->platform(), this));
     registerHandler(new UsersHandler(NymeaCore::instance()->userManager(), this));
     registerHandler(new ZigbeeHandler(NymeaCore::instance()->zigbeeManager(), this));

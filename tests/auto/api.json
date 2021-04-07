@@ -1,4 +1,4 @@
-5.4
+5.5
 {
     "enums": {
         "BasicType": [
@@ -439,6 +439,28 @@
             "returns": {
                 "deviceError": "$ref:DeviceError",
                 "o:actionType": "$ref:ActionType"
+            }
+        },
+        "AppData.Load": {
+            "description": "Retrieve an app data storage value that has previously been set with Store(). If no value had been set for this appId/key combination before, an empty value will be returned.",
+            "params": {
+                "appId": "String",
+                "key": "String",
+                "o:group": "String"
+            },
+            "returns": {
+                "value": "String"
+            }
+        },
+        "AppData.Store": {
+            "description": "Store an app data entry to the server. App data can be used by the client application to store configuration values. The app data storage is a key-value pair storage. Each entry value is identified by an appId, a key and optionally a group. The value data is a bytearray and can contain arbitrary data, such as a JSON map or image data, however, be aware of the maximum packet size for the used transport.\nThis might be useful to a client application to sync settings across multiple instances of the same application.\nThe group parameter might be used to create groups for this application.\nIMPORTANT: Currently no verification of the appId is done. The appid is merely a mechanism to prevent different different client apps from colliding by using the same key for data entries. This implies that the app data storage may not be suited for sensitive data given that anyone with a valid server token can read it.\n ",
+            "params": {
+                "appId": "String",
+                "key": "String",
+                "o:group": "String",
+                "value": "String"
+            },
+            "returns": {
             }
         },
         "Configuration.DeleteMqttPolicy": {
@@ -2050,6 +2072,15 @@
         }
     },
     "notifications": {
+        "AppData.Changed": {
+            "description": "Emitted whenever the app data is changed on the server.",
+            "params": {
+                "appId": "String",
+                "key": "String",
+                "o:group": "String",
+                "value": "String"
+            }
+        },
         "Configuration.BasicConfigurationChanged": {
             "description": "Emitted whenever the basic configuration of this server changes.",
             "params": {

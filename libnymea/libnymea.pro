@@ -8,7 +8,7 @@ QT -= gui
 DEFINES += LIBNYMEA_LIBRARY
 
 CONFIG += link_pkgconfig
-PKGCONFIG += nymea-zigbee
+PKGCONFIG += nymea-zigbee nymea-mqtt
 
 QMAKE_LFLAGS += -fPIC
 

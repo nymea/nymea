@@ -92,6 +92,7 @@ HEADERS += nymeacore.h \
     jsonrpc/configurationhandler.h \
     jsonrpc/networkmanagerhandler.h \
     jsonrpc/tagshandler.h \
+    jsonrpc/appdatahandler.h \
     jsonrpc/systemhandler.h \
     jsonrpc/scriptshandler.h \
     jsonrpc/usershandler.h \
@@ -179,6 +180,7 @@ SOURCES += nymeacore.cpp \
     jsonrpc/configurationhandler.cpp \
     jsonrpc/networkmanagerhandler.cpp \
     jsonrpc/tagshandler.cpp \
+    jsonrpc/appdatahandler.cpp \
     jsonrpc/systemhandler.cpp \
     jsonrpc/scriptshandler.cpp \
     jsonrpc/usershandler.cpp \

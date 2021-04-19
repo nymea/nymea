@@ -1,7 +1,25 @@
-nymea (0.27.0) UNRELEASED; urgency=medium
+nymea (0.27.0) xenial; urgency=medium
 
+  [ Michael Zanetti ]
+  * Don't call thingRemoved() when a thing didn't complete the setup
+  * 0.27
+  * Enable logging of barcode scanner events
+  * Improve adaptive logging filter
+  * Add support for the plugin and api key storage to python plugins
+  * Rework battery interface
+  * Add a cleaning robot interface
+  * Clean up PyStdoutHandler on shutdown
+  * Add support CONFIG+=asan for building with address sanitizer
+  * Add browsing support to python plugin API
+  * Rename forgotten deviceParams in ThingDescriptor
+  * Add device serial number to system api
+  * Add support for storing application data on the core
+  * Add parentId member to pyThingDescriptor
+  * Drop lastSeenTime from presence sensor
+  * Use PKGCONFIG for the mqtt include
+  * Use pkgconfig for libnymea-remoteproxyclient
 
- -- Michael Zanetti <michael.zanetti@nymea.io>  Thu, 04 Mar 2021 00:12:46 +0100
+ -- Jenkins <jenkins@nymea.io>  Mon, 19 Apr 2021 11:38:38 +0200
 
 nymea (0.26.0) xenial; urgency=medium
 

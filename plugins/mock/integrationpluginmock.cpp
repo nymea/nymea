@@ -134,7 +134,7 @@ void IntegrationPluginMock::setupThing(ThingSetupInfo *info)
 {
     if (info->thing()->thingClassId() == mockThingClassId || info->thing()->thingClassId() == autoMockThingClassId) {
         if (m_daemons.contains(info->thing())) {
-            // We already have a daemon, seem's we're reconfiguring
+            // We already have a daemon, seems we're reconfiguring
             delete m_daemons.take(info->thing());
         }
 
@@ -174,8 +174,7 @@ void IntegrationPluginMock::setupThing(ThingSetupInfo *info)
 
 
         if (async) {
-            Thing *device = info->thing();
-            QTimer::singleShot(1000, device, [info](){
+            QTimer::singleShot(1000, info, [info](){
                 qCDebug(dcMock()) << "Finishing thing setup for mocked thing" << info->thing()->name();
                 if (info->thing()->paramValue(mockThingBrokenParamTypeId).toBool()) {
                     info->finish(Thing::ThingErrorSetupFailed, QT_TR_NOOP("This mocked thing is intentionally broken."));
@@ -183,6 +182,12 @@ void IntegrationPluginMock::setupThing(ThingSetupInfo *info)
                     info->finish(Thing::ThingErrorNoError);
                 }
             });
+
+            connect(info, &ThingSetupInfo::aborted, this, [=](){
+                qCDebug(dcMock()) << "Setup aborted. Destroying webserver" << info->thing()->name();
+                delete m_daemons.take(info->thing());
+            });
+
             return;
         }
         qCDebug(dcMock()) << "Setup complete" << info->thing()->name();
@@ -260,24 +265,25 @@ void IntegrationPluginMock::setupThing(ThingSetupInfo *info)
     info->finish(Thing::ThingErrorThingClassNotFound);
 }
 
-void IntegrationPluginMock::postSetupThing(Thing *device)
+void IntegrationPluginMock::postSetupThing(Thing *thing)
 {
-    qCDebug(dcMock()) << "Postsetup mock" << device->name();
-    if (device->thingClassId() == parentMockThingClassId) {
+    qCDebug(dcMock()) << "Postsetup mock" << thing->name();
+    if (thing->thingClassId() == parentMockThingClassId) {
         foreach (Thing *d, myThings()) {
-            if (d->thingClassId() == childMockThingClassId && d->parentId() == device->id()) {
+            if (d->thingClassId() == childMockThingClassId && d->parentId() == thing->id()) {
                 return;
             }
         }
 
-        ThingDescriptor mockDescriptor(childMockThingClassId, "Mocked Thing Child (Auto created)", "Mocked Thing Child (Auto created)", device->id());
+        ThingDescriptor mockDescriptor(childMockThingClassId, "Mocked Thing Child (Auto created)", "Mocked Thing Child (Auto created)", thing->id());
         emit autoThingsAppeared(ThingDescriptors() << mockDescriptor);
     }
 }
 
-void IntegrationPluginMock::thingRemoved(Thing *device)
+void IntegrationPluginMock::thingRemoved(Thing *thing)
 {
-    delete m_daemons.take(device);
+    qCDebug(dcMock()) << "Thing removed" << thing->name();
+    delete m_daemons.take(thing);
 }
 
 void IntegrationPluginMock::startMonitoringAutoThings()

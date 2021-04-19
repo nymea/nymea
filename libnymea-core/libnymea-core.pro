@@ -8,7 +8,7 @@ INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 
 CONFIG += link_pkgconfig
-PKGCONFIG += nymea-mqtt nymea-networkmanager nymea-zigbee
+PKGCONFIG += nymea-mqtt nymea-networkmanager nymea-zigbee nymea-remoteproxyclient
 
 CONFIG(withoutpython) {
     message("Building without python support.")

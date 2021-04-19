@@ -33,7 +33,7 @@
 
 #include <QObject>
 #include "../transportinterface.h"
-#include "nymea-remoteproxyclient/remoteproxyconnection.h"
+#include "remoteproxyconnection.h"
 
 namespace nymeaserver {
 

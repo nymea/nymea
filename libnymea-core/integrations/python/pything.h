@@ -40,6 +40,7 @@ typedef struct _thing {
     ThingClass *thingClass = nullptr; // A copy of the thing class. This is owned by the python thread
     PyObject *pyId = nullptr;
     PyObject *pyThingClassId = nullptr;
+    PyObject *pyParentId = nullptr;
     PyObject *pyName = nullptr;
     PyObject *pyParams = nullptr;
     PyObject *pySettings = nullptr;
@@ -70,6 +71,7 @@ static void PyThing_setThing(PyThing *self, Thing *thing, PyThreadState *threadS
 
     self->pyId = PyUnicode_FromString(self->thing->id().toString().toUtf8().data());
     self->pyThingClassId = PyUnicode_FromString(self->thing->thingClassId().toString().toUtf8().data());
+    self->pyParentId = PyUnicode_FromString(self->thing->parentId().toString().toUtf8().data());
     self->pyName = PyUnicode_FromString(self->thing->name().toUtf8().data());
     self->pyParams = PyParams_FromParamList(self->thing->params());
     self->pySettings = PyParams_FromParamList(self->thing->settings());
@@ -141,6 +143,7 @@ static void PyThing_dealloc(PyThing * self) {
     qCDebug(dcPythonIntegrations()) << "--- PyThing" << self;
     Py_XDECREF(self->pyId);
     Py_XDECREF(self->pyThingClassId);
+    Py_XDECREF(self->pyParentId);
     Py_XDECREF(self->pyName);
     Py_XDECREF(self->pyParams);
     Py_XDECREF(self->pySettings);
@@ -167,6 +170,12 @@ static PyObject *PyThing_getThingClassId(PyThing *self, void */*closure*/)
 {
     Py_INCREF(self->pyThingClassId);
     return self->pyThingClassId;
+}
+
+static PyObject *PyThing_getParentId(PyThing *self, void */*closure*/)
+{
+    Py_INCREF(self->pyParentId);
+    return self->pyParentId;
 }
 
 static int PyThing_setName(PyThing *self, PyObject *value, void */*closure*/){
@@ -337,6 +346,7 @@ static PyGetSetDef PyThing_getset[] = {
     {"name", (getter)PyThing_getName, (setter)PyThing_setName, "Thing name", nullptr},
     {"id", (getter)PyThing_getId, 0, "ThingId", nullptr},
     {"thingClassId", (getter)PyThing_getThingClassId, 0, "ThingClassId", nullptr},
+    {"parentId", (getter)PyThing_getParentId, 0, "Parent thing id", nullptr},
     {"settings", (getter)PyThing_getSettings, (setter)PyThing_setSettings, "Thing settings", nullptr},
     {nullptr , nullptr, nullptr, nullptr, nullptr} /* Sentinel */
 };

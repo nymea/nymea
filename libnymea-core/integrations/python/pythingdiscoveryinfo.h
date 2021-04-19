@@ -106,6 +106,10 @@ static PyObject * PyThingDiscoveryInfo_addDescriptor(PyThingDiscoveryInfo* self,
     if (pyDescriptor->pyThingClassId) {
         thingClassId = ThingClassId(PyUnicode_AsUTF8(pyDescriptor->pyThingClassId));
     }
+    ThingId parentId;
+    if (pyDescriptor->pyParentId) {
+        parentId = ThingId(PyUnicode_AsUTF8(pyDescriptor->pyParentId));
+    }
     QString name;
     if (pyDescriptor->pyName) {
         name = QString::fromUtf8(PyUnicode_AsUTF8(pyDescriptor->pyName));
@@ -115,7 +119,7 @@ static PyObject * PyThingDiscoveryInfo_addDescriptor(PyThingDiscoveryInfo* self,
         description = QString::fromUtf8(PyUnicode_AsUTF8(pyDescriptor->pyDescription));
     }
 
-    ThingDescriptor descriptor(thingClassId, name, description);
+    ThingDescriptor descriptor(thingClassId, name, description, parentId);
     if (pyDescriptor->pyThingId) {
         descriptor.setThingId(ThingId(QString::fromUtf8(PyUnicode_AsUTF8(pyDescriptor->pyThingId))));
     }

@@ -137,6 +137,10 @@ PyObject *PythonIntegrationPlugin::pyAutoThingsAppeared(PyObject *self, PyObject
         if (pyDescriptor->pyThingClassId) {
             thingClassId = ThingClassId(PyUnicode_AsUTF8(pyDescriptor->pyThingClassId));
         }
+        ThingId parentId;
+        if (pyDescriptor->pyParentId) {
+            parentId = ThingId(PyUnicode_AsUTF8(pyDescriptor->pyParentId));
+        }
         QString name;
         if (pyDescriptor->pyName) {
             name = QString::fromUtf8(PyUnicode_AsUTF8(pyDescriptor->pyName));
@@ -146,7 +150,7 @@ PyObject *PythonIntegrationPlugin::pyAutoThingsAppeared(PyObject *self, PyObject
             description = QString::fromUtf8(PyUnicode_AsUTF8(pyDescriptor->pyDescription));
         }
 
-        ThingDescriptor descriptor(thingClassId, name, description);
+        ThingDescriptor descriptor(thingClassId, name, description, parentId);
 
         if (pyDescriptor->pyParams) {
             descriptor.setParams(PyParams_ToParamList(pyDescriptor->pyParams));

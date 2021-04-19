@@ -125,6 +125,7 @@ class DeviceDescriptor: public ThingDescriptor
 {
     Q_GADGET
     Q_PROPERTY(QUuid deviceId READ thingId USER true)
+    Q_PROPERTY(ParamList deviceParams READ params)
 };
 
 class DeviceDescriptors: public ThingDescriptors

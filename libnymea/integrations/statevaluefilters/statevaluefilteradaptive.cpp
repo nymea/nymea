@@ -124,10 +124,10 @@ void StateValueFilterAdaptive::update()
                 m_outputValueCount++;
             }
         }
-
-        // Poor mans solution to calculate standard deviation. Not as precise, but much faster than looping over history again
-        m_standardDeviation = ((m_standardDeviation * m_windowSize) + qAbs(changeRatioToAverage)) / (m_windowSize + 1);
     }
+
+    // Poor mans solution to calculate standard deviation. Not as precise, but much faster than looping over history again
+    m_standardDeviation = ((m_standardDeviation * m_windowSize) + qAbs(changeRatioToAverage)) / (m_windowSize + 1);
 
     // reset stats on overflow of counters
     if (m_inputValueCount < m_outputValueCount) {

@@ -142,7 +142,7 @@ Depends: ${shlibs:Depends},
          ${misc:Depends},
 Provides: nymea-update-plugin-api-1,
           nymea-zeroconf-plugin-api-1,
-          nymea-system-plugin-api-2
+          nymea-system-plugin-api-3
 Description: An open source IoT server - core library
  The nymea daemon is a plugin based IoT (Internet of Things) server. The
  server works like a translator for devices, things and services and

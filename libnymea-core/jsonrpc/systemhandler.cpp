@@ -168,6 +168,11 @@ SystemHandler::SystemHandler(Platform *platform, QObject *parent):
     returns.insert("timeZones", enumValueName(StringList));
     registerMethod("GetTimeZones", description, params, returns);
 
+    params.clear(); returns.clear();
+    description = "Returns information about the system nymea is running on.";
+    returns.insert("deviceSerialNumber", enumValueName(String));
+    registerMethod("GetSystemInfo", description, params, returns);
+
     // Notifications
     params.clear();
     description = "Emitted whenever the system capabilities change.";
@@ -443,6 +448,15 @@ JsonReply *SystemHandler::GetTimeZones(const QVariantMap &params) const
 
     QVariantMap returns;
     returns.insert("timeZones", timeZones);
+    return createReply(returns);
+}
+
+JsonReply *SystemHandler::GetSystemInfo(const QVariantMap &params) const
+{
+    Q_UNUSED(params)
+    QVariantMap returns;
+    QString deviceSerial = m_platform->systemController()->deviceSerialNumber();
+    returns.insert("deviceSerialNumber", deviceSerial);
     return createReply(returns);
 }
 

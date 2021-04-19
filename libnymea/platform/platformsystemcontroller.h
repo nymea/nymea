@@ -53,6 +53,8 @@ public:
     virtual bool setAutomaticTime(bool automaticTime);
     virtual bool setTimeZone(const QTimeZone &timeZone);
 
+    virtual QString deviceSerialNumber() const;
+
 
 signals:
     void availableChanged();

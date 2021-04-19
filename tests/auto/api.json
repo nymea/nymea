@@ -1783,6 +1783,14 @@
                 "repositories": "$ref:Repositories"
             }
         },
+        "System.GetSystemInfo": {
+            "description": "Returns information about the system nymea is running on.",
+            "params": {
+            },
+            "returns": {
+                "deviceSerialNumber": "String"
+            }
+        },
         "System.GetTime": {
             "description": "Get the system time and configuraton. The \"time\" and \"timeZone\" properties give the current server time and time zone. \"automaticTimeAvailable\" indicates whether this system supports automatically setting the clock (e.g. using NTP). \"automaticTime\" will be true if the system is configured to automatically update the clock.",
             "params": {

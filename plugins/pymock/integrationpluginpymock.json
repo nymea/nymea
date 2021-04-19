@@ -49,6 +49,7 @@
                     "displayName": "Python mock thing",
                     "createMethods": ["user"],
                     "setupMethod": "justAdd",
+                    "browsable": true,
                     "eventTypes": [
                         {
                             "id": "de6c2425-0dee-413f-8f4c-bb0929e83c0d",

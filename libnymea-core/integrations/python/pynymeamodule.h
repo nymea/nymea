@@ -13,6 +13,10 @@
 #include "pythingpairinginfo.h"
 #include "pypluginstorage.h"
 #include "pyapikeystorage.h"
+#include "pybrowseresult.h"
+#include "pybrowseritem.h"
+#include "pybrowseractioninfo.h"
+#include "pybrowseritemresult.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -31,6 +35,10 @@ static int nymea_exec(PyObject *m) {
     registerThingActionInfoType(m);
     registerPluginStorageType(m);
     registerApiKeyStorageType(m);
+    registerBrowseResultType(m);
+    registerBrowserItemType(m);
+    registerBrowserActionInfoType(m);
+    registerBrowserItemResultType(m);
 
     return 0;
 }

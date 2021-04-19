@@ -37,6 +37,9 @@ public:
     void postSetupThing(Thing *thing) override;
     void executeAction(ThingActionInfo *info) override;
     void thingRemoved(Thing *thing) override;
+    void browseThing(BrowseResult *result) override;
+    void executeBrowserItem(BrowserActionInfo *info) override;
+    void browserItem(BrowserItemResult *result) override;
 
 
     static PyObject* pyConfiguration(PyObject* self, PyObject* args);

@@ -47,6 +47,10 @@ HEADERS += nymeacore.h \
     integrations/apikeysprovidersloader.h \
     integrations/plugininfocache.h \
     integrations/python/pyapikeystorage.h \
+    integrations/python/pybrowseractioninfo.h \
+    integrations/python/pybrowseresult.h \
+    integrations/python/pybrowseritem.h \
+    integrations/python/pybrowseritemresult.h \
     integrations/python/pypluginstorage.h \
     integrations/thingmanagerimplementation.h \
     integrations/translator.h \

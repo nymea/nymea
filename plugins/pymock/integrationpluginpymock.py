@@ -7,7 +7,7 @@ loopRunning = False
 
 def init():
     global loopRunning
-    loopRunning = True
+    loopRunning = True    
 
     logger.log("Python mock plugin init")
     logger.warn("Python mock warning")
@@ -137,6 +137,27 @@ def thingNameChanged(thing, name):
 
 def thingSettingChanged(thing, paramTypeId, value):
     logger.log("Thing setting changed:", thing.name, paramTypeId, value)
+
+
+def browseThing(result):
+    logger.log("browseThing called", result.thing.name, result.itemId)
+    if result.itemId == "":
+        result.addItem(nymea.BrowserItem("001", "Item 0", "I'm a folder", browsable=True, icon=nymea.BrowserIconFolder))
+        result.addItem(nymea.BrowserItem("002", "Item 1", "I'm executable", executable=True, icon=nymea.BrowserIconApplication))
+        result.addItem(nymea.BrowserItem("003", "Item 2", "I'm a file", icon=nymea.BrowserIconFile))
+        result.addItem(nymea.BrowserItem("004", "Item 3", "I have a nice thumbnail", thumbnail="https://github.com/nymea/nymea/raw/master/icons/nymea-logo-256x256.png"))
+        result.addItem(nymea.BrowserItem("005", "Item 4", "I'm disabled", disabled=True, icon=nymea.BrowserIconFile))
+        result.addItem(nymea.BrowserItem("favorites", "Favorites", "I'm the best!", icon=nymea.BrowserIconFavorites))
+
+    if result.itemId == "001":
+        result.addItem(nymea.BrowserItem("011", "Item in subdir", "I'm in a subfolder", icon=nymea.BrowserIconFile))
+
+    result.finish(nymea.ThingErrorNoError)
+
+
+def executeBrowserItem(info):
+    logger.log("executeBrowserItem called for thing", info.thing.name, "and item", info.itemId)
+    info.finish(nymea.ThingErrorNoError)
 
 
 # Intentionally commented out to also have a test case for unimplmented functions

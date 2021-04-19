@@ -574,13 +574,11 @@ void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
     PyEval_ReleaseThread(m_threadState);
 
     connect(info, &ThingActionInfo::destroyed, this, [=](){
-        qCDebug(dcPythonIntegrations()) << "Info destroyed";
+        qCDebug(dcPythonIntegrations()) << "ThingActionInfo destroyed";
         PyEval_RestoreThread(m_threadState);
-        qCDebug(dcPythonIntegrations()) << "Info destroyed2";
         pyInfo->info = nullptr;
         Py_DECREF(pyInfo);
         PyEval_ReleaseThread(m_threadState);
-        qCDebug(dcPythonIntegrations()) << "Info destroyed3";
     });
 
     bool success = callPluginFunction("executeAction", reinterpret_cast<PyObject*>(pyInfo));
@@ -593,6 +591,81 @@ void PythonIntegrationPlugin::thingRemoved(Thing *thing)
 {
     PyThing *pyThing = m_things.value(thing);
     callPluginFunction("thingRemoved", reinterpret_cast<PyObject*>(pyThing));
+}
+
+void PythonIntegrationPlugin::browseThing(BrowseResult *result)
+{
+    PyThing *pyThing = m_things.value(result->thing());
+
+    PyEval_RestoreThread(m_threadState);
+
+    PyBrowseResult *pyBrowseResult = (PyBrowseResult*)PyObject_CallObject((PyObject*)&PyBrowseResultType, NULL);
+    PyBrowseResult_setBrowseResult(pyBrowseResult, result, pyThing);
+
+    PyEval_ReleaseThread(m_threadState);
+
+    connect(result, &BrowseResult::destroyed, this, [=](){
+        qCDebug(dcPythonIntegrations()) << "BrowseResult destroyed";
+        PyEval_RestoreThread(m_threadState);
+        pyBrowseResult->browseResult = nullptr;
+        Py_DECREF(pyBrowseResult);
+        PyEval_ReleaseThread(m_threadState);
+    });
+
+    bool success = callPluginFunction("browseThing", reinterpret_cast<PyObject*>(pyBrowseResult));
+    if (!success) {
+        result->finish(Thing::ThingErrorUnsupportedFeature);
+    }
+}
+
+void PythonIntegrationPlugin::executeBrowserItem(BrowserActionInfo *info)
+{
+    PyThing *pyThing = m_things.value(info->thing());
+
+    PyEval_RestoreThread(m_threadState);
+
+    PyBrowserActionInfo *pyBrowserActionInfo = (PyBrowserActionInfo*)PyObject_CallObject((PyObject*)&PyBrowserActionInfoType, NULL);
+    PyBrowserActionInfo_setInfo(pyBrowserActionInfo, info, pyThing);
+
+    PyEval_ReleaseThread(m_threadState);
+
+    connect(info, &BrowserActionInfo::destroyed, this, [=](){
+        qCDebug(dcPythonIntegrations()) << "BrowserActionInfo destroyed";
+        PyEval_RestoreThread(m_threadState);
+        pyBrowserActionInfo->info = nullptr;
+        Py_DECREF(pyBrowserActionInfo);
+        PyEval_ReleaseThread(m_threadState);
+    });
+
+    bool success = callPluginFunction("executeBrowserItem", reinterpret_cast<PyObject*>(pyBrowserActionInfo));
+    if (!success) {
+        info->finish(Thing::ThingErrorUnsupportedFeature);
+    }
+}
+
+void PythonIntegrationPlugin::browserItem(BrowserItemResult *result)
+{
+    PyThing *pyThing = m_things.value(result->thing());
+
+    PyEval_RestoreThread(m_threadState);
+
+    PyBrowserItemResult *pyBrowserItemResult = (PyBrowserItemResult*)PyObject_CallObject((PyObject*)&PyBrowserItemResultType, NULL);
+    PyBrowserItemResult_setBrowserItemResult(pyBrowserItemResult, result, pyThing);
+
+    PyEval_ReleaseThread(m_threadState);
+
+    connect(result, &BrowserItemResult::destroyed, this, [=](){
+        qCDebug(dcPythonIntegrations()) << "BrowseItemResult destroyed";
+        PyEval_RestoreThread(m_threadState);
+        pyBrowserItemResult->browserItemResult = nullptr;
+        Py_DECREF(pyBrowserItemResult);
+        PyEval_ReleaseThread(m_threadState);
+    });
+
+    bool success = callPluginFunction("browserItem", reinterpret_cast<PyObject*>(pyBrowserItemResult));
+    if (!success) {
+        result->finish(Thing::ThingErrorUnsupportedFeature);
+    }
 }
 
 void PythonIntegrationPlugin::exportIds()

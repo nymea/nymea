@@ -238,6 +238,9 @@ PythonIntegrationPlugin::~PythonIntegrationPlugin()
     s_plugins.take(this);
     Py_XDECREF(m_pluginModule);
     Py_DECREF(m_nymeaModule);
+    Py_XDECREF(m_logger);
+    Py_XDECREF(m_stdOutHandler);
+    Py_XDECREF(m_stdErrHandler);
 
     Py_EndInterpreter(m_threadState);
 
@@ -357,23 +360,24 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     QString category = metadata.pluginName();
     category.replace(0, 1, category[0].toUpper());
     PyObject *args = Py_BuildValue("(s)", category.toUtf8().data());
-    PyNymeaLoggingHandler *logger = reinterpret_cast<PyNymeaLoggingHandler*>(PyObject_CallObject((PyObject*)&PyNymeaLoggingHandlerType, args));
+    m_logger = PyObject_CallObject((PyObject*)&PyNymeaLoggingHandlerType, args);
     Py_DECREF(args);
 
     // Override stdout and stderr
     args = Py_BuildValue("(si)", category.toUtf8().data(), QtMsgType::QtDebugMsg);
-    PyStdOutHandler*stdOutHandler = reinterpret_cast<PyStdOutHandler*>(PyObject_CallObject((PyObject*)&PyStdOutHandlerType, args));
+    m_stdOutHandler = PyObject_CallObject((PyObject*)&PyStdOutHandlerType, args);
     Py_DECREF(args);
-    PySys_SetObject("stdout", (PyObject*)stdOutHandler);
+    PySys_SetObject("stdout", m_stdOutHandler);
     args = Py_BuildValue("(si)", category.toUtf8().data(), QtMsgType::QtWarningMsg);
-    PyStdOutHandler*stdErrHandler = reinterpret_cast<PyStdOutHandler*>(PyObject_CallObject((PyObject*)&PyStdOutHandlerType, args));
-    PySys_SetObject("stderr", (PyObject*)stdErrHandler);
+    m_stdErrHandler = PyObject_CallObject((PyObject*)&PyStdOutHandlerType, args);
+    PySys_SetObject("stderr", m_stdErrHandler);
     Py_DECREF(args);
 
-    int loggerAdded = PyModule_AddObject(m_pluginModule, "logger", reinterpret_cast<PyObject*>(logger));
+    int loggerAdded = PyModule_AddObject(m_pluginModule, "logger", m_logger);
     if (loggerAdded != 0) {
         qCWarning(dcPythonIntegrations()) << "Failed to add the logger object";
-        Py_DECREF(logger);
+        Py_DECREF(m_logger);
+        m_logger = nullptr;
     }
 
     // Export metadata ids into module

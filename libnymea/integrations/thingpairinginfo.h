@@ -53,13 +53,13 @@ public:
     ThingId parentId() const;
 
     QUrl oAuthUrl() const;
-    void setOAuthUrl(const QUrl &oAuthUrl);
 
     Thing::ThingError status() const;
     QString displayMessage() const;
     QString translatedDisplayMessage(const QLocale &locale) const;
 
 public slots:
+    void setOAuthUrl(const QUrl &oAuthUrl);
     void finish(Thing::ThingError status, const QString &displayMessage = QString());
 
 signals:

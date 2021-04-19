@@ -4,6 +4,30 @@
             "name": "batteryCritical",
             "type": "bool",
             "logged": true
+        },
+        {
+            "name": "batteryLevel",
+            "type": "int",
+            "minValue": 0,
+            "maxValue": 100,
+            "unit": "Percentage",
+            "optional": true,
+            "logged": true
+        },
+        {
+            "name": "pluggedIn",
+            "type": "bool",
+            "optional": true
+        },
+        {
+            "name": "charging",
+            "type": "bool",
+            "optional": true
+        },
+        {
+            "name": "discharging",
+            "type": "bool",
+            "optional": true
         }
     ]
 }

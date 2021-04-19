@@ -327,7 +327,7 @@ void TestDevices::verifyInterfaces()
     QVERIFY(!mockDevice.isEmpty());
 
     QVariantList interfaces = mockDevice.value("interfaces").toList();
-    QVariantList expectedInterfaces = {"system", "light", "power", "batterylevel", "battery", "wirelessconnectable", "connectable", "update"};
+    QVariantList expectedInterfaces = {"system", "light", "power", "battery", "wirelessconnectable", "connectable", "update"};
     qCDebug(dcTests()) << interfaces;
     qCDebug(dcTests()) << expectedInterfaces;
     QCOMPARE(interfaces, expectedInterfaces);

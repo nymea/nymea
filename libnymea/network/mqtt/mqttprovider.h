@@ -36,7 +36,7 @@
 
 #include "typeutils.h"
 #include "hardwareresource.h"
-#include "nymea-mqtt/mqttclient.h"
+#include "mqttclient.h"
 
 class MqttChannel;
 

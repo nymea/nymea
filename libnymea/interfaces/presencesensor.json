@@ -6,11 +6,6 @@
             "name": "isPresent",
             "type": "bool",
             "logged": true
-        },
-        {
-            "name": "lastSeenTime",
-            "type": "int",
-            "unit": "UnixTime"
         }
     ]
 }

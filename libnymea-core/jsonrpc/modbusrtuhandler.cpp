@@ -53,6 +53,9 @@ ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *
     modbusRtuMasterDescription.insert("parity", enumRef<SerialPort::SerialPortParity>());
     modbusRtuMasterDescription.insert("stopBits", enumRef<SerialPort::SerialPortStopBits>());
     modbusRtuMasterDescription.insert("dataBits", enumRef<SerialPort::SerialPortDataBits>());
+    modbusRtuMasterDescription.insert("numberOfRetries", enumValueName(Uint));
+    modbusRtuMasterDescription.insert("timeout", enumValueName(Uint));
+
     registerObject("ModbusRtuMaster", modbusRtuMasterDescription);
 
     QVariantMap params, returns;
@@ -91,24 +94,26 @@ ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *
 
     // ModbusRtuMasterRemoved notification
     params.clear();
-    description = "Emitted whenever a new modbus RTU master has been removed from the system.";
+    description = "Emitted whenever a modbus RTU master has been removed from the system.";
     params.insert("modbusUuid", enumValueName(Uuid));
     registerNotification("ModbusRtuMasterRemoved", description, params);
 
     // ModbusRtuMasterChanged notification
     params.clear();
-    description = "Emitted whenever a new modbus RTU master has been changed to the system.";
+    description = "Emitted whenever a modbus RTU master has been changed in the system.";
     params.insert("modbusRtuMaster", objectRef("ModbusRtuMaster"));
     registerNotification("ModbusRtuMasterChanged", description, params);
 
     // AddModbusRtuMaster
     params.clear(); returns.clear();
-    description = "Add a new modbus RTU master with the given configuration.";
+    description = "Add a new modbus RTU master with the given configuration. The timeout value is in milli seconds and the minimum value is 10 ms.";
     params.insert("serialPort", enumValueName(String));
     params.insert("baudrate", enumValueName(Uint));
     params.insert("parity", enumRef<SerialPort::SerialPortParity>());
     params.insert("dataBits", enumRef<SerialPort::SerialPortDataBits>());
     params.insert("stopBits", enumRef<SerialPort::SerialPortStopBits>());
+    params.insert("numberOfRetries", enumValueName(Uint));
+    params.insert("timeout", enumValueName(Uint));
     returns.insert("o:modbusUuid", enumValueName(Uuid));
     returns.insert("modbusError", enumRef<ModbusRtuManager::ModbusRtuError>());
     registerMethod("AddModbusRtuMaster", description, params, returns);
@@ -129,6 +134,8 @@ ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *
     params.insert("parity", enumRef<SerialPort::SerialPortParity>());
     params.insert("dataBits", enumRef<SerialPort::SerialPortDataBits>());
     params.insert("stopBits", enumRef<SerialPort::SerialPortStopBits>());
+    params.insert("numberOfRetries", enumValueName(Uint));
+    params.insert("timeout", enumValueName(Uint));
     returns.insert("modbusError", enumRef<ModbusRtuManager::ModbusRtuError>());
     registerMethod("ReconfigureModbusRtuMaster", description, params, returns);
 
@@ -211,10 +218,16 @@ JsonReply *ModbusRtuHandler::AddModbusRtuMaster(const QVariantMap &params)
     QSerialPort::Parity parity = static_cast<QSerialPort::Parity>(enumNameToValue<SerialPort::SerialPortParity>(params.value("parity").toString()));
     QSerialPort::StopBits stopBits = static_cast<QSerialPort::StopBits>(enumNameToValue<SerialPort::SerialPortStopBits>(params.value("stopBits").toString()));
     QSerialPort::DataBits dataBits = static_cast<QSerialPort::DataBits>(enumNameToValue<SerialPort::SerialPortDataBits>(params.value("dataBits").toString()));
-
-    QPair<ModbusRtuManager::ModbusRtuError, QUuid> result = m_modbusRtuManager->addNewModbusRtuMaster(serialPort, baudrate, parity, dataBits, stopBits);
+    uint numberOfRetries = params.value("numberOfRetries").toUInt();
+    uint timeout = params.value("timeout").toUInt();
 
     QVariantMap returnMap;
+    if (timeout < 10) {
+        returnMap.insert("modbusError", enumValueName<ModbusRtuManager::ModbusRtuError>(ModbusRtuManager::ModbusRtuErrorInvalidTimeoutValue));
+        return createReply(returnMap);
+    }
+
+    QPair<ModbusRtuManager::ModbusRtuError, QUuid> result = m_modbusRtuManager->addNewModbusRtuMaster(serialPort, baudrate, parity, dataBits, stopBits, numberOfRetries, timeout);
     returnMap.insert("modbusError", enumValueName<ModbusRtuManager::ModbusRtuError>(result.first));
     if (result.first == ModbusRtuManager::ModbusRtuErrorNoError) {
         returnMap.insert("modbusUuid", result.second);
@@ -240,9 +253,16 @@ JsonReply *ModbusRtuHandler::ReconfigureModbusRtuMaster(const QVariantMap &param
     QSerialPort::Parity parity = static_cast<QSerialPort::Parity>(enumNameToValue<SerialPort::SerialPortParity>(params.value("parity").toString()));
     QSerialPort::StopBits stopBits = static_cast<QSerialPort::StopBits>(enumNameToValue<SerialPort::SerialPortStopBits>(params.value("stopBits").toString()));
     QSerialPort::DataBits dataBits = static_cast<QSerialPort::DataBits>(enumNameToValue<SerialPort::SerialPortDataBits>(params.value("dataBits").toString()));
+    uint numberOfRetries = params.value("numberOfRetries").toUInt();
+    uint timeout = params.value("timeout").toUInt();
 
-    ModbusRtuManager::ModbusRtuError result = m_modbusRtuManager->reconfigureModbusRtuMaster(modbusUuid, serialPort, baudrate, parity, dataBits, stopBits);
     QVariantMap returnMap;
+    if (timeout < 10) {
+        returnMap.insert("modbusError", enumValueName<ModbusRtuManager::ModbusRtuError>(ModbusRtuManager::ModbusRtuErrorInvalidTimeoutValue));
+        return createReply(returnMap);
+    }
+
+    ModbusRtuManager::ModbusRtuError result = m_modbusRtuManager->reconfigureModbusRtuMaster(modbusUuid, serialPort, baudrate, parity, dataBits, stopBits, numberOfRetries, timeout);
     returnMap.insert("modbusError", enumValueName<ModbusRtuManager::ModbusRtuError>(result));
     return createReply(returnMap);
 }
@@ -258,6 +278,8 @@ QVariantMap ModbusRtuHandler::packModbusRtuMaster(ModbusRtuMaster *modbusRtuMast
     modbusRtuMasterMap.insert("parity", enumValueName<SerialPort::SerialPortParity>(static_cast<SerialPort::SerialPortParity>(modbusRtuMaster->parity())));
     modbusRtuMasterMap.insert("stopBits", enumValueName<SerialPort::SerialPortStopBits>(static_cast<SerialPort::SerialPortStopBits>(modbusRtuMaster->stopBits())));
     modbusRtuMasterMap.insert("dataBits", enumValueName<SerialPort::SerialPortDataBits>(static_cast<SerialPort::SerialPortDataBits>(modbusRtuMaster->dataBits())));
+    modbusRtuMasterMap.insert("numberOfRetries", modbusRtuMaster->numberOfRetries());
+    modbusRtuMasterMap.insert("timeout", modbusRtuMaster->timeout());
     return modbusRtuMasterMap;
 }
 

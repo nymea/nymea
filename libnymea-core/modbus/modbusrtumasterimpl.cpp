@@ -42,14 +42,16 @@ Q_DECLARE_LOGGING_CATEGORY(dcModbusRtu)
 
 namespace nymeaserver {
 
-ModbusRtuMasterImpl::ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, QObject *parent) :
+ModbusRtuMasterImpl::ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout, QObject *parent) :
     ModbusRtuMaster(parent),
     m_modbusUuid(modbusUuid),
     m_serialPort(serialPort),
     m_baudrate(baudrate),
     m_parity(parity),
     m_dataBits(dataBits),
-    m_stopBits(stopBits)
+    m_stopBits(stopBits),
+    m_numberOfRetries(numberOfRetries),
+    m_timeout(timeout)
 {
 #ifdef WITH_QTSERIALBUS
     m_modbus = new QModbusRtuSerialMaster(this);
@@ -58,6 +60,8 @@ ModbusRtuMasterImpl::ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString 
     m_modbus->setConnectionParameter(QModbusDevice::SerialDataBitsParameter, m_dataBits);
     m_modbus->setConnectionParameter(QModbusDevice::SerialStopBitsParameter, m_stopBits);
     m_modbus->setConnectionParameter(QModbusDevice::SerialParityParameter, m_parity);
+    m_modbus->setNumberOfRetries(m_numberOfRetries);
+    m_modbus->setTimeout(m_timeout);
 
     connect(m_modbus, &QModbusTcpClient::stateChanged, this, [=](QModbusDevice::State state){
         qCDebug(dcModbusRtu()) << "Connection state changed" << m_modbusUuid.toString() << m_serialPort << state;
@@ -171,6 +175,8 @@ bool ModbusRtuMasterImpl::connectDevice()
     m_modbus->setConnectionParameter(QModbusDevice::SerialDataBitsParameter, m_dataBits);
     m_modbus->setConnectionParameter(QModbusDevice::SerialStopBitsParameter, m_stopBits);
     m_modbus->setConnectionParameter(QModbusDevice::SerialParityParameter, m_parity);
+    m_modbus->setNumberOfRetries(m_numberOfRetries);
+    m_modbus->setTimeout(m_timeout);
     return m_modbus->connectDevice();
 #else
     qCWarning(dcModbusRtu()) << "Modbus is not available on this platform.";
@@ -185,6 +191,37 @@ void ModbusRtuMasterImpl::disconnectDevice()
 #else
     qCWarning(dcModbusRtu()) << "Modbus is not available on this platform.";
 #endif
+}
+
+int ModbusRtuMasterImpl::numberOfRetries() const
+{
+    return m_numberOfRetries;
+}
+
+void ModbusRtuMasterImpl::setNumberOfRetries(int numberOfRetries)
+{
+    if (m_numberOfRetries == numberOfRetries)
+        return;
+
+    m_numberOfRetries = numberOfRetries;
+    emit numberOfRetriesChanged(m_numberOfRetries);
+
+    m_modbus->setNumberOfRetries(m_numberOfRetries);
+}
+
+int ModbusRtuMasterImpl::timeout() const
+{
+    return m_timeout;
+}
+
+void ModbusRtuMasterImpl::setTimeout(int timeout)
+{
+    if (m_timeout == timeout)
+        return;
+
+    m_timeout = timeout;
+    emit timeoutChanged(m_timeout);
+    m_modbus->setTimeout(m_timeout);
 }
 
 ModbusRtuReply *ModbusRtuMasterImpl::readCoil(int slaveAddress, int registerAddress, quint16 size)

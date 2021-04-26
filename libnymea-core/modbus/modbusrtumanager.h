@@ -54,6 +54,7 @@ public:
         ModbusRtuErrorHardwareNotFound,
         ModbusRtuErrorResourceBusy,
         ModbusRtuErrorNotSupported,
+        ModbusRtuErrorInvalidTimeoutValue,
         ModbusRtuErrorConnectionFailed
     };
     Q_ENUM(ModbusRtuError)
@@ -69,8 +70,8 @@ public:
     bool hasModbusRtuMaster(const QUuid &modbusUuid) const;
     ModbusRtuMaster *getModbusRtuMaster(const QUuid &modbusUuid);
 
-    QPair<ModbusRtuError, QUuid> addNewModbusRtuMaster(const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits);
-    ModbusRtuError reconfigureModbusRtuMaster(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits);
+    QPair<ModbusRtuError, QUuid> addNewModbusRtuMaster(const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout);
+    ModbusRtuError reconfigureModbusRtuMaster(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout);
     ModbusRtuError removeModbusRtuMaster(const QUuid &modbusUuid);
 
 signals:

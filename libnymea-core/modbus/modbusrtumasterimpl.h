@@ -46,7 +46,7 @@ class ModbusRtuMasterImpl : public ModbusRtuMaster
 {
     Q_OBJECT
 public:
-    explicit ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, QObject *parent = nullptr);
+    explicit ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout, QObject *parent = nullptr);
     ~ModbusRtuMasterImpl() override = default;
 
     QUuid modbusUuid() const override;
@@ -71,6 +71,12 @@ public:
     bool connectDevice();
     void disconnectDevice();
 
+    int numberOfRetries() const override;
+    void setNumberOfRetries(int numberOfRetries);
+
+    int timeout() const override;
+    void setTimeout(int timeout);
+
     // Requests
     ModbusRtuReply *readCoil(int slaveAddress, int registerAddress, quint16 size = 1) override;
     ModbusRtuReply *readDiscreteInput(int slaveAddress, int registerAddress, quint16 size = 1) override;
@@ -93,6 +99,8 @@ private:
     QSerialPort::Parity m_parity;
     QSerialPort::DataBits m_dataBits;
     QSerialPort::StopBits m_stopBits;
+    int m_numberOfRetries = 3;
+    int m_timeout = 100;
 };
 
 }

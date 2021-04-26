@@ -49,6 +49,8 @@ public:
     virtual QSerialPort::Parity parity() const = 0;
     virtual QSerialPort::DataBits dataBits() const = 0;
     virtual QSerialPort::StopBits stopBits() = 0;
+    virtual int numberOfRetries() const = 0;
+    virtual int timeout() const = 0;
 
     virtual bool connected() const = 0;
 
@@ -72,6 +74,8 @@ signals:
     void parityChanged(QSerialPort::Parity parity);
     void dataBitsChanged(QSerialPort::DataBits dataBits);
     void stopBitsChanged(QSerialPort::StopBits stopBits);
+    void numberOfRetriesChanged(int numberOfRetries);
+    void timeoutChanged(int timeout);
 
 };
 
@@ -81,7 +85,9 @@ inline QDebug operator<<(QDebug debug, ModbusRtuMaster *modbusRtuMaster) {
     debug.nospace() << ", BaudRate: " << modbusRtuMaster->baudrate();
     debug.nospace() << ", " << modbusRtuMaster->dataBits();
     debug.nospace() << ", " << modbusRtuMaster->stopBits();
-    debug.nospace() << ", " << modbusRtuMaster->parity() << ") ";
+    debug.nospace() << ", " << modbusRtuMaster->parity();
+    debug.nospace() << ", Retries:" << modbusRtuMaster->numberOfRetries();
+    debug.nospace() << ", Timeout:" << modbusRtuMaster->numberOfRetries() << "ms)";
     return debug.space();
 };
 

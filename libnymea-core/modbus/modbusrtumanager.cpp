@@ -98,7 +98,7 @@ ModbusRtuMaster *ModbusRtuManager::getModbusRtuMaster(const QUuid &modbusUuid)
     return nullptr;
 }
 
-QPair<ModbusRtuManager::ModbusRtuError, QUuid>  ModbusRtuManager::addNewModbusRtuMaster(const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits)
+QPair<ModbusRtuManager::ModbusRtuError, QUuid>  ModbusRtuManager::addNewModbusRtuMaster(const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout)
 {
     if (!supported()) {
         qCWarning(dcModbusRtu()) << "Cannot add new modbus RTU master because serialbus is not suppoerted on this platform.";
@@ -112,7 +112,7 @@ QPair<ModbusRtuManager::ModbusRtuError, QUuid>  ModbusRtuManager::addNewModbusRt
     }
 
     QUuid modbusUuid = QUuid::createUuid();
-    ModbusRtuMasterImpl *modbusMaster = new ModbusRtuMasterImpl(modbusUuid, serialPort, baudrate, parity, dataBits, stopBits, this);
+    ModbusRtuMasterImpl *modbusMaster = new ModbusRtuMasterImpl(modbusUuid, serialPort, baudrate, parity, dataBits, stopBits, numberOfRetries, timeout, this);
     ModbusRtuMaster *modbus = qobject_cast<ModbusRtuMaster *>(modbusMaster);
     qCDebug(dcModbusRtu()) << "Adding new" << modbus << parity << dataBits << stopBits;
 
@@ -130,7 +130,7 @@ QPair<ModbusRtuManager::ModbusRtuError, QUuid>  ModbusRtuManager::addNewModbusRt
     return QPair<ModbusRtuError, QUuid>(ModbusRtuErrorNoError, modbusUuid);
 }
 
-ModbusRtuManager::ModbusRtuError ModbusRtuManager::reconfigureModbusRtuMaster(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits)
+ModbusRtuManager::ModbusRtuError ModbusRtuManager::reconfigureModbusRtuMaster(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout)
 {
     if (!supported()) {
         qCWarning(dcModbusRtu()) << "Cannot reconfigure modbus RTU master because serialbus is not suppoerted on this platform.";
@@ -142,6 +142,7 @@ ModbusRtuManager::ModbusRtuError ModbusRtuManager::reconfigureModbusRtuMaster(co
         return ModbusRtuErrorUuidNotFound;
     }
 
+    // Take the modbus masters
     ModbusRtuMasterImpl *modbusMaster = qobject_cast<ModbusRtuMasterImpl *>(m_modbusRtuMasters.value(modbusUuid));
 
     // Disconnect
@@ -153,6 +154,8 @@ ModbusRtuManager::ModbusRtuError ModbusRtuManager::reconfigureModbusRtuMaster(co
     modbusMaster->setParity(parity);
     modbusMaster->setDataBits(dataBits);
     modbusMaster->setStopBits(stopBits);
+    modbusMaster->setNumberOfRetries(numberOfRetries);
+    modbusMaster->setTimeout(timeout);
 
     // Connect again
     if (!modbusMaster->connectDevice()) {
@@ -214,9 +217,11 @@ void ModbusRtuManager::loadRtuMasters()
         QSerialPort::Parity parity = static_cast<QSerialPort::Parity>(settings.value("parity").toInt());
         QSerialPort::DataBits dataBits = static_cast<QSerialPort::DataBits>(settings.value("dataBits").toInt());
         QSerialPort::StopBits stopBits = static_cast<QSerialPort::StopBits>(settings.value("stopBits").toInt());
+        int numberOfRetries = settings.value("numberOfRetries").toInt();
+        int timeout = settings.value("timeout").toInt();
         settings.endGroup(); // uuid
 
-        addModbusRtuMasterInternally(new ModbusRtuMasterImpl(QUuid(uuidString), serialPort, baudrate, parity, dataBits, stopBits, this));
+        addModbusRtuMasterInternally(new ModbusRtuMasterImpl(QUuid(uuidString), serialPort, baudrate, parity, dataBits, stopBits, numberOfRetries, timeout, this));
     }
 
     settings.endGroup(); // ModbusRtuMasters
@@ -233,6 +238,8 @@ void ModbusRtuManager::saveModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster)
     settings.setValue("parity", static_cast<int>(modbusRtuMaster->parity()));
     settings.setValue("dataBits", static_cast<int>(modbusRtuMaster->dataBits()));
     settings.setValue("stopBits", static_cast<int>(modbusRtuMaster->stopBits()));
+    settings.setValue("numberOfRetries", modbusRtuMaster->numberOfRetries());
+    settings.setValue("timeout", modbusRtuMaster->timeout());
     settings.endGroup(); // uuid
     settings.endGroup(); // ModbusRtuMasters
 }

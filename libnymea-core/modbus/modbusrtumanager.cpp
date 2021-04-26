@@ -249,6 +249,11 @@ void ModbusRtuManager::addModbusRtuMasterInternally(ModbusRtuMasterImpl *modbusR
     });
 
     emit modbusRtuMasterAdded(modbusMaster);
+
+    // Try to connect the modbus rtu master after adding the bus
+    if (!modbusRtuMaster->connectDevice()) {
+        qCWarning(dcModbusRtu()) << "Failed to connect modbus RTU master. Could not connect to" << modbusMaster;
+    }
 }
 
 }

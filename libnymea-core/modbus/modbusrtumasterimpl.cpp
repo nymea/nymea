@@ -205,8 +205,9 @@ void ModbusRtuMasterImpl::setNumberOfRetries(int numberOfRetries)
 
     m_numberOfRetries = numberOfRetries;
     emit numberOfRetriesChanged(m_numberOfRetries);
-
+#ifdef WITH_QTSERIALBUS
     m_modbus->setNumberOfRetries(m_numberOfRetries);
+#endif
 }
 
 int ModbusRtuMasterImpl::timeout() const
@@ -221,7 +222,9 @@ void ModbusRtuMasterImpl::setTimeout(int timeout)
 
     m_timeout = timeout;
     emit timeoutChanged(m_timeout);
+#ifdef WITH_QTSERIALBUS
     m_modbus->setTimeout(m_timeout);
+#endif
 }
 
 ModbusRtuReply *ModbusRtuMasterImpl::readCoil(int slaveAddress, int registerAddress, quint16 size)

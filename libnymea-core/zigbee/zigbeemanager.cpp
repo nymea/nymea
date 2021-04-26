@@ -343,19 +343,19 @@ void ZigbeeManager::loadZigbeeNetworks()
 void ZigbeeManager::checkPlatformConfiguration()
 {
     /* Example platform configurations
- *
- * serialPort=/dev/ttymxc2
- * baudRate=115200
- * backend=nxp
- * autoSetup=false
- *
- * serialPort=/dev/ttyS0
- * baudRate=38400
- * backend=deconz
- * autoSetup=false
- *
- * autoSetup=true
- */
+     *
+     * serialPort=/dev/ttymxc2
+     * baudRate=115200
+     * backend=nxp
+     * autoSetup=false
+     *
+     * serialPort=/dev/ttyS0
+     * baudRate=38400
+     * backend=deconz
+     * autoSetup=false
+     *
+     * autoSetup=true
+     */
 
     QFileInfo platformConfigurationFileInfo(NymeaSettings::settingsPath() + QDir::separator() + "zigbee-platform.conf");
     if (platformConfigurationFileInfo.exists()) {
@@ -542,6 +542,12 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
             return;
         }
         emit nodeRemoved(network->networkUuid(), node);
+    });
+
+    connect(network, &ZigbeeNetwork::nodeJoined, this, [this, network](ZigbeeNode *node){
+        // The node has joined but is still initializing. Once the node has been initialized by the stack, the node added signal will be emitted.
+        qCDebug(dcZigbee()) << "Node joined the network" << network->networkUuid().toString() << node;
+        emit nodeJoined(network->networkUuid(), node);
     });
 
     connect(network, &ZigbeeNetwork::firmwareVersionChanged, this, [this, network](const QString &firmwareVersion){

@@ -125,6 +125,7 @@ signals:
     void zigbeeNetworkRemoved(const QUuid networkUuid);
     void zigbeeNetworkChanged(ZigbeeNetwork *zigbeeNetwork);
 
+    void nodeJoined(const QUuid &networkUuid, ZigbeeNode *node);
     void nodeAdded(const QUuid &networkUuid, ZigbeeNode *node);
     void nodeRemoved(const QUuid &networkUuid, ZigbeeNode *node);
 };

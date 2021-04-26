@@ -67,12 +67,19 @@ public:
 private:
     ZigbeeManager *m_zigbeeManager = nullptr;
 
+private slots:
+    void onNodeJoined(const QUuid &networkUuid, ZigbeeNode *node);
+    void onNodeAdded(const QUuid &networkUuid, ZigbeeNode *node);
+    void onNodeRemoved(const QUuid &networkUuid, ZigbeeNode *node);
+
 signals:
     void AdapterAdded(const QVariantMap &params);
     void AdapterRemoved(const QVariantMap &params);
+
     void NetworkAdded(const QVariantMap &params);
     void NetworkRemoved(const QVariantMap &params);
     void NetworkChanged(const QVariantMap &params);
+
     void NodeAdded(const QVariantMap &params);
     void NodeRemoved(const QVariantMap &params);
     void NodeChanged(const QVariantMap &params);

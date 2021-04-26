@@ -157,6 +157,7 @@
             "ModbusRtuErrorHardwareNotFound",
             "ModbusRtuErrorResourceBusy",
             "ModbusRtuErrorNotSupported",
+            "ModbusRtuErrorInvalidTimeoutValue",
             "ModbusRtuErrorConnectionFailed"
         ],
         "NetworkDeviceState": [
@@ -1509,13 +1510,15 @@
             }
         },
         "ModbusRtu.AddModbusRtuMaster": {
-            "description": "Add a new modbus RTU master with the given configuration.",
+            "description": "Add a new modbus RTU master with the given configuration. The timeout value is in milli seconds and the minimum value is 10 ms.",
             "params": {
                 "baudrate": "Uint",
                 "dataBits": "$ref:SerialPortDataBits",
+                "numberOfRetries": "Uint",
                 "parity": "$ref:SerialPortParity",
                 "serialPort": "String",
-                "stopBits": "$ref:SerialPortStopBits"
+                "stopBits": "$ref:SerialPortStopBits",
+                "timeout": "Uint"
             },
             "returns": {
                 "modbusError": "$ref:ModbusRtuError",
@@ -1547,9 +1550,11 @@
                 "baudrate": "Uint",
                 "dataBits": "$ref:SerialPortDataBits",
                 "modbusUuid": "Uuid",
+                "numberOfRetries": "Uint",
                 "parity": "$ref:SerialPortParity",
                 "serialPort": "String",
-                "stopBits": "$ref:SerialPortStopBits"
+                "stopBits": "$ref:SerialPortStopBits",
+                "timeout": "Uint"
             },
             "returns": {
                 "modbusError": "$ref:ModbusRtuError"
@@ -2409,13 +2414,13 @@
             }
         },
         "ModbusRtu.ModbusRtuMasterChanged": {
-            "description": "Emitted whenever a new modbus RTU master has been changed to the system.",
+            "description": "Emitted whenever a modbus RTU master has been changed in the system.",
             "params": {
                 "modbusRtuMaster": "$ref:ModbusRtuMaster"
             }
         },
         "ModbusRtu.ModbusRtuMasterRemoved": {
-            "description": "Emitted whenever a new modbus RTU master has been removed from the system.",
+            "description": "Emitted whenever a modbus RTU master has been removed from the system.",
             "params": {
                 "modbusUuid": "Uuid"
             }
@@ -2830,9 +2835,11 @@
             "connected": "Bool",
             "dataBits": "$ref:SerialPortDataBits",
             "modbusUuid": "Uuid",
+            "numberOfRetries": "Uint",
             "parity": "$ref:SerialPortParity",
             "serialPort": "String",
-            "stopBits": "$ref:SerialPortStopBits"
+            "stopBits": "$ref:SerialPortStopBits",
+            "timeout": "Uint"
         },
         "MqttPolicy": {
             "allowedPublishTopicFilters": "StringList",

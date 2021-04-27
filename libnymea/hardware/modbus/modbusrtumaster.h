@@ -86,8 +86,8 @@ inline QDebug operator<<(QDebug debug, ModbusRtuMaster *modbusRtuMaster) {
     debug.nospace() << ", " << modbusRtuMaster->dataBits();
     debug.nospace() << ", " << modbusRtuMaster->stopBits();
     debug.nospace() << ", " << modbusRtuMaster->parity();
-    debug.nospace() << ", Retries:" << modbusRtuMaster->numberOfRetries();
-    debug.nospace() << ", Timeout:" << modbusRtuMaster->numberOfRetries() << "ms)";
+    debug.nospace() << ", Retries: " << modbusRtuMaster->numberOfRetries();
+    debug.nospace() << ", Timeout: " << modbusRtuMaster->timeout() << "ms)";
     return debug.space();
 };
 

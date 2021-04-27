@@ -63,6 +63,15 @@ ModbusRtuManager::ModbusRtuManager(SerialPortMonitor *serialPortMonitor, QObject
             }
         }
     });
+
+    // Try to connect the modbus rtu masters
+    foreach (ModbusRtuMaster *modbusMaster, m_modbusRtuMasters.values()) {
+        ModbusRtuMasterImpl *modbusMasterImpl = qobject_cast<ModbusRtuMasterImpl *>(modbusMaster);
+        if (!modbusMasterImpl->connectDevice()) {
+            qCWarning(dcModbusRtu()) << "Failed to connect modbus RTU master. Could not connect to" << modbusMaster;
+        }
+    }
+
 }
 
 SerialPortMonitor *ModbusRtuManager::serialPortMonitor() const
@@ -256,11 +265,6 @@ void ModbusRtuManager::addModbusRtuMasterInternally(ModbusRtuMasterImpl *modbusR
     });
 
     emit modbusRtuMasterAdded(modbusMaster);
-
-    // Try to connect the modbus rtu master after adding the bus
-    if (!modbusRtuMaster->connectDevice()) {
-        qCWarning(dcModbusRtu()) << "Failed to connect modbus RTU master. Could not connect to" << modbusMaster;
-    }
 }
 
 }

@@ -162,6 +162,14 @@
             "NetworkManagerStateConnectedSite",
             "NetworkManagerStateConnectedGlobal"
         ],
+        "PermissionScope": [
+            "PermissionScopeNone",
+            "PermissionScopeControlThings",
+            "PermissionScopeConfigureThings",
+            "PermissionScopeExecuteRules",
+            "PermissionScopeConfigureRules",
+            "PermissionScopeAdmin"
+        ],
         "RemovePolicy": [
             "RemovePolicyCascade",
             "RemovePolicyUpdate"
@@ -403,6 +411,9 @@
     "flags": {
         "CreateMethods": [
             "$ref:CreateMethod"
+        ],
+        "PermissionScopes": [
+            "$ref:PermissionScope"
         ]
     },
     "methods": {
@@ -413,6 +424,7 @@
                 "key": "String",
                 "o:group": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "value": "String"
             }
@@ -425,6 +437,7 @@
                 "o:group": "String",
                 "value": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
             }
         },
@@ -433,6 +446,7 @@
             "params": {
                 "clientId": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -442,6 +456,7 @@
             "params": {
                 "id": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -451,6 +466,7 @@
             "params": {
                 "id": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -460,6 +476,7 @@
             "params": {
                 "id": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -469,6 +486,7 @@
             "params": {
                 "id": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -478,6 +496,7 @@
             "description": "Returns a list of locale codes available for the server. i.e. en_US, de_AT",
             "params": {
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "languages": [
                     "String"
@@ -488,6 +507,7 @@
             "description": "Get all configuration parameters of the server.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "basicConfiguration": {
                     "d:language": "String",
@@ -515,6 +535,7 @@
             "description": "Get all MQTT broker policies.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "mqttPolicies": [
                     "$ref:MqttPolicy"
@@ -525,6 +546,7 @@
             "description": "Get all MQTT Server configurations.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "mqttServerConfigurations": [
                     "$ref:ServerConfiguration"
@@ -536,6 +558,7 @@
             "description": "Get the list of available timezones.",
             "params": {
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "timeZones": [
                     "String"
@@ -547,6 +570,7 @@
             "params": {
                 "enabled": "Bool"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -556,6 +580,7 @@
             "params": {
                 "enabled": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -566,6 +591,7 @@
             "params": {
                 "language": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -575,6 +601,7 @@
             "params": {
                 "policy": "$ref:MqttPolicy"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -584,6 +611,7 @@
             "params": {
                 "configuration": "$ref:ServerConfiguration"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -593,6 +621,7 @@
             "params": {
                 "serverName": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -602,6 +631,7 @@
             "params": {
                 "configuration": "$ref:ServerConfiguration"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -612,6 +642,7 @@
             "params": {
                 "timeZone": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -621,6 +652,7 @@
             "params": {
                 "configuration": "$ref:WebServerConfiguration"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -630,6 +662,7 @@
             "params": {
                 "configuration": "$ref:ServerConfiguration"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
             }
@@ -642,6 +675,7 @@
                 "o:thingParams": "$ref:ParamList",
                 "thingClassId": "Uuid"
             },
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
                 "o:displayMessage": "String",
                 "o:thingId": "Uuid",
@@ -654,6 +688,7 @@
                 "o:itemId": "String",
                 "thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "items": [
                     "$ref:BrowserItem"
@@ -669,6 +704,7 @@
                 "o:username": "String",
                 "pairingTransactionId": "Uuid"
             },
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
                 "o:displayMessage": "String",
                 "o:thingId": "Uuid",
@@ -684,6 +720,7 @@
                 "outputStateTypeId": "Uuid",
                 "outputThingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
                 "o:ioConnectionId": "Uuid",
                 "thingError": "$ref:ThingError"
@@ -694,6 +731,7 @@
             "params": {
                 "ioConnectionId": "Uuid"
             },
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
                 "thingError": "$ref:ThingError"
             }
@@ -704,6 +742,7 @@
                 "o:discoveryParams": "$ref:ParamList",
                 "thingClassId": "Uuid"
             },
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
                 "o:displayMessage": "String",
                 "o:thingDescriptors": "$ref:ThingDescriptors",
@@ -716,6 +755,7 @@
                 "name": "String",
                 "thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
                 "thingError": "$ref:ThingError"
             }
@@ -727,6 +767,7 @@
                 "o:params": "$ref:ParamList",
                 "thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeControlThings",
             "returns": {
                 "o:displayMessage": "String",
                 "thingError": "$ref:ThingError"
@@ -738,6 +779,7 @@
                 "itemId": "String",
                 "thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeControlThings",
             "returns": {
                 "o:displayMessage": "String",
                 "thingError": "$ref:ThingError"
@@ -751,6 +793,7 @@
                 "o:params": "$ref:ParamList",
                 "thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeControlThings",
             "returns": {
                 "o:displayMessage": "String",
                 "thingError": "$ref:ThingError"
@@ -761,6 +804,7 @@
             "params": {
                 "thingClassId": "Uuid"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "actionTypes": "$ref:ActionTypes"
             }
@@ -771,6 +815,7 @@
                 "o:itemId": "String",
                 "thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "o:displayMessage": "String",
                 "o:item": "$ref:BrowserItem",
@@ -782,6 +827,7 @@
             "params": {
                 "thingClassId": "Uuid"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "eventTypes": "$ref:EventTypes"
             }
@@ -791,6 +837,7 @@
             "params": {
                 "o:thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "ioConnections": "$ref:IOConnections"
             }
@@ -800,6 +847,7 @@
             "params": {
                 "pluginId": "Uuid"
             },
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
                 "o:configuration": "$ref:ParamList",
                 "thingError": "$ref:ThingError"
@@ -809,6 +857,7 @@
             "description": "Returns a list of loaded plugins.",
             "params": {
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "plugins": "$ref:IntegrationPlugins"
             }
@@ -818,6 +867,7 @@
             "params": {
                 "thingClassId": "Uuid"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "stateTypes": "$ref:StateTypes"
             }
@@ -828,6 +878,7 @@
                 "stateTypeId": "Uuid",
                 "thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "o:value": "Variant",
                 "thingError": "$ref:ThingError"
@@ -838,6 +889,7 @@
             "params": {
                 "thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "o:values": "$ref:States",
                 "thingError": "$ref:ThingError"
@@ -851,6 +903,7 @@
                 ],
                 "o:vendorId": "Uuid"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "o:thingClasses": "$ref:ThingClasses",
                 "thingError": "$ref:ThingError"
@@ -861,6 +914,7 @@
             "params": {
                 "o:thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "o:things": "$ref:Things",
                 "thingError": "$ref:ThingError"
@@ -870,6 +924,7 @@
             "description": "Returns a list of supported Vendors.",
             "params": {
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "vendors": "$ref:Vendors"
             }
@@ -883,6 +938,7 @@
                 "o:thingId": "Uuid",
                 "o:thingParams": "$ref:ParamList"
             },
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
                 "o:displayMessage": "String",
                 "o:oAuthUrl": "String",
@@ -899,6 +955,7 @@
                 "o:thingId": "Uuid",
                 "o:thingParams": "$ref:ParamList"
             },
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
                 "o:displayMessage": "String",
                 "thingError": "$ref:ThingError"
@@ -916,6 +973,7 @@
                 ],
                 "thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
                 "o:ruleIds": [
                     "Uuid"
@@ -930,6 +988,7 @@
                 "eventTypeId": "Uuid",
                 "thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
                 "thingError": "$ref:ThingError"
             }
@@ -940,6 +999,7 @@
                 "configuration": "$ref:ParamList",
                 "pluginId": "Uuid"
             },
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
                 "thingError": "$ref:ThingError"
             }
@@ -951,6 +1011,7 @@
                 "stateTypeId": "Uuid",
                 "thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
                 "thingError": "$ref:ThingError"
             }
@@ -961,51 +1022,60 @@
                 "settings": "$ref:ParamList",
                 "thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
                 "thingError": "$ref:ThingError"
             }
         },
         "JSONRPC.Authenticate": {
-            "deprecated": "Use Users.Authenticate instead.",
             "description": "Authenticate a client to the api via user & password challenge. Provide a device name which allows the user to identify the client and revoke the token in case the device is lost or stolen. This will return a new token to be used to authorize a client at the API.",
             "params": {
                 "deviceName": "String",
                 "password": "String",
                 "username": "String"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
+                "o:scopes": "$ref:PermissionScopes",
                 "o:token": "String",
+                "o:username": "String",
                 "success": "Bool"
             }
         },
         "JSONRPC.CreateUser": {
-            "deprecated": "Use Users.CreateUser instead.",
-            "description": "Create a new user in the API. Currently this is only allowed to be called once when a new nymea instance is set up. Call Authenticate after this to obtain a device token for this user.",
+            "description": "Create a new user in the API. This is only allowed to be called when the initial setup is required. To create additional users, use Users.CreateUser instead. Call Authenticate after this to obtain a device token for the newly created user.",
             "params": {
+                "o:displayName": "String",
+                "o:email": "String",
                 "password": "String",
                 "username": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "error": "$ref:UserError"
             }
         },
         "JSONRPC.Hello": {
-            "description": "Initiates a connection. Use this method to perform an initial handshake of the connection. Optionally, a parameter \"locale\" is can be passed to set up the used locale for this connection. Strings such as ThingClass displayNames etc will be localized to this locale. If this parameter is omitted, the default system locale (depending on the configuration) is used. The reply of this method contains information about this core instance such as version information, uuid and its name. The locale valueindicates the locale used for this connection. Note: This method can be called multiple times. The locale used in the last call for this connection will be used. Other values, like initialSetupRequired might change if the setup has been performed in the meantime.\n The field cacheHashes may contain a map of methods and MD5 hashes. As long as the hash for a method does not change, a client may use a previously cached copy of the call instead of fetching the content again.",
+            "description": "Initiates a connection. Use this method to perform an initial handshake of the connection. Optionally, a parameter \"locale\" is can be passed to set up the used locale for this connection. Strings such as ThingClass displayNames etc will be localized to this locale. If this parameter is omitted, the default system locale (depending on the configuration) is used. The reply of this method contains information about this core instance such as version information, uuid and its name. The locale valueindicates the locale used for this connection. Note: This method can be called multiple times. The locale used in the last call for this connection will be used. Other values, like initialSetupRequired might change if the setup has been performed in the meantime.\n The field cacheHashes may contain a map of methods and MD5 hashes. As long as the hash for a method does not change, a client may use a previously cached copy of the call instead of fetching the content again. While the Hello call doesn't necessarily require a token, this can be called with a token. If a token is provided, it will be verified and the reply contains information about the tokens validity and the user and permissions for the given token.",
             "params": {
                 "o:locale": "String"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "authenticationRequired": "Bool",
                 "initialSetupRequired": "Bool",
                 "language": "String",
                 "locale": "String",
                 "name": "String",
+                "o:authenticated": "Bool",
                 "o:cacheHashes": [
                     "$ref:CacheHash"
                 ],
                 "o:experiences": [
                     "$ref:Experience"
                 ],
+                "o:permissionScopes": "$ref:PermissionScopes",
+                "o:username": "String",
                 "protocol version": "String",
                 "pushButtonAuthAvailable": "Bool",
                 "server": "String",
@@ -1017,6 +1087,7 @@
             "description": "Introspect this API.",
             "params": {
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "methods": "Object",
                 "notifications": "Object",
@@ -1027,6 +1098,7 @@
             "description": "Check whether the cloud is currently connected. \"connected\" will be true whenever connectionState equals CloudConnectionStateConnected and is deprecated. Please use the connectionState value instead.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "connectionState": "$ref:CloudConnectionState",
                 "d:connected": "Bool"
@@ -1037,27 +1109,18 @@
             "params": {
                 "sessionId": "String"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "sessionId": "String",
                 "success": "Bool"
             }
         },
-        "JSONRPC.RemoveToken": {
-            "deprecated": "Use Users.RemoveToken instead.",
-            "description": "Revoke access for a given token.",
-            "params": {
-                "tokenId": "Uuid"
-            },
-            "returns": {
-                "error": "$ref:UserError"
-            }
-        },
         "JSONRPC.RequestPushButtonAuth": {
-            "deprecated": "Use Users.RequestPushButtonAuth instead.",
             "description": "Authenticate a client to the api via Push Button method. Provide a device name which allows the user to identify the client and revoke the token in case the device is lost or stolen. If push button hardware is available, this will return with success and start listening for push button presses. When the push button is pressed, the PushButtonAuthFinished notification will be sent to the requesting client. The procedure will be cancelled when the connection is interrupted. If another client requests push button authentication while a procedure is still going on, the second call will take over and the first one will be notified by the PushButtonAuthFinished signal about the error. The application should make it clear to the user to not press the button when the procedure fails as this can happen for 2 reasons: a) a second user is trying to auth at the same time and only the currently active user should press the button or b) it might indicate an attacker trying to take over and snooping in for tokens.",
             "params": {
                 "deviceName": "String"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "success": "Bool",
                 "transactionId": "Int"
@@ -1069,6 +1132,7 @@
                 "d:o:enabled": "Bool",
                 "o:namespaces": "StringList"
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "d:enabled": "Bool",
                 "namespaces": "StringList"
@@ -1083,6 +1147,7 @@
                 "publicKey": "String",
                 "rootCA": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "success": "Bool"
             }
@@ -1093,26 +1158,17 @@
                 "idToken": "String",
                 "userId": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "message": "String",
                 "status": "Int"
-            }
-        },
-        "JSONRPC.Tokens": {
-            "deprecated": "Use Users.GetTokens instead.",
-            "description": "Return a list of TokenInfo objects of all the tokens for the current user.",
-            "params": {
-            },
-            "returns": {
-                "tokenInfoList": [
-                    "$ref:TokenInfo"
-                ]
             }
         },
         "JSONRPC.Version": {
             "description": "Version of this nymea/JSONRPC interface.",
             "params": {
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "protocol version": "String",
                 "qtBuildVersion": "String",
@@ -1150,6 +1206,7 @@
                     "Variant"
                 ]
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "count": "Int",
                 "loggingError": "$ref:LoggingError",
@@ -1168,6 +1225,7 @@
                 "stopBits": "$ref:SerialPortStopBits",
                 "timeout": "Uint"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "modbusError": "$ref:ModbusRtuError",
                 "o:modbusUuid": "Uuid"
@@ -1177,6 +1235,7 @@
             "description": "Get the list of configured modbus RTU masters.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "modbusError": "$ref:ModbusRtuError",
                 "o:modbusRtuMasters": [
@@ -1188,6 +1247,7 @@
             "description": "Get the list of available serial ports from the host system.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "serialPorts": "$ref:SerialPorts"
             }
@@ -1204,6 +1264,7 @@
                 "stopBits": "$ref:SerialPortStopBits",
                 "timeout": "Uint"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "modbusError": "$ref:ModbusRtuError"
             }
@@ -1213,6 +1274,7 @@
             "params": {
                 "modbusUuid": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "modbusError": "$ref:ModbusRtuError"
             }
@@ -1224,6 +1286,7 @@
                 "o:password": "String",
                 "ssid": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError"
             }
@@ -1233,6 +1296,7 @@
             "params": {
                 "interface": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError"
             }
@@ -1242,6 +1306,7 @@
             "params": {
                 "enable": "Bool"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError"
             }
@@ -1251,6 +1316,7 @@
             "params": {
                 "enable": "Bool"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError"
             }
@@ -1259,6 +1325,7 @@
             "description": "Get the list of current network devices.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError",
                 "o:wiredNetworkDevices": [
@@ -1273,6 +1340,7 @@
             "description": "Get the current network manager status.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError",
                 "o:status": {
@@ -1287,6 +1355,7 @@
             "params": {
                 "interface": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError",
                 "o:wirelessAccessPoints": [
@@ -1299,6 +1368,7 @@
             "params": {
                 "interface": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError"
             }
@@ -1310,6 +1380,7 @@
                 "password": "String",
                 "ssid": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "networkManagerError": "$ref:NetworkManagerError"
             }
@@ -1332,6 +1403,7 @@
                 "o:stateEvaluator": "$ref:StateEvaluator",
                 "o:timeDescriptor": "$ref:TimeDescriptor"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "o:ruleId": "Uuid",
                 "ruleError": "$ref:RuleError"
@@ -1342,6 +1414,7 @@
             "params": {
                 "ruleId": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "ruleError": "$ref:RuleError"
             }
@@ -1365,6 +1438,7 @@
                 "o:timeDescriptor": "$ref:TimeDescriptor",
                 "ruleId": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "o:rule": "$ref:Rule",
                 "ruleError": "$ref:RuleError"
@@ -1375,6 +1449,7 @@
             "params": {
                 "ruleId": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "ruleError": "$ref:RuleError"
             }
@@ -1384,6 +1459,7 @@
             "params": {
                 "ruleId": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "ruleError": "$ref:RuleError"
             }
@@ -1393,6 +1469,7 @@
             "params": {
                 "ruleId": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "ruleError": "$ref:RuleError"
             }
@@ -1402,6 +1479,7 @@
             "params": {
                 "thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "ruleIds": [
                     "Uuid"
@@ -1413,6 +1491,7 @@
             "params": {
                 "ruleId": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "o:rule": "$ref:Rule",
                 "ruleError": "$ref:RuleError"
@@ -1422,6 +1501,7 @@
             "description": "Get the descriptions of all configured rules. If you need more information about a specific rule use the method Rules.GetRuleDetails.",
             "params": {
             },
+            "permissionScope": "PermissionScopeConfigureRules",
             "returns": {
                 "ruleDescriptions": [
                     "$ref:RuleDescription"
@@ -1433,6 +1513,7 @@
             "params": {
                 "ruleId": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "ruleError": "$ref:RuleError"
             }
@@ -1443,6 +1524,7 @@
                 "content": "String",
                 "name": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "o:errors": "StringList",
                 "o:script": "$ref:Script",
@@ -1456,6 +1538,7 @@
                 "o:content": "String",
                 "o:name": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "o:errors": "StringList",
                 "scriptError": "$ref:ScriptError"
@@ -1466,6 +1549,7 @@
             "params": {
                 "id": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "o:content": "String",
                 "scriptError": "$ref:ScriptError"
@@ -1475,6 +1559,7 @@
             "description": "Get all script, that is, their names and properties, but no content.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "scripts": "$ref:Scripts"
             }
@@ -1484,6 +1569,7 @@
             "params": {
                 "id": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "scriptError": "$ref:ScriptError"
             }
@@ -1492,6 +1578,7 @@
             "description": "Instruct the system to poll the server for updates. Normally the system should automatically do this in regular intervals, however, if the client wants to allow the user to manually check for new updates now, this can be called. Returns true if the operation has been started successfully and the update manager will become busy. In order to know whether there are updates available, clients should walk through the list of packages retrieved from GetPackages and check whether there are packages with the updateAvailable flag set to true.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "success": "Bool"
             }
@@ -1502,6 +1589,7 @@
                 "enabled": "Bool",
                 "repositoryId": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "success": "Bool"
             }
@@ -1510,6 +1598,7 @@
             "description": "Get the list of capabilites on this system. The property \"powerManagement\" indicates whether restarting nymea and rebooting or shutting down is supported on this system. The property \"updateManagement indicates whether system update features are available in this system. The property \"timeManagement\" indicates whether the system time can be configured on this system. Note that GetTime will be available in any case.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "powerManagement": "Bool",
                 "timeManagement": "Bool",
@@ -1520,6 +1609,7 @@
             "description": "Get the list of packages currently available to the system. This might include installed available but not installed packages. Installed packages will have the installedVersion set to a non-empty value.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "packages": "$ref:Packages"
             }
@@ -1528,6 +1618,7 @@
             "description": "Get the list of repositories currently available to the system.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "repositories": "$ref:Repositories"
             }
@@ -1536,6 +1627,7 @@
             "description": "Returns information about the system nymea is running on.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "deviceSerialNumber": "String"
             }
@@ -1544,6 +1636,7 @@
             "description": "Get the system time and configuraton. The \"time\" and \"timeZone\" properties give the current server time and time zone. \"automaticTimeAvailable\" indicates whether this system supports automatically setting the clock (e.g. using NTP). \"automaticTime\" will be true if the system is configured to automatically update the clock.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "automaticTime": "Bool",
                 "automaticTimeAvailable": "Bool",
@@ -1555,6 +1648,7 @@
             "description": "Returns the list of IANA specified time zone IDs which can be used to select a time zone. It is not required to use this method if the client toolkit already provides means to obtain a list of IANA time zone ids.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "timeZones": "StringList"
             }
@@ -1563,6 +1657,7 @@
             "description": "Get the current status of the update system. \"busy\" indicates that the system is current busy with an operation regarding updates. This does not necessarily mean an actual update is running. When this is true, update related functions on the client should be marked as busy and no interaction with update components shall be allowed. An example for such a state is when the system queries the server if there are updates available, typically after a call to CheckForUpdates. \"updateRunning\" on the other hand indicates an actual update process is ongoing. The user should be informed about it, the system also might restart at any point while an update is running.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "busy": "Bool",
                 "updateRunning": "Bool"
@@ -1572,6 +1667,7 @@
             "description": "Initiate a reboot of the system. The return value will indicate whether the procedure has been initiated successfully.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "success": "Bool"
             }
@@ -1583,6 +1679,7 @@
                     "String"
                 ]
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "success": "Bool"
             }
@@ -1591,6 +1688,7 @@
             "description": "Initiate a restart of the nymea service. The return value will indicate whether the procedure has been initiated successfully.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "success": "Bool"
             }
@@ -1602,6 +1700,7 @@
                     "String"
                 ]
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "success": "Bool"
             }
@@ -1613,6 +1712,7 @@
                 "o:time": "Uint",
                 "o:timeZone": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "success": "Bool"
             }
@@ -1621,6 +1721,7 @@
             "description": "Initiate a shutdown of the system. The return value will indicate whether the procedure has been initiated successfully.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "success": "Bool"
             }
@@ -1632,6 +1733,7 @@
                     "String"
                 ]
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "success": "Bool"
             }
@@ -1641,6 +1743,7 @@
             "params": {
                 "tag": "$ref:Tag"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "tagError": "$ref:TagError"
             }
@@ -1653,6 +1756,7 @@
                 "o:tagId": "String",
                 "o:thingId": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "o:tags": "$ref:Tags",
                 "tagError": "$ref:TagError"
@@ -1663,20 +1767,9 @@
             "params": {
                 "tag": "$ref:Tag"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "tagError": "$ref:TagError"
-            }
-        },
-        "Users.Authenticate": {
-            "description": "Authenticate a client to the api via user & password challenge. Provide a device name which allows the user to identify the client and revoke the token in case the device is lost or stolen. This will return a new token to be used to authorize a client at the API.",
-            "params": {
-                "deviceName": "String",
-                "password": "String",
-                "username": "String"
-            },
-            "returns": {
-                "o:token": "String",
-                "success": "Bool"
             }
         },
         "Users.ChangePassword": {
@@ -1684,16 +1777,21 @@
             "params": {
                 "newPassword": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "error": "$ref:UserError"
             }
         },
         "Users.CreateUser": {
-            "description": "Create a new user in the API. Currently this is only allowed to be called once when a new nymea instance is set up. Call Authenticate after this to obtain a device token for this user.",
+            "description": "Create a new user in the API with the given username and password. Use scopes to define the permissions for the new user. If no scopes are given, this user will be an admin user. Call Authenticate after this to obtain a device token for this user.",
             "params": {
+                "o:displayName": "String",
+                "o:email": "String",
+                "o:scopes": "$ref:PermissionScopes",
                 "password": "String",
                 "username": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "error": "$ref:UserError"
             }
@@ -1702,6 +1800,7 @@
             "description": "Get all the tokens for the current user.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "error": "$ref:UserError",
                 "o:tokenInfoList": "$ref:TokenInfoList"
@@ -1711,9 +1810,19 @@
             "description": "Get info about the current token (the currently logged in user).",
             "params": {
             },
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "error": "$ref:UserError",
                 "o:userInfo": "$ref:UserInfo"
+            }
+        },
+        "Users.GetUsers": {
+            "description": "Return a list of all users in the system.",
+            "params": {
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "users": "$ref:UserInfoList"
             }
         },
         "Users.RemoveToken": {
@@ -1721,18 +1830,42 @@
             "params": {
                 "tokenId": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "error": "$ref:UserError"
             }
         },
-        "Users.RequestPushButtonAuth": {
-            "description": "Authenticate a client to the api via Push Button method. Provide a device name which allows the user to identify the client and revoke the token in case the device is lost or stolen. If push button hardware is available, this will return with success and start listening for push button presses. When the push button is pressed, the PushButtonAuthFinished notification will be sent to the requesting client. The procedure will be cancelled when the connection is interrupted. If another client requests push button authentication while a procedure is still going on, the second call will take over and the first one will be notified by the PushButtonAuthFinished signal about the error. The application should make it clear to the user to not press the button when the procedure fails as this can happen for 2 reasons: a) a second user is trying to auth at the same time and only the currently active user should press the button or b) it might indicate an attacker trying to take over and snooping in for tokens.",
+        "Users.RemoveUser": {
+            "description": "Remove a user from the system.",
             "params": {
-                "deviceName": "String"
+                "username": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
-                "success": "Bool",
-                "transactionId": "Int"
+                "error": "$ref:UserError"
+            }
+        },
+        "Users.SetUserInfo": {
+            "description": "Change user info. If username is given, info for the respective user is changed, otherwise the current user info is edited. Requires admin permissions to edit user info other than the own.",
+            "params": {
+                "o:displayName": "String",
+                "o:email": "String",
+                "o:username": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "error": "$ref:UserError"
+            }
+        },
+        "Users.SetUserScopes": {
+            "description": "Set the permissions (scopes) for a given user.",
+            "params": {
+                "scopes": "$ref:PermissionScopes",
+                "username": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "error": "$ref:UserError"
             }
         },
         "Zigbee.AddNetwork": {
@@ -1743,6 +1876,7 @@
                 "o:channelMask": "Uint",
                 "serialPort": "String"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "o:networkUuid": "Uuid",
                 "zigbeeError": "$ref:ZigbeeError"
@@ -1753,6 +1887,7 @@
             "params": {
                 "networkUuid": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "zigbeeError": "$ref:ZigbeeError"
             }
@@ -1761,6 +1896,7 @@
             "description": "Get the list of available ZigBee adapters and serial ports in order to set up the ZigBee network on the desired interface. The 'serialPort' property can be used as unique identifier for an adapter. If an adapter hardware has been recognized as a well known ZigBee adapter, the 'hardwareRecognized' property will be true and the 'baudRate' and 'backend' configurations can be used as they where given, otherwise the user might set the backend and baud rate manually. The available backends can be fetched using the GetAvailableBackends method.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "adapters": "$ref:ZigbeeAdapters"
             }
@@ -1769,6 +1905,7 @@
             "description": "Get the list of available ZigBee backends.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "backends": [
                     "String"
@@ -1779,6 +1916,7 @@
             "description": "Returns the list of configured ZigBee networks in the system.",
             "params": {
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "zigbeeNetworks": [
                     "$ref:ZigbeeNetwork"
@@ -1790,6 +1928,7 @@
             "params": {
                 "networkUuid": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "o:zigbeeNodes": [
                     "$ref:ZigbeeNode"
@@ -1802,6 +1941,7 @@
             "params": {
                 "networkUuid": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "zigbeeError": "$ref:ZigbeeError"
             }
@@ -1812,6 +1952,7 @@
                 "ieeeAddress": "String",
                 "networkUuid": "Uuid"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "zigbeeError": "$ref:ZigbeeError"
             }
@@ -1823,6 +1964,7 @@
                 "networkUuid": "Uuid",
                 "o:shortAddress": "Uint"
             },
+            "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "zigbeeError": "$ref:ZigbeeError"
             }
@@ -1994,7 +2136,6 @@
             }
         },
         "JSONRPC.PushButtonAuthFinished": {
-            "deprecated": "Use Users.PushButtonAuthFinished instead.",
             "description": "Emitted when a push button authentication reaches final state. NOTE: This notification is special. It will only be emitted to connections that did actively request a push button authentication, but also it will be emitted regardless of the notification settings. ",
             "params": {
                 "o:token": "String",
@@ -2230,6 +2371,24 @@
                 "o:token": "String",
                 "success": "Bool",
                 "transactionId": "Int"
+            }
+        },
+        "Users.UserAdded": {
+            "description": "Emitted when a user is added to the system.",
+            "params": {
+                "userInfo": "$ref:UserInfo"
+            }
+        },
+        "Users.UserChanged": {
+            "description": "Emitted whenever a user is changed.",
+            "params": {
+                "userInfo": "$ref:UserInfo"
+            }
+        },
+        "Users.UserRemoved": {
+            "description": "Emitted when a user is removed from the system.",
+            "params": {
+                "username": "String"
             }
         },
         "Zigbee.AdapterAdded": {
@@ -2672,8 +2831,14 @@
             "$ref:TokenInfo"
         ],
         "UserInfo": {
+            "r:displayName": "String",
+            "r:email": "String",
+            "r:scopes": "$ref:PermissionScopes",
             "r:username": "String"
         },
+        "UserInfoList": [
+            "$ref:UserInfo"
+        ],
         "Vendor": {
             "displayName": "String",
             "id": "Uuid",

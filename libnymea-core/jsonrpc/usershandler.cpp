@@ -40,49 +40,22 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     JsonHandler(parent),
     m_userManager(userManager)
 {
-    registerObject<UserInfo>();
+    registerFlag<Types::PermissionScope, Types::PermissionScopes>();
+    registerObject<UserInfo, UserInfoList>();
     registerObject<TokenInfo, TokenInfoList>();
 
     QVariantMap params, returns;
     QString description;
 
     params.clear(); returns.clear();
-    description = "Create a new user in the API. Currently this is only allowed to be called once when a new nymea instance is set up. Call Authenticate after this to obtain a device token for this user.";
+    description = "Create a new user in the API with the given username and password. Use scopes to define the permissions for the new user. If no scopes are given, this user will be an admin user. Call Authenticate after this to obtain a device token for this user.";
     params.insert("username", enumValueName(String));
     params.insert("password", enumValueName(String));
+    params.insert("o:email", enumValueName(String));
+    params.insert("o:displayName", enumValueName(String));
+    params.insert("o:scopes", flagRef<Types::PermissionScopes>());
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("CreateUser", description, params, returns);
-
-    params.clear(); returns.clear();
-    description = "Authenticate a client to the api via user & password challenge. Provide "
-                   "a device name which allows the user to identify the client and revoke the token in case "
-                   "the device is lost or stolen. This will return a new token to be used to authorize a "
-                   "client at the API.";
-    params.insert("username", enumValueName(String));
-    params.insert("password", enumValueName(String));
-    params.insert("deviceName", enumValueName(String));
-    returns.insert("success", enumValueName(Bool));
-    returns.insert("o:token", enumValueName(String));
-    registerMethod("Authenticate", description, params, returns);
-
-    params.clear(); returns.clear();
-    description = "Authenticate a client to the api via Push Button method. "
-                   "Provide a device name which allows the user to identify the client and revoke the "
-                   "token in case the device is lost or stolen. If push button hardware is available, "
-                   "this will return with success and start listening for push button presses. When the "
-                   "push button is pressed, the PushButtonAuthFinished notification will be sent to the "
-                   "requesting client. The procedure will be cancelled when the connection is interrupted. "
-                   "If another client requests push button authentication while a procedure is still going "
-                   "on, the second call will take over and the first one will be notified by the "
-                   "PushButtonAuthFinished signal about the error. The application should make it clear "
-                   "to the user to not press the button when the procedure fails as this can happen for 2 "
-                   "reasons: a) a second user is trying to auth at the same time and only the currently "
-                   "active user should press the button or b) it might indicate an attacker trying to take "
-                   "over and snooping in for tokens.";
-    params.insert("deviceName", enumValueName(String));
-    returns.insert("success", enumValueName(Bool));
-    returns.insert("transactionId", enumValueName(Int));
-    registerMethod("RequestPushButtonAuth", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Change the password for the currently logged in user.";
@@ -94,7 +67,7 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     description = "Get info about the current token (the currently logged in user).";
     returns.insert("o:userInfo", objectRef<UserInfo>());
     returns.insert("error", enumRef<UserManager::UserError>());
-    registerMethod("GetUserInfo", description, params, returns);
+    registerMethod("GetUserInfo", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Get all the tokens for the current user.";
@@ -108,7 +81,48 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     returns.insert("error", enumRef<UserManager::UserError>());
     registerMethod("RemoveToken", description, params, returns);
 
+    params.clear(); returns.clear();
+    description = "Return a list of all users in the system.";
+    returns.insert("users", objectRef<UserInfoList>());
+    registerMethod("GetUsers", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Remove a user from the system.";
+    params.insert("username", enumValueName(String));
+    returns.insert("error", enumRef<UserManager::UserError>());
+    registerMethod("RemoveUser", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Set the permissions (scopes) for a given user.";
+    params.insert("username", enumValueName(String));
+    params.insert("scopes", flagRef<Types::PermissionScopes>());
+    returns.insert("error", enumRef<UserManager::UserError>());
+    registerMethod("SetUserScopes", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Change user info. If username is given, info for the respective user is changed, otherwise the current user info is edited. Requires admin permissions to edit user info other than the own.";
+    params.insert("o:username", enumValueName(String));
+    params.insert("o:displayName", enumValueName(String));
+    params.insert("o:email", enumValueName(String));
+    returns.insert("error", enumRef<UserManager::UserError>());
+    registerMethod("SetUserInfo", description, params, returns);
+
     // Notifications
+    params.clear();
+    description = "Emitted when a user is added to the system.";
+    params.insert("userInfo", objectRef<UserInfo>());
+    registerNotification("UserAdded", description, params);
+
+    params.clear();
+    description = "Emitted when a user is removed from the system.";
+    params.insert("username", enumValueName(String));
+    registerNotification("UserRemoved", description, params);
+
+    params.clear();
+    description = "Emitted whenever a user is changed.";
+    params.insert("userInfo", objectRef<UserInfo>());
+    registerNotification("UserChanged", description, params);
+
     params.clear();
     description = "Emitted when a push button authentication reaches final state. NOTE: This notification is "
                   "special. It will only be emitted to connections that did actively request a push button "
@@ -118,7 +132,21 @@ UsersHandler::UsersHandler(UserManager *userManager, QObject *parent):
     params.insert("o:token", enumValueName(String));
     registerNotification("PushButtonAuthFinished", description, params);
 
-    connect(m_userManager, &UserManager::pushButtonAuthFinished, this, &UsersHandler::onPushButtonAuthFinished);
+    connect(m_userManager, &UserManager::userAdded, this, [this](const QString &username){
+        QVariantMap params;
+        params.insert("userInfo", pack(m_userManager->userInfo(username)));
+        emit UserAdded(params);
+    });
+    connect(m_userManager, &UserManager::userChanged, this, [this](const QString &username){
+        QVariantMap params;
+        params.insert("userInfo", pack(m_userManager->userInfo(username)));
+        emit UserChanged(params);
+    });
+    connect(m_userManager, &UserManager::userRemoved, this, [this](const QString &username){
+        QVariantMap params;
+        params.insert("username", username);
+        emit UserRemoved(params);
+    });
 
 }
 
@@ -131,8 +159,12 @@ JsonReply *UsersHandler::CreateUser(const QVariantMap &params)
 {
     QString username = params.value("username").toString();
     QString password = params.value("password").toString();
+    QString email = params.value("email").toString();
+    QString displayName = params.value("displayName").toString();
+    QStringList scopesList = params.value("scopes", Types::scopesToStringList(Types::PermissionScopeAdmin)).toStringList();
+    Types::PermissionScopes scopes = Types::scopesFromStringList(scopesList);
 
-    UserManager::UserError status = m_userManager->createUser(username, password);
+    UserManager::UserError status = m_userManager->createUser(username, password, email, displayName, scopes);
 
     QVariantMap returns;
     returns.insert("error", enumValueName<UserManager::UserError>(status));
@@ -157,40 +189,12 @@ JsonReply *UsersHandler::ChangePassword(const QVariantMap &params, const JsonCon
     }
 
     QString newPassword = params.value("newPassword").toString();
-    QString username = m_userManager->userInfo(currentToken).username();
 
-    UserManager::UserError status = m_userManager->changePassword(username, newPassword);
+    TokenInfo tokenInfo = m_userManager->tokenInfo(currentToken);
+
+    UserManager::UserError status = m_userManager->changePassword(tokenInfo.username(), newPassword);
     ret.insert("error", enumValueName<UserManager::UserError>(status));
     return createReply(ret);
-}
-
-JsonReply *UsersHandler::Authenticate(const QVariantMap &params)
-{
-    QString username = params.value("username").toString();
-    QString password = params.value("password").toString();
-    QString deviceName = params.value("deviceName").toString();
-
-    QByteArray token = m_userManager->authenticate(username, password, deviceName);
-    QVariantMap ret;
-    ret.insert("success", !token.isEmpty());
-    if (!token.isEmpty()) {
-        ret.insert("token", token);
-    }
-    return createReply(ret);
-}
-
-JsonReply *UsersHandler::RequestPushButtonAuth(const QVariantMap &params, const JsonContext &context)
-{
-    QString deviceName = params.value("deviceName").toString();
-
-    int transactionId = m_userManager->requestPushButtonAuth(deviceName);
-    m_pushButtonTransactions.insert(transactionId, context.clientId());
-
-    QVariantMap data;
-    data.insert("transactionId", transactionId);
-    // TODO: return false if pushbutton auth is disabled in settings
-    data.insert("success", true);
-    return createReply(data);
 }
 
 JsonReply *UsersHandler::GetUserInfo(const QVariantMap &params, const JsonContext &context)
@@ -200,7 +204,7 @@ JsonReply *UsersHandler::GetUserInfo(const QVariantMap &params, const JsonContex
 
     QByteArray currentToken = context.token();
     if (currentToken.isEmpty()) {
-        qCWarning(dcJsonRpc()) << "Cannot get user info form an unauthenticated connection";
+        qCWarning(dcJsonRpc()) << "Cannot get user info from an unauthenticated connection";
         ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
         return createReply(ret);
     }
@@ -211,7 +215,9 @@ JsonReply *UsersHandler::GetUserInfo(const QVariantMap &params, const JsonContex
         return createReply(ret);
     }
 
-    UserInfo userInfo = m_userManager->userInfo(currentToken);
+    TokenInfo tokenInfo = m_userManager->tokenInfo(currentToken);
+
+    UserInfo userInfo = m_userManager->userInfo(tokenInfo.username());
     ret.insert("userInfo", pack(userInfo));
     ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorNoError));
     return createReply(ret);
@@ -224,7 +230,7 @@ JsonReply *UsersHandler::GetTokens(const QVariantMap &params, const JsonContext 
 
     QByteArray currentToken = context.token();
     if (currentToken.isEmpty()) {
-        qCWarning(dcJsonRpc()) << "Cannot fetch tokens form an unauthenticated connection";
+        qCWarning(dcJsonRpc()) << "Cannot fetch tokens for an unauthenticated connection";
         ret.insert("error", enumValueName<UserManager::UserError>(UserManager::UserErrorPermissionDenied));
         return createReply(ret);
     }
@@ -236,7 +242,7 @@ JsonReply *UsersHandler::GetTokens(const QVariantMap &params, const JsonContext 
     }
 
     TokenInfo tokenInfo = m_userManager->tokenInfo(currentToken);
-    qCDebug(dcJsonRpc()) << "Fetching tokens for user" << tokenInfo.username();
+    qCDebug(dcJsonRpc()) << "Fetching tokens for user" << currentToken << tokenInfo.username();
     QList<TokenInfo> tokens = m_userManager->tokens(tokenInfo.username());
     QVariantList retList;
     foreach (const TokenInfo &tokenInfo, tokens) {
@@ -285,24 +291,70 @@ JsonReply *UsersHandler::RemoveToken(const QVariantMap &params, const JsonContex
     return createReply(ret);
 }
 
-void UsersHandler::onPushButtonAuthFinished(int transactionId, bool success, const QByteArray &token)
+JsonReply *UsersHandler::GetUsers(const QVariantMap &params)
 {
-    Q_UNUSED(success)
-    Q_UNUSED(token)
-    QUuid clientId = m_pushButtonTransactions.take(transactionId);
-    if (clientId.isNull()) {
-        qCDebug(dcJsonRpc()) << "Received a PushButton reply but wasn't expecting it.";
-        return;
+    Q_UNUSED(params)
+    QVariantMap reply;
+    reply.insert("users", pack(m_userManager->users()));
+    return createReply(reply);
+}
+
+JsonReply *UsersHandler::RemoveUser(const QVariantMap &params, const JsonContext &context)
+{
+    Q_UNUSED(context)
+    QString username = params.value("username").toString();
+    QVariantMap returns;
+    UserManager::UserError error = m_userManager->removeUser(username);
+    returns.insert("error", enumValueName<UserManager::UserError>(error));
+    return createReply(returns);
+}
+
+JsonReply *UsersHandler::SetUserScopes(const QVariantMap &params, const JsonContext &context)
+{
+    Q_UNUSED(context)
+    QString username = params.value("username").toString();
+    Types::PermissionScopes scopes = Types::scopesFromStringList(params.value("scopes").toStringList());
+    UserManager::UserError error = m_userManager->setUserScopes(username, scopes);
+    QVariantMap returns;
+    returns.insert("error", enumValueName<UserManager::UserError>(error));
+    return createReply(returns);
+}
+
+JsonReply *UsersHandler::SetUserInfo(const QVariantMap &params, const JsonContext &context)
+{
+    QVariantMap ret;
+
+    TokenInfo callingTokenInfo = m_userManager->tokenInfo(context.token());
+    QString username;
+
+    if (params.contains("username")) {
+        username = params.value("username").toString();
+    } else {
+        username = callingTokenInfo.username();
     }
 
-    QVariantMap params;
-    params.insert("transactionId", transactionId);
-    params.insert("success", success);
-    if (success) {
-        params.insert("token", token);
+    if (callingTokenInfo.username() != username && !m_userManager->userInfo(callingTokenInfo.username()).scopes().testFlag(Types::PermissionScopeAdmin)) {
+        ret.insert("error", enumValueName(UserManager::UserErrorPermissionDenied));
+        return createReply(ret);
     }
 
-    emit PushButtonAuthFinished(clientId, params);
+    UserInfo changedUserInfo = m_userManager->userInfo(username);
+
+    QString email;
+    if (params.contains("email")) {
+        email = params.value("email").toString();
+    } else {
+        email = changedUserInfo.email();
+    }
+    QString displayName;
+    if (params.contains("displayName")) {
+        displayName = params.value("displayName").toString();
+    } else {
+        displayName = changedUserInfo.displayName();
+    }
+    UserManager::UserError status = m_userManager->setUserInfo(username, email, displayName);
+    ret.insert("error", enumValueName(status));
+    return createReply(ret);
 }
 
 }

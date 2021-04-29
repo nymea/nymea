@@ -88,9 +88,9 @@ void NymeaTestBase::initTestCase(const QString &loggingRules)
     qCDebug(dcTests()) << "Nymea core instance initialized. Creating dummy user.";
 
     // Yes, we're intentionally mixing upper/lower case email here... username should not be case sensitive
-    NymeaCore::instance()->userManager()->removeUser("dummy@guh.io");
-    NymeaCore::instance()->userManager()->createUser("dummy@guh.io", "DummyPW1!");
-    m_apiToken = NymeaCore::instance()->userManager()->authenticate("Dummy@guh.io", "DummyPW1!", "testcase");
+    NymeaCore::instance()->userManager()->removeUser("dummy");
+    NymeaCore::instance()->userManager()->createUser("dummy", "DummyPW1!", "dummy@guh.io", "Dummy", Types::PermissionScopeAdmin);
+    m_apiToken = NymeaCore::instance()->userManager()->authenticate("Dummy", "DummyPW1!", "testcase");
 
     if (MockTcpServer::servers().isEmpty()) {
         qCWarning(dcTests) << "no mock tcp server found";

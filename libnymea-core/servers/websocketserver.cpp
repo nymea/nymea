@@ -121,6 +121,7 @@ void WebSocketServer::terminateClientConnection(const QUuid &clientId)
 {
     QWebSocket *client = m_clientList.value(clientId);
     if (client) {
+        client->flush();
         client->close();
     }
 }

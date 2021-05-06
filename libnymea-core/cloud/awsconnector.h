@@ -113,6 +113,7 @@ private:
     bool m_isCleanSession = true;
     bool m_shouldReconnect = false;
     QTimer m_reconnectTimer;
+    QTimer m_connectTimer;
 
     quint8 m_transactionId = 0;
     QString m_createDeviceId;

@@ -97,7 +97,7 @@ static PyObject * PyThingActionInfo_paramValue(PyThingActionInfo* self, PyObject
     for (int i = 0; i < PyTuple_Size(self->pyParams); i++) {
         PyParam *pyParam = reinterpret_cast<PyParam*>(PyTuple_GetItem(self->pyParams, i));
         // We're intentionally converting both ids to QUuid here in order to be more flexible with different UUID notations
-        ParamTypeId ptid = StateTypeId(PyUnicode_AsUTF8AndSize(pyParam->pyParamTypeId, nullptr));
+        ParamTypeId ptid = ParamTypeId(PyUnicode_AsUTF8AndSize(pyParam->pyParamTypeId, nullptr));
         if (ptid == paramTypeId) {
             Py_INCREF(pyParam->pyValue);
             return pyParam->pyValue;
@@ -105,7 +105,7 @@ static PyObject * PyThingActionInfo_paramValue(PyThingActionInfo* self, PyObject
     }
     qCWarning(dcPythonIntegrations()) << "No such ParamTypeId in action params" << paramTypeId;
     Py_RETURN_NONE;
-};
+}
 
 static PyMemberDef PyThingActionInfo_members[] = {
     {"thing", T_OBJECT_EX, offsetof(PyThingActionInfo, pyThing), 0, "Thing this action is for"},

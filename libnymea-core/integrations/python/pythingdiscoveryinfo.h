@@ -69,6 +69,27 @@ static void PyThingDiscoveryInfo_dealloc(PyThingDiscoveryInfo * self)
     Py_TYPE(self)->tp_free(self);
 }
 
+static PyObject * PyThingDiscoveryInfo_paramValue(PyThingDiscoveryInfo* self, PyObject* args) {
+    char *paramTypeIdStr = nullptr;
+    if (!PyArg_ParseTuple(args, "s", &paramTypeIdStr)) {
+        PyErr_SetString(PyExc_TypeError, "Invalid arguments in paramValue call. Expected: paramValue(paramTypeId)");
+        return nullptr;
+    }
+
+    ParamTypeId paramTypeId = ParamTypeId(paramTypeIdStr);
+    for (int i = 0; i < PyTuple_Size(self->pyParams); i++) {
+        PyParam *pyParam = reinterpret_cast<PyParam*>(PyTuple_GetItem(self->pyParams, i));
+        // We're intentionally converting both ids to QUuid here in order to be more flexible with different UUID notations
+        ParamTypeId ptid = ParamTypeId(PyUnicode_AsUTF8AndSize(pyParam->pyParamTypeId, nullptr));
+        if (ptid == paramTypeId) {
+            Py_INCREF(pyParam->pyValue);
+            return pyParam->pyValue;
+        }
+    }
+    qCWarning(dcPythonIntegrations()) << "No such ParamTypeId in discovery params" << paramTypeId;
+    Py_RETURN_NONE;
+}
+
 static PyObject * PyThingDiscoveryInfo_finish(PyThingDiscoveryInfo* self, PyObject* args)
 {
     int status;
@@ -142,6 +163,7 @@ static PyMemberDef PyThingDiscoveryInfo_members[] = {
 };
 
 static PyMethodDef PyThingDiscoveryInfo_methods[] = {
+    { "paramValue", (PyCFunction)PyThingDiscoveryInfo_paramValue, METH_VARARGS, "Get a discovery param value"},
     { "addDescriptor", (PyCFunction)PyThingDiscoveryInfo_addDescriptor, METH_VARARGS, "Add a new descriptor to the discovery" },
     { "finish", (PyCFunction)PyThingDiscoveryInfo_finish, METH_VARARGS, "Finish a discovery" },
     {nullptr, nullptr, 0, nullptr} // sentinel

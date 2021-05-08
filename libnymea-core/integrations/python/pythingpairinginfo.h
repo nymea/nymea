@@ -89,6 +89,27 @@ static void PyThingPairingInfo_dealloc(PyThingPairingInfo * self)
     Py_TYPE(self)->tp_free(self);
 }
 
+static PyObject * PyThingPairingInfo_paramValue(PyThingPairingInfo* self, PyObject* args) {
+    char *paramTypeIdStr = nullptr;
+    if (!PyArg_ParseTuple(args, "s", &paramTypeIdStr)) {
+        PyErr_SetString(PyExc_TypeError, "Invalid arguments in paramValue call. Expected: paramValue(paramTypeId)");
+        return nullptr;
+    }
+
+    ParamTypeId paramTypeId = ParamTypeId(paramTypeIdStr);
+    for (int i = 0; i < PyTuple_Size(self->pyParams); i++) {
+        PyParam *pyParam = reinterpret_cast<PyParam*>(PyTuple_GetItem(self->pyParams, i));
+        // We're intentionally converting both ids to QUuid here in order to be more flexible with different UUID notations
+        ParamTypeId ptid = ParamTypeId(PyUnicode_AsUTF8AndSize(pyParam->pyParamTypeId, nullptr));
+        if (ptid == paramTypeId) {
+            Py_INCREF(pyParam->pyValue);
+            return pyParam->pyValue;
+        }
+    }
+    qCWarning(dcPythonIntegrations()) << "No such ParamTypeId in thing params" << paramTypeId;
+    Py_RETURN_NONE;
+}
+
 static PyObject * PyThingPairingInfo_finish(PyThingPairingInfo* self, PyObject* args)
 {
     int status;
@@ -113,6 +134,7 @@ static PyObject * PyThingPairingInfo_finish(PyThingPairingInfo* self, PyObject* 
 }
 
 static PyMethodDef PyThingPairingInfo_methods[] = {
+    { "paramValue", (PyCFunction)PyThingPairingInfo_paramValue, METH_VARARGS, "Get a param value for the thing to be paired"},
     { "finish", (PyCFunction)PyThingPairingInfo_finish, METH_VARARGS, "Finish a discovery" },
     {nullptr, nullptr, 0, nullptr} // sentinel
 };

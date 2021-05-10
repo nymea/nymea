@@ -1,4 +1,14 @@
 {
-    "description": "The ventilation interface is used for any sort of ventilation. It extends the \"power\" interface and thus can be turned on or off.",
-    "extends": "power"
+    "description": "The ventilation interface is used for any sort of ventilation. It extends the \"power\" interface and thus can be turned on or off. Optionally, the air flow can be controlled. The thing class must specify the minimum and maximum values for the flow control.",
+    "extends": "power",
+    "states": [
+        {
+            "name": "flowRate",
+            "type": "int",
+            "minimumValue": "any",
+            "maximumValue": "any",
+            "writable": true,
+            "optional": true
+        }
+    ]
 }

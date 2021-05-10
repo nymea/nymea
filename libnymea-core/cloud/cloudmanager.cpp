@@ -39,7 +39,7 @@
 
 #include <networkmanager.h>
 
-#include "nymea-remoteproxyclient/remoteproxyconnection.h"
+#include <remoteproxyconnection.h>
 #include <QDir>
 
 using namespace remoteproxyclient;

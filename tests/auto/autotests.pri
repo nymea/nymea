@@ -1,5 +1,6 @@
 QT += dbus testlib network sql websockets
 CONFIG += testcase
+CONFIG += link_pkgconfig
 
 INCLUDEPATH += $$top_srcdir/libnymea \
                $$top_srcdir/libnymea-core \

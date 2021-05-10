@@ -35,7 +35,7 @@
 #include <QHostAddress>
 #include <QSslConfiguration>
 
-#include "nymea-mqtt/mqtt.h"
+#include <mqtt.h>
 #include "nymeaconfiguration.h"
 
 class MqttServer;

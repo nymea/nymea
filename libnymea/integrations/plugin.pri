@@ -31,7 +31,7 @@ CONFIG += plugin link_pkgconfig
 
 PKGCONFIG += nymea
 
-QMAKE_CXXFLAGS *= -Werror -std=c++11 -g
+QMAKE_CXXFLAGS *= -Werror -std=c++11 -g -Wno-deprecated-declarations
 QMAKE_LFLAGS *= -std=c++11 -z defs
 
 JSONFILE=$${_PRO_FILE_PWD_}/integrationplugin"$$TARGET".json

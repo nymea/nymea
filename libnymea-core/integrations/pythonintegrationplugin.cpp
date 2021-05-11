@@ -415,8 +415,10 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
         m_mutex.unlock();
 
         // And call the handler - if any
+        PyEval_RestoreThread(m_threadState);
         PyObject *pyParamTypeId = PyUnicode_FromString(paramTypeId.toString().toUtf8());
         PyObject *pyValue = QVariantToPyObject(value);
+        PyEval_ReleaseThread(m_threadState);
         callPluginFunction("configValueChanged", pyParamTypeId, pyValue);
         Py_DECREF(pyParamTypeId);
         Py_DECREF(pyValue);

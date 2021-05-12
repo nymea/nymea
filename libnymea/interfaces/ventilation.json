@@ -2,14 +2,14 @@
     "description": "The ventilation interface is used for any sort of ventilation. It extends the \"power\" interface and thus can be turned on or off.",
     "extends": "power",
     "states": [
-      {
-        "name": "flowrate",
-        "type": "int",
-        "minimumValue": 0,
-        "maximumValue": 100,
-        "writable": true,
-	    "optional": true
-      }
+        {
+            "name": "brightness",
+            "type": "int",
+            "minimumValue": 0,
+            "maximumValue": 100,
+            "unit": "percentage",
+            "writable": true,
+            "optional": true
+        }
     ]
-
 }

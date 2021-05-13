@@ -252,6 +252,7 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
 
     connect(m_zigbeeManager, &ZigbeeManager::nodeJoined, this, &ZigbeeHandler::onNodeJoined);
     connect(m_zigbeeManager, &ZigbeeManager::nodeAdded, this, &ZigbeeHandler::onNodeAdded);
+    connect(m_zigbeeManager, &ZigbeeManager::nodeChanged, this, &ZigbeeHandler::onNodeChanged);
     connect(m_zigbeeManager, &ZigbeeManager::nodeRemoved, this, &ZigbeeHandler::onNodeRemoved);
 
 }
@@ -497,6 +498,11 @@ void ZigbeeHandler::onNodeJoined(const QUuid &networkUuid, ZigbeeNode *node)
 void ZigbeeHandler::onNodeAdded(const QUuid &networkUuid, ZigbeeNode *node)
 {
     // Note: we emit the node changed signal here, since the node has been added internally after initialization.
+    onNodeChanged(networkUuid, node);
+}
+
+void ZigbeeHandler::onNodeChanged(const QUuid &networkUuid, ZigbeeNode *node)
+{
     QVariantMap params;
     params.insert("networkUuid", networkUuid);
     params.insert("zigbeeNode", packNode(node));

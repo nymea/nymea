@@ -114,6 +114,7 @@ private:
 
     ZigbeeAdapter convertUartAdapterToAdapter(const ZigbeeUartAdapter &uartAdapter);
     void evaluateZigbeeAvailable();
+    void setupNodeSignals(ZigbeeNode *node);
 
 signals:
     void availableChanged(bool available);
@@ -127,6 +128,7 @@ signals:
 
     void nodeJoined(const QUuid &networkUuid, ZigbeeNode *node);
     void nodeAdded(const QUuid &networkUuid, ZigbeeNode *node);
+    void nodeChanged(const QUuid &networkUuid, ZigbeeNode *node);
     void nodeRemoved(const QUuid &networkUuid, ZigbeeNode *node);
 };
 

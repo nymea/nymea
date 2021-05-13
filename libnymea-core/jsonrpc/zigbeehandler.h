@@ -70,6 +70,7 @@ private:
 private slots:
     void onNodeJoined(const QUuid &networkUuid, ZigbeeNode *node);
     void onNodeAdded(const QUuid &networkUuid, ZigbeeNode *node);
+    void onNodeChanged(const QUuid &networkUuid, ZigbeeNode *node);
     void onNodeRemoved(const QUuid &networkUuid, ZigbeeNode *node);
 
 signals:

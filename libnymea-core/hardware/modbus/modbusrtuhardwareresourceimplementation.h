@@ -33,7 +33,7 @@
 
 #include <QObject>
 
-#include "modbus/modbusrtumanager.h"
+#include "hardware/modbus/modbusrtumanager.h"
 #include "hardware/modbus/modbusrtumaster.h"
 #include "hardware/modbus/modbusrtuhardwareresource.h"
 

@@ -44,7 +44,7 @@
 #include "hardware/i2c/i2cmanagerimplementation.h"
 #include "hardware/zigbee/zigbeehardwareresourceimplementation.h"
 
-#include "modbus/modbusrtumanager.h"
+#include "hardware/modbus/modbusrtumanager.h"
 #include "hardware/modbus/modbusrtuhardwareresourceimplementation.h"
 
 namespace nymeaserver {

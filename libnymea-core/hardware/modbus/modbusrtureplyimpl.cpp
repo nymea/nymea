@@ -30,7 +30,6 @@
 
 #include "modbusrtureplyimpl.h"
 
-
 namespace nymeaserver {
 
 ModbusRtuReplyImpl::ModbusRtuReplyImpl(int slaveAddress, int registerAddress, QObject *parent) :

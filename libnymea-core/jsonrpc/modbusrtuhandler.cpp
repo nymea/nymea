@@ -29,7 +29,7 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "modbusrtuhandler.h"
-#include "modbus/modbusrtumanager.h"
+#include "hardware/modbus/modbusrtumanager.h"
 #include "hardware/serialport/serialportmonitor.h"
 
 namespace nymeaserver {

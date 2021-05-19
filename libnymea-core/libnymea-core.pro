@@ -79,9 +79,6 @@ HEADERS += nymeacore.h \
     experiences/experiencemanager.h \
     jsonrpc/modbusrtuhandler.h \
     jsonrpc/zigbeehandler.h \
-    modbus/modbusrtumanager.h \
-    modbus/modbusrtumasterimpl.h \
-    modbus/modbusrtureplyimpl.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
     ruleengine/stateevaluator.h \
@@ -145,6 +142,9 @@ HEADERS += nymeacore.h \
     hardware/bluetoothlowenergy/bluetoothlowenergydeviceimplementation.h \
     hardware/bluetoothlowenergy/bluetoothdiscoveryreplyimplementation.h \
     hardware/modbus/modbusrtuhardwareresourceimplementation.h \
+    hardware/modbus/modbusrtumanager.h \
+    hardware/modbus/modbusrtumasterimpl.h \
+    hardware/modbus/modbusrtureplyimpl.h \
     hardware/network/networkaccessmanagerimpl.h \
     hardware/network/upnp/upnpdiscoveryimplementation.h \
     hardware/network/upnp/upnpdiscoveryrequest.h \
@@ -173,9 +173,6 @@ SOURCES += nymeacore.cpp \
     experiences/experiencemanager.cpp \
     jsonrpc/modbusrtuhandler.cpp \
     jsonrpc/zigbeehandler.cpp \
-    modbus/modbusrtumanager.cpp \
-    modbus/modbusrtumasterimpl.cpp \
-    modbus/modbusrtureplyimpl.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \
     ruleengine/stateevaluator.cpp \
@@ -238,6 +235,9 @@ SOURCES += nymeacore.cpp \
     hardware/bluetoothlowenergy/bluetoothlowenergydeviceimplementation.cpp \
     hardware/bluetoothlowenergy/bluetoothdiscoveryreplyimplementation.cpp \
     hardware/modbus/modbusrtuhardwareresourceimplementation.cpp \
+    hardware/modbus/modbusrtumanager.cpp \
+    hardware/modbus/modbusrtumasterimpl.cpp \
+    hardware/modbus/modbusrtureplyimpl.cpp \
     hardware/network/networkaccessmanagerimpl.cpp \
     hardware/network/upnp/upnpdiscoveryimplementation.cpp \
     hardware/network/upnp/upnpdiscoveryrequest.cpp \

@@ -53,7 +53,7 @@
 
 #include "zigbee/zigbeemanager.h"
 
-#include "modbus/modbusrtumanager.h"
+#include "hardware/modbus/modbusrtumanager.h"
 #include "hardware/serialport/serialportmonitor.h"
 
 #include <networkmanager.h>

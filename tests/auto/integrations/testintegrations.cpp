@@ -612,6 +612,8 @@ void TestIntegrations::storedThings()
     ThingId addedThingId = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
     QVERIFY(!addedThingId.isNull());
 
+    clearLoggingDatabase();
+
     // Restart the core instance to check if settings are loaded at startup
     restartServer();
 
@@ -620,14 +622,25 @@ void TestIntegrations::storedThings()
     bool found = false;
     foreach (const QVariant &thing, response.toMap().value("params").toMap().value("things").toList()) {
         if (ThingId(thing.toMap().value("id").toString()) == addedThingId) {
-            qDebug() << "found added thing" << thing.toMap().value("params");
-            qDebug() << "expected thingParams:" << thingParams;
+            qCDebug(dcTests()) << "found added thing" << thing.toMap().value("params");
+            qCDebug(dcTests()) << "expected thingParams:" << thingParams;
             verifyParams(thingParams, thing.toMap().value("params").toList());
             found = true;
             break;
         }
     }
     QVERIFY2(found, "thing missing in config!");
+
+    // Wait for the DB to sync up and then verify that just restarting did not add state changes for this thing
+    waitForDBSync();
+
+    params.clear();
+    params.insert("thingIds", QVariantList() << addedThingId);
+    params.insert("loggingSources", QVariantList() << "LoggingSourceStates");
+    response = injectAndWait("Logging.GetLogEntries", params);
+    QVERIFY2(response.toMap().value("params").toMap().contains("logEntries"), "Huh? GetLogEntries failed!");
+    qCDebug(dcTests()) << "log response:" << response.toMap().value("params").toMap().value("logEntries");
+    QVERIFY2(response.toMap().value("params").toMap().value("logEntries").toList().isEmpty(), "There are state changed events after a core restart even though states did not change!");
 
     params.clear();
     params.insert("thingId", addedThingId);

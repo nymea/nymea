@@ -694,13 +694,7 @@ ThingPairingInfo *ThingManagerImplementation::confirmPairing(const PairingTransa
         ParamList settings = buildParams(thingClass.settingsTypes(), ParamList());
         thing->setSettings(settings);
 
-        QList<EventTypeId> loggedEventTypeIds;
-        foreach (const EventType &eventType, thingClass.eventTypes()) {
-            if (eventType.suggestLogging()) {
-                loggedEventTypeIds.append(eventType.id());
-            }
-        }
-        thing->setLoggedEventTypeIds(loggedEventTypeIds);
+        initThing(thing);
 
         ThingSetupInfo *info = setupThing(thing);
         connect(info, &ThingSetupInfo::finished, thing, [this, info, externalInfo, addNewThing](){
@@ -798,13 +792,8 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
     ParamList settings = buildParams(thingClass.settingsTypes(), ParamList());
     thing->setSettings(settings);
 
-    QList<EventTypeId> loggedEventTypeIds;
-    foreach (const EventType &eventType, thingClass.eventTypes()) {
-        if (eventType.suggestLogging()) {
-            loggedEventTypeIds.append(eventType.id());
-        }
-    }
-    thing->setLoggedEventTypeIds(loggedEventTypeIds);
+
+    initThing(thing);
 
     ThingSetupInfo *info = setupThing(thing);
     connect(info, &ThingSetupInfo::finished, this, [this, info](){
@@ -1614,13 +1603,7 @@ void ThingManagerImplementation::loadConfiguredThings()
 
         thing->setSettings(thingSettings);
 
-        QList<EventTypeId> loggedEventTypeIds;
-        foreach (const EventType &eventType, thingClass.eventTypes()) {
-            if (eventType.suggestLogging()) {
-                loggedEventTypeIds.append(eventType.id());
-            }
-        }
-        thing->setLoggedEventTypeIds(loggedEventTypeIds);
+        initThing(thing);
 
         settings.endGroup(); // ThingId
 
@@ -1740,13 +1723,7 @@ void ThingManagerImplementation::onAutoThingsAppeared(const ThingDescriptors &th
         thing->setSettings(settings);
         thing->setParentId(thingDescriptor.parentId());
 
-        QList<EventTypeId> loggedEventTypeIds;
-        foreach (const EventType &eventType, thingClass.eventTypes()) {
-            if (eventType.suggestLogging()) {
-                loggedEventTypeIds.append(eventType.id());
-            }
-        }
-        thing->setLoggedEventTypeIds(loggedEventTypeIds);
+        initThing(thing);
 
         qCDebug(dcThingManager()) << "Setting up auto thing:" << thing->name() << thing->id().toString();
 
@@ -2065,14 +2042,6 @@ ThingSetupInfo* ThingManagerImplementation::setupThing(Thing *thing)
     ThingClass thingClass = findThingClass(thing->thingClassId());
     IntegrationPlugin *plugin = m_integrationPlugins.value(thingClass.pluginId());
 
-    QList<State> states;
-    foreach (const StateType &stateType, thingClass.stateTypes()) {
-        State state(stateType.id(), thing->id());
-        states.append(state);
-    }
-    thing->setStates(states);
-    loadThingStates(thing);
-
     ThingSetupInfo *info = new ThingSetupInfo(thing, this, 30000);
 
     if (!plugin) {
@@ -2089,6 +2058,27 @@ ThingSetupInfo* ThingManagerImplementation::setupThing(Thing *thing)
     });
 
     return info;
+}
+
+void ThingManagerImplementation::initThing(Thing *thing)
+{
+    ThingClass thingClass = findThingClass(thing->thingClassId());
+
+    QList<State> states;
+    foreach (const StateType &stateType, thingClass.stateTypes()) {
+        State state(stateType.id(), thing->id());
+        states.append(state);
+    }
+    thing->setStates(states);
+    loadThingStates(thing);
+
+    QList<EventTypeId> loggedEventTypeIds;
+    foreach (const EventType &eventType, thingClass.eventTypes()) {
+        if (eventType.suggestLogging()) {
+            loggedEventTypeIds.append(eventType.id());
+        }
+    }
+    thing->setLoggedEventTypeIds(loggedEventTypeIds);
 }
 
 void ThingManagerImplementation::postSetupThing(Thing *thing)

@@ -36,7 +36,7 @@
 #include <QDateTime>
 #include <QTimer>
 
-#include <nymea-mqtt/mqttclient.h>
+#include <mqttclient.h>
 
 class AWSConnector : public QObject
 {

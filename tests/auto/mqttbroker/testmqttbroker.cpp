@@ -33,7 +33,7 @@
 #include "servers/mqttbroker.h"
 #include "servers/mocktcpserver.h"
 
-#include "nymea-mqtt/mqttclient.h"
+#include <mqttclient.h>
 
 #include <QXmlReader>
 

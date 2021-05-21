@@ -31,7 +31,7 @@
 #include "mqttbroker.h"
 #include "loggingcategories.h"
 
-#include "nymea-mqtt/mqttserver.h"
+#include <mqttserver.h>
 
 namespace nymeaserver {
 

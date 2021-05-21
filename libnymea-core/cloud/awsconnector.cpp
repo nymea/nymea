@@ -50,6 +50,17 @@ AWSConnector::AWSConnector(QObject *parent) : QObject(parent)
 
     m_reconnectTimer.setSingleShot(true);
     connect(&m_reconnectTimer, &QTimer::timeout, this, &AWSConnector::doConnect);
+
+    // In rare circumstances (I've observed this when the wifi driver panics) it happens that a connection
+    // attempt never completes but also doesn't emit any error (bug in Qt?). To catch that, manually call the
+    // disconnected slot to trigger reconnecting.
+    m_connectTimer.setSingleShot(true);
+    connect(&m_connectTimer, &QTimer::timeout, this, [this](){
+        if (m_client && !m_client->isConnected()) {
+            qCWarning(dcAWS()) << "Connection guard timer timed out! Resetting connection.";
+            onDisconnected();
+        }
+    });
 }
 
 AWSConnector::~AWSConnector()
@@ -63,6 +74,14 @@ AWSConnector::~AWSConnector()
 
 void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId, const QString &clientName, const QString &caFile, const QString &clientCertFile, const QString &clientPrivKeyFile)
 {
+    if (m_client) {
+        qCDebug(dcAWS()) << "Cleaning up old connection";
+        m_shouldReconnect = false;
+        m_client->disconnectFromHost();
+        // Don't rely on the graceful disconnect to actually happen... Force cleanup of the old connection
+        onDisconnected();
+    }
+
     m_shouldReconnect = true;
     m_currentEndpoint = endpoint;
     m_caFile = caFile;
@@ -70,12 +89,6 @@ void AWSConnector::connect2AWS(const QString &endpoint, const QString &clientId,
     m_clientPrivKeyFile = clientPrivKeyFile;
     m_clientId = clientId;
     m_clientName = clientName;
-
-    if (m_client) {
-        m_client->disconnectFromHost();
-        qCDebug(dcAWS()) << "Disconnecting from AWS";
-        return;
-    }
 
     doConnect();
 }
@@ -121,6 +134,7 @@ void AWSConnector::doConnect()
     connect(m_client, &MqttClient::connected, this, &AWSConnector::onConnected);
     connect(m_client, &MqttClient::disconnected, this, &AWSConnector::onDisconnected);
     connect(m_client, &MqttClient::error, this, [this](const QAbstractSocket::SocketError error){
+        m_connectTimer.stop();
         qCWarning(dcAWS()) << "An error happened in the MQTT transport" << error;
         // In order to also call onDisconnected (and start the reconnect timer) even when we have never been connected
         // we'll call it here. However, that might cause onDisconnected to be called twice. Let's prevent that.
@@ -131,10 +145,15 @@ void AWSConnector::doConnect()
     connect(m_client, &MqttClient::subscribed, this, &AWSConnector::onSubscribed);
     connect(m_client, &MqttClient::publishReceived, this, &AWSConnector::onPublishReceived);
     connect(m_client, &MqttClient::published, this, &AWSConnector::onPublished);
+
+    // If none of the above slots are called within a minute, reset ourselves...
+    m_connectTimer.start(60000);
 }
 
 void AWSConnector::onConnected()
 {
+    m_connectTimer.stop();
+
     if (!readRegisteredFlag()) {
         qCDebug(dcAWS()) << "AWS connected. Device not registered yet. Registering...";
         registerDevice();
@@ -286,6 +305,8 @@ quint16 AWSConnector::publish(const QString &topic, const QVariantMap &message)
 
 void AWSConnector::onDisconnected()
 {
+    m_connectTimer.stop();
+
     qCDebug(dcAWS) << "AWS disconnected.";
     m_client->deleteLater();
     m_client = nullptr;

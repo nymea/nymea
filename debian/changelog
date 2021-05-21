@@ -1,3 +1,15 @@
+nymea (0.27.1) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Better cloud reconnect
+  * Disable deprecation errors to allow building with gcc 10/Qt 5.15
+  * Fix some includes to be more flexible on finding headers
+  * Fix a threading related crash in python plugin param handling
+  * Enable building on Ubuntu 21.04
+  * Fix erraneous state changes during thing setup
+
+ -- Jenkins <jenkins@nymea.io>  Fri, 21 May 2021 15:13:54 +0200
+
 nymea (0.27.0) xenial; urgency=medium
 
   [ Michael Zanetti ]

@@ -42,9 +42,9 @@ override_dh_auto_build:
 override_dh_install: $(PREPROCESS_FILES:.in=)
 	# libnymea-core isn't public api... delete dev lib and just keep runtime libs.
 	rm $(CURDIR)/debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/libnymea-core.so
+	# Make sure the docs directory exists, even if we didn't build them
+	mkdir -p $(CURDIR)/doc/html
 	dh_install --fail-missing
-	# installing the documentation as there is no extra install target
-	cp -a $(CURDIR)/doc/html $(CURDIR)/debian/nymea-doc/usr/share/doc/nymea/ || true
 
 override_dh_auto_test:
 	dh_auto_test -- -k TESTARGS="-m 120 -p -o -p -,txt -p -o -p test-results.xml,xunitxml" TESTRUNNER="dbus-test-runner --bus-type=both --task"

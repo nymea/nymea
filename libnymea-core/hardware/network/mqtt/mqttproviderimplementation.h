@@ -44,7 +44,9 @@ class MqttProviderImplementation : public MqttProvider
 public:
     explicit MqttProviderImplementation(MqttBroker *broker, QObject *parent = nullptr);
 
+    MqttChannel* createChannel(const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) override;
     MqttChannel* createChannel(const QString &clientId, const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) override;
+    MqttChannel* createChannel(const QString &clientId, const QString &username, const QString &password, const QHostAddress &clientAddress, const QStringList &topicPrefixList = QStringList()) override;
     void releaseChannel(MqttChannel* channel) override;
 
     MqttClient* createInternalClient(const QString &clientId) override;

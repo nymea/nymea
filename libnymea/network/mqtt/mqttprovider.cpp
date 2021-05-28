@@ -154,14 +154,60 @@
     \sa HardwareResource, HardwareManager::mqttProvider()
 */
 
+/*! \fn MqttChannel *MqttProvider::createChannel(const QHostAddress &clientAddress, const QString &topicPrefix);
+    Creates a new MQTT channel on the internal broker. The returned channel will have the required details for the
+    client device to connect to the broker. A temporaray clientId/user/password combination will be created and
+    clients connecting to the broker with those credentials will have access to subscribe and post to # within the
+    given \a topicPrefixList.
+
+    The given \a clientAddress will be matched against available MQTT servers in the system and a proper server address
+    will be returned in the MqttChannel object. The client should be configured to connect to this server address.
+
+    \a topicPrefixList will be used to generate the policy for this MQTT client by appending "/#" to it. This will allow the
+    client to publish and subscribe to topics within "<topicPrefix>/#". See The MQTT specification on topic filters for more details.
+    It is good practice to isolate clients as much as possible the topics should be as restrictive as possible to avoid devices
+    snooping in on other things on the MQTT broker. If no topicPrefix is provided, a default of "<clientId>" Id is generated,
+    resulting in a policy of "<clientId>/#". At this point it is not allowed for plugins to publish/subscribe to # or $ topics.
+
+    \sa releaseChannel(MqttChannel *channel)
+*/
+
 /*! \fn MqttChannel *MqttProvider::createChannel(const QString &clientId, const QHostAddress &clientAddress, const QString &topicPrefix);
     Creates a new MQTT channel on the internal broker. The returned channel will have the required details for the
     client device to connect to the broker. A temporaray user/password combination will be created and
     clients connecting to the broker with those credentials will have access to subscribe and post to # within the
     given \a topicPrefixList.
 
+    \a clientId must be unique within the system or the channel creation will fail.
+
+    The given \a clientAddress will be matched against available MQTT servers in the system and a proper server address
+    will be returned in the MqttChannel object. The client should be configured to connect to this server address.
+
+    \a topicPrefixList will be used to generate the policy for this MQTT client by appending "/#" to it. This will allow the
+    client to publish and subscribe to topics within "<topicPrefix>/#". See The MQTT specification on topic filters for more details.
+    It is good practice to isolate clients as much as possible the topics should be as restrictive as possible to avoid devices
+    snooping in on other things on the MQTT broker. If no topicPrefix is provided, a default of "<clientId>" Id is generated,
+    resulting in a policy of "<clientId>/#". At this point it is not allowed for plugins to publish/subscribe to # or $ topics.
+
+    \sa releaseChannel(MqttChannel *channel)
+*/
+
+/*! \fn MqttChannel *MqttProvider::createChannel(const QString &clientId, const QString &username, const QString &password, const QHostAddress &clientAddress, const QString &topicPrefix);
+    Creates a new MQTT channel on the internal broker. The returned channel will have the required details for the
+    client device to connect to the broker. Clients connecting to the broker with those credentials will have access to
+    subscribe and post to # within the given \a topicPrefixList.
+
     \a clientId must be unique within the system or the channel creation will fail. If a mqtt client allows to configure the
     clientId, using it's deviceId is likely a good idea.
+
+    The given \a username and \a password will be used to create the policy for the client. Note: While it is technically
+    possible and allowed to use an empty user/password combination, a plugin developer should not do so unless the client
+    is not capable of providing login information. In most cases a plugin developer should use the overloaded method
+    that autogenerates a user and password combination instead. This method might be useful if a client cannot deal with
+    the auto generated credentials for whatever reason and a plugin requires to override them.
+
+    The given \a clientAddress will be matched against available MQTT servers in the system and a proper server address
+    will be returned in the MqttChannel object. The client should be configured to connect to this server address.
 
     \a topicPrefixList will be used to generate the policy for this MQTT client by appending "/#" to it. This will allow the
     client to publish and subscribe to topics within "<topicPrefix>/#". See The MQTT specification on topic filters for more details.

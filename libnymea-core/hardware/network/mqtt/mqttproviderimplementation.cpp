@@ -47,17 +47,41 @@ MqttProviderImplementation::MqttProviderImplementation(MqttBroker *broker, QObje
     connect(broker, &MqttBroker::publishReceived, this, &MqttProviderImplementation::onPublishReceived);
 }
 
+MqttChannel *MqttProviderImplementation::createChannel(const QHostAddress &clientAddress, const QStringList &topicPrefixList)
+{
+    QString clientId;
+    // Generate a clientId that hasn't been used yet.
+    do {
+        clientId = QUuid::createUuid().toString().remove(QRegExp("[{}-]")).left(16);
+    } while (m_createdChannels.contains(clientId));
+
+    return createChannel(clientId, clientAddress, topicPrefixList);
+}
+
 MqttChannel *MqttProviderImplementation::createChannel(const QString &clientId, const QHostAddress &clientAddress, const QStringList &topicPrefixList)
+{
+    QString username = QUuid::createUuid().toString().remove(QRegExp("[{}-]")).left(16);
+    QString password = QUuid::createUuid().toString().remove(QRegExp("[{}-]")).left(16);
+
+    return createChannel(clientId, username, password, clientAddress, topicPrefixList);
+}
+
+MqttChannel *MqttProviderImplementation::createChannel(const QString &clientId, const QString &username, const QString &password, const QHostAddress &clientAddress, const QStringList &topicPrefixList)
 {
     if (m_broker->configurations().isEmpty()) {
         qCWarning(dcMqtt) << "MQTT broker not running. Cannot create a channel for thing" << clientId;
         return nullptr;
     }
 
+    if (m_createdChannels.contains(clientId)) {
+        qCWarning(dcMqtt()) << "ClientId" << clientId << "already in use. Cannot create channel.";
+        return nullptr;
+    }
+
     MqttChannelImplementation* channel = new MqttChannelImplementation();
     channel->m_clientId = clientId;
-    channel->m_username = QUuid::createUuid().toString().remove(QRegExp("[{}-]"));
-    channel->m_password = QUuid::createUuid().toString().remove(QRegExp("[{}-]"));
+    channel->m_username = username;
+    channel->m_password = password;
     if (!topicPrefixList.isEmpty()) {
         channel->m_topicPrefixList = topicPrefixList;
     } else {

@@ -16,6 +16,7 @@ public:
     Q_INVOKABLE JsonReply *Load(const QVariantMap &params);
 
 signals:
+    void Changed(const QVariantMap &params);
 
 };
 

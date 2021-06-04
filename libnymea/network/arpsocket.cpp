@@ -1,5 +1,36 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+*
+* Copyright 2013 - 2021, nymea GmbH
+* Contact: contact@nymea.io
+*
+* This file is part of nymea.
+* This project including source code and documentation is protected by
+* copyright law, and remains the property of nymea GmbH. All rights, including
+* reproduction, publication, editing and translation, are reserved. The use of
+* this project is subject to the terms of a license agreement to be concluded
+* with nymea GmbH in accordance with the terms of use of nymea GmbH, available
+* under https://nymea.io/license
+*
+* GNU Lesser General Public License Usage
+* Alternatively, this project may be redistributed and/or modified under the
+* terms of the GNU Lesser General Public License as published by the Free
+* Software Foundation; version 3. This project is distributed in the hope that
+* it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+* warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with this project. If not, see <https://www.gnu.org/licenses/>.
+*
+* For any further details and any questions please contact us under
+* contact@nymea.io or see our FAQ/Licensing Information on
+* https://nymea.io/license/faq
+*
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #include "arpsocket.h"
 #include "loggingcategories.h"
+#include "networkutils.h"
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -161,7 +192,7 @@ bool ArpSocket::isOpen() const
 
 bool ArpSocket::openSocket()
 {
-    qCDebug(dcArpSocket()) << "Enabeling ARP scanner...";
+    qCDebug(dcArpSocket()) << "Open ARP socket...";
 
     if (m_isOpen) {
         qCWarning(dcArpSocket()) << "Failed to enable ARP scanner because the scanner is already running.";
@@ -220,7 +251,7 @@ bool ArpSocket::openSocket()
                 //qCDebug(dcArpSocket()) << "ARP request from " << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
                 break;
             case ARPOP_REPLY: {
-                QNetworkInterface networkInterface = getInterfaceForMacAddress(targetMacAddress);
+                QNetworkInterface networkInterface = NetworkUtils::getInterfaceForMacAddress(targetMacAddress);
                 if (!networkInterface.isValid()) {
                     qCWarning(dcArpSocket()) << "Could not find interface from ARP response" << targetHostAddress.toString() << targetMacAddress;
                     return;
@@ -364,30 +395,3 @@ void ArpSocket::fillHostAddress(uint8_t *targetArray, const QHostAddress &hostAd
     }
 }
 
-QNetworkInterface ArpSocket::getInterfaceForHostaddress(const QHostAddress &address)
-{
-    foreach (const QNetworkInterface &networkInterface, QNetworkInterface::allInterfaces()) {
-        foreach (const QNetworkAddressEntry &entry, networkInterface.addressEntries()) {
-            // Only IPv4
-            if (entry.ip().protocol() != QAbstractSocket::IPv4Protocol)
-                continue;
-
-            if (address.isInSubnet(entry.ip(), entry.netmask().toIPv4Address())) {
-                return networkInterface;
-            }
-        }
-    }
-
-    return QNetworkInterface();
-}
-
-QNetworkInterface ArpSocket::getInterfaceForMacAddress(const QString &macAddress)
-{
-    foreach (const QNetworkInterface &networkInterface, QNetworkInterface::allInterfaces()) {
-        if (networkInterface.hardwareAddress().toLower() == macAddress.toLower()) {
-            return networkInterface;
-        }
-    }
-
-    return QNetworkInterface();
-}

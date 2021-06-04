@@ -28,57 +28,49 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ARPSOCKET_H
-#define ARPSOCKET_H
+#ifndef NETWORKDEVICE_H
+#define NETWORKDEVICE_H
 
 #include <QDebug>
 #include <QObject>
-#include <QSocketNotifier>
-#include <QLoggingCategory>
 #include <QHostAddress>
 #include <QNetworkInterface>
 
 #include "libnymea.h"
 
-class LIBNYMEA_EXPORT ArpSocket : public QObject
+class LIBNYMEA_EXPORT NetworkDevice
 {
-    Q_OBJECT
 public:
-    explicit ArpSocket(QObject *parent = nullptr);
+    explicit NetworkDevice();
+    explicit NetworkDevice(const QString &macAddress);
 
-    // Send ARP request to all local networks
-    bool sendRequest();
+    QString macAddress() const;
+    void setMacAddress(const QString &macAddress);
 
-    // Send ARP request to a specific network interface with the given name
-    bool sendRequest(const QString &interfaceName);
+    QString macAddressManufacturer() const;
+    void setMacAddressManufacturer(const QString &macAddressManufacturer);
 
-    // Send ARP request to a specific network interface
-    bool sendRequest(const QNetworkInterface &networkInterface);
+    QHostAddress address() const;
+    void setAddress(const QHostAddress &address);
 
-    // Send ARP request to a specific address within the network
-    bool sendRequest(const QHostAddress &targetAddress);
+    QString hostName() const;
+    void setHostName(const QString &hostName);
 
-    bool isOpen() const;
+    QNetworkInterface networkInterface() const;
+    void setNetworkInterface(const QNetworkInterface &networkInterface);
 
-    bool openSocket();
-    void closeSocket();
-
-signals:
-    void arpResponse(const QNetworkInterface &networkInterface, const QHostAddress &address, const QString &macAddress);
+    bool isValid() const;
 
 private:
-    QSocketNotifier *m_socketNotifier = nullptr;
-    int m_socketDescriptor = -1;
-    bool m_isOpen = false;
-
-    bool sendRequestInternally(int networkInterfaceIndex, const QString &senderMacAddress, const QHostAddress &senderHostAddress, const QString &targetMacAddress, const QHostAddress &targetHostAddress);
-
-    QString getMacAddressString(uint8_t *senderHardwareAddress);
-    QHostAddress getHostAddressString(uint8_t *senderIpAddress);
-
-    void fillMacAddress(uint8_t *targetArray, const QString &macAddress);
-    void fillHostAddress(uint8_t *targetArray, const QHostAddress &hostAddress);
+    QHostAddress m_address;
+    QString m_macAddress;
+    QString m_macAddressManufacturer;
+    QString m_hostName;
+    QNetworkInterface m_networkInterface;
 
 };
 
-#endif // ARPSOCKET_H
+QDebug operator<<(QDebug debug, const NetworkDevice &networkDevice);
+
+
+#endif // NETWORKDEVICE_H

@@ -29,6 +29,7 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "ping.h"
+#include "networkutils.h"
 #include "loggingcategories.h"
 
 #include <fcntl.h>
@@ -115,7 +116,7 @@ PingReply *Ping::ping(const QHostAddress &hostAddress)
 {
     PingReply *reply = new PingReply(this);
     reply->m_targetHostAddress = hostAddress;
-    reply->m_networkInterface = getInterfaceForHostaddress(hostAddress);
+    reply->m_networkInterface = NetworkUtils::getInterfaceForHostaddress(hostAddress);
 
     // Perform the reply in the next event loop to give the user time to do the reply connects
     m_replyQueue.enqueue(reply);
@@ -282,34 +283,6 @@ void Ping::finishReply(PingReply *reply, PingReply::Error error)
     m_pendingReplies.remove(reply->requestId());
     emit reply->finished();
     reply->deleteLater();
-}
-
-QNetworkInterface Ping::getInterfaceForHostaddress(const QHostAddress &address)
-{
-    foreach (const QNetworkInterface &networkInterface, QNetworkInterface::allInterfaces()) {
-        foreach (const QNetworkAddressEntry &entry, networkInterface.addressEntries()) {
-            // Only IPv4
-            if (entry.ip().protocol() != QAbstractSocket::IPv4Protocol)
-                continue;
-
-            if (address.isInSubnet(entry.ip(), entry.netmask().toIPv4Address())) {
-                return networkInterface;
-            }
-        }
-    }
-
-    return QNetworkInterface();
-}
-
-QNetworkInterface Ping::getInterfaceForMacAddress(const QString &macAddress)
-{
-    foreach (const QNetworkInterface &networkInterface, QNetworkInterface::allInterfaces()) {
-        if (networkInterface.hardwareAddress().toLower() == macAddress.toLower()) {
-            return networkInterface;
-        }
-    }
-
-    return QNetworkInterface();
 }
 
 void Ping::onSocketReadyRead(int socketDescriptor)

@@ -28,82 +28,51 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PING_H
-#define PING_H
+#ifndef NETWORKDEVICEDISCOVERY_H
+#define NETWORKDEVICEDISCOVERY_H
 
-#include <QUrl>
-#include <QQueue>
 #include <QTimer>
 #include <QObject>
-#include <QHostAddress>
-#include <QSocketNotifier>
 #include <QLoggingCategory>
 
-#include <netinet/ip_icmp.h>
-
+#include "ping.h"
 #include "libnymea.h"
+#include "arpsocket.h"
+#include "networkdevicediscoveryreply.h"
 
-#include "pingreply.h"
+Q_DECLARE_LOGGING_CATEGORY(dcNetworkDeviceDiscovery)
 
-#include <netinet/ip_icmp.h>
-
-#define ICMP_PACKET_SIZE  64
-#define ICMP_TTL_VALUE  64
-#define ICMP_PAYLOAD_SIZE (ICMP_PACKET_SIZE - sizeof(struct icmphdr))
-
-class LIBNYMEA_EXPORT Ping : public QObject
+class LIBNYMEA_EXPORT NetworkDeviceDiscovery : public QObject
 {
     Q_OBJECT
 public:
-    explicit Ping(QObject *parent = nullptr);
+    explicit NetworkDeviceDiscovery(QObject *parent = nullptr);
 
-    QByteArray payload() const;
-    void setPayload(const QByteArray &payload);
+    NetworkDeviceDiscoveryReply *discover();
 
     bool available() const;
+    bool running() const;
 
-    PingReply::Error error() const;
-
-    PingReply *ping(const QHostAddress &hostAddress);
+    PingReply *ping(const QHostAddress &address);
 
 signals:
-    void availableChanged(bool available);
+    void runningChanged(bool running);
 
 private:
-    struct icmpPacket {
-        struct icmphdr icmpHeadr;
-        char icmpPayload[ICMP_PAYLOAD_SIZE];
-    };
+    ArpSocket *m_arpSocket = nullptr;
+    Ping *m_ping = nullptr;
+    bool m_running = false;
 
-    // Config
-    QByteArray m_payload = "ping from nymea";
-    PingReply::Error m_error = PingReply::ErrorNoError;
+    QTimer *m_discoveryTimer = nullptr;
+    NetworkDeviceDiscoveryReply *m_currentReply = nullptr;
+    QList<PingReply *> m_runningPingRepies;
 
-    // Socket
-    QSocketNotifier *m_socketNotifier = nullptr;
-    int m_socketDescriptor = -1;
-    QHash<quint16, PingReply *> m_pendingReplies;
-    bool m_available = false;
-
-    QQueue<PingReply *> m_replyQueue;
-    QTimer *m_queueTimer = nullptr;
-    void sendNextReply();
-
-    //Error performPing(const QString &address);
-    void performPing(PingReply *reply);
-    void verifyErrno(int error);
-
-    // Helper
-    unsigned short calculateChecksum(unsigned short *b, int len);
-    void cleanUpSocket();
-    void timeValueSubtract(struct timeval *start, struct timeval *stop);
-    quint16 calculateRequestId();
-
-    void finishReply(PingReply *reply, PingReply::Error error);
+    void pingAllNetworkDevices();
+    void finishDiscovery();
 
 private slots:
-    void onSocketReadyRead(int socketDescriptor);
+    void onArpResponseRceived(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress);
 
 };
 
-#endif // PING_H
+#endif // NETWORKDEVICEDISCOVERY_H

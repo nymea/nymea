@@ -37,10 +37,12 @@
 
 #include <sys/time.h>
 
+#include "libnymea.h"
+
 #include <QHostAddress>
 #include <QNetworkInterface>
 
-class PingReply : public QObject
+class LIBNYMEA_EXPORT PingReply : public QObject
 {
     Q_OBJECT
 

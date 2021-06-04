@@ -43,6 +43,11 @@ HEADERS += \
     network/apikeys/apikeysprovider.h \
     network/apikeys/apikeystorage.h \
     network/arpsocket.h \
+    network/networkdevice.h \
+    network/networkdevicediscovery.h \
+    network/networkdevicediscoveryreply.h \
+    network/networkdevices.h \
+    network/networkutils.h \
     network/ping.h \
     network/pingreply.h \
     platform/package.h \
@@ -144,6 +149,11 @@ SOURCES += \
     network/apikeys/apikeysprovider.cpp \
     network/apikeys/apikeystorage.cpp \
     network/arpsocket.cpp \
+    network/networkdevice.cpp \
+    network/networkdevicediscovery.cpp \
+    network/networkdevicediscoveryreply.cpp \
+    network/networkdevices.cpp \
+    network/networkutils.cpp \
     network/ping.cpp \
     network/pingreply.cpp \
     nymeasettings.cpp \

@@ -43,15 +43,15 @@ class LIBNYMEA_EXPORT NetworkDeviceDiscoveryReply : public QObject
     friend class NetworkDeviceDiscovery;
 
 public:
-    explicit NetworkDeviceDiscoveryReply(QObject *parent = nullptr);
-
     NetworkDevices &networkDevices();
 
 signals:
     void finished();
 
 private:
+    explicit NetworkDeviceDiscoveryReply(QObject *parent = nullptr);
     NetworkDevices m_networkDevices;
+    qint64 m_startTimestamp;
 
 };
 

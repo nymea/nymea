@@ -31,6 +31,9 @@
 #include "networkdevicediscovery.h"
 #include "loggingcategories.h"
 #include "networkutils.h"
+#include "macaddressdatabase.h"
+
+#include <QDateTime>
 
 NYMEA_LOGGING_CATEGORY(dcNetworkDeviceDiscovery, "NetworkDeviceDiscovery")
 
@@ -48,6 +51,10 @@ NetworkDeviceDiscovery::NetworkDeviceDiscovery(QObject *parent) :
     m_ping = new Ping(this);
     if (!m_ping->available())
         qCWarning(dcNetworkDeviceDiscovery()) << "Failed to create ping tool" << m_ping->error();
+
+    m_macAddressDatabase = new MacAddressDatabase(this);
+    if (!m_macAddressDatabase->available())
+        qCWarning(dcNetworkDeviceDiscovery()) << "The mac address database is not available. Network discovery will not lookup mac address manufacturer";
 
     m_discoveryTimer = new QTimer(this);
     m_discoveryTimer->setInterval(5000);
@@ -72,6 +79,7 @@ NetworkDeviceDiscoveryReply *NetworkDeviceDiscovery::discover()
 
     NetworkDeviceDiscoveryReply *reply = new NetworkDeviceDiscoveryReply(this);
     m_currentReply = reply;
+    m_currentReply->m_startTimestamp = QDateTime::currentMSecsSinceEpoch();
 
     if (m_ping->available()) {
         pingAllNetworkDevices();
@@ -179,11 +187,51 @@ void NetworkDeviceDiscovery::finishDiscovery()
     m_running = false;
     emit runningChanged(m_running);
 
-    qCDebug(dcNetworkDeviceDiscovery()) << "Discovery finished. Found" << m_currentReply->networkDevices().count() << "network devices.";
+    qint64 durationMilliSeconds = QDateTime::currentMSecsSinceEpoch() - m_currentReply->m_startTimestamp;
+    qCDebug(dcNetworkDeviceDiscovery()) << "Discovery finished. Found" << m_currentReply->networkDevices().count() << "network devices in" << QTime::fromMSecsSinceStartOfDay(durationMilliSeconds).toString("mm:ss.zzz");
     m_arpSocket->closeSocket();
     emit m_currentReply->finished();
     m_currentReply->deleteLater();
     m_currentReply = nullptr;
+}
+
+void NetworkDeviceDiscovery::updateOrAddNetworkDeviceArp(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress, const QString &manufacturer)
+{
+    int index = m_currentReply->networkDevices().indexFromHostAddress(address);
+    if (index >= 0) {
+        // Update the network device
+        m_currentReply->networkDevices()[index].setMacAddress(macAddress);
+        if (!manufacturer.isEmpty())
+            m_currentReply->networkDevices()[index].setMacAddressManufacturer(manufacturer);
+
+        if (interface.isValid()) {
+            m_currentReply->networkDevices()[index].setNetworkInterface(interface);
+        }
+    } else {
+        index = m_currentReply->networkDevices().indexFromMacAddress(macAddress);
+        if (index >= 0) {
+            // Update the network device
+            m_currentReply->networkDevices()[index].setAddress(address);
+            if (!manufacturer.isEmpty())
+                m_currentReply->networkDevices()[index].setMacAddressManufacturer(manufacturer);
+
+            if (interface.isValid()) {
+                m_currentReply->networkDevices()[index].setNetworkInterface(interface);
+            }
+        } else {
+            // Add the network device
+            NetworkDevice networkDevice;
+            networkDevice.setAddress(address);
+            networkDevice.setMacAddress(macAddress);
+            if (!manufacturer.isEmpty())
+                networkDevice.setMacAddressManufacturer(manufacturer);
+
+            if (interface.isValid())
+                networkDevice.setNetworkInterface(interface);
+
+            m_currentReply->networkDevices().append(networkDevice);
+        }
+    }
 }
 
 void NetworkDeviceDiscovery::onArpResponseRceived(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress)
@@ -194,31 +242,15 @@ void NetworkDeviceDiscovery::onArpResponseRceived(const QNetworkInterface &inter
     }
 
     qCDebug(dcNetworkDeviceDiscovery()) << "ARP reply received" << address.toString() << macAddress << interface.name();
-    // Update or add network device
-    int index = m_currentReply->networkDevices().indexFromHostAddress(address);
-    if (index >= 0) {
-        // Update the network device
-        m_currentReply->networkDevices()[index].setMacAddress(macAddress);
-        if (interface.isValid()) {
-            m_currentReply->networkDevices()[index].setNetworkInterface(interface);
-        }
-    } else {
-        index = m_currentReply->networkDevices().indexFromMacAddress(macAddress);
-        if (index >= 0) {
-            // Update the network device
-            m_currentReply->networkDevices()[index].setAddress(address);
-            if (interface.isValid()) {
-                m_currentReply->networkDevices()[index].setNetworkInterface(interface);
-            }
-        } else {
-            // Add the network device
-            NetworkDevice networkDevice;
-            networkDevice.setAddress(address);
-            networkDevice.setMacAddress(macAddress);
-            if (interface.isValid())
-                networkDevice.setNetworkInterface(interface);
 
-            m_currentReply->networkDevices().append(networkDevice);
-        }
+    // Lookup the mac address vendor if possible
+    if (m_macAddressDatabase->available()) {
+        MacAddressDatabaseReply *reply = m_macAddressDatabase->lookupMacAddress(macAddress);
+        connect(reply, &MacAddressDatabaseReply::finished, this, [=](){
+            qCDebug(dcNetworkDeviceDiscovery()) << "MAC manufacturer lookup finished for" << macAddress << ":" << reply->manufacturer();
+            updateOrAddNetworkDeviceArp(interface, address, macAddress, reply->manufacturer());
+        });
+    } else {
+        updateOrAddNetworkDeviceArp(interface, address, macAddress);
     }
 }

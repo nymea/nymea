@@ -3,8 +3,9 @@ include(../nymea.pri)
 TARGET = nymea
 TEMPLATE = lib
 
-QT += network bluetooth dbus serialport
+QT += network bluetooth dbus serialport sql
 QT -= gui
+
 DEFINES += LIBNYMEA_LIBRARY
 
 CONFIG += link_pkgconfig
@@ -43,6 +44,7 @@ HEADERS += \
     network/apikeys/apikeysprovider.h \
     network/apikeys/apikeystorage.h \
     network/arpsocket.h \
+    network/macaddressdatabase.h \
     network/networkdevice.h \
     network/networkdevicediscovery.h \
     network/networkdevicediscoveryreply.h \
@@ -149,6 +151,7 @@ SOURCES += \
     network/apikeys/apikeysprovider.cpp \
     network/apikeys/apikeystorage.cpp \
     network/arpsocket.cpp \
+    network/macaddressdatabase.cpp \
     network/networkdevice.cpp \
     network/networkdevicediscovery.cpp \
     network/networkdevicediscoveryreply.cpp \

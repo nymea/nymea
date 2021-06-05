@@ -40,6 +40,8 @@
 #include "arpsocket.h"
 #include "networkdevicediscoveryreply.h"
 
+class MacAddressDatabase;
+
 Q_DECLARE_LOGGING_CATEGORY(dcNetworkDeviceDiscovery)
 
 class LIBNYMEA_EXPORT NetworkDeviceDiscovery : public QObject
@@ -59,6 +61,7 @@ signals:
     void runningChanged(bool running);
 
 private:
+    MacAddressDatabase *m_macAddressDatabase = nullptr;
     ArpSocket *m_arpSocket = nullptr;
     Ping *m_ping = nullptr;
     bool m_running = false;
@@ -69,6 +72,8 @@ private:
 
     void pingAllNetworkDevices();
     void finishDiscovery();
+
+    void updateOrAddNetworkDeviceArp(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress, const QString &manufacturer = QString());
 
 private slots:
     void onArpResponseRceived(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress);

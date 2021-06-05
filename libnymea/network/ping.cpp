@@ -200,6 +200,10 @@ void Ping::performPing(PingReply *reply)
 
     // Start reply timer and handle timeout
     m_pendingReplies.insert(reply->requestId(), reply);
+    reply->m_timer->start(8000);
+    connect(reply, &PingReply::timeout, this, [=](){
+        finishReply(reply, PingReply::ErrorTimeout);
+    });
 }
 
 void Ping::verifyErrno(int error)
@@ -336,7 +340,7 @@ void Ping::onSocketReadyRead(int socketDescriptor)
             // Verify sequence number
             if (responsePacket->icmp_seq != reply->sequenceNumber()) {
                 qCWarning(dcPing()) << "Received echo reply with different sequence number" << htons(responsePacket->icmp_seq);
-                finishReply(reply, PingReply::ErrorInvalidSequenceNumberResponse);
+                finishReply(reply, PingReply::ErrorInvalidResponse);
                 return;
             }
 

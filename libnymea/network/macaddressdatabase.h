@@ -28,69 +28,66 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PINGREPLY_H
-#define PINGREPLY_H
+#ifndef MACADDRESSDATABASE_H
+#define MACADDRESSDATABASE_H
 
-#include <QTimer>
+#include <QQueue>
 #include <QObject>
-#include <QHostAddress>
-
-#include <sys/time.h>
+#include <QSqlDatabase>
+#include <QFutureWatcher>
 
 #include "libnymea.h"
 
-#include <QHostAddress>
-#include <QNetworkInterface>
-
-class LIBNYMEA_EXPORT PingReply : public QObject
+class LIBNYMEA_EXPORT MacAddressDatabaseReply : public QObject
 {
     Q_OBJECT
-
-    friend class Ping;
+    friend class MacAddressDatabase;
 
 public:
-    enum Error {
-        ErrorNoError,
-        ErrorInvalidResponse,
-        ErrorNetworkDown,
-        ErrorNetworkUnreachable,
-        ErrorPermissionDenied,
-        ErrorSocketError,
-        ErrorTimeout,
-        ErrorHostUnreachable
-    };
-    Q_ENUM(Error)
+    QString macAddress() const { return m_macAddress; };
+    QString manufacturer() const { return m_manufacturer; };
 
-    explicit PingReply(QObject *parent = nullptr);
-
-    QHostAddress targetHostAddress() const;
-    quint16 sequenceNumber() const;
-    quint16 requestId() const;
-    QString hostName() const;
-    QNetworkInterface networkInterface() const;
-
-    double duration() const;
-
-    Error error() const;
+private:
+    explicit MacAddressDatabaseReply(QObject *parent = nullptr) : QObject(parent) { };
+    QString m_macAddress;
+    QString m_manufacturer;
+    qint64 m_startTimestamp;
 
 signals:
     void finished();
-    void timeout();
-
-private:
-    QTimer *m_timer = nullptr;
-    QHostAddress m_targetHostAddress;
-    quint16 m_sequenceNumber = 0;
-    quint16 m_requestId = 0;
-    QString m_hostName;
-    QNetworkInterface m_networkInterface;
-
-    uint m_timeout = 3;
-    double m_duration = 0;
-    Error m_error = ErrorNoError;
-
-    struct timeval m_startTime;
 
 };
 
-#endif // PINGREPLY_H
+
+class LIBNYMEA_EXPORT MacAddressDatabase : public QObject
+{
+    Q_OBJECT
+public:
+    explicit MacAddressDatabase(QObject *parent = nullptr);
+    MacAddressDatabase(const QString &databaseName, QObject *parent = nullptr);
+    ~MacAddressDatabase();
+
+    bool available() const;
+
+    MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress);
+
+private:
+    QSqlDatabase m_db;
+    bool m_available = false;
+    QString m_connectionName;
+    QString m_databaseName = "/usr/share/nymea/mac-addresses.db";
+
+    MacAddressDatabaseReply *m_currentReply = nullptr;
+    QFutureWatcher<QString> *m_futureWatcher = nullptr;
+    QQueue<MacAddressDatabaseReply *> m_pendingReplies;
+
+    bool initDatabase();
+    void runNextLookup();
+
+private slots:
+    void onLookupFinished();
+    QString lookupMacAddressVendorInternal(const QString &macAddress);
+
+};
+
+#endif // MACADDRESSDATABASE_H

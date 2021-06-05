@@ -43,7 +43,6 @@
 #include <netdb.h>
 
 #include <QtEndian>
-#include <QHostInfo>
 
 NYMEA_LOGGING_CATEGORY(dcPing, "Ping")
 NYMEA_LOGGING_CATEGORY(dcPingTraffic, "PingTraffic")
@@ -350,23 +349,15 @@ void Ping::onSocketReadyRead(int socketDescriptor)
             timeValueSubtract(&receiveTimeValue, &reply->m_startTime);
             reply->m_duration = qRound((receiveTimeValue.tv_sec * 1000 + (double)receiveTimeValue.tv_usec / 1000) * 100) / 100.0;
 
-            QHostInfo::lookupHost(senderAddress.toString(), this, [=](const QHostInfo &info){
-                if (info.error() != QHostInfo::NoError) {
-                    qCWarning(dcPing()) << "Failed to look up hostname after successfull ping" << senderAddress.toString() << info.error();
-                } else {
-                    qCDebug(dcPing()) << "********Looked up hostname after successfull ping" << senderAddress.toString() << info.hostName();
-                    if (info.hostName() != senderAddress.toString()) {
-                        reply->m_hostName = info.hostName();
-                    }
-                }
+            // Note: due to a Qt bug < 5.9 we need to use old SLOT style and cannot make use of lambda here
+            int lookupId = QHostInfo::lookupHost(senderAddress.toString(), this, SLOT(onHostLookupFinished(const QHostInfo &info)));
+            m_pendingHostLookups.insert(lookupId, reply);
 
-                qCDebug(dcPingTraffic()) << "Received ICMP response" << reply->targetHostAddress().toString() << ICMP_PACKET_SIZE << "[Bytes]"
-                              << "ID:" << QString("0x%1").arg(responsePacket->icmp_id, 4, 16, QChar('0'))
-                              << "Sequence:" << htons(responsePacket->icmp_seq)
-                              << "Time:" << reply->duration() << "[ms]" << info.hostName();
+            qCDebug(dcPingTraffic()) << "Received ICMP response" << reply->targetHostAddress().toString() << ICMP_PACKET_SIZE << "[Bytes]"
+                          << "ID:" << QString("0x%1").arg(responsePacket->icmp_id, 4, 16, QChar('0'))
+                          << "Sequence:" << htons(responsePacket->icmp_seq)
+                          << "Time:" << reply->duration() << "[ms]";
 
-                finishReply(reply, PingReply::ErrorNoError);
-            });
         } else if (responsePacket->icmp_type == ICMP_DEST_UNREACH) {
 
             // Get the sending package
@@ -407,5 +398,25 @@ void Ping::onSocketReadyRead(int socketDescriptor)
             finishReply(reply, PingReply::ErrorHostUnreachable);
         }
     }
+}
+
+void Ping::onHostLookupFinished(const QHostInfo &info)
+{
+    PingReply *reply = m_pendingHostLookups.value(info.lookupId());
+    if (!reply) {
+        qCWarning(dcPing()) << "Could not find reply after host lookup.";
+        return;
+    }
+
+    if (info.error() != QHostInfo::NoError) {
+        qCWarning(dcPing()) << "Failed to look up hostname after successfull ping" << reply->targetHostAddress().toString() << info.error();
+    } else {
+        qCDebug(dcPing()) << "********Looked up hostname after successfull ping" << reply->targetHostAddress().toString() << info.hostName();
+        if (info.hostName() != reply->targetHostAddress().toString()) {
+            reply->m_hostName = info.hostName();
+        }
+    }
+
+    finishReply(reply, PingReply::ErrorNoError);
 }
 

@@ -70,7 +70,8 @@ Depends: libqt5network5,
          libnymea1 (= ${binary:Version}),
          ${shlibs:Depends},
          ${misc:Depends}
-Recommends: nymea-cli, 
+Recommends: nymea-cli,
+            nymea-data,
             network-manager,
             nymea-update-plugin-impl,
             nymea-system-plugin-impl,
@@ -84,6 +85,22 @@ Description: An open source IoT server - daemon
  in the system and create individual scenes and behaviors for your environment.
  .
  This package will install the daemon.
+
+
+Package: nymea-data
+Section: misc
+Architecture: all
+Depends: ${misc:Depends}
+Recommends: nymea
+Description: Optional data for extending functionality in nymea daemon
+ The nymea daemon is a plugin based IoT (Internet of Things) server. The
+ server works like a translator for devices, things and services and
+ allows them to interact.
+ With the powerful rule engine you are able to connect any device available
+ in the system and create individual scenes and behaviors for your environment.
+ .
+ This package provides the MAC address database for nymead and for the plugins in
+ order to get the manufacturer name for a given MAC address.
 
 
 Package: nymea-doc

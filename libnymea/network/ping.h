@@ -35,6 +35,7 @@
 #include <QQueue>
 #include <QTimer>
 #include <QObject>
+#include <QHostInfo>
 #include <QHostAddress>
 #include <QSocketNotifier>
 #include <QLoggingCategory>
@@ -88,6 +89,7 @@ private:
     QQueue<PingReply *> m_replyQueue;
     QTimer *m_queueTimer = nullptr;
     void sendNextReply();
+    QHash<int, PingReply *> m_pendingHostLookups;
 
     //Error performPing(const QString &address);
     void performPing(PingReply *reply);
@@ -103,6 +105,7 @@ private:
 
 private slots:
     void onSocketReadyRead(int socketDescriptor);
+    void onHostLookupFinished(const QHostInfo &info);
 
 };
 

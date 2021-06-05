@@ -189,7 +189,7 @@ QString MacAddressDatabase::lookupMacAddressVendorInternal(const QString &macAdd
 
         // Found to many results, lets add a value until we find the matching vendor
         length += 1;
-        if (length > fullMacAddressString)
+        if (length > fullMacAddressString.length())
             break;
 
         // Search with one addition digit

@@ -34,22 +34,26 @@ import os
 import sys
 import json
 import sqlite3
+import requests
 
+downloadUrl='https://macaddress.io/database/macaddress.io-db.json'
 jsonDataFileName = 'macaddress.io-db.json'
-print('Loading JSON data from', jsonDataFileName)
+databaseFileName = 'mac-addresses.db'
+
+print('Downloading', jsonDataFileName, '...')
+downloadRequest = requests.get(downloadUrl)
+open(jsonDataFileName, 'wb').write(downloadRequest.content)
+
+print('Reading JSON data..')
+vendorInfoHash = {}
 jsonDataFile = open(jsonDataFileName, 'r')
 lines = jsonDataFile.readlines()
-
-vendorInfoHash = {}
 for line in lines:
     vendorMap = json.loads(line)
     vendorInfoHash[vendorMap['oui']] = vendorMap['companyName']
 
 jsonDataFile.close()
 
-# Sort by oui for good binary search in the db
-sortedOuiHash = sorted(vendorInfoHash.items(), key=lambda x: x[0], reverse=False)
-databaseFileName = 'mac-addresses.db'
 if os.path.exists(databaseFileName):
     print('Delete old db file and create a new one', databaseFileName)
     os.remove(databaseFileName)
@@ -61,6 +65,7 @@ cursor.execute('CREATE TABLE oui (oui TEXT PRIMARY KEY, companyNameIndex INTEGER
 #cursor.execute('CREATE UNIQUE INDEX ouiIndex ON `oui` (`oui`);')
 
 # Insert all vendor names alphabetically
+print('Writing company names into database...')
 sortedVendorHash = sorted(vendorInfoHash.items(), key=lambda x: x[1], reverse=False)
 vendorCount = 0
 for vendorInfo in sortedVendorHash:
@@ -73,6 +78,9 @@ for vendorInfo in sortedVendorHash:
 connection.commit()
 
 # Insert all oui with reference to company name
+print('Writing company names into database...')
+# Sort by oui for good binary search in the db
+sortedOuiHash = sorted(vendorInfoHash.items(), key=lambda x: x[0], reverse=False)
 ouiCount = 0
 for vendorInfo in sortedOuiHash:
     insertQuery = 'INSERT OR IGNORE INTO oui (oui, companyNameIndex) VALUES(?, (SELECT rowid FROM companyNames WHERE companyName = ?));'
@@ -83,6 +91,6 @@ for vendorInfo in sortedOuiHash:
 
 connection.commit()
 connection.close()
-print('Loaded', ouiCount, 'OUI values from', vendorCount, 'manufacturers into', databaseFileName)
+print('Finished successfully. Loaded', ouiCount, 'OUI values from', vendorCount, 'manufacturers into', databaseFileName)
 
 

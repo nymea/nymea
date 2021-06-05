@@ -40,24 +40,27 @@ NYMEA_LOGGING_CATEGORY(dcNetworkDeviceDiscovery, "NetworkDeviceDiscovery")
 NetworkDeviceDiscovery::NetworkDeviceDiscovery(QObject *parent) :
     QObject(parent)
 {
+    // Create ARP socket
     m_arpSocket = new ArpSocket(this);
     connect(m_arpSocket, &ArpSocket::arpResponse, this, &NetworkDeviceDiscovery::onArpResponseRceived);
-
     if (!m_arpSocket->openSocket()) {
         qCWarning(dcNetworkDeviceDiscovery()) << "Network discovery will not make use of ARP packages.";
         m_arpSocket->closeSocket();
     }
 
+    // Create ping socket
     m_ping = new Ping(this);
     if (!m_ping->available())
         qCWarning(dcNetworkDeviceDiscovery()) << "Failed to create ping tool" << m_ping->error();
 
+    // Init MAC database if available
     m_macAddressDatabase = new MacAddressDatabase(this);
     if (!m_macAddressDatabase->available())
         qCWarning(dcNetworkDeviceDiscovery()) << "The mac address database is not available. Network discovery will not lookup mac address manufacturer";
 
+    // Timer for max duration af a discovery
     m_discoveryTimer = new QTimer(this);
-    m_discoveryTimer->setInterval(5000);
+    m_discoveryTimer->setInterval(20000);
     m_discoveryTimer->setSingleShot(true);
     connect(m_discoveryTimer, &QTimer::timeout, this, [=](){
         if (m_runningPingRepies.isEmpty() && m_currentReply) {
@@ -108,6 +111,11 @@ bool NetworkDeviceDiscovery::running() const
 PingReply *NetworkDeviceDiscovery::ping(const QHostAddress &address)
 {
     return m_ping->ping(address);
+}
+
+MacAddressDatabaseReply *NetworkDeviceDiscovery::lookupMacAddress(const QString &macAddress)
+{
+    return m_macAddressDatabase->lookupMacAddress(macAddress);
 }
 
 void NetworkDeviceDiscovery::pingAllNetworkDevices()
@@ -189,7 +197,6 @@ void NetworkDeviceDiscovery::finishDiscovery()
 
     qint64 durationMilliSeconds = QDateTime::currentMSecsSinceEpoch() - m_currentReply->m_startTimestamp;
     qCDebug(dcNetworkDeviceDiscovery()) << "Discovery finished. Found" << m_currentReply->networkDevices().count() << "network devices in" << QTime::fromMSecsSinceStartOfDay(durationMilliSeconds).toString("mm:ss.zzz");
-    m_arpSocket->closeSocket();
     emit m_currentReply->finished();
     m_currentReply->deleteLater();
     m_currentReply = nullptr;

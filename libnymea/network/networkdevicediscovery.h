@@ -41,6 +41,7 @@
 #include "networkdevicediscoveryreply.h"
 
 class MacAddressDatabase;
+class MacAddressDatabaseReply;
 
 Q_DECLARE_LOGGING_CATEGORY(dcNetworkDeviceDiscovery)
 
@@ -56,6 +57,7 @@ public:
     bool running() const;
 
     PingReply *ping(const QHostAddress &address);
+    MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress);
 
 signals:
     void runningChanged(bool running);

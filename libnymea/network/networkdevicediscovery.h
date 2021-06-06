@@ -37,9 +37,9 @@
 
 #include "ping.h"
 #include "libnymea.h"
-#include "arpsocket.h"
 #include "networkdevicediscoveryreply.h"
 
+class ArpSocket;
 class MacAddressDatabase;
 class MacAddressDatabaseReply;
 

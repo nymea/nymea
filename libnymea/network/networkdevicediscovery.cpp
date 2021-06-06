@@ -32,6 +32,7 @@
 #include "loggingcategories.h"
 #include "networkutils.h"
 #include "macaddressdatabase.h"
+#include "arpsocket.h"
 
 #include <QDateTime>
 
@@ -79,7 +80,6 @@ NetworkDeviceDiscoveryReply *NetworkDeviceDiscovery::discover()
     }
 
     qCDebug(dcNetworkDeviceDiscovery()) << "Starting network device discovery ...";
-
     NetworkDeviceDiscoveryReply *reply = new NetworkDeviceDiscoveryReply(this);
     m_currentReply = reply;
     m_currentReply->m_startTimestamp = QDateTime::currentMSecsSinceEpoch();

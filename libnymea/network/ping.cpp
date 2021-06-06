@@ -350,7 +350,7 @@ void Ping::onSocketReadyRead(int socketDescriptor)
             reply->m_duration = qRound((receiveTimeValue.tv_sec * 1000 + (double)receiveTimeValue.tv_usec / 1000) * 100) / 100.0;
 
             // Note: due to a Qt bug < 5.9 we need to use old SLOT style and cannot make use of lambda here
-            int lookupId = QHostInfo::lookupHost(senderAddress.toString(), this, SLOT(onHostLookupFinished(const QHostInfo &info)));
+            int lookupId = QHostInfo::lookupHost(senderAddress.toString(), this, SLOT(onHostLookupFinished(QHostInfo)));
             m_pendingHostLookups.insert(lookupId, reply);
 
             qCDebug(dcPingTraffic()) << "Received ICMP response" << reply->targetHostAddress().toString() << ICMP_PACKET_SIZE << "[Bytes]"

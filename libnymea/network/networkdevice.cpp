@@ -100,12 +100,12 @@ QDebug operator<<(QDebug dbg, const NetworkDevice &networkDevice)
 {
     dbg.nospace() << "NetworkDevice(";
     dbg.nospace() << networkDevice.address().toString() << ", ";
+    if (!networkDevice.hostName().isEmpty())
+        dbg.nospace() << ", " << networkDevice.hostName();
+
     dbg.nospace() << networkDevice.macAddress();
     if (!networkDevice.macAddressManufacturer().isEmpty())
         dbg.nospace() << "(" << networkDevice.macAddressManufacturer() << ")";
-
-    if (!networkDevice.hostName().isEmpty())
-        dbg.nospace() << ", " << networkDevice.hostName();
 
     if (networkDevice.networkInterface().isValid())
         dbg.nospace() << ", " << networkDevice.networkInterface().name();

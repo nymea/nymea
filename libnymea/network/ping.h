@@ -40,10 +40,7 @@
 #include <QSocketNotifier>
 #include <QLoggingCategory>
 
-#include <netinet/ip_icmp.h>
-
 #include "libnymea.h"
-
 #include "pingreply.h"
 
 #include <netinet/ip_icmp.h>

@@ -40,7 +40,7 @@ downloadUrl='https://macaddress.io/database/macaddress.io-db.json'
 jsonDataFileName = 'macaddress.io-db.json'
 databaseFileName = 'mac-addresses.db'
 
-print('Downloading', jsonDataFileName, '...')
+print('Downloading', downloadUrl, '...')
 downloadRequest = requests.get(downloadUrl)
 open(jsonDataFileName, 'wb').write(downloadRequest.content)
 
@@ -55,9 +55,10 @@ for line in lines:
 jsonDataFile.close()
 
 if os.path.exists(databaseFileName):
-    print('Delete old db file and create a new one', databaseFileName)
+    print('Delete old db file', databaseFileName)
     os.remove(databaseFileName)
 
+print('Build up database', databaseFileName)
 connection = sqlite3.connect(databaseFileName)
 cursor = connection.cursor()
 cursor.execute('CREATE TABLE companyNames (companyName TEXT PRIMARY KEY, UNIQUE(companyName));')
@@ -78,7 +79,7 @@ for vendorInfo in sortedVendorHash:
 connection.commit()
 
 # Insert all oui with reference to company name
-print('Writing company names into database...')
+print('Writing OUI into database with company name refference...')
 # Sort by oui for good binary search in the db
 sortedOuiHash = sorted(vendorInfoHash.items(), key=lambda x: x[0], reverse=False)
 ouiCount = 0

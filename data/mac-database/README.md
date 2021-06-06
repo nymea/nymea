@@ -8,5 +8,5 @@ The generated database is read performance optimized and tried to keep as small 
 
 The final database will be named `mac-addresses.db`.
 
-In nymea the `MacAddressDatabase` will search for this database file in `/usr/share/nymea/mac-addresses.db` and provides an asynch mechanism to get the company name for a given MAC address.
+In nymea the `MacAddressDatabase` will search by default for this database file in `/usr/share/nymea/mac-addresses.db` and provides an asynch threaded mechanism to get the company name for a given MAC address.
 

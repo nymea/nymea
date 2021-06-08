@@ -292,7 +292,7 @@ void Ping::onSocketReadyRead(int socketDescriptor)
 {
     // We must read all data otherwise the socket notifier does not work as expected
     while (true) {
-        // Read the socket data...
+        // Read the socket data and give some extra space for nested pakets...
         int receiveBufferSize = 2 * ICMP_PACKET_SIZE + sizeof(struct iphdr);
         char receiveBuffer[receiveBufferSize];
         memset(&receiveBuffer, 0, sizeof(receiveBufferSize));

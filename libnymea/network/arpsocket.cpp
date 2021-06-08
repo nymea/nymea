@@ -51,6 +51,7 @@
 #include <QDataStream>
 
 NYMEA_LOGGING_CATEGORY(dcArpSocket, "ArpSocket")
+NYMEA_LOGGING_CATEGORY(dcArpSocketTraffic, "ArpSocketTraffic")
 
 #define ETHER_PROTOCOL_LEN 4 // Length of the IPv4 address
 #define ETHER_HEADER_LEN sizeof(struct ether_header)
@@ -240,7 +241,7 @@ bool ArpSocket::openSocket()
             QHostAddress targetHostAddress = getHostAddressString(arpPacket->arp_tpa);
             uint16_t etherType = htons(etherHeader->ether_type);
             if (etherType != ETHERTYPE_ARP) {
-                qCWarning(dcArpSocket()) << "Received ARP socket data header with invalid type" << etherType;
+                qCWarning(dcArpSocketTraffic()) << "Received ARP socket data header with invalid type" << etherType;
                 return;
             }
 
@@ -257,27 +258,27 @@ bool ArpSocket::openSocket()
                     return;
                 }
 
-                qCDebug(dcArpSocket()) << "ARP response from" << senderMacAddress << senderHostAddress.toString() << "on" << networkInterface.name();
+                qCDebug(dcArpSocketTraffic()) << "ARP response from" << senderMacAddress << senderHostAddress.toString() << "on" << networkInterface.name();
                 emit arpResponse(networkInterface, senderHostAddress, senderMacAddress.toLower());
                 break;
             }
             case ARPOP_RREQUEST:
-                //qCDebug(dcArpSocket()) << "RARP request from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
+                qCDebug(dcArpSocketTraffic()) << "RARP request from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
                 break;
             case ARPOP_RREPLY:
-                //qCDebug(dcArpSocket()) << "PARP response from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
+                qCDebug(dcArpSocketTraffic()) << "PARP response from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
                 break;
             case ARPOP_InREQUEST:
-                //qCDebug(dcArpSocket()) << "InARP request from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
+                qCDebug(dcArpSocketTraffic()) << "InARP request from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
                 break;
             case ARPOP_InREPLY:
-                //qCDebug(dcArpSocket()) << "InARP response from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
+                qCDebug(dcArpSocketTraffic()) << "InARP response from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
                 break;
             case ARPOP_NAK:
-                //qCDebug(dcArpSocket()) << "(ATM)ARP NAK from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
+                qCDebug(dcArpSocketTraffic()) << "(ATM)ARP NAK from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
                 break;
             default:
-                qCWarning(dcArpSocket()) << "Received unhandled ARP operation code" << arpOperationCode << "from" << senderMacAddress << senderHostAddress.toString();
+                qCWarning(dcArpSocketTraffic()) << "Received unhandled ARP operation code" << arpOperationCode << "from" << senderMacAddress << senderHostAddress.toString();
                 break;
             }
         }

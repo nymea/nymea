@@ -244,12 +244,11 @@ void NetworkDeviceDiscovery::updateOrAddNetworkDeviceArp(const QNetworkInterface
 void NetworkDeviceDiscovery::onArpResponseRceived(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress)
 {
     if (!m_currentReply) {
-        qCDebug(dcNetworkDeviceDiscovery()) << "Received ARP reply but there is no discovery running.";
+        qCDebug(dcNetworkDeviceDiscovery()) << "Received ARP reply from" << address.toString() << macAddress << "but there is no discovery running.";
         return;
     }
 
     qCDebug(dcNetworkDeviceDiscovery()) << "ARP reply received" << address.toString() << macAddress << interface.name();
-
     // Lookup the mac address vendor if possible
     if (m_macAddressDatabase->available()) {
         MacAddressDatabaseReply *reply = m_macAddressDatabase->lookupMacAddress(macAddress);

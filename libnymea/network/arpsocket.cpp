@@ -48,6 +48,9 @@
 #include <netinet/if_ether.h>
 
 #include <QHostInfo>
+#include <QFile>
+#include <QFileInfo>
+#include <QTextStream>
 #include <QDataStream>
 
 NYMEA_LOGGING_CATEGORY(dcArpSocket, "ArpSocket")
@@ -82,6 +85,7 @@ bool ArpSocket::sendRequest(const QString &interfaceName)
     if (!m_isOpen)
         return false;
 
+
     // Get the interface
     qCDebug(dcArpSocket()) << "Sending ARP request to all network interfaces" << interfaceName << "...";
     QNetworkInterface networkInterface = QNetworkInterface::interfaceFromName(interfaceName);
@@ -90,6 +94,7 @@ bool ArpSocket::sendRequest(const QString &interfaceName)
         return false;
     }
 
+    loadArpCache(networkInterface);
     return sendRequest(networkInterface);
 }
 
@@ -124,6 +129,8 @@ bool ArpSocket::sendRequest(const QNetworkInterface &networkInterface)
         qCDebug(dcArpSocket()) << "Failed to send the ARP request to network interface" << networkInterface.name() << "because there is no hardware address which is required for ARP.";
         return false;
     }
+
+    loadArpCache(networkInterface);
 
     qCDebug(dcArpSocket()) << "Verifying network interface" << networkInterface.name() << networkInterface.hardwareAddress() << "...";
     foreach (const QNetworkAddressEntry &entry, networkInterface.addressEntries()) {
@@ -375,6 +382,68 @@ QHostAddress ArpSocket::getHostAddressString(uint8_t *senderIpAddress)
     }
 
     return QHostAddress(values.join("."));
+}
+
+bool ArpSocket::loadArpCache(const QNetworkInterface &interface)
+{
+    QFile arpFile("/proc/net/arp");
+    qCDebug(dcArpSocket()) << "Loading ARP cache from system" << arpFile.fileName() << "...";
+    if (!arpFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qCWarning(dcArpSocket()) << "Failed to load ARP cache from" << arpFile.fileName() << arpFile.errorString();
+        return false;
+    }
+
+    // Read all data
+    QByteArray data = arpFile.readAll();
+    arpFile.close();
+
+    // Parse data line by line
+    int lineCount = -1;
+    QTextStream stream(&data);
+    while (!stream.atEnd()) {
+        QString line = stream.readLine();
+        lineCount += 1;
+        // Skip the first line since it's just the header
+        if (lineCount == 0)
+            continue;
+
+
+        //qCDebug(dcArpSocket()) << "Checking line" << line;
+
+        QStringList columns = line.split(QLatin1Char(' '));
+        columns.removeAll("");
+
+        // Make sure we have enought token
+        if (columns.count() < 6) {
+            qCWarning(dcArpSocket()) << "Line has invalid column count" << line;
+            continue;
+        }
+
+        QHostAddress address(columns.at(0).trimmed());
+        if (address.isNull()) {
+            qCWarning(dcArpSocket()) << "Line has invalid address";
+            continue;
+        }
+
+        QString macAddress = columns.at(3).trimmed();
+        if (macAddress.count() != 17) {
+            qCWarning(dcArpSocket()) << "Line has invalid mac address" << columns << macAddress;
+            continue;
+        }
+
+        QNetworkInterface addressInterface = QNetworkInterface::interfaceFromName(columns.at(5));
+        if (!addressInterface.isValid())
+            continue;
+
+        // Check if we filter for specific interfaces
+        if (interface.isValid() && addressInterface.name() != interface.name())
+            continue;
+
+        qCDebug(dcArpSocket()) << "Loaded from cache" << address.toString() << macAddress << addressInterface.name();
+        emit arpResponse(addressInterface, address, macAddress);
+    }
+
+    return true;
 }
 
 void ArpSocket::fillMacAddress(uint8_t *targetArray, const QString &macAddress)

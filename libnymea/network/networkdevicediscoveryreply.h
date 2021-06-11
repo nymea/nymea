@@ -34,7 +34,7 @@
 #include <QObject>
 
 #include "libnymea.h"
-#include "networkdevices.h"
+#include "networkdeviceinfos.h"
 
 class LIBNYMEA_EXPORT NetworkDeviceDiscoveryReply : public QObject
 {
@@ -43,14 +43,14 @@ class LIBNYMEA_EXPORT NetworkDeviceDiscoveryReply : public QObject
     friend class NetworkDeviceDiscovery;
 
 public:
-    NetworkDevices &networkDevices();
+    NetworkDeviceInfos &networkDeviceInfos();
 
 signals:
     void finished();
 
 private:
     explicit NetworkDeviceDiscoveryReply(QObject *parent = nullptr);
-    NetworkDevices m_networkDevices;
+    NetworkDeviceInfos m_networkDeviceInfos;
     qint64 m_startTimestamp;
 
 };

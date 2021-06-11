@@ -28,27 +28,24 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "networkdevices.h"
+#include "networkdeviceinfos.h"
 
-NetworkDevices::NetworkDevices() :
-    QList<NetworkDevice>()
+#include <algorithm>
+
+NetworkDeviceInfos::NetworkDeviceInfos() :
+    QVector<NetworkDeviceInfo>()
 {
 
 }
 
-NetworkDevices::NetworkDevices(const QList<NetworkDevice> &other) :
-    QList<NetworkDevice>(other)
+NetworkDeviceInfos::NetworkDeviceInfos(const QVector<NetworkDeviceInfo> &other) :
+    QVector<NetworkDeviceInfo>(other)
 {
 
 }
 
-NetworkDevices NetworkDevices::operator<<(const NetworkDevice &networkDevice)
-{
-    this->append(networkDevice);
-    return *this;
-}
 
-int NetworkDevices::indexFromHostAddress(const QHostAddress &address)
+int NetworkDeviceInfos::indexFromHostAddress(const QHostAddress &address)
 {
     for (int i = 0; i < this->size(); i++) {
         if (at(i).address().toIPv4Address() == address.toIPv4Address()) {
@@ -59,7 +56,7 @@ int NetworkDevices::indexFromHostAddress(const QHostAddress &address)
     return -1;
 }
 
-int NetworkDevices::indexFromMacAddress(const QString &macAddress)
+int NetworkDeviceInfos::indexFromMacAddress(const QString &macAddress)
 {
     for (int i = 0; i < size(); i++) {
         if (at(i).macAddress().toLower() == macAddress.toLower()) {
@@ -70,34 +67,47 @@ int NetworkDevices::indexFromMacAddress(const QString &macAddress)
     return -1;
 }
 
-bool NetworkDevices::hasHostAddress(const QHostAddress &address)
+bool NetworkDeviceInfos::hasHostAddress(const QHostAddress &address)
 {
     return indexFromHostAddress(address) >= 0;
 }
 
-bool NetworkDevices::hasMacAddress(const QString &macAddress)
+bool NetworkDeviceInfos::hasMacAddress(const QString &macAddress)
 {
     return indexFromMacAddress(macAddress) >= 0;
 }
 
-NetworkDevice NetworkDevices::get(const QHostAddress &address)
+NetworkDeviceInfo NetworkDeviceInfos::get(const QHostAddress &address)
 {
-    foreach (const NetworkDevice &networkDevice, *this) {
-        if (networkDevice.address() == address) {
-            return networkDevice;
+    foreach (const NetworkDeviceInfo &networkDeviceInfo, *this) {
+        if (networkDeviceInfo.address() == address) {
+            return networkDeviceInfo;
         }
     }
 
-    return NetworkDevice();
+    return NetworkDeviceInfo();
 }
 
-NetworkDevice NetworkDevices::get(const QString &macAddress)
+NetworkDeviceInfo NetworkDeviceInfos::get(const QString &macAddress)
 {
-    foreach (const NetworkDevice &networkDevice, *this) {
-        if (networkDevice.macAddress() == macAddress) {
-            return networkDevice;
+    foreach (const NetworkDeviceInfo &networkDeviceInfo, *this) {
+        if (networkDeviceInfo.macAddress() == macAddress) {
+            return networkDeviceInfo;
         }
     }
 
-    return NetworkDevice();
+    return NetworkDeviceInfo();
+}
+
+void NetworkDeviceInfos::sortNetworkDevices()
+{
+//    std::sort(*this->begin(), *this->end(), [](const NetworkDeviceInfo& a, const NetworkDeviceInfo& b) {
+//        return a.address().toIPv4Address() < b.address().toIPv4Address();
+//    });
+}
+
+NetworkDeviceInfos &NetworkDeviceInfos::operator <<(const NetworkDeviceInfo &networkDeviceInfo)
+{
+    this->append(networkDeviceInfo);
+    return *this;
 }

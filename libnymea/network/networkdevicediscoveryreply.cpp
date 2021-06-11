@@ -36,7 +36,7 @@ NetworkDeviceDiscoveryReply::NetworkDeviceDiscoveryReply(QObject *parent) :
 
 }
 
-NetworkDevices &NetworkDeviceDiscoveryReply::networkDevices()
+NetworkDeviceInfos &NetworkDeviceDiscoveryReply::networkDeviceInfos()
 {
-    return m_networkDevices;
+    return m_networkDeviceInfos;
 }

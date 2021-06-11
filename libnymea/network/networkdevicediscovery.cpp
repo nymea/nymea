@@ -164,18 +164,18 @@ void NetworkDeviceDiscovery::pingAllNetworkDevices()
                     m_runningPingRepies.removeAll(reply);
                     if (reply->error() == PingReply::ErrorNoError) {
                         qCDebug(dcNetworkDeviceDiscovery()) << "Ping response from" << targetAddress.toString() << reply->hostName() << reply->duration() << "ms";
-                        int index = m_currentReply->networkDevices().indexFromHostAddress(targetAddress);
+                        int index = m_currentReply->networkDeviceInfos().indexFromHostAddress(targetAddress);
                         if (index < 0) {
                             // Add the network device
-                            NetworkDevice networkDevice;
-                            networkDevice.setAddress(targetAddress);
-                            networkDevice.setHostName(reply->hostName());
-                            m_currentReply->networkDevices().append(networkDevice);
+                            NetworkDeviceInfo networkDeviceInfo;
+                            networkDeviceInfo.setAddress(targetAddress);
+                            networkDeviceInfo.setHostName(reply->hostName());
+                            m_currentReply->networkDeviceInfos().append(networkDeviceInfo);
                         } else {
-                            m_currentReply->networkDevices()[index].setAddress(targetAddress);
-                            m_currentReply->networkDevices()[index].setHostName(reply->hostName());
-                            if (!m_currentReply->networkDevices()[index].networkInterface().isValid()) {
-                                m_currentReply->networkDevices()[index].setNetworkInterface(NetworkUtils::getInterfaceForHostaddress(targetAddress));
+                            m_currentReply->networkDeviceInfos()[index].setAddress(targetAddress);
+                            m_currentReply->networkDeviceInfos()[index].setHostName(reply->hostName());
+                            if (!m_currentReply->networkDeviceInfos()[index].networkInterface().isValid()) {
+                                m_currentReply->networkDeviceInfos()[index].setNetworkInterface(NetworkUtils::getInterfaceForHostaddress(targetAddress));
                             }
                         }
                     }
@@ -195,8 +195,11 @@ void NetworkDeviceDiscovery::finishDiscovery()
     m_running = false;
     emit runningChanged(m_running);
 
+    // Sort by host address
+    m_currentReply->networkDeviceInfos().sortNetworkDevices();
+
     qint64 durationMilliSeconds = QDateTime::currentMSecsSinceEpoch() - m_currentReply->m_startTimestamp;
-    qCDebug(dcNetworkDeviceDiscovery()) << "Discovery finished. Found" << m_currentReply->networkDevices().count() << "network devices in" << QTime::fromMSecsSinceStartOfDay(durationMilliSeconds).toString("mm:ss.zzz");
+    qCDebug(dcNetworkDeviceDiscovery()) << "Discovery finished. Found" << m_currentReply->networkDeviceInfos().count() << "network devices in" << QTime::fromMSecsSinceStartOfDay(durationMilliSeconds).toString("mm:ss.zzz");
     emit m_currentReply->finished();
     m_currentReply->deleteLater();
     m_currentReply = nullptr;
@@ -204,39 +207,39 @@ void NetworkDeviceDiscovery::finishDiscovery()
 
 void NetworkDeviceDiscovery::updateOrAddNetworkDeviceArp(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress, const QString &manufacturer)
 {
-    int index = m_currentReply->networkDevices().indexFromHostAddress(address);
+    int index = m_currentReply->networkDeviceInfos().indexFromHostAddress(address);
     if (index >= 0) {
         // Update the network device
-        m_currentReply->networkDevices()[index].setMacAddress(macAddress);
+        m_currentReply->networkDeviceInfos()[index].setMacAddress(macAddress);
         if (!manufacturer.isEmpty())
-            m_currentReply->networkDevices()[index].setMacAddressManufacturer(manufacturer);
+            m_currentReply->networkDeviceInfos()[index].setMacAddressManufacturer(manufacturer);
 
         if (interface.isValid()) {
-            m_currentReply->networkDevices()[index].setNetworkInterface(interface);
+            m_currentReply->networkDeviceInfos()[index].setNetworkInterface(interface);
         }
     } else {
-        index = m_currentReply->networkDevices().indexFromMacAddress(macAddress);
+        index = m_currentReply->networkDeviceInfos().indexFromMacAddress(macAddress);
         if (index >= 0) {
             // Update the network device
-            m_currentReply->networkDevices()[index].setAddress(address);
+            m_currentReply->networkDeviceInfos()[index].setAddress(address);
             if (!manufacturer.isEmpty())
-                m_currentReply->networkDevices()[index].setMacAddressManufacturer(manufacturer);
+                m_currentReply->networkDeviceInfos()[index].setMacAddressManufacturer(manufacturer);
 
             if (interface.isValid()) {
-                m_currentReply->networkDevices()[index].setNetworkInterface(interface);
+                m_currentReply->networkDeviceInfos()[index].setNetworkInterface(interface);
             }
         } else {
             // Add the network device
-            NetworkDevice networkDevice;
-            networkDevice.setAddress(address);
-            networkDevice.setMacAddress(macAddress);
+            NetworkDeviceInfo networkDeviceInfo;
+            networkDeviceInfo.setAddress(address);
+            networkDeviceInfo.setMacAddress(macAddress);
             if (!manufacturer.isEmpty())
-                networkDevice.setMacAddressManufacturer(manufacturer);
+                networkDeviceInfo.setMacAddressManufacturer(manufacturer);
 
             if (interface.isValid())
-                networkDevice.setNetworkInterface(interface);
+                networkDeviceInfo.setNetworkInterface(interface);
 
-            m_currentReply->networkDevices().append(networkDevice);
+            m_currentReply->networkDeviceInfos().append(networkDeviceInfo);
         }
     }
 }

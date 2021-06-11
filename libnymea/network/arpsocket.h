@@ -76,6 +76,8 @@ private:
     QString getMacAddressString(uint8_t *senderHardwareAddress);
     QHostAddress getHostAddressString(uint8_t *senderIpAddress);
 
+    bool loadArpCache(const QNetworkInterface &interface = QNetworkInterface());
+
     void fillMacAddress(uint8_t *targetArray, const QString &macAddress);
     void fillHostAddress(uint8_t *targetArray, const QHostAddress &hostAddress);
 

@@ -28,49 +28,34 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKDEVICE_H
-#define NETWORKDEVICE_H
+#ifndef NETWORKDEVICEINFOS_H
+#define NETWORKDEVICEINFOS_H
 
-#include <QDebug>
 #include <QObject>
-#include <QHostAddress>
-#include <QNetworkInterface>
 
 #include "libnymea.h"
+#include "networkdeviceinfo.h"
 
-class LIBNYMEA_EXPORT NetworkDevice
+class LIBNYMEA_EXPORT NetworkDeviceInfos : public QVector<NetworkDeviceInfo>
 {
+
 public:
-    explicit NetworkDevice();
-    explicit NetworkDevice(const QString &macAddress);
+    explicit NetworkDeviceInfos();
+    NetworkDeviceInfos(const QVector<NetworkDeviceInfo> &other);
 
-    QString macAddress() const;
-    void setMacAddress(const QString &macAddress);
+    int indexFromHostAddress(const QHostAddress &address);
+    int indexFromMacAddress(const QString &macAddress);
 
-    QString macAddressManufacturer() const;
-    void setMacAddressManufacturer(const QString &macAddressManufacturer);
+    bool hasHostAddress(const QHostAddress &address);
+    bool hasMacAddress(const QString &macAddress);
 
-    QHostAddress address() const;
-    void setAddress(const QHostAddress &address);
+    NetworkDeviceInfo get(const QHostAddress &address);
+    NetworkDeviceInfo get(const QString &macAddress);
 
-    QString hostName() const;
-    void setHostName(const QString &hostName);
+    void sortNetworkDevices();
 
-    QNetworkInterface networkInterface() const;
-    void setNetworkInterface(const QNetworkInterface &networkInterface);
-
-    bool isValid() const;
-
-private:
-    QHostAddress m_address;
-    QString m_macAddress;
-    QString m_macAddressManufacturer;
-    QString m_hostName;
-    QNetworkInterface m_networkInterface;
+    NetworkDeviceInfos &operator<<(const NetworkDeviceInfo &networkDeviceInfo);
 
 };
 
-QDebug operator<<(QDebug debug, const NetworkDevice &networkDevice);
-
-
-#endif // NETWORKDEVICE_H
+#endif // NETWORKDEVICEINFOS_H

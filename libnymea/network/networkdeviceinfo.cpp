@@ -96,50 +96,6 @@ bool NetworkDeviceInfo::isValid() const
     return (!m_address.isNull() || !m_macAddress.isEmpty()) && m_networkInterface.isValid();
 }
 
-//bool NetworkDeviceInfo::operator!=(const NetworkDeviceInfo &other) const
-//{
-//    return !(*this == other);
-//}
-
-//bool NetworkDeviceInfo::operator==(const NetworkDeviceInfo &other) const
-//{
-//    return m_address == other.address() &&
-//            m_macAddress == other.macAddress() &&
-//            m_macAddressManufacturer == other.macAddressManufacturer() &&
-//            m_hostName == other.hostName();
-//}
-
-//bool NetworkDeviceInfo::operator<(const NetworkDeviceInfo &other) const
-//{
-
-//    return m_address.toIPv4Address() < other.address().toIPv4Address();
-//}
-
-//bool NetworkDeviceInfo::operator<=(const NetworkDeviceInfo &other) const
-//{
-//    return m_address.toIPv4Address() <= other.address().toIPv4Address();
-//}
-
-//bool NetworkDeviceInfo::operator>(const NetworkDeviceInfo &other) const
-//{
-//    return m_address.toIPv4Address() > other.address().toIPv4Address();
-//}
-
-//bool NetworkDeviceInfo::operator>=(const NetworkDeviceInfo &other) const
-//{
-//    return m_address.toIPv4Address() != other.address().toIPv4Address();
-//}
-
-//bool NetworkDeviceInfo::operator-(const NetworkDeviceInfo &other) const
-//{
-//    return m_address.toIPv4Address() - other.address().toIPv4Address();
-//}
-
-//bool NetworkDeviceInfo::operator+(const NetworkDeviceInfo &other) const
-//{
-//    return m_address.toIPv4Address() + other.address().toIPv4Address();
-//}
-
 QDebug operator<<(QDebug dbg, const NetworkDeviceInfo &networkDeviceInfo)
 {
     dbg.nospace() << "NetworkDeviceInfo(" << networkDeviceInfo.address().toString();

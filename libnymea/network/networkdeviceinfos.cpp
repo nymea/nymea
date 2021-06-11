@@ -101,9 +101,9 @@ NetworkDeviceInfo NetworkDeviceInfos::get(const QString &macAddress)
 
 void NetworkDeviceInfos::sortNetworkDevices()
 {
-//    std::sort(*this->begin(), *this->end(), [](const NetworkDeviceInfo& a, const NetworkDeviceInfo& b) {
-//        return a.address().toIPv4Address() < b.address().toIPv4Address();
-//    });
+    std::sort(this->begin(), this->end(), [](const NetworkDeviceInfo& a, const NetworkDeviceInfo& b) {
+        return a.address().toIPv4Address() < b.address().toIPv4Address();
+    });
 }
 
 NetworkDeviceInfos &NetworkDeviceInfos::operator <<(const NetworkDeviceInfo &networkDeviceInfo)

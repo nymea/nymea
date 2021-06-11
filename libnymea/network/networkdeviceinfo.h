@@ -62,13 +62,6 @@ public:
 
     bool isValid() const;
 
-//    bool operator!=(const NetworkDeviceInfo& other) const;
-//    bool operator==(const NetworkDeviceInfo& other) const;
-//    bool operator<(const NetworkDeviceInfo& other) const;
-//    bool operator<=(const NetworkDeviceInfo& other) const;
-//    bool operator>(const NetworkDeviceInfo& other) const;
-//    bool operator>=(const NetworkDeviceInfo& other) const;
-
 private:
     QHostAddress m_address;
     QString m_macAddress;

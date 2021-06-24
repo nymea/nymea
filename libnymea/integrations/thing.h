@@ -133,6 +133,7 @@ public:
     void setStates(const States &states);
 
     Q_INVOKABLE QVariant stateValue(const StateTypeId &stateTypeId) const;
+    Q_INVOKABLE QVariant stateValue(const QString &stateName) const;
     Q_INVOKABLE void setStateValue(const StateTypeId &stateTypeId, const QVariant &value);
 
     Q_INVOKABLE State state(const StateTypeId &stateTypeId) const;

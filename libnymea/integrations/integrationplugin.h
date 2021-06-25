@@ -93,6 +93,7 @@ public:
     QString pluginDisplayName() const;
     Vendors supportedVendors() const;
     ThingClasses supportedThings() const;
+    ThingClass thingClass(const ThingClassId &thingClassId) const;
 
     virtual void startMonitoringAutoThings();
     virtual void discoverThings(ThingDiscoveryInfo *info);

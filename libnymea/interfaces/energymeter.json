@@ -1,0 +1,81 @@
+{
+    "description": "Energy meters measure electric power consumption/production on 3 phases. Often used as root measurements.",
+    "extends": [ "smartmeterconsumer", "smartmeterproducer" ],
+    "states": [
+        {
+            "name": "energyConsumedPhaseA",
+            "type": "double",
+            "unit": "KiloWattHour"
+        },
+        {
+            "name": "energyConsumedPhaseB",
+            "type": "double",
+            "unit": "KiloWattHour"
+        },
+        {
+            "name": "energyConsumedPhaseC",
+            "type": "double",
+            "unit": "KiloWattHour"
+        },
+        {
+            "name": "energyProducedPhaseA",
+            "type": "double",
+            "unit": "KiloWattHour"
+        },
+        {
+            "name": "energyProducedPhaseB",
+            "type": "double",
+            "unit": "KiloWattHour"
+        },
+        {
+            "name": "energyProducedPhaseC",
+            "type": "double",
+            "unit": "KiloWattHour"
+        },
+        {
+            "name": "currentPowerPhaseA",
+            "type": "double",
+            "unit": "Watt"
+        },
+        {
+            "name": "currentPowerPhaseB",
+            "type": "double",
+            "unit": "Watt"
+        },
+        {
+            "name": "currentPowerPhaseC",
+            "type": "double",
+            "unit": "Watt"
+        },
+        {
+            "name": "currentPhaseA",
+            "type": "double",
+            "unit": "Ampere"
+        },
+        {
+            "name": "currentPhaseB",
+            "type": "double",
+            "unit": "Ampere"
+        },
+        {
+            "name": "currentPhaseC",
+            "type": "double",
+            "unit": "Ampere"
+        },
+        {
+            "name": "voltagePhaseA",
+            "type": "double",
+            "unit": "Volt"
+        },
+        {
+            "name": "voltagePhaseB",
+            "type": "double",
+            "unit": "Volt"
+        },
+        {
+            "name": "voltagePhaseC",
+            "type": "double",
+            "unit": "Volt"
+        }
+    ]
+}

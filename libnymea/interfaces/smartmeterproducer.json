@@ -1,10 +1,18 @@
 {
-    "description": "A smartmeterproducer can monitor total energy produced by this thing.",
+    "description": "This interface is used for things that can monitor energy production. At least the grand total of the returned energy is provided, optionally live monitoring of the current production may be available. Please note that currentPower is always from a consumer perspective. Thus it will be a negative value for producing devices.",
     "extends": "smartmeter",
     "states": [
         {
             "name": "totalEnergyProduced",
-            "type": "double"
+            "type": "double",
+            "unit": "KiloWattHour"
+        },
+        {
+            "name": "currentPower",
+            "type": "double",
+            "unit": "Watt",
+            "optional": true,
+            "logged": true
         }
     ]
 }

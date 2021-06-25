@@ -1,4 +1,4 @@
-5.5
+5.6
 {
     "enums": {
         "BasicType": [
@@ -2626,6 +2626,7 @@
             "r:o:deviceId": "Uuid",
             "r:o:thingId": "Uuid",
             "r:params": "$ref:ParamList",
+            "r:thingClassId": "Uuid",
             "r:title": "String"
         },
         "DeviceDescriptors": [
@@ -2942,6 +2943,7 @@
             "r:id": "Uuid",
             "r:o:thingId": "Uuid",
             "r:params": "$ref:ParamList",
+            "r:thingClassId": "Uuid",
             "r:title": "String"
         },
         "ThingDescriptors": [

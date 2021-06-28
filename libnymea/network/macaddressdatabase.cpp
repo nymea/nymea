@@ -36,12 +36,34 @@
 #include <QFileInfo>
 #include <QTimer>
 #include <QSqlDatabase>
+#include <QStandardPaths>
 #include <QtConcurrent/QtConcurrent>
 
 NYMEA_LOGGING_CATEGORY(dcMacAddressDatabase, "MacAddressDatabase")
 
 MacAddressDatabase::MacAddressDatabase(QObject *parent) : QObject(parent)
 {
+    // Find database in system data locations
+    QString databaseFileName;
+    foreach (const QString &dataLocation, QStandardPaths::standardLocations(QStandardPaths::DataLocation)) {
+        QFileInfo databaseFileInfo(dataLocation + QDir::separator() + "mac-addresses.db");
+        if (!databaseFileInfo.exists()) {
+            continue;
+        }
+
+        databaseFileName = databaseFileInfo.absoluteFilePath();
+        break;
+    }
+
+    if (databaseFileName.isEmpty()) {
+        qCWarning(dcMacAddressDatabase()) << "Could not find the mac address database in any system data location paths" << QStandardPaths::standardLocations(QStandardPaths::DataLocation);
+        qCWarning(dcMacAddressDatabase()) << "The mac address database lookup feature will not be available.";
+        return;
+    }
+
+
+    m_databaseName = databaseFileName;
+
     m_available = initDatabase();
     if (m_available) {
         m_futureWatcher = new QFutureWatcher<QString>(this);
@@ -90,6 +112,7 @@ MacAddressDatabaseReply *MacAddressDatabase::lookupMacAddress(const QString &mac
 
 bool MacAddressDatabase::initDatabase()
 {
+    qCDebug(dcMacAddressDatabase()) << "Starting to initialize the mac address database:" << m_databaseName;
     m_connectionName = QFileInfo(m_databaseName).baseName();
     m_db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), m_connectionName);
     m_db.setDatabaseName(m_databaseName);

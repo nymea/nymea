@@ -49,11 +49,11 @@ packagesExist(Qt5SerialBus) {
 
 # Note: udev is not available on all platforms
 packagesExist(libudev) {
-    message("Build with udev support")
+    message("Building with udev support")
     PKGCONFIG += libudev
     DEFINES += WITH_UDEV
 } else {
-    message("Build without udev support.")
+    message("Building without udev support.")
 }
 
 target.path = $$[QT_INSTALL_LIBS]

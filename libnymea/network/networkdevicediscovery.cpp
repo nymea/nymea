@@ -44,8 +44,8 @@ NetworkDeviceDiscovery::NetworkDeviceDiscovery(QObject *parent) :
     // Create ARP socket
     m_arpSocket = new ArpSocket(this);
     connect(m_arpSocket, &ArpSocket::arpResponse, this, &NetworkDeviceDiscovery::onArpResponseRceived);
-    if (!m_arpSocket->openSocket()) {
-        qCWarning(dcNetworkDeviceDiscovery()) << "Network discovery will not make use of ARP packages.";
+    bool arpAvailable = m_arpSocket->openSocket();
+    if (!arpAvailable) {
         m_arpSocket->closeSocket();
     }
 
@@ -56,8 +56,6 @@ NetworkDeviceDiscovery::NetworkDeviceDiscovery(QObject *parent) :
 
     // Init MAC database if available
     m_macAddressDatabase = new MacAddressDatabase(this);
-    if (!m_macAddressDatabase->available())
-        qCWarning(dcNetworkDeviceDiscovery()) << "The mac address database is not available. Network discovery will not lookup mac address manufacturer";
 
     // Timer for max duration af a discovery
     m_discoveryTimer = new QTimer(this);
@@ -69,7 +67,11 @@ NetworkDeviceDiscovery::NetworkDeviceDiscovery(QObject *parent) :
         }
     });
 
-    qCDebug(dcNetworkDeviceDiscovery()) << "Created successfully";
+    if (!arpAvailable && !m_ping->available()) {
+        qCWarning(dcNetworkDeviceDiscovery()) << "Network device discovery is not available on this system.";
+    } else {
+        qCDebug(dcNetworkDeviceDiscovery()) << "Created successfully";
+    }
 }
 
 NetworkDeviceDiscoveryReply *NetworkDeviceDiscovery::discover()

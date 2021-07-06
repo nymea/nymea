@@ -206,14 +206,14 @@ bool Rule::isValid() const
 bool Rule::isConsistent() const
 {
     // check if this rules is based on any event and contains exit actions
-    if (!eventDescriptors().isEmpty() && stateEvaluator().isEmpty() && !exitActions().isEmpty()) {
-        qCWarning(dcRuleEngine) << "Rule not consistent. The exitActions will never be executed if the rule contains an eventDescriptor but no stateEvaluator.";
+    if (!eventDescriptors().isEmpty() && stateEvaluator().isEmpty() && timeDescriptor().calendarItems().isEmpty() && !exitActions().isEmpty()) {
+        qCWarning(dcRuleEngine) << "Rule not consistent. The exitActions will never be executed if the rule contains an eventDescriptor but no stateEvaluator or calendarItem.";
         return false;
     }
 
     // check if this rules is based on any time events and contains exit actions
-    if (!timeDescriptor().timeEventItems().isEmpty() && stateEvaluator().isEmpty() && !exitActions().isEmpty()) {
-        qCWarning(dcRuleEngine) << "Rule not consistent. The exitActions will never be executed if the rule contains a timeEvents but no stateEvaluator.";
+    if (!timeDescriptor().timeEventItems().isEmpty() && stateEvaluator().isEmpty() && timeDescriptor().calendarItems().isEmpty() && !exitActions().isEmpty()) {
+        qCWarning(dcRuleEngine) << "Rule not consistent. The exitActions will never be executed if the rule contains a timeEvent but no stateEvaluator or calendarItem.";
         return false;
     }
 

@@ -440,8 +440,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                         }
                         ioType = Types::IOTypeDigitalOutput;
                     } else if (ioTypeString == "analogInput") {
-                        if (stateType.type() != QVariant::Double) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog input but type is not \"double\"");
+                        if (stateType.type() != QVariant::Double && stateType.type() != QVariant::Int && stateType.type() != QVariant::UInt) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog input but type is not \"double\", \"int\" or \"uint\"");
                             hasError = true;
                             break;
                         }
@@ -452,8 +452,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                         }
                         ioType = Types::IOTypeAnalogInput;
                     } else if (ioTypeString == "analogOutput") {
-                        if (stateType.type() != QVariant::Double) {
-                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog output but type is not \"double\"");
+                        if (stateType.type() != QVariant::Double && stateType.type() != QVariant::Int && stateType.type() != QVariant::UInt) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog output but type is not \"double\", \"int\" or \"uint\"");
                             hasError = true;
                             break;
                         }

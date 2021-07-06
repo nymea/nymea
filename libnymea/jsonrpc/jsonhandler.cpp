@@ -359,6 +359,10 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
                         foreach (const EventTypeId &entry, propertyValue.value<QList<EventTypeId>>()) {
                             list << entry;
                         }
+                    } else if (propertyTypeName == "QList<QDateTime>") {
+                        foreach (const QDateTime &timestamp, propertyValue.value<QList<QDateTime>>()) {
+                            list << timestamp.toMSecsSinceEpoch() / 1000;
+                        }
                     } else {
                         Q_ASSERT_X(false, this->metaObject()->className(), QString("Unhandled list type: %1").arg(propertyTypeName).toUtf8());
                         qCWarning(dcJsonRpc()) << "Cannot pack property of unhandled list type" << propertyTypeName;

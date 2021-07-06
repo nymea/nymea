@@ -44,6 +44,8 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     qRegisterMetaType<nymeaserver::ZigbeeAdapter>();
     registerEnum<ZigbeeManager::ZigbeeNetworkState>();
     registerEnum<ZigbeeManager::ZigbeeError>();
+    registerEnum<ZigbeeManager::ZigbeeNodeType>();
+    registerEnum<ZigbeeManager::ZigbeeNodeState>();
     registerObject<ZigbeeAdapter, ZigbeeAdapters>();
 
     // Network object describing a network instance
@@ -63,6 +65,22 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     zigbeeNetworkDescription.insert("backend", enumValueName(String));
     zigbeeNetworkDescription.insert("networkState", enumRef<ZigbeeManager::ZigbeeNetworkState>());
     registerObject("ZigbeeNetwork", zigbeeNetworkDescription);
+
+    // Zigbee node description
+    QVariantMap zigbeeNodeDescription;
+    zigbeeNodeDescription.insert("networkUuid", enumValueName(Uuid));
+    zigbeeNodeDescription.insert("ieeeAddress", enumValueName(String));
+    zigbeeNodeDescription.insert("networkAddress", enumValueName(Uint));
+    zigbeeNodeDescription.insert("type", enumRef<ZigbeeManager::ZigbeeNodeType>());
+    zigbeeNodeDescription.insert("state", enumRef<ZigbeeManager::ZigbeeNodeState>());
+    zigbeeNodeDescription.insert("manufacturer", enumValueName(String));
+    zigbeeNodeDescription.insert("model", enumValueName(String));
+    zigbeeNodeDescription.insert("version", enumValueName(String));
+    zigbeeNodeDescription.insert("receiverOnWhileIdle", enumValueName(Bool));
+    zigbeeNodeDescription.insert("reachable", enumValueName(Bool));
+    zigbeeNodeDescription.insert("lqi", enumValueName(Uint));
+    zigbeeNodeDescription.insert("lastSeen", enumValueName(Uint));
+    registerObject("ZigbeeNode", zigbeeNodeDescription);
 
     QVariantMap params, returns;
     QString description;
@@ -163,6 +181,44 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
     registerMethod("SetPermitJoin", description, params, returns);
 
+    // GetNodes
+    params.clear(); returns.clear();
+    description = "Returns the list of ZigBee nodes from the network the given \'networkUuid\' in the system.";
+    params.insert("networkUuid", enumValueName(Uuid));
+    returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
+    returns.insert("o:zigbeeNodes", QVariantList() << objectRef("ZigbeeNode"));
+    registerMethod("GetNodes", description, params, returns);
+
+    // RemoveNode
+    params.clear(); returns.clear();
+    description = "Remove a ZigBee node with the given \'ieeeAddress\' from the network with the given \'networkUuid\'. "
+                  "If there is a thing configured for this node, also the thing will be removed from the system. "
+                  "The coordinator node cannot be removed.";
+    params.insert("networkUuid", enumValueName(Uuid));
+    params.insert("ieeeAddress", enumValueName(String));
+    returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
+    registerMethod("RemoveNode", description, params, returns);
+
+    // NodeAdded
+    params.clear();
+    description = "Emitted whenever a new ZigBee node has joined the network with the given \'networkUuid\'.";
+    params.insert("networkUuid", enumValueName(Uuid));
+    params.insert("zigbeeNode", objectRef("ZigbeeNode"));
+    registerNotification("NodeAdded", description, params);
+
+    // NodeRemoved
+    params.clear();
+    description = "Emitted whenever a ZigBee node has removed from the network with the given \'networkUuid\'.";
+    params.insert("networkUuid", enumValueName(Uuid));
+    params.insert("zigbeeNode", objectRef("ZigbeeNode"));
+    registerNotification("NodeRemoved", description, params);
+
+    // NodeChanged
+    params.clear();
+    description = "Emitted whenever a ZigBee node has changed.";
+    params.insert("networkUuid", enumValueName(Uuid));
+    params.insert("zigbeeNode", objectRef("ZigbeeNode"));
+    registerNotification("NodeChanged", description, params);
 
     connect(m_zigbeeManager, &ZigbeeManager::availableAdapterAdded, this, [this](const ZigbeeAdapter &adapter){
         QVariantMap params;
@@ -193,6 +249,12 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
         params.insert("networkUuid", networkUuid);
         emit NetworkRemoved(params);
     });
+
+    connect(m_zigbeeManager, &ZigbeeManager::nodeJoined, this, &ZigbeeHandler::onNodeJoined);
+    connect(m_zigbeeManager, &ZigbeeManager::nodeAdded, this, &ZigbeeHandler::onNodeAdded);
+    connect(m_zigbeeManager, &ZigbeeManager::nodeChanged, this, &ZigbeeHandler::onNodeChanged);
+    connect(m_zigbeeManager, &ZigbeeManager::nodeRemoved, this, &ZigbeeHandler::onNodeRemoved);
+
 }
 
 QString ZigbeeHandler::name() const
@@ -206,9 +268,9 @@ JsonReply *ZigbeeHandler::GetAvailableBackends(const QVariantMap &params)
 
     QVariantMap returnMap;
     QVariantList backendsList;
-    foreach (const QString &backendName, ZigbeeAdapter::backendNames().values())
+    foreach (const QString &backendName, ZigbeeAdapter::backendNames().values()) {
         backendsList << backendName;
-
+    }
     returnMap.insert("backends", backendsList);
     return createReply(returnMap);
 }
@@ -278,6 +340,53 @@ JsonReply *ZigbeeHandler::SetPermitJoin(const QVariantMap &params)
     return createReply(returnMap);
 }
 
+JsonReply *ZigbeeHandler::GetNodes(const QVariantMap &params)
+{
+    QVariantMap returnMap;
+    QUuid networkUuid = params.value("networkUuid").toUuid();
+    ZigbeeNetwork *network = m_zigbeeManager->zigbeeNetworks().value(networkUuid);
+    if (!network) {
+        returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(ZigbeeManager::ZigbeeErrorNetworkUuidNotFound));
+        return createReply(returnMap);
+    }
+
+    QVariantList nodeList;
+    foreach (ZigbeeNode *node, network->nodes()) {
+        nodeList << packNode(node);
+    }
+
+    returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(ZigbeeManager::ZigbeeErrorNoError));
+    returnMap.insert("zigbeeNodes", nodeList);
+    return createReply(returnMap);
+}
+
+JsonReply *ZigbeeHandler::RemoveNode(const QVariantMap &params)
+{
+    QVariantMap returnMap;
+    QUuid networkUuid = params.value("networkUuid").toUuid();
+    ZigbeeAddress nodeAddress(params.value("ieeeAddress").toString());
+    ZigbeeNetwork *network = m_zigbeeManager->zigbeeNetworks().value(networkUuid);
+    if (!network) {
+        returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(ZigbeeManager::ZigbeeErrorNetworkUuidNotFound));
+        return createReply(returnMap);
+    }
+
+    if (!network->hasNode(nodeAddress)) {
+        returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(ZigbeeManager::ZigbeeErrorNodeNotFound));
+        return createReply(returnMap);
+    }
+
+    ZigbeeNode *node = network->getZigbeeNode(nodeAddress);
+    if (node->shortAddress() == 0x0000) {
+        returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(ZigbeeManager::ZigbeeErrorForbidden));
+        return createReply(returnMap);
+    }
+
+    network->removeZigbeeNode(nodeAddress);
+    returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(ZigbeeManager::ZigbeeErrorNoError));
+    return createReply(returnMap);
+}
+
 JsonReply *ZigbeeHandler::GetNetworks(const QVariantMap &params)
 {
     Q_UNUSED(params)
@@ -336,6 +445,76 @@ QVariantMap ZigbeeHandler::packNetwork(ZigbeeNetwork *network)
     }
 
     return networkMap;
+}
+
+QVariantMap ZigbeeHandler::packNode(ZigbeeNode *node)
+{
+    QVariantMap nodeMap;
+    nodeMap.insert("networkUuid", node->networkUuid());
+    nodeMap.insert("ieeeAddress", node->extendedAddress().toString());
+    nodeMap.insert("networkAddress", node->shortAddress());
+    switch (node->nodeDescriptor().nodeType) {
+    case ZigbeeDeviceProfile::NodeTypeCoordinator:
+        nodeMap.insert("type", enumValueName<ZigbeeManager::ZigbeeNodeType>(ZigbeeManager::ZigbeeNodeTypeCoordinator));
+        break;
+    case ZigbeeDeviceProfile::NodeTypeRouter:
+        nodeMap.insert("type", enumValueName<ZigbeeManager::ZigbeeNodeType>(ZigbeeManager::ZigbeeNodeTypeRouter));
+        break;
+    default:
+        nodeMap.insert("type", enumValueName<ZigbeeManager::ZigbeeNodeType>(ZigbeeManager::ZigbeeNodeTypeEndDevice));
+        break;
+    }
+
+    switch (node->state()) {
+    case ZigbeeNode::StateUninitialized:
+        nodeMap.insert("state", enumValueName<ZigbeeManager::ZigbeeNodeState>(ZigbeeManager::ZigbeeNodeStateUninitialized));
+        break;
+    case ZigbeeNode::StateInitializing:
+        nodeMap.insert("state", enumValueName<ZigbeeManager::ZigbeeNodeState>(ZigbeeManager::ZigbeeNodeStateInitializing));
+        break;
+    case ZigbeeNode::StateInitialized:
+        nodeMap.insert("state", enumValueName<ZigbeeManager::ZigbeeNodeState>(ZigbeeManager::ZigbeeNodeStateInitialized));
+        break;
+    }
+
+    nodeMap.insert("manufacturer", node->manufacturerName());
+    nodeMap.insert("model", node->modelName());
+    nodeMap.insert("version", node->version());
+    nodeMap.insert("receiverOnWhileIdle", node->macCapabilities().receiverOnWhenIdle);
+    nodeMap.insert("reachable", node->reachable());
+    nodeMap.insert("lqi", node->lqi());
+    nodeMap.insert("lastSeen", node->lastSeen().toMSecsSinceEpoch() / 1000);
+    return nodeMap;
+}
+
+void ZigbeeHandler::onNodeJoined(const QUuid &networkUuid, ZigbeeNode *node)
+{
+    QVariantMap params;
+    params.insert("networkUuid", networkUuid);
+    params.insert("zigbeeNode", packNode(node));
+    emit NodeAdded(params);
+}
+
+void ZigbeeHandler::onNodeAdded(const QUuid &networkUuid, ZigbeeNode *node)
+{
+    // Note: we emit the node changed signal here, since the node has been added internally after initialization.
+    onNodeChanged(networkUuid, node);
+}
+
+void ZigbeeHandler::onNodeChanged(const QUuid &networkUuid, ZigbeeNode *node)
+{
+    QVariantMap params;
+    params.insert("networkUuid", networkUuid);
+    params.insert("zigbeeNode", packNode(node));
+    emit NodeChanged(params);
+}
+
+void ZigbeeHandler::onNodeRemoved(const QUuid &networkUuid, ZigbeeNode *node)
+{
+    QVariantMap params;
+    params.insert("networkUuid", networkUuid);
+    params.insert("zigbeeNode", packNode(node));
+    emit NodeRemoved(params);
 }
 
 }

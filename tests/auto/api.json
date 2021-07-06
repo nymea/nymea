@@ -1,4 +1,4 @@
-5.5
+5.6
 {
     "enums": {
         "BasicType": [
@@ -377,7 +377,9 @@
             "ZigbeeErrorNetworkUuidNotFound",
             "ZigbeeErrorDurationOutOfRange",
             "ZigbeeErrorNetworkOffline",
-            "ZigbeeErrorUnknownBackend"
+            "ZigbeeErrorUnknownBackend",
+            "ZigbeeErrorNodeNotFound",
+            "ZigbeeErrorForbidden"
         ],
         "ZigbeeNetworkState": [
             "ZigbeeNetworkStateOffline",
@@ -385,6 +387,17 @@
             "ZigbeeNetworkStateUpdating",
             "ZigbeeNetworkStateOnline",
             "ZigbeeNetworkStateError"
+        ],
+        "ZigbeeNodeState": [
+            "ZigbeeNodeStateUninitialized",
+            "ZigbeeNodeStateInitializing",
+            "ZigbeeNodeStateInitialized",
+            "ZigbeeNodeStateHandled"
+        ],
+        "ZigbeeNodeType": [
+            "ZigbeeNodeTypeCoordinator",
+            "ZigbeeNodeTypeRouter",
+            "ZigbeeNodeTypeEndDevice"
         ]
     },
     "flags": {
@@ -2058,9 +2071,31 @@
                 ]
             }
         },
+        "Zigbee.GetNodes": {
+            "description": "Returns the list of ZigBee nodes from the network the given 'networkUuid' in the system.",
+            "params": {
+                "networkUuid": "Uuid"
+            },
+            "returns": {
+                "o:zigbeeNodes": [
+                    "$ref:ZigbeeNode"
+                ],
+                "zigbeeError": "$ref:ZigbeeError"
+            }
+        },
         "Zigbee.RemoveNetwork": {
             "description": "Remove the ZigBee network with the given network uuid.",
             "params": {
+                "networkUuid": "Uuid"
+            },
+            "returns": {
+                "zigbeeError": "$ref:ZigbeeError"
+            }
+        },
+        "Zigbee.RemoveNode": {
+            "description": "Remove a ZigBee node with the given 'ieeeAddress' from the network with the given 'networkUuid'. If there is a thing configured for this node, also the thing will be removed from the system. The coordinator node cannot be removed.",
+            "params": {
+                "ieeeAddress": "String",
                 "networkUuid": "Uuid"
             },
             "returns": {
@@ -2533,6 +2568,27 @@
             "description": "Emitted whenever a new ZigBee network has been removed.",
             "params": {
                 "networkUuid": "Uuid"
+            }
+        },
+        "Zigbee.NodeAdded": {
+            "description": "Emitted whenever a new ZigBee node has joined the network with the given 'networkUuid'.",
+            "params": {
+                "networkUuid": "Uuid",
+                "zigbeeNode": "$ref:ZigbeeNode"
+            }
+        },
+        "Zigbee.NodeChanged": {
+            "description": "Emitted whenever a ZigBee node has changed.",
+            "params": {
+                "networkUuid": "Uuid",
+                "zigbeeNode": "$ref:ZigbeeNode"
+            }
+        },
+        "Zigbee.NodeRemoved": {
+            "description": "Emitted whenever a ZigBee node has removed from the network with the given 'networkUuid'.",
+            "params": {
+                "networkUuid": "Uuid",
+                "zigbeeNode": "$ref:ZigbeeNode"
             }
         }
     },
@@ -3043,6 +3099,20 @@
             "permitJoiningEnabled": "Bool",
             "permitJoiningRemaining": "Uint",
             "serialPort": "String"
+        },
+        "ZigbeeNode": {
+            "ieeeAddress": "String",
+            "lastSeen": "Uint",
+            "lqi": "Uint",
+            "manufacturer": "String",
+            "model": "String",
+            "networkAddress": "Uint",
+            "networkUuid": "Uuid",
+            "reachable": "Bool",
+            "receiverOnWhileIdle": "Bool",
+            "state": "$ref:ZigbeeNodeState",
+            "type": "$ref:ZigbeeNodeType",
+            "version": "String"
         }
     }
 }

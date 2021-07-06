@@ -60,9 +60,27 @@ public:
         ZigbeeErrorNetworkUuidNotFound,
         ZigbeeErrorDurationOutOfRange,
         ZigbeeErrorNetworkOffline,
-        ZigbeeErrorUnknownBackend
+        ZigbeeErrorUnknownBackend,
+        ZigbeeErrorNodeNotFound,
+        ZigbeeErrorForbidden
     };
     Q_ENUM(ZigbeeError)
+
+    // Node information
+    enum ZigbeeNodeType {
+        ZigbeeNodeTypeCoordinator,
+        ZigbeeNodeTypeRouter,
+        ZigbeeNodeTypeEndDevice
+    };
+    Q_ENUM(ZigbeeNodeType)
+
+    enum ZigbeeNodeState {
+        ZigbeeNodeStateUninitialized,
+        ZigbeeNodeStateInitializing,
+        ZigbeeNodeStateInitialized,
+        ZigbeeNodeStateHandled
+    };
+    Q_ENUM(ZigbeeNodeState)
 
     explicit ZigbeeManager(QObject *parent = nullptr);
 
@@ -96,6 +114,7 @@ private:
 
     ZigbeeAdapter convertUartAdapterToAdapter(const ZigbeeUartAdapter &uartAdapter);
     void evaluateZigbeeAvailable();
+    void setupNodeSignals(ZigbeeNode *node);
 
 signals:
     void availableChanged(bool available);
@@ -107,7 +126,9 @@ signals:
     void zigbeeNetworkRemoved(const QUuid networkUuid);
     void zigbeeNetworkChanged(ZigbeeNetwork *zigbeeNetwork);
 
+    void nodeJoined(const QUuid &networkUuid, ZigbeeNode *node);
     void nodeAdded(const QUuid &networkUuid, ZigbeeNode *node);
+    void nodeChanged(const QUuid &networkUuid, ZigbeeNode *node);
     void nodeRemoved(const QUuid &networkUuid, ZigbeeNode *node);
 };
 

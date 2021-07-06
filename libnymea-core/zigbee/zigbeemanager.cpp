@@ -205,8 +205,8 @@ ZigbeeManager::ZigbeeError ZigbeeManager::removeZigbeeNetwork(const QUuid &netwo
     settings.beginGroup("ZigbeeNetworks");
     settings.beginGroup(network->networkUuid().toString());
     settings.remove("");
-    settings.endGroup();
-    settings.endGroup();
+    settings.endGroup(); // networkUuid
+    settings.endGroup(); // ZigbeeNetworks
 
     qCDebug(dcZigbee()) << "Network removed successfully";
     return ZigbeeManager::ZigbeeErrorNoError;
@@ -343,19 +343,19 @@ void ZigbeeManager::loadZigbeeNetworks()
 void ZigbeeManager::checkPlatformConfiguration()
 {
     /* Example platform configurations
- *
- * serialPort=/dev/ttymxc2
- * baudRate=115200
- * backend=nxp
- * autoSetup=false
- *
- * serialPort=/dev/ttyS0
- * baudRate=38400
- * backend=deconz
- * autoSetup=false
- *
- * autoSetup=true
- */
+     *
+     * serialPort=/dev/ttymxc2
+     * baudRate=115200
+     * backend=nxp
+     * autoSetup=false
+     *
+     * serialPort=/dev/ttyS0
+     * baudRate=38400
+     * backend=deconz
+     * autoSetup=false
+     *
+     * autoSetup=true
+     */
 
     QFileInfo platformConfigurationFileInfo(NymeaSettings::settingsPath() + QDir::separator() + "zigbee-platform.conf");
     if (platformConfigurationFileInfo.exists()) {
@@ -544,6 +544,14 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
         emit nodeRemoved(network->networkUuid(), node);
     });
 
+    connect(network, &ZigbeeNetwork::nodeJoined, this, [this, network](ZigbeeNode *node){
+        // The node has joined but is still initializing. Once the node has been initialized by the stack, the node added signal will be emitted.
+        qCDebug(dcZigbee()) << "Node joined the network" << network->networkUuid().toString() << node;
+
+        emit nodeJoined(network->networkUuid(), node);
+        setupNodeSignals(node);
+    });
+
     connect(network, &ZigbeeNetwork::firmwareVersionChanged, this, [this, network](const QString &firmwareVersion){
         qCDebug(dcZigbee()) << "Network adapter firmware version changed for" << network << firmwareVersion;
         emit zigbeeNetworkChanged(network);
@@ -582,6 +590,10 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
                 }
             }
         }
+    }
+
+    foreach (ZigbeeNode *node, network->nodes()) {
+        setupNodeSignals(node);
     }
 }
 
@@ -626,6 +638,43 @@ void ZigbeeManager::evaluateZigbeeAvailable()
     qCDebug(dcZigbee()) << "Zigbee is" << (zigbeeAvailable ? "now available" : "not available any more.");
     m_available = zigbeeAvailable;
     emit availableChanged(m_available);
+}
+
+void ZigbeeManager::setupNodeSignals(ZigbeeNode *node)
+{
+    // Connect signals while joining for initializing
+
+    connect(node, &ZigbeeNode::shortAddressChanged, this, [=](){
+        emit nodeChanged(node->networkUuid(), node);
+    });
+
+    connect(node, &ZigbeeNode::stateChanged, this, [=](){
+        emit nodeChanged(node->networkUuid(), node);
+    });
+
+    connect(node, &ZigbeeNode::manufacturerNameChanged, this, [=](){
+        emit nodeChanged(node->networkUuid(), node);
+    });
+
+    connect(node, &ZigbeeNode::modelNameChanged, this, [=](){
+        emit nodeChanged(node->networkUuid(), node);
+    });
+
+    connect(node, &ZigbeeNode::versionChanged, this, [=](){
+        emit nodeChanged(node->networkUuid(), node);
+    });
+
+    connect(node, &ZigbeeNode::lqiChanged, this, [=](){
+        emit nodeChanged(node->networkUuid(), node);
+    });
+
+    connect(node, &ZigbeeNode::lastSeenChanged, this, [=](){
+        emit nodeChanged(node->networkUuid(), node);
+    });
+
+    connect(node, &ZigbeeNode::reachableChanged, this, [=](){
+        emit nodeChanged(node->networkUuid(), node);
+    });
 }
 
 

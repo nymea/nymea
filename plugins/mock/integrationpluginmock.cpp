@@ -738,6 +738,7 @@ void IntegrationPluginMock::executeAction(ThingActionInfo *info)
         } else if (info->action().actionTypeId() == inputTypeMockWritableTimestampUIntActionTypeId) {
             info->thing()->setStateValue(inputTypeMockWritableTimestampUIntStateTypeId, info->action().param(inputTypeMockWritableTimestampUIntActionWritableTimestampUIntParamTypeId).value().toULongLong());
         }
+        info->finish(Thing::ThingErrorNoError);
         return;
     }
 

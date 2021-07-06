@@ -160,10 +160,20 @@ void ThingClass::setStateTypes(const StateTypes &stateTypes)
 }
 
 /*! Returns true if this DeviceClass has a \l{StateType} with the given \a stateTypeId. */
-bool ThingClass::hasStateType(const StateTypeId &stateTypeId)
+bool ThingClass::hasStateType(const StateTypeId &stateTypeId) const
 {
     foreach (const StateType &stateType, m_stateTypes) {
         if (stateType.id() == stateTypeId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ThingClass::hasStateType(const QString &stateTypeName) const
+{
+    foreach (const StateType &stateType, m_stateTypes) {
+        if (stateType.name() == stateTypeName) {
             return true;
         }
     }
@@ -185,10 +195,20 @@ void ThingClass::setEventTypes(const EventTypes &eventTypes)
 }
 
 /*! Returns true if this DeviceClass has a \l{EventType} with the given \a eventTypeId. */
-bool ThingClass::hasEventType(const EventTypeId &eventTypeId)
+bool ThingClass::hasEventType(const EventTypeId &eventTypeId) const
 {
     foreach (const EventType &eventType, m_eventTypes) {
         if (eventType.id() == eventTypeId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ThingClass::hasEventType(const QString &eventTypeName) const
+{
+    foreach (const EventType &eventType, m_eventTypes) {
+        if (eventType.name() == eventTypeName) {
             return true;
         }
     }
@@ -210,10 +230,20 @@ void ThingClass::setActionTypes(const ActionTypes &actionTypes)
 }
 
 /*! Returns true if this DeviceClass has a \l{ActionType} with the given \a actionTypeId. */
-bool ThingClass::hasActionType(const ActionTypeId &actionTypeId)
+bool ThingClass::hasActionType(const ActionTypeId &actionTypeId) const
 {
     foreach (const ActionType &actionType, m_actionTypes) {
         if (actionType.id() == actionTypeId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ThingClass::hasActionType(const QString &actionTypeName) const
+{
+    foreach (const ActionType &actionType, m_actionTypes) {
+        if (actionType.name() == actionTypeName) {
             return true;
         }
     }

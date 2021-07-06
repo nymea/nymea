@@ -331,6 +331,11 @@ QVariant Thing::stateValue(const StateTypeId &stateTypeId) const
     return QVariant();
 }
 
+QVariant Thing::stateValue(const QString &stateName) const
+{
+    return stateValue(m_thingClass.stateTypes().findByName(stateName).id());
+}
+
 /*! For convenience, this finds the \l{State} matching the given \a stateTypeId in this thing and sets the current value to \a value. */
 void Thing::setStateValue(const StateTypeId &stateTypeId, const QVariant &value)
 {

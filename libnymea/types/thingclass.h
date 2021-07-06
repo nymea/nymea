@@ -98,15 +98,18 @@ public:
     StateTypes stateTypes() const;
     StateType getStateType(const StateTypeId &stateTypeId);
     void setStateTypes(const StateTypes &stateTypes);
-    bool hasStateType(const StateTypeId &stateTypeId);
+    bool hasStateType(const StateTypeId &stateTypeId) const;
+    bool hasStateType(const QString &stateTypeName) const;
 
     EventTypes eventTypes() const;
     void setEventTypes(const EventTypes &eventTypes);
-    bool hasEventType(const EventTypeId &eventTypeId);
+    bool hasEventType(const EventTypeId &eventTypeId) const;
+    bool hasEventType(const QString &eventTypeName) const;
 
     ActionTypes actionTypes() const;
     void setActionTypes(const ActionTypes &actionTypes);
-    bool hasActionType(const ActionTypeId &actionTypeId);
+    bool hasActionType(const ActionTypeId &actionTypeId) const;
+    bool hasActionType(const QString &actionTypeName) const;
 
     bool browsable() const;
     void setBrowsable(bool browsable);

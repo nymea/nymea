@@ -3,7 +3,7 @@ TARGET = nymea-core
 
 include(../nymea.pri)
 
-QT += bluetooth dbus qml sql websockets
+QT += bluetooth dbus qml sql websockets serialport
 INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 
@@ -35,6 +35,27 @@ CONFIG(withoutpython) {
     CONFIG -= python
 }
 
+# Qt serial bus module is officially available since Qt 5.8
+# but not all platforms host the qt serialbus package.
+# Let's check if the package exists, not the qt version
+packagesExist(Qt5SerialBus) {
+    message("Building with QtSerialBus support.")
+    # Qt += serialbus
+    PKGCONFIG += Qt5SerialBus
+    DEFINES += WITH_QTSERIALBUS
+} else {
+    message("Qt5SerialBus package not found. Building without QtSerialBus support.")
+}
+
+# Note: udev is not available on all platforms
+packagesExist(libudev) {
+    message("Building with udev support")
+    PKGCONFIG += libudev
+    DEFINES += WITH_UDEV
+} else {
+    message("Building without udev support.")
+}
+
 target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target
 
@@ -44,6 +65,7 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 
 HEADERS += nymeacore.h \
+    hardware/serialport/serialportmonitor.h \
     integrations/apikeysprovidersloader.h \
     integrations/plugininfocache.h \
     integrations/python/pyapikeystorage.h \
@@ -55,6 +77,7 @@ HEADERS += nymeacore.h \
     integrations/thingmanagerimplementation.h \
     integrations/translator.h \
     experiences/experiencemanager.h \
+    jsonrpc/modbusrtuhandler.h \
     jsonrpc/zigbeehandler.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
@@ -118,6 +141,10 @@ HEADERS += nymeacore.h \
     hardware/bluetoothlowenergy/bluetoothlowenergymanagerimplementation.h \
     hardware/bluetoothlowenergy/bluetoothlowenergydeviceimplementation.h \
     hardware/bluetoothlowenergy/bluetoothdiscoveryreplyimplementation.h \
+    hardware/modbus/modbusrtuhardwareresourceimplementation.h \
+    hardware/modbus/modbusrtumanager.h \
+    hardware/modbus/modbusrtumasterimpl.h \
+    hardware/modbus/modbusrtureplyimpl.h \
     hardware/network/networkaccessmanagerimpl.h \
     hardware/network/upnp/upnpdiscoveryimplementation.h \
     hardware/network/upnp/upnpdiscoveryrequest.h \
@@ -138,11 +165,13 @@ HEADERS += nymeacore.h \
 
 
 SOURCES += nymeacore.cpp \
+    hardware/serialport/serialportmonitor.cpp \
     integrations/apikeysprovidersloader.cpp \
     integrations/plugininfocache.cpp \
     integrations/thingmanagerimplementation.cpp \
     integrations/translator.cpp \
     experiences/experiencemanager.cpp \
+    jsonrpc/modbusrtuhandler.cpp \
     jsonrpc/zigbeehandler.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \
@@ -205,6 +234,10 @@ SOURCES += nymeacore.cpp \
     hardware/bluetoothlowenergy/bluetoothlowenergymanagerimplementation.cpp \
     hardware/bluetoothlowenergy/bluetoothlowenergydeviceimplementation.cpp \
     hardware/bluetoothlowenergy/bluetoothdiscoveryreplyimplementation.cpp \
+    hardware/modbus/modbusrtuhardwareresourceimplementation.cpp \
+    hardware/modbus/modbusrtumanager.cpp \
+    hardware/modbus/modbusrtumasterimpl.cpp \
+    hardware/modbus/modbusrtureplyimpl.cpp \
     hardware/network/networkaccessmanagerimpl.cpp \
     hardware/network/upnp/upnpdiscoveryimplementation.cpp \
     hardware/network/upnp/upnpdiscoveryrequest.cpp \

@@ -3,7 +3,7 @@ include(../nymea.pri)
 TARGET = nymea
 TEMPLATE = lib
 
-QT += network bluetooth dbus
+QT += network bluetooth dbus serialport
 QT -= gui
 DEFINES += LIBNYMEA_LIBRARY
 
@@ -13,6 +13,9 @@ PKGCONFIG += nymea-zigbee nymea-mqtt
 QMAKE_LFLAGS += -fPIC
 
 HEADERS += \
+    hardware/modbus/modbusrtuhardwareresource.h \
+    hardware/modbus/modbusrtumaster.h \
+    hardware/modbus/modbusrtureply.h \
     hardware/zigbee/zigbeehandler.h \
     hardware/zigbee/zigbeehardwareresource.h \
     integrations/browseractioninfo.h \
@@ -108,6 +111,7 @@ HEADERS += \
     experiences/experienceplugin.h \
 
 SOURCES += \
+    hardware/modbus/modbusrtuhardwareresource.cpp \
     hardware/zigbee/zigbeehandler.cpp \
     hardware/zigbee/zigbeehardwareresource.cpp \
     integrations/browseractioninfo.cpp \

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2021, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,46 +28,47 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#ifndef MODBUSRTUREPLY_H
+#define MODBUSRTUREPLY_H
 
 #include <QObject>
+#include <QVector>
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class ZigbeeHardwareResource;
-class HardwareResource;
-class ModbusRtuHardwareResource;
-
-class HardwareManager : public QObject
+class ModbusRtuReply : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
-
 public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
+    enum Error {
+        NoError,
+        ReadError,
+        WriteError,
+        ConnectionError,
+        ConfigurationError,
+        TimeoutError,
+        ProtocolError,
+        ReplyAbortedError,
+        UnknownError
+    };
+    Q_ENUM(Error)
 
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
-    virtual ZigbeeHardwareResource *zigbeeResource() = 0;
-    virtual ModbusRtuHardwareResource *modbusRtuResource() = 0;
+    virtual bool isFinished() const = 0;
+
+    virtual int slaveAddress() const = 0;
+    virtual int registerAddress() const = 0;
+
+    virtual QString errorString() const = 0;
+    virtual ModbusRtuReply::Error error() const = 0;
+
+    virtual QVector<quint16> result() const = 0;
 
 protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+    explicit ModbusRtuReply(QObject *parent = nullptr) : QObject(parent) { };
+    virtual ~ModbusRtuReply() = default;
+
+signals:
+    void finished();
+    void errorOccurred(ModbusRtuReply::Error error);
+
 };
 
-#endif // HARDWAREMANAGER_H
+#endif // MODBUSRTUREPLY_H

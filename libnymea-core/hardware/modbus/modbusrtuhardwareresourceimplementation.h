@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2021, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,46 +28,45 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#ifndef MODBUSRTUHARDWARERESOURCEIMPLEMENTATION_H
+#define MODBUSRTUHARDWARERESOURCEIMPLEMENTATION_H
 
 #include <QObject>
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class ZigbeeHardwareResource;
-class HardwareResource;
-class ModbusRtuHardwareResource;
+#include "hardware/modbus/modbusrtumanager.h"
+#include "hardware/modbus/modbusrtumaster.h"
+#include "hardware/modbus/modbusrtuhardwareresource.h"
 
-class HardwareManager : public QObject
+namespace nymeaserver {
+
+class ModbusRtuHardwareResourceImplementation : public ModbusRtuHardwareResource
 {
     Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
-
 public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
+    explicit ModbusRtuHardwareResourceImplementation(ModbusRtuManager *modbusRtuManager, QObject *parent = nullptr);
+    ~ModbusRtuHardwareResourceImplementation() override = default;
 
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
-    virtual ZigbeeHardwareResource *zigbeeResource() = 0;
-    virtual ModbusRtuHardwareResource *modbusRtuResource() = 0;
+    QList<ModbusRtuMaster *> modbusRtuMasters() const override;
+    bool hasModbusRtuMaster(const QUuid &modbusUuid) const override;
+    ModbusRtuMaster *getModbusRtuMaster(const QUuid &modbusUuid) const override;
+
+    bool available() const override;
+    bool enabled() const override;
+
+public slots:
+    bool enable();
+    bool disable();
 
 protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+    void setEnabled(bool enabled) override;
+
+private:
+    ModbusRtuManager *m_modbusRtuManager = nullptr;
+    bool m_available = false;
+    bool m_enabled = false;
+
 };
 
-#endif // HARDWAREMANAGER_H
+}
+
+#endif // MODBUSRTUHARDWARERESOURCEIMPLEMENTATION_H

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2021, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,46 +28,47 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#ifndef MODBUSRTUHANDLER_H
+#define MODBUSRTUHANDLER_H
 
 #include <QObject>
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class ZigbeeHardwareResource;
-class HardwareResource;
-class ModbusRtuHardwareResource;
+#include "jsonrpc/jsonhandler.h"
+#include "hardware/modbus/modbusrtumaster.h"
 
-class HardwareManager : public QObject
+namespace nymeaserver {
+
+class ModbusRtuManager;
+
+class ModbusRtuHandler : public JsonHandler
 {
     Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
-
 public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
+    explicit ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *parent = nullptr);
 
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
-    virtual ZigbeeHardwareResource *zigbeeResource() = 0;
-    virtual ModbusRtuHardwareResource *modbusRtuResource() = 0;
+    QString name() const override;
 
-protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+    Q_INVOKABLE JsonReply *GetSerialPorts(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *GetModbusRtuMasters(const QVariantMap &params);
+
+    Q_INVOKABLE JsonReply *AddModbusRtuMaster(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *RemoveModbusRtuMaster(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *ReconfigureModbusRtuMaster(const QVariantMap &params);
+
+signals:
+    void SerialPortAdded(const QVariantMap &params);
+    void SerialPortRemoved(const QVariantMap &params);
+
+    void ModbusRtuMasterAdded(const QVariantMap &params);
+    void ModbusRtuMasterRemoved(const QVariantMap &params);
+    void ModbusRtuMasterChanged(const QVariantMap &params);
+
+private:
+    ModbusRtuManager *m_modbusRtuManager = nullptr;
+
+    QVariantMap packModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster);
 };
 
-#endif // HARDWAREMANAGER_H
+}
+
+#endif // MODBUSRTUHANDLER_H

@@ -53,7 +53,9 @@ public:
         SettingsRoleMqttPolicies,
         SettingsRoleIOConnections,
         SettingsRoleZigbee,
+        SettingsRoleModbusRtu
     };
+    Q_ENUM(SettingsRole)
 
     explicit NymeaSettings(const SettingsRole &role = SettingsRoleNone, QObject *parent = nullptr);
     ~NymeaSettings();

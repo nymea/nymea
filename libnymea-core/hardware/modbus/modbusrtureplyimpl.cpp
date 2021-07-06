@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2021, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,46 +28,66 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#include "modbusrtureplyimpl.h"
 
-#include <QObject>
+namespace nymeaserver {
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class ZigbeeHardwareResource;
-class HardwareResource;
-class ModbusRtuHardwareResource;
-
-class HardwareManager : public QObject
+ModbusRtuReplyImpl::ModbusRtuReplyImpl(int slaveAddress, int registerAddress, QObject *parent) :
+    ModbusRtuReply(parent),
+    m_slaveAddress(slaveAddress),
+    m_registerAddress(registerAddress)
 {
-    Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
 
-public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
+}
 
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
-    virtual ZigbeeHardwareResource *zigbeeResource() = 0;
-    virtual ModbusRtuHardwareResource *modbusRtuResource() = 0;
+bool ModbusRtuReplyImpl::isFinished() const
+{
+    return m_finished;
+}
 
-protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
-};
+void ModbusRtuReplyImpl::setFinished(bool finished)
+{
+    m_finished = finished;
+}
 
-#endif // HARDWAREMANAGER_H
+int ModbusRtuReplyImpl::slaveAddress() const
+{
+    return m_slaveAddress;
+}
+
+int ModbusRtuReplyImpl::registerAddress() const
+{
+    return m_registerAddress;
+}
+
+QString ModbusRtuReplyImpl::errorString() const
+{
+    return m_errorString;
+}
+
+void ModbusRtuReplyImpl::setErrorString(const QString &errorString)
+{
+    m_errorString = errorString;
+}
+
+ModbusRtuReply::Error ModbusRtuReplyImpl::error() const
+{
+    return m_error;
+}
+
+void ModbusRtuReplyImpl::setError(ModbusRtuReply::Error error)
+{
+    m_error = error;
+}
+
+QVector<quint16> ModbusRtuReplyImpl::result() const
+{
+    return m_result;
+}
+
+void ModbusRtuReplyImpl::setResult(const QVector<quint16> &result)
+{
+    m_result = result;
+}
+
+}

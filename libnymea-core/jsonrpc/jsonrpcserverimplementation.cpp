@@ -75,6 +75,7 @@
 #include "systemhandler.h"
 #include "usershandler.h"
 #include "zigbeehandler.h"
+#include "modbusrtuhandler.h"
 
 #include <QJsonDocument>
 #include <QStringList>
@@ -599,6 +600,7 @@ void JsonRPCServerImplementation::setup()
     registerHandler(new SystemHandler(NymeaCore::instance()->platform(), this));
     registerHandler(new UsersHandler(NymeaCore::instance()->userManager(), this));
     registerHandler(new ZigbeeHandler(NymeaCore::instance()->zigbeeManager(), this));
+    registerHandler(new ModbusRtuHandler(NymeaCore::instance()->modbusRtuManager(), this));
 
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::pairingReply, this, &JsonRPCServerImplementation::pairingFinished);
     connect(NymeaCore::instance()->cloudManager(), &CloudManager::connectionStateChanged, this, &JsonRPCServerImplementation::onCloudConnectionStateChanged);

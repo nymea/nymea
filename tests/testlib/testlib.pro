@@ -5,6 +5,14 @@ include(../../nymea.pri)
 
 QT += testlib dbus network sql websockets
 
+# Qt serial bus module is officially available since Qt 5.8
+# but not all platforms host the qt serialbus package.
+# Let's check if the package exists, not the qt version
+packagesExist(Qt5SerialBus) {
+    Qt += serialbus
+    DEFINES += WITH_QTSERIALBUS
+}
+
 INCLUDEPATH += $$top_srcdir/libnymea \
                $$top_srcdir/libnymea-core
 

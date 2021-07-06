@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2021, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,46 +28,32 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#ifndef MODBUSRTUHARDWARERESOURCE_H
+#define MODBUSRTUHARDWARERESOURCE_H
 
+#include <QList>
 #include <QObject>
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class ZigbeeHardwareResource;
-class HardwareResource;
-class ModbusRtuHardwareResource;
+#include "hardwareresource.h"
+#include "modbusrtumaster.h"
 
-class HardwareManager : public QObject
+class ModbusRtuHardwareResource : public HardwareResource
 {
     Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
-
 public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
-
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
-    virtual ZigbeeHardwareResource *zigbeeResource() = 0;
-    virtual ModbusRtuHardwareResource *modbusRtuResource() = 0;
+    virtual QList<ModbusRtuMaster *> modbusRtuMasters() const = 0;
+    virtual bool hasModbusRtuMaster(const QUuid &modbusUuid) const = 0;
+    virtual ModbusRtuMaster *getModbusRtuMaster(const QUuid &modbusUuid) const = 0;
 
 protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+    explicit ModbusRtuHardwareResource(QObject *parent = nullptr);
+    virtual ~ModbusRtuHardwareResource() = default;
+
+signals:
+    void modbusRtuMasterAdded(const QUuid &modbusUuid);
+    void modbusRtuMasterRemoved(const QUuid &modbusUuid);
+    void modbusRtuMasterChanged(const QUuid &modbusUuid);
+
 };
 
-#endif // HARDWAREMANAGER_H
+#endif // MODBUSRTUHARDWARERESOURCE_H

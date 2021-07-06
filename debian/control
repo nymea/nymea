@@ -26,6 +26,8 @@ Build-Depends: debhelper (>= 9.0.0),
                qttools5-dev-tools,
                qtconnectivity5-dev,
                qtdeclarative5-dev,
+               libqt5serialport5-dev,
+               libqt5serialbus5-dev
 
 Package: nymea
 Architecture: any

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2021, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,46 +28,46 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#ifndef MODBUSRTUREPLYIMPL_H
+#define MODBUSRTUREPLYIMPL_H
 
 #include <QObject>
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class ZigbeeHardwareResource;
-class HardwareResource;
-class ModbusRtuHardwareResource;
+#include "hardware/modbus/modbusrtureply.h"
 
-class HardwareManager : public QObject
+namespace nymeaserver {
+
+class ModbusRtuReplyImpl : public ModbusRtuReply
 {
     Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
-
 public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
+    explicit ModbusRtuReplyImpl(int slaveAddress, int registerAddress, QObject *parent = nullptr);
 
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
-    virtual ZigbeeHardwareResource *zigbeeResource() = 0;
-    virtual ModbusRtuHardwareResource *modbusRtuResource() = 0;
+    bool isFinished() const override;
+    void setFinished(bool finished);
 
-protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+    int slaveAddress() const override;
+    int registerAddress() const override;
+
+    QString errorString() const override;
+    void setErrorString(const QString &errorString);
+
+    ModbusRtuReply::Error error() const override;
+    void setError(ModbusRtuReply::Error error);
+
+    QVector<quint16> result() const override;
+    void setResult(const QVector<quint16> &result);
+
+private:
+    bool m_finished = false;
+    int m_slaveAddress;
+    int m_registerAddress;
+    Error m_error = UnknownError;
+    QString m_errorString;
+    QVector<quint16> m_result;
+
 };
 
-#endif // HARDWAREMANAGER_H
+}
+
+#endif // MODBUSRTUREPLYIMPL_H

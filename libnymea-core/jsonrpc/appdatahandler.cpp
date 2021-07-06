@@ -64,6 +64,16 @@ JsonReply* AppDataHandler::Store(const QVariantMap &params)
     // used for excessive amounts of data as it is mostly meant as a config file syncing mechanism.
     QSettings settings(NymeaSettings::storagePath() + "/appdata/" + appId + '/' + group + ".conf", QSettings::IniFormat);
     settings.setValue(key, value);
+
+    QVariantMap notification;
+    notification.insert("appId", appId);
+    if (!group.isEmpty()) {
+        notification.insert("group", group);
+    }
+    notification.insert("key", key);
+    notification.insert("value", value);
+    emit Changed(notification);
+
     return createReply(QVariantMap());
 }
 

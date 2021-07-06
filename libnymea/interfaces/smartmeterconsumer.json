@@ -1,11 +1,18 @@
 {
-    "description": "A smartmeterproducer can monitor total energy consumed by this thing.",
+    "description": "This interface is used for things that can monitor energy consumption. At least the grand total of the consumer energy is provided, optionally live monitoring of the current usage may be available.",
     "extends": "smartmeter",
     "states": [
         {
             "name": "totalEnergyConsumed",
             "type": "double",
             "unit": "KiloWattHour"
+        },
+        {
+            "name": "currentPower",
+            "type": "double",
+            "unit": "Watt",
+            "optional": true,
+            "logged": true
         }
     ]
 }

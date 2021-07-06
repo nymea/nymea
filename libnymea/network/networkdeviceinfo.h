@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2021, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,48 +28,50 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#ifndef NETWORKDEVICEINFO_H
+#define NETWORKDEVICEINFO_H
 
+#include <QDebug>
 #include <QObject>
+#include <QHostAddress>
+#include <QNetworkInterface>
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class ZigbeeHardwareResource;
-class HardwareResource;
-class ModbusRtuHardwareResource;
-class NetworkDeviceDiscovery;
+#include "libnymea.h"
 
-class HardwareManager : public QObject
+class LIBNYMEA_EXPORT NetworkDeviceInfo
 {
-    Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
-
 public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
+    explicit NetworkDeviceInfo();
+    explicit NetworkDeviceInfo(const QString &macAddress);
+    ~NetworkDeviceInfo() = default;
 
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
-    virtual ZigbeeHardwareResource *zigbeeResource() = 0;
-    virtual ModbusRtuHardwareResource *modbusRtuResource() = 0;
-    virtual NetworkDeviceDiscovery *networkDeviceDiscovery() = 0;
+    QString macAddress() const;
+    void setMacAddress(const QString &macAddress);
 
-protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+    QString macAddressManufacturer() const;
+    void setMacAddressManufacturer(const QString &macAddressManufacturer);
+
+    QHostAddress address() const;
+    void setAddress(const QHostAddress &address);
+
+    QString hostName() const;
+    void setHostName(const QString &hostName);
+
+    QNetworkInterface networkInterface() const;
+    void setNetworkInterface(const QNetworkInterface &networkInterface);
+
+    bool isValid() const;
+
+private:
+    QHostAddress m_address;
+    QString m_macAddress;
+    QString m_macAddressManufacturer;
+    QString m_hostName;
+    QNetworkInterface m_networkInterface;
+
 };
 
-#endif // HARDWAREMANAGER_H
+QDebug operator<<(QDebug debug, const NetworkDeviceInfo &networkDeviceInfo);
+
+
+#endif // NETWORKDEVICEINFO_H

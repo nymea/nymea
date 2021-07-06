@@ -46,6 +46,7 @@
 
 #include "hardware/modbus/modbusrtumanager.h"
 #include "hardware/modbus/modbusrtuhardwareresourceimplementation.h"
+#include "network/networkdevicediscovery.h"
 
 namespace nymeaserver {
 
@@ -78,6 +79,8 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
 
     m_modbusRtuResource = new ModbusRtuHardwareResourceImplementation(modbusRtuManager, this);
 
+    m_networkDeviceDiscovery = new NetworkDeviceDiscovery(this);
+
     // Enable all the resources
     setResourceEnabled(m_pluginTimerManager, true);
     setResourceEnabled(m_radio433, true);
@@ -100,6 +103,7 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
 
 HardwareManagerImplementation::~HardwareManagerImplementation()
 {
+
 }
 
 Radio433 *HardwareManagerImplementation::radio433()
@@ -150,6 +154,11 @@ ZigbeeHardwareResource *HardwareManagerImplementation::zigbeeResource()
 ModbusRtuHardwareResource *HardwareManagerImplementation::modbusRtuResource()
 {
     return m_modbusRtuResource;
+}
+
+NetworkDeviceDiscovery *HardwareManagerImplementation::networkDeviceDiscovery()
+{
+    return m_networkDeviceDiscovery;
 }
 
 void HardwareManagerImplementation::thingsLoaded()

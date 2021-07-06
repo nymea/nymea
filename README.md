@@ -72,6 +72,15 @@ Chat with us on [Telegram](http://t.me/nymeacommunity) or [Discord](https://disc
 A detailed documentation on how to develop with *nymea* is available on the [nymea | developer documentation](https://nymea.io/documentation/developers/).
 
 
+## Network discovery
+
+When starting nymead as user without root privileges, the network device discovery will not available due to missing raw socket permission. 
+If you still want to make use of this feature, the binary capabilities need to be adjusted.
+
+    sudo setcap cap_net_admin,cap_net_raw=eip /usr/bin/nymead
+
+This will allow nymead to create raw sockets for ARP and ICMP network discovery tools even when nymead gets started as user without root privileges. 
+
 ## License
 --------------------------------------------
 > nymea is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3 of the License.

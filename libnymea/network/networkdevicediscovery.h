@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2021, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,48 +28,58 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#ifndef NETWORKDEVICEDISCOVERY_H
+#define NETWORKDEVICEDISCOVERY_H
 
+#include <QTimer>
 #include <QObject>
+#include <QLoggingCategory>
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class ZigbeeHardwareResource;
-class HardwareResource;
-class ModbusRtuHardwareResource;
-class NetworkDeviceDiscovery;
+#include "ping.h"
+#include "libnymea.h"
+#include "networkdevicediscoveryreply.h"
 
-class HardwareManager : public QObject
+class ArpSocket;
+class MacAddressDatabase;
+class MacAddressDatabaseReply;
+
+Q_DECLARE_LOGGING_CATEGORY(dcNetworkDeviceDiscovery)
+
+class LIBNYMEA_EXPORT NetworkDeviceDiscovery : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
-
 public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
+    explicit NetworkDeviceDiscovery(QObject *parent = nullptr);
 
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
-    virtual ZigbeeHardwareResource *zigbeeResource() = 0;
-    virtual ModbusRtuHardwareResource *modbusRtuResource() = 0;
-    virtual NetworkDeviceDiscovery *networkDeviceDiscovery() = 0;
+    NetworkDeviceDiscoveryReply *discover();
 
-protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+    bool available() const;
+    bool running() const;
+
+    PingReply *ping(const QHostAddress &address);
+    MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress);
+
+signals:
+    void runningChanged(bool running);
+
+private:
+    MacAddressDatabase *m_macAddressDatabase = nullptr;
+    ArpSocket *m_arpSocket = nullptr;
+    Ping *m_ping = nullptr;
+    bool m_running = false;
+
+    QTimer *m_discoveryTimer = nullptr;
+    NetworkDeviceDiscoveryReply *m_currentReply = nullptr;
+    QList<PingReply *> m_runningPingRepies;
+
+    void pingAllNetworkDevices();
+    void finishDiscovery();
+
+    void updateOrAddNetworkDeviceArp(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress, const QString &manufacturer = QString());
+
+private slots:
+    void onArpResponseRceived(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress);
+
 };
 
-#endif // HARDWAREMANAGER_H
+#endif // NETWORKDEVICEDISCOVERY_H

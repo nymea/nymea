@@ -64,6 +64,7 @@ public:
     I2CManager *i2cManager() override;
     ZigbeeHardwareResource *zigbeeResource() override;
     ModbusRtuHardwareResource *modbusRtuResource() override;
+    NetworkDeviceDiscovery *networkDeviceDiscovery() override;
 
 public slots:
     void thingsLoaded();
@@ -83,6 +84,8 @@ private:
     I2CManager *m_i2cManager = nullptr;
     ZigbeeHardwareResourceImplementation *m_zigbeeResource = nullptr;
     ModbusRtuHardwareResourceImplementation *m_modbusRtuResource = nullptr;
+    NetworkDeviceDiscovery *m_networkDeviceDiscovery = nullptr;
+
 };
 
 }

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2021, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,48 +28,69 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HARDWAREMANAGER_H
-#define HARDWAREMANAGER_H
+#ifndef PINGREPLY_H
+#define PINGREPLY_H
 
+#include <QTimer>
 #include <QObject>
+#include <QHostAddress>
 
-class Radio433;
-class UpnpDiscovery;
-class PluginTimerManager;
-class NetworkAccessManager;
-class UpnpDeviceDescriptor;
-class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
-class MqttProvider;
-class I2CManager;
-class ZigbeeHardwareResource;
-class HardwareResource;
-class ModbusRtuHardwareResource;
-class NetworkDeviceDiscovery;
+#include <sys/time.h>
 
-class HardwareManager : public QObject
+#include "libnymea.h"
+
+#include <QHostAddress>
+#include <QNetworkInterface>
+
+class LIBNYMEA_EXPORT PingReply : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(PluginTimerManager* pluginTimerManager READ pluginTimerManager CONSTANT)
+
+    friend class Ping;
 
 public:
-    HardwareManager(QObject *parent = nullptr);
-    virtual ~HardwareManager() = default;
+    enum Error {
+        ErrorNoError,
+        ErrorInvalidResponse,
+        ErrorNetworkDown,
+        ErrorNetworkUnreachable,
+        ErrorPermissionDenied,
+        ErrorSocketError,
+        ErrorTimeout,
+        ErrorHostUnreachable
+    };
+    Q_ENUM(Error)
 
-    virtual Radio433 *radio433() = 0;
-    virtual PluginTimerManager *pluginTimerManager() = 0;
-    virtual NetworkAccessManager *networkManager() = 0;
-    virtual UpnpDiscovery *upnpDiscovery() = 0;
-    virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
-    virtual MqttProvider *mqttProvider() = 0;
-    virtual I2CManager *i2cManager() = 0;
-    virtual ZigbeeHardwareResource *zigbeeResource() = 0;
-    virtual ModbusRtuHardwareResource *modbusRtuResource() = 0;
-    virtual NetworkDeviceDiscovery *networkDeviceDiscovery() = 0;
+    explicit PingReply(QObject *parent = nullptr);
 
-protected:
-    void setResourceEnabled(HardwareResource* resource, bool enabled);
+    QHostAddress targetHostAddress() const;
+    quint16 sequenceNumber() const;
+    quint16 requestId() const;
+    QString hostName() const;
+    QNetworkInterface networkInterface() const;
+
+    double duration() const;
+
+    Error error() const;
+
+signals:
+    void finished();
+    void timeout();
+
+private:
+    QTimer *m_timer = nullptr;
+    QHostAddress m_targetHostAddress;
+    quint16 m_sequenceNumber = 0;
+    quint16 m_requestId = 0;
+    QString m_hostName;
+    QNetworkInterface m_networkInterface;
+
+    uint m_timeout = 3;
+    double m_duration = 0;
+    Error m_error = ErrorNoError;
+
+    struct timeval m_startTime;
+
 };
 
-#endif // HARDWAREMANAGER_H
+#endif // PINGREPLY_H

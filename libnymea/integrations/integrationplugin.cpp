@@ -152,6 +152,17 @@ ThingClasses IntegrationPlugin::supportedThings() const
     return m_metaData.thingClasses();
 }
 
+/*! Returns a \l{ThingClass}{ThingClass} for the given \a thingClassId */
+ThingClass IntegrationPlugin::thingClass(const ThingClassId &thingClassId) const
+{
+    foreach (const ThingClass &thingClass, supportedThings()) {
+        if (thingClass.id() == thingClassId) {
+            return thingClass;
+        }
+    }
+    return ThingClass();
+}
+
 /*! Override this if your plugin supports things with ThingClass::CreationMethodAuto.
     This will be called at startup, after the configured things have been loaded.
     This is the earliest time you should start emitting autoThingsAppeared(). If you

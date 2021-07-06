@@ -41,6 +41,7 @@ class LIBNYMEA_EXPORT ThingDescriptor
 {
     Q_GADGET
     Q_PROPERTY(QUuid id READ id)
+    Q_PROPERTY(QUuid thingClassId READ thingClassId)
     Q_PROPERTY(QUuid thingId READ thingId USER true)
     Q_PROPERTY(QString title READ title)
     Q_PROPERTY(QString description READ description)

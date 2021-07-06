@@ -201,7 +201,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
         } else {
             // Event based rule
             if (containsEvent(rule, event, thing->thingClassId())) {
-                qCDebug(dcRuleEngineDebug()).nospace().noquote() << "Rule " << rule.name() << " (" << rule.id().toString() << ") contains event";
+                qCDebug(dcRuleEngineDebug()).nospace().noquote() << "Rule " << rule.name() << " (" << rule.id().toString() << ") contains event. States active:" << rule.statesActive() << "Time active:" << rule.timeActive();
                 if (rule.statesActive() && rule.timeActive()) {
                     qCDebug(dcRuleEngine).nospace().noquote() << "Rule " << rule.name() << " (" + rule.id().toString() << ") contains event and all states match.";
                     rules.append(rule);
@@ -1103,6 +1103,7 @@ void RuleEngine::appendRule(const Rule &rule)
 {
     Rule newRule = rule;
     newRule.setStatesActive(newRule.stateEvaluator().evaluate());
+    newRule.setTimeActive(newRule.timeDescriptor().evaluate(QDateTime(), QDateTime::currentDateTime()));
     qCDebug(dcRuleEngine()) << "Adding Rule:" << newRule;
     m_rules.insert(rule.id(), newRule);
     m_ruleIds.append(rule.id());

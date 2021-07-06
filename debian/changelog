@@ -1,7 +1,37 @@
-nymea (0.28.0) UNRELEASED; urgency=medium
+nymea (0.28.0) xenial; urgency=medium
 
 
- -- Michael Zanetti <michael.zanetti@nymea.io>  Thu, 29 Apr 2021 16:09:09 +0200
+  [ Simon Stürz ]
+  * Zigbee node JSON RPC API
+  * Modbus RTU hardware resource
+
+  [ Michael Zanetti ]
+  * 0.28
+  * Add more param getter functions to the python api
+
+  [ Simon Stürz ]
+  * Add air quality interfaces
+
+  [ Michael Zanetti ]
+  * Add more flexible createChannel API to the MQTT provider resource
+  * Fix action finishing in input types mock
+  * Fix time based rules not being initialized directly after creation
+  * Allow creating rules with exit actions and calendar items
+  * Add missing changed notification for appdata
+
+  [ Simon Stürz ]
+  * Network device discovery
+
+  [ Michael Zanetti ]
+  * Add flow rate control support to the ventilation interface
+  * Allow [u]ints to be used with analog IO connections
+  * Add support for QList<QDateTime> -> [time_t] conversion to JSON
+  * Add some convenience methods to access states/stateTypes by name
+  * Add thingClassId to thingDescriptors json
+  * Add a getter method for thing classes to plugin api
+  * Rework smartmeter interfaces
+
+ -- Jenkins <jenkins@nymea.io>  Tue, 06 Jul 2021 17:18:37 +0200
 
 nymea (0.27.1) xenial; urgency=medium
 

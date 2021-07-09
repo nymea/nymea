@@ -1,9 +1,9 @@
 {
     "extends": "sensor",
-    "description": "CO2 (carbon dioxide) sensors. Measures co2 in parts per million.",
+    "description": "Flammable gas (LPG, Propane, Methane etc) sensors. Measures co2 in parts per million.",
     "states": [
         {
-            "name": "co2",
+            "name": "gas",
             "type": "double",
             "unit": "PartsPerMillion",
             "logged": true

@@ -1,7 +1,10 @@
-nymea (0.28.1) UNRELEASED; urgency=medium
+nymea (0.28.1) xenial; urgency=medium
 
+  [ Simon Stürz ]
+  * Bump to 0.28.1
+  * Update mac address database
 
- -- Simon Stürz <simon.stuerz@nymea.io>  Thu, 15 Jul 2021 08:52:50 +0200
+ -- Jenkins <jenkins@nymea.io>  Fri, 16 Jul 2021 21:29:09 +0200
 
 nymea (0.28.0) xenial; urgency=medium
 

@@ -131,9 +131,11 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     m_logger = new LogEngine(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), m_configuration->logDBMaxEntries(), this);
     m_logger->setThingManager(m_thingManager);
 
+#ifdef WITH_QML
     qCDebug(dcCore()) << "Creating Script Engine";
     m_scriptEngine = new ScriptEngine(m_thingManager, this);
     m_serverManager->jsonServer()->registerHandler(new ScriptsHandler(m_scriptEngine, m_scriptEngine));
+#endif // WITH_QML
 
     qCDebug(dcCore()) << "Creating Tags Storage";
     m_tagsStorage = new TagsStorage(m_thingManager, m_ruleEngine, this);
@@ -559,10 +561,12 @@ RuleEngine *NymeaCore::ruleEngine() const
     return m_ruleEngine;
 }
 
+#ifdef WITH_QML
 ScriptEngine *NymeaCore::scriptEngine() const
 {
     return m_scriptEngine;
 }
+#endif // WITH_QML
 
 TimeManager *NymeaCore::timeManager() const
 {

@@ -31,6 +31,8 @@
 #ifndef SCRIPTALARM_H
 #define SCRIPTALARM_H
 
+#ifdef WITH_QML
+
 #include <QObject>
 #include <QDateTime>
 #include <QTimer>
@@ -96,5 +98,6 @@ private:
     bool m_active = false;
     int m_timerId = 0;
 };
+#endif // WITH_QML
 
 #endif // SCRIPTALARM_H

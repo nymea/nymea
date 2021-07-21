@@ -28,6 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef WITH_QML
+
 #include "scriptengine.h"
 #include "integrations/thingmanager.h"
 
@@ -487,3 +489,5 @@ void ScriptEngine::logCategoryFilter(QLoggingCategory *category)
 }
 
 }
+
+#endif // WITH_QML

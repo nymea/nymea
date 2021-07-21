@@ -31,6 +31,8 @@
 #ifndef SCRIPTINTEGRATIONPLUGIN_H
 #define SCRIPTINTEGRATIONPLUGIN_H
 
+#ifdef WITH_QML
+
 #include "integrations/integrationplugin.h"
 
 #include <QQmlEngine>
@@ -187,5 +189,7 @@ private:
     QJSValue m_pluginImport;
     QHash<Thing*, ScriptThing*> m_things;
 };
+
+#endif // WITH_QML
 
 #endif // SCRIPTINTEGRATIONPLUGIN_H

@@ -46,6 +46,7 @@
 #include "loggingcategories.h"
 #include "nymeacore.h"
 
+#ifdef __GLIBC__
 #include <execinfo.h>
 #include <signal.h>
 #include <stdio.h>
@@ -54,10 +55,13 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <cxxabi.h>
+#endif // __GLIBC__
 
 Q_DECLARE_LOGGING_CATEGORY(dcApplication)
 
 namespace nymeaserver {
+
+#ifdef __GLIBC__
 
 static bool s_aboutToShutdown = false;
 static bool s_multipleShutdownDetected = false;
@@ -139,12 +143,17 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
         signal(sig, handler);
 }
 
+#endif // __GLIBC__
+
 
 /*! Constructs a NymeaApplication with the given argument count \a argc and argument vector \a argv. */
 NymeaApplication::NymeaApplication(int &argc, char **argv) :
     QCoreApplication(argc, argv)
 {
+
+#ifdef __GLIBC__
     catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
+#endif // __GLIBC__
 }
 
 }

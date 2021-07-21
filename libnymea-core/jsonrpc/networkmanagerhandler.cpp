@@ -75,6 +75,7 @@
     This signal is emitted to the API notifications when a \l{WirelessNetworkDevice} has changed in the \l{NetworkManager}.
     The \a params contains the map for the notification.
 */
+#ifdef WITH_DBUS
 
 #include "loggingcategories.h"
 #include "networkmanagerhandler.h"
@@ -528,3 +529,5 @@ QVariantMap NetworkManagerHandler::statusToReply(NetworkManager::NetworkManagerE
 }
 
 }
+
+#endif // WITH_DBUS

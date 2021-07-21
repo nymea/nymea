@@ -31,6 +31,8 @@
 #ifndef NETWORKMANAGERHANDLER_H
 #define NETWORKMANAGERHANDLER_H
 
+#ifdef WITH_DBUS
+
 #include <QObject>
 
 #include "jsonrpc/jsonhandler.h"
@@ -97,5 +99,7 @@ private:
 };
 
 }
+
+#endif // WITH_DBUS
 
 #endif // NETWORKMANAGERHANDLER_H

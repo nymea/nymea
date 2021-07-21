@@ -3,12 +3,12 @@ TARGET = nymea-core
 
 include(../nymea.pri)
 
-QT += dbus qml sql websockets serialport
+QT += qml sql websockets serialport
 INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 
 CONFIG += link_pkgconfig
-PKGCONFIG += nymea-mqtt nymea-networkmanager nymea-zigbee nymea-remoteproxyclient nymea-gpio
+PKGCONFIG += nymea-mqtt nymea-zigbee nymea-remoteproxyclient nymea-gpio
 
 # Note: bluetooth is not available on all platforms
 qtHaveModule(bluetooth) {
@@ -17,6 +17,16 @@ qtHaveModule(bluetooth) {
     DEFINES += WITH_BLUETOOTH
 } else {
     message("Building without bluetooth support.")
+}
+
+# Note: dbus is not available on all platforms
+qtHaveModule(dbus) {
+    message("Building with dbus support")
+    QT += dbus
+    DEFINES += WITH_DBUS
+    PKGCONFIG += nymea-networkmanager
+} else {
+    message("Building without dbus support.")
 }
 
 CONFIG(withoutpython) {

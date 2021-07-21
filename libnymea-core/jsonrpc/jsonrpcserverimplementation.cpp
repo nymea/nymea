@@ -594,7 +594,9 @@ void JsonRPCServerImplementation::setup()
     registerHandler(new LoggingHandler(this));
     registerHandler(new StateHandler(this));
     registerHandler(new ConfigurationHandler(this));
+#ifdef WITH_DBUS
     registerHandler(new NetworkManagerHandler(NymeaCore::instance()->networkManager(), this));
+#endif // WITH_DBUS
     registerHandler(new TagsHandler(this));
     registerHandler(new AppDataHandler(this));
     registerHandler(new SystemHandler(NymeaCore::instance()->platform(), this));

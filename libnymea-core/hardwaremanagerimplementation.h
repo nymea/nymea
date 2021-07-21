@@ -32,8 +32,11 @@
 #define HARDWAREMANAGERIMPLEMENTATION_H
 
 #include <QObject>
-#include <QDBusConnection>
 #include <QNetworkAccessManager>
+
+#ifdef WITH_DBUS
+#include <QDBusConnection>
+#endif // WITH_DBUS
 
 #include "hardwaremanager.h"
 

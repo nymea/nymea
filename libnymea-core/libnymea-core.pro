@@ -284,13 +284,13 @@ SOURCES += nymeacore.cpp \
     zigbee/zigbeeadapters.cpp \
     zigbee/zigbeemanager.cpp
 
-versionAtLeast(QT_VERSION, 5.12.0) {
-message("Building with JS plugin support")
-HEADERS += \
-    integrations/scriptintegrationplugin.h
+if (versionAtLeast(QT_VERSION, 5.12.0):qtHaveModule(qml)) {
+    message("Building with JS plugin support")
+    HEADERS += \
+        integrations/scriptintegrationplugin.h
 
-SOURCES += \
-    integrations/scriptintegrationplugin.cpp
+    SOURCES += \
+        integrations/scriptintegrationplugin.cpp
 }
 
 CONFIG(python) {

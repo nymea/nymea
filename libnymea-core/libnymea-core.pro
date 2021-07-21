@@ -11,8 +11,7 @@ CONFIG += link_pkgconfig
 PKGCONFIG += nymea-mqtt nymea-zigbee nymea-remoteproxyclient nymea-gpio
 
 # Note: qml is not available on all platforms
-#qtHaveModule(qml) {
-FOO {
+qtHaveModule(qml) {
     message("Building with qml support")
     QT += qml
     DEFINES += WITH_QML

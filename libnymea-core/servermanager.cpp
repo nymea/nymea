@@ -159,11 +159,13 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         }
     }
 
+#ifdef WITH_BLUETOOTH
     m_bluetoothServer = new BluetoothServer(this);
     m_jsonServer->registerTransportInterface(m_bluetoothServer, true);
     if (configuration->bluetoothServerEnabled()) {
         m_bluetoothServer->startServer();
     }
+#endif // WITH_BLUETOOTH
 
     foreach (const WebServerConfiguration &config, configuration->webServerConfigurations()) {
         WebServer *webServer = new WebServer(config, m_sslConfiguration, this);
@@ -200,10 +202,12 @@ JsonRPCServerImplementation *ServerManager::jsonServer() const
 }
 
 /*! Returns the pointer to the created \l{BluetoothServer} in this \l{ServerManager}. */
+#ifdef WITH_BLUETOOTH
 BluetoothServer *ServerManager::bluetoothServer() const
 {
     return m_bluetoothServer;
 }
+#endif // WITH_BLUETOOTH
 
 /*! Returns the pointer to the created MockTcpServer in this \l{ServerManager}. */
 MockTcpServer *ServerManager::mockTcpServer() const

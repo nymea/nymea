@@ -131,9 +131,13 @@
 
 #include "bluetoothlowenergydevice.h"
 
+#ifdef WITH_BLUETOOTH
+
 /*! Constructs a new BluetoothLowEnergyDevice with the given \a parent. */
 BluetoothLowEnergyDevice::BluetoothLowEnergyDevice(QObject *parent) :
     QObject(parent)
 {
 
 }
+
+#endif // WITH_BLUETOOTH

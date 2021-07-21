@@ -614,10 +614,12 @@ QStringList NymeaCore::loggingFiltersPlugins()
     return loggingFiltersPlugins;
 }
 
+#ifdef WITH_BLUETOOTH
 BluetoothServer *NymeaCore::bluetoothServer() const
 {
     return m_serverManager->bluetoothServer();
 }
+#endif // WITH_BLUETOOTH
 
 NetworkManager *NymeaCore::networkManager() const
 {

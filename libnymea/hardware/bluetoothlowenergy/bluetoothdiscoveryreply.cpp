@@ -88,8 +88,10 @@
 */
 
 
+#ifdef WITH_BLUETOOTH
 
 #include "bluetoothdiscoveryreply.h"
+
 
 /*! Constructs a new BluetoothDiscoveryReply with the given \a parent. */
 BluetoothDiscoveryReply::BluetoothDiscoveryReply(QObject *parent) :
@@ -97,3 +99,5 @@ BluetoothDiscoveryReply::BluetoothDiscoveryReply(QObject *parent) :
 {
 
 }
+
+#endif // WITH_BLUETOOTH

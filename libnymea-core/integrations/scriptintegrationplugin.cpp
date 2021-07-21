@@ -28,6 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef WITH_QML
+
 #include "scriptintegrationplugin.h"
 
 #include <QQmlEngine>
@@ -259,3 +261,5 @@ void ScriptIntegrationPlugin::executeAction(ThingActionInfo *info)
         qCWarning(dcThingManager()) << "executeAction script failed to execute:\n" << ret.toString();
     }
 }
+
+#endif // WITH_QML

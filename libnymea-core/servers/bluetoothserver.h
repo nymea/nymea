@@ -31,6 +31,8 @@
 #ifndef BLUETOOTHSERVER_H
 #define BLUETOOTHSERVER_H
 
+#ifdef WITH_BLUETOOTH
+
 #include <QObject>
 #include <QBluetoothSocket>
 #include <QBluetoothServer>
@@ -78,5 +80,7 @@ public slots:
 };
 
 }
+
+#endif // WITH_BLUETOOTH
 
 #endif // BLUETOOTHSERVER_H

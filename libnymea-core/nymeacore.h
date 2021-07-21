@@ -101,7 +101,9 @@ public:
     ScriptEngine *scriptEngine() const;
     TimeManager *timeManager() const;
     ServerManager *serverManager() const;
+#ifdef WITH_BLUETOOTH
     BluetoothServer *bluetoothServer() const;
+#endif // WITH_BLUETOOTH
     NetworkManager *networkManager() const;
     UserManager *userManager() const;
     CloudManager *cloudManager() const;

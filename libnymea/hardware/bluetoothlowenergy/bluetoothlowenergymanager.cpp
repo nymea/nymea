@@ -60,6 +60,8 @@
 #include "bluetoothlowenergymanager.h"
 #include "loggingcategories.h"
 
+#ifdef WITH_BLUETOOTH
+
 /*! Constructs a \l{BluetoothLowEnergyManager} with the given \a parent. */
 BluetoothLowEnergyManager::BluetoothLowEnergyManager(QObject *parent) :
     HardwareResource("Bluetooth LE manager", parent)
@@ -73,3 +75,5 @@ void BluetoothLowEnergyManager::EnableBluetooth(bool enabled)
 {
     setEnabled(enabled);
 }
+
+#endif // WITH_BLUETOOTH

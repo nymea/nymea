@@ -28,6 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef WITH_BLUETOOTH
+
 #include "bluetoothlowenergymanagerimplementation.h"
 #include "loggingcategories.h"
 
@@ -258,3 +260,5 @@ bool BluetoothLowEnergyManagerImplementation::disable()
 }
 
 }
+
+#endif // WITH_BLUETOOTH

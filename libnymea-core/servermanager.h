@@ -48,8 +48,10 @@ class JsonRPCServerImplementation;
 class TcpServer;
 class WebSocketServer;
 class WebServer;
-class BluetoothServer;
 class MqttBroker;
+#ifdef WITH_BLUETOOTH
+class BluetoothServer;
+#endif // WITH_BLUETOOTH
 
 class MockTcpServer;
 
@@ -62,7 +64,9 @@ public:
     // Interfaces
     JsonRPCServerImplementation *jsonServer() const;
 
+#ifdef WITH_BLUETOOTH
     BluetoothServer* bluetoothServer() const;
+#endif // WITH_BLUETOOTH
 
     MockTcpServer *mockTcpServer() const;
 
@@ -90,7 +94,9 @@ private:
     // Interfaces
     JsonRPCServerImplementation *m_jsonServer;
 
+#ifdef WITH_BLUETOOTH
     BluetoothServer *m_bluetoothServer;
+#endif // WITH_BLUETOOTH
     QHash<QString, TcpServer*> m_tcpServers;
     QHash<QString, WebSocketServer*> m_webSocketServers;
     QHash<QString, WebServer*> m_webServers;

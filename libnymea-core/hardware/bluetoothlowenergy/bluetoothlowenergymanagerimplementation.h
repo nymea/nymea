@@ -31,6 +31,8 @@
 #ifndef BLUETOOTHLOWENERGYMANAGERIMPLEMENTATION_H
 #define BLUETOOTHLOWENERGYMANAGERIMPLEMENTATION_H
 
+#ifdef WITH_BLUETOOTH
+
 #include <QTimer>
 #include <QObject>
 #include <QPointer>
@@ -92,5 +94,7 @@ public slots:
 };
 
 }
+
+#endif // WITH_BLUETOOTH
 
 #endif // BLUETOOTHLOWENERGYMANAGERIMPLEMENTATION_H

@@ -31,6 +31,8 @@
 #ifndef SCRIPTACTION_H
 #define SCRIPTACTION_H
 
+#ifdef WITH_QML
+
 #include <QObject>
 #include <QQmlParserStatus>
 #include <QVariantMap>
@@ -83,5 +85,7 @@ public:
 };
 
 }
+
+#endif // WITH_QML
 
 #endif // SCRIPTACTION_H

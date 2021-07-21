@@ -28,6 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef WITH_QML
+
 #include "scriptinterfaceevent.h"
 
 #include <qqml.h>
@@ -100,4 +102,6 @@ void ScriptInterfaceEvent::onEventTriggered(const Event &event)
 }
 
 }
+
+#endif // WITH_QML
 

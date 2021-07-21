@@ -31,6 +31,8 @@
 #ifndef SCRIPTINTERFACEEVENT_H
 #define SCRIPTINTERFACEEVENT_H
 
+#ifdef WITH_QML
+
 #include <QObject>
 #include <QUuid>
 #include <QQmlParserStatus>
@@ -76,5 +78,7 @@ private:
 };
 
 }
+
+#endif // WITH_QML
 
 #endif // SCRIPTINTERFACEEVENT_H

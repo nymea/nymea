@@ -28,6 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef WITH_QML
+
 #include "script.h"
 
 namespace nymeaserver {
@@ -79,3 +81,5 @@ void Scripts::put(const QVariant &value)
 }
 
 }
+
+#endif // WITH_QML

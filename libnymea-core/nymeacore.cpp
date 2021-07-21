@@ -56,8 +56,9 @@
 #include "hardware/modbus/modbusrtumanager.h"
 #include "hardware/serialport/serialportmonitor.h"
 
+#ifdef WITH_DBUS
 #include <networkmanager.h>
-
+#endif // WITH_DBUS
 #include <QDir>
 #include <QCoreApplication>
 
@@ -137,15 +138,21 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     qCDebug(dcCore()) << "Creating Tags Storage";
     m_tagsStorage = new TagsStorage(m_thingManager, m_ruleEngine, this);
 
+#ifdef WITH_DBUS
     qCDebug(dcCore) << "Creating Network Manager";
     m_networkManager = new NetworkManager(this);
     m_networkManager->start();
+#endif // WITH_DBUS
 
     qCDebug(dcCore) << "Creating Debug Server Handler";
     m_debugServerHandler = new DebugServerHandler(this);
 
     qCDebug(dcCore) << "Creating Cloud Manager";
+#ifdef WITH_DBUS
     m_cloudManager = new CloudManager(m_configuration, m_networkManager, this);
+#else
+    m_cloudManager = new CloudManager(m_configuration, this);
+#endif // WITH_DBUS
 
     qCDebug(dcCore()) << "Loading experiences";
     m_experienceManager = new ExperienceManager(m_thingManager, m_serverManager->jsonServer(), this);
@@ -621,10 +628,12 @@ BluetoothServer *NymeaCore::bluetoothServer() const
 }
 #endif // WITH_BLUETOOTH
 
+#ifdef WITH_DBUS
 NetworkManager *NymeaCore::networkManager() const
 {
     return m_networkManager;
 }
+#endif // WITH_DBUS
 
 UserManager *NymeaCore::userManager() const
 {

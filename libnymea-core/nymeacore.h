@@ -104,7 +104,9 @@ public:
 #ifdef WITH_BLUETOOTH
     BluetoothServer *bluetoothServer() const;
 #endif // WITH_BLUETOOTH
+#ifdef WITH_DBUS
     NetworkManager *networkManager() const;
+#endif // WITH_DBUS
     UserManager *userManager() const;
     CloudManager *cloudManager() const;
     DebugServerHandler *debugServerHandler() const;
@@ -151,7 +153,9 @@ private:
     DebugServerHandler *m_debugServerHandler;
     TagsStorage *m_tagsStorage;
 
+#ifdef WITH_DBUS
     NetworkManager *m_networkManager;
+#endif // WITH_DBUS
     UserManager *m_userManager;
     System *m_system;
     ExperienceManager *m_experienceManager;

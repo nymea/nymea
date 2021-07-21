@@ -28,6 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef WITH_DBUS
+
 #include "nymeadbusservice.h"
 #include "loggingcategories.h"
 
@@ -74,4 +76,6 @@ void NymeaDBusService::setBusType(QDBusConnection::BusType busType)
 {
     s_busType = busType;
 }
+
+#endif // WITH_DBUS
 

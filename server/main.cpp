@@ -185,7 +185,9 @@ int main(int argc, char *argv[])
 
     // Parse DBus option
     if (parser.isSet(dbusOption)) {
+#ifdef WITH_DBUS
         NymeaDBusService::setBusType(QDBusConnection::SessionBus);
+#endif // WITH_DBUS
     }
 
     bool startForeground = parser.isSet(foregroundOption);

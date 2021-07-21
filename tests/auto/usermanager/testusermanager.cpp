@@ -120,7 +120,9 @@ TestUsermanager::TestUsermanager(QObject *parent): NymeaTestBase(parent)
 
 void TestUsermanager::initTestCase()
 {
+#ifdef WITH_DBUS
     NymeaDBusService::setBusType(QDBusConnection::SessionBus);
+#endif // WITH_DBUS
     NymeaTestBase::initTestCase();
 
     QLoggingCategory::setFilterRules("*.debug=false\n"

@@ -79,7 +79,9 @@ HardwareResource::HardwareResource(const QString &name, QObject *parent) :
     QObject(parent),
     m_name(name)
 {
+#ifdef WITH_DBUS
     new NymeaDBusService("/io/guh/nymead/HardwareManager/" + name, this);
+#endif // WITH_DBUS
 }
 
 /*! Returns the name of this resource. */

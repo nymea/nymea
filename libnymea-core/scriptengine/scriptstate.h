@@ -31,6 +31,8 @@
 #ifndef SCRIPTSTATE_H
 #define SCRIPTSTATE_H
 
+#ifdef WITH_QML
+
 #include <QObject>
 #include <QQmlParserStatus>
 #include <QPointer>
@@ -101,5 +103,7 @@ private:
 };
 
 }
+
+#endif // WITH_QML
 
 #endif // SCRIPTSTATE_H

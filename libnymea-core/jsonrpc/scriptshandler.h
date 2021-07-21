@@ -31,6 +31,8 @@
 #ifndef SCRIPTSHANDLER_H
 #define SCRIPTSHANDLER_H
 
+#ifdef WITH_QML
+
 #include "jsonrpc/jsonhandler.h"
 
 #include "scriptengine/scriptengine.h"
@@ -65,5 +67,7 @@ private:
 };
 
 }
+
+#endif // WITH_QML
 
 #endif // SCRIPTSHANDLER_H

@@ -28,6 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef WITH_QML
+
 #include "scriptalarm.h"
 #include "loggingcategories.h"
 
@@ -151,3 +153,5 @@ void ScriptAlarm::updateActive()
         emit activeChanged();
     }
 }
+
+#endif // WITH_QML

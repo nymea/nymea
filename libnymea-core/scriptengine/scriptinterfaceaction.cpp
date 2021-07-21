@@ -28,6 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef WITH_QML
+
 #include "scriptinterfaceaction.h"
 
 #include "integrations/thingmanager.h"
@@ -124,3 +126,5 @@ void ScriptInterfaceAction::execute(const QVariantMap &params)
 }
 
 }
+
+#endif // WITH_QML

@@ -3,12 +3,22 @@ TARGET = nymea-core
 
 include(../nymea.pri)
 
-QT += qml sql websockets serialport
+QT += sql websockets serialport
 INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 
 CONFIG += link_pkgconfig
 PKGCONFIG += nymea-mqtt nymea-zigbee nymea-remoteproxyclient
+
+# Note: qml is not available on all platforms
+#qtHaveModule(qml) {
+FOO {
+    message("Building with qml support")
+    QT += qml
+    DEFINES += WITH_QML
+} else {
+    message("Building without qml support.")
+}
 
 # Note: bluetooth is not available on all platforms
 qtHaveModule(bluetooth) {

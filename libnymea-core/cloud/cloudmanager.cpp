@@ -37,7 +37,9 @@
 #include "nymeaconfiguration.h"
 #include "nymeasettings.h"
 
+#ifdef WITH_DBUS
 #include <networkmanager.h>
+#endif // WITH_DBUS
 
 #include <remoteproxyconnection.h>
 #include <QDir>
@@ -46,6 +48,7 @@ using namespace remoteproxyclient;
 
 namespace nymeaserver {
 
+#ifdef WITH_DBUS
 CloudManager::CloudManager(NymeaConfiguration *configuration, NetworkManager *networkManager, QObject *parent):
     QObject(parent),
     m_configuration(configuration),
@@ -75,7 +78,35 @@ CloudManager::CloudManager(NymeaConfiguration *configuration, NetworkManager *ne
     setEnabled(m_configuration->cloudEnabled());
     connect(m_configuration, &NymeaConfiguration::cloudEnabledChanged, this, &CloudManager::setEnabled);
     connect(m_configuration, &NymeaConfiguration::serverNameChanged, this, &CloudManager::setDeviceName);
+}
+#endif // WITH_DBUS
 
+CloudManager::CloudManager(NymeaConfiguration *configuration, QObject *parent) :
+    QObject(parent),
+    m_configuration(configuration)
+{
+    m_awsConnector = new AWSConnector(this);
+    connect(m_awsConnector, &AWSConnector::devicePaired, this, &CloudManager::onPairingFinished);
+    connect(m_awsConnector, &AWSConnector::connected, this, &CloudManager::awsConnected);
+    connect(m_awsConnector, &AWSConnector::disconnected, this, &CloudManager::awsDisconnected);
+
+    ServerConfiguration config;
+    config.id = "remote";
+    config.authenticationEnabled = false;
+    config.sslEnabled = true;
+    m_transport = new CloudTransport(config, this);
+    connect(m_awsConnector, &AWSConnector::proxyConnectionRequestReceived, m_transport, &CloudTransport::connectToCloud);
+
+    m_deviceId = m_configuration->serverUuid();
+    m_deviceName = m_configuration->serverName();
+    m_serverUrl = m_configuration->cloudServerUrl();
+    m_caCertificate = m_configuration->cloudCertificateCA();
+    m_clientCertificate = m_configuration->cloudCertificate();
+    m_clientCertificateKey = m_configuration->cloudCertificateKey();
+
+    setEnabled(m_configuration->cloudEnabled());
+    connect(m_configuration, &NymeaConfiguration::cloudEnabledChanged, this, &CloudManager::setEnabled);
+    connect(m_configuration, &NymeaConfiguration::serverNameChanged, this, &CloudManager::setDeviceName);
 }
 
 CloudManager::~CloudManager()
@@ -257,11 +288,13 @@ void CloudManager::connect2aws()
 
 void CloudManager::onlineStateChanged()
 {
+#ifdef WITH_DBUS
     if (m_networkManager->state() == NetworkManager::NetworkManagerStateConnectedGlobal) {
         if (m_enabled && !m_awsConnector->isConnected()) {
             connect2aws();
         }
     }
+#endif // WITH_DBUS
 }
 
 void CloudManager::onPairingFinished(const QString &cognitoUserId, int errorCode, const QString &message)

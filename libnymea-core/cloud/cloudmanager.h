@@ -60,7 +60,10 @@ public:
     };
     Q_ENUM(CloudConnectionState)
 
+    explicit CloudManager(NymeaConfiguration *configuration, QObject *parent = nullptr);
+#ifdef WITH_DBUS
     explicit CloudManager(NymeaConfiguration *configuration, NetworkManager *networkManager, QObject *parent = nullptr);
+#endif // WITH_DBUS
     ~CloudManager();
 
     bool enabled() const;

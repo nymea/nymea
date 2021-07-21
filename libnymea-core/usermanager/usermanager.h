@@ -39,7 +39,9 @@
 
 namespace nymeaserver {
 
+#ifdef WITH_DBUS
 class PushButtonDBusService;
+#endif // WITH_DBUS
 
 class UserManager : public QObject
 {
@@ -96,7 +98,9 @@ private slots:
 
 private:
     QSqlDatabase m_db;
+#ifdef WITH_DBUS
     PushButtonDBusService *m_pushButtonDBusService = nullptr;
+#endif // WITH_DBUS
     int m_pushButtonTransactionIdCounter = 0;
     QPair<int, QString> m_pushButtonTransaction;
 

@@ -31,6 +31,8 @@
 #ifndef PUSHBUTTONDBUSSERVICE_H
 #define PUSHBUTTONDBUSSERVICE_H
 
+#ifdef WITH_DBUS
+
 #include <QObject>
 #include <QDBusObjectPath>
 #include <QDBusContext>
@@ -65,5 +67,7 @@ private:
 };
 
 }
+
+#endif // WITH_DBUS
 
 #endif // PUSHBUTTONDBUSSERVICE_H

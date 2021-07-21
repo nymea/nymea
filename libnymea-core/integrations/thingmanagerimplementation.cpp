@@ -31,7 +31,9 @@
 #include "thingmanagerimplementation.h"
 #include "translator.h"
 #if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
+#ifdef WITH_QML
 #include "scriptintegrationplugin.h"
+#endif
 #endif
 #ifdef WITH_PYTHON
 #include "pythonintegrationplugin.h"
@@ -172,6 +174,8 @@ QList<QJsonObject> ThingManagerImplementation::pluginsMetadata()
                 QPluginLoader loader(fi.absoluteFilePath());
                 pluginList.append(loader.metaData().value("MetaData").toObject());
 #if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
+#ifdef WITH_QML
+
             } else if (entry.startsWith("integrationplugin") && entry.endsWith(".js")) {
                 QFile jsonFile(fi.absolutePath() + "/" + fi.baseName() + ".json");
                 if (!jsonFile.open(QFile::ReadOnly)) {
@@ -180,6 +184,7 @@ QList<QJsonObject> ThingManagerImplementation::pluginsMetadata()
                 }
                 QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonFile.readAll());
                 pluginList.append(jsonDoc.object());
+#endif
 #endif
             } else if (entry.startsWith("integrationplugin") && entry.endsWith(".py")) {
                 QFile jsonFile(fi.absolutePath() + "/" + fi.baseName() + ".json");
@@ -1350,6 +1355,7 @@ void ThingManagerImplementation::loadPlugins()
 
             } else if (entry.startsWith("integrationplugin") && entry.endsWith(".js")) {
 #if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
+#ifdef WITH_QML
                 ScriptIntegrationPlugin *p = new ScriptIntegrationPlugin(this);
                 bool ok = p->loadScript(fi.absoluteFilePath());
                 if (ok) {
@@ -1357,6 +1363,7 @@ void ThingManagerImplementation::loadPlugins()
                 } else {
                     delete p;
                 }
+#endif
 #else
                 qCWarning(dcThingManager()) << "Not loading JS plugin as JS plugin support is not included in this nymea instance.";
 #endif

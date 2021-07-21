@@ -28,6 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef WITH_BLUETOOTH
+
 #include "bluetoothlowenergydeviceimplementation.h"
 #include "loggingcategories.h"
 
@@ -169,3 +171,5 @@ void BluetoothLowEnergyDeviceImplementation::onDeviceError(const QLowEnergyContr
 }
 
 }
+
+#endif // WITH_BLUETOOTH

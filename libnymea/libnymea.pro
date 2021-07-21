@@ -3,8 +3,17 @@ include(../nymea.pri)
 TARGET = nymea
 TEMPLATE = lib
 
-QT += network bluetooth dbus serialport sql
+QT += network dbus serialport sql
 QT -= gui
+
+# Note: bluetooth is not available on all platforms
+qtHaveModule(bluetooth) {
+    message("Building with bluetooth support")
+    QT += bluetooth
+    DEFINES += WITH_BLUETOOTH
+} else {
+    message("Building without bluetooth support.")
+}
 
 DEFINES += LIBNYMEA_LIBRARY
 

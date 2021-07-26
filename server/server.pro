@@ -5,7 +5,7 @@ TEMPLATE = app
 
 INCLUDEPATH += ../libnymea ../libnymea-core $$top_builddir
 
-target.path = /usr/bin
+target.path = $$[QT_INSTALL_PREFIX]/bin
 INSTALLS += target
 
 QT += sql xml websockets network

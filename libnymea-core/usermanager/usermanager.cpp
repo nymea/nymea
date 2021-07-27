@@ -79,10 +79,14 @@
 #include <QSqlQuery>
 #include <QVariant>
 #include <QSqlError>
-#include <QRegExpValidator>
 #include <QDateTime>
 #include <QDebug>
 #include <QFileInfo>
+
+#ifdef WITH_GUI
+#include <QRegExpValidator>
+#endif
+
 
 namespace nymeaserver {
 

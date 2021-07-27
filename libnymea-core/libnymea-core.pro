@@ -10,8 +10,15 @@ LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 CONFIG += link_pkgconfig
 PKGCONFIG += nymea-mqtt nymea-zigbee nymea-remoteproxyclient
 
+qtHaveModule(gui):!disablegui {
+    QT += gui
+    DEFINES += WITH_GUI
+} else {
+    QT -=gui
+}
+
 # Note: qml is not available on all platforms
-qtHaveModule(qml) {
+qtHaveModule(qml):!disableqml {
     message("Building with qml support")
     QT += qml
     DEFINES += WITH_QML
@@ -284,7 +291,7 @@ SOURCES += nymeacore.cpp \
     zigbee/zigbeeadapters.cpp \
     zigbee/zigbeemanager.cpp
 
-if (versionAtLeast(QT_VERSION, 5.12.0):qtHaveModule(qml)) {
+if (versionAtLeast(QT_VERSION, 5.12.0):qtHaveModule(qml):!disableqml) {
     message("Building with JS plugin support")
     HEADERS += \
         integrations/scriptintegrationplugin.h

@@ -209,10 +209,16 @@ HttpReply *WebServer::processIconRequest(const QString &fileName)
 
     QByteArray imageData;
 
+#ifdef WITH_GUI
     QImage image(":" + fileName);
     QBuffer buffer(&imageData);
     buffer.open(QIODevice::WriteOnly);
     image.save(&buffer, "png");
+#else
+    QFile imageFile(":" + fileName);
+    imageFile.open(QIODevice::ReadOnly);
+    imageData = imageFile.readAll();
+#endif // WITH_GUI
 
     if (!imageData.isEmpty()) {
         HttpReply *reply = HttpReply::createSuccessReply();

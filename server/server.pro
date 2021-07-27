@@ -9,6 +9,7 @@ target.path = $$[QT_INSTALL_PREFIX]/bin
 INSTALLS += target
 
 QT += sql xml websockets network
+QT -= gui
 
 # Note: bluetooth is not available on all platforms
 qtHaveModule(bluetooth) {
@@ -20,7 +21,7 @@ qtHaveModule(bluetooth) {
 }
 
 # Note: dbus is not available on all platforms
-qtHaveModule(dbus) {
+qtHaveModule(dbus):!disabledbus {
     message("Building with dbus support")
     QT += dbus
     DEFINES += WITH_DBUS

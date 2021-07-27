@@ -7,7 +7,7 @@ QT += network serialport sql
 QT -= gui
 
 # Note: bluetooth is not available on all platforms
-qtHaveModule(bluetooth) {
+qtHaveModule(bluetooth):!disablebluetooth {
     message("Building with bluetooth support")
     QT += bluetooth
     DEFINES += WITH_BLUETOOTH
@@ -16,7 +16,7 @@ qtHaveModule(bluetooth) {
 }
 
 # Note: dbus is not available on all platforms
-qtHaveModule(dbus) {
+qtHaveModule(dbus):!disabledbus {
     message("Building with dbus support")
     QT += dbus
     DEFINES += WITH_DBUS

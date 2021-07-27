@@ -12,7 +12,7 @@ QT += sql xml websockets network
 QT -= gui
 
 # Note: bluetooth is not available on all platforms
-qtHaveModule(bluetooth) {
+qtHaveModule(bluetooth):!disablebluetooth {
     message("Building with bluetooth support")
     QT += bluetooth
     DEFINES += WITH_BLUETOOTH

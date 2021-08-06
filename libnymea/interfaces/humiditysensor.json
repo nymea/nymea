@@ -4,6 +4,7 @@
         {
             "name": "humidity",
             "type": "double",
+            "unit": "Percentage",
             "minValue": 0,
             "maxValue": 100,
             "logged": true

@@ -50,6 +50,15 @@
                     "createMethods": ["user"],
                     "setupMethod": "justAdd",
                     "browsable": true,
+                    "settingsTypes": [
+                        {
+                            "id": "f3ef303b-d719-4a64-a44c-6b1935bf0d4d",
+                            "name": "interval",
+                            "displayName": "Timer interval",
+                            "type": "uint",
+                            "defaultValue": 5
+                        }
+                    ],
                     "eventTypes": [
                         {
                             "id": "de6c2425-0dee-413f-8f4c-bb0929e83c0d",

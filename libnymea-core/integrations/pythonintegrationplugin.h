@@ -50,6 +50,7 @@ public:
     static PyObject* pyAutoThingDisappeared(PyObject *self, PyObject* args);
     static PyObject* pyPluginStorage(PyObject* self, PyObject* args);
     static PyObject* pyApiKeyStorage(PyObject* self, PyObject* args);
+    static PyObject* pyHardwareManager(PyObject* self, PyObject* args);
 
 private:
     void exportIds();

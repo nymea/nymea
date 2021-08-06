@@ -35,12 +35,8 @@ CONFIG(withoutpython) {
     CONFIG -= python
 }
 
-# Qt serial bus module is officially available since Qt 5.8
-# but not all platforms host the qt serialbus package.
-# Let's check if the package exists, not the qt version
 packagesExist(Qt5SerialBus) {
     message("Building with QtSerialBus support.")
-    # Qt += serialbus
     PKGCONFIG += Qt5SerialBus
     DEFINES += WITH_QTSERIALBUS
 } else {

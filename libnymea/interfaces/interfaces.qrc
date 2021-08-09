@@ -60,6 +60,7 @@
         <file>smartmeterconsumer.json</file>
         <file>smartmeterproducer.json</file>
         <file>energymeter.json</file>
+        <file>solarinverter.json</file>
         <file>accesscontrol.json</file>
         <file>fingerprintreader.json</file>
         <file>useraccesscontrol.json</file>

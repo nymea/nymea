@@ -1,0 +1,11 @@
+{
+    "description": "Interface for electric vehicles",
+    "extends": ["battery"],
+    "states": [
+        {
+            "name": "capacity",
+            "type": "double",
+            "unit": "KiloWattHour"
+        }
+    ]
+}

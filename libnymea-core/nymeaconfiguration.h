@@ -147,6 +147,11 @@ public:
     void setWebSocketServerConfiguration(const ServerConfiguration &config);
     void removeWebSocketServerConfiguration(const QString &id);
 
+    // Tunnel proxy server
+    QHash<QString, ServerConfiguration> tunnelProxyServerConfigurations() const;
+    void setTunnelProxyServerConfiguration(const ServerConfiguration &config);
+    void removeTunnelProxyServerConfiguration(const QString &id);
+
     // MQTT
     QHash<QString, ServerConfiguration> mqttServerConfigurations() const;
     void setMqttServerConfiguration(const ServerConfiguration &config);
@@ -187,6 +192,7 @@ private:
     QHash<QString, ServerConfiguration> m_webSocketServerConfigs;
     QHash<QString, ServerConfiguration> m_mqttServerConfigs;
     QHash<QString, MqttPolicy> m_mqttPolicies;
+    QHash<QString, ServerConfiguration> m_tunnelProxyServerConfigs;
 
     void setServerUuid(const QUuid &uuid);
     void setWebServerPublicFolder(const QString & path);
@@ -216,6 +222,8 @@ signals:
     void webSocketServerConfigurationRemoved(const QString &configId);
     void mqttServerConfigurationChanged(const QString &configId);
     void mqttServerConfigurationRemoved(const QString &configId);
+    void tunnelProxyServerConfigurationChanged(const QString &configId);
+    void tunnelProxyServerConfigurationRemoved(const QString &configId);
 
     void mqttPolicyChanged(const QString &clientId);
     void mqttPolicyRemoved(const QString &clientId);

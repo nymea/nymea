@@ -57,6 +57,7 @@
 #include "servers/webserver.h"
 #include "servers/bluetoothserver.h"
 #include "servers/mqttbroker.h"
+#include "servers/tunnelproxyserver.h"
 
 #include "network/zeroconf/zeroconfservicepublisher.h"
 
@@ -165,6 +166,28 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         m_bluetoothServer->startServer();
     }
 
+    foreach (const ServerConfiguration &config, configuration->tunnelProxyServerConfigurations()) {
+        TunnelProxyServer *tunnelProxyServer = new TunnelProxyServer(configuration->serverName(), configuration->serverUuid(), config, this);
+        qCDebug(dcServerManager()) << "Creating tunnel proxy server" << config;
+        m_tunnelProxyServers.insert(config.id, tunnelProxyServer);
+        connect(tunnelProxyServer, &TunnelProxyServer::runningChanged, this, [this, tunnelProxyServer](bool running){
+            if (running) {
+                // Note: enable authentication in any case, we don't want to expose unprotected access trough the internet
+                m_jsonServer->registerTransportInterface(tunnelProxyServer, true);
+            } else {
+                m_jsonServer->unregisterTransportInterface(tunnelProxyServer);
+            }
+        });
+
+        // FIXME: make use of SSL over tunnel proxy connections
+        // FIXME: make sure the authentication is enabled for the tunnel proxy
+
+        // Note: only start the tunnel proxy server if cloud is connected
+        if (configuration->cloudEnabled()) {
+            tunnelProxyServer->startServer();
+        }
+    }
+
     foreach (const WebServerConfiguration &config, configuration->webServerConfigurations()) {
         WebServer *webServer = new WebServer(config, m_sslConfiguration, this);
         m_webServers.insert(config.id, webServer);
@@ -191,6 +214,9 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     connect(configuration, &NymeaConfiguration::mqttServerConfigurationRemoved, this, &ServerManager::mqttServerConfigurationRemoved);
     connect(configuration, &NymeaConfiguration::mqttPolicyChanged, this, &ServerManager::mqttPolicyChanged);
     connect(configuration, &NymeaConfiguration::mqttPolicyRemoved, this, &ServerManager::mqttPolicyRemoved);
+    connect(configuration, &NymeaConfiguration::tunnelProxyServerConfigurationChanged, this, &ServerManager::tunnelProxyServerConfigurationChanged);
+    connect(configuration, &NymeaConfiguration::tunnelProxyServerConfigurationRemoved, this, &ServerManager::tunnelProxyServerConfigurationRemoved);
+    connect(configuration, &NymeaConfiguration::cloudEnabledChanged, this, &ServerManager::cloudEnabledChanged);
 }
 
 /*! Returns the pointer to the created \l{JsonRPCServer} in this \l{ServerManager}. */
@@ -339,6 +365,30 @@ void ServerManager::mqttPolicyChanged(const QString &clientId)
 void ServerManager::mqttPolicyRemoved(const QString &clientId)
 {
     m_mqttBroker->removePolicy(clientId);
+}
+
+void ServerManager::tunnelProxyServerConfigurationChanged(const QString &id)
+{
+    // FIXME: not dynamic configurable for now
+    Q_UNUSED(id)
+}
+
+void ServerManager::tunnelProxyServerConfigurationRemoved(const QString &id)
+{
+    // FIXME: not dynamic configurable for now
+    Q_UNUSED(id)
+}
+
+void ServerManager::cloudEnabledChanged(bool enabled)
+{
+    qCDebug(dcServerManager()) << "Cloud connection" << (enabled ? "enabled. Starting tunnel proxy servers" : "disabled. Stopping tunnel proxy servers.");
+    foreach (TunnelProxyServer *server, m_tunnelProxyServers) {
+        if (enabled) {
+            server->startServer();
+        } else {
+            server->stopServer();
+        }
+    }
 }
 
 bool ServerManager::registerZeroConfService(const ServerConfiguration &configuration, const QString &serverType, const QString &serviceType)

@@ -50,6 +50,7 @@ class WebSocketServer;
 class WebServer;
 class BluetoothServer;
 class MqttBroker;
+class TunnelProxyServer;
 
 class MockTcpServer;
 
@@ -79,6 +80,10 @@ private slots:
     void mqttServerConfigurationRemoved(const QString &id);
     void mqttPolicyChanged(const QString &clientId);
     void mqttPolicyRemoved(const QString &clientId);
+    void tunnelProxyServerConfigurationChanged(const QString &id);
+    void tunnelProxyServerConfigurationRemoved(const QString &id);
+
+    void cloudEnabledChanged(bool enabled);
 
 private:
     bool registerZeroConfService(const ServerConfiguration &configuration, const QString &serverType, const QString &serviceType);
@@ -94,6 +99,7 @@ private:
     QHash<QString, TcpServer*> m_tcpServers;
     QHash<QString, WebSocketServer*> m_webSocketServers;
     QHash<QString, WebServer*> m_webServers;
+    QHash<QString, TunnelProxyServer *> m_tunnelProxyServers;
     MockTcpServer *m_mockTcpServer;
 
     MqttBroker *m_mqttBroker;

@@ -211,6 +211,21 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         mqttPolicies.endGroup();
     }
 
+    // Tunnel Proxy Server
+    // FIXME: maybe configure default proxy
+    if (settings.childGroups().contains("TunnelProxyServer")) {
+        settings.beginGroup("TunnelProxyServer");
+        if (settings.value("disabled").toBool()) {
+            qCDebug(dcConfiguration) << "Tunnel proxy server disabled by configuration.";
+        } else if (!settings.childGroups().isEmpty()) {
+            foreach (const QString &key, settings.childGroups()) {
+                ServerConfiguration config = readServerConfig("TunnelProxyServer", key);
+                m_tunnelProxyServerConfigs[config.id] = config;
+            }
+        }
+        settings.endGroup();
+    }
+
     // Write defaults for log settings
     settings.beginGroup("Logs");
     settings.setValue("logDBDriver", logDBDriver());
@@ -364,6 +379,25 @@ void NymeaConfiguration::removeWebSocketServerConfiguration(const QString &id)
     m_webSocketServerConfigs.take(id);
     deleteServerConfig("WebSocketServer", id);
     emit webSocketServerConfigurationRemoved(id);
+}
+
+QHash<QString, ServerConfiguration> NymeaConfiguration::tunnelProxyServerConfigurations() const
+{
+    return m_tunnelProxyServerConfigs;
+}
+
+void NymeaConfiguration::setTunnelProxyServerConfiguration(const ServerConfiguration &config)
+{
+    m_tunnelProxyServerConfigs[config.id] = config;
+    storeServerConfig("TunnelProxyServer", config);
+    emit tunnelProxyServerConfigurationChanged(config.id);
+}
+
+void NymeaConfiguration::removeTunnelProxyServerConfiguration(const QString &id)
+{
+    m_tunnelProxyServerConfigs.take(id);
+    deleteServerConfig("TunnelProxyServer", id);
+    emit tunnelProxyServerConfigurationRemoved(id);
 }
 
 QHash<QString, ServerConfiguration> NymeaConfiguration::mqttServerConfigurations() const

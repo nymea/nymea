@@ -66,8 +66,8 @@ signals:
 private slots:
     void onStateChanged(TunnelProxySocketServer::State state);
     void onServerRunningChanged(bool running);
-    void onErrorOccured(QAbstractSocket::SocketError error);
-    void onServerErrorOccured(TunnelProxySocketServer::Error error);
+    void onErrorOccurred(QAbstractSocket::SocketError error);
+    void onServerErrorOccurred(TunnelProxySocketServer::Error error);
     void onSslErrors(const QList<QSslError> &errors);
 
     void onClientConnected(TunnelProxySocket *tunnelProxySocket);

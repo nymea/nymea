@@ -55,8 +55,8 @@ TunnelProxyServer::TunnelProxyServer(const QString &serverName, const QUuid &ser
     m_tunnelProxySocketServer = new TunnelProxySocketServer(m_serverUuid, m_serverName, this);
     connect(m_tunnelProxySocketServer, &TunnelProxySocketServer::stateChanged, this, &TunnelProxyServer::onStateChanged);
     connect(m_tunnelProxySocketServer, &TunnelProxySocketServer::runningChanged, this, &TunnelProxyServer::onServerRunningChanged);
-    connect(m_tunnelProxySocketServer, &TunnelProxySocketServer::errorOccured, this, &TunnelProxyServer::onErrorOccured);
-    connect(m_tunnelProxySocketServer, &TunnelProxySocketServer::serverErrorOccured, this, &TunnelProxyServer::onServerErrorOccured);
+    connect(m_tunnelProxySocketServer, &TunnelProxySocketServer::errorOccurred, this, &TunnelProxyServer::onErrorOccurred);
+    connect(m_tunnelProxySocketServer, &TunnelProxySocketServer::serverErrorOccurred, this, &TunnelProxyServer::onServerErrorOccurred);
     connect(m_tunnelProxySocketServer, &TunnelProxySocketServer::sslErrors, this, &TunnelProxyServer::onSslErrors);
     connect(m_tunnelProxySocketServer, &TunnelProxySocketServer::clientConnected, this, &TunnelProxyServer::onClientConnected);
     connect(m_tunnelProxySocketServer, &TunnelProxySocketServer::clientDisconnected, this, &TunnelProxyServer::onClientDisconnected);
@@ -128,19 +128,19 @@ void TunnelProxyServer::onServerRunningChanged(bool running)
     emit runningChanged(running);
 }
 
-void TunnelProxyServer::onErrorOccured(QAbstractSocket::SocketError error)
+void TunnelProxyServer::onErrorOccurred(QAbstractSocket::SocketError error)
 {
-    qCDebug(dcTunnelProxyServer()) << "Remote proxy connection error occured" << error;
+    qCDebug(dcTunnelProxyServer()) << "Remote proxy connection error occurred" << error;
 }
 
-void TunnelProxyServer::onServerErrorOccured(TunnelProxySocketServer::Error error)
+void TunnelProxyServer::onServerErrorOccurred(TunnelProxySocketServer::Error error)
 {
-    qCWarning(dcTunnelProxyServer()) << "Error occured on server" << m_serverUrl.toString() << error;
+    qCWarning(dcTunnelProxyServer()) << "Error occurred on server" << m_serverUrl.toString() << error;
 }
 
 void TunnelProxyServer::onSslErrors(const QList<QSslError> &errors)
 {
-    qCDebug(dcTunnelProxyServer()) << "Remote proxy connection SSL errors occured" << errors;
+    qCDebug(dcTunnelProxyServer()) << "Remote proxy connection SSL errors occurred" << errors;
     // FIXME: make this configurable
     m_tunnelProxySocketServer->ignoreSslErrors();
 }

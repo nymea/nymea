@@ -83,12 +83,12 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         QString fallbackKeyFileName = NymeaSettings::storagePath() + "/certs/nymead-certificate.key";
 
         bool certsLoaded = false;
-        if (loadCertificate(configKeyFileName, configCertificateFileName)) {
-            qCDebug(dcServerManager()) << "Using SSL certificate:" << configKeyFileName;
+        if (!configKeyFileName.isEmpty() && !configCertificateFileName.isEmpty() && loadCertificate(configKeyFileName, configCertificateFileName)) {
+            qCDebug(dcServerManager()) << "Using SSL certificate:" << configCertificateFileName;
             certsLoaded = true;
-        } else if (loadCertificate(fallbackKeyFileName, fallbackCertificateFileName)) {
+        } else if (!fallbackKeyFileName.isEmpty() && !fallbackCertificateFileName.isEmpty() && loadCertificate(fallbackKeyFileName, fallbackCertificateFileName)) {
             certsLoaded = true;
-            qCWarning(dcServerManager()) << "Using fallback self-signed SSL certificate:" << fallbackCertificateFileName;
+            qCDebug(dcServerManager()) << "Using fallback self-signed SSL certificate:" << fallbackCertificateFileName;
         } else {
             qCDebug(dcServerManager()) << "Generating self signed certificates...";
             CertificateGenerator::generate(fallbackCertificateFileName, fallbackKeyFileName);
@@ -367,7 +367,7 @@ void ServerManager::unregisterZeroConfService(const QString &configId, const QSt
 bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName)
 {
     QFile certificateKeyFile(certificateKeyFileName);
-    if (!certificateKeyFile.exists() || certificateKeyFileName.isEmpty()) {
+    if (!certificateKeyFile.exists()) {
         qCWarning(dcServerManager()) << "Could not load certificate key file" << certificateKeyFile.fileName() << "because the file does not exist.";
         return false;
     }
@@ -382,7 +382,7 @@ bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const
     certificateKeyFile.close();
 
     QFile certificateFile(certificateFileName);
-    if (!certificateFile.exists() || certificateFileName.isEmpty()) {
+    if (!certificateFile.exists()) {
         qCWarning(dcServerManager()) << "Could not load certificate file" << certificateFile.fileName() << "because the file does not exist.";
         return false;
     }

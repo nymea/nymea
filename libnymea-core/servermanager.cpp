@@ -367,19 +367,31 @@ void ServerManager::unregisterZeroConfService(const QString &configId, const QSt
 bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName)
 {
     QFile certificateKeyFile(certificateKeyFileName);
+    if (!certificateKeyFile.exists() || certificateKeyFileName.isEmpty()) {
+        qCWarning(dcServerManager()) << "Could not load certificate key file" << certificateKeyFile.fileName() << "because the file does not exist.";
+        return false;
+    }
+
     if (!certificateKeyFile.open(QIODevice::ReadOnly)) {
         qCWarning(dcServerManager()) << "Could not open" << certificateKeyFile.fileName() << ":" << certificateKeyFile.errorString();
         return false;
     }
+
     m_certificateKey = QSslKey(certificateKeyFile.readAll(), QSsl::Rsa);
     qCDebug(dcServerManager()) << "Loaded private certificate key " << certificateKeyFileName;
     certificateKeyFile.close();
 
     QFile certificateFile(certificateFileName);
+    if (!certificateFile.exists() || certificateFileName.isEmpty()) {
+        qCWarning(dcServerManager()) << "Could not load certificate file" << certificateFile.fileName() << "because the file does not exist.";
+        return false;
+    }
+
     if (!certificateFile.open(QIODevice::ReadOnly)) {
         qCWarning(dcServerManager()) << "Could not open" << certificateFile.fileName() << ":" << certificateFile.errorString();
         return false;
     }
+
     m_certificate = QSslCertificate(certificateFile.readAll());
     qCDebug(dcServerManager()) << "Loaded certificate file " << certificateFileName;
     certificateFile.close();

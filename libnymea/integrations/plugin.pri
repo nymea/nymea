@@ -34,6 +34,12 @@ PKGCONFIG += nymea
 QMAKE_CXXFLAGS *= -Werror -std=c++11 -g -Wno-deprecated-declarations
 QMAKE_LFLAGS *= -std=c++11 -z defs
 
+gcc {
+    COMPILER_VERSION = $$system($$QMAKE_CXX " -dumpversion")
+    COMPILER_MAJOR_VERSION = $$str_member($$COMPILER_VERSION)
+    greaterThan(COMPILER_MAJOR_VERSION, 7): QMAKE_CXXFLAGS += -Wno-deprecated-copy
+}
+
 JSONFILE=$${_PRO_FILE_PWD_}/integrationplugin"$$TARGET".json
 
 # Make the device plugin json file visible in the Qt Creator

@@ -208,7 +208,6 @@ HttpReply *WebServer::processIconRequest(const QString &fileName)
         return HttpReply::createErrorReply(HttpReply::NotFound);
 
     QByteArray imageData;
-
     QImage image(":" + fileName);
     QBuffer buffer(&imageData);
     buffer.open(QIODevice::WriteOnly);

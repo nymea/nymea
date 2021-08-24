@@ -34,8 +34,11 @@
 #include "loggingcategories.h"
 
 #include <QJsonDocument>
-#include <QColor>
 #include <QDateTime>
+
+#ifdef WITH_GUI
+#include <QColor>
+#endif // WITH_GUI
 
 namespace nymeaserver {
 
@@ -241,6 +244,8 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
                 return Result(false, "Invalid Double: " + value.toString());
             }
         }
+
+#ifdef WITH_GUI
         // Color
         if (expectedBasicType == JsonHandler::Color) {
             QColor color = value.value<QColor>();
@@ -248,6 +253,8 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
                 return Result(false, "Invalid Color: " + value.toString());
             }
         }
+#endif // WITH_GUI
+
         // Time
         if (expectedBasicType == JsonHandler::Time) {
             QTime time = QTime::fromString(value.toString(), "hh:mm");

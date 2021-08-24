@@ -31,6 +31,8 @@
 #ifndef SCRIPT_H
 #define SCRIPT_H
 
+#ifdef WITH_QML
+
 #include <QMetaObject>
 #include <QUuid>
 #include <QQmlContext>
@@ -79,5 +81,7 @@ public:
 }
 Q_DECLARE_METATYPE(nymeaserver::Script)
 Q_DECLARE_METATYPE(nymeaserver::Scripts)
+
+#endif // WITH_QML
 
 #endif // SCRIPT_H

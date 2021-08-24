@@ -43,6 +43,7 @@
     \sa TransportInterface
 */
 
+#ifdef WITH_BLUETOOTH
 
 #include "bluetoothserver.h"
 #include "loggingcategories.h"
@@ -258,3 +259,5 @@ bool BluetoothServer::stopServer()
 
 
 }
+
+#endif // WITH_BLUETOOTH

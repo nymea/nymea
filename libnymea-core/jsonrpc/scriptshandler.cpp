@@ -28,6 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef WITH_QML
+
 #include "scriptshandler.h"
 
 #include "loggingcategories.h"
@@ -222,3 +224,5 @@ JsonReply *ScriptsHandler::RemoveScript(const QVariantMap &params)
 }
 
 }
+
+#endif // WITH_QML

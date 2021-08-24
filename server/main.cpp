@@ -120,8 +120,10 @@ int main(int argc, char *argv[])
     QCommandLineOption noColorOption({"c", "no-colors"}, QCoreApplication::translate("nymea", "Log output is colorized by default. Use this option to disable colors."));
     parser.addOption(noColorOption);
 
+#ifdef WITH_DBUS
     QCommandLineOption dbusOption(QStringList() << "session", QCoreApplication::translate("nymea", "If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus."));
     parser.addOption(dbusOption);
+#endif // WITH_DBUS
 
     QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory[Warnings]");
     parser.addOption(debugOption);
@@ -184,9 +186,11 @@ int main(int argc, char *argv[])
     QLoggingCategory::setFilterRules(loggingRules.join('\n'));
 
     // Parse DBus option
+#ifdef WITH_DBUS
     if (parser.isSet(dbusOption)) {
         NymeaDBusService::setBusType(QDBusConnection::SessionBus);
     }
+#endif // WITH_DBUS
 
     bool startForeground = parser.isSet(foregroundOption);
     if (startForeground) {

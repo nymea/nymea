@@ -79,10 +79,10 @@
 #include <QSqlQuery>
 #include <QVariant>
 #include <QSqlError>
-#include <QRegExpValidator>
 #include <QDateTime>
 #include <QDebug>
 #include <QFileInfo>
+#include <QRegExpValidator>
 
 namespace nymeaserver {
 
@@ -109,10 +109,11 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
             }
         }
     }
-
+#ifdef WITH_DBUS
     m_pushButtonDBusService = new PushButtonDBusService("/io/guh/nymead/UserManager", this);
     connect(m_pushButtonDBusService, &PushButtonDBusService::pushButtonPressed, this, &UserManager::onPushButtonPressed);
     m_pushButtonTransaction = qMakePair<int, QString>(-1, QString());
+#endif // WITH_DBUS
 }
 
 /*! Will return true if the database is working fine but doesn't have any information on users whatsoever.
@@ -232,7 +233,11 @@ UserManager::UserError UserManager::removeUser(const QString &username)
 /*! Returns true if the push button authentication is available for this system. */
 bool UserManager::pushButtonAuthAvailable() const
 {
+#ifdef WITH_DBUS
     return m_pushButtonDBusService->agentAvailable();
+#else
+    return false;
+#endif // WITH_DBUS
 }
 
 /*! Authenticated the given \a username with the given \a password for the \a deviceName. If the authentication was

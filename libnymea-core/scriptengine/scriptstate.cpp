@@ -28,6 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef WITH_QML
+
 #include "scriptstate.h"
 
 #include "loggingcategories.h"
@@ -263,3 +265,5 @@ void ScriptState::connectToThing()
 }
 
 }
+
+#endif // WITH_QML

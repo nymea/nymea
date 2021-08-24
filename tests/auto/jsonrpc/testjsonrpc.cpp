@@ -149,7 +149,9 @@ QStringList TestJSONRPC::extractRefs(const QVariant &variant)
 
 void TestJSONRPC::initTestCase()
 {
+#ifdef WITH_DBUS
     NymeaDBusService::setBusType(QDBusConnection::SessionBus);
+#endif // WITH_DBUS
     NymeaTestBase::initTestCase();
     QLoggingCategory::setFilterRules("*.debug=false\n"
 //                                     "JsonRpcTraffic.debug=true\n"

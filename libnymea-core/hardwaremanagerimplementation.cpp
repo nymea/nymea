@@ -70,8 +70,10 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
     // UPnP discovery
     m_upnpDiscovery = new UpnpDiscoveryImplementation(m_networkAccessManager, this);
 
+#ifdef WITH_BLUETOOTH
     // Bluetooth LE
     m_bluetoothLowEnergyManager = new BluetoothLowEnergyManagerImplementation(m_pluginTimerManager->registerTimer(10), this);
+#endif // WITH_BLUETOOTH
 
     m_i2cManager = new I2CManagerImplementation(this);
 
@@ -94,8 +96,10 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
     if (m_platform->zeroConfController()->available())
         setResourceEnabled(m_platform->zeroConfController(), true);
 
+#ifdef WITH_BLUETOOTH
     if (m_bluetoothLowEnergyManager->available())
         setResourceEnabled(m_bluetoothLowEnergyManager, true);
+#endif // WITH_BLUETOOTH
 
     m_mqttProvider = new MqttProviderImplementation(mqttBroker, this);
     qCDebug(dcHardware()) << "Hardware manager initialized successfully";
@@ -130,11 +134,12 @@ PlatformZeroConfController *HardwareManagerImplementation::zeroConfController()
 {
     return m_platform->zeroConfController();
 }
-
+#ifdef WITH_BLUETOOTH
 BluetoothLowEnergyManager *HardwareManagerImplementation::bluetoothLowEnergyManager()
 {
     return m_bluetoothLowEnergyManager;
 }
+#endif // WITH_BLUETOOTH
 
 MqttProvider *HardwareManagerImplementation::mqttProvider()
 {

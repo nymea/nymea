@@ -89,7 +89,7 @@ PyObject *PythonIntegrationPlugin::pyMyThings(PyObject *self, PyObject */*args*/
         qCWarning(dcThingManager()) << "Cannot find plugin instance for this python module.";
         return nullptr;
     }
-    
+
     plugin->m_mutex.lock();
     PyObject* result = PyTuple_New(plugin->m_things.count());
     for (int i = 0; i < plugin->m_things.count(); i++) {
@@ -540,7 +540,6 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
 
     connect(info->thing(), &Thing::destroyed, this, [=](){
         PyEval_RestoreThread(m_threadState);
-        m_things.remove(thing);
         pyThing->thing = nullptr;
         Py_DECREF(pyThing);
         m_threadPool->setMaxThreadCount(m_threadPool->maxThreadCount() - 1);
@@ -595,7 +594,7 @@ void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
 
 void PythonIntegrationPlugin::thingRemoved(Thing *thing)
 {
-    PyThing *pyThing = m_things.value(thing);
+    PyThing *pyThing = m_things.take(thing);
     callPluginFunction("thingRemoved", reinterpret_cast<PyObject*>(pyThing));
 }
 

@@ -116,7 +116,9 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
         break;
     case SettingsRoleThingStates:
         fileName = "thingstates.conf";
-        break;
+        // NOTE: this is a hard fix for verbund-mecmeter only
+        m_settings = new QSettings("/tmp/" + fileName, QSettings::IniFormat, this);
+        return;
     case SettingsRoleTags:
         fileName = "tags.conf";
         break;

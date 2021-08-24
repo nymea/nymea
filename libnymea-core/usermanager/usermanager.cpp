@@ -82,11 +82,7 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QFileInfo>
-
-#ifdef WITH_GUI
 #include <QRegExpValidator>
-#endif
-
 
 namespace nymeaserver {
 

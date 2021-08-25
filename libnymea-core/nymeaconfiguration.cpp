@@ -524,7 +524,9 @@ QString NymeaConfiguration::logDBName() const
     } else if (organisationName == "nymea-test") {
         defaultLogPath = "/tmp/" + organisationName + "/nymead-test.sqlite";
     } else if (NymeaSettings::isRoot()) {
-        defaultLogPath = "/var/log/nymead.sqlite";
+        // Note: openwrt hardware is very sensible regarding write cycles, let's force it to
+        // tmp (volatile storage) hardcoded hotfix for the PoC
+        defaultLogPath = "/tmp/nymead.sqlite";
     } else {
         defaultLogPath = QDir::homePath() + "/.config/" + organisationName + "/nymead.sqlite";
     }

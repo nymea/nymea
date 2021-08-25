@@ -116,7 +116,8 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
         break;
     case SettingsRoleThingStates:
         fileName = "thingstates.conf";
-        // NOTE: this is a hard fix for verbund-mecmeter only
+        // Note: openwrt hardware is very sensible regarding write cycles, let's force it to
+        // tmp (volontile storage) hardcoded hotfix for the PoC
         m_settings = new QSettings("/tmp/" + fileName, QSettings::IniFormat, this);
         return;
     case SettingsRoleTags:
@@ -202,7 +203,8 @@ QString NymeaSettings::storagePath()
     } else if (organisationName == "nymea-test") {
         path = "/tmp/" + organisationName;
     } else if (NymeaSettings::isRoot()) {
-        path = "/var/lib/" + organisationName;
+        // Note: openwrt mounts /var/lib into tmpfs: let's force it to /etc as harcoded hotfix for the PoC
+        path = "/etc/" + organisationName;
     } else {
         path = QDir::homePath() + "/.local/share/" + organisationName;
     }

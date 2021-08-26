@@ -1,5 +1,5 @@
 {
-    "description": "Energy meters measure electric power consumption/production on 3 phases. Often used as root measurements.",
+    "description": "Energy meters measure electric power consumption/production on 1, 2 or 3 phases. Often used as root measurements.",
     "extends": [ "smartmeter" ],
     "states": [
         {
@@ -26,12 +26,14 @@
         {
             "name": "energyConsumedPhaseB",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "optional": true
         },
         {
             "name": "energyConsumedPhaseC",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "optional": true
         },
         {
             "name": "energyProducedPhaseA",
@@ -41,12 +43,14 @@
         {
             "name": "energyProducedPhaseB",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "optional": true
         },
         {
             "name": "energyProducedPhaseC",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "optional": true
         },
         {
             "name": "currentPowerPhaseA",
@@ -56,12 +60,14 @@
         {
             "name": "currentPowerPhaseB",
             "type": "double",
-            "unit": "Watt"
+            "unit": "Watt",
+            "optional": true
         },
         {
             "name": "currentPowerPhaseC",
             "type": "double",
-            "unit": "Watt"
+            "unit": "Watt",
+            "optional": true
         },
         {
             "name": "currentPhaseA",
@@ -71,12 +77,14 @@
         {
             "name": "currentPhaseB",
             "type": "double",
-            "unit": "Ampere"
+            "unit": "Ampere",
+            "optional": true
         },
         {
             "name": "currentPhaseC",
             "type": "double",
-            "unit": "Ampere"
+            "unit": "Ampere",
+            "optional": true
         },
         {
             "name": "voltagePhaseA",
@@ -86,12 +94,14 @@
         {
             "name": "voltagePhaseB",
             "type": "double",
-            "unit": "Volt"
+            "unit": "Volt",
+            "optional": true
         },
         {
             "name": "voltagePhaseC",
             "type": "double",
-            "unit": "Volt"
+            "unit": "Volt",
+            "optional": true
         }
     ]
 }

@@ -1,5 +1,5 @@
 {
-    "description": "Energy meters measure electric power consumption/production on 1, 2 or 3 phases. Often used as root measurements.",
+    "description": "Energy meters measure electric power consumption/production on 1, 2 or 3 phases. Often used as root measurements. If a meter uses more than 1 phase, as many states as possible for each phase shall be implemented. If there is only one phase, the total energy, total current etc. including voltage and current for phase A should be implemented.",
     "extends": [ "smartmeter" ],
     "states": [
         {
@@ -23,7 +23,8 @@
         {
             "name": "energyConsumedPhaseA",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "optional": true
         },
         {
             "name": "energyConsumedPhaseB",
@@ -40,7 +41,8 @@
         {
             "name": "energyProducedPhaseA",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "optional": true
         },
         {
             "name": "energyProducedPhaseB",
@@ -57,7 +59,8 @@
         {
             "name": "currentPowerPhaseA",
             "type": "double",
-            "unit": "Watt"
+            "unit": "Watt",
+            "optional": true
         },
         {
             "name": "currentPowerPhaseB",

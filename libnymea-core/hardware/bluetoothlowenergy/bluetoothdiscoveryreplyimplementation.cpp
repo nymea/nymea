@@ -28,6 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef WITH_BLUETOOTH
+
 #include "bluetoothdiscoveryreplyimplementation.h"
 
 #include <QTimer>
@@ -76,3 +78,6 @@ void BluetoothDiscoveryReplyImplementation::setFinished()
 }
 
 }
+
+#endif // WITH_BLUETOOTH
+

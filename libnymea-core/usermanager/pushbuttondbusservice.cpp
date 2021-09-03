@@ -28,6 +28,8 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef WITH_DBUS
+
 #include "pushbuttondbusservice.h"
 #include "loggingcategories.h"
 #include "nymeadbusservice.h"
@@ -99,3 +101,4 @@ void PushButtonDBusService::serviceUnregistered(const QString &serviceName)
 }
 
 }
+#endif // WITH_DBUS

@@ -32,8 +32,11 @@
 #define HARDWAREMANAGERIMPLEMENTATION_H
 
 #include <QObject>
-#include <QDBusConnection>
 #include <QNetworkAccessManager>
+
+#ifdef WITH_DBUS
+#include <QDBusConnection>
+#endif // WITH_DBUS
 
 #include "hardwaremanager.h"
 
@@ -59,12 +62,15 @@ public:
     NetworkAccessManager *networkManager() override;
     UpnpDiscovery *upnpDiscovery() override;
     PlatformZeroConfController *zeroConfController() override;
-    BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
     MqttProvider *mqttProvider() override;
     I2CManager *i2cManager() override;
     ZigbeeHardwareResource *zigbeeResource() override;
     ModbusRtuHardwareResource *modbusRtuResource() override;
     NetworkDeviceDiscovery *networkDeviceDiscovery() override;
+
+#ifdef WITH_BLUETOOTH
+    BluetoothLowEnergyManager *bluetoothLowEnergyManager() override;
+#endif // WITH_BLUETOOTH
 
 public slots:
     void thingsLoaded();
@@ -79,13 +85,15 @@ private:
     Radio433 *m_radio433 = nullptr;
     NetworkAccessManager *m_networkManager = nullptr;
     UpnpDiscovery *m_upnpDiscovery = nullptr;
-    BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
     MqttProvider *m_mqttProvider = nullptr;
     I2CManager *m_i2cManager = nullptr;
     ZigbeeHardwareResourceImplementation *m_zigbeeResource = nullptr;
     ModbusRtuHardwareResourceImplementation *m_modbusRtuResource = nullptr;
     NetworkDeviceDiscovery *m_networkDeviceDiscovery = nullptr;
 
+#ifdef WITH_BLUETOOTH
+    BluetoothLowEnergyManager *m_bluetoothLowEnergyManager = nullptr;
+#endif // WITH_BLUETOOTH
 };
 
 }

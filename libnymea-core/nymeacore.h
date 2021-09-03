@@ -64,7 +64,9 @@ class UserManager;
 class Platform;
 class System;
 class ExperienceManager;
+#ifdef WITH_QML
 class ScriptEngine;
+#endif // WITH_QML
 class CloudManager;
 class ZigbeeManager;
 class ModbusRtuManager;
@@ -98,11 +100,17 @@ public:
     JsonRPCServerImplementation *jsonRPCServer() const;
     ThingManager *thingManager() const;
     RuleEngine *ruleEngine() const;
+#ifdef WITH_QML
     ScriptEngine *scriptEngine() const;
+#endif // WITH_QML
     TimeManager *timeManager() const;
     ServerManager *serverManager() const;
+#ifdef WITH_BLUETOOTH
     BluetoothServer *bluetoothServer() const;
+#endif // WITH_BLUETOOTH
+#ifdef WITH_DBUS
     NetworkManager *networkManager() const;
+#endif // WITH_DBUS
     UserManager *userManager() const;
     CloudManager *cloudManager() const;
     DebugServerHandler *debugServerHandler() const;
@@ -141,7 +149,9 @@ private:
     ServerManager *m_serverManager;
     ThingManagerImplementation *m_thingManager;
     RuleEngine *m_ruleEngine;
+#ifdef WITH_QML
     ScriptEngine *m_scriptEngine;
+#endif // WITH_QML
     LogEngine *m_logger;
     TimeManager *m_timeManager;
     CloudManager *m_cloudManager;
@@ -149,7 +159,9 @@ private:
     DebugServerHandler *m_debugServerHandler;
     TagsStorage *m_tagsStorage;
 
+#ifdef WITH_DBUS
     NetworkManager *m_networkManager;
+#endif // WITH_DBUS
     UserManager *m_userManager;
     System *m_system;
     ExperienceManager *m_experienceManager;

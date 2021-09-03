@@ -31,6 +31,8 @@
 #ifndef NYMEADBUSSERVICE_H
 #define NYMEADBUSSERVICE_H
 
+#ifdef WITH_DBUS
+
 #include <QObject>
 #include <QDBusConnection>
 #include <QDBusContext>
@@ -57,5 +59,6 @@ private:
 
 };
 
+#endif // WITH_DBUS
 
 #endif // NYMEADBUSSERVICE_H

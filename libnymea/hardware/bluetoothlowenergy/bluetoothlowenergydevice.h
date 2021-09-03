@@ -31,6 +31,8 @@
 #ifndef BLUETOOTHLOWENERGYDEVICE_H
 #define BLUETOOTHLOWENERGYDEVICE_H
 
+#ifdef WITH_BLUETOOTH
+
 #include <QObject>
 #include <QBluetoothDeviceInfo>
 #include <QBluetoothAddress>
@@ -70,5 +72,7 @@ signals:
     void servicesDiscoveryFinished();
 
 };
+
+#endif // WITH_BLUETOOTH
 
 #endif // BLUETOOTHLOWENERGYDEVICE_H

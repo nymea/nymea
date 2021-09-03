@@ -31,6 +31,8 @@
 #ifndef SCRIPTENGINE_H
 #define SCRIPTENGINE_H
 
+#ifdef WITH_QML
+
 #include <QObject>
 #include <QUuid>
 #include <QQmlEngine>
@@ -116,5 +118,7 @@ private:
 };
 
 }
+
+#endif // WITH_QML
 
 #endif // SCRIPTENGINE_H

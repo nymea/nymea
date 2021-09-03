@@ -39,13 +39,16 @@ class PluginTimerManager;
 class NetworkAccessManager;
 class UpnpDeviceDescriptor;
 class PlatformZeroConfController;
-class BluetoothLowEnergyManager;
 class MqttProvider;
 class I2CManager;
 class ZigbeeHardwareResource;
 class HardwareResource;
 class ModbusRtuHardwareResource;
 class NetworkDeviceDiscovery;
+
+#ifdef WITH_BLUETOOTH
+class BluetoothLowEnergyManager;
+#endif
 
 class HardwareManager : public QObject
 {
@@ -61,12 +64,15 @@ public:
     virtual NetworkAccessManager *networkManager() = 0;
     virtual UpnpDiscovery *upnpDiscovery() = 0;
     virtual PlatformZeroConfController *zeroConfController() = 0;
-    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
     virtual MqttProvider *mqttProvider() = 0;
     virtual I2CManager *i2cManager() = 0;
     virtual ZigbeeHardwareResource *zigbeeResource() = 0;
     virtual ModbusRtuHardwareResource *modbusRtuResource() = 0;
     virtual NetworkDeviceDiscovery *networkDeviceDiscovery() = 0;
+
+#ifdef WITH_BLUETOOTH
+    virtual BluetoothLowEnergyManager *bluetoothLowEnergyManager() = 0;
+#endif
 
 protected:
     void setResourceEnabled(HardwareResource* resource, bool enabled);

@@ -37,12 +37,17 @@
 #include <QHash>
 #include <QDir>
 #include <QTimer>
-#include <QImage>
 #include <QBuffer>
 #include <QSslSocket>
 #include <QSslCertificate>
 #include <QSslConfiguration>
 #include <QSslKey>
+
+#ifdef WITH_GUI
+#include <QImage>
+#else
+#include <QFile>
+#endif // WITH_GUI
 
 #include "nymeaconfiguration.h"
 

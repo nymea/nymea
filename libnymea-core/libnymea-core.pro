@@ -3,12 +3,47 @@ TARGET = nymea-core
 
 include(../nymea.pri)
 
-QT += bluetooth dbus qml sql websockets serialport
+QT += sql websockets serialport
 INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 
 CONFIG += link_pkgconfig
-PKGCONFIG += nymea-mqtt nymea-networkmanager nymea-zigbee nymea-remoteproxyclient
+PKGCONFIG += nymea-mqtt nymea-zigbee nymea-remoteproxyclient
+
+qtHaveModule(gui):!disablegui {
+    QT += gui
+    DEFINES += WITH_GUI
+} else {
+    QT -=gui
+}
+
+# Note: qml is not available on all platforms
+qtHaveModule(qml):!disableqml {
+    message("Building with qml support")
+    QT += qml
+    DEFINES += WITH_QML
+} else {
+    message("Building without qml support.")
+}
+
+# Note: bluetooth is not available on all platforms
+qtHaveModule(bluetooth):!disablebluetooth {
+    message("Building with bluetooth support")
+    QT += bluetooth
+    DEFINES += WITH_BLUETOOTH
+} else {
+    message("Building without bluetooth support.")
+}
+
+# Note: dbus is not available on all platforms
+qtHaveModule(dbus):!disabledbus {
+    message("Building with dbus support")
+    QT += dbus
+    DEFINES += WITH_DBUS
+    PKGCONFIG += nymea-networkmanager
+} else {
+    message("Building without dbus support.")
+}
 
 CONFIG(withoutpython) {
     message("Building without python support.")
@@ -256,13 +291,13 @@ SOURCES += nymeacore.cpp \
     zigbee/zigbeeadapters.cpp \
     zigbee/zigbeemanager.cpp
 
-versionAtLeast(QT_VERSION, 5.12.0) {
-message("Building with JS plugin support")
-HEADERS += \
-    integrations/scriptintegrationplugin.h
+if (versionAtLeast(QT_VERSION, 5.12.0):qtHaveModule(qml):!disableqml) {
+    message("Building with JS plugin support")
+    HEADERS += \
+        integrations/scriptintegrationplugin.h
 
-SOURCES += \
-    integrations/scriptintegrationplugin.cpp
+    SOURCES += \
+        integrations/scriptintegrationplugin.cpp
 }
 
 CONFIG(python) {

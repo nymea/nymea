@@ -31,6 +31,8 @@
 #ifndef SCRIPTINTERFACEACTION_H
 #define SCRIPTINTERFACEACTION_H
 
+#ifdef WITH_QML
+
 #include <QObject>
 #include <QQmlParserStatus>
 
@@ -69,5 +71,7 @@ public:
 };
 
 }
+
+#endif // WITH_QML
 
 #endif // SCRIPTINTERFACEACTION_H

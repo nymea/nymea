@@ -31,6 +31,8 @@
 #ifndef BLUETOOTHDISCOVERYREPLY_H
 #define BLUETOOTHDISCOVERYREPLY_H
 
+#ifdef WITH_BLUETOOTH
+
 #include <QObject>
 #include <QBluetoothDeviceInfo>
 
@@ -61,5 +63,7 @@ signals:
     void errorOccurred(const BluetoothDiscoveryReplyError &error);
 
 };
+
+#endif // WITH_BLUETOOTH
 
 #endif // BLUETOOTHDISCOVERYREPLY_H

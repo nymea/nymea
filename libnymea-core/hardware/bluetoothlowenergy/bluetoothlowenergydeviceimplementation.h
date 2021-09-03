@@ -31,6 +31,8 @@
 #ifndef BLUETOOTHLOWENERGYDEVICEIMPLEMENTATION_H
 #define BLUETOOTHLOWENERGYDEVICEIMPLEMENTATION_H
 
+#ifdef WITH_BLUETOOTH
+
 #include <QObject>
 #include <QBluetoothDeviceInfo>
 #include <QBluetoothAddress>
@@ -89,5 +91,7 @@ private slots:
 };
 
 }
+
+#endif // WITH_BLUETOOTH
 
 #endif // BLUETOOTHLOWENERGYDEVICEIMPLEMENTATION_H

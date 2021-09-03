@@ -1,51 +1,78 @@
 {
-    "description": "Energy meters measure electric power consumption/production on 3 phases. Often used as root measurements.",
-    "extends": [ "smartmeterconsumer", "smartmeterproducer" ],
+    "description": "Energy meters measure electric power consumption/production on 1, 2 or 3 phases. Often used as root measurements. If a meter uses more than 1 phase, as many states as possible for each phase shall be implemented. If there is only one phase, the total energy, total current etc. including voltage and current for phase A should be implemented.",
+    "extends": [ "smartmeter" ],
     "states": [
+        {
+            "name": "totalEnergyConsumed",
+            "type": "double",
+            "unit": "KiloWattHour",
+            "logged": true
+        },
+        {
+            "name": "totalEnergyProduced",
+            "type": "double",
+            "unit": "KiloWattHour",
+            "logged": true
+        },
+        {
+            "name": "currentPower",
+            "type": "double",
+            "unit": "Watt",
+            "logged": true
+        },
         {
             "name": "energyConsumedPhaseA",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "optional": true
         },
         {
             "name": "energyConsumedPhaseB",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "optional": true
         },
         {
             "name": "energyConsumedPhaseC",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "optional": true
         },
         {
             "name": "energyProducedPhaseA",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "optional": true
         },
         {
             "name": "energyProducedPhaseB",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "optional": true
         },
         {
             "name": "energyProducedPhaseC",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "optional": true
         },
         {
             "name": "currentPowerPhaseA",
             "type": "double",
-            "unit": "Watt"
+            "unit": "Watt",
+            "optional": true
         },
         {
             "name": "currentPowerPhaseB",
             "type": "double",
-            "unit": "Watt"
+            "unit": "Watt",
+            "optional": true
         },
         {
             "name": "currentPowerPhaseC",
             "type": "double",
-            "unit": "Watt"
+            "unit": "Watt",
+            "optional": true
         },
         {
             "name": "currentPhaseA",
@@ -55,12 +82,14 @@
         {
             "name": "currentPhaseB",
             "type": "double",
-            "unit": "Ampere"
+            "unit": "Ampere",
+            "optional": true
         },
         {
             "name": "currentPhaseC",
             "type": "double",
-            "unit": "Ampere"
+            "unit": "Ampere",
+            "optional": true
         },
         {
             "name": "voltagePhaseA",
@@ -70,12 +99,14 @@
         {
             "name": "voltagePhaseB",
             "type": "double",
-            "unit": "Volt"
+            "unit": "Volt",
+            "optional": true
         },
         {
             "name": "voltagePhaseC",
             "type": "double",
-            "unit": "Volt"
+            "unit": "Volt",
+            "optional": true
         }
     ]
 }

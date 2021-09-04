@@ -9,7 +9,7 @@ QT -= gui
 DEFINES += LIBNYMEA_LIBRARY
 
 CONFIG += link_pkgconfig
-PKGCONFIG += nymea-zigbee nymea-mqtt
+PKGCONFIG += nymea-zigbee nymea-mqtt nymea-gpio
 
 QMAKE_LFLAGS += -fPIC
 
@@ -65,8 +65,6 @@ HEADERS += \
     typeutils.h \
     loggingcategories.h \
     nymeasettings.h \
-    hardware/gpio.h \
-    hardware/gpiomonitor.h \
     hardware/pwm.h \
     hardware/radio433/radio433.h \
     network/upnp/upnpdiscovery.h \
@@ -162,8 +160,6 @@ SOURCES += \
     nymeasettings.cpp \
     platform/package.cpp \
     platform/repository.cpp \
-    hardware/gpio.cpp \
-    hardware/gpiomonitor.cpp \
     hardware/pwm.cpp \
     hardware/radio433/radio433.cpp \
     network/upnp/upnpdiscovery.cpp \

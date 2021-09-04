@@ -38,7 +38,7 @@
 #include <QDebug>
 
 #include "libnymea.h"
-#include "hardware/gpio.h"
+#include "gpio.h"
 
 namespace nymeaserver {
 

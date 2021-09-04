@@ -65,7 +65,7 @@
 
 #include "radio433.h"
 #include "loggingcategories.h"
-#include "hardware/gpio.h"
+#include "gpio.h"
 
 #include <QFileInfo>
 

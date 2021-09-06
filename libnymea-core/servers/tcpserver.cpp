@@ -214,7 +214,7 @@ void SslServer::incomingConnection(qintptr socketDescriptor)
 
     qCDebug(dcTcpServer()) << "New client socket connection:" << sslSocket;
 
-    connect(sslSocket, &QSslSocket::encrypted, [this, sslSocket](){ emit clientConnected(sslSocket); });
+    connect(sslSocket, &QSslSocket::encrypted, this, [this, sslSocket](){ emit clientConnected(sslSocket); });
     connect(sslSocket, &QSslSocket::readyRead, this, &SslServer::onSocketReadyRead);
     connect(sslSocket, &QSslSocket::disconnected, this, &SslServer::onClientDisconnected);
     typedef void (QSslSocket:: *sslErrorsSignal)(const QList<QSslError> &);

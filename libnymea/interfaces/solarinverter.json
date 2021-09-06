@@ -1,0 +1,4 @@
+{
+    "description": "Interface for solar inverters",
+    "extends": "smartmeterproducer"
+}

@@ -83,12 +83,12 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         QString fallbackKeyFileName = NymeaSettings::storagePath() + "/certs/nymead-certificate.key";
 
         bool certsLoaded = false;
-        if (loadCertificate(configKeyFileName, configCertificateFileName)) {
-            qCDebug(dcServerManager()) << "Using SSL certificate:" << configKeyFileName;
+        if (!configKeyFileName.isEmpty() && !configCertificateFileName.isEmpty() && loadCertificate(configKeyFileName, configCertificateFileName)) {
+            qCDebug(dcServerManager()) << "Using SSL certificate:" << configCertificateFileName;
             certsLoaded = true;
-        } else if (loadCertificate(fallbackKeyFileName, fallbackCertificateFileName)) {
+        } else if (!fallbackKeyFileName.isEmpty() && !fallbackCertificateFileName.isEmpty() && loadCertificate(fallbackKeyFileName, fallbackCertificateFileName)) {
             certsLoaded = true;
-            qCWarning(dcServerManager()) << "Using fallback self-signed SSL certificate:" << fallbackCertificateFileName;
+            qCDebug(dcServerManager()) << "Using fallback self-signed SSL certificate:" << fallbackCertificateFileName;
         } else {
             qCDebug(dcServerManager()) << "Generating self signed certificates...";
             CertificateGenerator::generate(fallbackCertificateFileName, fallbackKeyFileName);
@@ -367,19 +367,31 @@ void ServerManager::unregisterZeroConfService(const QString &configId, const QSt
 bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName)
 {
     QFile certificateKeyFile(certificateKeyFileName);
+    if (!certificateKeyFile.exists()) {
+        qCWarning(dcServerManager()) << "Could not load certificate key file" << certificateKeyFile.fileName() << "because the file does not exist.";
+        return false;
+    }
+
     if (!certificateKeyFile.open(QIODevice::ReadOnly)) {
         qCWarning(dcServerManager()) << "Could not open" << certificateKeyFile.fileName() << ":" << certificateKeyFile.errorString();
         return false;
     }
+
     m_certificateKey = QSslKey(certificateKeyFile.readAll(), QSsl::Rsa);
     qCDebug(dcServerManager()) << "Loaded private certificate key " << certificateKeyFileName;
     certificateKeyFile.close();
 
     QFile certificateFile(certificateFileName);
+    if (!certificateFile.exists()) {
+        qCWarning(dcServerManager()) << "Could not load certificate file" << certificateFile.fileName() << "because the file does not exist.";
+        return false;
+    }
+
     if (!certificateFile.open(QIODevice::ReadOnly)) {
         qCWarning(dcServerManager()) << "Could not open" << certificateFile.fileName() << ":" << certificateFile.errorString();
         return false;
     }
+
     m_certificate = QSslCertificate(certificateFile.readAll());
     qCDebug(dcServerManager()) << "Loaded certificate file " << certificateFileName;
     certificateFile.close();

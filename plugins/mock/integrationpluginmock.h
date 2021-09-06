@@ -32,7 +32,7 @@
 #define INTEGRATIONPLUGINMOCK_H
 
 #include "integrations/integrationplugin.h"
-
+#include "extern-plugininfo.h"
 #include <QProcess>
 
 class HttpDaemon;

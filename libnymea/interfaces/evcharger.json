@@ -7,6 +7,11 @@
             "type": "double",
             "writable": true,
             "unit": "Ampere"
+        },
+        {
+            "name": "pluggedIn",
+            "type": "bool",
+            "optional": true
         }
     ]
 }

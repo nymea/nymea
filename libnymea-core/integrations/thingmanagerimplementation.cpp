@@ -1370,7 +1370,7 @@ void ThingManagerImplementation::loadPlugins()
                     delete p;
                 }
 #else
-                qCWarning(dcThingManager()) << "Not loading Python plugin as Python plugin support is not included in this nymea instance.2";
+                qCWarning(dcThingManager()) << "Not loading Python plugin as Python plugin support is not included in this nymea instance.";
 #endif
             } else {
                 // Not a known plugin type

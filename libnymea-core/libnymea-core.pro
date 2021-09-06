@@ -70,6 +70,7 @@ HEADERS += nymeacore.h \
     integrations/python/pybrowseritem.h \
     integrations/python/pybrowseritemresult.h \
     integrations/python/pypluginstorage.h \
+    integrations/python/pyplugintimer.h \
     integrations/thingmanagerimplementation.h \
     integrations/translator.h \
     experiences/experiencemanager.h \

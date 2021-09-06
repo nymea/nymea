@@ -17,6 +17,7 @@
 #include "pybrowseritem.h"
 #include "pybrowseractioninfo.h"
 #include "pybrowseritemresult.h"
+#include "pyplugintimer.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -39,6 +40,7 @@ static int nymea_exec(PyObject *m) {
     registerBrowserItemType(m);
     registerBrowserActionInfoType(m);
     registerBrowserItemResultType(m);
+    registerPluginTimerType(m);
 
     return 0;
 }

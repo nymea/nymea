@@ -1,7 +1,30 @@
-nymea (0.29.0) UNRELEASED; urgency=medium
+nymea (0.29.0) xenial; urgency=medium
 
+  [ Michael Zanetti ]
+  * Bump version to 0.29.0
+  * Add O2, PH, ORP, CO and flammable gas sensor interfaces
+  * Update energymeter interface
+  * Add more methods to get to states by name instead of id
 
- -- Michael Zanetti <michael.zanetti@nymea.io>  Fri, 09 Jul 2021 13:37:38 +0200
+  [ Simon Stürz ]
+  * Fix TCP server internal signal connection
+
+  [ Michael Zanetti ]
+  * Force unit on humidity sensor interface
+  * Silence some spamming debug messages from project files
+  * Add PluginTimer API to python plugins
+  * Add a solar inverter interface
+  * Add a plugged in state to evcharger interface
+  * Add an electricvehicle interface
+
+  [ Simon Stürz ]
+  * Prevent unspecific warnings during certificate loading
+
+  [ Michael Zanetti ]
+  * Fix myThings() not being updated before thingRemoved in python
+    plugins
+
+ -- Jenkins <jenkins@nymea.io>  Mon, 06 Sep 2021 09:05:11 +0200
 
 nymea (0.28.1) xenial; urgency=medium
 

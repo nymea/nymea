@@ -14,6 +14,9 @@ LIBS += -L$$top_builddir/libnymea/ -lnymea \
         -L$$top_builddir/libnymea-core -lnymea-core \
         -lnymea-remoteproxyclient
 
+CONFIG += link_pkgconfig
+PKGCONFIG += nymea-zigbee
+
 # Server files
 include(qtservice/qtservice.pri)
 

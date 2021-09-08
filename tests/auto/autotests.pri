@@ -14,6 +14,8 @@ packagesExist(Qt5SerialBus) {
     message("Qt5SerialBus package not found. Building without QtSerialBus support.")
 }
 
+PKGCONFIG += nymea-zigbee
+
 INCLUDEPATH += $$top_srcdir/libnymea \
                $$top_srcdir/libnymea-core \
                $$top_srcdir/tests/testlib/ \

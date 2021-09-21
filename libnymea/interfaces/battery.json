@@ -20,13 +20,9 @@
             "optional": true
         },
         {
-            "name": "charging",
-            "type": "bool",
-            "optional": true
-        },
-        {
-            "name": "discharging",
-            "type": "bool",
+            "name": "chargingState",
+            "type": "QString",
+            "allowdValues": ["idle", "charging", "discharging"],
             "optional": true
         }
     ]

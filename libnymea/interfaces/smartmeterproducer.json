@@ -5,7 +5,8 @@
         {
             "name": "totalEnergyProduced",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "logged": true
         },
         {
             "name": "currentPower",

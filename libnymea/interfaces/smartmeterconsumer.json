@@ -12,7 +12,6 @@
             "name": "currentPower",
             "type": "double",
             "unit": "Watt",
-            "optional": true,
             "logged": true
         }
     ]

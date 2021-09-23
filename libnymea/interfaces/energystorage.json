@@ -11,7 +11,7 @@
         {
             "name": "capacity",
             "type": "double",
-            "unit": "WattHour"
+            "unit": "KiloWattHour"
         }
     ]
 }

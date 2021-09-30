@@ -95,7 +95,7 @@ signals:
 private slots:
     void pluginConfigChanged(const PluginId &id, const ParamList &config);
 
-    void thingStateChanged(Thing *thing, const QUuid &stateTypeId, const QVariant &value);
+    void thingStateChanged(Thing *thing, const QUuid &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
 
     void thingRemovedNotification(const ThingId &thingId);
 

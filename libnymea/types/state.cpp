@@ -80,6 +80,26 @@ void State::setValue(const QVariant &value)
     m_value = value;
 }
 
+void State::setMinValue(const QVariant &minValue)
+{
+    m_minValue = minValue;
+}
+
+void State::setMaxValue(const QVariant &maxValue)
+{
+    m_maxValue = maxValue;
+}
+
+QVariant State::minValue() const
+{
+    return m_minValue;
+}
+
+QVariant State::maxValue() const
+{
+    return m_maxValue;
+}
+
 Types::StateValueFilter State::filter() const
 {
     return m_filter;

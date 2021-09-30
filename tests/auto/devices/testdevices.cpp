@@ -897,7 +897,7 @@ void TestDevices::getActionTypes_data()
     QTest::addColumn<QList<ActionTypeId> >("actionTypeTestData");
 
     QTest::newRow("valid deviceclass") << mockThingClassId
-                                       << (QList<ActionTypeId>() << mockAsyncActionTypeId << mockAsyncFailingActionTypeId << mockFailingActionTypeId << mockWithoutParamsActionTypeId << mockPowerActionTypeId << mockWithoutParamsActionTypeId << mockBatteryLevelActionTypeId << mockSignalStrengthActionTypeId << mockUpdateStatusActionTypeId << mockPerformUpdateActionTypeId);
+                                       << (QList<ActionTypeId>() << mockIntWithLimitsActionTypeId << mockAsyncActionTypeId << mockAsyncFailingActionTypeId << mockFailingActionTypeId << mockWithoutParamsActionTypeId << mockPowerActionTypeId << mockWithoutParamsActionTypeId << mockBatteryLevelActionTypeId << mockSignalStrengthActionTypeId << mockUpdateStatusActionTypeId << mockPerformUpdateActionTypeId);
     QTest::newRow("invalid deviceclass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << QList<ActionTypeId>();
 }
 
@@ -929,7 +929,7 @@ void TestDevices::getEventTypes_data()
     QTest::addColumn<ThingClassId>("deviceClassId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("valid deviceclass") << mockThingClassId << 13;
+    QTest::newRow("valid deviceclass") << mockThingClassId << 14;
     QTest::newRow("invalid deviceclass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
@@ -954,7 +954,7 @@ void TestDevices::getStateTypes_data()
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("valid deviceclass") << mockThingClassId << 11;
+    QTest::newRow("valid deviceclass") << mockThingClassId << 12;
     QTest::newRow("invalid deviceclass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
@@ -1053,7 +1053,7 @@ void TestDevices::getStateValues()
     QCOMPARE(response.toMap().value("params").toMap().value("deviceError").toString(), enumValueName(statusCode));
     if (statusCode == Device::DeviceErrorNoError) {
         QVariantList values = response.toMap().value("params").toMap().value("values").toList();
-        QCOMPARE(values.count(), 11); // Mock device has 11 states...
+        QCOMPARE(values.count(), 12); // Mock device has 12 states...
     }
 }
 
@@ -1156,7 +1156,7 @@ void TestDevices::testDeviceSettings()
     QVERIFY2(DeviceId(device.value("id").toString()) == deviceId, "DeviceId not matching");
 
     QVariantList settings = device.value("settings").toList();
-    QCOMPARE(settings.count(), 1);
+    QCOMPARE(settings.count(), 3);
 
     QCOMPARE(settings.first().toMap().value("paramTypeId").toUuid(), QUuid(mockSettingsSetting1ParamTypeId));
     QVERIFY2(settings.first().toMap().value("value").toInt() == 5, "Setting 1 default value not matching");
@@ -1183,7 +1183,7 @@ void TestDevices::testDeviceSettings()
     QVERIFY2(DeviceId(device.value("id").toString()) == deviceId, "DeviceId not matching");
 
     settings = device.value("settings").toList();
-    QCOMPARE(settings.count(), 1);
+    QCOMPARE(settings.count(), 3);
 
     QCOMPARE(settings.first().toMap().value("paramTypeId").toUuid(), QUuid(mockSettingsSetting1ParamTypeId));
     QVERIFY2(settings.first().toMap().value("value").toInt() == 7, "Setting 1 changed value not matching");
@@ -1201,7 +1201,7 @@ void TestDevices::testDeviceSettings()
     QVERIFY2(DeviceId(device.value("id").toString()) == deviceId, "DeviceId not matching");
 
     settings = device.value("settings").toList();
-    QCOMPARE(settings.count(), 1);
+    QCOMPARE(settings.count(), 3);
 
     QCOMPARE(settings.first().toMap().value("paramTypeId").toUuid(), QUuid(mockSettingsSetting1ParamTypeId));
     QVERIFY2(settings.first().toMap().value("value").toInt() == 7, "Setting 1 changed value not persisting restart");

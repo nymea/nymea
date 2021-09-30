@@ -1297,7 +1297,18 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
         return info;
     }
 
-    Thing::ThingError paramCheck = ThingUtils::verifyParams(actionType.paramTypes(), action.params());
+    // If there's a stateType with the same id, we'll need to take min/max values from the state as
+    // they might change at runtime
+    ParamTypes paramTypes = actionType.paramTypes();
+    StateType stateType = thingClass.stateTypes().findById(action.actionTypeId());
+    if (!stateType.id().isNull()) {
+        ParamType pt = actionType.paramTypes().at(0);
+        pt.setMinValue(thing->state(stateType.id()).minValue());
+        pt.setMaxValue(thing->state(stateType.id()).maxValue());
+        paramTypes = ParamTypes() << pt;
+    }
+
+    Thing::ThingError paramCheck = ThingUtils::verifyParams(paramTypes, action.params());
     if (paramCheck != Thing::ThingErrorNoError) {
         qCWarning(dcThingManager()) << "Cannot execute action. Parameter verification failed.";
         ThingActionInfo *info = new ThingActionInfo(thing, action, this);
@@ -1813,7 +1824,7 @@ void ThingManagerImplementation::onEventTriggered(Event event)
     emit eventTriggered(event);
 }
 
-void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value)
+void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue)
 {
     Thing *thing = qobject_cast<Thing*>(sender());
     if (!thing || !m_configuredThings.contains(thing->id())) {
@@ -1822,7 +1833,7 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
     }
     storeThingState(thing, stateTypeId);
 
-    emit thingStateChanged(thing, stateTypeId, value);
+    emit thingStateChanged(thing, stateTypeId, value, minValue, maxValue);
 
     Param valueParam(ParamTypeId(stateTypeId.toString()), value);
     Event event(EventTypeId(stateTypeId.toString()), thing->id(), ParamList() << valueParam, true);
@@ -2095,22 +2106,28 @@ void ThingManagerImplementation::loadThingStates(Thing *thing)
     settings.beginGroup(thing->id().toString());
     ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
     foreach (const StateType &stateType, thingClass.stateTypes()) {
-        if (stateType.cached()) {
-            QVariant value = stateType.defaultValue();
+        QVariant value = stateType.defaultValue();
+        QVariant minValue = stateType.minValue();
+        QVariant maxValue = stateType.maxValue();
 
-            if (settings.contains(stateType.id().toString())) {
-                value = settings.value(stateType.id().toString());
-            } else if (settings.childGroups().contains(stateType.id().toString())) {
-                // 0.9 - 0.22 used to store in a subgroup
+        if (stateType.cached()) {
+            if (settings.childGroups().contains(stateType.id().toString())) {
                 settings.beginGroup(stateType.id().toString());
                 value = settings.value("value");
+                minValue = settings.value("minValue");
+                maxValue = settings.value("maxValue");
                 settings.endGroup();
+            } else if (settings.contains(stateType.id().toString())) {
+                // Migration from < 0.30
+                value = settings.value(stateType.id().toString());
             }
             value.convert(stateType.type());
-            thing->setStateValue(stateType.id(), value);
-        } else {
-            thing->setStateValue(stateType.id(), stateType.defaultValue());
+            minValue.convert(stateType.type());
+            maxValue.convert(stateType.type());
         }
+
+        thing->setStateValue(stateType.id(), value);
+        thing->setStateMinMaxValues(stateType.id(), minValue, maxValue);
         thing->setStateValueFilter(stateType.id(), stateType.filter());
     }
     settings.endGroup();
@@ -2286,7 +2303,11 @@ void ThingManagerImplementation::storeThingState(Thing *thing, const StateTypeId
 {
     NymeaSettings settings(NymeaSettings::SettingsRoleThingStates);
     settings.beginGroup(thing->id().toString());
-    settings.setValue(stateTypeId.toString(), thing->stateValue(stateTypeId));
+    settings.beginGroup(stateTypeId.toString());
+    settings.setValue("value", thing->stateValue(stateTypeId));
+    settings.setValue("minValue", thing->state(stateTypeId).minValue());
+    settings.setValue("maxValue", thing->state(stateTypeId).maxValue());
+    settings.endGroup();
     settings.endGroup();
 }
 

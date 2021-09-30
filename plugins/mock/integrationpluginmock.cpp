@@ -192,6 +192,18 @@ void IntegrationPluginMock::setupThing(ThingSetupInfo *info)
         }
         qCDebug(dcMock()) << "Setup complete" << info->thing()->name();
         info->finish(Thing::ThingErrorNoError);
+        Thing *thing = info->thing();
+        if (info->thing()->thingClassId() == mockThingClassId) {
+            connect(info->thing(), &Thing::settingChanged, this, [thing](const ParamTypeId &settingTypeId, const QVariant &value) {
+                if (settingTypeId == mockSettingsIntStateWithLimitsMinValueParamTypeId) {
+                    thing->setStateMinValue(mockIntWithLimitsStateTypeId, value);
+                }
+                if (settingTypeId == mockSettingsIntStateWithLimitsMaxValueParamTypeId) {
+                    thing->setStateMaxValue(mockIntWithLimitsStateTypeId, value);
+                }
+            });
+        }
+
         return;
     }
 
@@ -570,6 +582,12 @@ void IntegrationPluginMock::executeAction(ThingActionInfo *info)
                 }
 
             });
+            return;
+        }
+
+        if (info->action().actionTypeId() == mockIntWithLimitsActionTypeId) {
+            info->thing()->setStateValue(mockIntWithLimitsStateTypeId, info->action().paramValue(mockIntWithLimitsActionIntWithLimitsParamTypeId));
+            info->finish(Thing::ThingErrorNoError);
             return;
         }
 

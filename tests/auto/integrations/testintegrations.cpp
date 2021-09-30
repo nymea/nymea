@@ -141,6 +141,8 @@ private slots:
 
     void params();
 
+    void dynamicMinMax();
+
     void asyncSetupEmitsSetupStatusUpdate();
 
     void testTranslations();
@@ -919,7 +921,7 @@ void TestIntegrations::getActionTypes_data()
     QTest::addColumn<QList<ActionTypeId> >("actionTypeTestData");
 
     QTest::newRow("valid thingClass") << mockThingClassId
-                                       << (QList<ActionTypeId>() << mockAsyncActionTypeId << mockAsyncFailingActionTypeId << mockFailingActionTypeId << mockWithoutParamsActionTypeId << mockPowerActionTypeId << mockWithoutParamsActionTypeId << mockBatteryLevelActionTypeId << mockSignalStrengthActionTypeId << mockUpdateStatusActionTypeId << mockPerformUpdateActionTypeId);
+                                       << (QList<ActionTypeId>() << mockIntWithLimitsActionTypeId << mockAsyncActionTypeId << mockAsyncFailingActionTypeId << mockFailingActionTypeId << mockWithoutParamsActionTypeId << mockPowerActionTypeId << mockWithoutParamsActionTypeId << mockBatteryLevelActionTypeId << mockSignalStrengthActionTypeId << mockUpdateStatusActionTypeId << mockPerformUpdateActionTypeId);
     QTest::newRow("invalid thingClass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << QList<ActionTypeId>();
 }
 
@@ -951,7 +953,7 @@ void TestIntegrations::getEventTypes_data()
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("valid thingClass") << mockThingClassId << 13;
+    QTest::newRow("valid thingClass") << mockThingClassId << 14;
     QTest::newRow("invalid thingClass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
@@ -976,7 +978,7 @@ void TestIntegrations::getStateTypes_data()
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("valid thingClass") << mockThingClassId << 11;
+    QTest::newRow("valid thingClass") << mockThingClassId << 12;
     QTest::newRow("invalid thingClass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
@@ -1046,7 +1048,7 @@ void TestIntegrations::getStateValues()
     QCOMPARE(response.toMap().value("params").toMap().value("thingError").toString(), enumValueName(statusCode));
     if (statusCode == Thing::ThingErrorNoError) {
         QVariantList values = response.toMap().value("params").toMap().value("values").toList();
-        QCOMPARE(values.count(), 11); // Mock has 11 states...
+        QCOMPARE(values.count(), 12); // Mock has 12 states...
     }
 }
 
@@ -1149,7 +1151,7 @@ void TestIntegrations::testThingSettings()
     QVERIFY2(ThingId(thing.value("id").toString()) == thingId, "thingId not matching");
 
     QVariantList settings = thing.value("settings").toList();
-    QCOMPARE(settings.count(), 1);
+    QCOMPARE(settings.count(), 3);
 
     QCOMPARE(settings.first().toMap().value("paramTypeId").toUuid(), QUuid(mockSettingsSetting1ParamTypeId));
     QVERIFY2(settings.first().toMap().value("value").toInt() == 5, "Setting 1 default value not matching");
@@ -1176,7 +1178,7 @@ void TestIntegrations::testThingSettings()
     QVERIFY2(ThingId(thing.value("id").toString()) == thingId, "thingId not matching");
 
     settings = thing.value("settings").toList();
-    QCOMPARE(settings.count(), 1);
+    QCOMPARE(settings.count(), 3);
 
     QCOMPARE(settings.first().toMap().value("paramTypeId").toUuid(), QUuid(mockSettingsSetting1ParamTypeId));
     QVERIFY2(settings.first().toMap().value("value").toInt() == 7, "Setting 1 changed value not matching");
@@ -1194,7 +1196,7 @@ void TestIntegrations::testThingSettings()
     QVERIFY2(ThingId(thing.value("id").toString()) == thingId, "thingId not matching");
 
     settings = thing.value("settings").toList();
-    QCOMPARE(settings.count(), 1);
+    QCOMPARE(settings.count(), 3);
 
     QCOMPARE(settings.first().toMap().value("paramTypeId").toUuid(), QUuid(mockSettingsSetting1ParamTypeId));
     QVERIFY2(settings.first().toMap().value("value").toInt() == 7, "Setting 1 changed value not persisting restart");
@@ -2121,6 +2123,81 @@ void TestIntegrations::params()
 
     QVERIFY(event.param(id).value().toString() == "foo bar");
     QVERIFY(!event.param(ParamTypeId::createParamTypeId()).value().isValid());
+}
+
+void TestIntegrations::dynamicMinMax()
+{
+    enableNotifications({"Integrations"});
+
+    QList<Thing*> things = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId);
+    QVERIFY2(things.count() > 0, "There needs to be at least one configured Mock for this test");
+    Thing *thing = things.first();
+
+    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+
+    // Setup connection to mock client
+    QNetworkAccessManager nam;
+
+    // trigger state changed event in mock device
+    qCDebug(dcTests()) << "Changing state in mock thing to 11";
+    int port = thing->paramValue(mockThingHttpportParamTypeId).toInt();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockIntWithLimitsStateTypeId.toString()).arg(11)));
+    QNetworkReply *reply = nam.get(request);
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
+
+    // Check for the notification on JSON API
+    notificationSpy.wait();
+    QVariantList notifications;
+    notifications = checkNotifications(notificationSpy, "Integrations.StateChanged");
+    QVERIFY2(notifications.count() == 1, QString("Expected 1 Integrations.StateChanged notification. Received: %1").arg(notifications.count()).toUtf8());
+    QVariantMap notificationContent = notifications.first().toMap().value("params").toMap();
+
+    QCOMPARE(notificationContent.value("thingId").toUuid().toString(), thing->id().toString());
+    QCOMPARE(notificationContent.value("stateTypeId").toUuid().toString(), mockIntWithLimitsStateTypeId.toString());
+    QCOMPARE(notificationContent.value("value").toInt(), 11);
+    QCOMPARE(notificationContent.value("minValue").toInt(), 0);
+    QCOMPARE(notificationContent.value("maxValue").toInt(), 50);
+
+    // set the max to 8
+    qCDebug(dcTests()) << "Changing state max value to 8";
+    notificationSpy.clear();
+    thing->setStateMaxValue(mockIntWithLimitsStateTypeId, 8);
+
+    // Check for the notification on JSON API, state chould adapt to new max
+    notificationSpy.wait();
+    notifications = checkNotifications(notificationSpy, "Integrations.StateChanged");
+    QVERIFY2(notifications.count() == 1, "Should get Integrations.StateChanged notification");
+    notificationContent = notifications.first().toMap().value("params").toMap();
+
+    QCOMPARE(notificationContent.value("thingId").toUuid().toString(), thing->id().toString());
+    QCOMPARE(notificationContent.value("stateTypeId").toUuid().toString(), mockIntWithLimitsStateTypeId.toString());
+    QCOMPARE(notificationContent.value("value").toInt(), 8);
+
+    // Try to execute an action on the api that exceeds the max value
+    qCDebug(dcTests()) << "Executing action with invalid max value (40)";
+    QVariantMap actionParams;
+    actionParams.insert("thingId", thing->id());
+    actionParams.insert("actionTypeId", mockIntWithLimitsActionTypeId);
+    QVariantMap valueParam;
+    valueParam.insert("paramTypeId", mockIntWithLimitsActionIntWithLimitsParamTypeId);
+    // intentionally between thingClass max and dynamic max
+    valueParam.insert("value", 40);
+    actionParams.insert("params", QVariantList() << valueParam);
+    QVariant response = injectAndWait("Integrations.ExecuteAction", actionParams);
+    verifyThingError(response, Thing::ThingErrorInvalidParameter);
+
+    // Set the max to 100
+    qCDebug(dcTests()) << "Changing max state value to 100";
+    thing->setStateMaxValue(mockIntWithLimitsStateTypeId, 100);
+
+    // And try to execute the action again
+    // intentionally greater than thingClass max
+    qCDebug(dcTests()) << "Executing action with valid max (52)";
+    valueParam.insert("value", 52);
+    actionParams.insert("params", QVariantList() << valueParam);
+    response = injectAndWait("Integrations.ExecuteAction", actionParams);
+    verifyThingError(response, Thing::ThingErrorNoError);
+
 }
 
 void TestIntegrations::asyncSetupEmitsSetupStatusUpdate()

@@ -919,7 +919,7 @@ void TestIntegrations::getActionTypes_data()
     QTest::addColumn<QList<ActionTypeId> >("actionTypeTestData");
 
     QTest::newRow("valid thingClass") << mockThingClassId
-                                       << (QList<ActionTypeId>() << mockAsyncActionTypeId << mockAsyncFailingActionTypeId << mockFailingActionTypeId << mockWithoutParamsActionTypeId << mockPowerActionTypeId << mockWithoutParamsActionTypeId << mockBatteryLevelActionTypeId << mockSignalStrengthActionTypeId << mockUpdateStatusActionTypeId << mockPerformUpdateActionTypeId);
+                                       << (QList<ActionTypeId>() << mockIntWithLimitsActionTypeId << mockAsyncActionTypeId << mockAsyncFailingActionTypeId << mockFailingActionTypeId << mockWithoutParamsActionTypeId << mockPowerActionTypeId << mockWithoutParamsActionTypeId << mockBatteryLevelActionTypeId << mockSignalStrengthActionTypeId << mockUpdateStatusActionTypeId << mockPerformUpdateActionTypeId);
     QTest::newRow("invalid thingClass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << QList<ActionTypeId>();
 }
 
@@ -951,7 +951,7 @@ void TestIntegrations::getEventTypes_data()
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("valid thingClass") << mockThingClassId << 13;
+    QTest::newRow("valid thingClass") << mockThingClassId << 14;
     QTest::newRow("invalid thingClass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
@@ -976,7 +976,7 @@ void TestIntegrations::getStateTypes_data()
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("valid thingClass") << mockThingClassId << 11;
+    QTest::newRow("valid thingClass") << mockThingClassId << 12;
     QTest::newRow("invalid thingClass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
@@ -1046,7 +1046,7 @@ void TestIntegrations::getStateValues()
     QCOMPARE(response.toMap().value("params").toMap().value("thingError").toString(), enumValueName(statusCode));
     if (statusCode == Thing::ThingErrorNoError) {
         QVariantList values = response.toMap().value("params").toMap().value("values").toList();
-        QCOMPARE(values.count(), 11); // Mock has 11 states...
+        QCOMPARE(values.count(), 12); // Mock has 12 states...
     }
 }
 
@@ -1149,7 +1149,7 @@ void TestIntegrations::testThingSettings()
     QVERIFY2(ThingId(thing.value("id").toString()) == thingId, "thingId not matching");
 
     QVariantList settings = thing.value("settings").toList();
-    QCOMPARE(settings.count(), 1);
+    QCOMPARE(settings.count(), 3);
 
     QCOMPARE(settings.first().toMap().value("paramTypeId").toUuid(), QUuid(mockSettingsSetting1ParamTypeId));
     QVERIFY2(settings.first().toMap().value("value").toInt() == 5, "Setting 1 default value not matching");
@@ -1176,7 +1176,7 @@ void TestIntegrations::testThingSettings()
     QVERIFY2(ThingId(thing.value("id").toString()) == thingId, "thingId not matching");
 
     settings = thing.value("settings").toList();
-    QCOMPARE(settings.count(), 1);
+    QCOMPARE(settings.count(), 3);
 
     QCOMPARE(settings.first().toMap().value("paramTypeId").toUuid(), QUuid(mockSettingsSetting1ParamTypeId));
     QVERIFY2(settings.first().toMap().value("value").toInt() == 7, "Setting 1 changed value not matching");
@@ -1194,7 +1194,7 @@ void TestIntegrations::testThingSettings()
     QVERIFY2(ThingId(thing.value("id").toString()) == thingId, "thingId not matching");
 
     settings = thing.value("settings").toList();
-    QCOMPARE(settings.count(), 1);
+    QCOMPARE(settings.count(), 3);
 
     QCOMPARE(settings.first().toMap().value("paramTypeId").toUuid(), QUuid(mockSettingsSetting1ParamTypeId));
     QVERIFY2(settings.first().toMap().value("value").toInt() == 7, "Setting 1 changed value not persisting restart");

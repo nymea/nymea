@@ -138,6 +138,10 @@ public:
     Q_INVOKABLE QVariant stateValue(const QString &stateName) const;
     Q_INVOKABLE void setStateValue(const StateTypeId &stateTypeId, const QVariant &value);
     Q_INVOKABLE void setStateValue(const QString &stateName, const QVariant &value);
+    Q_INVOKABLE void setStateMinValue(const StateTypeId &stateTypeId, const QVariant &minValue);
+    Q_INVOKABLE void setStateMinValue(const QString &stateName, const QVariant &minValue);
+    Q_INVOKABLE void setStateMaxValue(const StateTypeId &stateTypeId, const QVariant &maxValue);
+    Q_INVOKABLE void setStateMaxValue(const QString &stateName, const QVariant &maxValue);
 
     Q_INVOKABLE State state(const StateTypeId &stateTypeId) const;
     Q_INVOKABLE State state(const QString &stateName) const;
@@ -159,7 +163,7 @@ public slots:
     void emitEvent(const EventTypeId &eventTypeId, const ParamList &params = ParamList());
 
 signals:
-    void stateValueChanged(const StateTypeId &stateTypeId, const QVariant &value);
+    void stateValueChanged(const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
     void settingChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     void nameChanged();
     void setupStatusChanged();

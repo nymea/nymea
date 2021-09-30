@@ -1813,7 +1813,7 @@ void ThingManagerImplementation::onEventTriggered(Event event)
     emit eventTriggered(event);
 }
 
-void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value)
+void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue)
 {
     Thing *thing = qobject_cast<Thing*>(sender());
     if (!thing || !m_configuredThings.contains(thing->id())) {
@@ -1822,7 +1822,7 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
     }
     storeThingState(thing, stateTypeId);
 
-    emit thingStateChanged(thing, stateTypeId, value);
+    emit thingStateChanged(thing, stateTypeId, value, minValue, maxValue);
 
     Param valueParam(ParamTypeId(stateTypeId.toString()), value);
     Event event(EventTypeId(stateTypeId.toString()), thing->id(), ParamList() << valueParam, true);
@@ -2111,6 +2111,8 @@ void ThingManagerImplementation::loadThingStates(Thing *thing)
         } else {
             thing->setStateValue(stateType.id(), stateType.defaultValue());
         }
+        thing->setStateMinValue(stateType.id(), stateType.minValue());
+        thing->setStateMaxValue(stateType.id(), stateType.maxValue());
         thing->setStateValueFilter(stateType.id(), stateType.filter());
     }
     settings.endGroup();

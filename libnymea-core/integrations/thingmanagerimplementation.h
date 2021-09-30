@@ -146,7 +146,7 @@ private slots:
     void onEventTriggered(Event event);
 
     // Only connect this to Things. It will query the sender()
-    void slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value);
+    void slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
     void slotThingSettingChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     void slotThingNameChanged();
 

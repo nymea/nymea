@@ -57,7 +57,8 @@ Action::Action(const ActionTypeId &actionTypeId, const ThingId &thingId, Trigger
 Action::Action(const Action &other):
     m_actionTypeId(other.actionTypeId()),
     m_thingId(other.thingId()),
-    m_params(other.params())
+    m_params(other.params()),
+    m_triggeredBy(other.triggeredBy())
 {
 }
 

@@ -147,4 +147,6 @@ void Action::operator =(const Action &other)
 {
     m_actionTypeId = other.actionTypeId();
     m_params = other.params();
+    m_thingId = other.thingId();
+    m_triggeredBy = other.triggeredBy();
 }

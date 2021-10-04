@@ -5,6 +5,9 @@ include(../../nymea.pri)
 
 QT += testlib dbus network sql websockets
 
+CONFIG += link_pkgconfig
+PKGCONFIG += nymea-zigbee
+
 # Qt serial bus module is officially available since Qt 5.8
 # but not all platforms host the qt serialbus package.
 # Let's check if the package exists, not the qt version

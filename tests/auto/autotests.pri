@@ -7,6 +7,8 @@ packagesExist(Qt5SerialBus) {
     DEFINES += WITH_QTSERIALBUS
 }
 
+PKGCONFIG += nymea-zigbee
+
 INCLUDEPATH += $$top_srcdir/libnymea \
                $$top_srcdir/libnymea-core \
                $$top_srcdir/tests/testlib/ \

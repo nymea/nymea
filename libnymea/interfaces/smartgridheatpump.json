@@ -1,0 +1,18 @@
+{
+    "description": "This interface can be used for heat pumps offering the smart grid label \"SG-Ready\". The modes can be set to the heatpump either trough 2 digital outputs or directly using modbus registers. These modes should be used by an energy manager and are not intended to be set by an user since there are certain rules to consider when switchen the SG mode.",
+    "extends": "heatpump",
+    "states": [
+        {
+            "name": "sgReadyMode",
+            "type": "QString",
+            "possibleValues": [
+                "Off",
+                "Low",
+                "Standard",
+                "High"
+            ],
+            "writable": true,
+            "logged": true
+        }
+    ]
+}

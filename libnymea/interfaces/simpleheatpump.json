@@ -1,0 +1,12 @@
+{
+    "description": "This interface can be used for heat pumps offering one digital input for controlling whenever it is good to consume more energy than normal. This interface is intended to be used by an energy manager to enable boost whenever cheap or self produced energy is available.",
+    "extends": "heatpump",
+    "states": [
+        {
+            "name": "boost",
+            "type": "bool",
+            "writable": true,
+            "logged": true
+        }
+    ]
+}

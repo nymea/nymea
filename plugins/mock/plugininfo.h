@@ -14,7 +14,7 @@
 #include <QLoggingCategory>
 #include <QObject>
 
-extern "C" const QString libnymea_api_version() { return QString("7.0.0");}
+extern "C" const QString libnymea_api_version() { return QString("7.3.0");}
 
 Q_DECLARE_LOGGING_CATEGORY(dcMock)
 Q_LOGGING_CATEGORY(dcMock, "Mock")
@@ -183,6 +183,9 @@ ParamTypeId inputTypeMockThingIp4ParamTypeId = ParamTypeId("{9e5f86a0-4bb3-4892-
 ParamTypeId inputTypeMockThingIp6ParamTypeId = ParamTypeId("{43bf3832-dd48-4090-a836-656e8b60216e}");
 ParamTypeId inputTypeMockThingUrlParamTypeId = ParamTypeId("{fa67229f-fcef-496f-b671-59a4b48f3ab5}");
 ParamTypeId inputTypeMockThingMacParamTypeId = ParamTypeId("{e93db587-7919-48f3-8c88-1651de63c765}");
+ParamTypeId inputTypeMockThingIntParamTypeId = ParamTypeId("{73b79b8e-db19-45fc-b777-0ace831b9cc5}");
+ParamTypeId inputTypeMockThingIntMinMaxParamTypeId = ParamTypeId("{b056f46d-1a88-4ef3-8fa5-01c27e1ef2a8}");
+ParamTypeId inputTypeMockThingDoubleParamTypeId = ParamTypeId("{2c1ac49c-577e-4071-8dd0-b83521befd78}");
 StateTypeId inputTypeMockBoolStateTypeId = StateTypeId("{3bad3a09-5826-4ed7-a832-10e3e2ee2a7d}");
 StateTypeId inputTypeMockWritableBoolStateTypeId = StateTypeId("{a7c11774-f31f-4d64-99d1-e0ae5fb35a5c}");
 StateTypeId inputTypeMockIntStateTypeId = StateTypeId("{d0fc56ae-5791-4e91-b76c-dadfbc7e7dbb}");
@@ -476,6 +479,9 @@ const QString translations[] {
     //: The name of the StateType ({f7d2063d-959e-46ac-8568-8b99722d3b22}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "Double"),
 
+    //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {2c1ac49c-577e-4071-8dd0-b83521befd78})
+    QT_TRANSLATE_NOOP("mock", "Double"),
+
     //: The name of the EventType ({f7d2063d-959e-46ac-8568-8b99722d3b22}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "Double changed"),
 
@@ -568,6 +574,12 @@ const QString translations[] {
 
     //: The name of the EventType ({d0fc56ae-5791-4e91-b76c-dadfbc7e7dbb}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "Int changed"),
+
+    //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {73b79b8e-db19-45fc-b777-0ace831b9cc5})
+    QT_TRANSLATE_NOOP("mock", "Integer"),
+
+    //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {b056f46d-1a88-4ef3-8fa5-01c27e1ef2a8})
+    QT_TRANSLATE_NOOP("mock", "Integer with min/max"),
 
     //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {e93db587-7919-48f3-8c88-1651de63c765})
     QT_TRANSLATE_NOOP("mock", "Mac address"),

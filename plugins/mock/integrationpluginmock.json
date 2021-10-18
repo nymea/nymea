@@ -690,6 +690,29 @@
                             "type": "QString",
                             "inputType": "MacAddress",
                             "defaultValue": "11:22:33:aa:bb:cc"
+                        },
+                        {
+                            "id": "73b79b8e-db19-45fc-b777-0ace831b9cc5",
+                            "name": "int",
+                            "displayName": "Integer",
+                            "type": "int",
+                            "defaultValue": 5
+                        },
+                        {
+                            "id": "b056f46d-1a88-4ef3-8fa5-01c27e1ef2a8",
+                            "name": "intMinMax",
+                            "displayName": "Integer with min/max",
+                            "type": "int",
+                            "minValue": -10,
+                            "maxValue": 100,
+                            "defaultValue": 5
+                        },
+                        {
+                            "id": "2c1ac49c-577e-4071-8dd0-b83521befd78",
+                            "name": "double",
+                            "displayName": "Double",
+                            "type": "double",
+                            "defaultValue": 3.1415
                         }
                     ],
                     "stateTypes": [

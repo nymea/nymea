@@ -128,6 +128,7 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     params.insert("serialPort", enumValueName(String));
     params.insert("baudRate", enumValueName(Uint));
     params.insert("backend", enumValueName(String));
+    params.insert("o:channelMask", enumValueName(Uint));
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
     returns.insert("o:networkUuid", enumValueName(Uuid));
     registerMethod("AddNetwork", description, params, returns);
@@ -300,7 +301,16 @@ JsonReply *ZigbeeHandler::AddNetwork(const QVariantMap &params)
         return createReply(returnMap);
     }
 
-    QPair<ZigbeeManager::ZigbeeError, QUuid> result = m_zigbeeManager->createZigbeeNetwork(serialPort, baudRate, ZigbeeAdapter::backendNames().key(backendString));
+    ZigbeeChannelMask channelMask = ZigbeeChannelMask::ChannelConfigurationAllChannels;
+    if (params.contains("channelMask")) {
+        channelMask = params.value("channelMask").toUInt() & ZigbeeChannelMask::ChannelConfigurationAllChannels;
+        if (channelMask == ZigbeeChannelMask::ChannelConfigurationNoChannel) {
+            returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(ZigbeeManager::ZigbeeErrorInvalidChannel));
+            return createReply(returnMap);
+        }
+    }
+
+    QPair<ZigbeeManager::ZigbeeError, QUuid> result = m_zigbeeManager->createZigbeeNetwork(serialPort, baudRate, ZigbeeAdapter::backendNames().key(backendString), channelMask);
     if (result.first == ZigbeeManager::ZigbeeErrorNoError) {
         returnMap.insert("networkUuid", result.second);
     }

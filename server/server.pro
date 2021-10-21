@@ -10,6 +10,9 @@ INSTALLS += target
 
 QT += sql xml websockets bluetooth dbus network
 
+CONFIG += link_pkgconfig
+PKGCONFIG += nymea-zigbee
+
 LIBS += -L$$top_builddir/libnymea/ -lnymea \
         -L$$top_builddir/libnymea-core -lnymea-core \
         -lnymea-remoteproxyclient

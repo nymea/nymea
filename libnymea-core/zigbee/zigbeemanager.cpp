@@ -149,7 +149,7 @@ QHash<QUuid, ZigbeeNetwork *> ZigbeeManager::zigbeeNetworks() const
 
 QPair<ZigbeeManager::ZigbeeError, QUuid> ZigbeeManager::createZigbeeNetwork(const QString &serialPort, uint baudRate, ZigbeeAdapter::ZigbeeBackendType backendType, ZigbeeChannelMask channelMask)
 {
-    qCDebug(dcZigbee()) << "Start creating network for" << serialPort << baudRate << backendType << channelMask;
+    qCDebug(dcZigbee()) << "Creating network for" << serialPort << baudRate << backendType << channelMask;
 
     // Make sure we don't have aleardy a network for this adapter
     foreach (ZigbeeNetwork *existingNetwork, m_zigbeeNetworks.values()) {

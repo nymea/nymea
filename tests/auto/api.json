@@ -1,4 +1,4 @@
-5.7
+5.8
 {
     "enums": {
         "BasicType": [
@@ -411,7 +411,8 @@
             "ZigbeeErrorNetworkOffline",
             "ZigbeeErrorUnknownBackend",
             "ZigbeeErrorNodeNotFound",
-            "ZigbeeErrorForbidden"
+            "ZigbeeErrorForbidden",
+            "ZigbeeErrorInvalidChannel"
         ],
         "ZigbeeNetworkState": [
             "ZigbeeNetworkStateOffline",
@@ -2119,6 +2120,7 @@
             "params": {
                 "backend": "String",
                 "baudRate": "Uint",
+                "o:channelMask": "Uint",
                 "serialPort": "String"
             },
             "returns": {

@@ -18,6 +18,13 @@
             "type": "bool",
             "logged": true,
             "optional": true
+        },
+        {
+            "name": "phaseCount",
+            "type": "uint",
+            "minValue": 1,
+            "maxValue": 3,
+            "optional": true
         }
     ]
 }

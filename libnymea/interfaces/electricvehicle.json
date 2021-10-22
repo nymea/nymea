@@ -12,7 +12,8 @@
             "type": "uint",
             "unit": "Ampere",
             "minValue": 6,
-            "maxValue": 16
+            "maxValue": 16,
+            "writable": true
         }
     ]
 }

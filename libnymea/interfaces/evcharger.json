@@ -25,6 +25,13 @@
             "minValue": 1,
             "maxValue": 3,
             "optional": true
+        },
+        {
+            "name": "sessionEnergy",
+            "type": "double",
+            "logged": true,
+            "unit": "KiloWattHour",
+            "optional": true
         }
     ]
 }

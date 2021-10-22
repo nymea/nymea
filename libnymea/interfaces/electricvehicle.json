@@ -1,11 +1,18 @@
 {
-    "description": "Interface for electric vehicles",
+    "description": "Interface for electric vehicles. Some electric cars require a minimal charging current, otherwise they don't start charging. Default is a minimum of 6 ampere.",
     "extends": ["battery"],
     "states": [
         {
             "name": "capacity",
             "type": "double",
             "unit": "KiloWattHour"
+        },
+        {
+            "name": "minimalChargingCurrent",
+            "type": "uint",
+            "unit": "Ampere",
+            "minValue": 6,
+            "maxValue": 16
         }
     ]
 }

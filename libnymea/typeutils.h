@@ -136,6 +136,7 @@ public:
         UnitVoltAmpere,
         UnitVoltAmpereReactive,
         UnitAmpereHour,
+        UnitOhm,
         UnitMicroSiemensPerCentimeter,
         UnitDuration,
         UnitNewton,

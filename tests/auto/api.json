@@ -1,4 +1,4 @@
-5.7
+5.8
 {
     "enums": {
         "BasicType": [
@@ -372,6 +372,7 @@
             "UnitVoltAmpere",
             "UnitVoltAmpereReactive",
             "UnitAmpereHour",
+            "UnitOhm",
             "UnitMicroSiemensPerCentimeter",
             "UnitDuration",
             "UnitNewton",

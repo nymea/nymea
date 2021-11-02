@@ -1,3 +1,10 @@
+nymea (0.29.2) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Fix a wrong error message from the plugininfocompiler
+
+ -- Jenkins <jenkins@nymea.io>  Tue, 02 Nov 2021 17:18:10 +0100
+
 nymea (0.29.1) xenial; urgency=medium
 
   [ Simon Stürz ]

@@ -1002,7 +1002,7 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
         if (pt.contains("unit")) {
             QPair<bool, Types::Unit> unitVerification = loadAndVerifyUnit(pt.value("unit").toString());
             if (!unitVerification.first) {
-                m_validationErrors.append("Param type \"" + paramName + "\" has invalid unit \"" + pt.value("type").toString() + "\"");
+                m_validationErrors.append("Param type \"" + paramName + "\" has invalid unit \"" + pt.value("unit").toString() + "\"");
                 hasErrors = true;
             } else {
                 paramType.setUnit(unitVerification.second);

@@ -407,6 +407,11 @@ void LogEngine::appendLogEntry(const LogEntry &entry)
     // ones and queue up the new one instead. The most recent one is more important (i.e. we don't want to lose
     // the last event in a series).
     if (m_jobQueue.count() > m_maxQueueLength) {
+        if (!m_initialized) {
+            qCDebug(dcLogEngine()) << "Log DB not initialized and queue is full. Discarding log entry.";
+            delete job;
+            return;
+        }
         qCDebug(dcLogEngine()) << "An excessive amount of data is being logged. (" << m_jobQueue.length() << "jobs in the queue)";
         if (m_flaggedJobs.contains(entry.typeId().toString() + entry.thingId().toString())) {
             if (m_flaggedJobs.value(entry.typeId().toString() + entry.thingId().toString()).count() > 10) {
@@ -712,6 +717,7 @@ void LogEngine::finalizeMigration3To4()
 bool LogEngine::initDB(const QString &username, const QString &password)
 {
     m_db.close();
+    m_initialized = false;
     bool opened = m_db.open(username, password);
     if (!opened) {
         qCWarning(dcLogEngine()) << "Can't open Log DB. Init failed.";
@@ -723,6 +729,7 @@ bool LogEngine::initDB(const QString &username, const QString &password)
         m_db.exec("CREATE TABLE metadata (`key` VARCHAR(10), data VARCHAR(40));");
         if (m_db.lastError().isValid()) {
             qCWarning(dcLogEngine) << "Error initualizing database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            m_db.close();
             return false;
         }
         m_db.exec(QString("INSERT INTO metadata (`key`, data) VALUES('version', '%1');").arg(DB_SCHEMA_VERSION));
@@ -736,6 +743,7 @@ bool LogEngine::initDB(const QString &username, const QString &password)
         if (version == 3) {
             if (!migrateDatabaseVersion3to4()) {
                 qCWarning(dcLogEngine()) << "Migration process failed.";
+                m_db.close();
                 return false;
             } else {
                 // Successfully migrated
@@ -745,6 +753,7 @@ bool LogEngine::initDB(const QString &username, const QString &password)
 
         if (version != DB_SCHEMA_VERSION) {
             qCWarning(dcLogEngine) << "Log schema version not matching! Schema upgrade not implemented for this version change.";
+            m_db.close();
             return false;
         } else {
             qCDebug(dcLogEngine) << QString("Log database schema version \"%1\" matches").arg(DB_SCHEMA_VERSION).toLatin1().data();
@@ -756,6 +765,7 @@ bool LogEngine::initDB(const QString &username, const QString &password)
         }
     } else {
         qCWarning(dcLogEngine) << "Broken log database. Version not found in metadata table.";
+        m_db.close();
         return false;
     }
 
@@ -801,6 +811,7 @@ bool LogEngine::initDB(const QString &username, const QString &password)
 
         if (m_db.lastError().isValid()) {
             qCWarning(dcLogEngine) << "Error creating log table in database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            m_db.close();
             return false;
         }
 

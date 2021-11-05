@@ -58,7 +58,7 @@ DeviceHandler::DeviceHandler(QObject *parent) :
     registerEnum<Device::DeviceSetupStatus>();
     registerEnum<Thing::ThingSetupStatus>();
     registerEnum<DeviceClass::SetupMethod>();
-    registerEnum<DeviceClass::CreateMethod, DeviceClass::CreateMethods>();
+    registerFlag<DeviceClass::CreateMethod, DeviceClass::CreateMethods>();
     registerEnum<Types::Unit>();
     registerEnum<Types::InputType>();
     registerEnum<Types::IOType>();

@@ -850,8 +850,8 @@ Thing::ThingError ThingManagerImplementation::removeConfiguredThing(const ThingI
     settings.remove("");
     settings.endGroup();
 
-    NymeaSettings stateCache(NymeaSettings::SettingsRoleThingStates);
-    stateCache.remove(thingId.toString());
+//    NymeaSettings stateCache(NymeaSettings::SettingsRoleThingStates);
+//    stateCache.remove(thingId.toString());
 
     foreach (const IOConnectionId &ioConnectionId, m_ioConnections.keys()) {
         IOConnection ioConnection = m_ioConnections.value(ioConnectionId);
@@ -1788,14 +1788,14 @@ void ThingManagerImplementation::onLoaded()
 
 void ThingManagerImplementation::cleanupThingStateCache()
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleThingStates);
-    foreach (const QString &entry, settings.childGroups()) {
-        ThingId thingId(entry);
-        if (!m_configuredThings.contains(thingId)) {
-            qCDebug(dcThingManager()) << "Thing ID" << thingId << "not found in configured things. Cleaning up stale thing state cache.";
-            settings.remove(entry);
-        }
-    }
+//    NymeaSettings settings(NymeaSettings::SettingsRoleThingStates);
+//    foreach (const QString &entry, settings.childGroups()) {
+//        ThingId thingId(entry);
+//        if (!m_configuredThings.contains(thingId)) {
+//            qCDebug(dcThingManager()) << "Thing ID" << thingId << "not found in configured things. Cleaning up stale thing state cache.";
+//            settings.remove(entry);
+//        }
+//    }
 }
 
 void ThingManagerImplementation::onEventTriggered(Event event)
@@ -2098,31 +2098,32 @@ void ThingManagerImplementation::postSetupThing(Thing *thing)
 
 void ThingManagerImplementation::loadThingStates(Thing *thing)
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleThingStates);
-    settings.beginGroup(thing->id().toString());
-    ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
-    foreach (const StateType &stateType, thingClass.stateTypes()) {
-        if (stateType.cached()) {
-            QVariant value = stateType.defaultValue();
+    Q_UNUSED(thing)
+//    NymeaSettings settings(NymeaSettings::SettingsRoleThingStates);
+//    settings.beginGroup(thing->id().toString());
+//    ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
+//    foreach (const StateType &stateType, thingClass.stateTypes()) {
+//        if (stateType.cached()) {
+//            QVariant value = stateType.defaultValue();
 
-            if (settings.contains(stateType.id().toString())) {
-                value = settings.value(stateType.id().toString());
-            } else if (settings.childGroups().contains(stateType.id().toString())) {
-                // 0.9 - 0.22 used to store in a subgroup
-                settings.beginGroup(stateType.id().toString());
-                value = settings.value("value");
-                settings.endGroup();
-            }
-            value.convert(stateType.type());
-            thing->setStateValue(stateType.id(), value);
-        } else {
-            thing->setStateValue(stateType.id(), stateType.defaultValue());
-        }
-        thing->setStateMinValue(stateType.id(), stateType.minValue());
-        thing->setStateMaxValue(stateType.id(), stateType.maxValue());
-        thing->setStateValueFilter(stateType.id(), stateType.filter());
-    }
-    settings.endGroup();
+//            if (settings.contains(stateType.id().toString())) {
+//                value = settings.value(stateType.id().toString());
+//            } else if (settings.childGroups().contains(stateType.id().toString())) {
+//                // 0.9 - 0.22 used to store in a subgroup
+//                settings.beginGroup(stateType.id().toString());
+//                value = settings.value("value");
+//                settings.endGroup();
+//            }
+//            value.convert(stateType.type());
+//            thing->setStateValue(stateType.id(), value);
+//        } else {
+//            thing->setStateValue(stateType.id(), stateType.defaultValue());
+//        }
+//        thing->setStateMinValue(stateType.id(), stateType.minValue());
+//        thing->setStateMaxValue(stateType.id(), stateType.maxValue());
+//        thing->setStateValueFilter(stateType.id(), stateType.filter());
+//    }
+//    settings.endGroup();
 }
 
 void ThingManagerImplementation::storeIOConnections()
@@ -2293,9 +2294,11 @@ void ThingManagerImplementation::storeThingStates(Thing *thing)
 
 void ThingManagerImplementation::storeThingState(Thing *thing, const StateTypeId &stateTypeId)
 {
-    NymeaSettings settings(NymeaSettings::SettingsRoleThingStates);
-    settings.beginGroup(thing->id().toString());
-    settings.setValue(stateTypeId.toString(), thing->stateValue(stateTypeId));
-    settings.endGroup();
+    Q_UNUSED(thing)
+    Q_UNUSED(stateTypeId)
+//    NymeaSettings settings(NymeaSettings::SettingsRoleThingStates);
+//    settings.beginGroup(thing->id().toString());
+//    settings.setValue(stateTypeId.toString(), thing->stateValue(stateTypeId));
+//    settings.endGroup();
 }
 

@@ -121,7 +121,7 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), m_zigbeeManager, m_modbusRtuManager, this);
 
     qCDebug(dcCore) << "Creating Thing Manager (locale:" << m_configuration->locale() << ")";
-    m_thingManager = new ThingManagerImplementation(m_hardwareManager, m_configuration->locale(), this);
+    m_thingManager = new ThingManagerImplementation(m_hardwareManager, this);
 
     qCDebug(dcCore) << "Creating Rule Engine";
     m_ruleEngine = new RuleEngine(this);

@@ -70,6 +70,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
     setBluetoothServerEnabled(bluetoothServerEnabled());
     setSslCertificate(sslCertificate(), sslCertificateKey());
     setDebugServerEnabled(debugServerEnabled());
+    setSyncStateCache(syncStateCache());
 
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
 
@@ -575,6 +576,21 @@ void NymeaConfiguration::setSslCertificate(const QString &sslCertificate, const 
     settings.beginGroup("SSL");
     settings.setValue("certificate", sslCertificate);
     settings.setValue("certificate-key", sslCertificateKey);
+    settings.endGroup();
+}
+
+bool NymeaConfiguration::syncStateCache() const
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
+    return settings.value("syncStateCache", false).toBool();
+}
+
+void NymeaConfiguration::setSyncStateCache(bool syncStateCache)
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
+    settings.setValue("syncStateCache", syncStateCache);
     settings.endGroup();
 }
 

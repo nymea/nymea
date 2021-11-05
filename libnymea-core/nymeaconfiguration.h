@@ -128,6 +128,9 @@ public:
     QString sslCertificateKey() const;
     void setSslCertificate(const QString &sslCertificate, const QString &sslCertificateKey);
 
+    bool syncStateCache() const;
+    void setSyncStateCache(bool syncStateCache);
+
     // Debug server
     bool debugServerEnabled() const;
     void setDebugServerEnabled(bool enabled);

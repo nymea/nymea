@@ -68,7 +68,7 @@ class ThingManagerImplementation: public ThingManager
     friend class IntegrationPlugin;
 
 public:
-    explicit ThingManagerImplementation(HardwareManager *hardwareManager, const QLocale &locale, QObject *parent = nullptr);
+    explicit ThingManagerImplementation(HardwareManager *hardwareManager, QObject *parent = nullptr);
     ~ThingManagerImplementation() override;
 
     static QStringList pluginSearchDirs();
@@ -175,7 +175,6 @@ private:
 private:
     HardwareManager *m_hardwareManager;
 
-    QLocale m_locale;
     Translator *m_translator = nullptr;
     QHash<VendorId, Vendor> m_supportedVendors;
     QHash<QString, Interface> m_supportedInterfaces;
@@ -200,6 +199,8 @@ private:
     QHash<IOConnectionId, IOConnection> m_ioConnections;
 
     ApiKeysProvidersLoader *m_apiKeysProvidersLoader = nullptr;
+
+    bool m_syncStateCache = false;
 };
 
 #endif // THINGMANAGERIMPLEMENTATION_H

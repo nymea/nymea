@@ -40,6 +40,7 @@
 #include "loggingcategories.h"
 #include "typeutils.h"
 #include "nymeasettings.h"
+#include "nymeaconfiguration.h"
 #include "version.h"
 #include "plugininfocache.h"
 
@@ -70,10 +71,9 @@
 #include <QDir>
 #include <QJsonDocument>
 
-ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardwareManager, const QLocale &locale, QObject *parent) :
+ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardwareManager, QObject *parent) :
     ThingManager(parent),
     m_hardwareManager(hardwareManager),
-    m_locale(locale),
     m_translator(new Translator(this))
 {
     foreach (const Interface &interface, ThingUtils::allInterfaces()) {
@@ -89,6 +89,9 @@ ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardware
         QFile oldStateFile(settingsPath + "/devicestates.conf");
         oldStateFile.copy(settingsPath + "/thingstates.conf");
     }
+
+    nymeaserver::NymeaConfiguration config;
+    m_syncStateCache = config.syncStateCache();
 
     m_apiKeysProvidersLoader = new ApiKeysProvidersLoader(this);
 
@@ -1820,7 +1823,10 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
         qCWarning(dcThingManager()) << "Invalid thing id in state change. Not forwarding event. Thing setup not complete yet?";
         return;
     }
-    storeThingState(thing, stateTypeId);
+
+    if (m_syncStateCache) {
+        storeThingState(thing, stateTypeId);
+    }
 
     emit thingStateChanged(thing, stateTypeId, value);
 

@@ -68,6 +68,7 @@ class LIBNYMEA_EXPORT ParamList: public QList<Param>
 public:
     ParamList();
     ParamList(const QList<Param> &other);
+    ParamList(std::initializer_list<Param> args):QList(args) {}
     Q_INVOKABLE QVariant get(int index);
     Q_INVOKABLE void put(const QVariant &variant);
     bool hasParam(const ParamTypeId &paramTypeId) const;

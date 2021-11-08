@@ -119,7 +119,9 @@ public:
     void setParams(const ParamList &params);
 
     QVariant paramValue(const ParamTypeId &paramTypeId) const;
+    QVariant paramValue(const QString &paramName) const;
     void setParamValue(const ParamTypeId &paramName, const QVariant &value);
+    void setParamValue(const QString &paramName, const QVariant &value);
 
     Q_INVOKABLE ParamList settings() const;
     Q_INVOKABLE bool hasSetting(const ParamTypeId &paramTypeId) const;
@@ -132,6 +134,7 @@ public:
 
     States states() const;
     bool hasState(const StateTypeId &stateTypeId) const;
+    bool hasState(const QString &stateName) const;
     void setStates(const States &states);
 
     Q_INVOKABLE QVariant stateValue(const StateTypeId &stateTypeId) const;
@@ -163,6 +166,7 @@ public:
 
 public slots:
     void emitEvent(const EventTypeId &eventTypeId, const ParamList &params = ParamList());
+    void emitEvent(const QString &eventName, const ParamList &params = ParamList());
 
 signals:
     void stateValueChanged(const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);

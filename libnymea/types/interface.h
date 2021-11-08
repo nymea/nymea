@@ -61,6 +61,7 @@ class LIBNYMEA_EXPORT Interfaces: public QList<Interface>
 public:
     Interfaces() = default;
     Interfaces(const QList<Interface> &other);
+    Interfaces(std::initializer_list<Interface> args):QList(args) {}
     Interface findByName(const QString &name);
 };
 

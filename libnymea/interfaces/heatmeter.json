@@ -1,0 +1,11 @@
+{
+    "description": "The heat meter interface defines basic measurment of heat energy produced. Normally this applies to heat pumps or radiators.",
+    "states": [
+        {
+            "name": "heatEnergy",
+            "type": "double",
+            "unit": "KiloWattHour",
+            "logged": true
+        }
+    ]
+}

@@ -7,7 +7,7 @@ packagesExist(Qt5SerialBus) {
     DEFINES += WITH_QTSERIALBUS
 }
 
-PKGCONFIG += nymea-zigbee
+PKGCONFIG += nymea-zigbee nymea-networkmanager
 
 INCLUDEPATH += $$top_srcdir/libnymea \
                $$top_srcdir/libnymea-core \

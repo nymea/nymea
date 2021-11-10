@@ -202,7 +202,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             QJsonObject thingClassObject = thingClassJson.toObject();
             /*! Returns a list of all valid JSON properties a ThingClass JSON definition can have. */
             QStringList thingClassProperties = QStringList() << "id" << "name" << "displayName" << "createMethods" << "setupMethod"
-                                     << "interfaces" << "browsable" << "discoveryParamTypes"
+                                     << "interfaces" << "providedInterfaces" << "browsable" << "discoveryParamTypes"
                                      << "paramTypes" << "settingsTypes" << "stateTypes" << "actionTypes" << "eventTypes" << "browserItemActionTypes";
             QStringList mandatoryThingClassProperties = QStringList() << "id" << "name" << "displayName";
 
@@ -869,6 +869,19 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             }
             interfaces.removeDuplicates();
             thingClass.setInterfaces(interfaces);
+
+            QStringList providedInterfaces;
+            foreach (const QJsonValue &value, thingClassObject.value("providedInterfaces").toArray()) {
+                Interface iface = ThingUtils::loadInterface(value.toString());
+                if (!iface.isValid()) {
+                    m_validationErrors.append("Thing class \"" + thingClass.name() + "\" uses non-existing interface \"" + value.toString() + "\" in providedInterfaces.");
+                    hasError = true;
+                    continue;
+                }
+                providedInterfaces.append(iface.name());
+            }
+
+            thingClass.setProvidedInterfaces(providedInterfaces);
 
             thingClass.setStateTypes(stateTypes);
             thingClass.setActionTypes(actionTypes);

@@ -51,6 +51,7 @@ class LIBNYMEA_EXPORT ThingClass
     Q_PROPERTY(QString name READ name)
     Q_PROPERTY(QString displayName READ displayName)
     Q_PROPERTY(QStringList interfaces READ interfaces)
+    Q_PROPERTY(QStringList providedInterfaces READ providedInterfaces)
     Q_PROPERTY(bool browsable READ browsable)
     Q_PROPERTY(SetupMethod setupMethod READ setupMethod)
     Q_PROPERTY(CreateMethods createMethods READ createMethods)
@@ -136,6 +137,9 @@ public:
     QStringList interfaces() const;
     void setInterfaces(const QStringList &interfaces);
 
+    QStringList providedInterfaces() const;
+    void setProvidedInterfaces(const QStringList &providedInterfaces);
+
     bool operator==(const ThingClass &device) const;
 
 private:
@@ -155,6 +159,7 @@ private:
     CreateMethods m_createMethods;
     SetupMethod m_setupMethod;
     QStringList m_interfaces;
+    QStringList m_providedInterfaces;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(ThingClass::CreateMethods)

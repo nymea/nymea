@@ -1,5 +1,5 @@
 {
-    "description": "The base for all heat pump interfaces. Can be used by the client to filter for heat pumps in the system."
+    "description": "The base for all heat pump interfaces. Can be used by the client to filter for heat pumps in the system.",
     "states": [
         {
             "name": "outdoorTemperature",

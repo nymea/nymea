@@ -1,4 +1,4 @@
 {
     "description": "This interface can be used for heat pumps offering one digital input for switching on and off the entire heatpump. Some heat pumps have only this possibility to be controlled. Be aware what you are doing if you switch of a heat pump and for how long.",
-    "extends": ["heatpump", "power"],
+    "extends": ["heatpump", "power"]
 }

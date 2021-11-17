@@ -151,6 +151,9 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     m_experienceManager = new ExperienceManager(m_thingManager, m_serverManager->jsonServer(), this);
 
 
+    // To be removed with 0.31 or later.
+    // Most of the cloud push notifications code has been removed with 0.30, this is just kept for a release or two
+    // to auto-remove all the cloud based push notification things users might have in their systems
     CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
     m_thingManager->registerStaticPlugin(cloudNotifications);
 

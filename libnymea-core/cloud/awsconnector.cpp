@@ -45,7 +45,6 @@
 
 AWSConnector::AWSConnector(QObject *parent) : QObject(parent)
 {
-    qRegisterMetaType<AWSConnector::PushNotificationsEndpoint>();
     m_clientName = readSyncedNameCache();
 
     m_reconnectTimer.setSingleShot(true);
@@ -217,29 +216,10 @@ void AWSConnector::onPairingsRetrieved(const QVariantMap &pairings)
     }
 
     qCDebug(dcAWS) << pairings.value("users").toList().count() << "devices paired in cloud.";
-    qCDebug(dcAWS) << pairings.value("pushNotificationsEndpoints").toList().count() << "push notification enabled users paired in cloud.";
-    QList<PushNotificationsEndpoint> pushNotificationEndpoints;
-    if (pairings.value("pushNotificationsEndpoints").toList().count() > 0) {
-        foreach (const QVariant &pairing, pairings.value("pushNotificationsEndpoints").toList()) {
-            foreach (const QString &cognitoUserId, pairing.toMap().keys()) {
-                qCDebug(dcAWS()) << "User:" << cognitoUserId << "has" << pairing.toMap().value(cognitoUserId).toList().count() << "push notifications enabled devices.";
-                foreach (const QVariant &endpoint, pairing.toMap().value(cognitoUserId).toList()) {
-                    PushNotificationsEndpoint ep;
-                    ep.userId = cognitoUserId;
-                    ep.endpointId = endpoint.toMap().value("endpointId").toString();
-                    ep.displayName = endpoint.toMap().value("displayName").toString();
-                    pushNotificationEndpoints.append(ep);
-                    qCDebug(dcAWS) << "Device:" << ep.displayName << "endpoint:" << ep.endpointId << "user:" << ep.userId;
-                }
-            }
-        }
-    }
 
     if (readSyncedNameCache() != m_clientName) {
         setName();
     }
-
-    emit pushNotificationEndpointsUpdated(pushNotificationEndpoints);
 }
 
 void AWSConnector::disconnectAWS()
@@ -276,18 +256,6 @@ void AWSConnector::pairDevice(const QString &idToken, const QString &userId)
     map.insert("timestamp", QDateTime::currentMSecsSinceEpoch());
     publish(QString("%1/pair").arg(m_clientId), map);
     m_pairingRequests.insert(m_transactionId, userId);
-}
-
-int AWSConnector::sendPushNotification(const QString &userId, const QString &endpointId, const QString &title, const QString &text)
-{
-    QVariantMap params;
-    params.insert("id", ++m_transactionId);
-    params.insert("command", "sendPushNotification");
-    params.insert("title", title);
-    params.insert("body", text);
-    params.insert("timestamp", QDateTime::currentMSecsSinceEpoch());
-    publish(QString("%1/notify/user/%2/%3").arg(m_clientId, userId, endpointId), params);
-    return m_transactionId;
 }
 
 quint16 AWSConnector::publish(const QString &topic, const QVariantMap &message)
@@ -471,20 +439,6 @@ void AWSConnector::onPublishReceived(const QString &topic, const QByteArray &pay
         }
         qCDebug(dcAWS) << "Proxy remote connection request received";
         proxyConnectionRequestReceived(token, nonce, serverUrl);
-    } else if (topic == QString("%1/notify/response").arg(m_clientId)) {
-        int transactionId = jsonDoc.toVariant().toMap().value("id").toInt();
-        int status = jsonDoc.toVariant().toMap().value("status").toInt();
-        qCDebug(dcAWS()) << "Push notification reply for transaction" << transactionId << " Status:" << status << jsonDoc.toVariant().toMap().value("message").toString();
-        emit pushNotificationSent(transactionId, status);
-    } else if (topic == QString("%1/notify/info/endpoint").arg(m_clientId)) {
-        QVariantMap endpoint = jsonDoc.toVariant().toMap().value("newPushNotificationsEndpoint").toMap();
-        Q_ASSERT(endpoint.keys().count() == 1);
-        QString cognitoId = endpoint.keys().first();
-        PushNotificationsEndpoint ep;
-        ep.userId = cognitoId;
-        ep.endpointId = endpoint.value(cognitoId).toMap().value("endpointId").toString();
-        ep.displayName = endpoint.value(cognitoId).toMap().value("displayName").toString();
-        emit pushNotificationEndpointAdded(ep);
     } else {
         qCWarning(dcAWS()) << "Unhandled subscription received!" << topic << payload;
     }

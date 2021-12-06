@@ -196,10 +196,9 @@ Description: The main libraries and header files for developing with nymea.
 Package: nymea-dev-tools
 Section: libdevel
 Architecture: any
-Multi-Arch: same
+Multi-Arch: no
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         libnymea1 (= ${binary:Version}),
          qttools5-dev-tools,
          rsync,
 Description: Tools for developing nymea plugins.
@@ -209,8 +208,9 @@ Description: Tools for developing nymea plugins.
 Package: nymea-sdk
 Section: devel
 Architecture: all
-Multi-Arch: allowed
-Depends: nymea-dev-tools
+Multi-Arch: no
+Depends: nymea-dev-tools (= ${binary:Version}),
+         libnymea-dev (= ${binary:Version}),
 Recommends: nymea-qtcreator-wizards,
             crossbuilder,
 Description: The nymea SDK.

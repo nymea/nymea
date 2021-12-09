@@ -242,7 +242,6 @@ PythonIntegrationPlugin::~PythonIntegrationPlugin()
     s_plugins.take(this);
     Py_XDECREF(m_pluginModule);
     Py_DECREF(m_nymeaModule);
-    Py_XDECREF(m_logger);
     Py_XDECREF(m_stdOutHandler);
     Py_XDECREF(m_stdErrHandler);
 
@@ -259,11 +258,13 @@ void PythonIntegrationPlugin::initPython()
     // Only modify the init tab once (initPython() might be called again after calling deinitPython())
     static bool initTabPrepared = false;
     if (!initTabPrepared) {
+        qCDebug(dcPythonIntegrations()) << "Adding nymea module to init tab";
         PyImport_AppendInittab("nymea", PyInit_nymea);
         initTabPrepared = true;
     }
 
     // Initialize the python engine and fire up threading support
+    qCDebug(dcPythonIntegrations()) << "Initializing Python engine";
     Py_InitializeEx(0);
     PyEval_InitThreads();
 
@@ -277,6 +278,7 @@ void PythonIntegrationPlugin::deinitPython()
     PyEval_RestoreThread(s_mainThreadState);
 
     // Tear down the python engine
+    qCDebug(dcPythonIntegrations()) << "Finalizing Python engine";
     Py_Finalize();
 
     // Our main thread state is destroyed now
@@ -289,6 +291,7 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     PyEval_RestoreThread(s_mainThreadState);
 
     // Create a new interpreter
+    qCDebug(dcPythonIntegrations()) << "Creatig new Python interpreter for script:" << scriptFile;
     m_threadState = Py_NewInterpreter();
 
     // Switch to the new interpreter thread state
@@ -361,11 +364,18 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     s_plugins.insert(this, m_pluginModule);
 
     // Set up logger with appropriate logging category
+    // Note: AddModule steals the reference and will delete it on Interpreter shutdown, so not keeping a reference to the logger.
     QString category = metadata.pluginName();
     category.replace(0, 1, category[0].toUpper());
     PyObject *args = Py_BuildValue("(s)", category.toUtf8().data());
-    m_logger = PyObject_CallObject((PyObject*)&PyNymeaLoggingHandlerType, args);
+    PyObject *logger = PyObject_CallObject((PyObject*)&PyNymeaLoggingHandlerType, args);
     Py_DECREF(args);
+
+    int loggerAdded = PyModule_AddObject(m_pluginModule, "logger", logger);
+    if (loggerAdded != 0) {
+        qCWarning(dcPythonIntegrations()) << "Failed to add the logger object";
+        Py_DECREF(logger);
+    }
 
     // Override stdout and stderr
     args = Py_BuildValue("(si)", category.toUtf8().data(), QtMsgType::QtDebugMsg);
@@ -377,12 +387,6 @@ bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)
     PySys_SetObject("stderr", m_stdErrHandler);
     Py_DECREF(args);
 
-    int loggerAdded = PyModule_AddObject(m_pluginModule, "logger", m_logger);
-    if (loggerAdded != 0) {
-        qCWarning(dcPythonIntegrations()) << "Failed to add the logger object";
-        Py_DECREF(m_logger);
-        m_logger = nullptr;
-    }
 
     // Export metadata ids into module
     exportIds();

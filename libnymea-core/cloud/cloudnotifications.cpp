@@ -46,14 +46,11 @@ ParamTypeId notifyActionParamBodyId = ParamTypeId("4bd0fa87-c663-4621-8040-99b6d
 
 StateTypeId connectedStateTypeId = StateTypeId("518e27b6-c3bf-49d7-be24-05ae978c00f7");
 
-CloudNotifications::CloudNotifications(AWSConnector* awsConnector, QObject *parent):
-    IntegrationPlugin(parent),
-    m_awsConnector(awsConnector)
+CloudNotifications::CloudNotifications(QObject *parent):
+    IntegrationPlugin(parent)
 {
-    connect(m_awsConnector, &AWSConnector::pushNotificationEndpointsUpdated, this, &CloudNotifications::pushNotificationEndpointsUpdated);
-    connect(m_awsConnector, &AWSConnector::pushNotificationEndpointAdded, this, &CloudNotifications::pushNotificationEndpointAdded);
-    connect(m_awsConnector, &AWSConnector::pushNotificationSent, this, &CloudNotifications::pushNotificationSent);
 
+    // Metadata is just kept for now to not cause any dead things in the system. To be removed in 0.31 or so
     QVariantMap pluginMetaData;
     pluginMetaData.insert("id", "ccc6dbc8-e352-48a1-8e87-3c89a4669fc2");
     pluginMetaData.insert("name", "CloudNotifications");
@@ -148,107 +145,12 @@ CloudNotifications::CloudNotifications(AWSConnector* awsConnector, QObject *pare
 
 void CloudNotifications::setupThing(ThingSetupInfo *info)
 {
-    Thing *thing = info->thing();
-    thing->setStateValue(connectedStateTypeId, m_awsConnector->isConnected());
-    qCDebug(dcCloud) << "Cloud Notifications thing setup:" << thing->name() << "Connected:" << m_awsConnector->isConnected();
-    connect(m_awsConnector, &AWSConnector::connected, info->thing(), [thing]() {
-        thing->setStateValue(connectedStateTypeId, true);
-    });
-    connect(m_awsConnector, &AWSConnector::disconnected, thing, [thing]() {
-        thing->setStateValue(connectedStateTypeId, false);
-    });
+    // Just finishing the setup for any old existing things to not throw any errors
     info->finish(Thing::ThingErrorNoError);
 }
 
-void CloudNotifications::startMonitoringAutoThings()
+void CloudNotifications::postSetupThing(Thing *thing)
 {
-}
-
-void CloudNotifications::executeAction(ThingActionInfo *info)
-{
-    qCDebug(dcCloud()) << "executeAction" << info->thing() << info->action().params();
-    QString userId = info->thing()->paramValue(cloudNotificationsThingClassUserParamId).toString();
-    QString endpointId = info->thing()->paramValue(cloudNotificationsThingClassEndpointParamId).toString();
-    int id = m_awsConnector->sendPushNotification(userId, endpointId, info->action().param(notifyActionParamTitleId).value().toString(), info->action().param(notifyActionParamBodyId).value().toString());
-    m_pendingPushNotifications.insert(id, info);
-}
-
-void CloudNotifications::pushNotificationEndpointsUpdated(const QList<AWSConnector::PushNotificationsEndpoint> &endpoints)
-{
-    qCDebug(dcCloud()) << "Push Notification endpoint update";
-    QList<Thing*> thingsToRemove;
-    foreach (Thing *configuredThing, myThings()) {
-        bool found = false;
-        foreach (const AWSConnector::PushNotificationsEndpoint &ep, endpoints) {
-            if (configuredThing->paramValue(cloudNotificationsThingClassUserParamId).toString() == ep.userId
-                    && configuredThing->paramValue(cloudNotificationsThingClassEndpointParamId).toString() == ep.endpointId) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            thingsToRemove.append(configuredThing);
-        }
-    }
-    foreach (Thing *d, thingsToRemove) {
-        emit autoThingDisappeared(d->id());
-    }
-
-    ThingDescriptors thingsToAdd;
-    foreach (const AWSConnector::PushNotificationsEndpoint &ep, endpoints) {
-        bool found = false;
-        qCDebug(dcCloud) << "Checking endoint:" << ep.endpointId;
-        foreach (Thing *d, myThings()) {
-            qCDebug(dcCloud) << "Have existing thing:" << d->name() << d->paramValue(cloudNotificationsThingClassEndpointParamId);
-            if (d->paramValue(cloudNotificationsThingClassUserParamId).toString() == ep.userId
-                    && d->paramValue(cloudNotificationsThingClassEndpointParamId).toString() == ep.endpointId) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            qCDebug(dcCloud) << "Adding new notification thing" << ep.displayName;
-            ThingDescriptor descriptor(cloudNotificationsThingClassId, ep.displayName, QString("Send notifications to %1").arg(ep.displayName));
-            ParamList params;
-            Param userIdParam(cloudNotificationsThingClassUserParamId, ep.userId);
-            params.append(userIdParam);
-            Param endpointIdParam(cloudNotificationsThingClassEndpointParamId, ep.endpointId);
-            params.append(endpointIdParam);
-            descriptor.setParams(params);
-            thingsToAdd.append(descriptor);
-        }
-    }
-    emit autoThingsAppeared(thingsToAdd);
-
-}
-
-void CloudNotifications::pushNotificationEndpointAdded(const AWSConnector::PushNotificationsEndpoint &endpoint)
-{
-    // Could be just an update, don't add it in that case...
-    foreach (Thing *d, myThings()) {
-        if (d->paramValue(cloudNotificationsThingClassUserParamId).toString() == endpoint.userId
-                && d->paramValue(cloudNotificationsThingClassEndpointParamId).toString() == endpoint.endpointId) {
-            return;
-        }
-    }
-    qCDebug(dcCloud) << "Push notification endpoint added:" << endpoint.displayName;
-    ThingDescriptor descriptor(cloudNotificationsThingClassId, endpoint.displayName, QString("Send notifications to %1").arg(endpoint.displayName));
-    ParamList params;
-    Param userIdParam(cloudNotificationsThingClassUserParamId, endpoint.userId);
-    params.append(userIdParam);
-    Param endpointIdParam(cloudNotificationsThingClassEndpointParamId, endpoint.endpointId);
-    params.append(endpointIdParam);
-    descriptor.setParams(params);
-    emit autoThingsAppeared({descriptor});
-}
-
-void CloudNotifications::pushNotificationSent(int id, int status)
-{
-    qCDebug(dcCloud()) << "Push notification sent" << id << status;
-    ThingActionInfo *info = m_pendingPushNotifications.take(id);
-    if (!info) {
-        qCWarning(dcCloud()) << "Received a push notification send reponse for a request we're not waiting for.";
-        return;
-    }
-    info->finish(status == 200 ? Thing::ThingErrorNoError : Thing::ThingErrorHardwareNotAvailable);
+    // And make it go away...
+    emit autoThingDisappeared(thing->id());
 }

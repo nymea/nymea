@@ -5,13 +5,13 @@
         {
             "name": "totalEnergyConsumed",
             "type": "double",
-            "unit": "KiloWattHour"
+            "unit": "KiloWattHour",
+            "logged": true
         },
         {
             "name": "currentPower",
             "type": "double",
             "unit": "Watt",
-            "optional": true,
             "logged": true
         }
     ]

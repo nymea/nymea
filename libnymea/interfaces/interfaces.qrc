@@ -88,5 +88,6 @@
         <file>cleaningrobot.json</file>
         <file>airquality.json</file>
         <file>indoorairquality.json</file>
+        <file>energystorage.json</file>
     </qresource>
 </RCC>

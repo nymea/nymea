@@ -4,7 +4,7 @@
     "states": [
         {
             "name": "maxChargingCurrent",
-            "type": "double",
+            "type": "uint",
             "writable": true,
             "unit": "Ampere"
         },
@@ -17,6 +17,20 @@
             "name": "charging",
             "type": "bool",
             "logged": true,
+            "optional": true
+        },
+        {
+            "name": "phaseCount",
+            "type": "uint",
+            "minValue": 1,
+            "maxValue": 3,
+            "optional": true
+        },
+        {
+            "name": "sessionEnergy",
+            "type": "double",
+            "logged": true,
+            "unit": "KiloWattHour",
             "optional": true
         }
     ]

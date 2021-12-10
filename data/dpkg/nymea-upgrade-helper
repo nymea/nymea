@@ -1,0 +1,11 @@
+
+#!/bin/sh
+
+if grep -q nymea
+then
+    systemctl status nymead > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "A nymea package will be changed. Scheduling nymead restart after upgrade."
+        touch /tmp/nymea-restart-pending
+    fi
+fi

@@ -43,6 +43,8 @@ class LIBNYMEA_EXPORT State
     Q_PROPERTY(QUuid stateTypeId READ stateTypeId)
     Q_PROPERTY(QVariant value READ value)
     Q_PROPERTY(Types::StateValueFilter filter READ filter)
+    Q_PROPERTY(QVariant minValue READ minValue USER true)
+    Q_PROPERTY(QVariant maxValue READ maxValue USER true)
 
 public:
     State();
@@ -52,15 +54,25 @@ public:
     ThingId thingId() const;
 
     QVariant value() const;
-    void setValue(const QVariant &value);
+
+    QVariant minValue() const;
+    QVariant maxValue() const;
 
     Types::StateValueFilter filter() const;
+
+private:
+    friend class Thing;
+    void setValue(const QVariant &value);
+    void setMinValue(const QVariant &minValue);
+    void setMaxValue(const QVariant &maxValue);
     void setFilter(Types::StateValueFilter filter);
 
 private:
     StateTypeId m_stateTypeId;
     ThingId m_thingId;
     QVariant m_value;
+    QVariant m_minValue;
+    QVariant m_maxValue;
     Types::StateValueFilter m_filter = Types::StateValueFilterNone;
 };
 Q_DECLARE_METATYPE(State)

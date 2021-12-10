@@ -73,6 +73,20 @@
                             "displayName": "Setting 1",
                             "type": "int",
                             "defaultValue": 5
+                        },
+                        {
+                            "id": "9c34c881-e825-4f27-bb5c-db868bc60fb1",
+                            "name": "intStateWithLimitsMinValue",
+                            "displayName": "Minimum value for int with limits",
+                            "type": "int",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "984e7ae0-6de7-447e-bc4d-5afde8a00f27",
+                            "name": "intStateWithLimitsMaxValue",
+                            "displayName": "Maximum value for int with limits",
+                            "type": "int",
+                            "defaultValue": 50
                         }
                     ],
                     "stateTypes": [
@@ -84,6 +98,19 @@
                             "defaultValue": 10,
                             "type": "int",
                             "suggestLogging": true
+                        },
+                        {
+                            "id": "5aa479bd-537a-4716-9852-52f6eec58722",
+                            "name": "intWithLimits",
+                            "displayName": "Dummy int state with limits",
+                            "displayNameEvent": "Dummy int state with limits changed",
+                            "displayNameAction": "Set dummy int state with limits",
+                            "defaultValue": 10,
+                            "type": "int",
+                            "minValue": 0,
+                            "maxValue": 50,
+                            "suggestLogging": true,
+                            "writable": true
                         },
                         {
                             "id": "9dd6a97c-dfd1-43dc-acbd-367932742310",

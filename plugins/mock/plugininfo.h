@@ -14,7 +14,7 @@
 #include <QLoggingCategory>
 #include <QObject>
 
-extern "C" const QString libnymea_api_version() { return QString("7.0.0");}
+extern "C" const QString libnymea_api_version() { return QString("7.2.0");}
 
 Q_DECLARE_LOGGING_CATEGORY(dcMock)
 Q_LOGGING_CATEGORY(dcMock, "Mock")
@@ -28,8 +28,11 @@ ParamTypeId mockThingHttpportParamTypeId = ParamTypeId("{d4f06047-125e-4479-9810
 ParamTypeId mockThingAsyncParamTypeId = ParamTypeId("{f2977061-4dd0-4ef5-85aa-3b7134743be3}");
 ParamTypeId mockThingBrokenParamTypeId = ParamTypeId("{ae8f8901-f2c1-42a5-8111-6d2fc8e4c1e4}");
 ParamTypeId mockSettingsSetting1ParamTypeId = ParamTypeId("{367f7ba4-5039-47be-abd8-59cc8eaf4b9a}");
+ParamTypeId mockSettingsIntStateWithLimitsMinValueParamTypeId = ParamTypeId("{9c34c881-e825-4f27-bb5c-db868bc60fb1}");
+ParamTypeId mockSettingsIntStateWithLimitsMaxValueParamTypeId = ParamTypeId("{984e7ae0-6de7-447e-bc4d-5afde8a00f27}");
 ParamTypeId mockDiscoveryResultCountParamTypeId = ParamTypeId("{d222adb4-2f9c-4c3f-8655-76400d0fb6ce}");
 StateTypeId mockIntStateTypeId = StateTypeId("{80baec19-54de-4948-ac46-31eabfaceb83}");
+StateTypeId mockIntWithLimitsStateTypeId = StateTypeId("{5aa479bd-537a-4716-9852-52f6eec58722}");
 StateTypeId mockBoolStateTypeId = StateTypeId("{9dd6a97c-dfd1-43dc-acbd-367932742310}");
 StateTypeId mockDoubleStateTypeId = StateTypeId("{7cac53ee-7048-4dc9-b000-7b585390f34c}");
 StateTypeId mockBatteryLevelStateTypeId = StateTypeId("{6c8ab9a6-0164-4795-b829-f4394fe4edc4}");
@@ -42,6 +45,8 @@ StateTypeId mockCurrentVersionStateTypeId = StateTypeId("{9f2e1e5d-3f1f-4794-aca
 StateTypeId mockAvailableVersionStateTypeId = StateTypeId("{060d7947-2b70-4a2b-b33b-a3577f71faeb}");
 EventTypeId mockIntEventTypeId = EventTypeId("{80baec19-54de-4948-ac46-31eabfaceb83}");
 ParamTypeId mockIntEventIntParamTypeId = ParamTypeId("{80baec19-54de-4948-ac46-31eabfaceb83}");
+EventTypeId mockIntWithLimitsEventTypeId = EventTypeId("{5aa479bd-537a-4716-9852-52f6eec58722}");
+ParamTypeId mockIntWithLimitsEventIntWithLimitsParamTypeId = ParamTypeId("{5aa479bd-537a-4716-9852-52f6eec58722}");
 EventTypeId mockBoolEventTypeId = EventTypeId("{9dd6a97c-dfd1-43dc-acbd-367932742310}");
 ParamTypeId mockBoolEventBoolParamTypeId = ParamTypeId("{9dd6a97c-dfd1-43dc-acbd-367932742310}");
 EventTypeId mockDoubleEventTypeId = EventTypeId("{7cac53ee-7048-4dc9-b000-7b585390f34c}");
@@ -65,6 +70,8 @@ ParamTypeId mockAvailableVersionEventAvailableVersionParamTypeId = ParamTypeId("
 EventTypeId mockEvent1EventTypeId = EventTypeId("{45bf3752-0fc6-46b9-89fd-ffd878b5b22b}");
 EventTypeId mockEvent2EventTypeId = EventTypeId("{863d5920-b1cf-4eb9-88bd-8f7b8583b1cf}");
 ParamTypeId mockEvent2EventIntParamParamTypeId = ParamTypeId("{0550e16d-60b9-4ba5-83f4-4d3cee656121}");
+ActionTypeId mockIntWithLimitsActionTypeId = ActionTypeId("{5aa479bd-537a-4716-9852-52f6eec58722}");
+ParamTypeId mockIntWithLimitsActionIntWithLimitsParamTypeId = ParamTypeId("{5aa479bd-537a-4716-9852-52f6eec58722}");
 ActionTypeId mockBatteryLevelActionTypeId = ActionTypeId("{6c8ab9a6-0164-4795-b829-f4394fe4edc4}");
 ParamTypeId mockBatteryLevelActionBatteryLevelParamTypeId = ParamTypeId("{6c8ab9a6-0164-4795-b829-f4394fe4edc4}");
 ActionTypeId mockPowerActionTypeId = ActionTypeId("{064aed0d-da4c-49d4-b236-60f97e98ff84}");
@@ -524,6 +531,18 @@ const QString translations[] {
     //: The name of the EventType ({80baec19-54de-4948-ac46-31eabfaceb83}) of ThingClass mock
     QT_TRANSLATE_NOOP("mock", "Dummy int state changed"),
 
+    //: The name of the ParamType (ThingClass: mock, ActionType: intWithLimits, ID: {5aa479bd-537a-4716-9852-52f6eec58722})
+    QT_TRANSLATE_NOOP("mock", "Dummy int state with limits"),
+
+    //: The name of the ParamType (ThingClass: mock, EventType: intWithLimits, ID: {5aa479bd-537a-4716-9852-52f6eec58722})
+    QT_TRANSLATE_NOOP("mock", "Dummy int state with limits"),
+
+    //: The name of the StateType ({5aa479bd-537a-4716-9852-52f6eec58722}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Dummy int state with limits"),
+
+    //: The name of the EventType ({5aa479bd-537a-4716-9852-52f6eec58722}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Dummy int state with limits changed"),
+
     //: The name of the ParamType (ThingClass: mock, EventType: currentVersion, ID: {9f2e1e5d-3f1f-4794-aca3-4e05b7a48842})
     QT_TRANSLATE_NOOP("mock", "Firmware version"),
 
@@ -578,8 +597,14 @@ const QString translations[] {
     //: The name of the ParamType (ThingClass: virtualIoTemperatureSensorMock, Type: settings, ID: {7077c56f-c35b-4252-8c15-8fb549be04ce})
     QT_TRANSLATE_NOOP("mock", "Maximum temperature"),
 
+    //: The name of the ParamType (ThingClass: mock, Type: settings, ID: {984e7ae0-6de7-447e-bc4d-5afde8a00f27})
+    QT_TRANSLATE_NOOP("mock", "Maximum value for int with limits"),
+
     //: The name of the ParamType (ThingClass: virtualIoTemperatureSensorMock, Type: settings, ID: {803cddbf-94c7-4f35-bc7a-18698b03b942})
     QT_TRANSLATE_NOOP("mock", "Minimum temperature"),
+
+    //: The name of the ParamType (ThingClass: mock, Type: settings, ID: {9c34c881-e825-4f27-bb5c-db868bc60fb1})
+    QT_TRANSLATE_NOOP("mock", "Minimum value for int with limits"),
 
     //: The name of the ActionType ({07cd8d5f-2f65-4955-b1f9-05d7f4da488a}) of ThingClass autoMock
     QT_TRANSLATE_NOOP("mock", "Mock Action 1 (with params)"),
@@ -677,6 +702,9 @@ const QString translations[] {
     //: The name of the Browser Item ActionType ({da6faef8-2816-430e-93bb-57e8f9582d29}) of ThingClass mock
     QT_TRANSLATE_NOOP("mock", "Remove from favorites"),
 
+    //: The name of the ParamType (ThingClass: mock, Type: discovery, ID: {d222adb4-2f9c-4c3f-8655-76400d0fb6ce})
+    QT_TRANSLATE_NOOP("mock", "Result count"),
+
     //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {22add8c9-ee4f-43ad-8931-58e999313ac3})
     QT_TRANSLATE_NOOP("mock", "Search text"),
 
@@ -766,6 +794,9 @@ const QString translations[] {
 
     //: The name of the ActionType ({53cd7c55-49b7-441b-b970-9048f20f0e2c}) of ThingClass pushButtonMock
     QT_TRANSLATE_NOOP("mock", "Set double value"),
+
+    //: The name of the ActionType ({5aa479bd-537a-4716-9852-52f6eec58722}) of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "Set dummy int state with limits"),
 
     //: The name of the ActionType ({fd341f72-6d9a-4812-9f66-47197c48a935}) of ThingClass virtualIoTemperatureSensorMock
     QT_TRANSLATE_NOOP("mock", "Set input"),
@@ -1257,9 +1288,6 @@ const QString translations[] {
     QT_TRANSLATE_NOOP("mock", "resultCount"),
 
     //: The name of the ParamType (ThingClass: pushButtonMock, Type: discovery, ID: {c40dbc59-4bba-4871-9b8e-bbd8d5d9193b})
-    QT_TRANSLATE_NOOP("mock", "resultCount"),
-
-    //: The name of the ParamType (ThingClass: mock, Type: discovery, ID: {d222adb4-2f9c-4c3f-8655-76400d0fb6ce})
     QT_TRANSLATE_NOOP("mock", "resultCount"),
 
     //: The name of the ActionType ({064aed0d-da4c-49d4-b236-60f97e98ff84}) of ThingClass mock

@@ -50,7 +50,7 @@ public:
     explicit NymeaTestBase(QObject *parent = nullptr);
 
 protected slots:
-    void initTestCase();
+    void initTestCase(const QString &loggingRules = QString());
     void cleanupTestCase();
     void cleanup();
 

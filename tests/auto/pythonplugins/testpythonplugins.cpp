@@ -51,17 +51,22 @@ private slots:
 
     void initTestCase();
 
+    void testRestartServer();
+
     void setupAndRemoveThing();
     void testDiscoverPairAndRemoveThing();
 
 
 };
 
+void TestPythonPlugins::testRestartServer()
+{
+    NymeaTestBase::restartServer();
+}
 
 void TestPythonPlugins::initTestCase()
 {
-    NymeaTestBase::initTestCase();
-    QLoggingCategory::setFilterRules("*.debug=false\n"
+    NymeaTestBase::initTestCase("*.debug=false\n*.info=false\n*.warning=false\n"
                                      "Tests.debug=true\n"
                                      "PyMock.debug=true\n"
                                      "PythonIntegrations.debug=true\n"

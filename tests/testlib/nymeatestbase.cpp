@@ -53,7 +53,7 @@ NymeaTestBase::NymeaTestBase(QObject *parent) :
     QCoreApplication::instance()->setOrganizationName("nymea-test");
 }
 
-void NymeaTestBase::initTestCase()
+void NymeaTestBase::initTestCase(const QString &loggingRules)
 {
     qCDebug(dcTests) << "NymeaTestBase starting.";
 
@@ -71,7 +71,11 @@ void NymeaTestBase::initTestCase()
     NymeaSettings nymeadSettings(NymeaSettings::SettingsRoleGlobal);
     nymeadSettings.clear();
 
-    QLoggingCategory::setFilterRules("*.debug=false\nApplication.debug=true\nTests.debug=true\nMock.debug=true");
+    if (loggingRules.isEmpty()) {
+        QLoggingCategory::setFilterRules("*.debug=false\nApplication.debug=true\nTests.debug=true\nMock.debug=true");
+    } else {
+        QLoggingCategory::setFilterRules(loggingRules);
+    }
 
     // Start the server
     qCDebug(dcTests()) << "Setting up nymea core instance";

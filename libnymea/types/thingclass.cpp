@@ -357,6 +357,23 @@ void ThingClass::setInterfaces(const QStringList &interfaces)
     m_interfaces = interfaces;
 }
 
+/*! Returns the interfaces that a thing does not directly implement, but it may still cater for
+    them by creating childs that do implement those. This is used as a hint for clients to
+    filter for desired interfaces during thing setup.
+ */
+QStringList ThingClass::providedInterfaces() const
+{
+    return m_providedInterfaces;
+}
+
+/*! Set the list of provided interfaces. This list should contain interfaces for things that
+    may be created as childs of this thing class.
+*/
+void ThingClass::setProvidedInterfaces(const QStringList &providedInterfaces)
+{
+    m_providedInterfaces = providedInterfaces;
+}
+
 /*! Returns whether \l{Device}{Devices} created from this \l{DeviceClass} are browsable */
 bool ThingClass::browsable() const
 {

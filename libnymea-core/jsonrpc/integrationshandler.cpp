@@ -57,7 +57,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     registerEnum<Thing::ThingError>();
     registerEnum<Thing::ThingSetupStatus>();
     registerEnum<ThingClass::SetupMethod>();
-    registerEnum<ThingClass::CreateMethod, ThingClass::CreateMethods>();
+    registerFlag<ThingClass::CreateMethod, ThingClass::CreateMethods>();
     registerEnum<Types::Unit>();
     registerEnum<Types::InputType>();
     registerEnum<Types::IOType>();

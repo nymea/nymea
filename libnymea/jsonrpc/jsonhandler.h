@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2021, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -76,11 +76,15 @@ public:
 
 
     template<typename T> static QString enumRef();
+    template<typename T> static QString flagRef();
     template<typename T> static QString objectRef();
     static QString objectRef(const QString &objectName);
 
     template<typename T> static QString enumValueName(T value);
     template<typename T> static T enumNameToValue(const QString &name);
+
+    template<typename T> static QStringList flagValueNames(T value);
+    template<typename T> static T flagNamesToValue(const QStringList &names);
 
     static BasicType variantTypeToBasicType(QVariant::Type variantType);
     static QVariant::Type basicTypeToVariantType(BasicType basicType);
@@ -91,7 +95,7 @@ public:
 
 protected:
     template <typename Enum> void registerEnum();
-    template <typename Enum, typename Flags> void registerEnum();
+    template <typename Enum, typename Flags> void registerFlag();
 
     template <typename ObjectType> void registerObject();
     template <typename ObjectType, typename ListType> void registerObject();
@@ -103,7 +107,6 @@ protected:
 
     // Deprecated QString based registerObject
     void registerObject(const QString &name, const QVariantMap &object);
-
 
     void registerMethod(const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, const QString &deprecationInfo = QString());
     void registerNotification(const QString &name, const QString &description, const QVariantMap &params, const QString &deprecationInfo = QString());
@@ -146,7 +149,7 @@ void JsonHandler::registerEnum()
 }
 
 template<typename Enum, typename Flags>
-void JsonHandler::registerEnum()
+void JsonHandler::registerFlag()
 {
     registerEnum<Enum>();
     QMetaEnum metaEnum = QMetaEnum::fromType<Enum>();
@@ -205,7 +208,16 @@ template<typename T>
 QString JsonHandler::enumRef()
 {
     QMetaEnum metaEnum = QMetaEnum::fromType<T>();
+    Q_ASSERT_X(!metaEnum.isFlag(), "JsonHandler", QString("The given type reference %1 is a flag. Please use flagRef() instead.").arg(metaEnum.name()).toUtf8());
     return QString("$ref:%1").arg(metaEnum.name());
+}
+
+template<typename T>
+QString JsonHandler::flagRef()
+{
+    QMetaEnum metaFlag = QMetaEnum::fromType<T>();
+    Q_ASSERT_X(metaFlag.isFlag(), "JsonHandler", QString("The given type reference %1 is not a flag.").arg(metaFlag.name()).toUtf8());
+    return QString("$ref:%1").arg(metaFlag.name());
 }
 
 template<typename T>
@@ -227,6 +239,34 @@ T JsonHandler::enumNameToValue(const QString &name)
 {
     QMetaEnum metaEnum = QMetaEnum::fromType<T>();
     return static_cast<T>(metaEnum.keyToValue(name.toUtf8()));
+}
+
+template<typename T>
+QStringList JsonHandler::flagValueNames(T value)
+{
+    QMetaEnum metaFlag = QMetaEnum::fromType<T>();
+    Q_ASSERT_X(metaFlag.isFlag(), "JsonHandler", QString("The given template type %1 is not a flag.").arg(metaFlag.name()).toUtf8());
+    QStringList names;
+    for (int i = 0; i < metaFlag.keyCount(); i++) {
+        if ((metaFlag.value(i) & value) > 0) {
+            names.append(metaFlag.key(i));
+        }
+    }
+    return names;
+}
+
+template<typename T>
+T JsonHandler::flagNamesToValue(const QStringList &names)
+{
+    QMetaEnum metaFlag = QMetaEnum::fromType<T>();
+    Q_ASSERT_X(metaFlag.isFlag(), "JsonHandler", QString("The given template type %1 is not a flag.").arg(metaFlag.name()).toUtf8());
+    T flag;
+    foreach (const QString &name, names) {
+        bool keyOk;
+        flag |= metaFlag.keyToValue(name.toUtf8(), &keyOk);
+        Q_ASSERT_X(keyOk, "JsonHandler", QString("The given enum value for the flag %1 is not ok.").arg(metaFlag.name()).toUtf8());
+    }
+    return flag;
 }
 
 template<typename T>

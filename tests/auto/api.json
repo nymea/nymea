@@ -412,7 +412,8 @@
             "ZigbeeErrorNetworkOffline",
             "ZigbeeErrorUnknownBackend",
             "ZigbeeErrorNodeNotFound",
-            "ZigbeeErrorForbidden"
+            "ZigbeeErrorForbidden",
+            "ZigbeeErrorInvalidChannel"
         ],
         "ZigbeeNetworkState": [
             "ZigbeeNetworkStateOffline",
@@ -2120,6 +2121,7 @@
             "params": {
                 "backend": "String",
                 "baudRate": "Uint",
+                "o:channelMask": "Uint",
                 "serialPort": "String"
             },
             "returns": {

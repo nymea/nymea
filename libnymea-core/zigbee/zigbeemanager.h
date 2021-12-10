@@ -62,7 +62,8 @@ public:
         ZigbeeErrorNetworkOffline,
         ZigbeeErrorUnknownBackend,
         ZigbeeErrorNodeNotFound,
-        ZigbeeErrorForbidden
+        ZigbeeErrorForbidden,
+        ZigbeeErrorInvalidChannel,
     };
     Q_ENUM(ZigbeeError)
 

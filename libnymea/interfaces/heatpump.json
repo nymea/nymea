@@ -1,0 +1,33 @@
+{
+    "description": "The base for all heat pump interfaces. Can be used by the client to filter for heat pumps in the system.",
+    "states": [
+        {
+            "name": "outdoorTemperature",
+            "type": "double",
+            "unit": "DegreeCelsius",
+            "logged": true,
+            "optional": true
+        },
+        {
+            "name": "hotWaterTemperature",
+            "type": "double",
+            "unit": "DegreeCelsius",
+            "logged": true,
+            "optional": true
+        },
+        {
+            "name": "returnTemperature",
+            "type": "double",
+            "unit": "DegreeCelsius",
+            "logged": true,
+            "optional": true
+        },
+        {
+            "name": "flowTemperature",
+            "type": "double",
+            "unit": "DegreeCelsius",
+            "logged": true,
+            "optional": true
+        }
+    ]
+}

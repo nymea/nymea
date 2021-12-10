@@ -89,5 +89,8 @@
         <file>airquality.json</file>
         <file>indoorairquality.json</file>
         <file>energystorage.json</file>
+        <file>heatpump.json</file>
+        <file>smartgridheatpump.json</file>
+        <file>simpleheatpump.json</file>
     </qresource>
 </RCC>

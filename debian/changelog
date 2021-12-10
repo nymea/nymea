@@ -1,7 +1,39 @@
-nymea (0.30.0) UNRELEASED; urgency=medium
+nymea (0.30.0) xenial; urgency=medium
 
+  [ Michael Zanetti ]
+  * 0.30
+  * Add energystorage interface
+  * Add support for dynamic min/max state values
 
- -- Michael Zanetti <michael.zanetti@nymea.io>  Mon, 20 Sep 2021 11:20:18 +0200
+  [ Simon Stürz ]
+  * Add heat pump interfaces
+
+  [ Michael Zanetti ]
+  * Add water level sensor interface
+  * Add charging state to evcharger interface
+  * Add api to set the zigbee channel during network setup
+
+  [ Simon Stürz ]
+  * Add min charging current to the electricvehicle interface
+  * Add phase count and session energy state to the evcharger interface
+
+  [ Michael Zanetti ]
+  * Change upgrade restart logic to also work on plugins and libs
+  * Add unit ohm
+  * Close log db if initialisation fails and discard entries.
+
+  [ Simon Stürz ]
+  * Add flag handling methods for the JSON RPC handler.
+
+  [ Michael Zanetti ]
+  * Add more "by name" thing methods and c++11 list_initializers for
+    lists
+  * Add a providedInterfaces property to thingClass
+  * Remove cloud push notifications
+  * Fix dependency to libnymea-dev for nymea-sdk
+  * Fix a double-free when shutting down the python engine.
+
+ -- Jenkins <jenkins@nymea.io>  Sat, 11 Dec 2021 00:31:22 +0100
 
 nymea (0.29.2) xenial; urgency=medium
 

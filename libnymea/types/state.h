@@ -84,6 +84,7 @@ class States: public QList<State>
 public:
     States();
     States(const QList<State> &other);
+    States(std::initializer_list<State> args):QList(args) {}
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
     Q_INVOKABLE QVariant stateValue(const StateTypeId &stateTypeId);

@@ -225,6 +225,12 @@ QVariant Thing::paramValue(const ParamTypeId &paramTypeId) const
     return QVariant();
 }
 
+QVariant Thing::paramValue(const QString &paramName) const
+{
+    ParamTypeId paramTypeId = m_thingClass.paramTypes().findByName(paramName).id();
+    return paramValue(paramTypeId);
+}
+
 /*! Sets the \a value of the \l{Param} with the given \a paramTypeId. */
 void Thing::setParamValue(const ParamTypeId &paramTypeId, const QVariant &value)
 {
@@ -236,6 +242,12 @@ void Thing::setParamValue(const ParamTypeId &paramTypeId, const QVariant &value)
         params << param;
     }
     m_params = params;
+}
+
+void Thing::setParamValue(const QString &paramName, const QVariant &value)
+{
+    ParamTypeId paramTypeId = m_thingClass.paramTypes().findByName(paramName).id();
+    setParamValue(paramTypeId, value);
 }
 
 ParamList Thing::settings() const
@@ -321,7 +333,7 @@ void Thing::setStates(const States &states)
     m_states = states;
 }
 
-/*! Returns true, a \l{State} with the given \a stateTypeId exists for this thing. */
+/*! Returns true, a \l{State} with the state given by \a stateTypeId exists for this thing. */
 bool Thing::hasState(const StateTypeId &stateTypeId) const
 {
     foreach (const State &state, m_states) {
@@ -330,6 +342,13 @@ bool Thing::hasState(const StateTypeId &stateTypeId) const
         }
     }
     return false;
+}
+
+/*! Finds the \l{State} matching the given \a stateTypeId in this thing and returns the current value. */
+bool Thing::hasState(const QString &stateName) const
+{
+    StateTypeId stateTypeId = m_thingClass.stateTypes().findByName(stateName).id();
+    return hasState(stateTypeId);
 }
 
 /*! Finds the \l{State} matching the given \a stateTypeId in this thing and returns the current value. */
@@ -601,6 +620,13 @@ QString Thing::setupDisplayMessage() const
 /*! Emits an event from this thing to the system. */
 void Thing::emitEvent(const EventTypeId &eventTypeId, const ParamList &params)
 {
+    emit eventTriggered(Event(eventTypeId, m_id, params));
+}
+
+/*! Emits an event from this thing to the system. */
+void Thing::emitEvent(const QString &eventName, const ParamList &params)
+{
+    EventTypeId eventTypeId = m_thingClass.eventTypes().findByName(eventName).id();
     emit eventTriggered(Event(eventTypeId, m_id, params));
 }
 

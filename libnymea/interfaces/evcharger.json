@@ -12,6 +12,12 @@
             "name": "pluggedIn",
             "type": "bool",
             "optional": true
+        },
+        {
+            "name": "charging",
+            "type": "bool",
+            "logged": true,
+            "optional": true
         }
     ]
 }

@@ -377,7 +377,8 @@
             "UnitNewton",
             "UnitNewtonMeter",
             "UnitRpm",
-            "UnitMilligramPerLiter"
+            "UnitMilligramPerLiter",
+            "UnitLiter"
         ],
         "UserError": [
             "UserErrorNoError",

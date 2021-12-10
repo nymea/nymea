@@ -1,0 +1,12 @@
+{
+    "description": "Sensors that can measure water fill levels.",
+    "extends": "sensor",
+    "states": [
+        {
+            "name": "waterLevel",
+            "type": "double",
+            "unit": "Liter",
+            "logged": true
+        }
+    ]
+}

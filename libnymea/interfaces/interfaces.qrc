@@ -34,6 +34,7 @@
         <file>closablesensor.json</file>
         <file>presencesensor.json</file>
         <file>watersensor.json</file>
+        <file>waterlevelsensor.json</file>
         <file>temperaturesensor.json</file>
         <file>humiditysensor.json</file>
         <file>pressuresensor.json</file>

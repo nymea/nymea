@@ -142,6 +142,7 @@ public:
         UnitNewtonMeter,
         UnitRpm,
         UnitMilligramPerLiter,
+        UnitLiter,
     };
     Q_ENUM(Unit)
 

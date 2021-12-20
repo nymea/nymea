@@ -201,6 +201,10 @@ bool TcpServer::stopServer()
     if (!m_server)
         return true;
 
+    foreach (QTcpSocket *client, m_clientList) {
+        client->abort();
+    }
+
     m_server->close();
     m_server->deleteLater();
     m_server = nullptr;

@@ -76,7 +76,8 @@ void TunnelProxyServer::sendData(const QUuid &clientId, const QByteArray &data)
         return;
     }
 
-    tunnelProxySocket->writeData(data);
+    // Note: we add a \n at the end of the data for easier json parsing on the other end
+    tunnelProxySocket->writeData(data + '\n');
 }
 
 void TunnelProxyServer::sendData(const QList<QUuid> &clients, const QByteArray &data)
@@ -108,6 +109,7 @@ bool TunnelProxyServer::startServer()
 
 bool TunnelProxyServer::stopServer()
 {
+    qCDebug(dcTunnelProxyServer()) << "Stopping server";
     m_tunnelProxySocketServer->stopServer();
     return true;
 }

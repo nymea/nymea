@@ -72,7 +72,7 @@ void TestConfigurations::initTestCase()
         f.close();
     }
 
-    NymeaTestBase::initTestCase();
+    NymeaTestBase::initTestCase("*.debug=false\nApplication.debug=true\nTests.debug=true\nServerManager.debug=true");
 }
 
 void TestConfigurations::getConfigurations()

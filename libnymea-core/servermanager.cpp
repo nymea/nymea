@@ -377,8 +377,13 @@ bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const
         return false;
     }
 
-    m_certificateKey = QSslKey(certificateKeyFile.readAll(), QSsl::Rsa);
-    qCDebug(dcServerManager()) << "Loaded private certificate key " << certificateKeyFileName;
+    m_certificateKey = QSslKey(&certificateKeyFile, QSsl::Rsa);
+    if (m_certificateKey.isNull()) {
+        qCWarning(dcServerManager()) << "SSL certificate key" << certificateFileName << "is not valid.";
+        return false;
+    }
+
+    qCDebug(dcServerManager()) << "Loaded private certificate key" << certificateKeyFileName;
     certificateKeyFile.close();
 
     QFile certificateFile(certificateFileName);
@@ -392,8 +397,13 @@ bool ServerManager::loadCertificate(const QString &certificateKeyFileName, const
         return false;
     }
 
-    m_certificate = QSslCertificate(certificateFile.readAll());
-    qCDebug(dcServerManager()) << "Loaded certificate file " << certificateFileName;
+    m_certificate = QSslCertificate(&certificateFile);
+    if (m_certificate.isNull()) {
+        qCWarning(dcServerManager()) << "SSL certificate" << certificateFileName << "is not valid.";;
+        return false;
+    }
+
+    qCDebug(dcServerManager()) << "Loaded certificate file" << certificateFileName;
     certificateFile.close();
 
     return true;

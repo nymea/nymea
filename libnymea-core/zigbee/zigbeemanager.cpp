@@ -266,8 +266,8 @@ void ZigbeeManager::saveNetwork(ZigbeeNetwork *network)
     case Zigbee::ZigbeeBackendTypeNxp:
         settings.setValue("backendType", static_cast<int>(ZigbeeAdapter::ZigbeeBackendTypeNxp));
         break;
-    default:
-        qCWarning(dcZigbee()) << "Unhandled backend type" << network->backendType() << "which is not implemented in nymea yet.";
+    case Zigbee::ZigbeeBackendTypeTi:
+        settings.setValue("backendType", static_cast<int>(ZigbeeAdapter::ZigbeeBackendTypeTi));
         break;
     }
     settings.setValue("panId", network->panId());
@@ -315,6 +315,10 @@ void ZigbeeManager::loadZigbeeNetworks()
         }
 
         ZigbeeNetwork *network = buildNetworkObject(networkUuid, backendType);
+        if (!network) {
+            qCWarning(dcZigbee()) << "Invalid zigbee network configuration. Skipping network" << networkUuid;
+            continue;
+        }
         network->setSerialPortName(serialPortName);
         network->setSerialBaudrate(serialBaudRate);
         network->setSerialNumber(serialNumber);
@@ -442,8 +446,13 @@ ZigbeeNetwork *ZigbeeManager::buildNetworkObject(const QUuid &networkId, ZigbeeA
     case ZigbeeAdapter::ZigbeeBackendTypeNxp:
         network = ZigbeeNetworkManager::createZigbeeNetwork(networkId, Zigbee::ZigbeeBackendTypeNxp, this);
         break;
+    case ZigbeeAdapter::ZigbeeBackendTypeTi:
+        network = ZigbeeNetworkManager::createZigbeeNetwork(networkId, Zigbee::ZigbeeBackendTypeTi, this);
+        break;
     }
-    network->setSettingsDirectory(QDir(NymeaSettings::settingsPath()));
+    if (network) {
+        network->setSettingsDirectory(QDir(NymeaSettings::settingsPath()));
+    }
     return network;
 }
 
@@ -613,8 +622,8 @@ ZigbeeAdapter ZigbeeManager::convertUartAdapterToAdapter(const ZigbeeUartAdapter
     case Zigbee::ZigbeeBackendTypeNxp:
         adapter.setBackendType(ZigbeeAdapter::ZigbeeBackendTypeNxp);
         break;
-    default:
-        qCWarning(dcZigbee()) << "Unhandled backend type" << uartAdapter.zigbeeBackend() << "which is not implemented in nymea yet.";
+    case Zigbee::ZigbeeBackendTypeTi:
+        adapter.setBackendType(ZigbeeAdapter::ZigbeeBackendTypeTi);
         break;
     }
     return adapter;

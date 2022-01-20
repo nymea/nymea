@@ -35,21 +35,20 @@ NYMEA_LOGGING_CATEGORY(dcTunnelProxyServer, "TunnelProxyServer")
 
 namespace nymeaserver {
 
-TunnelProxyServer::TunnelProxyServer(const QString &serverName, const QUuid &serverUuid, const ServerConfiguration &configuration, QObject *parent) :
+TunnelProxyServer::TunnelProxyServer(const QString &serverName, const QUuid &serverUuid, const TunnelProxyServerConfiguration &configuration, QObject *parent) :
     TransportInterface(configuration, parent),
+    m_config(configuration),
     m_serverName(serverName),
     m_serverUuid(serverUuid)
 {
-    // Note: the authentication must always be enabled on the tunnel proxy server
     if (!configuration.authenticationEnabled) {
-        qCWarning(dcTunnelProxyServer()) << "=============================================================================================================================";
-        qCWarning(dcTunnelProxyServer()) << "WARNING! The tunnel proxy server has authentication disabled! This is very dangerous and exposes your system to the internet.";
-        qCWarning(dcTunnelProxyServer()) << "=============================================================================================================================";
+        qCWarning(dcTunnelProxyServer()) << "=====================================================================================================================";
+        qCWarning(dcTunnelProxyServer()) << "WARNING! Tunnel proxy connection has authentication disabled! The system will be publicly accessible on the internet.";
+        qCWarning(dcTunnelProxyServer()) << "=====================================================================================================================";
     }
 
-    // Default to ssl
-    m_serverUrl.setScheme("ssl");
-    m_serverUrl.setHost(configuration.address.toString());
+    m_serverUrl.setScheme(configuration.sslEnabled ? "ssl" : "tcp");
+    m_serverUrl.setHost(configuration.address);
     m_serverUrl.setPort(configuration.port);
 
     m_tunnelProxySocketServer = new TunnelProxySocketServer(m_serverUuid, m_serverName, this);
@@ -102,7 +101,7 @@ void TunnelProxyServer::setServerName(const QString &serverName)
 
 bool TunnelProxyServer::startServer()
 {
-
+    qCDebug(dcTunnelProxyServer()) << "Connecting to tunnel proxy server at:" << m_serverUrl;
     m_tunnelProxySocketServer->startServer(m_serverUrl);
     return true;
 }
@@ -144,7 +143,12 @@ void TunnelProxyServer::onSslErrors(const QList<QSslError> &errors)
 {
     qCDebug(dcTunnelProxyServer()) << "Remote proxy connection SSL errors occurred" << errors;
     // FIXME: make this configurable
-    m_tunnelProxySocketServer->ignoreSslErrors();
+    if (m_config.ignoreSslErrors) {
+        qCWarning(dcTunnelProxyServer()) << "Ingoring SSL errors on tunnel proxy connection:" << errors;
+        m_tunnelProxySocketServer->ignoreSslErrors();
+    } else {
+        qCWarning(dcTunnelProxyServer()) << "The remote proxy connection failed due to SSL errors:" << errors;
+    }
 }
 
 void TunnelProxyServer::onClientConnected(TunnelProxySocket *tunnelProxySocket)

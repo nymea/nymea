@@ -72,7 +72,7 @@ void TestWebSocketServer::initTestCase()
 
     ServerConfiguration config;
     foreach (const ServerConfiguration &c, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {
-        if (c.port == 4444 && (c.address == QHostAddress("127.0.0.1") || c.address == QHostAddress("0.0.0.0"))) {
+        if (c.port == 4444 && (QHostAddress(c.address) == QHostAddress("127.0.0.1") || QHostAddress(c.address) == QHostAddress("0.0.0.0"))) {
             qDebug() << "Already have a websocketserver listening on 127.0.0.1:4444";
             config = c;
             break;
@@ -80,7 +80,7 @@ void TestWebSocketServer::initTestCase()
     }
 
     qDebug() << "Creating new websocketserver instance on 127.0.0.1:4444";
-    config.address = QHostAddress("127.0.0.1");
+    config.address = "127.0.0.1";
     config.port = 4444;
     config.sslEnabled = true;
     config.authenticationEnabled = true;

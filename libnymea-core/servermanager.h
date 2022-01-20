@@ -69,6 +69,10 @@ public:
 
     MqttBroker *mqttBroker() const;
 
+public slots:
+    void setServerName(const QString &serverName);
+
+
 private slots:
     void tcpServerConfigurationChanged(const QString &id);
     void tcpServerConfigurationRemoved(const QString &id);
@@ -89,8 +93,11 @@ private:
     bool registerZeroConfService(const ServerConfiguration &configuration, const QString &serverType, const QString &serviceType);
     void unregisterZeroConfService(const QString &configId, const QString &serverType);
 
+    bool loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName);
+
 private:
     Platform *m_platform = nullptr;
+    NymeaConfiguration *m_nymeaConfiguration = nullptr;
 
     // Interfaces
     JsonRPCServerImplementation *m_jsonServer;
@@ -108,12 +115,6 @@ private:
     QSslConfiguration m_sslConfiguration;
     QSslKey m_certificateKey;
     QSslCertificate m_certificate;
-
-    bool loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName);
-
-public slots:
-    void setServerName(const QString &serverName);
-
 };
 
 }

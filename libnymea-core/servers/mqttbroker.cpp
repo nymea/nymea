@@ -140,7 +140,7 @@ MqttBroker::~MqttBroker()
 
 bool MqttBroker::startServer(const ServerConfiguration &config, const QSslConfiguration &sslConfiguration)
 {
-    int serverAddressId = m_server->listen(config.address, config.port, config.sslEnabled ? sslConfiguration : QSslConfiguration());
+    int serverAddressId = m_server->listen(QHostAddress(config.address), config.port, config.sslEnabled ? sslConfiguration : QSslConfiguration());
     if (serverAddressId == -1) {
         qCWarning(dcMqtt) << "Error starting MQTT server on port" << config.port;
         return false;

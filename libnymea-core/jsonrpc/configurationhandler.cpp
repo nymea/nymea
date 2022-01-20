@@ -86,6 +86,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     // Objects
     registerObject<ServerConfiguration>();
     registerObject<WebServerConfiguration>();
+    registerObject<TunnelProxyServerConfiguration>();
     registerObject<MqttPolicy>();
 
     // Methods
@@ -118,12 +119,15 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     QVariantList webSocketServerConfigurations;
     webSocketServerConfigurations.append(objectRef<ServerConfiguration>());
     returns.insert("webSocketServerConfigurations", webSocketServerConfigurations);
+    QVariantList tunnelProxyServerConfigurations;
+    tunnelProxyServerConfigurations.append(objectRef<TunnelProxyServerConfiguration>());
+    returns.insert("tunnelProxyServerConfigurations", tunnelProxyServerConfigurations);
     QVariantList mqttServerConfigurations;
     mqttServerConfigurations.append(objectRef<ServerConfiguration>());
     QVariantMap cloudConfiguration;
     cloudConfiguration.insert("enabled", enumValueName(Bool));
     returns.insert("cloud", cloudConfiguration);
-    registerMethod("GetConfigurations", description, params, returns);
+    registerMethod("GetConfigurations", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Set the name of the server. Default is nymea.";
@@ -172,6 +176,18 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     params.insert("id", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("DeleteWebSocketServerConfiguration", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Configure a Tunnel Proxy Server interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Note: if you are changing the configuration for the interface you are currently connected to, the connection will be dropped.";
+    params.insert("configuration", objectRef<TunnelProxyServerConfiguration>());
+    returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
+    registerMethod("SetTunnelProxyServerConfiguration", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Delete a Tunnel Proxy Server interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the connection will be dropped.";
+    params.insert("id", enumValueName(String));
+    returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
+    registerMethod("DeleteTunnelProxyServerConfiguration", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Configure a WebServer interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added.";
@@ -258,6 +274,16 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     registerNotification("WebSocketServerConfigurationRemoved", description, params);
 
     params.clear(); returns.clear();
+    description = "Emitted whenever the tunnel proxy server configuration changes.";
+    params.insert("tunnelProxyServerConfiguration", objectRef<TunnelProxyServerConfiguration>());
+    registerNotification("TunnelProxyServerConfigurationChanged", description, params);
+
+    params.clear(); returns.clear();
+    description = "Emitted whenever a tunnel proxy server configuration is removed.";
+    params.insert("id", enumValueName(String));
+    registerNotification("TunnelProxyServerConfigurationRemoved", description, params);
+
+    params.clear(); returns.clear();
     description = "Emitted whenever the MQTT broker configuration is changed.";
     params.insert("mqttServerConfiguration", objectRef<ServerConfiguration>());
     registerNotification("MqttServerConfigurationChanged", description, params);
@@ -303,6 +329,8 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webServerConfigurationRemoved, this, &ConfigurationHandler::onWebServerConfigurationRemoved);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webSocketServerConfigurationChanged, this, &ConfigurationHandler::onWebSocketServerConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::webSocketServerConfigurationRemoved, this, &ConfigurationHandler::onWebSocketServerConfigurationRemoved);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::tunnelProxyServerConfigurationChanged, this, &ConfigurationHandler::onTunnelProxyServerConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::tunnelProxyServerConfigurationRemoved, this, &ConfigurationHandler::onTunnelProxyServerConfigurationRemoved);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttServerConfigurationChanged, this, &ConfigurationHandler::onMqttServerConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttServerConfigurationRemoved, this, &ConfigurationHandler::onMqttServerConfigurationRemoved);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttPolicyChanged, this, &ConfigurationHandler::onMqttPolicyChanged);
@@ -339,6 +367,12 @@ JsonReply *ConfigurationHandler::GetConfigurations(const QVariantMap &params) co
         webSocketServerConfigs.append(pack(config));
     }
     returns.insert("webSocketServerConfigurations", webSocketServerConfigs);
+
+    QVariantList tunnelProxyServerConfigs;
+    foreach (const TunnelProxyServerConfiguration &config, NymeaCore::instance()->configuration()->tunnelProxyServerConfigurations()) {
+        tunnelProxyServerConfigs.append(pack(config));
+    }
+    returns.insert("tunnelProxyServerConfigurations", tunnelProxyServerConfigs);
 
     QVariantMap cloudConfig;
     cloudConfig.insert("enabled", NymeaCore::instance()->configuration()->cloudEnabled());
@@ -422,7 +456,7 @@ JsonReply *ConfigurationHandler::SetTcpServerConfiguration(const QVariantMap &pa
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
     }
 
-    qCDebug(dcJsonRpc()) << QString("Configure TCP server %1:%2").arg(config.address.toString()).arg(config.port);
+    qCDebug(dcJsonRpc()) << QString("Configure TCP server %1:%2").arg(config.address).arg(config.port);
 
     NymeaCore::instance()->configuration()->setTcpServerConfiguration(config);
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
@@ -453,7 +487,7 @@ JsonReply *ConfigurationHandler::SetWebServerConfiguration(const QVariantMap &pa
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
     }
 
-    qCDebug(dcJsonRpc()) << QString("Configure web server %1:%2").arg(config.address.toString()).arg(config.port);
+    qCDebug(dcJsonRpc()) << QString("Configure web server %1:%2").arg(config.address).arg(config.port);
 
     NymeaCore::instance()->configuration()->setWebServerConfiguration(config);
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
@@ -483,7 +517,7 @@ JsonReply *ConfigurationHandler::SetWebSocketServerConfiguration(const QVariantM
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
     }
 
-    qCDebug(dcJsonRpc()) << QString("Configuring web socket server %1:%2").arg(config.address.toString()).arg(config.port);
+    qCDebug(dcJsonRpc()) << QString("Configuring web socket server %1:%2").arg(config.address).arg(config.port);
 
     NymeaCore::instance()->configuration()->setWebSocketServerConfiguration(config);
 
@@ -497,6 +531,37 @@ JsonReply *ConfigurationHandler::DeleteWebSocketServerConfiguration(const QVaria
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
     }
     NymeaCore::instance()->configuration()->removeWebSocketServerConfiguration(id);
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
+}
+
+JsonReply *ConfigurationHandler::SetTunnelProxyServerConfiguration(const QVariantMap &params) const
+{
+    TunnelProxyServerConfiguration config = unpack<TunnelProxyServerConfiguration>(params.value("configuration").toMap());
+    if (config.id.isEmpty()) {
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
+    }
+    if (config.address.isNull())
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidHostAddress));
+
+    if (config.port <= 0 || config.port > 65535) {
+        qCWarning(dcJsonRpc()) << "Port out of range";
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
+    }
+
+    qCDebug(dcJsonRpc()) << QString("Configuring tunnel proxy server %1:%2").arg(config.address).arg(config.port);
+
+    NymeaCore::instance()->configuration()->setTunnelProxyServerConfiguration(config);
+
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
+}
+
+JsonReply *ConfigurationHandler::DeleteTunnelProxyServerConfiguration(const QVariantMap &params) const
+{
+    QString id = params.value("id").toString();
+    if (id.isEmpty() || !NymeaCore::instance()->configuration()->tunnelProxyServerConfigurations().contains(id)) {
+        return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidId));
+    }
+    NymeaCore::instance()->configuration()->removeTunnelProxyServerConfiguration(id);
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
@@ -526,7 +591,7 @@ JsonReply *ConfigurationHandler::SetMqttServerConfiguration(const QVariantMap &p
         return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorInvalidPort));
     }
 
-    qCDebug(dcJsonRpc()) << QString("Configure MQTT server %1:%2").arg(config.address.toString()).arg(config.port);
+    qCDebug(dcJsonRpc()) << QString("Configure MQTT server %1:%2").arg(config.address).arg(config.port);
 
     NymeaCore::instance()->configuration()->setMqttServerConfiguration(config);
 
@@ -637,6 +702,22 @@ void ConfigurationHandler::onWebSocketServerConfigurationRemoved(const QString &
     QVariantMap params;
     params.insert("id", id);
     emit WebSocketServerConfigurationRemoved(params);
+}
+
+void ConfigurationHandler::onTunnelProxyServerConfigurationChanged(const QString &id)
+{
+    qCDebug(dcJsonRpc()) << "Notification: Tunnel proxy server configuration changed";
+    QVariantMap params;
+    params.insert("tunnelProxyServerConfiguration", pack(NymeaCore::instance()->configuration()->tunnelProxyServerConfigurations().value(id)));
+    emit TunnelProxyServerConfigurationChanged(params);
+}
+
+void ConfigurationHandler::onTunnelProxyServerConfigurationRemoved(const QString &id)
+{
+    qCDebug(dcJsonRpc()) << "Notification: Tunnel proxy server configuration removed";
+    QVariantMap params;
+    params.insert("id", id);
+    emit TunnelProxyServerConfigurationRemoved(params);
 }
 
 void ConfigurationHandler::onMqttServerConfigurationChanged(const QString &id)

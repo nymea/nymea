@@ -47,7 +47,7 @@ class TunnelProxyServer : public TransportInterface
 {
     Q_OBJECT
 public:
-    explicit TunnelProxyServer(const QString &serverName, const QUuid &serverUuid, const ServerConfiguration &configuration, QObject *parent = nullptr);
+    explicit TunnelProxyServer(const QString &serverName, const QUuid &serverUuid, const TunnelProxyServerConfiguration &configuration, QObject *parent = nullptr);
     ~TunnelProxyServer() override;
 
     void sendData(const QUuid &clientId, const QByteArray &data) override;
@@ -74,6 +74,7 @@ private slots:
     void onClientDisconnected(TunnelProxySocket *tunnelProxySocket);
 
 private:
+    TunnelProxyServerConfiguration m_config;
     TunnelProxySocketServer *m_tunnelProxySocketServer = nullptr;
     QString m_serverName;
     QUuid m_serverUuid;

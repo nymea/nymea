@@ -42,15 +42,14 @@ namespace nymeaserver {
 class ServerConfiguration {
     Q_GADGET
     Q_PROPERTY(QString id MEMBER id)
-    Q_PROPERTY(QString address READ addressString WRITE setAddress)
+    Q_PROPERTY(QString address MEMBER address)
     Q_PROPERTY(uint port MEMBER port)
     Q_PROPERTY(bool sslEnabled MEMBER sslEnabled)
     Q_PROPERTY(bool authenticationEnabled MEMBER authenticationEnabled)
 public:
     QString id;
-    QHostAddress address;
-    QString addressString() { return address.toString(); }
-    void setAddress(const QString &addressString) {address = QHostAddress(addressString); }
+    QString address;
+    void setAddress(const QString &address) {this->address = address; }
     uint port = 0;
     bool sslEnabled = true;
     bool authenticationEnabled = true;
@@ -73,6 +72,14 @@ class WebServerConfiguration: public ServerConfiguration
 public:
     QString publicFolder;
     bool restServerEnabled = false;
+};
+
+class TunnelProxyServerConfiguration: public ServerConfiguration
+{
+    Q_GADGET
+    Q_PROPERTY(bool ignoreSslErrors MEMBER ignoreSslErrors)
+public:
+    bool ignoreSslErrors = false;
 };
 
 class MqttPolicy
@@ -148,8 +155,8 @@ public:
     void removeWebSocketServerConfiguration(const QString &id);
 
     // Tunnel proxy server
-    QHash<QString, ServerConfiguration> tunnelProxyServerConfigurations() const;
-    void setTunnelProxyServerConfiguration(const ServerConfiguration &config);
+    QHash<QString, TunnelProxyServerConfiguration> tunnelProxyServerConfigurations() const;
+    void setTunnelProxyServerConfiguration(const TunnelProxyServerConfiguration &config);
     void removeTunnelProxyServerConfiguration(const QString &id);
 
     // MQTT
@@ -192,7 +199,7 @@ private:
     QHash<QString, ServerConfiguration> m_webSocketServerConfigs;
     QHash<QString, ServerConfiguration> m_mqttServerConfigs;
     QHash<QString, MqttPolicy> m_mqttPolicies;
-    QHash<QString, ServerConfiguration> m_tunnelProxyServerConfigs;
+    QHash<QString, TunnelProxyServerConfiguration> m_tunnelProxyServerConfigs;
 
     void setServerUuid(const QUuid &uuid);
     void setWebServerPublicFolder(const QString & path);
@@ -204,6 +211,8 @@ private:
     void deleteServerConfig(const QString &group, const QString &id);
     void storeWebServerConfig(const WebServerConfiguration &config);
     WebServerConfiguration readWebServerConfig(const QString &id);
+    void storeTunnelProxyServerConfig(const TunnelProxyServerConfiguration &config);
+    TunnelProxyServerConfiguration readTunnelProxyServerConfig(const QString &id);
 
     void storeMqttPolicy(const MqttPolicy &policy);
     MqttPolicy readMqttPolicy(const QString &clientId);

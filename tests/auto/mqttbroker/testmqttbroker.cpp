@@ -61,8 +61,7 @@ private slots:
 
 void TestMqttBroker::initTestCase()
 {
-    NymeaTestBase::initTestCase();
-    QLoggingCategory::setFilterRules("*.debug=false\nnymea.mqtt*.debug=true\nMqtt.debug=true\nJsonRpc.debug=true");
+    NymeaTestBase::initTestCase("*.debug=false\nnymea.mqtt*.debug=true\nMqtt.debug=true\nJsonRpc.debug=true");
 }
 
 void TestMqttBroker::testServerConfigurationAPI()

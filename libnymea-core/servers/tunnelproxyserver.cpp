@@ -125,7 +125,7 @@ void TunnelProxyServer::onStateChanged(TunnelProxySocketServer::State state)
 
 void TunnelProxyServer::onServerRunningChanged(bool running)
 {
-    qCDebug(dcTunnelProxyServer()) << "The server is" << (running ? "now listening for incomming connections on " + m_serverUuid.toString() : "not running any more.");
+    qCDebug(dcTunnelProxyServer()) << "The server is" << (running ? "now listening for incoming connections on " + m_serverUuid.toString() : "not running any more.");
     emit runningChanged(running);
 }
 

@@ -6,7 +6,9 @@
             "name": "maxChargingCurrent",
             "type": "uint",
             "writable": true,
-            "unit": "Ampere"
+            "unit": "Ampere",
+            "minValue": "any",
+            "maxValue": "any"
         },
         {
             "name": "pluggedIn",

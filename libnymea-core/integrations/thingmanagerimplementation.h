@@ -162,6 +162,7 @@ private:
     void trySetupThing(Thing *thing);
     void registerThing(Thing *thing);
     void postSetupThing(Thing *thing);
+    QString statesCacheFile(const ThingId &thingId);
     void storeThingStates(Thing *thing);
     void storeThingState(Thing *thing, const StateTypeId &stateTypeId);
     void loadThingStates(Thing *thing);

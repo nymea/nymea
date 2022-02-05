@@ -114,9 +114,6 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     case SettingsRoleGlobal:
         fileName = "nymead.conf";
         break;
-    case SettingsRoleThingStates:
-        fileName = "thingstates.conf";
-        break;
     case SettingsRoleTags:
         fileName = "tags.conf";
         break;
@@ -203,6 +200,22 @@ QString NymeaSettings::storagePath()
         path = "/var/lib/" + organisationName;
     } else {
         path = QDir::homePath() + "/.local/share/" + organisationName;
+    }
+    return path;
+}
+
+QString NymeaSettings::cachePath()
+{
+    QString path;
+    QString organisationName = QCoreApplication::instance()->organizationName();
+    if (!qEnvironmentVariableIsEmpty("SNAP")) {
+        path = QString(qgetenv("SNAP_DATA"));
+    } else if (organisationName == "nymea-test") {
+        path = "/tmp/" + organisationName;
+    } else if (NymeaSettings::isRoot()) {
+        path = "/var/cache/" + organisationName;
+    } else {
+        path = QDir::homePath() + "/.cache/" + organisationName;
     }
     return path;
 }

@@ -215,19 +215,12 @@ Interface ThingUtils::loadInterface(const QString &name)
         }
         stateTypes.append(stateType);
 
-        InterfaceEventType stateChangeEventType;
-        stateChangeEventType.setName(stateType.name());
-        stateChangeEventType.setOptional(stateType.optional());
-        stateChangeEventType.setSuggestLogging(stateType.suggestLogging());
-        stateChangeEventType.setLoggingOverride(stateType.loggingOverride());
         ParamType stateChangeEventParamType;
         stateChangeEventParamType.setName(stateType.name());
         stateChangeEventParamType.setType(stateType.type());
         stateChangeEventParamType.setAllowedValues(stateType.possibleValues());
         stateChangeEventParamType.setMinValue(stateType.minValue());
         stateChangeEventParamType.setMaxValue(stateType.maxValue());
-        stateChangeEventType.setParamTypes(ParamTypes() << stateChangeEventParamType);
-        eventTypes.append(stateChangeEventType);
 
         if (stateVariant.toMap().value("writable", false).toBool()) {
             InterfaceActionType stateChangeActionType;

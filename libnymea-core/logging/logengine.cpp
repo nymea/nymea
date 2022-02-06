@@ -110,6 +110,7 @@ void LogEngine::setThingManager(ThingManager *thingManager)
 {
     m_thingManager = thingManager;
     connect(thingManager, &ThingManager::eventTriggered, this, &LogEngine::logEvent);
+    connect(thingManager, &ThingManager::thingStateChanged, this, &LogEngine::logStateChange);
     connect(thingManager, &ThingManager::actionExecuted, this, &LogEngine::logAction);
 }
 
@@ -237,22 +238,11 @@ void LogEngine::logEvent(const Event &event)
     }
 
     QVariantList valueList;
-    Logging::LoggingSource sourceType;
-    if (event.isStateChangeEvent()) {
-        sourceType = Logging::LoggingSourceStates;
-
-        // There should only be one param
-        if (!event.params().isEmpty())
-            valueList << event.params().first().value();
-
-    } else {
-        sourceType = Logging::LoggingSourceEvents;
-        foreach (const Param &param, event.params()) {
-            valueList << param.value();
-        }
+    foreach (const Param &param, event.params()) {
+        valueList << param.value();
     }
 
-    LogEntry entry(sourceType);
+    LogEntry entry(Logging::LoggingSourceEvents);
     entry.setTypeId(event.eventTypeId());
     entry.setThingId(event.thingId());
     if (valueList.count() == 1) {
@@ -260,6 +250,19 @@ void LogEngine::logEvent(const Event &event)
     } else {
         entry.setValue(valueList);
     }
+    appendLogEntry(entry);
+}
+
+void LogEngine::logStateChange(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value)
+{
+    if (!thing->loggedStateTypeIds().contains(stateTypeId)) {
+        return;
+    }
+
+    LogEntry entry(Logging::LoggingSourceStates);
+    entry.setTypeId(stateTypeId);
+    entry.setThingId(thing->id());
+    entry.setValue(value);
     appendLogEntry(entry);
 }
 

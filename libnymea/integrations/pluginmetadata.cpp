@@ -489,24 +489,16 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 }
                 stateTypes.append(stateType);
 
-                // Events for state changed (Not checking for duplicate UUID, this is expected to be the same as the state!)
-                EventType eventType(EventTypeId(stateType.id().toString()));
-                eventType.setName(st.value("name").toString());
-                eventType.setDisplayName(st.value("displayNameEvent").toString());
-                ParamType paramType(ParamTypeId(stateType.id().toString()), st.value("name").toString(), stateType.type());
-                paramType.setDisplayName(st.value("displayName").toString());
-                paramType.setAllowedValues(stateType.possibleValues());
-                paramType.setDefaultValue(stateType.defaultValue());
-                paramType.setMinValue(stateType.minValue());
-                paramType.setMaxValue(stateType.maxValue());
-                paramType.setUnit(stateType.unit());
-                eventType.setParamTypes(QList<ParamType>() << paramType);
-                eventType.setIndex(stateType.index());
-                eventType.setSuggestLogging(st.value("suggestLogging").toBool());
-                eventTypes.append(eventType);
-
                 // ActionTypes for writeable StateTypes
                 if (writableState) {
+                    ParamType paramType(ParamTypeId(stateType.id().toString()), st.value("name").toString(), stateType.type());
+                    paramType.setDisplayName(st.value("displayName").toString());
+                    paramType.setAllowedValues(stateType.possibleValues());
+                    paramType.setDefaultValue(stateType.defaultValue());
+                    paramType.setMinValue(stateType.minValue());
+                    paramType.setMaxValue(stateType.maxValue());
+                    paramType.setUnit(stateType.unit());
+
                     ActionType actionType(ActionTypeId(stateType.id().toString()));
                     actionType.setName(stateType.name());
                     actionType.setDisplayName(st.value("displayNameAction").toString());

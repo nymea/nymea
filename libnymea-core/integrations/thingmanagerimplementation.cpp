@@ -509,6 +509,30 @@ Thing::ThingError ThingManagerImplementation::setThingSettings(const ThingId &th
     return Thing::ThingErrorNoError;
 }
 
+Thing::ThingError ThingManagerImplementation::setStateLogging(const ThingId &thingId, const StateTypeId &stateTypeId, bool enabled)
+{
+    Thing *thing = m_configuredThings.value(thingId);
+    if (!thing) {
+        qCWarning(dcThingManager()) << "Cannot configure event logging. Thing" << thingId.toString() << "not found";
+        return Thing::ThingErrorThingNotFound;
+    }
+    if (!thing->thingClass().stateTypes().findById(stateTypeId).isValid()) {
+        qCWarning(dcThingManager()) << "Cannot configure state logging. Thing" << thingId.toString() << "has no state type with id" << stateTypeId;
+        return Thing::ThingErrorStateTypeNotFound;
+    }
+    QList<StateTypeId> loggedStateTypes = thing->loggedStateTypeIds();
+    if (enabled && !loggedStateTypes.contains(stateTypeId)) {
+        loggedStateTypes.append(stateTypeId);
+        thing->setLoggedStateTypeIds(loggedStateTypes);
+        emit thingChanged(thing);
+    } else if (!enabled && loggedStateTypes.contains(stateTypeId)) {
+        loggedStateTypes.removeAll(stateTypeId);
+        thing->setLoggedStateTypeIds(loggedStateTypes);
+        emit thingChanged(thing);
+    }
+    return Thing::ThingErrorNoError;
+}
+
 Thing::ThingError ThingManagerImplementation::setEventLogging(const ThingId &thingId, const EventTypeId &eventTypeId, bool enabled)
 {
     Thing *thing = m_configuredThings.value(thingId);
@@ -1835,10 +1859,6 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
 
     emit thingStateChanged(thing, stateTypeId, value, minValue, maxValue);
 
-    Param valueParam(ParamTypeId(stateTypeId.toString()), value);
-    Event event(EventTypeId(stateTypeId.toString()), thing->id(), ParamList() << valueParam, true);
-    onEventTriggered(event);
-
     syncIOConnection(thing, stateTypeId);
 }
 
@@ -2090,6 +2110,13 @@ void ThingManagerImplementation::initThing(Thing *thing)
         }
     }
     thing->setLoggedEventTypeIds(loggedEventTypeIds);
+    QList<StateTypeId> loggedStateTypeIds;
+    foreach (const StateType &stateType, thingClass.stateTypes()) {
+        if (stateType.suggestLogging()) {
+            loggedStateTypeIds.append(stateType.id());
+        }
+    }
+    thing->setLoggedStateTypeIds(loggedStateTypeIds);
 }
 
 void ThingManagerImplementation::postSetupThing(Thing *thing)

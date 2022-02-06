@@ -163,8 +163,8 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
 
     connect(m_thingManager, &ThingManagerImplementation::pluginConfigChanged, this, &NymeaCore::pluginConfigChanged);
-    connect(m_thingManager, &ThingManagerImplementation::eventTriggered, this, &NymeaCore::gotEvent);
-    connect(m_thingManager, &ThingManagerImplementation::thingStateChanged, this, &NymeaCore::thingStateChanged);
+    connect(m_thingManager, &ThingManagerImplementation::eventTriggered, this, &NymeaCore::onEventTriggered);
+    connect(m_thingManager, &ThingManagerImplementation::thingStateChanged, this, &NymeaCore::onThingStateChanged);
     connect(m_thingManager, &ThingManagerImplementation::thingAdded, this, &NymeaCore::thingAdded);
     connect(m_thingManager, &ThingManagerImplementation::thingChanged, this, &NymeaCore::thingChanged);
     connect(m_thingManager, &ThingManagerImplementation::thingSettingChanged, this, &NymeaCore::thingSettingChanged);
@@ -662,10 +662,27 @@ ModbusRtuManager *NymeaCore::modbusRtuManager() const
     return m_modbusRtuManager;
 }
 
-void NymeaCore::gotEvent(const Event &event)
+void NymeaCore::onEventTriggered(const Event &event)
 {
     emit eventTriggered(event);
+    evaluateRules(event);
+}
 
+void NymeaCore::onThingStateChanged(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue)
+{
+    emit thingStateChanged(thing, stateTypeId, value, minValue, maxValue);
+
+    // The rule engine can have event based rules that would trigger when a state changes
+    // without "binding" to the state (as a stateEvaluator would do). So generate a fake event
+    // for every state change.
+    // TODO: This whole rule engine related code in this file should probably move into the RuleEngine itself.
+    Param valueParam(ParamTypeId(stateTypeId.toString()), value);
+    Event event(EventTypeId(stateTypeId.toString()), thing->id(), ParamList() << valueParam);
+    evaluateRules(event);
+}
+
+void NymeaCore::evaluateRules(const Event &event)
+{
     QList<RuleAction> actions;
     QList<RuleAction> eventBasedActions;
     foreach (const Rule &rule, m_ruleEngine->evaluateEvent(event)) {

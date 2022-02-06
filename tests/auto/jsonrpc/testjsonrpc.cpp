@@ -680,7 +680,7 @@ void TestJSONRPC::enableDisableNotifications_legacy()
 
     QStringList expectedNamespaces;
     if (enabled == "true") {
-        expectedNamespaces << "NetworkManager" << "Integrations" << "System" << "Rules"<< "Logging" << "Tags" << "AppData" << "JSONRPC" << "Configuration" << "Scripts" << "Users" << "Zigbee" << "ModbusRtu";
+        expectedNamespaces << "NetworkManager" << "Integrations" << "System" << "Rules" << "Logging" << "Tags" << "AppData" << "JSONRPC" << "Configuration" << "Scripts" << "Users" << "Zigbee" << "ModbusRtu";
     }
     std::sort(expectedNamespaces.begin(), expectedNamespaces.end());
 
@@ -690,7 +690,7 @@ void TestJSONRPC::enableDisableNotifications_legacy()
     }
     std::sort(actualNamespaces.begin(), actualNamespaces.end());
 
-    QCOMPARE(expectedNamespaces, actualNamespaces);
+    QVERIFY2(expectedNamespaces == actualNamespaces, QString("Namespaces not matching.\nExpected: %1\nReceived: %2").arg(expectedNamespaces.join(",")).arg(actualNamespaces.join(",")).toUtf8());
 }
 
 
@@ -839,19 +839,18 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
 
     // state state to 20
-    qDebug() << "setting mock int state to 20";
+    qCDebug(dcTests) << "setting mock int state to 20";
     QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(20)));
     QNetworkReply *reply = nam.get(request);
     connect(reply, SIGNAL(finished()), reply, SLOT(deleteLater()));
 
+    qCDebug(dcTests()) << "Waiting for RuleActiveChanged";
     if (spy.count() == 0) spy.wait();
     notificationVariant = checkNotification(clientSpy, "Rules.RuleActiveChanged");
     verifyRuleError(response);
 
     QCOMPARE(notificationVariant.toMap().value("params").toMap().value("ruleId").toUuid().toString(), ruleId.toString());
     QCOMPARE(notificationVariant.toMap().value("params").toMap().value("active").toBool(), true);
-
-    clientSpy.wait();
 
     spy.clear(); clientSpy.clear();
 
@@ -862,12 +861,10 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     connect(reply2, SIGNAL(finished()), reply2, SLOT(deleteLater()));
 
     // Waiting for notifications:
-    // Integrations.StateChanged for the change we did
-    // Integrations.EventTriggered
     // Rules.RuleActiveChanged
-    // Logging.LogEntryAdded // One for the state change we did
-    // Logging.LogEntryAdded // One for the rule state change
-    while (clientSpy.count() < 5) {
+    // Logging.LogEntryAdded
+    // Integrations.StateChanged for the change done by the rule
+    while (clientSpy.count() < 3) {
         clientSpy.wait();
     }
 
@@ -921,28 +918,6 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     }
 
     QVERIFY2(found, "Could not find the correct Devices.StateChanged notification");
-
-    // Waiting for:
-    // Devices.StateChanged
-    // Devices.EventTriggered
-    // Events.EventTriggered <-- deprecated
-    while (clientSpy.count() < 3) {
-        clientSpy.wait();
-    }
-
-    // Make sure the notification contains all the stuff we expect
-    QVariantList eventTriggeredVariants = checkNotifications(clientSpy, "Integrations.EventTriggered");
-    QVERIFY2(!eventTriggeredVariants.isEmpty(), "Did not get Integrations.EventTriggered notification.");
-    found = false;
-    foreach (const QVariant &eventTriggeredVariant, eventTriggeredVariants) {
-        if (eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("eventTypeId").toUuid() == stateTypeId) {
-            found = true;
-            QCOMPARE(eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("params").toList().first().toMap().value("value").toInt(), newVal);
-            break;
-        }
-    }
-
-    QVERIFY2(found, "Could not find the corresponding Integrations.EventTriggered notification");
 
     // Now turn off notifications
     QCOMPARE(disableNotifications(), true);

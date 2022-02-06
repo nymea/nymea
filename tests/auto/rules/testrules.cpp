@@ -407,13 +407,12 @@ void TestRules::generateEvent(const EventTypeId &eventTypeId)
 
 void TestRules::initTestCase()
 {
-    NymeaTestBase::initTestCase();
-    QLoggingCategory::setFilterRules("*.debug=false\n"
-                                     "Tests.debug=true\n"
-                                     "RuleEngine.debug=true\n"
-                                     "RuleEngineDebug.debug=true\n"
-                                     "JsonRpc.debug=true\n"
-                                     "Mock.*=true");
+    NymeaTestBase::initTestCase("*.debug=false\n"
+                                "Tests.debug=true\n"
+                                "RuleEngine.debug=true\n"
+                                "RuleEngineDebug.debug=true\n"
+                                "JsonRpc.debug=true\n"
+                                "Mock.*=true");
 }
 
 void TestRules::addRemoveRules_data()
@@ -2400,8 +2399,8 @@ void TestRules::removePolicyUpdate()
 
     // Add rule with child
     QVariantList eventDescriptors;
-    eventDescriptors.append(createEventDescriptor(childId, childMockBoolValueEventTypeId));
-    eventDescriptors.append(createEventDescriptor(parentId, parentMockBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(childId, childMockEvent1EventTypeId));
+    eventDescriptors.append(createEventDescriptor(parentId, parentMockEvent1EventTypeId));
     eventDescriptors.append(createEventDescriptor(m_mockThingId, mockEvent1EventTypeId));
 
     params.clear(); response.clear();
@@ -2486,8 +2485,8 @@ void TestRules::removePolicyCascade()
 
     // Add rule with child
     QVariantList eventDescriptors;
-    eventDescriptors.append(createEventDescriptor(childId, childMockBoolValueEventTypeId));
-    eventDescriptors.append(createEventDescriptor(parentId, parentMockBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(childId, childMockEvent1EventTypeId));
+    eventDescriptors.append(createEventDescriptor(parentId, parentMockEvent1EventTypeId));
     eventDescriptors.append(createEventDescriptor(m_mockThingId, mockEvent1EventTypeId));
 
     params.clear(); response.clear();
@@ -2563,8 +2562,8 @@ void TestRules::removePolicyUpdateRendersUselessRule()
 
     // Add rule with child
     QVariantList eventDescriptors;
-    eventDescriptors.append(createEventDescriptor(childId, childMockBoolValueEventTypeId));
-    eventDescriptors.append(createEventDescriptor(parentId, parentMockBoolValueEventTypeId));
+    eventDescriptors.append(createEventDescriptor(childId, childMockEvent1EventTypeId));
+    eventDescriptors.append(createEventDescriptor(parentId, parentMockEvent1EventTypeId));
     eventDescriptors.append(createEventDescriptor(m_mockThingId, mockEvent1EventTypeId));
 
     params.clear(); response.clear();

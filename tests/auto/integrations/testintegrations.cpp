@@ -139,7 +139,7 @@ private slots:
     void executeAction();
 
     void triggerEvent();
-    void triggerStateChangeEvent();
+    void triggerStateChangeSignal();
 
     void params();
 
@@ -343,7 +343,7 @@ void TestIntegrations::verifyInterfaces()
     QVERIFY(!mock.isEmpty());
 
     QVariantList interfaces = mock.value("interfaces").toList();
-    QVariantList expectedInterfaces = {"system", "light", "power", "battery", "wirelessconnectable", "connectable", "update"};
+    QVariantList expectedInterfaces = {"system", "light", "power", "battery", "wirelessconnectable", "connectable", "update", "multibutton", "button"};
     qCDebug(dcTests()) << interfaces;
     qCDebug(dcTests()) << expectedInterfaces;
     QCOMPARE(interfaces, expectedInterfaces);
@@ -991,7 +991,7 @@ void TestIntegrations::getActionTypes_data()
     QTest::addColumn<QList<ActionTypeId> >("actionTypeTestData");
 
     QTest::newRow("valid thingClass") << mockThingClassId
-                                       << (QList<ActionTypeId>() << mockIntWithLimitsActionTypeId << mockAsyncActionTypeId << mockAsyncFailingActionTypeId << mockFailingActionTypeId << mockWithoutParamsActionTypeId << mockPowerActionTypeId << mockWithoutParamsActionTypeId << mockBatteryLevelActionTypeId << mockSignalStrengthActionTypeId << mockUpdateStatusActionTypeId << mockPerformUpdateActionTypeId);
+                                       << (QList<ActionTypeId>() << mockIntWithLimitsActionTypeId << mockAsyncActionTypeId << mockAsyncFailingActionTypeId << mockFailingActionTypeId << mockWithoutParamsActionTypeId << mockPowerActionTypeId << mockWithoutParamsActionTypeId << mockBatteryLevelActionTypeId << mockSignalStrengthActionTypeId << mockUpdateStatusActionTypeId << mockPerformUpdateActionTypeId << mockPressButtonActionTypeId);
     QTest::newRow("invalid thingClass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << QList<ActionTypeId>();
 }
 
@@ -1023,7 +1023,7 @@ void TestIntegrations::getEventTypes_data()
     QTest::addColumn<ThingClassId>("thingClassId");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("valid thingClass") << mockThingClassId << 14;
+    QTest::newRow("valid thingClass") << mockThingClassId << 3;
     QTest::newRow("invalid thingClass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << 0;
 }
 
@@ -2140,7 +2140,7 @@ void TestIntegrations::triggerEvent()
     QCOMPARE(notificationContent.value("event").toMap().value("eventTypeId").toUuid().toString(), mockEvent1EventTypeId.toString());
 }
 
-void TestIntegrations::triggerStateChangeEvent()
+void TestIntegrations::triggerStateChangeSignal()
 {
     enableNotifications({"Integrations"});
 
@@ -2148,7 +2148,7 @@ void TestIntegrations::triggerStateChangeEvent()
     QVERIFY2(things.count() > 0, "There needs to be at least one configured Mock for this test");
     Thing *thing = things.first();
 
-    QSignalSpy spy(NymeaCore::instance(), SIGNAL(eventTriggered(const Event&)));
+    QSignalSpy spy(NymeaCore::instance(), SIGNAL(thingStateChanged(Thing *, const StateTypeId &, const QVariant &, const QVariant &, const QVariant &)));
     QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     // Setup connection to mock client
@@ -2162,25 +2162,23 @@ void TestIntegrations::triggerStateChangeEvent()
 
     // Lets wait for the notification
     spy.wait();
-    QVERIFY(spy.count() > 0);
-    for (int i = 0; i < spy.count(); i++ ){
-        Event event = spy.at(i).at(0).value<Event>();
-        if (event.thingId() == thing->id()) {
-            // Make sure the event contains all the stuff we expect
-            QCOMPARE(event.eventTypeId().toString(), mockIntStateTypeId.toString());
-            QCOMPARE(event.param(ParamTypeId(mockIntStateTypeId.toString())).value().toInt(), 37);
-        }
-    }
+    QVERIFY(spy.count() == 1);
+    Thing *t = spy.at(0).at(0).value<Thing*>();
+    QCOMPARE(t->id(), thing->id());
+    StateTypeId stId = spy.at(0).at(1).value<StateTypeId>();
+    QCOMPARE(stId, mockIntStateTypeId);
+    QVariant value = spy.at(0).at(2);
+    QCOMPARE(value.toInt(), 37);
 
     // Check for the notification on JSON API
     QVariantList notifications;
-    notifications = checkNotifications(notificationSpy, "Integrations.EventTriggered");
-    QVERIFY2(notifications.count() == 1, "Should get Integrations.EventTriggered notification");
+    notifications = checkNotifications(notificationSpy, "Integrations.StateChanged");
+    QVERIFY2(notifications.count() == 1, "Should get Integrations.StateChanged notification");
     QVariantMap notificationContent = notifications.first().toMap().value("params").toMap();
 
-    QCOMPARE(notificationContent.value("event").toMap().value("thingId").toUuid().toString(), thing->id().toString());
-    QCOMPARE(notificationContent.value("event").toMap().value("eventTypeId").toUuid().toString(), mockIntEventTypeId.toString());
-
+    QCOMPARE(notificationContent.value("thingId").toUuid().toString(), thing->id().toString());
+    QCOMPARE(notificationContent.value("stateTypeId").toUuid().toString(), mockIntStateTypeId.toString());
+    QCOMPARE(notificationContent.value("value").toInt(), 37);
 }
 
 void TestIntegrations::params()
@@ -2376,9 +2374,9 @@ void TestIntegrations::testTranslations()
             bool etFound = false;
             foreach (const QVariant &etVariant, tcMap.value("eventTypes").toList()) {
                 QVariantMap etMap = etVariant.toMap();
-                if (etMap.value("id").toUuid() == autoMockIntEventTypeId) {
+                if (etMap.value("id").toUuid() == autoMockEvent1EventTypeId) {
                     etFound = true;
-                    QCOMPARE(etMap.value("displayName").toString(), QString("Simulierter Integer Zustand geändert"));
+                    QCOMPARE(etMap.value("displayName").toString(), QString("Mock Ereignis 1"));
                 }
             }
             QVERIFY2(etFound, "EventType not found in mock thing class.");

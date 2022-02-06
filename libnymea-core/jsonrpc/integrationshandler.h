@@ -59,6 +59,7 @@ public:
     Q_INVOKABLE JsonReply *EditThing(const QVariantMap &params);
     Q_INVOKABLE JsonReply *RemoveThing(const QVariantMap &params);
     Q_INVOKABLE JsonReply *SetThingSettings(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *SetStateLogging(const QVariantMap &params);
     Q_INVOKABLE JsonReply *SetEventLogging(const QVariantMap &params);
     Q_INVOKABLE JsonReply *SetStateFilter(const QVariantMap &params);
 

@@ -106,6 +106,7 @@ public:
     Thing::ThingError editThing(const ThingId &thingId, const QString &name) override;
     Thing::ThingError setThingSettings(const ThingId &thingId, const ParamList &settings) override;
 
+    Thing::ThingError setStateLogging(const ThingId &thingId, const StateTypeId &stateTypeId, bool enabled) override;
     Thing::ThingError setEventLogging(const ThingId &thingId, const EventTypeId &eventTypeId, bool enabled) override;
     Thing::ThingError setStateFilter(const ThingId &thingId, const StateTypeId &stateTypeId, Types::StateValueFilter filter) override;
 

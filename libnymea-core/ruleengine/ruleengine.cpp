@@ -155,7 +155,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
         qCWarning(dcRuleEngine()) << "Invalid event. ThingID does not reference a valid thing";
         return QList<Rule>();
     }
-    ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(thing->thingClassId());
+    ThingClass thingClass = thing->thingClass();
     EventType eventType = thingClass.eventTypes().findById(event.eventTypeId());
 
 
@@ -329,6 +329,12 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
                     eventTypeFound = true;
                 }
             }
+            // Allow defining event descriptors with a stateTypeId as eventTypeId
+            foreach (const StateType &stateType, thingClass.stateTypes()) {
+                if (stateType.id() == eventDescriptor.eventTypeId()) {
+                    eventTypeFound = true;
+                }
+            }
             if (!eventTypeFound) {
                 qCWarning(dcRuleEngine) << "Cannot create rule. Thing " + thing->name() + " has no event type:" << eventDescriptor.eventTypeId();
                 return RuleErrorEventTypeNotFound;
@@ -340,7 +346,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
                 qWarning(dcRuleEngine()) << "No such interface:" << eventDescriptor.interface();
                 return RuleErrorInterfaceNotFound;
             }
-            if (iface.eventTypes().findByName(eventDescriptor.interfaceEvent()).name().isEmpty()) {
+            if (iface.eventTypes().findByName(eventDescriptor.interfaceEvent()).name().isEmpty() && iface.stateTypes().findByName(eventDescriptor.interfaceEvent()).name().isEmpty()) {
                 qWarning(dcRuleEngine()) << "Interface" << iface.name() << "has no such event:" << eventDescriptor.interfaceEvent();
                 return RuleErrorEventTypeNotFound;
             }
@@ -827,9 +833,17 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Thing
             }
 
             EventType et = dc.eventTypes().findById(event.eventTypeId());
-            if (et.name() != eventDescriptor.interfaceEvent()) {
-                // The fired event name does not match with the eventDescriptor's interfaceEvent
-                continue;
+            StateType st = dc.stateTypes().findById(event.eventTypeId());
+            if (et.isValid()) {
+                if (et.name() != eventDescriptor.interfaceEvent()) {
+                    // The fired event name does not match with the eventDescriptor's interfaceEvent
+                    continue;
+                }
+            } else if (st.isValid()) {
+                if (st.name() != eventDescriptor.interfaceEvent()) {
+                    // The fired event name does not match with the eventDescriptor's interfaceEvent
+                    continue;
+                }
             }
         }
 
@@ -847,8 +861,13 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Thing
                 }
                 ThingClass dc = NymeaCore::instance()->thingManager()->findThingClass(thingClassId);
                 EventType et = dc.eventTypes().findById(event.eventTypeId());
-                ParamType pt = et.paramTypes().findByName(paramDescriptor.paramName());
-                paramValue = event.param(pt.id()).value();
+                StateType st = dc.stateTypes().findById(event.eventTypeId());
+                if (et.isValid()) {
+                    ParamType pt = et.paramTypes().findByName(paramDescriptor.paramName());
+                    paramValue = event.param(pt.id()).value();
+                } else if (st.isValid()) {
+                    paramValue = event.paramValue(st.id());
+                }
             }
 
             switch (paramDescriptor.operatorType()) {
@@ -1092,6 +1111,11 @@ QVariant::Type RuleEngine::getEventParamType(const EventTypeId &eventTypeId, con
                         return paramType.type();
                     }
                 }
+            }
+        }
+        foreach (const StateType &stateType, thingClass.stateTypes()) {
+            if (stateType.id() == eventTypeId) {
+                return stateType.type();
             }
         }
     }

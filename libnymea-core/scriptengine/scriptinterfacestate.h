@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2022, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,50 +28,53 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef HTTPDAEMON_H
-#define HTTPDAEMON_H
+#ifndef SCRIPTINTERFACESTATE_H
+#define SCRIPTINTERFACESTATE_H
 
-#include "typeutils.h"
-#include "types/param.h"
-
-#include <QTcpServer>
+#include <QObject>
 #include <QUuid>
-#include <QDateTime>
+#include <QQmlParserStatus>
 
-class Thing;
-class IntegrationPlugin;
+#include "types/state.h"
+#include "integrations/thingmanager.h"
 
-class HttpDaemon : public QTcpServer
+namespace nymeaserver {
+
+class ScriptParams;
+
+class ScriptInterfaceState: public QObject, public QQmlParserStatus
 {
     Q_OBJECT
+    Q_INTERFACES(QQmlParserStatus)
+    Q_PROPERTY(QString interfaceName READ interfaceName WRITE setInterfaceName NOTIFY interfaceNameChanged)
+    Q_PROPERTY(QString stateName READ stateName WRITE setStateName NOTIFY stateNameChanged)
 public:
-    HttpDaemon(Thing *thing, IntegrationPlugin* parent = nullptr);
-    ~HttpDaemon();
-    void incomingConnection(qintptr socket) override;
+    ScriptInterfaceState(QObject *parent = nullptr);
+    void classBegin() override;
+    void componentComplete() override;
 
-    void actionExecuted(const ActionTypeId &actionTypeId);
+    QString interfaceName() const;
+    void setInterfaceName(const QString &interfaceName);
 
-signals:
-    void setState(const StateTypeId &stateTypeId, const QVariant &value);
-    void triggerEvent(const EventTypeId &eventTypeId, const ParamList &params);
-    void disappear();
-    void reconfigureAutodevice();
+    QString stateName() const;
+    void setStateName(const QString &stateName);
 
 private slots:
-    void readClient();
-    void discardClient();
+    void onStateChanged(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value);
+
+signals:
+    void interfaceNameChanged();
+    void stateNameChanged();
+
+    void stateChanged(const QString &thingId, const QVariant &value);
 
 private:
-    QString generateHeader();
-    QString generateWebPage();
+    ThingManager *m_thingManager = nullptr;
 
-private:
-    bool disabled;
-
-    IntegrationPlugin *m_plugin;
-    Thing *m_thing;
-
-    QList<QPair<ActionTypeId, QDateTime> > m_actionList;
+    QString m_interfaceName;
+    QString m_stateName;
 };
 
-#endif // HTTPDAEMON_H
+}
+
+#endif // SCRIPTINTERFACESTATE_H

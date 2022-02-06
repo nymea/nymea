@@ -544,6 +544,7 @@ void PythonIntegrationPlugin::setupThing(ThingSetupInfo *info)
 
     connect(info->thing(), &Thing::destroyed, this, [=](){
         PyEval_RestoreThread(m_threadState);
+        m_things.remove(thing); // In case thingRemoved is never called (e.g. failed setup) it needs to be removed too
         pyThing->thing = nullptr;
         Py_DECREF(pyThing);
         m_threadPool->setMaxThreadCount(m_threadPool->maxThreadCount() - 1);
@@ -598,7 +599,7 @@ void PythonIntegrationPlugin::executeAction(ThingActionInfo *info)
 
 void PythonIntegrationPlugin::thingRemoved(Thing *thing)
 {
-    PyThing *pyThing = m_things.take(thing);
+    PyThing *pyThing = m_things.take(thing); // removing thing from myThings() before the thingRemoved call
     callPluginFunction("thingRemoved", reinterpret_cast<PyObject*>(pyThing));
 }
 

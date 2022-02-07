@@ -48,7 +48,6 @@ class LogEntry
     Q_PROPERTY(Logging::LoggingSource source READ source)
     Q_PROPERTY(QUuid typeId READ typeId USER true)
     Q_PROPERTY(QUuid thingId READ thingId USER true)
-    Q_PROPERTY(QUuid deviceId READ thingId USER true REVISION 1)
     Q_PROPERTY(QVariant value READ value USER true)
     Q_PROPERTY(bool active READ active USER true)
     Q_PROPERTY(Logging::LoggingEventType eventType READ eventType USER true)

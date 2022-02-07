@@ -76,7 +76,6 @@ LoggingHandler::LoggingHandler(QObject *parent) :
     params.insert("o:eventTypes", QVariantList() << enumRef<Logging::LoggingEventType>());
     params.insert("o:typeIds", QVariantList() << enumValueName(Uuid));
     params.insert("o:thingIds", QVariantList() << enumValueName(Uuid));
-    params.insert("d:o:deviceIds", QVariantList() << enumValueName(Uuid));
     params.insert("o:values", QVariantList() << enumValueName(Variant));
     params.insert("o:limit", enumValueName(Int));
     params.insert("o:offset", enumValueName(Int));
@@ -189,7 +188,6 @@ QVariantMap LoggingHandler::packLogEntry(const LogEntry &logEntry)
             logEntryMap.insert("typeId", logEntry.typeId());
         }
         logEntryMap.insert("thingId", logEntry.thingId());
-        logEntryMap.insert("deviceId", logEntry.thingId()); // DEPRECATED
         logEntryMap.insert("value", LogValueTool::convertVariantToString(logEntry.value()));
         break;
     case Logging::LoggingSourceSystem:
@@ -249,13 +247,6 @@ LogFilter LoggingHandler::unpackLogFilter(const QVariantMap &logFilterMap)
         QVariantList thingIds = logFilterMap.value("thingIds").toList();
         foreach (const QVariant &thingId, thingIds) {
             filter.addThingId(ThingId(thingId.toString()));
-        }
-    }
-    // DEPRECATED
-    if (logFilterMap.contains("deviceIds")) {
-        QVariantList deviceIds = logFilterMap.value("deviceIds").toList();
-        foreach (const QVariant &deviceId, deviceIds) {
-            filter.addThingId(ThingId(deviceId.toString()));
         }
     }
     if (logFilterMap.contains("values")) {

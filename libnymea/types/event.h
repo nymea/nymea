@@ -44,7 +44,6 @@ class LIBNYMEA_EXPORT Event
     Q_GADGET
     Q_PROPERTY(QUuid eventTypeId READ eventTypeId)
     Q_PROPERTY(QUuid thingId READ thingId)
-    Q_PROPERTY(QUuid deviceId READ thingId REVISION 1)
     Q_PROPERTY(ParamList params READ params)
 public:
     Event();

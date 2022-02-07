@@ -150,8 +150,7 @@ QStringList TestJSONRPC::extractRefs(const QVariant &variant)
 void TestJSONRPC::initTestCase()
 {
     NymeaDBusService::setBusType(QDBusConnection::SessionBus);
-    NymeaTestBase::initTestCase();
-    QLoggingCategory::setFilterRules("*.debug=false\n"
+    NymeaTestBase::initTestCase("*.debug=false\n"
 //                                     "JsonRpcTraffic.debug=true\n"
                                      "JsonRpc.debug=true\n"
                                      "Translations.debug=true\n"
@@ -674,7 +673,7 @@ void TestJSONRPC::enableDisableNotifications_legacy()
 
     QStringList expectedNamespaces;
     if (enabled == "true") {
-        expectedNamespaces << "Actions" << "NetworkManager" << "Devices" << "Integrations" << "System" << "Rules" << "States" << "Logging" << "Tags" << "AppData" << "JSONRPC" << "Configuration" << "Events" << "Scripts" << "Users" << "Zigbee" << "ModbusRtu";
+        expectedNamespaces << "NetworkManager" << "Integrations" << "System" << "Rules"<< "Logging" << "Tags" << "AppData" << "JSONRPC" << "Configuration" << "Scripts" << "Users" << "Zigbee" << "ModbusRtu";
     }
     std::sort(expectedNamespaces.begin(), expectedNamespaces.end());
 
@@ -700,7 +699,6 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("thingId", m_mockThingId);
-    stateDescriptor.insert("deviceId", m_mockThingId); // DEPRECATED
     stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorLess));
     stateDescriptor.insert("value", "20");
     // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
@@ -715,7 +713,6 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QVariantMap actionNoParams;
     actionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     actionNoParams.insert("thingId", m_mockThingId);
-    actionNoParams.insert("deviceId", m_mockThingId); // DEPRECATED
     // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
     // .toString(QUuid::WithoutBraces) has only been added in 5.11 so we can't use that either...
     // Only hack I can come up with right now is to convert it to a Json and back to use the implicit cast
@@ -725,7 +722,6 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QVariantMap eventDescriptor;
     eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor.insert("thingId", m_mockThingId);
-    eventDescriptor.insert("deviceId", m_mockThingId); // DEPRECATED
     // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
     // .toString(QUuid::WithoutBraces) has only been added in 5.11 so we can't use that either...
     // Only hack I can come up with right now is to convert it to a Json and back to use the implicit cast
@@ -789,7 +785,6 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("thingId", m_mockThingId);
-    stateDescriptor.insert("deviceId", m_mockThingId); // DEPRECATED
     stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptor.insert("value", "20");
     // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
@@ -804,7 +799,6 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QVariantMap actionNoParams;
     actionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     actionNoParams.insert("thingId", m_mockThingId);
-    actionNoParams.insert("deviceId", m_mockThingId); // DEPRECATED
     // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
     // .toString(QUuid::WithoutBraces) has only been added in 5.11 so we can't use that either...
     // Only hack I can come up with right now is to convert it to a Json and back to use the implicit cast
@@ -855,21 +849,18 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     spy.clear(); clientSpy.clear();
 
     // set the rule inactive
-    qDebug() << "setting mock int state to 42";
+    qCDebug(dcTests) << "setting mock int state to 42";
     QNetworkRequest request2(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(42)));
     QNetworkReply *reply2 = nam.get(request2);
     connect(reply2, SIGNAL(finished()), reply2, SLOT(deleteLater()));
 
     // Waiting for notifications:
-    // Devices.StateChanged for the change we did
-    // Devices.EventTriggered
-    // Events.EventTriggered <-- deprecated
+    // Integrations.StateChanged for the change we did
+    // Integrations.EventTriggered
     // Rules.RuleActiveChanged
-    // Logging.LogEntryAdded
-    // Devices.StateChanged for the change done by the rule
-    // Devices.EventTriggered
-    // Events.EventTriggered <-- deprecated
-    while (clientSpy.count() < 8) {
+    // Logging.LogEntryAdded // One for the state change we did
+    // Logging.LogEntryAdded // One for the rule state change
+    while (clientSpy.count() < 5) {
         clientSpy.wait();
     }
 
@@ -894,7 +885,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
 
 void TestJSONRPC::stateChangeEmitsNotifications()
 {
-    enableNotifications({"Devices", "States", "Logging", "Events"});
+    enableNotifications({"Integrations", "Logging"});
     bool found = false;
 
     // Setup connection to mock client
@@ -911,9 +902,9 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     if (replySpy.count() == 0) replySpy.wait();
 
     // Make sure the notification contains all the stuff we expect
-    QVariantList stateChangedVariants = checkNotifications(clientSpy, "Devices.StateChanged");
-    QVERIFY2(!stateChangedVariants.isEmpty(), "Did not get Devices.StateChanged notification.");
-    qDebug() << "got" << stateChangedVariants.count() << "Devices.StateChanged notifications";
+    QVariantList stateChangedVariants = checkNotifications(clientSpy, "Integrations.StateChanged");
+    QVERIFY2(!stateChangedVariants.isEmpty(), "Did not get Integrations.StateChanged notification.");
+    qDebug() << "got" << stateChangedVariants.count() << "Integrations.StateChanged notifications";
     foreach (const QVariant &stateChangedVariant, stateChangedVariants) {
         if (stateChangedVariant.toMap().value("params").toMap().value("stateTypeId").toUuid() == stateTypeId) {
             found = true;
@@ -933,8 +924,8 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     }
 
     // Make sure the notification contains all the stuff we expect
-    QVariantList eventTriggeredVariants = checkNotifications(clientSpy, "Events.EventTriggered");
-    QVERIFY2(!eventTriggeredVariants.isEmpty(), "Did not get Events.EventTriggered notification.");
+    QVariantList eventTriggeredVariants = checkNotifications(clientSpy, "Integrations.EventTriggered");
+    QVERIFY2(!eventTriggeredVariants.isEmpty(), "Did not get Integrations.EventTriggered notification.");
     found = false;
     foreach (const QVariant &eventTriggeredVariant, eventTriggeredVariants) {
         if (eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("eventTypeId").toUuid() == stateTypeId) {
@@ -944,7 +935,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
         }
     }
 
-    QVERIFY2(found, "Could not find the corresponding Events.EventTriggered notification");
+    QVERIFY2(found, "Could not find the corresponding Integrations.EventTriggered notification");
 
     // Now turn off notifications
     QCOMPARE(disableNotifications(), true);

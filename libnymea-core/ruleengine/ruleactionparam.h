@@ -48,7 +48,6 @@ class LIBNYMEA_EXPORT RuleActionParam
     Q_PROPERTY(QUuid eventTypeId READ eventTypeId WRITE setEventTypeId USER true)
     Q_PROPERTY(QUuid eventParamTypeId READ eventParamTypeId WRITE setEventParamTypeId USER true)
     Q_PROPERTY(QUuid stateThingId READ stateThingId WRITE setStateThingId USER true)
-    Q_PROPERTY(QUuid stateDeviceId READ stateThingId WRITE setStateThingId USER true REVISION 1)
     Q_PROPERTY(QUuid stateTypeId READ stateTypeId WRITE setStateTypeId USER true)
 
 public:

@@ -44,7 +44,6 @@ class LIBNYMEA_EXPORT EventDescriptor
 {
     Q_GADGET
     Q_PROPERTY(QUuid thingId READ thingId WRITE setThingId USER true)
-    Q_PROPERTY(QUuid deviceId READ thingId WRITE setThingId USER true REVISION 1)
     Q_PROPERTY(QUuid eventTypeId READ eventTypeId WRITE setEventTypeId USER true)
     Q_PROPERTY(QString interface READ interface WRITE setInterface USER true)
     Q_PROPERTY(QString interfaceEvent READ interfaceEvent WRITE setInterfaceEvent USER true)

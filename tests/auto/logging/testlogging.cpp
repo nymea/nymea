@@ -300,7 +300,7 @@ void TestLogging::eventLogs()
 
     // Now snoop in for the events
     clearLoggingDatabase();
-    enableNotifications({"Events", "Logging"});
+    enableNotifications({"Integrations", "Logging"});
     QSignalSpy clientSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
 
     // trigger state change in mock device

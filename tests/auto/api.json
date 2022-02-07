@@ -1,4 +1,4 @@
-5.8
+6.0
 {
     "enums": {
         "BasicType": [
@@ -46,41 +46,6 @@
             "CreateMethodUser",
             "CreateMethodAuto",
             "CreateMethodDiscovery"
-        ],
-        "DeviceError": [
-            "DeviceErrorNoError",
-            "DeviceErrorPluginNotFound",
-            "DeviceErrorVendorNotFound",
-            "DeviceErrorDeviceNotFound",
-            "DeviceErrorDeviceClassNotFound",
-            "DeviceErrorActionTypeNotFound",
-            "DeviceErrorStateTypeNotFound",
-            "DeviceErrorEventTypeNotFound",
-            "DeviceErrorDeviceDescriptorNotFound",
-            "DeviceErrorMissingParameter",
-            "DeviceErrorInvalidParameter",
-            "DeviceErrorSetupFailed",
-            "DeviceErrorDuplicateUuid",
-            "DeviceErrorCreationMethodNotSupported",
-            "DeviceErrorSetupMethodNotSupported",
-            "DeviceErrorHardwareNotAvailable",
-            "DeviceErrorHardwareFailure",
-            "DeviceErrorAuthenticationFailure",
-            "DeviceErrorDeviceInUse",
-            "DeviceErrorDeviceInRule",
-            "DeviceErrorDeviceIsChild",
-            "DeviceErrorPairingTransactionIdNotFound",
-            "DeviceErrorParameterNotWritable",
-            "DeviceErrorItemNotFound",
-            "DeviceErrorItemNotExecutable",
-            "DeviceErrorUnsupportedFeature",
-            "DeviceErrorTimeout"
-        ],
-        "DeviceSetupStatus": [
-            "DeviceSetupStatusNone",
-            "DeviceSetupStatusInProgress",
-            "DeviceSetupStatusComplete",
-            "DeviceSetupStatusFailed"
         ],
         "IOType": [
             "IOTypeNone",
@@ -441,54 +406,6 @@
         ]
     },
     "methods": {
-        "Actions.ExecuteAction": {
-            "deprecated": "Please use Integrations.ExecuteAction instead.",
-            "description": "Execute a single action.",
-            "params": {
-                "actionTypeId": "Uuid",
-                "deviceId": "Uuid",
-                "o:params": "$ref:ParamList"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:displayMessage": "String"
-            }
-        },
-        "Actions.ExecuteBrowserItem": {
-            "deprecated": "Please use Integrations.ExecuteBrowserItem instead.",
-            "description": "Execute the item identified by itemId on the given device.",
-            "params": {
-                "deviceId": "Uuid",
-                "itemId": "String"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError"
-            }
-        },
-        "Actions.ExecuteBrowserItemAction": {
-            "deprecated": "Please use Integrations.ExecuteBrowserItem instead.",
-            "description": "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.",
-            "params": {
-                "actionTypeId": "Uuid",
-                "deviceId": "Uuid",
-                "itemId": "String",
-                "o:params": "$ref:ParamList"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError"
-            }
-        },
-        "Actions.GetActionType": {
-            "deprecated": "Please use the Integrations namespace instead.",
-            "description": "Get the ActionType for the given ActionTypeId.",
-            "params": {
-                "actionTypeId": "Uuid"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:actionType": "$ref:ActionType"
-            }
-        },
         "AppData.Load": {
             "description": "Retrieve an app data storage value that has previously been set with Store(). If no value had been set for this appId/key combination before, an empty value will be returned.",
             "params": {
@@ -715,289 +632,6 @@
             },
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
-            }
-        },
-        "Devices.AddConfiguredDevice": {
-            "description": "Add a configured device with a setupMethod of SetupMethodJustAdd. For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. Devices with CreateMethodJustAdd require all parameters to be supplied here. Devices with CreateMethodDiscovery require the use of a deviceDescriptorId. For discovered devices params are not required and will be taken from the DeviceDescriptor, however, they may be overridden by supplying deviceParams.",
-            "params": {
-                "deviceClassId": "Uuid",
-                "name": "String",
-                "o:deviceDescriptorId": "Uuid",
-                "o:deviceParams": "$ref:ParamList"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:deviceId": "Uuid",
-                "o:displayMessage": "String"
-            }
-        },
-        "Devices.BrowseDevice": {
-            "description": "Browse a device. If a DeviceClass indicates a device is browsable, this method will return the BrowserItems. If no parameter besides the deviceId is used, the root node of this device will be returned. Any returned item which is browsable can be passed as node. Results will be children of the given node.\nIn case of an error during browsing, the error will be indicated and the displayMessage may contain additional information for the user. The displayMessage will be translated. A client UI showing this message to the user should be prepared for empty, but also longer strings.",
-            "params": {
-                "deviceId": "Uuid",
-                "o:itemId": "String"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "items": [
-                    "$ref:BrowserItem"
-                ],
-                "o:displayMessage": "String"
-            }
-        },
-        "Devices.ConfirmPairing": {
-            "description": "Confirm an ongoing pairing. For SetupMethodUserAndPassword, provide the username in the \"username\" field and the password in the \"secret\" field. For SetupMethodEnterPin and provide the PIN in the \"secret\" field. In case of SetupMethodOAuth, the previously opened web view will eventually be redirected to http://128.0.0.1:8888 and the OAuth code as query parameters to this url. Provide the entire unmodified URL in the secret field.",
-            "params": {
-                "o:secret": "String",
-                "o:username": "String",
-                "pairingTransactionId": "Uuid"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:deviceId": "Uuid",
-                "o:displayMessage": "String"
-            }
-        },
-        "Devices.EditDevice": {
-            "description": "Edit the name of a device. This method does not change the configuration of the device.",
-            "params": {
-                "deviceId": "Uuid",
-                "name": "String"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError"
-            }
-        },
-        "Devices.ExecuteAction": {
-            "description": "Execute a single action.",
-            "params": {
-                "actionTypeId": "Uuid",
-                "deviceId": "Uuid",
-                "o:params": "$ref:ParamList"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:displayMessage": "String"
-            }
-        },
-        "Devices.ExecuteBrowserItem": {
-            "description": "Execute the item identified by itemId on the given device.\nIn case of an error during execution, the error will be indicated and the displayMessage may contain additional information for the user. The displayMessage will be translated. A client UI showing this message to the user should be prepared for empty, but also longer strings.",
-            "params": {
-                "deviceId": "Uuid",
-                "itemId": "String"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:displayMessage": "String"
-            }
-        },
-        "Devices.ExecuteBrowserItemAction": {
-            "description": "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.\nIn case of an error during execution, the error will be indicated and the displayMessage may contain additional information for the user. The displayMessage will be translated. A client UI showing this message to the user should be prepared for empty, but also longer strings.",
-            "params": {
-                "actionTypeId": "Uuid",
-                "deviceId": "Uuid",
-                "itemId": "String",
-                "o:params": "$ref:ParamList"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:displayMessage": "String"
-            }
-        },
-        "Devices.GetActionTypes": {
-            "description": "Get action types for a specified deviceClassId.",
-            "params": {
-                "deviceClassId": "Uuid"
-            },
-            "returns": {
-                "actionTypes": "$ref:ActionTypes"
-            }
-        },
-        "Devices.GetBrowserItem": {
-            "description": "Get a single item from the browser. This won't give any more info on an item than a regular browseDevice call, but it allows to fetch details of an item if only the ID is known.\nIn case of an error during browsing, the error will be indicated and the displayMessage may contain additional information for the user. The displayMessage will be translated. A client UI showing this message to the user should be prepared for empty, but also longer strings.",
-            "params": {
-                "deviceId": "Uuid",
-                "o:itemId": "String"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:displayMessage": "String",
-                "o:item": "$ref:BrowserItem"
-            }
-        },
-        "Devices.GetConfiguredDevices": {
-            "description": "Returns a list of configured devices, optionally filtered by deviceId.",
-            "params": {
-                "o:deviceId": "Uuid"
-            },
-            "returns": {
-                "devices": "$ref:Devices"
-            }
-        },
-        "Devices.GetDiscoveredDevices": {
-            "description": "Performs a device discovery and returns the results. This function may take a while to return. Note that this method will include all the found devices, that is, including devices that already have been added. Those devices will have deviceId set to the device id of the already added device. Such results may be used to reconfigure existing devices and might be filtered in cases where only unknown devices are of interest.",
-            "params": {
-                "deviceClassId": "Uuid",
-                "o:discoveryParams": "$ref:ParamList"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:deviceDescriptors": "$ref:DeviceDescriptors",
-                "o:displayMessage": "String"
-            }
-        },
-        "Devices.GetEventTypes": {
-            "description": "Get event types for a specified deviceClassId.",
-            "params": {
-                "deviceClassId": "Uuid"
-            },
-            "returns": {
-                "eventTypes": "$ref:EventTypes"
-            }
-        },
-        "Devices.GetPluginConfiguration": {
-            "description": "Get a plugin's params.",
-            "params": {
-                "pluginId": "Uuid"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:configuration": "$ref:ParamList"
-            }
-        },
-        "Devices.GetPlugins": {
-            "description": "Returns a list of loaded plugins.",
-            "params": {
-            },
-            "returns": {
-                "plugins": "$ref:DevicePlugins"
-            }
-        },
-        "Devices.GetStateTypes": {
-            "description": "Get state types for a specified deviceClassId.",
-            "params": {
-                "deviceClassId": "Uuid"
-            },
-            "returns": {
-                "stateTypes": "$ref:StateTypes"
-            }
-        },
-        "Devices.GetStateValue": {
-            "description": "Get the value of the given device and the given stateType",
-            "params": {
-                "deviceId": "Uuid",
-                "stateTypeId": "Uuid"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:value": "Variant"
-            }
-        },
-        "Devices.GetStateValues": {
-            "description": "Get all the state values of the given device.",
-            "params": {
-                "deviceId": "Uuid"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:values": "$ref:States"
-            }
-        },
-        "Devices.GetSupportedDevices": {
-            "description": "Returns a list of supported Device classes, optionally filtered by vendorId.",
-            "params": {
-                "o:vendorId": "Uuid"
-            },
-            "returns": {
-                "deviceClasses": "$ref:DeviceClasses"
-            }
-        },
-        "Devices.GetSupportedVendors": {
-            "description": "Returns a list of supported Vendors.",
-            "params": {
-            },
-            "returns": {
-                "vendors": "$ref:Vendors"
-            }
-        },
-        "Devices.PairDevice": {
-            "description": "Pair a device. Use this to set up or reconfigure devices for DeviceClasses with a setupMethod different than SetupMethodJustAdd. Depending on the CreateMethod and whether a new devices is set up or an existing one is reconfigured, different parameters are required:\nCreateMethodJustAdd takes the deviceClassId and the parameters to be used with that device. If an existing device should be reconfigured, the deviceId of said device should be given additionally.\nCreateMethodDiscovery requires the use of a deviceDescriptorId, previously obtained with DiscoverDevices. Optionally, parameters can be overridden with the give deviceParams. DeviceDescriptors containing a deviceId will reconfigure that device, descriptors without deviceId will add a new one.\nIf success is true, the return values will contain a pairingTransactionId, a displayMessage and the setupMethod. Depending on the setupMethod, the application should present the use an appropriate login mask, that is, For SetupMethodDisplayPin the user should enter a pin that is displayed on the device, for SetupMethodEnterPin the application should present the given PIN so the user can enter it on the device. For SetupMethodPushButton, the displayMessage shall be presented to the user as informational hints to press a button on the device. For SetupMethodUserAndPassword a login mask for a user and password login should be presented to the user. In case of SetupMethodOAuth, an OAuth URL will be returned which shall be opened in a web view to allow the user logging in.\nOnce the login procedure has completed, the application shall proceed with ConfirmPairing, providing the results of the pairing procedure.",
-            "params": {
-                "o:deviceClassId": "Uuid",
-                "o:deviceDescriptorId": "Uuid",
-                "o:deviceId": "Uuid",
-                "o:deviceParams": "$ref:ParamList",
-                "o:name": "String"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:displayMessage": "String",
-                "o:oAuthUrl": "String",
-                "o:pairingTransactionId": "Uuid",
-                "o:pin": "String",
-                "o:setupMethod": "$ref:SetupMethod"
-            }
-        },
-        "Devices.ReconfigureDevice": {
-            "description": "Reconfigure a device. This comes down to removing and recreating a device with new parameters but keeping its device id the same (and with that keeping rules, tags etc). For devices with create method CreateMethodDiscovery, a discovery (GetDiscoveredDevices) shall be performed first and this method is to be called with a deviceDescriptorId of the re-discovered device instead of the deviceId directly. Device parameters will be taken from the discovery, but can be overridden individually here by providing them in the deviceParams parameter. Only writable parameters can be changed.",
-            "params": {
-                "o:deviceDescriptorId": "Uuid",
-                "o:deviceId": "Uuid",
-                "o:deviceParams": "$ref:ParamList"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:displayMessage": "String"
-            }
-        },
-        "Devices.RemoveConfiguredDevice": {
-            "description": "Remove a device from the system.",
-            "params": {
-                "deviceId": "Uuid",
-                "o:removePolicy": "$ref:RemovePolicy",
-                "o:removePolicyList": [
-                    {
-                        "policy": "$ref:RemovePolicy",
-                        "ruleId": "Uuid"
-                    }
-                ]
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:ruleIds": [
-                    "Uuid"
-                ]
-            }
-        },
-        "Devices.SetDeviceSettings": {
-            "description": "Change the settings of a device.",
-            "params": {
-                "deviceId": "Uuid",
-                "settings": "$ref:ParamList"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError"
-            }
-        },
-        "Devices.SetPluginConfiguration": {
-            "description": "Set a plugin's params.",
-            "params": {
-                "configuration": "$ref:ParamList",
-                "pluginId": "Uuid"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError"
-            }
-        },
-        "Events.GetEventType": {
-            "deprecated": "Please use the Devices namespace instead.",
-            "description": "Get the EventType for the given eventTypeId.",
-            "params": {
-                "eventTypeId": "Uuid"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:eventType": "$ref:EventType"
             }
         },
         "Integrations.AddThing": {
@@ -1489,9 +1123,6 @@
         "Logging.GetLogEntries": {
             "description": "Get the LogEntries matching the given filter. The result set will contain entries matching all filter rules combined. If multiple options are given for a single filter type, the result set will contain entries matching any of those. The offset starts at the newest entry in the result set. By default all items are returned. Example: If the specified filter returns a total amount of 100 entries:\n- a offset value of 10 would include the oldest 90 entries\n- a offset value of 0 would return all 100 entries\n\nThe offset is particularly useful in combination with the maxCount property and can be used for pagination. E.g. A result set of 10000 entries can be fetched in  batches of 1000 entries by fetching\n1) offset 0, maxCount 1000: Entries 0 to 9999\n2) offset 10000, maxCount 1000: Entries 10000 - 19999\n3) offset 20000, maxCount 1000: Entries 20000 - 29999\n...",
             "params": {
-                "d:o:deviceIds": [
-                    "Uuid"
-                ],
                 "o:eventTypes": [
                     "$ref:LoggingEventType"
                 ],
@@ -1769,8 +1400,7 @@
         "Rules.FindRules": {
             "description": "Find a list of rules containing any of the given parameters.",
             "params": {
-                "d:o:deviceId": "Uuid",
-                "o:thingId": "Uuid"
+                "thingId": "Uuid"
             },
             "returns": {
                 "ruleIds": [
@@ -1856,17 +1486,6 @@
             },
             "returns": {
                 "scriptError": "$ref:ScriptError"
-            }
-        },
-        "States.GetStateType": {
-            "deprecated": "Please use the Integrations namespace instead.",
-            "description": "Get the StateType for the given stateTypeId.",
-            "params": {
-                "stateTypeId": "Uuid"
-            },
-            "returns": {
-                "deviceError": "$ref:DeviceError",
-                "o:stateType": "$ref:StateType"
             }
         },
         "System.CheckForUpdates": {
@@ -2029,7 +1648,6 @@
         "Tags.GetTags": {
             "description": "Get the Tags matching the given filter. Tags can be filtered by a thingID, a ruleId, an appId, a tagId or a combination of any (however, combining thingId and ruleId will return an empty result set).",
             "params": {
-                "d:o:deviceId": "Uuid",
                 "o:appId": "String",
                 "o:ruleId": "Uuid",
                 "o:tagId": "String",
@@ -2305,60 +1923,6 @@
             "description": "Emitted whenever a WebSocket server configuration is removed.",
             "params": {
                 "id": "String"
-            }
-        },
-        "Devices.DeviceAdded": {
-            "description": "Emitted whenever a Device was added.",
-            "params": {
-                "device": "$ref:Device"
-            }
-        },
-        "Devices.DeviceChanged": {
-            "description": "Emitted whenever the params, name or setupStatus of a Device changes.",
-            "params": {
-                "device": "$ref:Device"
-            }
-        },
-        "Devices.DeviceRemoved": {
-            "description": "Emitted whenever a Device was removed.",
-            "params": {
-                "deviceId": "Uuid"
-            }
-        },
-        "Devices.DeviceSettingChanged": {
-            "description": "Emitted whenever the setting of a Device is changed.",
-            "params": {
-                "deviceId": "Uuid",
-                "paramTypeId": "Uuid",
-                "value": "Variant"
-            }
-        },
-        "Devices.EventTriggered": {
-            "description": "Emitted whenever an Event is triggered.",
-            "params": {
-                "event": "$ref:Event"
-            }
-        },
-        "Devices.PluginConfigurationChanged": {
-            "description": "Emitted whenever a plugin's configuration is changed.",
-            "params": {
-                "configuration": "$ref:ParamList",
-                "pluginId": "Uuid"
-            }
-        },
-        "Devices.StateChanged": {
-            "description": "Emitted whenever a State of a device changes.",
-            "params": {
-                "deviceId": "Uuid",
-                "stateTypeId": "Uuid",
-                "value": "Variant"
-            }
-        },
-        "Events.EventTriggered": {
-            "deprecated": "Please use Devices.EventTriggered instead.",
-            "description": "Emitted whenever an Event is triggered.",
-            "params": {
-                "event": "$ref:Event"
             }
         },
         "Integrations.EventTriggered": {
@@ -2723,7 +2287,6 @@
     "types": {
         "Action": {
             "actionTypeId": "Uuid",
-            "d:deviceId": "Uuid",
             "o:params": "$ref:ParamList",
             "thingId": "Uuid"
         },
@@ -2764,79 +2327,12 @@
         "CalendarItems": [
             "$ref:CalendarItem"
         ],
-        "Device": {
-            "d:r:setupComplete": "Bool",
-            "o:name": "String",
-            "o:settings": "$ref:ParamList",
-            "r:deviceClassId": "Uuid",
-            "r:id": "Uuid",
-            "r:o:loggedEventTypeIds": [
-                "Uuid"
-            ],
-            "r:o:parentId": "Uuid",
-            "r:o:setupDisplayMessage": "String",
-            "r:params": "$ref:ParamList",
-            "r:setupError": "$ref:ThingError",
-            "r:setupStatus": "$ref:ThingSetupStatus",
-            "r:states": "$ref:States",
-            "r:thingClassId": "Uuid"
-        },
-        "DeviceClass": {
-            "r:actionTypes": "$ref:ActionTypes",
-            "r:browsable": "Bool",
-            "r:browserItemActionTypes": "$ref:ActionTypes",
-            "r:createMethods": "$ref:CreateMethods",
-            "r:discoveryParamTypes": "$ref:ParamTypes",
-            "r:displayName": "String",
-            "r:eventTypes": "$ref:EventTypes",
-            "r:id": "Uuid",
-            "r:interfaces": "StringList",
-            "r:name": "String",
-            "r:paramTypes": "$ref:ParamTypes",
-            "r:pluginId": "Uuid",
-            "r:providedInterfaces": "StringList",
-            "r:settingsTypes": "$ref:ParamTypes",
-            "r:setupMethod": "$ref:SetupMethod",
-            "r:stateTypes": "$ref:StateTypes",
-            "r:vendorId": "Uuid"
-        },
-        "DeviceClasses": [
-            "$ref:DeviceClass"
-        ],
-        "DeviceDescriptor": {
-            "d:r:deviceParams": "$ref:ParamList",
-            "r:description": "String",
-            "r:deviceParams": "$ref:ParamList",
-            "r:id": "Uuid",
-            "r:o:deviceId": "Uuid",
-            "r:o:thingId": "Uuid",
-            "r:params": "$ref:ParamList",
-            "r:thingClassId": "Uuid",
-            "r:title": "String"
-        },
-        "DeviceDescriptors": [
-            "$ref:DeviceDescriptor"
-        ],
-        "DevicePlugin": {
-            "r:displayName": "String",
-            "r:id": "Uuid",
-            "r:name": "String",
-            "r:paramTypes": "$ref:ParamTypes"
-        },
-        "DevicePlugins": [
-            "$ref:DevicePlugin"
-        ],
-        "Devices": [
-            "$ref:Device"
-        ],
         "Event": {
-            "d:r:deviceId": "Uuid",
             "r:eventTypeId": "Uuid",
             "r:params": "$ref:ParamList",
             "r:thingId": "Uuid"
         },
         "EventDescriptor": {
-            "d:o:deviceId": "Uuid",
             "o:eventTypeId": "Uuid",
             "o:interface": "String",
             "o:interfaceEvent": "String",
@@ -2884,7 +2380,6 @@
             "$ref:LogEntry"
         ],
         "LogEntry": {
-            "d:r:o:deviceId": "Uuid",
             "r:loggingLevel": "$ref:LoggingLevel",
             "r:o:active": "Bool",
             "r:o:errorCode": "String",
@@ -2992,7 +2487,6 @@
             "r:id": "Uuid"
         },
         "RuleAction": {
-            "d:o:deviceId": "Uuid",
             "o:actionTypeId": "Uuid",
             "o:browserItemId": "String",
             "o:interface": "String",
@@ -3001,7 +2495,6 @@
             "o:thingId": "Uuid"
         },
         "RuleActionParam": {
-            "d:o:stateDeviceId": "Uuid",
             "o:eventParamTypeId": "Uuid",
             "o:eventTypeId": "Uuid",
             "o:paramName": "String",
@@ -3057,7 +2550,6 @@
             "r:value": "Variant"
         },
         "StateDescriptor": {
-            "d:o:deviceId": "Uuid",
             "o:interface": "String",
             "o:interfaceState": "String",
             "o:stateTypeId": "Uuid",
@@ -3098,7 +2590,6 @@
         ],
         "Tag": {
             "appId": "String",
-            "d:o:deviceId": "Uuid",
             "o:ruleId": "Uuid",
             "o:thingId": "Uuid",
             "o:value": "String",
@@ -3146,7 +2637,6 @@
             "$ref:ThingClass"
         ],
         "ThingDescriptor": {
-            "d:r:deviceParams": "$ref:ParamList",
             "r:description": "String",
             "r:id": "Uuid",
             "r:o:thingId": "Uuid",

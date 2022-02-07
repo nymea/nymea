@@ -40,7 +40,6 @@ class LIBNYMEA_EXPORT RuleAction
 {
     Q_GADGET
     Q_PROPERTY(QUuid thingId READ thingId WRITE setThingId USER true)
-    Q_PROPERTY(QUuid deviceId READ thingId WRITE setThingId USER true REVISION 1)
     Q_PROPERTY(QUuid actionTypeId READ actionTypeId WRITE setActionTypeId USER true)
     Q_PROPERTY(QString interface READ interface WRITE setInterface USER true)
     Q_PROPERTY(QString interfaceAction READ interfaceAction WRITE setInterfaceAction USER true)

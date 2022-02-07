@@ -141,14 +141,13 @@ private:
 
 void TestTimeManager::initTestCase()
 {
-    NymeaTestBase::initTestCase();
-    QLoggingCategory::setFilterRules("*.debug=false\n"
-                                     "Tests.debug=true\n"
-                                     "RuleEngine.debug=true\n"
-//                                     "RuleEngineDebug.debug=true\n"
-                                     "Mock.debug=true\n"
-                                     "JsonRpc.debug=true\n"
-                                     "TimeManager.debug=true");
+    NymeaTestBase::initTestCase("*.debug=false\n"
+                                 "Tests.debug=true\n"
+                                 "RuleEngine.debug=true\n"
+//                                 "RuleEngineDebug.debug=true\n"
+                                 "Mock.debug=true\n"
+                                 "JsonRpc.debug=true\n"
+                                 "TimeManager.debug=true");
 }
 
 void TestTimeManager::loadSaveTimeDescriptor_data()
@@ -2028,7 +2027,7 @@ void TestTimeManager::initTimeManager()
 {
     cleanupMockHistory();
     removeAllRules();
-    enableNotifications({"Rules", "Integrations", "Events"});
+    enableNotifications({"Rules", "Integrations"});
     NymeaCore::instance()->timeManager()->stopTimer();
     qDebug() << NymeaCore::instance()->timeManager()->currentDateTime().toString();
 }
@@ -2183,14 +2182,14 @@ void TestTimeManager::triggerMockEvent1()
     if (eventSpy.isEmpty()) {
         eventSpy.wait();
     }
-    QVariantList eventTriggerVariants = checkNotifications(eventSpy, "Events.EventTriggered");
+    QVariantList eventTriggerVariants = checkNotifications(eventSpy, "Integrations.EventTriggered");
     QVERIFY2(eventTriggerVariants.count() == 1, "Did not get Events.EventTriggered notification.");
     QVERIFY2(eventTriggerVariants.first().toMap().value("params").toMap().contains("event"), "Notification Events.EventTriggered does not contain event.");
     QVariantMap eventMap = eventTriggerVariants.first().toMap().value("params").toMap().value("event").toMap();
 
-    QVERIFY2(eventMap.contains("thingId"), "Events.EventTriggered notification does not contain thingId");
-    QVERIFY2(ThingId(eventMap.value("thingId").toString()) == m_mockThingId, "Events.EventTriggered notification does not contain the correct thingId");
-    QVERIFY2(eventMap.contains("eventTypeId"), "Events.EventTriggered notification does not contain eventTypeId");
+    QVERIFY2(eventMap.contains("thingId"), "Integrations.EventTriggered notification does not contain thingId");
+    QVERIFY2(ThingId(eventMap.value("thingId").toString()) == m_mockThingId, "Integrations.EventTriggered notification does not contain the correct thingId");
+    QVERIFY2(eventMap.contains("eventTypeId"), "Integrations.EventTriggered notification does not contain eventTypeId");
     QVERIFY2(EventTypeId(eventMap.value("eventTypeId").toString()) == mockEvent1EventTypeId, "Events.EventTriggered notification does not contain the correct eventTypeId");
 }
 

@@ -60,14 +60,10 @@
 #include "version.h"
 #include "cloud/cloudmanager.h"
 
-#include "devicehandler.h"
 #include "integrationshandler.h"
-#include "actionhandler.h"
 #include "ruleshandler.h"
 #include "scriptshandler.h"
-#include "eventhandler.h"
 #include "logginghandler.h"
-#include "statehandler.h"
 #include "configurationhandler.h"
 #include "networkmanagerhandler.h"
 #include "tagshandler.h"
@@ -587,12 +583,8 @@ void JsonRPCServerImplementation::setup()
 {
     registerHandler(this);
     registerHandler(new IntegrationsHandler(NymeaCore::instance()->thingManager(), this));
-    registerHandler(new DeviceHandler(this));
-    registerHandler(new ActionHandler(this));
     registerHandler(new RulesHandler(this));
-    registerHandler(new EventHandler(this));
     registerHandler(new LoggingHandler(this));
-    registerHandler(new StateHandler(this));
     registerHandler(new ConfigurationHandler(this));
     registerHandler(new NetworkManagerHandler(NymeaCore::instance()->networkManager(), this));
     registerHandler(new TagsHandler(this));

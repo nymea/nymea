@@ -103,11 +103,7 @@ HEADERS += nymeacore.h \
     jsonrpc/jsonrpcserverimplementation.h \
     jsonrpc/jsonvalidator.h \
     jsonrpc/integrationshandler.h \
-    jsonrpc/devicehandler.h \
     jsonrpc/ruleshandler.h \
-    jsonrpc/actionhandler.h \
-    jsonrpc/eventhandler.h \
-    jsonrpc/statehandler.h \
     jsonrpc/logginghandler.h \
     jsonrpc/configurationhandler.h \
     jsonrpc/networkmanagerhandler.h \
@@ -197,11 +193,7 @@ SOURCES += nymeacore.cpp \
     jsonrpc/jsonrpcserverimplementation.cpp \
     jsonrpc/jsonvalidator.cpp \
     jsonrpc/integrationshandler.cpp \
-    jsonrpc/devicehandler.cpp \
     jsonrpc/ruleshandler.cpp \
-    jsonrpc/actionhandler.cpp \
-    jsonrpc/eventhandler.cpp \
-    jsonrpc/statehandler.cpp \
     jsonrpc/logginghandler.cpp \
     jsonrpc/configurationhandler.cpp \
     jsonrpc/networkmanagerhandler.cpp \

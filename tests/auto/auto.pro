@@ -1,10 +1,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS = \
-        actions \
         configurations \
-        devices \
-        events \
         integrations \
         ioconnections \
         jsonrpc \
@@ -16,7 +13,6 @@ SUBDIRS = \
         pythonplugins \
         rules \
         scripts \
-        states \
         tags \
         timemanager \
         userloading \

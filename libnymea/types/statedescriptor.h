@@ -46,7 +46,6 @@ class LIBNYMEA_EXPORT StateDescriptor
     Q_GADGET
     Q_PROPERTY(QUuid stateTypeId READ stateTypeId WRITE setStateTypeId USER true)
     Q_PROPERTY(QUuid thingId READ thingId WRITE setThingId USER true)
-    Q_PROPERTY(QUuid deviceId READ thingId WRITE setThingId USER true REVISION 1)
     Q_PROPERTY(QString interface READ interface WRITE setInterface USER true)
     Q_PROPERTY(QString interfaceState READ interfaceState WRITE setInterfaceState USER true)
     Q_PROPERTY(QVariant value READ stateValue WRITE setStateValue USER true)

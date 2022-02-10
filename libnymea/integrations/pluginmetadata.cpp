@@ -203,7 +203,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             /*! Returns a list of all valid JSON properties a ThingClass JSON definition can have. */
             QStringList thingClassProperties = QStringList() << "id" << "name" << "displayName" << "createMethods" << "setupMethod"
                                      << "interfaces" << "providedInterfaces" << "browsable" << "discoveryParamTypes"
-                                     << "paramTypes" << "settingsTypes" << "stateTypes" << "actionTypes" << "eventTypes" << "browserItemActionTypes";
+                                     << "paramTypes" << "settingsTypes" << "stateTypes" << "actionTypes" << "eventTypes" << "browserItemActionTypes"
+                                     << "discoveryType";
             QStringList mandatoryThingClassProperties = QStringList() << "id" << "name" << "displayName";
 
             QPair<QStringList, QStringList> verificationResult = verifyFields(thingClassProperties, mandatoryThingClassProperties, thingClassObject);
@@ -259,6 +260,20 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 }
             }
             thingClass.setCreateMethods(createMethods);
+
+            if (thingClassObject.contains("discoveryType")) {
+                QString discoveryTypeString = thingClassObject.value("discoveryType").toString();
+                if (discoveryTypeString == "precise") {
+                    thingClass.setDiscoveryType(ThingClass::DiscoveryTypePrecise);
+                } else if (discoveryTypeString == "weak") {
+                    thingClass.setDiscoveryType(ThingClass::DiscoveryTypeWeak);
+                } else {
+                    m_validationErrors.append("Unknown discoveryType \"" + discoveryTypeString + "\" in thingClass \"" + thingClass.name() +  "\".");
+                    hasError = true;
+                }
+            } else {
+                thingClass.setDiscoveryType(ThingClass::DiscoveryTypePrecise);
+            }
 
             // Read params
             QPair<bool, QList<ParamType> > paramTypesVerification = parseParamTypes(thingClassObject.value("paramTypes").toArray());

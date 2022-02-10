@@ -55,6 +55,7 @@ class LIBNYMEA_EXPORT ThingClass
     Q_PROPERTY(bool browsable READ browsable)
     Q_PROPERTY(SetupMethod setupMethod READ setupMethod)
     Q_PROPERTY(CreateMethods createMethods READ createMethods)
+    Q_PROPERTY(DiscoveryType discoveryType READ discoveryType)
     Q_PROPERTY(StateTypes stateTypes READ stateTypes)
     Q_PROPERTY(EventTypes eventTypes READ eventTypes)
     Q_PROPERTY(ActionTypes actionTypes READ actionTypes)
@@ -82,6 +83,12 @@ public:
         SetupMethodOAuth
     };
     Q_ENUM(SetupMethod)
+
+    enum DiscoveryType {
+        DiscoveryTypePrecise,
+        DiscoveryTypeWeak
+    };
+    Q_ENUM(DiscoveryType)
 
     ThingClass(const PluginId &pluginId = PluginId(), const VendorId &vendorId = VendorId(), const ThingClassId &id = ThingClassId());
 
@@ -134,6 +141,9 @@ public:
     SetupMethod setupMethod() const;
     void setSetupMethod(SetupMethod setupMethod);
 
+    DiscoveryType discoveryType() const;
+    void setDiscoveryType(DiscoveryType discoveryType);
+
     QStringList interfaces() const;
     void setInterfaces(const QStringList &interfaces);
 
@@ -156,8 +166,9 @@ private:
     ParamTypes m_paramTypes;
     ParamTypes m_settingsTypes;
     ParamTypes m_discoveryParamTypes;
-    CreateMethods m_createMethods;
-    SetupMethod m_setupMethod;
+    CreateMethods m_createMethods = CreateMethodUser;
+    SetupMethod m_setupMethod = SetupMethodJustAdd;
+    DiscoveryType m_discoveryType = DiscoveryTypePrecise;
     QStringList m_interfaces;
     QStringList m_providedInterfaces;
 };

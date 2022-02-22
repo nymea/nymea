@@ -123,6 +123,8 @@ HEADERS += nymeacore.h \
     logging/logentry.h \
     logging/logvaluetool.h \
     time/timemanager.h \
+    usermanager/builtinuserbackend.h \
+    usermanager/maveouserbackend.h \
     usermanager/userbackend.h \
     usermanager/userinfo.h \
     usermanager/usermanager.h \
@@ -228,6 +230,8 @@ SOURCES += nymeacore.cpp \
     logging/logentry.cpp \
     logging/logvaluetool.cpp \
     time/timemanager.cpp \
+    usermanager/builtinuserbackend.cpp \
+    usermanager/maveouserbackend.cpp \
     usermanager/userbackend.cpp \
     usermanager/userinfo.cpp \
     usermanager/usermanager.cpp \

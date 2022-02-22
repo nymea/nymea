@@ -104,7 +104,7 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     m_timeManager = new TimeManager(this);
 
     qCDebug(dcCore()) << "Creating User Manager";
-    m_userManager = new UserManager(NymeaSettings::settingsPath() + "/user-db.sqlite", this);
+    m_userManager = new UserManager(this);
 
     qCDebug(dcCore) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_platform, m_configuration, additionalInterfaces, this);

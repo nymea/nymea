@@ -35,7 +35,7 @@
 #include <QDBusObjectPath>
 #include <QDBusContext>
 
-#include "usermanager.h"
+#include "builtinuserbackend.h"
 
 namespace nymeaserver {
 
@@ -43,7 +43,7 @@ class PushButtonDBusService : public QObject, public QDBusContext
 {
     Q_OBJECT
 public:
-    explicit PushButtonDBusService(const QString &objectPath, UserManager *parent);
+    explicit PushButtonDBusService(const QString &objectPath, BuiltinUserBackend *parent);
 
     bool agentAvailable() const;
 
@@ -60,7 +60,7 @@ private slots:
     void serviceUnregistered(const QString &serviceName);
 
 private:
-    UserManager *m_userManager;
+    BuiltinUserBackend *m_userManager;
     QStringList m_registeredAgents;
 };
 

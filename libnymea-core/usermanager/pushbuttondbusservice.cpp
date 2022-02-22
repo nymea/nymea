@@ -39,7 +39,7 @@
 
 namespace nymeaserver {
 
-PushButtonDBusService::PushButtonDBusService(const QString &objectPath, UserManager *parent) :
+PushButtonDBusService::PushButtonDBusService(const QString &objectPath, BuiltinUserBackend *parent) :
     QObject(parent),
     m_userManager(parent)
 {
@@ -77,7 +77,7 @@ QByteArray PushButtonDBusService::GenerateAuthToken(const QString &deviceName)
     int transactionId = m_userManager->requestPushButtonAuth(deviceName);
     bool success = false;
     QByteArray token;
-    QMetaObject::Connection c = connect(m_userManager, &UserManager::pushButtonAuthFinished, this, [&] (int i, bool s, const QByteArray &t) {
+    QMetaObject::Connection c = connect(m_userManager, &BuiltinUserBackend::pushButtonAuthFinished, this, [&] (int i, bool s, const QByteArray &t) {
         if (transactionId == i) {
             success = s;
             token = t;

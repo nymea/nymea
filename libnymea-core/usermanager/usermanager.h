@@ -35,11 +35,10 @@
 #include "userinfo.h"
 
 #include <QObject>
-#include <QSqlDatabase>
 
 namespace nymeaserver {
 
-class PushButtonDBusService;
+class UserBackend;
 
 class UserManager : public QObject
 {
@@ -56,7 +55,7 @@ public:
     };
     Q_ENUM(UserError)
 
-    explicit UserManager(const QString &dbName, QObject *parent = nullptr);
+    explicit UserManager(QObject *parent = nullptr);
 
     bool initRequired() const;
     UserInfoList users() const;
@@ -90,23 +89,9 @@ signals:
     void pushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
 
 private:
-    bool initDB();
-    void rotate(const QString &dbName);
-    bool validateUsername(const QString &username) const;
-    bool validatePassword(const QString &password) const;
-    bool validateToken(const QByteArray &token) const;
-
-    void dumpDBError(const QString &message);
-
-private slots:
-    void onPushButtonPressed();
 
 private:
-    QSqlDatabase m_db;
-    PushButtonDBusService *m_pushButtonDBusService = nullptr;
-    int m_pushButtonTransactionIdCounter = 0;
-    QPair<int, QString> m_pushButtonTransaction;
-
+    UserBackend *m_builtinBackend = nullptr;
 };
 }
 Q_DECLARE_METATYPE(nymeaserver::UserManager::UserError)

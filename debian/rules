@@ -47,7 +47,7 @@ override_dh_install: $(PREPROCESS_FILES:.in=)
 	dh_install --fail-missing
 
 override_dh_auto_test:
-	dh_auto_test -- -k TESTARGS="-m 120 -p -o -p -,txt -p -o -p test-results.xml,xunitxml" TESTRUNNER="dbus-test-runner --bus-type=both --task"
+	dh_auto_test -- -k TESTARGS="-m 240 -p -o -p -,txt -p -o -p test-results.xml,xunitxml" TESTRUNNER="dbus-test-runner --bus-type=both --task"
 
 override_dh_auto_clean:
 	dh_auto_clean

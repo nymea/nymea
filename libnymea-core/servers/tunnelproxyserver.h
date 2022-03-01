@@ -57,6 +57,8 @@ public:
 
 public slots:
     void setServerName(const QString &serverName) override;
+    void setTunnelProxyConfig(const TunnelProxyServerConfiguration &tunnelProxyConfig);
+
     bool startServer() override;
     bool stopServer() override;
 
@@ -74,13 +76,15 @@ private slots:
     void onClientDisconnected(TunnelProxySocket *tunnelProxySocket);
 
 private:
-    TunnelProxyServerConfiguration m_config;
+    TunnelProxyServerConfiguration m_tunnelProxyConfig;
     TunnelProxySocketServer *m_tunnelProxySocketServer = nullptr;
     QString m_serverName;
     QUuid m_serverUuid;
     QUrl m_serverUrl;
 
     QHash<QUuid, TunnelProxySocket *> m_clients;
+
+    void initConfiguration();
 
 };
 

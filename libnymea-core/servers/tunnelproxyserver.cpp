@@ -37,7 +37,7 @@ namespace nymeaserver {
 
 TunnelProxyServer::TunnelProxyServer(const QString &serverName, const QUuid &serverUuid, const TunnelProxyServerConfiguration &configuration, QObject *parent) :
     TransportInterface(configuration, parent),
-    m_config(configuration),
+    m_tunnelProxyConfig(configuration),
     m_serverName(serverName),
     m_serverUuid(serverUuid)
 {
@@ -47,9 +47,7 @@ TunnelProxyServer::TunnelProxyServer(const QString &serverName, const QUuid &ser
         qCWarning(dcTunnelProxyServer()) << "=====================================================================================================================";
     }
 
-    m_serverUrl.setScheme(configuration.sslEnabled ? "ssl" : "tcp");
-    m_serverUrl.setHost(configuration.address);
-    m_serverUrl.setPort(configuration.port);
+    initConfiguration();
 
     m_tunnelProxySocketServer = new TunnelProxySocketServer(m_serverUuid, m_serverName, this);
     connect(m_tunnelProxySocketServer, &TunnelProxySocketServer::stateChanged, this, &TunnelProxyServer::onStateChanged);
@@ -99,8 +97,15 @@ void TunnelProxyServer::setServerName(const QString &serverName)
     m_serverName = serverName;
 }
 
+void TunnelProxyServer::setTunnelProxyConfig(const TunnelProxyServerConfiguration &tunnelProxyConfig)
+{
+    m_tunnelProxyConfig = tunnelProxyConfig;
+}
+
 bool TunnelProxyServer::startServer()
 {
+    initConfiguration();
+
     qCDebug(dcTunnelProxyServer()) << "Connecting to tunnel proxy server at:" << m_serverUrl;
     m_tunnelProxySocketServer->startServer(m_serverUrl);
     return true;
@@ -142,8 +147,7 @@ void TunnelProxyServer::onServerErrorOccurred(TunnelProxySocketServer::Error err
 void TunnelProxyServer::onSslErrors(const QList<QSslError> &errors)
 {
     qCDebug(dcTunnelProxyServer()) << "Remote proxy connection SSL errors occurred" << errors;
-    // FIXME: make this configurable
-    if (m_config.ignoreSslErrors) {
+    if (m_tunnelProxyConfig.ignoreSslErrors) {
         qCWarning(dcTunnelProxyServer()) << "Ingoring SSL errors on tunnel proxy connection:" << errors;
         m_tunnelProxySocketServer->ignoreSslErrors();
     } else {
@@ -170,6 +174,15 @@ void TunnelProxyServer::onClientDisconnected(TunnelProxySocket *tunnelProxySocke
     qCDebug(dcTunnelProxyServer()) << "Client disconnected:" << clientId.toString() << tunnelProxySocket->clientName() << "(Remote address:" << tunnelProxySocket->clientPeerAddress().toString() << ")";
     m_clients.remove(clientId);
     emit clientDisconnected(clientId);
+}
+
+void TunnelProxyServer::initConfiguration()
+{
+    qCDebug(dcTunnelProxyServer()) << "Init configuration" << m_tunnelProxyConfig;
+    m_serverUrl.setScheme(m_tunnelProxyConfig.sslEnabled ? "ssl" : "tcp");
+    m_serverUrl.setHost(m_tunnelProxyConfig.address);
+    m_serverUrl.setPort(m_tunnelProxyConfig.port);
+    qCDebug(dcTunnelProxyServer()) << "Using server URL" << m_serverUrl.toString();
 }
 
 }

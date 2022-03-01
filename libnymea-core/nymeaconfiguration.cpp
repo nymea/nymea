@@ -212,32 +212,13 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
     }
 
     // Tunnel Proxy Server
-    createDefaults = !settings.childGroups().contains("TunnelProxyServer");
     if (settings.childGroups().contains("TunnelProxyServer")) {
         settings.beginGroup("TunnelProxyServer");
-        if (settings.value("disabled").toBool()) {
-            qCDebug(dcConfiguration) << "Tunnel proxy server disabled by configuration.";
-        } else if (!settings.childGroups().isEmpty()) {
-            foreach (const QString &key, settings.childGroups()) {
-                TunnelProxyServerConfiguration config = readTunnelProxyServerConfig(key);
-                m_tunnelProxyServerConfigs[config.id] = config;
-            }
-        } else {
-            createDefaults = true;
+        foreach (const QString &key, settings.childGroups()) {
+            TunnelProxyServerConfiguration config = readTunnelProxyServerConfig(key);
+            m_tunnelProxyServerConfigs[config.id] = config;
         }
         settings.endGroup();
-    }
-    if (createDefaults) {
-        qCWarning(dcConfiguration) << "No Tunnel Proxy server configuration found. Generating default of remoteproxy.nymea.io:2213";
-        TunnelProxyServerConfiguration config;
-        config.id = "default";
-        config.address = "remoteproxy.nymea.io";
-        config.port = 2213;
-        config.sslEnabled = true;
-        config.authenticationEnabled = true;
-        config.ignoreSslErrors = false;
-        m_tunnelProxyServerConfigs[config.id] = config;
-        storeTunnelProxyServerConfig(config);
     }
 
     // Write defaults for log settings
@@ -403,7 +384,7 @@ QHash<QString, TunnelProxyServerConfiguration> NymeaConfiguration::tunnelProxySe
 void NymeaConfiguration::setTunnelProxyServerConfiguration(const TunnelProxyServerConfiguration &config)
 {
     m_tunnelProxyServerConfigs[config.id] = config;
-    storeServerConfig("TunnelProxyServer", config);
+    storeTunnelProxyServerConfig(config);
     emit tunnelProxyServerConfigurationChanged(config.id);
 }
 
@@ -791,7 +772,30 @@ QDebug operator <<(QDebug debug, const ServerConfiguration &configuration)
     debug.nospace() << ", " << configuration.id;
     debug.nospace() << ", " << QString("%1:%2").arg(configuration.address).arg(configuration.port);
     debug.nospace() << ") ";
-    return debug;
+    return debug.maybeSpace();
+}
+
+QDebug operator <<(QDebug debug, const TunnelProxyServerConfiguration &configuration)
+{
+    debug.nospace() << "TunnelProxyServerConfiguration(" << configuration.id;
+    debug.nospace() << ", " << QString("%1:%2").arg(configuration.address).arg(configuration.port);
+    if (configuration.sslEnabled) {
+        debug.nospace() << ", SSL enabled";
+    } else {
+        debug.nospace() << ", SSL disabled";
+    }
+    if (configuration.authenticationEnabled) {
+        debug.nospace() << ", Authentication enabled";
+    } else {
+        debug.nospace() << ", Authentication disabled";
+    }
+
+    if (configuration.ignoreSslErrors) {
+        debug.nospace() << ", Ignoring SSL errors";
+    }
+
+    debug.nospace() << ") ";
+    return debug.maybeSpace();
 }
 
 }

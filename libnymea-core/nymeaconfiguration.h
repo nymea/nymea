@@ -46,6 +46,7 @@ class ServerConfiguration {
     Q_PROPERTY(uint port MEMBER port)
     Q_PROPERTY(bool sslEnabled MEMBER sslEnabled)
     Q_PROPERTY(bool authenticationEnabled MEMBER authenticationEnabled)
+
 public:
     QString id;
     QString address;
@@ -69,18 +70,33 @@ class WebServerConfiguration: public ServerConfiguration
 {
     Q_GADGET
     Q_PROPERTY(QString publicFolder MEMBER publicFolder)
+
 public:
     QString publicFolder;
     bool restServerEnabled = false;
+
+    bool operator==(const WebServerConfiguration &other) const {
+        return ServerConfiguration::operator==(other)
+                && publicFolder == other.publicFolder
+                && restServerEnabled == other.restServerEnabled;
+    }
 };
 
 class TunnelProxyServerConfiguration: public ServerConfiguration
 {
     Q_GADGET
     Q_PROPERTY(bool ignoreSslErrors MEMBER ignoreSslErrors)
+
 public:
     bool ignoreSslErrors = false;
+
+    bool operator==(const TunnelProxyServerConfiguration &other) const {
+        return ServerConfiguration::operator==(other)
+                && ignoreSslErrors == other.ignoreSslErrors;
+    }
 };
+
+QDebug operator <<(QDebug debug, const TunnelProxyServerConfiguration &configuration);
 
 class MqttPolicy
 {

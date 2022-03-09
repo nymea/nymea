@@ -40,7 +40,7 @@ namespace nymeaserver {
 CloudTransport::CloudTransport(const ServerConfiguration &config, QObject *parent):
     TransportInterface(config, parent)
 {
-    m_defaultProxyUrl = "wss://remoteproxy.nymea.io";
+    m_defaultProxyUrl = "ssl://remoteproxy.nymea.io:4433";
 }
 
 void CloudTransport::sendData(const QUuid &clientId, const QByteArray &data)
@@ -89,12 +89,18 @@ void CloudTransport::connectToCloud(const QString &token, const QString &nonce, 
     QString proxyUrl = serverUrl.isEmpty() ? m_defaultProxyUrl : serverUrl;
     qCDebug(dcCloud()) << "Connecting to remote proxy server" << proxyUrl;
 
+    RemoteProxyConnection::ConnectionType connectionType = RemoteProxyConnection::ConnectionTypeTcpSocket;
+    QUrl url(proxyUrl);
+    if (url.scheme() == "wss" || url.scheme() == "ws") {
+        connectionType = RemoteProxyConnection::ConnectionTypeWebSocket;
+    }
+
     ConnectionContext context;
     context.clientId = QUuid::createUuid();
     context.token = token;
     context.nonce = nonce;
     QString identifier = QString("nymea:core (%1)").arg(NymeaCore::instance()->configuration()->serverName());
-    context.proxyConnection = new RemoteProxyConnection(NymeaCore::instance()->configuration()->serverUuid().toString(), identifier, this);
+    context.proxyConnection = new RemoteProxyConnection(NymeaCore::instance()->configuration()->serverUuid().toString(), identifier, connectionType, this);
     m_connections.insert(context.proxyConnection, context);
 
     connect(context.proxyConnection, &RemoteProxyConnection::ready, this, &CloudTransport::transportReady);
@@ -103,7 +109,7 @@ void CloudTransport::connectToCloud(const QString &token, const QString &nonce, 
     connect(context.proxyConnection, &RemoteProxyConnection::remoteConnectionEstablished, this, &CloudTransport::transportConnected);
     connect(context.proxyConnection, &RemoteProxyConnection::disconnected, this, &CloudTransport::transportDisconnected);
 
-    context.proxyConnection->connectServer(QUrl(proxyUrl));
+    context.proxyConnection->connectServer(url);
 }
 
 void CloudTransport::remoteConnectionStateChanged(RemoteProxyConnection::State state)

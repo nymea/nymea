@@ -48,7 +48,7 @@ void CloudTransport::sendData(const QUuid &clientId, const QByteArray &data)
     qCDebug(dcCloudTraffic()) << "Sending data" << clientId << data;
     foreach (const ConnectionContext &ctx, m_connections) {
         if (ctx.clientId == clientId) {
-            ctx.proxyConnection->sendData(data);
+            ctx.proxyConnection->sendData(data + '\n');
             return;
         }
     }

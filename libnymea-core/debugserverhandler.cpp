@@ -422,7 +422,7 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
 
         m_tracePathReply = HttpReply::createAsyncReply();
         connect(m_tracePathReply, &HttpReply::finished, this, [this](){
-            m_tracePathProcess = nullptr;
+            m_tracePathReply = nullptr;
         });
         return m_tracePathReply;
     }
@@ -696,59 +696,52 @@ void DebugServerHandler::onWebsocketClientError(QAbstractSocket::SocketError err
 void DebugServerHandler::onPingProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     qCDebug(dcDebugServer()) << "Ping process finished" << exitCode << exitStatus;
-    if (m_pingProcess) {
-        QByteArray processOutput = m_pingProcess->readAll();
-        qCDebug(dcDebugServer()) << "Ping output:" << endl << qUtf8Printable(processOutput);
+    QByteArray processOutput = m_pingProcess->readAll();
+    qCDebug(dcDebugServer()) << "Ping output:" << endl << qUtf8Printable(processOutput);
 
-        if (m_pingReply) {
-            m_pingReply->setPayload(processOutput);
-            m_pingReply->setHttpStatusCode(HttpReply::Ok);
-            m_pingReply->finished();
-            m_pingReply = nullptr;
-        }
-
-        m_pingProcess->deleteLater();
-        m_pingProcess = nullptr;
+    if (m_pingReply) {
+        m_pingReply->setPayload(processOutput);
+        m_pingReply->setHttpStatusCode(HttpReply::Ok);
+        m_pingReply->finished();
+        m_pingReply = nullptr;
     }
+
+    m_pingProcess->deleteLater();
+    m_pingProcess = nullptr;
 }
 
 void DebugServerHandler::onDigProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     qCDebug(dcDebugServer()) << "Dig process finished" << exitCode << exitStatus;
-    if (m_digProcess) {
-        QByteArray processOutput = m_digProcess->readAll();
-        qCDebug(dcDebugServer()) << "Dig output:" << endl << qUtf8Printable(processOutput);
+    QByteArray processOutput = m_digProcess->readAll();
+    qCDebug(dcDebugServer()) << "Dig output:" << endl << qUtf8Printable(processOutput);
 
-        if (m_digReply) {
-            m_digReply->setPayload(processOutput);
-            m_digReply->setHttpStatusCode(HttpReply::Ok);
-            m_digReply->finished();
-            m_digReply = nullptr;
-        }
-
-        m_digProcess->deleteLater();
-        m_digProcess = nullptr;
+    if (m_digReply) {
+        m_digReply->setPayload(processOutput);
+        m_digReply->setHttpStatusCode(HttpReply::Ok);
+        m_digReply->finished();
+        m_digReply = nullptr;
     }
+
+    m_digProcess->deleteLater();
+    m_digProcess = nullptr;
 }
 
 void DebugServerHandler::onTracePathProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     qCDebug(dcDebugServer()) << "Tracepath process finished" << exitCode << exitStatus;
+    QByteArray processOutput = m_tracePathProcess->readAll();
+    qCDebug(dcDebugServer()) << "Tracepath output:" << endl << qUtf8Printable(processOutput);
 
-    if (m_tracePathProcess) {
-        QByteArray processOutput = m_tracePathProcess->readAll();
-        qCDebug(dcDebugServer()) << "Tracepath output:" << endl << qUtf8Printable(processOutput);
-
-        if (m_tracePathReply) {
-            m_tracePathReply->setPayload(processOutput);
-            m_tracePathReply->setHttpStatusCode(HttpReply::Ok);
-            m_tracePathReply->finished();
-            m_tracePathReply = nullptr;
-        }
-
-        m_tracePathProcess->deleteLater();
-        m_tracePathProcess = nullptr;
+    if (m_tracePathReply) {
+        m_tracePathReply->setPayload(processOutput);
+        m_tracePathReply->setHttpStatusCode(HttpReply::Ok);
+        m_tracePathReply->finished();
+        m_tracePathReply = nullptr;
     }
+
+    m_tracePathProcess->deleteLater();
+    m_tracePathProcess = nullptr;
 }
 
 void DebugServerHandler::onDebugReportGeneratorFinished(bool success)

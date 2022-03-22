@@ -2,9 +2,11 @@
 #define PYUTILS_H
 
 #include <Python.h>
+#include <datetime.h>
 
 #include <QLoggingCategory>
 #include <QVariant>
+#include <QDateTime>
 
 Q_DECLARE_LOGGING_CATEGORY(dcPythonIntegrations)
 
@@ -34,8 +36,17 @@ PyObject *QVariantToPyObject(const QVariant &value)
         pyValue = Py_None;
         Py_INCREF(pyValue);
         break;
+    case QVariant::DateTime: {
+        PyObject *longObj = PyLong_FromLongLong(value.toDateTime().toMSecsSinceEpoch() / 1000);
+        PyObject *timeTuple = Py_BuildValue("(O)", longObj);
+        pyValue = PyDateTime_FromTimestamp(timeTuple);
+        Py_DECREF(longObj);
+        Py_DECREF(timeTuple);
+        break;
+    }
     default:
-        qCWarning(dcPythonIntegrations()) << "Unhandled data type in conversion from Param to PyParam!";
+        Q_ASSERT_X(false, "pyutils.h", QString("Unhandled data type in converting QVariant to PyObject: %1").arg(value.type()).toUtf8());
+        qCWarning(dcPythonIntegrations()) << "Unhandled data type" << value.type() << "in conversion from Param to PyParam!";
         pyValue = Py_None;
         Py_INCREF(pyValue);
         break;
@@ -64,6 +75,15 @@ QVariant PyObjectToQVariant(PyObject *pyObject)
 
     if (qstrcmp(pyObject->ob_type->tp_name, "bool") == 0) {
         return QVariant(PyObject_IsTrue(pyObject));
+    }
+
+    if (qstrcmp(pyObject->ob_type->tp_name, "datetime.datetime") == 0) {
+        PyObject *timestampFunction = PyObject_GetAttrString(pyObject, "timestamp");
+        PyObject *timestampFunctionResult = PyObject_CallFunction(timestampFunction, nullptr);
+        QDateTime ret = QDateTime::fromMSecsSinceEpoch(PyLong_AsLongLong(timestampFunctionResult) * 1000);
+        Py_DECREF(timestampFunction);
+        Py_DECREF(timestampFunctionResult);
+        return ret;
     }
 
     Q_ASSERT_X(false, "pyutils.h", QString("Unhandled data type in converting PyObject to QVariant: %1").arg(pyObject->ob_type->tp_name).toUtf8());

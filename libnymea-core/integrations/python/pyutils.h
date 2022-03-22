@@ -44,6 +44,15 @@ PyObject *QVariantToPyObject(const QVariant &value)
         Py_DECREF(timeTuple);
         break;
     }
+    case QVariant::StringList: {
+        QStringList stringList = value.toStringList();
+        pyValue = PyTuple_New(stringList.length());
+        for (int i = 0; i < stringList.count(); i++) {
+            PyObject *entry = PyUnicode_FromString(stringList.at(i).toUtf8());
+            PyTuple_SetItem(pyValue, i, entry);
+        }
+        break;
+    }
     default:
         Q_ASSERT_X(false, "pyutils.h", QString("Unhandled data type in converting QVariant to PyObject: %1").arg(value.type()).toUtf8());
         qCWarning(dcPythonIntegrations()) << "Unhandled data type" << value.type() << "in conversion from Param to PyParam!";

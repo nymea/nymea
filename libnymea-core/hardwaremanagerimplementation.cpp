@@ -46,7 +46,7 @@
 
 #include "hardware/modbus/modbusrtumanager.h"
 #include "hardware/modbus/modbusrtuhardwareresourceimplementation.h"
-#include "network/networkdevicediscovery.h"
+#include "hardware/network/networkdevicediscoveryimpl.h"
 
 namespace nymeaserver {
 
@@ -79,7 +79,7 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
 
     m_modbusRtuResource = new ModbusRtuHardwareResourceImplementation(modbusRtuManager, this);
 
-    m_networkDeviceDiscovery = new NetworkDeviceDiscovery(this);
+    m_networkDeviceDiscovery = new NetworkDeviceDiscoveryImpl(this);
 
     // Enable all the resources
     setResourceEnabled(m_pluginTimerManager, true);

@@ -44,11 +44,12 @@ HEADERS += \
     network/apikeys/apikeysprovider.h \
     network/apikeys/apikeystorage.h \
     network/arpsocket.h \
-    network/macaddressdatabase.h \
+    network/macaddressdatabasereply.h \
     network/networkdevicediscovery.h \
     network/networkdevicediscoveryreply.h \
     network/networkdeviceinfo.h \
     network/networkdeviceinfos.h \
+    network/networkdevicemonitor.h \
     network/networkutils.h \
     network/ping.h \
     network/pingreply.h \
@@ -149,11 +150,11 @@ SOURCES += \
     network/apikeys/apikeysprovider.cpp \
     network/apikeys/apikeystorage.cpp \
     network/arpsocket.cpp \
-    network/macaddressdatabase.cpp \
+    network/macaddressdatabasereply.cpp \
     network/networkdevicediscovery.cpp \
-    network/networkdevicediscoveryreply.cpp \
     network/networkdeviceinfo.cpp \
     network/networkdeviceinfos.cpp \
+    network/networkdevicemonitor.cpp \
     network/networkutils.cpp \
     network/ping.cpp \
     network/pingreply.cpp \

@@ -28,47 +28,24 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKDEVICEDISCOVERY_H
-#define NETWORKDEVICEDISCOVERY_H
+#include "macaddressdatabasereplyimpl.h"
 
-#include <QTimer>
-#include <QObject>
-#include <QLoggingCategory>
+namespace nymeaserver {
 
-#include "libnymea.h"
-#include "hardwareresource.h"
-
-#include "networkdevicemonitor.h"
-
-#include "pingreply.h"
-#include "macaddressdatabasereply.h"
-#include "networkdevicediscoveryreply.h"
-
-class LIBNYMEA_EXPORT NetworkDeviceDiscovery : public HardwareResource
+MacAddressDatabaseReplyImpl::MacAddressDatabaseReplyImpl(QObject *parent) :
+    MacAddressDatabaseReply(parent)
 {
-    Q_OBJECT
-public:
-    explicit NetworkDeviceDiscovery(QObject *parent = nullptr);
-    virtual ~NetworkDeviceDiscovery() = default;
 
-    virtual NetworkDeviceDiscoveryReply *discover() = 0;
+}
 
-    virtual bool running() const = 0;
+QString MacAddressDatabaseReplyImpl::macAddress() const
+{
+    return m_macAddress;
+}
 
-    virtual NetworkDeviceMonitor *registerMonitor(const QString &macAddress) = 0;
-    virtual void unregisterMonitor(const QString &macAddress) = 0;
-    virtual void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) = 0;
+QString MacAddressDatabaseReplyImpl::manufacturer() const
+{
+    return m_manufacturer;
+}
 
-    virtual PingReply *ping(const QHostAddress &address) = 0;
-
-    virtual MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) = 0;
-
-    virtual bool sendArpRequest(const QHostAddress &address) = 0;
-
-signals:
-    void runningChanged(bool running);
-    void networkDeviceInfoCacheUpdated();
-
-};
-
-#endif // NETWORKDEVICEDISCOVERY_H
+}

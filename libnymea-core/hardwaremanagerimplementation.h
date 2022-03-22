@@ -45,6 +45,7 @@ class ZigbeeManager;
 class ZigbeeHardwareResourceImplementation;
 class ModbusRtuManager;
 class ModbusRtuHardwareResourceImplementation;
+class NetworkDeviceDiscoveryImpl;
 
 class HardwareManagerImplementation : public HardwareManager
 {
@@ -84,7 +85,7 @@ private:
     I2CManager *m_i2cManager = nullptr;
     ZigbeeHardwareResourceImplementation *m_zigbeeResource = nullptr;
     ModbusRtuHardwareResourceImplementation *m_modbusRtuResource = nullptr;
-    NetworkDeviceDiscovery *m_networkDeviceDiscovery = nullptr;
+    NetworkDeviceDiscoveryImpl *m_networkDeviceDiscovery = nullptr;
 
 };
 

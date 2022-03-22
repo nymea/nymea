@@ -61,6 +61,7 @@ RESOURCES += $$top_srcdir/icons.qrc \
 
 
 HEADERS += nymeacore.h \
+    hardware/network/macaddressdatabasereplyimpl.h \
     hardware/serialport/serialportmonitor.h \
     integrations/apikeysprovidersloader.h \
     integrations/plugininfocache.h \
@@ -141,7 +142,11 @@ HEADERS += nymeacore.h \
     hardware/modbus/modbusrtumanager.h \
     hardware/modbus/modbusrtumasterimpl.h \
     hardware/modbus/modbusrtureplyimpl.h \
+    hardware/network/macaddressdatabase.h \
     hardware/network/networkaccessmanagerimpl.h \
+    hardware/network/networkdevicediscoveryimpl.h \
+    hardware/network/networkdevicediscoveryreplyimpl.h \
+    hardware/network/networkdevicemonitorimpl.h \
     hardware/network/upnp/upnpdiscoveryimplementation.h \
     hardware/network/upnp/upnpdiscoveryrequest.h \
     hardware/network/upnp/upnpdiscoveryreplyimplementation.h \
@@ -161,6 +166,7 @@ HEADERS += nymeacore.h \
 
 
 SOURCES += nymeacore.cpp \
+    hardware/network/macaddressdatabasereplyimpl.cpp \
     hardware/serialport/serialportmonitor.cpp \
     integrations/apikeysprovidersloader.cpp \
     integrations/plugininfocache.cpp \
@@ -233,7 +239,11 @@ SOURCES += nymeacore.cpp \
     hardware/modbus/modbusrtumanager.cpp \
     hardware/modbus/modbusrtumasterimpl.cpp \
     hardware/modbus/modbusrtureplyimpl.cpp \
+    hardware/network/macaddressdatabase.cpp \
     hardware/network/networkaccessmanagerimpl.cpp \
+    hardware/network/networkdevicediscoveryimpl.cpp \
+    hardware/network/networkdevicediscoveryreplyimpl.cpp \
+    hardware/network/networkdevicemonitorimpl.cpp \
     hardware/network/upnp/upnpdiscoveryimplementation.cpp \
     hardware/network/upnp/upnpdiscoveryrequest.cpp \
     hardware/network/upnp/upnpdiscoveryreplyimplementation.cpp \

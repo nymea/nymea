@@ -28,47 +28,43 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKDEVICEDISCOVERY_H
-#define NETWORKDEVICEDISCOVERY_H
+#ifndef NETWORKDEVICEMONITORIMPL_H
+#define NETWORKDEVICEMONITORIMPL_H
 
-#include <QTimer>
 #include <QObject>
-#include <QLoggingCategory>
+#include <QDateTime>
 
-#include "libnymea.h"
-#include "hardwareresource.h"
+#include "network/networkdevicemonitor.h"
 
-#include "networkdevicemonitor.h"
+namespace nymeaserver {
 
-#include "pingreply.h"
-#include "macaddressdatabasereply.h"
-#include "networkdevicediscoveryreply.h"
-
-class LIBNYMEA_EXPORT NetworkDeviceDiscovery : public HardwareResource
+class NetworkDeviceMonitorImpl : public NetworkDeviceMonitor
 {
     Q_OBJECT
+
+    friend class NetworkDeviceDiscoveryImpl;
+
 public:
-    explicit NetworkDeviceDiscovery(QObject *parent = nullptr);
-    virtual ~NetworkDeviceDiscovery() = default;
+    explicit NetworkDeviceMonitorImpl(const NetworkDeviceInfo &networkDeviceInfo, QObject *parent = nullptr);
+    ~NetworkDeviceMonitorImpl();
 
-    virtual NetworkDeviceDiscoveryReply *discover() = 0;
+    NetworkDeviceInfo networkDeviceInfo() const override;
 
-    virtual bool running() const = 0;
+    bool reachable() const override;
+    void setReachable(bool reachable);
 
-    virtual NetworkDeviceMonitor *registerMonitor(const QString &macAddress) = 0;
-    virtual void unregisterMonitor(const QString &macAddress) = 0;
-    virtual void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) = 0;
+    QDateTime lastSeen() const override;
+    void setLastSeen(const QDateTime lastSeen);
 
-    virtual PingReply *ping(const QHostAddress &address) = 0;
+private:
+    NetworkDeviceInfo m_networkDeviceInfo;
+    bool m_reachable = false;
+    QDateTime m_lastSeen;
 
-    virtual MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) = 0;
-
-    virtual bool sendArpRequest(const QHostAddress &address) = 0;
-
-signals:
-    void runningChanged(bool running);
-    void networkDeviceInfoCacheUpdated();
+    void updateNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo);
 
 };
 
-#endif // NETWORKDEVICEDISCOVERY_H
+}
+
+#endif // NETWORKDEVICEMONITORIMPL_H

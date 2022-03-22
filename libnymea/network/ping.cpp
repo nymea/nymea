@@ -411,7 +411,7 @@ void Ping::onHostLookupFinished(const QHostInfo &info)
     if (info.error() != QHostInfo::NoError) {
         qCWarning(dcPing()) << "Failed to look up hostname after successfull ping" << reply->targetHostAddress().toString() << info.error();
     } else {
-        qCDebug(dcPing()) << "********Looked up hostname after successfull ping" << reply->targetHostAddress().toString() << info.hostName();
+        qCDebug(dcPing()) << "******** Looked up hostname after successfull ping" << reply->targetHostAddress().toString() << info.hostName();
         if (info.hostName() != reply->targetHostAddress().toString()) {
             reply->m_hostName = info.hostName();
         }
@@ -419,4 +419,3 @@ void Ping::onHostLookupFinished(const QHostInfo &info)
 
     finishReply(reply, PingReply::ErrorNoError);
 }
-

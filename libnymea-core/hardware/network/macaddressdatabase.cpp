@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2021, nymea GmbH
+* Copyright 2013 - 2022, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -40,6 +40,8 @@
 #include <QtConcurrent/QtConcurrent>
 
 NYMEA_LOGGING_CATEGORY(dcMacAddressDatabase, "MacAddressDatabase")
+
+namespace nymeaserver {
 
 MacAddressDatabase::MacAddressDatabase(QObject *parent) : QObject(parent)
 {
@@ -96,7 +98,7 @@ bool MacAddressDatabase::available() const
 
 MacAddressDatabaseReply *MacAddressDatabase::lookupMacAddress(const QString &macAddress)
 {
-    MacAddressDatabaseReply *reply = new MacAddressDatabaseReply(this);
+    MacAddressDatabaseReplyImpl *reply = new MacAddressDatabaseReplyImpl(this);
     connect(reply, &MacAddressDatabaseReply::finished, reply, &MacAddressDatabaseReply::deleteLater);
     reply->m_macAddress = macAddress;
 
@@ -221,3 +223,4 @@ QString MacAddressDatabase::lookupMacAddressVendorInternal(const QString &macAdd
     return manufacturer;
 }
 
+}

@@ -28,47 +28,49 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKDEVICEDISCOVERY_H
-#define NETWORKDEVICEDISCOVERY_H
+#ifndef MACADDRESSDATABASE_H
+#define MACADDRESSDATABASE_H
 
-#include <QTimer>
+#include <QQueue>
 #include <QObject>
-#include <QLoggingCategory>
+#include <QSqlDatabase>
+#include <QFutureWatcher>
 
-#include "libnymea.h"
-#include "hardwareresource.h"
+#include "macaddressdatabasereplyimpl.h"
 
-#include "networkdevicemonitor.h"
+namespace nymeaserver {
 
-#include "pingreply.h"
-#include "macaddressdatabasereply.h"
-#include "networkdevicediscoveryreply.h"
-
-class LIBNYMEA_EXPORT NetworkDeviceDiscovery : public HardwareResource
+class MacAddressDatabase : public QObject
 {
     Q_OBJECT
 public:
-    explicit NetworkDeviceDiscovery(QObject *parent = nullptr);
-    virtual ~NetworkDeviceDiscovery() = default;
+    explicit MacAddressDatabase(QObject *parent = nullptr);
+    MacAddressDatabase(const QString &databaseName, QObject *parent = nullptr);
+    ~MacAddressDatabase();
 
-    virtual NetworkDeviceDiscoveryReply *discover() = 0;
+    bool available() const;
 
-    virtual bool running() const = 0;
+    MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress);
 
-    virtual NetworkDeviceMonitor *registerMonitor(const QString &macAddress) = 0;
-    virtual void unregisterMonitor(const QString &macAddress) = 0;
-    virtual void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) = 0;
+private:
+    QSqlDatabase m_db;
+    bool m_available = false;
+    QString m_connectionName;
+    QString m_databaseName = "/usr/share/nymea/mac-addresses.db";
 
-    virtual PingReply *ping(const QHostAddress &address) = 0;
+    MacAddressDatabaseReplyImpl *m_currentReply = nullptr;
+    QFutureWatcher<QString> *m_futureWatcher = nullptr;
+    QQueue<MacAddressDatabaseReplyImpl *> m_pendingReplies;
 
-    virtual MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) = 0;
+    bool initDatabase();
+    void runNextLookup();
 
-    virtual bool sendArpRequest(const QHostAddress &address) = 0;
-
-signals:
-    void runningChanged(bool running);
-    void networkDeviceInfoCacheUpdated();
+private slots:
+    void onLookupFinished();
+    QString lookupMacAddressVendorInternal(const QString &macAddress);
 
 };
 
-#endif // NETWORKDEVICEDISCOVERY_H
+}
+
+#endif // MACADDRESSDATABASE_H

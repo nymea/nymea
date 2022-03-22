@@ -99,6 +99,15 @@ NetworkDeviceInfo NetworkDeviceInfos::get(const QString &macAddress)
     return NetworkDeviceInfo();
 }
 
+void NetworkDeviceInfos::removeMacAddress(const QString &macAddress)
+{
+    for (int i = 0; i < size(); i++) {
+        if (at(i).macAddress().toLower() == macAddress.toLower()) {
+            remove(i);
+        }
+    }
+}
+
 void NetworkDeviceInfos::sortNetworkDevices()
 {
     std::sort(this->begin(), this->end(), [](const NetworkDeviceInfo& a, const NetworkDeviceInfo& b) {

@@ -52,6 +52,8 @@ public:
     NetworkDeviceInfo get(const QHostAddress &address);
     NetworkDeviceInfo get(const QString &macAddress);
 
+    void removeMacAddress(const QString &macAddress);
+
     void sortNetworkDevices();
 
     NetworkDeviceInfos &operator<<(const NetworkDeviceInfo &networkDeviceInfo);

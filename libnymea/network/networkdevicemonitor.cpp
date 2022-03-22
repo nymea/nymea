@@ -28,47 +28,25 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKDEVICEDISCOVERY_H
-#define NETWORKDEVICEDISCOVERY_H
-
-#include <QTimer>
-#include <QObject>
-#include <QLoggingCategory>
-
-#include "libnymea.h"
-#include "hardwareresource.h"
-
 #include "networkdevicemonitor.h"
+#include "networkdeviceinfo.h"
 
-#include "pingreply.h"
-#include "macaddressdatabasereply.h"
-#include "networkdevicediscoveryreply.h"
-
-class LIBNYMEA_EXPORT NetworkDeviceDiscovery : public HardwareResource
+NetworkDeviceMonitor::NetworkDeviceMonitor(QObject *parent) :
+    QObject(parent)
 {
-    Q_OBJECT
-public:
-    explicit NetworkDeviceDiscovery(QObject *parent = nullptr);
-    virtual ~NetworkDeviceDiscovery() = default;
 
-    virtual NetworkDeviceDiscoveryReply *discover() = 0;
+}
 
-    virtual bool running() const = 0;
+QDebug operator<<(QDebug dbg, NetworkDeviceMonitor *networkDeviceMonitor)
+{
+    dbg.nospace() << "NetworkDeviceMonitor(" << networkDeviceMonitor->networkDeviceInfo().macAddress();
 
-    virtual NetworkDeviceMonitor *registerMonitor(const QString &macAddress) = 0;
-    virtual void unregisterMonitor(const QString &macAddress) = 0;
-    virtual void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) = 0;
+    if (!networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer().isEmpty())
+        dbg.nospace() << " - " << networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer();
 
-    virtual PingReply *ping(const QHostAddress &address) = 0;
+    dbg.nospace() << ", " << networkDeviceMonitor->networkDeviceInfo().address().toString();
 
-    virtual MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) = 0;
+    dbg.nospace() << ") ";
+    return dbg.maybeSpace();
+}
 
-    virtual bool sendArpRequest(const QHostAddress &address) = 0;
-
-signals:
-    void runningChanged(bool running);
-    void networkDeviceInfoCacheUpdated();
-
-};
-
-#endif // NETWORKDEVICEDISCOVERY_H

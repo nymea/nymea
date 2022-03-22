@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2021, nymea GmbH
+* Copyright 2013 - 2022, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -39,19 +39,21 @@
 class LIBNYMEA_EXPORT NetworkDeviceDiscoveryReply : public QObject
 {
     Q_OBJECT
-
-    friend class NetworkDeviceDiscovery;
-
 public:
-    NetworkDeviceInfos &networkDeviceInfos();
+    explicit NetworkDeviceDiscoveryReply(QObject *parent = nullptr) : QObject(parent) { };
+    virtual ~NetworkDeviceDiscoveryReply() = default;
+
+    virtual NetworkDeviceInfos networkDeviceInfos() const = 0;
+    virtual NetworkDeviceInfos virtualNetworkDeviceInfos() const = 0;
 
 signals:
-    void finished();
+    // Emitted whenever a certain host address has been pinged successfully
+    void hostAddressDiscovered(const QHostAddress &address);
 
-private:
-    explicit NetworkDeviceDiscoveryReply(QObject *parent = nullptr);
-    NetworkDeviceInfos m_networkDeviceInfos;
-    qint64 m_startTimestamp;
+    // Emited whenerver a valid NetworkDeviceInfo has been added
+    void networkDeviceInfoAdded(const NetworkDeviceInfo &networkDeviceInfo);
+
+    void finished();
 
 };
 

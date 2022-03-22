@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2021, nymea GmbH
+* Copyright 2013 - 2022, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -43,7 +43,6 @@ class LIBNYMEA_EXPORT NetworkDeviceInfo
 public:
     explicit NetworkDeviceInfo();
     explicit NetworkDeviceInfo(const QString &macAddress);
-    ~NetworkDeviceInfo() = default;
 
     QString macAddress() const;
     void setMacAddress(const QString &macAddress);
@@ -61,6 +60,9 @@ public:
     void setNetworkInterface(const QNetworkInterface &networkInterface);
 
     bool isValid() const;
+    bool isComplete() const;
+
+    bool operator==(const NetworkDeviceInfo &other) const;
 
 private:
     QHostAddress m_address;
@@ -69,7 +71,13 @@ private:
     QString m_hostName;
     QNetworkInterface m_networkInterface;
 
+    bool m_macAddressSet = false;
+    bool m_macAddressManufacturerSet = false;
+    bool m_addressSet = false;
+    bool m_hostNameSet = false;
+    bool m_networkInterfaceSet = false;
 };
+
 
 QDebug operator<<(QDebug debug, const NetworkDeviceInfo &networkDeviceInfo);
 

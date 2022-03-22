@@ -28,47 +28,62 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKDEVICEDISCOVERY_H
-#define NETWORKDEVICEDISCOVERY_H
+#include "networkdevicemonitorimpl.h"
 
-#include <QTimer>
-#include <QObject>
-#include <QLoggingCategory>
+namespace nymeaserver {
 
-#include "libnymea.h"
-#include "hardwareresource.h"
-
-#include "networkdevicemonitor.h"
-
-#include "pingreply.h"
-#include "macaddressdatabasereply.h"
-#include "networkdevicediscoveryreply.h"
-
-class LIBNYMEA_EXPORT NetworkDeviceDiscovery : public HardwareResource
+NetworkDeviceMonitorImpl::NetworkDeviceMonitorImpl(const NetworkDeviceInfo &networkDeviceInfo, QObject *parent) :
+    NetworkDeviceMonitor(parent),
+    m_networkDeviceInfo(networkDeviceInfo)
 {
-    Q_OBJECT
-public:
-    explicit NetworkDeviceDiscovery(QObject *parent = nullptr);
-    virtual ~NetworkDeviceDiscovery() = default;
 
-    virtual NetworkDeviceDiscoveryReply *discover() = 0;
+}
 
-    virtual bool running() const = 0;
+NetworkDeviceMonitorImpl::~NetworkDeviceMonitorImpl()
+{
 
-    virtual NetworkDeviceMonitor *registerMonitor(const QString &macAddress) = 0;
-    virtual void unregisterMonitor(const QString &macAddress) = 0;
-    virtual void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) = 0;
+}
 
-    virtual PingReply *ping(const QHostAddress &address) = 0;
+NetworkDeviceInfo NetworkDeviceMonitorImpl::networkDeviceInfo() const
+{
+    return m_networkDeviceInfo;
+}
 
-    virtual MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) = 0;
+bool NetworkDeviceMonitorImpl::reachable() const
+{
+    return m_reachable;
+}
 
-    virtual bool sendArpRequest(const QHostAddress &address) = 0;
+void NetworkDeviceMonitorImpl::setReachable(bool reachable)
+{
+    if (m_reachable == reachable)
+        return;
 
-signals:
-    void runningChanged(bool running);
-    void networkDeviceInfoCacheUpdated();
+    m_reachable = reachable;
+    emit reachableChanged(m_reachable);
+}
 
-};
+QDateTime NetworkDeviceMonitorImpl::lastSeen() const
+{
+    return m_lastSeen;
+}
 
-#endif // NETWORKDEVICEDISCOVERY_H
+void NetworkDeviceMonitorImpl::setLastSeen(const QDateTime lastSeen)
+{
+    if (m_lastSeen == lastSeen)
+        return;
+
+    m_lastSeen = lastSeen;
+    emit lastSeenChanged(m_lastSeen);
+}
+
+void NetworkDeviceMonitorImpl::updateNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo)
+{
+    if (m_networkDeviceInfo == networkDeviceInfo)
+        return;
+
+    m_networkDeviceInfo = networkDeviceInfo;
+    emit networkDeviceInfoChanged(m_networkDeviceInfo);
+}
+
+}

@@ -605,7 +605,7 @@ void NymeaConfiguration::setServerUuid(const QUuid &uuid)
 
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("nymead");
-    settings.setValue("uuid", uuid);
+    settings.setValue("uuid", uuid.toString());
     settings.endGroup();
 }
 

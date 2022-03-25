@@ -42,6 +42,15 @@ BuiltinUserBackend::BuiltinUserBackend(QObject *parent)
     m_pushButtonTransaction = qMakePair<int, QString>(-1, QString());
 }
 
+UserManager::Capabilities BuiltinUserBackend::capabilities() const
+{
+    UserManager::Capabilities caps = UserManager::CapabilityNone;
+    if (m_pushButtonDBusService->agentAvailable()) {
+        caps |= UserManager::CapabilityPushButton;
+    }
+    return caps;
+}
+
 bool BuiltinUserBackend::initRequired() const
 {
     QString getTokensQuery = QString("SELECT id, username, creationdate, deviceName FROM tokens;");

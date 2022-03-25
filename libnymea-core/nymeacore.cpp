@@ -38,6 +38,7 @@
 #include "platform/platform.h"
 #include "experiences/experiencemanager.h"
 #include "platform/platformsystemcontroller.h"
+#include "usermanager/usermanagerimplementation.h"
 
 #include "scriptengine/scriptengine.h"
 #include "jsonrpc/scriptshandler.h"
@@ -104,7 +105,7 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     m_timeManager = new TimeManager(this);
 
     qCDebug(dcCore()) << "Creating User Manager";
-    m_userManager = new UserManager(this);
+    m_userManager = new UserManagerImplementation(this);
 
     qCDebug(dcCore) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_platform, m_configuration, additionalInterfaces, this);

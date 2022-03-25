@@ -1,7 +1,5 @@
 #include "userbackend.h"
 
-namespace nymeaserver {
-
 UserBackend::UserBackend(QObject *parent) : QObject(parent)
 {
 
@@ -23,4 +21,3 @@ void UserBackend::cancelPushButtonAuth(int transactionId)
     Q_UNUSED(transactionId)
 }
 
-}

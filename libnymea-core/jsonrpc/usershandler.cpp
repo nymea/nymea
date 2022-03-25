@@ -29,8 +29,8 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "usershandler.h"
-#include "usermanager/usermanager.h"
-#include "usermanager/userinfo.h"
+#include "usermanagemenent/usermanager.h"
+//#include "usermanager/usermanagerimplementation.h"
 
 #include "loggingcategories.h"
 

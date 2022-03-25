@@ -127,6 +127,10 @@ HEADERS += \
     platform/platformupdatecontroller.h \
     platform/platformzeroconfcontroller.h \
     experiences/experienceplugin.h \
+    usermanagemenent/userbackend.h \
+    usermanagemenent/usermanager.h \
+    usermanagemenent/tokeninfo.h \
+    usermanagemenent/userinfo.h \
 
 SOURCES += \
     hardware/modbus/modbusrtuhardwareresource.cpp \
@@ -239,6 +243,10 @@ SOURCES += \
     platform/platformupdatecontroller.cpp \
     platform/platformzeroconfcontroller.cpp \
     experiences/experienceplugin.cpp \
+    usermanagemenent/userbackend.cpp \
+    usermanagemenent/usermanager.cpp \
+    usermanagemenent/tokeninfo.cpp \
+    usermanagemenent/userinfo.cpp \
 
 
 RESOURCES += \

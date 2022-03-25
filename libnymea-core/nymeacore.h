@@ -53,6 +53,7 @@
 class Thing;
 
 class NetworkManager;
+class UserManager;
 
 namespace nymeaserver {
 
@@ -60,7 +61,6 @@ class JsonRPCServerImplementation;
 class LogEngine;
 class NymeaConfiguration;
 class TagsStorage;
-class UserManager;
 class Platform;
 class System;
 class ExperienceManager;

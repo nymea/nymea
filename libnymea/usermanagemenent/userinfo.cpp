@@ -2,8 +2,6 @@
 
 #include <QMetaEnum>
 
-namespace nymeaserver {
-
 UserInfo::UserInfo()
 {
 
@@ -65,4 +63,3 @@ void UserInfoList::put(const QVariant &variant)
     append(variant.value<UserInfo>());
 }
 
-}

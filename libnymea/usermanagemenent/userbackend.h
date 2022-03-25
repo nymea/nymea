@@ -3,9 +3,8 @@
 
 #include <QObject>
 
+#include "typeutils.h"
 #include "usermanager.h"
-
-namespace nymeaserver {
 
 class UserBackend : public QObject
 {
@@ -14,6 +13,7 @@ public:
     explicit UserBackend(QObject *parent = nullptr);
     virtual ~UserBackend() = default;
 
+    virtual UserManager::Capabilities capabilities() const = 0;
     virtual bool initRequired() const = 0;
 
     virtual UserManager::UserError createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes) = 0;
@@ -44,7 +44,5 @@ signals:
     void pushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
 
 };
-
-}
 
 #endif // USERBACKEND_H

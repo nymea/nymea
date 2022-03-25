@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2022, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -31,14 +31,10 @@
 #ifndef USERMANAGER_H
 #define USERMANAGER_H
 
-#include "tokeninfo.h"
-#include "userinfo.h"
-
 #include <QObject>
 
-namespace nymeaserver {
-
-class UserBackend;
+#include "tokeninfo.h"
+#include "userinfo.h"
 
 class UserManager : public QObject
 {
@@ -55,32 +51,37 @@ public:
     };
     Q_ENUM(UserError)
 
+    enum Capability {
+        CapabilityNone = 0x00,
+        CapabilityPushButton = 0x01,
+    };
+    Q_DECLARE_FLAGS(Capabilities, Capability)
+    Q_FLAG(Capabilities)
+
+
     explicit UserManager(QObject *parent = nullptr);
+    virtual ~UserManager() = default;
 
-    bool initRequired() const;
-    UserInfoList users() const;
+    virtual Capabilities capabilities() const = 0;
+    virtual bool initRequired() const = 0;
 
-    UserError createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes);
-    UserError changePassword(const QString &username, const QString &newPassword);
-    UserError removeUser(const QString &username);
-    UserError setUserScopes(const QString &username, Types::PermissionScopes scopes);
-    UserError setUserInfo(const QString &username, const QString &email, const QString &displayName);
+    virtual UserInfoList users() const = 0;
+    virtual UserError createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes) = 0;
+    virtual UserError removeUser(const QString &username) = 0;
+    virtual UserInfo userInfo(const QString &username = QString()) const = 0;
+    virtual UserError setUserInfo(const QString &username, const QString &email, const QString &displayName) = 0;
+    virtual UserError changePassword(const QString &username, const QString &newPassword) = 0;
+    virtual UserError setUserScopes(const QString &username, Types::PermissionScopes scopes) = 0;
 
-    bool pushButtonAuthAvailable() const;
+    virtual QByteArray authenticate(const QString &username, const QString &password, const QString &deviceName) = 0;
+    virtual int requestPushButtonAuth(const QString &deviceName) = 0;
+    virtual void cancelPushButtonAuth(int transactionId) = 0;
 
-    QByteArray authenticate(const QString &username, const QString &password, const QString &deviceName);
-    int requestPushButtonAuth(const QString &deviceName);
-    void cancelPushButtonAuth(int transactionId);
-
-    UserInfo userInfo(const QString &username = QString()) const;
-    TokenInfo tokenInfo(const QByteArray &token) const;
-    TokenInfo tokenInfo(const QUuid &tokenId) const;
-    QList<TokenInfo> tokens(const QString &username) const;
-
-    UserError removeToken(const QUuid &tokenId);
-
-
-    bool verifyToken(const QByteArray &token);
+    virtual bool verifyToken(const QByteArray &token) = 0;
+    virtual QList<TokenInfo> tokens(const QString &username) const = 0;
+    virtual TokenInfo tokenInfo(const QByteArray &token) const = 0;
+    virtual TokenInfo tokenInfo(const QUuid &tokenId) const = 0;
+    virtual UserError removeToken(const QUuid &tokenId) = 0;
 
 signals:
     void userAdded(const QString &username);
@@ -88,12 +89,7 @@ signals:
     void userChanged(const QString &username);
     void pushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
 
-private:
-
-private:
-    UserBackend *m_builtinBackend = nullptr;
 };
-}
-Q_DECLARE_METATYPE(nymeaserver::UserManager::UserError)
+Q_DECLARE_METATYPE(UserManager::UserError)
 
 #endif // USERMANAGER_H

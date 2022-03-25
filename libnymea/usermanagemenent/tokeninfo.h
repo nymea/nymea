@@ -28,48 +28,40 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef USERINFO_H
-#define USERINFO_H
+#ifndef TOKENINFO_H
+#define TOKENINFO_H
 
 #include <QUuid>
-#include <QObject>
+#include <QDateTime>
+#include <QMetaType>
 #include <QVariant>
-#include "typeutils.h"
 
-namespace nymeaserver {
-
-class UserInfo
+class TokenInfo
 {
     Q_GADGET
+    Q_PROPERTY(QUuid id READ id)
     Q_PROPERTY(QString username READ username)
-    Q_PROPERTY(QString email READ email)
-    Q_PROPERTY(QString displayName READ displayName)
-    Q_PROPERTY(Types::PermissionScopes scopes READ scopes)
+    Q_PROPERTY(QDateTime creationTime READ creationTime)
+    Q_PROPERTY(QString deviceName READ deviceName)
 
 public:
-    UserInfo();
-    UserInfo(const QString &username);
+    TokenInfo();
+    TokenInfo(const QUuid &id, const QString &username, const QDateTime &creationTime, const QString &deviceName);
 
+    QUuid id() const;
     QString username() const;
-    void setUsername(const QString &username);
-
-    QString email();
-    void setEmail(const QString &email);
-
-    QString displayName() const;
-    void setDisplayName(const QString &displayName);
-
-    Types::PermissionScopes scopes() const;
-    void setScopes(Types::PermissionScopes scopes);
+    QDateTime creationTime() const;
+    QString deviceName() const;
 
 private:
+    QUuid m_id;
     QString m_username;
-    QString m_email;
-    QString m_displayName;
-    Types::PermissionScopes m_scopes = Types::PermissionScopeNone;
+    QDateTime m_creationTime;
+    QString m_deviceName;
 };
 
-class UserInfoList: public QList<UserInfo>
+
+class TokenInfoList: public QList<TokenInfo>
 {
     Q_GADGET
     Q_PROPERTY(int count READ count)
@@ -77,5 +69,8 @@ public:
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
 };
-}
-#endif // USERINFO_H
+
+
+Q_DECLARE_METATYPE(TokenInfo)
+Q_DECLARE_METATYPE(TokenInfoList)
+#endif // TOKENINFO_H

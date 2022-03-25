@@ -303,7 +303,7 @@ JsonReply *JsonRPCServerImplementation::Hello(const QVariantMap &params, const J
     handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
     handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? NymeaCore::instance()->userManager()->initRequired() : false));
     handshake.insert("authenticationRequired", interface->configuration().authenticationEnabled);
-    handshake.insert("pushButtonAuthAvailable", NymeaCore::instance()->userManager()->pushButtonAuthAvailable());
+    handshake.insert("pushButtonAuthAvailable", NymeaCore::instance()->userManager()->capabilities().testFlag(UserManager::CapabilityPushButton));
     if (!m_experiences.isEmpty()) {
         QVariantList experiences;
         foreach (JsonHandler* handler, m_experiences.keys()) {

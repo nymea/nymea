@@ -2,11 +2,9 @@
 #define MAVEOUSERBACKEND_H
 
 #include <QObject>
-#include "userbackend.h"
+#include "usermanagemenent/userbackend.h"
 
 class MqttClient;
-
-using namespace nymeaserver;
 
 class MaveoUserBackend : public UserBackend
 {

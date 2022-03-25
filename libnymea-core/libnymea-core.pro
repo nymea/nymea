@@ -125,10 +125,6 @@ HEADERS += nymeacore.h \
     time/timemanager.h \
     usermanager/builtinuserbackend.h \
     usermanager/maveouserbackend.h \
-    usermanager/userbackend.h \
-    usermanager/userinfo.h \
-    usermanager/usermanager.h \
-    usermanager/tokeninfo.h \
     usermanager/pushbuttondbusservice.h \
     certificategenerator.h \
     cloud/awsconnector.h \
@@ -164,6 +160,7 @@ HEADERS += nymeacore.h \
     cloud/cloudtransport.h \
     debugreportgenerator.h \
     platform/platform.h \
+    usermanager/usermanagerimplementation.h \
     zigbee/zigbeeadapter.h \
     zigbee/zigbeeadapters.h \
     zigbee/zigbeemanager.h \
@@ -232,10 +229,6 @@ SOURCES += nymeacore.cpp \
     time/timemanager.cpp \
     usermanager/builtinuserbackend.cpp \
     usermanager/maveouserbackend.cpp \
-    usermanager/userbackend.cpp \
-    usermanager/userinfo.cpp \
-    usermanager/usermanager.cpp \
-    usermanager/tokeninfo.cpp \
     usermanager/pushbuttondbusservice.cpp \
     certificategenerator.cpp \
     cloud/awsconnector.cpp \
@@ -271,6 +264,7 @@ SOURCES += nymeacore.cpp \
     cloud/cloudtransport.cpp \
     debugreportgenerator.cpp \
     platform/platform.cpp \
+    usermanager/usermanagerimplementation.cpp \
     zigbee/zigbeeadapter.cpp \
     zigbee/zigbeeadapters.cpp \
     zigbee/zigbeemanager.cpp \

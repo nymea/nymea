@@ -33,7 +33,7 @@
 #include "logging/logengine.h"
 #include "nymeacore.h"
 #include "nymeatestbase.h"
-#include "usermanager/usermanager.h"
+#include "usermanager/usermanagerimplementation.h"
 #include "servers/mocktcpserver.h"
 #include "nymeadbusservice.h"
 

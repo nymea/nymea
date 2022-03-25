@@ -35,9 +35,9 @@
 
 #include "jsonrpc/jsonhandler.h"
 
-namespace nymeaserver {
-
 class UserManager;
+
+namespace nymeaserver {
 
 class UsersHandler : public JsonHandler
 {

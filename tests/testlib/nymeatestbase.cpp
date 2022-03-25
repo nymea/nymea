@@ -32,7 +32,7 @@
 #include "nymeacore.h"
 #include "nymeasettings.h"
 #include "servers/mocktcpserver.h"
-#include "usermanager/usermanager.h"
+#include "usermanager/usermanagerimplementation.h"
 
 using namespace nymeaserver;
 

@@ -1,8 +1,7 @@
 #ifndef BUILTINUSERBACKEND_H
 #define BUILTINUSERBACKEND_H
 
-#include "userbackend.h"
-#include "userinfo.h"
+#include "usermanagemenent/userbackend.h"
 
 #include <QObject>
 #include <QSqlDatabase>
@@ -18,6 +17,7 @@ class BuiltinUserBackend : public UserBackend
 public:
     explicit BuiltinUserBackend(QObject *parent = nullptr);
 
+    UserManager::Capabilities capabilities() const override;
     bool initRequired() const override;
 
     UserInfoList users() const override;

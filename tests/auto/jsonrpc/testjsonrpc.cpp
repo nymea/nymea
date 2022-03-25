@@ -33,7 +33,7 @@
 #include "nymeacore.h"
 #include "version.h"
 #include "servers/mocktcpserver.h"
-#include "usermanager/usermanager.h"
+#include "usermanager/usermanagerimplementation.h"
 #include "nymeadbusservice.h"
 
 using namespace nymeaserver;

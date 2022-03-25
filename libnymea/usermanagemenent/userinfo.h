@@ -28,71 +28,52 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*!
-    \class nymeaserver::TokenInfo
-    \brief This class holds information about an authentication token.
+#ifndef USERINFO_H
+#define USERINFO_H
 
-    \ingroup user
-    \inmodule core
-
-    The TokenInfo class holds information about a token used for authentication in the \l{nymeaserver::UserManager}{UserManager}.
-
-    \sa TokenInfo, PushButtonDBusService
-*/
-
-#include "tokeninfo.h"
-
+#include <QUuid>
+#include <QObject>
 #include <QVariant>
+#include "typeutils.h"
 
-namespace nymeaserver {
-
-TokenInfo::TokenInfo()
+class UserInfo
 {
+    Q_GADGET
+    Q_PROPERTY(QString username READ username)
+    Q_PROPERTY(QString email READ email)
+    Q_PROPERTY(QString displayName READ displayName)
+    Q_PROPERTY(Types::PermissionScopes scopes READ scopes)
 
-}
+public:
+    UserInfo();
+    UserInfo(const QString &username);
 
-/*! Constructs a new token info with the given \a id, \a username, \a creationTime and \a deviceName. */
-TokenInfo::TokenInfo(const QUuid &id, const QString &username, const QDateTime &creationTime, const QString &deviceName):
-    m_id(id),
-    m_username(username),
-    m_creationTime(creationTime),
-    m_deviceName(deviceName)
+    QString username() const;
+    void setUsername(const QString &username);
+
+    QString email();
+    void setEmail(const QString &email);
+
+    QString displayName() const;
+    void setDisplayName(const QString &displayName);
+
+    Types::PermissionScopes scopes() const;
+    void setScopes(Types::PermissionScopes scopes);
+
+private:
+    QString m_username;
+    QString m_email;
+    QString m_displayName;
+    Types::PermissionScopes m_scopes = Types::PermissionScopeNone;
+};
+
+class UserInfoList: public QList<UserInfo>
 {
+    Q_GADGET
+    Q_PROPERTY(int count READ count)
+public:
+    Q_INVOKABLE QVariant get(int index) const;
+    Q_INVOKABLE void put(const QVariant &variant);
+};
 
-}
-
-/*! Returns the id of this TokenInfo. */
-QUuid TokenInfo::id() const
-{
-    return m_id;
-}
-
-/*! Returns the userename of this TokenInfo. */
-QString TokenInfo::username() const
-{
-    return m_username;
-}
-
-/*! Returns the creation time of this TokenInfo. */
-QDateTime TokenInfo::creationTime() const
-{
-    return m_creationTime;
-}
-
-/*! Returns the device name of this TokenInfo. */
-QString TokenInfo::deviceName() const
-{
-    return m_deviceName;
-}
-
-QVariant TokenInfoList::get(int index) const
-{
-    return QVariant::fromValue(at(index));
-}
-
-void TokenInfoList::put(const QVariant &variant)
-{
-    append(variant.value<TokenInfo>());
-}
-
-}
+#endif // USERINFO_H

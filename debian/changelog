@@ -1,3 +1,43 @@
+nymea (1.0.0) xenial; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add support fur user permissions
+
+  [ Simon Stürz ]
+  * Add tunnel proxy server for new remote connection mechanism
+
+  [ Michael Zanetti ]
+  * Fix a crash when removing a currently connected transport
+  * Make SSL certificate loading and generating more robust
+  * Fix encoding of ZigbeeHandler (Windows CRLF -> Unix LF)
+  * Add support for TI z-Stack based Zigbee adapters
+  * Fix some interface definitions (minimum/maximum vs min/max)
+  * Split thing cache into individual files
+  * Fix cleaning up things when a setup fails in python plugins
+  * Don't generate events for state changes any more
+  * Remove deprecated Devices, Action, Events, States namespaces from
+    JSONRPC
+  * Add discoveryType thing class property
+
+  [ doctorseus ]
+  * Fix for ThingState which reports minValue instead of maxValue
+
+  [ Michael Zanetti ]
+  * Add debug prints to rule engine
+  * Increase timeout for auto tests
+  * Remove apt.conf.d/99nymea also without purge option
+
+  [ Simon Stürz ]
+  * Update copyright to 2022
+  * Update mac address database and switch source information provider
+  * Fix crash for long taking mac address lookup
+  * DebugInterface: Fix process finished crash if the http reply timed
+    out in the mean time
+
+  [ Jenkins ]
+
+ -- Jenkins <jenkins@nymea.io>  Sun, 27 Mar 2022 19:49:49 +0200
+
 nymea (0.30.0) xenial; urgency=medium
 
   [ Michael Zanetti ]

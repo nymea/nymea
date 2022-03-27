@@ -79,9 +79,7 @@
 ThingClass::ThingClass(const PluginId &pluginId, const VendorId &vendorId, const ThingClassId &id):
     m_id(id),
     m_vendorId(vendorId),
-    m_pluginId(pluginId),
-    m_createMethods(CreateMethodUser),
-    m_setupMethod(SetupMethodJustAdd)
+    m_pluginId(pluginId)
 {
 
 }
@@ -340,6 +338,16 @@ ThingClass::SetupMethod ThingClass::setupMethod() const
 void ThingClass::setSetupMethod(ThingClass::SetupMethod setupMethod)
 {
     m_setupMethod = setupMethod;
+}
+
+ThingClass::DiscoveryType ThingClass::discoveryType() const
+{
+    return m_discoveryType;
+}
+
+void ThingClass::setDiscoveryType(DiscoveryType discoveryType)
+{
+    m_discoveryType = discoveryType;
 }
 
 /*! Returns the \l{Interfaces for DeviceClasses}{interfaces} of this \l{DeviceClass}.*/

@@ -47,6 +47,10 @@
             "CreateMethodAuto",
             "CreateMethodDiscovery"
         ],
+        "DiscoveryType": [
+            "DiscoveryTypePrecise",
+            "DiscoveryTypeWeak"
+        ],
         "IOType": [
             "IOTypeNone",
             "IOTypeDigitalInput",
@@ -2829,6 +2833,7 @@
             "r:browserItemActionTypes": "$ref:ActionTypes",
             "r:createMethods": "$ref:CreateMethods",
             "r:discoveryParamTypes": "$ref:ParamTypes",
+            "r:discoveryType": "$ref:DiscoveryType",
             "r:displayName": "String",
             "r:eventTypes": "$ref:EventTypes",
             "r:id": "Uuid",

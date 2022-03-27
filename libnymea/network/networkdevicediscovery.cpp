@@ -209,6 +209,9 @@ void NetworkDeviceDiscovery::finishDiscovery()
 
 void NetworkDeviceDiscovery::updateOrAddNetworkDeviceArp(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress, const QString &manufacturer)
 {
+    if (!m_currentReply)
+        return;
+
     int index = m_currentReply->networkDeviceInfos().indexFromHostAddress(address);
     if (index >= 0) {
         // Update the network device
@@ -257,7 +260,7 @@ void NetworkDeviceDiscovery::onArpResponseRceived(const QNetworkInterface &inter
     // Lookup the mac address vendor if possible
     if (m_macAddressDatabase->available()) {
         MacAddressDatabaseReply *reply = m_macAddressDatabase->lookupMacAddress(macAddress);
-        connect(reply, &MacAddressDatabaseReply::finished, this, [=](){
+        connect(reply, &MacAddressDatabaseReply::finished, m_currentReply, [=](){
             qCDebug(dcNetworkDeviceDiscovery()) << "MAC manufacturer lookup finished for" << macAddress << ":" << reply->manufacturer();
             updateOrAddNetworkDeviceArp(interface, address, macAddress, reply->manufacturer());
         });

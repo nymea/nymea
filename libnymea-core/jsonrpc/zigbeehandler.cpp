@@ -433,6 +433,9 @@ QVariantMap ZigbeeHandler::packNetwork(ZigbeeNetwork *network)
     case Zigbee::ZigbeeBackendTypeNxp:
         networkMap.insert("backend", ZigbeeAdapter::backendNames().value(ZigbeeAdapter::ZigbeeBackendTypeNxp));
         break;
+    case Zigbee::ZigbeeBackendTypeTi:
+        networkMap.insert("backend", ZigbeeAdapter::backendNames().value(ZigbeeAdapter::ZigbeeBackendTypeTi));
+        break;
     }
 
     switch (network->state()) {

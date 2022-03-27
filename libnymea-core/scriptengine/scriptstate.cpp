@@ -206,7 +206,7 @@ QVariant ScriptState::maximumValue() const
     if (stateType.id().isNull()) {
         stateType = thing->thingClass().stateTypes().findByName(m_stateName);
     }
-    return stateType.minValue();
+    return stateType.maxValue();
 }
 
 void ScriptState::store()

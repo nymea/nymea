@@ -48,7 +48,6 @@ public:
         SettingsRoleRules,
         SettingsRolePlugins,
         SettingsRoleGlobal,
-        SettingsRoleThingStates,
         SettingsRoleTags,
         SettingsRoleMqttPolicies,
         SettingsRoleIOConnections,
@@ -66,6 +65,7 @@ public:
     static QString settingsPath();
     static QString translationsPath();
     static QString storagePath();
+    static QString cachePath();
 
     // forwarded QSettings methods
     QStringList	allKeys() const;

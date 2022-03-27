@@ -64,8 +64,8 @@ void NymeaTestBase::initTestCase(const QString &loggingRules)
     thingSettings.clear();
     NymeaSettings pluginSettings(NymeaSettings::SettingsRolePlugins);
     pluginSettings.clear();
-    NymeaSettings statesSettings(NymeaSettings::SettingsRoleThingStates);
-    statesSettings.clear();
+    QDir dir(NymeaSettings::cachePath() + "/thingstates/");
+    dir.removeRecursively();
 
     // Reset to default settings
     NymeaSettings nymeadSettings(NymeaSettings::SettingsRoleGlobal);

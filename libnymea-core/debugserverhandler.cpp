@@ -227,34 +227,6 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             return reply;
         }
 
-        if (requestPath.startsWith("/debug/settings/thingstates")) {
-            QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRoleThingStates).fileName();
-            qCDebug(dcDebugServer()) << "Loading" << settingsFileName;
-            QFile settingsFile(settingsFileName);
-            if (!settingsFile.exists()) {
-                qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName << "file does not exist.";
-                HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
-                reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(settingsFileName)));
-                return reply;
-            }
-
-            if (!settingsFile.open(QFile::ReadOnly)) {
-                qCWarning(dcDebugServer()) << "Could not read file for debug download" << settingsFileName;
-                HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
-                reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-                reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(settingsFileName)));
-                return reply;
-            }
-
-            QByteArray settingsFileData = settingsFile.readAll();
-            settingsFile.close();
-
-            HttpReply *reply = HttpReply::createSuccessReply();
-            reply->setHeader(HttpReply::ContentTypeHeader, "text/plain");
-            reply->setPayload(settingsFileData);
-            return reply;
-        }
 
         if (requestPath.startsWith("/debug/settings/plugins")) {
             QString settingsFileName = NymeaSettings(NymeaSettings::SettingsRolePlugins).fileName();
@@ -1383,56 +1355,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
         writer.writeAttribute("disabled", "true");
     }
     writer.writeAttribute("onClick", "showFile('/debug/settings/things')");
-    writer.writeCharacters(tr("Show"));
-    writer.writeEndElement(); // button
-    writer.writeEndElement(); // form
-    writer.writeEndElement(); // div show-button-column
-
-    writer.writeEndElement(); // div download-row
-
-
-    // Download row thing states
-    writer.writeStartElement("div");
-    writer.writeAttribute("class", "download-row");
-
-    writer.writeStartElement("div");
-    writer.writeAttribute("class", "download-name-column");
-    //: The thing states settings download description of the debug interface
-    writer.writeTextElement("p", tr("Thing states settings"));
-    writer.writeEndElement(); // div download-name-column
-
-    writer.writeStartElement("div");
-    writer.writeAttribute("class", "download-path-column");
-    writer.writeTextElement("p", NymeaSettings(NymeaSettings::SettingsRoleThingStates).fileName());
-    writer.writeEndElement(); // div download-path-column
-
-    writer.writeStartElement("div");
-    writer.writeAttribute("class", "download-button-column");
-    writer.writeStartElement("form");
-    writer.writeAttribute("class", "download-button");
-    writer.writeStartElement("button");
-    writer.writeAttribute("class", "button");
-    writer.writeAttribute("type", "button");
-    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleThingStates).fileName())) {
-        writer.writeAttribute("disabled", "true");
-    }
-    writer.writeAttribute("onClick", "downloadFile('/debug/settings/thingstates', 'thingstates.conf')");
-    writer.writeCharacters(tr("Download"));
-    writer.writeEndElement(); // button
-    writer.writeEndElement(); // form
-    writer.writeEndElement(); // div download-button-column
-
-    writer.writeStartElement("div");
-    writer.writeAttribute("class", "show-button-column");
-    writer.writeStartElement("form");
-    writer.writeAttribute("class", "show-button");
-    writer.writeStartElement("button");
-    writer.writeAttribute("class", "button");
-    writer.writeAttribute("type", "button");
-    if (!QFile::exists(NymeaSettings(NymeaSettings::SettingsRoleThingStates).fileName())) {
-        writer.writeAttribute("disabled", "true");
-    }
-    writer.writeAttribute("onClick", "showFile('/debug/settings/thingstates')");
     writer.writeCharacters(tr("Show"));
     writer.writeEndElement(); // button
     writer.writeEndElement(); // form

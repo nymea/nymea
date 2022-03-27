@@ -22,7 +22,6 @@
 
 # apt remove doesn't remove files from /etc unless --purge is given
 # but we want to remove /etc/apt/apt.conf.d/99nymea in any case
-
 rm /etc/apt/apt.conf.d/99nymea
 
 #DEBHELPER#

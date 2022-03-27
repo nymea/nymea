@@ -1,7 +1,0 @@
-# nymea hook to restart nymead after upgrades that change nymea plugins or libraries
-
-DPkg::Pre-Install-Pkgs {"/usr/libexec/nymea-upgrade-helper"; };
-DPkg::Tools::Options::/usr/libexec/nymea-upgrade-helper::Version "1";
-
-DPkg::Post-Invoke {"if [ -e /tmp/nymea-restart-pending ]; then systemctl restart nymead; rm /tmp/nymea-restart-pending; fi"; };
-

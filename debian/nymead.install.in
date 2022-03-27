@@ -5,5 +5,4 @@ usr/lib/@DEB_HOST_MULTIARCH@/libnymea-core.so.1.0.0
 data/systemd/nymead.service /lib/systemd/system/
 data/logrotate/nymead /etc/logrotate.d/
 data/dbus-1/io.guh.nymead.conf /etc/dbus-1/system.d/
-data/dpkg/apt.conf.d/99nymea /etc/apt/apt.conf.d/
 data/dpkg/nymea-upgrade-helper /usr/libexec/

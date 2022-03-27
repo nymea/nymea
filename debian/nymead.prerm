@@ -2,7 +2,7 @@
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                         #
-#  Copyright (C) 2015 - 2021 nymea GmbH <developer@nymea.io>              #
+#  Copyright (C) 2015 - 2022 nymea GmbH <developer@nymea.io>              #
 #                                                                         #
 #  This file is part of nymea.                                            #
 #                                                                         #
@@ -20,23 +20,10 @@
 #                                                                         #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-# Make sure user will be able to perform a networkdiscovery
-# using ARP and ICMP sockets (raw_sock).
-setcap cap_net_admin,cap_net_raw=eip /usr/bin/nymead
-if [ $? -eq 0 ]; then
-    echo "Set raw socket network capabilities successfully for nymead."
-else
-    echo "Failed to set raw socket network capabilities for nymead. Network device discovery will not be available for non root users."
-fi
-
-# nymea hook to restart nymead after upgrades that change nymea plugins or libraries
-cat <<EOF > /etc/apt/apt.conf.d/99nymea
-DPkg::Pre-Install-Pkgs {"/usr/libexec/nymea-upgrade-helper"; };
-DPkg::Tools::Options::/usr/libexec/nymea-upgrade-helper::Version "1";
-DPkg::Post-Invoke {"if [ -e /tmp/nymea-restart-pending ]; then systemctl restart nymead; rm /tmp/nymea-restart-pending; fi"; };
-EOF
+# apt remove doesn't remove files from /etc unless --purge is given
+# but we want to remove /etc/apt/apt.conf.d/99nymea in any case
+rm /etc/apt/apt.conf.d/99nymea
 
 #DEBHELPER#
 
 exit 0
-

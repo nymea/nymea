@@ -44,7 +44,6 @@ class Tag
     Q_PROPERTY(QString appId READ appId WRITE setAppId)
     Q_PROPERTY(QString tagId READ tagId WRITE setTagId)
     Q_PROPERTY(QUuid thingId READ thingId WRITE setThingId USER true)
-    Q_PROPERTY(QUuid deviceId READ thingId WRITE setThingId USER true REVISION 1)
     Q_PROPERTY(QUuid ruleId READ ruleId WRITE setRuleId USER true)
     Q_PROPERTY(QString value READ value WRITE setValue USER true)
 public:

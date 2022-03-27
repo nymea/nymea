@@ -40,6 +40,7 @@
 
 #include "jsonreply.h"
 #include "jsoncontext.h"
+#include "typeutils.h"
 
 class JsonHandler : public QObject
 {
@@ -108,7 +109,7 @@ protected:
     // Deprecated QString based registerObject
     void registerObject(const QString &name, const QVariantMap &object);
 
-    void registerMethod(const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, const QString &deprecationInfo = QString());
+    void registerMethod(const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, Types::PermissionScope permissionScope = Types::PermissionScopeAdmin, const QString &deprecationInfo = QString());
     void registerNotification(const QString &name, const QString &description, const QVariantMap &params, const QString &deprecationInfo = QString());
 
     JsonReply *createReply(const QVariantMap &data) const;

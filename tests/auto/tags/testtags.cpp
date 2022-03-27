@@ -83,7 +83,6 @@ QVariantMap TestTags::createRuleTag(const QString &ruleId, const QString &appId,
 bool TestTags::compareThingTag(const QVariantMap &tag, const QUuid &thingId, const QString &appId, const QString &tagId, const QString &value)
 {
     return tag.value("thingId").toUuid() == thingId &&
-            tag.value("deviceId").toUuid() == thingId && // backwards compatibility to < 0.19 adds deviceId along with thingId
             tag.value("appId").toString() == appId &&
             tag.value("tagId").toString() == tagId &&
             tag.value("value").toString() == value;

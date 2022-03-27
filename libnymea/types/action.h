@@ -42,7 +42,6 @@ class LIBNYMEA_EXPORT Action
     Q_GADGET
     Q_PROPERTY(QUuid actionTypeId READ actionTypeId WRITE setActionTypeId)
     Q_PROPERTY(QUuid thingId READ thingId WRITE setThingId)
-    Q_PROPERTY(QUuid deviceId READ thingId WRITE setThingId REVISION 1)
     Q_PROPERTY(ParamList params READ params WRITE setParams USER true)
 
 public:

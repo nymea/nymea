@@ -63,10 +63,8 @@ public:
     Q_INVOKABLE JsonReply *SetNotificationStatus(const QVariantMap &params, const JsonContext &context);
 
     Q_INVOKABLE JsonReply *CreateUser(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *RequestPushButtonAuth(const QVariantMap &params, const JsonContext &context);
-    Q_INVOKABLE JsonReply *Tokens(const QVariantMap &params, const JsonContext &context) const;
-    Q_INVOKABLE JsonReply *RemoveToken(const QVariantMap &params);
     Q_INVOKABLE JsonReply *SetupCloudConnection(const QVariantMap &params);
     Q_INVOKABLE JsonReply *SetupRemoteAccess(const QVariantMap &params);
     Q_INVOKABLE JsonReply *IsCloudConnected(const QVariantMap &params);
@@ -90,7 +88,6 @@ private:
     void sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap(), const QString &deprecationWarning = QString());
     void sendErrorResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
     void sendUnauthorizedResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
-    QVariantMap createWelcomeMessage(TransportInterface *interface, const QUuid &clientId) const;
 
     void processJsonPacket(TransportInterface *interface, const QUuid &clientId, const QByteArray &data);
 
@@ -128,6 +125,8 @@ private:
     QHash<QString, JsonReply*> m_pairingRequests;
 
     int m_notificationId;
+
+    QTimer m_connectionLockdownTimer;
 
     QString formatAssertion(const QString &targetNamespace, const QString &method, QMetaMethod::MethodType methodType, JsonHandler *handler, const QVariantMap &data) const;
 };

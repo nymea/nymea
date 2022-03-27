@@ -49,7 +49,6 @@ TagsHandler::TagsHandler(QObject *parent) : JsonHandler(parent)
                   "Tags can be filtered by a thingID, a ruleId, an appId, a tagId or a combination of any (however, "
                   "combining thingId and ruleId will return an empty result set).";
     params.insert("o:thingId", enumValueName(Uuid));
-    params.insert("d:o:deviceId", enumValueName(Uuid));
     params.insert("o:ruleId", enumValueName(Uuid));
     params.insert("o:appId", enumValueName(String));
     params.insert("o:tagId", enumValueName(String));
@@ -106,10 +105,6 @@ JsonReply *TagsHandler::GetTags(const QVariantMap &params) const
     QVariantList ret;
     foreach (const Tag &tag, NymeaCore::instance()->tagsStorage()->tags()) {
         if (params.contains("thingId") && params.value("thingId").toUuid() != tag.thingId()) {
-            continue;
-        }
-        if (params.contains("deviceId") && params.value("deviceId").toUuid() != tag.thingId()) {
-            // nymea < 0.19
             continue;
         }
         if (params.contains("ruleId") && params.value("ruleId").toUuid() != tag.ruleId()) {

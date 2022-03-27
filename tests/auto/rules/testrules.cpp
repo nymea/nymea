@@ -422,7 +422,6 @@ void TestRules::addRemoveRules_data()
     QVariantMap validActionNoParams;
     validActionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     validActionNoParams.insert("thingId", m_mockThingId);
-    validActionNoParams.insert("deviceId", m_mockThingId); // DEPRECATED
 
     QVariantMap invalidAction;
     invalidAction.insert("actionTypeId", ActionTypeId("f32c7efb-38b6-4576-a496-c75bbb23132f"));
@@ -432,7 +431,6 @@ void TestRules::addRemoveRules_data()
     QVariantMap validExitActionNoParams;
     validExitActionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     validExitActionNoParams.insert("thingId", m_mockThingId);
-    validExitActionNoParams.insert("deviceId", m_mockThingId); // DEPRECATED
 
     QVariantMap invalidExitAction;
     invalidExitAction.insert("actionTypeId", ActionTypeId("f32c7efb-38b6-4576-a496-c75bbb23132f"));
@@ -458,12 +456,10 @@ void TestRules::addRemoveRules_data()
     QVariantMap validEventDescriptor1;
     validEventDescriptor1.insert("eventTypeId", mockEvent1EventTypeId);
     validEventDescriptor1.insert("thingId", m_mockThingId);
-    validEventDescriptor1.insert("deviceId", m_mockThingId); // DEPRECATED
 
     QVariantMap validEventDescriptor2;
     validEventDescriptor2.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor2.insert("thingId", m_mockThingId);
-    validEventDescriptor2.insert("deviceId", m_mockThingId); // DEPRECATED
 
     QVariantList params;
     QVariantMap param1;
@@ -476,7 +472,6 @@ void TestRules::addRemoveRules_data()
     QVariantMap validEventDescriptor3;
     validEventDescriptor3.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor3.insert("thingId", m_mockThingId);
-    validEventDescriptor3.insert("deviceId", m_mockThingId); // DREPECATED
 
     // EventDescriptorList
     QVariantList eventDescriptorList;
@@ -491,7 +486,6 @@ void TestRules::addRemoveRules_data()
     QVariantMap validActionEventBased;
     validActionEventBased.insert("actionTypeId", mockWithParamsActionTypeId);
     validActionEventBased.insert("thingId", m_mockThingId);
-    validActionEventBased.insert("deviceId", m_mockThingId); // DEPRECATED
     QVariantMap validActionEventBasedParam1;
     validActionEventBasedParam1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     validActionEventBasedParam1.insert("eventTypeId", mockEvent2EventTypeId);
@@ -675,7 +669,6 @@ void TestRules::editRules_data()
     QVariantMap validActionNoParams;
     validActionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     validActionNoParams.insert("thingId", m_mockThingId);
-    validActionNoParams.insert("deviceId", m_mockThingId); // DEPRECATED
 
     QVariantMap invalidAction;
     invalidAction.insert("actionTypeId", ActionTypeId());
@@ -685,7 +678,6 @@ void TestRules::editRules_data()
     QVariantMap validExitActionNoParams;
     validExitActionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     validExitActionNoParams.insert("thingId", m_mockThingId);
-    validExitActionNoParams.insert("deviceId", m_mockThingId); // DEPRECATED
 
     QVariantMap invalidExitAction;
     invalidExitAction.insert("actionTypeId", ActionTypeId());
@@ -711,12 +703,10 @@ void TestRules::editRules_data()
     QVariantMap validEventDescriptor1;
     validEventDescriptor1.insert("eventTypeId", mockEvent1EventTypeId);
     validEventDescriptor1.insert("thingId", m_mockThingId);
-    validEventDescriptor1.insert("deviceId", m_mockThingId); // DEPRECATED
 
     QVariantMap validEventDescriptor2;
     validEventDescriptor2.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor2.insert("thingId", m_mockThingId);
-    validEventDescriptor2.insert("deviceId", m_mockThingId); // DEPRECATED
     QVariantList params;
     QVariantMap param1;
     param1.insert("paramTypeId", mockEvent2EventIntParamParamTypeId);
@@ -728,7 +718,6 @@ void TestRules::editRules_data()
     QVariantMap validEventDescriptor3;
     validEventDescriptor3.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor3.insert("thingId", m_mockThingId);
-    validEventDescriptor3.insert("deviceId", m_mockThingId); // DEPRECATED
 
     // EventDescriptorList
     QVariantList eventDescriptorList;
@@ -743,7 +732,6 @@ void TestRules::editRules_data()
     QVariantMap validActionEventBased;
     validActionEventBased.insert("actionTypeId", mockWithParamsActionTypeId);
     validActionEventBased.insert("thingId", m_mockThingId);
-    validActionEventBased.insert("deviceId", m_mockThingId); // DEPRECATED
     QVariantMap validActionEventBasedParam1;
     validActionEventBasedParam1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     validActionEventBasedParam1.insert("eventTypeId", mockEvent2EventTypeId);
@@ -828,11 +816,9 @@ void TestRules::editRules()
     QVariantMap eventDescriptor1;
     eventDescriptor1.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor1.insert("thingId", m_mockThingId);
-    eventDescriptor1.insert("deviceId", m_mockThingId); // DEPRECATED
     QVariantMap eventDescriptor2;
     eventDescriptor2.insert("eventTypeId", mockEvent2EventTypeId);
     eventDescriptor2.insert("thingId", m_mockThingId);
-    eventDescriptor2.insert("deviceId", m_mockThingId); // DEPRECATED
     QVariantMap eventParam1;
     eventParam1.insert("paramTypeId", mockEvent2EventIntParamParamTypeId);
     eventParam1.insert("value", 3);
@@ -889,7 +875,6 @@ void TestRules::editRules()
     QVariantMap validActionEventBased;
     validActionEventBased.insert("actionTypeId", mockWithParamsActionTypeId);
     validActionEventBased.insert("thingId", m_mockThingId);
-    validActionEventBased.insert("deviceId", m_mockThingId); // DEPRECATED
     QVariantMap validActionEventBasedParam1;
     validActionEventBasedParam1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     validActionEventBasedParam1.insert("eventTypeId", mockEvent2EventTypeId);
@@ -903,7 +888,6 @@ void TestRules::editRules()
     QVariantMap validEventDescriptor3;
     validEventDescriptor3.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor3.insert("thingId", m_mockThingId);
-    validEventDescriptor3.insert("deviceId", m_mockThingId); // DEPRECATED
     validEventDescriptor3.insert("paramDescriptors", QVariantList());
     validEventDescriptors3.append(validEventDescriptor3);
 
@@ -978,7 +962,7 @@ void TestRules::editRules()
             foreach (const QVariant &eventDescriptorVariant, eventDescriptorList) {
                 bool found = false;
                 foreach (const QVariant &replyEventDescriptorVariant, eventDescriptors) {
-                    if (eventDescriptorVariant.toMap().value("deviceId") == replyEventDescriptorVariant.toMap().value("deviceId") &&
+                    if (eventDescriptorVariant.toMap().value("thingId") == replyEventDescriptorVariant.toMap().value("thingId") &&
                             eventDescriptorVariant.toMap().value("eventTypeId") == replyEventDescriptorVariant.toMap().value("eventTypeId")) {
                         found = true;
                         QVERIFY2(eventDescriptorVariant == replyEventDescriptorVariant, "Event descriptor doesn't match");
@@ -1135,12 +1119,10 @@ void TestRules::loadStoreConfig()
     QVariantMap eventDescriptor1;
     eventDescriptor1.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor1.insert("thingId", m_mockThingId);
-    eventDescriptor1.insert("deviceId", m_mockThingId); // DEPRECATED
 
     QVariantMap eventDescriptor2;
     eventDescriptor2.insert("eventTypeId", mockEvent2EventTypeId);
     eventDescriptor2.insert("thingId", m_mockThingId);
-    eventDescriptor2.insert("deviceId", m_mockThingId); // DEPRECATED
     QVariantList eventParamDescriptors;
     QVariantMap eventParam1;
     eventParam1.insert("paramTypeId", mockEvent2EventIntParamParamTypeId);
@@ -1158,7 +1140,6 @@ void TestRules::loadStoreConfig()
 
     QVariantMap stateDescriptor2;
     stateDescriptor2.insert("thingId", m_mockThingId);
-    stateDescriptor2.insert("deviceId", m_mockThingId); // DEPRECATED
     stateDescriptor2.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptor2.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor2.insert("value", 1);
@@ -1168,7 +1149,6 @@ void TestRules::loadStoreConfig()
 
     QVariantMap stateDescriptor3;
     stateDescriptor3.insert("thingId", m_mockThingId);
-    stateDescriptor3.insert("deviceId", m_mockThingId); // DEPRECATED
     stateDescriptor3.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptor3.insert("stateTypeId", mockBoolStateTypeId);
     stateDescriptor3.insert("value", true);
@@ -1196,13 +1176,11 @@ void TestRules::loadStoreConfig()
     QVariantMap action1;
     action1.insert("actionTypeId", mockWithoutParamsActionTypeId);
     action1.insert("thingId", m_mockThingId);
-    action1.insert("deviceId", m_mockThingId); // DEPRECATED
     action1.insert("ruleActionParams", QVariantList());
 
     QVariantMap action2;
     action2.insert("actionTypeId", mockWithParamsActionTypeId);
     action2.insert("thingId", m_mockThingId);
-    action2.insert("deviceId", m_mockThingId); // DEPRECATED
     QVariantList action2Params;
     QVariantMap action2Param1;
     action2Param1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
@@ -1218,7 +1196,6 @@ void TestRules::loadStoreConfig()
     QVariantMap validActionEventBased;
     validActionEventBased.insert("actionTypeId", mockWithParamsActionTypeId);
     validActionEventBased.insert("thingId", m_mockThingId);
-    validActionEventBased.insert("deviceId", m_mockThingId); // DEPRECATED
     QVariantMap validActionEventBasedParam1;
     validActionEventBasedParam1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
     validActionEventBasedParam1.insert("eventTypeId", mockEvent2EventTypeId);
@@ -1232,7 +1209,6 @@ void TestRules::loadStoreConfig()
     QVariantMap validEventDescriptor3;
     validEventDescriptor3.insert("eventTypeId", mockEvent2EventTypeId);
     validEventDescriptor3.insert("thingId", m_mockThingId);
-    validEventDescriptor3.insert("deviceId", m_mockThingId); // DEPRECATED
     validEventDescriptors3.append(validEventDescriptor3);
 
     // Interface based event descriptor
@@ -1446,7 +1422,7 @@ void TestRules::loadStoreConfig()
             QVERIFY2(stateDescriptor.value("interface") == "battery", "Interface of stateDescriptor does not match");
             QVERIFY2(stateDescriptor.value("interfaceState") == "batteryCritical", "InterfaceState of stateDescriptor doesn't match");
         } else {
-            QVERIFY2(false, "StateDescriptor must have either deviceId/stateTypeId or interface/interfaceState.");
+            QVERIFY2(false, "StateDescriptor must have either thingId/stateTypeId or interface/interfaceState.");
         }
     }
 

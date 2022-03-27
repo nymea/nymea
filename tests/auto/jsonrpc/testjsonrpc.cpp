@@ -150,8 +150,7 @@ QStringList TestJSONRPC::extractRefs(const QVariant &variant)
 void TestJSONRPC::initTestCase()
 {
     NymeaDBusService::setBusType(QDBusConnection::SessionBus);
-    NymeaTestBase::initTestCase();
-    QLoggingCategory::setFilterRules("*.debug=false\n"
+    NymeaTestBase::initTestCase("*.debug=false\n"
 //                                     "JsonRpcTraffic.debug=true\n"
                                      "JsonRpc.debug=true\n"
                                      "Translations.debug=true\n"
@@ -236,8 +235,8 @@ void TestJSONRPC::testHandshakeLocale()
 
 void TestJSONRPC::testInitialSetup()
 {
-    foreach (const QString &user, NymeaCore::instance()->userManager()->users()) {
-        NymeaCore::instance()->userManager()->removeUser(user);
+    foreach (const UserInfo &userInfo, NymeaCore::instance()->userManager()->users()) {
+        NymeaCore::instance()->userManager()->removeUser(userInfo.username());
     }
     NymeaCore::instance()->userManager()->removeUser("");
 
@@ -246,7 +245,6 @@ void TestJSONRPC::testInitialSetup()
 
     QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
     QVERIFY(spy.isValid());
-    QSignalSpy connectedSpy(m_mockTcpServer, &MockTcpServer::clientConnected);
     QSignalSpy disconnectedSpy(m_mockTcpServer, &MockTcpServer::clientDisconnected);
 
     // Introspect call should work in any case
@@ -294,11 +292,10 @@ void TestJSONRPC::testInitialSetup()
     if (disconnectedSpy.count() == 0) disconnectedSpy.wait();
     QCOMPARE(disconnectedSpy.count(), 1);
     qCDebug(dcTests()) << "Mock client disconnected";
-    connectedSpy.clear();
+
+    // The connection will be locked down for 3 seconds
+    QTest::qWait(3200);
     emit m_mockTcpServer->clientConnected(m_clientId);
-    if (connectedSpy.count() == 0) connectedSpy.wait();
-    QCOMPARE(connectedSpy.count(), 1);
-    qCDebug(dcTests()) << "Mock client connected";
 
     spy.clear();
     m_mockTcpServer->injectData(m_clientId, "{\"id\": 0, \"method\": \"JSONRPC.Hello\"}");
@@ -312,7 +309,7 @@ void TestJSONRPC::testInitialSetup()
     // But it should still fail when giving a an invalid username
     spy.clear();
     qCDebug(dcTests()) << "Calling CreateUser, expecting failure (bad username)";
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"dummy\", \"password\": \"DummyPW1!\"}}\n");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"a\", \"password\": \"DummyPW1!\"}}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -326,7 +323,7 @@ void TestJSONRPC::testInitialSetup()
     // or when giving a bad password
     spy.clear();
     qCDebug(dcTests()) << "Calling CreateUser, expecting failure (bad password)";
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"weak\"}}\n");
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"nymea\", \"password\": \"weak\"}}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -382,12 +379,10 @@ void TestJSONRPC::testInitialSetup()
     // Connection should terminate
     if (disconnectedSpy.count() == 0) disconnectedSpy.wait();
     QCOMPARE(disconnectedSpy.count(), 1);
-    qCDebug(dcTests()) << "Mock client disconnected";
-    connectedSpy.clear();
+
+    // The connection will be locked down for 3 secs
+    QTest::qWait(3200);
     emit m_mockTcpServer->clientConnected(m_clientId);
-    if (connectedSpy.count() == 0) connectedSpy.wait();
-    QCOMPARE(connectedSpy.count(), 1);
-    qCDebug(dcTests()) << "Mock client connected";
 
     spy.clear();
     m_mockTcpServer->injectData(m_clientId, "{\"id\": 0, \"method\": \"JSONRPC.Hello\"}");
@@ -415,6 +410,7 @@ void TestJSONRPC::testInitialSetup()
 
     // Now lets authenticate with a wrong password
     spy.clear();
+    disconnectedSpy.clear();
     qCDebug(dcTests()) << "Calling Authenticate, expecting failure (bad password)";
     m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"Dummy@guh.io\", \"password\": \"wrongpw\", \"deviceName\": \"testcase\"}}\n");
     if (spy.count() == 0) {
@@ -423,11 +419,24 @@ void TestJSONRPC::testInitialSetup()
     QVERIFY(spy.count() == 1);
     jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
     response = jsonDoc.toVariant().toMap();
-    qCDebug(dcTests()) << "Calling Authenticate with wrong password:" << response.value("params").toMap().value("success").toString() << response.value("params").toMap().value("token").toString();
     QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
     QCOMPARE(response.value("params").toMap().value("success").toBool(), false);
     QVERIFY(response.value("params").toMap().value("token").toByteArray().isEmpty());
 
+    // Connection should terminate
+    if (disconnectedSpy.count() == 0) disconnectedSpy.wait();
+    QCOMPARE(disconnectedSpy.count(), 1);
+
+    // The connection will be locked down for 3 secs
+    QTest::qWait(3200);
+    emit m_mockTcpServer->clientConnected(m_clientId);
+
+    spy.clear();
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 0, \"method\": \"JSONRPC.Hello\"}");
+    if (spy.count() == 0) {
+        spy.wait();
+    }
+    QVERIFY(spy.count() == 1);
 
     // Now lets authenticate for real (but intentionally use a lowercase email here, should still work)
     spy.clear();
@@ -466,19 +475,17 @@ void TestJSONRPC::testRevokeToken()
     QVERIFY(spy.isValid());
     QSignalSpy disconnectedSpy(m_mockTcpServer, &MockTcpServer::clientDisconnected);
     QVERIFY(disconnectedSpy.isValid());
-    QSignalSpy connectedSpy(m_mockTcpServer, &MockTcpServer::clientConnected);
-    QVERIFY(connectedSpy.isValid());
 
     // Now get all the tokens
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Tokens\"}\n");
+    qCDebug(dcTests()) << "Getting existing Tokens";
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"Users.GetTokens\"}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
     QVERIFY(spy.count() == 1);
     QJsonDocument jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
     QVariantMap response = jsonDoc.toVariant().toMap();
-    qCDebug(dcTests()) << "Getting existing Tokens" << response.value("status").toString() << response;
     QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
     QVariantList tokenList = response.value("params").toMap().value("tokenInfoList").toList();
     QCOMPARE(tokenList.count(), 1);
@@ -486,6 +493,7 @@ void TestJSONRPC::testRevokeToken()
 
     // Authenticate and create a new token
     spy.clear();
+    qCDebug(dcTests()) << "Calling Authenticate with valid credentials" ;
     m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.Authenticate\", \"params\": {\"username\": \"dummy@guh.io\", \"password\": \"DummyPW1!\", \"deviceName\": \"testcase\"}}\n");
     if (spy.count() == 0) {
         spy.wait();
@@ -493,7 +501,6 @@ void TestJSONRPC::testRevokeToken()
     QVERIFY(spy.count() == 1);
     jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
     response = jsonDoc.toVariant().toMap();
-    qCDebug(dcTests()) << "Calling Authenticate with valid credentials:" << response.value("params").toMap().value("success").toString() << response.value("params").toMap().value("token").toString();
     QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
     QCOMPARE(response.value("params").toMap().value("success").toBool(), true);
     QByteArray newToken = response.value("params").toMap().value("token").toByteArray();
@@ -513,14 +520,14 @@ void TestJSONRPC::testRevokeToken()
 
     // Now get all the tokens using the old token
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.Tokens\"}\n");
+    qCDebug(dcTests()) << "Calling Tokens";
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"Users.GetTokens\"}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
     QVERIFY(spy.count() == 1);
     jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
     response = jsonDoc.toVariant().toMap();
-    qCDebug(dcTests()) << "Calling Tokens" << response.value("status").toString();
     QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
     tokenList = response.value("params").toMap().value("tokenInfoList").toList();
     QCOMPARE(tokenList.count(), 2);
@@ -536,19 +543,20 @@ void TestJSONRPC::testRevokeToken()
 
     // Revoke the new token
     spy.clear();
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"JSONRPC.RemoveToken\", \"params\": {\"tokenId\": \"" + newTokenId.toByteArray() + "\"}}\n");
+    qCDebug(dcTests()) << "Calling RemoveToken";
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 123, \"token\": \"" + m_apiToken + "\", \"method\": \"Users.RemoveToken\", \"params\": {\"tokenId\": \"" + newTokenId.toByteArray() + "\"}}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
     QVERIFY(spy.count() == 1);
     jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
     response = jsonDoc.toVariant().toMap();
-    qCDebug(dcTests()) << "Calling RemoveToken" << response.value("status").toString() << response;
     QCOMPARE(response.value("status").toString(), QStringLiteral("success"));
 
     // Do a call with the now removed token, it should be forbidden
     spy.clear();
     disconnectedSpy.clear();
+    qCDebug(dcTests()) << "Calling Version with now removed token";
     m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"token\": \"" + newToken + "\", \"method\": \"JSONRPC.Version\"}\n");
     if (spy.count() == 0) {
         spy.wait();
@@ -556,18 +564,16 @@ void TestJSONRPC::testRevokeToken()
     QVERIFY(spy.count() == 1);
     jsonDoc = QJsonDocument::fromJson(spy.first().at(1).toByteArray());
     response = jsonDoc.toVariant().toMap();
-    qCDebug(dcTests()) << "Calling Version with valid token:" << response.value("status").toString() << response.value("error").toString();
     QCOMPARE(response.value("status").toString(), QStringLiteral("unauthorized"));
 
     // And connection should drop
     if (disconnectedSpy.count() == 0) disconnectedSpy.wait();
     QCOMPARE(disconnectedSpy.count(), 1);
 
+    QTest::qWait(3200);
+
     // Connect again to not impact subsequent tests...
-    connectedSpy.clear();
     emit m_mockTcpServer->clientConnected(m_clientId);
-    if (connectedSpy.count() == 0) connectedSpy.wait();
-    QCOMPARE(connectedSpy.count(), 1);
     injectAndWait("JSONRPC.Hello");
 }
 
@@ -674,7 +680,7 @@ void TestJSONRPC::enableDisableNotifications_legacy()
 
     QStringList expectedNamespaces;
     if (enabled == "true") {
-        expectedNamespaces << "Actions" << "NetworkManager" << "Devices" << "Integrations" << "System" << "Rules" << "States" << "Logging" << "Tags" << "AppData" << "JSONRPC" << "Configuration" << "Events" << "Scripts" << "Users" << "Zigbee" << "ModbusRtu";
+        expectedNamespaces << "NetworkManager" << "Integrations" << "System" << "Rules"<< "Logging" << "Tags" << "AppData" << "JSONRPC" << "Configuration" << "Scripts" << "Users" << "Zigbee" << "ModbusRtu";
     }
     std::sort(expectedNamespaces.begin(), expectedNamespaces.end());
 
@@ -700,7 +706,6 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("thingId", m_mockThingId);
-    stateDescriptor.insert("deviceId", m_mockThingId); // DEPRECATED
     stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorLess));
     stateDescriptor.insert("value", "20");
     // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
@@ -715,7 +720,6 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QVariantMap actionNoParams;
     actionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     actionNoParams.insert("thingId", m_mockThingId);
-    actionNoParams.insert("deviceId", m_mockThingId); // DEPRECATED
     // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
     // .toString(QUuid::WithoutBraces) has only been added in 5.11 so we can't use that either...
     // Only hack I can come up with right now is to convert it to a Json and back to use the implicit cast
@@ -725,7 +729,6 @@ void TestJSONRPC::ruleAddedRemovedNotifications()
     QVariantMap eventDescriptor;
     eventDescriptor.insert("eventTypeId", mockEvent1EventTypeId);
     eventDescriptor.insert("thingId", m_mockThingId);
-    eventDescriptor.insert("deviceId", m_mockThingId); // DEPRECATED
     // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
     // .toString(QUuid::WithoutBraces) has only been added in 5.11 so we can't use that either...
     // Only hack I can come up with right now is to convert it to a Json and back to use the implicit cast
@@ -789,7 +792,6 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QVariantMap stateDescriptor;
     stateDescriptor.insert("stateTypeId", mockIntStateTypeId);
     stateDescriptor.insert("thingId", m_mockThingId);
-    stateDescriptor.insert("deviceId", m_mockThingId); // DEPRECATED
     stateDescriptor.insert("operator", enumValueName(Types::ValueOperatorEquals));
     stateDescriptor.insert("value", "20");
     // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
@@ -804,7 +806,6 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     QVariantMap actionNoParams;
     actionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     actionNoParams.insert("thingId", m_mockThingId);
-    actionNoParams.insert("deviceId", m_mockThingId); // DEPRECATED
     // This is a bit odd: QUuid.toString() wraps the uuids in {}, however, the implicit cast doesn't
     // .toString(QUuid::WithoutBraces) has only been added in 5.11 so we can't use that either...
     // Only hack I can come up with right now is to convert it to a Json and back to use the implicit cast
@@ -855,21 +856,18 @@ void TestJSONRPC::ruleActiveChangedNotifications()
     spy.clear(); clientSpy.clear();
 
     // set the rule inactive
-    qDebug() << "setting mock int state to 42";
+    qCDebug(dcTests) << "setting mock int state to 42";
     QNetworkRequest request2(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(m_mockThing1Port).arg(mockIntStateTypeId.toString()).arg(42)));
     QNetworkReply *reply2 = nam.get(request2);
     connect(reply2, SIGNAL(finished()), reply2, SLOT(deleteLater()));
 
     // Waiting for notifications:
-    // Devices.StateChanged for the change we did
-    // Devices.EventTriggered
-    // Events.EventTriggered <-- deprecated
+    // Integrations.StateChanged for the change we did
+    // Integrations.EventTriggered
     // Rules.RuleActiveChanged
-    // Logging.LogEntryAdded
-    // Devices.StateChanged for the change done by the rule
-    // Devices.EventTriggered
-    // Events.EventTriggered <-- deprecated
-    while (clientSpy.count() < 8) {
+    // Logging.LogEntryAdded // One for the state change we did
+    // Logging.LogEntryAdded // One for the rule state change
+    while (clientSpy.count() < 5) {
         clientSpy.wait();
     }
 
@@ -894,7 +892,7 @@ void TestJSONRPC::ruleActiveChangedNotifications()
 
 void TestJSONRPC::stateChangeEmitsNotifications()
 {
-    enableNotifications({"Devices", "States", "Logging", "Events"});
+    enableNotifications({"Integrations", "Logging"});
     bool found = false;
 
     // Setup connection to mock client
@@ -911,9 +909,9 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     if (replySpy.count() == 0) replySpy.wait();
 
     // Make sure the notification contains all the stuff we expect
-    QVariantList stateChangedVariants = checkNotifications(clientSpy, "Devices.StateChanged");
-    QVERIFY2(!stateChangedVariants.isEmpty(), "Did not get Devices.StateChanged notification.");
-    qDebug() << "got" << stateChangedVariants.count() << "Devices.StateChanged notifications";
+    QVariantList stateChangedVariants = checkNotifications(clientSpy, "Integrations.StateChanged");
+    QVERIFY2(!stateChangedVariants.isEmpty(), "Did not get Integrations.StateChanged notification.");
+    qDebug() << "got" << stateChangedVariants.count() << "Integrations.StateChanged notifications";
     foreach (const QVariant &stateChangedVariant, stateChangedVariants) {
         if (stateChangedVariant.toMap().value("params").toMap().value("stateTypeId").toUuid() == stateTypeId) {
             found = true;
@@ -933,8 +931,8 @@ void TestJSONRPC::stateChangeEmitsNotifications()
     }
 
     // Make sure the notification contains all the stuff we expect
-    QVariantList eventTriggeredVariants = checkNotifications(clientSpy, "Events.EventTriggered");
-    QVERIFY2(!eventTriggeredVariants.isEmpty(), "Did not get Events.EventTriggered notification.");
+    QVariantList eventTriggeredVariants = checkNotifications(clientSpy, "Integrations.EventTriggered");
+    QVERIFY2(!eventTriggeredVariants.isEmpty(), "Did not get Integrations.EventTriggered notification.");
     found = false;
     foreach (const QVariant &eventTriggeredVariant, eventTriggeredVariants) {
         if (eventTriggeredVariant.toMap().value("params").toMap().value("event").toMap().value("eventTypeId").toUuid() == stateTypeId) {
@@ -944,7 +942,7 @@ void TestJSONRPC::stateChangeEmitsNotifications()
         }
     }
 
-    QVERIFY2(found, "Could not find the corresponding Events.EventTriggered notification");
+    QVERIFY2(found, "Could not find the corresponding Integrations.EventTriggered notification");
 
     // Now turn off notifications
     QCOMPARE(disableNotifications(), true);
@@ -1185,8 +1183,8 @@ void TestJSONRPC::testPushButtonAuthConnectionDrop()
 
 void TestJSONRPC::testInitialSetupWithPushButtonAuth()
 {
-    foreach (const QString &user, NymeaCore::instance()->userManager()->users()) {
-        NymeaCore::instance()->userManager()->removeUser(user);
+    foreach (const UserInfo &userInfo, NymeaCore::instance()->userManager()->users()) {
+        NymeaCore::instance()->userManager()->removeUser(userInfo.username());
     }
     NymeaCore::instance()->userManager()->removeUser("");
     QVERIFY(NymeaCore::instance()->userManager()->initRequired());
@@ -1256,11 +1254,11 @@ void TestJSONRPC::testInitialSetupWithPushButtonAuth()
     QCOMPARE(response.toMap().value("params").toMap().value("initialSetupRequired").toBool(), false);
 
 
-    // CreateUser without a token should fail now even though there are 0 users in the DB
+    // CreateUser without a token should fail now that there is the push button generated user
     spy.clear();
     QSignalSpy disconnectedSpy(m_mockTcpServer, &MockTcpServer::clientDisconnected);
-    qCDebug(dcTests()) << "Calling CreateUser on uninitialized instance";
-    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"Dummy@guh.io\", \"password\": \"DummyPW1!\"}}\n");
+    qCDebug(dcTests()) << "Calling CreateUser on pushbutton initialized instance";
+    m_mockTcpServer->injectData(m_clientId, "{\"id\": 555, \"method\": \"JSONRPC.CreateUser\", \"params\": {\"username\": \"nymea\", \"password\": \"DummyPW1!\"}}\n");
     if (spy.count() == 0) {
         spy.wait();
     }
@@ -1269,11 +1267,13 @@ void TestJSONRPC::testInitialSetupWithPushButtonAuth()
     response = jsonDoc.toVariant();
     qCDebug(dcTests()) << "Result:" << response.toMap().value("status").toString() << response.toMap().value("error").toString();
     QCOMPARE(response.toMap().value("status").toString(), QStringLiteral("unauthorized"));
-    QCOMPARE(NymeaCore::instance()->userManager()->users().count(), 0);
+    QCOMPARE(NymeaCore::instance()->userManager()->users().count(), 1);
 
     // Connection should drop
     if (disconnectedSpy.isEmpty()) disconnectedSpy.wait();
     QCOMPARE(disconnectedSpy.count(), 1);
+
+    QTest::qWait(3200);
 
     // Reconnect to not impact subsequent tests
     m_mockTcpServer->clientConnected(m_clientId);

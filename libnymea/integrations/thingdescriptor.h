@@ -45,7 +45,6 @@ class LIBNYMEA_EXPORT ThingDescriptor
     Q_PROPERTY(QUuid thingId READ thingId USER true)
     Q_PROPERTY(QString title READ title)
     Q_PROPERTY(QString description READ description)
-    Q_PROPERTY(ParamList deviceParams READ params REVISION 1) // Had been forgotten in the device->thing transition.
     Q_PROPERTY(ParamList params READ params)                  // added in 0.27
 
 public:

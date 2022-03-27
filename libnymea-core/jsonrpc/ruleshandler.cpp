@@ -107,7 +107,7 @@ RulesHandler::RulesHandler(QObject *parent) :
     description = "Get the descriptions of all configured rules. If you need more information about a specific rule use the "
                    "method Rules.GetRuleDetails.";
     returns.insert("ruleDescriptions", QVariantList() << objectRef("RuleDescription"));
-    registerMethod("GetRules", description, params, returns);
+    registerMethod("GetRules", description, params, returns, Types::PermissionScopeConfigureRules);
 
     params.clear(); returns.clear();
     description = "Get details for the rule identified by ruleId";
@@ -166,8 +166,7 @@ RulesHandler::RulesHandler(QObject *parent) :
 
     params.clear(); returns.clear();
     description = "Find a list of rules containing any of the given parameters.";
-    params.insert("o:thingId", enumValueName(Uuid)); // TODO: remove "o:" from thingId once we drop deviceId support
-    params.insert("d:o:deviceId", enumValueName(Uuid));
+    params.insert("thingId", enumValueName(Uuid));
     returns.insert("ruleIds", QVariantList() << enumValueName(Uuid));
     registerMethod("FindRules", description, params, returns);
 
@@ -301,10 +300,7 @@ JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
 
 JsonReply *RulesHandler::FindRules(const QVariantMap &params)
 {
-    ThingId thingId = ThingId(params.value("deviceId").toString()); // DEPRECATED
-    if (params.contains("thingId")) {
-        thingId = ThingId(params.value("thingId").toString());
-    }
+    ThingId thingId = ThingId(params.value("thingId").toString());
     QList<RuleId> rules = NymeaCore::instance()->ruleEngine()->findRules(thingId);
 
     QVariantList rulesList;

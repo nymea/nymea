@@ -121,9 +121,7 @@ TestUsermanager::TestUsermanager(QObject *parent): NymeaTestBase(parent)
 void TestUsermanager::initTestCase()
 {
     NymeaDBusService::setBusType(QDBusConnection::SessionBus);
-    NymeaTestBase::initTestCase();
-
-    QLoggingCategory::setFilterRules("*.debug=false\n"
+    NymeaTestBase::initTestCase("*.debug=false\n"
                                      "Application.debug=true\n"
                                      "Tests.debug=true\n"
                                      "UserManager.debug=true\n"
@@ -134,12 +132,11 @@ void TestUsermanager::initTestCase()
 void TestUsermanager::init()
 {
     UserManager *userManager = NymeaCore::instance()->userManager();
-    foreach (const QString &user, userManager->users()) {
-        qCDebug(dcTests()) << "Removing user" << user;
-        userManager->removeUser(user);
+    foreach (const UserInfo &userInfo, userManager->users()) {
+        qCDebug(dcTests()) << "Removing user" << userInfo.username();
+        userManager->removeUser(userInfo.username());
     }
     userManager->removeUser("");
-
 }
 
 void TestUsermanager::loginValidation_data() {
@@ -151,12 +148,9 @@ void TestUsermanager::loginValidation_data() {
     QTest::newRow("foo@bar.co.uk,  Bla1234*, NoError")       << "foo@bar.co.uk"  << "Bla1234*" << UserManager::UserErrorNoError;
     QTest::newRow("foo@bar.com.au, Bla1234*, NoError")       << "foo@bar.com.au" << "Bla1234*" << UserManager::UserErrorNoError;
 
-    QTest::newRow("foo,         Bla1234*, InvalidUserId") << "foo"         << "Bla1234*" << UserManager::UserErrorInvalidUserId;
-    QTest::newRow("@,           Bla1234*, InvalidUserId") << "@"           << "Bla1234*" << UserManager::UserErrorInvalidUserId;
-    QTest::newRow("foo@,        Bla1234*, InvalidUserId") << "foo@"        << "Bla1234*" << UserManager::UserErrorInvalidUserId;
-    QTest::newRow("foo@bar,     Bla1234*, InvalidUserId") << "foo@bar"     << "Bla1234*" << UserManager::UserErrorInvalidUserId;
-    QTest::newRow("foo@bar.,    Bla1234*, InvalidUserId") << "foo@bar."    << "Bla1234*" << UserManager::UserErrorInvalidUserId;
-    QTest::newRow("foo@bar.co.uk.au, Bla1234*, InvalidUserId") << "foo@bar.co.uk.au"    << "Bla1234*" << UserManager::UserErrorInvalidUserId;
+    QTest::newRow("n,              Bla1234*, InvalidUserId") << "n"              << "Bla1234*" << UserManager::UserErrorInvalidUserId;
+    QTest::newRow("@,              Bla1234*, InvalidUserId") << "@"              << "Bla1234*" << UserManager::UserErrorInvalidUserId;
+    QTest::newRow("nymea,          Bla1234*, InvalidUserId") << "nymea"          << "Bla1234*" << UserManager::UserErrorNoError;
 
     QTest::newRow("foo@bar.baz, a,        BadPassword") << "foo@bar.baz" << "a"        << UserManager::UserErrorBadPassword;
     QTest::newRow("foo@bar.baz, a1,       BadPassword") << "foo@bar.baz" << "a1"       << UserManager::UserErrorBadPassword;
@@ -184,10 +178,9 @@ void TestUsermanager::loginValidation()
     QFETCH(UserManager::UserError, expectedError);
 
     UserManager *userManager = NymeaCore::instance()->userManager();
-    UserManager::UserError error = userManager->createUser(username, password);
+    UserManager::UserError error = userManager->createUser(username, password, "", "", Types::PermissionScopeAdmin);
     qDebug() << "Error:" << error << "Expected:" << expectedError;
     QCOMPARE(error, expectedError);
-
 }
 
 void TestUsermanager::createUser()
@@ -195,7 +188,7 @@ void TestUsermanager::createUser()
     QVariantMap params;
     params.insert("username", "valid@user.test");
     params.insert("password", "Bla1234*");
-    QVariant response = injectAndWait("Users.CreateUser", params);
+    QVariant response = injectAndWait("JSONRPC.CreateUser", params);
 
     QVERIFY2(response.toMap().value("status").toString() == "success", "Error creating user");
     QVERIFY2(response.toMap().value("params").toMap().value("error").toString() == "UserErrorNoError", "Error creating user");
@@ -210,7 +203,7 @@ void TestUsermanager::authenticate()
     params.insert("username", "valid@user.test");
     params.insert("password", "Bla1234*");
     params.insert("deviceName", "autotests");
-    QVariant response = injectAndWait("Users.Authenticate", params);
+    QVariant response = injectAndWait("JSONRPC.Authenticate", params);
 
     m_apiToken = response.toMap().value("params").toMap().value("token").toByteArray();
 
@@ -225,7 +218,7 @@ void TestUsermanager::authenticatePushButton()
 
     QVariantMap params;
     params.insert("deviceName", "pbtestdevice");
-    QVariant response = injectAndWait("Users.RequestPushButtonAuth", params);
+    QVariant response = injectAndWait("JSONRPC.RequestPushButtonAuth", params);
     qCDebug(dcTests()) << "Pushbutton auth response:" << qUtf8Printable(QJsonDocument::fromVariant(response).toJson(QJsonDocument::Indented));
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
     int transactionId = response.toMap().value("params").toMap().value("transactionId").toInt();
@@ -236,7 +229,7 @@ void TestUsermanager::authenticatePushButton()
     pushButtonAgent.sendButtonPressed();
 
     if (clientSpy.count() == 0) clientSpy.wait();
-    QVariantMap rsp = checkNotification(clientSpy, "Users.PushButtonAuthFinished").toMap();
+    QVariantMap rsp = checkNotification(clientSpy, "JSONRPC.PushButtonAuthFinished").toMap();
 
     for (int i = 0; i < clientSpy.count(); i++) {
         qCDebug(dcTests()) << "Notification:" << clientSpy.at(i);
@@ -267,7 +260,7 @@ void TestUsermanager::authenticatePushButtonAuthInterrupt()
     // request push button auth for client 1 (alice) and check for OK reply
     QVariantMap params;
     params.insert("deviceName", "alice");
-    QVariant response = injectAndWait("Users.RequestPushButtonAuth", params, aliceId);
+    QVariant response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, aliceId);
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
     int transactionId1 = response.toMap().value("params").toMap().value("transactionId").toInt();
 
@@ -276,7 +269,7 @@ void TestUsermanager::authenticatePushButtonAuthInterrupt()
     clientSpy.clear();
     params.clear();
     params.insert("deviceName", "mallory");
-    response = injectAndWait("Users.RequestPushButtonAuth", params, malloryId);
+    response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, malloryId);
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
     int transactionId2 = response.toMap().value("params").toMap().value("transactionId").toInt();
 
@@ -292,7 +285,7 @@ void TestUsermanager::authenticatePushButtonAuthInterrupt()
     // alice should have received a failed notification. She knows something's wrong.
     QVariantMap notification = QJsonDocument::fromJson(clientSpy.first().at(1).toByteArray()).toVariant().toMap();
     QCOMPARE(clientSpy.first().first().toUuid(), aliceId);
-    QCOMPARE(notification.value("notification").toString(), QLatin1String("Users.PushButtonAuthFinished"));
+    QCOMPARE(notification.value("notification").toString(), QLatin1String("JSONRPC.PushButtonAuthFinished"));
     QCOMPARE(notification.value("params").toMap().value("transactionId").toInt(), transactionId1);
     QCOMPARE(notification.value("params").toMap().value("success").toBool(), false);
 
@@ -306,7 +299,7 @@ void TestUsermanager::authenticatePushButtonAuthInterrupt()
     clientSpy.clear();
     params.clear();
     params.insert("deviceName", "alice");
-    response = injectAndWait("Users.RequestPushButtonAuth", params, aliceId);
+    response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, aliceId);
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
     int transactionId3 = response.toMap().value("params").toMap().value("transactionId").toInt();
 
@@ -321,7 +314,7 @@ void TestUsermanager::authenticatePushButtonAuthInterrupt()
     // mallory should have received a failed notification. She knows something's wrong.
     notification = QJsonDocument::fromJson(clientSpy.first().at(1).toByteArray()).toVariant().toMap();
     QCOMPARE(clientSpy.first().first().toUuid(), malloryId);
-    QCOMPARE(notification.value("notification").toString(), QLatin1String("Users.PushButtonAuthFinished"));
+    QCOMPARE(notification.value("notification").toString(), QLatin1String("JSONRPC.PushButtonAuthFinished"));
     QCOMPARE(notification.value("params").toMap().value("transactionId").toInt(), transactionId2);
     QCOMPARE(notification.value("params").toMap().value("success").toBool(), false);
 
@@ -345,7 +338,7 @@ void TestUsermanager::authenticatePushButtonAuthInterrupt()
     QCOMPARE(clientSpy.count(), 1);
     notification = QJsonDocument::fromJson(clientSpy.first().at(1).toByteArray()).toVariant().toMap();
     QCOMPARE(clientSpy.first().first().toUuid(), aliceId);
-    QCOMPARE(notification.value("notification").toString(), QLatin1String("Users.PushButtonAuthFinished"));
+    QCOMPARE(notification.value("notification").toString(), QLatin1String("JSONRPC.PushButtonAuthFinished"));
     QCOMPARE(notification.value("params").toMap().value("transactionId").toInt(), transactionId3);
     QCOMPARE(notification.value("params").toMap().value("success").toBool(), true);
     QVERIFY2(!notification.value("params").toMap().value("token").toByteArray().isEmpty(), "Token is empty while it shouldn't be");
@@ -368,7 +361,7 @@ void TestUsermanager::authenticatePushButtonAuthConnectionDrop()
     // request push button auth for client 1 (alice) and check for OK reply
     QVariantMap params;
     params.insert("deviceName", "alice");
-    QVariant response = injectAndWait("Users.RequestPushButtonAuth", params, aliceId);
+    QVariant response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, aliceId);
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
 
     // Disconnect alice
@@ -385,7 +378,7 @@ void TestUsermanager::authenticatePushButtonAuthConnectionDrop()
     // request push button auth for client 2 (bob) and check for OK reply
     params.clear();
     params.insert("deviceName", "bob");
-    response = injectAndWait("Users.RequestPushButtonAuth", params, bobId);
+    response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, bobId);
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
     int transactionId = response.toMap().value("params").toMap().value("transactionId").toInt();
 
@@ -402,7 +395,7 @@ void TestUsermanager::authenticatePushButtonAuthConnectionDrop()
     QCOMPARE(clientSpy.count(), 1);
     QVariantMap notification = QJsonDocument::fromJson(clientSpy.first().at(1).toByteArray()).toVariant().toMap();
     QCOMPARE(clientSpy.first().first().toUuid(), bobId);
-    QCOMPARE(notification.value("notification").toString(), QLatin1String("Users.PushButtonAuthFinished"));
+    QCOMPARE(notification.value("notification").toString(), QLatin1String("JSONRPC.PushButtonAuthFinished"));
     QCOMPARE(notification.value("params").toMap().value("transactionId").toInt(), transactionId);
     QCOMPARE(notification.value("params").toMap().value("success").toBool(), true);
     QVERIFY2(!notification.value("params").toMap().value("token").toByteArray().isEmpty(), "Token is empty while it shouldn't be");
@@ -469,7 +462,7 @@ void TestUsermanager::authenticateAfterPasswordChangeOK()
     params.insert("username", "valid@user.test");
     params.insert("password", "Blubb123"); // New password, should be ok
     params.insert("deviceName", "autotests");
-    QVariant response = injectAndWait("Users.Authenticate", params);
+    QVariant response = injectAndWait("JSONRPC.Authenticate", params);
 
     m_apiToken = response.toMap().value("params").toMap().value("token").toByteArray();
     QVERIFY2(!m_apiToken.isEmpty(), "Token should not be empty");
@@ -481,16 +474,27 @@ void TestUsermanager::authenticateAfterPasswordChangeFail()
 {
     changePassword();
 
+    QSignalSpy disconnectedSpy(m_mockTcpServer, &MockTcpServer::clientDisconnected);
+
     QVariantMap params;
     params.insert("username", "valid@user.test");
     params.insert("password", "Bla1234*"); // Original password, should not be ok
     params.insert("deviceName", "autotests");
-    QVariant response = injectAndWait("Users.Authenticate", params);
+    QVariant response = injectAndWait("JSONRPC.Authenticate", params);
 
     m_apiToken = response.toMap().value("params").toMap().value("token").toByteArray();
     QVERIFY2(m_apiToken.isEmpty(), "Token should be empty");
     QVERIFY2(response.toMap().value("status").toString() == "success", "Error authenticating");
     QCOMPARE(response.toMap().value("params").toMap().value("success").toString(), QString("false"));
+
+    // Connection should drop
+    if (disconnectedSpy.count() == 0) disconnectedSpy.wait();
+    QVERIFY2(disconnectedSpy.count() == 1, "Connection should have dropped");
+
+    QTest::qWait(3200);
+    m_mockTcpServer->clientConnected(m_clientId);
+    injectAndWait("JSONRPC.Hello");
+
 }
 
 void TestUsermanager::getUserInfo()
@@ -522,8 +526,9 @@ void TestUsermanager::unauthenticatedCallAfterTokenRemove()
     }
     QVERIFY2(spy.count() == 1, "Connection should be terminated!");
 
-    // need to restart as our connection dies
-    restartServer();
+    QTest::qWait(3200);
+    m_mockTcpServer->clientConnected(m_clientId);
+    injectAndWait("JSONRPC.Hello");
 }
 
 #include "testusermanager.moc"

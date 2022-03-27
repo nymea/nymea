@@ -116,6 +116,7 @@ void TcpServer::terminateClientConnection(const QUuid &clientId)
 {
     QTcpSocket *client = m_clientList.value(clientId);
     if (client) {
+        client->flush();
         client->close();
     }
 }

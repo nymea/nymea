@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2021, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,55 +28,43 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef EVENT_H
-#define EVENT_H
-
-#include "libnymea.h"
 #include "typeutils.h"
-#include "types/param.h"
 
-#include <QString>
-#include <QVariantList>
-#include <QDebug>
+#include <QMetaEnum>
 
-class LIBNYMEA_EXPORT Event
+QStringList Types::scopesToStringList(Types::PermissionScopes scopes)
 {
-    Q_GADGET
-    Q_PROPERTY(QUuid eventTypeId READ eventTypeId)
-    Q_PROPERTY(QUuid thingId READ thingId)
-    Q_PROPERTY(ParamList params READ params)
-public:
-    Event();
-    Event(const EventTypeId &eventTypeId, const ThingId &thingId, const ParamList &params = ParamList(), bool isStateChangeEvent = false);
+    QStringList ret;
+    QMetaEnum metaEnum = QMetaEnum::fromType<PermissionScope>();
+    for (int i = 0; i < metaEnum.keyCount(); i++) {
+        if (scopes.testFlag(static_cast<PermissionScope>(metaEnum.value(i)))) {
+            ret << metaEnum.key(i);
+        }
+    }
+    return ret;
+}
 
-    EventTypeId eventTypeId() const;
-    void setEventTypeId(const EventTypeId &eventTypeId);
+QString Types::scopeToString(Types::PermissionScope scope)
+{
+    QMetaEnum metaEnum = QMetaEnum::fromType<PermissionScope>();
+    return metaEnum.valueToKey(scope);
+}
 
-    ThingId thingId() const;
-    void setThingId(const ThingId &thingId);
+Types::PermissionScope Types::scopeFromString(const QString &scopeString)
+{
+    QMetaEnum metaEnum = QMetaEnum::fromType<PermissionScope>();
+    return static_cast<PermissionScope>(metaEnum.keyToValue(scopeString.toUtf8()));
+}
 
-    ParamList params() const;
-    void setParams(const ParamList &params);
-    Param param(const ParamTypeId &paramTypeId) const;
-    QVariant paramValue(const ParamTypeId &paramTypeId) const;
+Types::PermissionScopes Types::scopesFromStringList(const QStringList &scopeList)
+{
+    PermissionScopes ret;
+    QMetaEnum metaEnum = QMetaEnum::fromType<PermissionScopes>();
+    for (int i = 0; i < metaEnum.keyCount(); i++) {
+        if (scopeList.contains(metaEnum.key(i))) {
+            ret |= static_cast<PermissionScope>(metaEnum.value(i));
+        }
+    }
+    return ret;
+}
 
-    bool operator ==(const Event &other) const;
-
-    bool isStateChangeEvent() const;
-
-    bool logged() const;
-    void setLogged(bool logged);
-
-private:
-    EventTypeId m_eventTypeId;
-    ThingId m_thingId;
-    ParamList m_params;
-
-    bool m_isStateChangeEvent;
-    bool m_logged = false;
-};
-Q_DECLARE_METATYPE(Event)
-QDebug operator<<(QDebug dbg, const Event &event);
-QDebug operator<<(QDebug dbg, const QList<Event> &events);
-
-#endif // EVENT_H

@@ -57,12 +57,9 @@ QtMessageHandler ScriptEngine::s_upstreamMessageHandler;
 QLoggingCategory::CategoryFilter ScriptEngine::s_oldCategoryFilter = nullptr;
 QMutex ScriptEngine::s_loggerMutex;
 
-ScriptEngine::ScriptEngine(ThingManager *deviceManager, QObject *parent) : QObject(parent),
-    m_deviceManager(deviceManager)
+ScriptEngine::ScriptEngine(ThingManager *thingManager, QObject *parent) : QObject(parent),
+    m_thingManager(thingManager)
 {
-    qmlRegisterType<ScriptEvent>("nymea", 1, 0, "DeviceEvent");
-    qmlRegisterType<ScriptAction>("nymea", 1, 0, "DeviceAction");
-    qmlRegisterType<ScriptState>("nymea", 1, 0, "DeviceState");
     qmlRegisterType<ScriptEvent>("nymea", 1, 0, "ThingEvent");
     qmlRegisterType<ScriptAction>("nymea", 1, 0, "ThingAction");
     qmlRegisterType<ScriptState>("nymea", 1, 0, "ThingState");
@@ -71,7 +68,7 @@ ScriptEngine::ScriptEngine(ThingManager *deviceManager, QObject *parent) : QObje
     qmlRegisterType<ScriptAlarm>("nymea", 1, 0, "Alarm");
 
     m_engine = new QQmlEngine(this);
-    m_engine->setProperty("thingManager", reinterpret_cast<quint64>(m_deviceManager));
+    m_engine->setProperty("thingManager", reinterpret_cast<quint64>(m_thingManager));
 
     // Don't automatically print script warnings (that is, runtime errors, *not* console.warn() messages)
     // to stdout as they'd end up on the "default" logging category.

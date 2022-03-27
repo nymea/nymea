@@ -84,6 +84,8 @@ private slots:
 
     void storedThings();
 
+    void stateCache();
+
     void discoverThings_data();
     void discoverThings();
 
@@ -650,6 +652,74 @@ void TestIntegrations::storedThings()
     verifyThingError(response);
 }
 
+void TestIntegrations::stateCache()
+{
+    ThingClass mockThingClass = NymeaCore::instance()->thingManager()->findThingClass(mockThingClassId);
+
+    QVERIFY2(mockThingClass.getStateType(mockIntStateTypeId).cached(), "Mock int state is not cached (required to be true for this test)");
+    QVERIFY2(!mockThingClass.getStateType(mockBoolStateTypeId).cached(), "Mock bool state is cached (required to be false for this test)");
+
+    Thing* thing = NymeaCore::instance()->thingManager()->findConfiguredThings(mockThingClassId).first();
+    int port = thing->paramValue(mockThingHttpportParamTypeId).toInt();
+    QNetworkAccessManager nam;
+    QSignalSpy spy(&nam, SIGNAL(finished(QNetworkReply*)));
+
+
+    // First set the state values to something that is *not* the default
+    int oldIntValue = mockThingClass.getStateType(mockIntStateTypeId).defaultValue().toInt();
+    int newIntValue = oldIntValue + 1;
+    bool oldBoolValue = mockThingClass.getStateType(mockBoolStateTypeId).defaultValue().toBool();
+    bool newBoolValue = !oldBoolValue;
+
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockIntStateTypeId.toString()).arg(newIntValue)));
+    QNetworkReply *reply = nam.get(request);
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
+    spy.wait();
+
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockBoolStateTypeId.toString()).arg(newBoolValue)));
+    reply = nam.get(request);
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
+    spy.wait();
+
+    // For completeness, verify through JSONRPC that they were actually yet.
+    QVariantMap params;
+    params.insert("thingId", thing->id());
+
+    params["stateTypeId"] = mockIntStateTypeId;
+    QVariant response = injectAndWait("Integrations.GetStateValue", params);
+    QCOMPARE(response.toMap().value("params").toMap().value("value").toInt(), newIntValue);
+
+    params["stateTypeId"] = mockBoolStateTypeId;
+    response = injectAndWait("Integrations.GetStateValue", params);
+    QCOMPARE(response.toMap().value("params").toMap().value("value").toBool(), newBoolValue);
+
+    // Restart the server
+    restartServer();
+
+    // And check if the cached int state has successfully been restored
+    params["stateTypeId"] = mockIntStateTypeId;
+    response = injectAndWait("Integrations.GetStateValue", params);
+    QCOMPARE(response.toMap().value("params").toMap().value("value").toInt(), newIntValue);
+
+    // and that the non-cached bool state is back to its default
+    params["stateTypeId"] = mockBoolStateTypeId;
+    response = injectAndWait("Integrations.GetStateValue", params);
+    QCOMPARE(response.toMap().value("params").toMap().value("value").toBool(), mockThingClass.getStateType(mockBoolStateTypeId).defaultValue().toBool());
+
+    // Reset back to default values
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockBoolStateTypeId.toString()).arg(oldIntValue)));
+    reply = nam.get(request);
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
+    spy.wait();
+    spy.clear();
+    request = QNetworkRequest(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockBoolStateTypeId.toString()).arg(oldBoolValue)));
+    reply = nam.get(request);
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
+    spy.wait();
+}
+
 void TestIntegrations::discoverThings_data()
 {
     QTest::addColumn<ThingClassId>("thingClassId");
@@ -1011,6 +1081,7 @@ void TestIntegrations::getStateValue_data()
 
 void TestIntegrations::getStateValue()
 {
+    NymeaCore::instance()->thingManager()->findConfiguredThing(m_mockThingId)->setStateValue(mockIntStateTypeId, 10);
     QFETCH(ThingId, thingId);
     QFETCH(StateTypeId, stateTypeId);
     QFETCH(Thing::ThingError, statusCode);
@@ -2085,7 +2156,7 @@ void TestIntegrations::triggerStateChangeEvent()
 
     // trigger state changed event in mock device
     int port = thing->paramValue(mockThingHttpportParamTypeId).toInt();
-    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockIntStateTypeId.toString()).arg(11)));
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/setstate?%2=%3").arg(port).arg(mockIntStateTypeId.toString()).arg(37)));
     QNetworkReply *reply = nam.get(request);
     connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
 
@@ -2097,7 +2168,7 @@ void TestIntegrations::triggerStateChangeEvent()
         if (event.thingId() == thing->id()) {
             // Make sure the event contains all the stuff we expect
             QCOMPARE(event.eventTypeId().toString(), mockIntStateTypeId.toString());
-            QCOMPARE(event.param(ParamTypeId(mockIntStateTypeId.toString())).value().toInt(), 11);
+            QCOMPARE(event.param(ParamTypeId(mockIntStateTypeId.toString())).value().toInt(), 37);
         }
     }
 
@@ -2107,7 +2178,7 @@ void TestIntegrations::triggerStateChangeEvent()
     QVERIFY2(notifications.count() == 1, "Should get Integrations.EventTriggered notification");
     QVariantMap notificationContent = notifications.first().toMap().value("params").toMap();
 
-    QCOMPARE(notificationContent.value("event").toMap().value("deviceId").toUuid().toString(), thing->id().toString());
+    QCOMPARE(notificationContent.value("event").toMap().value("thingId").toUuid().toString(), thing->id().toString());
     QCOMPARE(notificationContent.value("event").toMap().value("eventTypeId").toUuid().toString(), mockIntEventTypeId.toString());
 
 }

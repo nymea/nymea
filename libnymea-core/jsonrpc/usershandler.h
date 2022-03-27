@@ -49,17 +49,18 @@ public:
 
     Q_INVOKABLE JsonReply *CreateUser(const QVariantMap &params);
     Q_INVOKABLE JsonReply *ChangePassword(const QVariantMap &params, const JsonContext &context);
-    Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *RequestPushButtonAuth(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *GetUserInfo(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *GetTokens(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *RemoveToken(const QVariantMap &params, const JsonContext &context);
+    Q_INVOKABLE JsonReply *GetUsers(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *RemoveUser(const QVariantMap &params, const JsonContext &context);
+    Q_INVOKABLE JsonReply *SetUserScopes(const QVariantMap &params, const JsonContext &context);
+    Q_INVOKABLE JsonReply *SetUserInfo(const QVariantMap &params, const JsonContext &context);
 
 signals:
-    void PushButtonAuthFinished(const QUuid &clientId, const QVariantMap &params);
-
-private slots:
-    void onPushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
+    void UserAdded(const QVariantMap &params);
+    void UserRemoved(const QVariantMap &params);
+    void UserChanged(const QVariantMap &params);
 
 private:
     UserManager *m_userManager = nullptr;

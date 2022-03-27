@@ -75,7 +75,7 @@ public:
         QByteArray content;
     };
 
-    explicit ScriptEngine(ThingManager *deviceManager, QObject *parent = nullptr);
+    explicit ScriptEngine(ThingManager *thingManager, QObject *parent = nullptr);
     ~ScriptEngine();
 
     Scripts scripts();
@@ -102,7 +102,7 @@ private:
 
     void onScriptMessage(QtMsgType type, const QMessageLogContext &context, const QString &message);
 private:
-    ThingManager *m_deviceManager = nullptr;
+    ThingManager *m_thingManager = nullptr;
     QQmlEngine *m_engine = nullptr;
 
     QHash<QUuid, Script*> m_scripts;

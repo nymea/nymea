@@ -231,16 +231,20 @@ QList<Rule> RuleEngine::evaluateTime(const QDateTime &dateTime)
 
     QList<Rule> rules;
 
+    qCDebug(dcRuleEngineDebug()) << "Evaluating time event" << dateTime.toString();
+
     foreach (const Rule &r, m_rules.values()) {
         Rule rule = m_rules.value(r.id());
         if (!rule.enabled()) {
-            qCDebug(dcRuleEngineDebug()) << "Skipping rule" + rule.name() + "because it is disabled";
+            qCDebug(dcRuleEngineDebug()) << "Skipping rule" << rule.name() << "because it is disabled";
             continue;
         }
 
         // If no timeDescriptor, do nothing
-        if (rule.timeDescriptor().isEmpty())
+        if (rule.timeDescriptor().isEmpty()) {
+            qCDebug(dcRuleEngineDebug()) << "Skipping rule" << rule.name() << "because it has not time descriptors";
             continue;
+        }
 
         // Check if this rule is based on calendarItems
         if (!rule.timeDescriptor().calendarItems().isEmpty()) {

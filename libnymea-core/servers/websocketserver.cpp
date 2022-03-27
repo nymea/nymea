@@ -240,7 +240,7 @@ bool WebSocketServer::stopServer()
 
     if (m_server) {
         m_server->close();
-        delete m_server;
+        m_server->deleteLater();
         m_server = nullptr;
     }
     return true;

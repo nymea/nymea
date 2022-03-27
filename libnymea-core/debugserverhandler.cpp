@@ -357,6 +357,9 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         m_pingProcess->start("ping", { "-c", "4", "nymea.io" } );
 
         m_pingReply = HttpReply::createAsyncReply();
+        connect(m_pingReply, &HttpReply::finished, this, [this](){
+            m_pingReply = nullptr;
+        });
         return m_pingReply;
     }
 
@@ -372,6 +375,9 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         m_digProcess->start("dig", { "nymea.io" } );
 
         m_digReply = HttpReply::createAsyncReply();
+        connect(m_digReply, &HttpReply::finished, this, [this](){
+            m_digReply = nullptr;
+        });
         return m_digReply;
     }
 
@@ -387,6 +393,9 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         m_tracePathProcess->start("tracepath", { "nymea.io" } );
 
         m_tracePathReply = HttpReply::createAsyncReply();
+        connect(m_tracePathReply, &HttpReply::finished, this, [this](){
+            m_tracePathReply = nullptr;
+        });
         return m_tracePathReply;
     }
 
@@ -662,10 +671,12 @@ void DebugServerHandler::onPingProcessFinished(int exitCode, QProcess::ExitStatu
     QByteArray processOutput = m_pingProcess->readAll();
     qCDebug(dcDebugServer()) << "Ping output:" << endl << qUtf8Printable(processOutput);
 
-    m_pingReply->setPayload(processOutput);
-    m_pingReply->setHttpStatusCode(HttpReply::Ok);
-    m_pingReply->finished();
-    m_pingReply = nullptr;
+    if (m_pingReply) {
+        m_pingReply->setPayload(processOutput);
+        m_pingReply->setHttpStatusCode(HttpReply::Ok);
+        m_pingReply->finished();
+        m_pingReply = nullptr;
+    }
 
     m_pingProcess->deleteLater();
     m_pingProcess = nullptr;
@@ -677,10 +688,12 @@ void DebugServerHandler::onDigProcessFinished(int exitCode, QProcess::ExitStatus
     QByteArray processOutput = m_digProcess->readAll();
     qCDebug(dcDebugServer()) << "Dig output:" << endl << qUtf8Printable(processOutput);
 
-    m_digReply->setPayload(processOutput);
-    m_digReply->setHttpStatusCode(HttpReply::Ok);
-    m_digReply->finished();
-    m_digReply = nullptr;
+    if (m_digReply) {
+        m_digReply->setPayload(processOutput);
+        m_digReply->setHttpStatusCode(HttpReply::Ok);
+        m_digReply->finished();
+        m_digReply = nullptr;
+    }
 
     m_digProcess->deleteLater();
     m_digProcess = nullptr;
@@ -692,10 +705,12 @@ void DebugServerHandler::onTracePathProcessFinished(int exitCode, QProcess::Exit
     QByteArray processOutput = m_tracePathProcess->readAll();
     qCDebug(dcDebugServer()) << "Tracepath output:" << endl << qUtf8Printable(processOutput);
 
-    m_tracePathReply->setPayload(processOutput);
-    m_tracePathReply->setHttpStatusCode(HttpReply::Ok);
-    m_tracePathReply->finished();
-    m_tracePathReply = nullptr;
+    if (m_tracePathReply) {
+        m_tracePathReply->setPayload(processOutput);
+        m_tracePathReply->setHttpStatusCode(HttpReply::Ok);
+        m_tracePathReply->finished();
+        m_tracePathReply = nullptr;
+    }
 
     m_tracePathProcess->deleteLater();
     m_tracePathProcess = nullptr;

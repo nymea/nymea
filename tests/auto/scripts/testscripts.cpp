@@ -72,6 +72,7 @@ private slots:
     void testScriptAlarm();
 
     void testInterfaceEvent();
+    void testInterfaceState();
     void testInterfaceAction();
 };
 
@@ -106,7 +107,7 @@ void TestScripts::testScriptEventById()
                             "            TestHelper.logEvent(thingId, eventTypeId, params);\n"
                             "        }\n"
                             "    }\n"
-                            "}\n").arg(m_mockThingId.toString()).arg(mockPowerEventTypeId.toString());
+                            "}\n").arg(m_mockThingId.toString()).arg(mockEvent2EventTypeId.toString());
 
     qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
     ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestEvent", script.toUtf8());
@@ -114,20 +115,30 @@ void TestScripts::testScriptEventById()
 
     QSignalSpy spy(TestHelper::instance(), &TestHelper::eventLogged);
 
-    // Generate event by setting state value of powerState
-    Action action(mockPowerActionTypeId, m_mockThingId);
-    action.setParams(ParamList() << Param(mockPowerActionPowerParamTypeId, true));
-    NymeaCore::instance()->thingManager()->executeAction(action);
+    // trigger event in mock device
+    Thing* thing = NymeaCore::instance()->thingManager()->findConfiguredThing(m_mockThingId);
+    int port = thing->paramValue(mockThingHttpportParamTypeId).toInt();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2&%3=%4")
+                                 .arg(port)
+                                 .arg(mockEvent2EventTypeId.toString())
+                                 .arg(mockEvent2EventIntParamParamTypeId.toString())
+                                 .arg(23)));
+    QNetworkAccessManager nam;
+    QNetworkReply *r = nam.get(request);
+    connect(r, &QNetworkReply::finished, r, &QNetworkReply::deleteLater);
 
-    spy.wait(1);
+    spy.wait();
 
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.first().at(0).value<ThingId>(), m_mockThingId);
-    QCOMPARE(EventTypeId(spy.first().at(1).toUuid()), mockPowerEventTypeId);
+    QCOMPARE(EventTypeId(spy.first().at(1).toUuid()), mockEvent2EventTypeId);
     QVariantMap expectedParams;
-    expectedParams.insert(mockPowerEventTypeId.toString().remove(QRegExp("[{}]")), true);
-    expectedParams.insert("power", true);
-    QCOMPARE(spy.first().at(2).toMap(), expectedParams);
+    expectedParams.insert(mockEvent2EventIntParamParamTypeId.toString().remove(QRegExp("[{}]")), 23);
+    expectedParams.insert("intParam", 23);
+    QVERIFY2(spy.first().at(2).toMap() == expectedParams, QString("Params not matching.\nExpected: %1\nGot: %2")
+             .arg(QString(QJsonDocument::fromVariant(expectedParams).toJson(QJsonDocument::Indented)))
+             .arg(QString(QJsonDocument::fromVariant(spy.first().at(2).toMap()).toJson(QJsonDocument::Indented)))
+             .toUtf8());
 }
 
 void TestScripts::testScriptEventByName()
@@ -142,7 +153,7 @@ void TestScripts::testScriptEventByName()
                             "            TestHelper.logEvent(thingId, eventName, params);\n"
                             "        }\n"
                             "    }\n"
-                            "}\n").arg(m_mockThingId.toString()).arg("power");
+                            "}\n").arg(m_mockThingId.toString()).arg("event2");
 
     qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
     ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestEvent", script.toUtf8());
@@ -150,19 +161,26 @@ void TestScripts::testScriptEventByName()
 
     QSignalSpy spy(TestHelper::instance(), &TestHelper::eventLogged);
 
-    // Generate event by setting state value of powerState
-    Action action(mockPowerActionTypeId, m_mockThingId);
-    action.setParams(ParamList() << Param(mockPowerActionPowerParamTypeId, true));
-    NymeaCore::instance()->thingManager()->executeAction(action);
+    // trigger event in mock device
+    Thing* thing = NymeaCore::instance()->thingManager()->findConfiguredThing(m_mockThingId);
+    int port = thing->paramValue(mockThingHttpportParamTypeId).toInt();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2&%3=%4")
+                                 .arg(port)
+                                 .arg(mockEvent2EventTypeId.toString())
+                                 .arg(mockEvent2EventIntParamParamTypeId.toString())
+                                 .arg(10)));
+    QNetworkAccessManager nam;
+    QNetworkReply *r = nam.get(request);
+    connect(r, &QNetworkReply::finished, r, &QNetworkReply::deleteLater);
 
-    spy.wait(1);
+    spy.wait();
 
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.first().at(0).value<ThingId>(), m_mockThingId);
-    QCOMPARE(spy.first().at(1).toString(), QString("power"));
+    QCOMPARE(spy.first().at(1).toString(), QString("event2"));
     QVariantMap expectedParams;
-    expectedParams.insert(mockPowerEventTypeId.toString().remove(QRegExp("[{}]")), true);
-    expectedParams.insert("power", true);
+    expectedParams.insert(mockEvent2EventIntParamParamTypeId.toString().remove(QRegExp("[{}]")), 10);
+    expectedParams.insert("intParam", 10);
     QCOMPARE(spy.first().at(2).toMap(), expectedParams);
 }
 
@@ -398,13 +416,57 @@ void TestScripts::testInterfaceEvent()
                             "            TestHelper.logEvent(thingId, eventName, params);\n"
                             "        }\n"
                             "    }\n"
-                            "}\n").arg("power").arg("power");
+                            "}\n").arg("button").arg("pressed");
 
     qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
     ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestEvent", script.toUtf8());
     QCOMPARE(reply.scriptError, ScriptEngine::ScriptErrorNoError);
 
     QSignalSpy spy(TestHelper::instance(), &TestHelper::eventLogged);
+
+    // trigger event in mock device
+    Thing* thing = NymeaCore::instance()->thingManager()->findConfiguredThing(m_mockThingId);
+    int port = thing->paramValue(mockThingHttpportParamTypeId).toInt();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2&%3=%4")
+                                 .arg(port)
+                                 .arg(mockPressedEventTypeId.toString())
+                                 .arg(mockPressedEventButtonNameParamTypeId.toString())
+                                 .arg("xxx")));
+    QNetworkAccessManager nam;
+    QNetworkReply *r = nam.get(request);
+    connect(r, &QNetworkReply::finished, r, &QNetworkReply::deleteLater);
+
+    spy.wait();
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.first().at(0).value<ThingId>(), m_mockThingId);
+    QCOMPARE(spy.first().at(1).toString(), QString("pressed"));
+    QVariantMap expectedParams;
+    expectedParams.insert(mockPressedEventButtonNameParamTypeId.toString().remove(QRegExp("[{}]")), "xxx");
+    expectedParams.insert("buttonName", "xxx");
+    QCOMPARE(spy.first().at(2).toMap(), expectedParams);
+
+}
+
+void TestScripts::testInterfaceState()
+{
+    QString script = QString("import QtQuick 2.0\n"
+                            "import nymea 1.0\n"
+                            "Item {\n"
+                            "    InterfaceState {\n"
+                            "        interfaceName: \"%1\"\n"
+                            "        stateName: \"%2\"\n"
+                            "        onStateChanged: {\n"
+                            "            TestHelper.logStateChange(thingId, stateName, value);\n"
+                            "        }\n"
+                            "    }\n"
+                            "}\n").arg("power").arg("power");
+
+    qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
+    ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestInterfaceState", script.toUtf8());
+    QCOMPARE(reply.scriptError, ScriptEngine::ScriptErrorNoError);
+
+    QSignalSpy spy(TestHelper::instance(), &TestHelper::stateChangeLogged);
 
     // Generate event by setting state value of powerState
     Action action(mockPowerActionTypeId, m_mockThingId);
@@ -416,11 +478,7 @@ void TestScripts::testInterfaceEvent()
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.first().at(0).value<ThingId>(), m_mockThingId);
     QCOMPARE(spy.first().at(1).toString(), QString("power"));
-    QVariantMap expectedParams;
-    expectedParams.insert(mockPowerEventTypeId.toString().remove(QRegExp("[{}]")), true);
-    expectedParams.insert("power", true);
-    QCOMPARE(spy.first().at(2).toMap(), expectedParams);
-
+    QCOMPARE(spy.first().at(2).toBool(), true);
 }
 
 void TestScripts::testInterfaceAction()

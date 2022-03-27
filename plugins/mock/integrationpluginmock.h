@@ -69,7 +69,7 @@ public slots:
 
 private slots:
     void setState(const StateTypeId &stateTypeId, const QVariant &value);
-    void triggerEvent(const EventTypeId &id);
+    void triggerEvent(const EventTypeId &id, const ParamList &params);
     void onDisappear();
     void onReconfigureAutoDevice();
     void generateDiscoveredDevices(ThingDiscoveryInfo *info);

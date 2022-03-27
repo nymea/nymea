@@ -1039,6 +1039,18 @@
                 "thingError": "$ref:ThingError"
             }
         },
+        "Integrations.SetStateLogging": {
+            "description": "Enable/disable logging for the given state type on the given thing.",
+            "params": {
+                "enabled": "Bool",
+                "stateTypeId": "Uuid",
+                "thingId": "Uuid"
+            },
+            "permissionScope": "PermissionScopeConfigureThings",
+            "returns": {
+                "thingError": "$ref:ThingError"
+            }
+        },
         "Integrations.SetThingSettings": {
             "description": "Change the settings of a thing.",
             "params": {
@@ -2798,6 +2810,9 @@
             "o:settings": "$ref:ParamList",
             "r:id": "Uuid",
             "r:o:loggedEventTypeIds": [
+                "Uuid"
+            ],
+            "r:o:loggedStateTypeIds": [
                 "Uuid"
             ],
             "r:o:parentId": "Uuid",

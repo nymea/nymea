@@ -86,6 +86,7 @@ public slots:
 
 private slots:
     void logEvent(const Event &event);
+    void logStateChange(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value);
     void logAction(const Action &action, Thing::ThingError status);
 
 signals:

@@ -584,6 +584,11 @@ State Thing::state(const QString &stateName) const
     return state(stateTypeId);
 }
 
+QList<StateTypeId> Thing::loggedStateTypeIds() const
+{
+    return m_loggedStateTypeIds;
+}
+
 QList<EventTypeId> Thing::loggedEventTypeIds() const
 {
     return m_loggedEventTypeIds;
@@ -653,6 +658,11 @@ void Thing::setSetupStatus(Thing::ThingSetupStatus status, Thing::ThingError set
     m_setupError = setupError;
     m_setupDisplayMessage = displayMessage;
     emit setupStatusChanged();
+}
+
+void Thing::setLoggedStateTypeIds(const QList<StateTypeId> loggedStateTypeIds)
+{
+    m_loggedStateTypeIds = loggedStateTypeIds;
 }
 
 void Thing::setLoggedEventTypeIds(const QList<EventTypeId> loggedEventTypeIds)

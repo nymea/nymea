@@ -47,7 +47,7 @@ class LIBNYMEA_EXPORT Event
     Q_PROPERTY(ParamList params READ params)
 public:
     Event();
-    Event(const EventTypeId &eventTypeId, const ThingId &thingId, const ParamList &params = ParamList(), bool isStateChangeEvent = false);
+    Event(const EventTypeId &eventTypeId, const ThingId &thingId, const ParamList &params = ParamList());
 
     EventTypeId eventTypeId() const;
     void setEventTypeId(const EventTypeId &eventTypeId);
@@ -62,8 +62,6 @@ public:
 
     bool operator ==(const Event &other) const;
 
-    bool isStateChangeEvent() const;
-
     bool logged() const;
     void setLogged(bool logged);
 
@@ -72,7 +70,6 @@ private:
     ThingId m_thingId;
     ParamList m_params;
 
-    bool m_isStateChangeEvent;
     bool m_logged = false;
 };
 Q_DECLARE_METATYPE(Event)

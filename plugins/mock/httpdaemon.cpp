@@ -107,7 +107,16 @@ void HttpDaemon::readClient()
             qCDebug(dcMock()) << "Setting state value" << stateValue;
             emit setState(stateTypeId, stateValue);
         } else if (url.path() == "/generateevent") {
-            emit triggerEvent(EventTypeId(query.queryItemValue("eventtypeid")));
+            qCDebug(dcMock()) << "Generate event called" << url.query();
+            QList<QPair<QString, QString>> queryItems = query.queryItems();
+            ParamList params;
+            for (int i = 0; i < queryItems.count(); i++) {
+                QPair<QString, QString> item = queryItems.at(i);
+                if (item.first != "eventtypeid") {
+                    params.append(Param(ParamTypeId(item.first), item.second));
+                }
+            }
+            emit triggerEvent(EventTypeId(query.queryItemValue("eventtypeid")), params);
         } else if (url.path() == "/actionhistory") {
             qCDebug(dcMock()) << "Get action history called";
 

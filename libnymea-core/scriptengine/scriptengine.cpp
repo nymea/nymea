@@ -36,6 +36,7 @@
 #include "scriptstate.h"
 #include "scriptalarm.h"
 #include "scriptinterfaceaction.h"
+#include "scriptinterfacestate.h"
 #include "scriptinterfaceevent.h"
 
 #include "nymeasettings.h"
@@ -64,6 +65,7 @@ ScriptEngine::ScriptEngine(ThingManager *thingManager, QObject *parent) : QObjec
     qmlRegisterType<ScriptAction>("nymea", 1, 0, "ThingAction");
     qmlRegisterType<ScriptState>("nymea", 1, 0, "ThingState");
     qmlRegisterType<ScriptInterfaceAction>("nymea", 1, 0, "InterfaceAction");
+    qmlRegisterType<ScriptInterfaceState>("nymea", 1, 0, "InterfaceState");
     qmlRegisterType<ScriptInterfaceEvent>("nymea", 1, 0, "InterfaceEvent");
     qmlRegisterType<ScriptAlarm>("nymea", 1, 0, "Alarm");
 

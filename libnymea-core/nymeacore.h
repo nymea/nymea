@@ -120,7 +120,7 @@ signals:
 
     void pluginConfigChanged(const PluginId &id, const ParamList &config);
     void eventTriggered(const Event &event);
-    void thingStateChanged(Thing *thing, const QUuid &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
+    void thingStateChanged(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
     void thingRemoved(const ThingId &thingId);
     void thingAdded(Thing *thing);
     void thingChanged(Thing *thing);
@@ -160,7 +160,9 @@ private:
     QList<RuleId> m_executingRules;
 
 private slots:
-    void gotEvent(const Event &event);
+    void onEventTriggered(const Event &event);
+    void onThingStateChanged(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
+    void evaluateRules(const Event &event);
     void onDateTimeChanged(const QDateTime &dateTime);
     void onThingDisappeared(const ThingId &thingId);
     void thingManagerLoaded();

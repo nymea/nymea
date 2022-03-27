@@ -81,6 +81,7 @@ public:
     virtual Thing::ThingError editThing(const ThingId &thingId, const QString &name) = 0;
     virtual Thing::ThingError setThingSettings(const ThingId &thingId, const ParamList &settings) = 0;
 
+    virtual Thing::ThingError setStateLogging(const ThingId &thingId, const StateTypeId &stateTypeId, bool enabled) = 0;
     virtual Thing::ThingError setEventLogging(const ThingId &thingId, const EventTypeId &eventTypeId, bool enabled) = 0;
     virtual Thing::ThingError setStateFilter(const ThingId &thingId, const StateTypeId &stateTypeId, Types::StateValueFilter filter) = 0;
 

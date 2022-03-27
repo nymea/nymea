@@ -88,6 +88,7 @@ HEADERS += nymeacore.h \
     scriptengine/scriptevent.h \
     scriptengine/scriptinterfaceaction.h \
     scriptengine/scriptinterfaceevent.h \
+    scriptengine/scriptinterfacestate.h \
     scriptengine/scriptstate.h \
     transportinterface.h \
     nymeaconfiguration.h \
@@ -180,6 +181,7 @@ SOURCES += nymeacore.cpp \
     scriptengine/scriptevent.cpp \
     scriptengine/scriptinterfaceaction.cpp \
     scriptengine/scriptinterfaceevent.cpp \
+    scriptengine/scriptinterfacestate.cpp \
     scriptengine/scriptstate.cpp \
     transportinterface.cpp \
     nymeaconfiguration.cpp \

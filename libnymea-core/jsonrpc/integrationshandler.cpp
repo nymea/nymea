@@ -243,6 +243,14 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     registerMethod("SetThingSettings", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
+    description = "Enable/disable logging for the given state type on the given thing.";
+    params.insert("thingId", enumValueName(Uuid));
+    params.insert("stateTypeId", enumValueName(Uuid));
+    params.insert("enabled", enumValueName(Bool));
+    returns.insert("thingError", enumRef<Thing::ThingError>());
+    registerMethod("SetStateLogging", description, params, returns, Types::PermissionScopeConfigureThings);
+
+    params.clear(); returns.clear();
     description = "Enable/disable logging for the given event type on the given thing.";
     params.insert("thingId", enumValueName(Uuid));
     params.insert("eventTypeId", enumValueName(Uuid));
@@ -854,6 +862,15 @@ JsonReply *IntegrationsHandler::SetThingSettings(const QVariantMap &params)
     ThingId thingId = ThingId(params.value("thingId").toString());
     ParamList settings = unpack<ParamList>(params.value("settings"));
     Thing::ThingError status = NymeaCore::instance()->thingManager()->setThingSettings(thingId, settings);
+    return createReply(statusToReply(status));
+}
+
+JsonReply *IntegrationsHandler::SetStateLogging(const QVariantMap &params)
+{
+    ThingId thingId = ThingId(params.value("thingId").toString());
+    StateTypeId stateTypeId = StateTypeId(params.value("stateTypeId").toUuid());
+    bool enabled = params.value("enabled").toBool();
+    Thing::ThingError status = NymeaCore::instance()->thingManager()->setStateLogging(thingId, stateTypeId, enabled);
     return createReply(statusToReply(status));
 }
 

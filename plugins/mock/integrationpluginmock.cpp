@@ -896,7 +896,7 @@ void IntegrationPluginMock::setState(const StateTypeId &stateTypeId, const QVari
     device->setStateValue(stateTypeId, value);
 }
 
-void IntegrationPluginMock::triggerEvent(const EventTypeId &id)
+void IntegrationPluginMock::triggerEvent(const EventTypeId &id, const ParamList &params)
 {
     HttpDaemon *daemon = qobject_cast<HttpDaemon*>(sender());
     if (!daemon)
@@ -904,8 +904,8 @@ void IntegrationPluginMock::triggerEvent(const EventTypeId &id)
 
     Thing *device = m_daemons.key(daemon);
 
-    qCDebug(dcMock) << "Emitting event " << id;
-    device->emitEvent(id);
+    qCDebug(dcMock) << "Emitting event " << id << params;
+    device->emitEvent(id, params);
 }
 
 void IntegrationPluginMock::onDisappear()

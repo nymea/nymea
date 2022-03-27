@@ -30,7 +30,7 @@
                     "id": "753f0d32-0468-4d08-82ed-1964aab03298",
                     "name": "mock",
                     "displayName": "Mock Thing",
-                    "interfaces": ["system", "light", "battery", "wirelessconnectable", "update"],
+                    "interfaces": ["system", "light", "battery", "wirelessconnectable", "update", "multibutton"],
                     "createMethods": ["user", "discovery"],
                     "browsable": true,
                     "discoveryParamTypes": [
@@ -231,6 +231,19 @@
                                     "defaultValue": 10
                                 }
                             ]
+                        },
+                        {
+                            "id": "f2708625-4b7b-42fd-9a18-3501d89ce599",
+                            "name": "pressed",
+                            "displayName": "Button pressed",
+                            "paramTypes": [
+                                {
+                                    "id": "5f8adeb2-04f0-4b2e-9dbf-a91966bdcc24",
+                                    "name": "buttonName",
+                                    "displayName": "Button name",
+                                    "type": "QString"
+                                }
+                            ]
                         }
                     ],
                     "actionTypes": [
@@ -277,6 +290,19 @@
                             "id": "f2b847dd-ab40-4278-940b-3615f1d7dfd3",
                             "name": "performUpdate",
                             "displayName": "Update firmware"
+                        },
+                        {
+                            "id": "592dfded-0144-4947-bd02-ca84c2124f39",
+                            "name": "pressButton",
+                            "displayName": "Press button",
+                            "paramTypes": [
+                                 {
+                                    "id": "279e0157-78ea-4bb3-a756-b12fb46cf4fc",
+                                    "name": "buttonName",
+                                    "displayName": "Button name",
+                                    "type": "QString"
+                                 }
+                            ]
                         }
                     ],
                     "browserItemActionTypes": [
@@ -619,6 +645,13 @@
                             "defaultValue": false,
                             "writable": true
                         }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "61ebadc0-47ea-4800-8c45-ee5222cddb4b",
+                            "name": "event1",
+                            "displayName": "Event 1"
+                        }
                     ]
                 },
                 {
@@ -637,6 +670,13 @@
                             "type": "bool",
                             "defaultValue": false,
                             "writable": true
+                        }
+                    ],
+                    "eventTypes": [
+                        {
+                            "id": "dad344b4-fff3-4803-b5cb-7cbb65aa5102",
+                            "name": "event1",
+                            "displayName": "Event 1"
                         }
                     ]
                 },

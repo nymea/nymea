@@ -2,7 +2,7 @@
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
-# Copyright 2013 - 2021, nymea GmbH
+# Copyright 2013 - 2022, nymea GmbH
 # Contact: contact@nymea.io
 #
 # This file is part of nymea.
@@ -35,24 +35,56 @@ import sys
 import json
 import sqlite3
 import requests
+import argparse
 
-downloadUrl='https://macaddress.io/database/macaddress.io-db.json'
-jsonDataFileName = 'macaddress.io-db.json'
+# Note: this db is no longer free
 databaseFileName = 'mac-addresses.db'
 
-print('Downloading', downloadUrl, '...')
-downloadRequest = requests.get(downloadUrl)
-open(jsonDataFileName, 'wb').write(downloadRequest.content)
+parser = argparse.ArgumentParser(description='Build mac address database from source.')
+parser.add_argument('--macaddressio', action='store_true', help='Download and generate using macaddress.io as source (note: not free any more)')
 
-print('Reading JSON data..')
+args = parser.parse_args()
+
 vendorInfoHash = {}
-jsonDataFile = open(jsonDataFileName, 'r')
-lines = jsonDataFile.readlines()
-for line in lines:
-    vendorMap = json.loads(line)
-    vendorInfoHash[vendorMap['oui']] = vendorMap['companyName']
 
-jsonDataFile.close()
+if args.macaddressio:
+    # Deprecated: not free any more, but would still work if you buy the db
+    downloadUrl='https://macaddress.io/database/macaddress.io-db.json'
+    jsonDataFileName = 'macaddress.io-db.json'
+    print('Downloading', downloadUrl, '...')
+    downloadRequest = requests.get(downloadUrl)
+    open(jsonDataFileName, 'wb').write(downloadRequest.content)
+
+    print('Reading JSON data..')
+    jsonDataFile = open(jsonDataFileName, 'r')
+    lines = jsonDataFile.readlines()
+    for line in lines:
+        vendorMap = json.loads(line)
+        vendorInfoHash[vendorMap['oui']] = vendorMap['companyName']
+
+    jsonDataFile.close()
+
+else:
+    downloadUrl="https://maclookup.app/downloads/json-database/get-db"
+    jsonDataFileName = 'mac-vendors-export.json'
+    print('Downloading', downloadUrl, '...')
+    downloadRequest = requests.get(downloadUrl)
+    open(jsonDataFileName, 'wb').write(downloadRequest.content)
+
+    if not os.path.exists(jsonDataFileName):
+        print('Could not find %s. Please download the json data from https://maclookup.app/downloads/json-database and place it into this folder.')
+
+    print('Reading JSON data..')
+    # Example: {"macPrefix":"00:00:0C","vendorName":"Cisco Systems, Inc","private":false,"blockType":"MA-L","lastUpdate":"2015/11/17"}
+
+    jsonDataFile = open(jsonDataFileName, 'r')
+    jsonData = json.load(jsonDataFile)
+    jsonDataFile.close()
+    for vendorMap in jsonData:
+        vendorInfoHash[vendorMap['macPrefix']] = vendorMap['vendorName']
+        print(vendorMap['macPrefix'], vendorMap['vendorName'])
+
+
 
 if os.path.exists(databaseFileName):
     print('Delete old db file', databaseFileName)
@@ -72,7 +104,7 @@ vendorCount = 0
 for vendorInfo in sortedVendorHash:
     insertQuery = 'INSERT OR IGNORE INTO companyNames (companyName) VALUES(?);'
     cursor.execute(insertQuery, [vendorInfo[1]])
-    cursor.execute('SELECT COUNT(companyName) FROM companyNames');
+    cursor.execute('SELECT COUNT(companyName) FROM companyNames;')
     countResult = cursor.fetchall()
     vendorCount = countResult[0][0]
 
@@ -86,12 +118,10 @@ ouiCount = 0
 for vendorInfo in sortedOuiHash:
     insertQuery = 'INSERT OR IGNORE INTO oui (oui, companyNameIndex) VALUES(?, (SELECT rowid FROM companyNames WHERE companyName = ?));'
     cursor.execute(insertQuery, [vendorInfo[0].replace(':', ''), vendorInfo[1]])
-    cursor.execute('SELECT COUNT(oui) FROM oui');
+    cursor.execute('SELECT COUNT(oui) FROM oui;')
     countResult = cursor.fetchall()
     ouiCount = countResult[0][0]
 
 connection.commit()
 connection.close()
 print('Finished successfully. Loaded', ouiCount, 'OUI values from', vendorCount, 'manufacturers into', databaseFileName)
-
-

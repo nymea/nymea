@@ -100,6 +100,7 @@ HEADERS += nymeacore.h \
     servers/bluetoothserver.h \
     servers/websocketserver.h \
     servers/mqttbroker.h \
+    servers/tunnelproxyserver.h \
     jsonrpc/jsonrpcserverimplementation.h \
     jsonrpc/jsonvalidator.h \
     jsonrpc/integrationshandler.h \
@@ -191,6 +192,7 @@ SOURCES += nymeacore.cpp \
     servers/websocketserver.cpp \
     servers/bluetoothserver.cpp \
     servers/mqttbroker.cpp \
+    servers/tunnelproxyserver.cpp \
     jsonrpc/jsonrpcserverimplementation.cpp \
     jsonrpc/jsonvalidator.cpp \
     jsonrpc/integrationshandler.cpp \

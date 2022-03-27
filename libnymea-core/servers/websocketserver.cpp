@@ -87,7 +87,7 @@ WebSocketServer::~WebSocketServer()
 /*! Returns the url of this server. */
 QUrl WebSocketServer::serverUrl() const
 {
-    return QUrl(QString("%1://%2:%3").arg((configuration().sslEnabled ? "wss" : "ws")).arg(configuration().address.toString()).arg(configuration().port));
+    return QUrl(QString("%1://%2:%3").arg((configuration().sslEnabled ? "wss" : "ws")).arg(configuration().address).arg(configuration().port));
 }
 
 /*! Send the given \a data map to the client with the given \a clientId.
@@ -219,7 +219,7 @@ bool WebSocketServer::startServer()
     connect (m_server, &QWebSocketServer::newConnection, this, &WebSocketServer::onClientConnected);
     connect (m_server, &QWebSocketServer::acceptError, this, &WebSocketServer::onServerError);
 
-    if (!m_server->listen(configuration().address, static_cast<quint16>(configuration().port))) {
+    if (!m_server->listen(QHostAddress(configuration().address), static_cast<quint16>(configuration().port))) {
         qCWarning(dcWebSocketServer()) << "Error listening on" << serverUrl().toString();
         return false;
     }

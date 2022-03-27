@@ -42,15 +42,15 @@ namespace nymeaserver {
 class ServerConfiguration {
     Q_GADGET
     Q_PROPERTY(QString id MEMBER id)
-    Q_PROPERTY(QString address READ addressString WRITE setAddress)
+    Q_PROPERTY(QString address MEMBER address)
     Q_PROPERTY(uint port MEMBER port)
     Q_PROPERTY(bool sslEnabled MEMBER sslEnabled)
     Q_PROPERTY(bool authenticationEnabled MEMBER authenticationEnabled)
+
 public:
     QString id;
-    QHostAddress address;
-    QString addressString() { return address.toString(); }
-    void setAddress(const QString &addressString) {address = QHostAddress(addressString); }
+    QString address;
+    void setAddress(const QString &address) {this->address = address; }
     uint port = 0;
     bool sslEnabled = true;
     bool authenticationEnabled = true;
@@ -70,10 +70,33 @@ class WebServerConfiguration: public ServerConfiguration
 {
     Q_GADGET
     Q_PROPERTY(QString publicFolder MEMBER publicFolder)
+
 public:
     QString publicFolder;
     bool restServerEnabled = false;
+
+    bool operator==(const WebServerConfiguration &other) const {
+        return ServerConfiguration::operator==(other)
+                && publicFolder == other.publicFolder
+                && restServerEnabled == other.restServerEnabled;
+    }
 };
+
+class TunnelProxyServerConfiguration: public ServerConfiguration
+{
+    Q_GADGET
+    Q_PROPERTY(bool ignoreSslErrors MEMBER ignoreSslErrors)
+
+public:
+    bool ignoreSslErrors = false;
+
+    bool operator==(const TunnelProxyServerConfiguration &other) const {
+        return ServerConfiguration::operator==(other)
+                && ignoreSslErrors == other.ignoreSslErrors;
+    }
+};
+
+QDebug operator <<(QDebug debug, const TunnelProxyServerConfiguration &configuration);
 
 class MqttPolicy
 {
@@ -147,6 +170,11 @@ public:
     void setWebSocketServerConfiguration(const ServerConfiguration &config);
     void removeWebSocketServerConfiguration(const QString &id);
 
+    // Tunnel proxy server
+    QHash<QString, TunnelProxyServerConfiguration> tunnelProxyServerConfigurations() const;
+    void setTunnelProxyServerConfiguration(const TunnelProxyServerConfiguration &config);
+    void removeTunnelProxyServerConfiguration(const QString &id);
+
     // MQTT
     QHash<QString, ServerConfiguration> mqttServerConfigurations() const;
     void setMqttServerConfiguration(const ServerConfiguration &config);
@@ -187,6 +215,7 @@ private:
     QHash<QString, ServerConfiguration> m_webSocketServerConfigs;
     QHash<QString, ServerConfiguration> m_mqttServerConfigs;
     QHash<QString, MqttPolicy> m_mqttPolicies;
+    QHash<QString, TunnelProxyServerConfiguration> m_tunnelProxyServerConfigs;
 
     void setServerUuid(const QUuid &uuid);
     void setWebServerPublicFolder(const QString & path);
@@ -198,6 +227,8 @@ private:
     void deleteServerConfig(const QString &group, const QString &id);
     void storeWebServerConfig(const WebServerConfiguration &config);
     WebServerConfiguration readWebServerConfig(const QString &id);
+    void storeTunnelProxyServerConfig(const TunnelProxyServerConfiguration &config);
+    TunnelProxyServerConfiguration readTunnelProxyServerConfig(const QString &id);
 
     void storeMqttPolicy(const MqttPolicy &policy);
     MqttPolicy readMqttPolicy(const QString &clientId);
@@ -216,6 +247,8 @@ signals:
     void webSocketServerConfigurationRemoved(const QString &configId);
     void mqttServerConfigurationChanged(const QString &configId);
     void mqttServerConfigurationRemoved(const QString &configId);
+    void tunnelProxyServerConfigurationChanged(const QString &configId);
+    void tunnelProxyServerConfigurationRemoved(const QString &configId);
 
     void mqttPolicyChanged(const QString &clientId);
     void mqttPolicyRemoved(const QString &clientId);

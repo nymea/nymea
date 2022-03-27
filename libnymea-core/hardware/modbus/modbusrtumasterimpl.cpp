@@ -79,7 +79,7 @@ ModbusRtuMasterImpl::ModbusRtuMasterImpl(const QUuid &modbusUuid, const QString 
     });
 
     connect(m_modbus, &QModbusRtuSerialMaster::errorOccurred, this, [=](QModbusDevice::Error error){
-        qCWarning(dcModbusRtu()) << "Error occured for modbus RTU master" << m_modbusUuid.toString() << m_serialPort << error << m_modbus->errorString();
+        qCWarning(dcModbusRtu()) << "Error occurred for modbus RTU master" << m_modbusUuid.toString() << m_serialPort << error << m_modbus->errorString();
         if (error != QModbusDevice::NoError) {
             disconnectDevice();
         }

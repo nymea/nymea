@@ -50,6 +50,7 @@ class WebSocketServer;
 class WebServer;
 class BluetoothServer;
 class MqttBroker;
+class TunnelProxyServer;
 
 class MockTcpServer;
 
@@ -68,6 +69,10 @@ public:
 
     MqttBroker *mqttBroker() const;
 
+public slots:
+    void setServerName(const QString &serverName);
+
+
 private slots:
     void tcpServerConfigurationChanged(const QString &id);
     void tcpServerConfigurationRemoved(const QString &id);
@@ -79,13 +84,20 @@ private slots:
     void mqttServerConfigurationRemoved(const QString &id);
     void mqttPolicyChanged(const QString &clientId);
     void mqttPolicyRemoved(const QString &clientId);
+    void tunnelProxyServerConfigurationChanged(const QString &id);
+    void tunnelProxyServerConfigurationRemoved(const QString &id);
+
+    void cloudEnabledChanged(bool enabled);
 
 private:
     bool registerZeroConfService(const ServerConfiguration &configuration, const QString &serverType, const QString &serviceType);
     void unregisterZeroConfService(const QString &configId, const QString &serverType);
 
+    bool loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName);
+
 private:
     Platform *m_platform = nullptr;
+    NymeaConfiguration *m_nymeaConfiguration = nullptr;
 
     // Interfaces
     JsonRPCServerImplementation *m_jsonServer;
@@ -94,6 +106,7 @@ private:
     QHash<QString, TcpServer*> m_tcpServers;
     QHash<QString, WebSocketServer*> m_webSocketServers;
     QHash<QString, WebServer*> m_webServers;
+    QHash<QString, TunnelProxyServer *> m_tunnelProxyServers;
     MockTcpServer *m_mockTcpServer;
 
     MqttBroker *m_mqttBroker;
@@ -102,12 +115,6 @@ private:
     QSslConfiguration m_sslConfiguration;
     QSslKey m_certificateKey;
     QSslCertificate m_certificate;
-
-    bool loadCertificate(const QString &certificateKeyFileName, const QString &certificateFileName);
-
-public slots:
-    void setServerName(const QString &serverName);
-
 };
 
 }

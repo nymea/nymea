@@ -98,6 +98,7 @@ TransportInterface::TransportInterface(const ServerConfiguration &config, QObjec
     QObject(parent),
     m_config(config)
 {
+
 }
 
 /*! Set the ServerConfiguration of this TransportInterface to the given \a config. */

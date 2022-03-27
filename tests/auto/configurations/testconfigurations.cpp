@@ -278,7 +278,7 @@ void TestConfigurations::testDebugServerConfiguration()
 
     qCDebug(dcTests()) << "TestWebserver starting";
     foreach (const WebServerConfiguration &config, NymeaCore::instance()->configuration()->webServerConfigurations()) {
-        if (config.port == 3333 && (config.address == QHostAddress("127.0.0.1") || config.address == QHostAddress("0.0.0.0"))) {
+        if (config.port == 3333 && (QHostAddress(config.address) == QHostAddress("127.0.0.1") || QHostAddress(config.address) == QHostAddress("0.0.0.0"))) {
             qDebug() << "Already have a webserver listening on 127.0.0.1:3333";
             return;
         }
@@ -287,7 +287,7 @@ void TestConfigurations::testDebugServerConfiguration()
     qCDebug(dcTests) << "Creating new webserver instance on 127.0.0.1:3333";
     WebServerConfiguration config;
     config.id = "Testwebserver for debug server interface";
-    config.address = QHostAddress("127.0.0.1");
+    config.address = "127.0.0.1";
     config.port = 3333;
     config.sslEnabled = true;
     NymeaCore::instance()->configuration()->setWebServerConfiguration(config);

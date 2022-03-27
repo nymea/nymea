@@ -94,7 +94,7 @@ MqttChannel *MqttProviderImplementation::createChannel(const QString &clientId, 
         foreach (const QNetworkAddressEntry &addressEntry, interface.addressEntries()) {
             if (clientAddress.isInSubnet(addressEntry.ip(), addressEntry.prefixLength())) {
                 foreach (const ServerConfiguration &config, m_broker->configurations()) {
-                    if (config.address == QHostAddress("0.0.0.0") || clientAddress.isInSubnet(config.address, addressEntry.prefixLength())) {
+                    if (QHostAddress(config.address) == QHostAddress("0.0.0.0") || clientAddress.isInSubnet(QHostAddress(config.address), addressEntry.prefixLength())) {
                         channel->m_serverAddress = addressEntry.ip();
                         channel->m_serverPort = config.port;
                         break;
@@ -145,9 +145,9 @@ MqttClient *MqttProviderImplementation::createInternalClient(const QString &clie
 
     ServerConfiguration preferredConfig;
     foreach (const ServerConfiguration &config, m_broker->configurations()) {
-        if (config.address == QHostAddress::Any
-                || config.address == QHostAddress::AnyIPv4
-                || config.address == QHostAddress::LocalHost) {
+        if (QHostAddress(config.address) == QHostAddress::Any
+                || QHostAddress(config.address) == QHostAddress::AnyIPv4
+                || QHostAddress(config.address) == QHostAddress::LocalHost) {
             preferredConfig = config;
             break;
         }
@@ -176,12 +176,12 @@ MqttClient *MqttProviderImplementation::createInternalClient(const QString &clie
         m_broker->removePolicy(clientId);
     });
 
-    if (preferredConfig.address == QHostAddress::Any
-            || preferredConfig.address == QHostAddress::AnyIPv4
-            || preferredConfig.address == QHostAddress::LocalHost) {
+    if (QHostAddress(preferredConfig.address) == QHostAddress::Any
+            || QHostAddress(preferredConfig.address) == QHostAddress::AnyIPv4
+            || QHostAddress(preferredConfig.address) == QHostAddress::LocalHost) {
         client->connectToHost("127.0.0.1", preferredConfig.port);
     } else {
-        client->connectToHost(preferredConfig.address.toString(), preferredConfig.port);
+        client->connectToHost(preferredConfig.address, preferredConfig.port);
     }
     return client;
 }

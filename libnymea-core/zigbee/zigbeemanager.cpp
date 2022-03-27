@@ -457,7 +457,7 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
     });
 
     connect(network, &ZigbeeNetwork::errorOccured, this, [this, network](ZigbeeNetwork::Error error){
-        qCWarning(dcZigbee()) << "Network error occured for" << network << error;
+        qCWarning(dcZigbee()) << "Network error occurred for" << network << error;
         evaluateZigbeeAvailable();
         // TODO: handle error
     });

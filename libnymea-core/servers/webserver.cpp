@@ -129,7 +129,7 @@ WebServer::~WebServer()
 /*! Returns the server URL of this WebServer. */
 QUrl WebServer::serverUrl() const
 {
-    return QUrl(QString("%1://%2:%3").arg((m_configuration.sslEnabled ? "https" : "http")).arg(m_configuration.address.toString()).arg(m_configuration.port));
+    return QUrl(QString("%1://%2:%3").arg((m_configuration.sslEnabled ? "https" : "http")).arg(m_configuration.address).arg(m_configuration.port));
 }
 
 /*! Send the given \a reply map to the corresponding client.
@@ -561,7 +561,7 @@ void WebServer::setServerName(const QString &serverName)
 /*! Returns true if this \l{WebServer} started successfully. */
 bool WebServer::startServer()
 {
-    if (!listen(m_configuration.address, static_cast<quint16>(m_configuration.port))) {
+    if (!listen(QHostAddress(m_configuration.address), static_cast<quint16>(m_configuration.port))) {
         qCWarning(dcWebServer()) << "Webserver could not listen on" << serverUrl().toString() << errorString();
         m_enabled = false;
         return false;
@@ -712,7 +712,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     int counter = 1;
     int sslCounter = 1;
     foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->webSocketServerConfigurations()) {
-        if (config.address == QHostAddress("0.0.0.0") || config.address == address) {
+        if (QHostAddress(config.address) == QHostAddress("0.0.0.0") || QHostAddress(config.address) == address) {
             writer.writeStartElement("service");
             writer.writeTextElement("serviceType", QString("urn:nymea.io:service:%1:%2").arg(config.sslEnabled ? "wss" : "ws").arg(config.sslEnabled ? sslCounter : counter));
             writer.writeTextElement("serviceId", QString("urn:nymea.io:serviceId:%1:%2").arg(config.sslEnabled ? "wss" : "ws").arg(config.sslEnabled ? sslCounter++ : counter++));
@@ -725,7 +725,7 @@ QByteArray WebServer::createServerXmlDocument(QHostAddress address)
     counter = 1;
     sslCounter = 1;
     foreach (const ServerConfiguration &config, NymeaCore::instance()->configuration()->tcpServerConfigurations()) {
-        if (config.address == QHostAddress("0.0.0.0") || config.address == address) {
+        if (QHostAddress(config.address) == QHostAddress("0.0.0.0") || QHostAddress(config.address) == address) {
             writer.writeStartElement("service");
             writer.writeTextElement("serviceType", QString("urn:nymea.io:service:%1:%2").arg(config.sslEnabled ? "nymeas" : "nymea").arg(config.sslEnabled ? sslCounter : counter));
             writer.writeTextElement("serviceId", QString("urn:nymea.io:serviceId:%1:%2").arg(config.sslEnabled ? "nymeas" : "nymea").arg(config.sslEnabled ? sslCounter++ : counter++));

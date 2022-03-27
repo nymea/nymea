@@ -471,6 +471,16 @@
                 "configurationError": "$ref:ConfigurationError"
             }
         },
+        "Configuration.DeleteTunnelProxyServerConfiguration": {
+            "description": "Delete a Tunnel Proxy Server interface of the server. Note: if you are deleting the configuration for the interface you are currently connected to, the connection will be dropped.",
+            "params": {
+                "id": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
         "Configuration.DeleteWebServerConfiguration": {
             "description": "Delete a WebServer interface of the server.",
             "params": {
@@ -507,7 +517,7 @@
             "description": "Get all configuration parameters of the server.",
             "params": {
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeNone",
             "returns": {
                 "basicConfiguration": {
                     "d:language": "String",
@@ -522,6 +532,9 @@
                 },
                 "tcpServerConfigurations": [
                     "$ref:ServerConfiguration"
+                ],
+                "tunnelProxyServerConfigurations": [
+                    "$ref:TunnelProxyServerConfiguration"
                 ],
                 "webServerConfigurations": [
                     "$ref:WebServerConfiguration"
@@ -641,6 +654,16 @@
             "description": "Set the time zone of the server. See also: \"GetTimeZones\"",
             "params": {
                 "timeZone": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.SetTunnelProxyServerConfiguration": {
+            "description": "Configure a Tunnel Proxy Server interface of the server. If the ID is an existing one, the existing config will be modified, otherwise a new one will be added. Note: if you are changing the configuration for the interface you are currently connected to, the connection will be dropped.",
+            "params": {
+                "configuration": "$ref:TunnelProxyServerConfiguration"
             },
             "permissionScope": "PermissionScopeAdmin",
             "returns": {
@@ -2043,6 +2066,18 @@
                 "id": "String"
             }
         },
+        "Configuration.TunnelProxyServerConfigurationChanged": {
+            "description": "Emitted whenever the tunnel proxy server configuration changes.",
+            "params": {
+                "tunnelProxyServerConfiguration": "$ref:TunnelProxyServerConfiguration"
+            }
+        },
+        "Configuration.TunnelProxyServerConfigurationRemoved": {
+            "description": "Emitted whenever a tunnel proxy server configuration is removed.",
+            "params": {
+                "id": "String"
+            }
+        },
         "Configuration.WebServerConfigurationChanged": {
             "description": "Emitted whenever the web server configuration changes.",
             "params": {
@@ -2830,6 +2865,14 @@
         "TokenInfoList": [
             "$ref:TokenInfo"
         ],
+        "TunnelProxyServerConfiguration": {
+            "address": "String",
+            "authenticationEnabled": "Bool",
+            "id": "String",
+            "ignoreSslErrors": "Bool",
+            "port": "Uint",
+            "sslEnabled": "Bool"
+        },
         "UserInfo": {
             "r:displayName": "String",
             "r:email": "String",

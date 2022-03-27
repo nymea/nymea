@@ -60,6 +60,8 @@ public:
     Q_INVOKABLE JsonReply *DeleteWebServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetWebSocketServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *DeleteWebSocketServerConfiguration(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *SetTunnelProxyServerConfiguration(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *DeleteTunnelProxyServerConfiguration(const QVariantMap &params) const;
 
     Q_INVOKABLE JsonReply *GetMqttServerConfigurations(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetMqttServerConfiguration(const QVariantMap &params) const;
@@ -79,6 +81,8 @@ signals:
     void WebServerConfigurationRemoved(const QVariantMap &params);
     void WebSocketServerConfigurationChanged(const QVariantMap &params);
     void WebSocketServerConfigurationRemoved(const QVariantMap &params);
+    void TunnelProxyServerConfigurationChanged(const QVariantMap &params);
+    void TunnelProxyServerConfigurationRemoved(const QVariantMap &params);
 
     void MqttServerConfigurationChanged(const QVariantMap &params);
     void MqttServerConfigurationRemoved(const QVariantMap &params);
@@ -95,6 +99,8 @@ private slots:
     void onWebServerConfigurationRemoved(const QString &id);
     void onWebSocketServerConfigurationChanged(const QString &id);
     void onWebSocketServerConfigurationRemoved(const QString &id);
+    void onTunnelProxyServerConfigurationChanged(const QString &id);
+    void onTunnelProxyServerConfigurationRemoved(const QString &id);
     void onMqttServerConfigurationChanged(const QString &id);
     void onMqttServerConfigurationRemoved(const QString &id);
     void onMqttPolicyChanged(const QString &clientId);

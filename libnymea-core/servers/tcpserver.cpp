@@ -101,7 +101,7 @@ TcpServer::~TcpServer()
 /*! Returns the URL of this server. */
 QUrl TcpServer::serverUrl() const
 {
-    return QUrl(QString("%1://%2:%3").arg((configuration().sslEnabled ? "nymeas" : "nymea")).arg(configuration().address.toString()).arg(configuration().port));
+    return QUrl(QString("%1://%2:%3").arg((configuration().sslEnabled ? "nymeas" : "nymea")).arg(configuration().address).arg(configuration().port));
 }
 
 /*! Sending \a data to a list of \a clients.*/
@@ -177,8 +177,8 @@ void TcpServer::setServerName(const QString &serverName)
 bool TcpServer::startServer()
 {
     m_server = new SslServer(configuration().sslEnabled, m_sslConfig);
-    if(!m_server->listen(configuration().address, static_cast<quint16>(configuration().port))) {
-        qCWarning(dcTcpServer()) << "Tcp server error: can not listen on" << configuration().address.toString() << configuration().port;
+    if(!m_server->listen(QHostAddress(configuration().address), static_cast<quint16>(configuration().port))) {
+        qCWarning(dcTcpServer()) << "Tcp server error: can not listen on" << configuration().address << configuration().port;
         delete m_server;
         m_server = nullptr;
         return false;

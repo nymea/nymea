@@ -93,7 +93,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         qCWarning(dcConfiguration) << "No TCP server configuration found. Generating default of nymeas://0.0.0.0:2222";
         ServerConfiguration config;
         config.id = "default";
-        config.address = QHostAddress("0.0.0.0");
+        config.address = QHostAddress("0.0.0.0").toString();
         config.port = 2222;
         config.sslEnabled = true;
         config.authenticationEnabled = true;
@@ -121,7 +121,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         qCWarning(dcConfiguration) << "No Web server configuration found. Generating defaults of http://0.0.0.0:80 and https://0.0.0.0:443";
         WebServerConfiguration insecureConfig;
         insecureConfig.id = "insecure";
-        insecureConfig.address = QHostAddress("0.0.0.0");
+        insecureConfig.address = QHostAddress("0.0.0.0").toString();
         insecureConfig.port = 80;
         insecureConfig.sslEnabled = false;
         insecureConfig.authenticationEnabled = false;
@@ -132,7 +132,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
 
         WebServerConfiguration secureConfig;
         secureConfig.id = "secure";
-        secureConfig.address = QHostAddress("0.0.0.0");
+        secureConfig.address = QHostAddress("0.0.0.0").toString();
         secureConfig.port = 443;
         secureConfig.sslEnabled = true;
         secureConfig.authenticationEnabled = false;
@@ -162,7 +162,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         qCWarning(dcConfiguration) << "No WebSocket server configuration found. Generating default of wss://0.0.0.0:4444";
         ServerConfiguration config;
         config.id = "default";
-        config.address = QHostAddress("0.0.0.0");
+        config.address = QHostAddress("0.0.0.0").toString();
         config.port = 4444;
         config.sslEnabled = true;
         config.authenticationEnabled = true;
@@ -190,7 +190,7 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         qCWarning(dcConfiguration) << "No MQTT server configuration found. Generating default of 0.0.0.0:1883";
         ServerConfiguration config;
         config.id = "default";
-        config.address = QHostAddress("0.0.0.0");
+        config.address = QHostAddress("0.0.0.0").toString();
         config.port = 1883;
         config.sslEnabled = false;
         config.authenticationEnabled = true;
@@ -209,6 +209,16 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
         policy.allowedSubscribeTopicFilters = mqttPolicies.value("allowedSubscribeTopicFilters").toStringList();
         m_mqttPolicies.insert(clientId, policy);
         mqttPolicies.endGroup();
+    }
+
+    // Tunnel Proxy Server
+    if (settings.childGroups().contains("TunnelProxyServer")) {
+        settings.beginGroup("TunnelProxyServer");
+        foreach (const QString &key, settings.childGroups()) {
+            TunnelProxyServerConfiguration config = readTunnelProxyServerConfig(key);
+            m_tunnelProxyServerConfigs[config.id] = config;
+        }
+        settings.endGroup();
     }
 
     // Write defaults for log settings
@@ -364,6 +374,25 @@ void NymeaConfiguration::removeWebSocketServerConfiguration(const QString &id)
     m_webSocketServerConfigs.take(id);
     deleteServerConfig("WebSocketServer", id);
     emit webSocketServerConfigurationRemoved(id);
+}
+
+QHash<QString, TunnelProxyServerConfiguration> NymeaConfiguration::tunnelProxyServerConfigurations() const
+{
+    return m_tunnelProxyServerConfigs;
+}
+
+void NymeaConfiguration::setTunnelProxyServerConfiguration(const TunnelProxyServerConfiguration &config)
+{
+    m_tunnelProxyServerConfigs[config.id] = config;
+    storeTunnelProxyServerConfig(config);
+    emit tunnelProxyServerConfigurationChanged(config.id);
+}
+
+void NymeaConfiguration::removeTunnelProxyServerConfiguration(const QString &id)
+{
+    m_tunnelProxyServerConfigs.take(id);
+    deleteServerConfig("TunnelProxyServer", id);
+    emit tunnelProxyServerConfigurationRemoved(id);
 }
 
 QHash<QString, ServerConfiguration> NymeaConfiguration::mqttServerConfigurations() const
@@ -627,7 +656,7 @@ void NymeaConfiguration::storeServerConfig(const QString &group, const ServerCon
     settings.beginGroup(group);
     settings.remove("disabled");
     settings.beginGroup(config.id);
-    settings.setValue("address", config.address.toString());
+    settings.setValue("address", config.address);
     settings.setValue("port", config.port);
     settings.setValue("sslEnabled", config.sslEnabled);
     settings.setValue("authenticationEnabled", config.authenticationEnabled);
@@ -642,7 +671,7 @@ ServerConfiguration NymeaConfiguration::readServerConfig(const QString &group, c
     settings.beginGroup(group);
     settings.beginGroup(id);
     config.id = id;
-    config.address = QHostAddress(settings.value("address").toString());
+    config.address = settings.value("address").toString();
     config.port = settings.value("port").toUInt();
     config.sslEnabled = settings.value("sslEnabled", true).toBool();
     config.authenticationEnabled = settings.value("authenticationEnabled", true).toBool();
@@ -681,12 +710,40 @@ WebServerConfiguration NymeaConfiguration::readWebServerConfig(const QString &id
     settings.beginGroup("WebServer");
     settings.beginGroup(id);
     config.id = id;
-    config.address = QHostAddress(settings.value("address").toString());
+    config.address = settings.value("address").toString();
     config.port = settings.value("port").toUInt();
     config.sslEnabled = settings.value("sslEnabled", true).toBool();
     config.authenticationEnabled = settings.value("authenticationEnabled", true).toBool();
     config.publicFolder = settings.value("publicFolder").toString();
     config.restServerEnabled = settings.value("restServerEnabled", false).toBool();
+    settings.endGroup();
+    settings.endGroup();
+    return config;
+}
+
+void NymeaConfiguration::storeTunnelProxyServerConfig(const TunnelProxyServerConfiguration &config)
+{
+    storeServerConfig("TunnelProxyServer", config);
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("TunnelProxyServer");
+    settings.beginGroup(config.id);
+    settings.setValue("ignoreSslErrors", config.ignoreSslErrors);
+    settings.endGroup();
+    settings.endGroup();
+}
+
+TunnelProxyServerConfiguration NymeaConfiguration::readTunnelProxyServerConfig(const QString &id)
+{
+    TunnelProxyServerConfiguration config;
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("TunnelProxyServer");
+    settings.beginGroup(id);
+    config.id = id;
+    config.address = settings.value("address").toString();
+    config.port = settings.value("port").toUInt();
+    config.sslEnabled = settings.value("sslEnabled", true).toBool();
+    config.authenticationEnabled = settings.value("authenticationEnabled", true).toBool();
+    config.ignoreSslErrors = settings.value("ignoreSslErrors").toBool();
     settings.endGroup();
     settings.endGroup();
     return config;
@@ -713,9 +770,32 @@ QDebug operator <<(QDebug debug, const ServerConfiguration &configuration)
 {
     debug.nospace() << "ServerConfiguration(" << configuration.address;
     debug.nospace() << ", " << configuration.id;
-    debug.nospace() << ", " << QString("%1:%2").arg(configuration.address.toString()).arg(configuration.port);
+    debug.nospace() << ", " << QString("%1:%2").arg(configuration.address).arg(configuration.port);
     debug.nospace() << ") ";
-    return debug;
+    return debug.maybeSpace();
+}
+
+QDebug operator <<(QDebug debug, const TunnelProxyServerConfiguration &configuration)
+{
+    debug.nospace() << "TunnelProxyServerConfiguration(" << configuration.id;
+    debug.nospace() << ", " << QString("%1:%2").arg(configuration.address).arg(configuration.port);
+    if (configuration.sslEnabled) {
+        debug.nospace() << ", SSL enabled";
+    } else {
+        debug.nospace() << ", SSL disabled";
+    }
+    if (configuration.authenticationEnabled) {
+        debug.nospace() << ", Authentication enabled";
+    } else {
+        debug.nospace() << ", Authentication disabled";
+    }
+
+    if (configuration.ignoreSslErrors) {
+        debug.nospace() << ", Ignoring SSL errors";
+    }
+
+    debug.nospace() << ") ";
+    return debug.maybeSpace();
 }
 
 }

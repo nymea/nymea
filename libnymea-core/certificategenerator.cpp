@@ -34,9 +34,13 @@
 
 #include <QRegExp>
 #include <QFileInfo>
+#include <QSaveFile>
 #include <QDir>
 #include <QUuid>
 #include <QDebug>
+#include <QLoggingCategory>
+
+Q_DECLARE_LOGGING_CATEGORY(dcServerManager)
 
 namespace nymeaserver {
 
@@ -48,8 +52,24 @@ void CertificateGenerator::generate(const QString &certificateFilename, const QS
     X509 * x509 = nullptr;
     X509_NAME * name = nullptr;
     BIO * bp_public = nullptr, * bp_private = nullptr;
-    const char * buffer = nullptr;
-    long size;
+    const char * keyBuffer = nullptr;
+    const char * certBuffer = nullptr;
+
+    QFileInfo certFi(certificateFilename);
+    QFileInfo keyFi(keyFilename);
+
+    QDir dir;
+    if (!dir.mkpath(certFi.absolutePath()) || !dir.mkpath(keyFi.absolutePath())) {
+        qCWarning(dcServerManager) << "Error creating SSL certificate destination folder";
+        return;
+    }
+
+    QSaveFile certfile(certificateFilename);
+    QSaveFile keyFile(keyFilename);
+    if (!certfile.open(QFile::WriteOnly | QFile::Truncate | QFile::Unbuffered) || !keyFile.open(QFile::WriteOnly | QFile::Truncate | QFile::Unbuffered)) {
+        qCWarning(dcServerManager()) << "Error opening SSL certificate files";
+        return;
+    }
 
     bne = BN_new();
     BN_set_word(bne, RSA_F4);
@@ -90,7 +110,7 @@ void CertificateGenerator::generate(const QString &certificateFilename, const QS
         EVP_PKEY_free(pkey);
         X509_free(x509);
         BIO_free_all(bp_private);
-        qFatal("PEM_write_bio_PrivateKey");
+        qCCritical(dcServerManager) << "PEM_write_bio_PrivateKey";
         return;
     }
     bp_public = BIO_new(BIO_s_mem());
@@ -103,26 +123,23 @@ void CertificateGenerator::generate(const QString &certificateFilename, const QS
         X509_free(x509);
         BIO_free_all(bp_public);
         BIO_free_all(bp_private);
-        qFatal("PEM_write_bio_X509");
+        qCCritical(dcServerManager) << "PEM_write_bio_X509";
     }
-    size = BIO_get_mem_data(bp_public, &buffer);
-    q_check_ptr(buffer);
-    QFileInfo certFi(certificateFilename);
-    QDir dir;
-    QFile certfile(certificateFilename);
-    if (!dir.mkpath(certFi.absolutePath()) || !certfile.open(QFile::WriteOnly | QFile::Truncate) || certfile.write(buffer, size) != size) {
-        qWarning() << "Error writing certificate file" << certificateFilename;
-    }
-    certfile.close();
+    long pubSize = BIO_get_mem_data(bp_public, &certBuffer);
+    q_check_ptr(certBuffer);
 
-    size = BIO_get_mem_data(bp_private, &buffer);
-    q_check_ptr(buffer);
-    QFileInfo keyFi(keyFilename);
-    QFile keyFile(keyFilename);
-    if (!dir.mkpath(keyFi.absolutePath()) || !keyFile.open(QFile::WriteOnly | QFile::Truncate) || keyFile.write(buffer, size) != size) {
-        qWarning() << "Error writing key file" << keyFilename;
+    long privSize = BIO_get_mem_data(bp_private, &keyBuffer);
+    q_check_ptr(keyBuffer);
+
+    if (certfile.write(certBuffer, pubSize) == pubSize && keyFile.write(keyBuffer, privSize) == privSize) {
+        certfile.commit();
+        keyFile.commit();
+        qCDebug(dcServerManager()) << "Generated new SSL certificate";
+    } else {
+        qCWarning(dcServerManager()) << "Error writing SSL certificate files" << certificateFilename << keyFilename;
+        certfile.cancelWriting();
+        keyFile.cancelWriting();
     }
-    keyFile.close();
 
     BN_free(bne);
     EVP_PKEY_free(pkey); // this will also free the rsa key

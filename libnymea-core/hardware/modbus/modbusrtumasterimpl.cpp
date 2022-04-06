@@ -462,7 +462,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::writeCoils(int slaveAddress, int registerAd
 
         // Check if the reply finished with an error
         if (modbusReply->error() != QModbusDevice::NoError) {
-            qCWarning(dcModbusRtu()) << "Read coil request finished with error" << modbusReply->error() << modbusReply->errorString();
+            qCWarning(dcModbusRtu()) << "Write coil request finished with error" << modbusReply->error() << modbusReply->errorString();
             emit reply->errorOccurred(reply->error());
             emit reply->finished();
             return;
@@ -475,7 +475,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::writeCoils(int slaveAddress, int registerAd
     });
 
     connect(modbusReply, &QModbusReply::errorOccurred, modbusReply, [=](QModbusDevice::Error error){
-        qCWarning(dcModbusRtu()) << "Read coil request finished with error" << error << modbusReply->errorString();
+        qCWarning(dcModbusRtu()) << "Write coil request finished with error" << error << modbusReply->errorString();
         reply->setFinished(true);
         reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
         reply->setErrorString(modbusReply->errorString());
@@ -518,7 +518,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::writeHoldingRegisters(int slaveAddress, int
 
         // Check if the reply finished with an error
         if (modbusReply->error() != QModbusDevice::NoError) {
-            qCWarning(dcModbusRtu()) << "Read coil request finished with error" << modbusReply->error() << modbusReply->errorString();
+            qCWarning(dcModbusRtu()) << "Write holding register request finished with error" << modbusReply->error() << modbusReply->errorString();
             emit reply->errorOccurred(reply->error());
             emit reply->finished();
             return;
@@ -531,7 +531,7 @@ ModbusRtuReply *ModbusRtuMasterImpl::writeHoldingRegisters(int slaveAddress, int
     });
 
     connect(modbusReply, &QModbusReply::errorOccurred, modbusReply, [=](QModbusDevice::Error error){
-        qCWarning(dcModbusRtu()) << "Read coil request finished with error" << error << modbusReply->errorString();
+        qCWarning(dcModbusRtu()) << "Write holding register request finished with error" << error << modbusReply->errorString();
         reply->setFinished(true);
         reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
         reply->setErrorString(modbusReply->errorString());

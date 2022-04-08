@@ -37,7 +37,13 @@ ModbusRtuReplyImpl::ModbusRtuReplyImpl(int slaveAddress, int registerAddress, QO
     m_slaveAddress(slaveAddress),
     m_registerAddress(registerAddress)
 {
-
+    m_timeoutTimer.start(10000);
+    connect(&m_timeoutTimer, &QTimer::timeout, this, [=](){
+        if (!m_finished) {
+            m_error = TimeoutError;
+            emit errorOccurred(TimeoutError);
+        }
+    });
 }
 
 bool ModbusRtuReplyImpl::isFinished() const

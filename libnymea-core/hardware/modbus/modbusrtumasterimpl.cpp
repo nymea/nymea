@@ -238,9 +238,10 @@ ModbusRtuReply *ModbusRtuMasterImpl::readCoil(int slaveAddress, int registerAddr
     QModbusDataUnit request = QModbusDataUnit(QModbusDataUnit::RegisterType::Coils, registerAddress, size);
     QModbusReply *modbusReply = m_modbus->sendReadRequest(request, slaveAddress);
 
-    connect(modbusReply, &QModbusReply::finished, modbusReply, [=](){
-        modbusReply->deleteLater();
+    // Cleaning up modbusReply when our reply finishes, regardless if that happened because modbusReply finished or reply timeouted
+    connect(reply, &ModbusRtuReply::finished, modbusReply, &QModbusReply::deleteLater);
 
+    connect(modbusReply, &QModbusReply::finished, reply, [=](){
         // Fill common reply data
         reply->setFinished(true);
         reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
@@ -257,15 +258,6 @@ ModbusRtuReply *ModbusRtuMasterImpl::readCoil(int slaveAddress, int registerAddr
         // Parse the data unit and set reply result
         const QModbusDataUnit unit = modbusReply->result();
         reply->setResult(unit.values());
-        emit reply->finished();
-    });
-
-    connect(modbusReply, &QModbusReply::errorOccurred, modbusReply, [=](QModbusDevice::Error error){
-        qCWarning(dcModbusRtu()) << "Read coil request finished with error" << error << modbusReply->errorString();
-        reply->setFinished(true);
-        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
-        reply->setErrorString(modbusReply->errorString());
-        emit reply->errorOccurred(reply->error());
         emit reply->finished();
     });
 
@@ -291,9 +283,10 @@ ModbusRtuReply *ModbusRtuMasterImpl::readDiscreteInput(int slaveAddress, int reg
     QModbusDataUnit request = QModbusDataUnit(QModbusDataUnit::RegisterType::DiscreteInputs, registerAddress, size);
     QModbusReply *modbusReply = m_modbus->sendReadRequest(request, slaveAddress);
 
-    connect(modbusReply, &QModbusReply::finished, modbusReply, [=](){
-        modbusReply->deleteLater();
+    // Cleaning up modbusReply when our reply finishes, regardless if that happened because modbusReply finished or reply timeouted
+    connect(reply, &ModbusRtuReply::finished, modbusReply, &QModbusReply::deleteLater);
 
+    connect(modbusReply, &QModbusReply::finished, reply, [=](){
         // Fill common reply data
         reply->setFinished(true);
         reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
@@ -310,15 +303,6 @@ ModbusRtuReply *ModbusRtuMasterImpl::readDiscreteInput(int slaveAddress, int reg
         // Parse the data unit and set reply result
         const QModbusDataUnit unit = modbusReply->result();
         reply->setResult(unit.values());
-        emit reply->finished();
-    });
-
-    connect(modbusReply, &QModbusReply::errorOccurred, modbusReply, [=](QModbusDevice::Error error){
-        qCWarning(dcModbusRtu()) << "Read descrete inputs request finished with error" << error << modbusReply->errorString();
-        reply->setFinished(true);
-        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
-        reply->setErrorString(modbusReply->errorString());
-        emit reply->errorOccurred(reply->error());
         emit reply->finished();
     });
 
@@ -344,9 +328,10 @@ ModbusRtuReply *ModbusRtuMasterImpl::readInputRegister(int slaveAddress, int reg
     QModbusDataUnit request = QModbusDataUnit(QModbusDataUnit::RegisterType::InputRegisters, registerAddress, size);
     QModbusReply *modbusReply = m_modbus->sendReadRequest(request, slaveAddress);
 
-    connect(modbusReply, &QModbusReply::finished, modbusReply, [=](){
-        modbusReply->deleteLater();
+    // Cleaning up modbusReply when our reply finishes, regardless if that happened because modbusReply finished or reply timeouted
+    connect(reply, &ModbusRtuReply::finished, modbusReply, &QModbusReply::deleteLater);
 
+    connect(modbusReply, &QModbusReply::finished, reply, [=](){
         // Fill common reply data
         reply->setFinished(true);
         reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
@@ -363,15 +348,6 @@ ModbusRtuReply *ModbusRtuMasterImpl::readInputRegister(int slaveAddress, int reg
         // Parse the data unit and set reply result
         const QModbusDataUnit unit = modbusReply->result();
         reply->setResult(unit.values());
-        emit reply->finished();
-    });
-
-    connect(modbusReply, &QModbusReply::errorOccurred, modbusReply, [=](QModbusDevice::Error error){
-        qCWarning(dcModbusRtu()) << "Read input registers request finished with error" << error << modbusReply->errorString();
-        reply->setFinished(true);
-        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
-        reply->setErrorString(modbusReply->errorString());
-        emit reply->errorOccurred(reply->error());
         emit reply->finished();
     });
 
@@ -397,9 +373,10 @@ ModbusRtuReply *ModbusRtuMasterImpl::readHoldingRegister(int slaveAddress, int r
     QModbusDataUnit request = QModbusDataUnit(QModbusDataUnit::RegisterType::HoldingRegisters, registerAddress, size);
     QModbusReply *modbusReply = m_modbus->sendReadRequest(request, slaveAddress);
 
-    connect(modbusReply, &QModbusReply::finished, modbusReply, [=](){
-        modbusReply->deleteLater();
+    // Cleaning up modbusReply when our reply finishes, regardless if that happened because modbusReply finished or reply timeouted
+    connect(reply, &ModbusRtuReply::finished, modbusReply, &QModbusReply::deleteLater);
 
+    connect(modbusReply, &QModbusReply::finished, reply, [=](){
         // Fill common reply data
         reply->setFinished(true);
         reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
@@ -416,15 +393,6 @@ ModbusRtuReply *ModbusRtuMasterImpl::readHoldingRegister(int slaveAddress, int r
         // Parse the data unit and set reply result
         const QModbusDataUnit unit = modbusReply->result();
         reply->setResult(unit.values());
-        emit reply->finished();
-    });
-
-    connect(modbusReply, &QModbusReply::errorOccurred, modbusReply, [=](QModbusDevice::Error error){
-        qCWarning(dcModbusRtu()) << "Read holding registers request finished with error" << error << modbusReply->errorString();
-        reply->setFinished(true);
-        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
-        reply->setErrorString(modbusReply->errorString());
-        emit reply->errorOccurred(reply->error());
         emit reply->finished();
     });
 
@@ -449,12 +417,12 @@ ModbusRtuReply *ModbusRtuMasterImpl::writeCoils(int slaveAddress, int registerAd
     // Create the actual modbus lib reply
     QModbusDataUnit request = QModbusDataUnit(QModbusDataUnit::RegisterType::Coils, registerAddress, values.length());
     request.setValues(values);
-
     QModbusReply *modbusReply = m_modbus->sendWriteRequest(request, slaveAddress);
 
-    connect(modbusReply, &QModbusReply::finished, modbusReply, [=](){
-        modbusReply->deleteLater();
+    // Cleaning up modbusReply when our reply finishes, regardless if that happened because modbusReply finished or reply timeouted
+    connect(reply, &ModbusRtuReply::finished, modbusReply, &QModbusReply::deleteLater);
 
+    connect(modbusReply, &QModbusReply::finished, reply, [=](){
         // Fill common reply data
         reply->setFinished(true);
         reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
@@ -471,15 +439,6 @@ ModbusRtuReply *ModbusRtuMasterImpl::writeCoils(int slaveAddress, int registerAd
         // Parse the data unit and set reply result
         const QModbusDataUnit unit = modbusReply->result();
         reply->setResult(unit.values());
-        emit reply->finished();
-    });
-
-    connect(modbusReply, &QModbusReply::errorOccurred, modbusReply, [=](QModbusDevice::Error error){
-        qCWarning(dcModbusRtu()) << "Write coil request finished with error" << error << modbusReply->errorString();
-        reply->setFinished(true);
-        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
-        reply->setErrorString(modbusReply->errorString());
-        emit reply->errorOccurred(reply->error());
         emit reply->finished();
     });
 
@@ -505,12 +464,12 @@ ModbusRtuReply *ModbusRtuMasterImpl::writeHoldingRegisters(int slaveAddress, int
     // Create the actual modbus lib reply
     QModbusDataUnit request = QModbusDataUnit(QModbusDataUnit::RegisterType::HoldingRegisters, registerAddress, values.length());
     request.setValues(values);
-
     QModbusReply *modbusReply = m_modbus->sendWriteRequest(request, slaveAddress);
 
-    connect(modbusReply, &QModbusReply::finished, modbusReply, [=](){
-        modbusReply->deleteLater();
+    // Cleaning up modbusReply when our reply finishes, regardless if that happened because modbusReply finished or reply timeouted
+    connect(reply, &ModbusRtuReply::finished, modbusReply, &QModbusReply::deleteLater);
 
+    connect(modbusReply, &QModbusReply::finished, reply, [=](){
         // Fill common reply data
         reply->setFinished(true);
         reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
@@ -527,15 +486,6 @@ ModbusRtuReply *ModbusRtuMasterImpl::writeHoldingRegisters(int slaveAddress, int
         // Parse the data unit and set reply result
         const QModbusDataUnit unit = modbusReply->result();
         reply->setResult(unit.values());
-        emit reply->finished();
-    });
-
-    connect(modbusReply, &QModbusReply::errorOccurred, modbusReply, [=](QModbusDevice::Error error){
-        qCWarning(dcModbusRtu()) << "Write holding register request finished with error" << error << modbusReply->errorString();
-        reply->setFinished(true);
-        reply->setError(static_cast<ModbusRtuReply::Error>(modbusReply->error()));
-        reply->setErrorString(modbusReply->errorString());
-        emit reply->errorOccurred(reply->error());
         emit reply->finished();
     });
 

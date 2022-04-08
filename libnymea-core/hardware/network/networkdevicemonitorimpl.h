@@ -45,10 +45,13 @@ class NetworkDeviceMonitorImpl : public NetworkDeviceMonitor
     friend class NetworkDeviceDiscoveryImpl;
 
 public:
-    explicit NetworkDeviceMonitorImpl(const NetworkDeviceInfo &networkDeviceInfo, QObject *parent = nullptr);
+    explicit NetworkDeviceMonitorImpl(const MacAddress &macAddress, QObject *parent = nullptr);
     ~NetworkDeviceMonitorImpl();
 
+    MacAddress macAddress() const override;
+
     NetworkDeviceInfo networkDeviceInfo() const override;
+    void setNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo);
 
     bool reachable() const override;
     void setReachable(bool reachable);
@@ -58,10 +61,10 @@ public:
 
 private:
     NetworkDeviceInfo m_networkDeviceInfo;
+    MacAddress m_macAddress;
     bool m_reachable = false;
     QDateTime m_lastSeen;
-
-    void updateNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo);
+    QDateTime m_lastConnectionAttempt;
 
 };
 

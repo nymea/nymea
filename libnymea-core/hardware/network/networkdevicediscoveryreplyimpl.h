@@ -56,7 +56,7 @@ private:
     NetworkDeviceInfos m_networkDeviceInfos; // Contains only complete and valid infos
     NetworkDeviceInfos m_virtualNetworkDeviceInfos; // Contains ping responses without ARP, like VPN devices
 
-    QHash<QString, NetworkDeviceInfo> m_networkDeviceCache;
+    QHash<MacAddress, NetworkDeviceInfo> m_networkDeviceCache;
     qint64 m_startTimestamp;
 
     // Temporary cache for ping responses where the mac is not known yet (like VPN devices)
@@ -65,10 +65,13 @@ private:
     QString macAddressFromHostAddress(const QHostAddress &address);
     bool hasHostAddress(const QHostAddress &address);
 
+    void verifyComplete(const MacAddress &macAddress);
+
     // Add or update the network device info and verify if completed
     void processPingResponse(const QHostAddress &address, const QString &hostName);
-    void processArpResponse(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress);
-    void processMacManufacturer(const QString &macAddress, const QString &manufacturer);
+    void processArpResponse(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress);
+    void processMacManufacturer(const MacAddress &macAddress, const QString &manufacturer);
+
     void processDiscoveryFinished();
 };
 

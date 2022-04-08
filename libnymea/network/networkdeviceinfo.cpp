@@ -29,7 +29,7 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "networkdeviceinfo.h"
-
+#include "macaddress.h"
 
 NetworkDeviceInfo::NetworkDeviceInfo()
 {
@@ -40,6 +40,12 @@ NetworkDeviceInfo::NetworkDeviceInfo(const QString &macAddress):
     m_macAddress(macAddress)
 {
     m_macAddressSet = true;
+}
+
+NetworkDeviceInfo::NetworkDeviceInfo(const QHostAddress &address):
+    m_address(address)
+{
+    m_addressSet = true;
 }
 
 QString NetworkDeviceInfo::macAddress() const
@@ -99,7 +105,7 @@ void NetworkDeviceInfo::setNetworkInterface(const QNetworkInterface &networkInte
 
 bool NetworkDeviceInfo::isValid() const
 {
-    return (!m_address.isNull() || !m_macAddress.isEmpty()) && m_networkInterface.isValid();
+    return (!m_address.isNull() || !MacAddress(m_macAddress).isNull()) && m_networkInterface.isValid();
 }
 
 bool NetworkDeviceInfo::isComplete() const
@@ -107,9 +113,19 @@ bool NetworkDeviceInfo::isComplete() const
     return m_macAddressSet && m_macAddressManufacturerSet && m_addressSet && m_hostNameSet && m_networkInterfaceSet;
 }
 
+QString NetworkDeviceInfo::incompleteProperties() const
+{
+    QStringList list;
+    if (!m_macAddressSet) list.append("MAC not set");
+    if (!m_macAddressManufacturerSet) list.append("MAC vendor not set");
+    if (!m_hostNameSet) list.append("hostname not set");
+    if (!m_networkInterfaceSet) list.append("nework interface not set");
+    return list.join(", ");
+}
+
 bool NetworkDeviceInfo::operator==(const NetworkDeviceInfo &other) const
 {
-    return m_macAddress == other.macAddress() &&
+    return MacAddress(m_macAddress) == MacAddress(other.macAddress()) &&
             m_address == other.address() &&
             m_hostName == other.hostName() &&
             m_macAddressManufacturer == other.macAddressManufacturer() &&
@@ -117,10 +133,18 @@ bool NetworkDeviceInfo::operator==(const NetworkDeviceInfo &other) const
             isComplete() == other.isComplete();
 }
 
+bool NetworkDeviceInfo::operator!=(const NetworkDeviceInfo &other) const
+{
+    return !operator==(other);
+}
+
 QDebug operator<<(QDebug dbg, const NetworkDeviceInfo &networkDeviceInfo)
 {
     dbg.nospace() << "NetworkDeviceInfo(" << networkDeviceInfo.address().toString();
-    dbg.nospace() << ", " << networkDeviceInfo.macAddress();
+
+    if (!networkDeviceInfo.macAddress().isEmpty())
+        dbg.nospace() << ", " << MacAddress(networkDeviceInfo.macAddress()).toString();
+
     if (!networkDeviceInfo.macAddressManufacturer().isEmpty())
         dbg.nospace() << " (" << networkDeviceInfo.macAddressManufacturer() << ") ";
 

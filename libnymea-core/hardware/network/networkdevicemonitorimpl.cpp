@@ -32,9 +32,9 @@
 
 namespace nymeaserver {
 
-NetworkDeviceMonitorImpl::NetworkDeviceMonitorImpl(const NetworkDeviceInfo &networkDeviceInfo, QObject *parent) :
+NetworkDeviceMonitorImpl::NetworkDeviceMonitorImpl(const MacAddress &macAddress, QObject *parent) :
     NetworkDeviceMonitor(parent),
-    m_networkDeviceInfo(networkDeviceInfo)
+    m_macAddress(macAddress)
 {
 
 }
@@ -44,9 +44,23 @@ NetworkDeviceMonitorImpl::~NetworkDeviceMonitorImpl()
 
 }
 
+MacAddress NetworkDeviceMonitorImpl::macAddress() const
+{
+    return m_macAddress;
+}
+
 NetworkDeviceInfo NetworkDeviceMonitorImpl::networkDeviceInfo() const
 {
     return m_networkDeviceInfo;
+}
+
+void NetworkDeviceMonitorImpl::setNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo)
+{
+    if (m_networkDeviceInfo == networkDeviceInfo)
+        return;
+
+    m_networkDeviceInfo = networkDeviceInfo;
+    emit networkDeviceInfoChanged(m_networkDeviceInfo);
 }
 
 bool NetworkDeviceMonitorImpl::reachable() const
@@ -74,16 +88,8 @@ void NetworkDeviceMonitorImpl::setLastSeen(const QDateTime lastSeen)
         return;
 
     m_lastSeen = lastSeen;
+
     emit lastSeenChanged(m_lastSeen);
-}
-
-void NetworkDeviceMonitorImpl::updateNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo)
-{
-    if (m_networkDeviceInfo == networkDeviceInfo)
-        return;
-
-    m_networkDeviceInfo = networkDeviceInfo;
-    emit networkDeviceInfoChanged(m_networkDeviceInfo);
 }
 
 }

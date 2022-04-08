@@ -44,6 +44,7 @@ HEADERS += \
     network/apikeys/apikeysprovider.h \
     network/apikeys/apikeystorage.h \
     network/arpsocket.h \
+    network/macaddress.h \
     network/macaddressdatabasereply.h \
     network/networkdevicediscovery.h \
     network/networkdevicediscoveryreply.h \
@@ -150,6 +151,7 @@ SOURCES += \
     network/apikeys/apikeysprovider.cpp \
     network/apikeys/apikeystorage.cpp \
     network/arpsocket.cpp \
+    network/macaddress.cpp \
     network/macaddressdatabasereply.cpp \
     network/networkdevicediscovery.cpp \
     network/networkdeviceinfo.cpp \

@@ -1040,7 +1040,6 @@ void TestIntegrations::getEventTypes()
 
     QVariantList eventTypes = response.toMap().value("params").toMap().value("eventTypes").toList();
     QCOMPARE(eventTypes.count(), resultCount);
-
 }
 
 void TestIntegrations::getStateTypes_data()

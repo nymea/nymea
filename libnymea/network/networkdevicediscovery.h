@@ -55,13 +55,15 @@ public:
 
     virtual bool running() const = 0;
 
-    virtual NetworkDeviceMonitor *registerMonitor(const QString &macAddress) = 0;
-    virtual void unregisterMonitor(const QString &macAddress) = 0;
+    virtual NetworkDeviceMonitor *registerMonitor(const MacAddress &macAddress) = 0;
+
+    virtual void unregisterMonitor(const MacAddress &macAddress) = 0;
     virtual void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) = 0;
 
     virtual PingReply *ping(const QHostAddress &address) = 0;
 
     virtual MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) = 0;
+    virtual MacAddressDatabaseReply *lookupMacAddress(const MacAddress &macAddress) = 0;
 
     virtual bool sendArpRequest(const QHostAddress &address) = 0;
 

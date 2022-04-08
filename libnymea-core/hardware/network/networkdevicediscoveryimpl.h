@@ -34,6 +34,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QLoggingCategory>
+#include <QDateTime>
 
 #include <network/networkdeviceinfo.h>
 #include <network/networkdevicediscovery.h>
@@ -65,13 +66,15 @@ public:
 
     NetworkDeviceDiscoveryReply *discover() override;
 
-    NetworkDeviceMonitor *registerMonitor(const QString &macAddress) override;
-    void unregisterMonitor(const QString &macAddress) override;
+    NetworkDeviceMonitor *registerMonitor(const MacAddress &macAddress) override;
+
+    void unregisterMonitor(const MacAddress &macAddress) override;
     void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) override;
 
     PingReply *ping(const QHostAddress &address) override;
 
     MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) override;
+    MacAddressDatabaseReply *lookupMacAddress(const MacAddress &macAddress) override;
 
     bool sendArpRequest(const QHostAddress &address) override;
 
@@ -84,31 +87,48 @@ private:
     Ping *m_ping = nullptr;
     bool m_enabled = true;
     bool m_running = false;
+
     QTimer *m_discoveryTimer = nullptr;
     QTimer *m_monitorTimer = nullptr;
+
+    QDateTime m_lastDiscovery;
+    QDateTime m_lastCacheHousekeeping;
+
+    uint m_rediscoveryInterval = 300; // 5 min
+    uint m_monitorInterval = 60; // 1 min
+    uint m_cacheCleanupPeriod = 30; // days
 
     NetworkDeviceDiscoveryReplyImpl *m_currentReply = nullptr;
     QList<PingReply *> m_runningPingRepies;
 
-    QHash<QString, NetworkDeviceMonitorImpl *> m_monitors;
+    QHash<MacAddress, NetworkDeviceMonitorImpl *> m_monitors;
+    QHash<MacAddress, QDateTime> m_lastSeen;
 
     QSettings *m_cacheSettings;
-    QHash<QString, NetworkDeviceInfo> m_networkInfoCache;
+    QHash<MacAddress, NetworkDeviceInfo> m_networkInfoCache;
 
     void pingAllNetworkDevices();
-    void finishDiscovery();
 
     void processMonitorPingResult(PingReply *reply, NetworkDeviceMonitorImpl *monitor);
 
     void loadNetworkDeviceCache();
-    void removeFromNetworkDeviceCache(const QString &macAddress);
+    void removeFromNetworkDeviceCache(const MacAddress &macAddress);
     void saveNetworkDeviceCache(const NetworkDeviceInfo &deviceInfo);
 
     void updateCache(const NetworkDeviceInfo &deviceInfo);
+    void evaluateMonitor(NetworkDeviceMonitorImpl *monitor);
+
+    void processArpTraffic(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress);
+
+    // Time helpers
+    bool longerAgoThan(const QDateTime &dateTime, uint minutes);
+    QDateTime convertMinuteBased(const QDateTime &dateTime = QDateTime());
 
 private slots:
-    void onArpResponseReceived(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress);
+    void onArpResponseReceived(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress);
+    void onArpRequstReceived(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress);
     void evaluateMonitors();
+    void finishDiscovery();
 
 };
 

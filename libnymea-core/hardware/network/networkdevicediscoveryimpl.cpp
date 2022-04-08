@@ -1,4 +1,4 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+﻿/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
 * Copyright 2013 - 2022, nymea GmbH
 * Contact: contact@nymea.io
@@ -37,8 +37,6 @@
 #include <network/arpsocket.h>
 #include <network/networkutils.h>
 
-#include <QDateTime>
-
 NYMEA_LOGGING_CATEGORY(dcNetworkDeviceDiscovery, "NetworkDeviceDiscovery")
 
 namespace nymeaserver {
@@ -50,9 +48,8 @@ NetworkDeviceDiscoveryImpl::NetworkDeviceDiscoveryImpl(QObject *parent) :
     m_arpSocket = new ArpSocket(this);
     connect(m_arpSocket, &ArpSocket::arpResponse, this, &NetworkDeviceDiscoveryImpl::onArpResponseReceived);
     bool arpAvailable = m_arpSocket->openSocket();
-    if (!arpAvailable) {
+    if (!arpAvailable)
         m_arpSocket->closeSocket();
-    }
 
     // Create ping socket
     m_ping = new Ping(this);
@@ -86,6 +83,9 @@ NetworkDeviceDiscoveryImpl::NetworkDeviceDiscoveryImpl(QObject *parent) :
 
     m_cacheSettings = new QSettings(NymeaSettings::cachePath() + "/network-device-discovery.cache", QSettings::IniFormat);
     loadNetworkDeviceCache();
+
+    // Start the monitor timer in any case, we do also the cache cleanup there...
+    m_monitorTimer->start();
 }
 
 NetworkDeviceDiscoveryImpl::~NetworkDeviceDiscoveryImpl()
@@ -133,42 +133,56 @@ bool NetworkDeviceDiscoveryImpl::running() const
     return m_running;
 }
 
-NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(const QString &macAddress)
+NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(const MacAddress &macAddress)
 {
+    qCDebug(dcNetworkDeviceDiscovery()) << "Register new network device monitor for" << macAddress;
+    // Make sure we creare only one monitor per mac
     if (m_monitors.contains(macAddress))
         return m_monitors.value(macAddress);
 
+    if (macAddress.isNull()) {
+        qCWarning(dcNetworkDeviceDiscovery()) << "Could not register monitor for invalid" << macAddress.toString();
+        return nullptr;
+    }
+
+    // Fill in cached information
     NetworkDeviceInfo info;
     if (m_networkInfoCache.contains(macAddress)) {
         info = m_networkInfoCache.value(macAddress);
     } else {
-        info.setMacAddress(macAddress);
-        qCDebug(dcNetworkDeviceDiscovery()) << "Adding mac address monitor for unresolved mac address. Starting a discovery...";
+        info.setMacAddress(macAddress.toString());
+    }
+
+    NetworkDeviceMonitorImpl *monitor = new NetworkDeviceMonitorImpl(macAddress, this);
+    monitor->setNetworkDeviceInfo(info);
+
+    m_monitors.insert(macAddress, monitor);
+
+    // Restart the monitor timer since we evaluate this one now
+    m_monitorTimer->start();
+
+    if (!monitor->networkDeviceInfo().isValid()) {
+        qCDebug(dcNetworkDeviceDiscovery()) << "Adding network device monitor for unresolved mac address. Starting a discovery...";
         discover();
     }
 
-    NetworkDeviceMonitorImpl *monitor = new NetworkDeviceMonitorImpl(info, this);
-    bool initRequired = m_monitors.isEmpty();
-    m_monitors.insert(macAddress, monitor);
-    if (initRequired) {
-        m_monitorTimer->start();
-        evaluateMonitors();
-    }
+    evaluateMonitor(monitor);
 
     return monitor;
 }
 
-void NetworkDeviceDiscoveryImpl::unregisterMonitor(const QString &macAddress)
+void NetworkDeviceDiscoveryImpl::unregisterMonitor(const MacAddress &macAddress)
 {
     if (m_monitors.contains(macAddress)) {
         NetworkDeviceMonitor *monitor = m_monitors.take(macAddress);
+        qCDebug(dcNetworkDeviceDiscovery()) << "Unregister" << monitor;
         monitor->deleteLater();
     }
 }
 
 void NetworkDeviceDiscoveryImpl::unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor)
 {
-    unregisterMonitor(networkDeviceMonitor->networkDeviceInfo().macAddress());
+    unregisterMonitor(MacAddress(networkDeviceMonitor->networkDeviceInfo().macAddress()));
 }
 
 PingReply *NetworkDeviceDiscoveryImpl::ping(const QHostAddress &address)
@@ -176,18 +190,40 @@ PingReply *NetworkDeviceDiscoveryImpl::ping(const QHostAddress &address)
     // Note: we use any ping used trough this method also for the monitor evaluation
     PingReply *reply = m_ping->ping(address);
     connect(reply, &PingReply::finished, this, [=](){
+
+        // Search cache for mac address and update last seen
+        if (reply->error() == PingReply::ErrorNoError) {
+            foreach (const NetworkDeviceInfo &info, m_networkInfoCache) {
+                if (info.address() == address) {
+                    // Found info for this ip, update the cache
+                    MacAddress macAddress(info.macAddress());
+                    if (!macAddress.isNull() && m_networkInfoCache.contains(macAddress)) {
+                        m_lastSeen[macAddress] = QDateTime::currentDateTime();
+                        saveNetworkDeviceCache(m_networkInfoCache.value(macAddress));
+                    }
+                }
+            }
+        }
+
+        // Update any monitor
         foreach (NetworkDeviceMonitorImpl *monitor, m_monitors.values()) {
             if (monitor->networkDeviceInfo().address() == address) {
                 processMonitorPingResult(reply, monitor);
             }
         }
     });
+
     return reply;
 }
 
 MacAddressDatabaseReply *NetworkDeviceDiscoveryImpl::lookupMacAddress(const QString &macAddress)
 {
     return m_macAddressDatabase->lookupMacAddress(macAddress);
+}
+
+MacAddressDatabaseReply *NetworkDeviceDiscoveryImpl::lookupMacAddress(const MacAddress &macAddress)
+{
+    return lookupMacAddress(macAddress.toString());
 }
 
 bool NetworkDeviceDiscoveryImpl::sendArpRequest(const QHostAddress &address)
@@ -202,7 +238,6 @@ void NetworkDeviceDiscoveryImpl::setEnabled(bool enabled)
 {
     m_enabled = enabled;
     emit enabledChanged(m_enabled);
-
     // TODO: disable network discovery if false, not used for now
 }
 
@@ -259,7 +294,7 @@ void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
                         }
                     }
 
-                    if (m_runningPingRepies.isEmpty() && m_currentReply) {
+                    if (m_runningPingRepies.isEmpty() && m_currentReply && !m_discoveryTimer->isActive()) {
                         qCWarning(dcNetworkDeviceDiscovery()) << "All ping replies finished for discovery." << m_currentReply->networkDeviceInfos().count();
                         finishDiscovery();
                     }
@@ -269,22 +304,9 @@ void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
     }
 }
 
-void NetworkDeviceDiscoveryImpl::finishDiscovery()
-{
-    m_discoveryTimer->stop();
-
-    m_running = false;
-    emit runningChanged(m_running);
-
-    emit networkDeviceInfoCacheUpdated();
-
-    m_currentReply->processDiscoveryFinished();
-    m_currentReply->deleteLater();
-    m_currentReply = nullptr;
-}
-
 void NetworkDeviceDiscoveryImpl::processMonitorPingResult(PingReply *reply, NetworkDeviceMonitorImpl *monitor)
 {
+    // Save the last time we tried to communicate
     if (reply->error() == PingReply::ErrorNoError) {
         qCDebug(dcNetworkDeviceDiscovery()) << "Ping response from" << monitor << reply->duration() << "ms";
         monitor->setLastSeen(QDateTime::currentDateTime());
@@ -298,36 +320,57 @@ void NetworkDeviceDiscoveryImpl::processMonitorPingResult(PingReply *reply, Netw
 void NetworkDeviceDiscoveryImpl::loadNetworkDeviceCache()
 {
     qCDebug(dcNetworkDeviceDiscovery()) << "Loading cached network device information from" << m_cacheSettings->fileName();
+
     m_networkInfoCache.clear();
+    QDateTime now = QDateTime::currentDateTime();
+
     m_cacheSettings->beginGroup("NetworkDeviceInfos");
     foreach (const QString &macAddress, m_cacheSettings->childGroups()) {
         m_cacheSettings->beginGroup(macAddress);
-        NetworkDeviceInfo info(macAddress);
+
+        MacAddress mac(macAddress);
+        QDateTime lastSeen = QDateTime::fromMSecsSinceEpoch(m_cacheSettings->value("lastSeen").toLongLong());
+
+        // Remove the info from the cache if not seen fo the last 30 days...
+        if (lastSeen.date().addDays(m_cacheCleanupPeriod) < now.date()) {
+            qCDebug(dcNetworkDeviceDiscovery()) << "Removing network device cache entry since it did not show up within the last" << m_cacheCleanupPeriod << "days" << mac.toString();
+            m_cacheSettings->remove("");
+            continue;
+        }
+
+        NetworkDeviceInfo info(mac.toString());
         info.setAddress(QHostAddress(m_cacheSettings->value("address").toString()));
         info.setHostName(m_cacheSettings->value("hostName").toString());
         info.setMacAddressManufacturer(m_cacheSettings->value("manufacturer").toString());
         info.setNetworkInterface(QNetworkInterface::interfaceFromName(m_cacheSettings->value("interface").toString()));
+
         if (info.isValid() && info.isComplete()) {
-            qCDebug(dcNetworkDeviceDiscovery()) << "Loaded cached" << info;
-            m_networkInfoCache.insert(info.macAddress(), info);
+            qCDebug(dcNetworkDeviceDiscovery()) << "Loaded cached" << info << "last seen" << lastSeen.toString();
+            m_networkInfoCache[mac] = info;
+            m_lastSeen[mac] = lastSeen;
         } else {
             qCWarning(dcNetworkDeviceDiscovery()) << "Clean up invalid cached network device info from cache" << info;
             m_cacheSettings->remove("");
         }
+
         m_cacheSettings->endGroup(); // mac address
     }
     m_cacheSettings->endGroup(); // NetworkDeviceInfos
+
+    // We just did some housekeeping while loading from the cache
+    m_lastCacheHousekeeping = QDateTime::currentDateTime();
 }
 
-void NetworkDeviceDiscoveryImpl::removeFromNetworkDeviceCache(const QString &macAddress)
+void NetworkDeviceDiscoveryImpl::removeFromNetworkDeviceCache(const MacAddress &macAddress)
 {
-    if (macAddress.isEmpty())
+    if (macAddress.isNull())
         return;
 
     m_networkInfoCache.remove(macAddress);
+    m_lastSeen.remove(macAddress);
 
     m_cacheSettings->beginGroup("NetworkDeviceInfos");
-    m_cacheSettings->beginGroup(macAddress);
+    m_cacheSettings->beginGroup(macAddress.toString());
     m_cacheSettings->remove("");
     m_cacheSettings->endGroup(); // mac address
     m_cacheSettings->endGroup(); // NetworkDeviceInfos
@@ -341,54 +384,82 @@ void NetworkDeviceDiscoveryImpl::saveNetworkDeviceCache(const NetworkDeviceInfo 
     m_cacheSettings->setValue("hostName", deviceInfo.hostName());
     m_cacheSettings->setValue("manufacturer", deviceInfo.macAddressManufacturer());
     m_cacheSettings->setValue("interface", deviceInfo.networkInterface().name());
+    m_cacheSettings->setValue("lastSeen", convertMinuteBased(m_lastSeen.value(MacAddress(deviceInfo.macAddress()))).toMSecsSinceEpoch());
     m_cacheSettings->endGroup(); // mac address
     m_cacheSettings->endGroup(); // NetworkDeviceInfos
 }
 
 void NetworkDeviceDiscoveryImpl::updateCache(const NetworkDeviceInfo &deviceInfo)
 {
-    if (deviceInfo.macAddress().isEmpty())
+    MacAddress macAddress(deviceInfo.macAddress());
+    if (macAddress.isNull())
         return;
 
-    if (m_monitors.contains(deviceInfo.macAddress())) {
-        NetworkDeviceMonitorImpl *monitor = m_monitors.value(deviceInfo.macAddress());
-        monitor->updateNetworkDeviceInfo(deviceInfo);
+    if (m_monitors.contains(macAddress)) {
+        NetworkDeviceMonitorImpl *monitor = m_monitors.value(macAddress);
+        monitor->setNetworkDeviceInfo(deviceInfo);
     }
 
-    if (m_networkInfoCache.value(deviceInfo.macAddress()) == deviceInfo)
+    if (m_networkInfoCache.value(macAddress) == deviceInfo)
         return;
 
-    m_networkInfoCache[deviceInfo.macAddress()] = deviceInfo;
+    m_networkInfoCache[macAddress] = deviceInfo;
     saveNetworkDeviceCache(deviceInfo);
 }
 
-void NetworkDeviceDiscoveryImpl::onArpResponseReceived(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress)
+void NetworkDeviceDiscoveryImpl::evaluateMonitor(NetworkDeviceMonitorImpl *monitor)
 {
-    // Ignore ARP from zero mac
-    if (macAddress == QString("00:00:00:00:00:00")) {
-        qCDebug(dcNetworkDeviceDiscovery()) << "Ignoring ARP reply from" << address.toString() << macAddress << interface.name();
-        return;
+    // Start action if we have not seen the device for gracePeriod seconds
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+
+    bool requiresRefresh = false;
+    if (monitor->lastSeen().isNull()) {
+        qCDebug(dcNetworkDeviceDiscovery()) << monitor << "requires refresh. Not seen since application start.";
+        requiresRefresh = true;
     }
 
-    qCDebug(dcNetworkDeviceDiscovery()) << "ARP reply received" << address.toString() << macAddress << interface.name();
+    if (!requiresRefresh && currentDateTime > monitor->lastSeen().addSecs(m_monitorInterval)) {
+        qCDebug(dcNetworkDeviceDiscovery()) << monitor << "requires refresh. Not see since" << (currentDateTime.toMSecsSinceEpoch() - monitor->lastSeen().toMSecsSinceEpoch()) / 1000.0 << "s";
+        requiresRefresh = true;
+    }
+
+    if (!requiresRefresh)
+        return;
+
+    if (monitor->networkDeviceInfo().address().isNull())
+        return;
+
+    // Try to ping first
+    qCDebug(dcNetworkDeviceDiscovery()) << monitor << "try to ping" << monitor->networkDeviceInfo().address().toString();
+    monitor->m_lastConnectionAttempt = currentDateTime;
+
+    PingReply *reply = m_ping->ping(monitor->networkDeviceInfo().address());
+    connect(reply, &PingReply::finished, monitor, [=](){
+        processMonitorPingResult(reply, monitor);
+    });
+}
+
+void NetworkDeviceDiscoveryImpl::processArpTraffic(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress)
+{
+    QDateTime now = QDateTime::currentDateTime();
+    m_lastSeen[macAddress] = now;
 
     if (m_networkInfoCache.contains(macAddress)) {
         if (m_networkInfoCache.value(macAddress).address() != address) {
             m_networkInfoCache[macAddress].setAddress(address);
-            saveNetworkDeviceCache(m_networkInfoCache[macAddress]);
+            saveNetworkDeviceCache(m_networkInfoCache.value(macAddress));
         }
     }
 
     // Update the monitors
-    foreach (NetworkDeviceMonitorImpl *monitor, m_monitors) {
-        if (monitor->networkDeviceInfo().macAddress() == macAddress) {
-            monitor->setLastSeen(QDateTime::currentDateTime());
-            monitor->setReachable(true);
-
-            if (monitor->networkDeviceInfo().address() != address) {
-                monitor->m_networkDeviceInfo.setAddress(address);
-                emit monitor->networkDeviceInfoChanged(monitor->networkDeviceInfo());
-            }
+    NetworkDeviceMonitorImpl *monitor = m_monitors.value(macAddress);
+    if (monitor) {
+        monitor->setLastSeen(now);
+        monitor->setReachable(true);
+        if (monitor->networkDeviceInfo().address() != address) {
+            monitor->m_networkDeviceInfo.setAddress(address);
+            qCDebug(dcNetworkDeviceDiscovery()) << "NetworkDeviceMonitor" << monitor << "ip address changed";
+            emit monitor->networkDeviceInfoChanged(monitor->networkDeviceInfo());
         }
     }
 
@@ -408,7 +479,7 @@ void NetworkDeviceDiscoveryImpl::onArpResponseReceived(const QNetworkInterface &
         } else {
             // Lookup the mac address vendor if possible
             if (m_macAddressDatabase->available()) {
-                MacAddressDatabaseReply *reply = m_macAddressDatabase->lookupMacAddress(macAddress);
+                MacAddressDatabaseReply *reply = m_macAddressDatabase->lookupMacAddress(macAddress.toString());
                 connect(reply, &MacAddressDatabaseReply::finished, m_currentReply, [=](){
                     qCDebug(dcNetworkDeviceDiscovery()) << "MAC manufacturer lookup finished for" << macAddress << ":" << reply->manufacturer();
                     m_currentReply->processMacManufacturer(macAddress, reply->manufacturer());
@@ -421,41 +492,101 @@ void NetworkDeviceDiscoveryImpl::onArpResponseReceived(const QNetworkInterface &
     }
 }
 
+bool NetworkDeviceDiscoveryImpl::longerAgoThan(const QDateTime &dateTime, uint seconds)
+{
+    uint duration = (QDateTime::currentDateTime().toMSecsSinceEpoch() - dateTime.toMSecsSinceEpoch()) / 1000.0;
+    return duration >= seconds;
+}
+
+QDateTime NetworkDeviceDiscoveryImpl::convertMinuteBased(const QDateTime &dateTime)
+{
+    // We store the date time on minute accuracy to have
+    // less write cycles and a higher resolution is not necessary
+
+    // If the given datetime is null, use the current datetime
+    QDateTime dateTimeToConvert;
+    if (dateTime.isNull()) {
+        dateTimeToConvert = QDateTime::currentDateTime();
+    } else {
+        dateTimeToConvert = dateTime;
+    }
+
+    dateTimeToConvert.setTime(QTime(dateTimeToConvert.time().hour(), dateTimeToConvert.time().minute(), 0, 0));
+    return dateTimeToConvert;
+}
+
+void NetworkDeviceDiscoveryImpl::onArpResponseReceived(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress)
+{
+    // Ignore ARP from zero mac
+    if (macAddress.isNull()) {
+        qCDebug(dcNetworkDeviceDiscovery()) << "Ignoring ARP reply from" << address.toString() << macAddress.toString() << interface.name();
+        return;
+    }
+
+    qCDebug(dcNetworkDeviceDiscovery()) << "ARP reply received" << address.toString() << macAddress.toString() << interface.name();
+    processArpTraffic(interface, address, macAddress);
+}
+
+void NetworkDeviceDiscoveryImpl::onArpRequstReceived(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress)
+{
+    // Ignore ARP from zero mac
+    if (macAddress.isNull()) {
+        qCDebug(dcNetworkDeviceDiscovery()) << "Ignoring ARP reply from" << address.toString() << macAddress.toString() << interface.name();
+        return;
+    }
+
+    qCDebug(dcNetworkDeviceDiscovery()) << "ARP request received" << address.toString() << macAddress.toString() << interface.name();
+    processArpTraffic(interface, address, macAddress);
+}
+
 void NetworkDeviceDiscoveryImpl::evaluateMonitors()
 {
+    bool monitorRequiresRediscovery = false;
     foreach (NetworkDeviceMonitorImpl *monitor, m_monitors) {
-        // Start action if we have not seen the device for gracePeriod seconds
-        const int gracePeriod = 60;
-        QDateTime currentDateTime = QDateTime::currentDateTime();
+        evaluateMonitor(monitor);
 
-        bool requiresRefresh = false;
-
-        if (monitor->lastSeen().isNull()) {
-            qCDebug(dcNetworkDeviceDiscovery()) << monitor << "requires refresh. Not seen yet";
-            requiresRefresh = true;
+        // Check if there is any monitor which has not be seen since
+        if (monitor->m_lastConnectionAttempt.isValid() && longerAgoThan(monitor->lastSeen(), m_monitorInterval)) {
+            monitorRequiresRediscovery = true;
         }
-
-        if (!requiresRefresh && currentDateTime > monitor->lastSeen().addSecs(gracePeriod)) {
-            qCDebug(dcNetworkDeviceDiscovery()) << monitor << "requires refresh. Not see since" << (currentDateTime.toMSecsSinceEpoch() - monitor->lastSeen().toMSecsSinceEpoch()) / 1000.0 << "s";
-            requiresRefresh = true;
-        }
-
-        if (!requiresRefresh)
-            continue;
-
-        if (monitor->networkDeviceInfo().address().isNull()) {
-            // Not known yet
-            // TODO: load from cache
-            continue;
-        }
-
-        // Try to ping first
-        qCDebug(dcNetworkDeviceDiscovery()) << monitor << "try to ping" << monitor->networkDeviceInfo().address().toString();
-        PingReply *reply = m_ping->ping(monitor->networkDeviceInfo().address());
-        connect(reply, &PingReply::finished, monitor, [=](){
-            processMonitorPingResult(reply, monitor);
-        });
     }
+
+    if (monitorRequiresRediscovery && longerAgoThan(m_lastDiscovery, m_rediscoveryInterval)) {
+        qCDebug(dcNetworkDeviceDiscovery()) << "There are unreachable monitors and the last discovery is more than" << m_rediscoveryInterval << "s ago. Starting network discovery to search the monitored network devices...";
+        discover();
+    }
+
+    // Do some cache housekeeping if required
+    if (m_lastCacheHousekeeping.addDays(1) < QDateTime::currentDateTime()) {
+        qCDebug(dcNetworkDeviceDiscovery()) << "Starting cache housekeeping since it is more than one day since the last clanup...";
+        QDateTime now = QDateTime::currentDateTime();
+        foreach (const MacAddress &mac, m_lastSeen.keys()) {
+            // Remove the info from the cache if not seen fo the last 30 days...
+            if (m_lastSeen.value(mac).date().addDays(m_cacheCleanupPeriod) < QDateTime::currentDateTime().date()) {
+                qCDebug(dcNetworkDeviceDiscovery()) << "Removing network device cache entry since it did not show up within the last" << m_cacheCleanupPeriod << "days" << mac.toString();
+                removeFromNetworkDeviceCache(mac);
+            }
+        }
+
+        m_lastCacheHousekeeping = now;
+    }
+}
+
+void NetworkDeviceDiscoveryImpl::finishDiscovery()
+{
+    qCDebug(dcNetworkDeviceDiscovery()) << "Finishing discovery...";
+    m_discoveryTimer->stop();
+
+    m_running = false;
+    emit runningChanged(m_running);
+
+    emit networkDeviceInfoCacheUpdated();
+
+    m_lastDiscovery = QDateTime::currentDateTime();
+
+    m_currentReply->processDiscoveryFinished();
+    m_currentReply->deleteLater();
+    m_currentReply = nullptr;
 }
 
 }

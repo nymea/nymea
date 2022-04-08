@@ -58,8 +58,13 @@ int NetworkDeviceInfos::indexFromHostAddress(const QHostAddress &address)
 
 int NetworkDeviceInfos::indexFromMacAddress(const QString &macAddress)
 {
+    return indexFromMacAddress(MacAddress(macAddress));
+}
+
+int NetworkDeviceInfos::indexFromMacAddress(const MacAddress &macAddress)
+{
     for (int i = 0; i < size(); i++) {
-        if (at(i).macAddress().toLower() == macAddress.toLower()) {
+        if (MacAddress(at(i).macAddress()) == macAddress) {
             return i;
         }
     }
@@ -77,7 +82,12 @@ bool NetworkDeviceInfos::hasMacAddress(const QString &macAddress)
     return indexFromMacAddress(macAddress) >= 0;
 }
 
-NetworkDeviceInfo NetworkDeviceInfos::get(const QHostAddress &address)
+bool NetworkDeviceInfos::hasMacAddress(const MacAddress &macAddress)
+{
+    return indexFromMacAddress(macAddress) >= 0;
+}
+
+NetworkDeviceInfo NetworkDeviceInfos::get(const QHostAddress &address) const
 {
     foreach (const NetworkDeviceInfo &networkDeviceInfo, *this) {
         if (networkDeviceInfo.address() == address) {
@@ -88,7 +98,7 @@ NetworkDeviceInfo NetworkDeviceInfos::get(const QHostAddress &address)
     return NetworkDeviceInfo();
 }
 
-NetworkDeviceInfo NetworkDeviceInfos::get(const QString &macAddress)
+NetworkDeviceInfo NetworkDeviceInfos::get(const QString &macAddress) const
 {
     foreach (const NetworkDeviceInfo &networkDeviceInfo, *this) {
         if (networkDeviceInfo.macAddress() == macAddress) {
@@ -99,10 +109,20 @@ NetworkDeviceInfo NetworkDeviceInfos::get(const QString &macAddress)
     return NetworkDeviceInfo();
 }
 
+NetworkDeviceInfo NetworkDeviceInfos::get(const MacAddress &macAddress) const
+{
+    return get(macAddress.toString());
+}
+
 void NetworkDeviceInfos::removeMacAddress(const QString &macAddress)
 {
+    removeMacAddress(MacAddress(macAddress));
+}
+
+void NetworkDeviceInfos::removeMacAddress(const MacAddress &macAddress)
+{
     for (int i = 0; i < size(); i++) {
-        if (at(i).macAddress().toLower() == macAddress.toLower()) {
+        if (MacAddress(at(i).macAddress()) == macAddress) {
             remove(i);
         }
     }

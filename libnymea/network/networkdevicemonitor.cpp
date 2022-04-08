@@ -39,14 +39,14 @@ NetworkDeviceMonitor::NetworkDeviceMonitor(QObject *parent) :
 
 QDebug operator<<(QDebug dbg, NetworkDeviceMonitor *networkDeviceMonitor)
 {
-    dbg.nospace() << "NetworkDeviceMonitor(" << networkDeviceMonitor->networkDeviceInfo().macAddress();
+    dbg.nospace() << "NetworkDeviceMonitor(" << networkDeviceMonitor->macAddress().toString();
 
     if (!networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer().isEmpty())
         dbg.nospace() << " - " << networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer();
 
     dbg.nospace() << ", " << networkDeviceMonitor->networkDeviceInfo().address().toString();
 
-    dbg.nospace() << ") ";
-    return dbg.maybeSpace();
+    dbg.nospace() << ")";
+    return dbg.space();
 }
 

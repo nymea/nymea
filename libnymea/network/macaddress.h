@@ -28,63 +28,59 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKDEVICEINFO_H
-#define NETWORKDEVICEINFO_H
+#ifndef MACADDRESS_H
+#define MACADDRESS_H
 
-#include <QDebug>
-#include <QObject>
-#include <QDateTime>
-#include <QHostAddress>
-#include <QNetworkInterface>
+#include <QHash>
+#include <QString>
+#include <QByteArray>
 
 #include "libnymea.h"
 
-class LIBNYMEA_EXPORT NetworkDeviceInfo
+class LIBNYMEA_EXPORT MacAddress
 {
 public:
-    explicit NetworkDeviceInfo();
-    explicit NetworkDeviceInfo(const QString &macAddress);
-    explicit NetworkDeviceInfo(const QHostAddress &address);
+    explicit MacAddress();
+    explicit MacAddress(const QString &macAddress);
+    explicit MacAddress(const QByteArray &macAddress);
+    explicit MacAddress(unsigned char *rawData);
+    MacAddress(const MacAddress &other);
 
-    QString macAddress() const;
-    void setMacAddress(const QString &macAddress);
+    static MacAddress broadcast();
+    static MacAddress fromString(const QString &macAddress);
 
-    QString macAddressManufacturer() const;
-    void setMacAddressManufacturer(const QString &macAddressManufacturer);
+    QString toString() const;
 
-    QHostAddress address() const;
-    void setAddress(const QHostAddress &address);
+    QByteArray toByteArray() const;
 
-    QString hostName() const;
-    void setHostName(const QString &hostName);
-
-    QNetworkInterface networkInterface() const;
-    void setNetworkInterface(const QNetworkInterface &networkInterface);
-
+    bool isNull() const;
     bool isValid() const;
-    bool isComplete() const;
 
-    QString incompleteProperties() const;
+    void clear();
 
-    bool operator==(const NetworkDeviceInfo &other) const;
-    bool operator!=(const NetworkDeviceInfo &other) const;
+    MacAddress &operator=(const MacAddress &other);
+
+    bool operator<(const MacAddress &other) const;
+    bool operator>(const MacAddress &other) const;
+    bool operator==(const MacAddress &other) const;
+    bool operator!=(const MacAddress &other) const;
 
 private:
-    QHostAddress m_address;
-    QString m_macAddress;
-    QString m_macAddressManufacturer;
-    QString m_hostName;
-    QNetworkInterface m_networkInterface;
+    QByteArray m_rawData = 0;
 
-    bool m_macAddressSet = false;
-    bool m_macAddressManufacturerSet = false;
-    bool m_addressSet = false;
-    bool m_hostNameSet = false;
-    bool m_networkInterfaceSet = false;
 };
 
 
-QDebug operator<<(QDebug debug, const NetworkDeviceInfo &networkDeviceInfo);
+#if QT_VERSION < 0x0600000
+using qhash_result_t = uint;
+#else
+using qhash_result_t = size_t;
+#endif
+inline qhash_result_t qHash(const MacAddress &macAddress, qhash_result_t seed)
+{
+    return qHash(macAddress.toByteArray(), seed);
+}
 
+QDebug operator<<(QDebug debug, const MacAddress &address);
 
-#endif // NETWORKDEVICEINFO_H
+#endif // MACADDRESS_H

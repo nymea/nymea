@@ -17,6 +17,12 @@ LIBS += -L$$top_builddir/libnymea/ -lnymea \
         -L$$top_builddir/libnymea-core -lnymea-core \
         -lnymea-remoteproxyclient
 
+# Add rpath for easy running from the build dir, unless explicitly disabled
+!norpath: {
+    message("Adding rpath to nymead binary")
+    LIBS += -Wl,-rpath ../libnymea/:../libnymea-core/
+}
+
 CONFIG += link_pkgconfig
 PKGCONFIG += nymea-zigbee
 

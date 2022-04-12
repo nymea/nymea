@@ -16,11 +16,11 @@ ifeq (,$(filter nodoc,$(DEB_BUILD_OPTIONS)))
 	MAKE_TARGETS += doc
 endif 
 
-QMAKE_ADDITIONAL_ARGS=
+QMAKE_ADDITIONAL_ARGS = CONFIG+=norpath
 ifneq (,$(filter coverage,$(DEB_BUILD_OPTIONS)))
-	QMAKE_ADDITIONAL_ARGS += CONFIG+=coverage CONFIG+=debug
+        QMAKE_ADDITIONAL_ARGS += CONFIG+=coverage CONFIG+=debug
 else
-	QMAKE_ADDITIONAL_ARGS += CONFIG+=release
+        QMAKE_ADDITIONAL_ARGS += CONFIG+=release
 endif
 
 DPKG_EXPORT_BUILDFLAGS = 1

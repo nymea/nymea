@@ -45,4 +45,7 @@ signals:
 
 };
 
+Q_DECLARE_INTERFACE(UserBackend, "io.nymea.UserBackend")
+
+
 #endif // USERBACKEND_H

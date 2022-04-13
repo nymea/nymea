@@ -347,7 +347,7 @@ JsonReply *JsonRPCServerImplementation::Hello(const QVariantMap &params, const J
     }
 
     if (badToken) {
-        qCWarning(dcJsonRpc()) << "Staring connection lockdown timer";
+        qCWarning(dcJsonRpc()) << "Invalid token received from client! Starting connection lockdown timer";
         m_connectionLockdownTimer.start();
     }
 
@@ -440,7 +440,7 @@ JsonReply *JsonRPCServerImplementation::Authenticate(const QVariantMap &params, 
     }
 
     if (token.isEmpty()) {
-        qCWarning(dcJsonRpc()) << "Staring connection lockdown timer";
+        qCWarning(dcJsonRpc()) << "Starting connection lockdown timer";
         m_connectionLockdownTimer.start();
     }
 
@@ -684,7 +684,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
                 sendUnauthorizedResponse(interface, clientId, commandId, "Initial setup required. Call Users.CreateUser first.");
                 qCWarning(dcJsonRpc()) << "Initial setup required but client does not call the setup. Dropping connection.";
                 interface->terminateClientConnection(clientId);
-                qCWarning(dcJsonRpc()) << "Staring connection lockdown timer";
+                qCWarning(dcJsonRpc()) << "Starting connection lockdown timer";
                 m_connectionLockdownTimer.start();
                 return;
             }
@@ -695,7 +695,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
                     sendUnauthorizedResponse(interface, clientId, commandId, "Forbidden: Invalid token.");
                     qCWarning(dcJsonRpc()) << "Client did not not present a valid token. Dropping connection.";
                     interface->terminateClientConnection(clientId);
-                    qCWarning(dcJsonRpc()) << "Staring connection lockdown timer";
+                    qCWarning(dcJsonRpc()) << "Starting connection lockdown timer";
                     m_connectionLockdownTimer.start();
                     return;
                 }

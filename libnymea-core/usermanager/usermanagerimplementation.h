@@ -72,6 +72,9 @@ public:
 
     bool verifyToken(const QByteArray &token) override;
 
+private:
+    QStringList pluginSearchDirs();
+    void loadBackendPlugin(const QString &file);
 
 private:
     UserBackend *m_backend = nullptr;

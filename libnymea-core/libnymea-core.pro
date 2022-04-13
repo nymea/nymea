@@ -124,7 +124,6 @@ HEADERS += nymeacore.h \
     logging/logvaluetool.h \
     time/timemanager.h \
     usermanager/builtinuserbackend.h \
-    usermanager/maveouserbackend.h \
     usermanager/pushbuttondbusservice.h \
     certificategenerator.h \
     cloud/awsconnector.h \
@@ -228,7 +227,6 @@ SOURCES += nymeacore.cpp \
     logging/logvaluetool.cpp \
     time/timemanager.cpp \
     usermanager/builtinuserbackend.cpp \
-    usermanager/maveouserbackend.cpp \
     usermanager/pushbuttondbusservice.cpp \
     certificategenerator.cpp \
     cloud/awsconnector.cpp \

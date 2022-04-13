@@ -73,7 +73,6 @@
 #include "loggingcategories.h"
 #include "nymeacore.h"
 #include "builtinuserbackend.h"
-#include "maveouserbackend.h"
 
 #include <QUuid>
 #include <QCryptographicHash>
@@ -85,14 +84,43 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QFileInfo>
+#include <QCoreApplication>
 
 namespace nymeaserver {
 
 UserManagerImplementation::UserManagerImplementation(QObject *parent):
     UserManager(parent)
 {
-    m_backend = new BuiltinUserBackend(this);
-//    m_builtinBackend = new MaveoUserBackend(this);
+    foreach (const QString &path, pluginSearchDirs()) {
+        QDir dir(path);
+        qCDebug(dcPlatform) << "Loading platform plugins from:" << dir.absolutePath();
+        foreach (const QString &entry, dir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
+            QFileInfo fi(path + "/" + entry);
+            if (fi.isFile()) {
+                if (entry.startsWith("libnymea_userbackendplugin") && entry.endsWith(".so")) {
+                    loadBackendPlugin(path + "/" + entry);
+                }
+            } else if (fi.isDir()) {
+                if (QFileInfo::exists(path + "/" + entry + "/libnymea_userbackendplugin" + entry + ".so")) {
+                    loadBackendPlugin(path + "/" +  entry + "/libnymea_userbackendplugin" + entry + ".so");
+                }
+            }
+            if (m_backend) {
+                break;
+            }
+        }
+        if (m_backend) {
+            break;
+        }
+    }
+
+    if (!m_backend) {
+        qCInfo(dcUserManager()) << "Using builtin backend.";
+        m_backend = new BuiltinUserBackend(this);
+    } else {
+        qCInfo(dcUserManager()) << "Using backend:" << m_backend->metaObject()->className();
+    }
+
     connect(m_backend, &BuiltinUserBackend::userAdded, this, &UserManagerImplementation::userAdded);
     connect(m_backend, &BuiltinUserBackend::userRemoved, this, &UserManagerImplementation::userRemoved);
     connect(m_backend, &BuiltinUserBackend::userChanged, this, &UserManagerImplementation::userChanged);
@@ -183,6 +211,45 @@ UserManagerImplementation::UserError UserManagerImplementation::removeToken(cons
 bool UserManagerImplementation::verifyToken(const QByteArray &token)
 {
     return m_backend->verifyToken(token);
+}
+
+QStringList UserManagerImplementation::pluginSearchDirs()
+{
+    QStringList searchDirs;
+    QByteArray envPath = qgetenv("NYMEA_USERBACKEND_PLUGIN_PATH");
+    if (!envPath.isEmpty()) {
+        searchDirs << QString(envPath).split(':');
+    }
+
+    foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+        searchDirs << libraryPath.replace("qt5", "nymea").replace("plugins", "userbackend");
+    }
+    foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+        searchDirs << libraryPath.replace("plugins", "nymea/userbackend");
+    }
+    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/nymea/userbackend/";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../userbackend/";
+    searchDirs << QCoreApplication::applicationDirPath() + "/../../../userbackend/";
+    return searchDirs;
+}
+
+void UserManagerImplementation::loadBackendPlugin(const QString &file)
+{
+    QPluginLoader loader;
+    loader.setFileName(file);
+    loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+    if (!loader.load()) {
+        qCWarning(dcUserManager()) << loader.errorString();
+        return;
+    }
+    m_backend = qobject_cast<UserBackend*>(loader.instance());
+    if (!m_backend) {
+        qCWarning(dcUserManager()) << "Could not get plugin instance of" << loader.fileName();
+        loader.unload();
+        return;
+    }
+    qCDebug(dcPlatform()) << "Loaded user backend plugin:" << loader.fileName();
+    m_backend->setParent(this);
 }
 
 }

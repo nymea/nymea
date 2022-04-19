@@ -412,6 +412,21 @@ bool ScriptEngine::loadScript(Script *script)
         m_engine->clearComponentCache();
         return false;
     }
+
+    QObjectList objects = {script->object};
+    while (!objects.empty()) {
+        QObject *obj = objects.takeFirst();
+        objects.append(obj->children());
+
+        qCDebug(dcScriptEngine()) << "Script uses object:" << obj->objectName() << obj->metaObject()->className();
+        if (qstrcmp(obj->metaObject()->className(), "nymeaserver::ScriptState") == 0) {
+            for (int i = 0; i < obj->metaObject()->propertyCount(); i++) {
+                if (qstrcmp(obj->metaObject()->property(i).name(), "thingId") == 0) {
+                    qCDebug(dcScriptEngine()) << "thingId:" << obj->metaObject()->property(i).read(obj);
+                }
+            }
+        }
+    }
     return true;
 }
 

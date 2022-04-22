@@ -66,8 +66,8 @@ private slots:
     void getDebugServer();
 
 public slots:
-    void onSslErrors(const QList<QSslError> &) {
-        qWarning() << "SSL error";
+    void onSslErrors(const QList<QSslError> &errors) {
+        qCWarning(dcTests()) << "SSL errors:" << errors;
         QSslSocket *socket = static_cast<QSslSocket*>(sender());
         socket->ignoreSslErrors();
     }
@@ -75,7 +75,7 @@ public slots:
 
 void TestWebserver::initTestCase()
 {
-    NymeaTestBase::initTestCase();
+    NymeaTestBase::initTestCase("*.debug=false\nWebServer.debug=true\ntests.debug=true\nServerManager.debug=true");
     qDebug() << "TestWebserver starting";
 
     foreach (const WebServerConfiguration &config, NymeaCore::instance()->configuration()->webServerConfigurations()) {
@@ -215,7 +215,8 @@ void TestWebserver::checkAllowedMethodCall()
     QFETCH(int, expectedStatusCode);
 
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply* reply, const QList<QSslError> &) {
+    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply* reply, const QList<QSslError> &errors) {
+        qCWarning(dcTests) << "SSL errors:" << errors;
         reply->ignoreSslErrors();
     });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
@@ -244,7 +245,7 @@ void TestWebserver::checkAllowedMethodCall()
     } else if(method == "TRACE") {
         reply = nam.sendCustomRequest(request, "TRACE");
     } else {
-        // just to make shore there will be a reply to delete
+        // just to make sure there will be a reply to delete
         reply = nam.get(request);
     }
 
@@ -279,7 +280,7 @@ void TestWebserver::badRequests_data()
     wrongHeaderFormatting.append("\r\n");
 
     QByteArray userAgentMissing;
-    userAgentMissing.append("GET /abc HTTP/1.1\r\n");
+    userAgentMissing.append("GET /index.html HTTP/1.1\r\n");
     userAgentMissing.append("\r\n");
 
     QTest::newRow("wrong content length") << wrongContentLength << 400;
@@ -334,8 +335,8 @@ void TestWebserver::getFiles_data()
     QTest::newRow("get /etc/passwd") << "/etc/passwd" << 404;
     QTest::newRow("get /blub/blub/blabla") << "/etc/passwd" << 404;
     QTest::newRow("get /../../etc/passwd") << "/../../etc/passwd" << 404;
-    QTest::newRow("get /../../") << "/../../" << 403;
-    QTest::newRow("get /../") << "/../" << 403;
+    QTest::newRow("get /../../") << "/../../" << 404;
+    QTest::newRow("get /../") << "/../" << 404;
     QTest::newRow("get /etc/nymea/nymead.conf") << "/etc/nymea/nymead.conf" << 404;
     QTest::newRow("get /etc/sudoers") <<  "/etc/sudoers" << 404;
     QTest::newRow("get /root/.ssh/id_rsa.pub") <<  "/root/.ssh/id_rsa.pub" << 404;
@@ -347,7 +348,7 @@ void TestWebserver::getFiles()
     QFETCH(int, expectedStatusCode);
 
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply* reply, const QList<QSslError> &) {
+    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply* reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
@@ -489,17 +490,24 @@ void TestWebserver::getDebugServer_data()
     // Check if syslog is accessable
     QFileInfo syslogFileInfo("/var/log/syslog");
 
-    if (syslogFileInfo.exists() && syslogFileInfo.isReadable()) {
-        // syslog enabled
-        QTest::newRow("GET /debug/syslog | server enabled | 200") << "get" << "/debug/syslog" << true << 200;
-        QTest::newRow("OPTIONS /debug/syslog | server enabled | 200") << "options" << "/debug/syslog" << true << 200;
+    if (!syslogFileInfo.exists()) {
+        // syslog file doesn't exist
+        QTest::newRow("GET /debug/syslog | server enabled | 200") << "get" << "/debug/syslog" << true << 404;
+        QTest::newRow("OPTIONS /debug/syslog | server enabled | 200") << "options" << "/debug/syslog" << true << 404;
+        QTest::newRow("PUT /debug/syslog | server enabled | 405") << "put" << "/debug/syslog" << true << 405;
+        QTest::newRow("POST /debug/syslog | server enabled | 405") << "post" << "/debug/syslog" << true << 405;
+        QTest::newRow("DELETE /debug/syslog | server enabled | 405") << "delete" << "/debug/syslog" << true << 405;
+    } else if (!syslogFileInfo.isReadable()) {
+        // syslog enabled, but not readable
+        QTest::newRow("GET /debug/syslog | server enabled | 200") << "get" << "/debug/syslog" << true << 403;
+        QTest::newRow("OPTIONS /debug/syslog | server enabled | 200") << "options" << "/debug/syslog" << true << 403;
         QTest::newRow("PUT /debug/syslog | server enabled | 405") << "put" << "/debug/syslog" << true << 405;
         QTest::newRow("POST /debug/syslog | server enabled | 405") << "post" << "/debug/syslog" << true << 405;
         QTest::newRow("DELETE /debug/syslog | server enabled | 405") << "delete" << "/debug/syslog" << true << 405;
     } else {
-        // syslog enabled, but not readable
-        QTest::newRow("GET /debug/syslog | server enabled | 200") << "get" << "/debug/syslog" << true << 403;
-        QTest::newRow("OPTIONS /debug/syslog | server enabled | 200") << "options" << "/debug/syslog" << true << 403;
+        // syslog enabled
+        QTest::newRow("GET /debug/syslog | server enabled | 200") << "get" << "/debug/syslog" << true << 200;
+        QTest::newRow("OPTIONS /debug/syslog | server enabled | 200") << "options" << "/debug/syslog" << true << 200;
         QTest::newRow("PUT /debug/syslog | server enabled | 405") << "put" << "/debug/syslog" << true << 405;
         QTest::newRow("POST /debug/syslog | server enabled | 405") << "post" << "/debug/syslog" << true << 405;
         QTest::newRow("DELETE /debug/syslog | server enabled | 405") << "delete" << "/debug/syslog" << true << 405;

@@ -8,7 +8,7 @@ SUBDIRS = \
         logging \
         loggingdirect \
         loggingloading \
-        macaddressunittests \
+        macaddress \
         mqttbroker \
         plugins \
         pythonplugins \

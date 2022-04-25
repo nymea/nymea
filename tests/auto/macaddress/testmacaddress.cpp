@@ -34,7 +34,7 @@
 
 using namespace nymeaserver;
 
-class MacAddressUnitTests: public NymeaTestBase
+class TestMacAddress: public NymeaTestBase
 {
     Q_OBJECT
 
@@ -56,12 +56,12 @@ private slots:
 
 };
 
-void MacAddressUnitTests::initTestCase()
+void TestMacAddress::initTestCase()
 {
     NymeaTestBase::initTestCase("*.debug=false\nTests.debug=true\n");
 }
 
-void MacAddressUnitTests::defaultConstructor()
+void TestMacAddress::defaultConstructor()
 {
     MacAddress mac;
     QVERIFY(mac.isNull());
@@ -90,7 +90,7 @@ void MacAddressUnitTests::defaultConstructor()
     QCOMPARE(MacAddress(QString("aabbccddeeff")), MacAddress(validRawData));
 }
 
-void MacAddressUnitTests::macAddressValidation_data()
+void TestMacAddress::macAddressValidation_data()
 {
     QTest::addColumn<QString>("macString");
     QTest::addColumn<bool>("isValid");
@@ -116,7 +116,7 @@ void MacAddressUnitTests::macAddressValidation_data()
     QTest::newRow("Too long") << "xx:yy:zz:dd:ee:ee:ee" << false << true << m_zeroMacString;
 }
 
-void MacAddressUnitTests::macAddressValidation()
+void TestMacAddress::macAddressValidation()
 {
     QFETCH(QString, macString);
     QFETCH(bool, isValid);
@@ -130,5 +130,5 @@ void MacAddressUnitTests::macAddressValidation()
     QCOMPARE(mac.toString(), toString);
 }
 
-#include "macaddressunittests.moc"
-QTEST_MAIN(MacAddressUnitTests)
+#include "testmacaddress.moc"
+QTEST_MAIN(TestMacAddress)

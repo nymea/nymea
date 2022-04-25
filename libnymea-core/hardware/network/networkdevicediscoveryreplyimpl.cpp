@@ -181,7 +181,7 @@ void NetworkDeviceDiscoveryReplyImpl::processDiscoveryFinished()
     m_networkDeviceInfos.sortNetworkDevices();
 
     qint64 durationMilliSeconds = QDateTime::currentMSecsSinceEpoch() - m_startTimestamp;
-    qCDebug(dcNetworkDeviceDiscovery()) << "Discovery finished. Found" << networkDeviceInfos().count() << "network devices in" << QTime::fromMSecsSinceStartOfDay(durationMilliSeconds).toString("mm:ss.zzz");
+    qCInfo(dcNetworkDeviceDiscovery()) << "Discovery finished. Found" << networkDeviceInfos().count() << "network devices in" << QTime::fromMSecsSinceStartOfDay(durationMilliSeconds).toString("mm:ss.zzz");
 
     // Process what's left and add it to result list
     foreach (const NetworkDeviceInfo &info, m_networkDeviceInfos) {

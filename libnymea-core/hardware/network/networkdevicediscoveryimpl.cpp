@@ -78,7 +78,7 @@ NetworkDeviceDiscoveryImpl::NetworkDeviceDiscoveryImpl(QObject *parent) :
     if (!arpAvailable && !m_ping->available()) {
         qCWarning(dcNetworkDeviceDiscovery()) << "Network device discovery is not available on this system.";
     } else {
-        qCDebug(dcNetworkDeviceDiscovery()) << "Created successfully";
+        qCInfo(dcNetworkDeviceDiscovery()) << "Created successfully";
     }
 
     m_cacheSettings = new QSettings(NymeaSettings::cachePath() + "/network-device-discovery.cache", QSettings::IniFormat);
@@ -100,7 +100,7 @@ NetworkDeviceDiscoveryReply *NetworkDeviceDiscoveryImpl::discover()
         return m_currentReply;
     }
 
-    qCDebug(dcNetworkDeviceDiscovery()) << "Starting network device discovery ...";
+    qCInfo(dcNetworkDeviceDiscovery()) << "Starting network device discovery ...";
     m_currentReply = new NetworkDeviceDiscoveryReplyImpl(this);
     connect(m_currentReply, &NetworkDeviceDiscoveryReplyImpl::networkDeviceInfoAdded, this, &NetworkDeviceDiscoveryImpl::updateCache);
 
@@ -135,7 +135,7 @@ bool NetworkDeviceDiscoveryImpl::running() const
 
 NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(const MacAddress &macAddress)
 {
-    qCDebug(dcNetworkDeviceDiscovery()) << "Register new network device monitor for" << macAddress;
+    qCInfo(dcNetworkDeviceDiscovery()) << "Register new network device monitor for" << macAddress;
     // Make sure we creare only one monitor per mac
     if (m_monitors.contains(macAddress))
         return m_monitors.value(macAddress);
@@ -175,7 +175,7 @@ void NetworkDeviceDiscoveryImpl::unregisterMonitor(const MacAddress &macAddress)
 {
     if (m_monitors.contains(macAddress)) {
         NetworkDeviceMonitor *monitor = m_monitors.take(macAddress);
-        qCDebug(dcNetworkDeviceDiscovery()) << "Unregister" << monitor;
+        qCInfo(dcNetworkDeviceDiscovery()) << "Unregister" << monitor;
         monitor->deleteLater();
     }
 }
@@ -319,7 +319,7 @@ void NetworkDeviceDiscoveryImpl::processMonitorPingResult(PingReply *reply, Netw
 
 void NetworkDeviceDiscoveryImpl::loadNetworkDeviceCache()
 {
-    qCDebug(dcNetworkDeviceDiscovery()) << "Loading cached network device information from" << m_cacheSettings->fileName();
+    qCInfo(dcNetworkDeviceDiscovery()) << "Loading cached network device information from" << m_cacheSettings->fileName();
 
     m_networkInfoCache.clear();
     QDateTime now = QDateTime::currentDateTime();
@@ -548,7 +548,7 @@ void NetworkDeviceDiscoveryImpl::evaluateMonitors()
         evaluateMonitor(monitor);
 
         // Check if there is any monitor which has not be seen since
-        if (monitor->lastConnectionAttempt().isValid() && longerAgoThan(monitor->lastSeen(), m_monitorInterval)) {
+        if (!monitor->reachable() && monitor->lastConnectionAttempt().isValid() && longerAgoThan(monitor->lastSeen(), m_monitorInterval)) {
             monitorRequiresRediscovery = true;
         }
     }
@@ -560,7 +560,7 @@ void NetworkDeviceDiscoveryImpl::evaluateMonitors()
 
     // Do some cache housekeeping if required
     if (m_lastCacheHousekeeping.addDays(1) < QDateTime::currentDateTime()) {
-        qCDebug(dcNetworkDeviceDiscovery()) << "Starting cache housekeeping since it is more than one day since the last clanup...";
+        qCInfo(dcNetworkDeviceDiscovery()) << "Starting cache housekeeping since it is more than one day since the last clanup...";
         QDateTime now = QDateTime::currentDateTime();
         foreach (const MacAddress &mac, m_lastSeen.keys()) {
             // Remove the info from the cache if not seen fo the last 30 days...

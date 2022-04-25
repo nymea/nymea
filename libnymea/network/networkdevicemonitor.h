@@ -44,6 +44,7 @@ class LIBNYMEA_EXPORT NetworkDeviceMonitor : public QObject
 
 public:
     explicit NetworkDeviceMonitor(QObject *parent = nullptr);
+    virtual ~NetworkDeviceMonitor();
 
     virtual MacAddress macAddress() const = 0;
 

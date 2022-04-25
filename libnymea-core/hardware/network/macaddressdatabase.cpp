@@ -142,6 +142,7 @@ bool MacAddressDatabase::initDatabase()
         return false;
     }
 
+    qCInfo(dcMacAddressDatabase()) << "Database initialized successfully" << m_databaseName;
     return true;
 }
 
@@ -163,7 +164,7 @@ void MacAddressDatabase::onLookupFinished()
 {
     if (m_currentReply) {
         QString manufacturer = m_futureWatcher->future().result();
-        qCDebug(dcMacAddressDatabase()) << "Manufacturer lookup for" << m_currentReply->macAddress() << "finished:" << manufacturer << QDateTime::currentMSecsSinceEpoch() - m_currentReply->m_startTimestamp << "ms";
+        qCInfo(dcMacAddressDatabase()) << "Manufacturer lookup for" << m_currentReply->macAddress() << "finished:" << manufacturer << QDateTime::currentMSecsSinceEpoch() - m_currentReply->m_startTimestamp << "ms";
         m_currentReply->m_manufacturer = manufacturer;
         emit m_currentReply->finished();
         m_currentReply = nullptr;
@@ -174,7 +175,7 @@ void MacAddressDatabase::onLookupFinished()
 
 QString MacAddressDatabase::lookupMacAddressVendorInternal(const QString &macAddress)
 {
-    qCDebug(dcMacAddressDatabase()) << "Start looking up vendor for" << macAddress;
+    qCInfo(dcMacAddressDatabase()) << "Start looking up vendor for" << macAddress;
     // Convert the mac address string to upper like in the database and remove : since they have been removed for size reasons
     QString fullMacAddressString = QString(macAddress).toUpper().remove(":");
 

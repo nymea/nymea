@@ -346,7 +346,7 @@ void ArpSocket::processDataBuffer(unsigned char *receiveBuffer, int size)
 
         QNetworkInterface networkInterface = NetworkUtils::getInterfaceForHostaddress(senderHostAddress);
         if (!networkInterface.isValid()) {
-            qCWarning(dcArpSocket()) << "Could not find local interface from ARP request" << senderHostAddress.toString() << senderMacAddress.toString();
+            qCDebug(dcArpSocket()) << "Could not find local interface from ARP request" << senderHostAddress.toString() << senderMacAddress.toString();
             return;
         }
 
@@ -361,7 +361,7 @@ void ArpSocket::processDataBuffer(unsigned char *receiveBuffer, int size)
     case ARPOP_REPLY: {
         QNetworkInterface networkInterface = NetworkUtils::getInterfaceForMacAddress(targetMacAddress);
         if (!networkInterface.isValid()) {
-            qCWarning(dcArpSocket()) << "Could not find local interface from ARP response" << targetHostAddress.toString() << targetMacAddress.toString();
+            qCDebug(dcArpSocket()) << "Could not find local interface from ARP response" << targetHostAddress.toString() << targetMacAddress.toString();
             return;
         }
 

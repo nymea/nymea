@@ -410,12 +410,32 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
             QVariantMap dataMap;
             QVariantMap loggingCategories;
             foreach (const QString &loggingCategory, NymeaCore::loggingFilters()) {
-                loggingCategories.insert(loggingCategory, settings.value(QString("%1.debug").arg(loggingCategory), false).toBool());
+                QString level = "critical";
+                if (settings.value(QString("%1.warning").arg(loggingCategory), true).toBool()) {
+                    level = "warning";
+                }
+                if (settings.value(QString("%1.info").arg(loggingCategory), true).toBool()) {
+                    level = "info";
+                }
+                if (settings.value(QString("%1.debug").arg(loggingCategory), false).toBool()) {
+                    level = "debug";
+                }
+                loggingCategories.insert(loggingCategory, level);
             }
             dataMap.insert("loggingCategories", loggingCategories);
             QVariantMap loggingCategoriesPlugins;
             foreach (const QString &loggingCategory, NymeaCore::loggingFiltersPlugins()) {
-                loggingCategoriesPlugins.insert(loggingCategory, settings.value(QString("%1.debug").arg(loggingCategory), false).toBool());
+                QString level = "critical";
+                if (settings.value(QString("%1.warning").arg(loggingCategory), true).toBool()) {
+                    level = "warning";
+                }
+                if (settings.value(QString("%1.info").arg(loggingCategory), true).toBool()) {
+                    level = "info";
+                }
+                if (settings.value(QString("%1.debug").arg(loggingCategory), false).toBool()) {
+                    level = "debug";
+                }
+                loggingCategoriesPlugins.insert(loggingCategory, level);
             }
             dataMap.insert("loggingCategoriesPlugins", loggingCategoriesPlugins);
 
@@ -434,9 +454,25 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                     continue;
                 }
 
-                bool enabled = QVariant(requestQuery.queryItems().at(i).second).toBool();
-                qCDebug(dcDebugServer()) << "Logging category" << category << (enabled ? "enabled" : "disabled");
-                settings.setValue(QString("%1.debug").arg(category), (enabled ? "true" : "false"));
+                QString level = QVariant(requestQuery.queryItems().at(i).second).toString();
+                qCDebug(dcDebugServer()) << "Logging category" << category << level;
+                if (level == "debug") {
+                    settings.setValue(QString("%1.debug").arg(category), true);
+                    settings.setValue(QString("%1.info").arg(category), true);
+                    settings.setValue(QString("%1.warning").arg(category), true);
+                } else if (level == "info") {
+                    settings.setValue(QString("%1.debug").arg(category), false);
+                    settings.setValue(QString("%1.info").arg(category), true);
+                    settings.setValue(QString("%1.warning").arg(category), true);
+                } else if (level == "warning"){
+                    settings.setValue(QString("%1.debug").arg(category), false);
+                    settings.setValue(QString("%1.info").arg(category), false);
+                    settings.setValue(QString("%1.warning").arg(category), true);
+                } else {
+                    settings.setValue(QString("%1.debug").arg(category), false);
+                    settings.setValue(QString("%1.info").arg(category), false);
+                    settings.setValue(QString("%1.warning").arg(category), false);
+                }
             }
 
             // Update logging filter rules according to the nw settings
@@ -1806,22 +1842,29 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     QStringList loggingCategories = NymeaCore::loggingFilters();
     loggingCategories.sort();
 
+    QHash<QString, QString> categoryMap = {
+        {"debug", "🐞 Debug"},
+        {"info", "ℹ️ Info"},
+        {"warning", "⚠️ Warning"},
+        {"critical", "🔥 Critical"}
+    };
     foreach (const QString &loggingCategory, loggingCategories) {
         writer.writeStartElement("div");
-        writer.writeAttribute("class", "debug-category");
-        writer.writeTextElement("p", loggingCategory);
-        writer.writeStartElement("label");
-        writer.writeAttribute("class", "switch");
-        writer.writeStartElement("input");
-        writer.writeAttribute("id", QString("debug-category-%1").arg(loggingCategory));
-        writer.writeAttribute("type", "checkbox");
-        writer.writeAttribute("onclick", QString("toggleLoggingCategory('%1')").arg(loggingCategory));
-        writer.writeEndElement(); // input
-        writer.writeStartElement("span");
-        writer.writeAttribute("class", "slider round");
-        writer.writeCharacters("");
-        writer.writeEndElement(); // span
-        writer.writeEndElement(); // label
+          writer.writeAttribute("class", "debug-category");
+          writer.writeTextElement("p", loggingCategory);
+          writer.writeStartElement("label");
+            writer.writeStartElement("select");
+              writer.writeAttribute("class", "debug-select");
+              writer.writeAttribute("onchange", QString("toggleLoggingCategory('%1', this)").arg(loggingCategory));
+              writer.writeAttribute("id", QString("debug-category-%1").arg(loggingCategory));
+              foreach (const QString &option, QStringList({"debug", "info", "warning", "critical"})) {
+                  writer.writeStartElement("option");
+                    writer.writeAttribute("value", option);
+                    writer.writeCharacters(categoryMap.value(option));
+                  writer.writeEndElement();
+              }
+            writer.writeEndElement(); // select
+          writer.writeEndElement(); // label
         writer.writeEndElement(); // div debug-category
     }
 
@@ -1842,16 +1885,17 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
         writer.writeAttribute("class", "debug-category");
         writer.writeTextElement("p", loggingCategory);
         writer.writeStartElement("label");
-        writer.writeAttribute("class", "switch");
-        writer.writeStartElement("input");
-        writer.writeAttribute("id", QString("debug-category-%1").arg(loggingCategory));
-        writer.writeAttribute("type", "checkbox");
-        writer.writeAttribute("onclick", QString("toggleLoggingCategory('%1')").arg(loggingCategory));
-        writer.writeEndElement(); // input
-        writer.writeStartElement("span");
-        writer.writeAttribute("class", "slider round");
-        writer.writeCharacters("");
-        writer.writeEndElement(); // span
+        writer.writeStartElement("select");
+          writer.writeAttribute("class", "debug-select");
+          writer.writeAttribute("onchange", QString("toggleLoggingCategory('%1', this)").arg(loggingCategory));
+          writer.writeAttribute("id", QString("debug-category-%1").arg(loggingCategory));
+          foreach (const QString &option, QStringList({"debug", "info", "warning", "critical"})) {
+              writer.writeStartElement("option");
+                writer.writeAttribute("value", option);
+                writer.writeCharacters(categoryMap.value(option));
+              writer.writeEndElement();
+          }
+        writer.writeEndElement(); // select
         writer.writeEndElement(); // label
         writer.writeEndElement(); // div debug-category
     }
@@ -1867,7 +1911,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("class", "footer");
     writer.writeTextElement("p", QString("Copyright %1 %2 nymea GmbH.").arg(QChar(0xA9)).arg(COPYRIGHT_YEAR_STRING));
     //: The footer license note of the debug interface
-    writer.writeTextElement("p", tr("Released under the GNU GENERAL PUBLIC LICENSE Version 2."));
+    writer.writeTextElement("p", tr("Released under the GNU GENERAL PUBLIC LICENSE Version 3."));
     writer.writeEndElement(); // div footer
 
     writer.writeEndElement(); // div container

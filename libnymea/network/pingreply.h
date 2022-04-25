@@ -57,7 +57,8 @@ public:
         ErrorPermissionDenied,
         ErrorSocketError,
         ErrorTimeout,
-        ErrorHostUnreachable
+        ErrorHostUnreachable,
+        ErrorInvalidHostAddress
     };
     Q_ENUM(Error)
 

@@ -135,13 +135,20 @@ void Ping::sendNextReply()
     PingReply *reply = m_replyQueue.dequeue();
     //qCDebug(dcPing()) << "Send next reply," << m_replyQueue.count() << "left in queue";
     m_queueTimer->start();
-    QTimer::singleShot(0, this, [=]() { performPing(reply); });
+    QTimer::singleShot(0, reply, [=]() { performPing(reply); });
 }
 
 void Ping::performPing(PingReply *reply)
 {
     if (!m_available) {
         qCDebug(dcPing()) << "Cannot send ping request" << m_error;
+        finishReply(reply, m_error);
+        return;
+    }
+
+    if (reply->targetHostAddress().isNull()) {
+        m_error = PingReply::ErrorInvalidHostAddress;
+        qCWarning(dcPing()) << "Cannot send ping request" << m_error;
         finishReply(reply, m_error);
         return;
     }

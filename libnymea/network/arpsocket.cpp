@@ -71,9 +71,6 @@ bool ArpSocket::sendRequest()
     if (!m_isOpen)
         return false;
 
-    // Initially load the arp cache before we start to broadcast
-    //loadArpCache();
-
     // Send the ARP request trough each network interface
     qCDebug(dcArpSocket()) << "Sending ARP request to all local network interfaces...";
     foreach (const QNetworkInterface &networkInterface, QNetworkInterface::allInterfaces()) {
@@ -88,9 +85,8 @@ bool ArpSocket::sendRequest(const QString &interfaceName)
     if (!m_isOpen)
         return false;
 
-
     // Get the interface
-    qCDebug(dcArpSocket()) << "Sending ARP request to all network interfaces" << interfaceName << "...";
+    qCDebug(dcArpSocket()) << "Sending ARP request to network interface" << interfaceName << "...";
     QNetworkInterface networkInterface = QNetworkInterface::interfaceFromName(interfaceName);
     if (!networkInterface.isValid()) {
         qCWarning(dcArpSocket()) << "Failed to send the ARP request to network interface" << interfaceName << "because the interface is not valid.";
@@ -109,7 +105,7 @@ bool ArpSocket::sendRequest(const QNetworkInterface &networkInterface)
     if (networkInterface.flags().testFlag(QNetworkInterface::IsLoopBack))
         return false;
 
-    // If have no interface indes, we cannot use this network
+    // If the interface index is unknown, we cannot use this network
     if (networkInterface.index() == 0) {
         qCDebug(dcArpSocket()) << "Failed to send the ARP request to network interface" << networkInterface.name() << "because the system interface index is unknown.";
         return false;

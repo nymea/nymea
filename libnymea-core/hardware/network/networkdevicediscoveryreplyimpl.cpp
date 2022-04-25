@@ -33,9 +33,9 @@
 
 #include <QDateTime>
 
-namespace nymeaserver {
+Q_DECLARE_LOGGING_CATEGORY(dcNetworkDeviceDiscovery)
 
-NYMEA_LOGGING_CATEGORY(dcNetworkDeviceDiscovery, "NetworkDeviceDiscovery")
+namespace nymeaserver {
 
 NetworkDeviceDiscoveryReplyImpl::NetworkDeviceDiscoveryReplyImpl(QObject *parent) :
     NetworkDeviceDiscoveryReply(parent)

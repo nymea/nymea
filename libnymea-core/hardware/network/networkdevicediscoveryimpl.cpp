@@ -431,7 +431,7 @@ void NetworkDeviceDiscoveryImpl::evaluateMonitor(NetworkDeviceMonitorImpl *monit
 
     // Try to ping first
     qCDebug(dcNetworkDeviceDiscovery()) << monitor << "try to ping" << monitor->networkDeviceInfo().address().toString();
-    monitor->m_lastConnectionAttempt = currentDateTime;
+    monitor->setLastConnectionAttempt(currentDateTime);
 
     PingReply *reply = m_ping->ping(monitor->networkDeviceInfo().address());
     connect(reply, &PingReply::finished, monitor, [=](){
@@ -457,7 +457,9 @@ void NetworkDeviceDiscoveryImpl::processArpTraffic(const QNetworkInterface &inte
         monitor->setLastSeen(now);
         monitor->setReachable(true);
         if (monitor->networkDeviceInfo().address() != address) {
-            monitor->m_networkDeviceInfo.setAddress(address);
+            NetworkDeviceInfo info = monitor->networkDeviceInfo();
+            info.setAddress(address);
+            monitor->setNetworkDeviceInfo(info);
             qCDebug(dcNetworkDeviceDiscovery()) << "NetworkDeviceMonitor" << monitor << "ip address changed";
             emit monitor->networkDeviceInfoChanged(monitor->networkDeviceInfo());
         }
@@ -546,7 +548,7 @@ void NetworkDeviceDiscoveryImpl::evaluateMonitors()
         evaluateMonitor(monitor);
 
         // Check if there is any monitor which has not be seen since
-        if (monitor->m_lastConnectionAttempt.isValid() && longerAgoThan(monitor->lastSeen(), m_monitorInterval)) {
+        if (monitor->lastConnectionAttempt().isValid() && longerAgoThan(monitor->lastSeen(), m_monitorInterval)) {
             monitorRequiresRediscovery = true;
         }
     }

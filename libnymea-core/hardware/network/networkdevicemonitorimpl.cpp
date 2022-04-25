@@ -82,7 +82,7 @@ QDateTime NetworkDeviceMonitorImpl::lastSeen() const
     return m_lastSeen;
 }
 
-void NetworkDeviceMonitorImpl::setLastSeen(const QDateTime lastSeen)
+void NetworkDeviceMonitorImpl::setLastSeen(const QDateTime &lastSeen)
 {
     if (m_lastSeen == lastSeen)
         return;
@@ -90,6 +90,16 @@ void NetworkDeviceMonitorImpl::setLastSeen(const QDateTime lastSeen)
     m_lastSeen = lastSeen;
 
     emit lastSeenChanged(m_lastSeen);
+}
+
+QDateTime NetworkDeviceMonitorImpl::lastConnectionAttempt() const
+{
+    return m_lastConnectionAttempt;
+}
+
+void NetworkDeviceMonitorImpl::setLastConnectionAttempt(const QDateTime &lastConnectionAttempt)
+{
+    m_lastConnectionAttempt = lastConnectionAttempt;
 }
 
 }

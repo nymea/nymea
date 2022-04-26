@@ -49,6 +49,13 @@ NYMEA_LOGGING_CATEGORY(dcPingTraffic, "PingTraffic")
 
 Ping::Ping(QObject *parent) : QObject(parent)
 {
+    m_queueTimer = new QTimer(this);
+    m_queueTimer->setInterval(20);
+    m_queueTimer->setSingleShot(true);
+    connect(m_queueTimer, &QTimer::timeout, this, [=](){
+        sendNextReply();
+    });
+
     // Build socket descriptor
     m_socketDescriptor = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (m_socketDescriptor < 0) {
@@ -77,13 +84,6 @@ Ping::Ping(QObject *parent) : QObject(parent)
     // Create the socket notifier for read notification
     m_socketNotifier = new QSocketNotifier(m_socketDescriptor, QSocketNotifier::Read, this);
     connect(m_socketNotifier, &QSocketNotifier::activated, this, &Ping::onSocketReadyRead);
-
-    m_queueTimer = new QTimer(this);
-    m_queueTimer->setInterval(20);
-    m_queueTimer->setSingleShot(true);
-    connect(m_queueTimer, &QTimer::timeout, this, [=](){
-        sendNextReply();
-    });
 
     m_socketNotifier->setEnabled(true);
     m_available = true;

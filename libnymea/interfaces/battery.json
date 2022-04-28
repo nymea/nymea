@@ -22,7 +22,7 @@
         {
             "name": "chargingState",
             "type": "QString",
-            "allowdValues": ["idle", "charging", "discharging"],
+            "allowedValues": ["idle", "charging", "discharging"],
             "optional": true
         }
     ]

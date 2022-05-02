@@ -115,7 +115,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     // Transports
     MockTcpServer *tcpServer = new MockTcpServer(this);
     m_jsonServer->registerTransportInterface(tcpServer);
-    tcpServer->startServer();
+//    tcpServer->startServer();
 
     foreach (const QString &interfaceString, additionalInterfaces) {
         QUrl additionalInterface(interfaceString);
@@ -152,18 +152,18 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         TcpServer *tcpServer = new TcpServer(config, m_sslConfiguration, this);
         m_jsonServer->registerTransportInterface(tcpServer);
         m_tcpServers.insert(config.id, tcpServer);
-        if (tcpServer->startServer()) {
+//        if (tcpServer->startServer()) {
             registerZeroConfService(config, "tcp", "_jsonrpc._tcp");
-        }
+//        }
     }
 
     foreach (const ServerConfiguration &config, configuration->webSocketServerConfigurations()) {
         WebSocketServer *webSocketServer = new WebSocketServer(config, m_sslConfiguration, this);
         m_jsonServer->registerTransportInterface(webSocketServer);
         m_webSocketServers.insert(config.id, webSocketServer);
-        if (webSocketServer->startServer()) {
+//        if (webSocketServer->startServer()) {
             registerZeroConfService(config, "ws", "_ws._tcp");
-        }
+//        }
     }
 
     m_bluetoothServer = new BluetoothServer(this);

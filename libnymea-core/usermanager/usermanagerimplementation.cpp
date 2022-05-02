@@ -73,6 +73,7 @@
 #include "loggingcategories.h"
 #include "nymeacore.h"
 #include "builtinuserbackend.h"
+#include "usermanagement/createuserinfo.h"
 
 #include <QUuid>
 #include <QCryptographicHash>
@@ -121,16 +122,22 @@ UserManagerImplementation::UserManagerImplementation(QObject *parent):
         qCInfo(dcUserManager()) << "Using backend:" << m_backend->metaObject()->className();
     }
 
-    connect(m_backend, &BuiltinUserBackend::userAdded, this, &UserManagerImplementation::userAdded);
-    connect(m_backend, &BuiltinUserBackend::userRemoved, this, &UserManagerImplementation::userRemoved);
-    connect(m_backend, &BuiltinUserBackend::userChanged, this, &UserManagerImplementation::userChanged);
-    connect(m_backend, &BuiltinUserBackend::pushButtonAuthFinished, this, &UserManagerImplementation::pushButtonAuthFinished);
+    connect(m_backend, &UserBackend::readyChanged, this, &UserManagerImplementation::readyChanged);
+    connect(m_backend, &UserBackend::userAdded, this, &UserManagerImplementation::userAdded);
+    connect(m_backend, &UserBackend::userRemoved, this, &UserManagerImplementation::userRemoved);
+    connect(m_backend, &UserBackend::userChanged, this, &UserManagerImplementation::userChanged);
+    connect(m_backend, &UserBackend::pushButtonAuthFinished, this, &UserManagerImplementation::pushButtonAuthFinished);
 
 }
 
 UserManager::Capabilities UserManagerImplementation::capabilities() const
 {
     return m_backend->capabilities();
+}
+
+bool UserManagerImplementation::isReady() const
+{
+    return m_backend->isReady();
 }
 
 bool UserManagerImplementation::initRequired() const
@@ -143,9 +150,11 @@ UserInfoList UserManagerImplementation::users() const
     return m_backend->users();
 }
 
-UserManagerImplementation::UserError UserManagerImplementation::createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes)
+CreateUserInfo *UserManagerImplementation::createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes)
 {
-    return m_backend->createUser(username, password, email, displayName, scopes);
+    CreateUserInfo *info = new CreateUserInfo(username, password, email, displayName, scopes, this);
+    m_backend->createUser(info);
+    return info;
 }
 
 UserManagerImplementation::UserError UserManagerImplementation::changePassword(const QString &username, const QString &newPassword)

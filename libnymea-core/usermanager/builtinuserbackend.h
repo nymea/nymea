@@ -1,7 +1,7 @@
 #ifndef BUILTINUSERBACKEND_H
 #define BUILTINUSERBACKEND_H
 
-#include "usermanagemenent/userbackend.h"
+#include "usermanagement/userbackend.h"
 
 #include <QObject>
 #include <QSqlDatabase>
@@ -21,7 +21,7 @@ public:
     bool initRequired() const override;
 
     UserInfoList users() const override;
-    UserManager::UserError createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes) override;
+    void createUser(CreateUserInfo *info) override;
     UserManager::UserError changePassword(const QString &username, const QString &newPassword) override;
     UserManager::UserError removeUser(const QString &username) override;
     UserManager::UserError setUserScopes(const QString &username, Types::PermissionScopes scopes) override;

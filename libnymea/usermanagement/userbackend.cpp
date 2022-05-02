@@ -5,6 +5,11 @@ UserBackend::UserBackend(QObject *parent) : QObject(parent)
 
 }
 
+bool UserBackend::isReady() const
+{
+    return true;
+}
+
 bool UserBackend::pushButtonAuthAvailable() const
 {
     return false;

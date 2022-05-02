@@ -59,6 +59,8 @@
 #include "platform/platform.h"
 #include "version.h"
 #include "cloud/cloudmanager.h"
+#include "usermanagement/usermanager.h"
+#include "usermanagement/createuserinfo.h"
 
 #include "integrationshandler.h"
 #include "ruleshandler.h"
@@ -406,11 +408,16 @@ JsonReply *JsonRPCServerImplementation::CreateUser(const QVariantMap &params)
     QString email = params.value("email").toString();
     QString displayName = params.value("displayName").toString();
 
-    UserManager::UserError status = NymeaCore::instance()->userManager()->createUser(username, password, email, displayName, Types::PermissionScopeAdmin);
+    CreateUserInfo *info = NymeaCore::instance()->userManager()->createUser(username, password, email, displayName, Types::PermissionScopeAdmin);
+    JsonReply *reply = createAsyncReply("CreateUser");
+    connect(info, &CreateUserInfo::finished, reply, [reply](UserManager::UserError status) {
+        QVariantMap returns;
+        returns.insert("error", enumValueName<UserManager::UserError>(status));
+        reply->setData(returns);
+        reply->finished();
+    });
 
-    QVariantMap returns;
-    returns.insert("error", enumValueName<UserManager::UserError>(status));
-    return createReply(returns);
+    return reply;
 }
 
 JsonReply *JsonRPCServerImplementation::Authenticate(const QVariantMap &params, const JsonContext &context)
@@ -527,6 +534,15 @@ void JsonRPCServerImplementation::registerTransportInterface(TransportInterface 
     connect(interface, &TransportInterface::clientConnected, this, &JsonRPCServerImplementation::clientConnected);
     connect(interface, &TransportInterface::clientDisconnected, this, &JsonRPCServerImplementation::clientDisconnected);
     connect(interface, &TransportInterface::dataAvailable, this, &JsonRPCServerImplementation::processData);
+
+    if (NymeaCore::instance()->userManager()->isReady()) {
+        interface->startServer();
+    }
+    connect(NymeaCore::instance()->userManager(), &UserManager::readyChanged, this, [interface](bool ready) {
+        if (ready) {
+            interface->startServer();
+        }
+    });
 }
 
 void JsonRPCServerImplementation::unregisterTransportInterface(TransportInterface *interface)

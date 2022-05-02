@@ -31,7 +31,7 @@
 #ifndef USERMANAGERIMPLEMENTATION_H
 #define USERMANAGERIMPLEMENTATION_H
 
-#include "usermanagemenent/usermanager.h"
+#include "usermanagement/usermanager.h"
 
 #include <QObject>
 
@@ -48,10 +48,11 @@ public:
 
     Capabilities capabilities() const override;
 
+    bool isReady() const override;
     bool initRequired() const override;
     UserInfoList users() const override;
 
-    UserError createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes) override;
+    CreateUserInfo* createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes) override;
     UserError changePassword(const QString &username, const QString &newPassword) override;
     UserError removeUser(const QString &username) override;
     UserError setUserScopes(const QString &username, Types::PermissionScopes scopes) override;

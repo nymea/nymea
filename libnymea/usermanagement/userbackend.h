@@ -13,10 +13,11 @@ public:
     explicit UserBackend(QObject *parent = nullptr);
     virtual ~UserBackend() = default;
 
+    virtual bool isReady() const;
     virtual UserManager::Capabilities capabilities() const = 0;
     virtual bool initRequired() const = 0;
 
-    virtual UserManager::UserError createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes) = 0;
+    virtual void createUser(CreateUserInfo *info) = 0;
     virtual UserManager::UserError changePassword(const QString &username, const QString &newPassword) = 0;
     virtual UserManager::UserError removeUser(const QString &username) = 0;
     virtual UserManager::UserError setUserScopes(const QString &username, Types::PermissionScopes scopes) = 0;
@@ -38,6 +39,7 @@ public:
     virtual void cancelPushButtonAuth(int transactionId);
 
 signals:
+    void readyChanged(bool ready);
     void userAdded(const QString &username);
     void userRemoved(const QString &username);
     void userChanged(const QString &username);

@@ -1,6 +1,7 @@
 #include "builtinuserbackend.h"
 #include "nymeasettings.h"
 #include "pushbuttondbusservice.h"
+#include "usermanagement/createuserinfo.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -80,47 +81,50 @@ UserInfoList BuiltinUserBackend::users() const
     return users;
 }
 
-UserManager::UserError BuiltinUserBackend::createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes)
+void BuiltinUserBackend::createUser(CreateUserInfo *info)
 {
-    if (!validateUsername(username)) {
-        qCWarning(dcUserManager) << "Error creating user. Invalid username:" << username;
-        return UserManager::UserErrorInvalidUserId;
+    if (!validateUsername(info->username())) {
+        qCWarning(dcUserManager) << "Error creating user. Invalid username:" << info;
+        info->finish(UserManager::UserErrorInvalidUserId);
+        return;
     }
 
-    if (!validatePassword(password)) {
+    if (!validatePassword(info->password())) {
         qCWarning(dcUserManager) << "Password failed character validation. Must contain a letter, a number and a special charactar. Minimum length: 8";
-        return UserManager::UserErrorBadPassword;
+        info->finish(UserManager::UserErrorBadPassword);
+        return;
     }
 
     QSqlQuery checkForDuplicateUserQuery(m_db);
     checkForDuplicateUserQuery.prepare("SELECT * FROM users WHERE lower(username) = ?;");
-    checkForDuplicateUserQuery.addBindValue(username.toLower());
+    checkForDuplicateUserQuery.addBindValue(info->username().toLower());
     checkForDuplicateUserQuery.exec();
     if (checkForDuplicateUserQuery.first()) {
         qCWarning(dcUserManager) << "Username already in use";
-        return UserManager::UserErrorDuplicateUserId;
+        info->finish(UserManager::UserErrorDuplicateUserId);
+        return;
     }
 
     QByteArray salt = QUuid::createUuid().toString().remove(QRegExp("[{}]")).toUtf8();
-    QByteArray hashedPassword = QCryptographicHash::hash(QString(password + salt).toUtf8(), QCryptographicHash::Sha512).toBase64();
+    QByteArray hashedPassword = QCryptographicHash::hash(QString(info->password() + salt).toUtf8(), QCryptographicHash::Sha512).toBase64();
     QSqlQuery query(m_db);
     query.prepare("INSERT INTO users(username, email, displayName, password, salt, scopes) VALUES(?, ?, ?, ?, ?, ?);");
-    query.addBindValue(username.toLower());
-    query.addBindValue(email);
-    query.addBindValue(displayName);
+    query.addBindValue(info->username().toLower());
+    query.addBindValue(info->email());
+    query.addBindValue(info->displayName());
     query.addBindValue(QString::fromUtf8(hashedPassword));
     query.addBindValue(QString::fromUtf8(salt));
-    query.addBindValue(Types::scopesToStringList(scopes).join(','));
+    query.addBindValue(Types::scopesToStringList(info->scopes()).join(','));
     query.exec();
     if (query.lastError().type() != QSqlError::NoError) {
         qCWarning(dcUserManager) << "Error creating user:" << query.lastError().databaseText() << query.lastError().driverText();
-        return UserManager::UserErrorBackendError;
+        info->finish(UserManager::UserErrorBackendError);
+        return;
     }
 
-    qCInfo(dcUserManager()) << "New user" << username << "added to the system with permissions:" << Types::scopesToStringList(scopes);
-    emit userAdded(username);
-    return UserManager::UserErrorNoError;
-
+    qCInfo(dcUserManager()) << "New user" << info << "added to the system with permissions:" << Types::scopesToStringList(info->scopes());
+    emit userAdded(info->username());
+    info->finish(UserManager::UserErrorNoError);
 }
 
 UserManager::UserError BuiltinUserBackend::changePassword(const QString &username, const QString &newPassword)

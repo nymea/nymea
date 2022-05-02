@@ -36,6 +36,8 @@
 #include "tokeninfo.h"
 #include "userinfo.h"
 
+class CreateUserInfo;
+
 class UserManager : public QObject
 {
     Q_OBJECT
@@ -62,11 +64,12 @@ public:
     explicit UserManager(QObject *parent = nullptr);
     virtual ~UserManager() = default;
 
+    virtual bool isReady() const = 0;
     virtual Capabilities capabilities() const = 0;
     virtual bool initRequired() const = 0;
 
     virtual UserInfoList users() const = 0;
-    virtual UserError createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes) = 0;
+    virtual CreateUserInfo* createUser(const QString &username, const QString &password, const QString &email, const QString &displayName, Types::PermissionScopes scopes) = 0;
     virtual UserError removeUser(const QString &username) = 0;
     virtual UserInfo userInfo(const QString &username = QString()) const = 0;
     virtual UserError setUserInfo(const QString &username, const QString &email, const QString &displayName) = 0;
@@ -84,6 +87,7 @@ public:
     virtual UserError removeToken(const QUuid &tokenId) = 0;
 
 signals:
+    void readyChanged(bool ready);
     void userAdded(const QString &username);
     void userRemoved(const QString &username);
     void userChanged(const QString &username);

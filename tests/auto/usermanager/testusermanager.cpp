@@ -34,6 +34,7 @@
 #include "nymeacore.h"
 #include "nymeatestbase.h"
 #include "usermanager/usermanagerimplementation.h"
+#include "usermanagement/createuserinfo.h"
 #include "servers/mocktcpserver.h"
 #include "nymeadbusservice.h"
 
@@ -178,9 +179,11 @@ void TestUsermanager::loginValidation()
     QFETCH(UserManager::UserError, expectedError);
 
     UserManager *userManager = NymeaCore::instance()->userManager();
-    UserManager::UserError error = userManager->createUser(username, password, "", "", Types::PermissionScopeAdmin);
-    qDebug() << "Error:" << error << "Expected:" << expectedError;
-    QCOMPARE(error, expectedError);
+    CreateUserInfo *info = userManager->createUser(username, password, "", "", Types::PermissionScopeAdmin);
+    QSignalSpy spy(info, &CreateUserInfo::finished);
+    spy.wait();
+    qDebug() << "Error:" << info->status() << "Expected:" << expectedError;
+    QCOMPARE(info->status(), expectedError);
 }
 
 void TestUsermanager::createUser()

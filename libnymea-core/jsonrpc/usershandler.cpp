@@ -29,8 +29,8 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "usershandler.h"
-#include "usermanagemenent/usermanager.h"
-//#include "usermanager/usermanagerimplementation.h"
+#include "usermanagement/usermanager.h"
+#include "usermanagement/createuserinfo.h"
 
 #include "loggingcategories.h"
 
@@ -164,11 +164,16 @@ JsonReply *UsersHandler::CreateUser(const QVariantMap &params)
     QStringList scopesList = params.value("scopes", Types::scopesToStringList(Types::PermissionScopeAdmin)).toStringList();
     Types::PermissionScopes scopes = Types::scopesFromStringList(scopesList);
 
-    UserManager::UserError status = m_userManager->createUser(username, password, email, displayName, scopes);
+    CreateUserInfo *info = m_userManager->createUser(username, password, email, displayName, scopes);
+    JsonReply *reply = createAsyncReply("CreateUser");
+    connect(info, &CreateUserInfo::finished, reply, [reply](UserManager::UserError status){
+        QVariantMap returns;
+        returns.insert("error", enumValueName<UserManager::UserError>(status));
+        reply->setData(returns);
+        reply->finished();
+    });
 
-    QVariantMap returns;
-    returns.insert("error", enumValueName<UserManager::UserError>(status));
-    return createReply(returns);
+    return reply;
 }
 
 JsonReply *UsersHandler::ChangePassword(const QVariantMap &params, const JsonContext &context)

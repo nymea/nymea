@@ -169,7 +169,7 @@ bool WebServer::verifyFile(QSslSocket *socket, const QString &fileName)
 
     // make sure the file is in the public directory
     if (!file.canonicalFilePath().startsWith(QDir(m_configuration.publicFolder).canonicalPath())) {
-        qCDebug(dcWebServer()) << "Requested file" << file.fileName() << "is outside the public folder.";
+        qCDebug(dcWebServer()) << "Requested file" << file.canonicalFilePath() << "is outside the public folder.";
         HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
         reply->setClientId(m_clientList.key(socket));
         sendHttpReply(reply);

@@ -1,6 +1,6 @@
 {
     "description": "An EV-charger. Extends the power interface for charging/not charging an electric vehicle. Supports regulation of the max. charging current in addition to be powered on or off.",
-    "extends": ["smartmeterconsumer", "power"],
+    "extends": ["power"],
     "states": [
         {
             "name": "maxChargingCurrent",

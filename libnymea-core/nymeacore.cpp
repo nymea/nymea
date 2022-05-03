@@ -196,6 +196,9 @@ NymeaCore::~NymeaCore()
     qCDebug(dcCore) << "Shutting down \"Rule Engine\"";
     delete m_ruleEngine;
 
+    qCDebug(dcCore()) << "Shutting down \"Experiences\"";
+    delete m_experienceManager;
+
     // Next, ThingManager, so plugins don't access any resources any more.
     qCDebug(dcCore) << "Shutting down \"Thing Manager\"";
     delete m_thingManager;

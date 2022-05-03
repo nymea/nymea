@@ -232,10 +232,6 @@ ZigbeeManager::ZigbeeError ZigbeeManager::setZigbeeNetworkPermitJoin(const QUuid
 
     qCDebug(dcZigbee()) << "Set permit joining in network" << network << "to" << duration << "seconds" << ZigbeeUtils::convertUint16ToHexString(shortAddress);
     network->setPermitJoining(duration, shortAddress);
-
-    // Notify all clients about the new configuration
-    emit zigbeeNetworkChanged(network);
-
     return ZigbeeManager::ZigbeeErrorNoError;
 }
 
@@ -502,6 +498,16 @@ void ZigbeeManager::addNetwork(ZigbeeNetwork *network)
 
     connect(network, &ZigbeeNetwork::permitJoiningEnabledChanged, this, [this, network](bool permitJoiningEnabled){
         qCDebug(dcZigbee()) << "Network permit joining changed" << network->networkUuid().toString() << permitJoiningEnabled;
+        emit zigbeeNetworkChanged(network);
+    });
+
+    connect(network, &ZigbeeNetwork::permitJoinDurationChanged, this, [this, network](bool permitJoinDuration){
+        qCDebug(dcZigbee()) << "Network permit join duration changed" << network->networkUuid().toString() << permitJoinDuration;
+        emit zigbeeNetworkChanged(network);
+    });
+
+    connect(network, &ZigbeeNetwork::permitJoinRemainingChanged, this, [this, network](bool permitJoinRemaining){
+        qCDebug(dcZigbee()) << "Network permit join remaining changed" << network->networkUuid().toString() << permitJoinRemaining;
         emit zigbeeNetworkChanged(network);
     });
 

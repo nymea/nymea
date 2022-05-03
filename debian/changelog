@@ -1,3 +1,25 @@
+nymea (1.1.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add support for datetime objects to pluginStorage in python plugins
+  * Add support for listing and removing entries to PyPluginStorage
+  * Store the serveruuid as string
+
+  [ Simon Stürz ]
+  * Network device monitor
+
+  [ Michael Zanetti ]
+  * Remove smartmeterconsumer from evcharger
+  * Add a timeout to ModbusRtuReplies
+  * Fix modbus RTU warning prints
+  * Allow modbus RTU plugins to request a connection reset
+  * Add rpath to nymead binary
+  * Fix webserver tests
+  * Increase timeout for tests
+  * Fixes in permit joining timer handling
+
+ -- jenkins <developer@nymea.io>  Tue, 03 May 2022 23:27:19 +0200
+
 nymea (1.0.0) xenial; urgency=medium
 
   [ Michael Zanetti ]

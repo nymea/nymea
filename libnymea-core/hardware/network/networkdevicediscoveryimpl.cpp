@@ -84,8 +84,11 @@ NetworkDeviceDiscoveryImpl::NetworkDeviceDiscoveryImpl(QObject *parent) :
     m_cacheSettings = new QSettings(NymeaSettings::cachePath() + "/network-device-discovery.cache", QSettings::IniFormat);
     loadNetworkDeviceCache();
 
-    // Start the monitor timer in any case, we do also the cache cleanup there...
-    m_monitorTimer->start();
+    // Start the timer only if the resource is available
+    if (available()) {
+        // Start the monitor timer in any case, we do also the cache cleanup there...
+        m_monitorTimer->start();
+    }
 }
 
 NetworkDeviceDiscoveryImpl::~NetworkDeviceDiscoveryImpl()
@@ -100,9 +103,17 @@ NetworkDeviceDiscoveryReply *NetworkDeviceDiscoveryImpl::discover()
         return m_currentReply;
     }
 
-    qCInfo(dcNetworkDeviceDiscovery()) << "Starting network device discovery ...";
     m_currentReply = new NetworkDeviceDiscoveryReplyImpl(this);
+
+    if (!available()) {
+        qCWarning(dcNetworkDeviceDiscovery()) << "The network discovery is not available. Please make sure the binary has the required capability (CAP_NET_RAW) or start the application as root.";
+        // Finish the discovery in the next event loop so anny connections after the creation will work as expected
+        QTimer::singleShot(0, this, &NetworkDeviceDiscoveryImpl::finishDiscovery);
+        return m_currentReply;
+    }
+
     connect(m_currentReply, &NetworkDeviceDiscoveryReplyImpl::networkDeviceInfoAdded, this, &NetworkDeviceDiscoveryImpl::updateCache);
+    qCInfo(dcNetworkDeviceDiscovery()) << "Starting network device discovery ...";
 
     if (m_ping->available())
         pingAllNetworkDevices();
@@ -136,14 +147,15 @@ bool NetworkDeviceDiscoveryImpl::running() const
 NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(const MacAddress &macAddress)
 {
     qCInfo(dcNetworkDeviceDiscovery()) << "Register new network device monitor for" << macAddress;
-    // Make sure we creare only one monitor per mac
+    // Make sure we create only one monitor per MAC
     if (m_monitors.contains(macAddress))
         return m_monitors.value(macAddress);
 
     if (macAddress.isNull()) {
-        qCWarning(dcNetworkDeviceDiscovery()) << "Could not register monitor for invalid" << macAddress.toString();
+        qCWarning(dcNetworkDeviceDiscovery()) << "Could not register monitor for invalid" << macAddress;
         return nullptr;
     }
+
 
     // Fill in cached information
     NetworkDeviceInfo info;
@@ -155,8 +167,12 @@ NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(const MacAddre
 
     NetworkDeviceMonitorImpl *monitor = new NetworkDeviceMonitorImpl(macAddress, this);
     monitor->setNetworkDeviceInfo(info);
-
     m_monitors.insert(macAddress, monitor);
+
+    if (!available()) {
+        qCWarning(dcNetworkDeviceDiscovery()) << "Registered monitor but the hardware resource is not available. The monitor will not work as expected" << monitor;
+        return monitor;
+    }
 
     // Restart the monitor timer since we evaluate this one now
     m_monitorTimer->start();

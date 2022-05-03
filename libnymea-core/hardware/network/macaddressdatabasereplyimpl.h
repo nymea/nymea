@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2021, nymea GmbH
+* Copyright 2013 - 2022, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,66 +28,35 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef MACADDRESSDATABASE_H
-#define MACADDRESSDATABASE_H
+#ifndef MACADDRESSDATABASEREPLYIMPL_H
+#define MACADDRESSDATABASEREPLYIMPL_H
 
-#include <QQueue>
 #include <QObject>
-#include <QSqlDatabase>
-#include <QFutureWatcher>
 
-#include "libnymea.h"
+#include <network/macaddressdatabasereply.h>
 
-class LIBNYMEA_EXPORT MacAddressDatabaseReply : public QObject
+namespace nymeaserver {
+
+class MacAddressDatabaseReplyImpl : public MacAddressDatabaseReply
 {
     Q_OBJECT
+
     friend class MacAddressDatabase;
 
 public:
-    QString macAddress() const { return m_macAddress; };
-    QString manufacturer() const { return m_manufacturer; };
+    explicit MacAddressDatabaseReplyImpl(QObject *parent = nullptr);
+    ~MacAddressDatabaseReplyImpl() override = default;
+
+    QString macAddress() const override;
+    QString manufacturer() const override;
 
 private:
-    explicit MacAddressDatabaseReply(QObject *parent = nullptr) : QObject(parent) { };
     QString m_macAddress;
     QString m_manufacturer;
     qint64 m_startTimestamp;
 
-signals:
-    void finished();
-
 };
 
+}
 
-class LIBNYMEA_EXPORT MacAddressDatabase : public QObject
-{
-    Q_OBJECT
-public:
-    explicit MacAddressDatabase(QObject *parent = nullptr);
-    MacAddressDatabase(const QString &databaseName, QObject *parent = nullptr);
-    ~MacAddressDatabase();
-
-    bool available() const;
-
-    MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress);
-
-private:
-    QSqlDatabase m_db;
-    bool m_available = false;
-    QString m_connectionName;
-    QString m_databaseName = "/usr/share/nymea/mac-addresses.db";
-
-    MacAddressDatabaseReply *m_currentReply = nullptr;
-    QFutureWatcher<QString> *m_futureWatcher = nullptr;
-    QQueue<MacAddressDatabaseReply *> m_pendingReplies;
-
-    bool initDatabase();
-    void runNextLookup();
-
-private slots:
-    void onLookupFinished();
-    QString lookupMacAddressVendorInternal(const QString &macAddress);
-
-};
-
-#endif // MACADDRESSDATABASE_H
+#endif // MACADDRESSDATABASEREPLYIMPL_H

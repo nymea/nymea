@@ -28,63 +28,38 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKDEVICEINFO_H
-#define NETWORKDEVICEINFO_H
+#ifndef NETWORKDEVICEMONITOR_H
+#define NETWORKDEVICEMONITOR_H
 
-#include <QDebug>
 #include <QObject>
 #include <QDateTime>
-#include <QHostAddress>
-#include <QNetworkInterface>
 
 #include "libnymea.h"
+#include "macaddress.h"
+#include "networkdeviceinfo.h"
 
-class LIBNYMEA_EXPORT NetworkDeviceInfo
+class LIBNYMEA_EXPORT NetworkDeviceMonitor : public QObject
 {
+    Q_OBJECT
+
 public:
-    explicit NetworkDeviceInfo();
-    explicit NetworkDeviceInfo(const QString &macAddress);
-    explicit NetworkDeviceInfo(const QHostAddress &address);
+    explicit NetworkDeviceMonitor(QObject *parent = nullptr);
+    virtual ~NetworkDeviceMonitor() = default;
 
-    QString macAddress() const;
-    void setMacAddress(const QString &macAddress);
+    virtual MacAddress macAddress() const = 0;
 
-    QString macAddressManufacturer() const;
-    void setMacAddressManufacturer(const QString &macAddressManufacturer);
+    virtual NetworkDeviceInfo networkDeviceInfo() const = 0;
 
-    QHostAddress address() const;
-    void setAddress(const QHostAddress &address);
+    virtual bool reachable() const = 0;
+    virtual QDateTime lastSeen() const = 0;
 
-    QString hostName() const;
-    void setHostName(const QString &hostName);
+signals:
+    void reachableChanged(bool reachable);
+    void lastSeenChanged(const QDateTime &lastSeen);
+    void networkDeviceInfoChanged(const NetworkDeviceInfo &networkDeviceInfo);
 
-    QNetworkInterface networkInterface() const;
-    void setNetworkInterface(const QNetworkInterface &networkInterface);
-
-    bool isValid() const;
-    bool isComplete() const;
-
-    QString incompleteProperties() const;
-
-    bool operator==(const NetworkDeviceInfo &other) const;
-    bool operator!=(const NetworkDeviceInfo &other) const;
-
-private:
-    QHostAddress m_address;
-    QString m_macAddress;
-    QString m_macAddressManufacturer;
-    QString m_hostName;
-    QNetworkInterface m_networkInterface;
-
-    bool m_macAddressSet = false;
-    bool m_macAddressManufacturerSet = false;
-    bool m_addressSet = false;
-    bool m_hostNameSet = false;
-    bool m_networkInterfaceSet = false;
 };
 
+QDebug operator<<(QDebug debug, NetworkDeviceMonitor *networkDeviceMonitor);
 
-QDebug operator<<(QDebug debug, const NetworkDeviceInfo &networkDeviceInfo);
-
-
-#endif // NETWORKDEVICEINFO_H
+#endif // NETWORKDEVICEMONITOR_H

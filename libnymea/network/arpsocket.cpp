@@ -85,16 +85,14 @@ bool ArpSocket::sendRequest(const QString &interfaceName)
     if (!m_isOpen)
         return false;
 
-
     // Get the interface
-    qCDebug(dcArpSocket()) << "Sending ARP request to all network interfaces" << interfaceName << "...";
+    qCDebug(dcArpSocket()) << "Sending ARP request to network interface" << interfaceName << "...";
     QNetworkInterface networkInterface = QNetworkInterface::interfaceFromName(interfaceName);
     if (!networkInterface.isValid()) {
         qCWarning(dcArpSocket()) << "Failed to send the ARP request to network interface" << interfaceName << "because the interface is not valid.";
         return false;
     }
 
-    loadArpCache(networkInterface);
     return sendRequest(networkInterface);
 }
 
@@ -107,7 +105,7 @@ bool ArpSocket::sendRequest(const QNetworkInterface &networkInterface)
     if (networkInterface.flags().testFlag(QNetworkInterface::IsLoopBack))
         return false;
 
-    // If have no interface indes, we cannot use this network
+    // If the interface index is unknown, we cannot use this network
     if (networkInterface.index() == 0) {
         qCDebug(dcArpSocket()) << "Failed to send the ARP request to network interface" << networkInterface.name() << "because the system interface index is unknown.";
         return false;
@@ -129,8 +127,6 @@ bool ArpSocket::sendRequest(const QNetworkInterface &networkInterface)
         qCDebug(dcArpSocket()) << "Failed to send the ARP request to network interface" << networkInterface.name() << "because there is no hardware address which is required for ARP.";
         return false;
     }
-
-    loadArpCache(networkInterface);
 
     qCDebug(dcArpSocket()) << "Verifying network interface" << networkInterface.name() << networkInterface.hardwareAddress() << "...";
     foreach (const QNetworkAddressEntry &entry, networkInterface.addressEntries()) {
@@ -159,7 +155,7 @@ bool ArpSocket::sendRequest(const QNetworkInterface &networkInterface)
             if (targetAddress == entry.ip())
                 continue;
 
-            sendRequestInternally(networkInterface.index(), networkInterface.hardwareAddress(), entry.ip(), "ff:ff:ff:ff:ff:ff", targetAddress);
+            sendRequestInternally(networkInterface.index(), MacAddress(networkInterface.hardwareAddress()), entry.ip(), MacAddress::broadcast(), targetAddress);
         }
     }
 
@@ -183,8 +179,11 @@ bool ArpSocket::sendRequest(const QHostAddress &targetAddress)
             if (entry.ip().protocol() != QAbstractSocket::IPv4Protocol)
                 continue;
 
-            if (targetAddress.isInSubnet(entry.ip(), entry.netmask().toIPv4Address())) {
-                return sendRequestInternally(networkInterface.index(), networkInterface.hardwareAddress(), entry.ip(), "ff:ff:ff:ff:ff:ff", targetAddress);
+            qCDebug(dcArpSocket()) << "Check subnet for" << networkInterface.name() << entry.ip() << entry.netmask();
+            if (targetAddress.isInSubnet(entry.ip(), entry.prefixLength())) {
+                return sendRequestInternally(networkInterface.index(), MacAddress(networkInterface.hardwareAddress()), entry.ip(), MacAddress::broadcast(), targetAddress);
+            } else {
+                qCDebug(dcArpSocket()) << targetAddress << "is not part of subnet" << entry.ip() << "netmask" << entry.netmask() << "netmask int" << entry.netmask().toIPv4Address();
             }
         }
     }
@@ -228,66 +227,17 @@ bool ArpSocket::openSocket()
             return;
 
         // Make sure to read all data from the socket...
-        while (true) {
-            char receiveBuffer[ETHER_ARP_PACKET_LEN];
+        int bytesReceived = 0;
+        while (bytesReceived >= 0) {
+            unsigned char receiveBuffer[ETHER_ARP_PACKET_LEN];
             memset(&receiveBuffer, 0, sizeof(receiveBuffer));
 
             // Read the buffer
-            int bytesReceived = recv(m_socketDescriptor, receiveBuffer, ETHER_ARP_PACKET_LEN, 0);
-            if (bytesReceived < 0) {
-                // Finished reading
-                return;
-            }
+            bytesReceived = recv(m_socketDescriptor, receiveBuffer, ETHER_ARP_PACKET_LEN, 0);
+            if (bytesReceived < 0)
+                continue;
 
-            // Parse data using structs header + arp
-            struct ether_header *etherHeader = (struct ether_header *)(receiveBuffer);
-            struct ether_arp *arpPacket = (struct ether_arp *)(receiveBuffer + ETHER_HEADER_LEN);
-            QString senderMacAddress = getMacAddressString(arpPacket->arp_sha);
-            QHostAddress senderHostAddress = getHostAddressString(arpPacket->arp_spa);
-            QString targetMacAddress = getMacAddressString(arpPacket->arp_tha);
-            QHostAddress targetHostAddress = getHostAddressString(arpPacket->arp_tpa);
-            uint16_t etherType = htons(etherHeader->ether_type);
-            if (etherType != ETHERTYPE_ARP) {
-                qCWarning(dcArpSocketTraffic()) << "Received ARP socket data header with invalid type" << etherType;
-                return;
-            }
-
-            // Filter for ARP replies
-            uint16_t arpOperationCode = htons(arpPacket->arp_op);
-            switch (arpOperationCode) {
-            case ARPOP_REQUEST:
-                //qCDebug(dcArpSocket()) << "ARP request from " << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
-                break;
-            case ARPOP_REPLY: {
-                QNetworkInterface networkInterface = NetworkUtils::getInterfaceForMacAddress(targetMacAddress);
-                if (!networkInterface.isValid()) {
-                    qCWarning(dcArpSocket()) << "Could not find interface from ARP response" << targetHostAddress.toString() << targetMacAddress;
-                    return;
-                }
-
-                qCDebug(dcArpSocketTraffic()) << "ARP response from" << senderMacAddress << senderHostAddress.toString() << "on" << networkInterface.name();
-                emit arpResponse(networkInterface, senderHostAddress, senderMacAddress.toLower());
-                break;
-            }
-            case ARPOP_RREQUEST:
-                qCDebug(dcArpSocketTraffic()) << "RARP request from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
-                break;
-            case ARPOP_RREPLY:
-                qCDebug(dcArpSocketTraffic()) << "PARP response from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
-                break;
-            case ARPOP_InREQUEST:
-                qCDebug(dcArpSocketTraffic()) << "InARP request from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
-                break;
-            case ARPOP_InREPLY:
-                qCDebug(dcArpSocketTraffic()) << "InARP response from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
-                break;
-            case ARPOP_NAK:
-                qCDebug(dcArpSocketTraffic()) << "(ATM)ARP NAK from" << senderMacAddress << senderHostAddress.toString() << "-->" << targetMacAddress << targetHostAddress.toString();
-                break;
-            default:
-                qCWarning(dcArpSocketTraffic()) << "Received unhandled ARP operation code" << arpOperationCode << "from" << senderMacAddress << senderHostAddress.toString();
-                break;
-            }
+            processDataBuffer(receiveBuffer, bytesReceived);
         }
     });
 
@@ -318,7 +268,7 @@ void ArpSocket::closeSocket()
     qCDebug(dcArpSocket()) << "ARP disabled successfully";
 }
 
-bool ArpSocket::sendRequestInternally(int networkInterfaceIndex, const QString &senderMacAddress, const QHostAddress &senderHostAddress, const QString &targetMacAddress, const QHostAddress &targetHostAddress)
+bool ArpSocket::sendRequestInternally(int networkInterfaceIndex, const MacAddress &senderMacAddress, const QHostAddress &senderHostAddress, const MacAddress &targetMacAddress, const QHostAddress &targetHostAddress)
 {
     // Set up data structures
     unsigned char sendingBuffer[ETHER_ARP_PACKET_LEN];
@@ -364,14 +314,80 @@ bool ArpSocket::sendRequestInternally(int networkInterfaceIndex, const QString &
     return true;
 }
 
-QString ArpSocket::getMacAddressString(uint8_t *senderHardwareAddress)
+void ArpSocket::processDataBuffer(unsigned char *receiveBuffer, int size)
 {
-    QStringList hexValues;
-    for (int i = 0; i < ETHER_ADDR_LEN; i++) {
-        hexValues.append(QString("%1").arg(senderHardwareAddress[i], 2, 16, QLatin1Char('0')));
+    // Parse data using structs header + arp
+    QByteArray receivedBufferBytes;
+    for (int i = 0; i < size; i++) {
+        receivedBufferBytes.append(receiveBuffer[i]);
     }
 
-    return hexValues.join(":");
+    struct ether_header *etherHeader = (struct ether_header *)(receiveBuffer);
+    struct ether_arp *arpPacket = (struct ether_arp *)(receiveBuffer + ETHER_HEADER_LEN);
+    MacAddress senderMacAddress = MacAddress(arpPacket->arp_sha);
+    QHostAddress senderHostAddress = getHostAddressString(arpPacket->arp_spa);
+    MacAddress targetMacAddress = MacAddress(arpPacket->arp_tha);
+    QHostAddress targetHostAddress = getHostAddressString(arpPacket->arp_tpa);
+
+    uint16_t etherType = htons(etherHeader->ether_type);
+    if (etherType != ETHERTYPE_ARP) {
+        qCWarning(dcArpSocketTraffic()) << "Received ARP socket data header with invalid type" << etherType;
+        return;
+    }
+
+    // Filter for ARP replies
+    uint16_t arpOperationCode = htons(arpPacket->arp_op);
+    switch (arpOperationCode) {
+    case ARPOP_REQUEST: {
+        // The sender of the arp request provides ip and mac.
+        // Lets find the corresponding interface and use it for the discovery and monitor
+        if (senderHostAddress.isNull())
+            return;
+
+        QNetworkInterface networkInterface = NetworkUtils::getInterfaceForHostaddress(senderHostAddress);
+        if (!networkInterface.isValid()) {
+            qCDebug(dcArpSocket()) << "Could not find local interface from ARP request" << senderHostAddress.toString() << senderMacAddress.toString();
+            return;
+        }
+
+        // Note: we are not interested in our own requests
+        if (senderMacAddress != MacAddress(networkInterface.hardwareAddress())) {
+            qCDebug(dcArpSocket()) << "ARP request" << receivedBufferBytes.toHex() << "from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString() << "on" << networkInterface.name();
+            emit arpRequestReceived(networkInterface, senderHostAddress, senderMacAddress);
+        }
+
+        break;
+    }
+    case ARPOP_REPLY: {
+        QNetworkInterface networkInterface = NetworkUtils::getInterfaceForMacAddress(targetMacAddress);
+        if (!networkInterface.isValid()) {
+            qCDebug(dcArpSocket()) << "Could not find local interface from ARP response" << targetHostAddress.toString() << targetMacAddress.toString();
+            return;
+        }
+
+        qCDebug(dcArpSocket()) << "ARP reply" << receivedBufferBytes.toHex() << "from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString() << "on" << networkInterface.name();
+        emit arpResponse(networkInterface, senderHostAddress, senderMacAddress);
+        break;
+    }
+    case ARPOP_RREQUEST:
+        qCDebug(dcArpSocketTraffic()) << "RARP request from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        break;
+    case ARPOP_RREPLY:
+        qCDebug(dcArpSocketTraffic()) << "PARP response from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        break;
+    case ARPOP_InREQUEST:
+        qCDebug(dcArpSocketTraffic()) << "InARP request from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        break;
+    case ARPOP_InREPLY:
+        qCDebug(dcArpSocketTraffic()) << "InARP response from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        break;
+    case ARPOP_NAK:
+        qCDebug(dcArpSocketTraffic()) << "(ATM)ARP NAK from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        break;
+    default:
+        qCWarning(dcArpSocketTraffic()) << "Received unhandled ARP operation code" << arpOperationCode << "from" << senderMacAddress.toString() << senderHostAddress.toString();
+        break;
+    }
 }
 
 QHostAddress ArpSocket::getHostAddressString(uint8_t *senderIpAddress)
@@ -403,52 +419,54 @@ bool ArpSocket::loadArpCache(const QNetworkInterface &interface)
     while (!stream.atEnd()) {
         QString line = stream.readLine();
         lineCount += 1;
+
         // Skip the first line since it's just the header
         if (lineCount == 0)
             continue;
 
-
-        //qCDebug(dcArpSocket()) << "Checking line" << line;
-
+        qCDebug(dcArpSocket()) << "Checking line" << line;
         QStringList columns = line.split(QLatin1Char(' '));
         columns.removeAll("");
 
         // Make sure we have enought token
         if (columns.count() < 6) {
-            qCWarning(dcArpSocket()) << "Line has invalid column count" << line;
+            qCWarning(dcArpSocket()) << "ARP cache line has invalid column count" << line;
             continue;
         }
 
         QHostAddress address(columns.at(0).trimmed());
         if (address.isNull()) {
-            qCWarning(dcArpSocket()) << "Line has invalid address";
+            qCWarning(dcArpSocket()) << "ARP cache line has invalid IP address";
             continue;
         }
 
-        QString macAddress = columns.at(3).trimmed();
-        if (macAddress.count() != 17) {
-            qCWarning(dcArpSocket()) << "Line has invalid mac address" << columns << macAddress;
+        QString macAddressString = columns.at(3).trimmed();
+        MacAddress macAddress(macAddressString);
+        if (macAddress.isNull()) {
+            qCDebug(dcArpSocket()) << "ARP cache line has invalid MAC address" << macAddressString;
             continue;
         }
 
         QNetworkInterface addressInterface = QNetworkInterface::interfaceFromName(columns.at(5));
-        if (!addressInterface.isValid())
+        if (!addressInterface.isValid()) {
+            qCDebug(dcArpSocket()) << "ARP cache line has invalid network interface identifier" << columns << columns.at(5);
             continue;
+        }
 
         // Check if we filter for specific interfaces
         if (interface.isValid() && addressInterface.name() != interface.name())
             continue;
 
-        qCDebug(dcArpSocket()) << "Loaded from cache" << address.toString() << macAddress << addressInterface.name();
+        qCDebug(dcArpSocket()) << "Loaded from cache" << address.toString() << macAddress.toString() << addressInterface.name();
         emit arpResponse(addressInterface, address, macAddress);
     }
 
     return true;
 }
 
-void ArpSocket::fillMacAddress(uint8_t *targetArray, const QString &macAddress)
+void ArpSocket::fillMacAddress(uint8_t *targetArray, const MacAddress &macAddress)
 {
-    QStringList macValues = macAddress.split(":");
+    QStringList macValues = macAddress.toString().split(":");
     for (int i = 0; i < ETHER_ADDR_LEN; i++) {
         targetArray[i] = macValues.at(i).toUInt(nullptr, 16);
     }

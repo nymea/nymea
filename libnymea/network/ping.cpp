@@ -49,6 +49,13 @@ NYMEA_LOGGING_CATEGORY(dcPingTraffic, "PingTraffic")
 
 Ping::Ping(QObject *parent) : QObject(parent)
 {
+    m_queueTimer = new QTimer(this);
+    m_queueTimer->setInterval(20);
+    m_queueTimer->setSingleShot(true);
+    connect(m_queueTimer, &QTimer::timeout, this, [=](){
+        sendNextReply();
+    });
+
     // Build socket descriptor
     m_socketDescriptor = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (m_socketDescriptor < 0) {
@@ -77,13 +84,6 @@ Ping::Ping(QObject *parent) : QObject(parent)
     // Create the socket notifier for read notification
     m_socketNotifier = new QSocketNotifier(m_socketDescriptor, QSocketNotifier::Read, this);
     connect(m_socketNotifier, &QSocketNotifier::activated, this, &Ping::onSocketReadyRead);
-
-    m_queueTimer = new QTimer(this);
-    m_queueTimer->setInterval(20);
-    m_queueTimer->setSingleShot(true);
-    connect(m_queueTimer, &QTimer::timeout, this, [=](){
-        sendNextReply();
-    });
 
     m_socketNotifier->setEnabled(true);
     m_available = true;
@@ -135,13 +135,20 @@ void Ping::sendNextReply()
     PingReply *reply = m_replyQueue.dequeue();
     //qCDebug(dcPing()) << "Send next reply," << m_replyQueue.count() << "left in queue";
     m_queueTimer->start();
-    QTimer::singleShot(0, this, [=]() { performPing(reply); });
+    QTimer::singleShot(0, reply, [=]() { performPing(reply); });
 }
 
 void Ping::performPing(PingReply *reply)
 {
     if (!m_available) {
         qCDebug(dcPing()) << "Cannot send ping request" << m_error;
+        finishReply(reply, m_error);
+        return;
+    }
+
+    if (reply->targetHostAddress().isNull()) {
+        m_error = PingReply::ErrorInvalidHostAddress;
+        qCWarning(dcPing()) << "Cannot send ping request" << m_error;
         finishReply(reply, m_error);
         return;
     }
@@ -411,7 +418,7 @@ void Ping::onHostLookupFinished(const QHostInfo &info)
     if (info.error() != QHostInfo::NoError) {
         qCWarning(dcPing()) << "Failed to look up hostname after successfull ping" << reply->targetHostAddress().toString() << info.error();
     } else {
-        qCDebug(dcPing()) << "********Looked up hostname after successfull ping" << reply->targetHostAddress().toString() << info.hostName();
+        qCDebug(dcPing()) << "Looked up hostname after successfull ping" << reply->targetHostAddress().toString() << info.hostName();
         if (info.hostName() != reply->targetHostAddress().toString()) {
             reply->m_hostName = info.hostName();
         }
@@ -419,4 +426,3 @@ void Ping::onHostLookupFinished(const QHostInfo &info)
 
     finishReply(reply, PingReply::ErrorNoError);
 }
-

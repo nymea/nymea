@@ -28,11 +28,49 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "networkdevicediscovery.h"
+#ifndef MACADDRESSDATABASE_H
+#define MACADDRESSDATABASE_H
 
-NetworkDeviceDiscovery::NetworkDeviceDiscovery(QObject *parent) :
-    HardwareResource("Network device discovery", parent)
+#include <QQueue>
+#include <QObject>
+#include <QSqlDatabase>
+#include <QFutureWatcher>
+
+#include "macaddressdatabasereplyimpl.h"
+
+namespace nymeaserver {
+
+class MacAddressDatabase : public QObject
 {
+    Q_OBJECT
+public:
+    explicit MacAddressDatabase(QObject *parent = nullptr);
+    MacAddressDatabase(const QString &databaseName, QObject *parent = nullptr);
+    ~MacAddressDatabase();
+
+    bool available() const;
+
+    MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress);
+
+private:
+    QSqlDatabase m_db;
+    bool m_available = false;
+    QString m_connectionName;
+    QString m_databaseName = "/usr/share/nymea/mac-addresses.db";
+
+    MacAddressDatabaseReplyImpl *m_currentReply = nullptr;
+    QFutureWatcher<QString> *m_futureWatcher = nullptr;
+    QQueue<MacAddressDatabaseReplyImpl *> m_pendingReplies;
+
+    bool initDatabase();
+    void runNextLookup();
+
+private slots:
+    void onLookupFinished();
+    QString lookupMacAddressVendorInternal(const QString &macAddress);
+
+};
 
 }
 
+#endif // MACADDRESSDATABASE_H

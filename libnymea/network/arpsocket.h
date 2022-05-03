@@ -39,6 +39,7 @@
 #include <QNetworkInterface>
 
 #include "libnymea.h"
+#include "macaddress.h"
 
 class LIBNYMEA_EXPORT ArpSocket : public QObject
 {
@@ -64,21 +65,23 @@ public:
     void closeSocket();
 
 signals:
-    void arpResponse(const QNetworkInterface &networkInterface, const QHostAddress &address, const QString &macAddress);
+    void arpResponse(const QNetworkInterface &networkInterface, const QHostAddress &address, const MacAddress &macAddress);
+    void arpRequestReceived(const QNetworkInterface &networkInterface, const QHostAddress &address, const MacAddress &macAddress);
 
 private:
     QSocketNotifier *m_socketNotifier = nullptr;
     int m_socketDescriptor = -1;
     bool m_isOpen = false;
 
-    bool sendRequestInternally(int networkInterfaceIndex, const QString &senderMacAddress, const QHostAddress &senderHostAddress, const QString &targetMacAddress, const QHostAddress &targetHostAddress);
+    bool sendRequestInternally(int networkInterfaceIndex, const MacAddress &senderMacAddress, const QHostAddress &senderHostAddress, const MacAddress &targetMacAddress, const QHostAddress &targetHostAddress);
 
-    QString getMacAddressString(uint8_t *senderHardwareAddress);
+    void processDataBuffer(unsigned char *receiveBuffer, int size);
+
     QHostAddress getHostAddressString(uint8_t *senderIpAddress);
 
     bool loadArpCache(const QNetworkInterface &interface = QNetworkInterface());
 
-    void fillMacAddress(uint8_t *targetArray, const QString &macAddress);
+    void fillMacAddress(uint8_t *targetArray, const MacAddress &macAddress);
     void fillHostAddress(uint8_t *targetArray, const QHostAddress &hostAddress);
 
 };

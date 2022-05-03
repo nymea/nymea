@@ -13,7 +13,7 @@ QNetworkInterface NetworkUtils::getInterfaceForHostaddress(const QHostAddress &a
             if (entry.ip().protocol() != QAbstractSocket::IPv4Protocol)
                 continue;
 
-            if (address.isInSubnet(entry.ip(), entry.netmask().toIPv4Address())) {
+            if (address.isInSubnet(entry.ip(), entry.prefixLength())) {
                 return networkInterface;
             }
         }
@@ -26,6 +26,17 @@ QNetworkInterface NetworkUtils::getInterfaceForMacAddress(const QString &macAddr
 {
     foreach (const QNetworkInterface &networkInterface, QNetworkInterface::allInterfaces()) {
         if (networkInterface.hardwareAddress().toLower() == macAddress.toLower()) {
+            return networkInterface;
+        }
+    }
+
+    return QNetworkInterface();
+}
+
+QNetworkInterface NetworkUtils::getInterfaceForMacAddress(const MacAddress &macAddress)
+{
+    foreach (const QNetworkInterface &networkInterface, QNetworkInterface::allInterfaces()) {
+        if (MacAddress(networkInterface.hardwareAddress()) == macAddress) {
             return networkInterface;
         }
     }

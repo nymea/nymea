@@ -34,6 +34,7 @@
 #include <QObject>
 
 #include "libnymea.h"
+#include "macaddress.h"
 #include "networkdeviceinfo.h"
 
 class LIBNYMEA_EXPORT NetworkDeviceInfos : public QVector<NetworkDeviceInfo>
@@ -45,12 +46,18 @@ public:
 
     int indexFromHostAddress(const QHostAddress &address);
     int indexFromMacAddress(const QString &macAddress);
+    int indexFromMacAddress(const MacAddress &macAddress);
 
     bool hasHostAddress(const QHostAddress &address);
     bool hasMacAddress(const QString &macAddress);
+    bool hasMacAddress(const MacAddress &macAddress);
 
-    NetworkDeviceInfo get(const QHostAddress &address);
-    NetworkDeviceInfo get(const QString &macAddress);
+    NetworkDeviceInfo get(const QHostAddress &address) const;
+    NetworkDeviceInfo get(const QString &macAddress) const;
+    NetworkDeviceInfo get(const MacAddress &macAddress) const;
+
+    void removeMacAddress(const QString &macAddress);
+    void removeMacAddress(const MacAddress &macAddress);
 
     void sortNetworkDevices();
 

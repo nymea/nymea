@@ -28,11 +28,24 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "networkdevicediscovery.h"
+#include "macaddressdatabasereplyimpl.h"
 
-NetworkDeviceDiscovery::NetworkDeviceDiscovery(QObject *parent) :
-    HardwareResource("Network device discovery", parent)
+namespace nymeaserver {
+
+MacAddressDatabaseReplyImpl::MacAddressDatabaseReplyImpl(QObject *parent) :
+    MacAddressDatabaseReply(parent)
 {
 
 }
 
+QString MacAddressDatabaseReplyImpl::macAddress() const
+{
+    return m_macAddress;
+}
+
+QString MacAddressDatabaseReplyImpl::manufacturer() const
+{
+    return m_manufacturer;
+}
+
+}

@@ -34,6 +34,8 @@
 #include <QHostAddress>
 #include <QNetworkInterface>
 
+#include "macaddress.h"
+
 class NetworkUtils
 {
 public:
@@ -41,6 +43,7 @@ public:
 
     static QNetworkInterface getInterfaceForHostaddress(const QHostAddress &address);
     static QNetworkInterface getInterfaceForMacAddress(const QString &macAddress);
+    static QNetworkInterface getInterfaceForMacAddress(const MacAddress &macAddress);
 };
 
 #endif // NETWORKUTILS_H

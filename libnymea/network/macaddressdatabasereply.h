@@ -28,63 +28,27 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKDEVICEINFO_H
-#define NETWORKDEVICEINFO_H
+#ifndef MACADDRESSDATABASEREPLY_H
+#define MACADDRESSDATABASEREPLY_H
 
-#include <QDebug>
 #include <QObject>
-#include <QDateTime>
-#include <QHostAddress>
-#include <QNetworkInterface>
 
 #include "libnymea.h"
 
-class LIBNYMEA_EXPORT NetworkDeviceInfo
+class LIBNYMEA_EXPORT MacAddressDatabaseReply : public QObject
 {
+    Q_OBJECT
+
 public:
-    explicit NetworkDeviceInfo();
-    explicit NetworkDeviceInfo(const QString &macAddress);
-    explicit NetworkDeviceInfo(const QHostAddress &address);
+    explicit MacAddressDatabaseReply(QObject *parent = nullptr);
+    virtual ~MacAddressDatabaseReply() = default;
 
-    QString macAddress() const;
-    void setMacAddress(const QString &macAddress);
+    virtual QString macAddress() const = 0;
+    virtual QString manufacturer() const  = 0;
 
-    QString macAddressManufacturer() const;
-    void setMacAddressManufacturer(const QString &macAddressManufacturer);
+signals:
+    void finished();
 
-    QHostAddress address() const;
-    void setAddress(const QHostAddress &address);
-
-    QString hostName() const;
-    void setHostName(const QString &hostName);
-
-    QNetworkInterface networkInterface() const;
-    void setNetworkInterface(const QNetworkInterface &networkInterface);
-
-    bool isValid() const;
-    bool isComplete() const;
-
-    QString incompleteProperties() const;
-
-    bool operator==(const NetworkDeviceInfo &other) const;
-    bool operator!=(const NetworkDeviceInfo &other) const;
-
-private:
-    QHostAddress m_address;
-    QString m_macAddress;
-    QString m_macAddressManufacturer;
-    QString m_hostName;
-    QNetworkInterface m_networkInterface;
-
-    bool m_macAddressSet = false;
-    bool m_macAddressManufacturerSet = false;
-    bool m_addressSet = false;
-    bool m_hostNameSet = false;
-    bool m_networkInterfaceSet = false;
 };
 
-
-QDebug operator<<(QDebug debug, const NetworkDeviceInfo &networkDeviceInfo);
-
-
-#endif // NETWORKDEVICEINFO_H
+#endif // MACADDRESSDATABASEREPLY_H

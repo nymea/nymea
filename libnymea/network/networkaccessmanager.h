@@ -42,7 +42,7 @@
 #include <QDebug>
 #include <QUrl>
 
-class LIBNYMEA_EXPORT NetworkAccessManager : public HardwareResource
+class LIBNYMEA_EXPORT   NetworkAccessManager : public HardwareResource
 {
     Q_OBJECT
 

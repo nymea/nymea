@@ -28,11 +28,25 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "networkdevicediscovery.h"
+#include "networkdevicemonitor.h"
+#include "networkdeviceinfo.h"
 
-NetworkDeviceDiscovery::NetworkDeviceDiscovery(QObject *parent) :
-    HardwareResource("Network device discovery", parent)
+NetworkDeviceMonitor::NetworkDeviceMonitor(QObject *parent) :
+    QObject(parent)
 {
 
+}
+
+QDebug operator<<(QDebug dbg, NetworkDeviceMonitor *networkDeviceMonitor)
+{
+    dbg.nospace() << "NetworkDeviceMonitor(" << networkDeviceMonitor->macAddress().toString();
+
+    if (!networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer().isEmpty())
+        dbg.nospace() << " - " << networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer();
+
+    dbg.nospace() << ", " << networkDeviceMonitor->networkDeviceInfo().address().toString();
+
+    dbg.nospace() << ")";
+    return dbg.space();
 }
 

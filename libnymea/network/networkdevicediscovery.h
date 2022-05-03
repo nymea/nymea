@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2021, nymea GmbH
+* Copyright 2013 - 2022, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -35,50 +35,41 @@
 #include <QObject>
 #include <QLoggingCategory>
 
-#include "ping.h"
 #include "libnymea.h"
+#include "hardwareresource.h"
+
+#include "networkdevicemonitor.h"
+
+#include "pingreply.h"
+#include "macaddressdatabasereply.h"
 #include "networkdevicediscoveryreply.h"
 
-class ArpSocket;
-class MacAddressDatabase;
-class MacAddressDatabaseReply;
-
-Q_DECLARE_LOGGING_CATEGORY(dcNetworkDeviceDiscovery)
-
-class LIBNYMEA_EXPORT NetworkDeviceDiscovery : public QObject
+class LIBNYMEA_EXPORT NetworkDeviceDiscovery : public HardwareResource
 {
     Q_OBJECT
 public:
     explicit NetworkDeviceDiscovery(QObject *parent = nullptr);
+    virtual ~NetworkDeviceDiscovery() = default;
 
-    NetworkDeviceDiscoveryReply *discover();
+    virtual NetworkDeviceDiscoveryReply *discover() = 0;
 
-    bool available() const;
-    bool running() const;
+    virtual bool running() const = 0;
 
-    PingReply *ping(const QHostAddress &address);
-    MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress);
+    virtual NetworkDeviceMonitor *registerMonitor(const MacAddress &macAddress) = 0;
+
+    virtual void unregisterMonitor(const MacAddress &macAddress) = 0;
+    virtual void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) = 0;
+
+    virtual PingReply *ping(const QHostAddress &address) = 0;
+
+    virtual MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) = 0;
+    virtual MacAddressDatabaseReply *lookupMacAddress(const MacAddress &macAddress) = 0;
+
+    virtual bool sendArpRequest(const QHostAddress &address) = 0;
 
 signals:
     void runningChanged(bool running);
-
-private:
-    MacAddressDatabase *m_macAddressDatabase = nullptr;
-    ArpSocket *m_arpSocket = nullptr;
-    Ping *m_ping = nullptr;
-    bool m_running = false;
-
-    QTimer *m_discoveryTimer = nullptr;
-    NetworkDeviceDiscoveryReply *m_currentReply = nullptr;
-    QList<PingReply *> m_runningPingRepies;
-
-    void pingAllNetworkDevices();
-    void finishDiscovery();
-
-    void updateOrAddNetworkDeviceArp(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress, const QString &manufacturer = QString());
-
-private slots:
-    void onArpResponseRceived(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress);
+    void networkDeviceInfoCacheUpdated();
 
 };
 

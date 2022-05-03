@@ -8,6 +8,7 @@ SUBDIRS = \
         logging \
         loggingdirect \
         loggingloading \
+        macaddress \
         mqttbroker \
         plugins \
         pythonplugins \
@@ -21,4 +22,3 @@ SUBDIRS = \
         webserver \
         websocketserver \
         #coap \ # temporary removed until fixed
-

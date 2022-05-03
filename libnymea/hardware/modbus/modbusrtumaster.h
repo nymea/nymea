@@ -54,6 +54,8 @@ public:
 
     virtual bool connected() const = 0;
 
+    virtual void requestReconnect() = 0;
+
     // Requests
     virtual ModbusRtuReply *readCoil(int slaveAddress, int registerAddress, quint16 size = 1) = 0;
     virtual ModbusRtuReply *readDiscreteInput(int slaveAddress, int registerAddress, quint16 size = 1) = 0;

@@ -167,6 +167,12 @@ bool ModbusRtuMasterImpl::connected() const
     return m_connected;
 }
 
+void ModbusRtuMasterImpl::requestReconnect()
+{
+    disconnectDevice();
+    connectDevice();
+}
+
 bool ModbusRtuMasterImpl::connectDevice()
 {
 #ifdef WITH_QTSERIALBUS

@@ -68,6 +68,8 @@ public:
 
     bool connected() const override;
 
+    void requestReconnect() override;
+
     bool connectDevice();
     void disconnectDevice();
 

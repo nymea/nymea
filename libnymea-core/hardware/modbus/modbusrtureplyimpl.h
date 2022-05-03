@@ -32,6 +32,7 @@
 #define MODBUSRTUREPLYIMPL_H
 
 #include <QObject>
+#include <QTimer>
 
 #include "hardware/modbus/modbusrtureply.h"
 
@@ -65,7 +66,7 @@ private:
     Error m_error = UnknownError;
     QString m_errorString;
     QVector<quint16> m_result;
-
+    QTimer m_timeoutTimer;
 };
 
 }

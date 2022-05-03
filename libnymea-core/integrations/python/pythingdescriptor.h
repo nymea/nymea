@@ -61,7 +61,6 @@ static int PyThingDescriptor_init(PyThingDescriptor *self, PyObject *args, PyObj
     }
     if (parentId) {
         Py_INCREF(parentId);
-        qCritical() << "++++" << ThingId(PyUnicode_AsUTF8(parentId));
         self->pyParentId = parentId;
     }
     if (params) {

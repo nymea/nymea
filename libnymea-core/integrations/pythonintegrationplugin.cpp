@@ -268,6 +268,9 @@ void PythonIntegrationPlugin::initPython()
     Py_InitializeEx(0);
     PyEval_InitThreads();
 
+    // Needs to be imported once to be able to use PyDateTime functions
+    PyDateTime_IMPORT;
+
     // Store the main thread state and release the GIL
     s_mainThreadState = PyEval_SaveThread();
 }

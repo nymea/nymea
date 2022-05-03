@@ -63,7 +63,7 @@ static PyObject * PyPluginStorage_setValue(PyPluginStorage* self, PyObject* args
     char *keyStr = nullptr;
     PyObject *value = nullptr;
     if (!PyArg_ParseTuple(args, "sO", &keyStr, &value)) {
-        PyErr_SetString(PyExc_TypeError, "Invalid arguments in value call. Expected: value(key, value)");
+        PyErr_SetString(PyExc_TypeError, "Invalid arguments in setValue call. Expected: setValue(key, value)");
         return nullptr;
     }
 
@@ -74,7 +74,7 @@ static PyObject * PyPluginStorage_setValue(PyPluginStorage* self, PyObject* args
 static PyObject * PyPluginStorage_beginGroup(PyPluginStorage* self, PyObject* args) {
     char *groupStr = nullptr;
     if (!PyArg_ParseTuple(args, "s", &groupStr)) {
-        PyErr_SetString(PyExc_TypeError, "Invalid arguments in value call. Expected: beginGroup(group)");
+        PyErr_SetString(PyExc_TypeError, "Invalid arguments in beginGroup call. Expected: beginGroup(group)");
         return nullptr;
     }
 
@@ -88,11 +88,29 @@ static PyObject * PyPluginStorage_endGroup(PyPluginStorage* self, PyObject* args
     Py_RETURN_NONE;
 };
 
+static PyObject * PyPluginStorage_remove(PyPluginStorage *self, PyObject* args) {
+    char *keyStr = nullptr;
+    if (!PyArg_ParseTuple(args, "s", &keyStr)) {
+        PyErr_SetString(PyExc_TypeError, "Invalid arguments in remove call. Expected: remove(key)");
+        return nullptr;
+    }
+    self->pluginStorage->remove(keyStr);
+    Py_RETURN_NONE;
+};
+
+static PyObject * PyPluginStorage_childKeys(PyPluginStorage* self, PyObject* args) {
+    Q_UNUSED(args)
+    QStringList keys = self->pluginStorage->childKeys();
+    return QVariantToPyObject(keys);
+};
+
 static PyMethodDef PyPluginStorage_methods[] = {
-    { "value", (PyCFunction)PyPluginStorage_value,       METH_VARARGS, "Get a value from the plugin storage" },
+    { "value", (PyCFunction)PyPluginStorage_value, METH_VARARGS, "Get a value from the plugin storage" },
     { "setValue", (PyCFunction)PyPluginStorage_setValue, METH_VARARGS, "Set a value to the plugin storage"},
     { "beginGroup", (PyCFunction)PyPluginStorage_beginGroup, METH_VARARGS, "Begin a group in the plugin storage."},
     { "endGroup", (PyCFunction)PyPluginStorage_endGroup, METH_VARARGS, "End a group in the plugin storage."},
+    { "remove", (PyCFunction)PyPluginStorage_remove, METH_VARARGS, "Remove an entry/group from the plugin storage."},
+    { "childKeys", (PyCFunction)PyPluginStorage_childKeys, METH_VARARGS, "List all keys (including subgroups) of the current group."},
     {nullptr, nullptr, 0, nullptr} // sentinel
 };
 

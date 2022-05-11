@@ -1525,27 +1525,30 @@ void ThingManagerImplementation::loadConfiguredThings()
     foreach (const QString &idString, settings.childGroups()) {
         settings.beginGroup(idString);
         QString thingName = settings.value("thingName").toString();
-        if (!settings.contains("thingName")) { // nymea < 0.20
-            thingName = settings.value("devicename").toString();
-        }
         PluginId pluginId = PluginId(settings.value("pluginid").toString());
+        ThingClassId thingClassId = ThingClassId(settings.value("thingClassId").toString());
+
+        if (m_supportedThings.contains(thingClassId) && m_supportedThings.value(thingClassId).pluginId() != pluginId) {
+            PluginId newPluginId = m_supportedThings.value(thingClassId).pluginId();
+            qCInfo(dcThingManager()) << "Thing class" << thingClassId << "has moved from plugin" << pluginId << "to" << newPluginId;
+            pluginId = newPluginId;
+            settings.setValue("pluginid", pluginId);
+        }
+
         IntegrationPlugin *plugin = m_integrationPlugins.value(pluginId);
         if (!plugin) {
             qCWarning(dcThingManager()) << "Plugin for thing" << thingName << idString << "not found. This thing will not be functional until the plugin can be loaded.";
         }
-        ThingClassId thingClassId = ThingClassId(settings.value("thingClassId").toString());
-        // If ThingClassId isn't found in the config, retry with ThingClassId (nymea < 0.20)
-        if (thingClassId.isNull()) {
-            thingClassId = ThingClassId(settings.value("deviceClassId").toString());
-        }
+
         ThingClass thingClass = findThingClass(thingClassId);
         if (!thingClass.isValid()) {
-            // Try to load the device class from the cache
+            // Try to load the thing class from the cache
             QJsonObject pluginInfo = PluginInfoCache::loadPluginInfo(pluginId);
             if (!pluginInfo.empty()) {
                 PluginMetadata pluginMetadata(pluginInfo, false, false);
                 thingClass = pluginMetadata.thingClasses().findById(thingClassId);
                 if (thingClass.isValid()) {
+                    qCInfo(dcThingManager()) << "Loaded thing class" << thingClassId << "for" << thingName << idString << "from cache.";
                     m_supportedThings.insert(thingClassId, thingClass);
                     if (!m_supportedVendors.contains(thingClass.vendorId())) {
                         Vendor vendor = pluginMetadata.vendors().findById(thingClass.vendorId());
@@ -1555,17 +1558,11 @@ void ThingManagerImplementation::loadConfiguredThings()
             }
         }
         if (!thingClass.isValid()) {
-            qCWarning(dcThingManager()) << "Not loading thing" << thingName << idString << "because the thing class for this thing could not be found.";
+            qCWarning(dcThingManager()) << "Not loading thing" << thingName << idString << "because the thing class" << thingClassId << "is neither provided by a plugin nor found in the cache.";
             settings.endGroup(); // ThingId
             continue;
         }
 
-        // Cross-check if this plugin still implements this thing class
-        if (plugin && !plugin->supportedThings().contains(thingClass)) {
-            qCWarning(dcThingManager()) << "Not loading thing" << thingName << idString << "because plugin" << plugin->pluginName() << "has removed support for it.";
-            settings.endGroup(); // ThingId
-            continue;
-        }
         Thing *thing = new Thing(pluginId, thingClass, ThingId(idString), this);
         thing->m_autoCreated = settings.value("autoCreated").toBool();
         thing->setName(thingName);

@@ -1,0 +1,11 @@
+{
+    "description": "An interface for fire/smoke sensors.",
+    "extends": "sensor",
+    "states": [
+        {
+            "name": "fireDetected",
+            "type": "bool",
+            "logged": true
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "description": "An interface for alarms, such as fire or intruder alarms.",
+    "actions": [
+        {
+            "name": "alarm",
+            "logged": true
+        }
+    ]
+}

@@ -1,5 +1,5 @@
 {
-    "description": "Used for things that have some sort of alert. For instance, light bulbs may be able to blink on alert actions, or speaker might be able to play an alert sound. Zigbee devices for example often provide alert actions to identify themselves.",
+    "description": "Used for things that have some sort of alert. For instance, light bulbs may be able to blink on alert actions, or speaker might be able to play an alert sound.",
     "actions": [
         {
             "name": "alert"

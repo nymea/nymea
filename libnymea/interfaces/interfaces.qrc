@@ -93,5 +93,7 @@
         <file>heatpump.json</file>
         <file>smartgridheatpump.json</file>
         <file>simpleheatpump.json</file>
+        <file>alarm.json</file>
+        <file>firesensor.json</file>
     </qresource>
 </RCC>

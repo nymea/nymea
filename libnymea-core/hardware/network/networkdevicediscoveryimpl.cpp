@@ -250,6 +250,11 @@ bool NetworkDeviceDiscoveryImpl::sendArpRequest(const QHostAddress &address)
     return false;
 }
 
+QHash<MacAddress, NetworkDeviceInfo> NetworkDeviceDiscoveryImpl::cache() const
+{
+    return m_networkInfoCache;
+}
+
 void NetworkDeviceDiscoveryImpl::setEnabled(bool enabled)
 {
     m_enabled = enabled;

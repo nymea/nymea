@@ -71,7 +71,7 @@ public:
 
 signals:
     void runningChanged(bool running);
-    void networkDeviceInfoCacheUpdated();
+    void cacheUpdated();
 
 };
 

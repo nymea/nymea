@@ -603,7 +603,7 @@ void NetworkDeviceDiscoveryImpl::finishDiscovery()
     m_running = false;
     emit runningChanged(m_running);
 
-    emit networkDeviceInfoCacheUpdated();
+    emit cacheUpdated();
 
     m_lastDiscovery = QDateTime::currentDateTime();
 

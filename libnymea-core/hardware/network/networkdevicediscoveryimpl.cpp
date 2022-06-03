@@ -378,6 +378,8 @@ void NetworkDeviceDiscoveryImpl::loadNetworkDeviceCache()
     }
     m_cacheSettings->endGroup(); // NetworkDeviceInfos
 
+    qCInfo(dcNetworkDeviceDiscovery()) << "Loaded" << m_networkInfoCache.count() << "network device infos from cache.";
+
     // We just did some housekeeping while loading from the cache
     m_lastCacheHousekeeping = QDateTime::currentDateTime();
 }

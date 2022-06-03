@@ -71,7 +71,7 @@ public:
     void unregisterMonitor(const MacAddress &macAddress) override;
     void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) override;
 
-    PingReply *ping(const QHostAddress &address) override;
+    PingReply *ping(const QHostAddress &address, uint retries = 3) override;
 
     MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) override;
     MacAddressDatabaseReply *lookupMacAddress(const MacAddress &macAddress) override;

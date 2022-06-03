@@ -111,11 +111,21 @@ PingReply::Error Ping::error() const
     return m_error;
 }
 
-PingReply *Ping::ping(const QHostAddress &hostAddress)
+PingReply *Ping::ping(const QHostAddress &hostAddress, uint retries)
 {
     PingReply *reply = new PingReply(this);
     reply->m_targetHostAddress = hostAddress;
     reply->m_networkInterface = NetworkUtils::getInterfaceForHostaddress(hostAddress);
+    reply->m_reties = retries;
+
+    connect(reply, &PingReply::timeout, this, [=](){
+        // Note: this is not the ICMP timeout, here we actually got nothing from nobody...
+        finishReply(reply, PingReply::ErrorTimeout);
+    });
+
+    connect(reply, &PingReply::aborted, this, [=](){
+        finishReply(reply, PingReply::ErrorAborted);
+    });
 
     // Perform the reply in the next event loop to give the user time to do the reply connects
     m_replyQueue.enqueue(reply);
@@ -206,10 +216,7 @@ void Ping::performPing(PingReply *reply)
 
     // Start reply timer and handle timeout
     m_pendingReplies.insert(reply->requestId(), reply);
-    reply->m_timer->start(8000);
-    connect(reply, &PingReply::timeout, this, [=](){
-        finishReply(reply, PingReply::ErrorTimeout);
-    });
+    reply->m_timer->start(m_timeoutDuration);
 }
 
 void Ping::verifyErrno(int error)
@@ -289,10 +296,34 @@ quint16 Ping::calculateRequestId()
 
 void Ping::finishReply(PingReply *reply, PingReply::Error error)
 {
-    reply->m_error = error;
-    m_pendingReplies.remove(reply->requestId());
-    emit reply->finished();
-    reply->deleteLater();
+    // Check if we should retry
+    if (reply->m_retryCount >= reply->m_reties ||
+            error == PingReply::ErrorNoError ||
+            error == PingReply::ErrorAborted ||
+            error == PingReply::ErrorInvalidHostAddress ||
+            error == PingReply::ErrorPermissionDenied) {
+        // No retry, we are done
+        reply->m_error = error;
+        reply->m_timer->stop();
+        m_pendingReplies.remove(reply->requestId());
+        emit reply->finished();
+        reply->deleteLater();
+    } else {
+        m_pendingReplies.remove(reply->requestId());
+        reply->m_error = error;
+        reply->m_retryCount++;
+        reply->m_sequenceNumber++;
+
+        qCDebug(dcPing()) << "Ping finished with error" << error << "Retry ping" << reply->targetHostAddress().toString() << reply->m_retryCount << "/" << reply->m_reties;
+        emit reply->retry(error, reply->retryCount());
+
+        // Note: will be restarted once actually sent trough the network
+        reply->m_timer->stop();
+
+        // Re-Enqueu the reply
+        m_replyQueue.enqueue(reply);
+        sendNextReply();
+    }
 }
 
 void Ping::onSocketReadyRead(int socketDescriptor)
@@ -360,7 +391,7 @@ void Ping::onSocketReadyRead(int socketDescriptor)
             int lookupId = QHostInfo::lookupHost(senderAddress.toString(), this, SLOT(onHostLookupFinished(QHostInfo)));
             m_pendingHostLookups.insert(lookupId, reply);
 
-            qCDebug(dcPingTraffic()) << "Received ICMP response" << reply->targetHostAddress().toString() << ICMP_PACKET_SIZE << "[Bytes]"
+            qCDebug(dcPing()) << "Received ICMP response" << reply->targetHostAddress().toString() << ICMP_PACKET_SIZE << "[Bytes]"
                           << "ID:" << QString("0x%1").arg(responsePacket->icmp_id, 4, 16, QChar('0'))
                           << "Sequence:" << htons(responsePacket->icmp_seq)
                           << "Time:" << reply->duration() << "[ms]";

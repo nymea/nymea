@@ -201,10 +201,10 @@ void NetworkDeviceDiscoveryImpl::unregisterMonitor(NetworkDeviceMonitor *network
     unregisterMonitor(MacAddress(networkDeviceMonitor->networkDeviceInfo().macAddress()));
 }
 
-PingReply *NetworkDeviceDiscoveryImpl::ping(const QHostAddress &address)
+PingReply *NetworkDeviceDiscoveryImpl::ping(const QHostAddress &address, uint retries)
 {
     // Note: we use any ping used trough this method also for the monitor evaluation
-    PingReply *reply = m_ping->ping(address);
+    PingReply *reply = m_ping->ping(address, retries);
     connect(reply, &PingReply::finished, this, [=](){
 
         // Search cache for mac address and update last seen
@@ -304,7 +304,8 @@ void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
                 if (targetAddress == entry.ip())
                     continue;
 
-                PingReply *reply = ping(targetAddress);
+                // Retry only once to ping a device
+                PingReply *reply = ping(targetAddress, 1);
                 m_runningPingRepies.append(reply);
                 connect(reply, &PingReply::finished, this, [=](){
                     m_runningPingRepies.removeAll(reply);
@@ -333,7 +334,7 @@ void NetworkDeviceDiscoveryImpl::processMonitorPingResult(PingReply *reply, Netw
         monitor->setLastSeen(QDateTime::currentDateTime());
         monitor->setReachable(true);
     } else {
-        qCDebug(dcNetworkDeviceDiscovery()) << "Failed to ping device from" << monitor << reply->error();
+        qCDebug(dcNetworkDeviceDiscovery()) << "Failed to ping device from" << monitor << "retrying" << reply->retries() << "times:" << reply->error();
         monitor->setReachable(false);
     }
 }
@@ -452,12 +453,23 @@ void NetworkDeviceDiscoveryImpl::evaluateMonitor(NetworkDeviceMonitorImpl *monit
     if (monitor->networkDeviceInfo().address().isNull())
         return;
 
+    if (monitor->currentPingReply())
+        return;
+
     // Try to ping first
     qCDebug(dcNetworkDeviceDiscovery()) << monitor << "try to ping" << monitor->networkDeviceInfo().address().toString();
+    PingReply *reply = m_ping->ping(monitor->networkDeviceInfo().address(), monitor->pingRetries());
+    monitor->setCurrentPingReply(reply);
     monitor->setLastConnectionAttempt(currentDateTime);
 
-    PingReply *reply = m_ping->ping(monitor->networkDeviceInfo().address());
+    connect(reply, &PingReply::retry, monitor, [=](PingReply::Error error, uint retryCount){
+        Q_UNUSED(error)
+        Q_UNUSED(retryCount)
+        monitor->setLastConnectionAttempt(QDateTime::currentDateTime());
+    });
+
     connect(reply, &PingReply::finished, monitor, [=](){
+        monitor->setCurrentPingReply(nullptr);
         processMonitorPingResult(reply, monitor);
     });
 }

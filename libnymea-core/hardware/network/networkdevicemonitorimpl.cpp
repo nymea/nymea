@@ -29,6 +29,9 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "networkdevicemonitorimpl.h"
+#include "loggingcategories.h"
+
+Q_DECLARE_LOGGING_CATEGORY(dcNetworkDeviceDiscovery)
 
 namespace nymeaserver {
 
@@ -73,6 +76,7 @@ void NetworkDeviceMonitorImpl::setReachable(bool reachable)
     if (m_reachable == reachable)
         return;
 
+    qCDebug(dcNetworkDeviceDiscovery()) << this << (reachable ? "is now reachable" : "is not reachable any more.");
     m_reachable = reachable;
     emit reachableChanged(m_reachable);
 }
@@ -90,6 +94,26 @@ void NetworkDeviceMonitorImpl::setLastSeen(const QDateTime &lastSeen)
     m_lastSeen = lastSeen;
 
     emit lastSeenChanged(m_lastSeen);
+}
+
+uint NetworkDeviceMonitorImpl::pingRetries() const
+{
+    return m_pingRetries;
+}
+
+void NetworkDeviceMonitorImpl::setPingRetries(uint pingRetries)
+{
+    m_pingRetries = pingRetries;
+}
+
+PingReply *NetworkDeviceMonitorImpl::currentPingReply() const
+{
+    return m_currentPingReply;
+}
+
+void NetworkDeviceMonitorImpl::setCurrentPingReply(PingReply *reply)
+{
+    m_currentPingReply = reply;
 }
 
 QDateTime NetworkDeviceMonitorImpl::lastConnectionAttempt() const

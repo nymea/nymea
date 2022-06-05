@@ -163,6 +163,10 @@
 
 #include <QMetaEnum>
 #include <QTime>
+#include <QLoggingCategory>
+#include <QDataStream>
+
+Q_DECLARE_LOGGING_CATEGORY(dcCoap)
 
 /*! Constructs a CoapPdu with the given \a parent. */
 CoapPdu::CoapPdu(QObject *parent) :
@@ -370,7 +374,7 @@ void CoapPdu::addOption(const CoapOption::Option &option, const QByteArray &data
     CoapOption o;
     o.setOption(option);
     o.setData(data);
-    m_options.insert(index + 1, o);
+    m_options.insert(qMin(m_options.length(), index + 1), o);
 }
 
 /*! Returns the block of this \l{CoapPdu}. */
@@ -504,70 +508,97 @@ QByteArray CoapPdu::pack() const
 
 void CoapPdu::unpack(const QByteArray &data)
 {
-    // create a CoapPDU
     if (data.length() < 4) {
         m_error = InvalidPduSizeError;
     }
 
-    quint8 *rawData = (quint8 *)data.data();
-    setVersion((rawData[0] & 0xc0) >> 6);
-    setMessageType(static_cast<MessageType>((rawData[0] & 0x30) >> 4));
-    quint8 tokenLength = (rawData[0] & 0xf);
+    QDataStream stream(data);
+    quint8 flags;
+    stream >> flags;
 
+    setVersion((flags & 0xc0) >> 6);
+//    qCDebug(dcCoap()) << "Version:" << m_version;
+
+    setMessageType(static_cast<MessageType>((flags & 0x30) >> 4));
+//    qCDebug(dcCoap()) << "Message Type:" << messageType();
+
+    quint8 tokenLength = flags & 0x0f;
+//    qCDebug(dcCoap()) << "Token length:" << tokenLength;
     if (tokenLength > 8) {
+        qCWarning(dcCoap()) << "Inavalid token length" << tokenLength;
         m_error = InvalidTokenError;
+        return;
     }
 
-    setToken(QByteArray((const char *)rawData + 4, tokenLength));
-    setStatusCode(static_cast<StatusCode>(rawData[1]));
-    setMessageId((qint16)data.mid(2,2).toHex().toUInt(0,16));
+    quint8 reqRspCode;
+    stream >> reqRspCode;
+    setStatusCode(static_cast<StatusCode>(reqRspCode));
+//    qCDebug(dcCoap()) << "Req/Rsp code:" << statusCode();
 
-    // parse options
-    int index = 4 + tokenLength;
-    quint8 optionByte = rawData[index];
-    quint16 delta = 0;
-    while (QByteArray::number(optionByte, 16) != "ff" && optionByte != 0) {
-        quint16 optionNumber = ((optionByte & 0xf0) >> 4);
+    quint16 messageId;
+    stream >> messageId;
+    setMessageId(messageId);
+//    qCDebug(dcCoap()) << "Message ID:" << messageId;
+    char tokenData[tokenLength];
+    if (stream.readRawData(tokenData, tokenLength) != tokenLength) {
+        qCWarning(dcCoap()) << "Token data not complete.";
+        m_error = InvalidTokenError;
+        return;
+    }
+    QByteArray token(tokenData, tokenLength);
+    setToken(token);
+//    qCDebug(dcCoap()) << "Token:" << token.toHex();
 
-        // check option delta
-        if (optionNumber < 13) {
-            delta += optionNumber;
-        } else if (optionNumber == 13) {
-            // extended 8 bit option delta
-            delta += (quint8)(rawData[index + 1] + 13);
-            index += 1;
-        } else if (optionNumber == 14) {
-            // extended 16 bit option delta
-            delta += ((rawData[index + 1] << 8) | rawData[index + 2]) + 269;
-            index += 2;
-        } else if (optionNumber == 15) {
-            m_error = InvalidOptionDeltaError;
+
+    while (!stream.atEnd()) {
+        quint8 optionByte;
+        stream >> optionByte;
+//        qCDebug(dcCoap()) << "OptionByte:" << optionByte;
+
+        if (optionByte == 0xff) {
+            char payloadData[65507]; // Max UDP datagram size
+            int payloadLength = stream.readRawData(payloadData, 65507);
+            if (payloadLength > 0) {
+                setPayload(QByteArray(payloadData, payloadLength));
+            }
+            return;
         }
 
-        // check option length
-        quint16 optionLength = (optionByte & 0xf);
+        quint16 optionDelta;
+        optionDelta = (optionByte & 0xf0) >> 4;
+//        qCDebug(dcCoap()) << "Option delta:" << optionDelta;
+        quint16 optionLength = (optionByte & 0x0f);
+//        qCDebug(dcCoap()) << "Option length:" << optionLength;
+
+        if (optionDelta == 13) {
+            quint8 optionDeltaExtended;
+            stream >> optionDeltaExtended;
+            optionDelta = optionDeltaExtended + 13;
+//            qCDebug(dcCoap()).nospace() << "Extended option delta (8 bit): " << optionDelta << " (" << optionDeltaExtended << " + 13)";
+        } else if (optionDelta == 14) {
+            quint16 optionDeltaExtended;
+            stream >> optionDeltaExtended;
+            optionDelta = optionDeltaExtended + 269;
+//            qCDebug(dcCoap()).nospace() << "Extended option delta (16 bit): " << optionDelta << " (" << optionDeltaExtended << " + 269)";
+        }
+
         if (optionLength == 13) {
-            // extended 8 bit option length
-            optionLength = (quint8)(rawData[index + 1] - 13);
-            index += 1;
+            quint8 optionLengthExtended;
+            stream >> optionLengthExtended;
+            optionLength = optionLengthExtended + 13;
+//            qCDebug(dcCoap()).nospace() << "Extended option length (8 bit): " << optionLength << " (" << optionLengthExtended << " + 13)";
         } else if (optionLength == 14) {
-            // extended 16 bit option delta
-            optionLength = ((rawData[index + 1] << 8) | rawData[index + 2]) - 269;
-            index += 2;
-        } else if (optionLength == 15) {
-            m_error = InvalidOptionLengthError;
+            quint16 optionLengthExtended;
+            stream >> optionLengthExtended;
+            optionLength = optionLengthExtended + 269;
+//            qCDebug(dcCoap()).nospace() << "Extended option kength (16 bit): " << optionDelta << " (" << optionLengthExtended << " + 269)";
         }
 
-        QByteArray optionData = QByteArray((const char *)rawData + index + 1, optionLength);
-        addOption(static_cast<CoapOption::Option>(delta), optionData);
+        char optionData[optionLength];
+        stream.readRawData(optionData, optionLength);
+//        qCDebug(dcCoap()) << "Option data:" << QByteArray(optionData, optionLength);
 
-        index += optionLength + 1;
-        optionByte = rawData[index];
-
-        if (QByteArray::number(optionByte, 16) == "ff") {
-            setPayload(data.right(data.length() - index - 1));
-            break;
-        }
+        addOption(static_cast<CoapOption::Option>(optionDelta), QByteArray(optionData, optionLength));
     }
 }
 

@@ -68,6 +68,7 @@ public:
         Acknowledgement = 0x02,
         Reset           = 0x03
     };
+    Q_ENUM(MessageType)
 
     // Methods:       https://tools.ietf.org/html/rfc7252#section-5.8
     // Respond codes: https://tools.ietf.org/html/rfc7252#section-12.1.2
@@ -101,6 +102,7 @@ public:
         GatewayTimeout           = 0xa4,  // 5.04
         ProxyingNotSupported     = 0xa5   // 5.05
     };
+    Q_ENUM(StatusCode)
 
     // https://tools.ietf.org/html/rfc7252#section-12.3
     enum ContentType {
@@ -111,6 +113,7 @@ public:
         ApplicationExi   = 47,
         ApplicationJson  = 50
     };
+    Q_ENUM(ContentType)
 
     enum Error {
         NoError,
@@ -120,6 +123,7 @@ public:
         InvalidOptionLengthError,
         UnknownOptionError
     };
+    Q_ENUM(Error)
 
     CoapPdu(QObject *parent = 0);
     CoapPdu(const QByteArray &data, QObject *parent = 0);

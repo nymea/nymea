@@ -116,7 +116,7 @@ PingReply *Ping::ping(const QHostAddress &hostAddress, uint retries)
     PingReply *reply = new PingReply(this);
     reply->m_targetHostAddress = hostAddress;
     reply->m_networkInterface = NetworkUtils::getInterfaceForHostaddress(hostAddress);
-    reply->m_reties = retries;
+    reply->m_retries = retries;
 
     connect(reply, &PingReply::timeout, this, [=](){
         // Note: this is not the ICMP timeout, here we actually got nothing from nobody...
@@ -297,7 +297,7 @@ quint16 Ping::calculateRequestId()
 void Ping::finishReply(PingReply *reply, PingReply::Error error)
 {
     // Check if we should retry
-    if (reply->m_retryCount >= reply->m_reties ||
+    if (reply->m_retryCount >= reply->m_retries ||
             error == PingReply::ErrorNoError ||
             error == PingReply::ErrorAborted ||
             error == PingReply::ErrorInvalidHostAddress ||
@@ -314,7 +314,7 @@ void Ping::finishReply(PingReply *reply, PingReply::Error error)
         reply->m_retryCount++;
         reply->m_sequenceNumber++;
 
-        qCDebug(dcPing()) << "Ping finished with error" << error << "Retry ping" << reply->targetHostAddress().toString() << reply->m_retryCount << "/" << reply->m_reties;
+        qCDebug(dcPing()) << "Ping finished with error" << error << "Retry ping" << reply->targetHostAddress().toString() << reply->m_retryCount << "/" << reply->m_retries;
         emit reply->retry(error, reply->retryCount());
 
         // Note: will be restarted once actually sent trough the network

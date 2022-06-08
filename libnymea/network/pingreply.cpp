@@ -65,7 +65,7 @@ QNetworkInterface PingReply::networkInterface() const
 
 uint PingReply::retries() const
 {
-    return m_reties;
+    return m_retries;
 }
 
 uint PingReply::retryCount() const

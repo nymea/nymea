@@ -93,7 +93,7 @@ NetworkDeviceDiscoveryImpl::NetworkDeviceDiscoveryImpl(QObject *parent) :
 
 NetworkDeviceDiscoveryImpl::~NetworkDeviceDiscoveryImpl()
 {
-
+    delete m_cacheSettings;
 }
 
 NetworkDeviceDiscoveryReply *NetworkDeviceDiscoveryImpl::discover()

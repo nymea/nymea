@@ -47,7 +47,7 @@ Translator::~Translator()
 {
     foreach (const TranslatorContext &ctx, m_translatorContexts) {
         foreach (QTranslator *t, ctx.translators) {
-            t->deleteLater();
+            delete t;
         }
     }
     m_translatorContexts.clear();

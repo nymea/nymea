@@ -184,10 +184,10 @@ CoapPdu::MessageType CoapReply::messageType() const
     return m_messageType;
 }
 
-/*! Returns the \l{CoapPdu::StatusCode} of this \l{CoapReply}. */
-CoapPdu::StatusCode CoapReply::statusCode() const
+/*! Returns the \l{CoapPdu::ReqRspCode} of this \l{CoapReply}. */
+CoapPdu::ReqRspCode CoapReply::reqRspCode() const
 {
-    return m_statusCode;
+    return m_reqRspCode;
 }
 
 CoapReply::CoapReply(const CoapRequest &request, QObject *parent) :
@@ -198,7 +198,7 @@ CoapReply::CoapReply(const CoapRequest &request, QObject *parent) :
     m_retransmissions(1),
     m_contentType(CoapPdu::TextPlain),
     m_messageType(CoapPdu::Acknowledgement),
-    m_statusCode(CoapPdu::Empty),
+    m_reqRspCode(CoapPdu::Empty),
     m_lockedUp(false)
 {
     m_timer = new QTimer(this);
@@ -275,19 +275,19 @@ void CoapReply::resend()
     }
 }
 
-void CoapReply::setContentType(const CoapPdu::ContentType contentType)
+void CoapReply::setContentType(CoapPdu::ContentType contentType)
 {
     m_contentType = contentType;
 }
 
-void CoapReply::setMessageType(const CoapPdu::MessageType &messageType)
+void CoapReply::setMessageType(CoapPdu::MessageType messageType)
 {
     m_messageType = messageType;
 }
 
-void CoapReply::setStatusCode(const CoapPdu::StatusCode &statusCode)
+void CoapReply::setReqRspCode(CoapPdu::ReqRspCode reqRspCode)
 {
-    m_statusCode = statusCode;
+    m_reqRspCode = reqRspCode;
 }
 
 void CoapReply::setHostAddress(const QHostAddress &address)
@@ -300,7 +300,7 @@ QHostAddress CoapReply::hostAddress() const
     return m_hostAddress;
 }
 
-void CoapReply::setPort(const int &port)
+void CoapReply::setPort(int port)
 {
     m_port = port;
 }
@@ -320,12 +320,12 @@ QByteArray CoapReply::requestPayload() const
     return m_requestPayload;
 }
 
-void CoapReply::setRequestMethod(const CoapPdu::StatusCode &method)
+void CoapReply::setRequestMethod(CoapPdu::ReqRspCode method)
 {
     m_requestMethod = method;
 }
 
-CoapPdu::StatusCode CoapReply::requestMethod() const
+CoapPdu::ReqRspCode CoapReply::requestMethod() const
 {
     return m_requestMethod;
 }
@@ -352,7 +352,7 @@ QDebug operator<<(QDebug debug, CoapReply *reply)
     QMetaEnum messageTypeEnum = metaObject.enumerator(metaObject.indexOfEnumerator("MessageType"));
     QMetaEnum contentTypeEnum = metaObject.enumerator(metaObject.indexOfEnumerator("ContentType"));
     debug.nospace() << "CoapReply(" << messageTypeEnum.valueToKey(reply->messageType()) << ")" << endl;
-    debug.nospace() << "  Status code: " << CoapPdu::getStatusCodeString(reply->statusCode()) << endl;
+    debug.nospace() << "  Status code: " << CoapPdu::getReqRspCodeString(reply->reqRspCode()) << endl;
     debug.nospace() << "  Content type: " << contentTypeEnum.valueToKey(reply->contentType()) << endl;
     debug.nospace() << "  Payload size: " << reply->payload().size() << endl;
 

@@ -173,7 +173,7 @@ CoapPdu::CoapPdu(QObject *parent) :
     QObject(parent),
     m_version(1),
     m_messageType(Confirmable),
-    m_statusCode(Empty),
+    m_reqRspCode(Empty),
     m_messageId(0),
     m_contentType(TextPlain),
     m_payload(QByteArray()),
@@ -187,7 +187,7 @@ CoapPdu::CoapPdu(const QByteArray &data, QObject *parent) :
     QObject(parent),
     m_version(1),
     m_messageType(Confirmable),
-    m_statusCode(Empty),
+    m_reqRspCode(Empty),
     m_messageId(0),
     m_contentType(TextPlain),
     m_payload(QByteArray()),
@@ -197,20 +197,20 @@ CoapPdu::CoapPdu(const QByteArray &data, QObject *parent) :
     unpack(data);
 }
 
-/*! Returns the human readable status code for the given \a statusCode. */
-QString CoapPdu::getStatusCodeString(const CoapPdu::StatusCode &statusCode)
+/*! Returns the human readable string for the given \a reqRspCode. */
+QString CoapPdu::getReqRspCodeString(CoapPdu::ReqRspCode reqRspCode)
 {
     QString statusCodeString;
     const QMetaObject &metaObject = CoapPdu::staticMetaObject;
-    QMetaEnum statusCodeEnum = metaObject.enumerator(metaObject.indexOfEnumerator("StatusCode"));
-    int classNumber = (statusCode & 0xE0) >> 5;
-    int detailNumber = statusCode & 0x1F;
+    QMetaEnum statusCodeEnum = metaObject.enumerator(metaObject.indexOfEnumerator("ReqRspCode"));
+    int classNumber = (reqRspCode & 0xE0) >> 5;
+    int detailNumber = reqRspCode & 0x1F;
     statusCodeString.append(QString::number(classNumber) + ".");
     if (detailNumber < 10)
         statusCodeString.append("0");
 
     statusCodeString.append(QString::number(detailNumber) + " ");
-    statusCodeString.append(statusCodeEnum.valueToKey(statusCode));
+    statusCodeString.append(statusCodeEnum.valueToKey(reqRspCode));
     return statusCodeString;
 }
 
@@ -221,7 +221,7 @@ quint8 CoapPdu::version() const
 }
 
 /*! Sets the version of this \l{CoapPdu} to the given \a version. */
-void CoapPdu::setVersion(const quint8 &version)
+void CoapPdu::setVersion(quint8 version)
 {
     m_version = version;
 }
@@ -233,21 +233,21 @@ CoapPdu::MessageType CoapPdu::messageType() const
 }
 
 /*! Sets the \l{CoapPdu::MessageType} of this \l{CoapPdu} to the given \a messageType. */
-void CoapPdu::setMessageType(const CoapPdu::MessageType &messageType)
+void CoapPdu::setMessageType(CoapPdu::MessageType messageType)
 {
     m_messageType = messageType;
 }
 
-/*! Returns the \l{CoapPdu::StatusCode} of this \l{CoapPdu}. */
-CoapPdu::StatusCode CoapPdu::statusCode() const
+/*! Returns the \l{CoapPdu::ReqRspCode} of this \l{CoapPdu}. */
+CoapPdu::ReqRspCode CoapPdu::reqRspCode() const
 {
-    return m_statusCode;
+    return m_reqRspCode;
 }
 
-/*! Sets the \l{CoapPdu::StatusCode} of this \l{CoapPdu} to the given \a statusCode. */
-void CoapPdu::setStatusCode(const CoapPdu::StatusCode &statusCode)
+/*! Sets the \l{CoapPdu::ReqRspCode} of this \l{CoapPdu} to the given \a reqRspCode. */
+void CoapPdu::setReqRspCode(CoapPdu::ReqRspCode reqRspCode)
 {
-    m_statusCode = statusCode;
+    m_reqRspCode = reqRspCode;
 }
 
 /*! Returns the messageId of this \l{CoapPdu}. */
@@ -267,7 +267,7 @@ void CoapPdu::createMessageId()
 }
 
 /*! Sets the messageId of this \l{CoapPdu} to the given \a messageId. */
-void CoapPdu::setMessageId(const quint16 &messageId)
+void CoapPdu::setMessageId(quint16 messageId)
 {
     m_messageId = messageId;
 }
@@ -282,7 +282,7 @@ CoapPdu::ContentType CoapPdu::contentType() const
 
     \sa CoapPdu::ContentType
 */
-void CoapPdu::setContentType(const CoapPdu::ContentType &contentType)
+void CoapPdu::setContentType(ContentType contentType)
 {
     m_contentType = contentType;
 }
@@ -336,7 +336,7 @@ QList<CoapOption> CoapPdu::options() const
 
     \sa CoapOption
 */
-void CoapPdu::addOption(const CoapOption::Option &option, const QByteArray &data)
+void CoapPdu::addOption(CoapOption::Option option, const QByteArray &data)
 {
     // set pdu data from the option
     switch (option) {
@@ -384,7 +384,7 @@ CoapPduBlock CoapPdu::block() const
 }
 
 /*! Returns true if this \l{CoapPdu} has the given \a option. */
-bool CoapPdu::hasOption(const CoapOption::Option &option) const
+bool CoapPdu::hasOption(CoapOption::Option option) const
 {
     foreach (const CoapOption &o, m_options) {
         if (o.option() == option)
@@ -393,12 +393,22 @@ bool CoapPdu::hasOption(const CoapOption::Option &option) const
     return false;
 }
 
+CoapOption CoapPdu::option(CoapOption::Option option) const
+{
+    foreach (const CoapOption &o, m_options) {
+        if (o.option() == option) {
+            return o;
+        }
+    }
+    return CoapOption();
+}
+
 /*! Resets this \l{CoapPdu} to the default values. */
 void CoapPdu::clear()
 {
     m_version = 1;
     m_messageType = Confirmable;
-    m_statusCode = Empty;
+    m_reqRspCode = Empty;
     m_messageId = 0;
     m_contentType = TextPlain;
     m_token.clear();
@@ -426,7 +436,7 @@ QByteArray CoapPdu::pack() const
     rawHeader[0] = m_version << 6;
     rawHeader[0] |= (quint8)m_messageType << 4;
     rawHeader[0] |= (quint8)m_token.size();
-    rawHeader[1] = (quint8)m_statusCode;
+    rawHeader[1] = (quint8)m_reqRspCode;
     rawHeader[2] = (quint8)(m_messageId >> 8);
     rawHeader[3] = (quint8)(m_messageId & 0xff);
     pduData = QByteArray::fromRawData((char *)rawHeader, 4);
@@ -532,8 +542,8 @@ void CoapPdu::unpack(const QByteArray &data)
 
     quint8 reqRspCode;
     stream >> reqRspCode;
-    setStatusCode(static_cast<StatusCode>(reqRspCode));
-//    qCDebug(dcCoap()) << "Req/Rsp code:" << statusCode();
+    setReqRspCode(static_cast<ReqRspCode>(reqRspCode));
+//    qCDebug(dcCoap()) << "Req/Rsp code:" << reqRspCode();
 
     quint16 messageId;
     stream >> messageId;
@@ -611,7 +621,7 @@ QDebug operator<<(QDebug debug, const CoapPdu &coapPdu)
     const QMetaObject &metaObject = CoapPdu::staticMetaObject;
     QMetaEnum messageTypeEnum = metaObject.enumerator(metaObject.indexOfEnumerator("MessageType"));
     debug.nospace() << "CoapPdu(" << messageTypeEnum.valueToKey(coapPdu.messageType()) << ")" << endl;
-    debug.nospace() << "  Code: " << CoapPdu::getStatusCodeString(coapPdu.statusCode()) << endl;
+    debug.nospace() << "  Code: " << CoapPdu::getReqRspCodeString(coapPdu.reqRspCode()) << endl;
     debug.nospace() << "  Ver: " << coapPdu.version() << endl;
     debug.nospace() << "  Token: " << coapPdu.token().length() << " " << "0x"+ coapPdu.token().toHex() << endl;
     debug.nospace() << "  Message ID: " << coapPdu.messageId() << endl;

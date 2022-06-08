@@ -95,7 +95,7 @@ private:
     QString m_hostName;
     QNetworkInterface m_networkInterface;
 
-    uint m_reties = 0;
+    uint m_retries = 0;
     uint m_retryCount = 0;
     uint m_timeout = 3;
     double m_duration = 0;

@@ -158,7 +158,7 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     m_thingManager->registerStaticPlugin(cloudNotifications);
 
     CloudTransport *cloudTransport = m_cloudManager->createTransportInterface();
-    m_serverManager->jsonServer()->registerTransportInterface(cloudTransport, false);
+    m_serverManager->jsonServer()->registerTransportInterface(cloudTransport);
 
     connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
 

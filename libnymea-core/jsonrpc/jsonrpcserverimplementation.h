@@ -76,7 +76,7 @@ signals:
 
     // Server API
 public:
-    void registerTransportInterface(TransportInterface *interface, bool authenticationRequired);
+    void registerTransportInterface(TransportInterface *interface);
     void unregisterTransportInterface(TransportInterface *interface);
 
     bool registerHandler(JsonHandler *handler) override;
@@ -111,7 +111,6 @@ private slots:
 private:
     QVariantMap m_api;
     QHash<JsonHandler*, QString> m_experiences;
-    QMap<TransportInterface*, bool> m_interfaces; // Interface, authenticationRequired
     QHash<QString, JsonHandler *> m_handlers;
     QHash<JsonReply *, TransportInterface *> m_asyncReplies;
 

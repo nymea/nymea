@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
     QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory[Warnings]");
     parser.addOption(debugOption);
 
-    QCommandLineOption interfacesOption({"i", "interface"}, QCoreApplication::translate("nymea", "Additional interfaces to listen on. In nymea URI format (e.g. nymeas://127.0.0.2:7777)."));
+    QCommandLineOption interfacesOption({"i", "interface"}, QCoreApplication::translate("nymea", "Additional interfaces to listen on. In nymea URI format (e.g. nymeas://127.0.0.2:7777). Note that such interfaces will not require any authentication as they are intended to be used for automated testing only."), "interfaceString");
     parser.addOption(interfacesOption);
 
     parser.process(application);

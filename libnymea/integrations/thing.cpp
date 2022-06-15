@@ -739,7 +739,7 @@ Things Things::filterByParam(const ParamTypeId &paramTypeId, const QVariant &val
 {
     Things ret;
     foreach (Thing* thing, *this) {
-        if (paramTypeId != paramTypeId) {
+        if (!thing->thingClass().paramTypes().findById(paramTypeId).isValid()) {
             continue;
         }
         if (!value.isNull() && thing->paramValue(paramTypeId) != value) {

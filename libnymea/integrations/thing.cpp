@@ -424,6 +424,11 @@ void Thing::setStateValue(const StateTypeId &stateTypeId, const QVariant &value)
 void Thing::setStateValue(const QString &stateName, const QVariant &value)
 {
     StateTypeId stateTypeId = m_thingClass.stateTypes().findByName(stateName).id();
+    if (stateTypeId.isNull()) {
+        qCWarning(dcThing()) << "No such state" << stateName << "in" << m_name << "(" + thingClass().name() + ")";
+        return;
+    }
+
     setStateValue(stateTypeId, value);
 }
 

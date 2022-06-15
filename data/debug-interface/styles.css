@@ -283,6 +283,52 @@ button::-moz-focus-inner { border: 0; }
     flex-grow: 1;
 }
 
+.debug-select {
+    box-sizing: border-box;
+    margin: 0;
+    border-radius: 4px;
+    font: inherit;
+}
+
+.debug-select {
+    max-width: 100%;
+    width: 100%;
+    border: 0 none;
+    padding: 0 10px;
+    background: #fff;
+    color: #666;
+    border: 1px solid #e5e5e5;
+    transition: .2s ease-in-out;
+    transition-property: color,background-color,border;
+}
+
+.debug-select:not([multiple]):not([size]) {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 20px;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2224%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2016%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%20%20%20%20%3Cpolygon%20fill%3D%22%23666%22%20points%3D%2212%201%209%206%2015%206%22%20%2F%3E%0A%20%20%20%20%3Cpolygon%20fill%3D%22%23666%22%20points%3D%2212%2013%209%208%2015%208%22%20%2F%3E%0A%3C%2Fsvg%3E%0A");
+    background-repeat: no-repeat;
+    background-position: 100% 50%;
+}
+
+
+.debug-select:not([multiple]):not([size]) {
+    height: 40px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.debug-select:not([multiple]):not([size]) option {
+    color: #666;
+}
+
+.debug-select:focus {
+    outline:0;
+    background-color: #fff;
+    color: #666;
+    border-color: #57baae;
+}
+
 /* The switch - the box around the slider */
 .switch {
   position: relative;

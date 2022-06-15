@@ -145,23 +145,23 @@ function loadLoggingCategorySettings() {
             
             for (var loggingCategory in responseMap['loggingCategories']) {
                 var loggingCategoryElement = document.getElementById("debug-category-" + loggingCategory)
-                loggingCategoryElement.checked = responseMap['loggingCategories'][loggingCategory]
+                console.log("Setting category", loggingCategory, "to", responseMap['loggingCategories'][loggingCategory])
+                loggingCategoryElement.value = responseMap['loggingCategories'][loggingCategory]
             }   
             
             for (var loggingCategory in responseMap['loggingCategoriesPlugins']) {
                 var loggingCategoryElement = document.getElementById("debug-category-" + loggingCategory)
-                loggingCategoryElement.checked = responseMap['loggingCategoriesPlugins'][loggingCategory]
+                loggingCategoryElement.value = responseMap['loggingCategoriesPlugins'][loggingCategory]
             }   
         }
     }
 }
 
 
-function toggleLoggingCategory(categoryName) {
-    var switchElement = document.getElementById("debug-category-" + categoryName)
-    console.log("Toggle logging category", categoryName, switchElement.checked)
+function toggleLoggingCategory(categoryName, obj) {
+    console.log("Select changed:", categoryName, obj.value)
     
-    var fileRequestUrl = "/debug/logging-categories?" + categoryName + "=" + (switchElement.checked ? "true" : "false");
+    var fileRequestUrl = "/debug/logging-categories?" + categoryName + "=" + obj.value;
     
         // Request report file generation
     var request = new XMLHttpRequest();

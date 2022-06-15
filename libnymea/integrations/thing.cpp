@@ -401,6 +401,7 @@ void Thing::setStateValue(const StateTypeId &stateTypeId, const QVariant &value)
             if (filter) {
                 filter->addValue(newValue);
                 newValue = filter->filteredValue();
+                newValue.convert(stateType.type());
             }
 
             QVariant oldValue = m_states.at(i).value();

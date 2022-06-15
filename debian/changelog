@@ -1,3 +1,25 @@
+nymea (1.2.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Fix filters generating wrong data types
+  * Allow configuring warning/info/debug logging levels
+  * Fix allowedValues for battery interface
+  * Explicitly destroy experiences
+  * Add alarm and firesensor interfaces
+
+  [ Simon Stürz ]
+  * Fix Things filter by param method
+
+  [ Michael Zanetti ]
+  * Print a better warning when setStateValue() is called with a wrong
+    name
+  * Properly use pkgconfig to find nymea-mqtt
+
+  [ Simon Stürz ]
+  * Provide access to the network device discovery cache
+
+ -- jenkins <developer@nymea.io>  Thu, 16 Jun 2022 00:20:53 +0200
+
 nymea (1.1.0) jammy; urgency=medium
 
   [ Michael Zanetti ]

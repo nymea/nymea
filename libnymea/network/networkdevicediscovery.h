@@ -67,9 +67,11 @@ public:
 
     virtual bool sendArpRequest(const QHostAddress &address) = 0;
 
+    virtual QHash<MacAddress, NetworkDeviceInfo> cache() const = 0;
+
 signals:
     void runningChanged(bool running);
-    void networkDeviceInfoCacheUpdated();
+    void cacheUpdated();
 
 };
 

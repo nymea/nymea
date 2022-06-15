@@ -250,6 +250,11 @@ bool NetworkDeviceDiscoveryImpl::sendArpRequest(const QHostAddress &address)
     return false;
 }
 
+QHash<MacAddress, NetworkDeviceInfo> NetworkDeviceDiscoveryImpl::cache() const
+{
+    return m_networkInfoCache;
+}
+
 void NetworkDeviceDiscoveryImpl::setEnabled(bool enabled)
 {
     m_enabled = enabled;
@@ -372,6 +377,8 @@ void NetworkDeviceDiscoveryImpl::loadNetworkDeviceCache()
         m_cacheSettings->endGroup(); // mac address
     }
     m_cacheSettings->endGroup(); // NetworkDeviceInfos
+
+    qCInfo(dcNetworkDeviceDiscovery()) << "Loaded" << m_networkInfoCache.count() << "network device infos from cache.";
 
     // We just did some housekeeping while loading from the cache
     m_lastCacheHousekeeping = QDateTime::currentDateTime();
@@ -598,7 +605,7 @@ void NetworkDeviceDiscoveryImpl::finishDiscovery()
     m_running = false;
     emit runningChanged(m_running);
 
-    emit networkDeviceInfoCacheUpdated();
+    emit cacheUpdated();
 
     m_lastDiscovery = QDateTime::currentDateTime();
 

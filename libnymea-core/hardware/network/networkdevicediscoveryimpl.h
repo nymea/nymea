@@ -78,6 +78,8 @@ public:
 
     bool sendArpRequest(const QHostAddress &address) override;
 
+    QHash<MacAddress, NetworkDeviceInfo> cache() const override;
+
 protected:
     void setEnabled(bool enabled) override;
 

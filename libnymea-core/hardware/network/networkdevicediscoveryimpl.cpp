@@ -357,6 +357,7 @@ void NetworkDeviceDiscoveryImpl::loadNetworkDeviceCache()
         if (lastSeen.date().addDays(m_cacheCleanupPeriod) < now.date()) {
             qCDebug(dcNetworkDeviceDiscovery()) << "Removing network device cache entry since it did not show up within the last" << m_cacheCleanupPeriod << "days" << mac.toString();
             m_cacheSettings->remove("");
+            m_cacheSettings->endGroup(); // mac address
             continue;
         }
 
@@ -392,12 +393,12 @@ void NetworkDeviceDiscoveryImpl::removeFromNetworkDeviceCache(const MacAddress &
 
     m_networkInfoCache.remove(macAddress);
     m_lastSeen.remove(macAddress);
-
     m_cacheSettings->beginGroup("NetworkDeviceInfos");
     m_cacheSettings->beginGroup(macAddress.toString());
     m_cacheSettings->remove("");
     m_cacheSettings->endGroup(); // mac address
     m_cacheSettings->endGroup(); // NetworkDeviceInfos
+    m_cacheSettings->sync();
 }
 
 void NetworkDeviceDiscoveryImpl::saveNetworkDeviceCache(const NetworkDeviceInfo &deviceInfo)
@@ -411,6 +412,7 @@ void NetworkDeviceDiscoveryImpl::saveNetworkDeviceCache(const NetworkDeviceInfo 
     m_cacheSettings->setValue("lastSeen", convertMinuteBased(m_lastSeen.value(MacAddress(deviceInfo.macAddress()))).toMSecsSinceEpoch());
     m_cacheSettings->endGroup(); // mac address
     m_cacheSettings->endGroup(); // NetworkDeviceInfos
+    m_cacheSettings->sync();
 }
 
 void NetworkDeviceDiscoveryImpl::updateCache(const NetworkDeviceInfo &deviceInfo)

@@ -113,19 +113,21 @@ PingReply::Error Ping::error() const
 
 PingReply *Ping::ping(const QHostAddress &hostAddress, uint retries)
 {
-    PingReply *reply = new PingReply(this);
-    reply->m_targetHostAddress = hostAddress;
-    reply->m_networkInterface = NetworkUtils::getInterfaceForHostaddress(hostAddress);
+    PingReply *reply = createReply(hostAddress);
     reply->m_retries = retries;
 
-    connect(reply, &PingReply::timeout, this, [=](){
-        // Note: this is not the ICMP timeout, here we actually got nothing from nobody...
-        finishReply(reply, PingReply::ErrorTimeout);
-    });
+    // Perform the reply in the next event loop to give the user time to do the reply connects
+    m_replyQueue.enqueue(reply);
+    sendNextReply();
 
-    connect(reply, &PingReply::aborted, this, [=](){
-        finishReply(reply, PingReply::ErrorAborted);
-    });
+    return reply;
+}
+
+PingReply *Ping::ping(const QHostAddress &hostAddress, bool lookupHost, uint retries)
+{
+    PingReply *reply = createReply(hostAddress);
+    reply->m_retries = retries;
+    reply->m_doHostLookup = lookupHost;
 
     // Perform the reply in the next event loop to give the user time to do the reply connects
     m_replyQueue.enqueue(reply);
@@ -143,7 +145,7 @@ void Ping::sendNextReply()
         return;
 
     PingReply *reply = m_replyQueue.dequeue();
-    //qCDebug(dcPing()) << "Send next reply," << m_replyQueue.count() << "left in queue";
+    qCDebug(dcPing()) << "Send next reply," << m_replyQueue.count() << "left in queue";
     m_queueTimer->start();
     QTimer::singleShot(0, reply, [=]() { performPing(reply); });
 }
@@ -294,6 +296,24 @@ quint16 Ping::calculateRequestId()
     return requestId;
 }
 
+PingReply *Ping::createReply(const QHostAddress &hostAddress)
+{
+    PingReply *reply = new PingReply(this);
+    reply->m_targetHostAddress = hostAddress;
+    reply->m_networkInterface = NetworkUtils::getInterfaceForHostaddress(hostAddress);
+
+    connect(reply, &PingReply::timeout, this, [=](){
+        // Note: this is not the ICMP timeout, here we actually got nothing from nobody...
+        finishReply(reply, PingReply::ErrorTimeout);
+    });
+
+    connect(reply, &PingReply::aborted, this, [=](){
+        finishReply(reply, PingReply::ErrorAborted);
+    });
+
+    return reply;
+}
+
 void Ping::finishReply(PingReply *reply, PingReply::Error error)
 {
     // Check if we should retry
@@ -387,14 +407,20 @@ void Ping::onSocketReadyRead(int socketDescriptor)
             timeValueSubtract(&receiveTimeValue, &reply->m_startTime);
             reply->m_duration = qRound((receiveTimeValue.tv_sec * 1000 + (double)receiveTimeValue.tv_usec / 1000) * 100) / 100.0;
 
-            // Note: due to a Qt bug < 5.9 we need to use old SLOT style and cannot make use of lambda here
-            int lookupId = QHostInfo::lookupHost(senderAddress.toString(), this, SLOT(onHostLookupFinished(QHostInfo)));
-            m_pendingHostLookups.insert(lookupId, reply);
-
             qCDebug(dcPing()) << "Received ICMP response" << reply->targetHostAddress().toString() << ICMP_PACKET_SIZE << "[Bytes]"
                           << "ID:" << QString("0x%1").arg(responsePacket->icmp_id, 4, 16, QChar('0'))
                           << "Sequence:" << htons(responsePacket->icmp_seq)
                           << "Time:" << reply->duration() << "[ms]";
+
+            if (reply->doHostLookup()) {
+                // Note: due to a Qt bug < 5.9 we need to use old SLOT style and cannot make use of lambda here
+                int lookupId = QHostInfo::lookupHost(senderAddress.toString(), this, SLOT(onHostLookupFinished(QHostInfo)));
+                m_pendingHostLookups.insert(lookupId, reply);
+            } else {
+                finishReply(reply, PingReply::ErrorNoError);
+            }
+
+
 
         } else if (responsePacket->icmp_type == ICMP_DEST_UNREACH) {
 

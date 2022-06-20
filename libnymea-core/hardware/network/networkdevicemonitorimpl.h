@@ -45,7 +45,7 @@ class NetworkDeviceMonitorImpl : public NetworkDeviceMonitor
 
 public:
     explicit NetworkDeviceMonitorImpl(const MacAddress &macAddress, QObject *parent = nullptr);
-    ~NetworkDeviceMonitorImpl();
+    ~NetworkDeviceMonitorImpl() override;
 
     MacAddress macAddress() const override;
 

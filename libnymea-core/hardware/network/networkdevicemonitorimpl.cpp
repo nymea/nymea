@@ -44,7 +44,9 @@ NetworkDeviceMonitorImpl::NetworkDeviceMonitorImpl(const MacAddress &macAddress,
 
 NetworkDeviceMonitorImpl::~NetworkDeviceMonitorImpl()
 {
-
+    if (m_currentPingReply) {
+        m_currentPingReply->abort();
+    }
 }
 
 MacAddress NetworkDeviceMonitorImpl::macAddress() const

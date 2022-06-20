@@ -83,6 +83,11 @@ PingReply::Error PingReply::error() const
     return m_error;
 }
 
+bool PingReply::doHostLookup() const
+{
+    return m_doHostLookup;
+}
+
 void PingReply::abort()
 {
     m_timer->stop();

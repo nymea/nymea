@@ -63,6 +63,7 @@ public:
     PingReply::Error error() const;
 
     PingReply *ping(const QHostAddress &hostAddress, uint retries = 3);
+    PingReply *ping(const QHostAddress &hostAddress, bool lookupHost, uint retries = 3);
 
 signals:
     void availableChanged(bool available);
@@ -99,6 +100,7 @@ private:
     void timeValueSubtract(struct timeval *start, struct timeval *stop);
     quint16 calculateRequestId();
 
+    PingReply *createReply(const QHostAddress &hostAddress);
     void finishReply(PingReply *reply, PingReply::Error error);
 
 private slots:

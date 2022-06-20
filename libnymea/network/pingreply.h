@@ -78,6 +78,8 @@ public:
 
     Error error() const;
 
+    bool doHostLookup() const;
+
 public slots:
     void abort();
 
@@ -94,6 +96,8 @@ private:
     quint16 m_requestId = 0;
     QString m_hostName;
     QNetworkInterface m_networkInterface;
+
+    bool m_doHostLookup = false;
 
     uint m_retries = 0;
     uint m_retryCount = 0;

@@ -146,16 +146,21 @@ bool NetworkDeviceDiscoveryImpl::running() const
 
 NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(const MacAddress &macAddress)
 {
-    qCInfo(dcNetworkDeviceDiscovery()) << "Register new network device monitor for" << macAddress;
-    // Make sure we create only one monitor per MAC
-    if (m_monitors.contains(macAddress))
-        return m_monitors.value(macAddress);
-
     if (macAddress.isNull()) {
         qCWarning(dcNetworkDeviceDiscovery()) << "Could not register monitor for invalid" << macAddress;
         return nullptr;
     }
 
+    // Make sure we create only one monitor per MAC and keep track how many user
+    // have access to this monitor otherwise an unregister could cause a crash in
+    // an other plugin plugin which might still need it
+    if (m_monitors.contains(macAddress)) {
+        m_monitorsReferenceCount[macAddress] += 1;
+        qCInfo(dcNetworkDeviceDiscovery()) << "Register network device monitor for" << macAddress << "which already exists. Returning existing monitor having now" << m_monitorsReferenceCount[macAddress] << "references.";
+        return m_monitors.value(macAddress);
+    }
+
+    qCInfo(dcNetworkDeviceDiscovery()) << "Register new network device monitor for" << macAddress;
 
     // Fill in cached information
     NetworkDeviceInfo info;
@@ -168,6 +173,7 @@ NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(const MacAddre
     NetworkDeviceMonitorImpl *monitor = new NetworkDeviceMonitorImpl(macAddress, this);
     monitor->setNetworkDeviceInfo(info);
     m_monitors.insert(macAddress, monitor);
+    m_monitorsReferenceCount[macAddress] = 1;
 
     if (!available()) {
         qCWarning(dcNetworkDeviceDiscovery()) << "Registered monitor but the hardware resource is not available. The monitor will not work as expected" << monitor;
@@ -189,10 +195,19 @@ NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(const MacAddre
 
 void NetworkDeviceDiscoveryImpl::unregisterMonitor(const MacAddress &macAddress)
 {
+    if (m_monitorsReferenceCount.contains(macAddress)) {
+        m_monitorsReferenceCount[macAddress] -= 1;
+        if (m_monitorsReferenceCount[macAddress] > 0) {
+            qCDebug(dcNetworkDeviceDiscovery()) << "Unregistered monitor for" << macAddress.toString() << "but keeping the monitor. There are still" << m_monitorsReferenceCount[macAddress] << "references to it.";
+            return;
+        }
+    }
+
     if (m_monitors.contains(macAddress)) {
         NetworkDeviceMonitor *monitor = m_monitors.take(macAddress);
         qCInfo(dcNetworkDeviceDiscovery()) << "Unregister" << monitor;
         monitor->deleteLater();
+        m_monitorsReferenceCount.remove(macAddress);
     }
 }
 
@@ -203,32 +218,17 @@ void NetworkDeviceDiscoveryImpl::unregisterMonitor(NetworkDeviceMonitor *network
 
 PingReply *NetworkDeviceDiscoveryImpl::ping(const QHostAddress &address, uint retries)
 {
-    // Note: we use any ping used trough this method also for the monitor evaluation
     PingReply *reply = m_ping->ping(address, retries);
-    connect(reply, &PingReply::finished, this, [=](){
+    // Note: we use any ping used trough this method also for the monitor evaluation
+    watchPingReply(reply);
+    return reply;
+}
 
-        // Search cache for mac address and update last seen
-        if (reply->error() == PingReply::ErrorNoError) {
-            foreach (const NetworkDeviceInfo &info, m_networkInfoCache) {
-                if (info.address() == address) {
-                    // Found info for this ip, update the cache
-                    MacAddress macAddress(info.macAddress());
-                    if (!macAddress.isNull() && m_networkInfoCache.contains(macAddress)) {
-                        m_lastSeen[macAddress] = QDateTime::currentDateTime();
-                        saveNetworkDeviceCache(m_networkInfoCache.value(macAddress));
-                    }
-                }
-            }
-        }
-
-        // Update any monitor
-        foreach (NetworkDeviceMonitorImpl *monitor, m_monitors.values()) {
-            if (monitor->networkDeviceInfo().address() == address) {
-                processMonitorPingResult(reply, monitor);
-            }
-        }
-    });
-
+PingReply *NetworkDeviceDiscoveryImpl::ping(const QHostAddress &address, bool lookupHost, uint retries)
+{
+    PingReply *reply = m_ping->ping(address, lookupHost, retries);
+    // Note: we use any ping used trough this method also for the monitor evaluation
+    watchPingReply(reply);
     return reply;
 }
 
@@ -304,8 +304,8 @@ void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
                 if (targetAddress == entry.ip())
                     continue;
 
-                // Retry only once to ping a device
-                PingReply *reply = ping(targetAddress, 1);
+                // Retry only once to ping a device and lookup the hostname on success
+                PingReply *reply = ping(targetAddress, true, 1);
                 m_runningPingRepies.append(reply);
                 connect(reply, &PingReply::finished, this, [=](){
                     m_runningPingRepies.removeAll(reply);
@@ -337,6 +337,32 @@ void NetworkDeviceDiscoveryImpl::processMonitorPingResult(PingReply *reply, Netw
         qCDebug(dcNetworkDeviceDiscovery()) << "Failed to ping device from" << monitor << "retrying" << reply->retries() << "times:" << reply->error();
         monitor->setReachable(false);
     }
+}
+
+void NetworkDeviceDiscoveryImpl::watchPingReply(PingReply *reply)
+{
+    connect(reply, &PingReply::finished, this, [=](){
+        // Search cache for mac address and update last seen
+        if (reply->error() == PingReply::ErrorNoError) {
+            foreach (const NetworkDeviceInfo &info, m_networkInfoCache) {
+                if (info.address() == reply->targetHostAddress()) {
+                    // Found info for this ip, update the cache
+                    MacAddress macAddress(info.macAddress());
+                    if (!macAddress.isNull() && m_networkInfoCache.contains(macAddress)) {
+                        m_lastSeen[macAddress] = QDateTime::currentDateTime();
+                        saveNetworkDeviceCache(m_networkInfoCache.value(macAddress));
+                    }
+                }
+            }
+        }
+
+        // Update any monitor
+        foreach (NetworkDeviceMonitorImpl *monitor, m_monitors.values()) {
+            if (monitor->networkDeviceInfo().address() == reply->targetHostAddress()) {
+                processMonitorPingResult(reply, monitor);
+            }
+        }
+    });
 }
 
 void NetworkDeviceDiscoveryImpl::loadNetworkDeviceCache()
@@ -403,6 +429,9 @@ void NetworkDeviceDiscoveryImpl::removeFromNetworkDeviceCache(const MacAddress &
 
 void NetworkDeviceDiscoveryImpl::saveNetworkDeviceCache(const NetworkDeviceInfo &deviceInfo)
 {
+    if (!deviceInfo.isValid() || !deviceInfo.isComplete())
+        return;
+
     m_cacheSettings->beginGroup("NetworkDeviceInfos");
     m_cacheSettings->beginGroup(deviceInfo.macAddress());
     m_cacheSettings->setValue("address", deviceInfo.address().toString());
@@ -435,6 +464,12 @@ void NetworkDeviceDiscoveryImpl::updateCache(const NetworkDeviceInfo &deviceInfo
 
 void NetworkDeviceDiscoveryImpl::evaluateMonitor(NetworkDeviceMonitorImpl *monitor)
 {
+    if (monitor->networkDeviceInfo().address().isNull())
+        return;
+
+    if (monitor->currentPingReply())
+        return;
+
     // Start action if we have not seen the device for gracePeriod seconds
     QDateTime currentDateTime = QDateTime::currentDateTime();
 
@@ -450,12 +485,6 @@ void NetworkDeviceDiscoveryImpl::evaluateMonitor(NetworkDeviceMonitorImpl *monit
     }
 
     if (!requiresRefresh)
-        return;
-
-    if (monitor->networkDeviceInfo().address().isNull())
-        return;
-
-    if (monitor->currentPingReply())
         return;
 
     // Try to ping first

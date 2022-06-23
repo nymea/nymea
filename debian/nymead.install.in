@@ -1,7 +1,4 @@
 usr/bin/nymead
-usr/lib/@DEB_HOST_MULTIARCH@/libnymea-core.so.1
-usr/lib/@DEB_HOST_MULTIARCH@/libnymea-core.so.1.0
-usr/lib/@DEB_HOST_MULTIARCH@/libnymea-core.so.1.0.0
 data/systemd/nymead.service /lib/systemd/system/
 data/logrotate/nymead /etc/logrotate.d/
 data/dbus-1/io.guh.nymead.conf /etc/dbus-1/system.d/

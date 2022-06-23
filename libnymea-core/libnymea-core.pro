@@ -52,13 +52,10 @@ packagesExist(libudev) {
     message("Building without udev support.")
 }
 
-target.path = $$[QT_INSTALL_LIBS]
-INSTALLS += target
 
 # icons for the webserver
 RESOURCES += $$top_srcdir/icons.qrc \
              $$top_srcdir/data/debug-interface/debug-interface.qrc
-
 
 HEADERS += nymeacore.h \
     hardware/network/macaddressdatabasereplyimpl.h \
@@ -290,3 +287,25 @@ HEADERS += \
 SOURCES += \
     integrations/pythonintegrationplugin.cpp
 }
+
+target.path = $$[QT_INSTALL_LIBS]
+INSTALLS += target
+
+# install header file with relative subdirectory
+for(header, HEADERS) {
+    path = $$[QT_INSTALL_PREFIX]/include/nymea-core/$${dirname(header)}
+    eval(headers_$${path}.files += $${header})
+    eval(headers_$${path}.path = $${path})
+    eval(INSTALLS *= headers_$${path})
+}
+
+# Create pkgconfig file
+CONFIG += create_pc create_prl no_install_prl
+QMAKE_PKGCONFIG_NAME = libnymea-core
+QMAKE_PKGCONFIG_DESCRIPTION = nymea core development library
+QMAKE_PKGCONFIG_PREFIX = $$[QT_INSTALL_PREFIX]
+QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_PREFIX]/include/nymea-core/
+QMAKE_PKGCONFIG_LIBDIR = $$target.path
+QMAKE_PKGCONFIG_VERSION = $$NYMEA_VERSION_STRING
+QMAKE_PKGCONFIG_FILE = nymea-core
+QMAKE_PKGCONFIG_DESTDIR = pkgconfig

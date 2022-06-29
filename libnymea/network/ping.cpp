@@ -306,6 +306,14 @@ PingReply *Ping::createReply(const QHostAddress &hostAddress)
         finishReply(reply, PingReply::ErrorAborted);
     });
 
+    connect(reply, &PingReply::finished, this, [=](){
+        reply->deleteLater();
+
+        // Cleanup any retry left over queue stuff
+        m_pendingReplies.remove(reply->requestId());
+        m_replyQueue.removeAll(reply);
+    });
+
     return reply;
 }
 
@@ -322,14 +330,18 @@ void Ping::finishReply(PingReply *reply, PingReply::Error error)
         reply->m_timer->stop();
         m_pendingReplies.remove(reply->requestId());
         emit reply->finished();
-        reply->deleteLater();
     } else {
-        m_pendingReplies.remove(reply->requestId());
+        // Note: don't remove from m_pendingReplies to prevent
+        // double assignmet of request id's between 2 retries
         reply->m_error = error;
         reply->m_retryCount++;
         reply->m_sequenceNumber++;
 
-        qCDebug(dcPing()) << "Ping finished with error" << error << "Retry ping" << reply->targetHostAddress().toString() << reply->m_retryCount << "/" << reply->m_retries;
+        if (reply->m_retries > 1) {
+            qCDebug(dcPing()) << "Ping finished with error" << error << "Retry ping" << reply->targetHostAddress().toString() << reply->m_retryCount << "/" << reply->m_retries;
+        } else {
+            qCDebug(dcPing()) << "Ping finished with error" << error << "Retry ping" << reply->targetHostAddress().toString();
+        }
         emit reply->retry(error, reply->retryCount());
 
         // Note: will be restarted once actually sent trough the network

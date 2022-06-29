@@ -110,6 +110,7 @@ public:
     Platform *platform() const;
     ZigbeeManager *zigbeeManager() const;
     ModbusRtuManager *modbusRtuManager() const;
+    ExperienceManager *experienceManager() const;
 
     static QStringList getAvailableLanguages();
     static QStringList loggingFilters();

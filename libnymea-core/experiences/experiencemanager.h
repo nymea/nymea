@@ -45,24 +45,22 @@ class ExperienceManager : public QObject
 public:
     explicit ExperienceManager(ThingManager *thingManager, JsonRPCServer *jsonRpcServer, QObject *parent = nullptr);
 
-signals:
+    QList<ExperiencePlugin *> plugins() const;
 
-public slots:
+    // This method is used for testing
+    void loadExperiencePlugin(ExperiencePlugin *experiencePlugin);
 
 private slots:
     void loadPlugins();
 
 private:
-    QStringList pluginSearchDirs() const;
-
-private:
     ThingManager *m_thingManager = nullptr;
     JsonRPCServer *m_jsonRpcServer = nullptr;
+    QList<ExperiencePlugin *> m_plugins;
 
+    QStringList pluginSearchDirs() const;
     void loadExperiencePlugin(const QString &file);
 
-private:
-    QList<ExperiencePlugin*> m_plugins;
 };
 
 }

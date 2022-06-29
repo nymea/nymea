@@ -92,7 +92,7 @@ signals:
 private:
     QTimer *m_timer = nullptr;
     QHostAddress m_targetHostAddress;
-    quint16 m_sequenceNumber = 0;
+    quint16 m_sequenceNumber = 1;
     quint16 m_requestId = 0;
     QString m_hostName;
     QNetworkInterface m_networkInterface;

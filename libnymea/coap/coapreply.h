@@ -132,8 +132,8 @@ private:
     int m_messageId;
     QByteArray m_messageToken;
 
-    bool m_observation;
-    bool m_observationEnable;
+    bool m_observation = false;
+    bool m_observationEnable = false;
 
 signals:
     void timeout();

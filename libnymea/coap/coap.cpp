@@ -801,16 +801,15 @@ void Coap::hostLookupFinished(const QHostInfo &hostInfo)
 void Coap::onReadyRead()
 {
     QHostAddress hostAddress;
-    QByteArray data;
     quint16 port;
 
     while (m_socket->hasPendingDatagrams()) {
-        data.resize(m_socket->pendingDatagramSize());
-        m_socket->readDatagram(data.data(), data.size(), &hostAddress, &port);
+        QByteArray datagram(m_socket->pendingDatagramSize(), 0);
+        m_socket->readDatagram(datagram.data(), datagram.size(), &hostAddress, &port);
+        qCDebug(dcCoap()) << "Datagram received from:" << hostAddress << ":" << datagram;
+        CoapPdu pdu(datagram);
+        processResponse(pdu, hostAddress, port);
     }
-
-    CoapPdu pdu(data);
-    processResponse(pdu, hostAddress, port);
 }
 
 void Coap::onReplyTimeout()

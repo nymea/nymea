@@ -44,7 +44,7 @@ CoapRequest::CoapRequest(const QUrl &url) :
     m_url(url),
     m_contentType(CoapPdu::TextPlain),
     m_messageType(CoapPdu::Confirmable),
-    m_statusCode(CoapPdu::Empty)
+    m_reqRspCode(CoapPdu::Empty)
 {
 }
 

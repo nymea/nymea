@@ -57,7 +57,7 @@ private:
     QUrl m_url;
     CoapPdu::ContentType m_contentType;
     CoapPdu::MessageType m_messageType;
-    CoapPdu::StatusCode m_statusCode;
+    CoapPdu::ReqRspCode m_reqRspCode;
 
 };
 

@@ -65,11 +65,14 @@ public:
     CoapReply *put(const CoapRequest &request, const QByteArray &data = QByteArray());
     CoapReply *post(const CoapRequest &request, const QByteArray &data = QByteArray());
     CoapReply *deleteResource(const CoapRequest &request);
+    CoapReply *customRequest(CoapPdu::ReqRspCode requestCode, const CoapRequest &request, const QByteArray &data = QByteArray());
 
     // Notifications for observable resources
     CoapReply *enableResourceNotifications(const CoapRequest &request);
     CoapReply *disableNotifications(const CoapRequest &request);
 
+    bool joinMulticastGroup(const QHostAddress &address = QHostAddress("224.0.1.187"));
+    bool leaveMulticastGroup(const QHostAddress &address = QHostAddress("224.0.1.187"));
 
 private:
     QUdpSocket *m_socket;
@@ -105,6 +108,7 @@ private:
 signals:
     void replyFinished(CoapReply *reply);
     void notificationReceived(const CoapObserveResource &resource, const int &notificationNumber, const QByteArray &payload);
+    void multicastMessageReceived(const QHostAddress &source, const CoapPdu &pdu);
 
 private slots:
     void hostLookupFinished(const QHostInfo &hostInfo);

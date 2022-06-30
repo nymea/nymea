@@ -66,7 +66,7 @@ public:
 
     CoapPdu::ContentType contentType() const;
     CoapPdu::MessageType messageType() const;
-    CoapPdu::StatusCode statusCode() const;
+    CoapPdu::ReqRspCode reqRspCode() const;
 
 private:
     CoapReply(const CoapRequest &request, QObject *parent = 0);
@@ -78,9 +78,9 @@ private:
 
     void resend();
 
-    void setContentType(const CoapPdu::ContentType contentType = CoapPdu::TextPlain);
-    void setMessageType(const CoapPdu::MessageType &messageType);
-    void setStatusCode(const CoapPdu::StatusCode &statusCode);
+    void setContentType(CoapPdu::ContentType contentType = CoapPdu::TextPlain);
+    void setMessageType(CoapPdu::MessageType messageType);
+    void setReqRspCode(CoapPdu::ReqRspCode reqRspCode);
 
     QTimer *m_timer;
     CoapRequest m_request;
@@ -93,20 +93,20 @@ private:
 
     CoapPdu::ContentType m_contentType;
     CoapPdu::MessageType m_messageType;
-    CoapPdu::StatusCode m_statusCode;
+    CoapPdu::ReqRspCode m_reqRspCode;
 
     // data for the request
     void setHostAddress(const QHostAddress &address);
     QHostAddress hostAddress() const;
 
-    void setPort(const int &port);
+    void setPort(int port);
     int port() const;
 
     void setRequestPayload(const QByteArray &requestPayload);
     QByteArray requestPayload() const;
 
-    void setRequestMethod(const CoapPdu::StatusCode &method);
-    CoapPdu::StatusCode requestMethod() const;
+    void setRequestMethod(CoapPdu::ReqRspCode method);
+    CoapPdu::ReqRspCode requestMethod() const;
 
     void setRequestData(const QByteArray &requestData);
     QByteArray requestData() const;
@@ -125,7 +125,7 @@ private:
 
     QHostAddress m_hostAddress;
     int m_port;
-    CoapPdu::StatusCode m_requestMethod;
+    CoapPdu::ReqRspCode m_requestMethod;
     QByteArray m_requestPayload;
     QByteArray m_requestData;
     bool m_lockedUp;

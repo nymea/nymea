@@ -72,7 +72,7 @@ public:
 
     // Methods:       https://tools.ietf.org/html/rfc7252#section-5.8
     // Respond codes: https://tools.ietf.org/html/rfc7252#section-12.1.2
-    enum StatusCode {
+    enum ReqRspCode {
         Empty                    = 0x00,  // Empty message (ping)
         Get                      = 0x01,  // Method GET
         Post                     = 0x02,  // Method POST
@@ -102,7 +102,7 @@ public:
         GatewayTimeout           = 0xa4,  // 5.04
         ProxyingNotSupported     = 0xa5   // 5.05
     };
-    Q_ENUM(StatusCode)
+    Q_ENUM(ReqRspCode)
 
     // https://tools.ietf.org/html/rfc7252#section-12.3
     enum ContentType {
@@ -128,24 +128,24 @@ public:
     CoapPdu(QObject *parent = 0);
     CoapPdu(const QByteArray &data, QObject *parent = 0);
 
-    static QString getStatusCodeString(const StatusCode &statusCode);
+    static QString getReqRspCodeString(CoapPdu::ReqRspCode reqRspCode);
 
     // header fields
     quint8 version() const;
-    void setVersion(const quint8 &version);
+    void setVersion(quint8 version);
 
     MessageType messageType() const;
-    void setMessageType(const MessageType &messageType);
+    void setMessageType(MessageType messageType);
 
-    StatusCode statusCode() const;
-    void setStatusCode(const StatusCode &statusCode);
+    ReqRspCode reqRspCode() const;
+    void setReqRspCode(ReqRspCode reqRspCode);
 
     quint16 messageId() const;
     void createMessageId();
-    void setMessageId(const quint16 &messageId);
+    void setMessageId(quint16 messageId);
 
     ContentType contentType() const;
-    void setContentType(const ContentType &contentType);
+    void setContentType(ContentType contentType);
 
     QByteArray token() const;
     void createToken();
@@ -156,11 +156,12 @@ public:
     void setPayload(const QByteArray &payload);
 
     QList<CoapOption> options() const;
-    void addOption(const CoapOption::Option &option, const QByteArray &data);
+    void addOption(CoapOption::Option option, const QByteArray &data);
 
     CoapPduBlock block() const;
 
-    bool hasOption(const CoapOption::Option &option) const;
+    bool hasOption(CoapOption::Option option) const;
+    CoapOption option(CoapOption::Option option) const;
 
     void clear();
     bool isValid() const;
@@ -170,7 +171,7 @@ public:
 private:
     quint8 m_version;
     MessageType m_messageType;
-    StatusCode m_statusCode;
+    ReqRspCode m_reqRspCode;
     quint16 m_messageId;
     ContentType m_contentType;
     QByteArray m_token;

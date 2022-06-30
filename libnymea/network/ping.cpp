@@ -111,11 +111,23 @@ PingReply::Error Ping::error() const
     return m_error;
 }
 
-PingReply *Ping::ping(const QHostAddress &hostAddress)
+PingReply *Ping::ping(const QHostAddress &hostAddress, uint retries)
 {
-    PingReply *reply = new PingReply(this);
-    reply->m_targetHostAddress = hostAddress;
-    reply->m_networkInterface = NetworkUtils::getInterfaceForHostaddress(hostAddress);
+    PingReply *reply = createReply(hostAddress);
+    reply->m_retries = retries;
+
+    // Perform the reply in the next event loop to give the user time to do the reply connects
+    m_replyQueue.enqueue(reply);
+    sendNextReply();
+
+    return reply;
+}
+
+PingReply *Ping::ping(const QHostAddress &hostAddress, bool lookupHost, uint retries)
+{
+    PingReply *reply = createReply(hostAddress);
+    reply->m_retries = retries;
+    reply->m_doHostLookup = lookupHost;
 
     // Perform the reply in the next event loop to give the user time to do the reply connects
     m_replyQueue.enqueue(reply);
@@ -133,7 +145,7 @@ void Ping::sendNextReply()
         return;
 
     PingReply *reply = m_replyQueue.dequeue();
-    //qCDebug(dcPing()) << "Send next reply," << m_replyQueue.count() << "left in queue";
+    qCDebug(dcPing()) << "Send next reply," << m_replyQueue.count() << "left in queue";
     m_queueTimer->start();
     QTimer::singleShot(0, reply, [=]() { performPing(reply); });
 }
@@ -168,11 +180,10 @@ void Ping::performPing(PingReply *reply)
     memset(&requestPacket, 0, sizeof(requestPacket));
     requestPacket.icmpHeadr.type = ICMP_ECHO;
     if (reply->requestId() == 0) {
-        requestPacket.icmpHeadr.un.echo.id = calculateRequestId();
-    } else {
-        requestPacket.icmpHeadr.un.echo.id = reply->requestId();
+        reply->m_requestId = calculateRequestId();
     }
-    requestPacket.icmpHeadr.un.echo.sequence = htons(reply->m_sequenceNumber++);
+    requestPacket.icmpHeadr.un.echo.id = htons(reply->requestId());
+    requestPacket.icmpHeadr.un.echo.sequence = htons(reply->sequenceNumber());
 
     // Write the ICMP payload
     memset(&requestPacket.icmpPayload, ' ', sizeof(requestPacket.icmpPayload));
@@ -187,13 +198,9 @@ void Ping::performPing(PingReply *reply)
         qCWarning(dcPing()) << "Failed to get start time for ping measurement" << strerror(errno);
     }
 
-    reply->m_requestId = requestPacket.icmpHeadr.un.echo.id;
-    reply->m_targetHostAddress = targetHostAddress;
-    reply->m_sequenceNumber = requestPacket.icmpHeadr.un.echo.sequence;
-
     qCDebug(dcPingTraffic()) << "Send ICMP echo request" << reply->targetHostAddress().toString() << ICMP_PACKET_SIZE << "[Bytes]"
-                      << "ID:" << QString("0x%1").arg(requestPacket.icmpHeadr.un.echo.id, 4, 16, QChar('0'))
-                      << "Sequence:" << htons(requestPacket.icmpHeadr.un.echo.sequence);
+                      << "ID:" << QString("0x%1").arg(reply->requestId(), 4, 16, QChar('0'))
+                      << "Sequence:" << reply->sequenceNumber();
 
     // Send packet to the target ip
     int bytesSent = sendto(m_socketDescriptor, &requestPacket, sizeof(requestPacket), 0, (struct sockaddr *)&pingAddress, sizeof(pingAddress));
@@ -206,10 +213,7 @@ void Ping::performPing(PingReply *reply)
 
     // Start reply timer and handle timeout
     m_pendingReplies.insert(reply->requestId(), reply);
-    reply->m_timer->start(8000);
-    connect(reply, &PingReply::timeout, this, [=](){
-        finishReply(reply, PingReply::ErrorTimeout);
-    });
+    reply->m_timer->start(m_timeoutDuration);
 }
 
 void Ping::verifyErrno(int error)
@@ -287,12 +291,66 @@ quint16 Ping::calculateRequestId()
     return requestId;
 }
 
+PingReply *Ping::createReply(const QHostAddress &hostAddress)
+{
+    PingReply *reply = new PingReply(this);
+    reply->m_targetHostAddress = hostAddress;
+    reply->m_networkInterface = NetworkUtils::getInterfaceForHostaddress(hostAddress);
+
+    connect(reply, &PingReply::timeout, this, [=](){
+        // Note: this is not the ICMP timeout, here we actually got nothing from nobody...
+        finishReply(reply, PingReply::ErrorTimeout);
+    });
+
+    connect(reply, &PingReply::aborted, this, [=](){
+        finishReply(reply, PingReply::ErrorAborted);
+    });
+
+    connect(reply, &PingReply::finished, this, [=](){
+        reply->deleteLater();
+
+        // Cleanup any retry left over queue stuff
+        m_pendingReplies.remove(reply->requestId());
+        m_replyQueue.removeAll(reply);
+    });
+
+    return reply;
+}
+
 void Ping::finishReply(PingReply *reply, PingReply::Error error)
 {
-    reply->m_error = error;
-    m_pendingReplies.remove(reply->requestId());
-    emit reply->finished();
-    reply->deleteLater();
+    // Check if we should retry
+    if (reply->m_retryCount >= reply->m_retries ||
+            error == PingReply::ErrorNoError ||
+            error == PingReply::ErrorAborted ||
+            error == PingReply::ErrorInvalidHostAddress ||
+            error == PingReply::ErrorPermissionDenied) {
+        // No retry, we are done
+        reply->m_error = error;
+        reply->m_timer->stop();
+        m_pendingReplies.remove(reply->requestId());
+        emit reply->finished();
+    } else {
+        // Note: don't remove from m_pendingReplies to prevent
+        // double assignmet of request id's between 2 retries
+        reply->m_error = error;
+        reply->m_retryCount++;
+        reply->m_sequenceNumber++;
+
+        if (reply->m_retries > 1) {
+            qCDebug(dcPing()) << "Ping finished with error" << error << "Retry ping" << reply->targetHostAddress().toString() << reply->m_retryCount << "/" << reply->m_retries;
+        } else {
+            qCDebug(dcPing()) << "Ping finished with error" << error << "Retry ping" << reply->targetHostAddress().toString();
+        }
+        emit reply->retry(error, reply->retryCount());
+
+        // Note: will be restarted once actually sent trough the network
+        reply->m_timer->stop();
+
+        // Re-Enqueu the reply
+        m_replyQueue.enqueue(reply);
+        sendNextReply();
+    }
 }
 
 void Ping::onSocketReadyRead(int socketDescriptor)
@@ -323,16 +381,19 @@ void Ping::onSocketReadyRead(int socketDescriptor)
                           << "TTL" << ipHeader->ttl;
 
         struct icmp *responsePacket = reinterpret_cast<struct icmp *>(receiveBuffer + ipHeaderLength);
+        quint16 icmpId = htons(responsePacket->icmp_id);
+        quint16 icmpSequnceNumber = htons(responsePacket->icmp_seq);
         qCDebug(dcPingTraffic()) << "ICMP packt (Size:" << icmpPacketSize << "Bytes):"
                           << "Type" << responsePacket->icmp_type
                           << "Code:" << responsePacket->icmp_code
-                          << "ID:" << QString("0x%1").arg(responsePacket->icmp_id, 4, 16, QChar('0'))
-                          << "Sequence:" << responsePacket->icmp_seq;
+                          << "ID:" << QString("0x%1").arg(icmpId, 4, 16, QChar('0'))
+                          << "Sequence:" << icmpSequnceNumber;
 
         if (responsePacket->icmp_type == ICMP_ECHOREPLY) {
-            PingReply *reply = m_pendingReplies.take(responsePacket->icmp_id);
+
+            PingReply *reply = m_pendingReplies.take(icmpId);
             if (!reply) {
-                qCDebug(dcPing()) << "No pending reply for ping echo response with id" << QString("0x%1").arg(responsePacket->icmp_id, 4, 16, QChar('0')) << "Sequence:" << htons(responsePacket->icmp_seq) << "from" << senderAddress.toString();
+                qCDebug(dcPing()) << "No pending reply for ping echo response with id" << QString("0x%1").arg(icmpId, 4, 16, QChar('0')) << "Sequence:" << icmpSequnceNumber << "from" << senderAddress.toString();
                 return;
             }
 
@@ -344,8 +405,8 @@ void Ping::onSocketReadyRead(int socketDescriptor)
             }
 
             // Verify sequence number
-            if (responsePacket->icmp_seq != reply->sequenceNumber()) {
-                qCWarning(dcPing()) << "Received echo reply with different sequence number" << htons(responsePacket->icmp_seq);
+            if (icmpSequnceNumber != reply->sequenceNumber()) {
+                qCWarning(dcPing()) << "Received echo reply with different sequence number" << icmpSequnceNumber;
                 finishReply(reply, PingReply::ErrorInvalidResponse);
                 return;
             }
@@ -356,14 +417,20 @@ void Ping::onSocketReadyRead(int socketDescriptor)
             timeValueSubtract(&receiveTimeValue, &reply->m_startTime);
             reply->m_duration = qRound((receiveTimeValue.tv_sec * 1000 + (double)receiveTimeValue.tv_usec / 1000) * 100) / 100.0;
 
-            // Note: due to a Qt bug < 5.9 we need to use old SLOT style and cannot make use of lambda here
-            int lookupId = QHostInfo::lookupHost(senderAddress.toString(), this, SLOT(onHostLookupFinished(QHostInfo)));
-            m_pendingHostLookups.insert(lookupId, reply);
-
-            qCDebug(dcPingTraffic()) << "Received ICMP response" << reply->targetHostAddress().toString() << ICMP_PACKET_SIZE << "[Bytes]"
-                          << "ID:" << QString("0x%1").arg(responsePacket->icmp_id, 4, 16, QChar('0'))
-                          << "Sequence:" << htons(responsePacket->icmp_seq)
+            qCDebug(dcPing()) << "Received ICMP response" << reply->targetHostAddress().toString() << ICMP_PACKET_SIZE << "[Bytes]"
+                          << "ID:" << QString("0x%1").arg(icmpId, 4, 16, QChar('0'))
+                          << "Sequence:" << icmpSequnceNumber
                           << "Time:" << reply->duration() << "[ms]";
+
+            if (reply->doHostLookup()) {
+                // Note: due to a Qt bug < 5.9 we need to use old SLOT style and cannot make use of lambda here
+                int lookupId = QHostInfo::lookupHost(senderAddress.toString(), this, SLOT(onHostLookupFinished(QHostInfo)));
+                m_pendingHostLookups.insert(lookupId, reply);
+            } else {
+                finishReply(reply, PingReply::ErrorNoError);
+            }
+
+
 
         } else if (responsePacket->icmp_type == ICMP_DEST_UNREACH) {
 
@@ -382,22 +449,25 @@ void Ping::onSocketReadyRead(int socketDescriptor)
                               << "TTL" << ipHeader->ttl;
 
             struct icmp *nestedResponsePacket = reinterpret_cast<struct icmp *>(receiveBuffer + messageOffset + nestedIpHeaderLength);
+            icmpId = htons(nestedResponsePacket->icmp_id);
+            icmpSequnceNumber = htons(nestedResponsePacket->icmp_seq);
+
             qCDebug(dcPingTraffic()) << "++ ICMP packt (Size:" << nestedIcmpPacketSize << "Bytes):"
                               << "Type" << nestedResponsePacket->icmp_type
                               << "Code:" << nestedResponsePacket->icmp_code
-                              << "ID:" << QString("0x%1").arg(nestedResponsePacket->icmp_id, 4, 16, QChar('0'))
-                              << "Sequence:" << nestedResponsePacket->icmp_seq;
+                              << "ID:" << QString("0x%1").arg(icmpId, 4, 16, QChar('0'))
+                              << "Sequence:" << icmpSequnceNumber;
 
             qCDebug(dcPing()) << "ICMP destination unreachable" << nestedDestinationAddress.toString()
                               << "Code:" << nestedResponsePacket->icmp_code
-                              << "ID:" << QString("0x%1").arg(nestedResponsePacket->icmp_id, 4, 16, QChar('0'))
-                              << "Sequence:" << htons(nestedResponsePacket->icmp_seq);
+                              << "ID:" << QString("0x%1").arg(icmpId, 4, 16, QChar('0'))
+                              << "Sequence:" << icmpSequnceNumber;
 
-            PingReply *reply = m_pendingReplies.take(nestedResponsePacket->icmp_id);
+            PingReply *reply = m_pendingReplies.take(icmpId);
             if (!reply) {
                 qCDebug(dcPingTraffic()) << "No pending reply for ping echo response unreachable with ID"
-                                              << QString("0x%1").arg(nestedResponsePacket->icmp_id, 4, 16, QChar('0'))
-                                              << "Sequence:" << htons(nestedResponsePacket->icmp_seq)
+                                              << QString("0x%1").arg(icmpId, 4, 16, QChar('0'))
+                                              << "Sequence:" << icmpSequnceNumber
                                               << "from" << nestedSenderAddress.toString() << "to" << nestedDestinationAddress.toString();
                 return;
             }

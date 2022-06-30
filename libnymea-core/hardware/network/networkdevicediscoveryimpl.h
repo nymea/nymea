@@ -71,7 +71,8 @@ public:
     void unregisterMonitor(const MacAddress &macAddress) override;
     void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) override;
 
-    PingReply *ping(const QHostAddress &address) override;
+    PingReply *ping(const QHostAddress &address, uint retries = 3) override;
+    PingReply *ping(const QHostAddress &address, bool lookupHost, uint retries = 3);
 
     MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) override;
     MacAddressDatabaseReply *lookupMacAddress(const MacAddress &macAddress) override;
@@ -104,6 +105,7 @@ private:
     QList<PingReply *> m_runningPingRepies;
 
     QHash<MacAddress, NetworkDeviceMonitorImpl *> m_monitors;
+    QHash<MacAddress, int> m_monitorsReferenceCount;
     QHash<MacAddress, QDateTime> m_lastSeen;
 
     QSettings *m_cacheSettings;
@@ -112,6 +114,8 @@ private:
     void pingAllNetworkDevices();
 
     void processMonitorPingResult(PingReply *reply, NetworkDeviceMonitorImpl *monitor);
+
+    void watchPingReply(PingReply *reply);
 
     void loadNetworkDeviceCache();
     void removeFromNetworkDeviceCache(const MacAddress &macAddress);

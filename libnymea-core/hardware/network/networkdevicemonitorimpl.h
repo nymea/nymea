@@ -35,6 +35,7 @@
 #include <QDateTime>
 
 #include "network/networkdevicemonitor.h"
+#include "network/pingreply.h"
 
 namespace nymeaserver {
 
@@ -44,7 +45,7 @@ class NetworkDeviceMonitorImpl : public NetworkDeviceMonitor
 
 public:
     explicit NetworkDeviceMonitorImpl(const MacAddress &macAddress, QObject *parent = nullptr);
-    ~NetworkDeviceMonitorImpl();
+    ~NetworkDeviceMonitorImpl() override;
 
     MacAddress macAddress() const override;
 
@@ -57,8 +58,15 @@ public:
     QDateTime lastSeen() const override;
     void setLastSeen(const QDateTime &lastSeen);
 
+    uint pingRetries() const override;
+    void setPingRetries(uint pingRetries) override;
+
+    PingReply *currentPingReply() const;
+    void setCurrentPingReply(PingReply *reply);
+
     QDateTime lastConnectionAttempt() const;
     void setLastConnectionAttempt(const QDateTime &lastConnectionAttempt);
+
 
 private:
     NetworkDeviceInfo m_networkDeviceInfo;
@@ -66,7 +74,8 @@ private:
     bool m_reachable = false;
     QDateTime m_lastSeen;
     QDateTime m_lastConnectionAttempt;
-
+    uint m_pingRetries = 5;
+    PingReply *m_currentPingReply = nullptr;
 };
 
 }

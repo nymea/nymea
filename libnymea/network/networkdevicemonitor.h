@@ -53,6 +53,9 @@ public:
     virtual bool reachable() const = 0;
     virtual QDateTime lastSeen() const = 0;
 
+    virtual uint pingRetries() const = 0;
+    virtual void setPingRetries(uint pingRetries) = 0;
+
 signals:
     void reachableChanged(bool reachable);
     void lastSeenChanged(const QDateTime &lastSeen);

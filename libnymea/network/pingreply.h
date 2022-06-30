@@ -51,6 +51,7 @@ class LIBNYMEA_EXPORT PingReply : public QObject
 public:
     enum Error {
         ErrorNoError,
+        ErrorAborted,
         ErrorInvalidResponse,
         ErrorNetworkDown,
         ErrorNetworkUnreachable,
@@ -70,22 +71,36 @@ public:
     QString hostName() const;
     QNetworkInterface networkInterface() const;
 
+    uint retries() const;
+    uint retryCount() const;
+
     double duration() const;
 
     Error error() const;
 
+    bool doHostLookup() const;
+
+public slots:
+    void abort();
+
 signals:
     void finished();
     void timeout();
+    void retry(Error error, uint retryCount);
+    void aborted();
 
 private:
     QTimer *m_timer = nullptr;
     QHostAddress m_targetHostAddress;
-    quint16 m_sequenceNumber = 0;
+    quint16 m_sequenceNumber = 1;
     quint16 m_requestId = 0;
     QString m_hostName;
     QNetworkInterface m_networkInterface;
 
+    bool m_doHostLookup = false;
+
+    uint m_retries = 0;
+    uint m_retryCount = 0;
     uint m_timeout = 3;
     double m_duration = 0;
     Error m_error = ErrorNoError;

@@ -63,6 +63,16 @@ QNetworkInterface PingReply::networkInterface() const
     return m_networkInterface;
 }
 
+uint PingReply::retries() const
+{
+    return m_retries;
+}
+
+uint PingReply::retryCount() const
+{
+    return m_retryCount;
+}
+
 double PingReply::duration() const
 {
     return m_duration;
@@ -71,4 +81,16 @@ double PingReply::duration() const
 PingReply::Error PingReply::error() const
 {
     return m_error;
+}
+
+bool PingReply::doHostLookup() const
+{
+    return m_doHostLookup;
+}
+
+void PingReply::abort()
+{
+    m_timer->stop();
+    m_error = ErrorAborted;
+    emit aborted();
 }

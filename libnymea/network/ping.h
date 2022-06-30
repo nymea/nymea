@@ -62,7 +62,8 @@ public:
 
     PingReply::Error error() const;
 
-    PingReply *ping(const QHostAddress &hostAddress);
+    PingReply *ping(const QHostAddress &hostAddress, uint retries = 3);
+    PingReply *ping(const QHostAddress &hostAddress, bool lookupHost, uint retries = 3);
 
 signals:
     void availableChanged(bool available);
@@ -76,6 +77,7 @@ private:
     // Config
     QByteArray m_payload = "ping from nymea";
     PingReply::Error m_error = PingReply::ErrorNoError;
+    uint m_timeoutDuration = 5000;
 
     // Socket
     QSocketNotifier *m_socketNotifier = nullptr;
@@ -98,6 +100,7 @@ private:
     void timeValueSubtract(struct timeval *start, struct timeval *stop);
     quint16 calculateRequestId();
 
+    PingReply *createReply(const QHostAddress &hostAddress);
     void finishReply(PingReply *reply, PingReply::Error error);
 
 private slots:

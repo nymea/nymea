@@ -114,7 +114,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 
     // Transports
     MockTcpServer *tcpServer = new MockTcpServer(this);
-    m_jsonServer->registerTransportInterface(tcpServer, true);
+    m_jsonServer->registerTransportInterface(tcpServer);
     tcpServer->startServer();
 
     foreach (const QString &interfaceString, additionalInterfaces) {
@@ -125,15 +125,20 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         config.port = additionalInterface.port();
         TransportInterface *server = nullptr;
         QString serverType, serviceType;
+        qCInfo(dcServerManager) << "Enabling additional interface" << additionalInterface;
         if (additionalInterface.scheme().startsWith("nymea")) {
             config.sslEnabled = additionalInterface.scheme().startsWith("nymeas");
+            config.authenticationEnabled = false;
             server = new TcpServer(config, m_sslConfiguration, this);
+            m_jsonServer->registerTransportInterface(server);
             m_tcpServers.insert(config.id, qobject_cast<TcpServer*>(server));
             serverType = "tcp";
             serviceType = "_jsonrpc._tcp";
         } else if (additionalInterface.scheme().startsWith("ws")) {
             config.sslEnabled = additionalInterface.scheme().startsWith("wss");
+            config.authenticationEnabled = false;
             server = new WebSocketServer(config, m_sslConfiguration, this);
+            m_jsonServer->registerTransportInterface(server);
             m_webSocketServers.insert(config.id, qobject_cast<WebSocketServer*>(server));
             serverType = "ws";
             serviceType = "_ws._tcp";
@@ -145,7 +150,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 
     foreach (const ServerConfiguration &config, configuration->tcpServerConfigurations()) {
         TcpServer *tcpServer = new TcpServer(config, m_sslConfiguration, this);
-        m_jsonServer->registerTransportInterface(tcpServer, config.authenticationEnabled);
+        m_jsonServer->registerTransportInterface(tcpServer);
         m_tcpServers.insert(config.id, tcpServer);
         if (tcpServer->startServer()) {
             registerZeroConfService(config, "tcp", "_jsonrpc._tcp");
@@ -154,7 +159,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
 
     foreach (const ServerConfiguration &config, configuration->webSocketServerConfigurations()) {
         WebSocketServer *webSocketServer = new WebSocketServer(config, m_sslConfiguration, this);
-        m_jsonServer->registerTransportInterface(webSocketServer, config.authenticationEnabled);
+        m_jsonServer->registerTransportInterface(webSocketServer);
         m_webSocketServers.insert(config.id, webSocketServer);
         if (webSocketServer->startServer()) {
             registerZeroConfService(config, "ws", "_ws._tcp");
@@ -162,7 +167,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     }
 
     m_bluetoothServer = new BluetoothServer(this);
-    m_jsonServer->registerTransportInterface(m_bluetoothServer, true);
+    m_jsonServer->registerTransportInterface(m_bluetoothServer);
     if (configuration->bluetoothServerEnabled()) {
         m_bluetoothServer->startServer();
     }
@@ -173,8 +178,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         m_tunnelProxyServers.insert(config.id, tunnelProxyServer);
         connect(tunnelProxyServer, &TunnelProxyServer::runningChanged, this, [this, tunnelProxyServer](bool running){
             if (running) {
-                // Note: enable authentication in any case, we don't want to expose unprotected access trough the internet
-                m_jsonServer->registerTransportInterface(tunnelProxyServer, true);
+                m_jsonServer->registerTransportInterface(tunnelProxyServer);
             } else {
                 m_jsonServer->unregisterTransportInterface(tunnelProxyServer);
             }
@@ -254,7 +258,7 @@ void ServerManager::tcpServerConfigurationChanged(const QString &id)
         server = new TcpServer(config, m_sslConfiguration, this);
         m_tcpServers.insert(config.id, server);
     }
-    m_jsonServer->registerTransportInterface(server, config.authenticationEnabled);
+    m_jsonServer->registerTransportInterface(server);
     if (server->startServer()) {
         registerZeroConfService(config, "tcp", "_jsonrpc._tcp");
     }
@@ -287,7 +291,7 @@ void ServerManager::webSocketServerConfigurationChanged(const QString &id)
         server = new WebSocketServer(config, m_sslConfiguration, this);
         m_webSocketServers.insert(server->configuration().id, server);
     }
-    m_jsonServer->registerTransportInterface(server, config.authenticationEnabled);
+    m_jsonServer->registerTransportInterface(server);
     if (server->startServer()) {
         registerZeroConfService(config, "ws", "_ws._tcp");
     }
@@ -380,8 +384,7 @@ void ServerManager::tunnelProxyServerConfigurationChanged(const QString &id)
         m_tunnelProxyServers.insert(server->configuration().id, server);
         connect(server, &TunnelProxyServer::runningChanged, this, [this, server](bool running){
             if (running) {
-                // Note: enable authentication in any case, we don't want to expose unprotected access trough the internet
-                m_jsonServer->registerTransportInterface(server, true);
+                m_jsonServer->registerTransportInterface(server);
             } else {
                 m_jsonServer->unregisterTransportInterface(server);
             }

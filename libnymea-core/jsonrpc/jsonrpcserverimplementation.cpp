@@ -521,16 +521,11 @@ QHash<QString, JsonHandler *> JsonRPCServerImplementation::handlers() const
 }
 
 /*! Register a new \l{TransportInterface} to the JSON server. If the given interface is already registered, just the authenticationRequired flag will be updated. */
-void JsonRPCServerImplementation::registerTransportInterface(TransportInterface *interface, bool authenticationRequired)
+void JsonRPCServerImplementation::registerTransportInterface(TransportInterface *interface)
 {
-    if (!m_interfaces.contains(interface)) {
-        connect(interface, &TransportInterface::clientConnected, this, &JsonRPCServerImplementation::clientConnected);
-        connect(interface, &TransportInterface::clientDisconnected, this, &JsonRPCServerImplementation::clientDisconnected);
-        connect(interface, &TransportInterface::dataAvailable, this, &JsonRPCServerImplementation::processData);
-        m_interfaces.insert(interface, authenticationRequired);
-    } else {
-        m_interfaces[interface] = authenticationRequired;
-    }
+    connect(interface, &TransportInterface::clientConnected, this, &JsonRPCServerImplementation::clientConnected);
+    connect(interface, &TransportInterface::clientDisconnected, this, &JsonRPCServerImplementation::clientDisconnected);
+    connect(interface, &TransportInterface::dataAvailable, this, &JsonRPCServerImplementation::processData);
 }
 
 void JsonRPCServerImplementation::unregisterTransportInterface(TransportInterface *interface)
@@ -542,7 +537,6 @@ void JsonRPCServerImplementation::unregisterTransportInterface(TransportInterfac
         interface->terminateClientConnection(clientId);
         clientDisconnected(clientId);
     }
-    m_interfaces.take(interface);
 }
 
 bool JsonRPCServerImplementation::registerExperienceHandler(JsonHandler *handler, int majorVersion, int minorVersion)
@@ -678,7 +672,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     QString method = commandList.last();
 
     // check if authentication is required for this transport
-    if (m_interfaces.value(interface)) {
+    if (interface->configuration().authenticationEnabled) {
         QByteArray token = message.value("token").toByteArray();
         QStringList authExemptMethodsNoUser = {"JSONRPC.Introspect", "JSONRPC.Hello", "JSONRPC.RequestPushButtonAuth", "JSONRPC.CreateUser"};
         QStringList authExemptMethodsWithUser = {"JSONRPC.Introspect", "JSONRPC.Hello", "JSONRPC.Authenticate", "JSONRPC.RequestPushButtonAuth"};

@@ -1,3 +1,19 @@
+nymea (1.3.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Migrate pluginid in thing settings when a thing class moves
+
+  [ Simon Stürz ]
+  * Add ping retry feature and provide it to the monitor
+
+  [ Michael Zanetti ]
+  * Some fixes in Coap
+  * Add support for CoIoT
+  * Fix additional interface command line parameter
+  * Add phaseCount state to electricvehicle interface
+
+ -- jenkins <developer@nymea.io>  Thu, 30 Jun 2022 15:04:40 +0200
+
 nymea (1.2.0) jammy; urgency=medium
 
   [ Michael Zanetti ]

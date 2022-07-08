@@ -1,4 +1,4 @@
-6.0
+6.1
 {
     "enums": {
         "BasicType": [
@@ -380,6 +380,115 @@
             "WirelessModeAdhoc",
             "WirelessModeInfrastructure",
             "WirelessModeAccessPoint"
+        ],
+        "ZWaveDeviceType": [
+            "ZWaveDeviceTypeUnknown",
+            "ZWaveDeviceTypeCentralController",
+            "ZWaveDeviceTypeDisplaySimple",
+            "ZWaveDeviceTypeDoorLockKeypad",
+            "ZWaveDeviceTypeFanSwitch",
+            "ZWaveDeviceTypeGateway",
+            "ZWaveDeviceTypeLightDimmerSwitch",
+            "ZWaveDeviceTypeOnOffPowerSwitch",
+            "ZWaveDeviceTypePowerStrip",
+            "ZWaveDeviceTypeRemoteControlAV",
+            "ZWaveDeviceTypeRemoteControlMultiPurpose",
+            "ZWaveDeviceTypeRemoteControlSimple",
+            "ZWaveDeviceTypeKeyFob",
+            "ZWaveDeviceTypeSensorNotification",
+            "ZWaveDeviceTypeSmokeAlarmSensor",
+            "ZWaveDeviceTypeCOAlarmSensor",
+            "ZWaveDeviceTypeCO2AlarmSensor",
+            "ZWaveDeviceTypeHeatAlarmSensor",
+            "ZWaveDeviceTypeWaterAlarmSensor",
+            "ZWaveDeviceTypeAccessControlSensor",
+            "ZWaveDeviceTypeHomeSecuritySensor",
+            "ZWaveDeviceTypePowerManagementSensor",
+            "ZWaveDeviceTypeSystemSensor",
+            "ZWaveDeviceTypeEmergencyAlarmSensor",
+            "ZWaveDeviceTypeClockSensor",
+            "ZWaveDeviceTypeMultiDeviceAlarmSensor",
+            "ZWaveDeviceTypeMultilevelSensor",
+            "ZWaveDeviceTypeAirTemperatureSensor",
+            "ZWaveDeviceTypeGeneralPurposeSensor",
+            "ZWaveDeviceTypeLuminanceSensor",
+            "ZWaveDeviceTypePowerSensor",
+            "ZWaveDeviceTypeHumiditySensor",
+            "ZWaveDeviceTypeVelocitySensor",
+            "ZWaveDeviceTypeDirectionSensor",
+            "ZWaveDeviceTypeAtmosphericPressureSensor",
+            "ZWaveDeviceTypeBarometricPressureSensor",
+            "ZWaveDeviceTypeSolarRadiationSensor",
+            "ZWaveDeviceTypeDewPointSensor",
+            "ZWaveDeviceTypeRainRateSensor",
+            "ZWaveDeviceTypeTideLevelSensor",
+            "ZWaveDeviceTypeWeightSensor",
+            "ZWaveDeviceTypeVoltageSensor",
+            "ZWaveDeviceTypeCurrentSensor",
+            "ZWaveDeviceTypeCO2LevelSensor",
+            "ZWaveDeviceTypeAirFlowSensor",
+            "ZWaveDeviceTypeTankCapacitySensor",
+            "ZWaveDeviceTypeDistanceSensor",
+            "ZWaveDeviceTypeAnglePositionSensor",
+            "ZWaveDeviceTypeRotationSensor",
+            "ZWaveDeviceTypeWaterTemperatureSensor",
+            "ZWaveDeviceTypeSoilTemperatureSensor",
+            "ZWaveDeviceTypeSeismicIntensitySensor",
+            "ZWaveDeviceTypeSeismicMagnitudeSensor",
+            "ZWaveDeviceTypeUltraVioletSensor",
+            "ZWaveDeviceTypeElectricalResistivitySensor",
+            "ZWaveDeviceTypeElectricalConductivitySensor",
+            "ZWaveDeviceTypeLoudnessSensor",
+            "ZWaveDeviceTypeMoistureSensor",
+            "ZWaveDeviceTypeFrequencySensor",
+            "ZWaveDeviceTypeTimeSensor",
+            "ZWaveDeviceTypeTargetTemperatureSensor",
+            "ZWaveDeviceTypeMultiDeviceSensor",
+            "ZWaveDeviceTypeSetTopBox",
+            "ZWaveDeviceTypeSiren",
+            "ZWaveDeviceTypeSubEnergyMeter",
+            "ZWaveDeviceTypeSubSystemController",
+            "ZWaveDeviceTypeThermostatHVAC",
+            "ZWaveDeviceTypeThermostatSetback",
+            "ZWaveDeviceTypeTV",
+            "ZWaveDeviceTypeValveOpenClose",
+            "ZWaveDeviceTypeWallController",
+            "ZWaveDeviceTypeWholeHomeMeterSimple",
+            "ZWaveDeviceTypeWindowCoveringNoPosEndpoint",
+            "ZWaveDeviceTypeWindowCoveringEndpointAware",
+            "ZWaveDeviceTypeWindowCoveringPositionEndpointAware"
+        ],
+        "ZWaveError": [
+            "ZWaveErrorNoError",
+            "ZWaveErrorInUse",
+            "ZWaveErrorNetworkUuidNotFound",
+            "ZWaveErrorNodeIdNotFound",
+            "ZWaveErrorTimeout",
+            "ZWaveErrorBackendError"
+        ],
+        "ZWaveNetworkState": [
+            "ZWaveNetworkStateOffline",
+            "ZWaveNetworkStateStarting",
+            "ZWaveNetworkStateOnline",
+            "ZWaveNetworkStateError"
+        ],
+        "ZWaveNodeRole": [
+            "ZWaveNodeRoleUnknown",
+            "ZWaveNodeRoleCentralController",
+            "ZWaveNodeRoleSubController",
+            "ZWaveNodeRolePortableController",
+            "ZWaveNodeRolePortableReportingController",
+            "ZWaveNodeRolePortableSlave",
+            "ZWaveNodeRoleAlwaysOnSlabe",
+            "ZWaveNodeRoleReportingSleepingSlave",
+            "ZWaveNodeRoleListeningSleepingSlave"
+        ],
+        "ZWaveNodeType": [
+            "ZWaveNodeTypeUnknown",
+            "ZWaveNodeTypeController",
+            "ZWaveNodeTypeStaticController",
+            "ZWaveNodeTypeSlave",
+            "ZWaveNodeTypeRoutingSlave"
         ],
         "ZigbeeError": [
             "ZigbeeErrorNoError",
@@ -1907,6 +2016,120 @@
                 "error": "$ref:UserError"
             }
         },
+        "ZWave.AddNetwork": {
+            "description": "Add a new Z-Wave network with the given serial port.",
+            "params": {
+                "serialPort": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "o:networkUuid": "Uuid",
+                "zwaveError": "$ref:ZWaveError"
+            }
+        },
+        "ZWave.AddNode": {
+            "description": "Start the node inclusion procedure for the given Z-Wave network.",
+            "params": {
+                "networkUuid": "Uuid"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "zwaveError": "$ref:ZWaveError"
+            }
+        },
+        "ZWave.CancelPendingOperation": {
+            "description": "Cancel any running node inclusion or removal procedure for the given Z-Wave network.",
+            "params": {
+                "networkUuid": "Uuid"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "zwaveError": "$ref:ZWaveError"
+            }
+        },
+        "ZWave.FactoryResetNetwork": {
+            "description": "Factory reset the controller for the given Z-Wave network.",
+            "params": {
+                "networkUuid": "Uuid"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "zwaveError": "$ref:ZWaveError"
+            }
+        },
+        "ZWave.GetNetworks": {
+            "description": "Get all the Z-Wave networks in the system.",
+            "params": {
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "networks": [
+                    "$ref:ZWaveNetwork"
+                ]
+            }
+        },
+        "ZWave.GetNodes": {
+            "description": "Get the list of nodes in a network",
+            "params": {
+                "networkUuid": "Uuid"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "o:nodes": [
+                    "$ref:ZWaveNode"
+                ],
+                "zwaveError": "$ref:ZWaveError"
+            }
+        },
+        "ZWave.GetSerialPorts": {
+            "description": "Get the list of available serial ports from the host system.",
+            "params": {
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "serialPorts": "$ref:SerialPorts"
+            }
+        },
+        "ZWave.IsZWaveAvailable": {
+            "description": "Query if the Z-Wave subsystem is available at all.",
+            "params": {
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "available": "Bool"
+            }
+        },
+        "ZWave.RemoveFailedNode": {
+            "description": "Remove the given failed node from the given Z-Wave network. This will not work if node is not marked as failed.",
+            "params": {
+                "networkUuid": "Uuid",
+                "nodeId": "Uint"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "zwaveError": "$ref:ZWaveError"
+            }
+        },
+        "ZWave.RemoveNetwork": {
+            "description": "Remove the given Z-Wave network from the system.",
+            "params": {
+                "networkUuid": "Uuid"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "zwaveError": "$ref:ZWaveError"
+            }
+        },
+        "ZWave.RemoveNode": {
+            "description": "Start the node removal procedure for the given Z-Wave network.",
+            "params": {
+                "networkUuid": "Uuid"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "zwaveError": "$ref:ZWaveError"
+            }
+        },
         "Zigbee.AddNetwork": {
             "description": "Create a new ZigBee network for the given 'serialPort', 'baudRate' and 'backend'. The serial ports can be fetched from the available adapters. See 'GetAdapters' for more information. The available backends can be fetched using the 'GetAvailableBackends' method.",
             "params": {
@@ -2442,6 +2665,45 @@
                 "username": "String"
             }
         },
+        "ZWave.NetworkAdded": {
+            "description": "Emitted whenever a new Z-Wave network has been added to the system.",
+            "params": {
+                "network": "$ref:ZWaveNetwork"
+            }
+        },
+        "ZWave.NetworkChanged": {
+            "description": "Emitted whenever a Z-Wave network changes.",
+            "params": {
+                "network": "$ref:ZWaveNetwork"
+            }
+        },
+        "ZWave.NetworkRemoved": {
+            "description": "Emitted whenever a Z-Wave network has been removed from the system.",
+            "params": {
+                "networkUuid": "Uuid"
+            }
+        },
+        "ZWave.NodeAdded": {
+            "description": "Emitted whenever a Z-Wave node is added.",
+            "params": {
+                "networkUuid": "Uuid",
+                "node": "$ref:ZWaveNode"
+            }
+        },
+        "ZWave.NodeChanged": {
+            "description": "Emitted whenever a Z-Wave node has changed.",
+            "params": {
+                "networkUuid": "Uuid",
+                "node": "$ref:ZWaveNode"
+            }
+        },
+        "ZWave.NodeRemoved": {
+            "description": "Emitted whenever a Z-Wave node is removed.",
+            "params": {
+                "networkUuid": "Uuid",
+                "nodeId": "Uint"
+            }
+        },
         "Zigbee.AdapterAdded": {
             "description": "Emitted whenever a new ZigBee adapter or serial port has been detected in the system.",
             "params": {
@@ -2943,6 +3205,40 @@
             "r:mode": "$ref:WirelessMode",
             "r:o:currentAccessPoint": "$ref:WirelessAccessPoint",
             "r:state": "$ref:NetworkDeviceState"
+        },
+        "ZWaveNetwork": {
+            "homeId": "Uint",
+            "isBridgeController": "Bool",
+            "isPrimaryController": "Bool",
+            "isStaticUpdateController": "Bool",
+            "isZWavePlus": "Bool",
+            "networkState": "$ref:ZWaveNetworkState",
+            "networkUuid": "Uuid",
+            "serialPort": "String",
+            "waitingForNodeAddition": "Bool",
+            "waitingForNodeRemoval": "Bool"
+        },
+        "ZWaveNode": {
+            "deviceType": "$ref:ZWaveDeviceType",
+            "failed": "Bool",
+            "initialized": "Bool",
+            "isBeamingDevice": "Bool",
+            "isSecurityDevice": "Bool",
+            "isZWavePlusDevice": "Bool",
+            "linkQuality": "Uint",
+            "manufacturerId": "Uint",
+            "manufacturerName": "String",
+            "networkUuid": "Uuid",
+            "nodeId": "Uint",
+            "nodeType": "$ref:ZWaveNodeType",
+            "productId": "Uint",
+            "productName": "String",
+            "productType": "Uint",
+            "reachable": "Bool",
+            "role": "$ref:ZWaveNodeRole",
+            "securityMode": "Uint",
+            "sleeping": "Bool",
+            "version": "String"
         },
         "ZigbeeAdapter": {
             "r:backend": "String",

@@ -60,6 +60,10 @@ RESOURCES += $$top_srcdir/icons.qrc \
 HEADERS += nymeacore.h \
     hardware/network/macaddressdatabasereplyimpl.h \
     hardware/serialport/serialportmonitor.h \
+    hardware/zwave/zwavehardwareresourceimplementation.h \
+    zwave/zwavedevicedatabase.h \
+    zwave/zwavemanagerreply.h \
+    zwave/zwavenodeimplementation.h \
     integrations/apikeysprovidersloader.h \
     integrations/plugininfocache.h \
     integrations/python/pyapikeystorage.h \
@@ -74,6 +78,7 @@ HEADERS += nymeacore.h \
     experiences/experiencemanager.h \
     jsonrpc/modbusrtuhandler.h \
     jsonrpc/zigbeehandler.h \
+    jsonrpc/zwavehandler.h \
     ruleengine/ruleengine.h \
     ruleengine/rule.h \
     ruleengine/stateevaluator.h \
@@ -159,12 +164,19 @@ HEADERS += nymeacore.h \
     platform/platform.h \
     zigbee/zigbeeadapter.h \
     zigbee/zigbeeadapters.h \
-    zigbee/zigbeemanager.h
+    zigbee/zigbeemanager.h \
+    zwave/zwaveadapter.h \
+    zwave/zwavemanager.h \
+    zwave/zwavenetwork.h \
 
 
 SOURCES += nymeacore.cpp \
     hardware/network/macaddressdatabasereplyimpl.cpp \
     hardware/serialport/serialportmonitor.cpp \
+    hardware/zwave/zwavehardwareresourceimplementation.cpp \
+    zwave/zwavedevicedatabase.cpp \
+    zwave/zwavemanagerreply.cpp \
+    zwave/zwavenodeimplementation.cpp \
     integrations/apikeysprovidersloader.cpp \
     integrations/plugininfocache.cpp \
     integrations/thingmanagerimplementation.cpp \
@@ -172,6 +184,7 @@ SOURCES += nymeacore.cpp \
     experiences/experiencemanager.cpp \
     jsonrpc/modbusrtuhandler.cpp \
     jsonrpc/zigbeehandler.cpp \
+    jsonrpc/zwavehandler.cpp \
     ruleengine/ruleengine.cpp \
     ruleengine/rule.cpp \
     ruleengine/stateevaluator.cpp \
@@ -256,7 +269,10 @@ SOURCES += nymeacore.cpp \
     platform/platform.cpp \
     zigbee/zigbeeadapter.cpp \
     zigbee/zigbeeadapters.cpp \
-    zigbee/zigbeemanager.cpp
+    zigbee/zigbeemanager.cpp \
+    zwave/zwaveadapter.cpp \
+    zwave/zwavemanager.cpp \
+    zwave/zwavenetwork.cpp \
 
 versionAtLeast(QT_VERSION, 5.12.0) {
 message("Building with JS plugin support")

@@ -129,6 +129,9 @@ NymeaSettings::NymeaSettings(const SettingsRole &role, QObject *parent):
     case SettingsRoleModbusRtu:
         fileName = "modbusrtu.conf";
         break;
+    case SettingsRoleZWave:
+        fileName = "zwave.conf";
+        break;
     }
     m_settings = new QSettings(basePath + settingsPrefix + fileName, QSettings::IniFormat, this);
 }

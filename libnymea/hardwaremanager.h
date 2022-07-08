@@ -43,6 +43,7 @@ class BluetoothLowEnergyManager;
 class MqttProvider;
 class I2CManager;
 class ZigbeeHardwareResource;
+class ZWaveHardwareResource;
 class HardwareResource;
 class ModbusRtuHardwareResource;
 class NetworkDeviceDiscovery;
@@ -65,6 +66,7 @@ public:
     virtual MqttProvider *mqttProvider() = 0;
     virtual I2CManager *i2cManager() = 0;
     virtual ZigbeeHardwareResource *zigbeeResource() = 0;
+    virtual ZWaveHardwareResource *zwaveResource() = 0;
     virtual ModbusRtuHardwareResource *modbusRtuResource() = 0;
     virtual NetworkDeviceDiscovery *networkDeviceDiscovery() = 0;
 

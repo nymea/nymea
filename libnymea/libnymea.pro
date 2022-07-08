@@ -19,6 +19,13 @@ HEADERS += \
     hardware/modbus/modbusrtureply.h \
     hardware/zigbee/zigbeehandler.h \
     hardware/zigbee/zigbeehardwareresource.h \
+    hardware/zwave/zwave.h \
+    hardware/zwave/zwavereply.h \
+    hardware/zwave/zwavehandler.h \
+    hardware/zwave/zwavehardwareresource.h \
+    hardware/zwave/zwavenode.h \
+    hardware/zwave/zwavevalue.h \
+    hardware/zwave/zwavebackend.h \
     integrations/browseractioninfo.h \
     integrations/browseritemactioninfo.h \
     integrations/browseritemresult.h \
@@ -124,6 +131,13 @@ SOURCES += \
     hardware/modbus/modbusrtuhardwareresource.cpp \
     hardware/zigbee/zigbeehandler.cpp \
     hardware/zigbee/zigbeehardwareresource.cpp \
+    hardware/zwave/zwave.cpp \
+    hardware/zwave/zwavereply.cpp \
+    hardware/zwave/zwavehandler.cpp \
+    hardware/zwave/zwavehardwareresource.cpp \
+    hardware/zwave/zwavenode.cpp \
+    hardware/zwave/zwavevalue.cpp \
+    hardware/zwave/zwavebackend.cpp \
     integrations/browseractioninfo.cpp \
     integrations/browseritemactioninfo.cpp \
     integrations/browseritemresult.cpp \

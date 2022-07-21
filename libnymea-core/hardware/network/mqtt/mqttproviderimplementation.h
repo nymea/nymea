@@ -64,7 +64,7 @@ private slots:
 private:
     MqttBroker* m_broker = nullptr;
 
-    QHash<QString, MqttChannel*> m_createdChannels;
+    QHash<QString, MqttChannel *> m_createdChannels;
 };
 
 }

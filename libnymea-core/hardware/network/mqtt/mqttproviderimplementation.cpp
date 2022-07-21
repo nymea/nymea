@@ -205,16 +205,16 @@ void MqttProviderImplementation::setEnabled(bool enabled)
 void MqttProviderImplementation::onClientConnected(const QString &clientId)
 {
     if (m_createdChannels.contains(clientId)) {
-        MqttChannel* channel = m_createdChannels.value(clientId);
-        emit channel->clientConnected(channel);
+        MqttChannelImplementation *channel = qobject_cast<MqttChannelImplementation *>(m_createdChannels.value(clientId));
+        channel->setConnected(true);
     }
 }
 
 void MqttProviderImplementation::onClientDisconnected(const QString &clientId)
 {
     if (m_createdChannels.contains(clientId)) {
-        MqttChannel *channel = m_createdChannels.value(clientId);
-        emit channel->clientDisconnected(channel);
+        MqttChannelImplementation *channel = qobject_cast<MqttChannelImplementation *>(m_createdChannels.value(clientId));
+        channel->setConnected(false);
     }
 }
 

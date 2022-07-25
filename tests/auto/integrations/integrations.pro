@@ -1,5 +1,5 @@
 include(../../../nymea.pri)
 include(../autotests.pri)
 
-TARGET = testintegrations
+TARGET = nymeatestintegrations
 SOURCES += testintegrations.cpp

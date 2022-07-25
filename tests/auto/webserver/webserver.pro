@@ -3,5 +3,5 @@ include(../autotests.pri)
 
 QT += xml
 
-TARGET = webserver
+TARGET = nymeatestwebserver
 SOURCES += testwebserver.cpp

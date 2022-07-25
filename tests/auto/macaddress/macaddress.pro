@@ -1,4 +1,4 @@
-TARGET = testmacaddress
+TARGET = nymeatestmacaddress
 
 include(../../../nymea.pri)
 include(../autotests.pri)

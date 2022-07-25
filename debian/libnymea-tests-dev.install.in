@@ -1,0 +1,3 @@
+usr/lib/@DEB_HOST_MULTIARCH@/libnymea-tests.so
+usr/include/nymea-tests
+usr/lib/@DEB_HOST_MULTIARCH@/pkgconfig/nymea-tests.pc

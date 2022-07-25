@@ -1,7 +1,7 @@
 include(../../../nymea.pri)
 include(../autotests.pri)
 
-TARGET = testjsonrpc
+TARGET = nymeatestjsonrpc
 SOURCES += testjsonrpc.cpp \
            ../../utils/pushbuttonagent.cpp
 

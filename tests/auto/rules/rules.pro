@@ -1,5 +1,5 @@
 include(../../../nymea.pri)
 include(../autotests.pri)
 
-TARGET = rules
+TARGET = nymeatestrules
 SOURCES += testrules.cpp

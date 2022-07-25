@@ -4,6 +4,6 @@ include(../autotests.pri)
 QT += xml
 PKGCONFIG += nymea-mqtt
 
-TARGET = mqttbroker
+TARGET = nymeatestmqttbroker
 SOURCES += testmqttbroker.cpp
 

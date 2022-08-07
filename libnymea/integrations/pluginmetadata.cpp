@@ -333,10 +333,11 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 QJsonObject st = stateTypesJson.toObject();
                 bool writableState = false;
 
+                // TODO: DEPRECATED 1.2: Remove displayNameEvent eventually (requires updating all plugins)
                 QStringList stateTypeProperties = {"id", "name", "displayName", "displayNameEvent", "type", "defaultValue", "cached",
                                                    "unit", "minValue", "maxValue", "possibleValues", "writable", "displayNameAction",
                                                    "ioType", "suggestLogging", "filter"};
-                QStringList mandatoryStateTypeProperties = {"id", "name", "displayName", "displayNameEvent", "type", "defaultValue"};
+                QStringList mandatoryStateTypeProperties = {"id", "name", "displayName", "type", "defaultValue"};
                 QPair<QStringList, QStringList> verificationResult = verifyFields(stateTypeProperties, mandatoryStateTypeProperties, st);
 
                 // Check mandatory fields
@@ -354,6 +355,11 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                 if (!verificationResult.second.isEmpty()) {
                     m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has unknown properties \"" + verificationResult.second.join("\", \"") + "\"");
                     hasError = true;
+                }
+                // Print warning on deprecated fields
+                if (st.contains("displayNameEvent")) {
+                    m_validationErrors.contains("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" contains deprecated displayNameEvent property");
+                    // Not a real error, not setting hasError.
                 }
 
                 // If this is a writable stateType, there must be also the displayNameAction property

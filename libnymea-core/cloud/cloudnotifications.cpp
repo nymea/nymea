@@ -109,7 +109,6 @@ CloudNotifications::CloudNotifications(QObject *parent):
     connectedState.insert("name", "connected");
     connectedState.insert("displayName", tr("connected"));
     connectedState.insert("type", "bool");
-    connectedState.insert("displayNameEvent", tr("Connected changed"));
     connectedState.insert("defaultValue", false);
 
     QVariantList stateTypes;

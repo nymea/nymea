@@ -5,12 +5,20 @@
             "name": "state",
             "type": "QString",
             "allowedValues": ["locked", "locking", "unlocked", "unlocking", "unlatched",  "unlatching"],
-            "logged": true
+            "logged": true,
+            "optional": true
         }
     ],
     "actions": [
         {
-            "name": "unlatch"
+            "name": "lock"
+        },
+        {
+            "name": "unlock"
+        },
+        {
+            "name": "unlatch",
+            "optional": true
         }
     ]
 }

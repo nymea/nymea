@@ -44,11 +44,22 @@ ThingSetupInfo::ThingSetupInfo(Thing *thing, ThingManager *thingManager, quint32
 {
     connect(this, &ThingSetupInfo::finished, this, &ThingSetupInfo::deleteLater, Qt::QueuedConnection);
 
+    // TODO 2.0: Create a base class and move this finished() of all Info classes logic handling there
+    // That will badly break the ABI, so copy/pasting this for now.
     if (timeout > 0) {
         QTimer::singleShot(timeout, this, [this] {
-            emit aborted();
+            // It can happen that a plugin calls finish() in a slot which normally would be dispatched before the timeout
+            // but due to high system load the slot is invoked only after the timeout. This in turn would cause Qt to also queue up
+            // this timeout slot and by the time the system processes slots, the plugin comes in first and we'd fire an aborted()
+            // signal in the plugin after it called finish(), potentially badly breaking the plugin as a plugin developer would not
+            // expect this to happen. So we'll have to verify here that the plugin did not finish() by now before aborting.
             if (!m_finished) {
-                finish(Thing::ThingErrorTimeout);
+                emit aborted();
+                // Also it could happen the the plugin calls finish() *in* the aborted() signal, in which case
+                // we don't want to call finish() here now to not print a warning about duplicate finished calls
+                if (!m_finished) {
+                    finish(Thing::ThingErrorTimeout);
+                }
             }
         });
     }

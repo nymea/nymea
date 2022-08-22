@@ -17,7 +17,13 @@ nymea (/[n'aiːmea:]/ - is an open source IoT edge server. The plug-in based arc
 </p>
 
 We have created an image for your Raspberry Pi (all models) that comes with an array of plugins for different smart devices!
- [Download](https://downloads.nymea.io/images/raspberrypi/latest)
+
+Use the [Raspberry Pi imager](https://www.raspberrypi.com/software/) and select nymea as operating system. You'll have the
+choice between a headless nymea:core setup or a kiosk image that contains nymea:core and nymea:app for Raspberry Pis with touch screen.
+
+Alternatively, the image can be downloaded and flashed manually from [here](https://downloads.nymea.io/images/raspberrypi/). We recommend
+the latest Raspberry Pi OS Bullseye [core](https://downloads.nymea.io/images/raspberrypi/nymea-core-image-raspios-bullseye-latest.zip) or
+[kiosk](https://downloads.nymea.io//images/raspberrypi/nymea-kiosk-image-raspios-bullseye-latest.zip) image.
 
 ### Get nymea:app here:
 
@@ -25,7 +31,7 @@ We have created an image for your Raspberry Pi (all models) that comes with an a
   <tr>
     <td> 
       <p>
-        <a href="https://itunes.apple.com/us/app/nymea-app/id1400810250?mt=8">
+        <a href="https://apps.apple.com/us/app/nymea-app/id1400810250">
           <img border="0" align="middle" alt="iOS Badge" src="https://nymea.io/downloads/img/app-store/appstore.png" width=200>
      </p>
     </td>
@@ -43,7 +49,7 @@ We have created an image for your Raspberry Pi (all models) that comes with an a
     </td>
     <td> 
       <p>
-         <a href="https://downloads.nymea.io/nymea-app/nymea-app-osx-bundle.dmg">
+         <a href="https://apps.apple.com/us/app/nymea-app/id1488785734">
          <img border="0" align="middle" alt="macOS Badge" src="https://nymea.io/downloads/img/app-store/macos.png" width=200">
       </p>
     </td>
@@ -55,12 +61,14 @@ We have created an image for your Raspberry Pi (all models) that comes with an a
     </td>
     <td> 
       <p>
-        <a href="https://downloads.nymea.io/nymea-app/nymea-app-win-installer.exe">
+        <a href="https://downloads.nymea.io/nymea-app/windows/latest">
         <img border="0" align="middle" alt="Windows Badge" src="https://nymea.io/downloads/img/app-store/windows.svg" width=200>
       </p>
     </td>
   </tr>
 </table>
+
+Manual download files of nymea:app can be found [here](https://downloads.nymea.io/nymea-app/).
 
 A detailed description how to install and getting started with *nymea* can be found in the [nymea | user documentation](https://nymea.io/documentation/users/installation/getting-started).
 

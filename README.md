@@ -37,6 +37,12 @@ We have created an image for your Raspberry Pi (all models) that comes with an a
     </td>
     <td> 
       <p>
+        <a href="https://open-store.io/app/io.guh.nymeaapp">
+        <img border="0" align="middle" alt="Openstore Badge" src="https://open-store.io/badges/en_US.png" width=200>
+      </p>
+    </td>
+    <td> 
+      <p>
          <a href="https://downloads.nymea.io/nymea-app/nymea-app-osx-bundle.dmg">
          <img border="0" align="middle" alt="macOS Badge" src="https://nymea.io/downloads/img/app-store/macos.png" width=200">
       </p>

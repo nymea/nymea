@@ -200,6 +200,14 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
     registerMethod("RemoveNode", description, params, returns);
 
+    // UpdateNodeNeighborTable
+    params.clear(); returns.clear();
+    description = "Update the internal neighbor table of a ZigBee node with the given \'ieeeAddress\' in the network with the given \'networkUuid\'.";
+    params.insert("networkUuid", enumValueName(Uuid));
+    params.insert("ieeeAddress", enumValueName(String));
+    returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
+    registerMethod("UpdateNodeNeighborTable", description, params, returns);
+
     // NodeAdded
     params.clear();
     description = "Emitted whenever a new ZigBee node has joined the network with the given \'networkUuid\'.";
@@ -395,6 +403,46 @@ JsonReply *ZigbeeHandler::RemoveNode(const QVariantMap &params)
     network->removeZigbeeNode(nodeAddress);
     returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(ZigbeeManager::ZigbeeErrorNoError));
     return createReply(returnMap);
+}
+
+JsonReply *ZigbeeHandler::UpdateNodeNeighborTable(const QVariantMap &params)
+{
+    QVariantMap returnMap;
+    QUuid networkUuid = params.value("networkUuid").toUuid();
+    ZigbeeAddress nodeAddress(params.value("ieeeAddress").toString());
+
+    ZigbeeNetwork *network = m_zigbeeManager->zigbeeNetworks().value(networkUuid);
+    if (!network) {
+        returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(ZigbeeManager::ZigbeeErrorNetworkUuidNotFound));
+        return createReply(returnMap);
+    }
+
+    if (network->state() != ZigbeeNetwork::StateRunning) {
+        returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(ZigbeeManager::ZigbeeErrorNetworkOffline));
+        return createReply(returnMap);
+    }
+
+    ZigbeeNode *node = network->getZigbeeNode(nodeAddress);
+    if (!node) {
+        returnMap.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(ZigbeeManager::ZigbeeErrorNodeNotFound));
+        return createReply(returnMap);
+    }
+
+    JsonReply *jsonReply = createAsyncReply("UpdateNodeNeighborTable");
+    ZigbeeReply *zigbeeReply = node->updateNeighborTableEntries();
+    connect(zigbeeReply, &ZigbeeReply::finished, jsonReply, [zigbeeReply, jsonReply](){
+        ZigbeeManager::ZigbeeError zigbeeError = ZigbeeManager::ZigbeeErrorNoError;
+        if (zigbeeReply->error()) {
+            zigbeeError = ZigbeeManager::ZigbeeErrorCommunicationError;
+        }
+
+        QVariantMap data;
+        data.insert("zigbeeError", enumValueName<ZigbeeManager::ZigbeeError>(zigbeeError));
+        jsonReply->setData(data);
+        emit jsonReply->finished();
+    });
+
+    return jsonReply;
 }
 
 JsonReply *ZigbeeHandler::GetNetworks(const QVariantMap &params)

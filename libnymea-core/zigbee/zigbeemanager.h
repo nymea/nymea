@@ -64,6 +64,7 @@ public:
         ZigbeeErrorNodeNotFound,
         ZigbeeErrorForbidden,
         ZigbeeErrorInvalidChannel,
+        ZigbeeErrorCommunicationError
     };
     Q_ENUM(ZigbeeError)
 

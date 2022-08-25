@@ -14,6 +14,7 @@ PKGCONFIG += nymea-zigbee nymea-mqtt nymea-gpio
 QMAKE_LFLAGS += -fPIC
 
 HEADERS += \
+    hardware/electricity.h \
     hardware/modbus/modbusrtuhardwareresource.h \
     hardware/modbus/modbusrtumaster.h \
     hardware/modbus/modbusrtureply.h \

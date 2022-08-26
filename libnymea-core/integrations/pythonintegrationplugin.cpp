@@ -505,8 +505,9 @@ void PythonIntegrationPlugin::confirmPairing(ThingPairingInfo *info, const QStri
         PyEval_ReleaseThread(m_threadState);
     });
 
-    PyObject *pyUsername = PyUnicode_FromString(username.toUtf8().data());
-    PyObject *pySecret = PyUnicode_FromString(secret.toUtf8().data());
+    // PyUnicode_FromString crashes on empty strings. Creating a new empty python string instead.
+    PyObject *pyUsername = username.isEmpty() ? PyUnicode_New(1, 127) : PyUnicode_FromString(username.toUtf8().data());
+    PyObject *pySecret = secret.isEmpty() ? PyUnicode_New(1, 127) : PyUnicode_FromString(secret.toUtf8().data());
     bool result = callPluginFunction("confirmPairing", reinterpret_cast<PyObject*>(pyInfo), pyUsername, pySecret);
     if (!result) {
         info->finish(Thing::ThingErrorHardwareFailure, "Plugin error: " + pluginName());

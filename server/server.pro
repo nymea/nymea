@@ -20,7 +20,8 @@ LIBS += -L$$top_builddir/libnymea/ -lnymea \
 # Add rpath for easy running from the build dir, unless explicitly disabled
 !norpath: {
     message("Adding rpath to nymead binary")
-    LIBS += -Wl,-rpath ../libnymea/:../libnymea-core/
+    LIBS += -Wl,-rpath ../libnymea/
+    LIBS += -Wl,-rpath ../libnymea-core/
 }
 
 CONFIG += link_pkgconfig

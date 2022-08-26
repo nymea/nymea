@@ -538,21 +538,28 @@ void NetworkDeviceDiscoveryImpl::processArpTraffic(const QNetworkInterface &inte
         m_currentReply->processArpResponse(interface, address, macAddress);
 
         // Check if we know the mac address manufacturer from the cache
+        bool requiresMacAddressLookup = true;
         if (m_networkInfoCache.contains(macAddress)) {
             QString cachedManufacturer = m_networkInfoCache[macAddress].macAddressManufacturer();
             if (!cachedManufacturer.isEmpty()) {
-                // Found the mac address manufacturer in the cache, let's use that
+                // Found the mac address manufacturer in the cache, let's use that one...
                 m_currentReply->processMacManufacturer(macAddress, cachedManufacturer);
+                requiresMacAddressLookup = false;
             }
-        } else {
+        }
+
+        if (requiresMacAddressLookup) {
             // Lookup the mac address vendor if possible
             if (m_macAddressDatabase->available()) {
+                // Not found in the cache, and the mac address database is available...let's make a query
                 MacAddressDatabaseReply *reply = m_macAddressDatabase->lookupMacAddress(macAddress.toString());
                 connect(reply, &MacAddressDatabaseReply::finished, m_currentReply, [=](){
+                    // Note: set the mac manufacturer explicitly to make the info complete (even an empty sring)
                     qCDebug(dcNetworkDeviceDiscovery()) << "MAC manufacturer lookup finished for" << macAddress << ":" << reply->manufacturer();
                     m_currentReply->processMacManufacturer(macAddress, reply->manufacturer());
                 });
             } else {
+                // Not found in the cache, and no mac address database available...we are done with mac vendor
                 // Note: set the mac manufacturer explicitly to make the info complete
                 m_currentReply->processMacManufacturer(macAddress, QString());
             }

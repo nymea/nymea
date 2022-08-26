@@ -52,6 +52,8 @@ public:
 
     virtual void publish(const QString &topic, const QByteArray &payload) = 0;
 
+    virtual bool isConnected() const = 0;
+
 signals:
     void clientConnected(MqttChannel* channel);
     void clientDisconnected(MqttChannel* channel);

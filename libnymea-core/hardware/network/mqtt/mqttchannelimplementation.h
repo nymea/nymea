@@ -50,6 +50,9 @@ public:
 
     void publish(const QString &topic, const QByteArray &payload) override;
 
+    bool isConnected() const override;
+    void setConnected(bool connected);
+
 signals:
     void pluginPublished(const QString &topic, const QByteArray &payload);
 
@@ -60,6 +63,7 @@ private:
     QHostAddress m_serverAddress;
     quint16 m_serverPort;
     QStringList m_topicPrefixList;
+    bool m_connected = false;
 
     friend class MqttProviderImplementation;
 };

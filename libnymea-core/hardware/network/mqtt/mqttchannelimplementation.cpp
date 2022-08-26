@@ -72,4 +72,19 @@ void MqttChannelImplementation::publish(const QString &topic, const QByteArray &
     emit pluginPublished(topic, payload);
 }
 
+bool MqttChannelImplementation::isConnected() const
+{
+    return m_connected;
+}
+
+void MqttChannelImplementation::setConnected(bool connected)
+{
+    m_connected = connected;
+    if (m_connected) {
+        emit clientConnected(this);
+    } else {
+        emit clientDisconnected(this);
+    }
+}
+
 }

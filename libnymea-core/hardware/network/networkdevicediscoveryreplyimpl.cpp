@@ -105,6 +105,7 @@ void NetworkDeviceDiscoveryReplyImpl::processPingResponse(const QHostAddress &ad
     info.setAddress(address);
     info.setHostName(hostName);
     m_pingCache.insert(address, info);
+    // First time seeing this host address
     emit hostAddressDiscovered(address);
 }
 
@@ -117,7 +118,6 @@ void NetworkDeviceDiscoveryReplyImpl::processArpResponse(const QNetworkInterface
         info.setNetworkInterface(interface);
         info.setMacAddress(macAddress.toString());
         m_networkDeviceCache[macAddress] = info;
-        emit hostAddressDiscovered(address);
     } else {
         if (m_networkDeviceCache.contains(macAddress)) {
             m_networkDeviceCache[macAddress].setAddress(address);
@@ -127,6 +127,8 @@ void NetworkDeviceDiscoveryReplyImpl::processArpResponse(const QNetworkInterface
             info.setAddress(address);
             info.setNetworkInterface(interface);
             m_networkDeviceCache[macAddress] = info;
+            // First time seeing this host address
+            emit hostAddressDiscovered(address);
         }
     }
 

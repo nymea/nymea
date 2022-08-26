@@ -38,7 +38,7 @@ the latest Raspberry Pi OS Bullseye [core](https://downloads.nymea.io/images/ras
     <td> 
       <p>
          <a href="https://play.google.com/store/apps/details?id=io.guh.nymeaapp&hl=en&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1">
-         <img border="0" align="middle" alt="Android Badge" src="https://nymea.io/downloads/img/app-store/playstore.png" width=200>
+         <img border="0" align="middle" alt="Android Badge" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width=250>
      </p>
     </td>
     <td> 

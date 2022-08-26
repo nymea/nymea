@@ -1,3 +1,47 @@
+nymea (1.4.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Make ThingClassId optional in AddThing() when there's already a
+    ThingDescriptor
+
+  [ Simon Stürz ]
+  * Add debian package for libnymea-core
+  * Provide experience manager access in core instance
+  * Fix NetworkDiscovery::hostAddressDiscovered not always being emitted
+  * NetworkDiscovery: Lookup the mac address vendor also if the cache
+    has stored an empty mac vendor
+  * Adjust timeout duration for actions, thing discovery and JSON-RPC
+    replies
+  * Add connected property to MqttChannel
+  * Update nymea-tests and provide nymea-testlib as development package
+  * Update nymead server installation path prefix mechanism
+
+  [ Michael Zanetti ]
+  * Allow apps to cache the GetPlugins call on JsonRpc
+  * Add support for Z-Wave
+  * Fix logging level indicator character for debug prints
+  * Fix build failure in rpath setting with certain toolchains
+  * Check Info objects for finished after aborting them
+  * Fix a python plugin crash when trying to login with empty
+    credentials
+  * Remove displayNameEvent property from stateTypes
+  * Add lock/unlock actions to smartlock interface
+  * Add optional boost state to thermostats
+
+  [ Simon Stürz ]
+  * Update mac address database
+
+  [ Michael Zanetti ]
+  * Readme downloads update
+
+  [ Jenkins ]
+  * Update readme.md to show nymea:app for ubuntu touch
+
+  [ Simon Stürz ]
+  * Add electricity helper class to libnymea
+
+ -- jenkins <developer@nymea.io>  Fri, 26 Aug 2022 12:58:14 +0200
+
 nymea (1.3.1) jammy; urgency=medium
 
 

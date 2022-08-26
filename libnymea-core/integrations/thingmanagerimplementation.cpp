@@ -302,7 +302,7 @@ ThingDiscoveryInfo* ThingManagerImplementation::discoverThings(const ThingClassI
     }
     ParamList effectiveParams = buildParams(thingClass.discoveryParamTypes(), params);
 
-    ThingDiscoveryInfo *discoveryInfo = new ThingDiscoveryInfo(thingClassId, effectiveParams, this, 30000);
+    ThingDiscoveryInfo *discoveryInfo = new ThingDiscoveryInfo(thingClassId, effectiveParams, this, 40000);
     connect(discoveryInfo, &ThingDiscoveryInfo::finished, this, [this, discoveryInfo](){
         if (discoveryInfo->status() != Thing::ThingErrorNoError) {
             qCWarning(dcThingManager()) << "Discovery failed:" << discoveryInfo->status() << discoveryInfo->displayMessage();
@@ -1341,7 +1341,7 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
     ParamList finalParams = buildParams(actionType.paramTypes(), action.params());
     finalAction.setParams(finalParams);
 
-    ThingActionInfo *info = new ThingActionInfo(thing, finalAction, this, 30000);
+    ThingActionInfo *info = new ThingActionInfo(thing, finalAction, this, 15000);
 
     IntegrationPlugin *plugin = m_integrationPlugins.value(thing->pluginId());
     if (!plugin) {

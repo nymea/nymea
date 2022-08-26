@@ -116,8 +116,8 @@ void nymeaLogMessageHandler(QtMsgType type, const QMessageLogContext &context, c
         break;
 #endif
     case QtDebugMsg:
-        messageString = QString(" I %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
-        fprintf(stdout, " I | %s: %s\n", context.category, message.toUtf8().data());
+        messageString = QString(" D %1 | %2: %3").arg(timeString).arg(context.category).arg(message);
+        fprintf(stdout, " D | %s: %s\n", context.category, message.toUtf8().data());
         break;
     case QtWarningMsg:
         messageString = QString(" W %1 | %2: %3").arg(timeString).arg(context.category).arg(message);

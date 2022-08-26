@@ -40,8 +40,6 @@ override_dh_auto_build:
 	make -j$(DEB_PARALLEL_JOBS) $(MAKE_TARGETS)
 
 override_dh_install: $(PREPROCESS_FILES:.in=)
-	# libnymea-core isn't public api... delete dev lib and just keep runtime libs.
-	rm $(CURDIR)/debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/libnymea-core.so
 	# Make sure the docs directory exists, even if we didn't build them
 	mkdir -p $(CURDIR)/doc/html
 	dh_install --fail-missing

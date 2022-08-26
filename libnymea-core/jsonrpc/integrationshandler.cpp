@@ -485,11 +485,11 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
         }
         QList<ThingClassId> thingClassIds = thingClassesMap.keys();
         std::sort(thingClassIds.begin(), thingClassIds.end());
-        ThingClasses thingClasses;
+        QVariantList thingClasses;
         foreach (const ThingClassId &id, thingClassIds) {
-            thingClasses.append(thingClassesMap.value(id));
+            thingClasses.append(pack(thingClassesMap.value(id)));
         }
-        QByteArray hash = QCryptographicHash::hash(QJsonDocument::fromVariant(pack(thingClasses)).toJson(), QCryptographicHash::Md5).toHex();
+        QByteArray hash = QCryptographicHash::hash(QJsonDocument::fromVariant(thingClasses).toJson(), QCryptographicHash::Md5).toHex();
         m_cacheHashes.insert("GetThingClasses", hash);
 
         QHash<VendorId, Vendor> vendorsMap;
@@ -498,12 +498,26 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
         }
         QList<VendorId> vendorIds = vendorsMap.keys();
         std::sort(vendorIds.begin(), vendorIds.end());
-        Vendors vendors;
+        QVariantList vendors;
         foreach (const VendorId &id, vendorIds) {
-            vendors.append(vendorsMap.value(id));
+            vendors.append(pack(vendorsMap.value(id)));
         }
-        hash = QCryptographicHash::hash(QJsonDocument::fromVariant(pack(vendors)).toJson(), QCryptographicHash::Md5).toHex();
+        hash = QCryptographicHash::hash(QJsonDocument::fromVariant(vendors).toJson(), QCryptographicHash::Md5).toHex();
         m_cacheHashes.insert("GetVendors", hash);
+
+        QHash<PluginId, IntegrationPlugin*> pluginsMap;
+
+        foreach (IntegrationPlugin *p, m_thingManager->plugins()) {
+            pluginsMap.insert(p->pluginId(), p);
+        }
+        QList<PluginId> pluginIds = pluginsMap.keys();
+        std::sort(pluginIds.begin(), pluginIds.end());
+        QVariantList pluginList;
+        foreach (const PluginId &pluginId, pluginIds) {
+            pluginList.append(pack(*(pluginsMap.value(pluginId))));
+        }
+        hash = QCryptographicHash::hash(QJsonDocument::fromVariant(pluginList).toJson(), QCryptographicHash::Md5).toHex();
+        m_cacheHashes.insert("GetPlugins", hash);
     });
 }
 

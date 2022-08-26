@@ -46,7 +46,9 @@ ThingDiscoveryInfo::ThingDiscoveryInfo(const ThingClassId &thingClassId, const P
     if (timeout > 0) {
         QTimer::singleShot(timeout, this, [this] {
             emit aborted();
-            finish(Thing::ThingErrorTimeout);
+            if (!m_finished) {
+                finish(Thing::ThingErrorTimeout);
+            }
         });
     }
 }

@@ -1,4 +1,4 @@
-TARGET = testpythonplugins
+TARGET = nymeatestpythonplugins
 
 include(../../../nymea.pri)
 include(../autotests.pri)

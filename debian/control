@@ -1,7 +1,7 @@
 Source: nymea
 Section: utils
 Priority: optional
-Maintainer: Nymea GmbH <developer@nymea.io>
+Maintainer: nymea GmbH <developer@nymea.io>
 Standards-Version: 3.9.7
 Homepage: https://nymea.io
 Vcs-Git: https://github.com/nymea/nymea.git
@@ -30,6 +30,7 @@ Build-Depends: debhelper (>= 9.0.0),
                libqt5serialport5-dev,
                libqt5serialbus5-dev
 
+
 Package: nymea
 Architecture: any
 Section: metapackages
@@ -39,13 +40,9 @@ Depends: nymead (= ${binary:Version}),
 Recommends: qml-module-qtquick2
 Suggests: nymea-doc
 Description: An open source IoT server - meta package
- The nymea daemon is a plugin based IoT (Internet of Things) server. The
- server works like a translator for devices, things and services and
- allows them to interact.
- With the powerful rule engine you are able to connect any device available 
- in the system and create individual scenes and behaviors for your environment.
- .
- This package will install the server and the default plugins.
+ The nymea daemon is a plugin based IoT (Internet of Things) server.
+ The server works like a translator for devices, things and services
+ and allows them to interact.
 
 
 Package: nymead
@@ -65,29 +62,18 @@ Recommends: nymea-cli,
             nymea-zeroconf-plugin-impl,
             nymea-apikeysprovider-plugin-impl,
 Description: An open source IoT server - daemon
- The nymea daemon is a plugin based IoT (Internet of Things) server. The
- server works like a translator for devices, things and services and
- allows them to interact.
- With the powerful rule engine you are able to connect any device available
- in the system and create individual scenes and behaviors for your environment.
- .
- This package will install the daemon.
+ The nymea daemon is a plugin based IoT (Internet of Things) server. 
+ The server works like a translator for devices, things and services 
+ and allows them to interact.
 
 
 Package: nymea-data
 Section: misc
 Architecture: all
 Depends: ${misc:Depends}
-Recommends: nymea
-Description: Optional data for extending functionality in nymea daemon
- The nymea daemon is a plugin based IoT (Internet of Things) server. The
- server works like a translator for devices, things and services and
- allows them to interact.
- With the powerful rule engine you are able to connect any device available
- in the system and create individual scenes and behaviors for your environment.
- .
- This package provides the MAC address database for nymead and for the plugins in
- order to get the manufacturer name for a given MAC address.
+Recommends: nymead
+Description: Optional data for extending functionality in nymea daemon - data
+ Provides application data used by nymea:core
 
 
 Package: nymea-doc
@@ -96,14 +82,8 @@ Architecture: all
 Depends: ${misc:Depends}
 Recommends: nymea
 Build-Profiles: <!nodoc>
-Description: Documentation for the nymea package (on-site) - documentation
- The nymea daemon is a plugin based IoT (Internet of Things) server. The
- server works like a translator for devices, things and services and
- allows them to interact.
- With the powerful rule engine you are able to connect any device available
- in the system and create individual scenes and behaviors for your environment.
- .
- This package contains documentation for developing nymea.
+Description: Documentation for the nymea library - documentation
+ This package contains documentation for developing nymea plugins.
 
 
 Package: nymea-translations
@@ -111,14 +91,32 @@ Section: misc
 Architecture: all
 Depends: ${misc:Depends}
 Recommends: nymea
-Description: Translation files for nymead and plugins - translations
- The nymea daemon is a plugin based IoT (Internet of Things) server. The
- server works like a translator for devices, things and services and
- allows them to interact.
- With the powerful rule engine you are able to connect any device available
- in the system and create individual scenes and behaviors for your environment.
- .
- This package provides the translation files for nymead and for the plugins.
+Description: Translation files for nymead - translations
+ Translation files for the nymea daemon.
+
+
+Package: libnymea-tests
+Section: libs
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libnymea-core (= ${binary:Version})
+Description: nymea-tests library - library
+ Shared resources for nymea-tests.
+
+
+Package: libnymea-tests-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libnymea-tests (= ${binary:Version}),
+         libnymea-core-dev (= ${binary:Version})
+Description: nymea-tests library - development files
+ Provides the nymea-tests development files for building 
+ automated tests.
 
 
 Package: nymea-tests
@@ -127,15 +125,10 @@ Architecture: any
 Multi-Arch: same
 Depends: nymea (= ${binary:Version}),
          ${shlibs:Depends},
-         ${misc:Depends}
-Description: Tests and mock plugin for the nymea daemon - tests
- The nymea daemon is a plugin based IoT (Internet of Things) server. The
- server works like a translator for devices, things and services and
- allows them to interact.
- With the powerful rule engine you are able to connect any device available
- in the system and create individual scenes and behaviors for your environment.
- .
- This package will install the mock-plugin and the corresponding tests.
+         ${misc:Depends},
+         libnymea-tests (= ${binary:Version})
+Description: nymea automated tests and mock plugin - tests
+ Automated tests and mock plugin for the nymea daemon.
 
 
 Package: libnymea1
@@ -147,14 +140,8 @@ Depends: ${shlibs:Depends},
 Provides: nymea-update-plugin-api-1,
           nymea-zeroconf-plugin-api-1,
           nymea-system-plugin-api-3
-Description: An open source IoT server - library
- The nymea daemon is a plugin based IoT (Internet of Things) server. The
- server works like a translator for devices, things and services and
- allows them to interact.
- With the powerful rule engine you are able to connect any device available
- in the system and create individual scenes and behaviors for your environment.
- .
- This package will install shared libraries for nymea.
+Description: nymea shared resources - library
+ Shared resources for nymea plugins.
 
 
 Package: libnymea-dev
@@ -169,14 +156,8 @@ Depends: ${shlibs:Depends},
 Replaces: libnymea1-dev
 Breaks: libnymea1-dev
 Provides: libnymea1-dev
-Description: The main libraries and header files for developing with nymea.
- The nymea daemon is a plugin based IoT (Internet of Things) server. The
- server works like a translator for devices, things and services and
- allows them to interact.
- With the powerful rule engine you are able to connect any device available
- in the system and create individual scenes and behaviors for your environment.
- .
- This package will install the development files for nymea.
+Description: nymea plugin development API library - development files
+ Shared resources for developing nymea plugins.
 
 
 Package: libnymea-core
@@ -201,14 +182,8 @@ Depends: ${shlibs:Depends},
          iputils-ping,
          qml-module-qtquick2,
          dnsutils,
-Description: An open source IoT server - core library
- The nymea daemon is a plugin based IoT (Internet of Things) server. The
- server works like a translator for devices, things and services and
- allows them to interact.
- With the powerful rule engine you are able to connect any device available
- in the system and create individual scenes and behaviors for your environment.
- .
- This package will install shared libraries for nymea core.
+Description: nymea:core internal - library
+ Internal library for nymea:core.
 
 
 Package: libnymea-core-dev
@@ -219,14 +194,8 @@ Depends: ${shlibs:Depends},
          ${misc:Depends},
          libnymea-core (= ${binary:Version}),
          libnymea-dev (= ${binary:Version})
-Description: The main libraries and header files for developing with nymea core.
- The nymea daemon is a plugin based IoT (Internet of Things) server. The
- server works like a translator for devices, things and services and
- allows them to interact.
- With the powerful rule engine you are able to connect any device available
- in the system and create individual scenes and behaviors for your environment.
- .
- This package will install the development files for nymea core.
+Description: nymea:core internal library - development files
+ Development files for the internal nymea:core library.
 
 
 Package: nymea-dev-tools
@@ -238,8 +207,8 @@ Depends: ${shlibs:Depends},
          qttools5-dev-tools,
          rsync,
 Description: Tools for developing nymea plugins.
- .
  This package will install the nymea-plugininfocompiler.
+
 
 Package: nymea-sdk
 Section: devel
@@ -251,5 +220,4 @@ Recommends: nymea-qtcreator-wizards,
             crossbuilder,
 Suggests: libnymea-core-dev (= ${binary:Version})
 Description: The nymea SDK.
- .
  Meta-Package for everything required to develop on nymea.

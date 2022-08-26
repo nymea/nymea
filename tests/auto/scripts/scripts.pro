@@ -1,7 +1,7 @@
 include(../../../nymea.pri)
 include(../autotests.pri)
 
-TARGET = scripts
+TARGET = nymeatestscripts
 SOURCES += testscripts.cpp \
     testhelper.cpp
 

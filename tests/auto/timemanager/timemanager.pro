@@ -1,4 +1,4 @@
-TARGET = testtimemanager
+TARGET = nymeatesttimemanager
 
 include(../../../nymea.pri)
 include(../autotests.pri)

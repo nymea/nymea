@@ -665,6 +665,11 @@ ModbusRtuManager *NymeaCore::modbusRtuManager() const
     return m_modbusRtuManager;
 }
 
+ExperienceManager *NymeaCore::experienceManager() const
+{
+    return m_experienceManager;
+}
+
 void NymeaCore::onEventTriggered(const Event &event)
 {
     emit eventTriggered(event);

@@ -1,4 +1,4 @@
-TARGET = testactions
+TARGET = nymeatestplugins
 
 include(../../../nymea.pri)
 include(../autotests.pri)

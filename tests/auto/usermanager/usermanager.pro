@@ -1,7 +1,7 @@
 include(../../../nymea.pri)
 include(../autotests.pri)
 
-TARGET = testusermanager
+TARGET = nymeatestusermanager
 
 HEADERS += ../../utils/pushbuttonagent.h
 

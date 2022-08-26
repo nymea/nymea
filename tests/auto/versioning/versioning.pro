@@ -1,4 +1,4 @@
-TARGET = testversioning
+TARGET = nymeatestversioning
 
 include(../../../nymea.pri)
 include(../autotests.pri)

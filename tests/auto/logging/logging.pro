@@ -1,5 +1,5 @@
 include(../../../nymea.pri)
 include(../autotests.pri)
 
-TARGET = testlogging
+TARGET = nymeatestlogging
 SOURCES += testlogging.cpp

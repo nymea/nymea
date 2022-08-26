@@ -1,4 +1,4 @@
-TARGET = testconfigurations
+TARGET = nymeatestconfigurations
 
 include(../../../nymea.pri)
 include(../autotests.pri)

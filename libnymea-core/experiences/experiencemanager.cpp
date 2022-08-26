@@ -48,6 +48,11 @@ ExperienceManager::ExperienceManager(ThingManager *thingManager, JsonRPCServer *
     staticMetaObject.invokeMethod(this, "loadPlugins", Qt::QueuedConnection);
 }
 
+QList<ExperiencePlugin *> ExperienceManager::plugins() const
+{
+    return m_plugins;
+}
+
 void ExperienceManager::loadPlugins()
 {
     foreach (const QString &path, pluginSearchDirs()) {
@@ -105,6 +110,14 @@ void ExperienceManager::loadExperiencePlugin(const QString &file)
     plugin->setParent(this);
     plugin->initPlugin(m_thingManager, m_jsonRpcServer);
 
+}
+
+void ExperienceManager::loadExperiencePlugin(ExperiencePlugin *experiencePlugin)
+{
+    qCDebug(dcExperiences()) << "Adding experience plugin:" << experiencePlugin;
+    m_plugins.append(experiencePlugin);
+    experiencePlugin->setParent(this);
+    experiencePlugin->initPlugin(m_thingManager, m_jsonRpcServer);
 }
 
 }

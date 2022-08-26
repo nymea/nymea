@@ -3,6 +3,6 @@ include(../autotests.pri)
 
 QT += websockets
 
-TARGET = websocketserver
+TARGET = nymeatestwebsocketserver
 SOURCES += testwebsocketserver.cpp
 

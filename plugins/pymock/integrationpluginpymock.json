@@ -37,7 +37,6 @@
                             "id": "12c82472-56b0-4229-b324-4aaa6850320e",
                             "name": "state1",
                             "displayName": "State 1",
-                            "displayNameEvent": "State 1 changed",
                             "type": "bool",
                             "defaultValue": false
                         }
@@ -79,7 +78,6 @@
                             "id": "24714828-93ec-41a7-875e-6a0b5b57d25c",
                             "name": "state1",
                             "displayName": "State 1",
-                            "displayNameEvent": "State 1 changed",
                             "displayNameAction": "Set state 1",
                             "type": "int",
                             "defaultValue": 0
@@ -157,7 +155,6 @@
                             "id": "99d0af17-9e8c-42bb-bece-a5d114f051d3",
                             "name": "state1",
                             "displayName": "State 1",
-                            "displayNameEvent": "State 1 changed",
                             "displayNameAction": "Set state 1",
                             "type": "int",
                             "defaultValue": 0

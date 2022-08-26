@@ -24,6 +24,11 @@
             "name": "coolingOn",
             "type": "bool",
             "optional": true
+        },
+        {
+            "name": "boost",
+            "type": "bool",
+            "optional": true
         }
     ]
 }

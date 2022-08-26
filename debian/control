@@ -28,7 +28,7 @@ Build-Depends: debhelper (>= 9.0.0),
                qtconnectivity5-dev,
                qtdeclarative5-dev,
                libqt5serialport5-dev,
-               libqt5serialbus5-dev
+               libqt5serialbus5-dev,
 
 
 Package: nymea
@@ -61,6 +61,7 @@ Recommends: nymea-cli,
             nymea-system-plugin-impl,
             nymea-zeroconf-plugin-impl,
             nymea-apikeysprovider-plugin-impl,
+            nymea-zwave-plugin-impl,
 Description: An open source IoT server - daemon
  The nymea daemon is a plugin based IoT (Internet of Things) server. 
  The server works like a translator for devices, things and services 

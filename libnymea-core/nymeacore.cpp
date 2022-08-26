@@ -53,6 +53,7 @@
 
 #include "zigbee/zigbeemanager.h"
 
+#include "zwave/zwavemanager.h"
 #include "hardware/modbus/modbusrtumanager.h"
 #include "hardware/serialport/serialportmonitor.h"
 
@@ -108,17 +109,20 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     qCDebug(dcCore) << "Creating Server Manager";
     m_serverManager = new ServerManager(m_platform, m_configuration, additionalInterfaces, this);
 
+    qCDebug(dcCore()) << "Create Serial Port Monitor";
+    m_serialPortMonitor = new SerialPortMonitor(this);
+
     qCDebug(dcCore()) << "Create Zigbee Manager";
     m_zigbeeManager = new ZigbeeManager(this);
 
-    qCDebug(dcCore()) << "Create Serial Port Monitor";
-    m_serialPortMonitor = new SerialPortMonitor(this);
+    qCDebug(dcCore()) << "Creating ZWave Manager";
+    m_zwaveManager = new ZWaveManager(m_serialPortMonitor, this);
 
     qCDebug(dcCore()) << "Create Modbus RTU Manager";
     m_modbusRtuManager = new ModbusRtuManager(m_serialPortMonitor, this);
 
     qCDebug(dcCore) << "Creating Hardware Manager";
-    m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), m_zigbeeManager, m_modbusRtuManager, this);
+    m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), m_zigbeeManager, m_zwaveManager, m_modbusRtuManager, this);
 
     qCDebug(dcCore) << "Creating Thing Manager (locale:" << m_configuration->locale() << ")";
     m_thingManager = new ThingManagerImplementation(m_hardwareManager, m_configuration->locale(), this);
@@ -658,6 +662,11 @@ Platform *NymeaCore::platform() const
 ZigbeeManager *NymeaCore::zigbeeManager() const
 {
     return m_zigbeeManager;
+}
+
+ZWaveManager *NymeaCore::zwaveManager() const
+{
+    return m_zwaveManager;
 }
 
 ModbusRtuManager *NymeaCore::modbusRtuManager() const

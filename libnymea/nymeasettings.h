@@ -52,7 +52,8 @@ public:
         SettingsRoleMqttPolicies,
         SettingsRoleIOConnections,
         SettingsRoleZigbee,
-        SettingsRoleModbusRtu
+        SettingsRoleModbusRtu,
+        SettingsRoleZWave
     };
     Q_ENUM(SettingsRole)
 

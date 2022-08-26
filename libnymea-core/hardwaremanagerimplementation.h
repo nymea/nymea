@@ -43,6 +43,8 @@ class Platform;
 class MqttBroker;
 class ZigbeeManager;
 class ZigbeeHardwareResourceImplementation;
+class ZWaveManager;
+class ZWaveHardwareResourceImplementation;
 class ModbusRtuManager;
 class ModbusRtuHardwareResourceImplementation;
 class NetworkDeviceDiscoveryImpl;
@@ -52,7 +54,7 @@ class HardwareManagerImplementation : public HardwareManager
     Q_OBJECT
 
 public:
-    explicit HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, ModbusRtuManager *modbusRtuManager, QObject *parent = nullptr);
+    explicit HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, ZWaveManager *zwaveManager, ModbusRtuManager *modbusRtuManager, QObject *parent = nullptr);
     ~HardwareManagerImplementation() override;
 
     Radio433 *radio433() override;
@@ -64,6 +66,7 @@ public:
     MqttProvider *mqttProvider() override;
     I2CManager *i2cManager() override;
     ZigbeeHardwareResource *zigbeeResource() override;
+    ZWaveHardwareResource *zwaveResource() override;
     ModbusRtuHardwareResource *modbusRtuResource() override;
     NetworkDeviceDiscovery *networkDeviceDiscovery() override;
 
@@ -84,6 +87,7 @@ private:
     MqttProvider *m_mqttProvider = nullptr;
     I2CManager *m_i2cManager = nullptr;
     ZigbeeHardwareResourceImplementation *m_zigbeeResource = nullptr;
+    ZWaveHardwareResourceImplementation *m_zwaveResource = nullptr;
     ModbusRtuHardwareResourceImplementation *m_modbusRtuResource = nullptr;
     NetworkDeviceDiscoveryImpl *m_networkDeviceDiscovery = nullptr;
 

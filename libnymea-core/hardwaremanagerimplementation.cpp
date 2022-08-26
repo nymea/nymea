@@ -43,6 +43,7 @@
 #include "hardware/network/mqtt/mqttproviderimplementation.h"
 #include "hardware/i2c/i2cmanagerimplementation.h"
 #include "hardware/zigbee/zigbeehardwareresourceimplementation.h"
+#include "hardware/zwave/zwavehardwareresourceimplementation.h"
 
 #include "hardware/modbus/modbusrtumanager.h"
 #include "hardware/modbus/modbusrtuhardwareresourceimplementation.h"
@@ -50,7 +51,7 @@
 
 namespace nymeaserver {
 
-HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, ModbusRtuManager *modbusRtuManager, QObject *parent) :
+HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform, MqttBroker *mqttBroker, ZigbeeManager *zigbeeManager, ZWaveManager *zwaveManager, ModbusRtuManager *modbusRtuManager, QObject *parent) :
     HardwareManager(parent),
     m_platform(platform)
 {
@@ -76,6 +77,8 @@ HardwareManagerImplementation::HardwareManagerImplementation(Platform *platform,
     m_i2cManager = new I2CManagerImplementation(this);
 
     m_zigbeeResource = new ZigbeeHardwareResourceImplementation(zigbeeManager, this);
+
+    m_zwaveResource = new ZWaveHardwareResourceImplementation(zwaveManager, this);
 
     m_modbusRtuResource = new ModbusRtuHardwareResourceImplementation(modbusRtuManager, this);
 
@@ -151,6 +154,11 @@ ZigbeeHardwareResource *HardwareManagerImplementation::zigbeeResource()
     return m_zigbeeResource;
 }
 
+ZWaveHardwareResource *HardwareManagerImplementation::zwaveResource()
+{
+    return m_zwaveResource;
+}
+
 ModbusRtuHardwareResource *HardwareManagerImplementation::modbusRtuResource()
 {
     return m_modbusRtuResource;
@@ -164,6 +172,7 @@ NetworkDeviceDiscovery *HardwareManagerImplementation::networkDeviceDiscovery()
 void HardwareManagerImplementation::thingsLoaded()
 {
     m_zigbeeResource->thingsLoaded();
+    m_zwaveResource->thingsLoaded();
 }
 
 }

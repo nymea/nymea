@@ -67,6 +67,7 @@ class ExperienceManager;
 class ScriptEngine;
 class CloudManager;
 class ZigbeeManager;
+class ZWaveManager;
 class ModbusRtuManager;
 class SerialPortMonitor;
 
@@ -109,6 +110,7 @@ public:
     TagsStorage *tagsStorage() const;
     Platform *platform() const;
     ZigbeeManager *zigbeeManager() const;
+    ZWaveManager *zwaveManager() const;
     ModbusRtuManager *modbusRtuManager() const;
     ExperienceManager *experienceManager() const;
 
@@ -155,6 +157,7 @@ private:
     System *m_system;
     ExperienceManager *m_experienceManager;
     ZigbeeManager *m_zigbeeManager;
+    ZWaveManager *m_zwaveManager;
     SerialPortMonitor *m_serialPortMonitor;
     ModbusRtuManager *m_modbusRtuManager;
 

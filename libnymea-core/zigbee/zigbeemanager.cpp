@@ -237,7 +237,7 @@ ZigbeeManager::ZigbeeError ZigbeeManager::setZigbeeNetworkPermitJoin(const QUuid
 
 ZigbeeManager::ZigbeeError ZigbeeManager::factoryResetNetwork(const QUuid &networkUuid)
 {
-    if (!m_zigbeeNetworks.keys().contains(networkUuid)) {
+    if (!m_zigbeeNetworks.contains(networkUuid)) {
         qCWarning(dcZigbee()) << "Could not factory reset network with uuid" << networkUuid.toString() << "because there is no network with this uuid.";
         return ZigbeeManager::ZigbeeErrorNetworkUuidNotFound;
     }
@@ -245,6 +245,16 @@ ZigbeeManager::ZigbeeError ZigbeeManager::factoryResetNetwork(const QUuid &netwo
     ZigbeeNetwork *network = m_zigbeeNetworks.value(networkUuid);
     qCDebug(dcZigbee()) << "Start factory resetting" << network;
     network->factoryResetNetwork();
+    return ZigbeeManager::ZigbeeErrorNoError;
+}
+
+ZigbeeManager::ZigbeeError ZigbeeManager::refreshNeighborTables(const QUuid &networkUuid)
+{
+    if (!m_zigbeeNetworks.contains(networkUuid)) {
+        qCWarning(dcZigbee()) << "No network with uuid" << networkUuid.toString();
+        return ZigbeeManager::ZigbeeErrorNetworkUuidNotFound;
+    }
+    m_zigbeeNetworks.value(networkUuid)->refreshNeighborTable();
     return ZigbeeManager::ZigbeeErrorNoError;
 }
 
@@ -688,6 +698,10 @@ void ZigbeeManager::setupNodeSignals(ZigbeeNode *node)
     });
 
     connect(node, &ZigbeeNode::reachableChanged, this, [=](){
+        emit nodeChanged(node->networkUuid(), node);
+    });
+
+    connect(node, &ZigbeeNode::neighborTableRecordsChanged, this, [=](){
         emit nodeChanged(node->networkUuid(), node);
     });
 }

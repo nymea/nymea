@@ -95,6 +95,7 @@ public:
     ZigbeeError removeZigbeeNetwork(const QUuid &networkUuid);
     ZigbeeError setZigbeeNetworkPermitJoin(const QUuid &networkUuid, quint16 shortAddress = Zigbee::BroadcastAddressAllRouters, uint duration = 120);
     ZigbeeError factoryResetNetwork(const QUuid &networkUuid);
+    ZigbeeError refreshNeighborTables(const QUuid &networkUuid);
 
 private:
     ZigbeeAdapters m_adapters;

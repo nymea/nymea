@@ -47,6 +47,8 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     registerEnum<ZigbeeManager::ZigbeeNodeType>();
     registerEnum<ZigbeeManager::ZigbeeNodeState>();
     registerObject<ZigbeeAdapter, ZigbeeAdapters>();
+    registerEnum<ZigbeeNodeRelationship>();
+    registerEnum<ZigbeeNodeRouteStatus>();
 
     // Network object describing a network instance
     QVariantMap zigbeeNetworkDescription;
@@ -66,6 +68,22 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     zigbeeNetworkDescription.insert("networkState", enumRef<ZigbeeManager::ZigbeeNetworkState>());
     registerObject("ZigbeeNetwork", zigbeeNetworkDescription);
 
+    QVariantMap zigbeeNeighborTableRecordDescription;
+    zigbeeNeighborTableRecordDescription.insert("networkAddress", enumValueName(Uint));
+    zigbeeNeighborTableRecordDescription.insert("relationship", enumRef<ZigbeeNodeRelationship>());
+    zigbeeNeighborTableRecordDescription.insert("lqi", enumValueName(Uint));
+    zigbeeNeighborTableRecordDescription.insert("depth", enumValueName(Uint));
+    zigbeeNeighborTableRecordDescription.insert("permitJoining", enumValueName(Bool));
+    registerObject("ZigbeeNeighborTableRecord", zigbeeNeighborTableRecordDescription);
+
+    QVariantMap zigbeeRoutingTableRecordDescription;
+    zigbeeRoutingTableRecordDescription.insert("destinationAddress", enumValueName(Uint));
+    zigbeeRoutingTableRecordDescription.insert("nextHopAddress", enumValueName(Uint));
+    zigbeeRoutingTableRecordDescription.insert("status", enumRef<ZigbeeNodeRouteStatus>());
+    zigbeeRoutingTableRecordDescription.insert("manyToOne", enumValueName(Bool));
+    zigbeeRoutingTableRecordDescription.insert("memoryConstrained", enumValueName(Bool));
+    registerObject("ZigbeeRoutingTableRecord", zigbeeRoutingTableRecordDescription);
+
     // Zigbee node description
     QVariantMap zigbeeNodeDescription;
     zigbeeNodeDescription.insert("networkUuid", enumValueName(Uuid));
@@ -80,6 +98,8 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     zigbeeNodeDescription.insert("reachable", enumValueName(Bool));
     zigbeeNodeDescription.insert("lqi", enumValueName(Uint));
     zigbeeNodeDescription.insert("lastSeen", enumValueName(Uint));
+    zigbeeNodeDescription.insert("neighborTableRecords", QVariantList() << objectRef("ZigbeeNeighborTableRecord"));
+    zigbeeNodeDescription.insert("routingTableRecords", QVariantList() << objectRef("ZigbeeRoutingTableRecord"));
     registerObject("ZigbeeNode", zigbeeNodeDescription);
 
     QVariantMap params, returns;
@@ -181,6 +201,12 @@ ZigbeeHandler::ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent) :
     params.insert("o:shortAddress", enumValueName(Uint));
     returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
     registerMethod("SetPermitJoin", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Refresh the neighbor table for all nodes. Note that calling this may cause a lot of traffic in the ZigBee network.";
+    params.insert("networkUuid", enumValueName(Uuid));
+    returns.insert("zigbeeError", enumRef<ZigbeeManager::ZigbeeError>());
+    registerMethod("RefreshNeighborTables", description, params, returns);
 
     // GetNodes
     params.clear(); returns.clear();
@@ -397,6 +423,12 @@ JsonReply *ZigbeeHandler::RemoveNode(const QVariantMap &params)
     return createReply(returnMap);
 }
 
+JsonReply *ZigbeeHandler::RefreshNeighborTables(const QVariantMap &params)
+{
+    ZigbeeManager::ZigbeeError error = m_zigbeeManager->refreshNeighborTables(params.value("networkUuid").toUuid());
+    return createReply({{"zigbeeError", enumValueName(error)}});
+}
+
 JsonReply *ZigbeeHandler::GetNetworks(const QVariantMap &params)
 {
     Q_UNUSED(params)
@@ -497,6 +529,28 @@ QVariantMap ZigbeeHandler::packNode(ZigbeeNode *node)
     nodeMap.insert("reachable", node->reachable());
     nodeMap.insert("lqi", node->lqi());
     nodeMap.insert("lastSeen", node->lastSeen().toMSecsSinceEpoch() / 1000);
+    QVariantList neighborTableRecords;
+    foreach (const ZigbeeDeviceProfile::NeighborTableListRecord &record, node->neighborTableRecords()) {
+        QVariantMap recordMap;
+        recordMap.insert("networkAddress", record.shortAddress);
+        recordMap.insert("depth", record.depth);
+        recordMap.insert("lqi", record.lqi);
+        recordMap.insert("relationship", enumValueName(static_cast<ZigbeeHandler::ZigbeeNodeRelationship>(record.relationship)));
+        recordMap.insert("permitJoining", record.permitJoining);
+        neighborTableRecords.append(recordMap);
+    }
+    nodeMap.insert("neighborTableRecords", neighborTableRecords);
+    QVariantList routingTableRecords;
+    foreach (const ZigbeeDeviceProfile::RoutingTableListRecord &record, node->routingTableRecords()) {
+        QVariantMap recordMap;
+        recordMap.insert("destinationAddress", record.destinationAddress);
+        recordMap.insert("nextHopAddress", record.nextHopAddress);
+        recordMap.insert("status", enumValueName(static_cast<ZigbeeHandler::ZigbeeNodeRouteStatus>(record.status)));
+        recordMap.insert("memoryConstrained", record.memoryConstrained);
+        recordMap.insert("manyToOne", record.manyToOne);
+        routingTableRecords.append(recordMap);
+    }
+    nodeMap.insert("routingTableRecords", routingTableRecords);
     return nodeMap;
 }
 

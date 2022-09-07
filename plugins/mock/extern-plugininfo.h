@@ -57,6 +57,7 @@ extern ParamTypeId mockUpdateStatusActionUpdateStatusParamTypeId;
 extern ActionTypeId mockWithParamsActionTypeId;
 extern ParamTypeId mockWithParamsActionParam1ParamTypeId;
 extern ParamTypeId mockWithParamsActionParam2ParamTypeId;
+extern ParamTypeId mockWithParamsActionParam3ParamTypeId;
 extern ActionTypeId mockWithoutParamsActionTypeId;
 extern ActionTypeId mockAsyncActionTypeId;
 extern ActionTypeId mockFailingActionTypeId;

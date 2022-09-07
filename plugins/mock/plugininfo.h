@@ -61,6 +61,7 @@ ParamTypeId mockUpdateStatusActionUpdateStatusParamTypeId = ParamTypeId("{ebc413
 ActionTypeId mockWithParamsActionTypeId = ActionTypeId("{dea0f4e1-65e3-4981-8eaa-2701c53a9185}");
 ParamTypeId mockWithParamsActionParam1ParamTypeId = ParamTypeId("{a2d3a256-a551-4712-a65b-ecd5a436a1cb}");
 ParamTypeId mockWithParamsActionParam2ParamTypeId = ParamTypeId("{304a4899-18be-4e3b-94f4-d03be52f3233}");
+ParamTypeId mockWithParamsActionParam3ParamTypeId = ParamTypeId("{d1e428ae-eb8c-45aa-b1b0-e3d7de659c3a}");
 ActionTypeId mockWithoutParamsActionTypeId = ActionTypeId("{defd3ed6-1a0d-400b-8879-a0202cf39935}");
 ActionTypeId mockAsyncActionTypeId = ActionTypeId("{fbae06d3-7666-483e-a39e-ec50fe89054e}");
 ActionTypeId mockFailingActionTypeId = ActionTypeId("{df3cf33d-26d5-4577-9132-9823bd33fad0}");
@@ -448,6 +449,9 @@ const QString translations[] {
 
     //: The name of the plugin mock ({727a4a9a-c187-446f-aadf-f1b2220607d1})
     QT_TRANSLATE_NOOP("mock", "Mocked things"),
+
+    //: The name of the ParamType (ThingClass: mock, ActionType: withParams, ID: {d1e428ae-eb8c-45aa-b1b0-e3d7de659c3a})
+    QT_TRANSLATE_NOOP("mock", "Param with default value"),
 
     //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {e5c0d14b-c9f1-4aca-a56e-85bfa6977150})
     QT_TRANSLATE_NOOP("mock", "Password text"),

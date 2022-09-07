@@ -251,6 +251,13 @@
                                     "name": "param2",
                                     "displayName": "mockActionParam2",
                                     "type": "bool"
+                                },
+                                {
+                                    "id": "d1e428ae-eb8c-45aa-b1b0-e3d7de659c3a",
+                                    "name": "param3",
+                                    "displayName": "Param with default value",
+                                    "type": "QString",
+                                    "defaultValue": ""
                                 }
                             ]
                         },

@@ -1005,7 +1005,7 @@ RuleEngine::RuleError RuleEngine::checkRuleAction(const RuleAction &ruleAction, 
 
         // Verify all required params are given
         foreach (const ParamType &paramType, actionType.paramTypes()) {
-            bool found = false;
+            bool found = !paramType.defaultValue().isNull();
             foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
                 if (ruleActionParam.paramTypeId() == paramType.id()
                         || ruleActionParam.paramName() == paramType.name()) {

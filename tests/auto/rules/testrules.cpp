@@ -121,8 +121,8 @@ private slots:
     void testRuleActionParams_data();
     void testRuleActionParams();
 
-    void testRuleActionPAramsFromEventParameter_data();
-    void testRuleActionPAramsFromEventParameter();
+    void testRuleActionParamsFromEventParameter_data();
+    void testRuleActionParamsFromEventParameter();
 
     void testInitStatesActive();
 
@@ -422,9 +422,28 @@ void TestRules::addRemoveRules_data()
     validActionNoParams.insert("actionTypeId", mockWithoutParamsActionTypeId);
     validActionNoParams.insert("thingId", m_mockThingId);
 
-    QVariantMap invalidAction;
-    invalidAction.insert("actionTypeId", ActionTypeId("f32c7efb-38b6-4576-a496-c75bbb23132f"));
-    invalidAction.insert("thingId", m_mockThingId);
+    QVariantMap invalidActionTypeId;
+    invalidActionTypeId.insert("actionTypeId", ActionTypeId("f32c7efb-38b6-4576-a496-c75bbb23132f"));
+    invalidActionTypeId.insert("thingId", m_mockThingId);
+
+    QVariantMap invalidActionMissingParam; // mockWithParamsActionType has 2 required and 1 optional param
+    invalidActionMissingParam.insert("actionTypeId", mockWithParamsActionTypeId);
+    invalidActionMissingParam.insert("thingId", m_mockThingId);
+    QVariantMap invalidActionMissingParamParam1;
+    invalidActionMissingParamParam1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
+    invalidActionMissingParamParam1.insert("value", 5);
+    invalidActionMissingParam.insert("ruleActionParams", QVariantList() << invalidActionMissingParamParam1);
+
+    QVariantMap validActionWithParams; // mockWithParamsActionType has 2 required and 1 optional param
+    validActionWithParams.insert("actionTypeId", mockWithParamsActionTypeId);
+    validActionWithParams.insert("thingId", m_mockThingId);
+    QVariantMap validActionWithParamsParam1;
+    validActionWithParamsParam1.insert("paramTypeId", mockWithParamsActionParam1ParamTypeId);
+    validActionWithParamsParam1.insert("value", 5);
+    QVariantMap validActionWithParamsParam2;
+    validActionWithParamsParam2.insert("paramTypeId", mockWithParamsActionParam2ParamTypeId);
+    validActionWithParamsParam2.insert("value", true);
+    validActionWithParams.insert("ruleActionParams", QVariantList() << validActionWithParamsParam1 << validActionWithParamsParam2);
 
     // RuleExitAction
     QVariantMap validExitActionNoParams;
@@ -553,9 +572,11 @@ void TestRules::addRemoveRules_data()
 
     // Rules without exit actions
     QTest::newRow("valid rule. enabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << true     << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << true << "TestRule";
-    QTest::newRow("valid rule. disabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")             << false    << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << true << "TestRule";
+    QTest::newRow("valid rule. disabled, 1 EventDescriptor, StateEvaluator, 1 Action, name")            << false    << validActionNoParams      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << true << "TestRule";
     QTest::newRow("valid rule. 2 EventDescriptors, 1 Action, name")                                     << true     << validActionNoParams      << QVariantMap()            << QVariantMap()            << eventDescriptorList  << validStateEvaluator      << RuleEngine::RuleErrorNoError << true << "TestRule";
-    QTest::newRow("invalid action")                                                                     << true     << invalidAction            << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorActionTypeNotFound << false << "TestRule";
+    QTest::newRow("invalid action (invalid actionTypeId)")                                              << true     << invalidActionTypeId      << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorActionTypeNotFound << false << "TestRule";
+    QTest::newRow("invalid action (missing param)")                                                     << true     << invalidActionMissingParam<< QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorMissingParameter << false << "TestRule";
+    QTest::newRow("valid action (with params)")                                                         << true     << validActionWithParams    << QVariantMap()            << validEventDescriptor1    << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorNoError << false << "TestRule";
     QTest::newRow("invalid event descriptor")                                                           << true     << validActionNoParams      << QVariantMap()            << invalidEventDescriptor   << QVariantList()       << validStateEvaluator      << RuleEngine::RuleErrorThingNotFound << false << "TestRule";
 }
 
@@ -2673,7 +2694,7 @@ void TestRules::testRuleActionParams()
     verifyRuleError(response, error);
 }
 
-void TestRules::testRuleActionPAramsFromEventParameter_data() {
+void TestRules::testRuleActionParamsFromEventParameter_data() {
     QTest::addColumn<QVariantMap>("event");
     QTest::addColumn<QVariantMap>("action");
     QTest::addColumn<RuleEngine::RuleError>("error");
@@ -2716,7 +2737,7 @@ void TestRules::testRuleActionPAramsFromEventParameter_data() {
     QTest::newRow("int -> bool") << intEvent << boolAction << RuleEngine::RuleErrorNoError;
 }
 
-void TestRules::testRuleActionPAramsFromEventParameter()
+void TestRules::testRuleActionParamsFromEventParameter()
 {
     QFETCH(QVariantMap, event);
     QFETCH(QVariantMap, action);

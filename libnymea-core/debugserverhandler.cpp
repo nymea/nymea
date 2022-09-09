@@ -966,10 +966,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeAttribute("class", "tabcontent");
     writer.writeAttribute("id", "information-section");
 
-    //: The welcome message of the debug interface
-    writer.writeTextElement("p", tr("Welcome to the debug interface."));
-    writer.writeTextElement("p", tr("This debug interface was designed to provide an easy possibility to get helpful information about the running nymea server."));
-
     // Warning
     writer.writeStartElement("div");
     writer.writeAttribute("class", "warning");
@@ -984,7 +980,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("div");
     writer.writeAttribute("class", "warning-message");
     //: The warning message of the debug interface
-    writer.writeCharacters(tr("Be aware that this debug interface is a security risk and could offer access to sensible data."));
+    writer.writeCharacters(tr("Please note that this debug interface may allow accessing sensitive data about the nymea system and connected devices and services. It is recommended to disable it again when not needed any more."));
     writer.writeEndElement(); // div warning message
     writer.writeEndElement(); // div warning
 
@@ -1186,7 +1182,7 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     writer.writeStartElement("div");
     writer.writeAttribute("class", "warning-message");
     //: The warning message of the debug interface
-    writer.writeCharacters(tr("Do not share these generated information public, since they can contain sensible data and should be shared very carefully and only with people you trust!"));
+    writer.writeCharacters(tr("Please note that the generated debug report may contain sensitive data about the nymea system and connected devices and services."));
     writer.writeEndElement(); // div warning message
     writer.writeEndElement(); // div warning
 

@@ -63,6 +63,13 @@ public:
     };
     Q_ENUM(ZigbeeNodeRouteStatus)
 
+    enum ZigbeeClusterDirection {
+        ZigbeeClusterDirectionServer,
+        ZigbeeClusterDirectionClient
+    };
+    Q_ENUM(ZigbeeClusterDirection)
+
+
     explicit ZigbeeHandler(ZigbeeManager *zigbeeManager, QObject *parent = nullptr);
 
     QString name() const override;
@@ -80,6 +87,10 @@ public:
     Q_INVOKABLE JsonReply *RemoveNode(const QVariantMap &params);
 
     Q_INVOKABLE JsonReply *RefreshNeighborTables(const QVariantMap &params);
+
+    Q_INVOKABLE JsonReply *RefreshBindings(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *CreateBinding(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *RemoveBinding(const QVariantMap &params);
 
     QVariantMap packNetwork(ZigbeeNetwork *network);
     QVariantMap packNode(ZigbeeNode *node);

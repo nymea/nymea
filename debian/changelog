@@ -1,3 +1,12 @@
+nymea (1.4.1) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Fix creating rules without giving action params that have a default
+    value
+  * Fix warning messages in debug report page
+
+ -- jenkins <developer@nymea.io>  Fri, 23 Sep 2022 16:33:50 +0200
+
 nymea (1.4.0) jammy; urgency=medium
 
   [ Michael Zanetti ]

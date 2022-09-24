@@ -38,6 +38,7 @@
 #include <QObject>
 
 namespace nymeaserver {
+namespace scriptengine {
 
 class Script
 {
@@ -75,9 +76,9 @@ public:
     Q_INVOKABLE QVariant get(int index);
     Q_INVOKABLE void put(const QVariant &value);
 };
-
 }
-Q_DECLARE_METATYPE(nymeaserver::Script)
-Q_DECLARE_METATYPE(nymeaserver::Scripts)
+}
+Q_DECLARE_METATYPE(nymeaserver::scriptengine::Script)
+Q_DECLARE_METATYPE(nymeaserver::scriptengine::Scripts)
 
 #endif // SCRIPT_H

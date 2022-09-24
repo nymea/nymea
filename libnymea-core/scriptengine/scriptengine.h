@@ -42,6 +42,7 @@
 #include "script.h"
 
 namespace nymeaserver {
+namespace scriptengine {
 
 class ScriptEngine : public QObject
 {
@@ -115,6 +116,7 @@ private:
     static QMutex s_loggerMutex;
 };
 
+}
 }
 
 #endif // SCRIPTENGINE_H

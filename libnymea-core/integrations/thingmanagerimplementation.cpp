@@ -1235,12 +1235,7 @@ Vendor ThingManagerImplementation::translateVendor(const Vendor &vendor, const Q
 
 Thing *ThingManagerImplementation::findConfiguredThing(const ThingId &id) const
 {
-    foreach (Thing *thing, m_configuredThings) {
-        if (thing->id() == id) {
-            return thing;
-        }
-    }
-    return nullptr;
+    return m_configuredThings.value(id);
 }
 
 Things ThingManagerImplementation::configuredThings() const

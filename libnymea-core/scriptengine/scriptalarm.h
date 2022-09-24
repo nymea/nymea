@@ -34,6 +34,8 @@
 #include <QObject>
 #include <QDateTime>
 #include <QTimer>
+namespace nymeaserver {
+namespace scriptengine {
 
 class ScriptAlarm : public QObject
 {
@@ -96,5 +98,8 @@ private:
     bool m_active = false;
     int m_timerId = 0;
 };
+
+}
+}
 
 #endif // SCRIPTALARM_H

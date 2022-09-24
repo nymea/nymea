@@ -38,6 +38,8 @@
 #include "scriptinterfaceaction.h"
 #include "scriptinterfacestate.h"
 #include "scriptinterfaceevent.h"
+#include "scriptthing.h"
+#include "scriptthings.h"
 
 #include "nymeasettings.h"
 
@@ -51,7 +53,10 @@
 
 #include <QDir>
 
+NYMEA_LOGGING_CATEGORY(dcScriptEngine, "ScriptEngine")
+
 namespace nymeaserver {
+namespace scriptengine {
 
 QList<ScriptEngine*> ScriptEngine::s_engines;
 QtMessageHandler ScriptEngine::s_upstreamMessageHandler;
@@ -68,6 +73,8 @@ ScriptEngine::ScriptEngine(ThingManager *thingManager, QObject *parent) : QObjec
     qmlRegisterType<ScriptInterfaceState>("nymea", 1, 0, "InterfaceState");
     qmlRegisterType<ScriptInterfaceEvent>("nymea", 1, 0, "InterfaceEvent");
     qmlRegisterType<ScriptAlarm>("nymea", 1, 0, "Alarm");
+    qmlRegisterType<ScriptThing>("nymea", 1, 0, "Thing");
+    qmlRegisterType<ScriptThings>("nymea", 1, 0, "Things");
 
     m_engine = new QQmlEngine(this);
     m_engine->setProperty("thingManager", reinterpret_cast<quint64>(m_thingManager));
@@ -485,4 +492,5 @@ void ScriptEngine::logCategoryFilter(QLoggingCategory *category)
     }
 }
 
+}
 }

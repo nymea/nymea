@@ -36,6 +36,8 @@
 
 namespace nymeaserver {
 
+using namespace scriptengine;
+
 ScriptsHandler::ScriptsHandler(ScriptEngine *scriptEngine, QObject *parent):
     JsonHandler(parent),
     m_engine(scriptEngine)
@@ -43,7 +45,7 @@ ScriptsHandler::ScriptsHandler(ScriptEngine *scriptEngine, QObject *parent):
     registerEnum<ScriptEngine::ScriptError>();
     registerEnum<ScriptEngine::ScriptMessageType>();
 
-    registerObject<Script, Scripts>();
+    registerObject<scriptengine::Script, Scripts>();
 
     QVariantMap params, returns;
     QString description;

@@ -28,55 +28,83 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef SCRIPTINTERFACESTATE_H
-#define SCRIPTINTERFACESTATE_H
+#ifndef SCRIPTTHINGS_H
+#define SCRIPTTHINGS_H
+
+#include "integrations/thingmanager.h"
 
 #include <QObject>
-#include <QUuid>
+#include <QAbstractListModel>
+#include <QSortFilterProxyModel>
 #include <QQmlParserStatus>
 
-#include "types/state.h"
-#include "integrations/thingmanager.h"
 
 namespace nymeaserver {
 namespace scriptengine {
 
-class ScriptParams;
+class ScriptThing;
+class ThingsModel;
 
-class ScriptInterfaceState: public QObject, public QQmlParserStatus
+
+class ScriptThings : public QSortFilterProxyModel, public QQmlParserStatus
 {
     Q_OBJECT
-    Q_INTERFACES(QQmlParserStatus)
-    Q_PROPERTY(QString interfaceName READ interfaceName WRITE setInterfaceName NOTIFY interfaceNameChanged)
-    Q_PROPERTY(QString stateName READ stateName WRITE setStateName NOTIFY stateNameChanged)
+    Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
+    Q_PROPERTY(QString filterInterface READ filterInterface WRITE setFilterInterface NOTIFY filterInterfaceChanged)
+
 public:
-    ScriptInterfaceState(QObject *parent = nullptr);
+    explicit ScriptThings(QObject *parent = nullptr);
     void classBegin() override;
     void componentComplete() override;
 
-    QString interfaceName() const;
-    void setInterfaceName(const QString &interfaceName);
+    QString filterInterface() const;
+    void setFilterInterface(const QString &filterInterface);
 
-    QString stateName() const;
-    void setStateName(const QString &stateName);
-
-private slots:
-    void onStateChanged(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value);
+    Q_INVOKABLE nymeaserver::scriptengine::ScriptThing *get(int index) const;
+    Q_INVOKABLE nymeaserver::scriptengine::ScriptThing *getThing(const QUuid &thingId) const;
 
 signals:
-    void interfaceNameChanged();
-    void stateNameChanged();
+    void countChanged();
+    void filterInterfaceChanged();
+    void thingAdded(const QString &thingId);
+    void thingRemoved(const QString &thingId);
 
-    void stateChanged(const QString &thingId, const QVariant &value);
+protected:
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+
+private:
+    ThingManager *m_thingManager = nullptr;
+    ThingsModel *m_model = nullptr;
+
+    QString m_filterInterface;
+};
+
+class ThingsModel: public QAbstractListModel
+{
+    Q_OBJECT
+
+public:
+    enum Roles {
+        RoleId,
+        RoleName
+    };
+    ThingsModel(ThingManager *thingManager, QObject *parent = nullptr);
+
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
+    QHash<int, QByteArray> roleNames() const override;
+
+    Thing *get(int index) const;
+    Thing *getThing(const QUuid &thingId) const;
+
+signals:
+    void countChanged();
 
 private:
     ThingManager *m_thingManager = nullptr;
 
-    QString m_interfaceName;
-    QString m_stateName;
 };
 
 }
 }
-
-#endif // SCRIPTINTERFACESTATE_H
+#endif // SCRIPTTHINGS_H

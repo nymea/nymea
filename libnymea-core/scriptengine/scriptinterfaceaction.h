@@ -37,6 +37,7 @@
 class ThingManager;
 
 namespace nymeaserver {
+namespace scriptengine {
 
 class ScriptInterfaceAction : public QObject, public QQmlParserStatus
 {
@@ -68,6 +69,7 @@ public:
     QString m_actionName;
 };
 
+}
 }
 
 #endif // SCRIPTINTERFACEACTION_H

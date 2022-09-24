@@ -35,6 +35,7 @@
 #include <QJsonDocument>
 
 namespace nymeaserver {
+namespace scriptengine {
 
 ScriptInterfaceState::ScriptInterfaceState(QObject *parent) : QObject(parent)
 {
@@ -91,4 +92,4 @@ void ScriptInterfaceState::onStateChanged(Thing *thing, const StateTypeId &state
 }
 
 }
-
+}

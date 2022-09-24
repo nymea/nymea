@@ -42,7 +42,7 @@ class ScriptsHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit ScriptsHandler(ScriptEngine *scriptEngine, QObject *parent = nullptr);
+    explicit ScriptsHandler(scriptengine::ScriptEngine *scriptEngine, QObject *parent = nullptr);
 
     QString name() const override;
 
@@ -61,7 +61,7 @@ signals:
     void ScriptLogMessage(const QVariantMap &params);
 
 private:
-    ScriptEngine *m_engine = nullptr;
+    scriptengine::ScriptEngine *m_engine = nullptr;
 };
 
 }

@@ -50,6 +50,11 @@ void TestHelper::logStateChange(const QString &thingId, const QString &stateId, 
     emit stateChangeLogged(ThingId(thingId), stateId, value);
 }
 
+void TestHelper::setTestResult(bool success)
+{
+    emit testResult(success);
+}
+
 TestHelper::TestHelper(QObject *parent) : QObject(parent)
 {
 

@@ -135,7 +135,7 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     m_logger->setThingManager(m_thingManager);
 
     qCDebug(dcCore()) << "Creating Script Engine";
-    m_scriptEngine = new ScriptEngine(m_thingManager, this);
+    m_scriptEngine = new scriptengine::ScriptEngine(m_thingManager, this);
     m_serverManager->jsonServer()->registerHandler(new ScriptsHandler(m_scriptEngine, m_scriptEngine));
 
     qCDebug(dcCore()) << "Creating Tags Storage";

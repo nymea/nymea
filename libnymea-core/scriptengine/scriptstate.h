@@ -39,6 +39,7 @@
 #include "integrations/thingactioninfo.h"
 
 namespace nymeaserver {
+namespace scriptengine {
 
 class ScriptState : public QObject, public QQmlParserStatus
 {
@@ -98,8 +99,11 @@ private:
     QVariant m_valueCache;
 
     QVariant m_valueStore;
+
+    QMetaObject::Connection m_connection;
 };
 
+}
 }
 
 #endif // SCRIPTSTATE_H

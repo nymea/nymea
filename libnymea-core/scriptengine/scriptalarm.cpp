@@ -29,9 +29,13 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "scriptalarm.h"
-#include "loggingcategories.h"
 
 #include <QTimer>
+#include <QLoggingCategory>
+Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
+
+namespace nymeaserver {
+namespace scriptengine {
 
 ScriptAlarm::ScriptAlarm(QObject *parent) : QObject(parent)
 {
@@ -150,4 +154,7 @@ void ScriptAlarm::updateActive()
         m_active = active;
         emit activeChanged();
     }
+}
+
+}
 }

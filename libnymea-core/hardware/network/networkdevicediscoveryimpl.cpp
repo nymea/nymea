@@ -98,35 +98,68 @@ NetworkDeviceDiscoveryImpl::~NetworkDeviceDiscoveryImpl()
 
 NetworkDeviceDiscoveryReply *NetworkDeviceDiscoveryImpl::discover()
 {
-    if (m_currentReply) {
-        qCDebug(dcNetworkDeviceDiscovery()) << "Discovery already running. Returning current pending discovery reply...";
-        return m_currentReply;
+    // Each user calling this method receives it's own reply object.
+    // For internal tracking we use the current reply, but each caller gets it's own
+    // reply and owns the object, even if the discovery has been finished.
+
+    // Create the internal object if required
+    bool alreadyRunning = (m_currentReply != nullptr);
+    if (alreadyRunning) {
+        qCDebug(dcNetworkDeviceDiscovery()) << "Discovery internally already running. Re-using the current running discovery reply.";
+    } else {
+        qCDebug(dcNetworkDeviceDiscovery()) << "Starting internally a new discovery.";
+        m_currentReply = new NetworkDeviceDiscoveryReplyImpl(this);
+        connect(m_currentReply, &NetworkDeviceDiscoveryReplyImpl::networkDeviceInfoAdded, this, &NetworkDeviceDiscoveryImpl::updateCache);
     }
 
-    m_currentReply = new NetworkDeviceDiscoveryReplyImpl(this);
+    // Create the reply for the user
+    NetworkDeviceDiscoveryReplyImpl *reply = new NetworkDeviceDiscoveryReplyImpl(this);
+    connect(m_currentReply, &NetworkDeviceDiscoveryReplyImpl::networkDeviceInfoAdded, reply, &NetworkDeviceDiscoveryReplyImpl::addCompleteNetworkDeviceInfo);
+    connect(m_currentReply, &NetworkDeviceDiscoveryReplyImpl::hostAddressDiscovered, reply, &NetworkDeviceDiscoveryReplyImpl::hostAddressDiscovered);
+    connect(m_currentReply, &NetworkDeviceDiscoveryReplyImpl::finished, reply, [this, reply](){
+        // Sync all network device infos with all pending replies
+        foreach (const NetworkDeviceInfo &info, m_currentReply->networkDeviceInfos()) {
+            reply->addCompleteNetworkDeviceInfo(info);
+        }
+
+        foreach (const NetworkDeviceInfo &info, m_currentReply->virtualNetworkDeviceInfos()) {
+            reply->addVirtualNetworkDeviceInfo(info);
+        }
+
+        reply->setFinished(true);
+        emit reply->finished();
+    });
 
     if (!available()) {
         qCWarning(dcNetworkDeviceDiscovery()) << "The network discovery is not available. Please make sure the binary has the required capability (CAP_NET_RAW) or start the application as root.";
-        // Finish the discovery in the next event loop so anny connections after the creation will work as expected
+        // Finish the discovery in the next event loop so any connections after the creation will work as expected
         QTimer::singleShot(0, this, &NetworkDeviceDiscoveryImpl::finishDiscovery);
-        return m_currentReply;
+        return reply;
     }
 
-    connect(m_currentReply, &NetworkDeviceDiscoveryReplyImpl::networkDeviceInfoAdded, this, &NetworkDeviceDiscoveryImpl::updateCache);
-    qCInfo(dcNetworkDeviceDiscovery()) << "Starting network device discovery ...";
+    if (alreadyRunning) {
+        // Add already discovered network device infos in the next event loop
+        // so any connections after this method call will work as expected
+        QTimer::singleShot(0, reply, [this, reply](){
+            foreach (const NetworkDeviceInfo &networkDeviceInfo, m_currentReply->networkDeviceInfos()) {
+                reply->addCompleteNetworkDeviceInfo(networkDeviceInfo);
+            }
+        });
+    } else {
+        qCInfo(dcNetworkDeviceDiscovery()) << "Starting network device discovery ...";
 
-    if (m_ping->available())
-        pingAllNetworkDevices();
+        if (m_ping->available())
+            pingAllNetworkDevices();
 
-    if (m_arpSocket->isOpen())
-        m_arpSocket->sendRequest();
+        if (m_arpSocket->isOpen())
+            m_arpSocket->sendRequest();
 
-    m_discoveryTimer->start();
+        m_discoveryTimer->start();
 
-    m_running = true;
-    emit runningChanged(m_running);
-
-    return m_currentReply;
+        m_running = true;
+        emit runningChanged(m_running);
+    }
+    return reply;
 }
 
 bool NetworkDeviceDiscoveryImpl::available() const
@@ -185,7 +218,8 @@ NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(const MacAddre
 
     if (!monitor->networkDeviceInfo().isValid()) {
         qCDebug(dcNetworkDeviceDiscovery()) << "Adding network device monitor for unresolved mac address. Starting a discovery...";
-        discover();
+        NetworkDeviceDiscoveryReply *reply = discover();
+        connect(reply, &NetworkDeviceDiscoveryReply::finished, reply, &NetworkDeviceDiscoveryReply::deleteLater);
     }
 
     evaluateMonitor(monitor);
@@ -628,7 +662,8 @@ void NetworkDeviceDiscoveryImpl::evaluateMonitors()
 
     if (monitorRequiresRediscovery && longerAgoThan(m_lastDiscovery, m_rediscoveryInterval)) {
         qCDebug(dcNetworkDeviceDiscovery()) << "There are unreachable monitors and the last discovery is more than" << m_rediscoveryInterval << "s ago. Starting network discovery to search the monitored network devices...";
-        discover();
+        NetworkDeviceDiscoveryReply *reply = discover();
+        connect(reply, &NetworkDeviceDiscoveryReply::finished, reply, &NetworkDeviceDiscoveryReply::deleteLater);
     }
 
     // Do some cache housekeeping if required
@@ -659,6 +694,7 @@ void NetworkDeviceDiscoveryImpl::finishDiscovery()
 
     m_lastDiscovery = QDateTime::currentDateTime();
 
+    // Clean up internal reply
     m_currentReply->processDiscoveryFinished();
     m_currentReply->deleteLater();
     m_currentReply = nullptr;

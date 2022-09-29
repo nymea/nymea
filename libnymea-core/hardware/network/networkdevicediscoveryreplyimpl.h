@@ -43,8 +43,6 @@ class NetworkDeviceDiscoveryReplyImpl : public NetworkDeviceDiscoveryReply
 {
     Q_OBJECT
 
-    friend class NetworkDeviceDiscoveryImpl;
-
 public:
     explicit NetworkDeviceDiscoveryReplyImpl(QObject *parent = nullptr);
     ~NetworkDeviceDiscoveryReplyImpl() override = default;
@@ -52,12 +50,28 @@ public:
     NetworkDeviceInfos networkDeviceInfos() const override;
     NetworkDeviceInfos virtualNetworkDeviceInfos() const override;
 
+    bool isFinished() const override;
+    void setFinished(bool finished);
+
+    // Add or update the network device info and verify if completed
+    void processPingResponse(const QHostAddress &address, const QString &hostName);
+    void processArpResponse(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress);
+    void processMacManufacturer(const MacAddress &macAddress, const QString &manufacturer);
+
+    void processDiscoveryFinished();
+
+public slots:
+    void addCompleteNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo);
+    void addVirtualNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo);
+
 private:
     NetworkDeviceInfos m_networkDeviceInfos; // Contains only complete and valid infos
     NetworkDeviceInfos m_virtualNetworkDeviceInfos; // Contains ping responses without ARP, like VPN devices
 
     QHash<MacAddress, NetworkDeviceInfo> m_networkDeviceCache;
     qint64 m_startTimestamp;
+
+    bool m_isFinished = false;
 
     // Temporary cache for ping responses where the mac is not known yet (like VPN devices)
     QHash<QHostAddress, NetworkDeviceInfo> m_pingCache;
@@ -67,12 +81,7 @@ private:
 
     void verifyComplete(const MacAddress &macAddress);
 
-    // Add or update the network device info and verify if completed
-    void processPingResponse(const QHostAddress &address, const QString &hostName);
-    void processArpResponse(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress);
-    void processMacManufacturer(const MacAddress &macAddress, const QString &manufacturer);
 
-    void processDiscoveryFinished();
 };
 
 }

@@ -53,39 +53,14 @@ NetworkDeviceInfos NetworkDeviceDiscoveryReplyImpl::virtualNetworkDeviceInfos() 
     return m_virtualNetworkDeviceInfos;
 }
 
-QString NetworkDeviceDiscoveryReplyImpl::macAddressFromHostAddress(const QHostAddress &address)
+bool NetworkDeviceDiscoveryReplyImpl::isFinished() const
 {
-    foreach (const NetworkDeviceInfo &info, m_networkDeviceCache) {
-        if (info.address() == address) {
-            return info.macAddress();
-        }
-    }
-
-    return QString();
+    return m_isFinished;
 }
 
-bool NetworkDeviceDiscoveryReplyImpl::hasHostAddress(const QHostAddress &address)
+void NetworkDeviceDiscoveryReplyImpl::setFinished(bool finished)
 {
-    return ! macAddressFromHostAddress(address).isEmpty();
-}
-
-void NetworkDeviceDiscoveryReplyImpl::verifyComplete(const MacAddress &macAddress)
-{
-    if (!m_networkDeviceCache.contains(macAddress))
-        return;
-
-    if (m_networkDeviceCache[macAddress].isComplete() && m_networkDeviceCache[macAddress].isValid()) {
-        if (m_networkDeviceInfos.hasMacAddress(macAddress)) {
-            if (m_networkDeviceInfos.get(macAddress) != m_networkDeviceCache.value(macAddress)) {
-                qCWarning(dcNetworkDeviceDiscovery()) << "Already complete network device info changed during discovery process! Please report a bug if you see this message.";
-                qCWarning(dcNetworkDeviceDiscovery()) << m_networkDeviceInfos.get(macAddress);
-                qCWarning(dcNetworkDeviceDiscovery()) << m_networkDeviceCache.value(macAddress);
-            }
-        } else {
-            m_networkDeviceInfos.append(m_networkDeviceCache.value(macAddress));
-            emit networkDeviceInfoAdded(m_networkDeviceCache[macAddress]);
-        }
-    }
+    m_isFinished = finished;
 }
 
 void NetworkDeviceDiscoveryReplyImpl::processPingResponse(const QHostAddress &address, const QString &hostName)
@@ -217,7 +192,63 @@ void NetworkDeviceDiscoveryReplyImpl::processDiscoveryFinished()
         qCDebug(dcNetworkDeviceDiscovery()) << "--> " << info << "Valid:" << info.isValid() << "Complete:" << info.isComplete() << info.incompleteProperties();
     }
 
+    m_isFinished = true;
     emit finished();
+}
+
+void NetworkDeviceDiscoveryReplyImpl::addCompleteNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo)
+{
+    // Note: this method will be called only from the discovery
+    if (!m_networkDeviceInfos.hasMacAddress(networkDeviceInfo.macAddress())) {
+        m_networkDeviceInfos.append(networkDeviceInfo);
+
+        emit hostAddressDiscovered(networkDeviceInfo.address());
+
+        emit networkDeviceInfoAdded(networkDeviceInfo);
+    }
+}
+
+void NetworkDeviceDiscoveryReplyImpl::addVirtualNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo)
+{
+    // Note: this method will be called only from the discovery
+    if (!m_networkDeviceInfos.hasHostAddress(networkDeviceInfo.address())) {
+        m_virtualNetworkDeviceInfos.append(networkDeviceInfo);
+    }
+}
+
+QString NetworkDeviceDiscoveryReplyImpl::macAddressFromHostAddress(const QHostAddress &address)
+{
+    foreach (const NetworkDeviceInfo &info, m_networkDeviceCache) {
+        if (info.address() == address) {
+            return info.macAddress();
+        }
+    }
+
+    return QString();
+}
+
+bool NetworkDeviceDiscoveryReplyImpl::hasHostAddress(const QHostAddress &address)
+{
+    return ! macAddressFromHostAddress(address).isEmpty();
+}
+
+void NetworkDeviceDiscoveryReplyImpl::verifyComplete(const MacAddress &macAddress)
+{
+    if (!m_networkDeviceCache.contains(macAddress))
+        return;
+
+    if (m_networkDeviceCache[macAddress].isComplete() && m_networkDeviceCache[macAddress].isValid()) {
+        if (m_networkDeviceInfos.hasMacAddress(macAddress)) {
+            if (m_networkDeviceInfos.get(macAddress) != m_networkDeviceCache.value(macAddress)) {
+                qCWarning(dcNetworkDeviceDiscovery()) << "Already complete network device info changed during discovery process! Please report a bug if you see this message.";
+                qCWarning(dcNetworkDeviceDiscovery()) << m_networkDeviceInfos.get(macAddress);
+                qCWarning(dcNetworkDeviceDiscovery()) << m_networkDeviceCache.value(macAddress);
+            }
+        } else {
+            m_networkDeviceInfos.append(m_networkDeviceCache.value(macAddress));
+            emit networkDeviceInfoAdded(m_networkDeviceCache[macAddress]);
+        }
+    }
 }
 
 }

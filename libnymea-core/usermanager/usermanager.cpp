@@ -246,7 +246,7 @@ UserManager::UserError UserManager::setUserScopes(const QString &username, Types
 {
     QString scopesString = Types::scopesToStringList(scopes).join(',');
     QSqlQuery setScopesQuery(m_db);
-    setScopesQuery.prepare("UPDATE users SET scopes = '%1' WHERE username = '%2'");
+    setScopesQuery.prepare("UPDATE users SET scopes = ? WHERE username = ?");
     setScopesQuery.addBindValue(scopesString);
     setScopesQuery.addBindValue(username);
     setScopesQuery.exec();

@@ -240,7 +240,7 @@ void NetworkDeviceDiscoveryReplyImpl::verifyComplete(const MacAddress &macAddres
     if (m_networkDeviceCache[macAddress].isComplete() && m_networkDeviceCache[macAddress].isValid()) {
         if (m_networkDeviceInfos.hasMacAddress(macAddress)) {
             if (m_networkDeviceInfos.get(macAddress) != m_networkDeviceCache.value(macAddress)) {
-                qCWarning(dcNetworkDeviceDiscovery()) << "Already complete network device info changed during discovery process! Please report a bug if you see this message.";
+                qCWarning(dcNetworkDeviceDiscovery()) << "Already complete network device info changed during discovery process! Please report a bug if you see this message containing following 2 lines:";
                 qCWarning(dcNetworkDeviceDiscovery()) << m_networkDeviceInfos.get(macAddress);
                 qCWarning(dcNetworkDeviceDiscovery()) << m_networkDeviceCache.value(macAddress);
             }

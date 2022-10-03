@@ -31,6 +31,7 @@
 #include "nymeatestbase.h"
 #include "servers/mocktcpserver.h"
 #include "tagging/tagsstorage.h"
+#include "../plugins/mock/extern-plugininfo.h"
 
 using namespace nymeaserver;
 

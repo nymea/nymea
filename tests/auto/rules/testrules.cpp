@@ -33,6 +33,7 @@
 #include "servers/mocktcpserver.h"
 #include "nymeacore.h"
 #include "jsonrpc/jsonhandler.h"
+#include "../plugins/mock/extern-plugininfo.h"
 
 using namespace nymeaserver;
 

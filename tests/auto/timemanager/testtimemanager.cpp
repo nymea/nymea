@@ -35,6 +35,8 @@
 #include "platform/platform.h"
 #include "platform/platformsystemcontroller.h"
 
+#include "../plugins/mock/extern-plugininfo.h"
+
 using namespace nymeaserver;
 
 class TestTimeManager: public NymeaTestBase

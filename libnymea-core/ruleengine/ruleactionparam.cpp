@@ -177,6 +177,7 @@ bool RuleActionParam::isStateBased() const
 
 QDebug operator<<(QDebug dbg, const RuleActionParam &ruleActionParam)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "RuleActionParam(ParamTypeId: " << ruleActionParam.paramTypeId().toString() << ", Name:" << ruleActionParam.paramName() << ", Value:" << ruleActionParam.value();
     if (ruleActionParam.eventTypeId() != EventTypeId()) {
        dbg.nospace() << ", EventTypeId:" << ruleActionParam.eventTypeId().toString() << ", EventParamTypeId:" << ruleActionParam.eventParamTypeId().toString() << ")";
@@ -233,12 +234,13 @@ RuleActionParams RuleActionParams::operator<<(const RuleActionParam &ruleActionP
 
 QDebug operator<<(QDebug dbg, const RuleActionParams &ruleActionParams)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "RuleActionParamList (count:" << ruleActionParams.count() << ")" << endl;
     for (int i = 0; i < ruleActionParams.count(); i++ ) {
         dbg.nospace() << "     " << i << ": " << ruleActionParams.at(i) << endl;
     }
 
-    return dbg.space();
+    return dbg;
 }
 
 QVariant RuleActionParams::get(int index) const

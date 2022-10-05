@@ -245,6 +245,7 @@ void Rule::setActive(const bool &active)
  * It is useful to debug, but be cautionous with using this in production code.  */
 QDebug operator<<(QDebug dbg, const Rule &rule)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << endl << "=== Rule begin ===" << endl;
     dbg.nospace() << "ID:" << rule.id().toString() << endl;
     dbg.nospace() << "Name:" << rule.name() << endl;
@@ -256,7 +257,7 @@ QDebug operator<<(QDebug dbg, const Rule &rule)
     dbg.nospace() << "Actions:" << rule.actions();
     dbg.nospace() << "ExitActions:" << rule.exitActions();
     dbg.nospace() << "=== Rule end  ===";
-    return dbg.space();
+    return dbg;
 }
 
 Rules::Rules()

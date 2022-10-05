@@ -234,7 +234,8 @@ QStringList ParamType::mandatoryTypeProperties()
 /*! Writes the name, type, defaultValue, min value, max value and readOnly of the given \a paramType to \a dbg. */
 QDebug operator<<(QDebug dbg, const ParamType &paramType)
 {
-    dbg.nospace() << "ParamType(Id" << paramType.id()
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "ParamType(Id" << paramType.id().toString()
                   << "  Name: " << paramType.name()
                   << ", Type:" << QVariant::typeToName(paramType.type())
                   << ", Default:" << paramType.defaultValue()
@@ -244,18 +245,19 @@ QDebug operator<<(QDebug dbg, const ParamType &paramType)
                   << ", ReadOnly:" << paramType.readOnly()
                   << ")";
 
-    return dbg.space();
+    return dbg;
 }
 
 /*! Writes the name, type defaultValue, min and max value of each \a paramTypes to \a dbg. */
 QDebug operator<<(QDebug dbg, const QList<ParamType> &paramTypes)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "ParamTypeList (count:" << paramTypes.count() << ")" << endl;
     for (int i = 0; i < paramTypes.count(); i++ ) {
         dbg.nospace() << "     " << i << ": " << paramTypes.at(i) << endl;
     }
 
-    return dbg.space();
+    return dbg;
 }
 
 ParamTypes::ParamTypes(const QList<ParamType> &other): QList<ParamType>(other)

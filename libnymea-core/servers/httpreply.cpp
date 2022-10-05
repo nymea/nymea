@@ -490,10 +490,11 @@ void HttpReply::timeout()
 
 QDebug operator<<(QDebug debug, HttpReply *httpReply)
 {
+    QDebugStateSaver saver(debug);
     debug.nospace() << "HttpReply(" << httpReply->clientId().toString() << ")" << endl;
     debug << qUtf8Printable(httpReply->rawHeader());
     debug << qUtf8Printable(httpReply->payload());
-    return debug.space();
+    return debug;
 }
 
 }

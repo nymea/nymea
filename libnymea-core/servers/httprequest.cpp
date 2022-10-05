@@ -277,6 +277,7 @@ HttpRequest::RequestMethod HttpRequest::getRequestMethodType(const QString &meth
 
 QDebug operator<<(QDebug debug, const HttpRequest &httpRequest)
 {
+    QDebugStateSaver saver(debug);
     debug << "HttpRequest:" << endl;
     debug << qUtf8Printable(httpRequest.rawHeader());
     debug << qUtf8Printable(httpRequest.payload());

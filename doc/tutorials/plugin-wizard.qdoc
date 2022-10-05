@@ -128,7 +128,7 @@
         each with its own device classes. The uuid of the vendor guh is known, and therefore already filled out. You have to update
         the vendor uuid, name and id with your plugin information.
 
-        \printuntil "deviceClasses"
+        \printuntil "thingClasses"
 
         Here you can see the default created deviceclass, showing you the basic structure of a device class.
 

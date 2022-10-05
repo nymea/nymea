@@ -154,6 +154,7 @@ private:
 Q_DECLARE_INTERFACE(IntegrationPlugin, "io.nymea.IntegrationPlugin")
 Q_DECLARE_METATYPE(IntegrationPlugin*)
 
+QDebug operator<<(QDebug debug, IntegrationPlugin *plugin);
 
 class LIBNYMEA_EXPORT IntegrationPlugins: public QList<IntegrationPlugin*>
 {

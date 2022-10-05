@@ -40,6 +40,7 @@ ZWaveNode::ZWaveNode(QObject *parent):
 
 QDebug operator<<(QDebug debug, ZWaveNode *node)
 {
+    QDebugStateSaver saver(debug);
     debug.nospace().noquote() << "\nNode ID: " << node->nodeId() << (node->name().isEmpty() ? "" : ", " + node->name()) << " Z-Wave Version: " << node->version() << (node->isZWavePlusDevice() ? "+" : "") << "\n"
                               << "├ Type: " << node->nodeType() << "\n"
                               << "├ Role: " << node->role() << "\n"

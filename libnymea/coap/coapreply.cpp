@@ -348,6 +348,7 @@ void CoapReply::setRequestData(const QByteArray &requestData)
 */
 QDebug operator<<(QDebug debug, CoapReply *reply)
 {
+    QDebugStateSaver saver(debug);
     const QMetaObject &metaObject = CoapPdu::staticMetaObject;
     QMetaEnum messageTypeEnum = metaObject.enumerator(metaObject.indexOfEnumerator("MessageType"));
     QMetaEnum contentTypeEnum = metaObject.enumerator(metaObject.indexOfEnumerator("ContentType"));
@@ -359,5 +360,5 @@ QDebug operator<<(QDebug debug, CoapReply *reply)
     if (!reply->payload().isEmpty())
         debug.nospace() << endl << reply->payload() << endl;
 
-    return debug.space();
+    return debug;
 }

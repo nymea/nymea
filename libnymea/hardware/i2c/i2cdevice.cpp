@@ -113,6 +113,7 @@ bool I2CDevice::writeData(int fileDescriptor, const QByteArray &data)
 
 QDebug operator<<(QDebug debug, const I2CDevice *i2cDevice)
 {
+    QDebugStateSaver saver(debug);
     debug.nospace() << "I2CDevice(Port: " << i2cDevice->portName() << ", Address: 0x" << QString::number(i2cDevice->address(), 16) << ")";
-    return debug.space();
+    return debug;
 }

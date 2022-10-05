@@ -39,6 +39,7 @@ NetworkDeviceMonitor::NetworkDeviceMonitor(QObject *parent) :
 
 QDebug operator<<(QDebug dbg, NetworkDeviceMonitor *networkDeviceMonitor)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "NetworkDeviceMonitor(" << networkDeviceMonitor->macAddress().toString();
 
     if (!networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer().isEmpty())
@@ -47,6 +48,6 @@ QDebug operator<<(QDebug dbg, NetworkDeviceMonitor *networkDeviceMonitor)
     dbg.nospace() << ", " << networkDeviceMonitor->networkDeviceInfo().address().toString();
 
     dbg.nospace() << ")";
-    return dbg.space();
+    return dbg;
 }
 

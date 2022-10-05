@@ -113,19 +113,21 @@ void State::setFilter(Types::StateValueFilter filter)
 /*! Writes the stateTypeId, the deviceId and the value of the given \a state to \a dbg. */
 QDebug operator<<(QDebug dbg, const State &state)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "State(StateTypeId: " << state.stateTypeId().toString() << ", DeviceId:" << state.thingId() << ", value:" << state.value() << ")";
-    return dbg.space();
+    return dbg;
 }
 
 /*! Writes each stateTypeId, deviceId and value of the given \a states to \a dbg. */
 QDebug operator<<(QDebug dbg, const QList<State> &states)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "StateList (count:" << states.count() << ")";
     for (int i = 0; i < states.count(); i++ ) {
         dbg.nospace() << "     " << i << ": " << states.at(i);
     }
 
-    return dbg.space();
+    return dbg;
 }
 
 States::States()

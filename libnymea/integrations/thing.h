@@ -208,7 +208,7 @@ private:
     QHash<StateTypeId, StateValueFilter*> m_stateValueFilters;
 };
 
-QDebug operator<<(QDebug dbg, Thing *device);
+QDebug operator<<(QDebug debug, Thing *device);
 
 class LIBNYMEA_EXPORT Things: public QList<Thing*>
 {

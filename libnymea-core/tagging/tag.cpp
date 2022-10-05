@@ -118,6 +118,7 @@ bool Tag::operator==(const Tag &other) const
 
 QDebug operator<<(QDebug dbg, const Tag &tag)
 {
+    QDebugStateSaver saver(dbg);
     if (!tag.thingId().isNull()) {
         dbg.nospace() << "Tag (ThingId:" << tag.thingId();
     } else {

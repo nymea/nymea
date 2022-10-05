@@ -122,7 +122,7 @@ See also: \l{RepeatingOption}
 \section2 Device
 \code
 {
-    "deviceClassId": "Uuid", 
+    "thingClassId": "Uuid", 
     "id": "Uuid", 
     "name": "String", 
     "o:parentId": "Uuid", 
@@ -1287,7 +1287,7 @@ Add a configured device with a setupMethod of SetupMethodJustAdd. For devices wi
 Params
 \code
 {
-    "deviceClassId": "Uuid", 
+    "thingClassId": "Uuid", 
     "name": "String", 
     "o:deviceDescriptorId": "Uuid", 
     "o:deviceParams": [
@@ -1359,11 +1359,11 @@ Returns
 \endcode
 See also: \l{DeviceError}
 \section2 Devices.GetActionTypes
-Get action types for a specified deviceClassId.
+Get action types for a specified thingClassId.
 Params
 \code
 {
-    "deviceClassId": "Uuid"
+    "thingClassId": "Uuid"
 }
 \endcode
 Returns
@@ -1414,7 +1414,7 @@ Performs a device discovery and returns the results. This function may take a wh
 Params
 \code
 {
-    "deviceClassId": "Uuid", 
+    "thingClassId": "Uuid", 
     "o:discoveryParams": [
         "$ref:Param"
     ]
@@ -1432,11 +1432,11 @@ Returns
 \endcode
 See also: \l{DeviceDescriptor}, \l{DeviceError}, \l{Param}
 \section2 Devices.GetEventTypes
-Get event types for a specified deviceClassId.
+Get event types for a specified thingClassId.
 Params
 \code
 {
-    "deviceClassId": "Uuid"
+    "thingClassId": "Uuid"
 }
 \endcode
 Returns
@@ -1482,11 +1482,11 @@ Returns
 \endcode
 See also: \l{Plugin}
 \section2 Devices.GetStateTypes
-Get state types for a specified deviceClassId.
+Get state types for a specified thingClassId.
 Params
 \code
 {
-    "deviceClassId": "Uuid"
+    "thingClassId": "Uuid"
 }
 \endcode
 Returns
@@ -1547,7 +1547,7 @@ Params
 Returns
 \code
 {
-    "deviceClasses": [
+    "thingClasses": [
         "$ref:DeviceClass"
     ]
 }
@@ -1573,7 +1573,7 @@ Pair a device. Use this for DeviceClasses with a setupMethod different than Setu
 Params
 \code
 {
-    "deviceClassId": "Uuid", 
+    "thingClassId": "Uuid", 
     "name": "String", 
     "o:deviceDescriptorId": "Uuid", 
     "o:deviceParams": [
@@ -3206,7 +3206,7 @@ See also: \l{Tag}
         "Devices.AddConfiguredDevice": {
             "description": "Add a configured device with a setupMethod of SetupMethodJustAdd. For devices with a setupMethod different than SetupMethodJustAdd, use PairDevice. Devices with CreateMethodJustAdd require all parameters to be supplied here. Devices with CreateMethodDiscovery require the use of a deviceDescriptorId. For discovered devices params are not required and will be taken from the DeviceDescriptor, however, they may be overridden by supplying parameters here.", 
             "params": {
-                "deviceClassId": "Uuid", 
+                "thingClassId": "Uuid", 
                 "name": "String", 
                 "o:deviceDescriptorId": "Uuid", 
                 "o:deviceParams": [
@@ -3256,9 +3256,9 @@ See also: \l{Tag}
             }
         }, 
         "Devices.GetActionTypes": {
-            "description": "Get action types for a specified deviceClassId.", 
+            "description": "Get action types for a specified thingClassId.", 
             "params": {
-                "deviceClassId": "Uuid"
+                "thingClassId": "Uuid"
             }, 
             "returns": {
                 "actionTypes": [
@@ -3291,7 +3291,7 @@ See also: \l{Tag}
         "Devices.GetDiscoveredDevices": {
             "description": "Performs a device discovery and returns the results. This function may take a while to return. Note that this method will include all the found devices, that is, including devices that may already have been added. Those devices will have deviceId set to the device id of the already added device. Such results may be used to reconfigure existing devices and might be filtered in cases where only unknown devices are of interest.", 
             "params": {
-                "deviceClassId": "Uuid", 
+                "thingClassId": "Uuid", 
                 "o:discoveryParams": [
                     "$ref:Param"
                 ]
@@ -3305,9 +3305,9 @@ See also: \l{Tag}
             }
         }, 
         "Devices.GetEventTypes": {
-            "description": "Get event types for a specified deviceClassId.", 
+            "description": "Get event types for a specified thingClassId.", 
             "params": {
-                "deviceClassId": "Uuid"
+                "thingClassId": "Uuid"
             }, 
             "returns": {
                 "eventTypes": [
@@ -3337,9 +3337,9 @@ See also: \l{Tag}
             }
         }, 
         "Devices.GetStateTypes": {
-            "description": "Get state types for a specified deviceClassId.", 
+            "description": "Get state types for a specified thingClassId.", 
             "params": {
-                "deviceClassId": "Uuid"
+                "thingClassId": "Uuid"
             }, 
             "returns": {
                 "stateTypes": [
@@ -3379,7 +3379,7 @@ See also: \l{Tag}
                 "o:vendorId": "Uuid"
             }, 
             "returns": {
-                "deviceClasses": [
+                "thingClasses": [
                     "$ref:DeviceClass"
                 ]
             }
@@ -3396,7 +3396,7 @@ See also: \l{Tag}
         "Devices.PairDevice": {
             "description": "Pair a device. Use this for DeviceClasses with a setupMethod different than SetupMethodJustAdd. Use deviceDescriptorId or deviceParams, depending on the createMethod of the device class. CreateMethodJustAdd takes the parameters you want to have with that device. CreateMethodDiscovery requires the use of a deviceDescriptorId, optionally, parameters can be overridden here. If success is true, the return values will contain a pairingTransactionId, a displayMessage and the setupMethod. Depending on the setupMethod you should either proceed with AddConfiguredDevice or PairDevice.", 
             "params": {
-                "deviceClassId": "Uuid", 
+                "thingClassId": "Uuid", 
                 "name": "String", 
                 "o:deviceDescriptorId": "Uuid", 
                 "o:deviceParams": [
@@ -4393,7 +4393,7 @@ See also: \l{Tag}
             "CreateMethodDiscovery"
         ], 
         "Device": {
-            "deviceClassId": "Uuid", 
+            "thingClassId": "Uuid", 
             "id": "Uuid", 
             "name": "String", 
             "o:parentId": "Uuid", 

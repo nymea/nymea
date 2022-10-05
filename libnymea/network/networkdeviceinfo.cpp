@@ -140,6 +140,7 @@ bool NetworkDeviceInfo::operator!=(const NetworkDeviceInfo &other) const
 
 QDebug operator<<(QDebug dbg, const NetworkDeviceInfo &networkDeviceInfo)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "NetworkDeviceInfo(" << networkDeviceInfo.address().toString();
 
     if (!networkDeviceInfo.macAddress().isEmpty())
@@ -155,5 +156,5 @@ QDebug operator<<(QDebug dbg, const NetworkDeviceInfo &networkDeviceInfo)
         dbg.nospace() << ", " << networkDeviceInfo.networkInterface().name();
 
     dbg.nospace() << ")";
-    return dbg.space();
+    return dbg;
 }

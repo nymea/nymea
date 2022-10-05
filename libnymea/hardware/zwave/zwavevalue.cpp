@@ -112,6 +112,7 @@ bool ZWaveValue::isValid() const
 
 QDebug operator<<(QDebug debug, ZWaveValue value)
 {
+    QDebugStateSaver saver(debug);
     debug.nospace() << "Value(ID: " << value.id() << ", "
                     << "Ins: " << value.instance() << ", "
                     << value.genre() << ", "

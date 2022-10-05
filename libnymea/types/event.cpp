@@ -150,17 +150,19 @@ bool Event::operator ==(const Event &other) const
 /*! Writes the eventTypeId and the deviceId of the given \a event to \a dbg. */
 QDebug operator<<(QDebug dbg, const Event &event)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "Event(EventTypeId: " << event.eventTypeId().toString() << ", DeviceId" << event.thingId().toString() << ")";
-    return dbg.space();
+    return dbg;
 }
 
 /*! Writes the each \l{Event} of the given \a events to \a dbg. */
 QDebug operator<<(QDebug dbg, const QList<Event> &events)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "EventList (count:" << events.count() << ")";
     for (int i = 0; i < events.count(); i++ ) {
         dbg.nospace() << "     " << i << ": " << events.at(i);
     }
 
-    return dbg.space();
+    return dbg;
 }

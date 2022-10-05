@@ -143,6 +143,7 @@ void CoreLink::setObservable(const bool &observable)
 */
 QDebug operator<<(QDebug debug, const CoreLink &link)
 {
+    QDebugStateSaver saver(debug);
     const QMetaObject &metaObject = CoapPdu::staticMetaObject;
     QMetaEnum contentTypeEnum = metaObject.enumerator(metaObject.indexOfEnumerator("ContentType"));
     debug.nospace() << "CoapLink(" << link.path() << ")" << endl;
@@ -162,5 +163,5 @@ QDebug operator<<(QDebug debug, const CoreLink &link)
     if (link.maximumSize() >= 0)
         debug.nospace() << "  Maximum size: " << link.maximumSize() << endl;
 
-    return debug.space();
+    return debug;
 }

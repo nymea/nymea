@@ -42,6 +42,13 @@ class NetworkManagerHandler : public JsonHandler
 {
     Q_OBJECT
 public:
+    enum WiredNetworkConnectionType {
+        WiredNetworkConnectionTypeDHCP,
+        WiredNetworkConnectionTypeManual,
+        WiredNetworkConnectionTypeShared
+    };
+    Q_ENUM(WiredNetworkConnectionType)
+
     explicit NetworkManagerHandler(NetworkManager *networkManager, QObject *parent = nullptr);
 
     QString name() const override;
@@ -51,13 +58,11 @@ public:
     Q_INVOKABLE JsonReply *EnableWirelessNetworking(const QVariantMap &params);
     Q_INVOKABLE JsonReply *GetWirelessAccessPoints(const QVariantMap &params);
     Q_INVOKABLE JsonReply *GetNetworkDevices(const QVariantMap &params);
+    Q_INVOKABLE JsonReply *CreateWiredConnection(const QVariantMap &params);
     Q_INVOKABLE JsonReply *ScanWifiNetworks(const QVariantMap &params);
     Q_INVOKABLE JsonReply *ConnectWifiNetwork(const QVariantMap &params);
     Q_INVOKABLE JsonReply *DisconnectInterface(const QVariantMap &params);
     Q_INVOKABLE JsonReply *StartAccessPoint(const QVariantMap &params);
-
-private:
-    QVariantMap packNetworkManagerStatus();
 
 signals:
     // NetworkManager
@@ -86,6 +91,7 @@ private slots:
     void onWiredNetworkDeviceChanged(WiredNetworkDevice *networkDevice);
 
 private:
+    QVariantMap packNetworkManagerStatus();
     QVariantMap packWirelessAccessPoint(WirelessAccessPoint *wirelessAccessPoint);
     QVariantMap packWiredNetworkDevice(WiredNetworkDevice *networkDevice);
     QVariantMap packWirelessNetworkDevice(WirelessNetworkDevice *networkDevice);

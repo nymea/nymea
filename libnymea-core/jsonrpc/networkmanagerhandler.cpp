@@ -91,6 +91,7 @@ NetworkManagerHandler::NetworkManagerHandler(NetworkManager *networkManager, QOb
     registerEnum<NetworkManager::NetworkManagerState>();
     registerEnum<NetworkDevice::NetworkDeviceState>();
     registerEnum<WirelessNetworkDevice::WirelessMode>();
+    registerEnum<WiredNetworkConnectionType>();
 
     // Objects
     QVariantMap wirelessAccessPoint;
@@ -171,6 +172,17 @@ NetworkManagerHandler::NetworkManagerHandler(NetworkManager *networkManager, QOb
     params.insert("interface", enumValueName(String));
     returns.insert("networkManagerError", enumRef<NetworkManager::NetworkManagerError>());
     registerMethod("ScanWifiNetworks", description, params, returns);
+
+    params.clear(); returns.clear();
+    description = "Create a wired connection.";
+    params.insert("interface", enumValueName(String));
+    params.insert("type", enumRef<WiredNetworkConnectionType>());
+    params.insert("o:ip", enumValueName(String));
+    params.insert("o:prefix", enumValueName(Uint));
+    params.insert("o:gateway", enumValueName(String));
+    params.insert("o:dns", enumValueName(String));
+    returns.insert("networkManagerError", enumRef<NetworkManager::NetworkManagerError>());
+    registerMethod("CreateWiredConnection", description, params, returns);
 
     params.clear(); returns.clear();
     description = "Connect to the wifi network with the given ssid and password.";
@@ -339,6 +351,38 @@ JsonReply *NetworkManagerHandler::GetNetworkDevices(const QVariantMap &params)
     returns.insert("wirelessNetworkDevices", wirelessNetworkDevices);
     returns.insert("wiredNetworkDevices", wiredNetworkDevices);
     return createReply(returns);
+}
+
+JsonReply *NetworkManagerHandler::CreateWiredConnection(const QVariantMap &params)
+{
+    if (!m_networkManager->available()) {
+        return createReply(statusToReply(NetworkManager::NetworkManagerErrorNetworkManagerNotAvailable));
+    }
+    QString interface = params.value("interface").toString();
+    QMetaEnum typeEnum = QMetaEnum::fromType<WiredNetworkConnectionType>();
+    WiredNetworkConnectionType type = static_cast<WiredNetworkConnectionType>(typeEnum.keyToValue(params.value("type").toByteArray()));
+
+    switch (type) {
+    case WiredNetworkConnectionTypeManual: {
+        QHostAddress ip = QHostAddress(params.value("ip").toString());
+        quint8 prefix = params.value("prefix").toInt();
+        QHostAddress gateway = QHostAddress(params.value("gateway").toString());
+        QHostAddress dns = QHostAddress(params.value("dns").toString());
+        NetworkManager::NetworkManagerError status = m_networkManager->createWiredManualConnection(interface, ip, prefix, gateway, dns);
+        return createReply(statusToReply(status));
+    }
+    case WiredNetworkConnectionTypeDHCP: {
+        NetworkManager::NetworkManagerError status = m_networkManager->createWiredAutoConnection(interface);
+        return createReply(statusToReply(status));
+    }
+    case WiredNetworkConnectionTypeShared: {
+        QHostAddress ip = QHostAddress(params.value("ip").toString());
+        quint8 prefix = params.value("prefix").toInt();
+        NetworkManager::NetworkManagerError status = m_networkManager->createSharedConnection(interface, ip, prefix);
+        return createReply(statusToReply(status));
+    }
+    }
+    return createReply(statusToReply(NetworkManager::NetworkManagerErrorInvalidConfiguration));
 }
 
 JsonReply *NetworkManagerHandler::ScanWifiNetworks(const QVariantMap &params)

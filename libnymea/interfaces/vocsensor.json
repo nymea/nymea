@@ -1,0 +1,14 @@
+{
+    "description": "Sensor for volatile organic compounds (VOC).",
+    "extends": "sensor",
+    "states": [
+        {
+            "name": "voc",
+            "type": "uint",
+            "unit": "PartsPerBillion",
+            "minValue": 0,
+            "maxValue": 65353,
+            "logged": true
+        }
+    ]
+}

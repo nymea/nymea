@@ -126,6 +126,7 @@ public:
         UnitEuroCentPerKiloWattHour,
         UnitPercentage,
         UnitPartsPerMillion,
+        UnitPartsPerBillion,
         UnitEuro,
         UnitDollar,
         UnitHertz,
@@ -144,6 +145,7 @@ public:
         UnitRpm,
         UnitMilligramPerLiter,
         UnitLiter,
+        UnitMicroGrammPerCubicalMeter,
     };
     Q_ENUM(Unit)
 

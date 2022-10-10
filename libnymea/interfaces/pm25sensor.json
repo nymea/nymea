@@ -1,0 +1,14 @@
+{
+    "extends": "sensor",
+    "description": "PM2.5 (Fine particles) sensors. Measures PM2.5 particles in µg/m3.",
+    "states": [
+        {
+            "name": "pm25",
+            "type": "double",
+            "unit": "MicroGrammPerCubicalMeter",
+            "minValue": 0,
+            "maxValue": 500,
+            "logged": true
+        }
+    ]
+}

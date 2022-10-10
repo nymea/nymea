@@ -45,6 +45,10 @@
         <file>cosensor.json</file>
         <file>co2sensor.json</file>
         <file>o2sensor.json</file>
+        <file>no2sensor.json</file>
+        <file>o3sensor.json</file>
+        <file>pm25sensor.json</file>
+        <file>pm10sensor.json</file>
         <file>gassensor.json</file>
         <file>orpsensor.json</file>
         <file>conductivitysensor.json</file>
@@ -87,8 +91,7 @@
         <file>venetianblind.json</file>
         <file>update.json</file>
         <file>cleaningrobot.json</file>
-        <file>airquality.json</file>
-        <file>indoorairquality.json</file>
+        <file>vocsensor.json</file>
         <file>energystorage.json</file>
         <file>heatpump.json</file>
         <file>smartgridheatpump.json</file>

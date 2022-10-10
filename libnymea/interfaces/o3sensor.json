@@ -1,0 +1,14 @@
+{
+    "extends": "sensor",
+    "description": "O3 (ozone) sensors. Measures o3 in parts per million.",
+    "states": [
+        {
+            "name": "o3",
+            "type": "double",
+            "unit": "MicroGrammPerCubicalMeter",
+            "minValue": 0,
+            "maxValue": 500,
+            "logged": true
+        }
+    ]
+}

@@ -1,4 +1,4 @@
-6.1
+6.2
 {
     "enums": {
         "BasicType": [
@@ -154,7 +154,8 @@
             "NetworkManagerErrorWirelessNetworkingDisabled",
             "NetworkManagerErrorWirelessConnectionFailed",
             "NetworkManagerErrorNetworkingDisabled",
-            "NetworkManagerErrorNetworkManagerNotAvailable"
+            "NetworkManagerErrorNetworkManagerNotAvailable",
+            "NetworkManagerErrorInvalidConfiguration"
         ],
         "NetworkManagerState": [
             "NetworkManagerStateUnknown",
@@ -339,6 +340,7 @@
             "UnitEuroCentPerKiloWattHour",
             "UnitPercentage",
             "UnitPartsPerMillion",
+            "UnitPartsPerBillion",
             "UnitEuro",
             "UnitDollar",
             "UnitHertz",
@@ -356,7 +358,8 @@
             "UnitNewtonMeter",
             "UnitRpm",
             "UnitMilligramPerLiter",
-            "UnitLiter"
+            "UnitLiter",
+            "UnitMicroGrammPerCubicalMeter"
         ],
         "UserError": [
             "UserErrorNoError",

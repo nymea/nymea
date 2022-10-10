@@ -1,0 +1,14 @@
+{
+    "extends": "sensor",
+    "description": "PM10 (Coarse particles) sensors. Measures PM10 particles in µg/m3.",
+    "states": [
+        {
+            "name": "pm10",
+            "type": "double",
+            "unit": "MicroGrammPerCubicalMeter",
+            "minValue": 0,
+            "maxValue": 500,
+            "logged": true
+        }
+    ]
+}

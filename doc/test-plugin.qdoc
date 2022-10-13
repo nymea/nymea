@@ -12,11 +12,11 @@
 
     To make nymead load the plugin from the plugins build directory, run nymead with an environment variable exported
     \code
-        $ NYMEA_PLUGINS_PATH=/path/to/plugin/ nymead -n
+        $ NYMEA_PLUGINS_EXTRA_PATH=/path/to/plugin/ nymead -n
     \endcode
 
     In order to easier debug things, it is advised to enable debug output for the device manager and your plugin. E.g.
     \code
-        $ NYMEA_PLUGINS_PATH=/path/to/plugin nymead -n -d DeviceManager -d YourPlugin
+        $ NYMEA_PLUGINS_EXTRA_PATH=/path/to/plugin nymead -n -d DeviceManager -d YourPlugin
     \endcode
 */

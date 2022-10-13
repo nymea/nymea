@@ -101,21 +101,33 @@ PlatformZeroConfController *Platform::zeroConfController() const
 
 QStringList Platform::pluginSearchDirs() const
 {
+    const char *envDefaultPath = "NYMEA_PLATFORM_PLUGINS_PATH";
+    const char *envExtraPath = "NYMEA_PLATFORM_PLUGINS_EXTRA_PATH";
+
     QStringList searchDirs;
-    QByteArray envPath = qgetenv("NYMEA_PLATFORM_PLUGINS_PATH");
-    if (!envPath.isEmpty()) {
-        searchDirs << QString(envPath).split(':');
+    QByteArray envExtraPathData = qgetenv(envExtraPath);
+    if (!envExtraPathData.isEmpty()) {
+        searchDirs << QString::fromUtf8(envExtraPathData).split(':');
     }
 
-    foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
-        searchDirs << libraryPath.replace("qt5", "nymea").replace("plugins", "platform");
+    if (qEnvironmentVariableIsSet(envDefaultPath)) {
+        QByteArray envDefaultPathData = qgetenv(envDefaultPath);
+        if (!envDefaultPathData.isEmpty()) {
+            searchDirs << QString::fromUtf8(envDefaultPathData).split(':');
+        }
+    } else {
+        foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+            searchDirs << libraryPath.replace("qt5", "nymea").replace("plugins", "platform");
+        }
+        foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+            searchDirs << libraryPath.replace("plugins", "nymea/platform");
+        }
+        searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../lib/nymea/platform/").absolutePath();
+        searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../platform/").absolutePath();
+        searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../../../platform/").absolutePath();
     }
-    foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
-        searchDirs << libraryPath.replace("plugins", "nymea/platform");
-    }
-    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/nymea/platform/";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../platform/";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../../../platform/";
+
+    searchDirs.removeDuplicates();
     return searchDirs;
 }
 

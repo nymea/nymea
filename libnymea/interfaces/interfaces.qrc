@@ -95,5 +95,6 @@
         <file>simpleheatpump.json</file>
         <file>alarm.json</file>
         <file>firesensor.json</file>
+        <file>childlock.json</file>
     </qresource>
 </RCC>

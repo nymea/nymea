@@ -183,13 +183,12 @@ void NetworkDeviceDiscoveryReplyImpl::processDiscoveryFinished()
         qCDebug(dcNetworkDeviceDiscovery()) << "--> " << info;
     }
 
-    qCDebug(dcNetworkDeviceDiscovery()) << "Rest:";
     foreach (const MacAddress &macAddress, m_networkDeviceCache.keys()) {
         if (m_networkDeviceInfos.hasMacAddress(macAddress))
             continue;
 
         NetworkDeviceInfo info = m_networkDeviceCache.value(macAddress);
-        qCDebug(dcNetworkDeviceDiscovery()) << "--> " << info << "Valid:" << info.isValid() << "Complete:" << info.isComplete() << info.incompleteProperties();
+        qCDebug(dcNetworkDeviceDiscovery()) << "Unhandled information:" << info << "Valid:" << info.isValid() << "Complete:" << info.isComplete() << info.incompleteProperties();
     }
 
     m_isFinished = true;

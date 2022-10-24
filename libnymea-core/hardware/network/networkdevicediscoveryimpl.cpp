@@ -117,6 +117,7 @@ NetworkDeviceDiscoveryReply *NetworkDeviceDiscoveryImpl::discover()
     connect(m_currentReply, &NetworkDeviceDiscoveryReplyImpl::networkDeviceInfoAdded, reply, &NetworkDeviceDiscoveryReplyImpl::addCompleteNetworkDeviceInfo);
     connect(m_currentReply, &NetworkDeviceDiscoveryReplyImpl::hostAddressDiscovered, reply, &NetworkDeviceDiscoveryReplyImpl::hostAddressDiscovered);
     connect(m_currentReply, &NetworkDeviceDiscoveryReplyImpl::finished, reply, [this, reply](){
+return;
         // Sync all network device infos with all pending replies
         foreach (const NetworkDeviceInfo &info, m_currentReply->networkDeviceInfos()) {
             reply->addCompleteNetworkDeviceInfo(info);

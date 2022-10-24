@@ -64,7 +64,7 @@ NetworkDeviceDiscoveryImpl::NetworkDeviceDiscoveryImpl(QObject *parent) :
     m_discoveryTimer->setInterval(20000);
     m_discoveryTimer->setSingleShot(true);
     connect(m_discoveryTimer, &QTimer::timeout, this, [=](){
-        if (m_runningPingRepies.isEmpty() && m_currentReply) {
+        if (m_runningPingReplies.isEmpty() && m_currentReply) {
             finishDiscovery();
         }
     });
@@ -126,6 +126,9 @@ NetworkDeviceDiscoveryReply *NetworkDeviceDiscoveryImpl::discover()
             reply->addVirtualNetworkDeviceInfo(info);
         }
 
+        m_currentReply->deleteLater();
+        m_currentReply = nullptr;
+
         reply->setFinished(true);
         emit reply->finished();
     });
@@ -141,6 +144,9 @@ NetworkDeviceDiscoveryReply *NetworkDeviceDiscoveryImpl::discover()
         // Add already discovered network device infos in the next event loop
         // so any connections after this method call will work as expected
         QTimer::singleShot(0, reply, [this, reply](){
+            if (!m_currentReply)
+                return;
+
             foreach (const NetworkDeviceInfo &networkDeviceInfo, m_currentReply->networkDeviceInfos()) {
                 reply->addCompleteNetworkDeviceInfo(networkDeviceInfo);
             }
@@ -340,9 +346,9 @@ void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
 
                 // Retry only once to ping a device and lookup the hostname on success
                 PingReply *reply = ping(targetAddress, true, 1);
-                m_runningPingRepies.append(reply);
+                m_runningPingReplies.append(reply);
                 connect(reply, &PingReply::finished, this, [=](){
-                    m_runningPingRepies.removeAll(reply);
+                    m_runningPingReplies.removeAll(reply);
                     if (reply->error() == PingReply::ErrorNoError) {
                         qCDebug(dcNetworkDeviceDiscovery()) << "Ping response from" << targetAddress.toString() << reply->hostName() << reply->duration() << "ms";
                         if (m_currentReply) {
@@ -350,7 +356,7 @@ void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
                         }
                     }
 
-                    if (m_runningPingRepies.isEmpty() && m_currentReply && !m_discoveryTimer->isActive()) {
+                    if (m_runningPingReplies.isEmpty() && m_currentReply && !m_discoveryTimer->isActive()) {
                         qCWarning(dcNetworkDeviceDiscovery()) << "All ping replies finished for discovery." << m_currentReply->networkDeviceInfos().count();
                         finishDiscovery();
                     }
@@ -695,9 +701,9 @@ void NetworkDeviceDiscoveryImpl::finishDiscovery()
     m_lastDiscovery = QDateTime::currentDateTime();
 
     // Clean up internal reply
-    m_currentReply->processDiscoveryFinished();
-    m_currentReply->deleteLater();
-    m_currentReply = nullptr;
+    if (m_currentReply) {
+        m_currentReply->processDiscoveryFinished();
+    }
 }
 
 }

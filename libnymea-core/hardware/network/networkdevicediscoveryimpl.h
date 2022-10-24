@@ -102,7 +102,7 @@ private:
     uint m_cacheCleanupPeriod = 30; // days
 
     NetworkDeviceDiscoveryReplyImpl *m_currentReply = nullptr;
-    QList<PingReply *> m_runningPingRepies;
+    QList<PingReply *> m_runningPingReplies;
 
     QHash<MacAddress, NetworkDeviceMonitorImpl *> m_monitors;
     QHash<MacAddress, int> m_monitorsReferenceCount;

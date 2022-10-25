@@ -154,7 +154,8 @@
             "NetworkManagerErrorWirelessNetworkingDisabled",
             "NetworkManagerErrorWirelessConnectionFailed",
             "NetworkManagerErrorNetworkingDisabled",
-            "NetworkManagerErrorNetworkManagerNotAvailable"
+            "NetworkManagerErrorNetworkManagerNotAvailable",
+            "NetworkManagerErrorInvalidConfiguration"
         ],
         "NetworkManagerState": [
             "NetworkManagerStateUnknown",
@@ -374,6 +375,11 @@
             "ValueOperatorGreater",
             "ValueOperatorLessOrEqual",
             "ValueOperatorGreaterOrEqual"
+        ],
+        "WiredNetworkConnectionType": [
+            "WiredNetworkConnectionTypeDHCP",
+            "WiredNetworkConnectionTypeManual",
+            "WiredNetworkConnectionTypeShared"
         ],
         "WirelessMode": [
             "WirelessModeUnknown",
@@ -1454,6 +1460,21 @@
                 "interface": "String",
                 "o:password": "String",
                 "ssid": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "networkManagerError": "$ref:NetworkManagerError"
+            }
+        },
+        "NetworkManager.CreateWiredConnection": {
+            "description": "Create a wired connection.",
+            "params": {
+                "interface": "String",
+                "o:dns": "String",
+                "o:gateway": "String",
+                "o:ip": "String",
+                "o:prefix": "Uint",
+                "type": "$ref:WiredNetworkConnectionType"
             },
             "permissionScope": "PermissionScopeAdmin",
             "returns": {

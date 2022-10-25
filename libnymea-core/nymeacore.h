@@ -64,12 +64,16 @@ class UserManager;
 class Platform;
 class System;
 class ExperienceManager;
-class ScriptEngine;
 class CloudManager;
 class ZigbeeManager;
 class ZWaveManager;
 class ModbusRtuManager;
 class SerialPortMonitor;
+
+namespace scriptengine {
+class ScriptEngine;
+}
+using namespace scriptengine;
 
 class NymeaCore : public QObject
 {

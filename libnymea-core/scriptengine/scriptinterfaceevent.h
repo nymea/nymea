@@ -39,6 +39,7 @@
 #include "integrations/thingmanager.h"
 
 namespace nymeaserver {
+namespace scriptengine {
 
 class ScriptParams;
 
@@ -75,6 +76,7 @@ private:
     QString m_eventName;
 };
 
+}
 }
 
 #endif // SCRIPTINTERFACEEVENT_H

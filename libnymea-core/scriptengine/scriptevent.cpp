@@ -35,6 +35,7 @@
 #include <QJsonDocument>
 
 namespace nymeaserver {
+namespace scriptengine {
 
 ScriptEvent::ScriptEvent(QObject *parent) : QObject(parent)
 {
@@ -117,4 +118,4 @@ void ScriptEvent::onEventTriggered(const Event &event)
 }
 
 }
-
+}

@@ -28,55 +28,57 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef SCRIPTINTERFACESTATE_H
-#define SCRIPTINTERFACESTATE_H
+#ifndef SCRIPTTHING_H
+#define SCRIPTTHING_H
 
 #include <QObject>
-#include <QUuid>
 #include <QQmlParserStatus>
-
-#include "types/state.h"
+#include <QUuid>
 #include "integrations/thingmanager.h"
 
 namespace nymeaserver {
 namespace scriptengine {
 
-class ScriptParams;
-
-class ScriptInterfaceState: public QObject, public QQmlParserStatus
+class ScriptThing : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
-    Q_INTERFACES(QQmlParserStatus)
-    Q_PROPERTY(QString interfaceName READ interfaceName WRITE setInterfaceName NOTIFY interfaceNameChanged)
-    Q_PROPERTY(QString stateName READ stateName WRITE setStateName NOTIFY stateNameChanged)
+    Q_PROPERTY(QString thingId READ thingId WRITE setThingId NOTIFY thingIdChanged)
+    Q_PROPERTY(QString name READ name NOTIFY nameChanged)
 public:
-    ScriptInterfaceState(QObject *parent = nullptr);
+    explicit ScriptThing(QObject *parent = nullptr);
+    explicit ScriptThing(ThingManager *thingManager, QObject *parent = nullptr);
     void classBegin() override;
     void componentComplete() override;
 
-    QString interfaceName() const;
-    void setInterfaceName(const QString &interfaceName);
+    QString thingId() const;
+    void setThingId(const QString &thingId);
 
-    QString stateName() const;
-    void setStateName(const QString &stateName);
+    QString name() const;
 
-private slots:
-    void onStateChanged(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value);
+    Q_INVOKABLE QVariant stateValue(const QString &stateName) const;
+
+    Q_INVOKABLE void setStateValue(const QString &stateName, const QVariant &value);
+    Q_INVOKABLE void executeAction(const QString &actionName, const QVariantMap &params);
 
 signals:
-    void interfaceNameChanged();
-    void stateNameChanged();
+    void thingIdChanged();
+    void nameChanged();
 
-    void stateChanged(const QString &thingId, const QVariant &value);
+    void stateValueChanged(const QString &stateName, const QVariant &value);
+    void eventTriggered(const QString &eventName, const QVariantMap &params);
+
+private slots:
+    void init(ThingManager *thingManager);
+    void connectToThing();
 
 private:
+    ThingId m_thingId;
     ThingManager *m_thingManager = nullptr;
 
-    QString m_interfaceName;
-    QString m_stateName;
+    QMetaObject::Connection m_nameConnection;
 };
 
 }
 }
 
-#endif // SCRIPTINTERFACESTATE_H
+#endif // SCRIPTTHING_H

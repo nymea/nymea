@@ -36,9 +36,11 @@
 #include <QQmlEngine>
 #include <qqml.h>
 
-#include "loggingcategories.h"
+#include <QLoggingCategory>
+Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
 
 namespace nymeaserver {
+namespace scriptengine {
 
 ScriptInterfaceAction::ScriptInterfaceAction(QObject *parent) : QObject(parent)
 {
@@ -123,4 +125,5 @@ void ScriptInterfaceAction::execute(const QVariantMap &params)
     }
 }
 
+}
 }

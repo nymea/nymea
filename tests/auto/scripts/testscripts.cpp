@@ -74,6 +74,13 @@ private slots:
     void testInterfaceEvent();
     void testInterfaceState();
     void testInterfaceAction();
+
+    void testScriptThingAction();
+    void testScriptThingReadState();
+    void testScriptThingWriteState();
+    void testScriptThingEvent();
+
+    void testThingsFindThing();
 };
 
 
@@ -517,6 +524,180 @@ void TestScripts::testInterfaceAction()
     QCOMPARE(spy.first().at(2).toBool(), true);
 
 }
+
+void TestScripts::testScriptThingAction()
+{
+    QString script = QString("import QtQuick 2.0\n"
+                            "import nymea 1.0\n"
+                            "Item {\n"
+                            "    Thing {\n"
+                            "        id: thing\n"
+                            "        thingId: \"%1\"\n"
+                            "    }\n"
+                            "    Connections {\n"
+                            "        target: TestHelper\n"
+                            "        onExecuteAction: {\n"
+                            "            thing.executeAction(\"%2\", params)\n"
+                            "        }\n"
+                            "    }\n"
+                            "}\n").arg(m_mockThingId.toString()).arg("power");
+
+    qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
+    ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestAction", script.toUtf8());
+    QCOMPARE(reply.scriptError, ScriptEngine::ScriptErrorNoError);
+
+    QSignalSpy spy(NymeaCore::instance()->thingManager(), &ThingManager::thingStateChanged);
+
+    QVariantMap params;
+    params.insert("power", true);
+    TestHelper::instance()->executeAction(params);
+
+    spy.wait(1);
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.first().at(0).value<Thing*>()->id(), m_mockThingId);
+    QCOMPARE(spy.first().at(1).value<StateTypeId>(), mockPowerStateTypeId);
+    QCOMPARE(spy.first().at(2).toBool(), true);
+
+}
+
+void TestScripts::testScriptThingReadState()
+{
+    QString script = QString("import QtQuick 2.0\n"
+                            "import nymea 1.0\n"
+                            "Item {\n"
+                            "    Thing {\n"
+                            "        thingId: \"%1\"\n"
+                            "        onStateValueChanged: {\n"
+                            "            TestHelper.logStateChange(thingId, stateName, value);\n"
+                            "        }\n"
+                            "    }\n"
+                            "}\n").arg(m_mockThingId.toString()).arg("power");
+
+    qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
+    ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestState", script.toUtf8());
+    QCOMPARE(reply.scriptError, ScriptEngine::ScriptErrorNoError);
+
+    QSignalSpy spy(TestHelper::instance(), &TestHelper::stateChangeLogged);
+
+    // Generate state change
+    Action action(mockPowerActionTypeId, m_mockThingId);
+    action.setParams(ParamList() << Param(mockPowerActionPowerParamTypeId, true));
+    NymeaCore::instance()->thingManager()->executeAction(action);
+
+    spy.wait(1);
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.first().at(0).value<ThingId>(), m_mockThingId);
+    QCOMPARE(spy.first().at(1).toString(), QString("power"));
+    QCOMPARE(spy.first().at(2).toBool(), true);
+
+}
+
+void TestScripts::testScriptThingWriteState()
+{
+    QString script = QString("import QtQuick 2.0\n"
+                            "import nymea 1.0\n"
+                            "Item {\n"
+                            "    Thing {\n"
+                            "        id: thing\n"
+                            "        thingId: \"%1\"\n"
+                            "    }\n"
+                            "    Connections {\n"
+                            "        target: TestHelper\n"
+                            "        onSetState: {\n"
+                            "            thing.setStateValue(\"%2\", value)\n"
+                            "        }\n"
+                            "    }\n"
+                            "}\n").arg(m_mockThingId.toString()).arg("power");
+
+    qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
+    ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestState", script.toUtf8());
+    QCOMPARE(reply.scriptError, ScriptEngine::ScriptErrorNoError);
+
+    QSignalSpy spy(NymeaCore::instance()->thingManager(), &ThingManager::thingStateChanged);
+
+    TestHelper::instance()->setState(true);
+
+    spy.wait(1);
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.first().at(0).value<Thing*>()->id(), m_mockThingId);
+    QCOMPARE(spy.first().at(1).value<StateTypeId>(), mockPowerStateTypeId);
+    QCOMPARE(spy.first().at(2).toBool(), true);
+
+}
+
+void TestScripts::testScriptThingEvent()
+{
+    QString script = QString("import QtQuick 2.0\n"
+                            "import nymea 1.0\n"
+                            "Item {\n"
+                            "    Thing {\n"
+                            "        thingId: \"%1\"\n"
+                            "        onEventTriggered: {\n"
+                            "            TestHelper.logEvent(thingId, eventName, params);\n"
+                            "        }\n"
+                            "    }\n"
+                            "}\n").arg(m_mockThingId.toString());
+
+    qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
+    ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestEvent", script.toUtf8());
+    QCOMPARE(reply.scriptError, ScriptEngine::ScriptErrorNoError);
+
+    QSignalSpy spy(TestHelper::instance(), &TestHelper::eventLogged);
+
+    // trigger event in mock device
+    Thing* thing = NymeaCore::instance()->thingManager()->findConfiguredThing(m_mockThingId);
+    int port = thing->paramValue(mockThingHttpportParamTypeId).toInt();
+    QNetworkRequest request(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2&%3=%4")
+                                 .arg(port)
+                                 .arg(mockEvent2EventTypeId.toString())
+                                 .arg(mockEvent2EventIntParamParamTypeId.toString())
+                                 .arg(10)));
+    QNetworkAccessManager nam;
+    QNetworkReply *r = nam.get(request);
+    connect(r, &QNetworkReply::finished, r, &QNetworkReply::deleteLater);
+
+    spy.wait();
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.first().at(0).value<ThingId>(), m_mockThingId);
+    QCOMPARE(spy.first().at(1).toString(), QString("event2"));
+    QVariantMap expectedParams;
+    expectedParams.insert(mockEvent2EventIntParamParamTypeId.toString().remove(QRegExp("[{}]")), 10);
+    expectedParams.insert("intParam", 10);
+    QCOMPARE(spy.first().at(2).toMap(), expectedParams);
+
+}
+
+void TestScripts::testThingsFindThing()
+{
+    QSignalSpy spy(TestHelper::instance(), &TestHelper::testResult);
+
+    QString script = QString("import QtQuick 2.0\n"
+                            "import nymea 1.0\n"
+                            "Item {\n"
+                            "    id: root\n"
+                            "    property string thingId: \"%1\"\n"
+                            "    Things {\n"
+                            "        id: things\n"
+                            "    }\n"
+                            "    Component.onCompleted: {\n"
+                            "        var thing = things.getThing(root.thingId)\n"
+                            "        TestHelper.setTestResult(thing.thingId == root.thingId);\n"
+                            "    }\n"
+                            "}\n").arg(m_mockThingId.toString());
+
+    qCDebug(dcTests()) << "Adding script:\n" << qUtf8Printable(script);
+    ScriptEngine::AddScriptReply reply = NymeaCore::instance()->scriptEngine()->addScript("TestEvent", script.toUtf8());
+    QCOMPARE(reply.scriptError, ScriptEngine::ScriptErrorNoError);
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.first().at(0).toBool(), true);
+
+}
+
 
 
 #include "testscripts.moc"

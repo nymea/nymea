@@ -30,7 +30,11 @@
 
 #include "script.h"
 
+#include <QLoggingCategory>
+Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
+
 namespace nymeaserver {
+namespace scriptengine {
 
 Script::Script()
 {
@@ -78,4 +82,5 @@ void Scripts::put(const QVariant &value)
     append(value.value<Script>());
 }
 
+}
 }

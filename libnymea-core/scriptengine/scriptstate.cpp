@@ -30,13 +30,15 @@
 
 #include "scriptstate.h"
 
-#include "loggingcategories.h"
-
 #include <QColor>
 #include <qqml.h>
 #include <QQmlEngine>
 
+#include <QLoggingCategory>
+Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
+
 namespace nymeaserver {
+namespace scriptengine {
 
 ScriptState::ScriptState(QObject *parent) : QObject(parent)
 {
@@ -238,6 +240,9 @@ void ScriptState::onThingStateChanged(Thing *thing, const StateTypeId &stateType
 
 void ScriptState::connectToThing()
 {
+    if (m_connection) {
+        disconnect(m_connection);
+    }
     Thing *thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
     if (!thing) {
         qCDebug(dcScriptEngine()) << "Can't find thing with id" << m_thingId << "(yet)";
@@ -252,7 +257,7 @@ void ScriptState::connectToThing()
         qCDebug(dcScriptEngine()) << "Thing setup for" << thing->name() << "not complete yet";
     }
 
-    connect(thing, &Thing::setupStatusChanged, this, [this, thing](){
+    m_connection = connect(thing, &Thing::setupStatusChanged, this, [this, thing](){
         if (thing->setupStatus() == Thing::ThingSetupStatusComplete) {
             qCDebug(dcScriptEngine()) << "Thing setup for" << thing->name() << "completed";
             if (!m_valueCache.isNull()) {
@@ -262,4 +267,5 @@ void ScriptState::connectToThing()
     });
 }
 
+}
 }

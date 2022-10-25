@@ -105,6 +105,7 @@ Depends: ${shlibs:Depends},
          libnymea-core (= ${binary:Version})
 Description: nymea-tests library - library
  Shared resources for nymea-tests.
+ This package provides also the mock plugin for the tests.
 
 
 Package: libnymea-tests-dev
@@ -128,8 +129,8 @@ Depends: nymea (= ${binary:Version}),
          ${shlibs:Depends},
          ${misc:Depends},
          libnymea-tests (= ${binary:Version})
-Description: nymea automated tests and mock plugin - tests
- Automated tests and mock plugin for the nymea daemon.
+Description: nymea automated tests - tests
+ Automated tests for the nymea daemon.
 
 
 Package: libnymea1

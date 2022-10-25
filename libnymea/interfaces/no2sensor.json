@@ -1,0 +1,14 @@
+{
+    "description": "Interface for nitrogen dioxide sensors. NO2 is measured in µg/m3.",
+    "extends": "sensor",
+    "states": [
+        {
+            "name": "no2",
+            "type": "double",
+            "unit": "MicroGrammPerCubicalMeter",
+            "minValue": 0,
+            "maxValue": 800,
+            "logged": true
+        }
+    ]
+}

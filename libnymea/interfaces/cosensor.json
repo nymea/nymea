@@ -6,6 +6,8 @@
             "name": "co",
             "type": "double",
             "unit": "PartsPerMillion",
+            "minValue": 0,
+            "maxValue": 255,
             "logged": true
         }
     ]

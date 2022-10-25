@@ -340,6 +340,7 @@
             "UnitEuroCentPerKiloWattHour",
             "UnitPercentage",
             "UnitPartsPerMillion",
+            "UnitPartsPerBillion",
             "UnitEuro",
             "UnitDollar",
             "UnitHertz",
@@ -357,7 +358,8 @@
             "UnitNewtonMeter",
             "UnitRpm",
             "UnitMilligramPerLiter",
-            "UnitLiter"
+            "UnitLiter",
+            "UnitMicroGrammPerCubicalMeter"
         ],
         "UserError": [
             "UserErrorNoError",

@@ -3,7 +3,7 @@
     "description": "Flammable gas (LPG, Propane, Methane etc) sensors. Measures co2 in parts per million.",
     "states": [
         {
-            "name": "gas",
+            "name": "gasLevel",
             "type": "double",
             "unit": "PartsPerMillion",
             "logged": true

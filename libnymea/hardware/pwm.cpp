@@ -340,6 +340,7 @@ bool Pwm::unexportPwm()
 
 QDebug operator<<(QDebug d, Pwm *pwm)
 {
+    QDebugStateSaver saver(d);
     d << "-----------------------------------";
     d << "\n--> pwm0 on pwmChip" << pwm->chipNumber()  << ":";
     d << "\n------------------";

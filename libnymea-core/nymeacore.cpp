@@ -704,7 +704,7 @@ void NymeaCore::evaluateRules(const Event &event)
     QList<RuleAction> eventBasedActions;
     foreach (const Rule &rule, m_ruleEngine->evaluateEvent(event)) {
         if (m_executingRules.contains(rule.id())) {
-            qCWarning(dcRuleEngine()) << "WARNING: Loop detected in rule execution for rule" << rule.id() << rule.name();
+            qCWarning(dcRuleEngine()) << "WARNING: Loop detected in rule execution for rule" << rule.id().toString() << rule.name();
             break;
         }
         m_executingRules.append(rule.id());

@@ -81,13 +81,15 @@ bool Param::isValid() const
 /*! Writes the paramTypeId and value of the given \a param to \a dbg. */
 QDebug operator<<(QDebug dbg, const Param &param)
 {
-    dbg.nospace() << "Param(Id: " << param.paramTypeId().toString() << ", Value:" << param.value() << ")";
-    return dbg.space();
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "Param(Id: " << param.paramTypeId().toString() << ", Value: " << param.value() << ")";
+    return dbg;
 }
 
 /*! Writes the param of the given \a params to \a dbg. */
 QDebug operator<<(QDebug dbg, const ParamList &params)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "ParamList (count:" << params.count() << ")";
     if (params.count() == 0) {
         dbg.nospace() << endl;
@@ -96,7 +98,7 @@ QDebug operator<<(QDebug dbg, const ParamList &params)
         dbg.nospace() << endl << "     " << i << ": " << params.at(i);
     }
 
-    return dbg.space();
+    return dbg;
 }
 
 /*!

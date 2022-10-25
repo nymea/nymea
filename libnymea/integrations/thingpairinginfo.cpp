@@ -122,8 +122,8 @@ QString ThingPairingInfo::translatedDisplayMessage(const QLocale &locale) const
     if (!m_thingManager) {
         return m_displayMessage;
     }
-    ThingClass deviceClass = m_thingManager->findThingClass(m_thingClassId);
-    return m_thingManager->translate(deviceClass.pluginId(), m_displayMessage.toUtf8(), locale);
+    ThingClass thingClass = m_thingManager->findThingClass(m_thingClassId);
+    return m_thingManager->translate(thingClass.pluginId(), m_displayMessage.toUtf8(), locale);
 }
 
 void ThingPairingInfo::finish(Thing::ThingError status, const QString &displayMessage)

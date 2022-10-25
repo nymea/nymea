@@ -178,6 +178,7 @@ bool EventDescriptor::operator ==(const EventDescriptor &other) const
 /*! Print an EventDescriptor including ParamDescriptors to QDebug. */
 QDebug operator<<(QDebug dbg, const EventDescriptor &eventDescriptor)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "EventDescriptor(EventTypeId: " << eventDescriptor.eventTypeId().toString() << ", ThingId:" << eventDescriptor.thingId().toString() << ", Interface:" << eventDescriptor.interface() << ", InterfaceEvent:" << eventDescriptor.interfaceEvent() <<  ")" << endl;
     for (int i = 0; i < eventDescriptor.paramDescriptors().count(); i++) {
         dbg.nospace() << "    " << i << ": " << eventDescriptor.paramDescriptors().at(i);
@@ -189,6 +190,7 @@ QDebug operator<<(QDebug dbg, const EventDescriptor &eventDescriptor)
 /*! Writes each \a eventDescriptors to \a dbg. */
 QDebug operator<<(QDebug dbg, const QList<EventDescriptor> &eventDescriptors)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "EventDescriptorList (count:" << eventDescriptors.count() << "):" << endl;
     for (int i = 0; i < eventDescriptors.count(); i++ ) {
         dbg.nospace() << "  " << i << ": " << eventDescriptors.at(i);

@@ -97,7 +97,7 @@ QString ThingSetupInfo::translatedDisplayMessage(const QLocale &locale)
 void ThingSetupInfo::finish(Thing::ThingError status, const QString &displayMessage)
 {
     if (m_finished) {
-        qCWarning(dcIntegrations()) << "ThingSetupInfo::finish() called on an already finished object.";
+        qCWarning(dcIntegrations()) << "ThingSetupInfo::finish() called on an already finished object for" << m_thing << status << displayMessage;
         return;
     }
     m_finished = true;

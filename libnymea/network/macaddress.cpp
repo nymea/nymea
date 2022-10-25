@@ -157,6 +157,7 @@ bool MacAddress::operator!=(const MacAddress &other) const
 
 QDebug operator<<(QDebug debug, const MacAddress &macAddress)
 {
+    QDebugStateSaver saver(debug);
     debug.nospace() << "MacAddress(" << macAddress.toString() << ")";
-    return debug.space();
+    return debug;
 }

@@ -450,9 +450,10 @@ Thing::ThingError IntegrationPlugin::setConfigValue(const ParamTypeId &paramType
         if (paramType.id() == paramTypeId) {
             found = true;
             Thing::ThingError result = ThingUtils::verifyParam(paramType, Param(paramTypeId, value));
-            if (result != Thing::ThingErrorNoError)
+            if (result != Thing::ThingErrorNoError) {
+                qCWarning(dcThingManager()) << "Cannot set plugin config from" << this << "because the param verification failed with error" << result;
                 return result;
-
+            }
             break;
         }
     }
@@ -519,6 +520,14 @@ ApiKeyStorage *IntegrationPlugin::apiKeyStorage() const
 void IntegrationPlugin::setMetaData(const PluginMetadata &metaData)
 {
     m_metaData = metaData;
+}
+
+QDebug operator<<(QDebug debug, IntegrationPlugin *plugin)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace() << "IntegrationPlugin(" << plugin->pluginDisplayName();
+    debug.nospace() << ", id: " << plugin->pluginId().toString() << ")";
+    return debug;
 }
 
 IntegrationPlugins::IntegrationPlugins()

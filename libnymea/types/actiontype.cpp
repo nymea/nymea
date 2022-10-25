@@ -194,7 +194,8 @@ ActionType &ActionTypes::operator[](const QString &name)
 
 QDebug operator<<(QDebug dbg, const ActionType &actionType)
 {
-    dbg.nospace().noquote() << "ActionType: " << actionType.name() << actionType.displayName() << actionType.id();
+    QDebugStateSaver saver(dbg);
+    dbg.nospace().noquote() << "ActionType(" << actionType.name() << ", " << actionType.displayName() << ", " << actionType.id() << ") ";
     return dbg;
 }
 

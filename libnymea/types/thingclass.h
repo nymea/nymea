@@ -175,7 +175,7 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(ThingClass::CreateMethods)
 
-QDebug operator<<(QDebug &dbg, const ThingClass &deviceClass);
+QDebug operator<<(QDebug dbg, const ThingClass &thingClass);
 
 class LIBNYMEA_EXPORT ThingClasses: public QList<ThingClass>
 {

@@ -133,6 +133,7 @@ QHash<ZigbeeAdapter::ZigbeeBackendType, QString> ZigbeeAdapter::backendNames()
 
 QDebug operator<<(QDebug debug, const ZigbeeAdapter &adapter)
 {
+    QDebugStateSaver saver(debug);
     debug.nospace() << "ZigbeeAdapter(" << adapter.name() << " - " << adapter.description();
     debug.nospace() << ", " << adapter.serialPort();
     if (adapter.hardwareRecognized()) {
@@ -141,7 +142,7 @@ QDebug operator<<(QDebug debug, const ZigbeeAdapter &adapter)
     }
 
     debug.nospace() << ")";
-    return debug.space();
+    return debug;
 }
 
 }

@@ -222,6 +222,7 @@ QString UpnpDeviceDescriptor::upc() const
 
 QDebug operator<<(QDebug debug, const UpnpDeviceDescriptor &upnpDeviceDescriptor)
 {
+    QDebugStateSaver saver(debug);
     debug << "----------------------------------------------\n";
     debug << "UPnP device on " << upnpDeviceDescriptor.hostAddress().toString() << upnpDeviceDescriptor.port() << "\n";
     debug << "location              | " << upnpDeviceDescriptor.location() << "\n";

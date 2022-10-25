@@ -618,6 +618,7 @@ void CoapPdu::unpack(const QByteArray &data)
 */
 QDebug operator<<(QDebug debug, const CoapPdu &coapPdu)
 {
+    QDebugStateSaver saver(debug);
     const QMetaObject &metaObject = CoapPdu::staticMetaObject;
     QMetaEnum messageTypeEnum = metaObject.enumerator(metaObject.indexOfEnumerator("MessageType"));
     debug.nospace() << "CoapPdu(" << messageTypeEnum.valueToKey(coapPdu.messageType()) << ")" << endl;
@@ -633,5 +634,5 @@ QDebug operator<<(QDebug debug, const CoapPdu &coapPdu)
     if (!coapPdu.payload().isEmpty())
         debug.nospace() << endl << coapPdu.payload() << endl;
 
-    return debug.space();
+    return debug;
 }

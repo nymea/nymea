@@ -39,7 +39,7 @@
                     "name": "VendorName",
                     "displayName": "Name of the vendor",
                     "id": "uuid",
-                    "deviceClasses": [
+                    "thingClasses": [
                         ...
                     ]
                 }
@@ -139,7 +139,7 @@
                     "id": "uuid",
                     "name": "vendorName",
                     "displayName": "Name of the vendor (translatable)",
-                    "deviceClasses": [
+                    "thingClasses": [
                         ...
                     ]
                 }
@@ -166,7 +166,7 @@
             \li string
             \li The visible name of the vendor \unicode{0x2192} \l{Vendor::displayName()}. This string will be available for translations.
         \row
-            \li \tt deviceClasses
+            \li \tt thingClasses
             \li \b M
             \li array
             \li A list of \l{DeviceClass}{DeviceClasses} objects.
@@ -176,7 +176,7 @@
         \endtable
 
     \section2 The DeviceClass definition
-    A \l{Vendor} can support more then one \l{DeviceClass}, so the parameter \e deviceClasses in the vendor definition is a list.
+    A \l{Vendor} can support more then one \l{DeviceClass}, so the parameter \e thingClasses in the vendor definition is a list.
     Each element of this list represents a \l{DeviceClass} in nymea.
 
     \code
@@ -185,10 +185,10 @@
             "vendors": [
                 {
                     ..
-                    "deviceClasses": [
+                    "thingClasses": [
                         {
                             "id": "uuid",
-                            "name": "deviceClassName",
+                            "name": "thingClassName",
                             "displayName": "The name of the device class (translatable)",
                             "o:createMethods": [ ],
                             "o:setupMethod": "SetupMethod",
@@ -344,7 +344,7 @@
             \li \tt name
             \li \b M
             \li string
-            \li This parameter will be used to define the ParamTypeId variable named \tt{deviceClassName<name>ParamTypeId} in the plugininfo.h, so it can be used in the code.
+            \li This parameter will be used to define the ParamTypeId variable named \tt{thingClassName<name>ParamTypeId} in the plugininfo.h, so it can be used in the code.
         \row
             \li \tt displayName
             \li \b M
@@ -454,7 +454,7 @@ A \l{StateType} has following parameters:
             \li \tt name
             \li \b M
             \li string
-            \li This parameter will be used to define the StateTypeId variable named \tt{deviceClassName<name>StateTypeId} in the plugininfo.h, so it can be used in the code.
+            \li This parameter will be used to define the StateTypeId variable named \tt{thingClassName<name>StateTypeId} in the plugininfo.h, so it can be used in the code.
         \row
             \li \tt displayName
             \li \b M
@@ -618,7 +618,7 @@ A \l{StateType} has following parameters:
             \li \tt name
             \li \b M
             \li string
-            \li This parameter will be used to define the ActionTypeId variable named \tt{deviceClassName<name>ActionTypeId} in the plugininfo.h, so it can be used in the code.
+            \li This parameter will be used to define the ActionTypeId variable named \tt{thingClassName<name>ActionTypeId} in the plugininfo.h, so it can be used in the code.
         \row
             \li \tt displayName
             \li \b M
@@ -665,7 +665,7 @@ A \l{StateType} has following parameters:
             \li \tt name
             \li \b M
             \li string
-            \li This parameter will be used to define the EventTypeId variable named \tt{deviceClassName<name>EventTypeId} in the plugininfo.h, so it can be used in the code.
+            \li This parameter will be used to define the EventTypeId variable named \tt{thingClassName<name>EventTypeId} in the plugininfo.h, so it can be used in the code.
         \row
             \li \tt displayName
             \li \b M

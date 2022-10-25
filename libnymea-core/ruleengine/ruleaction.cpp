@@ -210,6 +210,7 @@ void RuleAction::operator=(const RuleAction &other)
 
 QDebug operator<<(QDebug dbg, const RuleAction &ruleAction)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "RuleAction(ActionTypeId:" << ruleAction.actionTypeId().toString() << ", ThingId:" << ruleAction.thingId().toString() << ", Interface:" << ruleAction.interface() << ", InterfaceAction:" << ruleAction.interfaceAction() << ", BrowserItemId:" << ruleAction.browserItemId() << ")" << endl;
     for (int i = 0; i < ruleAction.ruleActionParams().count(); i++) {
         dbg.nospace() << "    " << i << ": " << ruleAction.ruleActionParams().at(i) << endl;
@@ -219,6 +220,7 @@ QDebug operator<<(QDebug dbg, const RuleAction &ruleAction)
 
 QDebug operator<<(QDebug dbg, const QList<RuleAction> &ruleActionList)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "RuleActionList (count:" << ruleActionList.count() << "):" << endl;
     for (int i = 0; i < ruleActionList.count(); i++ ) {
         dbg.nospace() << "  " << i << ": " << ruleActionList.at(i);

@@ -197,6 +197,7 @@ bool StateDescriptor::isValid() const
 /*! Print a StateDescriptor with all its contents to QDebug. */
 QDebug operator<<(QDebug dbg, const StateDescriptor &stateDescriptor)
 {
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "StateDescriptor(ThingId:" << stateDescriptor.thingId().toString() << ", StateTypeId:"
                   << stateDescriptor.stateTypeId().toString() << ", Interface:" << stateDescriptor.interface()
                   << ", InterfaceState:" << stateDescriptor.interfaceState() << ", Operator:" << stateDescriptor.operatorType() << ", Value:" << stateDescriptor.stateValue()

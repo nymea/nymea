@@ -394,15 +394,16 @@ void ThingClass::setBrowsable(bool browsable)
     m_browsable = browsable;
 }
 
-/*! Compare this \a deviceClass to another. This is effectively the same as calling a.id() == b.id(). Returns true if the ids match.*/
-bool ThingClass::operator==(const ThingClass &deviceClass) const
+/*! Compare this \a thingClass to another. This is effectively the same as calling a.id() == b.id(). Returns true if the ids match.*/
+bool ThingClass::operator==(const ThingClass &thingClass) const
 {
-    return m_id == deviceClass.id();
+    return m_id == thingClass.id();
 }
 
-QDebug operator<<(QDebug &dbg, const ThingClass &deviceClass)
+QDebug operator<<(QDebug dbg, const ThingClass &thingClass)
 {
-    dbg << "DeviceClass ID:" << deviceClass.id() << "Name:" << deviceClass.name();
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "ThingClass(" << thingClass.id().toString() << "Name: " << thingClass.name() << ")";
     return dbg;
 }
 
@@ -417,9 +418,9 @@ ThingClasses::ThingClasses(const QList<ThingClass> &other): QList<ThingClass> (o
 
 ThingClass ThingClasses::findById(const ThingClassId &id) const
 {
-    foreach (const ThingClass &deviceClass, *this) {
-        if (deviceClass.id() == id) {
-            return deviceClass;
+    foreach (const ThingClass &thingClass, *this) {
+        if (thingClass.id() == id) {
+            return thingClass;
         }
     }
     return ThingClass();

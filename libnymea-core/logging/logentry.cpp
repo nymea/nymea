@@ -170,6 +170,7 @@ int LogEntry::errorCode() const
 
 QDebug operator<<(QDebug dbg, const LogEntry &entry)
 {
+    QDebugStateSaver saver(dbg);
     QMetaEnum metaEnum;
     dbg.nospace() << "LogEntry (" << entry.timestamp().toString() << ")" << endl;
     dbg.nospace() << " time stamp: " << entry.timestamp().toTime_t() << endl;
@@ -184,7 +185,7 @@ QDebug operator<<(QDebug dbg, const LogEntry &entry)
     dbg.nospace() << " error code: " << entry.errorCode() << endl;
     dbg.nospace() << "     active: " << entry.active() << endl;
     dbg.nospace() << "      value: " << entry.value() << endl;
-    return dbg.space();
+    return dbg;
 }
 
 LogEntries::LogEntries()

@@ -113,6 +113,7 @@ QByteArray CoapOption::data() const
 */
 QDebug operator<<(QDebug debug, const CoapOption &coapOption)
 {
+    QDebugStateSaver saver(debug);
     const QMetaObject &metaObject = CoapOption::staticMetaObject;
     QMetaEnum optionEnum = metaObject.enumerator(metaObject.indexOfEnumerator("Option"));
 
@@ -161,5 +162,5 @@ QDebug operator<<(QDebug debug, const CoapOption &coapOption)
         break;
     }
 
-    return debug.space();
+    return debug;
 }

@@ -254,7 +254,7 @@ ZigbeeManager::ZigbeeError ZigbeeManager::refreshNeighborTables(const QUuid &net
         qCWarning(dcZigbee()) << "No network with uuid" << networkUuid.toString();
         return ZigbeeManager::ZigbeeErrorNetworkUuidNotFound;
     }
-    m_zigbeeNetworks.value(networkUuid)->refreshNeighborTable();
+    m_zigbeeNetworks.value(networkUuid)->refreshNeighborTables();
     return ZigbeeManager::ZigbeeErrorNoError;
 }
 
@@ -702,6 +702,14 @@ void ZigbeeManager::setupNodeSignals(ZigbeeNode *node)
     });
 
     connect(node, &ZigbeeNode::neighborTableRecordsChanged, this, [=](){
+        emit nodeChanged(node->networkUuid(), node);
+    });
+
+    connect(node, &ZigbeeNode::routingTableRecordsChanged, this, [=](){
+        emit nodeChanged(node->networkUuid(), node);
+    });
+
+    connect(node, &ZigbeeNode::bindingTableRecordsChanged, this, [=](){
         emit nodeChanged(node->networkUuid(), node);
     });
 }

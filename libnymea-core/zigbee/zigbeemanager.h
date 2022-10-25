@@ -64,6 +64,9 @@ public:
         ZigbeeErrorNodeNotFound,
         ZigbeeErrorForbidden,
         ZigbeeErrorInvalidChannel,
+        ZigbeeErrorNetworkError,
+        ZigbeeErrorTimeoutError,
+        ZigbeeErrorNotSupported
     };
     Q_ENUM(ZigbeeError)
 
@@ -96,6 +99,7 @@ public:
     ZigbeeError setZigbeeNetworkPermitJoin(const QUuid &networkUuid, quint16 shortAddress = Zigbee::BroadcastAddressAllRouters, uint duration = 120);
     ZigbeeError factoryResetNetwork(const QUuid &networkUuid);
     ZigbeeError refreshNeighborTables(const QUuid &networkUuid);
+    ZigbeeReply *createBinding(const QUuid &networkUuid, const ZigbeeAddress &sourceAddress, quint8 sourceEndpointId, quint16 clusterId, const ZigbeeAddress &destinationAddress, quint8 destinationEndpointId);
 
 private:
     ZigbeeAdapters m_adapters;

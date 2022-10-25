@@ -490,6 +490,10 @@
             "ZWaveNodeTypeSlave",
             "ZWaveNodeTypeRoutingSlave"
         ],
+        "ZigbeeClusterDirection": [
+            "ZigbeeClusterDirectionServer",
+            "ZigbeeClusterDirectionClient"
+        ],
         "ZigbeeError": [
             "ZigbeeErrorNoError",
             "ZigbeeErrorAdapterNotAvailable",
@@ -500,7 +504,10 @@
             "ZigbeeErrorUnknownBackend",
             "ZigbeeErrorNodeNotFound",
             "ZigbeeErrorForbidden",
-            "ZigbeeErrorInvalidChannel"
+            "ZigbeeErrorInvalidChannel",
+            "ZigbeeErrorNetworkError",
+            "ZigbeeErrorTimeoutError",
+            "ZigbeeErrorNotSupported"
         ],
         "ZigbeeNetworkState": [
             "ZigbeeNetworkStateOffline",
@@ -2158,6 +2165,22 @@
                 "zigbeeError": "$ref:ZigbeeError"
             }
         },
+        "Zigbee.CreateBinding": {
+            "description": "Create a binding. Use destinationAddress and destinationEndpointId to create a node to node binding, or use destinationGroupAddress to create a group binding.",
+            "params": {
+                "clusterId": "Uint",
+                "networkUuid": "Uuid",
+                "o:destinationAddress": "String",
+                "o:destinationEndpointId": "Uint",
+                "o:destinationGroupAddress": "Uint",
+                "sourceAddress": "String",
+                "sourceEndpointId": "Uint"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "zigbeeError": "$ref:ZigbeeError"
+            }
+        },
         "Zigbee.FactoryResetNetwork": {
             "description": "Factory reset the network with the given 'networkUuid'. The network does not have to be online for this procedure, and all associated nodes and things will be removed permanently.",
             "params": {
@@ -2212,10 +2235,37 @@
                 "zigbeeError": "$ref:ZigbeeError"
             }
         },
+        "Zigbee.RefreshBindings": {
+            "description": "Refresh the binding table for the given node.",
+            "params": {
+                "ieeeAddress": "String",
+                "networkUuid": "Uuid"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "zigbeeError": "$ref:ZigbeeError"
+            }
+        },
         "Zigbee.RefreshNeighborTables": {
             "description": "Refresh the neighbor table for all nodes. Note that calling this may cause a lot of traffic in the ZigBee network.",
             "params": {
                 "networkUuid": "Uuid"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "zigbeeError": "$ref:ZigbeeError"
+            }
+        },
+        "Zigbee.RemoveBinding": {
+            "description": "Remove a binding.",
+            "params": {
+                "clusterId": "Uint",
+                "networkUuid": "Uuid",
+                "o:destinationAddress": "String",
+                "o:destinationEndpointId": "Uint",
+                "o:destinationGroupAddress": "Uint",
+                "sourceAddress": "String",
+                "sourceEndpointId": "Uint"
             },
             "permissionScope": "PermissionScopeAdmin",
             "returns": {
@@ -3276,6 +3326,18 @@
         "ZigbeeAdapters": [
             "$ref:ZigbeeAdapter"
         ],
+        "ZigbeeBindingTableRecord": {
+            "clusterId": "Uint",
+            "o:destinationAddress": "String",
+            "o:destinationEndpointId": "Uint",
+            "o:destinationGroupAddress": "Uint",
+            "sourceAddress": "String",
+            "sourceEndpointId": "Uint"
+        },
+        "ZigbeeCluster": {
+            "clusterId": "Uint",
+            "direction": "$ref:ZigbeeClusterDirection"
+        },
         "ZigbeeNeighborTableRecord": {
             "depth": "Uint",
             "lqi": "Uint",
@@ -3300,6 +3362,12 @@
             "serialPort": "String"
         },
         "ZigbeeNode": {
+            "bindingTableRecords": [
+                "$ref:ZigbeeBindingTableRecord"
+            ],
+            "endpoints": [
+                "$ref:ZigbeeNodeEndpoint"
+            ],
             "ieeeAddress": "String",
             "lastSeen": "Uint",
             "lqi": "Uint",
@@ -3318,6 +3386,15 @@
             "state": "$ref:ZigbeeNodeState",
             "type": "$ref:ZigbeeNodeType",
             "version": "String"
+        },
+        "ZigbeeNodeEndpoint": {
+            "endpointId": "Uint",
+            "inputClusters": [
+                "$ref:ZigbeeCluster"
+            ],
+            "outputClusters": [
+                "$ref:ZigbeeCluster"
+            ]
         },
         "ZigbeeRoutingTableRecord": {
             "destinationAddress": "Uint",

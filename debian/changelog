@@ -1,3 +1,37 @@
+nymea (1.5.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Fix a potential info->aborted() call after the plugin called info-
+    >finish()
+  * Expose Zigbee neighbor tables to jsonrpc
+  * Align gassensor interface wording
+  * Fix PyStdOutHandler class name in python engine
+  * Add API to interact with ZigBee bindings
+  * Add Thing and Things types to script engine
+
+  [ Simon Stürz ]
+  * Network device discovery: create reply for each discovery request
+
+  [ Michael Zanetti ]
+  * Fix editing user scopes
+
+  [ Simon Stürz ]
+  * Network device discovery: fix potential crash on unregister non
+    existing monitor
+  * Provide mock plugin with the test library, not with the tests.
+  * Remove extern plugin info from testlib header
+  * Improve warning information in thing manager
+
+  [ Michael Zanetti ]
+  * Add API to configure the wired network
+  * Rework air quliaty interfaces
+
+  [ Simon Stürz ]
+  * Allow to override default paths using new env variable
+  * Update mac address database
+
+ -- jenkins <developer@nymea.io>  Tue, 25 Oct 2022 02:37:19 +0200
+
 nymea (1.4.1) jammy; urgency=medium
 
   [ Michael Zanetti ]

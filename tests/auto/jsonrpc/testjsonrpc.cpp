@@ -35,6 +35,7 @@
 #include "servers/mocktcpserver.h"
 #include "usermanager/usermanager.h"
 #include "nymeadbusservice.h"
+#include "../plugins/mock/extern-plugininfo.h"
 
 using namespace nymeaserver;
 

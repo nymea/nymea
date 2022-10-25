@@ -32,6 +32,7 @@
 #include "nymeacore.h"
 #include "nymeasettings.h"
 #include "servers/mocktcpserver.h"
+#include "../plugins/mock/extern-plugininfo.h"
 
 using namespace nymeaserver;
 

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2022, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -35,10 +35,11 @@
 #include <QtTest>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QLoggingCategory>
+
+#include <typeutils.h>
 
 Q_DECLARE_LOGGING_CATEGORY(dcTests)
-
-#include "../plugins/mock/extern-plugininfo.h"
 
 namespace nymeaserver {
 class MockTcpServer;

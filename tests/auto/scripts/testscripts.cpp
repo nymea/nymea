@@ -35,6 +35,8 @@
 #include "nymeacore.h"
 #include "scriptengine/scriptengine.h"
 
+#include "../plugins/mock/extern-plugininfo.h"
+
 #include <QtQml/qqml.h>
 
 using namespace nymeaserver;

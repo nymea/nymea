@@ -34,6 +34,8 @@
 #include "logging/logvaluetool.h"
 #include "servers/mocktcpserver.h"
 
+#include "../plugins/mock/extern-plugininfo.h"
+
 #include <qglobal.h>
 
 using namespace nymeaserver;

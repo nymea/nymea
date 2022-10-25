@@ -38,6 +38,8 @@
 #include "servers/mocktcpserver.h"
 #include "jsonrpc/integrationshandler.h"
 
+#include "../plugins/mock/extern-plugininfo.h"
+
 using namespace nymeaserver;
 
 class TestIOConnections : public NymeaTestBase

@@ -39,18 +39,29 @@ QHash<QString, ApiKey> ApiKeysProvidersLoader::allApiKeys() const
 
 QStringList ApiKeysProvidersLoader::pluginSearchDirs() const
 {
+    const char *envDefaultPath = "NYMEA_APIKEYS_PLUGINS_PATH";
+    const char *envExtraPath = "NYMEA_APIKEYS_PLUGINS_EXTRA_PATH";
+
     QStringList searchDirs;
-    QByteArray envPath = qgetenv("NYMEA_APIKEYS_PLUGINS_PATH");
-    if (!envPath.isEmpty()) {
-        searchDirs << QString(envPath).split(':');
+    QByteArray envExtraPathData = qgetenv(envExtraPath);
+    if (!envExtraPathData.isEmpty()) {
+        searchDirs << QString::fromUtf8(envExtraPathData).split(':');
     }
 
-    foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
-        searchDirs << libraryPath.replace("qt5", "nymea").replace("plugins", "apikeysproviders");
+    if (qEnvironmentVariableIsSet(envDefaultPath)) {
+        QByteArray envDefaultPathData = qgetenv(envDefaultPath);
+        if (!envDefaultPathData.isEmpty()) {
+            searchDirs << QString::fromUtf8(envDefaultPathData).split(':');
+        }
+    } else {
+        foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+            searchDirs << libraryPath.replace("qt5", "nymea").replace("plugins", "apikeysproviders");
+        }
+        searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../lib/nymea/apikeysproviders").absolutePath();
+        searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../apikeysproviders/").absolutePath();
+        searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../../../apikeysproviders/").absolutePath();
     }
-    searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../lib/nymea/apikeysproviders/").absolutePath();
-    searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../apikeysproviders/").absolutePath();
-    searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../../../apikeysproviders/").absolutePath();
+
     searchDirs.removeDuplicates();
     return searchDirs;
 }

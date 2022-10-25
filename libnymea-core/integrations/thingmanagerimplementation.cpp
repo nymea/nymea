@@ -131,21 +131,32 @@ ThingManagerImplementation::~ThingManagerImplementation()
 
 QStringList ThingManagerImplementation::pluginSearchDirs()
 {
+    const char *envDefaultPath = "NYMEA_PLUGINS_PATH";
+    const char *envExtraPath = "NYMEA_PLUGINS_EXTRA_PATH";
+
     QStringList searchDirs;
-    QByteArray envPath = qgetenv("NYMEA_PLUGINS_PATH");
-    if (!envPath.isEmpty()) {
-        searchDirs << QString(envPath).split(':');
+    QByteArray envExtraPathData = qgetenv(envExtraPath);
+    if (!envExtraPathData.isEmpty()) {
+        searchDirs << QString::fromUtf8(envExtraPathData).split(':');
     }
 
-    foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
-        searchDirs << libraryPath.replace("qt5", "nymea");
+    if (qEnvironmentVariableIsSet(envDefaultPath)) {
+        QByteArray envDefaultPathData = qgetenv(envDefaultPath);
+        if (!envDefaultPathData.isEmpty()) {
+            searchDirs << QString::fromUtf8(envDefaultPathData).split(':');
+        }
+    } else {
+        foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+            searchDirs << libraryPath.replace("qt5", "nymea");
+        }
+        foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+            searchDirs << libraryPath.replace("plugins", "nymea/plugins");
+        }
+        searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../lib/nymea/plugins/").absolutePath();
+        searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../plugins/").absolutePath();
+        searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../../../plugins/").absolutePath();
     }
-    foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
-        searchDirs << libraryPath.replace("plugins", "nymea/plugins");
-    }
-    searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../lib/nymea/plugins/").absolutePath();
-    searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../plugins/").absolutePath();
-    searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../../../plugins/").absolutePath();
+
     searchDirs.removeDuplicates();
     return searchDirs;
 }

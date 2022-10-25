@@ -75,18 +75,30 @@ void ExperienceManager::loadPlugins()
 
 QStringList ExperienceManager::pluginSearchDirs() const
 {
+    const char *envDefaultPath = "NYMEA_EXPERIENCE_PLUGINS_PATH";
+    const char *envExtraPath = "NYMEA_EXPERIENCE_PLUGINS_EXTRA_PATH";
+
     QStringList searchDirs;
-    QByteArray envPath = qgetenv("NYMEA_EXPERIENCE_PLUGINS_PATH");
-    if (!envPath.isEmpty()) {
-        searchDirs << QString(envPath).split(':');
+    QByteArray envExtraPathData = qgetenv(envExtraPath);
+    if (!envExtraPathData.isEmpty()) {
+        searchDirs << QString::fromUtf8(envExtraPathData).split(':');
     }
 
-    foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
-        searchDirs << libraryPath.replace("qt5", "nymea").replace("plugins", "experiences");
+    if (qEnvironmentVariableIsSet(envDefaultPath)) {
+        QByteArray envDefaultPathData = qgetenv(envDefaultPath);
+        if (!envDefaultPathData.isEmpty()) {
+            searchDirs << QString::fromUtf8(envDefaultPathData).split(':');
+        }
+    } else {
+        foreach (QString libraryPath, QCoreApplication::libraryPaths()) {
+            searchDirs << libraryPath.replace("qt5", "nymea").replace("plugins", "experiences");
+        }
+        searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../lib/nymea/experiences").absolutePath();
+        searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../experiences/").absolutePath();
+        searchDirs << QDir(QCoreApplication::applicationDirPath() + "/../../../experiences/").absolutePath();
     }
-    searchDirs << QCoreApplication::applicationDirPath() + "/../lib/nymea/experiences";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../experiences/";
-    searchDirs << QCoreApplication::applicationDirPath() + "/../../../experiences/";
+
+    searchDirs.removeDuplicates();
     return searchDirs;
 }
 

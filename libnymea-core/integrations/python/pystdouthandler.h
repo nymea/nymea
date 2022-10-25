@@ -97,10 +97,10 @@ static void registerStdOutHandler(PyObject *module)
     PyStdOutHandlerType.tp_init = reinterpret_cast<initproc>(PyStdOutHandler_init);
     PyStdOutHandlerType.tp_flags = Py_TPFLAGS_DEFAULT;
     PyStdOutHandlerType.tp_methods = PyStdOutHandler_methods;
-    PyStdOutHandlerType.tp_doc = "Logging handler for nymea.";
+    PyStdOutHandlerType.tp_doc = "Std out handler for nymea.";
 
     if (PyType_Ready(&PyStdOutHandlerType) == 0) {
-        PyModule_AddObject(module, "NymeaLoggingHandler", (PyObject *)&PyStdOutHandlerType);
+        PyModule_AddObject(module, "NymeaStdOutHandler", (PyObject *)&PyStdOutHandlerType);
     }
 }
 

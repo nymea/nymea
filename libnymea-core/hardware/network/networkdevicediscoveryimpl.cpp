@@ -259,7 +259,7 @@ void NetworkDeviceDiscoveryImpl::unregisterMonitor(const MacAddress &macAddress)
     }
 
     if (m_monitors.contains(macAddress)) {
-        NetworkDeviceMonitor *monitor = m_monitors.take(macAddress);
+        NetworkDeviceMonitorImpl *monitor = m_monitors.take(macAddress);
         qCInfo(dcNetworkDeviceDiscovery()) << "Unregister" << monitor;
         monitor->deleteLater();
         m_monitorsReferenceCount.remove(macAddress);
@@ -268,6 +268,12 @@ void NetworkDeviceDiscoveryImpl::unregisterMonitor(const MacAddress &macAddress)
 
 void NetworkDeviceDiscoveryImpl::unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor)
 {
+    if (!networkDeviceMonitor)
+        return;
+
+    if (!m_monitors.values().contains(qobject_cast<NetworkDeviceMonitorImpl *>(networkDeviceMonitor)))
+        return;
+
     unregisterMonitor(MacAddress(networkDeviceMonitor->networkDeviceInfo().macAddress()));
 }
 

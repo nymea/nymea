@@ -1,4 +1,4 @@
-6.1
+6.2
 {
     "enums": {
         "BasicType": [
@@ -508,6 +508,20 @@
             "ZigbeeNetworkStateUpdating",
             "ZigbeeNetworkStateOnline",
             "ZigbeeNetworkStateError"
+        ],
+        "ZigbeeNodeRelationship": [
+            "ZigbeeNodeRelationshipParent",
+            "ZigbeeNodeRelationshipChild",
+            "ZigbeeNodeRelationshipSibling",
+            "ZigbeeNodeRelationshipNone",
+            "ZigbeeNodeRelationshipPreviousChild"
+        ],
+        "ZigbeeNodeRouteStatus": [
+            "ZigbeeNodeRouteStatusActive",
+            "ZigbeeNodeRouteStatusDiscoveryUnderway",
+            "ZigbeeNodeRouteStatusDiscoveryFailed",
+            "ZigbeeNodeRouteStatusInactive",
+            "ZigbeeNodeRouteStatusValidationUnderway"
         ],
         "ZigbeeNodeState": [
             "ZigbeeNodeStateUninitialized",
@@ -2198,6 +2212,16 @@
                 "zigbeeError": "$ref:ZigbeeError"
             }
         },
+        "Zigbee.RefreshNeighborTables": {
+            "description": "Refresh the neighbor table for all nodes. Note that calling this may cause a lot of traffic in the ZigBee network.",
+            "params": {
+                "networkUuid": "Uuid"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "zigbeeError": "$ref:ZigbeeError"
+            }
+        },
         "Zigbee.RemoveNetwork": {
             "description": "Remove the ZigBee network with the given network uuid.",
             "params": {
@@ -3252,6 +3276,13 @@
         "ZigbeeAdapters": [
             "$ref:ZigbeeAdapter"
         ],
+        "ZigbeeNeighborTableRecord": {
+            "depth": "Uint",
+            "lqi": "Uint",
+            "networkAddress": "Uint",
+            "permitJoining": "Bool",
+            "relationship": "$ref:ZigbeeNodeRelationship"
+        },
         "ZigbeeNetwork": {
             "backend": "String",
             "baudRate": "Uint",
@@ -3274,13 +3305,26 @@
             "lqi": "Uint",
             "manufacturer": "String",
             "model": "String",
+            "neighborTableRecords": [
+                "$ref:ZigbeeNeighborTableRecord"
+            ],
             "networkAddress": "Uint",
             "networkUuid": "Uuid",
             "reachable": "Bool",
             "receiverOnWhileIdle": "Bool",
+            "routingTableRecords": [
+                "$ref:ZigbeeRoutingTableRecord"
+            ],
             "state": "$ref:ZigbeeNodeState",
             "type": "$ref:ZigbeeNodeType",
             "version": "String"
+        },
+        "ZigbeeRoutingTableRecord": {
+            "destinationAddress": "Uint",
+            "manyToOne": "Bool",
+            "memoryConstrained": "Bool",
+            "nextHopAddress": "Uint",
+            "status": "$ref:ZigbeeNodeRouteStatus"
         }
     }
 }

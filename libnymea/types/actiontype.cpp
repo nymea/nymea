@@ -111,18 +111,6 @@ void ActionType::setParamTypes(const ParamTypes &paramTypes)
     m_paramTypes = paramTypes;
 }
 
-/*! Returns a list of all valid properties a ActionType definition can have. */
-QStringList ActionType::typeProperties()
-{
-    return QStringList() << "id" << "name" << "displayName" << "paramTypes";
-}
-
-/*! Returns a list of mandatory properties a ActionType definition must have. */
-QStringList ActionType::mandatoryTypeProperties()
-{
-    return QStringList() << "id" << "name" << "displayName";
-}
-
 ActionTypes::ActionTypes(const QList<ActionType> &other)
 {
     foreach (const ActionType &at, other) {

@@ -129,7 +129,7 @@ bool EventType::isValid() const
 /*! Returns a list of all valid JSON properties a EventType JSON definition can have. */
 QStringList EventType::typeProperties()
 {
-    return QStringList() << "id" << "name" << "displayName" << "paramTypes";
+    return QStringList() << "id" << "name" << "displayName" << "paramTypes" << "suggestLogging";
 }
 
 /*! Returns a list of mandatory JSON properties a EventType JSON definition must have. */

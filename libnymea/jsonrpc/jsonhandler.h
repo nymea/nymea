@@ -98,7 +98,11 @@ protected:
     template <typename Enum> void registerEnum();
     template <typename Enum, typename Flags> void registerFlag();
 
+    // Registers the given object
     template <typename ObjectType> void registerObject();
+    // Registers the given list type object as a container for the given object type, without registering the object type itself
+    template <typename ListType, typename ObjectType> void registerList();
+    // Registers an object and its list type object
     template <typename ObjectType, typename ListType> void registerObject();
 
     template <typename ObjectType> void registerUncreatableObject();
@@ -117,6 +121,7 @@ protected:
 
 private:
     void registerObject(const QMetaObject &metaObject);
+    void registerList(const QMetaObject &listObject, const QMetaObject &metaObject);
     void registerObject(const QMetaObject &metaObject, const QMetaObject &listMetaObject);
 
     QVariant pack(const QMetaObject &metaObject, const void *gadget) const;
@@ -166,6 +171,15 @@ void JsonHandler::registerObject()
     qRegisterMetaType<ObjectType>();
     QMetaObject metaObject = ObjectType::staticMetaObject;
     registerObject(metaObject);
+}
+
+template<typename ListType, typename ObjectType>
+void JsonHandler::registerList()
+{
+    qRegisterMetaType<ListType>();
+    QMetaObject metaObject = ObjectType::staticMetaObject;
+    QMetaObject listMetaObject = ListType::staticMetaObject;
+    registerList(listMetaObject, metaObject);
 }
 
 template<typename ObjectType, typename ListType>

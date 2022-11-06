@@ -262,7 +262,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
 
     if (definition.type() == QVariant::Map) {
         if (value.type() != QVariant::Map) {
-            return Result(false, "Invalid value. Expected a map bug received: " + value.toString());
+            return Result(false, "Invalid value. Expected a map but received: " + value.toString());
         }
         return validateMap(value.toMap(), definition.toMap(), api, openMode);
     }

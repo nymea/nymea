@@ -1,3 +1,8 @@
+nymea (1.5.1) jammy; urgency=medium
+
+
+ -- jenkins <developer@nymea.io>  Mon, 07 Nov 2022 12:48:00 +0100
+
 nymea (1.5.0) jammy; urgency=medium
 
   [ Michael Zanetti ]

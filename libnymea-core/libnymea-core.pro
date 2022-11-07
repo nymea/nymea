@@ -131,9 +131,6 @@ HEADERS += nymeacore.h \
     usermanager/tokeninfo.h \
     usermanager/pushbuttondbusservice.h \
     certificategenerator.h \
-    cloud/awsconnector.h \
-    cloud/cloudmanager.h \
-    cloud/cloudnotifications.h \
     hardwaremanagerimplementation.h \
     hardware/plugintimermanagerimplementation.h \
     hardware/radio433/radio433brennenstuhl.h \
@@ -161,7 +158,6 @@ HEADERS += nymeacore.h \
     debugserverhandler.h \
     tagging/tagsstorage.h \
     tagging/tag.h \
-    cloud/cloudtransport.h \
     debugreportgenerator.h \
     platform/platform.h \
     zigbee/zigbeeadapter.h \
@@ -238,9 +234,6 @@ SOURCES += nymeacore.cpp \
     usermanager/tokeninfo.cpp \
     usermanager/pushbuttondbusservice.cpp \
     certificategenerator.cpp \
-    cloud/awsconnector.cpp \
-    cloud/cloudmanager.cpp \
-    cloud/cloudnotifications.cpp \
     hardwaremanagerimplementation.cpp \
     hardware/plugintimermanagerimplementation.cpp \
     hardware/radio433/radio433brennenstuhl.cpp \
@@ -268,7 +261,6 @@ SOURCES += nymeacore.cpp \
     debugserverhandler.cpp \
     tagging/tagsstorage.cpp \
     tagging/tag.cpp \
-    cloud/cloudtransport.cpp \
     debugreportgenerator.cpp \
     platform/platform.cpp \
     zigbee/zigbeeadapter.cpp \

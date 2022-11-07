@@ -566,7 +566,7 @@
                 "key": "String",
                 "o:group": "String"
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeControlThings",
             "returns": {
                 "value": "String"
             }
@@ -579,7 +579,7 @@
                 "o:group": "String",
                 "value": "String"
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
             }
         },
@@ -1595,7 +1595,7 @@
                 "o:stateEvaluator": "$ref:StateEvaluator",
                 "o:timeDescriptor": "$ref:TimeDescriptor"
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeConfigureRules",
             "returns": {
                 "o:ruleId": "Uuid",
                 "ruleError": "$ref:RuleError"
@@ -1606,7 +1606,7 @@
             "params": {
                 "ruleId": "Uuid"
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeConfigureRules",
             "returns": {
                 "ruleError": "$ref:RuleError"
             }
@@ -1630,7 +1630,7 @@
                 "o:timeDescriptor": "$ref:TimeDescriptor",
                 "ruleId": "Uuid"
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeConfigureRules",
             "returns": {
                 "o:rule": "$ref:Rule",
                 "ruleError": "$ref:RuleError"
@@ -1641,7 +1641,7 @@
             "params": {
                 "ruleId": "Uuid"
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeConfigureRules",
             "returns": {
                 "ruleError": "$ref:RuleError"
             }
@@ -1651,7 +1651,7 @@
             "params": {
                 "ruleId": "Uuid"
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeExecuteRules",
             "returns": {
                 "ruleError": "$ref:RuleError"
             }
@@ -1661,7 +1661,7 @@
             "params": {
                 "ruleId": "Uuid"
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeExecuteRules",
             "returns": {
                 "ruleError": "$ref:RuleError"
             }
@@ -1671,7 +1671,7 @@
             "params": {
                 "thingId": "Uuid"
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeExecuteRules",
             "returns": {
                 "ruleIds": [
                     "Uuid"
@@ -1683,7 +1683,7 @@
             "params": {
                 "ruleId": "Uuid"
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeExecuteRules",
             "returns": {
                 "o:rule": "$ref:Rule",
                 "ruleError": "$ref:RuleError"
@@ -1693,7 +1693,7 @@
             "description": "Get the descriptions of all configured rules. If you need more information about a specific rule use the method Rules.GetRuleDetails.",
             "params": {
             },
-            "permissionScope": "PermissionScopeConfigureRules",
+            "permissionScope": "PermissionScopeExecuteRules",
             "returns": {
                 "ruleDescriptions": [
                     "$ref:RuleDescription"
@@ -1705,7 +1705,7 @@
             "params": {
                 "ruleId": "Uuid"
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeConfigureRules",
             "returns": {
                 "ruleError": "$ref:RuleError"
             }
@@ -1935,7 +1935,7 @@
             "params": {
                 "tag": "$ref:Tag"
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeControlThings",
             "returns": {
                 "tagError": "$ref:TagError"
             }
@@ -1948,7 +1948,7 @@
                 "o:tagId": "String",
                 "o:thingId": "Uuid"
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeControlThings",
             "returns": {
                 "o:tags": "$ref:Tags",
                 "tagError": "$ref:TagError"
@@ -1959,7 +1959,7 @@
             "params": {
                 "tag": "$ref:Tag"
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeControlThings",
             "returns": {
                 "tagError": "$ref:TagError"
             }

@@ -26,7 +26,7 @@ AppDataHandler::AppDataHandler(QObject *parent) : JsonHandler(parent)
     params.insert("o:group", enumValueName(String));
     params.insert("key", enumValueName(String));
     params.insert("value", enumValueName(String));
-    registerMethod("Store", description, params, returns);
+    registerMethod("Store", description, params, returns, Types::PermissionScopeConfigureThings);
 
     description.clear(); params.clear(); returns.clear();
     description = "Retrieve an app data storage value that has previously been set with Store(). If no value "
@@ -35,7 +35,7 @@ AppDataHandler::AppDataHandler(QObject *parent) : JsonHandler(parent)
     params.insert("o:group", enumValueName(String));
     params.insert("key", enumValueName(String));
     returns.insert("value", enumValueName(String));
-    registerMethod("Load", description, params, returns);
+    registerMethod("Load", description, params, returns, Types::PermissionScopeControlThings);
 
     // Notifications
     description.clear(); params.clear();

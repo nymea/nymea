@@ -918,7 +918,8 @@
         "Integrations.ExecuteAction": {
             "description": "Execute a single action.",
             "params": {
-                "actionTypeId": "Uuid",
+                "d:o:actionTypeId": "Uuid",
+                "o:actionName": "String",
                 "o:params": "$ref:ParamList",
                 "thingId": "Uuid"
             },
@@ -2793,7 +2794,8 @@
     },
     "types": {
         "Action": {
-            "actionTypeId": "Uuid",
+            "d:o:actionTypeId": "Uuid",
+            "o:actionName": "String",
             "o:params": "$ref:ParamList",
             "thingId": "Uuid"
         },

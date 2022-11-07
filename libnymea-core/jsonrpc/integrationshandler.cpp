@@ -338,8 +338,9 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
 
     params.clear(); returns.clear();
     description = "Execute a single action.";
-    params.insert("actionTypeId", enumValueName(Uuid));
     params.insert("thingId", enumValueName(Uuid));
+    params.insert("o:name", enumValueName(String)); // TODO: Make mandatory when actionTypeId is removed
+    params.insert("d:o:actionTypeId", enumValueName(Uuid));
     params.insert("o:params", objectRef<ParamList>());
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:displayMessage", enumValueName(String));
@@ -997,11 +998,19 @@ JsonReply *IntegrationsHandler::GetBrowserItem(const QVariantMap &params, const 
 JsonReply *IntegrationsHandler::ExecuteAction(const QVariantMap &params, const JsonContext &context)
 {
     ThingId thingId(params.value("thingId").toString());
+    QString name = params.value("name").toString();
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     ParamList actionParams = unpack<ParamList>(params.value("params"));
     QLocale locale = context.locale();
 
-    Action action(actionTypeId, thingId);
+    Action action;
+    if (!name.isEmpty()) {
+        action.setName(name);
+    } else {
+        action.setActionTypeId(actionTypeId);
+    }
+
+    action.setThingId(thingId);
     action.setParams(actionParams);
 
     JsonReply *jsonReply = createAsyncReply("ExecuteAction");

@@ -197,6 +197,8 @@ void TestUsermanager::createUser()
 void TestUsermanager::authenticate()
 {
     m_apiToken.clear();
+    injectAndWait("JSONRPC.Hello");
+
     createUser();
 
     QVariantMap params;
@@ -237,6 +239,13 @@ void TestUsermanager::authenticatePushButton()
 
     QCOMPARE(rsp.value("params").toMap().value("transactionId").toInt(), transactionId);
     QVERIFY2(!rsp.value("params").toMap().value("token").toByteArray().isEmpty(), "Token not in push button auth notification");
+
+    m_apiToken = rsp.value("params").toMap().value("token").toByteArray();
+
+    qCDebug(dcTests()) << "Invoking Version";
+    // Test a regular call to verify we're actually authenticated
+    response = injectAndWait("JSONRPC.Version");
+    QVERIFY2(response.toMap().value("status").toString() == "success", "JSONRPC.Version call failed after push button auth!");
 }
 
 void TestUsermanager::authenticatePushButtonAuthInterrupt()
@@ -269,7 +278,7 @@ void TestUsermanager::authenticatePushButtonAuthInterrupt()
     clientSpy.clear();
     params.clear();
     params.insert("deviceName", "mallory");
-    response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, malloryId);
+    response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, malloryId, "");
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
     int transactionId2 = response.toMap().value("params").toMap().value("transactionId").toInt();
 
@@ -361,7 +370,7 @@ void TestUsermanager::authenticatePushButtonAuthConnectionDrop()
     // request push button auth for client 1 (alice) and check for OK reply
     QVariantMap params;
     params.insert("deviceName", "alice");
-    QVariant response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, aliceId);
+    QVariant response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, aliceId, "");
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
 
     // Disconnect alice
@@ -378,7 +387,7 @@ void TestUsermanager::authenticatePushButtonAuthConnectionDrop()
     // request push button auth for client 2 (bob) and check for OK reply
     params.clear();
     params.insert("deviceName", "bob");
-    response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, bobId);
+    response = injectAndWait("JSONRPC.RequestPushButtonAuth", params, bobId, "");
     QCOMPARE(response.toMap().value("params").toMap().value("success").toBool(), true);
     int transactionId = response.toMap().value("params").toMap().value("transactionId").toInt();
 

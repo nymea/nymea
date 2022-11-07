@@ -87,6 +87,11 @@ void NymeaTestBase::initTestCase(const QString &loggingRules)
     qApp->processEvents();
     qCDebug(dcTests()) << "Nymea core instance initialized. Creating dummy user.";
 
+    foreach (const UserInfo &userInfo, NymeaCore::instance()->userManager()->users()) {
+        NymeaCore::instance()->userManager()->removeUser(userInfo.username());
+    }
+    NymeaCore::instance()->userManager()->removeUser("");
+
     // Yes, we're intentionally mixing upper/lower case email here... username should not be case sensitive
     NymeaCore::instance()->userManager()->removeUser("dummy");
     NymeaCore::instance()->userManager()->createUser("dummy", "DummyPW1!", "dummy@guh.io", "Dummy", Types::PermissionScopeAdmin);
@@ -128,13 +133,13 @@ void NymeaTestBase::cleanup()
     }
 }
 
-QVariant NymeaTestBase::injectAndWait(const QString &method, const QVariantMap &params, const QUuid &clientId)
+QVariant NymeaTestBase::injectAndWait(const QString &method, const QVariantMap &params, const QUuid &clientId, const QByteArray &tokenOverride)
 {
     QVariantMap call;
     call.insert("id", m_commandId);
     call.insert("method", method);
     call.insert("params", params);
-    call.insert("token", m_apiToken);
+    call.insert("token", tokenOverride == "default" ? m_apiToken : tokenOverride);
 
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(call);
     QSignalSpy spy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));

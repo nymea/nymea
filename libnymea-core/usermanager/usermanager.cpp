@@ -164,6 +164,7 @@ UserManager::UserError UserManager::createUser(const QString &username, const QS
 
     QSqlQuery checkForDuplicateUserQuery(m_db);
     checkForDuplicateUserQuery.prepare("SELECT * FROM users WHERE lower(username) = ?;");
+    // Note: We're using toLower() on the username mainly for the reason that in old versions the username used to be an email address
     checkForDuplicateUserQuery.addBindValue(username.toLower());
     checkForDuplicateUserQuery.exec();
     if (checkForDuplicateUserQuery.first()) {

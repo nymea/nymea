@@ -296,6 +296,8 @@ JsonReply *JsonRPCServerImplementation::Hello(const QVariantMap &params, const J
         handshake.insert("cacheHashes", cacheHashes);
     }
 
+    m_clientTokens[context.clientId()] = context.token();
+
     bool badToken = false;
     if (!context.token().isEmpty()) {
         TokenInfo tokenInfo = NymeaCore::instance()->userManager()->tokenInfo(context.token());
@@ -303,7 +305,7 @@ JsonReply *JsonRPCServerImplementation::Hello(const QVariantMap &params, const J
         badToken = tokenInfo.id().isNull();
         handshake.insert("authenticated", !badToken);
         handshake.insert("permissionScopes", Types::scopesToStringList(userInfo.scopes()));
-        handshake.insert("username", userInfo.username());        
+        handshake.insert("username", userInfo.username());
     }
 
     // If the connection is locked down already (because of a previous failed attempt) and authentication failed
@@ -411,6 +413,8 @@ JsonReply *JsonRPCServerImplementation::Authenticate(const QVariantMap &params, 
         qCWarning(dcJsonRpc()) << "Staring connection lockdown timer";
         m_connectionLockdownTimer.start();
     }
+
+    m_clientTokens[context.clientId()] = token;
 
     return createReply(ret);
 }
@@ -596,11 +600,24 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     QString targetNamespace = commandList.first();
     QString method = commandList.last();
 
+    // We'll only allow setting a new token in the hello call. All other calls must match the token given in the hello
+    QByteArray token = m_clientTokens.value(clientId);
+    if (methodString == "JSONRPC.Hello") {
+        token = message.value("token").toByteArray();
+    } else if (message.value("token").toByteArray() != token) {
+        qCWarning(dcJsonRpc()) << "Client changed token without redoing the handshake.";
+        qCDebug(dcJsonRpc) << "Old token:" << token << "new token:" << message.value("token").toByteArray();
+        sendUnauthorizedResponse(interface, clientId, commandId, "Changing the user (token) requires a new handshake. Call JSONRPC.Hello.");
+        interface->terminateClientConnection(clientId);
+        qCWarning(dcJsonRpc()) << "Staring connection lockdown timer";
+        m_connectionLockdownTimer.start();
+        return;
+    }
+
     // check if authentication is required for this transport
-    if (interface->configuration().authenticationEnabled) {
-        QByteArray token = message.value("token").toByteArray();
-        QStringList authExemptMethodsNoUser = {"JSONRPC.Introspect", "JSONRPC.Hello", "JSONRPC.RequestPushButtonAuth", "JSONRPC.CreateUser"};
-        QStringList authExemptMethodsWithUser = {"JSONRPC.Introspect", "JSONRPC.Hello", "JSONRPC.Authenticate", "JSONRPC.RequestPushButtonAuth"};
+    if (interface->configuration().authenticationEnabled) {        
+        QStringList authExemptMethodsNoUser = {"JSONRPC.Hello", "JSONRPC.RequestPushButtonAuth", "JSONRPC.CreateUser"};
+        QStringList authExemptMethodsWithUser = {"JSONRPC.Hello", "JSONRPC.Authenticate", "JSONRPC.RequestPushButtonAuth"};
         // if there is no user in the system yet, let's fail unless this is a special method for authentication itself
         if (NymeaCore::instance()->userManager()->initRequired()) {
             if (!authExemptMethodsNoUser.contains(methodString) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
@@ -677,7 +694,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
     }
 
     JsonContext callContext(clientId, m_clientLocales.value(clientId));
-    callContext.setToken(message.value("token").toByteArray());
+    callContext.setToken(token);
 
     qCDebug(dcJsonRpc()) << "Invoking method" << targetNamespace + '.' +  method << "from client" << clientId;
 
@@ -833,6 +850,7 @@ void JsonRPCServerImplementation::onPushButtonAuthFinished(int transactionId, bo
     params.insert("success", success);
     if (success) {
         params.insert("token", token);
+        m_clientTokens[clientId] = token;
     }
 
     emit PushButtonAuthFinished(clientId, params);
@@ -981,6 +999,7 @@ void JsonRPCServerImplementation::clientDisconnected(const QUuid &clientId)
     m_clientNotifications.remove(clientId);
     m_clientBuffers.remove(clientId);
     m_clientLocales.remove(clientId);
+    m_clientTokens.remove(clientId);
     if (m_pushButtonTransactions.values().contains(clientId)) {
         NymeaCore::instance()->userManager()->cancelPushButtonAuth(m_pushButtonTransactions.key(clientId));
     }

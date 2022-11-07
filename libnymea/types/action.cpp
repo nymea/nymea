@@ -53,6 +53,14 @@ Action::Action(const ActionTypeId &actionTypeId, const ThingId &thingId, Trigger
 {
 }
 
+Action::Action(const ThingId &thingId, const QString &actionName, TriggeredBy triggeredBy):
+    m_thingId(thingId),
+    m_actionName(actionName),
+    m_triggeredBy(triggeredBy)
+{
+
+}
+
 /*! Construct a copy of an \a other Action. */
 Action::Action(const Action &other):
     m_actionTypeId(other.actionTypeId()),
@@ -88,6 +96,16 @@ ThingId Action::thingId() const
 void Action::setThingId(const ThingId &thingId)
 {
     m_thingId = thingId;
+}
+
+QString Action::actionName() const
+{
+    return m_actionName;
+}
+
+void Action::setActionName(const QString &actionName)
+{
+    m_actionName = actionName;
 }
 
 /*! Returns the parameters for this Action. */

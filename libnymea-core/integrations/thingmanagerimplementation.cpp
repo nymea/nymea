@@ -1320,9 +1320,17 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
 
     // Make sure this thing has an action type with this id
     ThingClass thingClass = findThingClass(thing->thingClassId());
-    ActionType actionType = thingClass.actionTypes().findById(action.actionTypeId());
-    if (actionType.id().isNull()) {
-        qCWarning(dcThingManager()) << "Cannot execute action on" << thing << "No ActionType with ID" << action.actionTypeId();
+    ActionType actionType;
+    if (!action.actionName().isEmpty()) {
+        actionType = thingClass.actionTypes().findByName(action.actionName());
+        finalAction.setActionTypeId(actionType.id());
+    } else {
+        actionType = thingClass.actionTypes().findById(action.actionTypeId());
+        finalAction.setActionName(actionType.name());
+    }
+
+    if (actionType.name().isEmpty()) {
+        qCWarning(dcThingManager()) << "Cannot execute action on" << thing << "No ActionType with name" << action.actionName() << "or ID" << action.actionTypeId();
         ThingActionInfo *info = new ThingActionInfo(thing, action, this);
         info->finish(Thing::ThingErrorActionTypeNotFound);
         return info;
@@ -1339,7 +1347,7 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
     // If there's a stateType with the same id, we'll need to take min/max values from the state as
     // they might change at runtime
     ParamTypes paramTypes = actionType.paramTypes();
-    StateType stateType = thingClass.stateTypes().findById(action.actionTypeId());
+    StateType stateType = thingClass.stateTypes().findByName(actionType.name());
     if (!stateType.id().isNull()) {
         ParamType pt = actionType.paramTypes().at(0);
         pt.setMinValue(thing->state(stateType.id()).minValue());

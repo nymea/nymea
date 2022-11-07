@@ -40,8 +40,9 @@
 class LIBNYMEA_EXPORT Action
 {
     Q_GADGET
-    Q_PROPERTY(QUuid actionTypeId READ actionTypeId WRITE setActionTypeId)
+    Q_PROPERTY(QUuid actionTypeId READ actionTypeId WRITE setActionTypeId USER true REVISION 1)
     Q_PROPERTY(QUuid thingId READ thingId WRITE setThingId)
+    Q_PROPERTY(QString actionName READ actionName WRITE setActionName USER true) // TODO: make mandatory when deprecated actionTypeId is removed
     Q_PROPERTY(ParamList params READ params WRITE setParams USER true)
 
 public:
@@ -50,7 +51,8 @@ public:
         TriggeredByRule,
         TriggeredByScript
     };
-    explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const ThingId &thingId = ThingId(), TriggeredBy triggeredBy = TriggeredByUser);
+    explicit Action(const ActionTypeId &actionTypeId, const ThingId &thingId = ThingId(), TriggeredBy triggeredBy = TriggeredByUser);
+    explicit Action(const ThingId &thingId = ThingId(), const QString &actionName = QString(), TriggeredBy triggeredBy = TriggeredByUser);
     Action(const Action &other);
 
     bool isValid() const;
@@ -59,6 +61,8 @@ public:
     void setActionTypeId(const ActionTypeId &actionTypeId);
     ThingId thingId() const;
     void setThingId(const ThingId &thingId);
+    QString actionName() const;
+    void setActionName(const QString &actionName);
 
     ParamList params() const;
     void setParams(const ParamList &params);
@@ -71,6 +75,7 @@ public:
 private:
     ActionTypeId m_actionTypeId;
     ThingId m_thingId;
+    QString m_actionName;
     ParamList m_params;
     TriggeredBy m_triggeredBy = TriggeredByUser;
 };

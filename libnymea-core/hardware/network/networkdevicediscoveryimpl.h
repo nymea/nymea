@@ -101,8 +101,9 @@ private:
     uint m_monitorInterval = 60; // 1 min
     uint m_cacheCleanupPeriod = 30; // days
 
-    NetworkDeviceDiscoveryReplyImpl *m_currentReply = nullptr;
-    QList<NetworkDeviceDiscoveryReplyImpl *> m_pendingReplies;
+    NetworkDeviceDiscoveryReplyImpl *m_currentDiscoveryReply = nullptr;
+    QList<NetworkDeviceDiscoveryReplyImpl *> m_pendingDiscoveryReplies;
+    QList<MacAddressDatabaseReply *> m_runningMacDatabaseReplies;
     QList<PingReply *> m_runningPingReplies;
 
     QHash<MacAddress, NetworkDeviceMonitorImpl *> m_monitors;

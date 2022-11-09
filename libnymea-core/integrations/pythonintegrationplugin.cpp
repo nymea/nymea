@@ -441,6 +441,13 @@ void PythonIntegrationPlugin::init()
     m_mutex.unlock();
 
     callPluginFunction("init");
+
+    // Waiting for the init to finish. In case a plugin needs to do some more stuff in init we don't
+    // want to run setupThing() before the init finishes.
+    if (m_runningTasks.values().contains("init")) {
+        QFutureWatcher<void> *watcher = m_runningTasks.key("init");
+        watcher->waitForFinished();
+    }
 }
 
 void PythonIntegrationPlugin::startMonitoringAutoThings()

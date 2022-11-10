@@ -50,7 +50,7 @@ NYMEA_LOGGING_CATEGORY(dcPingTraffic, "PingTraffic")
 Ping::Ping(QObject *parent) : QObject(parent)
 {
     m_queueTimer = new QTimer(this);
-    m_queueTimer->setInterval(20);
+    m_queueTimer->setInterval(10);
     m_queueTimer->setSingleShot(true);
     connect(m_queueTimer, &QTimer::timeout, this, [=](){
         sendNextReply();
@@ -111,6 +111,11 @@ PingReply::Error Ping::error() const
     return m_error;
 }
 
+int Ping::queueCount() const
+{
+    return m_replyQueue.count();
+}
+
 PingReply *Ping::ping(const QHostAddress &hostAddress, uint retries)
 {
     PingReply *reply = createReply(hostAddress);
@@ -144,10 +149,15 @@ void Ping::sendNextReply()
     if (m_replyQueue.isEmpty())
         return;
 
-    PingReply *reply = m_replyQueue.dequeue();
-    qCDebug(dcPing()) << "Send next reply," << m_replyQueue.count() << "left in queue";
+    m_currentReply = m_replyQueue.dequeue();
+    qCDebug(dcPing()) << "Send next reply " << m_currentReply->targetHostAddress().toString() << QString("0x%1").arg(m_currentReply->requestId(), 4, 16, QChar('0')) << ", " << m_replyQueue.count() << "left in queue";
     m_queueTimer->start();
-    QTimer::singleShot(0, reply, [=]() { performPing(reply); });
+    QTimer::singleShot(0, this, [=]() {
+        if (!m_currentReply)
+            return;
+
+        performPing(m_currentReply);
+    });
 }
 
 void Ping::performPing(PingReply *reply)
@@ -298,7 +308,7 @@ PingReply *Ping::createReply(const QHostAddress &hostAddress)
     reply->m_networkInterface = NetworkUtils::getInterfaceForHostaddress(hostAddress);
 
     connect(reply, &PingReply::timeout, this, [=](){
-        // Note: this is not the ICMP timeout, here we actually got nothing from nobody...
+        // Note: this is not the ICMP timeout, here we actually got nothing from anybody...
         finishReply(reply, PingReply::ErrorTimeout);
     });
 
@@ -310,8 +320,18 @@ PingReply *Ping::createReply(const QHostAddress &hostAddress)
         reply->deleteLater();
 
         // Cleanup any retry left over queue stuff
+        if (m_currentReply == reply)
+            m_currentReply = nullptr;
+
         m_pendingReplies.remove(reply->requestId());
         m_replyQueue.removeAll(reply);
+
+        if (m_pendingHostLookups.values().contains(reply)) {
+            // Abort any pending host lookups, the reply has been finished
+            int lookupId = m_pendingHostLookups.key(reply);
+            QHostInfo::abortHostLookup(lookupId);
+            m_pendingHostLookups.remove(lookupId);
+        }
     });
 
     return reply;
@@ -391,7 +411,7 @@ void Ping::onSocketReadyRead(int socketDescriptor)
 
         if (responsePacket->icmp_type == ICMP_ECHOREPLY) {
 
-            PingReply *reply = m_pendingReplies.take(icmpId);
+            PingReply *reply = m_pendingReplies.value(icmpId);
             if (!reply) {
                 qCDebug(dcPing()) << "No pending reply for ping echo response with id" << QString("0x%1").arg(icmpId, 4, 16, QChar('0')) << "Sequence:" << icmpSequnceNumber << "from" << senderAddress.toString();
                 return;
@@ -426,10 +446,10 @@ void Ping::onSocketReadyRead(int socketDescriptor)
                 // Note: due to a Qt bug < 5.9 we need to use old SLOT style and cannot make use of lambda here
                 int lookupId = QHostInfo::lookupHost(senderAddress.toString(), this, SLOT(onHostLookupFinished(QHostInfo)));
                 m_pendingHostLookups.insert(lookupId, reply);
+                // Finish the reply after the host lookup has finished
             } else {
                 finishReply(reply, PingReply::ErrorNoError);
             }
-
 
 
         } else if (responsePacket->icmp_type == ICMP_DEST_UNREACH) {
@@ -463,7 +483,7 @@ void Ping::onSocketReadyRead(int socketDescriptor)
                               << "ID:" << QString("0x%1").arg(icmpId, 4, 16, QChar('0'))
                               << "Sequence:" << icmpSequnceNumber;
 
-            PingReply *reply = m_pendingReplies.take(icmpId);
+            PingReply *reply = m_pendingReplies.value(icmpId);
             if (!reply) {
                 qCDebug(dcPingTraffic()) << "No pending reply for ping echo response unreachable with ID"
                                               << QString("0x%1").arg(icmpId, 4, 16, QChar('0'))

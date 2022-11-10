@@ -62,6 +62,8 @@ public:
 
     PingReply::Error error() const;
 
+    int queueCount() const;
+
     PingReply *ping(const QHostAddress &hostAddress, uint retries = 3);
     PingReply *ping(const QHostAddress &hostAddress, bool lookupHost, uint retries = 3);
 
@@ -87,6 +89,7 @@ private:
 
     QQueue<PingReply *> m_replyQueue;
     QTimer *m_queueTimer = nullptr;
+    PingReply *m_currentReply = nullptr;
     void sendNextReply();
     QHash<int, PingReply *> m_pendingHostLookups;
 

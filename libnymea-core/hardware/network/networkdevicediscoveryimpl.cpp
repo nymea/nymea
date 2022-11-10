@@ -64,7 +64,20 @@ NetworkDeviceDiscoveryImpl::NetworkDeviceDiscoveryImpl(QObject *parent) :
     m_discoveryTimer->setInterval(20000);
     m_discoveryTimer->setSingleShot(true);
     connect(m_discoveryTimer, &QTimer::timeout, this, [=](){
-        if (m_runningPingReplies.isEmpty() && m_runningMacDatabaseReplies.isEmpty() && m_currentDiscoveryReply) {
+        if (!m_runningPingReplies.isEmpty()) {
+            qCDebug(dcNetworkDeviceDiscovery()) << "Discovery timeout occurred. There are still" << m_runningPingReplies.count()  << "ping replies pending and" << m_ping->queueCount() << "addresses int the ping queue. Aborting them...";
+            foreach (PingReply *reply, m_runningPingReplies) {
+                reply->abort();
+            }
+        }
+
+        // We still wait for any mac manufacturer lookups, since we got already a mac...
+        if (!m_runningMacDatabaseReplies.isEmpty()) {
+            qCDebug(dcNetworkDeviceDiscovery()) << "Discovery timeout occurred but there are still" << m_runningMacDatabaseReplies.count() << "mac database replies pending. Waiting for them to finish...";
+            return;
+        }
+
+        if (m_currentDiscoveryReply) {
             qCDebug(dcNetworkDeviceDiscovery()) << "Discovery timeout occurred and all pending replies have finished.";
             finishDiscovery();
         }
@@ -376,6 +389,11 @@ void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
                         if (m_currentDiscoveryReply) {
                             m_currentDiscoveryReply->processPingResponse(targetAddress, reply->hostName());
                         }
+                    }
+
+                    if (m_runningPingReplies.isEmpty() && !m_runningMacDatabaseReplies.isEmpty()) {
+                        qCDebug(dcNetworkDeviceDiscovery()) << "All ping replies have finished but there are still" << m_runningMacDatabaseReplies.count() << "mac db lookups pending. Waiting for them to finish...";
+                        return;
                     }
 
                     if (m_runningPingReplies.isEmpty() && m_runningMacDatabaseReplies.isEmpty() && m_currentDiscoveryReply && !m_discoveryTimer->isActive()) {

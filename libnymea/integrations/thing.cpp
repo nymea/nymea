@@ -580,7 +580,7 @@ State Thing::state(const StateTypeId &stateTypeId) const
             return m_states.at(i);
         }
     }
-    return State(StateTypeId(), ThingId());
+    return State(StateTypeId(), ThingId(), QString());
 }
 
 /*! Returns the \l{State} with the given name of this thing. */

@@ -2147,7 +2147,7 @@ void ThingManagerImplementation::initThing(Thing *thing)
 
     QList<State> states;
     foreach (const StateType &stateType, thingClass.stateTypes()) {
-        State state(stateType.id(), thing->id());
+        State state(stateType.id(), thing->id(), stateType.name());
         states.append(state);
     }
     thing->setStates(states);

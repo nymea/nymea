@@ -40,7 +40,9 @@
 class LIBNYMEA_EXPORT State
 {
     Q_GADGET
-    Q_PROPERTY(QUuid stateTypeId READ stateTypeId)
+    Q_PROPERTY(QUuid stateTypeId READ stateTypeId USER true REVISION 1)
+    Q_PROPERTY(QUuid thingId READ thingId)
+    Q_PROPERTY(QString name READ name USER true) // TODO: Make mandatory when stateTypeId is removed
     Q_PROPERTY(QVariant value READ value)
     Q_PROPERTY(Types::StateValueFilter filter READ filter)
     Q_PROPERTY(QVariant minValue READ minValue USER true)
@@ -48,10 +50,11 @@ class LIBNYMEA_EXPORT State
 
 public:
     State();
-    State(const StateTypeId &stateTypeId, const ThingId &deviceId);
+    State(const StateTypeId &stateTypeId, const ThingId &thingId, const QString &name);
 
     StateTypeId stateTypeId() const;
     ThingId thingId() const;
+    QString name() const;
 
     QVariant value() const;
 
@@ -70,6 +73,7 @@ private:
 private:
     StateTypeId m_stateTypeId;
     ThingId m_thingId;
+    QString m_name;
     QVariant m_value;
     QVariant m_minValue;
     QVariant m_maxValue;

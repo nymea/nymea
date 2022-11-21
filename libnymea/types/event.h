@@ -42,18 +42,23 @@
 class LIBNYMEA_EXPORT Event
 {
     Q_GADGET
-    Q_PROPERTY(QUuid eventTypeId READ eventTypeId)
+    Q_PROPERTY(QUuid eventTypeId READ eventTypeId USER true REVISION 1)
     Q_PROPERTY(QUuid thingId READ thingId)
+    Q_PROPERTY(QString name READ name USER true) // TODO: Make mandatory when eventTypeId is removed
     Q_PROPERTY(ParamList params READ params)
 public:
     Event();
     Event(const EventTypeId &eventTypeId, const ThingId &thingId, const ParamList &params = ParamList());
+    Event(const ThingId &thingId, const QString &name, const ParamList &params = ParamList());
 
     EventTypeId eventTypeId() const;
     void setEventTypeId(const EventTypeId &eventTypeId);
 
     ThingId thingId() const;
     void setThingId(const ThingId &thingId);
+
+    QString name() const;
+    void setName(const QString &name);
 
     ParamList params() const;
     void setParams(const ParamList &params);
@@ -65,6 +70,7 @@ public:
 private:
     EventTypeId m_eventTypeId;
     ThingId m_thingId;
+    QString m_name;
     ParamList m_params;
 };
 Q_DECLARE_METATYPE(Event)

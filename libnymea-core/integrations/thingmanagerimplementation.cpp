@@ -1878,11 +1878,22 @@ void ThingManagerImplementation::onEventTriggered(Event event)
         qCWarning(dcThingManager()) << "Invalid thing id in emitted event. Not forwarding event. Thing setup not complete yet?";
         return;
     }
+
+    // First, let's find the event type by ID, if given (ID has still higher priority for now)
     EventType eventType = thing->thingClass().eventTypes().findById(event.eventTypeId());
+    // Of not found, try to find it by name.
     if (!eventType.isValid()) {
-        qCWarning(dcThingManager()) << "The given thing" << thing << "does not have an event type of id " + event.eventTypeId().toString() + ". Not forwarding event.";
+        eventType = thing->thingClass().eventTypes().findByName(event.name());
+    }
+    if (!eventType.isValid()) {
+        qCWarning(dcThingManager()).nospace() << "The given thing " << thing << " does not have an event type of id " + event.eventTypeId().toString() + " or name " << event.eventTypeId() << ". Not forwarding event.";
         return;
     }
+
+    // As currently we allow eventy by eventTypeId and by name, make sure both are filled in (can be removed once eventTypeId goes away
+    event.setEventTypeId(eventType.id());
+    event.setName(eventType.name());
+
     // configure logging
     if (thing->loggedEventTypeIds().contains(event.eventTypeId())) {
         m_logEngine->logEvent(event);

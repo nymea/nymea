@@ -50,15 +50,22 @@ Event::Event()
 {
 }
 
-/*! Constructs an Event reflecting the \l{Event} given by \a eventTypeId, associated with
- *  the \l{Device} given by \a deviceId and the parameters given by \a params. The parameter \a isStateChangeEvent
- *  specifies if the \l{Event} will be autogeneratet or not. The parameters must
- *  match the description in the reflecting \l{Event}.  */
+/*! Constructs an Event reflecting the \l{EventType} given by \a eventTypeId, associated with
+ *  the \l{Device} given by \a deviceId and the parameters given by \a params. The parameters must
+ *  match the description in the reflecting \l{EventType}.  */
 Event::Event(const EventTypeId &eventTypeId, const ThingId &thingId, const ParamList &params):
     m_eventTypeId(eventTypeId),
     m_thingId(thingId),
     m_params(params)
 {
+}
+
+Event::Event(const ThingId &thingId, const QString &name, const ParamList &params):
+    m_thingId(thingId),
+    m_name(name),
+    m_params(params)
+{
+
 }
 
 /*! Returns the id of the \l{EventType} which describes this Event. */
@@ -83,6 +90,16 @@ ThingId Event::thingId() const
 void Event::setThingId(const ThingId &thingId)
 {
     m_thingId = thingId;
+}
+
+QString Event::name() const
+{
+    return m_name;
+}
+
+void Event::setName(const QString &name)
+{
+    m_name = name;
 }
 
 /*! Returns the parameters of this Event. */
@@ -134,6 +151,7 @@ bool Event::operator ==(const Event &other) const
 
     return m_eventTypeId == other.eventTypeId()
             && m_thingId == other.thingId()
+            && m_name == other.name()
             && paramsMatch;
 }
 
@@ -141,7 +159,7 @@ bool Event::operator ==(const Event &other) const
 QDebug operator<<(QDebug dbg, const Event &event)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "Event(EventTypeId: " << event.eventTypeId().toString() << ", DeviceId" << event.thingId().toString() << ")";
+    dbg.nospace() << "Event(EventTypeId: " << event.eventTypeId().toString() << ", ThingId: " << event.thingId().toString() << ", Name: " << event.name() << ")";
     return dbg;
 }
 

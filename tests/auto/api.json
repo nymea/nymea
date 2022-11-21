@@ -919,7 +919,7 @@
             "description": "Execute a single action.",
             "params": {
                 "d:o:actionTypeId": "Uuid",
-                "o:actionName": "String",
+                "o:name": "String",
                 "o:params": "$ref:ParamList",
                 "thingId": "Uuid"
             },
@@ -2795,7 +2795,7 @@
     "types": {
         "Action": {
             "d:o:actionTypeId": "Uuid",
-            "o:actionName": "String",
+            "o:name": "String",
             "o:params": "$ref:ParamList",
             "thingId": "Uuid"
         },
@@ -2837,7 +2837,8 @@
             "$ref:CalendarItem"
         ],
         "Event": {
-            "r:eventTypeId": "Uuid",
+            "d:r:o:eventTypeId": "Uuid",
+            "r:o:name": "String",
             "r:params": "$ref:ParamList",
             "r:thingId": "Uuid"
         },
@@ -3052,10 +3053,12 @@
             "sslEnabled": "Bool"
         },
         "State": {
+            "d:r:o:stateTypeId": "Uuid",
             "r:filter": "$ref:StateValueFilter",
             "r:o:maxValue": "Variant",
             "r:o:minValue": "Variant",
-            "r:stateTypeId": "Uuid",
+            "r:o:name": "String",
+            "r:thingId": "Uuid",
             "r:value": "Variant"
         },
         "StateDescriptor": {

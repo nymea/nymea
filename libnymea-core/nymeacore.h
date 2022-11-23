@@ -87,15 +87,6 @@ public:
     void init(const QStringList &additionalInterfaces = QStringList());
     void destroy();
 
-    // Thing handling
-    QPair<Thing::ThingError, QList<RuleId> >removeConfiguredThing(const ThingId &thingId, const QHash<RuleId, RuleEngine::RemovePolicy> &removePolicyList);
-    Thing::ThingError removeConfiguredThing(const ThingId &thingId, const RuleEngine::RemovePolicy &removePolicy);
-
-    BrowserActionInfo* executeBrowserItem(const BrowserAction &browserAction);
-    BrowserItemActionInfo* executeBrowserItemAction(const BrowserItemAction &browserItemAction);
-
-    void executeRuleActions(const QList<RuleAction> ruleActions);
-
     RuleEngine::RuleError removeRule(const RuleId &id);
 
     NymeaConfiguration *configuration() const;
@@ -125,19 +116,6 @@ public:
 signals:
     void initialized();
 
-    void pluginConfigChanged(const PluginId &id, const ParamList &config);
-    void eventTriggered(const Event &event);
-    void thingStateChanged(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
-    void thingRemoved(const ThingId &thingId);
-    void thingAdded(Thing *thing);
-    void thingChanged(Thing *thing);
-    void thingSettingChanged(const ThingId &thingId, const ParamTypeId &settingParamTypeId, const QVariant &value);
-
-    void ruleRemoved(const RuleId &ruleId);
-    void ruleAdded(const Rule &rule);
-    void ruleActiveChanged(const Rule &rule);
-    void ruleConfigurationChanged(const Rule &rule);
-
 private:
     explicit NymeaCore(QObject *parent = nullptr);
     static NymeaCore *s_instance;
@@ -165,14 +143,8 @@ private:
     SerialPortMonitor *m_serialPortMonitor;
     ModbusRtuManager *m_modbusRtuManager;
 
-    QList<RuleId> m_executingRules;
 
 private slots:
-    void onEventTriggered(const Event &event);
-    void onThingStateChanged(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
-    void evaluateRules(const Event &event);
-    void onDateTimeChanged(const QDateTime &dateTime);
-    void onThingDisappeared(const ThingId &thingId);
     void thingManagerLoaded();
 
 };

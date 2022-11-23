@@ -1,4 +1,4 @@
-7.0
+7.1
 {
     "enums": {
         "BasicType": [
@@ -168,10 +168,6 @@
             "PermissionScopeExecuteRules",
             "PermissionScopeConfigureRules",
             "PermissionScopeAdmin"
-        ],
-        "RemovePolicy": [
-            "RemovePolicyCascade",
-            "RemovePolicyUpdate"
         ],
         "RepeatingMode": [
             "RepeatingModeNone",
@@ -1121,22 +1117,13 @@
             }
         },
         "Integrations.RemoveThing": {
-            "description": "Remove a thing from the system.",
+            "description": "Remove a thing and all its childs from the system. RemovePolicy is deprecated and has no effect any more.",
             "params": {
-                "o:removePolicy": "$ref:RemovePolicy",
-                "o:removePolicyList": [
-                    {
-                        "policy": "$ref:RemovePolicy",
-                        "ruleId": "Uuid"
-                    }
-                ],
+                "d:o:removePolicy": "String",
                 "thingId": "Uuid"
             },
             "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
-                "o:ruleIds": [
-                    "Uuid"
-                ],
                 "thingError": "$ref:ThingError"
             }
         },

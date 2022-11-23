@@ -110,11 +110,11 @@ protected:
     virtual IOConnectionResult connectIO(const IOConnection &connection) = 0;
 
 signals:
+    void loaded();
     void pluginConfigChanged(const PluginId &id, const ParamList &config);
     void eventTriggered(const Event &event);
     void thingStateChanged(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
     void thingRemoved(const ThingId &thingId);
-    void thingDisappeared(const ThingId &thingId);
     void thingAdded(Thing *thing);
     void thingChanged(Thing *thing);
     void thingSettingChanged(const ThingId &thingId, const ParamTypeId &settingParamTypeId, const QVariant &value);

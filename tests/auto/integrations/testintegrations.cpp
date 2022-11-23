@@ -1910,9 +1910,9 @@ void TestIntegrations::discoverThingsParenting()
     QVERIFY(childThing->thingClassId() == childMockThingClassId);
 
     // Now delete the parent and make sure the child will be deleted too
-    QSignalSpy removeSpy(NymeaCore::instance(), &NymeaCore::thingRemoved);
-    QPair<Thing::ThingError, QList<RuleId> > ret = NymeaCore::instance()->removeConfiguredThing(parentThing->id(), QHash<RuleId, RuleEngine::RemovePolicy>());
-    QCOMPARE(ret.first, Thing::ThingErrorNoError);
+    QSignalSpy removeSpy(NymeaCore::instance()->thingManager(), &ThingManager::thingRemoved);
+    Thing::ThingError ret = NymeaCore::instance()->thingManager()->removeConfiguredThing(parentThing->id());
+    QCOMPARE(ret, Thing::ThingErrorNoError);
     QCOMPARE(removeSpy.count(), 3); // The parent, the auto-mock and the discovered mock
 
 }
@@ -2107,8 +2107,8 @@ void TestIntegrations::triggerEvent()
     QVERIFY2(things.count() > 0, "There needs to be at least one configured Mock Device for this test");
     Thing *thing = things.first();
 
-    QSignalSpy spy(NymeaCore::instance(), SIGNAL(eventTriggered(const Event&)));
-    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy spy(NymeaCore::instance()->thingManager(), &ThingManager::eventTriggered);
+    QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Setup connection to mock client
     QNetworkAccessManager nam;
@@ -2148,8 +2148,8 @@ void TestIntegrations::triggerStateChangeSignal()
     QVERIFY2(things.count() > 0, "There needs to be at least one configured Mock for this test");
     Thing *thing = things.first();
 
-    QSignalSpy spy(NymeaCore::instance(), SIGNAL(thingStateChanged(Thing *, const StateTypeId &, const QVariant &, const QVariant &, const QVariant &)));
-    QSignalSpy notificationSpy(m_mockTcpServer, SIGNAL(outgoingData(QUuid,QByteArray)));
+    QSignalSpy spy(NymeaCore::instance()->thingManager(), &ThingManager::thingStateChanged);
+    QSignalSpy notificationSpy(m_mockTcpServer, &MockTcpServer::outgoingData);
 
     // Setup connection to mock client
     QNetworkAccessManager nam;

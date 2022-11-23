@@ -106,14 +106,6 @@ LogEngine::~LogEngine()
     m_db.close();
 }
 
-void LogEngine::setThingManager(ThingManager *thingManager)
-{
-    m_thingManager = thingManager;
-    connect(thingManager, &ThingManager::eventTriggered, this, &LogEngine::logEvent);
-    connect(thingManager, &ThingManager::thingStateChanged, this, &LogEngine::logStateChange);
-    connect(thingManager, &ThingManager::actionExecuted, this, &LogEngine::logAction);
-}
-
 LogEntriesFetchJob *LogEngine::fetchLogEntries(const LogFilter &filter)
 {
     QList<LogEntry> results;
@@ -233,10 +225,6 @@ void LogEngine::logSystemEvent(const QDateTime &dateTime, bool active, Logging::
 
 void LogEngine::logEvent(const Event &event)
 {
-    if (!event.logged()) {
-        return;
-    }
-
     QVariantList valueList;
     foreach (const Param &param, event.params()) {
         valueList << param.value();
@@ -255,10 +243,6 @@ void LogEngine::logEvent(const Event &event)
 
 void LogEngine::logStateChange(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value)
 {
-    if (!thing->loggedStateTypeIds().contains(stateTypeId)) {
-        return;
-    }
-
     LogEntry entry(Logging::LoggingSourceStates);
     entry.setTypeId(stateTypeId);
     entry.setThingId(thing->id());

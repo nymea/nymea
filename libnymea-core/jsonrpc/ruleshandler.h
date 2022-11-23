@@ -37,11 +37,13 @@
 
 namespace nymeaserver {
 
+class RuleEngine;
+
 class RulesHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit RulesHandler(QObject *parent = nullptr);
+    explicit RulesHandler(RuleEngine *ruleEngine, QObject *parent = nullptr);
 
     QString name() const override;
 
@@ -73,6 +75,9 @@ private slots:
 
 private:
     QVariantMap packRuleDescription(const Rule &rule);
+
+private:
+    RuleEngine *m_ruleEngine = nullptr;
 };
 
 }

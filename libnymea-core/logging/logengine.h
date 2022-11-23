@@ -61,8 +61,6 @@ public:
     LogEngine(const QString &driver, const QString &dbName, const QString &hostname = QString("127.0.0.1"), const QString &username = QString(), const QString &password = QString(), int maxDBSize = 50000, QObject *parent = nullptr);
     ~LogEngine();
 
-    void setThingManager(ThingManager *thingManager);
-
     LogEntriesFetchJob *fetchLogEntries(const LogFilter &filter = LogFilter());
     ThingsFetchJob *fetchThings();
 
@@ -76,6 +74,9 @@ public:
 
 public slots:
     void logSystemEvent(const QDateTime &dateTime, bool active, Logging::LoggingLevel level = Logging::LoggingLevelInfo);
+    void logEvent(const Event &event);
+    void logStateChange(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value);
+    void logAction(const Action &action, Thing::ThingError status);
     void logBrowserAction(const BrowserAction &browserAction, Logging::LoggingLevel level = Logging::LoggingLevelInfo, int errorCode = 0);
     void logBrowserItemAction(const BrowserItemAction &browserItemAction, Logging::LoggingLevel level = Logging::LoggingLevelInfo, int errorCode = 0);
     void logRuleTriggered(const Rule &rule);
@@ -83,11 +84,6 @@ public slots:
     void logRuleEnabledChanged(const Rule &rule, const bool &enabled);
     void logRuleActionsExecuted(const Rule &rule);
     void logRuleExitActionsExecuted(const Rule &rule);
-
-private slots:
-    void logEvent(const Event &event);
-    void logStateChange(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value);
-    void logAction(const Action &action, Thing::ThingError status);
 
 signals:
     void logEntryAdded(const LogEntry &logEntry);
@@ -121,8 +117,6 @@ private:
     int m_entryCount = 0;
     bool m_initialized = false;
     bool m_dbMalformed = false;
-
-    ThingManager *m_thingManager = nullptr;
 
     // When maxQueueLength is exceeded, jobs will be flagged and discarded if this source logs more events
     int m_maxQueueLength;

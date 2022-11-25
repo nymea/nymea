@@ -1426,7 +1426,11 @@ void ThingManagerImplementation::loadPlugins()
 
             if (m_integrationPlugins.contains(plugin->pluginId())) {
                 qCWarning(dcThingManager()) << "A plugin with this ID is already loaded. Not loading" << entry << plugin->pluginId();
-                delete plugin;
+                // Depending on the plugin type, duplicate loading of the same plugin file may return the same instance. In which
+                // case we do *not* want to delete it, but we want to delete the dupe if a new instance has been created with the same ID.
+                if (m_integrationPlugins.value(plugin->pluginId()) != plugin) {
+                    delete plugin;
+                }
                 continue;
             }
             loadPlugin(plugin);

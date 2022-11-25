@@ -220,7 +220,7 @@ QVariantList NymeaTestBase::checkNotifications(const QSignalSpy &spy, const QStr
 QVariant NymeaTestBase::getAndWait(const QNetworkRequest &request, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [&nam](QNetworkReply *reply, const QList<QSslError> &) {
+    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
@@ -258,7 +258,7 @@ QVariant NymeaTestBase::getAndWait(const QNetworkRequest &request, const int &ex
 QVariant NymeaTestBase::deleteAndWait(const QNetworkRequest &request, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
+    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
@@ -293,7 +293,7 @@ QVariant NymeaTestBase::deleteAndWait(const QNetworkRequest &request, const int 
 QVariant NymeaTestBase::postAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
+    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
@@ -333,7 +333,7 @@ QVariant NymeaTestBase::postAndWait(const QNetworkRequest &request, const QVaria
 QVariant NymeaTestBase::putAndWait(const QNetworkRequest &request, const QVariant &params, const int &expectedStatus)
 {
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply *reply, const QList<QSslError> &) {
+    connect(&nam, &QNetworkAccessManager::sslErrors, [](QNetworkReply *reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));

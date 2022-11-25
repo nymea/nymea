@@ -42,6 +42,7 @@
         <file>lightsensor.json</file>
         <file>noisesensor.json</file>
         <file>windspeedsensor.json</file>
+        <file>rainfallsensor.json</file>
         <file>cosensor.json</file>
         <file>co2sensor.json</file>
         <file>o2sensor.json</file>

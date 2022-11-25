@@ -1,0 +1,19 @@
+{
+    "extends": "sensor",
+    "description": "This interface represents a rainfall sensor and informs about how much millimeters rain has fallen in the given time period.",
+    "states": [
+        {
+            "name": "rainfallLastHour",
+            "type": "uint",
+            "unit": "MilliMeter",
+            "logged": true
+        },
+        {
+            "name": "rainfallLastDay",
+            "type": "uint",
+            "unit": "MilliMeter",
+            "logged": true,
+            "optional": true
+        }
+    ]
+}

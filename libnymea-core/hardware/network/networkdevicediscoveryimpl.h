@@ -85,6 +85,12 @@ protected:
     void setEnabled(bool enabled) override;
 
 private:
+    typedef struct TargetNetwork {
+        QNetworkInterface networkInterface;
+        QNetworkAddressEntry addressEntry;
+        QHostAddress address;
+    } TargetNetwork;
+
     MacAddressDatabase *m_macAddressDatabase = nullptr;
     ArpSocket *m_arpSocket = nullptr;
     Ping *m_ping = nullptr;

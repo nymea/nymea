@@ -47,9 +47,6 @@
 #include "integrations/thingactioninfo.h"
 #include "integrations/browseractioninfo.h"
 #include "integrations/browseritemactioninfo.h"
-#include "cloud/cloudmanager.h"
-#include "cloud/cloudnotifications.h"
-#include "cloud/cloudtransport.h"
 
 #include "zigbee/zigbeemanager.h"
 
@@ -148,21 +145,9 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     qCDebug(dcCore) << "Creating Debug Server Handler";
     m_debugServerHandler = new DebugServerHandler(this);
 
-    qCDebug(dcCore) << "Creating Cloud Manager";
-    m_cloudManager = new CloudManager(m_configuration, m_networkManager, this);
-
     qCDebug(dcCore()) << "Loading experiences";
     m_experienceManager = new ExperienceManager(m_thingManager, m_serverManager->jsonServer(), this);
 
-
-    // To be removed with 0.31 or later.
-    // Most of the cloud push notifications code has been removed with 0.30, this is just kept for a release or two
-    // to auto-remove all the cloud based push notification things users might have in their systems
-    CloudNotifications *cloudNotifications = m_cloudManager->createNotificationsPlugin();
-    m_thingManager->registerStaticPlugin(cloudNotifications);
-
-    CloudTransport *cloudTransport = m_cloudManager->createTransportInterface();
-    m_serverManager->jsonServer()->registerTransportInterface(cloudTransport);
 
     connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
 
@@ -210,8 +195,7 @@ NymeaCore::~NymeaCore()
     // Destroy resources used by things
     qCDebug(dcCore) << "Shutting down \"Server Manager\"";
     delete m_serverManager;
-    qCDebug(dcCore) << "Shutting down \"CloudManager\"";
-    delete m_cloudManager;
+
     qCDebug(dcCore()) << "Shutting down \"Hardware Manager\"";
     delete m_hardwareManager;
 

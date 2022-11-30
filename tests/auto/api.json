@@ -1,4 +1,4 @@
-6.2
+7.0
 {
     "enums": {
         "BasicType": [
@@ -25,12 +25,6 @@
             "BrowserIconDocument",
             "BrowserIconPackage",
             "BrowserIconFavorites"
-        ],
-        "CloudConnectionState": [
-            "CloudConnectionStateDisabled",
-            "CloudConnectionStateUnconfigured",
-            "CloudConnectionStateConnecting",
-            "CloudConnectionStateConnected"
         ],
         "ConfigurationError": [
             "ConfigurationErrorNoError",
@@ -1271,16 +1265,6 @@
                 "types": "Object"
             }
         },
-        "JSONRPC.IsCloudConnected": {
-            "description": "Check whether the cloud is currently connected. \"connected\" will be true whenever connectionState equals CloudConnectionStateConnected and is deprecated. Please use the connectionState value instead.",
-            "params": {
-            },
-            "permissionScope": "PermissionScopeAdmin",
-            "returns": {
-                "connectionState": "$ref:CloudConnectionState",
-                "d:connected": "Bool"
-            }
-        },
         "JSONRPC.KeepAlive": {
             "description": "This is basically a Ping/Pong mechanism a client app may use to check server connectivity. Currently, the server does not actually do anything with this information and will return the call providing the given sessionId back to the caller. It is up to the client whether to use this or not and not required by the server to keep the connection alive.",
             "params": {
@@ -1313,32 +1297,6 @@
             "returns": {
                 "d:enabled": "Bool",
                 "namespaces": "StringList"
-            }
-        },
-        "JSONRPC.SetupCloudConnection": {
-            "description": "Sets up the cloud connection by deploying a certificate and its configuration.",
-            "params": {
-                "certificatePEM": "String",
-                "endpoint": "String",
-                "privateKey": "String",
-                "publicKey": "String",
-                "rootCA": "String"
-            },
-            "permissionScope": "PermissionScopeAdmin",
-            "returns": {
-                "success": "Bool"
-            }
-        },
-        "JSONRPC.SetupRemoteAccess": {
-            "description": "Setup the remote connection by providing AWS token information. This requires the cloud to be connected.",
-            "params": {
-                "idToken": "String",
-                "userId": "String"
-            },
-            "permissionScope": "PermissionScopeAdmin",
-            "returns": {
-                "message": "String",
-                "status": "Int"
             }
         },
         "JSONRPC.Version": {
@@ -2497,13 +2455,6 @@
                 "paramTypeId": "Uuid",
                 "thingId": "Uuid",
                 "value": "Variant"
-            }
-        },
-        "JSONRPC.CloudConnectedChanged": {
-            "description": "Emitted whenever the cloud connection status changes.",
-            "params": {
-                "connected": "Bool",
-                "connectionState": "$ref:CloudConnectionState"
             }
         },
         "JSONRPC.PushButtonAuthFinished": {

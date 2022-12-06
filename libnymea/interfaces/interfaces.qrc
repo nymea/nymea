@@ -40,6 +40,7 @@
         <file>pressuresensor.json</file>
         <file>moisturesensor.json</file>
         <file>lightsensor.json</file>
+        <file>vibrationsensor.json</file>
         <file>noisesensor.json</file>
         <file>windspeedsensor.json</file>
         <file>cosensor.json</file>

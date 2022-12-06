@@ -1,0 +1,10 @@
+{
+    "description": "An interface for vibration sensors.",
+    "extends": "sensor",
+    "events": [
+        {
+            "name": "vibrationDetected",
+            "logged": true
+        }
+    ]
+}

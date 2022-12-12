@@ -105,6 +105,7 @@ private:
 
     PingReply *createReply(const QHostAddress &hostAddress);
     void finishReply(PingReply *reply, PingReply::Error error);
+    void cleanUpReply(PingReply *reply);
 
 private slots:
     void onSocketReadyRead(int socketDescriptor);

@@ -317,21 +317,13 @@ PingReply *Ping::createReply(const QHostAddress &hostAddress)
     });
 
     connect(reply, &PingReply::finished, this, [=](){
+        cleanUpReply(reply);
         reply->deleteLater();
+    });
 
-        // Cleanup any retry left over queue stuff
-        if (m_currentReply == reply)
-            m_currentReply = nullptr;
-
-        m_pendingReplies.remove(reply->requestId());
-        m_replyQueue.removeAll(reply);
-
-        if (m_pendingHostLookups.values().contains(reply)) {
-            // Abort any pending host lookups, the reply has been finished
-            int lookupId = m_pendingHostLookups.key(reply);
-            QHostInfo::abortHostLookup(lookupId);
-            m_pendingHostLookups.remove(lookupId);
-        }
+    // Just in case the reply get's deleted before beeing able to finish ...
+    connect(reply, &PingReply::destroyed, this, [=](){
+        cleanUpReply(reply);
     });
 
     return reply;
@@ -370,6 +362,23 @@ void Ping::finishReply(PingReply *reply, PingReply::Error error)
         // Re-Enqueu the reply
         m_replyQueue.enqueue(reply);
         sendNextReply();
+    }
+}
+
+void Ping::cleanUpReply(PingReply *reply)
+{
+    // Cleanup any retry left over queue stuff
+    if (m_currentReply == reply)
+        m_currentReply = nullptr;
+
+    m_pendingReplies.remove(reply->requestId());
+    m_replyQueue.removeAll(reply);
+
+    if (m_pendingHostLookups.values().contains(reply)) {
+        // Abort any pending host lookups, the reply has been finished
+        int lookupId = m_pendingHostLookups.key(reply);
+        QHostInfo::abortHostLookup(lookupId);
+        m_pendingHostLookups.remove(lookupId);
     }
 }
 

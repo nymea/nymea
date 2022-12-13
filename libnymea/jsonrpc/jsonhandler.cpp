@@ -231,9 +231,8 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
     m_metaObjects.insert(className, metaObject);
 }
 
-void JsonHandler::registerObject(const QMetaObject &metaObject, const QMetaObject &listMetaObject)
+void JsonHandler::registerList(const QMetaObject &listMetaObject, const QMetaObject &metaObject)
 {
-    registerObject(metaObject);
     QString listTypeName = QString(listMetaObject.className()).split("::").last();
     QString objectTypeName = QString(metaObject.className()).split("::").last();
     m_objects.insert(listTypeName, QVariantList() << QVariant(QString("$ref:%1").arg(objectTypeName)));
@@ -243,6 +242,12 @@ void JsonHandler::registerObject(const QMetaObject &metaObject, const QMetaObjec
     Q_ASSERT_X(listMetaObject.indexOfProperty("count") >= 0, "JsonHandler", QString("List type %1 does not implement \"count\" property!").arg(listTypeName).toUtf8());
     Q_ASSERT_X(listMetaObject.indexOfMethod("get(int)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE QVariant get(int index)\" method!").arg(listTypeName).toUtf8());
     Q_ASSERT_X(listMetaObject.indexOfMethod("put(QVariant)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE void put(QVariant variant)\" method!").arg(listTypeName).toUtf8());
+}
+
+void JsonHandler::registerObject(const QMetaObject &metaObject, const QMetaObject &listMetaObject)
+{
+    registerObject(metaObject);
+    registerList(listMetaObject, metaObject);
 }
 
 QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) const

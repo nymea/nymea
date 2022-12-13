@@ -1,3 +1,37 @@
+nymea (1.6.0) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Update systemd service dependecies to dbus.socket
+
+  [ Michael Zanetti ]
+  * Add a childlock interface
+  * Fix suggestLogging property not working for eventTypes
+  * Allow registering list types without their contained objects on
+    JSONRPC
+  * Fix permissions for rules, tags and appdata api
+  * Make init call for python plugins blocking
+
+  [ Simon Stürz ]
+  * NetworkDeviceDiscovery: wait for pending MAC address manufacturer
+    lookups before finishing a discovery
+
+  [ Michael Zanetti ]
+  * Allow registering lists of ThingId on json rpc
+  * Fix a crash when the same plugin file is loaded twice
+
+  [ Simon Stürz ]
+  * NetworkDeviceDiscovery: Skip duplicated discovery if there are
+    multiple network interfaces connected to the same network
+
+  [ Michael Zanetti ]
+  * Drop old nymea:cloud support
+  * Add vibrationsensor interface
+
+  [ Simon Stürz ]
+  * Update mac address vendor database
+
+ -- jenkins <developer@nymea.io>  Tue, 13 Dec 2022 21:05:09 +0100
+
 nymea (1.5.1) jammy; urgency=medium
 
 

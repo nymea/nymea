@@ -29,9 +29,10 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "networkdevicediscoveryimpl.h"
-
 #include "nymeasettings.h"
 #include "loggingcategories.h"
+
+#include <math.h>
 
 #include <network/ping.h>
 #include <network/arpsocket.h>
@@ -339,6 +340,9 @@ void NetworkDeviceDiscoveryImpl::setEnabled(bool enabled)
 
 void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
 {
+    QList<QHostAddress> ownAddresses;
+    QList<TargetNetwork> targetNetworks;
+
     qCDebug(dcNetworkDeviceDiscovery()) << "Starting ping for all network devices...";
     foreach (const QNetworkInterface &networkInterface, QNetworkInterface::allInterfaces()) {
         if (networkInterface.flags().testFlag(QNetworkInterface::IsLoopBack))
@@ -352,56 +356,88 @@ void NetworkDeviceDiscoveryImpl::pingAllNetworkDevices()
 
         qCDebug(dcNetworkDeviceDiscovery()) << "Verifying network interface" << networkInterface.name() << networkInterface.hardwareAddress() << "...";
         foreach (const QNetworkAddressEntry &entry, networkInterface.addressEntries()) {
-            qCDebug(dcNetworkDeviceDiscovery()) << "  Checking entry" << entry.ip().toString();
 
             // Only IPv4
             if (entry.ip().protocol() != QAbstractSocket::IPv4Protocol)
                 continue;
 
+            // Store the own address of this network interface in any case,
+            // since we don't want to ping our self
+            ownAddresses.append(entry.ip());
+
+            TargetNetwork targetNetwork;
+            targetNetwork.networkInterface = networkInterface;
+            targetNetwork.addressEntry = entry;
+            targetNetwork.address = QHostAddress(entry.ip().toIPv4Address() & entry.netmask().toIPv4Address());
+
+            qCDebug(dcNetworkDeviceDiscovery()) << "  Checking entry" << entry.ip().toString();
             qCDebug(dcNetworkDeviceDiscovery()) << "    Host address:" << entry.ip().toString();
+            qCDebug(dcNetworkDeviceDiscovery()) << "    Network address:" << targetNetwork.address.toString();
             qCDebug(dcNetworkDeviceDiscovery()) << "    Broadcast address:" << entry.broadcast().toString();
             qCDebug(dcNetworkDeviceDiscovery()) << "    Netmask:" << entry.netmask().toString();
-            quint32 addressRangeStart = entry.ip().toIPv4Address() & entry.netmask().toIPv4Address();
-            quint32 addressRangeStop = entry.broadcast().toIPv4Address() | addressRangeStart;
-            quint32 range = addressRangeStop - addressRangeStart;
+            qCDebug(dcNetworkDeviceDiscovery()) << "    Address rang from" << targetNetwork.address.toString() << "-->" << targetNetwork.addressEntry.broadcast().toString();
 
             // Let's scan only 255.255.255.0 networks for now
-            if (range > 255)
+            if (entry.prefixLength() < 24) {
+                qCDebug(dcNetworkDeviceDiscovery()) << "Skipping network interface" << networkInterface.name() << "because there are to many hosts to contact. The network detector was designed for /24 networks.";
+                continue;
+            }
+
+            // Filter out duplicated networks (for example connected using wifi and ethernet to the same network) ...
+
+            bool duplicatedNetwork = false;
+            foreach (const TargetNetwork &tn, targetNetworks) {
+                if (tn.address == targetNetwork.address && tn.addressEntry.netmask() == targetNetwork.addressEntry.netmask()) {
+                    qCDebug(dcNetworkDeviceDiscovery()) << "Skipping network interface" << targetNetwork.networkInterface.name() << targetNetwork.address.toString() << "as ping target network because it seems to be the same network as" << tn.networkInterface.name() << tn.address.toString();
+                    duplicatedNetwork = true;
+                    break;
+                }
+            }
+
+            if (duplicatedNetwork)
                 continue;
 
-            qCDebug(dcNetworkDeviceDiscovery()) << "    Address range" << range << " | from" << QHostAddress(addressRangeStart).toString() << "-->" << QHostAddress(addressRangeStop).toString();
-            // Send ping request to each address within the range
-            for (quint32 i = 1; i < range; i++) {
-                quint32 address = addressRangeStart + i;
-                QHostAddress targetAddress(address);
+            targetNetworks.append(targetNetwork);
+        }
+    }
 
-                // Skip our self
-                if (targetAddress == entry.ip())
-                    continue;
+    foreach (const TargetNetwork &targetNetwork, targetNetworks) {
 
-                // Retry only once to ping a device and lookup the hostname on success
-                PingReply *reply = ping(targetAddress, true, 1);
-                m_runningPingReplies.append(reply);
-                connect(reply, &PingReply::finished, this, [=](){
-                    m_runningPingReplies.removeAll(reply);
-                    if (reply->error() == PingReply::ErrorNoError) {
-                        qCDebug(dcNetworkDeviceDiscovery()) << "Ping response from" << targetAddress.toString() << reply->hostName() << reply->duration() << "ms";
-                        if (m_currentDiscoveryReply) {
-                            m_currentDiscoveryReply->processPingResponse(targetAddress, reply->hostName());
-                        }
+        // Send ping request to each address within the range
+        quint32 targetHostsCount = pow(2, 32 - targetNetwork.addressEntry.prefixLength()) - 1;
+        for (quint32 i = 1; i < targetHostsCount; i++) {
+            QHostAddress targetAddress(targetNetwork.address.toIPv4Address() + i);
+
+            // Skip the broadcast
+            if (targetAddress == targetNetwork.addressEntry.broadcast())
+                continue;
+
+            // Skip our self
+            if (ownAddresses.contains(targetAddress))
+                continue;
+
+            // Retry only once to ping a device and lookup the hostname on success
+            PingReply *reply = ping(targetAddress, true, 1);
+            m_runningPingReplies.append(reply);
+            connect(reply, &PingReply::finished, this, [=](){
+                m_runningPingReplies.removeAll(reply);
+                if (reply->error() == PingReply::ErrorNoError) {
+                    qCDebug(dcNetworkDeviceDiscovery()) << "Ping response from" << targetAddress.toString() << reply->hostName() << reply->duration() << "ms";
+                    if (m_currentDiscoveryReply) {
+                        m_currentDiscoveryReply->processPingResponse(targetAddress, reply->hostName());
                     }
+                }
 
-                    if (m_runningPingReplies.isEmpty() && !m_runningMacDatabaseReplies.isEmpty()) {
-                        qCDebug(dcNetworkDeviceDiscovery()) << "All ping replies have finished but there are still" << m_runningMacDatabaseReplies.count() << "mac db lookups pending. Waiting for them to finish...";
-                        return;
-                    }
+                if (m_runningPingReplies.isEmpty() && !m_runningMacDatabaseReplies.isEmpty()) {
+                    qCDebug(dcNetworkDeviceDiscovery()) << "All ping replies have finished but there are still" << m_runningMacDatabaseReplies.count() << "mac db lookups pending. Waiting for them to finish...";
+                    return;
+                }
 
-                    if (m_runningPingReplies.isEmpty() && m_runningMacDatabaseReplies.isEmpty() && m_currentDiscoveryReply && !m_discoveryTimer->isActive()) {
-                        qCDebug(dcNetworkDeviceDiscovery()) << "All pending replies have finished.";
-                        finishDiscovery();
-                    }
-                });
-            }
+                if (m_runningPingReplies.isEmpty() && m_runningMacDatabaseReplies.isEmpty() && m_currentDiscoveryReply && !m_discoveryTimer->isActive()) {
+                    qCDebug(dcNetworkDeviceDiscovery()) << "All pending replies have finished.";
+                    finishDiscovery();
+                }
+            });
         }
     }
 }

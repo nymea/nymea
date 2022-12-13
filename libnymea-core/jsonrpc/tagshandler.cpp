@@ -54,7 +54,7 @@ TagsHandler::TagsHandler(QObject *parent) : JsonHandler(parent)
     params.insert("o:tagId", enumValueName(String));
     returns.insert("tagError", enumRef<TagsStorage::TagError>());
     returns.insert("o:tags", objectRef("Tags"));
-    registerMethod("GetTags", description, params, returns);
+    registerMethod("GetTags", description, params, returns, Types::PermissionScopeControlThings);
 
     params.clear(); returns.clear();
     description = "Add a Tag. "
@@ -65,7 +65,7 @@ TagsHandler::TagsHandler(QObject *parent) : JsonHandler(parent)
                   "the TagValueChanged notification will be emitted.";
     params.insert("tag", objectRef("Tag"));
     returns.insert("tagError", enumRef<TagsStorage::TagError>());
-    registerMethod("AddTag", description, params, returns);
+    registerMethod("AddTag", description, params, returns, Types::PermissionScopeControlThings);
 
     params.clear(); returns.clear();
     description = "Remove a Tag. "
@@ -73,7 +73,7 @@ TagsHandler::TagsHandler(QObject *parent) : JsonHandler(parent)
                   "TagRemoved notification will be emitted.";
     params.insert("tag", objectRef("Tag"));
     returns.insert("tagError", enumRef<TagsStorage::TagError>());
-    registerMethod("RemoveTag", description, params, returns);
+    registerMethod("RemoveTag", description, params, returns, Types::PermissionScopeControlThings);
 
     // Notifications
     params.clear();

@@ -107,14 +107,14 @@ RulesHandler::RulesHandler(QObject *parent) :
     description = "Get the descriptions of all configured rules. If you need more information about a specific rule use the "
                    "method Rules.GetRuleDetails.";
     returns.insert("ruleDescriptions", QVariantList() << objectRef("RuleDescription"));
-    registerMethod("GetRules", description, params, returns, Types::PermissionScopeConfigureRules);
+    registerMethod("GetRules", description, params, returns, Types::PermissionScopeExecuteRules);
 
     params.clear(); returns.clear();
     description = "Get details for the rule identified by ruleId";
     params.insert("ruleId", enumValueName(Uuid));
     returns.insert("o:rule", objectRef("Rule"));
     returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
-    registerMethod("GetRuleDetails", description, params, returns);
+    registerMethod("GetRuleDetails", description, params, returns, Types::PermissionScopeExecuteRules);
 
     params.clear(); returns.clear();
     description = "Add a rule. You can describe rules by one or many EventDesciptors and a StateEvaluator. "
@@ -138,7 +138,7 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.insert("o:executable", enumValueName(Bool));
     returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
     returns.insert("o:ruleId", enumValueName(Uuid));
-    registerMethod("AddRule", description, params, returns);
+    registerMethod("AddRule", description, params, returns, Types::PermissionScopeConfigureRules);
 
     params.clear(); returns.clear();
     description = "Edit the parameters of a rule. The configuration of the rule with the given ruleId "
@@ -156,45 +156,45 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.insert("o:executable", enumValueName(Bool));
     returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
     returns.insert("o:rule", objectRef("Rule"));
-    registerMethod("EditRule", description, params, returns);
+    registerMethod("EditRule", description, params, returns, Types::PermissionScopeConfigureRules);
 
     params.clear(); returns.clear();
     description = "Remove a rule";
     params.insert("ruleId", enumValueName(Uuid));
     returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
-    registerMethod("RemoveRule", description, params, returns);
+    registerMethod("RemoveRule", description, params, returns, Types::PermissionScopeConfigureRules);
 
     params.clear(); returns.clear();
     description = "Find a list of rules containing any of the given parameters.";
     params.insert("thingId", enumValueName(Uuid));
     returns.insert("ruleIds", QVariantList() << enumValueName(Uuid));
-    registerMethod("FindRules", description, params, returns);
+    registerMethod("FindRules", description, params, returns, Types::PermissionScopeExecuteRules);
 
     params.clear(); returns.clear();
     description = "Enabled a rule that has previously been disabled."
                    "If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.";
     params.insert("ruleId", enumValueName(Uuid));
     returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
-    registerMethod("EnableRule", description, params, returns);
+    registerMethod("EnableRule", description, params, returns, Types::PermissionScopeConfigureRules);
 
     params.clear(); returns.clear();
     description = "Disable a rule. The rule won't be triggered by it's events or state changes while it is disabled. "
                    "If successful, the notification \"Rule.RuleConfigurationChanged\" will be emitted.";
     params.insert("ruleId", enumValueName(Uuid));
     returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
-    registerMethod("DisableRule", description, params, returns);
+    registerMethod("DisableRule", description, params, returns, Types::PermissionScopeConfigureRules);
 
     params.clear(); returns.clear();
     description = "Execute the action list of the rule with the given ruleId.";
     params.insert("ruleId", enumValueName(Uuid));
     returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
-    registerMethod("ExecuteActions", description, params, returns);
+    registerMethod("ExecuteActions", description, params, returns, Types::PermissionScopeExecuteRules);
 
     params.clear(); returns.clear();
     description = "Execute the exit action list of the rule with the given ruleId.";
     params.insert("ruleId", enumValueName(Uuid));
     returns.insert("ruleError", enumRef<RuleEngine::RuleError>());
-    registerMethod("ExecuteExitActions", description, params, returns);
+    registerMethod("ExecuteExitActions", description, params, returns, Types::PermissionScopeExecuteRules);
 
     // Notifications
     params.clear(); returns.clear();

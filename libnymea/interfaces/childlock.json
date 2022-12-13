@@ -1,0 +1,11 @@
+{
+    "description": "Interface for devices that support a child lock on physical keys.",
+    "states": [
+        {
+            "name": "childLock",
+            "type": "bool",
+            "writable": true,
+            "logged": true
+        }
+    ]
+}

@@ -69,9 +69,6 @@ public:
 
     bool isValid() const;
 
-    static QStringList typeProperties();
-    static QStringList mandatoryTypeProperties();
-
 private:
     EventTypeId m_id;
     QString m_name;

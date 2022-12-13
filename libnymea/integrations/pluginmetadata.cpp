@@ -533,7 +533,10 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             index = 0;
             foreach (const QJsonValue &actionTypesJson, thingClassObject.value("actionTypes").toArray()) {
                 QJsonObject at = actionTypesJson.toObject();
-                QPair<QStringList, QStringList> verificationResult = verifyFields(ActionType::typeProperties(), ActionType::mandatoryTypeProperties(), at);
+
+                QStringList actionTypeProperties = {"id", "name", "displayName", "paramTypes"};
+                QStringList mandatoryActionTypeProperties = {"id", "name", "displayName"};
+                QPair<QStringList, QStringList> verificationResult = verifyFields(actionTypeProperties, mandatoryActionTypeProperties, at);
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
@@ -580,7 +583,10 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             foreach (const QJsonValue &eventTypesJson, thingClassObject.value("eventTypes").toArray()) {
                 QJsonObject et = eventTypesJson.toObject();
 
-                QPair<QStringList, QStringList> verificationResult = verifyFields(EventType::typeProperties(), EventType::mandatoryTypeProperties(), et);
+                QStringList eventTypeProperties = {"id", "name", "displayName", "paramTypes", "suggestLogging"};
+                QStringList mandatoryEventTypeProperties = {"id", "name", "displayName"};
+
+                QPair<QStringList, QStringList> verificationResult = verifyFields(eventTypeProperties, mandatoryEventTypeProperties, et);
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {
@@ -625,7 +631,9 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             index = 0;
             foreach (const QJsonValue &browserItemActionTypesJson, thingClassObject.value("browserItemActionTypes").toArray()) {
                 QJsonObject at = browserItemActionTypesJson.toObject();
-                QPair<QStringList, QStringList> verificationResult = verifyFields(ActionType::typeProperties(), ActionType::mandatoryTypeProperties(), at);
+                QStringList actionTypeProperties = {"id", "name", "displayName", "paramTypes"};
+                QStringList mandatoryActionTypeProperties = {"id", "name", "displayName"};
+                QPair<QStringList, QStringList> verificationResult = verifyFields(actionTypeProperties, mandatoryActionTypeProperties, at);
 
                 // Check mandatory fields
                 if (!verificationResult.first.isEmpty()) {

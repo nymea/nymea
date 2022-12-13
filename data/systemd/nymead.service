@@ -1,7 +1,8 @@
 [Unit]
 Description=nymead - IoT server
 Documentation=https://wiki.nymea.io
-After=network.target
+Requires=dbus.socket
+After=network.target dbus.socket
 Wants=network-online.target
 
 [Service]

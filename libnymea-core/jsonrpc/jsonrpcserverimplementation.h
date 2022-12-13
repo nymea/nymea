@@ -65,9 +65,6 @@ public:
     Q_INVOKABLE JsonReply *CreateUser(const QVariantMap &params);
     Q_INVOKABLE JsonReply *Authenticate(const QVariantMap &params, const JsonContext &context);
     Q_INVOKABLE JsonReply *RequestPushButtonAuth(const QVariantMap &params, const JsonContext &context);
-    Q_INVOKABLE JsonReply *SetupCloudConnection(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *SetupRemoteAccess(const QVariantMap &params);
-    Q_INVOKABLE JsonReply *IsCloudConnected(const QVariantMap &params);
     Q_INVOKABLE JsonReply *KeepAlive(const QVariantMap &params);
 
 signals:
@@ -104,8 +101,6 @@ private slots:
 
     void asyncReplyFinished();
 
-    void pairingFinished(QString cognitoUserId, int status, const QString &message);
-    void onCloudConnectionStateChanged();
     void onPushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
 
 private:

@@ -208,7 +208,7 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
                 typeName = QString("$ref:BasicType");
             } else if (QString(metaProperty.typeName()).startsWith("QList")) {
                 QString elementType = QString(metaProperty.typeName()).remove("QList<").remove(">");
-                if (elementType == "EventTypeId" || elementType == "StateTypeId" || elementType == "ActionTypeId") {
+                if (elementType == "ThingId" || elementType == "EventTypeId" || elementType == "StateTypeId" || elementType == "ActionTypeId") {
                     elementType = "QUuid";
                 }
                 QVariant::Type variantType = QVariant::nameToType(elementType.toUtf8());
@@ -354,6 +354,10 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
                         foreach (const QUuid &entry, propertyValue.value<QList<QUuid>>()) {
                             list << entry;
                         }
+                    } else if (propertyTypeName == "QList<ThingId>") {
+                        foreach (const ThingId &entry, propertyValue.value<QList<ThingId>>()) {
+                            list << entry;
+                        }
                     } else if (propertyTypeName == "QList<EventTypeId>") {
                         foreach (const EventTypeId &entry, propertyValue.value<QList<EventTypeId>>()) {
                             list << entry;
@@ -482,6 +486,7 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
                         }
                         metaProperty.writeOnGadget(ptr, QVariant::fromValue(intList));
                     } else if (metaProperty.typeName() == QStringLiteral("QList<QUuid>")
+                               || metaProperty.typeName() == QStringLiteral("QList<ThingId>")
                                || metaProperty.typeName() == QStringLiteral("QList<EventTypeId>")
                                || metaProperty.typeName() == QStringLiteral("QList<StateTypeId>")
                                || metaProperty.typeName() == QStringLiteral("QList<ActionTypeId>")) {

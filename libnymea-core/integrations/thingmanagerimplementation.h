@@ -158,7 +158,7 @@ private:
     void pairThingInternal(ThingPairingInfo *info);
     ThingSetupInfo *addConfiguredThingInternal(const ThingClassId &thingClassId, const QString &name, const ParamList &params, const ThingId &parentId = ThingId());
     ThingSetupInfo *reconfigureThingInternal(Thing *thing, const ParamList &params, const QString &name = QString());
-    ThingSetupInfo *setupThing(Thing *thing);
+    ThingSetupInfo *setupThing(Thing *thing, bool initialSetup);
     void initThing(Thing *thing);
     void trySetupThing(Thing *thing);
     void registerThing(Thing *thing);

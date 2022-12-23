@@ -1,3 +1,8 @@
+nymea (1.6.1) jammy; urgency=medium
+
+
+ -- jenkins <developer@nymea.io>  Fri, 23 Dec 2022 11:32:14 +0100
+
 nymea (1.6.0) jammy; urgency=medium
 
   [ Simon Stürz ]

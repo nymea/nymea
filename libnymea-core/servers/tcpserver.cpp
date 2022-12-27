@@ -176,7 +176,7 @@ void TcpServer::setServerName(const QString &serverName)
  */
 bool TcpServer::startServer()
 {
-    m_server = new SslServer(configuration().sslEnabled, m_sslConfig);
+    m_server = new SslServer(configuration().sslEnabled, m_sslConfig, this);
     if(!m_server->listen(QHostAddress(configuration().address), static_cast<quint16>(configuration().port))) {
         qCWarning(dcTcpServer()) << "Tcp server error: can not listen on" << configuration().address << configuration().port;
         delete m_server;
@@ -207,7 +207,7 @@ bool TcpServer::stopServer()
     }
 
     m_server->close();
-    m_server->deleteLater();
+    delete m_server;
     m_server = nullptr;
     return true;
 }

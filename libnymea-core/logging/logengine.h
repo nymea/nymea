@@ -129,6 +129,7 @@ private:
     QHash<QString, QList<DatabaseJob*>> m_flaggedJobs;
 
     QList<DatabaseJob*> m_jobQueue;
+    QList<DatabaseJob*> m_priorityJobQueue;
     DatabaseJob *m_currentJob = nullptr;
     QFutureWatcher<DatabaseJob*> m_jobWatcher;
 };

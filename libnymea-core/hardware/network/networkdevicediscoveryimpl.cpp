@@ -615,8 +615,11 @@ void NetworkDeviceDiscoveryImpl::evaluateMonitor(NetworkDeviceMonitorImpl *monit
         monitor->setLastConnectionAttempt(QDateTime::currentDateTime());
     });
 
-    connect(reply, &PingReply::finished, monitor, [=](){
+    connect(reply, &PingReply::destroyed, monitor, [=](){
         monitor->setCurrentPingReply(nullptr);
+    });
+
+    connect(reply, &PingReply::finished, monitor, [=](){
         processMonitorPingResult(reply, monitor);
     });
 }

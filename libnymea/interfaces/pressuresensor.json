@@ -5,6 +5,8 @@
             "name": "pressure",
             "type": "double",
             "unit": "MilliBar",
+            "minValue": "any",
+            "maxValue": "any",
             "logged": true
         }
     ]

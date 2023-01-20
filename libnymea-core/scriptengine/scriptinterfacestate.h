@@ -61,7 +61,7 @@ public:
     void setStateName(const QString &stateName);
 
 private slots:
-    void onStateChanged(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value);
+    void onStateChanged(Thing *thing, const QString &stateName, const QVariant &value);
 
 signals:
     void interfaceNameChanged();

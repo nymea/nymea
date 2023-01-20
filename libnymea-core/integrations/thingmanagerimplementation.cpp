@@ -1910,7 +1910,8 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
         qCWarning(dcThingManager()) << "Invalid thing id in state change. Not forwarding event. Thing setup not complete yet?";
         return;
     }
-    if (thing->thingClass().getStateType(stateTypeId).cached()) {
+    StateType stateType = thing->thingClass().getStateType(stateTypeId);
+    if (stateType.cached()) {
         storeThingState(thing, stateTypeId);
     }
 
@@ -1918,7 +1919,8 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
         m_logEngine->logStateChange(thing, stateTypeId, value);
     }
 
-    emit thingStateChanged(thing, stateTypeId, value, minValue, maxValue);
+//    emit thingStateChanged(thing, stateTypeId, value, minValue, maxValue);
+    emit thingStateChanged(thing, stateType.name(), value, minValue, maxValue);
 
     syncIOConnection(thing, stateTypeId);
 }

@@ -78,13 +78,13 @@ void ScriptInterfaceState::setStateName(const QString &stateName)
     }
 }
 
-void ScriptInterfaceState::onStateChanged(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value)
+void ScriptInterfaceState::onStateChanged(Thing *thing, const QString &stateName, const QVariant &value)
 {
     if (!thing->thingClass().interfaces().contains(m_interfaceName)) {
         return;
     }
 
-    if (!m_stateName.isEmpty() && thing->thingClass().stateTypes().findByName(m_stateName).id() != stateTypeId) {
+    if (!m_stateName.isEmpty() && m_stateName != stateName) {
         return;
     }
 

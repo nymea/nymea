@@ -80,8 +80,8 @@ ThingManager::ThingManager(QObject *parent) : QObject(parent)
     type needs to match. In other words, states with ioType "digitalInput" can be connected to states with ioType
     "digitaOutput" and states with ioType "analogInput" can be connected to states with ioType "analogOutput".
  */
-IOConnectionResult ThingManager::connectIO(const ThingId &inputThing, const StateTypeId &inputState, const ThingId &outputThing, const StateTypeId &outputState, bool inverted)
+IOConnectionResult ThingManager::connectIO(const ThingId &inputThingId, const QString &inputState, const ThingId &outputThingId, const QString &outputState, bool inverted)
 {
-    IOConnection connection(IOConnectionId::createIOConnectionId(), inputThing, inputState, outputThing, outputState, inverted);
+    IOConnection connection(IOConnectionId::createIOConnectionId(), inputThingId, inputState, outputThingId, outputState, inverted);
     return connectIO(connection);
 }

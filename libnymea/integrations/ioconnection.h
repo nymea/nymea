@@ -48,31 +48,39 @@ class IOConnection
     Q_GADGET
     Q_PROPERTY(QUuid id READ id)
     Q_PROPERTY(QUuid inputThingId READ inputThingId)
-    Q_PROPERTY(QUuid inputStateTypeId READ inputStateTypeId)
+    Q_PROPERTY(QUuid inputStateTypeId READ inputStateTypeId USER true REVISION 1)
+    Q_PROPERTY(QString inputState READ inputState USER true) // TODO: Make mandatory when inputStateTypeId is removed
     Q_PROPERTY(QUuid outputThingId READ outputThingId)
-    Q_PROPERTY(QUuid outputStateTypeId READ outputStateTypeId)
+    Q_PROPERTY(QUuid outputStateTypeId READ outputStateTypeId USER true REVISION 1)
+    Q_PROPERTY(QString outputState READ outputState USER true) // TODO: Make mandatory when outputStateTypeId is removed
     Q_PROPERTY(bool inverted READ inverted)
 
 public:
     IOConnection();
-    IOConnection(const IOConnectionId &id, const ThingId &inputThingId, const StateTypeId &inputStateTypeId, const ThingId &outputThingId, const StateTypeId &outputStateTypeId, bool inverted = false);
+    IOConnection(const IOConnectionId &id, const ThingId &inputThingId, const QString &inputState, const ThingId &outputThingId, const QString &outputState, bool inverted = false);
 
     IOConnectionId id() const;
 
     ThingId inputThingId() const;
+    QString inputState() const;
     StateTypeId inputStateTypeId() const;
+    void setInputStateTypeId(const StateTypeId &stateTypeId); // Deprecated
 
     ThingId outputThingId() const;
     StateTypeId outputStateTypeId() const;
+    void setOutputStateTypeId(const StateTypeId &stateTypeId); // Deprecated
+    QString outputState() const;
 
     bool inverted() const;
 
 private:
     IOConnectionId m_id;
     ThingId m_inputThingId;
-    StateTypeId m_inputStateTypeId;
+    StateTypeId m_inputStateTypeId; // Deprecated
+    QString m_inputState;
     ThingId m_outputThingId;
-    StateTypeId m_outputStateTypeId;
+    StateTypeId m_outputStateTypeId; // Deprecated
+    QString m_outputState;
     bool m_inverted = false;
 };
 

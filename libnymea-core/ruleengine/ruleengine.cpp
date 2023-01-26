@@ -145,12 +145,16 @@ RuleEngine::RuleEngine(ThingManager *thingManager, TimeManager *timeManager, Log
 
     connect(m_thingManager, &ThingManager::eventTriggered, this, &RuleEngine::onEventTriggered);
 
-    connect(m_thingManager, &ThingManager::thingStateChanged, this, [this](Thing *thing, const StateTypeId &stateTypeId, const QVariant &value, const QVariant &/*minValue*/, const QVariant &/*maxValue*/){
+    connect(m_thingManager, &ThingManager::thingStateChanged, this, [this](Thing *thing, const QString &stateName, const QVariant &value, const QVariant &/*minValue*/, const QVariant &/*maxValue*/){
         // There can be event based rules that would trigger when a state changes
         // without "binding" to the state (as a stateEvaluator would do). So generate a fake event
         // for every state change.
-        Param valueParam(ParamTypeId(stateTypeId.toString()), value);
-        Event event(EventTypeId(stateTypeId.toString()), thing->id(), ParamList() << valueParam);
+        StateType stateType = thing->thingClass().stateTypes().findByName(stateName);
+        Param valueParam(stateName, value);
+        valueParam.setParamTypeId(stateType.id()); // Legacy < 1.7
+        Event event(thing->id(), stateName, ParamList() << valueParam);
+        event.setEventTypeId(stateType.id()); // Legacy < 1.7
+        qCDebug(dcRuleEngine()) << "Generated event from state:" << event;
         onEventTriggered(event);
     });
 
@@ -183,7 +187,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
         return QList<Rule>();
     }
     ThingClass thingClass = thing->thingClass();
-    EventType eventType = thingClass.eventTypes().findById(event.eventTypeId());
+    EventType eventType = thingClass.eventTypes().findByName(event.name());
 
 
     if (event.params().count() == 0) {

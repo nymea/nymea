@@ -50,12 +50,12 @@ IOConnection::IOConnection()
 }
 
 /*! Constructs a new IOConnection object. */
-IOConnection::IOConnection(const IOConnectionId &id, const ThingId &inputThing, const StateTypeId &inputState, const ThingId &outputThing, const StateTypeId &outputState, bool inverted):
+IOConnection::IOConnection(const IOConnectionId &id, const ThingId &inputThing, const QString &inputState, const ThingId &outputThing, const QString &outputState, bool inverted):
     m_id(id),
     m_inputThingId(inputThing),
-    m_inputStateTypeId(inputState),
+    m_inputState(inputState),
     m_outputThingId(outputThing),
-    m_outputStateTypeId(outputState),
+    m_outputState(outputState),
     m_inverted(inverted)
 {
 
@@ -79,6 +79,16 @@ StateTypeId IOConnection::inputStateTypeId() const
     return m_inputStateTypeId;
 }
 
+void IOConnection::setInputStateTypeId(const StateTypeId &stateTypeId)
+{
+    m_inputStateTypeId = stateTypeId;
+}
+
+QString IOConnection::inputState() const
+{
+    return m_inputState;
+}
+
 /*! Returns the ID of the output thing for this connection. */
 ThingId IOConnection::outputThingId() const
 {
@@ -89,6 +99,16 @@ ThingId IOConnection::outputThingId() const
 StateTypeId IOConnection::outputStateTypeId() const
 {
     return m_outputStateTypeId;
+}
+
+void IOConnection::setOutputStateTypeId(const StateTypeId &outputStateTypeId)
+{
+    m_outputStateTypeId = outputStateTypeId;
+}
+
+QString IOConnection::outputState() const
+{
+    return m_outputState;
 }
 
 /*! Returns whether the connection is inverted or not. */

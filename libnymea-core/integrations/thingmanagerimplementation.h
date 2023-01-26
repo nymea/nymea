@@ -111,9 +111,9 @@ public:
     Thing::ThingError editThing(const ThingId &thingId, const QString &name) override;
     Thing::ThingError setThingSettings(const ThingId &thingId, const ParamList &settings) override;
 
-    Thing::ThingError setStateLogging(const ThingId &thingId, const StateTypeId &stateTypeId, bool enabled) override;
-    Thing::ThingError setEventLogging(const ThingId &thingId, const EventTypeId &eventTypeId, bool enabled) override;
-    Thing::ThingError setStateFilter(const ThingId &thingId, const StateTypeId &stateTypeId, Types::StateValueFilter filter) override;
+    Thing::ThingError setStateLogging(const ThingId &thingId, const QString &stateName, bool enabled) override;
+    Thing::ThingError setEventLogging(const ThingId &thingId, const QString &eventName, bool enabled) override;
+    Thing::ThingError setStateFilter(const ThingId &thingId, const QString &stateName, Types::StateValueFilter filter) override;
 
     Thing::ThingError removeConfiguredThing(const ThingId &thingId) override;
 
@@ -149,7 +149,7 @@ private slots:
     void onEventTriggered(Event event);
 
     // Only connect this to Things. It will query the sender()
-    void slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
+    void slotThingStateValueChanged(const QString &stateName, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
     void slotThingSettingChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     void slotThingNameChanged();
 
@@ -168,11 +168,11 @@ private:
     void postSetupThing(Thing *thing);
     QString statesCacheFile(const ThingId &thingId);
     void storeThingStates(Thing *thing);
-    void storeThingState(Thing *thing, const StateTypeId &stateTypeId);
+    void storeThingState(Thing *thing, const QString &stateName);
     void loadThingStates(Thing *thing);
     void storeIOConnections();
     void loadIOConnections();
-    void syncIOConnection(Thing *inputThing, const StateTypeId &stateTypeId);
+    void syncIOConnection(Thing *inputThing, const QString &stateName);
     QVariant mapValue(const QVariant &value, const StateType &fromStateType, const StateType &toStateType, bool inverted) const;
 
     IntegrationPlugin *createCppIntegrationPlugin(const QString &absoluteFilePath);

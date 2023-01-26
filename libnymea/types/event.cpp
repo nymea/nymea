@@ -159,7 +159,7 @@ bool Event::operator ==(const Event &other) const
 QDebug operator<<(QDebug dbg, const Event &event)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "Event(EventTypeId: " << event.eventTypeId().toString() << ", ThingId: " << event.thingId().toString() << ", Name: " << event.name() << ")";
+    dbg.nospace() << "Event(EventTypeId: " << event.eventTypeId().toString() << ", ThingId: " << event.thingId().toString() << ", Name: " << event.name() << ", Params: " << event.params() << ")";
     return dbg;
 }
 

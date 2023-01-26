@@ -231,7 +231,7 @@ void StateType::setFilter(Types::StateValueFilter filter)
 /*! Returns true if this state type has an ID, a type and a name set. */
 bool StateType::isValid() const
 {
-    return !m_id.isNull() && m_type != QVariant::Invalid && !m_name.isEmpty();
+    return !m_name.isEmpty() && !m_id.isNull() && m_type != QVariant::Invalid && !m_name.isEmpty();
 }
 
 StateTypes::StateTypes(const QList<StateType> &other)

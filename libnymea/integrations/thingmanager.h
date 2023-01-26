@@ -81,9 +81,9 @@ public:
     virtual Thing::ThingError editThing(const ThingId &thingId, const QString &name) = 0;
     virtual Thing::ThingError setThingSettings(const ThingId &thingId, const ParamList &settings) = 0;
 
-    virtual Thing::ThingError setStateLogging(const ThingId &thingId, const StateTypeId &stateTypeId, bool enabled) = 0;
-    virtual Thing::ThingError setEventLogging(const ThingId &thingId, const EventTypeId &eventTypeId, bool enabled) = 0;
-    virtual Thing::ThingError setStateFilter(const ThingId &thingId, const StateTypeId &stateTypeId, Types::StateValueFilter filter) = 0;
+    virtual Thing::ThingError setStateLogging(const ThingId &thingId, const QString &stateName, bool enabled) = 0;
+    virtual Thing::ThingError setEventLogging(const ThingId &thingId, const QString &eventName, bool enabled) = 0;
+    virtual Thing::ThingError setStateFilter(const ThingId &thingId, const QString &stateName, Types::StateValueFilter filter) = 0;
 
     virtual Thing::ThingError removeConfiguredThing(const ThingId &thingId) = 0;
 
@@ -95,7 +95,7 @@ public:
     virtual BrowserItemActionInfo* executeBrowserItemAction(const BrowserItemAction &browserItemAction) = 0;
 
     virtual IOConnections ioConnections(const ThingId &thingId = ThingId()) const = 0;
-    IOConnectionResult connectIO(const ThingId &inputThing, const StateTypeId &inputState, const ThingId &outputThing, const StateTypeId &outputState, bool inverted = false);
+    IOConnectionResult connectIO(const ThingId &inputThingId, const QString &inputState, const ThingId &outputThingId, const QString &outputState, bool inverted = false);
     virtual Thing::ThingError disconnectIO(const IOConnectionId &ioConnectionId) = 0;
 
     virtual QString translate(const PluginId &pluginId, const QString &string, const QLocale &locale) = 0;

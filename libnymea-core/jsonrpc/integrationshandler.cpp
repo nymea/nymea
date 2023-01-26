@@ -246,7 +246,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.clear(); returns.clear();
     description = "Enable/disable logging for the given state type on the given thing.";
     params.insert("thingId", enumValueName(Uuid));
-    params.insert("stateTypeId", enumValueName(Uuid));
+    params.insert("stateName", enumValueName(String));
     params.insert("enabled", enumValueName(Bool));
     returns.insert("thingError", enumRef<Thing::ThingError>());
     registerMethod("SetStateLogging", description, params, returns, Types::PermissionScopeConfigureThings);
@@ -254,7 +254,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.clear(); returns.clear();
     description = "Enable/disable logging for the given event type on the given thing.";
     params.insert("thingId", enumValueName(Uuid));
-    params.insert("eventTypeId", enumValueName(Uuid));
+    params.insert("eventName", enumValueName(String));
     params.insert("enabled", enumValueName(Bool));
     returns.insert("thingError", enumRef<Thing::ThingError>());
     registerMethod("SetEventLogging", description, params, returns, Types::PermissionScopeConfigureThings);
@@ -262,7 +262,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.clear(); returns.clear();
     description = "Set the filter for the given state on the given thing.";
     params.insert("thingId", enumValueName(Uuid));
-    params.insert("stateTypeId", enumValueName(Uuid));
+    params.insert("stateName", enumValueName(Uuid));
     params.insert("filter", enumRef<Types::StateValueFilter>());
     returns.insert("thingError", enumRef<Thing::ThingError>());
     registerMethod("SetStateFilter", description, params, returns, Types::PermissionScopeConfigureThings);
@@ -380,9 +380,11 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     description = "Connect two generic IO states. Input and output need to be compatible, that is, either a digital input "
                   "and a digital output, or an analog input and an analog output. If successful, the connectionId will be returned.";
     params.insert("inputThingId", enumValueName(Uuid));
-    params.insert("inputStateTypeId", enumValueName(Uuid));
+    params.insert("o:inputState", enumValueName(String)); // TODO: Make mandatory when inputStateTypeId is removed
+    params.insert("d:o:inputStateTypeId", enumValueName(Uuid));
     params.insert("outputThingId", enumValueName(Uuid));
-    params.insert("outputStateTypeId", enumValueName(Uuid));
+    params.insert("o:outputState", enumValueName(String)); // TODO: Make mandatory when outputStateTypeId is removed
+    params.insert("d:o:outputStateTypeId", enumValueName(Uuid));
     params.insert("o:inverted", enumValueName(Bool));
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:ioConnectionId", enumValueName(Uuid));
@@ -399,7 +401,8 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.clear(); returns.clear();
     description = "Emitted whenever a state of a thing changes.";
     params.insert("thingId", enumValueName(Uuid));
-    params.insert("stateTypeId", enumValueName(Uuid));
+    params.insert("stateName", enumValueName(String));
+    params.insert("d:stateTypeId", enumValueName(Uuid));
     params.insert("value", enumValueName(Variant));
     params.insert("minValue", enumValueName(Variant));
     params.insert("maxValue", enumValueName(Variant));
@@ -861,29 +864,29 @@ JsonReply *IntegrationsHandler::SetThingSettings(const QVariantMap &params)
 JsonReply *IntegrationsHandler::SetStateLogging(const QVariantMap &params)
 {
     ThingId thingId = ThingId(params.value("thingId").toString());
-    StateTypeId stateTypeId = StateTypeId(params.value("stateTypeId").toUuid());
+    QString stateName = params.value("stateName").toString();
     bool enabled = params.value("enabled").toBool();
-    Thing::ThingError status = m_thingManager->setStateLogging(thingId, stateTypeId, enabled);
+    Thing::ThingError status = m_thingManager->setStateLogging(thingId, stateName, enabled);
     return createReply(statusToReply(status));
 }
 
 JsonReply *IntegrationsHandler::SetEventLogging(const QVariantMap &params)
 {
     ThingId thingId = ThingId(params.value("thingId").toString());
-    EventTypeId eventTypeId = EventTypeId(params.value("eventTypeId").toUuid());
+    QString eventName = params.value("eventName").toString();
     bool enabled = params.value("enabled").toBool();
-    Thing::ThingError status = m_thingManager->setEventLogging(thingId, eventTypeId, enabled);
+    Thing::ThingError status = m_thingManager->setEventLogging(thingId, eventName, enabled);
     return createReply(statusToReply(status));
 }
 
 JsonReply *IntegrationsHandler::SetStateFilter(const QVariantMap &params)
 {
     ThingId thingId = ThingId(params.value("thingId").toString());
-    StateTypeId stateTypeId = StateTypeId(params.value("stateTypeId").toUuid());
+    QString stateName = params.value("stateName").toString();
     QString filterString = params.value("filter").toString();
     QMetaEnum metaEnum = QMetaEnum::fromType<Types::StateValueFilter>();
     Types::StateValueFilter filter = static_cast<Types::StateValueFilter>(metaEnum.keyToValue(filterString.toUtf8()));
-    Thing::ThingError status = m_thingManager->setStateFilter(thingId, stateTypeId, filter);
+    Thing::ThingError status = m_thingManager->setStateFilter(thingId, stateName, filter);
     return createReply(statusToReply(status));
 }
 
@@ -1088,11 +1091,32 @@ JsonReply *IntegrationsHandler::GetIOConnections(const QVariantMap &params)
 JsonReply *IntegrationsHandler::ConnectIO(const QVariantMap &params)
 {
     ThingId inputThingId = params.value("inputThingId").toUuid();
-    StateTypeId inputStateTypeId = params.value("inputStateTypeId").toUuid();
+    QString inputState = params.value("inputState").toString();
+    // Backwards compatibility < 1.7
+    if (inputState.isEmpty() && params.contains("inputStateTypeId")) {
+        Thing *thing = m_thingManager->findConfiguredThing(inputThingId);
+        if (!thing) {
+            return createReply({{"thingError", enumValueName(Thing::ThingErrorThingNotFound)}});
+        }
+        inputState = thing->thingClass().getStateType(params.value("inputStateTypeId").toUuid()).name();
+    } else if (inputState.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Either inputState or inputStateTypeId must be given.";
+        return createReply({{"thingError", enumValueName(Thing::ThingErrorMissingParameter)}});
+    }
+
     ThingId outputThingId = params.value("outputThingId").toUuid();
-    StateTypeId outputStateTypeId = params.value("outputStateTypeId").toUuid();
+    QString outputState = params.value("outputState").toString();
+    if (outputState.isEmpty() && params.contains("outputStateTypeId")) {
+        Thing *thing = m_thingManager->findConfiguredThing(outputThingId);
+        if (!thing) {
+            return createReply({{"thingError", enumValueName(Thing::ThingErrorThingNotFound)}});
+        }
+        outputState = thing->thingClass().getStateType(params.value("outputStateTypeId").toUuid()).name();
+    } else if (outputState.isEmpty()) {
+        return createReply({{"thingError", enumValueName(Thing::ThingErrorMissingParameter)}});
+    }
     bool inverted = params.value("inverted", false).toBool();
-    IOConnectionResult result = m_thingManager->connectIO(inputThingId, inputStateTypeId, outputThingId, outputStateTypeId, inverted);
+    IOConnectionResult result = m_thingManager->connectIO(inputThingId, inputState, outputThingId, outputState, inverted);
     QVariantMap reply = statusToReply(result.error);
     if (result.error == Thing::ThingErrorNoError) {
         reply.insert("ioConnectionId", result.ioConnectionId);
@@ -1141,11 +1165,12 @@ void IntegrationsHandler::pluginConfigChanged(const PluginId &id, const ParamLis
     emit PluginConfigurationChanged(params);
 }
 
-void IntegrationsHandler::thingStateChanged(Thing *thing, const QUuid &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue)
+void IntegrationsHandler::thingStateChanged(Thing *thing, const QString &stateName, const QVariant &value, const QVariant &minValue, const QVariant &maxValue)
 {
     QVariantMap params;
     params.insert("thingId", thing->id());
-    params.insert("stateTypeId", stateTypeId);
+    params.insert("stateName", stateName);
+    params.insert("stateTypeId", thing->thingClass().getStateType(stateName).id());
     params.insert("value", value);
     params.insert("minValue", minValue);
     params.insert("maxValue", maxValue);

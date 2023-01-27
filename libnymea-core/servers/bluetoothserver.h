@@ -57,7 +57,7 @@ public:
 private:
     QBluetoothServer *m_server = nullptr;
     QBluetoothLocalDevice *m_localDevice = nullptr;
-    QBluetoothServiceInfo m_serviceInfo;
+    QBluetoothServiceInfo *m_serviceInfo = nullptr;
 
     // Client storage
     QHash<QUuid, QBluetoothSocket *> m_clientList;

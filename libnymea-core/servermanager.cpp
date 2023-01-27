@@ -166,6 +166,7 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
         }
     }
 
+    qCDebug(dcBluetoothServer()) << "Creating Bluetooth server.";
     m_bluetoothServer = new BluetoothServer(this);
     m_jsonServer->registerTransportInterface(m_bluetoothServer);
     if (configuration->bluetoothServerEnabled()) {

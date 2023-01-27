@@ -48,6 +48,9 @@
 #include "loggingcategories.h"
 
 #include <QJsonDocument>
+#include <QDBusConnection>
+#include <QDBusConnectionInterface>
+#include <QDBusReply>
 
 namespace nymeaserver {
 
@@ -69,6 +72,19 @@ BluetoothServer::~BluetoothServer()
 /*! Returns true if a Bleutooth hardware is available. */
 bool BluetoothServer::hardwareAvailable()
 {
+    // QBluetooth hangs for the D-Bus timeout if BlueZ is not available. In order to avoid that, let's first check
+    // ourselves if bluez is registered on D-Bus.
+    QDBusReply<QStringList> reply = QDBusConnection::systemBus().interface()->registeredServiceNames();
+    if (!reply.isValid()) {
+        qWarning(dcBluetoothServer()) << "Unable to query D-Bus for bluez:" << reply.error().message();
+        return false;
+    }
+    const QStringList services = reply.value();
+    if (!services.contains("org.bluez")) {
+        qCWarning(dcBluetoothServer()) << "BlueZ not found on D-Bus. Skipping Bluetooth initialisation.";
+        return false;
+    }
+
     QBluetoothLocalDevice localDevice;
     return localDevice.isValid();
 }
@@ -193,21 +209,23 @@ bool BluetoothServer::startServer()
     }
 
     // Set service attributes
+    m_serviceInfo = new QBluetoothServiceInfo();
+
     QBluetoothServiceInfo::Sequence browseSequence;
     browseSequence << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::PublicBrowseGroup));
-    m_serviceInfo.setAttribute(QBluetoothServiceInfo::BrowseGroupList, browseSequence);
+    m_serviceInfo->setAttribute(QBluetoothServiceInfo::BrowseGroupList, browseSequence);
 
     QBluetoothServiceInfo::Sequence classId;
     classId << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::SerialPort));
-    m_serviceInfo.setAttribute(QBluetoothServiceInfo::BluetoothProfileDescriptorList, classId);
+    m_serviceInfo->setAttribute(QBluetoothServiceInfo::BluetoothProfileDescriptorList, classId);
     classId.prepend(QVariant::fromValue(nymeaServiceUuid));
 
-    m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceClassIds, classId);
-    m_serviceInfo.setAttribute(QBluetoothServiceInfo::BluetoothProfileDescriptorList, classId);
-    m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceName, QVariant("nymea"));
-    m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceDescription, QVariant("The JSON-RPC interface for nymea."));
-    m_serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceProvider, QVariant("https://nymea.io"));
-    m_serviceInfo.setAttribute(QBluetoothServiceInfo::DocumentationUrl, QVariant("https://doc.nymea.io/jsonrpc.html"));
+    m_serviceInfo->setAttribute(QBluetoothServiceInfo::ServiceClassIds, classId);
+    m_serviceInfo->setAttribute(QBluetoothServiceInfo::BluetoothProfileDescriptorList, classId);
+    m_serviceInfo->setAttribute(QBluetoothServiceInfo::ServiceName, QVariant("nymea"));
+    m_serviceInfo->setAttribute(QBluetoothServiceInfo::ServiceDescription, QVariant("The JSON-RPC interface for nymea."));
+    m_serviceInfo->setAttribute(QBluetoothServiceInfo::ServiceProvider, QVariant("https://nymea.io"));
+    m_serviceInfo->setAttribute(QBluetoothServiceInfo::DocumentationUrl, QVariant("https://doc.nymea.io/jsonrpc.html"));
 
     // Define protocol
     QBluetoothServiceInfo::Sequence protocolDescriptorList;
@@ -215,21 +233,22 @@ bool BluetoothServer::startServer()
     protocol << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::Rfcomm))
              << QVariant::fromValue(quint8(m_server->serverPort()));
     protocolDescriptorList.append(QVariant::fromValue(protocol));
-    m_serviceInfo.setAttribute(QBluetoothServiceInfo::ProtocolDescriptorList, protocolDescriptorList);
+    m_serviceInfo->setAttribute(QBluetoothServiceInfo::ProtocolDescriptorList, protocolDescriptorList);
 
     // Set UUID
-    m_serviceInfo.setServiceUuid(nymeaServiceUuid);
+    m_serviceInfo->setServiceUuid(nymeaServiceUuid);
 
     // Register the service in the local device
-    if (!m_serviceInfo.registerService(m_localDevice->address())) {
-        qCWarning(dcBluetoothServer()) << "Could not register service" << m_serviceInfo.serviceName() << nymeaServiceUuid.toString();
+    if (!m_serviceInfo->registerService(m_localDevice->address())) {
+        qCWarning(dcBluetoothServer()) << "Could not register service" << m_serviceInfo->serviceName() << nymeaServiceUuid.toString();
+        delete m_serviceInfo;
         delete m_localDevice;
         delete m_server;
         m_localDevice = nullptr;
         m_server = nullptr;
         return false;
     }
-    qCDebug(dcBluetoothServer()) << "Started bluetooth server" << m_localDevice->name() << m_localDevice->address().toString() << "Serivce:" << m_serviceInfo.serviceName() << nymeaServiceUuid.toString();
+    qCDebug(dcBluetoothServer()) << "Started bluetooth server" << m_localDevice->name() << m_localDevice->address().toString() << "Serivce:" << m_serviceInfo->serviceName() << nymeaServiceUuid.toString();
 
     return true;
 }
@@ -240,9 +259,13 @@ bool BluetoothServer::stopServer()
         client->close();
     }
 
+    if (m_serviceInfo) {
+        m_serviceInfo->unregisterService();
+        delete m_serviceInfo;
+    }
+
     if (m_server) {
         qCDebug(dcBluetoothServer()) << "Shutting down \"Bluetooth server\"";
-        m_serviceInfo.unregisterService();
         m_server->close();
         m_server->deleteLater();
         m_server = nullptr;

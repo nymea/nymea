@@ -31,17 +31,33 @@
 #include "bluetoothlowenergymanagerimplementation.h"
 #include "loggingcategories.h"
 
+#include <QDBusConnection>
+#include <QDBusConnectionInterface>
+#include <QDBusReply>
+
 namespace nymeaserver {
 
 BluetoothLowEnergyManagerImplementation::BluetoothLowEnergyManagerImplementation(PluginTimer *reconnectTimer, QObject *parent) :
     BluetoothLowEnergyManager(parent),
     m_reconnectTimer(reconnectTimer)
 {
+    // QBluetooth hangs for the D-Bus timeout if BlueZ is not available. In order to avoid that, let's first check
+    // ourselves if bluez is registered on D-Bus.
+    QDBusReply<QStringList> reply = QDBusConnection::systemBus().interface()->registeredServiceNames();
+    if (!reply.isValid()) {
+        qWarning(dcBluetooth()) << "Unable to query D-Bus for bluez:" << reply.error().message();
+        return;
+    }
+    const QStringList services = reply.value();
+    if (!services.contains("org.bluez")) {
+        qCWarning(dcBluetooth()) << "BlueZ not found on D-Bus. Skipping Bluetooth initialisation.";
+        return;
+    }
+
     // Check which bluetooth adapter are available
     QList<QBluetoothHostInfo> bluetoothAdapters = QBluetoothLocalDevice::allDevices();
     if (bluetoothAdapters.isEmpty()) {
         qCWarning(dcBluetooth()) << "No bluetooth adapter found. Resource not available.";
-        m_available = false;
         return;
     }
 

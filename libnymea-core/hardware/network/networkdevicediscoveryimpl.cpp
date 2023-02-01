@@ -241,6 +241,7 @@ NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(const MacAddre
 
     NetworkDeviceMonitorImpl *monitor = new NetworkDeviceMonitorImpl(macAddress, this);
     monitor->setNetworkDeviceInfo(info);
+    monitor->setLastSeen(m_lastSeen.value(macAddress, QDateTime()));
     m_monitors.insert(macAddress, monitor);
     m_monitorsReferenceCount[macAddress] = 1;
 
@@ -256,10 +257,11 @@ NetworkDeviceMonitor *NetworkDeviceDiscoveryImpl::registerMonitor(const MacAddre
         qCDebug(dcNetworkDeviceDiscovery()) << "Adding network device monitor for unresolved mac address. Starting a discovery...";
         NetworkDeviceDiscoveryReply *reply = discover();
         connect(reply, &NetworkDeviceDiscoveryReply::finished, reply, &NetworkDeviceDiscoveryReply::deleteLater);
+    } else {
+        evaluateMonitor(monitor);
     }
 
-    evaluateMonitor(monitor);
-
+    qCDebug(dcNetworkDeviceDiscovery()) << "Registered successfully" << monitor;
     return monitor;
 }
 
@@ -580,7 +582,7 @@ void NetworkDeviceDiscoveryImpl::updateCache(const NetworkDeviceInfo &deviceInfo
 
 void NetworkDeviceDiscoveryImpl::evaluateMonitor(NetworkDeviceMonitorImpl *monitor)
 {
-    if (monitor->networkDeviceInfo().address().isNull())
+    if (!monitor->networkDeviceInfo().isValid())
         return;
 
     if (monitor->currentPingReply())
@@ -598,6 +600,12 @@ void NetworkDeviceDiscoveryImpl::evaluateMonitor(NetworkDeviceMonitorImpl *monit
     if (!requiresRefresh && currentDateTime > monitor->lastSeen().addSecs(m_monitorInterval)) {
         qCDebug(dcNetworkDeviceDiscovery()) << monitor << "requires refresh. Not see since" << (currentDateTime.toMSecsSinceEpoch() - monitor->lastSeen().toMSecsSinceEpoch()) / 1000.0 << "s";
         requiresRefresh = true;
+    }
+
+    if (!requiresRefresh && currentDateTime <= monitor->lastSeen().addSecs(m_monitorInterval)) {
+        // We have seen this device within the last minute, make sure the monitor is reachable
+        monitor->setReachable(true);
+        return;
     }
 
     if (!requiresRefresh)

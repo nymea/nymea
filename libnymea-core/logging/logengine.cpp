@@ -817,8 +817,17 @@ bool LogEngine::initDB(const QString &username, const QString &password)
             m_db.close();
             return false;
         }
+    }
 
-
+    m_db.exec("CREATE INDEX IF NOT EXISTS idx_query_single_thing ON entries (thingId);");
+    if (m_db.lastError().isValid()) {
+        qCWarning(dcLogEngine()) << "Error creating entries table thing index in log database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+        return false;
+    }
+    m_db.exec("CREATE INDEX IF NOT EXISTS idx_query_single_type ON entries (typeId, thingId);");
+    if (m_db.lastError().isValid()) {
+        qCWarning(dcLogEngine()) << "Error creating entries table state index in log database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+        return false;
     }
 
     qCDebug(dcLogEngine) << "Initialized logging DB successfully. (maximum DB size:" << m_dbMaxSize << ")";

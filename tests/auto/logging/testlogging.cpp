@@ -389,9 +389,11 @@ void TestLogging::actionLog()
 
     // wait for the outgoing data
     // 3 packets: ExecuteAction reply,  LogDatabaseUpdated signal and LogEntryAdded signal
-    clientSpy.wait(500);
-    if (clientSpy.count() < 3) {
-        clientSpy.wait(500);
+    while (clientSpy.count() < 3) {
+        bool success = clientSpy.wait();
+        if (!success) {
+            break;
+        }
     }
 
     QVariantList logEntryAddedVariants = checkNotifications(clientSpy, "Logging.LogEntryAdded");

@@ -83,7 +83,7 @@ LoggingHandler::LoggingHandler(QObject *parent) :
     returns.insert("o:logEntries", objectRef<LogEntries>());
     returns.insert("count", enumValueName(Int));
     returns.insert("offset", enumValueName(Int));
-    registerMethod("GetLogEntries", description, params, returns);
+    registerMethod("GetLogEntries", description, params, returns, Types::PermissionScopeControlThings);
 
     // Notifications
     params.clear();

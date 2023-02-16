@@ -53,7 +53,6 @@ public:
     Q_INVOKABLE JsonReply *SetTimeZone(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetLanguage(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetDebugServerEnabled(const QVariantMap &params) const;
-    Q_INVOKABLE JsonReply *SetCloudEnabled(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetTcpServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *DeleteTcpServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetWebServerConfiguration(const QVariantMap &params) const;
@@ -92,7 +91,6 @@ signals:
 private slots:
     void onBasicConfigurationChanged();
     void onLanguageChanged();
-    void onCloudConfigurationChanged(bool enabled);
     void onTcpServerConfigurationChanged(const QString &id);
     void onTcpServerConfigurationRemoved(const QString &id);
     void onWebServerConfigurationChanged(const QString &id);

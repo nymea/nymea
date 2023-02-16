@@ -218,7 +218,6 @@ ServerManager::ServerManager(Platform *platform, NymeaConfiguration *configurati
     connect(configuration, &NymeaConfiguration::mqttPolicyRemoved, this, &ServerManager::mqttPolicyRemoved);
     connect(configuration, &NymeaConfiguration::tunnelProxyServerConfigurationChanged, this, &ServerManager::tunnelProxyServerConfigurationChanged);
     connect(configuration, &NymeaConfiguration::tunnelProxyServerConfigurationRemoved, this, &ServerManager::tunnelProxyServerConfigurationRemoved);
-    connect(configuration, &NymeaConfiguration::cloudEnabledChanged, this, &ServerManager::cloudEnabledChanged);
 }
 
 /*! Returns the pointer to the created \l{JsonRPCServer} in this \l{ServerManager}. */
@@ -404,18 +403,6 @@ void ServerManager::tunnelProxyServerConfigurationRemoved(const QString &id)
     m_jsonServer->unregisterTransportInterface(server);
     server->stopServer();
     server->deleteLater();
-}
-
-void ServerManager::cloudEnabledChanged(bool enabled)
-{
-    qCDebug(dcServerManager()) << "Cloud connection" << (enabled ? "enabled. Starting tunnel proxy servers" : "disabled. Stopping tunnel proxy servers.");
-    foreach (TunnelProxyServer *server, m_tunnelProxyServers) {
-        if (enabled) {
-            server->startServer();
-        } else {
-            server->stopServer();
-        }
-    }
 }
 
 bool ServerManager::registerZeroConfService(const ServerConfiguration &configuration, const QString &serverType, const QString &serviceType)

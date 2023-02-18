@@ -1,4 +1,4 @@
-7.0
+7.1
 {
     "enums": {
         "BasicType": [
@@ -657,6 +657,11 @@
             "returns": {
                 "basicConfiguration": {
                     "d:language": "String",
+                    "d:location": {
+                        "latitude": "Double",
+                        "longitude": "Double",
+                        "name": "String"
+                    },
                     "d:serverTime": "Uint",
                     "d:timeZone": "String",
                     "debugServerEnabled": "Bool",
@@ -726,6 +731,20 @@
             "description": "Sets the server language to the given language. See also: \"GetAvailableLanguages\"",
             "params": {
                 "language": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Configuration.SetLocation": {
+            "description": "Sets the server location.",
+            "params": {
+                "location": {
+                    "latitude": "Double",
+                    "longitude": "Double",
+                    "name": "String"
+                }
             },
             "permissionScope": "PermissionScopeAdmin",
             "returns": {
@@ -2289,6 +2308,11 @@
             "params": {
                 "basicConfiguration": {
                     "d:language": "String",
+                    "d:location": {
+                        "latitude": "Double",
+                        "longitude": "Double",
+                        "name": "String"
+                    },
                     "d:serverTime": "Uint",
                     "d:timeZone": "String",
                     "debugServerEnabled": "Bool",

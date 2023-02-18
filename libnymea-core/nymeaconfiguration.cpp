@@ -285,6 +285,39 @@ void NymeaConfiguration::setTimeZone(const QByteArray &timeZone)
     }
 }
 
+double NymeaConfiguration::locationLatitude() const
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
+    return settings.value("locationLatitude").toDouble();
+}
+
+double NymeaConfiguration::locationLongitude() const
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
+    return settings.value("locationLongitude").toDouble();
+}
+
+QString NymeaConfiguration::locationName() const
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
+    return settings.value("locationName").toString();
+}
+
+void NymeaConfiguration::setLocation(double latitude, double longitude, const QString &name)
+{
+    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
+    settings.beginGroup("nymead");
+    if (settings.value("locationLatitude").toDouble() != latitude || settings.value("locationLongitude").toDouble() != longitude || settings.value("locationName").toString() != name) {
+        settings.setValue("locationLatitude", latitude);
+        settings.setValue("locationLongitude", longitude);
+        settings.setValue("locationName", name);
+        emit locationChanged();
+    }
+}
+
 QLocale NymeaConfiguration::locale() const
 {
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);

@@ -96,7 +96,7 @@ LogEngine::~LogEngine()
 {
     // Process the job queue before allowing to shut down
     while (m_currentJob) {
-        qCDebug(dcLogEngine()) << "Waiting for job to finish... (" << m_jobQueue.count() << "jobs left in queue)";
+        qCDebug(dcLogEngine()) << "Waiting for job to finish... (" << (m_priorityJobQueue.count() + m_jobQueue.count()) << "jobs left in queue)";
         m_jobWatcher.waitForFinished();
         // Make sure that the job queue is processes
         // We can't call processQueue ourselves because thread synchronisation is done via queued connections
@@ -192,7 +192,7 @@ ThingsFetchJob *LogEngine::fetchThings()
 
 bool LogEngine::jobsRunning() const
 {
-    return !m_jobQueue.isEmpty() || m_currentJob;
+    return !m_jobQueue.isEmpty() || !m_priorityJobQueue.isEmpty() || m_currentJob;
 }
 
 void LogEngine::setMaxLogEntries(int maxLogEntries, int trimSize)
@@ -491,11 +491,12 @@ void LogEngine::trim()
 void LogEngine::enqueJob(DatabaseJob *job, bool priority)
 {
     if (priority) {
-        m_jobQueue.prepend(job);
+        m_priorityJobQueue.append(job);
+        qCDebug(dcLogEngine()) << "Scheduled priority job at position" << (m_priorityJobQueue.count() - 1)  << "(" << m_priorityJobQueue.count() << "jobs in the queue)";
     } else {
         m_jobQueue.append(job);
+        qCDebug(dcLogEngine()) << "Scheduled job at position" << (m_jobQueue.count() - 1) << "(" << m_jobQueue.count() << "jobs in the queue)";
     }
-    qCDebug(dcLogEngine()) << "Scheduled job at position" << (priority ? 0 : m_jobQueue.count() - 1) << "(" << m_jobQueue.count() << "jobs in the queue)";
     processQueue();
 }
 
@@ -505,7 +506,7 @@ void LogEngine::processQueue()
         return;
     }
 
-    if (m_jobQueue.isEmpty()) {
+    if (m_priorityJobQueue.isEmpty() && m_jobQueue.isEmpty()) {
         emit jobsRunningChanged();
         return;
     }
@@ -525,8 +526,15 @@ void LogEngine::processQueue()
     }
 
 
-    DatabaseJob *job = m_jobQueue.takeFirst();
-    qCDebug(dcLogEngine()) << "Processing DB queue. (" << m_jobQueue.count() << "jobs left in queue," << m_entryCount << "entries in DB)";
+    DatabaseJob *job = nullptr;
+    if (!m_priorityJobQueue.isEmpty()) {
+        job = m_priorityJobQueue.takeFirst();
+        qCDebug(dcLogEngine()) << "Processing DB priority queue. (" << m_priorityJobQueue.count() << "jobs left in queue," << m_entryCount << "entries in DB)";
+    } else {
+        job = m_jobQueue.takeFirst();
+        qCDebug(dcLogEngine()) << "Processing DB queue. (" << m_jobQueue.count() << "jobs left in queue," << m_entryCount << "entries in DB)";
+    }
+
     m_currentJob = job;
 
     QFuture<DatabaseJob*> future = QtConcurrent::run([job](){

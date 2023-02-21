@@ -115,9 +115,7 @@ private slots:
 
     void testStateBasedAction();
 
-    void removePolicyUpdate();
-    void removePolicyCascade();
-    void removePolicyUpdateRendersUselessRule();
+    void removeThingCleansRule();
 
     void testRuleActionParams_data();
     void testRuleActionParams();
@@ -2385,7 +2383,7 @@ void TestRules::testStateBasedAction()
     qCDebug(dcTests()) << "Log entries:" << entries;
 }
 
-void TestRules::removePolicyUpdate()
+void TestRules::removeThingCleansRule()
 {
     // ADD parent
     QVariantMap params;
@@ -2441,196 +2439,14 @@ void TestRules::removePolicyUpdate()
     response = injectAndWait("Integrations.RemoveThing", params);
     verifyThingError(response, Thing::ThingErrorThingIsChild);
 
-    // Try to remove child
-    params.clear(); response.clear();
-    params.insert("thingId", parentId);
-    response = injectAndWait("Integrations.RemoveThing", params);
-    verifyThingError(response, Thing::ThingErrorThingInRule);
-
     // Remove policy
     params.clear(); response.clear();
     params.insert("thingId", parentId);
-    params.insert("removePolicy", "RemovePolicyUpdate");
+    params.insert("removePolicy", "RemovePolicyCascade"); // This is deprecated and doesn't do anything any more, keeping it as clients may pass it too still
     response = injectAndWait("Integrations.RemoveThing", params);
     verifyThingError(response);
 
     // get updated rule
-    params.clear();
-    params.insert("ruleId", ruleId);
-    response = injectAndWait("Rules.GetRuleDetails", params);
-    verifyRuleError(response);
-
-    QVariantMap rule = response.toMap().value("params").toMap().value("rule").toMap();
-    qDebug() << "Updated rule:" << QJsonDocument::fromVariant(rule).toJson();
-    QVERIFY(rule.value("eventDescriptors").toList().count() == 1);
-
-    // REMOVE rule
-    QVariantMap removeParams;
-    removeParams.insert("ruleId", ruleId);
-    response = injectAndWait("Rules.RemoveRule", removeParams);
-    verifyRuleError(response);
-}
-
-void TestRules::removePolicyCascade()
-{
-    // ADD parent
-    QVariantMap params;
-    params.insert("thingClassId", parentMockThingClassId);
-    params.insert("name", "Parent");
-
-    QSignalSpy addedSpy(NymeaCore::instance()->thingManager(), &ThingManager::thingAdded);
-
-    QVariant response = injectAndWait("Integrations.AddThing", params);
-    verifyThingError(response);
-
-    ThingId parentId = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
-    QVERIFY(!parentId.isNull());
-
-    addedSpy.wait();
-
-    // find child
-    response = injectAndWait("Integrations.GetThings");
-
-    QVariantList things = response.toMap().value("params").toMap().value("things").toList();
-
-    ThingId childId;
-    foreach (const QVariant thingVariant, things) {
-        QVariantMap thingMap = thingVariant.toMap();
-
-        if (thingMap.value("thingClassId").toUuid() == childMockThingClassId) {
-            if (thingMap.value("parentId").toUuid() == parentId) {
-                childId = ThingId(thingMap.value("id").toString());
-            }
-        }
-    }
-    QVERIFY2(!childId.isNull(), "Could not find child");
-
-    // Add rule with child
-    QVariantList eventDescriptors;
-    eventDescriptors.append(createEventDescriptor(childId, childMockEvent1EventTypeId));
-    eventDescriptors.append(createEventDescriptor(parentId, parentMockEvent1EventTypeId));
-    eventDescriptors.append(createEventDescriptor(m_mockThingId, mockEvent1EventTypeId));
-
-    params.clear(); response.clear();
-    params.insert("name", "RemovePolicy");
-    params.insert("eventDescriptors", eventDescriptors);
-    params.insert("actions", QVariantList() << createActionWithParams(m_mockThingId));
-
-    response = injectAndWait("Rules.AddRule", params);
-    verifyRuleError(response);
-    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
-    QVERIFY2(!ruleId.isNull(), "Could not get ruleId");
-
-    // Try to remove child
-    params.clear(); response.clear();
-    params.insert("thingId", childId);
-    response = injectAndWait("Integrations.RemoveThing", params);
-    verifyThingError(response, Thing::ThingErrorThingIsChild);
-
-    // Try to remove child by removing parent
-    params.clear(); response.clear();
-    params.insert("thingId", parentId);
-    response = injectAndWait("Integrations.RemoveThing", params);
-    verifyThingError(response, Thing::ThingErrorThingInRule);
-
-    // Remove policy
-    params.clear(); response.clear();
-    params.insert("thingId", parentId);
-    params.insert("removePolicy", "RemovePolicyCascade");
-    response = injectAndWait("Integrations.RemoveThing", params);
-    verifyThingError(response);
-
-    // get updated rule
-    params.clear();
-    params.insert("ruleId", ruleId);
-    response = injectAndWait("Rules.GetRuleDetails", params);
-    verifyRuleError(response, RuleEngine::RuleErrorRuleNotFound);
-}
-
-void TestRules::removePolicyUpdateRendersUselessRule()
-{
-    // ADD parent
-    QVariantMap params;
-    params.insert("thingClassId", parentMockThingClassId);
-    params.insert("name", "Parent");
-
-    QSignalSpy addedSpy(NymeaCore::instance()->thingManager(), &ThingManager::thingAdded);
-
-    QVariant response = injectAndWait("Integrations.AddThing", params);
-    verifyThingError(response);
-
-    ThingId parentId = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
-    QVERIFY(!parentId.isNull());
-
-    addedSpy.wait();
-
-    // find child
-    qCDebug(dcTests()) << "Get things";
-    response = injectAndWait("Integrations.GetThings");
-
-    QVariantList things = response.toMap().value("params").toMap().value("things").toList();
-
-    ThingId childId;
-    foreach (const QVariant thingVariant, things) {
-        QVariantMap thingMap = thingVariant.toMap();
-
-        if (thingMap.value("thingClassId").toUuid() == childMockThingClassId) {
-            if (thingMap.value("parentId").toUuid() == parentId) {
-                childId = ThingId(thingMap.value("id").toString());
-            }
-        }
-    }
-    QVERIFY2(!childId.isNull(), "Could not find child");
-
-    // Add rule with child
-    QVariantList eventDescriptors;
-    eventDescriptors.append(createEventDescriptor(childId, childMockEvent1EventTypeId));
-    eventDescriptors.append(createEventDescriptor(parentId, parentMockEvent1EventTypeId));
-    eventDescriptors.append(createEventDescriptor(m_mockThingId, mockEvent1EventTypeId));
-
-    params.clear(); response.clear();
-    params.insert("name", "RemovePolicy");
-    params.insert("eventDescriptors", eventDescriptors);
-
-    QVariantMap action;
-    action.insert("thingId", childId);
-    action.insert("actionTypeId", childMockBoolValueActionTypeId);
-    QVariantMap ruleActionParam;
-    ruleActionParam.insert("paramTypeId", childMockBoolValueActionBoolValueParamTypeId);
-    ruleActionParam.insert("value", true);
-    action.insert("ruleActionParams", QVariantList() << ruleActionParam);
-    params.insert("actions", QVariantList() << action);
-
-    qCDebug(dcTests()) << "Adding Rule";
-    response = injectAndWait("Rules.AddRule", params);
-    verifyRuleError(response);
-    RuleId ruleId = RuleId(response.toMap().value("params").toMap().value("ruleId").toString());
-    QVERIFY2(!ruleId.isNull(), "Could not get ruleId");
-
-    // Try to remove child
-    qCDebug(dcTests()) << "Removing thing (expecing failure - thing is child)";
-    params.clear(); response.clear();
-    params.insert("thingId", childId);
-    response = injectAndWait("Integrations.RemoveThing", params);
-    verifyThingError(response, Thing::ThingErrorThingIsChild);
-
-    // Try to remove child by removing parent
-    qCDebug(dcTests()) << "Removing thing (expeciting failure - thing in use)";
-    params.clear(); response.clear();
-    params.insert("thingId", parentId);
-    response = injectAndWait("Integrations.RemoveThing", params);
-    verifyThingError(response, Thing::ThingErrorThingInRule);
-
-    // Remove policy
-    qCDebug(dcTests()) << "Removing thing with update policy";
-    params.clear(); response.clear();
-    params.insert("thingId", parentId);
-    params.insert("removePolicy", "RemovePolicyUpdate");
-    response = injectAndWait("Integrations.RemoveThing", params);
-    verifyThingError(response);
-
-    // get updated rule. It should've been deleted given it ended up with no actions
-    qCDebug(dcTests()) << "Getting details";
     params.clear();
     params.insert("ruleId", ruleId);
     response = injectAndWait("Rules.GetRuleDetails", params);

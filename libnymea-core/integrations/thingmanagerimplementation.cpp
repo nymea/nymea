@@ -59,6 +59,7 @@
 //#include "unistd.h"
 
 #include "plugintimer.h"
+#include "logging/logengine.h"
 
 #include <QPluginLoader>
 #include <QStaticPlugin>
@@ -70,9 +71,10 @@
 #include <QDir>
 #include <QJsonDocument>
 
-ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardwareManager, const QLocale &locale, QObject *parent) :
+ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardwareManager, LogEngine *logEngine, const QLocale &locale, QObject *parent) :
     ThingManager(parent),
     m_hardwareManager(hardwareManager),
+    m_logEngine(logEngine),
     m_locale(locale),
     m_translator(new Translator(this))
 {
@@ -854,46 +856,65 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
 
 Thing::ThingError ThingManagerImplementation::removeConfiguredThing(const ThingId &thingId)
 {
+    Thing *thing = m_configuredThings.value(thingId);
+    if (!thing) {
+        return Thing::ThingErrorThingNotFound;
+    }
+
+    if (!thing->parentId().isNull() && thing->autoCreated()) {
+        qCWarning(dcThingManager) << "Thing is an autocreated child of" << thing->parentId().toString() << ". Remove the parent instead.";
+        return Thing::ThingErrorThingIsChild;
+    }
+
+    removeConfiguredThingInternal(thing);
+
+    return Thing::ThingErrorNoError;
+}
+
+void ThingManagerImplementation::removeConfiguredThingInternal(Thing *thing)
+{
     // We're checking thingSetupStatus and abort any pending setup here. As setup finished()
     // comes in as a QueuedConnection, make sure to process all events before going on so we
     // don't end up aborting an already finished setup instead of calling thingRemoved() on it.
     qApp->processEvents();
 
-    Thing *thing = m_configuredThings.take(thingId);
-    if (!thing) {
-        return Thing::ThingErrorThingNotFound;
-    }
-    IntegrationPlugin *plugin = m_integrationPlugins.value(thing->pluginId());
-    if (!plugin) {
-        qCWarning(dcThingManager()).nospace() << "Plugin not loaded for thing " << thing << ". Not calling thingRemoved on plugin.";
-    } else if (thing->setupStatus() == Thing::ThingSetupStatusInProgress) {
-        qCWarning(dcThingManager()).nospace() << "Thing " << thing << " is still being set up. Aborting setup.";
-        ThingSetupInfo *setupInfo = m_pendingSetups.value(thingId);
-        emit setupInfo->aborted();
-    } else if (thing->setupStatus() == Thing::ThingSetupStatusComplete) {
-        plugin->thingRemoved(thing);
-    }
+    Things toBeRemoved = findChilds(thing->id());
+    toBeRemoved.append(thing);
+    while (!toBeRemoved.isEmpty()) {
+        Thing *t = m_configuredThings.take(toBeRemoved.takeFirst()->id());
 
-    thing->deleteLater();
-
-    NymeaSettings settings(NymeaSettings::SettingsRoleThings);
-    settings.beginGroup("ThingConfig");
-    settings.beginGroup(thingId.toString());
-    settings.remove("");
-    settings.endGroup();
-
-    QFile::remove(statesCacheFile(thingId));
-
-    foreach (const IOConnectionId &ioConnectionId, m_ioConnections.keys()) {
-        IOConnection ioConnection = m_ioConnections.value(ioConnectionId);
-        if (ioConnection.inputThingId() == thing->id() || ioConnection.outputThingId() == thing->id()) {
-            disconnectIO(ioConnectionId);
+        IntegrationPlugin *plugin = m_integrationPlugins.value(t->pluginId());
+        if (!plugin) {
+            qCWarning(dcThingManager()).nospace() << "Plugin not loaded for thing " << t << ". Not calling thingRemoved on plugin.";
+        } else if (thing->setupStatus() == Thing::ThingSetupStatusInProgress) {
+            qCWarning(dcThingManager()).nospace() << "Thing " << thing << " is still being set up. Aborting setup.";
+            ThingSetupInfo *setupInfo = m_pendingSetups.value(t->id());
+            emit setupInfo->aborted();
+        } else if (thing->setupStatus() == Thing::ThingSetupStatusComplete) {
+            plugin->thingRemoved(t);
         }
+
+        t->deleteLater();
+
+        NymeaSettings settings(NymeaSettings::SettingsRoleThings);
+        settings.beginGroup("ThingConfig");
+        settings.beginGroup(t->id().toString());
+        settings.remove("");
+        settings.endGroup();
+
+        QFile::remove(statesCacheFile(t->id()));
+
+        foreach (const IOConnectionId &ioConnectionId, m_ioConnections.keys()) {
+            IOConnection ioConnection = m_ioConnections.value(ioConnectionId);
+            if (ioConnection.inputThingId() == t->id() || ioConnection.outputThingId() == t->id()) {
+                disconnectIO(ioConnectionId);
+            }
+        }
+
+        m_logEngine->removeThingLogs(thing->id());
+
+        emit thingRemoved(t->id());
     }
-
-    emit thingRemoved(thingId);
-
-    return Thing::ThingErrorNoError;
 }
 
 BrowseResult *ThingManagerImplementation::browseThing(const ThingId &thingId, const QString &itemId, const QLocale &locale)
@@ -977,6 +998,9 @@ BrowserActionInfo* ThingManagerImplementation::executeBrowserItem(const BrowserA
     Thing *thing = m_configuredThings.value(browserAction.thingId());
 
     BrowserActionInfo *info = new BrowserActionInfo(thing, this, browserAction, this, 30000);
+    connect(info, &BrowserActionInfo::finished, info->thing(), [this, info](){
+        m_logEngine->logBrowserAction(info->browserAction(), info->status() == Thing::ThingErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, info->status());
+    });
 
     if (!thing) {
         info->finish(Thing::ThingErrorThingNotFound);
@@ -1009,6 +1033,9 @@ BrowserItemActionInfo* ThingManagerImplementation::executeBrowserItemAction(cons
     Thing *thing = m_configuredThings.value(browserItemAction.thingId());
 
     BrowserItemActionInfo *info = new BrowserItemActionInfo(thing, this, browserItemAction, this, 30000);
+    connect(info, &BrowserItemActionInfo::finished, info->thing(), [this, info](){
+        m_logEngine->logBrowserItemAction(info->browserItemAction(), info->status() == Thing::ThingErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, info->status());
+    });
 
     if (!thing) {
         info->finish(Thing::ThingErrorThingNotFound);
@@ -1359,6 +1386,7 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
 
     ThingActionInfo *info = new ThingActionInfo(thing, finalAction, this, 15000);
     connect(info, &ThingActionInfo::finished, this, [=](){
+        m_logEngine->logAction(finalAction, info->status());
         emit actionExecuted(action, info->status());
     });
 
@@ -1810,7 +1838,7 @@ void ThingManagerImplementation::onAutoThingDisappeared(const ThingId &thingId)
         return;
     }
 
-    emit thingDisappeared(thingId);
+    removeConfiguredThingInternal(thing);
 }
 
 void ThingManagerImplementation::onLoaded()
@@ -1849,7 +1877,7 @@ void ThingManagerImplementation::onEventTriggered(Event event)
     }
     // configure logging
     if (thing->loggedEventTypeIds().contains(event.eventTypeId())) {
-        event.setLogged(true);
+        m_logEngine->logEvent(event);
     }
 
     // Forward the event
@@ -1865,6 +1893,10 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
     }
     if (thing->thingClass().getStateType(stateTypeId).cached()) {
         storeThingState(thing, stateTypeId);
+    }
+
+    if (thing->loggedStateTypeIds().contains(stateTypeId)) {
+        m_logEngine->logStateChange(thing, stateTypeId, value);
     }
 
     emit thingStateChanged(thing, stateTypeId, value, minValue, maxValue);

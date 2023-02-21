@@ -61,6 +61,11 @@ class HardwareManager;
 class Translator;
 class ApiKeysProvidersLoader;
 
+namespace nymeaserver {
+class LogEngine;
+}
+using namespace nymeaserver;
+
 class ThingManagerImplementation: public ThingManager
 {
     Q_OBJECT
@@ -68,7 +73,7 @@ class ThingManagerImplementation: public ThingManager
     friend class IntegrationPlugin;
 
 public:
-    explicit ThingManagerImplementation(HardwareManager *hardwareManager, const QLocale &locale, QObject *parent = nullptr);
+    explicit ThingManagerImplementation(HardwareManager *hardwareManager, LogEngine *logEngine, const QLocale &locale, QObject *parent = nullptr);
     ~ThingManagerImplementation() override;
 
     static QStringList pluginSearchDirs();
@@ -131,9 +136,6 @@ public:
     ThingClass translateThingClass(const ThingClass &thingClass, const QLocale &locale) override;
     Vendor translateVendor(const Vendor &vendor, const QLocale &locale) override;
 
-signals:
-    void loaded();
-
 private slots:
     void loadPlugins();
     void loadPlugin(IntegrationPlugin *pluginIface);
@@ -157,6 +159,7 @@ private:
     ParamList buildParams(const ParamTypes &types, const ParamList &first, const ParamList &second = ParamList());
     void pairThingInternal(ThingPairingInfo *info);
     ThingSetupInfo *addConfiguredThingInternal(const ThingClassId &thingClassId, const QString &name, const ParamList &params, const ThingId &parentId = ThingId());
+    void removeConfiguredThingInternal(Thing *thing);
     ThingSetupInfo *reconfigureThingInternal(Thing *thing, const ParamList &params, const QString &name = QString());
     ThingSetupInfo *setupThing(Thing *thing, bool initialSetup);
     void initThing(Thing *thing);
@@ -176,6 +179,7 @@ private:
 
 private:
     HardwareManager *m_hardwareManager;
+    nymeaserver::LogEngine *m_logEngine;
 
     QLocale m_locale;
     Translator *m_translator = nullptr;

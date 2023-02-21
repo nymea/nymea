@@ -119,16 +119,6 @@ QVariant Event::paramValue(const ParamTypeId &paramTypeId) const
     return QVariant();
 }
 
-bool Event::logged() const
-{
-    return m_logged;
-}
-
-void Event::setLogged(bool logged)
-{
-    m_logged = logged;
-}
-
 /*! Compare this Event to the Event given by \a other.
  *  Events are equal (returns true) if eventTypeId, deviceId and params match. */
 bool Event::operator ==(const Event &other) const

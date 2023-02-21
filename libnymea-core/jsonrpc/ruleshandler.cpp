@@ -62,7 +62,6 @@
 */
 
 #include "ruleshandler.h"
-#include "nymeacore.h"
 #include "ruleengine/ruleengine.h"
 #include "loggingcategories.h"
 
@@ -72,8 +71,9 @@
 namespace nymeaserver {
 
 /*! Constructs a new \l{RulesHandler} with the given \a parent. */
-RulesHandler::RulesHandler(QObject *parent) :
-    JsonHandler(parent)
+RulesHandler::RulesHandler(RuleEngine *ruleEngine, QObject *parent) :
+    JsonHandler(parent),
+    m_ruleEngine(ruleEngine)
 {
     // Enums
     registerEnum<RuleEngine::RuleError>();
@@ -218,10 +218,10 @@ RulesHandler::RulesHandler(QObject *parent) :
     params.insert("rule", objectRef("Rule"));
     registerNotification("RuleConfigurationChanged", description, params);
 
-    connect(NymeaCore::instance(), &NymeaCore::ruleAdded, this, &RulesHandler::ruleAddedNotification);
-    connect(NymeaCore::instance(), &NymeaCore::ruleRemoved, this, &RulesHandler::ruleRemovedNotification);
-    connect(NymeaCore::instance(), &NymeaCore::ruleActiveChanged, this, &RulesHandler::ruleActiveChangedNotification);
-    connect(NymeaCore::instance(), &NymeaCore::ruleConfigurationChanged, this, &RulesHandler::ruleConfigurationChangedNotification);
+    connect(m_ruleEngine, &RuleEngine::ruleAdded, this, &RulesHandler::ruleAddedNotification);
+    connect(m_ruleEngine, &RuleEngine::ruleRemoved, this, &RulesHandler::ruleRemovedNotification);
+    connect(m_ruleEngine, &RuleEngine::ruleActiveChanged, this, &RulesHandler::ruleActiveChangedNotification);
+    connect(m_ruleEngine, &RuleEngine::ruleConfigurationChanged, this, &RulesHandler::ruleConfigurationChangedNotification);
 }
 
 /*! Returns the name of the \l{RulesHandler}. In this case \b Rules.*/
@@ -235,7 +235,7 @@ JsonReply* RulesHandler::GetRules(const QVariantMap &params)
     Q_UNUSED(params)
 
     QVariantList rulesList;
-    foreach (const Rule &rule, NymeaCore::instance()->ruleEngine()->rules()) {
+    foreach (const Rule &rule, m_ruleEngine->rules()) {
         rulesList.append(packRuleDescription(rule));
     }
 
@@ -247,7 +247,7 @@ JsonReply* RulesHandler::GetRules(const QVariantMap &params)
 JsonReply *RulesHandler::GetRuleDetails(const QVariantMap &params)
 {
     RuleId ruleId = RuleId(params.value("ruleId").toString());
-    Rule rule = NymeaCore::instance()->ruleEngine()->findRule(ruleId);
+    Rule rule = m_ruleEngine->findRule(ruleId);
     if (rule.id().isNull()) {
         QVariantMap data;
         data.insert("ruleError", enumValueName<RuleEngine::RuleError>(RuleEngine::RuleErrorRuleNotFound));
@@ -264,7 +264,7 @@ JsonReply* RulesHandler::AddRule(const QVariantMap &params)
     Rule rule = unpack<Rule>(params);
     rule.setId(RuleId::createRuleId());
 
-    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->addRule(rule);
+    RuleEngine::RuleError status = m_ruleEngine->addRule(rule);
     QVariantMap returns;
     if (status ==  RuleEngine::RuleErrorNoError) {
         returns.insert("ruleId", rule.id().toString());
@@ -280,10 +280,10 @@ JsonReply *RulesHandler::EditRule(const QVariantMap &params)
     // FIXME: Edit rule API currently has "ruleId" while the Rule type has "id". Auto unpacking will fail for this property
     rule.setId(params.value("ruleId").toUuid());
 
-    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->editRule(rule);
+    RuleEngine::RuleError status = m_ruleEngine->editRule(rule);
     QVariantMap returns;
     if (status ==  RuleEngine::RuleErrorNoError) {
-        returns.insert("rule", pack(NymeaCore::instance()->ruleEngine()->findRule(rule.id())));
+        returns.insert("rule", pack(m_ruleEngine->findRule(rule.id())));
     }
     returns.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
     return createReply(returns);
@@ -293,7 +293,7 @@ JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
 {
     QVariantMap returns;
     RuleId ruleId(params.value("ruleId").toString());
-    RuleEngine::RuleError status = NymeaCore::instance()->removeRule(ruleId);
+    RuleEngine::RuleError status = m_ruleEngine->removeRule(ruleId);
     returns.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
     return createReply(returns);
 }
@@ -301,7 +301,7 @@ JsonReply* RulesHandler::RemoveRule(const QVariantMap &params)
 JsonReply *RulesHandler::FindRules(const QVariantMap &params)
 {
     ThingId thingId = ThingId(params.value("thingId").toString());
-    QList<RuleId> rules = NymeaCore::instance()->ruleEngine()->findRules(thingId);
+    QList<RuleId> rules = m_ruleEngine->findRules(thingId);
 
     QVariantList rulesList;
     foreach (const RuleId &ruleId, rules) {
@@ -315,7 +315,7 @@ JsonReply *RulesHandler::FindRules(const QVariantMap &params)
 
 JsonReply *RulesHandler::EnableRule(const QVariantMap &params)
 {
-    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->enableRule(RuleId(params.value("ruleId").toString()));
+    RuleEngine::RuleError status = m_ruleEngine->enableRule(RuleId(params.value("ruleId").toString()));
     QVariantMap ret;
     ret.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
     return createReply(ret);
@@ -323,7 +323,7 @@ JsonReply *RulesHandler::EnableRule(const QVariantMap &params)
 
 JsonReply *RulesHandler::DisableRule(const QVariantMap &params)
 {
-    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->disableRule(RuleId(params.value("ruleId").toString()));
+    RuleEngine::RuleError status = m_ruleEngine->disableRule(RuleId(params.value("ruleId").toString()));
     QVariantMap ret;
     ret.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
     return createReply(ret);
@@ -333,7 +333,7 @@ JsonReply *RulesHandler::ExecuteActions(const QVariantMap &params)
 {
     QVariantMap returns;
     RuleId ruleId(params.value("ruleId").toString());
-    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->executeActions(ruleId);
+    RuleEngine::RuleError status = m_ruleEngine->executeActions(ruleId);
     returns.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
     return createReply(returns);
 }
@@ -342,7 +342,7 @@ JsonReply *RulesHandler::ExecuteExitActions(const QVariantMap &params)
 {
     QVariantMap returns;
     RuleId ruleId(params.value("ruleId").toString());
-    RuleEngine::RuleError status = NymeaCore::instance()->ruleEngine()->executeExitActions(ruleId);
+    RuleEngine::RuleError status = m_ruleEngine->executeExitActions(ruleId);
     returns.insert("ruleError", enumValueName<RuleEngine::RuleError>(status));
     return createReply(returns);
 }

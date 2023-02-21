@@ -51,8 +51,24 @@ public:
     Q_DECLARE_FLAGS(Phases, Phase)
     Q_FLAG(Phases)
 
+    static QString convertPhasesToString(const Phases &phases) {
+
+        QString phasesString;
+
+        if (phases.testFlag(PhaseA))
+            phasesString.append("A");
+
+        if (phases.testFlag(PhaseB))
+            phasesString.append("B");
+
+        if (phases.testFlag(PhaseC))
+            phasesString.append("C");
+
+        return phasesString;
+    };
+
     static Phases convertPhasesFromString(const QString &phasesString) {
-        Phases phases = PhaseUnknown;
+        Phases phases = PhaseNone;
 
         if (phasesString.contains("A"))
             phases |= PhaseA;

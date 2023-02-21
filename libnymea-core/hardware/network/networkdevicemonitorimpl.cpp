@@ -94,7 +94,6 @@ void NetworkDeviceMonitorImpl::setLastSeen(const QDateTime &lastSeen)
         return;
 
     m_lastSeen = lastSeen;
-
     emit lastSeenChanged(m_lastSeen);
 }
 

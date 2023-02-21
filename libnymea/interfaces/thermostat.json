@@ -7,28 +7,33 @@
             "unit": "DegreeCelsius",
             "minValue": "any",
             "maxValue": "any",
-            "writable": true
+            "writable": true,
+            "logged": true
         },
         {
             "name": "temperature",
             "type": "double",
             "unit": "DegreeCelsius",
-            "optional": true
+            "optional": true,
+            "logged": true
         },
         {
             "name": "heatingOn",
             "type": "bool",
-            "optional": true
+            "optional": true,
+            "logged": true
         },
         {
             "name": "coolingOn",
             "type": "bool",
-            "optional": true
+            "optional": true,
+            "logged": true
         },
         {
             "name": "boost",
             "type": "bool",
-            "optional": true
+            "optional": true,
+            "logged": true
         }
     ]
 }

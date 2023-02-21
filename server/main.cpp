@@ -99,19 +99,10 @@ int main(int argc, char *argv[])
     QCommandLineOption foregroundOption(QStringList() << "n" << "no-daemon", QCoreApplication::translate("nymea", "Run nymead in the foreground, not as daemon."));
     parser.addOption(foregroundOption);
 
-    QString debugDescription = QCoreApplication::translate("nymea", "Debug categories to enable. Prefix with \"No\" to disable. Suffix with \"Warnings\" to address warnings.\nExamples:\n-d AWSTraffic\n-d NoDeviceManager\n-d NoBluetoothWarnings\n\nCategories are:");
+    QCommandLineOption quietOption(QStringList() << "q" << "quiet", QCoreApplication::translate("nymea", "Disables logging all debug, info and warning categories."));
+    parser.addOption(quietOption);
 
-    loggingFilters.sort();
-    foreach (const QString &filterName, loggingFilters)
-        debugDescription += "\n- " + filterName;
-
-
-    loggingFiltersPlugins.sort();
-    debugDescription += "\n\nPlugin categories:\n";
-    foreach (const QString &filterName, loggingFiltersPlugins)
-        debugDescription += "\n- " + filterName;
-
-    QCommandLineOption allOption(QStringList() << "p" << "print-all", QCoreApplication::translate("nymea", "Enables all debug categories except *Traffic and *Debug categories. Single debug categories can be disabled again with -d parameter."));
+    QCommandLineOption allOption(QStringList() << "p" << "print-all", QCoreApplication::translate("nymea", "Enables all info and debug categories except *Traffic and *Debug categories."));
     parser.addOption(allOption);
 
     QCommandLineOption logOption({"l", "log"}, QCoreApplication::translate("nymea", "Specify a log file to write to, if this option is not specified, logs will be printed to the standard output."), "logfile");
@@ -123,7 +114,8 @@ int main(int argc, char *argv[])
     QCommandLineOption dbusOption(QStringList() << "session", QCoreApplication::translate("nymea", "If specified, all D-Bus interfaces will be bound to the session bus instead of the system bus."));
     parser.addOption(dbusOption);
 
-    QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory[Warnings]");
+    QString debugDescription = QCoreApplication::translate("nymea", "Debug categories to enable. Prefix with \"No\" to disable. Suffix with \"Info\" or \"Warnings\" to address info and warning messages. Enabling a debug category will implicitly enable the according info category.\nExamples:\n-d ThingManager\n-d NoApplicationInfo\n\n");
+    QCommandLineOption debugOption(QStringList() << "d" << "debug-category", debugDescription, "[No]DebugCategory[Warning|Info]]");
     parser.addOption(debugOption);
 
     QCommandLineOption interfacesOption({"i", "interface"}, QCoreApplication::translate("nymea", "Additional interfaces to listen on. In nymea URI format (e.g. nymeas://127.0.0.2:7777). Note that such interfaces will not require any authentication as they are intended to be used for automated testing only."), "interfaceString");
@@ -138,23 +130,29 @@ int main(int argc, char *argv[])
     }
 
     /* The logging rules will be evaluated sequentially
-     *  1. All debug categories off
-     *  2. Enable all debug categories if requested from command line (-p)
+     *  1. All debug and info categories off (with -q also warnings)
+     *  2. Enable all warning info and debug categories if requested from command line (-p)
      *  3. The stored categories from the nymead.conf will be appended
      *  4. Add the individual command line params will be added (-d)
      *  5. QT_LOGGING_CONF
      *  6. QT_LOGGING_RULES
-     *
-     * The final filter rules will be set.
      */
 
     // 1. All debug categories off
     QStringList loggingRules;
     loggingRules << "*.debug=false";
+    loggingRules << "*.info=false";
+    if (parser.isSet(quietOption)) {
+        loggingRules << "*.warning=false";
+    } else {
+        loggingRules << "Application.info=true";
+    }
 
     // 2. Enable all debug categories making sense if requested from command line (-p)
     if (parser.isSet(allOption)) {
         loggingRules << "*.debug=true";
+        loggingRules << "*.info=true";
+        loggingRules << "*.warning=true";
         loggingRules << "*Traffic.debug=false";
         loggingRules << "*Debug.debug=false";
     }
@@ -163,21 +161,34 @@ int main(int argc, char *argv[])
     NymeaSettings nymeaSettings(NymeaSettings::SettingsRoleGlobal);
     nymeaSettings.beginGroup("LoggingRules");
     foreach (const QString &category, nymeaSettings.childKeys()) {
-        loggingRules << QString("%1=%2").arg(category).arg(nymeaSettings.value(category, "false").toString());
+        bool enable = nymeaSettings.value(category, false).toBool();
+        if (enable && category.endsWith("debug")) {
+            loggingRules << QString("%1=%2").arg(category).arg("true");
+            loggingRules << QString("%1=%2").arg(QString(category).replace(QRegExp("debug$"), "info")).arg("true");
+            loggingRules << QString("%1=%2").arg(QString(category).replace(QRegExp("debug$"), "warning")).arg("true");
+        } else {
+            loggingRules << QString("%1=%2").arg(category).arg(nymeaSettings.value(category, "false").toString());
+        }
     }
     nymeaSettings.endGroup();
 
     // 4. Add the individual command line params will be added (-d)
     foreach (QString debugArea, parser.values(debugOption)) {
-        bool enable = !debugArea.startsWith("No");
+        bool enable = true;
         bool isWarning = debugArea.endsWith("Warnings");
-        debugArea.remove(QRegExp("^No"));
-        debugArea.remove(QRegExp("Warnings$"));
-        loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg(isWarning ? "warning" : "debug").arg(enable ? "true": "false"));
-//        if (loggingFilters.contains(debugArea) || loggingFiltersPlugins.contains(debugArea)) {
-//        } else {
-//            qCWarning(dcApplication) << QCoreApplication::translate("nymea", "No such debug category:") << debugArea;
-//        }
+        bool isInfo = debugArea.endsWith("Info");
+        if (QRegExp("^No[A-Z]").exactMatch(debugArea)) {
+            debugArea.remove(QRegExp("^No"));
+            enable = false;
+        }
+        debugArea.remove(QRegExp("(Warnings|Info)$"));
+        if (enable && !isWarning && !isInfo) {
+            loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg("debug").arg("true"));
+            loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg("info").arg("true"));
+            loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg("warning").arg("true"));
+        } else {
+            loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg(isWarning ? "warning" : (isInfo ? "info" : "debug")).arg(enable ? "true": "false"));
+        }
     }
 
     // Finally set the rules for the logging

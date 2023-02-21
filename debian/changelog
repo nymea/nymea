@@ -1,3 +1,48 @@
+nymea (1.7.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Bind a client connection to the token given in the hello call.
+  * Improve debug logging filter arguments
+  * Add information for initialSetup and reconfigure to ThingSetupInfo
+  * Enable logging for thermostat states
+  * Properly clean up the TCP server on shutdown
+  * Enqueue priority jobs instead of prepending
+  * Require min/max values for co2sensors
+
+  [ Simon Stürz ]
+  * network device monitor: Clean up pending ping replies properly
+
+  [ Michael Zanetti ]
+  * Require min/max values for pressuresensors
+  * Use dynamic min/max values for io connections
+  * Refactor NymeaCore class
+
+  [ Simon Stürz ]
+  * Update copyright to 2023
+
+  [ Michael Zanetti ]
+  * Manually check for Bluetooth before instantiating QtBluetooth
+
+  [ Simon Stürz ]
+  * NetworkDeviceMonitor: Fix initial reachable state using internal
+    caches
+
+  [ Michael Zanetti ]
+  * Create indices on entries table of log db
+  * Stabilize logging tests
+
+  [ Simon Stürz ]
+  * Fix method to convert phases from string
+
+  [ Michael Zanetti ]
+  * Allow users with ControlThings permission to read things logs
+  * Drop cloud settings which aren't used any more
+
+  [ Simon Stürz ]
+  * Update MAC address database
+
+ -- jenkins <developer@nymea.io>  Tue, 21 Feb 2023 17:43:48 +0100
+
 nymea (1.6.3) jammy; urgency=medium
 
 

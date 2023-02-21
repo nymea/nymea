@@ -973,9 +973,11 @@
                             "id": "07165c12-4d53-45c0-8bf1-34618443b706",
                             "name": "digitalInput1",
                             "displayName": "Digital input 1",
+                            "displayNameAction": "Set digital input 1",
                             "type": "bool",
                             "defaultValue": false,
-                            "ioType": "digitalInput"
+                            "ioType": "digitalInput",
+                            "writable": true
                         },
                         {
                             "id": "0a4362ba-a086-4540-84ba-107ef7b99ed8",

@@ -49,6 +49,13 @@ Param::Param(const ParamTypeId &paramTypeId, const QVariant &value):
 {
 }
 
+Param::Param(const QString &name, const QVariant &value):
+    m_name(name),
+    m_value(value)
+{
+
+}
+
 /*! Returns the paramTypeId of this \l Param. */
 ParamTypeId Param::paramTypeId() const
 {
@@ -58,6 +65,16 @@ ParamTypeId Param::paramTypeId() const
 void Param::setParamTypeId(const ParamTypeId &paramTypeId)
 {
     m_paramTypeId = paramTypeId;
+}
+
+QString Param::name() const
+{
+    return m_name;
+}
+
+void Param::setName(const QString &name)
+{
+    m_name = name;
 }
 
 /*! Returns the value of this \l Param. */
@@ -82,7 +99,7 @@ bool Param::isValid() const
 QDebug operator<<(QDebug dbg, const Param &param)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "Param(Id: " << param.paramTypeId().toString() << ", Value: " << param.value() << ")";
+    dbg.nospace() << "Param(Name: " << param.name() << ", Value: " << param.value() << ", Id: " << param.paramTypeId().toString() << ")";
     return dbg;
 }
 

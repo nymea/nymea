@@ -46,8 +46,6 @@ class ScriptState : public QObject, public QQmlParserStatus
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(QString thingId READ thingId WRITE setThingId NOTIFY thingIdChanged)
-    Q_PROPERTY(QString deviceId READ thingId WRITE setThingId NOTIFY thingIdChanged) // DEPRECATED
-    Q_PROPERTY(QString stateTypeId READ stateTypeId WRITE setStateTypeId NOTIFY stateTypeChanged)
     Q_PROPERTY(QString stateName READ stateName WRITE setStateName NOTIFY stateTypeChanged)
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
     Q_PROPERTY(QVariant minimumValue READ minimumValue NOTIFY stateTypeChanged)
@@ -60,9 +58,6 @@ public:
 
     QString thingId() const;
     void setThingId(const QString &thingId);
-
-    QString stateTypeId() const;
-    void setStateTypeId(const QString &stateTypeId);
 
     QString stateName() const;
     void setStateName(const QString &stateName);
@@ -83,7 +78,7 @@ signals:
     void valueChanged();
 
 private slots:
-    void onThingStateChanged(Thing *thing, const StateTypeId &stateTypeId);
+    void onThingStateChanged(Thing *thing, const QString &stateName);
 
     void connectToThing();
 
@@ -91,7 +86,6 @@ private:
     ThingManager *m_thingManager = nullptr;
 
     QString m_thingId;
-    QString m_stateTypeId;
     QString m_stateName;
 
 

@@ -104,7 +104,8 @@ public:
     void setDisplayName(const QString &displayName);
 
     StateTypes stateTypes() const;
-    StateType getStateType(const StateTypeId &stateTypeId);
+    StateType getStateType(const StateTypeId &stateTypeId) const;
+    StateType getStateType(const QString &stateName) const;
     void setStateTypes(const StateTypes &stateTypes);
     bool hasStateType(const StateTypeId &stateTypeId) const;
     bool hasStateType(const QString &stateTypeName) const;
@@ -125,6 +126,7 @@ public:
     ActionTypes browserItemActionTypes() const;
     void setBrowserItemActionTypes(const ActionTypes &browserItemActionTypes);
     bool hasBrowserItemActionType(const ActionTypeId &actionTypeId);
+    bool hasBrowserItemActionType(const QString &browserItemActionName);
 
     ParamTypes paramTypes() const;
     void setParamTypes(const ParamTypes &paramTypes);

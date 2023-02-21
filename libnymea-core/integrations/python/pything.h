@@ -79,7 +79,8 @@ static void PyThing_setThing(PyThing *self, Thing *thing, PyThreadState *threadS
     self->pyStates = PyList_New(thing->states().count());
     for (int i = 0; i < thing->states().count(); i++) {
         State state = thing->states().at(i);
-        PyObject *pyState = Py_BuildValue("{s:s, s:O}",
+        PyObject *pyState = Py_BuildValue("{s:s, s:s, s:O}",
+                                          "name", state.name().toUtf8().data(),
                                           "stateTypeId", state.stateTypeId().toString().toUtf8().data(),
                                           "value", QVariantToPyObject(state.value()));
         PyList_SetItem(self->pyStates, i, pyState);
@@ -120,15 +121,18 @@ static void PyThing_setThing(PyThing *self, Thing *thing, PyThreadState *threadS
         PyEval_ReleaseThread(self->threadState);
     });
 
-    QObject::connect(thing, &Thing::stateValueChanged, [=](const StateTypeId &stateTypeId, const QVariant &value){
+    QObject::connect(thing, &Thing::stateValueChanged, [=](const QString &stateName, const QVariant &value){
         PyEval_RestoreThread(self->threadState);
         for (int i = 0; i < PyList_Size(self->pyStates); i++) {
             PyObject *pyState = PyList_GetItem(self->pyStates, i);
+            PyObject *pyStateName = PyDict_GetItemString(pyState, "name");
+            QString sn = QString(PyUnicode_AsUTF8AndSize(pyStateName, nullptr));
             PyObject *pyStateTypeId = PyDict_GetItemString(pyState, "stateTypeId");
             StateTypeId stid = StateTypeId(PyUnicode_AsUTF8AndSize(pyStateTypeId, nullptr));
-            if (stid == stateTypeId) {
-                pyState = Py_BuildValue("{s:s, s:O}",
-                                  "stateTypeId", stateTypeId.toString().toUtf8().data(),
+            if (sn == stateName) {
+                pyState = Py_BuildValue("{s:s, s:s, s:O}",
+                                  "name", sn.toUtf8().data(),
+                                  "stateTypeId", stid.toString().toUtf8().data(),
                                   "value", QVariantToPyObject(value));
                 PyList_SetItem(self->pyStates, i, pyState);
                 break;
@@ -268,23 +272,36 @@ static int PyThing_setSettings(PyThing */*self*/, PyObject */*value*/, void */*c
 
 static PyObject * PyThing_stateValue(PyThing* self, PyObject* args)
 {
-    char *stateTypeIdStr = nullptr;
+    char *stateNameOrTypeIdStr = nullptr;
 
-    if (!PyArg_ParseTuple(args, "s", &stateTypeIdStr)) {
+    if (!PyArg_ParseTuple(args, "s", &stateNameOrTypeIdStr)) {
         PyErr_SetString(PyExc_ValueError, "Error parsing arguments. Signature is 's'");
         return nullptr;
     }
 
-    StateTypeId stateTypeId = StateTypeId(stateTypeIdStr);
-
-    for (int i = 0; i < PyList_Size(self->pyStates); i++) {
-        PyObject *pyState = PyList_GetItem(self->pyStates, i);
-        PyObject *pyStateTypeId = PyDict_GetItemString(pyState, "stateTypeId");
-        StateTypeId stid = StateTypeId(PyUnicode_AsUTF8AndSize(pyStateTypeId, nullptr));
-        if (stid == stateTypeId) {
-            PyObject *value = PyDict_GetItemString(pyState, "value");
-            Py_INCREF(value);
-            return value;
+    StateTypeId stateTypeId = StateTypeId(stateNameOrTypeIdStr);
+    QString stateName = QString(stateNameOrTypeIdStr);
+    if (!stateTypeId.isNull()) { // Legacy < 1.7
+        for (int i = 0; i < PyList_Size(self->pyStates); i++) {
+            PyObject *pyState = PyList_GetItem(self->pyStates, i);
+            PyObject *pyStateTypeId = PyDict_GetItemString(pyState, "stateTypeId");
+            StateTypeId stid = StateTypeId(PyUnicode_AsUTF8AndSize(pyStateTypeId, nullptr));
+            if (stid == stateTypeId) {
+                PyObject *value = PyDict_GetItemString(pyState, "value");
+                Py_INCREF(value);
+                return value;
+            }
+        }
+    } else if (!stateName.isEmpty()){
+        for (int i = 0; i < PyList_Size(self->pyStates); i++) {
+            PyObject *pyState = PyList_GetItem(self->pyStates, i);
+            PyObject *pyStateName = PyDict_GetItemString(pyState, "name");
+            QString sn = QString(PyUnicode_AsUTF8AndSize(pyStateName, nullptr));
+            if (sn == stateName) {
+                PyObject *value = PyDict_GetItemString(pyState, "value");
+                Py_INCREF(value);
+                return value;
+            }
         }
     }
 
@@ -294,19 +311,24 @@ static PyObject * PyThing_stateValue(PyThing* self, PyObject* args)
 
 static PyObject * PyThing_setStateValue(PyThing* self, PyObject* args)
 {
-    char *stateTypeIdStr = nullptr;
+    char *stateNameOrTypeIdStr = nullptr;
     PyObject *valueObj = nullptr;
 
-    if (!PyArg_ParseTuple(args, "sO", &stateTypeIdStr, &valueObj)) {
+    if (!PyArg_ParseTuple(args, "sO", &stateNameOrTypeIdStr, &valueObj)) {
         PyErr_SetString(PyExc_ValueError, "Error parsing arguments. Signature is 'sO'");
         return nullptr;
     }
 
-    StateTypeId stateTypeId = StateTypeId(stateTypeIdStr);
+    StateTypeId stateTypeId = StateTypeId(stateNameOrTypeIdStr);
+    QString stateName = QString(stateNameOrTypeIdStr);
     QVariant value = PyObjectToQVariant(valueObj);
 
     if (self->thing != nullptr) {
-        QMetaObject::invokeMethod(self->thing, "setStateValue", Qt::QueuedConnection, Q_ARG(StateTypeId, stateTypeId), Q_ARG(QVariant, value));
+        if (!stateTypeId.isNull()) {
+            QMetaObject::invokeMethod(self->thing, "setStateValue", Qt::QueuedConnection, Q_ARG(StateTypeId, stateTypeId), Q_ARG(QVariant, value));
+        } else {
+            QMetaObject::invokeMethod(self->thing, "setStateValue", Qt::QueuedConnection, Q_ARG(QString, stateName), Q_ARG(QVariant, value));
+        }
     }
 
     Py_RETURN_NONE;

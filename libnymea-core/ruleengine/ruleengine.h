@@ -34,14 +34,23 @@
 #include "rule.h"
 #include "stateevaluator.h"
 #include "types/event.h"
-#include "types/thingclass.h"
+
+#include "integrations/thingmanager.h"
 
 #include <QObject>
 #include <QList>
 #include <QUuid>
 #include <QSettings>
 
+Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
+Q_DECLARE_LOGGING_CATEGORY(dcRuleEngineDebug)
+
+class ThingManager;
+
 namespace nymeaserver {
+
+class LogEngine;
+class TimeManager;
 
 class RuleEngine : public QObject
 {
@@ -72,18 +81,8 @@ public:
     };
     Q_ENUM(RuleError)
 
-    enum RemovePolicy {
-        RemovePolicyCascade,
-        RemovePolicyUpdate
-    };
-    Q_ENUM(RemovePolicy)
-
-    explicit RuleEngine(QObject *parent = nullptr);
+    explicit RuleEngine(ThingManager *thingManager, TimeManager *timeManager, LogEngine *logEngine, QObject *parent = nullptr);
     ~RuleEngine();
-    void init();
-
-    QList<Rule> evaluateEvent(const Event &event);
-    QList<Rule> evaluateTime(const QDateTime &dateTime);
 
     RuleError addRule(const Rule &rule, bool fromEdit = false);
     RuleError editRule(const Rule &rule);
@@ -109,8 +108,18 @@ signals:
     void ruleAdded(const Rule &rule);
     void ruleRemoved(const RuleId &ruleId);
     void ruleConfigurationChanged(const Rule &rule);
+    void ruleActiveChanged(const Rule &rule);
 
-private:
+private slots:
+    void init();
+    void onEventTriggered(const Event &event);
+    void onDateTimeChanged(const QDateTime &dateTime);
+    void onThingRemoved(const ThingId &thingId);
+
+private:    
+    QList<Rule> evaluateEvent(const Event &event);
+    QList<Rule> evaluateTime(const QDateTime &dateTime);
+
     bool containsEvent(const Rule &rule, const Event &event, const ThingClassId &thingClassId);
     bool containsState(const StateEvaluator &stateEvaluator, const Event &stateChangeEvent);
 
@@ -125,12 +134,22 @@ private:
     void saveRuleActions(NymeaSettings *settings, const QList<RuleAction> &ruleActions);
     QList<RuleAction> loadRuleActions(NymeaSettings *settings);
 
+    void executeRuleActions(const QList<RuleAction> ruleActions);
+
+
 private:
+    ThingManager *m_thingManager = nullptr;
+    TimeManager *m_timeManager = nullptr;
+    LogEngine *m_logEngine = nullptr;
+
     QList<RuleId> m_ruleIds; // Keeping a list of RuleIds to keep sorting order...
     QHash<RuleId, Rule> m_rules; // ...but use a Hash for faster finding
     QList<RuleId> m_activeRules;
 
     QDateTime m_lastEvaluationTime;
+
+    QList<RuleId> m_executingRules;
+
 };
 
 }

@@ -110,31 +110,62 @@
 
 
 #include "ruleengine.h"
-#include "nymeacore.h"
 #include "loggingcategories.h"
 #include "time/calendaritem.h"
 #include "time/repeatingoption.h"
 #include "time/timeeventitem.h"
+#include "time/timemanager.h"
 
 #include "types/eventdescriptor.h"
 #include "types/paramdescriptor.h"
 #include "nymeasettings.h"
 #include "integrations/thingmanager.h"
 #include "integrations/thing.h"
+#include "logging/logengine.h"
 
 #include <QDebug>
 #include <QStringList>
 #include <QStandardPaths>
 #include <QCoreApplication>
 
+NYMEA_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
+NYMEA_LOGGING_CATEGORY(dcRuleEngineDebug, "RuleEngineDebug")
+
 namespace nymeaserver {
 
 /*! Constructs the RuleEngine with the given \a parent. Although it wouldn't harm to have multiple RuleEngines, there is one
     instance available from \l{NymeaCore}. This one should be used instead of creating multiple ones.
  */
-RuleEngine::RuleEngine(QObject *parent) :
-    QObject(parent)
+RuleEngine::RuleEngine(ThingManager *thingManager, TimeManager *timeManager, LogEngine *logEngine, QObject *parent) :
+    QObject(parent),
+    m_thingManager(thingManager),
+    m_timeManager(timeManager),
+    m_logEngine(logEngine)
 {
+
+    connect(m_thingManager, &ThingManager::eventTriggered, this, &RuleEngine::onEventTriggered);
+
+    connect(m_thingManager, &ThingManager::thingStateChanged, this, [this](Thing *thing, const QString &stateName, const QVariant &value, const QVariant &/*minValue*/, const QVariant &/*maxValue*/){
+        // There can be event based rules that would trigger when a state changes
+        // without "binding" to the state (as a stateEvaluator would do). So generate a fake event
+        // for every state change.
+        StateType stateType = thing->thingClass().stateTypes().findByName(stateName);
+        Param valueParam(stateName, value);
+        valueParam.setParamTypeId(stateType.id()); // Legacy < 1.7
+        Event event(thing->id(), stateName, ParamList() << valueParam);
+        event.setEventTypeId(stateType.id()); // Legacy < 1.7
+        qCDebug(dcRuleEngine()) << "Generated event from state:" << event;
+        onEventTriggered(event);
+    });
+
+    connect(m_thingManager, &ThingManager::thingRemoved, this, &RuleEngine::onThingRemoved);
+
+    connect(m_timeManager, &TimeManager::dateTimeChanged, this, &RuleEngine::onDateTimeChanged);
+
+    connect(m_thingManager, &ThingManager::loaded, this, [=](){
+        init();
+        onDateTimeChanged(m_timeManager->currentDateTime());
+    });
 }
 
 /*! Destructor of the \l{RuleEngine}. */
@@ -150,13 +181,13 @@ RuleEngine::~RuleEngine()
 */
 QList<Rule> RuleEngine::evaluateEvent(const Event &event)
 {
-    Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(event.thingId());
+    Thing *thing = m_thingManager->findConfiguredThing(event.thingId());
     if (!thing) {
         qCWarning(dcRuleEngine()) << "Invalid event. ThingID does not reference a valid thing";
         return QList<Rule>();
     }
     ThingClass thingClass = thing->thingClass();
-    EventType eventType = thingClass.eventTypes().findById(event.eventTypeId());
+    EventType eventType = thingClass.eventTypes().findByName(event.name());
 
 
     if (event.params().count() == 0) {
@@ -307,7 +338,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
     }
 
     if (!rule.isConsistent()) {
-        qCWarning(dcRuleEngine) << "Rule inconsistent.";
+        qCWarning(dcRuleEngine) << "Invalid rule format. (Either missing actions, or exitActions without condition given.)";
         return RuleErrorInvalidRuleFormat;
     }
 
@@ -319,14 +350,14 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
         }
         if (eventDescriptor.type() == EventDescriptor::TypeThing) {
             // check thingId
-            Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(eventDescriptor.thingId());
+            Thing *thing = m_thingManager->findConfiguredThing(eventDescriptor.thingId());
             if (!thing) {
                 qCWarning(dcRuleEngine) << "Cannot create rule. No configured thing for eventTypeId" << eventDescriptor.eventTypeId();
                 return RuleErrorThingNotFound;
             }
 
             // Check eventTypeId for this deivce
-            ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(thing->thingClassId());
+            ThingClass thingClass = m_thingManager->findThingClass(thing->thingClassId());
             bool eventTypeFound = false;
             foreach (const EventType &eventType, thingClass.eventTypes()) {
                 if (eventType.id() == eventDescriptor.eventTypeId()) {
@@ -345,7 +376,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
             }
         } else {
             // Interface based event
-            Interface iface = NymeaCore::instance()->thingManager()->supportedInterfaces().findByName(eventDescriptor.interface());
+            Interface iface = m_thingManager->supportedInterfaces().findByName(eventDescriptor.interface());
             if (!iface.isValid()) {
                 qWarning(dcRuleEngine()) << "No such interface:" << eventDescriptor.interface();
                 return RuleErrorInterfaceNotFound;
@@ -507,6 +538,8 @@ RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId, bool fromEdit
     settings.remove("");
     settings.endGroup();
 
+    m_logEngine->removeRuleLogs(ruleId);
+
     if (!fromEdit)
         emit ruleRemoved(ruleId);
 
@@ -536,7 +569,7 @@ RuleEngine::RuleError RuleEngine::enableRule(const RuleId &ruleId)
     saveRule(rule);
     emit ruleConfigurationChanged(rule);
 
-    NymeaCore::instance()->logEngine()->logRuleEnabledChanged(rule, true);
+    m_logEngine->logRuleEnabledChanged(rule, true);
     qCDebug(dcRuleEngine()) << "Rule" << rule.name() << rule.id().toString() << "enabled.";
 
     return RuleErrorNoError;
@@ -562,7 +595,7 @@ RuleEngine::RuleError RuleEngine::disableRule(const RuleId &ruleId)
     saveRule(rule);
     emit ruleConfigurationChanged(rule);
 
-    NymeaCore::instance()->logEngine()->logRuleEnabledChanged(rule, false);
+    m_logEngine->logRuleEnabledChanged(rule, false);
     qCDebug(dcRuleEngine()) << "Rule" << rule.name() << rule.id().toString() << "disabled.";
     return RuleErrorNoError;
 }
@@ -597,8 +630,8 @@ RuleEngine::RuleError RuleEngine::executeActions(const RuleId &ruleId)
     }
 
     qCDebug(dcRuleEngine) << "Executing rule actions of rule" << rule.name() << rule.id().toString();
-    NymeaCore::instance()->logEngine()->logRuleActionsExecuted(rule);
-    NymeaCore::instance()->executeRuleActions(rule.actions());
+    m_logEngine->logRuleActionsExecuted(rule);
+    executeRuleActions(rule.actions());
     return RuleErrorNoError;
 }
 
@@ -629,8 +662,8 @@ RuleEngine::RuleError RuleEngine::executeExitActions(const RuleId &ruleId)
     }
 
     qCDebug(dcRuleEngine) << "Executing rule exit actions of rule" << rule.name() << rule.id().toString();
-    NymeaCore::instance()->logEngine()->logRuleExitActionsExecuted(rule);
-    NymeaCore::instance()->executeRuleActions(rule.exitActions());
+    m_logEngine->logRuleExitActionsExecuted(rule);
+    executeRuleActions(rule.exitActions());
     return RuleErrorNoError;
 }
 
@@ -830,7 +863,7 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Thing
 
         // If this is a interface based rule, the thing must implement the interface
         if (eventDescriptor.type() == EventDescriptor::TypeInterface) {
-            ThingClass dc = NymeaCore::instance()->thingManager()->findThingClass(thingClassId);
+            ThingClass dc = m_thingManager->findThingClass(thingClassId);
             if (!dc.interfaces().contains(eventDescriptor.interface())) {
                 // ThingClass for this event doesn't implement the interface for this eventDescriptor
                 continue;
@@ -863,7 +896,7 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Thing
                     allOK = false;
                     continue;
                 }
-                ThingClass dc = NymeaCore::instance()->thingManager()->findThingClass(thingClassId);
+                ThingClass dc = m_thingManager->findThingClass(thingClassId);
                 EventType et = dc.eventTypes().findById(event.eventTypeId());
                 StateType st = dc.stateTypes().findById(event.eventTypeId());
                 if (et.isValid()) {
@@ -928,8 +961,8 @@ bool RuleEngine::containsState(const StateEvaluator &stateEvaluator, const Event
                 return true;
             }
         } else {
-            Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(stateChangeEvent.thingId());
-            ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(thing->thingClassId());
+            Thing *thing = m_thingManager->findConfiguredThing(stateChangeEvent.thingId());
+            ThingClass thingClass = m_thingManager->findThingClass(thing->thingClassId());
             if (thingClass.interfaces().contains(stateEvaluator.stateDescriptor().interface())) {
                 return true;
             }
@@ -954,13 +987,13 @@ RuleEngine::RuleError RuleEngine::checkRuleAction(const RuleAction &ruleAction, 
 
     ActionType actionType;
     if (ruleAction.type() == RuleAction::TypeThing) {
-        Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(ruleAction.thingId());
+        Thing *thing = m_thingManager->findConfiguredThing(ruleAction.thingId());
         if (!thing) {
             qCWarning(dcRuleEngine) << "Cannot create rule. No configured thing with ID" << ruleAction.thingId();
             return RuleErrorThingNotFound;
         }
 
-        ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(thing->thingClassId());
+        ThingClass thingClass = m_thingManager->findThingClass(thing->thingClassId());
         if (!thingClass.hasActionType(ruleAction.actionTypeId())) {
             qCWarning(dcRuleEngine) << "Cannot create rule. Thing " + thing->name() + " has no action type:" << ruleAction.actionTypeId();
             return RuleErrorActionTypeNotFound;
@@ -968,7 +1001,7 @@ RuleEngine::RuleError RuleEngine::checkRuleAction(const RuleAction &ruleAction, 
 
         actionType = thingClass.actionTypes().findById(ruleAction.actionTypeId());
     } else if (ruleAction.type() == RuleAction::TypeInterface) {
-        Interface iface = NymeaCore::instance()->thingManager()->supportedInterfaces().findByName(ruleAction.interface());
+        Interface iface = m_thingManager->supportedInterfaces().findByName(ruleAction.interface());
         if (!iface.isValid()) {
             qCWarning(dcRuleEngine()) << "Cannot create rule. No such interface:" << ruleAction.interface();
             return RuleError::RuleErrorInterfaceNotFound;
@@ -979,7 +1012,7 @@ RuleEngine::RuleError RuleEngine::checkRuleAction(const RuleAction &ruleAction, 
             return RuleError::RuleErrorActionTypeNotFound;
         }
     } else if (ruleAction.type() == RuleAction::TypeBrowser) {
-        Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(ruleAction.thingId());
+        Thing *thing = m_thingManager->findConfiguredThing(ruleAction.thingId());
         if (!thing) {
             qCWarning(dcRuleEngine) << "Cannot create rule. No configured thing with ID" << ruleAction.thingId();
             return RuleErrorThingNotFound;
@@ -1057,12 +1090,12 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
             return RuleErrorTypesNotMatching;
         }
     } else if (ruleActionParam.isStateBased()) {
-        Thing *d = NymeaCore::instance()->thingManager()->findConfiguredThing(ruleActionParam.stateThingId());
+        Thing *d = m_thingManager->findConfiguredThing(ruleActionParam.stateThingId());
         if (!d) {
             qCWarning(dcRuleEngine()) << "Cannot create Rule. ThingId from RuleActionParam" << ruleActionParam.paramTypeId() << "not found in system.";
             return RuleErrorThingNotFound;
         }
-        ThingClass stateThingClass = NymeaCore::instance()->thingManager()->findThingClass(d->thingClassId());
+        ThingClass stateThingClass = m_thingManager->findThingClass(d->thingClassId());
         StateType stateType = stateThingClass.stateTypes().findById(ruleActionParam.stateTypeId());
         QVariant::Type actionParamType = getActionParamType(actionType.id(), ruleActionParam.paramTypeId());
         QVariant v(stateType.type());
@@ -1090,7 +1123,7 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
 
 QVariant::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, const ParamTypeId &paramTypeId)
 {
-    foreach (const ThingClass &thingClass, NymeaCore::instance()->thingManager()->supportedThings()) {
+    foreach (const ThingClass &thingClass, m_thingManager->supportedThings()) {
         foreach (const ActionType &actionType, thingClass.actionTypes()) {
             if (actionType.id() == actionTypeId) {
                 foreach (const ParamType &paramType, actionType.paramTypes()) {
@@ -1107,7 +1140,7 @@ QVariant::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, 
 
 QVariant::Type RuleEngine::getEventParamType(const EventTypeId &eventTypeId, const ParamTypeId &paramTypeId)
 {
-    foreach (const ThingClass &thingClass, NymeaCore::instance()->thingManager()->supportedThings()) {
+    foreach (const ThingClass &thingClass, m_thingManager->supportedThings()) {
         foreach (const EventType &eventType, thingClass.eventTypes()) {
             if (eventType.id() == eventTypeId) {
                 foreach (const ParamType &paramType, eventType.paramTypes()) {
@@ -1369,6 +1402,231 @@ QList<RuleAction> RuleEngine::loadRuleActions(NymeaSettings *settings)
         settings->endGroup();
     }
     return actions;
+}
+
+void RuleEngine::executeRuleActions(const QList<RuleAction> ruleActions)
+{
+    QList<Action> actions;
+    QList<BrowserAction> browserActions;
+    foreach (const RuleAction &ruleAction, ruleActions) {
+        if (ruleAction.type() == RuleAction::TypeThing) {
+            Thing *thing = m_thingManager->findConfiguredThing(ruleAction.thingId());
+            if (!thing) {
+                qCWarning(dcRuleEngine()) << "Unable to find thing" << ruleAction.thingId() << "for rule action" << ruleAction;
+                continue;
+            }
+            ActionTypeId actionTypeId = ruleAction.actionTypeId();
+            ParamList params;
+            bool ok = true;
+            foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
+                if (ruleActionParam.isValueBased()) {
+                    params.append(Param(ruleActionParam.paramTypeId(), ruleActionParam.value()));
+                } else if (ruleActionParam.isStateBased()) {
+                    Thing *stateThing = m_thingManager->findConfiguredThing(ruleActionParam.stateThingId());
+                    if (!stateThing) {
+                        qCWarning(dcRuleEngine()) << "Cannot find thing" << ruleActionParam.stateThingId() << "required by rule action";
+                        ok = false;
+                        break;
+                    }
+                    ThingClass stateThingClass = m_thingManager->findThingClass(stateThing->thingClassId());
+                    if (!stateThingClass.hasStateType(ruleActionParam.stateTypeId())) {
+                        qCWarning(dcRuleEngine()) << "Device" << thing->name() << thing->id() << "does not have a state type" << ruleActionParam.stateTypeId();
+                        ok = false;
+                        break;
+                    }
+                    params.append(Param(ruleActionParam.paramTypeId(), stateThing->stateValue(ruleActionParam.stateTypeId())));
+                }
+            }
+            if (!ok) {
+                qCWarning(dcRuleEngine()) << "Not executing rule action";
+                continue;
+            }
+            Action action(actionTypeId, thing->id(), Action::TriggeredByRule);
+            action.setParams(params);
+            actions.append(action);
+        } else if (ruleAction.type() == RuleAction::TypeBrowser) {
+            Thing *thing = m_thingManager->findConfiguredThing(ruleAction.thingId());
+            if (!thing) {
+                qCWarning(dcRuleEngine()) << "Unable to find thing" << ruleAction.thingId() << "for rule action" << ruleAction;
+                continue;
+            }
+            BrowserAction browserAction(ruleAction.thingId(), ruleAction.browserItemId());
+            browserActions.append(browserAction);
+        } else {
+            Things things = m_thingManager->findConfiguredThings(ruleAction.interface());
+            foreach (Thing* thing, things) {
+                ThingClass thingClass = m_thingManager->findThingClass(thing->thingClassId());
+                ActionType actionType = thingClass.actionTypes().findByName(ruleAction.interfaceAction());
+                if (actionType.id().isNull()) {
+                    qCWarning(dcRuleEngine()) << "Error creating Action. The given ThingClass does not implement action:" << ruleAction.interfaceAction();
+                    continue;
+                }
+
+                ParamList params;
+                bool ok = true;
+                foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
+                    ParamType paramType = actionType.paramTypes().findByName(ruleActionParam.paramName());
+                    if (paramType.id().isNull()) {
+                        qCWarning(dcRuleEngine()) << "Error creating Action. The given ActionType does not have a parameter:" << ruleActionParam.paramName();
+                        ok = false;
+                        continue;
+                    }
+                    if (ruleActionParam.isValueBased()) {
+                        params.append(Param(paramType.id(), ruleActionParam.value()));
+                    } else if (ruleActionParam.isStateBased()) {
+                        Thing *stateThing = m_thingManager->findConfiguredThing(ruleActionParam.stateThingId());
+                        if (!stateThing) {
+                            qCWarning(dcRuleEngine()) << "Cannot find thing" << ruleActionParam.stateThingId() << "required by rule action";
+                            ok = false;
+                            break;
+                        }
+                        ThingClass stateThingClass = m_thingManager->findThingClass(stateThing->thingClassId());
+                        if (!stateThingClass.hasStateType(ruleActionParam.stateTypeId())) {
+                            qCWarning(dcRuleEngine()) << "Thing" << thing->name() << thing->id() << "does not have a state type" << ruleActionParam.stateTypeId();
+                            ok = false;
+                            break;
+                        }
+                        params.append(Param(paramType.id(), stateThing->stateValue(ruleActionParam.stateTypeId())));
+                    }
+                }
+                if (!ok) {
+                    qCWarning(dcRuleEngine()) << "Not executing rule action";
+                    continue;
+                }
+
+                Action action = Action(actionType.id(), thing->id(), Action::TriggeredByRule);
+                action.setParams(params);
+                actions.append(action);
+            }
+        }
+    }
+
+    foreach (const Action &action, actions) {
+        qCDebug(dcRuleEngine) << "Executing action" << action.actionTypeId() << action.params();
+        ThingActionInfo *info = m_thingManager->executeAction(action);
+        connect(info, &ThingActionInfo::finished, this, [info](){
+            if (info->status() != Thing::ThingErrorNoError) {
+                qCWarning(dcRuleEngine) << "Error executing action:" << info->status() << info->displayMessage();
+            }
+        });
+    }
+
+    foreach (const BrowserAction &browserAction, browserActions) {
+        BrowserActionInfo *info = m_thingManager->executeBrowserItem(browserAction);
+        connect(info, &BrowserActionInfo::finished, this, [info, this](){
+            m_logEngine->logBrowserAction(info->browserAction(), info->status() == Thing::ThingErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, info->status());
+            if (info->status() != Thing::ThingErrorNoError) {
+                qCWarning(dcRuleEngine) << "Error executing browser action:" << info->status();
+            }
+        });
+    }
+}
+
+void RuleEngine::onEventTriggered(const Event &event)
+{
+    QList<RuleAction> actions;
+    QList<RuleAction> eventBasedActions;
+    foreach (const Rule &rule, evaluateEvent(event)) {
+        if (m_executingRules.contains(rule.id())) {
+            qCWarning(dcRuleEngine()) << "WARNING: Loop detected in rule execution for rule" << rule.id().toString() << rule.name();
+            break;
+        }
+        m_executingRules.append(rule.id());
+
+        // Event based
+        if (!rule.eventDescriptors().isEmpty()) {
+            m_logEngine->logRuleTriggered(rule);
+            QList<RuleAction> tmp;
+            if (rule.statesActive() && rule.timeActive()) {
+                qCDebug(dcRuleEngineDebug()) << "Executing actions";
+                tmp = rule.actions();
+            } else {
+                qCDebug(dcRuleEngineDebug()) << "Executing exitActions";
+                tmp = rule.exitActions();
+            }
+            // check if we have an event based action or a normal action
+            foreach (const RuleAction &action, tmp) {
+                if (action.isEventBased()) {
+                    eventBasedActions.append(action);
+                } else {
+                    actions.append(action);
+                }
+            }
+        } else {
+            // State based rule
+            m_logEngine->logRuleActiveChanged(rule);
+            emit ruleActiveChanged(rule);
+            if (rule.active()) {
+                actions.append(rule.actions());
+            } else {
+                actions.append(rule.exitActions());
+            }
+        }
+    }
+
+    // Set action params, depending on the event value
+    foreach (RuleAction ruleAction, eventBasedActions) {
+        RuleActionParams newParams;
+        foreach (RuleActionParam ruleActionParam, ruleAction.ruleActionParams()) {
+            // if this event param should be taken over in this action
+            if (event.eventTypeId() == ruleActionParam.eventTypeId()) {
+                QVariant eventValue = event.params().paramValue(ruleActionParam.eventParamTypeId());
+
+                // TODO: limits / scale calculation -> actionValue = eventValue * x
+                //       something like a EventParamDescriptor
+
+                ruleActionParam.setValue(eventValue);
+                qCDebug(dcRuleEngine) << "Using param value from event:" << ruleActionParam.value();
+            }
+            newParams.append(ruleActionParam);
+        }
+        ruleAction.setRuleActionParams(newParams);
+        actions.append(ruleAction);
+    }
+
+    executeRuleActions(actions);
+    m_executingRules.clear();
+}
+
+void RuleEngine::onDateTimeChanged(const QDateTime &dateTime)
+{
+    QList<RuleAction> actions;
+    foreach (const Rule &rule, evaluateTime(dateTime)) {
+        // TimeEvent based
+        if (!rule.timeDescriptor().timeEventItems().isEmpty()) {
+            m_logEngine->logRuleTriggered(rule);
+            if (rule.statesActive() && rule.timeActive()) {
+                actions.append(rule.actions());
+            } else {
+                actions.append(rule.exitActions());
+            }
+        } else {
+            // Calendar based rule
+            m_logEngine->logRuleActiveChanged(rule);
+            emit ruleActiveChanged(rule);
+            if (rule.active()) {
+                actions.append(rule.actions());
+            } else {
+                actions.append(rule.exitActions());
+            }
+        }
+    }
+    executeRuleActions(actions);
+}
+
+void RuleEngine::onThingRemoved(const ThingId &thingId)
+{
+    QList<RuleId> affectedRules;
+
+    foreach (const RuleId &ruleId, findRules(thingId)) {
+        if (!affectedRules.contains(ruleId)) {
+            affectedRules.append(ruleId);
+        }
+    }
+
+    while (!affectedRules.isEmpty()) {
+        removeRule(affectedRules.takeFirst());
+    }
 }
 
 void RuleEngine::init()

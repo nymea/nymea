@@ -82,23 +82,6 @@ void ScriptState::setThingId(const QString &thingId)
     }
 }
 
-QString ScriptState::stateTypeId() const
-{
-    return m_stateTypeId;
-}
-
-void ScriptState::setStateTypeId(const QString &stateTypeId)
-{
-    if (m_stateTypeId != stateTypeId) {
-        m_stateTypeId = stateTypeId;
-        emit stateTypeChanged();
-        store();
-        if (!m_valueCache.isNull()) {
-            setValue(m_valueCache);
-        }
-    }
-}
-
 QString ScriptState::stateName() const
 {
     return m_stateName;
@@ -122,12 +105,7 @@ QVariant ScriptState::value() const
     if (!thing) {
         return QVariant();
     }
-    StateTypeId stateTypeId = StateTypeId(m_stateTypeId);
-    if (stateTypeId.isNull()) {
-        stateTypeId = thing->thingClass().stateTypes().findByName(m_stateName).id();
-    }
-
-    return thing->stateValue(stateTypeId);
+    return thing->stateValue(m_stateName);
 }
 
 void ScriptState::setValue(const QVariant &value)
@@ -150,28 +128,15 @@ void ScriptState::setValue(const QVariant &value)
         return;
     }
 
-    ActionTypeId actionTypeId;
-    if (!m_stateTypeId.isNull()) {
-        actionTypeId = thing->thingClass().stateTypes().findById(StateTypeId(m_stateTypeId)).id();
-        if (actionTypeId.isNull()) {
-            qCDebug(dcScriptEngine) << "Thing" << thing->name() << "does not have a state with type id" << m_stateTypeId;
-        }
-    }
-    if (actionTypeId.isNull()) {
-        actionTypeId = thing->thingClass().stateTypes().findByName(stateName()).id();
-        if (actionTypeId.isNull()) {
-            qCDebug(dcScriptEngine) << "Thing" << thing->name() << "does not have a state named" << m_stateName;
-        }
-    }
-
-    if (actionTypeId.isNull()) {
+    ActionType actionType = thing->thingClass().actionTypes().findByName(m_stateName);
+    if (actionType.name().isEmpty()) {
         m_valueCache = value;
-        qCDebug(dcScriptEngine()) << "Either stateTypeId or stateName is required to be valid.";
+        qCDebug(dcScriptEngine()) << "Thing does not have an action named:" << m_stateName;
         return;
     }
 
-    Action action(ActionTypeId(actionTypeId), ThingId(m_thingId), Action::TriggeredByScript);
-    ParamList params = ParamList() << Param(ParamTypeId(actionTypeId), value);
+    Action action(ThingId(m_thingId), m_stateName, Action::TriggeredByScript);
+    ParamList params = ParamList() << Param(ParamTypeId(actionType.id()), value);
     action.setParams(params);
 
     qCDebug(dcScriptEngine()) << "Executing action on" << thing->name();
@@ -191,9 +156,9 @@ QVariant ScriptState::minimumValue() const
     if (!thing) {
         return QVariant();
     }
-    StateType stateType = thing->thingClass().stateTypes().findById(StateTypeId(m_stateTypeId));
-    if (stateType.id().isNull()) {
-        stateType = thing->thingClass().stateTypes().findByName(m_stateName);
+    StateType stateType = thing->thingClass().stateTypes().findByName(m_stateName);
+    if (stateType.name().isEmpty()) {
+        qCWarning(dcScriptEngine()) << "State name is not valid" << m_stateName;
     }
     return stateType.minValue();
 }
@@ -204,9 +169,9 @@ QVariant ScriptState::maximumValue() const
     if (!thing) {
         return QVariant();
     }
-    StateType stateType = thing->thingClass().stateTypes().findById(StateTypeId(m_stateTypeId));
+    StateType stateType = thing->thingClass().stateTypes().findByName(m_stateName);
     if (stateType.id().isNull()) {
-        stateType = thing->thingClass().stateTypes().findByName(m_stateName);
+        qCWarning(dcScriptEngine()) << "State name is not valid" << m_stateName;
     }
     return stateType.maxValue();
 }
@@ -221,19 +186,12 @@ void ScriptState::restore()
     setValue(m_valueStore);
 }
 
-void ScriptState::onThingStateChanged(Thing *thing, const StateTypeId &stateTypeId)
+void ScriptState::onThingStateChanged(Thing *thing, const QString &stateName)
 {
     if (thing->id() != ThingId(m_thingId)) {
         return;
     }
-    StateTypeId localStateTypeId = StateTypeId(m_stateTypeId);
-    if (localStateTypeId.isNull()) {
-        localStateTypeId = thing->thingClass().stateTypes().findByName(m_stateName).id();
-    }
-    if (localStateTypeId.isNull()) {
-        return;
-    }
-    if (stateTypeId == localStateTypeId) {
+    if (stateName == m_stateName) {
         emit valueChanged();
     }
 }

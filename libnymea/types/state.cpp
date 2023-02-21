@@ -50,9 +50,10 @@ State::State()
 
 /*! Constructs a State reflecting the \l{StateType} given by \a stateTypeId
  *  and associated with the \l{Device} given by \a deviceId */
-State::State(const StateTypeId &stateTypeId, const ThingId &deviceId):
+State::State(const StateTypeId &stateTypeId, const ThingId &thingId, const QString &name):
     m_stateTypeId(stateTypeId),
-    m_thingId(deviceId)
+    m_thingId(thingId),
+    m_name(name)
 {
 }
 
@@ -66,6 +67,11 @@ StateTypeId State::stateTypeId() const
 ThingId State::thingId() const
 {
     return m_thingId;
+}
+
+QString State::name() const
+{
+    return m_name;
 }
 
 /*! Returns the state's value. */

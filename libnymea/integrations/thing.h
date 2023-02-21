@@ -61,8 +61,8 @@ class LIBNYMEA_EXPORT Thing: public QObject
     Q_PROPERTY(QString setupDisplayMessage READ setupDisplayMessage NOTIFY setupStatusChanged USER true)
     Q_PROPERTY(ThingError setupError READ setupError NOTIFY setupStatusChanged)
     Q_PROPERTY(QUuid parentId READ parentId USER true)
-    Q_PROPERTY(QList<StateTypeId> loggedStateTypeIds READ loggedStateTypeIds USER true)
-    Q_PROPERTY(QList<EventTypeId> loggedEventTypeIds READ loggedEventTypeIds USER true)
+    Q_PROPERTY(QStringList loggedStates READ loggedStates USER true)
+    Q_PROPERTY(QStringList loggedEvents READ loggedEvents USER true)
 
 public:
     enum ThingError {
@@ -152,8 +152,8 @@ public:
     Q_INVOKABLE State state(const StateTypeId &stateTypeId) const;
     Q_INVOKABLE State state(const QString &stateName) const;
 
-    QList<StateTypeId> loggedStateTypeIds() const;
-    QList<EventTypeId> loggedEventTypeIds() const;
+    QStringList loggedStates() const;
+    QStringList loggedEvents() const;
 
     ThingId parentId() const;
     void setParentId(const ThingId &parentId);
@@ -171,7 +171,7 @@ public slots:
     void emitEvent(const QString &eventName, const ParamList &params = ParamList());
 
 signals:
-    void stateValueChanged(const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
+    void stateValueChanged(const QString &stateName, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
     void settingChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     void nameChanged();
     void setupStatusChanged();
@@ -184,9 +184,9 @@ private:
     Thing(const PluginId &pluginId, const ThingClass &thingClass, QObject *parent = nullptr);
 
     void setSetupStatus(ThingSetupStatus status, ThingError setupError, const QString &displayMessage = QString());
-    void setLoggedStateTypeIds(const QList<StateTypeId> loggedStateTypeIds);
-    void setLoggedEventTypeIds(const QList<EventTypeId> loggedEventTypeIds);
-    void setStateValueFilter(const StateTypeId &stateTypeId, Types::StateValueFilter filter);
+    void setLoggedStates(const QStringList &loggedStates);
+    void setLoggedEvents(const QStringList &loggedEvents);
+    void setStateValueFilter(const QString &stateName, Types::StateValueFilter filter);
 
 private:
     ThingClass m_thingClass;
@@ -203,9 +203,9 @@ private:
     ThingError m_setupError = ThingErrorNoError;
     QString m_setupDisplayMessage;
 
-    QList<StateTypeId> m_loggedStateTypeIds;
-    QList<EventTypeId> m_loggedEventTypeIds;
-    QHash<StateTypeId, StateValueFilter*> m_stateValueFilters;
+    QStringList m_loggedStates;
+    QStringList m_loggedEvents;
+    QHash<QString, StateValueFilter*> m_stateValueFilters;
 };
 
 QDebug operator<<(QDebug debug, Thing *device);

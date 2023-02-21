@@ -141,13 +141,23 @@ StateTypes ThingClass::stateTypes() const
 
 /*! Returns the \l{StateType} with the given \a stateTypeId of this \l{DeviceClass}.
  * If there is no matching \l{StateType}, an invalid \l{StateType} will be returned.*/
-StateType ThingClass::getStateType(const StateTypeId &stateTypeId)
+StateType ThingClass::getStateType(const StateTypeId &stateTypeId) const
 {
     foreach (const StateType &stateType, m_stateTypes) {
         if (stateType.id() == stateTypeId)
             return stateType;
     }
     return StateType(StateTypeId());
+}
+
+StateType ThingClass::getStateType(const QString &stateName) const
+{
+    foreach (const StateType &stateType, m_stateTypes) {
+        if (stateType.name() == stateName) {
+            return stateType;
+        }
+    }
+    return StateType();
 }
 
 /*! Set the \a stateTypes of this DeviceClass. \{Device}{Devices} created
@@ -262,11 +272,22 @@ void ThingClass::setBrowserItemActionTypes(const ActionTypes &browserItemActionT
     m_browserItemActionTypes = browserItemActionTypes;
 }
 
-/*! Returns true if this DeviceClass has a \l{ActionType} with the given \a actionTypeId. */
+/*! Returns true if this ThingClass' browser has a \l{ActionType} with the given \a actionTypeId. */
 bool ThingClass::hasBrowserItemActionType(const ActionTypeId &actionTypeId)
 {
     foreach (const ActionType &actionType, m_browserItemActionTypes) {
         if (actionType.id() == actionTypeId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/*! Returns true if this ThingClass' browser has a \l{ActionType} with the given \a actionName. */
+bool ThingClass::hasBrowserItemActionType(const QString &browserItemActionName)
+{
+    foreach (const ActionType &actionType, m_browserItemActionTypes) {
+        if (actionType.name() == browserItemActionName) {
             return true;
         }
     }

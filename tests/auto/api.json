@@ -1,4 +1,4 @@
-7.0
+7.1
 {
     "enums": {
         "BasicType": [
@@ -168,10 +168,6 @@
             "PermissionScopeExecuteRules",
             "PermissionScopeConfigureRules",
             "PermissionScopeAdmin"
-        ],
-        "RemovePolicy": [
-            "RemovePolicyCascade",
-            "RemovePolicyUpdate"
         ],
         "RepeatingMode": [
             "RepeatingModeNone",
@@ -922,7 +918,8 @@
         "Integrations.ExecuteAction": {
             "description": "Execute a single action.",
             "params": {
-                "actionTypeId": "Uuid",
+                "d:o:actionTypeId": "Uuid",
+                "o:name": "String",
                 "o:params": "$ref:ParamList",
                 "thingId": "Uuid"
             },
@@ -1121,22 +1118,13 @@
             }
         },
         "Integrations.RemoveThing": {
-            "description": "Remove a thing from the system.",
+            "description": "Remove a thing and all its childs from the system. RemovePolicy is deprecated and has no effect any more.",
             "params": {
-                "o:removePolicy": "$ref:RemovePolicy",
-                "o:removePolicyList": [
-                    {
-                        "policy": "$ref:RemovePolicy",
-                        "ruleId": "Uuid"
-                    }
-                ],
+                "d:o:removePolicy": "String",
                 "thingId": "Uuid"
             },
             "permissionScope": "PermissionScopeConfigureThings",
             "returns": {
-                "o:ruleIds": [
-                    "Uuid"
-                ],
                 "thingError": "$ref:ThingError"
             }
         },
@@ -2806,7 +2794,8 @@
     },
     "types": {
         "Action": {
-            "actionTypeId": "Uuid",
+            "d:o:actionTypeId": "Uuid",
+            "o:name": "String",
             "o:params": "$ref:ParamList",
             "thingId": "Uuid"
         },
@@ -2848,7 +2837,8 @@
             "$ref:CalendarItem"
         ],
         "Event": {
-            "r:eventTypeId": "Uuid",
+            "d:r:o:eventTypeId": "Uuid",
+            "r:o:name": "String",
             "r:params": "$ref:ParamList",
             "r:thingId": "Uuid"
         },
@@ -3063,10 +3053,12 @@
             "sslEnabled": "Bool"
         },
         "State": {
+            "d:r:o:stateTypeId": "Uuid",
             "r:filter": "$ref:StateValueFilter",
             "r:o:maxValue": "Variant",
             "r:o:minValue": "Variant",
-            "r:stateTypeId": "Uuid",
+            "r:o:name": "String",
+            "r:thingId": "Uuid",
             "r:value": "Variant"
         },
         "StateDescriptor": {

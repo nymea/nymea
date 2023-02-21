@@ -14,7 +14,7 @@
 #include <QLoggingCategory>
 #include <QObject>
 
-extern "C" const QString libnymea_api_version() { return QString("7.3.0");}
+extern "C" const QString libnymea_api_version() { return QString("8.0.0");}
 
 Q_DECLARE_LOGGING_CATEGORY(dcMock)
 Q_LOGGING_CATEGORY(dcMock, "Mock")
@@ -205,6 +205,8 @@ StateTypeId genericIoMockAnalogInput1StateTypeId = StateTypeId("{ac56977c-cbba-4
 StateTypeId genericIoMockAnalogInput2StateTypeId = StateTypeId("{8e07e57e-ba4e-42df-81ee-5b72ed074532}");
 StateTypeId genericIoMockAnalogOutput1StateTypeId = StateTypeId("{70cf053e-4abc-4d88-8e1e-2bd9a62256c7}");
 StateTypeId genericIoMockAnalogOutput2StateTypeId = StateTypeId("{e40bcf7d-47b8-41fa-b213-3652a905b376}");
+ActionTypeId genericIoMockDigitalInput1ActionTypeId = ActionTypeId("{07165c12-4d53-45c0-8bf1-34618443b706}");
+ParamTypeId genericIoMockDigitalInput1ActionDigitalInput1ParamTypeId = ParamTypeId("{07165c12-4d53-45c0-8bf1-34618443b706}");
 ActionTypeId genericIoMockDigitalOutput1ActionTypeId = ActionTypeId("{d6fcdb52-f7c3-423b-b9f5-1e29f164c42e}");
 ParamTypeId genericIoMockDigitalOutput1ActionDigitalOutput1ParamTypeId = ParamTypeId("{d6fcdb52-f7c3-423b-b9f5-1e29f164c42e}");
 ActionTypeId genericIoMockDigitalOutput2ActionTypeId = ActionTypeId("{35de8b68-0cf3-4850-a27d-cf9c4a26921f}");
@@ -290,6 +292,9 @@ const QString translations[] {
 
     //: The name of the StateType ({35de8b68-0cf3-4850-a27d-cf9c4a26921f}) of ThingClass genericIoMock
     QT_TRANSLATE_NOOP("mock", "Digital Output 2"),
+
+    //: The name of the ParamType (ThingClass: genericIoMock, ActionType: digitalInput1, ID: {07165c12-4d53-45c0-8bf1-34618443b706})
+    QT_TRANSLATE_NOOP("mock", "Digital input 1"),
 
     //: The name of the StateType ({07165c12-4d53-45c0-8bf1-34618443b706}) of ThingClass genericIoMock
     QT_TRANSLATE_NOOP("mock", "Digital input 1"),
@@ -554,6 +559,9 @@ const QString translations[] {
 
     //: The name of the ActionType ({20dc7c22-c50e-42db-837c-2bbced939f8e}) of ThingClass pushButtonMock
     QT_TRANSLATE_NOOP("mock", "Set color"),
+
+    //: The name of the ActionType ({07165c12-4d53-45c0-8bf1-34618443b706}) of ThingClass genericIoMock
+    QT_TRANSLATE_NOOP("mock", "Set digital input 1"),
 
     //: The name of the ActionType ({17635624-7c19-4bae-8429-2f7aa5d2f843}) of ThingClass displayPinMock
     QT_TRANSLATE_NOOP("mock", "Set double value"),

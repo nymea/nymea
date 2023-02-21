@@ -59,6 +59,7 @@
 //#include "unistd.h"
 
 #include "plugintimer.h"
+#include "logging/logengine.h"
 
 #include <QPluginLoader>
 #include <QStaticPlugin>
@@ -70,9 +71,10 @@
 #include <QDir>
 #include <QJsonDocument>
 
-ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardwareManager, const QLocale &locale, QObject *parent) :
+ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardwareManager, LogEngine *logEngine, const QLocale &locale, QObject *parent) :
     ThingManager(parent),
     m_hardwareManager(hardwareManager),
+    m_logEngine(logEngine),
     m_locale(locale),
     m_translator(new Translator(this))
 {
@@ -522,67 +524,67 @@ Thing::ThingError ThingManagerImplementation::setThingSettings(const ThingId &th
     return Thing::ThingErrorNoError;
 }
 
-Thing::ThingError ThingManagerImplementation::setStateLogging(const ThingId &thingId, const StateTypeId &stateTypeId, bool enabled)
+Thing::ThingError ThingManagerImplementation::setStateLogging(const ThingId &thingId, const QString &stateName, bool enabled)
 {
     Thing *thing = m_configuredThings.value(thingId);
     if (!thing) {
         qCWarning(dcThingManager()) << "Cannot configure event logging. Thing" << thingId.toString() << "not found";
         return Thing::ThingErrorThingNotFound;
     }
-    if (!thing->thingClass().stateTypes().findById(stateTypeId).isValid()) {
-        qCWarning(dcThingManager()) << "Cannot configure state logging. Thing" << thing << "has no state type with id" << stateTypeId;
+    if (!thing->thingClass().stateTypes().findByName(stateName).isValid()) {
+        qCWarning(dcThingManager()) << "Cannot configure state logging. Thing" << thing << "has no state type" << stateName;
         return Thing::ThingErrorStateTypeNotFound;
     }
-    QList<StateTypeId> loggedStateTypes = thing->loggedStateTypeIds();
-    if (enabled && !loggedStateTypes.contains(stateTypeId)) {
-        loggedStateTypes.append(stateTypeId);
-        thing->setLoggedStateTypeIds(loggedStateTypes);
+    QStringList loggedStateTypes = thing->loggedStates();
+    if (enabled && !loggedStateTypes.contains(stateName)) {
+        loggedStateTypes.append(stateName);
+        thing->setLoggedStates(loggedStateTypes);
         emit thingChanged(thing);
-    } else if (!enabled && loggedStateTypes.contains(stateTypeId)) {
-        loggedStateTypes.removeAll(stateTypeId);
-        thing->setLoggedStateTypeIds(loggedStateTypes);
+    } else if (!enabled && loggedStateTypes.contains(stateName)) {
+        loggedStateTypes.removeAll(stateName);
+        thing->setLoggedStates(loggedStateTypes);
         emit thingChanged(thing);
     }
     return Thing::ThingErrorNoError;
 }
 
-Thing::ThingError ThingManagerImplementation::setEventLogging(const ThingId &thingId, const EventTypeId &eventTypeId, bool enabled)
+Thing::ThingError ThingManagerImplementation::setEventLogging(const ThingId &thingId, const QString &eventName, bool enabled)
 {
     Thing *thing = m_configuredThings.value(thingId);
     if (!thing) {
         qCWarning(dcThingManager()) << "Cannot configure event logging. Thing" << thingId.toString() << "not found";
         return Thing::ThingErrorThingNotFound;
     }
-    if (!thing->thingClass().eventTypes().findById(eventTypeId).isValid()) {
-        qCWarning(dcThingManager()) << "Cannot configure event logging. Thing" << thing << "has no event type with id" << eventTypeId;
+    if (!thing->thingClass().eventTypes().findByName(eventName).isValid()) {
+        qCWarning(dcThingManager()) << "Cannot configure event logging. Thing" << thing << "has no event type with id" << eventName;
         return Thing::ThingErrorEventTypeNotFound;
     }
-    QList<EventTypeId> loggedEventTypes = thing->loggedEventTypeIds();
-    if (enabled && !loggedEventTypes.contains(eventTypeId)) {
-        loggedEventTypes.append(eventTypeId);
-        thing->setLoggedEventTypeIds(loggedEventTypes);
+    QStringList loggedEventTypes = thing->loggedEvents();
+    if (enabled && !loggedEventTypes.contains(eventName)) {
+        loggedEventTypes.append(eventName);
+        thing->setLoggedEvents(loggedEventTypes);
         emit thingChanged(thing);
-    } else if (!enabled && loggedEventTypes.contains(eventTypeId)) {
-        loggedEventTypes.removeAll(eventTypeId);
-        thing->setLoggedEventTypeIds(loggedEventTypes);
+    } else if (!enabled && loggedEventTypes.contains(eventName)) {
+        loggedEventTypes.removeAll(eventName);
+        thing->setLoggedEvents(loggedEventTypes);
         emit thingChanged(thing);
     }
     return Thing::ThingErrorNoError;
 }
 
-Thing::ThingError ThingManagerImplementation::setStateFilter(const ThingId &thingId, const StateTypeId &stateTypeId, Types::StateValueFilter filter)
+Thing::ThingError ThingManagerImplementation::setStateFilter(const ThingId &thingId, const QString &stateName, Types::StateValueFilter filter)
 {
     Thing *thing = m_configuredThings.value(thingId);
     if (!thing) {
         qCWarning(dcThingManager()) << "Cannot configure state filter. Thing" << thingId.toString() << "not found";
         return Thing::ThingErrorThingNotFound;
     }
-    if (!thing->thingClass().stateTypes().findById(stateTypeId).isValid()) {
-        qCWarning(dcThingManager()) << "Cannot configure state filter. Thing" << thing << "has no state type with id" << stateTypeId;
+    if (!thing->thingClass().stateTypes().findByName(stateName).isValid()) {
+        qCWarning(dcThingManager()) << "Cannot configure state filter. Thing" << thing << "has no state type " << stateName;
         return Thing::ThingErrorEventTypeNotFound;
     }
 
-    thing->setStateValueFilter(stateTypeId, filter);
+    thing->setStateValueFilter(stateName, filter);
     emit thingChanged(thing);
     return Thing::ThingErrorNoError;
 }
@@ -854,46 +856,65 @@ ThingSetupInfo* ThingManagerImplementation::addConfiguredThingInternal(const Thi
 
 Thing::ThingError ThingManagerImplementation::removeConfiguredThing(const ThingId &thingId)
 {
+    Thing *thing = m_configuredThings.value(thingId);
+    if (!thing) {
+        return Thing::ThingErrorThingNotFound;
+    }
+
+    if (!thing->parentId().isNull() && thing->autoCreated()) {
+        qCWarning(dcThingManager) << "Thing is an autocreated child of" << thing->parentId().toString() << ". Remove the parent instead.";
+        return Thing::ThingErrorThingIsChild;
+    }
+
+    removeConfiguredThingInternal(thing);
+
+    return Thing::ThingErrorNoError;
+}
+
+void ThingManagerImplementation::removeConfiguredThingInternal(Thing *thing)
+{
     // We're checking thingSetupStatus and abort any pending setup here. As setup finished()
     // comes in as a QueuedConnection, make sure to process all events before going on so we
     // don't end up aborting an already finished setup instead of calling thingRemoved() on it.
     qApp->processEvents();
 
-    Thing *thing = m_configuredThings.take(thingId);
-    if (!thing) {
-        return Thing::ThingErrorThingNotFound;
-    }
-    IntegrationPlugin *plugin = m_integrationPlugins.value(thing->pluginId());
-    if (!plugin) {
-        qCWarning(dcThingManager()).nospace() << "Plugin not loaded for thing " << thing << ". Not calling thingRemoved on plugin.";
-    } else if (thing->setupStatus() == Thing::ThingSetupStatusInProgress) {
-        qCWarning(dcThingManager()).nospace() << "Thing " << thing << " is still being set up. Aborting setup.";
-        ThingSetupInfo *setupInfo = m_pendingSetups.value(thingId);
-        emit setupInfo->aborted();
-    } else if (thing->setupStatus() == Thing::ThingSetupStatusComplete) {
-        plugin->thingRemoved(thing);
-    }
+    Things toBeRemoved = findChilds(thing->id());
+    toBeRemoved.append(thing);
+    while (!toBeRemoved.isEmpty()) {
+        Thing *t = m_configuredThings.take(toBeRemoved.takeFirst()->id());
 
-    thing->deleteLater();
-
-    NymeaSettings settings(NymeaSettings::SettingsRoleThings);
-    settings.beginGroup("ThingConfig");
-    settings.beginGroup(thingId.toString());
-    settings.remove("");
-    settings.endGroup();
-
-    QFile::remove(statesCacheFile(thingId));
-
-    foreach (const IOConnectionId &ioConnectionId, m_ioConnections.keys()) {
-        IOConnection ioConnection = m_ioConnections.value(ioConnectionId);
-        if (ioConnection.inputThingId() == thing->id() || ioConnection.outputThingId() == thing->id()) {
-            disconnectIO(ioConnectionId);
+        IntegrationPlugin *plugin = m_integrationPlugins.value(t->pluginId());
+        if (!plugin) {
+            qCWarning(dcThingManager()).nospace() << "Plugin not loaded for thing " << t << ". Not calling thingRemoved on plugin.";
+        } else if (thing->setupStatus() == Thing::ThingSetupStatusInProgress) {
+            qCWarning(dcThingManager()).nospace() << "Thing " << thing << " is still being set up. Aborting setup.";
+            ThingSetupInfo *setupInfo = m_pendingSetups.value(t->id());
+            emit setupInfo->aborted();
+        } else if (thing->setupStatus() == Thing::ThingSetupStatusComplete) {
+            plugin->thingRemoved(t);
         }
+
+        t->deleteLater();
+
+        NymeaSettings settings(NymeaSettings::SettingsRoleThings);
+        settings.beginGroup("ThingConfig");
+        settings.beginGroup(t->id().toString());
+        settings.remove("");
+        settings.endGroup();
+
+        QFile::remove(statesCacheFile(t->id()));
+
+        foreach (const IOConnectionId &ioConnectionId, m_ioConnections.keys()) {
+            IOConnection ioConnection = m_ioConnections.value(ioConnectionId);
+            if (ioConnection.inputThingId() == t->id() || ioConnection.outputThingId() == t->id()) {
+                disconnectIO(ioConnectionId);
+            }
+        }
+
+        m_logEngine->removeThingLogs(thing->id());
+
+        emit thingRemoved(t->id());
     }
-
-    emit thingRemoved(thingId);
-
-    return Thing::ThingErrorNoError;
 }
 
 BrowseResult *ThingManagerImplementation::browseThing(const ThingId &thingId, const QString &itemId, const QLocale &locale)
@@ -977,6 +998,9 @@ BrowserActionInfo* ThingManagerImplementation::executeBrowserItem(const BrowserA
     Thing *thing = m_configuredThings.value(browserAction.thingId());
 
     BrowserActionInfo *info = new BrowserActionInfo(thing, this, browserAction, this, 30000);
+    connect(info, &BrowserActionInfo::finished, info->thing(), [this, info](){
+        m_logEngine->logBrowserAction(info->browserAction(), info->status() == Thing::ThingErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, info->status());
+    });
 
     if (!thing) {
         info->finish(Thing::ThingErrorThingNotFound);
@@ -1009,6 +1033,9 @@ BrowserItemActionInfo* ThingManagerImplementation::executeBrowserItemAction(cons
     Thing *thing = m_configuredThings.value(browserItemAction.thingId());
 
     BrowserItemActionInfo *info = new BrowserItemActionInfo(thing, this, browserItemAction, this, 30000);
+    connect(info, &BrowserItemActionInfo::finished, info->thing(), [this, info](){
+        m_logEngine->logBrowserItemAction(info->browserItemAction(), info->status() == Thing::ThingErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, info->status());
+    });
 
     if (!thing) {
         info->finish(Thing::ThingErrorThingNotFound);
@@ -1063,12 +1090,12 @@ IOConnectionResult ThingManagerImplementation::connectIO(const IOConnection &con
         result.error = Thing::ThingErrorThingNotFound;
         return result;
     }
-    if (!inputThing->thingClass().stateTypes().contains(connection.inputStateTypeId())) {
-        qCWarning(dcThingManager()) << "Input thing" << inputThing << "does not have a state with id" << connection.inputStateTypeId();
+    if (!inputThing->thingClass().stateTypes().contains(connection.inputState())) {
+        qCWarning(dcThingManager()) << "Input thing" << inputThing << "does not have a state " << connection.inputState();
         result.error = Thing::ThingErrorStateTypeNotFound;
         return result;
     }
-    StateType inputStateType = inputThing->thingClass().stateTypes().findById(connection.inputStateTypeId());
+    StateType inputStateType = inputThing->thingClass().stateTypes().findByName(connection.inputState());
 
     // Check if this is actually an input
     if (inputStateType.ioType() != Types::IOTypeDigitalInput && inputStateType.ioType() != Types::IOTypeAnalogInput) {
@@ -1083,12 +1110,12 @@ IOConnectionResult ThingManagerImplementation::connectIO(const IOConnection &con
         result.error = Thing::ThingErrorThingNotFound;
         return result;
     }
-    if (!outputThing->thingClass().stateTypes().contains(connection.outputStateTypeId())) {
-        qCWarning(dcThingManager()) << "Output thing" << outputThing << "does not have a state with id" << connection.outputStateTypeId();
+    if (!outputThing->thingClass().stateTypes().contains(connection.outputState())) {
+        qCWarning(dcThingManager()) << "Output thing" << outputThing << "does not have a state" << connection.outputState();
         result.error = Thing::ThingErrorStateTypeNotFound;
         return result;
     }
-    StateType outputStateType = outputThing->thingClass().stateTypes().findById(connection.outputStateTypeId());
+    StateType outputStateType = outputThing->thingClass().stateTypes().findByName(connection.outputState());
 
     // Check if this is actually an output
     if (outputStateType.ioType() != Types::IOTypeDigitalOutput && outputStateType.ioType() != Types::IOTypeAnalogOutput) {
@@ -1122,20 +1149,25 @@ IOConnectionResult ThingManagerImplementation::connectIO(const IOConnection &con
         }
     }
 
+    // For backward compatibility with < 1.7 we're adding the stateTypeIds to the connection
+    IOConnection newConnection(connection);
+    newConnection.setInputStateTypeId(inputStateType.id());
+    newConnection.setOutputStateTypeId(outputStateType.id());
+
     // Finally add the connection
-    m_ioConnections.insert(connection.id(), connection);
+    m_ioConnections.insert(newConnection.id(), newConnection);
 
     storeIOConnections();
 
-    emit ioConnectionAdded(connection);
+    emit ioConnectionAdded(newConnection);
 
     qCDebug(dcThingManager()) << "IO connected added:" << inputThing << "->" << outputThing;
 
     // Sync initial state
-    syncIOConnection(inputThing, connection.inputStateTypeId());
+    syncIOConnection(inputThing, newConnection.inputState());
 
     result.error = Thing::ThingErrorNoError;
-    result.ioConnectionId = connection.id();
+    result.ioConnectionId = newConnection.id();
     return result;
 }
 
@@ -1320,9 +1352,17 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
 
     // Make sure this thing has an action type with this id
     ThingClass thingClass = findThingClass(thing->thingClassId());
-    ActionType actionType = thingClass.actionTypes().findById(action.actionTypeId());
-    if (actionType.id().isNull()) {
-        qCWarning(dcThingManager()) << "Cannot execute action on" << thing << "No ActionType with ID" << action.actionTypeId();
+    ActionType actionType;
+    if (!action.name().isEmpty()) {
+        actionType = thingClass.actionTypes().findByName(action.name());
+        finalAction.setActionTypeId(actionType.id());
+    } else {
+        actionType = thingClass.actionTypes().findById(action.actionTypeId());
+        finalAction.setName(actionType.name());
+    }
+
+    if (actionType.name().isEmpty()) {
+        qCWarning(dcThingManager()) << "Cannot execute action on" << thing << "No ActionType with name" << action.name() << "or ID" << action.actionTypeId();
         ThingActionInfo *info = new ThingActionInfo(thing, action, this);
         info->finish(Thing::ThingErrorActionTypeNotFound);
         return info;
@@ -1339,7 +1379,7 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
     // If there's a stateType with the same id, we'll need to take min/max values from the state as
     // they might change at runtime
     ParamTypes paramTypes = actionType.paramTypes();
-    StateType stateType = thingClass.stateTypes().findById(action.actionTypeId());
+    StateType stateType = thingClass.stateTypes().findByName(actionType.name());
     if (!stateType.id().isNull()) {
         ParamType pt = actionType.paramTypes().at(0);
         pt.setMinValue(thing->state(stateType.id()).minValue());
@@ -1359,6 +1399,7 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
 
     ThingActionInfo *info = new ThingActionInfo(thing, finalAction, this, 15000);
     connect(info, &ThingActionInfo::finished, this, [=](){
+        m_logEngine->logAction(finalAction, info->status());
         emit actionExecuted(action, info->status());
     });
 
@@ -1810,7 +1851,7 @@ void ThingManagerImplementation::onAutoThingDisappeared(const ThingId &thingId)
         return;
     }
 
-    emit thingDisappeared(thingId);
+    removeConfiguredThingInternal(thing);
 }
 
 void ThingManagerImplementation::onLoaded()
@@ -1842,44 +1883,61 @@ void ThingManagerImplementation::onEventTriggered(Event event)
         qCWarning(dcThingManager()) << "Invalid thing id in emitted event. Not forwarding event. Thing setup not complete yet?";
         return;
     }
+
+    // First, let's find the event type by ID, if given (ID has still higher priority for now)
     EventType eventType = thing->thingClass().eventTypes().findById(event.eventTypeId());
+    // Of not found, try to find it by name.
     if (!eventType.isValid()) {
-        qCWarning(dcThingManager()) << "The given thing" << thing << "does not have an event type of id " + event.eventTypeId().toString() + ". Not forwarding event.";
+        eventType = thing->thingClass().eventTypes().findByName(event.name());
+    }
+    if (!eventType.isValid()) {
+        qCWarning(dcThingManager()).nospace() << "The given thing " << thing << " does not have an event type of id " + event.eventTypeId().toString() + " or name " << event.eventTypeId() << ". Not forwarding event.";
         return;
     }
+
+    // As currently we allow eventy by eventTypeId and by name, make sure both are filled in (can be removed once eventTypeId goes away
+    event.setEventTypeId(eventType.id());
+    event.setName(eventType.name());
+
     // configure logging
-    if (thing->loggedEventTypeIds().contains(event.eventTypeId())) {
-        event.setLogged(true);
+    if (thing->loggedEvents().contains(event.name())) {
+        m_logEngine->logEvent(event);
     }
 
     // Forward the event
     emit eventTriggered(event);
 }
 
-void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue)
+void ThingManagerImplementation::slotThingStateValueChanged(const QString &stateName, const QVariant &value, const QVariant &minValue, const QVariant &maxValue)
 {
     Thing *thing = qobject_cast<Thing*>(sender());
     if (!thing || !m_configuredThings.contains(thing->id())) {
         qCWarning(dcThingManager()) << "Invalid thing id in state change. Not forwarding event. Thing setup not complete yet?";
         return;
     }
-    if (thing->thingClass().getStateType(stateTypeId).cached()) {
-        storeThingState(thing, stateTypeId);
+    StateType stateType = thing->thingClass().getStateType(stateName);
+    if (stateType.cached()) {
+        storeThingState(thing, stateName);
     }
 
-    emit thingStateChanged(thing, stateTypeId, value, minValue, maxValue);
+    if (thing->loggedStates().contains(stateName)) {
+        m_logEngine->logStateChange(thing, stateType.id(), value);
+    }
 
-    syncIOConnection(thing, stateTypeId);
+//    emit thingStateChanged(thing, stateTypeId, value, minValue, maxValue);
+    emit thingStateChanged(thing, stateType.name(), value, minValue, maxValue);
+
+    syncIOConnection(thing, stateName);
 }
 
-void ThingManagerImplementation::syncIOConnection(Thing *thing, const StateTypeId &stateTypeId)
+void ThingManagerImplementation::syncIOConnection(Thing *thing, const QString &stateName)
 {
 
     foreach (const IOConnection &ioConnection, m_ioConnections) {
         // Check if this state is an input to an IO connection.
-        if (ioConnection.inputThingId() == thing->id() && ioConnection.inputStateTypeId() == stateTypeId) {
+        if (ioConnection.inputThingId() == thing->id() && ioConnection.inputState() == stateName) {
             Thing *inputThing = thing;
-            QVariant inputValue = inputThing->stateValue(stateTypeId);
+            QVariant inputValue = inputThing->stateValue(stateName);
 
             Thing *outputThing = m_configuredThings.value(ioConnection.outputThingId());
             if (!outputThing) {
@@ -1891,9 +1949,9 @@ void ThingManagerImplementation::syncIOConnection(Thing *thing, const StateTypeI
                 qCWarning(dcThingManager()) << "Plugin not found for IO connection's output action.";
                 continue;
             }
-            StateType inputStateType = inputThing->thingClass().getStateType(stateTypeId);
+            StateType inputStateType = inputThing->thingClass().getStateType(stateName);
 
-            StateType outputStateType = outputThing->thingClass().getStateType(ioConnection.outputStateTypeId());
+            StateType outputStateType = outputThing->thingClass().getStateType(ioConnection.outputState());
             if (outputStateType.id().isNull()) {
                 qCWarning(dcThingManager()) << "Could not find output state type for IO connection.";
                 continue;
@@ -1936,9 +1994,9 @@ void ThingManagerImplementation::syncIOConnection(Thing *thing, const StateTypeI
         }
 
         // Now check if this is an output state type and - if possible - update the inputs for bidirectional connections
-        if (ioConnection.outputThingId() == thing->id() && ioConnection.outputStateTypeId() == stateTypeId) {
+        if (ioConnection.outputThingId() == thing->id() && ioConnection.outputState() == stateName) {
             Thing *outputThing = thing;
-            QVariant outputValue = outputThing->stateValue(stateTypeId);
+            QVariant outputValue = outputThing->stateValue(stateName);
 
             Thing *inputThing = m_configuredThings.value(ioConnection.inputThingId());
             if (!inputThing) {
@@ -1950,9 +2008,9 @@ void ThingManagerImplementation::syncIOConnection(Thing *thing, const StateTypeI
                 qCWarning(dcThingManager()) << "Plugin not found for IO connection's input action.";
                 continue;
             }
-            StateType outputStateType = outputThing->thingClass().getStateType(stateTypeId);
+            StateType outputStateType = outputThing->thingClass().getStateType(stateName);
 
-            StateType inputStateType = inputThing->thingClass().getStateType(ioConnection.inputStateTypeId());
+            StateType inputStateType = inputThing->thingClass().getStateType(ioConnection.inputState());
             if (inputStateType.id().isNull()) {
                 qCWarning(dcThingManager()) << "Could not find input state type for IO connection.";
                 continue;
@@ -2107,26 +2165,26 @@ void ThingManagerImplementation::initThing(Thing *thing)
 
     QList<State> states;
     foreach (const StateType &stateType, thingClass.stateTypes()) {
-        State state(stateType.id(), thing->id());
+        State state(stateType.id(), thing->id(), stateType.name());
         states.append(state);
     }
     thing->setStates(states);
     loadThingStates(thing);
 
-    QList<EventTypeId> loggedEventTypeIds;
+    QStringList loggedEvents;
     foreach (const EventType &eventType, thingClass.eventTypes()) {
         if (eventType.suggestLogging()) {
-            loggedEventTypeIds.append(eventType.id());
+            loggedEvents.append(eventType.name());
         }
     }
-    thing->setLoggedEventTypeIds(loggedEventTypeIds);
-    QList<StateTypeId> loggedStateTypeIds;
+    thing->setLoggedEvents(loggedEvents);
+    QStringList loggedStates;
     foreach (const StateType &stateType, thingClass.stateTypes()) {
         if (stateType.suggestLogging()) {
-            loggedStateTypeIds.append(stateType.id());
+            loggedStates.append(stateType.name());
         }
     }
-    thing->setLoggedStateTypeIds(loggedStateTypeIds);
+    thing->setLoggedStates(loggedStates);
 }
 
 void ThingManagerImplementation::postSetupThing(Thing *thing)
@@ -2144,14 +2202,7 @@ QString ThingManagerImplementation::statesCacheFile(const ThingId &thingId)
 
 void ThingManagerImplementation::loadThingStates(Thing *thing)
 {
-    QSettings *settings = nullptr;
-    if (QFile::exists(statesCacheFile(thing->id()))) {
-        settings = new QSettings(statesCacheFile(thing->id()), QSettings::IniFormat);
-    } else {
-        // try legacy (<= 0.30 cache)
-        settings = new QSettings(NymeaSettings::settingsPath() + "/thingstates.conf", QSettings::IniFormat);
-        settings->beginGroup(thing->id().toString());
-    }
+    QSettings settings(statesCacheFile(thing->id()), QSettings::IniFormat);
     ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
     foreach (const StateType &stateType, thingClass.stateTypes()) {
         QVariant value = stateType.defaultValue();
@@ -2159,26 +2210,30 @@ void ThingManagerImplementation::loadThingStates(Thing *thing)
         QVariant maxValue = stateType.maxValue();
 
         if (stateType.cached()) {
-            if (settings->childGroups().contains(stateType.id().toString())) {
-                settings->beginGroup(stateType.id().toString());
-                value = settings->value("value");
-                minValue = settings->value("minValue");
-                maxValue = settings->value("maxValue");
-                settings->endGroup();
-            } else if (settings->contains(stateType.id().toString())) {
-                // Migration from < 0.30
-                value = settings->value(stateType.id().toString());
+            if (settings.childGroups().contains(stateType.name())) {
+                settings.beginGroup(stateType.name());
+                value = settings.value("value");
+                minValue = settings.value("minValue");
+                maxValue = settings.value("maxValue");
+                settings.endGroup();
+
+            } else if (settings.childGroups().contains(stateType.id().toString())) {
+                // Migrate from < 1.7
+                settings.beginGroup(stateType.id().toString());
+                value = settings.value("value");
+                minValue = settings.value("minValue");
+                maxValue = settings.value("maxValue");
+                settings.endGroup();
             }
             value.convert(stateType.type());
             minValue.convert(stateType.type());
             maxValue.convert(stateType.type());
         }
 
-        thing->setStateValue(stateType.id(), value);
-        thing->setStateMinMaxValues(stateType.id(), minValue, maxValue);
-        thing->setStateValueFilter(stateType.id(), stateType.filter());
+        thing->setStateValue(stateType.name(), value);
+        thing->setStateMinMaxValues(stateType.name(), minValue, maxValue);
+        thing->setStateValueFilter(stateType.name(), stateType.filter());
     }
-    delete settings;
 }
 
 void ThingManagerImplementation::storeIOConnections()
@@ -2189,9 +2244,11 @@ void ThingManagerImplementation::storeIOConnections()
         connectionSettings.beginGroup(ioConnection.id().toString());
 
         connectionSettings.setValue("inputThingId", ioConnection.inputThingId().toString());
-        connectionSettings.setValue("inputStateTypeId", ioConnection.inputStateTypeId().toString());
+        connectionSettings.setValue("inputState", ioConnection.inputState());
+        connectionSettings.setValue("inputStateTypeId", ioConnection.inputStateTypeId().toString()); // Backwards compatibility < 1.7
         connectionSettings.setValue("outputThingId", ioConnection.outputThingId().toString());
-        connectionSettings.setValue("outputStateTypeId", ioConnection.outputStateTypeId().toString());
+        connectionSettings.setValue("outputState", ioConnection.outputState());
+        connectionSettings.setValue("outputStateTypeId", ioConnection.outputStateTypeId().toString()); // Backwards compatibility < 1.7
         connectionSettings.setValue("inverted", ioConnection.inverted());
 
         connectionSettings.endGroup();
@@ -2207,21 +2264,41 @@ void ThingManagerImplementation::loadIOConnections()
         connectionSettings.beginGroup(idString);
         IOConnectionId id(idString);
         ThingId inputThingId = connectionSettings.value("inputThingId").toUuid();
-        StateTypeId inputStateTypeId = connectionSettings.value("inputStateTypeId").toUuid();
-        ThingId outputThingId = connectionSettings.value("outputThingId").toUuid();
-        StateTypeId outputStateTypeId = connectionSettings.value("outputStateTypeId").toUuid();
-        bool inverted = connectionSettings.value("inverted").toBool();
-        IOConnection ioConnection(id, inputThingId, inputStateTypeId, outputThingId, outputStateTypeId, inverted);
-        m_ioConnections.insert(id, ioConnection);
-        connectionSettings.endGroup();
-
         Thing *inputThing = m_configuredThings.value(inputThingId);
         if (!inputThing) {
             continue;
         }
-        syncIOConnection(inputThing, inputStateTypeId);
+        StateType inputStateType;
+        QString inputState = connectionSettings.value("inputState").toString();
+        if (connectionSettings.contains("inputState")) {
+            inputStateType = inputThing->thingClass().getStateType(connectionSettings.value("inputState").toString());
+        } else { // Backwards compatibility < 1.7
+            inputStateType = inputThing->thingClass().getStateType(connectionSettings.value("inputStateTypeId").toUuid());
+        }
+
+        ThingId outputThingId = connectionSettings.value("outputThingId").toUuid();
+        Thing *outputThing = m_configuredThings.value(outputThingId);
+        if (!outputThing) {
+            continue;
+        }
+        StateType outputStateType;
+        if (connectionSettings.contains("outputState")) {
+            outputStateType = outputThing->thingClass().getStateType(connectionSettings.value("outputState").toString());
+        } else { // Backwards compatibility < 1.7
+            outputStateType = outputThing->thingClass().getStateType(connectionSettings.value("outputStateType").toUuid());
+        }
+        bool inverted = connectionSettings.value("inverted").toBool();
+        IOConnection ioConnection(id, inputThingId, inputStateType.name(), outputThingId, outputStateType.name(), inverted);
+        ioConnection.setInputStateTypeId(inputStateType.id()); // Backwards compatibility < 1.7
+        ioConnection.setOutputStateTypeId(outputStateType.id()); // Backwards compatibility < 1.7
+        m_ioConnections.insert(id, ioConnection);
+        connectionSettings.endGroup();
+
+        syncIOConnection(inputThing, inputStateType.name());
     }
     connectionSettings.endGroup();
+
+    storeIOConnections(); // Store them again with all fields set for migration
 }
 
 QVariant ThingManagerImplementation::mapValue(const QVariant &value, const StateType &fromStateType, const StateType &toStateType, bool inverted) const
@@ -2344,19 +2421,19 @@ void ThingManagerImplementation::storeThingStates(Thing *thing)
     ThingClass thingClass = m_supportedThings.value(thing->thingClassId());
     foreach (const StateType &stateType, thingClass.stateTypes()) {
         if (stateType.cached()) {
-            storeThingState(thing,  stateType.id());
+            storeThingState(thing,  stateType.name());
         }
     }
 }
 
-void ThingManagerImplementation::storeThingState(Thing *thing, const StateTypeId &stateTypeId)
+void ThingManagerImplementation::storeThingState(Thing *thing, const QString &stateName)
 {
     QSettings settings(statesCacheFile(thing->id()), QSettings::IniFormat);
-    qCDebug(dcThingManager()) << "Caching state:" << thing->name() << thing->thingClass().stateTypes().findById(stateTypeId).name();
-    settings.beginGroup(stateTypeId.toString());
-    settings.setValue("value", thing->stateValue(stateTypeId));
-    settings.setValue("minValue", thing->state(stateTypeId).minValue());
-    settings.setValue("maxValue", thing->state(stateTypeId).maxValue());
+    qCDebug(dcThingManager()) << "Caching state:" << thing->name() << stateName;
+    settings.beginGroup(stateName);
+    settings.setValue("value", thing->stateValue(stateName));
+    settings.setValue("minValue", thing->state(stateName).minValue());
+    settings.setValue("maxValue", thing->state(stateName).maxValue());
     settings.endGroup();
 }
 

@@ -146,13 +146,13 @@ void ScriptThing::init(ThingManager *thingManager)
             connectToThing();
         }
     });
-    connect(m_thingManager, &ThingManager::thingStateChanged, this, [=](Thing *thing, const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue){
+    connect(m_thingManager, &ThingManager::thingStateChanged, this, [=](Thing *thing, const QString &stateName, const QVariant &value, const QVariant &minValue, const QVariant &maxValue){
         Q_UNUSED(minValue)
         Q_UNUSED(maxValue)
         if (m_thingId != thing->id()) {
             return;
         }
-        emit stateValueChanged(thing->thingClass().getStateType(stateTypeId).name(), value);
+        emit stateValueChanged(stateName, value);
     });
     connect(m_thingManager, &ThingManager::eventTriggered, this, [=](const Event &event){
         if (m_thingId != event.thingId()) {

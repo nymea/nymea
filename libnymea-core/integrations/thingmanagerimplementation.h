@@ -61,6 +61,11 @@ class HardwareManager;
 class Translator;
 class ApiKeysProvidersLoader;
 
+namespace nymeaserver {
+class LogEngine;
+}
+using namespace nymeaserver;
+
 class ThingManagerImplementation: public ThingManager
 {
     Q_OBJECT
@@ -68,7 +73,7 @@ class ThingManagerImplementation: public ThingManager
     friend class IntegrationPlugin;
 
 public:
-    explicit ThingManagerImplementation(HardwareManager *hardwareManager, const QLocale &locale, QObject *parent = nullptr);
+    explicit ThingManagerImplementation(HardwareManager *hardwareManager, LogEngine *logEngine, const QLocale &locale, QObject *parent = nullptr);
     ~ThingManagerImplementation() override;
 
     static QStringList pluginSearchDirs();
@@ -106,9 +111,9 @@ public:
     Thing::ThingError editThing(const ThingId &thingId, const QString &name) override;
     Thing::ThingError setThingSettings(const ThingId &thingId, const ParamList &settings) override;
 
-    Thing::ThingError setStateLogging(const ThingId &thingId, const StateTypeId &stateTypeId, bool enabled) override;
-    Thing::ThingError setEventLogging(const ThingId &thingId, const EventTypeId &eventTypeId, bool enabled) override;
-    Thing::ThingError setStateFilter(const ThingId &thingId, const StateTypeId &stateTypeId, Types::StateValueFilter filter) override;
+    Thing::ThingError setStateLogging(const ThingId &thingId, const QString &stateName, bool enabled) override;
+    Thing::ThingError setEventLogging(const ThingId &thingId, const QString &eventName, bool enabled) override;
+    Thing::ThingError setStateFilter(const ThingId &thingId, const QString &stateName, Types::StateValueFilter filter) override;
 
     Thing::ThingError removeConfiguredThing(const ThingId &thingId) override;
 
@@ -131,9 +136,6 @@ public:
     ThingClass translateThingClass(const ThingClass &thingClass, const QLocale &locale) override;
     Vendor translateVendor(const Vendor &vendor, const QLocale &locale) override;
 
-signals:
-    void loaded();
-
 private slots:
     void loadPlugins();
     void loadPlugin(IntegrationPlugin *pluginIface);
@@ -147,7 +149,7 @@ private slots:
     void onEventTriggered(Event event);
 
     // Only connect this to Things. It will query the sender()
-    void slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
+    void slotThingStateValueChanged(const QString &stateName, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
     void slotThingSettingChanged(const ParamTypeId &paramTypeId, const QVariant &value);
     void slotThingNameChanged();
 
@@ -157,6 +159,7 @@ private:
     ParamList buildParams(const ParamTypes &types, const ParamList &first, const ParamList &second = ParamList());
     void pairThingInternal(ThingPairingInfo *info);
     ThingSetupInfo *addConfiguredThingInternal(const ThingClassId &thingClassId, const QString &name, const ParamList &params, const ThingId &parentId = ThingId());
+    void removeConfiguredThingInternal(Thing *thing);
     ThingSetupInfo *reconfigureThingInternal(Thing *thing, const ParamList &params, const QString &name = QString());
     ThingSetupInfo *setupThing(Thing *thing);
     void initThing(Thing *thing);
@@ -165,17 +168,18 @@ private:
     void postSetupThing(Thing *thing);
     QString statesCacheFile(const ThingId &thingId);
     void storeThingStates(Thing *thing);
-    void storeThingState(Thing *thing, const StateTypeId &stateTypeId);
+    void storeThingState(Thing *thing, const QString &stateName);
     void loadThingStates(Thing *thing);
     void storeIOConnections();
     void loadIOConnections();
-    void syncIOConnection(Thing *inputThing, const StateTypeId &stateTypeId);
+    void syncIOConnection(Thing *inputThing, const QString &stateName);
     QVariant mapValue(const QVariant &value, const StateType &fromStateType, const StateType &toStateType, bool inverted) const;
 
     IntegrationPlugin *createCppIntegrationPlugin(const QString &absoluteFilePath);
 
 private:
     HardwareManager *m_hardwareManager;
+    nymeaserver::LogEngine *m_logEngine;
 
     QLocale m_locale;
     Translator *m_translator = nullptr;

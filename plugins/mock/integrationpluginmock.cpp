@@ -770,6 +770,12 @@ void IntegrationPluginMock::executeAction(ThingActionInfo *info)
     }
 
     if (info->thing()->thingClassId() == genericIoMockThingClassId) {
+        if (info->action().actionTypeId() == genericIoMockDigitalInput1ActionTypeId) {
+            qCDebug(dcMock()) << "Setting digital input 1 to" << info->action().param(genericIoMockDigitalInput1ActionDigitalInput1ParamTypeId).value().toBool();
+            info->thing()->setStateValue(genericIoMockDigitalInput1StateTypeId, info->action().param(genericIoMockDigitalInput1ActionDigitalInput1ParamTypeId).value().toBool());
+            info->finish(Thing::ThingErrorNoError);
+            return;
+        }
         if (info->action().actionTypeId() == genericIoMockDigitalOutput1ActionTypeId) {
             qCDebug(dcMock()) << "Setting digital output 1 to" << info->action().param(genericIoMockDigitalOutput1ActionDigitalOutput1ParamTypeId).value().toBool();
             info->thing()->setStateValue(genericIoMockDigitalOutput1StateTypeId, info->action().param(genericIoMockDigitalOutput1ActionDigitalOutput1ParamTypeId).value().toBool());

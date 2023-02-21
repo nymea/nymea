@@ -29,7 +29,6 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "integrationshandler.h"
-#include "nymeacore.h"
 #include "integrations/thingmanager.h"
 #include "integrations/thing.h"
 #include "integrations/integrationplugin.h"
@@ -43,9 +42,11 @@
 #include "integrations/thingsetupinfo.h"
 #include "integrations/browseresult.h"
 #include "integrations/browseritemresult.h"
+#include "ruleengine/ruleengine.h"
 
 #include <QDebug>
 #include <QJsonDocument>
+#include <QCryptographicHash>
 
 namespace nymeaserver {
 
@@ -63,7 +64,6 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     registerEnum<Types::InputType>();
     registerEnum<Types::IOType>();
     registerEnum<Types::StateValueFilter>();
-    registerEnum<RuleEngine::RemovePolicy>();
     registerEnum<BrowserItem::BrowserIcon>();
     registerEnum<MediaBrowserItem::MediaBrowserIcon>();
 
@@ -246,7 +246,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.clear(); returns.clear();
     description = "Enable/disable logging for the given state type on the given thing.";
     params.insert("thingId", enumValueName(Uuid));
-    params.insert("stateTypeId", enumValueName(Uuid));
+    params.insert("stateName", enumValueName(String));
     params.insert("enabled", enumValueName(Bool));
     returns.insert("thingError", enumRef<Thing::ThingError>());
     registerMethod("SetStateLogging", description, params, returns, Types::PermissionScopeConfigureThings);
@@ -254,7 +254,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.clear(); returns.clear();
     description = "Enable/disable logging for the given event type on the given thing.";
     params.insert("thingId", enumValueName(Uuid));
-    params.insert("eventTypeId", enumValueName(Uuid));
+    params.insert("eventName", enumValueName(String));
     params.insert("enabled", enumValueName(Bool));
     returns.insert("thingError", enumRef<Thing::ThingError>());
     registerMethod("SetEventLogging", description, params, returns, Types::PermissionScopeConfigureThings);
@@ -262,23 +262,16 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.clear(); returns.clear();
     description = "Set the filter for the given state on the given thing.";
     params.insert("thingId", enumValueName(Uuid));
-    params.insert("stateTypeId", enumValueName(Uuid));
+    params.insert("stateName", enumValueName(Uuid));
     params.insert("filter", enumRef<Types::StateValueFilter>());
     returns.insert("thingError", enumRef<Thing::ThingError>());
     registerMethod("SetStateFilter", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
-    description = "Remove a thing from the system.";
+    description = "Remove a thing and all its childs from the system. RemovePolicy is deprecated and has no effect any more.";
     params.insert("thingId", enumValueName(Uuid));
-    params.insert("o:removePolicy", enumRef<RuleEngine::RemovePolicy>());
-    QVariantMap policy;
-    policy.insert("ruleId", enumValueName(Uuid));
-    policy.insert("policy", enumRef<RuleEngine::RemovePolicy>());
-    QVariantList removePolicyList;
-    removePolicyList.append(policy);
-    params.insert("o:removePolicyList", removePolicyList);
+    params.insert("d:o:removePolicy", enumValueName(String));
     returns.insert("thingError", enumRef<Thing::ThingError>());
-    returns.insert("o:ruleIds", QVariantList() << enumValueName(Uuid));
     registerMethod("RemoveThing", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
@@ -345,8 +338,9 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
 
     params.clear(); returns.clear();
     description = "Execute a single action.";
-    params.insert("actionTypeId", enumValueName(Uuid));
     params.insert("thingId", enumValueName(Uuid));
+    params.insert("o:name", enumValueName(String)); // TODO: Make mandatory when actionTypeId is removed
+    params.insert("d:o:actionTypeId", enumValueName(Uuid));
     params.insert("o:params", objectRef<ParamList>());
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:displayMessage", enumValueName(String));
@@ -386,9 +380,11 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     description = "Connect two generic IO states. Input and output need to be compatible, that is, either a digital input "
                   "and a digital output, or an analog input and an analog output. If successful, the connectionId will be returned.";
     params.insert("inputThingId", enumValueName(Uuid));
-    params.insert("inputStateTypeId", enumValueName(Uuid));
+    params.insert("o:inputState", enumValueName(String)); // TODO: Make mandatory when inputStateTypeId is removed
+    params.insert("d:o:inputStateTypeId", enumValueName(Uuid));
     params.insert("outputThingId", enumValueName(Uuid));
-    params.insert("outputStateTypeId", enumValueName(Uuid));
+    params.insert("o:outputState", enumValueName(String)); // TODO: Make mandatory when outputStateTypeId is removed
+    params.insert("d:o:outputStateTypeId", enumValueName(Uuid));
     params.insert("o:inverted", enumValueName(Bool));
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:ioConnectionId", enumValueName(Uuid));
@@ -405,7 +401,8 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.clear(); returns.clear();
     description = "Emitted whenever a state of a thing changes.";
     params.insert("thingId", enumValueName(Uuid));
-    params.insert("stateTypeId", enumValueName(Uuid));
+    params.insert("stateName", enumValueName(String));
+    params.insert("d:stateTypeId", enumValueName(Uuid));
     params.insert("value", enumValueName(Variant));
     params.insert("minValue", enumValueName(Variant));
     params.insert("maxValue", enumValueName(Variant));
@@ -443,7 +440,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     description = "Emitted whenever an Event is triggered.";
     params.insert("event", objectRef<Event>());
     registerNotification("EventTriggered", description, params);
-    connect(NymeaCore::instance(), &NymeaCore::eventTriggered, this, [this](const Event &event){
+    connect(m_thingManager, &ThingManager::eventTriggered, this, [this](const Event &event){
         QVariantMap params;
         params.insert("event", pack(event));
         emit EventTriggered(params);
@@ -469,14 +466,14 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
         emit IOConnectionRemoved(params);
     });
 
-    connect(NymeaCore::instance(), &NymeaCore::pluginConfigChanged, this, &IntegrationsHandler::pluginConfigChanged);
-    connect(NymeaCore::instance(), &NymeaCore::thingStateChanged, this, &IntegrationsHandler::thingStateChanged);
-    connect(NymeaCore::instance(), &NymeaCore::thingRemoved, this, &IntegrationsHandler::thingRemovedNotification);
-    connect(NymeaCore::instance(), &NymeaCore::thingAdded, this, &IntegrationsHandler::thingAddedNotification);
-    connect(NymeaCore::instance(), &NymeaCore::thingChanged, this, &IntegrationsHandler::thingChangedNotification);
-    connect(NymeaCore::instance(), &NymeaCore::thingSettingChanged, this, &IntegrationsHandler::thingSettingChangedNotification);
+    connect(m_thingManager, &ThingManager::pluginConfigChanged, this, &IntegrationsHandler::pluginConfigChanged);
+    connect(m_thingManager, &ThingManager::thingStateChanged, this, &IntegrationsHandler::thingStateChanged);
+    connect(m_thingManager, &ThingManager::thingRemoved, this, &IntegrationsHandler::thingRemovedNotification);
+    connect(m_thingManager, &ThingManager::thingAdded, this, &IntegrationsHandler::thingAddedNotification);
+    connect(m_thingManager, &ThingManager::thingChanged, this, &IntegrationsHandler::thingChangedNotification);
+    connect(m_thingManager, &ThingManager::thingSettingChanged, this, &IntegrationsHandler::thingSettingChangedNotification);
 
-    connect(NymeaCore::instance(), &NymeaCore::initialized, this, [=](){
+    connect(m_thingManager, &ThingManager::loaded, this, [=](){
         // Generating cache hashes.
         // NOTE: We need to sort the lists to get a stable result
         QHash<ThingClassId, ThingClass> thingClassesMap;
@@ -535,8 +532,8 @@ JsonReply* IntegrationsHandler::GetVendors(const QVariantMap &params, const Json
 {
     Q_UNUSED(params)
     QVariantList vendors;
-    foreach (const Vendor &vendor, NymeaCore::instance()->thingManager()->supportedVendors()) {
-        Vendor translatedVendor = NymeaCore::instance()->thingManager()->translateVendor(vendor, context.locale());
+    foreach (const Vendor &vendor, m_thingManager->supportedVendors()) {
+        Vendor translatedVendor = m_thingManager->translateVendor(vendor, context.locale());
         vendors.append(pack(translatedVendor));
     }
 
@@ -550,7 +547,7 @@ JsonReply* IntegrationsHandler::GetThingClasses(const QVariantMap &params, const
     QVariantMap returns;
     QVariantList thingClasses;
 
-    foreach (const ThingClass &thingClass, NymeaCore::instance()->thingManager()->supportedThings()) {
+    foreach (const ThingClass &thingClass, m_thingManager->supportedThings()) {
         if (params.contains("vendorId") && thingClass.vendorId() != VendorId(params.value("vendorId").toUuid())) {
             continue;
         }
@@ -567,7 +564,7 @@ JsonReply* IntegrationsHandler::GetThingClasses(const QVariantMap &params, const
             }
         }
 
-        ThingClass translatedThingClass = NymeaCore::instance()->thingManager()->translateThingClass(thingClass, context.locale());
+        ThingClass translatedThingClass = m_thingManager->translateThingClass(thingClass, context.locale());
         thingClasses.append(pack(translatedThingClass));
     }
 
@@ -586,7 +583,7 @@ JsonReply *IntegrationsHandler::DiscoverThings(const QVariantMap &params, const 
     ParamList discoveryParams = unpack<ParamList>(params.value("discoveryParams"));
 
     JsonReply *reply = createAsyncReply("DiscoverThings");
-    ThingDiscoveryInfo *info = NymeaCore::instance()->thingManager()->discoverThings(thingClassId, discoveryParams);
+    ThingDiscoveryInfo *info = m_thingManager->discoverThings(thingClassId, discoveryParams);
     connect(info, &ThingDiscoveryInfo::finished, reply, [this, reply, info, locale](){
         QVariantMap returns;
         returns.insert("thingError", enumValueName<Thing::ThingError>(info->status()));
@@ -614,9 +611,9 @@ JsonReply* IntegrationsHandler::GetPlugins(const QVariantMap &params, const Json
 {
     Q_UNUSED(params)
     QVariantList plugins;
-    foreach (IntegrationPlugin* plugin, NymeaCore::instance()->thingManager()->plugins()) {
+    foreach (IntegrationPlugin* plugin, m_thingManager->plugins()) {
         QVariantMap packedPlugin = pack(*plugin).toMap();
-        packedPlugin["displayName"] = NymeaCore::instance()->thingManager()->translate(plugin->pluginId(), plugin->pluginDisplayName(), context.locale());
+        packedPlugin["displayName"] = m_thingManager->translate(plugin->pluginId(), plugin->pluginDisplayName(), context.locale());
         plugins.append(packedPlugin);
     }
 
@@ -629,7 +626,7 @@ JsonReply *IntegrationsHandler::GetPluginConfiguration(const QVariantMap &params
 {
     QVariantMap returns;
 
-    IntegrationPlugin *plugin = NymeaCore::instance()->thingManager()->plugins().findById(PluginId(params.value("pluginId").toString()));
+    IntegrationPlugin *plugin = m_thingManager->plugins().findById(PluginId(params.value("pluginId").toString()));
     if (!plugin) {
         returns.insert("thingError", enumValueName<Thing::ThingError>(Thing::ThingErrorPluginNotFound));
         return createReply(returns);
@@ -649,7 +646,7 @@ JsonReply* IntegrationsHandler::SetPluginConfiguration(const QVariantMap &params
     QVariantMap returns;
     PluginId pluginId = PluginId(params.value("pluginId").toString());
     ParamList pluginParams = unpack<ParamList>(params.value("configuration"));
-    Thing::ThingError result = NymeaCore::instance()->thingManager()->setPluginConfig(pluginId, pluginParams);
+    Thing::ThingError result = m_thingManager->setPluginConfig(pluginId, pluginParams);
     returns.insert("thingError",enumValueName<Thing::ThingError>(result));
     return createReply(returns);
 }
@@ -674,10 +671,10 @@ JsonReply* IntegrationsHandler::AddThing(const QVariantMap &params, const JsonCo
             jsonReply->finished();
             return jsonReply;
         }
-        info = NymeaCore::instance()->thingManager()->addConfiguredThing(thingClassId, thingParams, thingName);
+        info = m_thingManager->addConfiguredThing(thingClassId, thingParams, thingName);
 
     } else {
-        info = NymeaCore::instance()->thingManager()->addConfiguredThing(thingDescriptorId, thingParams, thingName);
+        info = m_thingManager->addConfiguredThing(thingDescriptorId, thingParams, thingName);
     }
     connect(info, &ThingSetupInfo::finished, jsonReply, [info, jsonReply, locale](){
         QVariantMap returns;
@@ -706,24 +703,24 @@ JsonReply *IntegrationsHandler::PairThing(const QVariantMap &params, const JsonC
     ThingPairingInfo *info;
     if (params.contains("thingDescriptorId")) {
         ThingDescriptorId thingDescriptorId = ThingDescriptorId(params.value("thingDescriptorId").toString());
-        info = NymeaCore::instance()->thingManager()->pairThing(thingDescriptorId, thingParams, thingName);
+        info = m_thingManager->pairThing(thingDescriptorId, thingParams, thingName);
     } else if (params.contains("thingId")) {
         ThingId thingId = ThingId(params.value("thingId").toString());
-        info = NymeaCore::instance()->thingManager()->pairThing(thingId, thingParams, thingName);
+        info = m_thingManager->pairThing(thingId, thingParams, thingName);
     } else {
         ThingClassId thingClassId(params.value("thingClassId").toString());
-        info = NymeaCore::instance()->thingManager()->pairThing(thingClassId, thingParams, thingName);
+        info = m_thingManager->pairThing(thingClassId, thingParams, thingName);
     }
 
     JsonReply *jsonReply = createAsyncReply("PairThing");
 
-    connect(info, &ThingPairingInfo::finished, jsonReply, [jsonReply, info, locale](){
+    connect(info, &ThingPairingInfo::finished, jsonReply, [jsonReply, info, locale, this](){
         QVariantMap returns;
         returns.insert("thingError", enumValueName<Thing::ThingError>(info->status()));
         returns.insert("pairingTransactionId", info->transactionId().toString());
 
         if (info->status() == Thing::ThingErrorNoError) {
-            ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(info->thingClassId());
+            ThingClass thingClass = m_thingManager->findThingClass(info->thingClassId());
             returns.insert("setupMethod", enumValueName<ThingClass::SetupMethod>(thingClass.setupMethod()));
         }
 
@@ -751,7 +748,7 @@ JsonReply *IntegrationsHandler::ConfirmPairing(const QVariantMap &params)
 
     JsonReply *jsonReply = createAsyncReply("ConfirmPairing");
 
-    ThingPairingInfo *info = NymeaCore::instance()->thingManager()->confirmPairing(pairingTransactionId, username, secret);
+    ThingPairingInfo *info = m_thingManager->confirmPairing(pairingTransactionId, username, secret);
     connect(info, &ThingPairingInfo::finished, jsonReply, [info, jsonReply, locale](){
 
         QVariantMap returns;
@@ -774,22 +771,22 @@ JsonReply* IntegrationsHandler::GetThings(const QVariantMap &params, const JsonC
     QVariantMap returns;
     QVariantList things;
     if (params.contains("thingId")) {
-        Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(ThingId(params.value("thingId").toString()));
+        Thing *thing = m_thingManager->findConfiguredThing(ThingId(params.value("thingId").toString()));
         if (!thing) {
             returns.insert("thingError", enumValueName<Thing::ThingError>(Thing::ThingErrorThingNotFound));
             return createReply(returns);
         } else {
             QVariantMap packedThing = pack(thing).toMap();
-            QString translatedSetupStatus = NymeaCore::instance()->thingManager()->translate(thing->pluginId(), thing->setupDisplayMessage(), context.locale());
+            QString translatedSetupStatus = m_thingManager->translate(thing->pluginId(), thing->setupDisplayMessage(), context.locale());
             if (!translatedSetupStatus.isEmpty()) {
                 packedThing["setupDisplayMessage"] = translatedSetupStatus;
             }
             things.append(packedThing);
         }
     } else {
-        foreach (Thing *thing, NymeaCore::instance()->thingManager()->configuredThings()) {
+        foreach (Thing *thing, m_thingManager->configuredThings()) {
             QVariantMap packedThing = pack(thing).toMap();
-            QString translatedSetupStatus = NymeaCore::instance()->thingManager()->translate(thing->pluginId(), thing->setupDisplayMessage(), context.locale());
+            QString translatedSetupStatus = m_thingManager->translate(thing->pluginId(), thing->setupDisplayMessage(), context.locale());
             if (!translatedSetupStatus.isEmpty()) {
                 packedThing["setupDisplayMessage"] = translatedSetupStatus;
             }
@@ -812,9 +809,9 @@ JsonReply *IntegrationsHandler::ReconfigureThing(const QVariantMap &params, cons
 
     ThingSetupInfo *info;
     if (!thingDescriptorId.isNull()) {
-        info = NymeaCore::instance()->thingManager()->reconfigureThing(thingDescriptorId, thingParams);
+        info = m_thingManager->reconfigureThing(thingDescriptorId, thingParams);
     } else if (!thingId.isNull()){
-        info = NymeaCore::instance()->thingManager()->reconfigureThing(thingId, thingParams);
+        info = m_thingManager->reconfigureThing(thingId, thingParams);
     } else {
         qCWarning(dcJsonRpc()) << "Either thingId or thingDescriptorId are required";
         QVariantMap ret;
@@ -842,7 +839,7 @@ JsonReply *IntegrationsHandler::EditThing(const QVariantMap &params)
 
     qCDebug(dcJsonRpc()) << "Edit thing" << thingId << name;
 
-    Thing::ThingError status = NymeaCore::instance()->thingManager()->editThing(thingId, name);
+    Thing::ThingError status = m_thingManager->editThing(thingId, name);
 
     return createReply(statusToReply(status));
 }
@@ -851,33 +848,8 @@ JsonReply* IntegrationsHandler::RemoveThing(const QVariantMap &params)
 {
     QVariantMap returns;
     ThingId thingId = ThingId(params.value("thingId").toString());
-
-    // global removePolicy has priority
-    if (params.contains("removePolicy")) {
-        RuleEngine::RemovePolicy removePolicy = params.value("removePolicy").toString() == "RemovePolicyCascade" ? RuleEngine::RemovePolicyCascade : RuleEngine::RemovePolicyUpdate;
-        Thing::ThingError status = NymeaCore::instance()->removeConfiguredThing(thingId, removePolicy);
-        returns.insert("thingError", enumValueName<Thing::ThingError>(status));
-        return createReply(returns);
-    }
-
-    QHash<RuleId, RuleEngine::RemovePolicy> removePolicyList;
-    foreach (const QVariant &variant, params.value("removePolicyList").toList()) {
-        RuleId ruleId = RuleId(variant.toMap().value("ruleId").toString());
-        RuleEngine::RemovePolicy policy = variant.toMap().value("policy").toString() == "RemovePolicyCascade" ? RuleEngine::RemovePolicyCascade : RuleEngine::RemovePolicyUpdate;
-        removePolicyList.insert(ruleId, policy);
-    }
-
-    QPair<Thing::ThingError, QList<RuleId> > status = NymeaCore::instance()->removeConfiguredThing(thingId, removePolicyList);
-    returns.insert("thingError", enumValueName<Thing::ThingError>(status.first));
-
-    if (!status.second.isEmpty()) {
-        QVariantList ruleIdList;
-        foreach (const RuleId &ruleId, status.second) {
-            ruleIdList.append(ruleId.toString());
-        }
-        returns.insert("ruleIds", ruleIdList);
-    }
-
+    Thing::ThingError status = m_thingManager->removeConfiguredThing(thingId);
+    returns.insert("thingError", enumValueName<Thing::ThingError>(status));
     return createReply(returns);
 }
 
@@ -885,43 +857,43 @@ JsonReply *IntegrationsHandler::SetThingSettings(const QVariantMap &params)
 {
     ThingId thingId = ThingId(params.value("thingId").toString());
     ParamList settings = unpack<ParamList>(params.value("settings"));
-    Thing::ThingError status = NymeaCore::instance()->thingManager()->setThingSettings(thingId, settings);
+    Thing::ThingError status = m_thingManager->setThingSettings(thingId, settings);
     return createReply(statusToReply(status));
 }
 
 JsonReply *IntegrationsHandler::SetStateLogging(const QVariantMap &params)
 {
     ThingId thingId = ThingId(params.value("thingId").toString());
-    StateTypeId stateTypeId = StateTypeId(params.value("stateTypeId").toUuid());
+    QString stateName = params.value("stateName").toString();
     bool enabled = params.value("enabled").toBool();
-    Thing::ThingError status = NymeaCore::instance()->thingManager()->setStateLogging(thingId, stateTypeId, enabled);
+    Thing::ThingError status = m_thingManager->setStateLogging(thingId, stateName, enabled);
     return createReply(statusToReply(status));
 }
 
 JsonReply *IntegrationsHandler::SetEventLogging(const QVariantMap &params)
 {
     ThingId thingId = ThingId(params.value("thingId").toString());
-    EventTypeId eventTypeId = EventTypeId(params.value("eventTypeId").toUuid());
+    QString eventName = params.value("eventName").toString();
     bool enabled = params.value("enabled").toBool();
-    Thing::ThingError status = NymeaCore::instance()->thingManager()->setEventLogging(thingId, eventTypeId, enabled);
+    Thing::ThingError status = m_thingManager->setEventLogging(thingId, eventName, enabled);
     return createReply(statusToReply(status));
 }
 
 JsonReply *IntegrationsHandler::SetStateFilter(const QVariantMap &params)
 {
     ThingId thingId = ThingId(params.value("thingId").toString());
-    StateTypeId stateTypeId = StateTypeId(params.value("stateTypeId").toUuid());
+    QString stateName = params.value("stateName").toString();
     QString filterString = params.value("filter").toString();
     QMetaEnum metaEnum = QMetaEnum::fromType<Types::StateValueFilter>();
     Types::StateValueFilter filter = static_cast<Types::StateValueFilter>(metaEnum.keyToValue(filterString.toUtf8()));
-    Thing::ThingError status = NymeaCore::instance()->thingManager()->setStateFilter(thingId, stateTypeId, filter);
+    Thing::ThingError status = m_thingManager->setStateFilter(thingId, stateName, filter);
     return createReply(statusToReply(status));
 }
 
 JsonReply* IntegrationsHandler::GetEventTypes(const QVariantMap &params, const JsonContext &context) const
 {
-    ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(ThingClassId(params.value("thingClassId").toString()));
-    ThingClass translatedThingClass = NymeaCore::instance()->thingManager()->translateThingClass(thingClass, context.locale());
+    ThingClass thingClass = m_thingManager->findThingClass(ThingClassId(params.value("thingClassId").toString()));
+    ThingClass translatedThingClass = m_thingManager->translateThingClass(thingClass, context.locale());
 
     QVariantMap returns;
     returns.insert("eventTypes", pack(translatedThingClass.eventTypes()));
@@ -930,8 +902,8 @@ JsonReply* IntegrationsHandler::GetEventTypes(const QVariantMap &params, const J
 
 JsonReply* IntegrationsHandler::GetActionTypes(const QVariantMap &params, const JsonContext &context) const
 {
-    ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(ThingClassId(params.value("thingClassId").toString()));
-    ThingClass translatedThingClass = NymeaCore::instance()->thingManager()->translateThingClass(thingClass, context.locale());
+    ThingClass thingClass = m_thingManager->findThingClass(ThingClassId(params.value("thingClassId").toString()));
+    ThingClass translatedThingClass = m_thingManager->translateThingClass(thingClass, context.locale());
 
     QVariantMap returns;
     returns.insert("actionTypes", pack(translatedThingClass.actionTypes()));
@@ -940,8 +912,8 @@ JsonReply* IntegrationsHandler::GetActionTypes(const QVariantMap &params, const 
 
 JsonReply* IntegrationsHandler::GetStateTypes(const QVariantMap &params, const JsonContext &context) const
 {
-    ThingClass thingClass = NymeaCore::instance()->thingManager()->findThingClass(ThingClassId(params.value("thingClassId").toString()));
-    ThingClass translatedThingClass = NymeaCore::instance()->thingManager()->translateThingClass(thingClass, context.locale());
+    ThingClass thingClass = m_thingManager->findThingClass(ThingClassId(params.value("thingClassId").toString()));
+    ThingClass translatedThingClass = m_thingManager->translateThingClass(thingClass, context.locale());
 
     QVariantMap returns;
     returns.insert("stateTypes", pack(translatedThingClass.stateTypes()));
@@ -950,7 +922,7 @@ JsonReply* IntegrationsHandler::GetStateTypes(const QVariantMap &params, const J
 
 JsonReply* IntegrationsHandler::GetStateValue(const QVariantMap &params) const
 {
-    Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(ThingId(params.value("thingId").toString()));
+    Thing *thing = m_thingManager->findConfiguredThing(ThingId(params.value("thingId").toString()));
     if (!thing) {
         return createReply(statusToReply(Thing::ThingErrorThingNotFound));
     }
@@ -966,7 +938,7 @@ JsonReply* IntegrationsHandler::GetStateValue(const QVariantMap &params) const
 
 JsonReply *IntegrationsHandler::GetStateValues(const QVariantMap &params) const
 {
-    Thing *thing = NymeaCore::instance()->thingManager()->findConfiguredThing(ThingId(params.value("thingId").toString()));
+    Thing *thing = m_thingManager->findConfiguredThing(ThingId(params.value("thingId").toString()));
     if (!thing) {
         return createReply(statusToReply(Thing::ThingErrorThingNotFound));
     }
@@ -983,7 +955,7 @@ JsonReply *IntegrationsHandler::BrowseThing(const QVariantMap &params, const Jso
 
     JsonReply *jsonReply = createAsyncReply("BrowseThing");
 
-    BrowseResult *result = NymeaCore::instance()->thingManager()->browseThing(thingId, itemId, context.locale());
+    BrowseResult *result = m_thingManager->browseThing(thingId, itemId, context.locale());
     connect(result, &BrowseResult::finished, jsonReply, [this, jsonReply, result, context](){
 
         QVariantMap returns = statusToReply(result->status());
@@ -1010,7 +982,7 @@ JsonReply *IntegrationsHandler::GetBrowserItem(const QVariantMap &params, const 
 
     JsonReply *jsonReply = createAsyncReply("GetBrowserItem");
 
-    BrowserItemResult *result = NymeaCore::instance()->thingManager()->browserItemDetails(thingId, itemId, context.locale());
+    BrowserItemResult *result = m_thingManager->browserItemDetails(thingId, itemId, context.locale());
     connect(result, &BrowserItemResult::finished, jsonReply, [this, jsonReply, result, context](){
         QVariantMap params = statusToReply(result->status());
         if (result->status() == Thing::ThingErrorNoError) {
@@ -1029,16 +1001,24 @@ JsonReply *IntegrationsHandler::GetBrowserItem(const QVariantMap &params, const 
 JsonReply *IntegrationsHandler::ExecuteAction(const QVariantMap &params, const JsonContext &context)
 {
     ThingId thingId(params.value("thingId").toString());
+    QString name = params.value("name").toString();
     ActionTypeId actionTypeId(params.value("actionTypeId").toString());
     ParamList actionParams = unpack<ParamList>(params.value("params"));
     QLocale locale = context.locale();
 
-    Action action(actionTypeId, thingId);
+    Action action;
+    if (!name.isEmpty()) {
+        action.setName(name);
+    } else {
+        action.setActionTypeId(actionTypeId);
+    }
+
+    action.setThingId(thingId);
     action.setParams(actionParams);
 
     JsonReply *jsonReply = createAsyncReply("ExecuteAction");
 
-    ThingActionInfo *info = NymeaCore::instance()->thingManager()->executeAction(action);
+    ThingActionInfo *info = m_thingManager->executeAction(action);
     connect(info, &ThingActionInfo::finished, jsonReply, [info, jsonReply, locale](){
         QVariantMap data;
         data.insert("thingError", enumValueName(info->status()));
@@ -1060,7 +1040,7 @@ JsonReply *IntegrationsHandler::ExecuteBrowserItem(const QVariantMap &params, co
 
     JsonReply *jsonReply = createAsyncReply("ExecuteBrowserItem");
 
-    BrowserActionInfo *info = NymeaCore::instance()->executeBrowserItem(action);
+    BrowserActionInfo *info = m_thingManager->executeBrowserItem(action);
     connect(info, &BrowserActionInfo::finished, jsonReply, [info, jsonReply, context](){
         QVariantMap data;
         data.insert("thingError", enumValueName<Thing::ThingError>(info->status()));
@@ -1084,7 +1064,7 @@ JsonReply *IntegrationsHandler::ExecuteBrowserItemAction(const QVariantMap &para
 
     JsonReply *jsonReply = createAsyncReply("ExecuteBrowserItemAction");
 
-    BrowserItemActionInfo *info = NymeaCore::instance()->executeBrowserItemAction(browserItemAction);
+    BrowserItemActionInfo *info = m_thingManager->executeBrowserItemAction(browserItemAction);
     connect(info, &BrowserItemActionInfo::finished, jsonReply, [info, jsonReply, context](){
         QVariantMap data;
         data.insert("thingError", enumValueName<Thing::ThingError>(info->status()));
@@ -1111,11 +1091,32 @@ JsonReply *IntegrationsHandler::GetIOConnections(const QVariantMap &params)
 JsonReply *IntegrationsHandler::ConnectIO(const QVariantMap &params)
 {
     ThingId inputThingId = params.value("inputThingId").toUuid();
-    StateTypeId inputStateTypeId = params.value("inputStateTypeId").toUuid();
+    QString inputState = params.value("inputState").toString();
+    // Backwards compatibility < 1.7
+    if (inputState.isEmpty() && params.contains("inputStateTypeId")) {
+        Thing *thing = m_thingManager->findConfiguredThing(inputThingId);
+        if (!thing) {
+            return createReply({{"thingError", enumValueName(Thing::ThingErrorThingNotFound)}});
+        }
+        inputState = thing->thingClass().getStateType(params.value("inputStateTypeId").toUuid()).name();
+    } else if (inputState.isEmpty()) {
+        qCWarning(dcJsonRpc()) << "Either inputState or inputStateTypeId must be given.";
+        return createReply({{"thingError", enumValueName(Thing::ThingErrorMissingParameter)}});
+    }
+
     ThingId outputThingId = params.value("outputThingId").toUuid();
-    StateTypeId outputStateTypeId = params.value("outputStateTypeId").toUuid();
+    QString outputState = params.value("outputState").toString();
+    if (outputState.isEmpty() && params.contains("outputStateTypeId")) {
+        Thing *thing = m_thingManager->findConfiguredThing(outputThingId);
+        if (!thing) {
+            return createReply({{"thingError", enumValueName(Thing::ThingErrorThingNotFound)}});
+        }
+        outputState = thing->thingClass().getStateType(params.value("outputStateTypeId").toUuid()).name();
+    } else if (outputState.isEmpty()) {
+        return createReply({{"thingError", enumValueName(Thing::ThingErrorMissingParameter)}});
+    }
     bool inverted = params.value("inverted", false).toBool();
-    IOConnectionResult result = m_thingManager->connectIO(inputThingId, inputStateTypeId, outputThingId, outputStateTypeId, inverted);
+    IOConnectionResult result = m_thingManager->connectIO(inputThingId, inputState, outputThingId, outputState, inverted);
     QVariantMap reply = statusToReply(result.error);
     if (result.error == Thing::ThingErrorNoError) {
         reply.insert("ioConnectionId", result.ioConnectionId);
@@ -1164,11 +1165,12 @@ void IntegrationsHandler::pluginConfigChanged(const PluginId &id, const ParamLis
     emit PluginConfigurationChanged(params);
 }
 
-void IntegrationsHandler::thingStateChanged(Thing *thing, const QUuid &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue)
+void IntegrationsHandler::thingStateChanged(Thing *thing, const QString &stateName, const QVariant &value, const QVariant &minValue, const QVariant &maxValue)
 {
     QVariantMap params;
     params.insert("thingId", thing->id());
-    params.insert("stateTypeId", stateTypeId);
+    params.insert("stateName", stateName);
+    params.insert("stateTypeId", thing->thingClass().getStateType(stateName).id());
     params.insert("value", value);
     params.insert("minValue", minValue);
     params.insert("maxValue", maxValue);

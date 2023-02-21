@@ -188,19 +188,6 @@ public:
     bool bluetoothServerEnabled() const;
     void setBluetoothServerEnabled(bool enabled);
 
-    // Cloud
-    bool cloudEnabled() const;
-    void setCloudEnabled(bool enabled);
-
-    QString cloudServerUrl() const;
-    void setCloudServerUrl(const QString &cloudServerUrl);
-    QString cloudCertificateCA() const;
-    void setCloudCertificateCA(const QString &cloudCertificateCA);
-    QString cloudCertificate() const;
-    void setCloudCertificate(const QString &cloudCertificate);
-    QString cloudCertificateKey() const;
-    void setCloudCertificateKey(const QString &cloudCertificateKey);
-
     // Logging
     QString logDBDriver() const;
     QString logDBName() const;
@@ -256,7 +243,6 @@ signals:
     void bluetoothServerEnabledChanged();
     void mqttBrokerEnabledChanged();
     void mqttPortChanged();
-    void cloudEnabledChanged(bool enabled);
     void debugServerEnabledChanged(bool enabled);
 };
 

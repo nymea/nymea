@@ -87,8 +87,6 @@ private slots:
     void tunnelProxyServerConfigurationChanged(const QString &id);
     void tunnelProxyServerConfigurationRemoved(const QString &id);
 
-    void cloudEnabledChanged(bool enabled);
-
 private:
     bool registerZeroConfService(const ServerConfiguration &configuration, const QString &serverType, const QString &serviceType);
     void unregisterZeroConfService(const QString &configId, const QString &serverType);

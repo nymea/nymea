@@ -124,9 +124,6 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     returns.insert("tunnelProxyServerConfigurations", tunnelProxyServerConfigurations);
     QVariantList mqttServerConfigurations;
     mqttServerConfigurations.append(objectRef<ServerConfiguration>());
-    QVariantMap cloudConfiguration;
-    cloudConfiguration.insert("enabled", enumValueName(Bool));
-    returns.insert("cloud", cloudConfiguration);
     registerMethod("GetConfigurations", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
@@ -200,12 +197,6 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     params.insert("id", enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("DeleteWebServerConfiguration", description, params, returns);
-
-    params.clear(); returns.clear();
-    description = "Sets whether the cloud connection is enabled or disabled in the settings.";
-    params.insert("enabled", enumValueName(Bool));
-    returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
-    registerMethod("SetCloudEnabled", description, params, returns);
 
     // MQTT
     params.clear(); returns.clear();
@@ -304,11 +295,6 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     registerNotification("WebServerConfigurationRemoved", description, params);
 
     params.clear(); returns.clear();
-    description = "Emitted whenever the cloud configuration is changed.";
-    params.insert("cloudConfiguration", cloudConfiguration);
-    registerNotification("CloudConfigurationChanged", description, params);
-
-    params.clear(); returns.clear();
     description = "Emitted whenever a MQTT broker policy is changed.";
     params.insert("policy", objectRef<MqttPolicy>());
     registerNotification("MqttPolicyChanged", description, params);
@@ -335,7 +321,6 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttServerConfigurationRemoved, this, &ConfigurationHandler::onMqttServerConfigurationRemoved);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttPolicyChanged, this, &ConfigurationHandler::onMqttPolicyChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::mqttPolicyRemoved, this, &ConfigurationHandler::onMqttPolicyRemoved);
-    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::cloudEnabledChanged, this, &ConfigurationHandler::onCloudConfigurationChanged);
 }
 
 /*! Returns the name of the \l{ConfigurationHandler}. In this case \b Configuration.*/
@@ -373,10 +358,6 @@ JsonReply *ConfigurationHandler::GetConfigurations(const QVariantMap &params) co
         tunnelProxyServerConfigs.append(pack(config));
     }
     returns.insert("tunnelProxyServerConfigurations", tunnelProxyServerConfigs);
-
-    QVariantMap cloudConfig;
-    cloudConfig.insert("enabled", NymeaCore::instance()->configuration()->cloudEnabled());
-    returns.insert("cloud", cloudConfig);
 
     return createReply(returns);
 }
@@ -634,13 +615,6 @@ JsonReply *ConfigurationHandler::DeleteMqttPolicy(const QVariantMap &params) con
     return createReply(statusToReply(success ? NymeaConfiguration::ConfigurationErrorNoError : NymeaConfiguration::ConfigurationErrorInvalidId));
 }
 
-JsonReply *ConfigurationHandler::SetCloudEnabled(const QVariantMap &params) const
-{
-    bool enabled = params.value("enabled").toBool();
-    NymeaCore::instance()->configuration()->setCloudEnabled(enabled);
-    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
-}
-
 JsonReply *ConfigurationHandler::SetDebugServerEnabled(const QVariantMap &params) const
 {
     bool enabled = params.value("enabled").toBool();
@@ -769,16 +743,6 @@ QVariantMap ConfigurationHandler::statusToReply(NymeaConfiguration::Configuratio
     QVariantMap returns;
     returns.insert("configurationError", enumValueName<NymeaConfiguration::ConfigurationError>(status));
     return returns;
-}
-
-void ConfigurationHandler::onCloudConfigurationChanged(bool enabled)
-{
-    qCDebug(dcJsonRpc()) << "Notification: cloud configuration changed";
-    QVariantMap params;
-    QVariantMap cloudConfiguration;
-    cloudConfiguration.insert("enabled", enabled);
-    params.insert("cloudConfiguration", cloudConfiguration);
-    emit CloudConfigurationChanged(params);
 }
 
 void ConfigurationHandler::onLanguageChanged()

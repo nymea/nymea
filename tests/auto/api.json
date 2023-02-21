@@ -659,9 +659,6 @@
                     "serverName": "String",
                     "serverUuid": "Uuid"
                 },
-                "cloud": {
-                    "enabled": "Bool"
-                },
                 "tcpServerConfigurations": [
                     "$ref:ServerConfiguration"
                 ],
@@ -708,16 +705,6 @@
                 "timeZones": [
                     "String"
                 ]
-            }
-        },
-        "Configuration.SetCloudEnabled": {
-            "description": "Sets whether the cloud connection is enabled or disabled in the settings.",
-            "params": {
-                "enabled": "Bool"
-            },
-            "permissionScope": "PermissionScopeAdmin",
-            "returns": {
-                "configurationError": "$ref:ConfigurationError"
             }
         },
         "Configuration.SetDebugServerEnabled": {
@@ -2294,14 +2281,6 @@
                     "debugServerEnabled": "Bool",
                     "serverName": "String",
                     "serverUuid": "Uuid"
-                }
-            }
-        },
-        "Configuration.CloudConfigurationChanged": {
-            "description": "Emitted whenever the cloud configuration is changed.",
-            "params": {
-                "cloudConfiguration": {
-                    "enabled": "Bool"
                 }
             }
         },

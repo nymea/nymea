@@ -170,7 +170,7 @@ private:
     void storeIOConnections();
     void loadIOConnections();
     void syncIOConnection(Thing *inputThing, const StateTypeId &stateTypeId);
-    QVariant mapValue(const QVariant &value, const StateType &fromStateType, const StateType &toStateType, bool inverted) const;
+    QVariant mapValue(const QVariant &value, const State &fromState, const State &toState, bool inverted) const;
 
     IntegrationPlugin *createCppIntegrationPlugin(const QString &absoluteFilePath);
 

@@ -1892,12 +1892,15 @@ void ThingManagerImplementation::syncIOConnection(Thing *thing, const StateTypeI
                 continue;
             }
             StateType inputStateType = inputThing->thingClass().getStateType(stateTypeId);
+            State inputState = inputThing->state(stateTypeId);
 
             StateType outputStateType = outputThing->thingClass().getStateType(ioConnection.outputStateTypeId());
             if (outputStateType.id().isNull()) {
                 qCWarning(dcThingManager()) << "Could not find output state type for IO connection.";
                 continue;
             }
+            State outputState = outputThing->state(ioConnection.outputStateTypeId());
+
             QVariant outputValue;
             if (outputStateType.ioType() == Types::IOTypeDigitalOutput) {
                 // Digital IOs are mapped as-is
@@ -1909,7 +1912,7 @@ void ThingManagerImplementation::syncIOConnection(Thing *thing, const StateTypeI
                 }
             } else {
                 // Analog IOs are mapped within the according min/max ranges
-                outputValue = mapValue(inputValue, inputStateType, outputStateType, ioConnection.inverted());
+                outputValue = mapValue(inputValue, inputState, outputState, ioConnection.inverted());
 
                 // We're already in sync (fuzzy, good enough)! Skipping action.
                 if (qFuzzyCompare(1.0 + outputThing->stateValue(outputStateType.id()).toDouble(), 1.0 + outputValue.toDouble())) {
@@ -1929,7 +1932,7 @@ void ThingManagerImplementation::syncIOConnection(Thing *thing, const StateTypeI
                     if (inputStateType.ioType() == Types::IOTypeDigitalInput) {
                         inputThing->setStateValue(inputStateType.id(), outputThing->stateValue(outputStateType.id()));
                     } else {
-                        inputThing->setStateValue(inputStateType.id(), mapValue(outputThing->stateValue(outputStateType.id()), outputStateType, inputStateType, ioConnection.inverted()));
+                        inputThing->setStateValue(inputStateType.id(), mapValue(outputThing->stateValue(outputStateType.id()), outputState, inputState, ioConnection.inverted()));
                     }
                 }
             });
@@ -1951,12 +1954,14 @@ void ThingManagerImplementation::syncIOConnection(Thing *thing, const StateTypeI
                 continue;
             }
             StateType outputStateType = outputThing->thingClass().getStateType(stateTypeId);
+            State outputState = outputThing->state(stateTypeId);
 
             StateType inputStateType = inputThing->thingClass().getStateType(ioConnection.inputStateTypeId());
             if (inputStateType.id().isNull()) {
                 qCWarning(dcThingManager()) << "Could not find input state type for IO connection.";
                 continue;
             }
+            State inputState = inputThing->state(ioConnection.inputStateTypeId());
 
             if (!inputStateType.writable()) {
                 qCDebug(dcThingManager()) << "Input state is not writable. This connection is unidirectional.";
@@ -1974,7 +1979,7 @@ void ThingManagerImplementation::syncIOConnection(Thing *thing, const StateTypeI
                 }
             } else {
                 // Analog IOs are mapped within the according min/max ranges
-                inputValue = mapValue(outputValue, outputStateType, inputStateType, ioConnection.inverted());
+                inputValue = mapValue(outputValue, outputState, inputState, ioConnection.inverted());
 
                 // Prevent looping even if the above calculation has rounding errors... Just skip this action if we're close enough already
                 if (qFuzzyCompare(1.0 + inputThing->stateValue(inputStateType.id()).toDouble(), 1.0 + inputValue.toDouble())) {
@@ -2224,12 +2229,12 @@ void ThingManagerImplementation::loadIOConnections()
     connectionSettings.endGroup();
 }
 
-QVariant ThingManagerImplementation::mapValue(const QVariant &value, const StateType &fromStateType, const StateType &toStateType, bool inverted) const
+QVariant ThingManagerImplementation::mapValue(const QVariant &value, const State &fromState, const State &toState, bool inverted) const
 {
-    double fromMin = fromStateType.minValue().toDouble();
-    double fromMax = fromStateType.maxValue().toDouble();
-    double toMin = toStateType.minValue().toDouble();
-    double toMax = toStateType.maxValue().toDouble();
+    double fromMin = fromState.minValue().toDouble();
+    double fromMax = fromState.maxValue().toDouble();
+    double toMin = toState.minValue().toDouble();
+    double toMax = toState.maxValue().toDouble();
     double fromValue = value.toDouble();
     double fromPercent = (fromValue - fromMin) / (fromMax - fromMin);
     fromPercent = inverted ? 1 - fromPercent : fromPercent;

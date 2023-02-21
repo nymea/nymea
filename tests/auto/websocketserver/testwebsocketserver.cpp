@@ -83,7 +83,7 @@ void TestWebSocketServer::initTestCase()
     config.address = "127.0.0.1";
     config.port = 4444;
     config.sslEnabled = true;
-    config.authenticationEnabled = true;
+    config.authenticationEnabled = false;
     NymeaCore::instance()->configuration()->setWebSocketServerConfiguration(config);
 
 }

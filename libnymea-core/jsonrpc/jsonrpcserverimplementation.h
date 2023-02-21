@@ -113,6 +113,7 @@ private:
     QHash<QUuid, QByteArray> m_clientBuffers;
     QHash<QUuid, QStringList> m_clientNotifications;
     QHash<QUuid, QLocale> m_clientLocales;
+    QHash<QUuid, QByteArray> m_clientTokens;
     QHash<int, QUuid> m_pushButtonTransactions;
     QHash<QUuid, QTimer*> m_newConnectionWaitTimers;
 

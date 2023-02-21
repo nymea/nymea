@@ -1328,7 +1328,7 @@
                     "Variant"
                 ]
             },
-            "permissionScope": "PermissionScopeAdmin",
+            "permissionScope": "PermissionScopeControlThings",
             "returns": {
                 "count": "Int",
                 "loggingError": "$ref:LoggingError",

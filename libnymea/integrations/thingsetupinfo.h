@@ -42,10 +42,13 @@ class LIBNYMEA_EXPORT ThingSetupInfo : public QObject
     Q_OBJECT
     Q_PROPERTY(Thing* thing READ thing CONSTANT)
 public:
-    explicit ThingSetupInfo(Thing *thing, ThingManager *thingManager, quint32 timeout = 0);
+    explicit ThingSetupInfo(QObject *parent);
+    explicit ThingSetupInfo(Thing *thing, ThingManager *thingManager, bool initialSetup, bool reconfigure, quint32 timeout = 0);
 
     Thing *thing() const;
 
+    bool isInitialSetup() const;
+    bool isReconfigure() const;
     bool isFinished() const;
 
     Thing::ThingError status() const;
@@ -62,6 +65,8 @@ signals:
 private:
     Thing *m_thing = nullptr;
 
+    bool m_initialSetup = true;
+    bool m_reconfigure = false;
     bool m_finished = false;
     Thing::ThingError m_status = Thing::ThingErrorNoError;
     QString m_displayMessage;

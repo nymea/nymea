@@ -37,9 +37,17 @@
 
 Q_DECLARE_LOGGING_CATEGORY(dcIntegrations)
 
-ThingSetupInfo::ThingSetupInfo(Thing *thing, ThingManager *thingManager, quint32 timeout):
+ThingSetupInfo::ThingSetupInfo(QObject *parent):
+    QObject(parent)
+{
+
+}
+
+ThingSetupInfo::ThingSetupInfo(Thing *thing, ThingManager *thingManager, bool initialSetup, bool reconfigure, quint32 timeout):
     QObject(thingManager),
     m_thing(thing),
+    m_initialSetup(initialSetup),
+    m_reconfigure(reconfigure),
     m_thingManager(thingManager)
 {
     connect(this, &ThingSetupInfo::finished, this, &ThingSetupInfo::deleteLater, Qt::QueuedConnection);
@@ -68,6 +76,16 @@ ThingSetupInfo::ThingSetupInfo(Thing *thing, ThingManager *thingManager, quint32
 Thing *ThingSetupInfo::thing() const
 {
     return m_thing;
+}
+
+bool ThingSetupInfo::isInitialSetup() const
+{
+    return m_initialSetup;
+}
+
+bool ThingSetupInfo::isReconfigure() const
+{
+    return m_reconfigure;
 }
 
 bool ThingSetupInfo::isFinished() const

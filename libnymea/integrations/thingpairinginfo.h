@@ -42,7 +42,7 @@ class LIBNYMEA_EXPORT ThingPairingInfo: public QObject
 {
     Q_OBJECT
 public:
-    ThingPairingInfo(const PairingTransactionId &pairingTransactionId, const ThingClassId &thingClassId, const ThingId &thingId, const QString &thingName, const ParamList &params, const ThingId &parentId, ThingManager *parent, quint32 timeout = 0);
+    ThingPairingInfo(const PairingTransactionId &pairingTransactionId, const ThingClassId &thingClassId, const ThingId &thingId, const QString &thingName, const ParamList &params, const ThingId &parentId, ThingManager *parent, bool reconfigure, quint32 timeout = 0);
 
     PairingTransactionId transactionId() const;
 
@@ -53,6 +53,8 @@ public:
     ThingId parentId() const;
 
     QUrl oAuthUrl() const;
+
+    bool isReconfigure() const;
 
     Thing::ThingError status() const;
     QString displayMessage() const;
@@ -76,6 +78,7 @@ private:
 
     QUrl m_oAuthUrl;
 
+    bool m_reconfigure = false;
     bool m_finished = false;
     Thing::ThingError m_status = Thing::ThingErrorNoError;
     QString m_displayMessage;

@@ -11,6 +11,7 @@ doc/interfacelist.qdoc
 
 # Never add downloaded json data
 data/mac-database/macaddress.io-db.json
+data/mac-database/mac-vendors-export.json
 
 .crossbuilder/
 debs*.tar

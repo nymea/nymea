@@ -6,7 +6,9 @@
             "name": "co2",
             "type": "double",
             "unit": "PartsPerMillion",
-            "logged": true
+            "logged": true,
+            "minValue": "any",
+            "maxValue": "any"
         }
     ]
 }

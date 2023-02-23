@@ -29,6 +29,15 @@
             "optional": true
         },
         {
+            "name": "desiredPhaseCount",
+            "type": "uint",
+            "minValue": 1,
+            "maxValue": 3,
+            "possibleValues": "any",
+            "writable": true,
+            "optional": true
+        },
+        {
             "name": "sessionEnergy",
             "type": "double",
             "logged": true,

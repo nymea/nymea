@@ -33,7 +33,8 @@
 
 #include "jsonrpc/jsonhandler.h"
 #include "logging/logentry.h"
-#include "logging/logfilter.h"
+
+class LogEngine;
 
 namespace nymeaserver {
 
@@ -41,24 +42,19 @@ class LoggingHandler : public JsonHandler
 {
     Q_OBJECT
 public:
-    explicit LoggingHandler(QObject *parent = nullptr);
+    explicit LoggingHandler(LogEngine *logEngine, QObject *parent = nullptr);
     QString name() const override;
 
     Q_INVOKABLE JsonReply *GetLogEntries(const QVariantMap &params) const;
 
 signals:
     void LogEntryAdded(const QVariantMap &params);
-    void LogDatabaseUpdated(const QVariantMap &params);
 
 private:
-    static QVariantMap packLogEntry(const LogEntry &logEntry);
+    QVariantMap packLogEntry(const LogEntry &logEntry);
 
-    static LogFilter unpackLogFilter(const QVariantMap &logFilterMap);
-
-private slots:
-    void logEntryAdded(const LogEntry &entry);
-    void logDatabaseUpdated();
-
+private:
+    LogEngine *m_logEngine = nullptr;
 };
 
 }

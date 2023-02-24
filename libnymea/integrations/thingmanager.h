@@ -83,6 +83,7 @@ public:
 
     virtual Thing::ThingError setStateLogging(const ThingId &thingId, const StateTypeId &stateTypeId, bool enabled) = 0;
     virtual Thing::ThingError setEventLogging(const ThingId &thingId, const EventTypeId &eventTypeId, bool enabled) = 0;
+    virtual Thing::ThingError setActionLogging(const ThingId &thingId, const ActionTypeId &actionTypeId, bool enabled) = 0;
     virtual Thing::ThingError setStateFilter(const ThingId &thingId, const StateTypeId &stateTypeId, Types::StateValueFilter filter) = 0;
 
     virtual Thing::ThingError removeConfiguredThing(const ThingId &thingId) = 0;

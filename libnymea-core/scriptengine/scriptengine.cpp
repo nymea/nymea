@@ -42,6 +42,7 @@
 #include "scriptthings.h"
 
 #include "nymeasettings.h"
+#include "logging/logengine.h"
 
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -63,7 +64,7 @@ QtMessageHandler ScriptEngine::s_upstreamMessageHandler;
 QLoggingCategory::CategoryFilter ScriptEngine::s_oldCategoryFilter = nullptr;
 QMutex ScriptEngine::s_loggerMutex;
 
-ScriptEngine::ScriptEngine(ThingManager *thingManager, QObject *parent) : QObject(parent),
+ScriptEngine::ScriptEngine(ThingManager *thingManager, LogEngine *logEngine, QObject *parent) : QObject(parent),
     m_thingManager(thingManager)
 {
     qmlRegisterType<ScriptEvent>("nymea", 1, 0, "ThingEvent");
@@ -75,6 +76,8 @@ ScriptEngine::ScriptEngine(ThingManager *thingManager, QObject *parent) : QObjec
     qmlRegisterType<ScriptAlarm>("nymea", 1, 0, "Alarm");
     qmlRegisterType<ScriptThing>("nymea", 1, 0, "Thing");
     qmlRegisterType<ScriptThings>("nymea", 1, 0, "Things");
+
+    m_logger = logEngine->registerLogSource("scripts", {"id", "event"});
 
     m_engine = new QQmlEngine(this);
     m_engine->setProperty("thingManager", reinterpret_cast<quint64>(m_thingManager));
@@ -401,8 +404,11 @@ bool ScriptEngine::loadScript(Script *script)
 
     script->errors.clear();
 
+
     script->component = new QQmlComponent(m_engine, QUrl::fromLocalFile(fileName), this);
     script->context = new QQmlContext(m_engine, this);
+    script->context->setContextProperty("logger", QVariant::fromValue(m_logger));
+    script->context->setContextProperty("scriptId", script->id().toString());
     script->object = script->component->create(script->context);
 
     if (!script->object) {

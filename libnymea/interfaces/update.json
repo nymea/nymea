@@ -8,7 +8,8 @@
         },
         {
             "name": "currentVersion",
-            "type": "QString"
+            "type": "QString",
+            "logged": true
         },
         {
             "name": "availableVersion",

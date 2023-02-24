@@ -473,20 +473,6 @@ void TestWebserver::getDebugServer_data()
     QTest::newRow("POST /debug/styles.css | server disabled | 404") << "post" << "/debug/styles.css" << false << 404;
     QTest::newRow("DELETE /debug/styles.css | server disabled | 404") << "delete" << "/debug/styles.css" << false << 404;
 
-    // logdb enabled
-    QTest::newRow("GET /debug/logdb.sql | server enabled | 200") << "get" << "/debug/logdb.sql" << true << 200;
-    QTest::newRow("OPTIONS /debug/logdb.sql | server enabled | 200") << "options" << "/debug/logdb.sql" << true << 200;
-    QTest::newRow("PUT /debug/logdb.sql | server enabled | 405") << "put" << "/debug/logdb.sql" << true << 405;
-    QTest::newRow("POST /debug/logdb.sql | server enabled | 405") << "post" << "/debug/logdb.sql" << true << 405;
-    QTest::newRow("DELETE /debug/logdb.sql | server enabled | 405") << "delete" << "/debug/logdb.sql" << true << 405;
-
-    // logdb disabled
-    QTest::newRow("GET /debug/logdb.sql | server disabled | 404") << "get" << "/debug/logdb.sql" << false << 404;
-    QTest::newRow("OPTIONS /debug/logdb.sql | server disabled | 404") << "options" << "/debug/logdb.sql" << false << 404;
-    QTest::newRow("PUT /debug/logdb.sql | server disabled | 404") << "put" << "/debug/logdb.sql" << false << 404;
-    QTest::newRow("POST /debug/logdb.sql | server disabled | 404") << "post" << "/debug/logdb.sql" << false << 404;
-    QTest::newRow("DELETE /debug/logdb.sql | server disabled | 404") << "delete" << "/debug/logdb.sql" << false << 404;
-
     // Check if syslog is accessable
     QFileInfo syslogFileInfo("/var/log/syslog");
 

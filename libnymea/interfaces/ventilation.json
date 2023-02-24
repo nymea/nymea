@@ -8,7 +8,8 @@
             "minValue": "any",
             "maxValue": "any",
             "writable": true,
-            "optional": true
+            "optional": true,
+            "logged": true
         }
     ]
 }

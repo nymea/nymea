@@ -70,6 +70,7 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QJsonDocument>
+#include <QMetaEnum>
 
 ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardwareManager, LogEngine *logEngine, const QLocale &locale, QObject *parent) :
     ThingManager(parent),
@@ -531,7 +532,7 @@ Thing::ThingError ThingManagerImplementation::setStateLogging(const ThingId &thi
         qCWarning(dcThingManager()) << "Cannot configure event logging. Thing" << thingId.toString() << "not found";
         return Thing::ThingErrorThingNotFound;
     }
-    if (!thing->thingClass().stateTypes().findById(stateTypeId).isValid()) {
+    if (!thing->thingClass().hasStateType(stateTypeId)) {
         qCWarning(dcThingManager()) << "Cannot configure state logging. Thing" << thing << "has no state type with id" << stateTypeId;
         return Thing::ThingErrorStateTypeNotFound;
     }
@@ -539,10 +540,18 @@ Thing::ThingError ThingManagerImplementation::setStateLogging(const ThingId &thi
     if (enabled && !loggedStateTypes.contains(stateTypeId)) {
         loggedStateTypes.append(stateTypeId);
         thing->setLoggedStateTypeIds(loggedStateTypes);
+        storeConfiguredThings();
+
+        registerStateLogger(thing, stateTypeId);
+
         emit thingChanged(thing);
     } else if (!enabled && loggedStateTypes.contains(stateTypeId)) {
         loggedStateTypes.removeAll(stateTypeId);
         thing->setLoggedStateTypeIds(loggedStateTypes);
+        storeConfiguredThings();
+
+        unregisterStateLogger(thing, stateTypeId);
+
         emit thingChanged(thing);
     }
     return Thing::ThingErrorNoError;
@@ -563,13 +572,54 @@ Thing::ThingError ThingManagerImplementation::setEventLogging(const ThingId &thi
     if (enabled && !loggedEventTypes.contains(eventTypeId)) {
         loggedEventTypes.append(eventTypeId);
         thing->setLoggedEventTypeIds(loggedEventTypes);
+        storeConfiguredThings();
+
+        registerEventLogger(thing, eventTypeId);
+
         emit thingChanged(thing);
     } else if (!enabled && loggedEventTypes.contains(eventTypeId)) {
         loggedEventTypes.removeAll(eventTypeId);
         thing->setLoggedEventTypeIds(loggedEventTypes);
+        storeConfiguredThings();
+
+        unregisterEventLogger(thing, eventTypeId);
+
         emit thingChanged(thing);
     }
     return Thing::ThingErrorNoError;
+}
+
+Thing::ThingError ThingManagerImplementation::setActionLogging(const ThingId &thingId, const ActionTypeId &actionTypeId, bool enabled)
+{
+    Thing *thing = m_configuredThings.value(thingId);
+    if (!thing) {
+        qCWarning(dcThingManager()) << "Cannot configure action logging. Thing" << thingId.toString() << "not found";
+        return Thing::ThingErrorThingNotFound;
+    }
+    if (!thing->thingClass().hasActionType(actionTypeId)) {
+        qCWarning(dcThingManager()) << "Cannot configure action logging. Thing" << thing << "has no action type with id" << actionTypeId;
+        return Thing::ThingErrorEventTypeNotFound;
+    }
+    QList<ActionTypeId> loggedActionTypes = thing->loggedActionTypeIds();
+    if (enabled && !loggedActionTypes.contains(actionTypeId)) {
+        loggedActionTypes.append(actionTypeId);
+        thing->setLoggedActionTypeIds(loggedActionTypes);
+        storeConfiguredThings();
+
+        registerActionLogger(thing, actionTypeId);
+
+        emit thingChanged(thing);
+    } else if (!enabled && loggedActionTypes.contains(actionTypeId)) {
+        loggedActionTypes.removeAll(actionTypeId);
+        thing->setLoggedActionTypeIds(loggedActionTypes);
+        storeConfiguredThings();
+
+        unregisterActionLogger(thing, actionTypeId);
+
+        emit thingChanged(thing);
+    }
+    return Thing::ThingErrorNoError;
+
 }
 
 Thing::ThingError ThingManagerImplementation::setStateFilter(const ThingId &thingId, const StateTypeId &stateTypeId, Types::StateValueFilter filter)
@@ -911,7 +961,15 @@ void ThingManagerImplementation::removeConfiguredThingInternal(Thing *thing)
             }
         }
 
-        m_logEngine->removeThingLogs(thing->id());
+        foreach (const StateTypeId &stateTypeId, thing->loggedStateTypeIds()) {
+            unregisterStateLogger(thing, stateTypeId);
+        }
+        foreach (const EventTypeId &eventTypeId, thing->loggedEventTypeIds()) {
+            unregisterEventLogger(thing, eventTypeId);
+        }
+        foreach (const ActionTypeId &actionTypeId, thing->loggedActionTypeIds()) {
+            unregisterActionLogger(thing, actionTypeId);
+        }
 
         emit thingRemoved(t->id());
     }
@@ -998,9 +1056,6 @@ BrowserActionInfo* ThingManagerImplementation::executeBrowserItem(const BrowserA
     Thing *thing = m_configuredThings.value(browserAction.thingId());
 
     BrowserActionInfo *info = new BrowserActionInfo(thing, this, browserAction, this, 30000);
-    connect(info, &BrowserActionInfo::finished, info->thing(), [this, info](){
-        m_logEngine->logBrowserAction(info->browserAction(), info->status() == Thing::ThingErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, info->status());
-    });
 
     if (!thing) {
         info->finish(Thing::ThingErrorThingNotFound);
@@ -1033,9 +1088,6 @@ BrowserItemActionInfo* ThingManagerImplementation::executeBrowserItemAction(cons
     Thing *thing = m_configuredThings.value(browserItemAction.thingId());
 
     BrowserItemActionInfo *info = new BrowserItemActionInfo(thing, this, browserItemAction, this, 30000);
-    connect(info, &BrowserItemActionInfo::finished, info->thing(), [this, info](){
-        m_logEngine->logBrowserItemAction(info->browserItemAction(), info->status() == Thing::ThingErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, info->status());
-    });
 
     if (!thing) {
         info->finish(Thing::ThingErrorThingNotFound);
@@ -1386,7 +1438,21 @@ ThingActionInfo *ThingManagerImplementation::executeAction(const Action &action)
 
     ThingActionInfo *info = new ThingActionInfo(thing, finalAction, this, 15000);
     connect(info, &ThingActionInfo::finished, this, [=](){
-        m_logEngine->logAction(finalAction, info->status());
+
+        if (thing->loggedActionTypeIds().contains(actionType.id())) {
+            QVariantMap params;
+            foreach (const ParamType &paramType, actionType.paramTypes()) {
+                params.insert(paramType.name(), action.paramValue(paramType.id()));
+            }
+
+            m_actionLoggers.value(thing->id().toString() + "-" + actionType.name())->log({},
+                                                        {
+                                                            {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
+                                                            {"triggeredBy", QMetaEnum::fromType<Action::TriggeredBy>().valueToKey(action.triggeredBy())},
+                                                            {"params", QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact)}
+                                                        });
+        }
+
         emit actionExecuted(action, info->status());
     });
 
@@ -1676,6 +1742,29 @@ void ThingManagerImplementation::loadConfiguredThings()
 
         initThing(thing);
 
+        // Overriding logging settings from thingClass/interfaces with user preferences
+        if (settings.contains("loggedStateTypeIds")) {
+            QList<StateTypeId> loggedStateTypeIds;
+            foreach (const QString &stateTypeId, settings.value("loggedStateTypeIds").toStringList()) {
+                loggedStateTypeIds.append(StateTypeId(stateTypeId));
+            }
+            thing->setLoggedStateTypeIds(loggedStateTypeIds);
+        }
+        if (settings.contains("loggedEventTypeIds")) {
+            QList<EventTypeId> loggedEventTypeIds;
+            foreach (const QString &eventTypeId, settings.value("loggedEventTypeIds").toStringList()) {
+                loggedEventTypeIds.append(EventTypeId(eventTypeId));
+            }
+            thing->setLoggedEventTypeIds(loggedEventTypeIds);
+        }
+        if (settings.contains("loggedActionTypeIds")) {
+            QList<ActionTypeId> loggedActionTypeIds;
+            foreach (const QString &actionTypeId, settings.value("loggedActionTypeIds").toStringList()) {
+                loggedActionTypeIds.append(ActionTypeId(actionTypeId));
+            }
+            thing->setLoggedActionTypeIds(loggedActionTypeIds);
+        }
+
         settings.endGroup(); // ThingId
 
         // We always add the thing to the list in this case. If it's in the stored things
@@ -1738,6 +1827,21 @@ void ThingManagerImplementation::storeConfiguredThings()
         }
         settings.endGroup(); // Settings
 
+        QStringList loggedStateTypeIds;
+        foreach (const StateTypeId &stateTypeId, thing->loggedStateTypeIds()) {
+            loggedStateTypeIds.append(stateTypeId.toString());
+        }
+        settings.setValue("loggedStateTypeIds", loggedStateTypeIds);
+        QStringList loggedEventTypeIds;
+        foreach (const EventTypeId &eventTypeId, thing->loggedEventTypeIds()) {
+            loggedEventTypeIds.append(eventTypeId.toString());
+        }
+        settings.setValue("loggedEventTypeIds", loggedEventTypeIds);
+        QStringList loggedActionTypeIds;
+        foreach (const ActionTypeId &actionTypeId, thing->loggedActionTypeIds()) {
+            loggedActionTypeIds.append(actionTypeId.toString());
+        }
+        settings.setValue("loggedActionTypeIds", loggedActionTypeIds);
 
         settings.endGroup(); // ThingId
     }
@@ -1875,9 +1979,13 @@ void ThingManagerImplementation::onEventTriggered(Event event)
         qCWarning(dcThingManager()) << "The given thing" << thing << "does not have an event type of id " + event.eventTypeId().toString() + ". Not forwarding event.";
         return;
     }
-    // configure logging
+
     if (thing->loggedEventTypeIds().contains(event.eventTypeId())) {
-        m_logEngine->logEvent(event);
+        QVariantMap params;
+        foreach (const ParamType &paramType, eventType.paramTypes()) {
+            params.insert(paramType.name(), event.paramValue(paramType.id()));
+        }
+        m_eventLoggers.value(thing->id().toString() + "-" + eventType.name())->log({}, {{"params", QJsonDocument::fromVariant(params).toJson(QJsonDocument::Compact)}});
     }
 
     // Forward the event
@@ -1891,12 +1999,13 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
         qCWarning(dcThingManager()) << "Invalid thing id in state change. Not forwarding event. Thing setup not complete yet?";
         return;
     }
-    if (thing->thingClass().getStateType(stateTypeId).cached()) {
+    StateType stateType = thing->thingClass().getStateType(stateTypeId);
+    if (stateType.cached()) {
         storeThingState(thing, stateTypeId);
     }
 
     if (thing->loggedStateTypeIds().contains(stateTypeId)) {
-        m_logEngine->logStateChange(thing, stateTypeId, value);
+        m_stateLoggers.value(thing->id().toString() + "-" + stateType.name())->log({}, {{stateType.name(), value}});
     }
 
     emit thingStateChanged(thing, stateTypeId, value, minValue, maxValue);
@@ -2150,13 +2259,6 @@ void ThingManagerImplementation::initThing(Thing *thing)
     thing->setStates(states);
     loadThingStates(thing);
 
-    QList<EventTypeId> loggedEventTypeIds;
-    foreach (const EventType &eventType, thingClass.eventTypes()) {
-        if (eventType.suggestLogging()) {
-            loggedEventTypeIds.append(eventType.id());
-        }
-    }
-    thing->setLoggedEventTypeIds(loggedEventTypeIds);
     QList<StateTypeId> loggedStateTypeIds;
     foreach (const StateType &stateType, thingClass.stateTypes()) {
         if (stateType.suggestLogging()) {
@@ -2164,6 +2266,21 @@ void ThingManagerImplementation::initThing(Thing *thing)
         }
     }
     thing->setLoggedStateTypeIds(loggedStateTypeIds);
+
+    QList<EventTypeId> loggedEventTypeIds;
+    foreach (const EventType &eventType, thingClass.eventTypes()) {
+        if (eventType.suggestLogging()) {
+            loggedEventTypeIds.append(eventType.id());
+        }
+    }
+    thing->setLoggedEventTypeIds(loggedEventTypeIds);
+
+    // By default all action types are logged
+    QList<ActionTypeId> loggedActionTypeIds;
+    foreach (const ActionType &actionType, thingClass.actionTypes()) {
+        loggedActionTypeIds.append(actionType.id());
+    }
+    thing->setLoggedActionTypeIds(loggedActionTypeIds);
 }
 
 void ThingManagerImplementation::postSetupThing(Thing *thing)
@@ -2274,6 +2391,62 @@ QVariant ThingManagerImplementation::mapValue(const QVariant &value, const State
     return toValue;
 }
 
+void ThingManagerImplementation::registerStateLogger(Thing *thing, const StateTypeId &stateTypeId)
+{
+    StateType stateType = thing->thingClass().getStateType(stateTypeId);
+    QString name = thing->id().toString() + "-" + stateType.name();
+    QList<QVariant::Type> sampledTypes {
+        QVariant::Int,
+        QVariant::UInt,
+        QVariant::LongLong,
+        QVariant::ULongLong,
+        QVariant::Double
+    };
+    Types::LoggingType loggingType = sampledTypes.contains(stateType.type()) ? Types::LoggingTypeSampled : Types::LoggingTypeDiscrete;
+    Logger *logger = m_logEngine->registerLogSource("state-" + name, {}, loggingType, stateType.name());
+    m_stateLoggers.insert(name, logger);
+}
+
+void ThingManagerImplementation::unregisterStateLogger(Thing *thing, const StateTypeId &stateTypeId)
+{
+    StateType stateType = thing->thingClass().getStateType(stateTypeId);
+    QString name = thing->id().toString() + "-" + stateType.name();
+    m_logEngine->unregisterLogSource("state-" + name);
+    m_stateLoggers.remove(name);
+}
+
+void ThingManagerImplementation::registerEventLogger(Thing *thing, const EventTypeId &eventTypeId)
+{
+    EventType eventType = thing->thingClass().eventTypes().findById(eventTypeId);
+    QString name = thing->id().toString() + "-" + eventType.name();
+    Logger *logger = m_logEngine->registerLogSource("event-" + name, {});
+    m_eventLoggers.insert(name, logger);
+}
+
+void ThingManagerImplementation::unregisterEventLogger(Thing *thing, const EventTypeId &eventTypeId)
+{
+    EventType eventType = thing->thingClass().eventTypes().findById(eventTypeId);
+    QString name = thing->id().toString() + "-" + eventType.name();
+    m_logEngine->unregisterLogSource("event-" + name);
+    m_eventLoggers.remove(name);
+}
+
+void ThingManagerImplementation::registerActionLogger(Thing *thing, const ActionTypeId &actionTypeId)
+{
+    ActionType actionType = thing->thingClass().actionTypes().findById(actionTypeId);
+    QString name = thing->id().toString() + "-" + actionType.name();
+    Logger *logger = m_logEngine->registerLogSource("action-" + name, {});
+    m_actionLoggers.insert(name, logger);
+}
+
+void ThingManagerImplementation::unregisterActionLogger(Thing *thing, const ActionTypeId &actionTypeId)
+{
+    ActionType actionType = thing->thingClass().actionTypes().findById(actionTypeId);
+    QString name = thing->id().toString() + "-" + actionType.name();
+    m_logEngine->unregisterLogSource("action-" + name);
+    m_actionLoggers.remove(name);
+}
+
 void ThingManagerImplementation::trySetupThing(Thing *thing)
 {
     thing->setSetupStatus(Thing::ThingSetupStatusInProgress, Thing::ThingErrorNoError);
@@ -2312,6 +2485,22 @@ void ThingManagerImplementation::registerThing(Thing *thing)
     connect(thing, &Thing::stateValueChanged, this, &ThingManagerImplementation::slotThingStateValueChanged);
     connect(thing, &Thing::settingChanged, this, &ThingManagerImplementation::slotThingSettingChanged);
     connect(thing, &Thing::nameChanged, this, &ThingManagerImplementation::slotThingNameChanged);
+
+    foreach (const StateType &stateType, thing->thingClass().stateTypes()) {
+        if (thing->loggedStateTypeIds().contains(stateType.id())) {
+            registerStateLogger(thing, stateType.id());
+        }
+    }
+    foreach (const EventType &eventType, thing->thingClass().eventTypes()) {
+        if (thing->loggedEventTypeIds().contains(eventType.id())) {
+            registerEventLogger(thing, eventType.id());
+        }
+    }
+    foreach (const ActionType &actionType, thing->thingClass().actionTypes()) {
+        if (thing->loggedActionTypeIds().contains(actionType.id())) {
+            registerActionLogger(thing, actionType.id());
+        }
+    }
 }
 
 IntegrationPlugin *ThingManagerImplementation::createCppIntegrationPlugin(const QString &absoluteFilePath)

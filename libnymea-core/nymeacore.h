@@ -40,7 +40,6 @@
 #include "ruleengine/rule.h"
 #include "ruleengine/ruleengine.h"
 
-#include "logging/logengine.h"
 #include "servermanager.h"
 
 #include "time/timemanager.h"
@@ -51,13 +50,14 @@
 #include <QObject>
 
 class Thing;
+class LogEngine;
+class Logger;
 
 class NetworkManager;
 
 namespace nymeaserver {
 
 class JsonRPCServerImplementation;
-class LogEngine;
 class NymeaConfiguration;
 class TagsStorage;
 class UserManager;
@@ -81,11 +81,19 @@ class NymeaCore : public QObject
     friend class NymeaTestBase;
 
 public:
+    enum ShutdownReason {
+        ShutdownReasonQuit,
+        ShutdownReasonTerm,
+        ShutdownReasonFailure,
+        ShutdownReasonRestart
+    };
+    Q_ENUM(ShutdownReason)
+
     static NymeaCore* instance();
     ~NymeaCore();
 
     void init(const QStringList &additionalInterfaces = QStringList());
-    void destroy();
+    void destroy(nymeaserver::NymeaCore::ShutdownReason reason);
 
     RuleEngine::RuleError removeRule(const RuleId &id);
 
@@ -117,31 +125,34 @@ signals:
     void initialized();
 
 private:
+
     explicit NymeaCore(QObject *parent = nullptr);
     static NymeaCore *s_instance;
+    static ShutdownReason s_shutdownReason;
 
     Platform *m_platform = nullptr;
 
-    NymeaConfiguration *m_configuration;
-    ServerManager *m_serverManager;
-    ThingManagerImplementation *m_thingManager;
-    RuleEngine *m_ruleEngine;
-    ScriptEngine *m_scriptEngine;
-    LogEngine *m_logger;
-    TimeManager *m_timeManager;
-    CloudManager *m_cloudManager;
-    HardwareManagerImplementation *m_hardwareManager;
-    DebugServerHandler *m_debugServerHandler;
-    TagsStorage *m_tagsStorage;
+    NymeaConfiguration *m_configuration = nullptr;
+    ServerManager *m_serverManager = nullptr;
+    ThingManagerImplementation *m_thingManager = nullptr;
+    RuleEngine *m_ruleEngine = nullptr;
+    ScriptEngine *m_scriptEngine = nullptr;
+    LogEngine *m_logEngine = nullptr;
+    Logger *m_logger = nullptr;
+    TimeManager *m_timeManager = nullptr;
+    CloudManager *m_cloudManager = nullptr;
+    HardwareManagerImplementation *m_hardwareManager = nullptr;
+    DebugServerHandler *m_debugServerHandler = nullptr;
+    TagsStorage *m_tagsStorage = nullptr;
 
-    NetworkManager *m_networkManager;
-    UserManager *m_userManager;
-    System *m_system;
-    ExperienceManager *m_experienceManager;
-    ZigbeeManager *m_zigbeeManager;
-    ZWaveManager *m_zwaveManager;
-    SerialPortMonitor *m_serialPortMonitor;
-    ModbusRtuManager *m_modbusRtuManager;
+    NetworkManager *m_networkManager = nullptr;
+    UserManager *m_userManager = nullptr;
+    System *m_system = nullptr;
+    ExperienceManager *m_experienceManager = nullptr;
+    ZigbeeManager *m_zigbeeManager = nullptr;
+    ZWaveManager *m_zwaveManager = nullptr;
+    SerialPortMonitor *m_serialPortMonitor = nullptr;
+    ModbusRtuManager *m_modbusRtuManager = nullptr;
 
 
 private slots:

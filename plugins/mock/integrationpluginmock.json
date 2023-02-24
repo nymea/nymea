@@ -210,6 +210,7 @@
                             "id": "863d5920-b1cf-4eb9-88bd-8f7b8583b1cf",
                             "name": "event2",
                             "displayName": "Mock Event 2",
+                            "suggestLogging": true,
                             "paramTypes": [
                                 {
                                     "id": "0550e16d-60b9-4ba5-83f4-4d3cee656121",

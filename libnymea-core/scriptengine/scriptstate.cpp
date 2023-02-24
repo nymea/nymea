@@ -33,6 +33,9 @@
 #include <QColor>
 #include <qqml.h>
 #include <QQmlEngine>
+#include <QQmlContext>
+
+#include "logging/logengine.h"
 
 #include <QLoggingCategory>
 Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
@@ -56,6 +59,9 @@ void ScriptState::classBegin()
             connectToThing();
         }
     });
+
+    m_scriptId = qmlEngine(this)->contextForObject(this)->contextProperty("scriptId").toUuid();
+    m_logger = qmlEngine(this)->contextForObject(this)->contextProperty("logger").value<Logger*>();
 }
 
 void ScriptState::componentComplete()
@@ -175,13 +181,23 @@ void ScriptState::setValue(const QVariant &value)
     action.setParams(params);
 
     qCDebug(dcScriptEngine()) << "Executing action on" << thing->name();
+
     m_valueCache = QVariant();
     m_pendingActionInfo = m_thingManager->executeAction(action);
-    connect(m_pendingActionInfo, &ThingActionInfo::finished, this, [this](){
+    connect(m_pendingActionInfo, &ThingActionInfo::finished, this, [this, thing, actionTypeId](){
+
+        ActionType actionType = thing->thingClass().actionTypes().findById(actionTypeId);
+        m_logger->log({m_scriptId.toString(), "action"}, {
+                          {"thingId", thing->id()},
+                          {"action", actionType.name()},
+                          {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(m_pendingActionInfo->status())}
+                      });
+
         m_pendingActionInfo = nullptr;
         if (!m_valueCache.isNull()) {
             setValue(m_valueCache);
         }
+
     });
 }
 

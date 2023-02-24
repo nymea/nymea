@@ -94,7 +94,7 @@ public:
     void setCached(bool cached);
 
     bool suggestLogging() const;
-    void setSuggestLogging(bool logged);
+    void setSuggestLogging(bool suggestLogging);
 
     Types::StateValueFilter filter() const;
     void setFilter(Types::StateValueFilter filter);

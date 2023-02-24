@@ -124,7 +124,7 @@ protected:
 
     void waitForDBSync();
     void restartServer();
-    void clearLoggingDatabase();
+    void clearLoggingDatabase(const QString &source);
 
 private:
     void createMock();

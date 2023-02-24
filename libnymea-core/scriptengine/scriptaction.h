@@ -34,7 +34,9 @@
 #include <QObject>
 #include <QQmlParserStatus>
 #include <QVariantMap>
+#include <QUuid>
 
+class Logger;
 class ThingManager;
 
 namespace nymeaserver {
@@ -77,6 +79,9 @@ signals:
 
 public:
     ThingManager *m_thingManager = nullptr;
+    Logger *m_logger = nullptr;
+    QUuid m_scriptId;
+
     QString m_thingId;
     QString m_interfaceName;
     QString m_actionTypeId;

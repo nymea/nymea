@@ -628,13 +628,15 @@ void IntegrationPluginMock::executeAction(ThingActionInfo *info)
 
     if (info->thing()->thingClassId() == autoMockThingClassId) {
         if (info->action().actionTypeId() == autoMockMockActionAsyncActionTypeId || info->action().actionTypeId() == autoMockMockActionAsyncBrokenActionTypeId) {
-            QTimer::singleShot(1000, info->thing(), [info](){
+            QTimer::singleShot(1000, info->thing(), [this, info](){
                 if (info->action().actionTypeId() == autoMockMockActionAsyncBrokenActionTypeId) {
                     info->finish(Thing::ThingErrorSetupFailed, QT_TR_NOOP("This mock action is intentionally broken."));
                 } else {
+                    m_daemons.value(info->thing())->actionExecuted(info->action().actionTypeId());
                     info->finish(Thing::ThingErrorNoError);
                 }
             });
+            return;
         }
 
         if (info->action().actionTypeId() == autoMockMockActionBrokenActionTypeId) {

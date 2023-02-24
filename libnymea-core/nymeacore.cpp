@@ -38,9 +38,10 @@
 #include "platform/platform.h"
 #include "experiences/experiencemanager.h"
 #include "platform/platformsystemcontroller.h"
-
+#include "logging/logengineinfluxdb.h"
 #include "scriptengine/scriptengine.h"
 #include "jsonrpc/scriptshandler.h"
+#include "version.h"
 
 #include "integrations/thingmanagerimplementation.h"
 #include "integrations/thing.h"
@@ -64,6 +65,7 @@ NYMEA_LOGGING_CATEGORY(dcCore, "Core")
 namespace nymeaserver {
 
 NymeaCore* NymeaCore::s_instance = nullptr;
+NymeaCore::ShutdownReason NymeaCore::s_shutdownReason = NymeaCore::ShutdownReasonTerm;
 
 /*! Returns a pointer to the single \l{NymeaCore} instance. */
 NymeaCore *NymeaCore::instance()
@@ -122,16 +124,18 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), m_zigbeeManager, m_zwaveManager, m_modbusRtuManager, this);
 
     qCDebug(dcCore) << "Creating Log Engine";
-    m_logger = new LogEngine(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), m_configuration->logDBMaxEntries(), this);
+//    m_logger = new Logger(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), this);
+    m_logEngine = new LogEngineInfluxDB(m_configuration->logDBHost(), m_configuration->logDBName(), m_configuration->logDBUser(), m_configuration->logDBPassword(), this);
+    m_logger = m_logEngine->registerLogSource("core", {"event"});
 
     qCDebug(dcCore) << "Creating Thing Manager (locale:" << m_configuration->locale() << ")";
-    m_thingManager = new ThingManagerImplementation(m_hardwareManager, m_logger, m_configuration->locale(), this);
+    m_thingManager = new ThingManagerImplementation(m_hardwareManager, m_logEngine, m_configuration->locale(), this);
 
     qCDebug(dcCore) << "Creating Rule Engine";
-    m_ruleEngine = new RuleEngine(m_thingManager, m_timeManager, m_logger, this);
+    m_ruleEngine = new RuleEngine(m_thingManager, m_timeManager, m_logEngine, this);
 
     qCDebug(dcCore()) << "Creating Script Engine";
-    m_scriptEngine = new scriptengine::ScriptEngine(m_thingManager, this);
+    m_scriptEngine = new scriptengine::ScriptEngine(m_thingManager, m_logEngine, this);
     m_serverManager->jsonServer()->registerHandler(new ScriptsHandler(m_scriptEngine, m_scriptEngine));
 
     qCDebug(dcCore()) << "Creating Tags Storage";
@@ -152,14 +156,17 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
 
     connect(m_thingManager, &ThingManagerImplementation::loaded, this, &NymeaCore::thingManagerLoaded);
 
-    m_logger->logSystemEvent(m_timeManager->currentDateTime(), true);
+    m_logger->log({"started"}, {{"version", NYMEA_VERSION_STRING}});
 }
 
 /*! Destructor of the \l{NymeaCore}. */
 NymeaCore::~NymeaCore()
 {
     qCDebug(dcCore()) << "Shutting down NymeaCore";
-    m_logger->logSystemEvent(m_timeManager->currentDateTime(), false);
+    m_logger->log({"stopped"}, {
+                      {"version", NYMEA_VERSION_STRING},
+                      {"shutdownReason", QMetaEnum::fromType<ShutdownReason>().valueToKey(s_shutdownReason)}
+                  });
 
     // Disconnect all signals/slots, we're going down now
     m_timeManager->disconnect(this);
@@ -186,14 +193,15 @@ NymeaCore::~NymeaCore()
 
     // Now go ahead and clean up stuff.
     qCDebug(dcCore) << "Shutting down \"Log Engine\"";
-    delete m_logger;
+    delete m_logEngine;
 
     qCDebug(dcCore) << "Done shutting down NymeaCore";
 }
 
-void NymeaCore::destroy()
+void NymeaCore::destroy(ShutdownReason reason)
 {
     if (s_instance) {
+        s_shutdownReason = reason;
         delete s_instance;
     }
 
@@ -334,7 +342,7 @@ ExperienceManager *NymeaCore::experienceManager() const
 
 LogEngine* NymeaCore::logEngine() const
 {
-    return m_logger;
+    return m_logEngine;
 }
 
 JsonRPCServerImplementation *NymeaCore::jsonRPCServer() const
@@ -353,16 +361,16 @@ void NymeaCore::thingManagerLoaded()
     // Do some houskeeping...
     qCDebug(dcCore()) << "Starting housekeeping...";
     QDateTime startTime = QDateTime::currentDateTime();
-    ThingsFetchJob *job = m_logger->fetchThings();
-    connect(job, &ThingsFetchJob::finished, m_thingManager, [this, job, startTime](){
-        foreach (const ThingId &thingId, job->results()) {
-            if (!m_thingManager->findConfiguredThing(thingId)) {
-                qCDebug(dcCore()) << "Cleaning stale thing entries from log DB for thing id" << thingId;
-                m_logger->removeThingLogs(thingId);
-            }
-        }
-        qCDebug(dcCore()) << "Housekeeping done in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";
-    });
+//    ThingsFetchJob *job = m_logger->fetchThings();
+//    connect(job, &ThingsFetchJob::finished, m_thingManager, [this, job, startTime](){
+//        foreach (const ThingId &thingId, job->results()) {
+//            if (!m_thingManager->findConfiguredThing(thingId)) {
+//                qCDebug(dcCore()) << "Cleaning stale thing entries from log DB for thing id" << thingId;
+//                m_logger->removeThingLogs(thingId);
+//            }
+//        }
+//        qCDebug(dcCore()) << "Housekeeping done in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";
+//    });
 
     foreach (const ThingId &thingId, m_ruleEngine->thingsInRules()) {
         if (!m_thingManager->findConfiguredThing(thingId)) {

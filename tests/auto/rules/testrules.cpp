@@ -33,6 +33,7 @@
 #include "servers/mocktcpserver.h"
 #include "nymeacore.h"
 #include "jsonrpc/jsonhandler.h"
+#include "logging/logengine.h"
 #include "../plugins/mock/extern-plugininfo.h"
 
 using namespace nymeaserver;
@@ -411,7 +412,9 @@ void TestRules::initTestCase()
                                 "RuleEngine.debug=true\n"
                                 "RuleEngineDebug.debug=true\n"
                                 "JsonRpc.debug=true\n"
-                                "Mock.*=true");
+                                "Mock.*=true\n"
+                                "LogEngine.debug=true\n"
+                                );
 }
 
 void TestRules::addRemoveRules_data()
@@ -2341,6 +2344,11 @@ void TestRules::testStateBasedAction()
     QVariant response = injectAndWait("Rules.AddRule", addRuleParams);
     verifyRuleError(response);
 
+    QString logSourceName = "action-" + m_mockThingId.toString() + "-withParams";
+    waitForDBSync(); // Waiting for sync before clearning to make sure we also clear any on process entries
+    clearLoggingDatabase(logSourceName);
+    waitForDBSync();
+
     // trigger event
     spy.clear();
     request = QNetworkRequest(QUrl(QString("http://localhost:%1/generateevent?eventtypeid=%2").arg(m_mockThing1Port).arg(mockEvent1EventTypeId.toString())));
@@ -2349,15 +2357,32 @@ void TestRules::testStateBasedAction()
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    LogFilter filter;
-    filter.addThingId(m_mockThingId);
-    filter.addTypeId(mockWithParamsActionTypeId);
+//    LogFilter filter;
+//    filter.addThingId(m_mockThingId);
+//    filter.addTypeId(mockWithParamsActionTypeId);
 
-    LogEntriesFetchJob *job = NymeaCore::instance()->logEngine()->fetchLogEntries(filter);
-    QSignalSpy fetchSpy(job, &LogEntriesFetchJob::finished);
+    waitForDBSync();
+
+    LogFetchJob *job = NymeaCore::instance()->logEngine()->fetchLogEntries({logSourceName});
+    QSignalSpy fetchSpy(job, &LogFetchJob::finished);
     fetchSpy.wait();
-    QList<LogEntry> entries = job->results();
-    qCDebug(dcTests()) << "Log entries:" << entries;
+    QVERIFY(!fetchSpy.isEmpty());
+    LogEntries entries = job->entries();
+
+    qCDebug(dcTests()) << "Got log entries:" << entries.count();
+    foreach (const LogEntry &entry, job->entries()) {
+        qCDebug(dcTests()) << entry.source() << entry.timestamp() << entry.values();
+    }
+
+    QCOMPARE(entries.count(), 1);
+    QCOMPARE(entries.first().values().value("triggeredBy").toString(), enumValueName(Action::TriggeredByRule));
+    QCOMPARE(entries.first().values().value("status").toString(), enumValueName(Thing::ThingErrorNoError));
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(entries.first().values().value("params").toByteArray(), &error);
+    QCOMPARE(error.error, QJsonParseError::NoError);
+    QCOMPARE(jsonDoc.toVariant().toMap().value("param1").toInt(), 11);
+    QCOMPARE(jsonDoc.toVariant().toMap().value("param2").toBool(), true);
+    QCOMPARE(jsonDoc.toVariant().toMap().value("param3").toString(), QString());
 
     // set bool state to false
     spy.clear();
@@ -2375,12 +2400,22 @@ void TestRules::testStateBasedAction()
     QCOMPARE(spy.count(), 1);
     reply->deleteLater();
 
-    job = NymeaCore::instance()->logEngine()->fetchLogEntries(filter);
-    QSignalSpy fetchSpy2(job, &LogEntriesFetchJob::finished);
-    fetchSpy2.wait();
-    entries = job->results();
 
-    qCDebug(dcTests()) << "Log entries:" << entries;
+    job = NymeaCore::instance()->logEngine()->fetchLogEntries({logSourceName});
+    {
+    QSignalSpy fetchSpy(job, &LogFetchJob::finished);
+    fetchSpy.wait();
+    QVERIFY(!fetchSpy.isEmpty());
+    }
+    entries = job->entries();
+    QCOMPARE(entries.count(), 1);
+    QCOMPARE(entries.first().values().value("triggeredBy").toString(), enumValueName(Action::TriggeredByRule));
+    QCOMPARE(entries.first().values().value("status").toString(), enumValueName(Thing::ThingErrorNoError));
+    jsonDoc = QJsonDocument::fromJson(entries.first().values().value("params").toByteArray(), &error);
+    QCOMPARE(error.error, QJsonParseError::NoError);
+    QCOMPARE(jsonDoc.toVariant().toMap().value("param1").toInt(), 11);
+    QCOMPARE(jsonDoc.toVariant().toMap().value("param2").toBool(), true);
+    QCOMPARE(jsonDoc.toVariant().toMap().value("param3").toString(), QString());
 }
 
 void TestRules::removeThingCleansRule()

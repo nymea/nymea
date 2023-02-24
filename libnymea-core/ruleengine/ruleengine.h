@@ -46,10 +46,11 @@ Q_DECLARE_LOGGING_CATEGORY(dcRuleEngine)
 Q_DECLARE_LOGGING_CATEGORY(dcRuleEngineDebug)
 
 class ThingManager;
+class LogEngine;
+class Logger;
 
 namespace nymeaserver {
 
-class LogEngine;
 class TimeManager;
 
 class RuleEngine : public QObject
@@ -134,13 +135,13 @@ private:
     void saveRuleActions(NymeaSettings *settings, const QList<RuleAction> &ruleActions);
     QList<RuleAction> loadRuleActions(NymeaSettings *settings);
 
-    void executeRuleActions(const QList<RuleAction> ruleActions);
+    void executeRuleActions(const RuleId &ruleId, const QList<RuleAction> &ruleActions);
 
 
 private:
     ThingManager *m_thingManager = nullptr;
     TimeManager *m_timeManager = nullptr;
-    LogEngine *m_logEngine = nullptr;
+    Logger *m_logger = nullptr;
 
     QList<RuleId> m_ruleIds; // Keeping a list of RuleIds to keep sorting order...
     QHash<RuleId, Rule> m_rules; // ...but use a Hash for faster finding

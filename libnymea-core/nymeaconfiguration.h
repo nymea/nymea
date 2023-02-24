@@ -189,12 +189,10 @@ public:
     void setBluetoothServerEnabled(bool enabled);
 
     // Logging
-    QString logDBDriver() const;
     QString logDBName() const;
     QString logDBHost() const;
     QString logDBUser() const;
     QString logDBPassword() const;
-    int logDBMaxEntries() const;
 
 private:
     QHash<QString, ServerConfiguration> m_tcpServerConfigs;

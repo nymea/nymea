@@ -50,6 +50,8 @@ public:
         TriggeredByRule,
         TriggeredByScript
     };
+    Q_ENUM(TriggeredBy)
+
     explicit Action(const ActionTypeId &actionTypeId = ActionTypeId(), const ThingId &thingId = ThingId(), TriggeredBy triggeredBy = TriggeredByUser);
     Action(const Action &other);
 

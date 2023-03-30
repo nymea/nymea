@@ -10,6 +10,7 @@
         {
             "name": "percentage",
             "type": "int",
+            "unit": "Percentage",
             "minValue": 0,
             "maxValue": 100,
             "writable": true

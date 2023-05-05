@@ -608,6 +608,13 @@ void NetworkDeviceDiscoveryImpl::evaluateMonitor(NetworkDeviceMonitorImpl *monit
         return;
     }
 
+    if (!requiresRefresh && monitor->reachable() && currentDateTime <= monitor->lastConnectionAttempt().addSecs(m_rediscoveryInterval)) {
+        // Note: in some cases only a failed ping is able to mark a device as offline if some ARP proxy is responding to our ARP requests.
+        // Ping all network devices in any case once in a while, even if we think it is reachable.
+        qCDebug(dcNetworkDeviceDiscovery()) << monitor << "performing verification ping.";
+        requiresRefresh = true;
+    }
+
     if (!requiresRefresh)
         return;
 

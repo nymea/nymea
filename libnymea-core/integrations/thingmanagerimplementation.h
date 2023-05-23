@@ -60,11 +60,8 @@ class ThingPairingInfo;
 class HardwareManager;
 class Translator;
 class ApiKeysProvidersLoader;
-
-namespace nymeaserver {
 class LogEngine;
-}
-using namespace nymeaserver;
+class Logger;
 
 class ThingManagerImplementation: public ThingManager
 {
@@ -113,6 +110,7 @@ public:
 
     Thing::ThingError setStateLogging(const ThingId &thingId, const StateTypeId &stateTypeId, bool enabled) override;
     Thing::ThingError setEventLogging(const ThingId &thingId, const EventTypeId &eventTypeId, bool enabled) override;
+    Thing::ThingError setActionLogging(const ThingId &thingId, const ActionTypeId &actionTypeId, bool enabled) override;
     Thing::ThingError setStateFilter(const ThingId &thingId, const StateTypeId &stateTypeId, Types::StateValueFilter filter) override;
 
     Thing::ThingError removeConfiguredThing(const ThingId &thingId) override;
@@ -175,11 +173,18 @@ private:
     void syncIOConnection(Thing *inputThing, const StateTypeId &stateTypeId);
     QVariant mapValue(const QVariant &value, const State &fromState, const State &toState, bool inverted) const;
 
+    void registerStateLogger(Thing *thing, const StateTypeId &stateTypeId);
+    void unregisterStateLogger(Thing *thing, const StateTypeId &stateTypeId);
+    void registerEventLogger(Thing *thing, const EventTypeId &eventTypeId);
+    void unregisterEventLogger(Thing *thing, const EventTypeId &eventTypeId);
+    void registerActionLogger(Thing *thing, const ActionTypeId &actionTypeId);
+    void unregisterActionLogger(Thing *thing, const ActionTypeId &actionTypeId);
+
     IntegrationPlugin *createCppIntegrationPlugin(const QString &absoluteFilePath);
 
 private:
     HardwareManager *m_hardwareManager;
-    nymeaserver::LogEngine *m_logEngine;
+    LogEngine *m_logEngine;
 
     QLocale m_locale;
     Translator *m_translator = nullptr;
@@ -189,6 +194,9 @@ private:
     QHash<ThingClassId, ThingClass> m_supportedThings;
     QHash<ThingId, Thing*> m_configuredThings;
     QHash<ThingDescriptorId, ThingDescriptor> m_discoveredThings;
+    QHash<QString, Logger*> m_stateLoggers;
+    QHash<QString, Logger*> m_actionLoggers;
+    QHash<QString, Logger*> m_eventLoggers;
 
     QHash<PluginId, IntegrationPlugin*> m_integrationPlugins;
 

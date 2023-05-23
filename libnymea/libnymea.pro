@@ -48,6 +48,9 @@ HEADERS += \
     jsonrpc/jsonreply.h \
     jsonrpc/jsonrpcserver.h \
     libnymea.h \
+    logging/logengine.h \
+    logging/logentry.h \
+    logging/logger.h \
     network/apikeys/apikey.h \
     network/apikeys/apikeysprovider.h \
     network/apikeys/apikeystorage.h \
@@ -161,6 +164,9 @@ SOURCES += \
     jsonrpc/jsonhandler.cpp \
     jsonrpc/jsonreply.cpp \
     jsonrpc/jsonrpcserver.cpp \
+    logging/logengine.cpp \
+    logging/logentry.cpp \
+    logging/logger.cpp \
     loggingcategories.cpp \
     network/apikeys/apikey.cpp \
     network/apikeys/apikeysprovider.cpp \

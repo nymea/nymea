@@ -1,5 +1,6 @@
 usr/bin/nymead
 data/systemd/nymead.service /lib/systemd/system/
+data/systemd/influxd.service.d/nymea-env.conf /etc/systemd/system/influxd.service.d/
 data/logrotate/nymead /etc/logrotate.d/
 data/dbus-1/io.guh.nymead.conf /etc/dbus-1/system.d/
 data/dpkg/nymea-upgrade-helper /usr/libexec/

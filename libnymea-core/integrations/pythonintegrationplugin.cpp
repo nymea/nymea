@@ -286,6 +286,7 @@ void PythonIntegrationPlugin::deinitPython()
 
     // Our main thread state is destroyed now
     s_mainThreadState = nullptr;
+    qCDebug(dcPythonIntegrations()) << "Python engine finalized";
 }
 
 bool PythonIntegrationPlugin::loadScript(const QString &scriptFile)

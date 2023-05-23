@@ -600,6 +600,11 @@ QList<EventTypeId> Thing::loggedEventTypeIds() const
     return m_loggedEventTypeIds;
 }
 
+QList<ActionTypeId> Thing::loggedActionTypeIds() const
+{
+    return m_loggedActionTypeIds;
+}
+
 /*! Returns the \l{ThingId} of the parent of this thing. If the parentId
     is not set, this thing does not have a parent.
 */
@@ -674,6 +679,11 @@ void Thing::setLoggedStateTypeIds(const QList<StateTypeId> loggedStateTypeIds)
 void Thing::setLoggedEventTypeIds(const QList<EventTypeId> loggedEventTypeIds)
 {
     m_loggedEventTypeIds = loggedEventTypeIds;
+}
+
+void Thing::setLoggedActionTypeIds(const QList<ActionTypeId> loggedActionTypeIds)
+{
+    m_loggedActionTypeIds = loggedActionTypeIds;
 }
 
 void Thing::setStateValueFilter(const StateTypeId &stateTypeId, Types::StateValueFilter filter)

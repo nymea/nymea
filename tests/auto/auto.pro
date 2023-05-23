@@ -6,8 +6,6 @@ SUBDIRS = \
         ioconnections \
         jsonrpc \
         logging \
-        loggingdirect \
-        loggingloading \
         macaddress \
         mqttbroker \
         plugins \

@@ -213,9 +213,9 @@ bool StateType::suggestLogging() const
     return m_logged;
 }
 
-void StateType::setSuggestLogging(bool logged)
+void StateType::setSuggestLogging(bool suggestLogging)
 {
-    m_logged = logged;
+    m_logged = suggestLogging;
 }
 
 Types::StateValueFilter StateType::filter() const

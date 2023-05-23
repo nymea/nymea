@@ -33,6 +33,7 @@
 #include "nymeasettings.h"
 #include "servers/mocktcpserver.h"
 #include "usermanager/usermanager.h"
+#include "logging/logengine.h"
 
 using namespace nymeaserver;
 
@@ -70,6 +71,10 @@ void NymeaTestBase::initTestCase(const QString &loggingRules)
     // Reset to default settings
     NymeaSettings nymeadSettings(NymeaSettings::SettingsRoleGlobal);
     nymeadSettings.clear();
+
+    nymeadSettings.beginGroup("Logs");
+    nymeadSettings.setValue("logDBName", "nymeatest");
+    nymeadSettings.endGroup();
 
     if (loggingRules.isEmpty()) {
         QLoggingCategory::setFilterRules("*.debug=false\nApplication.debug=true\nTests.debug=true\nMock.debug=true");
@@ -122,7 +127,7 @@ void NymeaTestBase::initTestCase(const QString &loggingRules)
 
 void NymeaTestBase::cleanupTestCase()
 {
-    NymeaCore::instance()->destroy();
+    NymeaCore::instance()->destroy(NymeaCore::ShutdownReasonTerm);
 }
 
 void NymeaTestBase::cleanup()
@@ -417,6 +422,7 @@ void NymeaTestBase::waitForDBSync()
 {
     while (NymeaCore::instance()->logEngine()->jobsRunning()) {
         qApp->processEvents();
+        QTest::qWait(500);
     }
 }
 
@@ -424,7 +430,7 @@ void NymeaTestBase::restartServer()
 {
     // Destroy and recreate the core instance...
     qCDebug(dcTests()) << "Tearing down server instance";
-    NymeaCore::instance()->destroy();
+    NymeaCore::instance()->destroy(NymeaCore::ShutdownReasonRestart);
     qCDebug(dcTests()) << "Restarting server instance";
     NymeaCore::instance()->init();
     QSignalSpy coreSpy(NymeaCore::instance(), SIGNAL(initialized()));
@@ -435,9 +441,10 @@ void NymeaTestBase::restartServer()
     injectAndWait("JSONRPC.Hello");
 }
 
-void NymeaTestBase::clearLoggingDatabase()
+void NymeaTestBase::clearLoggingDatabase(const QString &source)
 {
-    NymeaCore::instance()->logEngine()->clearDatabase();
+    NymeaCore::instance()->logEngine()->clear(source);
+    waitForDBSync();
 }
 
 void NymeaTestBase::createMock()

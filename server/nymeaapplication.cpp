@@ -59,75 +59,64 @@ Q_DECLARE_LOGGING_CATEGORY(dcApplication)
 
 namespace nymeaserver {
 
-static bool s_aboutToShutdown = false;
-static bool s_multipleShutdownDetected = false;
 static int s_shutdownCounter = 0;
 
 static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vector<int>& ignoreSignals = std::vector<int>())
 {
     auto handler = [](int sig) ->void {
-        switch (sig) {
-        case SIGQUIT:
-            qCDebug(dcApplication) << "Cought SIGQUIT quit signal...";
-            break;
-        case SIGINT:
-            qCDebug(dcApplication) << "Cought SIGINT quit signal...";
-            break;
-        case SIGTERM:
-            qCDebug(dcApplication) << "Cought SIGTERM quit signal...";
-            break;
-        case SIGHUP:
-            qCDebug(dcApplication) << "Cought SIGHUP quit signal...";
-            break;
-        default:
-            break;
-        }
 
-        if (s_aboutToShutdown) {
-            switch (s_shutdownCounter) {
-            case 0:
-                qCWarning(dcApplication()) << "Already shutting down. Be nice and give me some time to clean up, please.";
-                break;
-            case 1:
-                qCCritical(dcApplication()) << "I told you, I'm already shutting down. Be nice and give me some time to clean up, PLEASE.";
-                break;
-            case 2:
-                qCCritical(dcApplication()) << "Still shutting down...";
-                break;
-            case 3:
-                qCCritical(dcApplication()) << "Hmpf...";
-                break;
-            case 4:
-                qCCritical(dcApplication()) << "It's getting boring...";
-                break;
-            case 5:
-                qCCritical(dcApplication()) << "S H U T T I N G  DOWN";
-                break;
-            case 6:
-                qCCritical(dcApplication()) << "S H U T T I N G  DOWN";
-                break;
-            case 7:
-                qCCritical(dcApplication()) << "S H U T T I N G  DOWN";
-                break;
-            default:
-                qCCritical(dcApplication()) << "Fuck this shit. I'm out...";
-                NymeaApplication::quit();
-                break;
+        // forecefully exit() if repeated signals come in.
+        if (s_shutdownCounter > 0) {
+            if (s_shutdownCounter < 4) {
+                qCCritical(dcApplication()) << "Shutdown in progress." << (4 - s_shutdownCounter) << "more times to abort.";
+                s_shutdownCounter++;
+                return;
             }
-            s_shutdownCounter++;
+            exit(EXIT_FAILURE);
             return;
         }
 
+        NymeaCore::ShutdownReason reason = NymeaCore::ShutdownReasonQuit;
+        switch (sig) {
+        case SIGQUIT:
+            qCDebug(dcApplication) << "Cought SIGQUIT signal...";
+            reason = NymeaCore::ShutdownReasonQuit;
+            break;
+        case SIGINT:
+            qCDebug(dcApplication) << "Cought SIGINT signal...";
+            reason = NymeaCore::ShutdownReasonTerm;
+            break;
+        case SIGTERM:
+            qCDebug(dcApplication) << "Cought SIGTERM signal...";
+            reason = NymeaCore::ShutdownReasonTerm;
+            break;
+        case SIGHUP:
+            qCDebug(dcApplication) << "Cought SIGHUP signal...";
+            reason = NymeaCore::ShutdownReasonTerm;
+            break;
+        case SIGKILL:
+            qCDebug(dcApplication) << "Cought SIGKILL signal...";
+            reason = NymeaCore::ShutdownReasonTerm;
+            break;
+        case SIGSEGV:
+            qCDebug(dcApplication) << "Cought SIGSEGV quit signal...";
+            reason = NymeaCore::ShutdownReasonFailure;
+            break;
+        case SIGFPE:
+            qCDebug(dcApplication) << "Cought SIGFPE quit signal...";
+            reason = NymeaCore::ShutdownReasonFailure;
+            break;
+        default:
+            qCDebug(dcApplication) << "Cought signal" << sig;
+            break;
+        }
+
         qCInfo(dcApplication) << "=====================================";
-        qCInfo(dcApplication) << "Shutting down nymea daemon";
+        qCInfo(dcApplication) << "Shutting down nymea:core";
         qCInfo(dcApplication) << "=====================================";
 
-        s_aboutToShutdown = true;
-        NymeaCore::instance()->destroy();
-
-        if (s_multipleShutdownDetected)
-            qCDebug(dcApplication) << "Ok, ok, I'm done! :)";
-
+        s_shutdownCounter++;
+        NymeaCore::instance()->destroy(reason);
         NymeaApplication::quit();
     };
 
@@ -144,7 +133,8 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
 NymeaApplication::NymeaApplication(int &argc, char **argv) :
     QCoreApplication(argc, argv)
 {
-    catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP});
+    // Catching SIGSEGV messes too much with various tools...
+    catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP, SIGKILL, /*SIGSEGV,*/ SIGFPE});
 }
 
 }

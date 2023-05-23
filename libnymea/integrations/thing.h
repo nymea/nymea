@@ -63,6 +63,7 @@ class LIBNYMEA_EXPORT Thing: public QObject
     Q_PROPERTY(QUuid parentId READ parentId USER true)
     Q_PROPERTY(QList<StateTypeId> loggedStateTypeIds READ loggedStateTypeIds USER true)
     Q_PROPERTY(QList<EventTypeId> loggedEventTypeIds READ loggedEventTypeIds USER true)
+    Q_PROPERTY(QList<ActionTypeId> loggedActionTypeIds READ loggedActionTypeIds USER true)
 
 public:
     enum ThingError {
@@ -154,6 +155,7 @@ public:
 
     QList<StateTypeId> loggedStateTypeIds() const;
     QList<EventTypeId> loggedEventTypeIds() const;
+    QList<ActionTypeId> loggedActionTypeIds() const;
 
     ThingId parentId() const;
     void setParentId(const ThingId &parentId);
@@ -186,6 +188,7 @@ private:
     void setSetupStatus(ThingSetupStatus status, ThingError setupError, const QString &displayMessage = QString());
     void setLoggedStateTypeIds(const QList<StateTypeId> loggedStateTypeIds);
     void setLoggedEventTypeIds(const QList<EventTypeId> loggedEventTypeIds);
+    void setLoggedActionTypeIds(const QList<ActionTypeId> loggedActionTypeIds);
     void setStateValueFilter(const StateTypeId &stateTypeId, Types::StateValueFilter filter);
 
 private:
@@ -205,6 +208,7 @@ private:
 
     QList<StateTypeId> m_loggedStateTypeIds;
     QList<EventTypeId> m_loggedEventTypeIds;
+    QList<ActionTypeId> m_loggedActionTypeIds;
     QHash<StateTypeId, StateValueFilter*> m_stateValueFilters;
 };
 

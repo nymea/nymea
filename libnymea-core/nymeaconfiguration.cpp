@@ -223,12 +223,10 @@ NymeaConfiguration::NymeaConfiguration(QObject *parent) :
 
     // Write defaults for log settings
     settings.beginGroup("Logs");
-    settings.setValue("logDBDriver", logDBDriver());
     settings.setValue("logDBName", logDBName());
     settings.setValue("logDBHost", logDBHost());
     settings.setValue("logDBUser", logDBUser());
     settings.setValue("logDBPassword", logDBPassword());
-    settings.setValue("logDBMaxEntries", logDBMaxEntries());
     settings.endGroup();
 }
 
@@ -488,13 +486,6 @@ void NymeaConfiguration::setBluetoothServerEnabled(bool enabled)
     emit bluetoothServerEnabledChanged();
 }
 
-QString NymeaConfiguration::logDBDriver() const
-{
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("Logs");
-    return settings.value("logDBDriver", "QSQLITE").toString();
-}
-
 QString NymeaConfiguration::logDBHost() const
 {
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
@@ -504,22 +495,16 @@ QString NymeaConfiguration::logDBHost() const
 
 QString NymeaConfiguration::logDBName() const
 {
-    QString defaultLogPath;
-    QString organisationName = QCoreApplication::instance()->organizationName();
-
-    if (!qgetenv("SNAP").isEmpty()) {
-        defaultLogPath = QString(qgetenv("SNAP_COMMON")) + "/nymead.sqlite";
-    } else if (organisationName == "nymea-test") {
-        defaultLogPath = "/tmp/" + organisationName + "/nymead-test.sqlite";
-    } else if (NymeaSettings::isRoot()) {
-        defaultLogPath = "/var/log/nymead.sqlite";
-    } else {
-        defaultLogPath = QDir::homePath() + "/.config/" + organisationName + "/nymead.sqlite";
-    }
-
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("Logs");
-    return settings.value("logDBName", defaultLogPath).toString();
+    // Migration from < 1.8. Switching the driver is not supported any more.
+    // As sqlite used an absolute filename which won't work as DB name in other databases
+    // we'll reset the config if the user has explicitly set it.
+    if (settings.value("logDBDriver").toString() == "QSQLITE") {
+        settings.remove("logDBName");
+        settings.remove("logDBDriver");
+    }
+    return settings.value("logDBName", "nymea").toString();
 }
 
 QString NymeaConfiguration::logDBUser() const
@@ -534,13 +519,6 @@ QString NymeaConfiguration::logDBPassword() const
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("Logs");
     return settings.value("logDBPassword").toString();
-}
-
-int NymeaConfiguration::logDBMaxEntries() const
-{
-    NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
-    settings.beginGroup("Logs");
-    return settings.value("logDBMaxEntries", 200000).toInt();
 }
 
 QString NymeaConfiguration::sslCertificate() const

@@ -127,6 +127,7 @@
 #include <QStringList>
 #include <QStandardPaths>
 #include <QCoreApplication>
+#include <QMetaEnum>
 
 NYMEA_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
 NYMEA_LOGGING_CATEGORY(dcRuleEngineDebug, "RuleEngineDebug")
@@ -139,9 +140,9 @@ namespace nymeaserver {
 RuleEngine::RuleEngine(ThingManager *thingManager, TimeManager *timeManager, LogEngine *logEngine, QObject *parent) :
     QObject(parent),
     m_thingManager(thingManager),
-    m_timeManager(timeManager),
-    m_logEngine(logEngine)
+    m_timeManager(timeManager)
 {
+    m_logger = logEngine->registerLogSource("rules", {"id", "event"});
 
     connect(m_thingManager, &ThingManager::eventTriggered, this, &RuleEngine::onEventTriggered);
 
@@ -451,6 +452,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
     appendRule(rule);
     saveRule(rule);
 
+    m_logger->log({rule.id().toString(), "created"}, {{"name", rule.name()}});
     if (!fromEdit)
         emit ruleAdded(rule);
 
@@ -494,6 +496,7 @@ RuleEngine::RuleError RuleEngine::editRule(const Rule &rule)
     emit ruleConfigurationChanged(rule);
 
     qCDebug(dcRuleEngine()) << "Rule" << rule.id().toString() << "updated.";
+    m_logger->log({rule.id().toString(), "changed"}, {{"name", rule.name()}});
 
     return RuleErrorNoError;
 }
@@ -526,7 +529,7 @@ RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId, bool fromEdit
     }
 
     m_ruleIds.takeAt(index);
-    m_rules.remove(ruleId);
+    Rule rule = m_rules.take(ruleId);
     m_activeRules.removeAll(ruleId);
 
     NymeaSettings settings(NymeaSettings::SettingsRoleRules);
@@ -534,7 +537,7 @@ RuleEngine::RuleError RuleEngine::removeRule(const RuleId &ruleId, bool fromEdit
     settings.remove("");
     settings.endGroup();
 
-    m_logEngine->removeRuleLogs(ruleId);
+    m_logger->log({ruleId.toString(), "removed"}, {{"name", rule.name()}});
 
     if (!fromEdit)
         emit ruleRemoved(ruleId);
@@ -565,7 +568,7 @@ RuleEngine::RuleError RuleEngine::enableRule(const RuleId &ruleId)
     saveRule(rule);
     emit ruleConfigurationChanged(rule);
 
-    m_logEngine->logRuleEnabledChanged(rule, true);
+    m_logger->log({rule.id().toString(), "enabled"}, {{"name", rule.name()}});
     qCDebug(dcRuleEngine()) << "Rule" << rule.name() << rule.id().toString() << "enabled.";
 
     return RuleErrorNoError;
@@ -591,7 +594,7 @@ RuleEngine::RuleError RuleEngine::disableRule(const RuleId &ruleId)
     saveRule(rule);
     emit ruleConfigurationChanged(rule);
 
-    m_logEngine->logRuleEnabledChanged(rule, false);
+    m_logger->log({rule.id().toString(), "disabled"}, {{"name", rule.name()}});
     qCDebug(dcRuleEngine()) << "Rule" << rule.name() << rule.id().toString() << "disabled.";
     return RuleErrorNoError;
 }
@@ -626,8 +629,8 @@ RuleEngine::RuleError RuleEngine::executeActions(const RuleId &ruleId)
     }
 
     qCDebug(dcRuleEngine) << "Executing rule actions of rule" << rule.name() << rule.id().toString();
-    m_logEngine->logRuleActionsExecuted(rule);
-    executeRuleActions(rule.actions());
+    m_logger->log({rule.id().toString(), "executed"}, {{"name", rule.name()}});
+    executeRuleActions(rule.id(), rule.actions());
     return RuleErrorNoError;
 }
 
@@ -658,8 +661,9 @@ RuleEngine::RuleError RuleEngine::executeExitActions(const RuleId &ruleId)
     }
 
     qCDebug(dcRuleEngine) << "Executing rule exit actions of rule" << rule.name() << rule.id().toString();
-    m_logEngine->logRuleExitActionsExecuted(rule);
-    executeRuleActions(rule.exitActions());
+    m_logger->log({rule.id().toString(), "executed"}, {{"name", rule.name()}});
+//    m_logEngine->logRuleExitActionsExecuted(rule);
+    executeRuleActions(rule.id(), rule.exitActions());
     return RuleErrorNoError;
 }
 
@@ -1400,7 +1404,7 @@ QList<RuleAction> RuleEngine::loadRuleActions(NymeaSettings *settings)
     return actions;
 }
 
-void RuleEngine::executeRuleActions(const QList<RuleAction> ruleActions)
+void RuleEngine::executeRuleActions(const RuleId &ruleId, const QList<RuleAction> &ruleActions)
 {
     QList<Action> actions;
     QList<BrowserAction> browserActions;
@@ -1500,19 +1504,31 @@ void RuleEngine::executeRuleActions(const QList<RuleAction> ruleActions)
     foreach (const Action &action, actions) {
         qCDebug(dcRuleEngine) << "Executing action" << action.actionTypeId() << action.params();
         ThingActionInfo *info = m_thingManager->executeAction(action);
-        connect(info, &ThingActionInfo::finished, this, [info](){
+        connect(info, &ThingActionInfo::finished, this, [=](){
             if (info->status() != Thing::ThingErrorNoError) {
                 qCWarning(dcRuleEngine) << "Error executing action:" << info->status() << info->displayMessage();
             }
+            ActionType actionType = m_thingManager->findConfiguredThing(action.thingId())->thingClass().actionTypes().findById(action.actionTypeId());
+            m_logger->log({ruleId.toString(), "executed"}, {
+                              {"name", m_rules.value(ruleId).name()},
+                              {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
+                              {"thingId", info->action().thingId()},
+                              {"action", actionType.name()}
+                          });
         });
     }
 
     foreach (const BrowserAction &browserAction, browserActions) {
         BrowserActionInfo *info = m_thingManager->executeBrowserItem(browserAction);
-        connect(info, &BrowserActionInfo::finished, this, [info, this](){
-            m_logEngine->logBrowserAction(info->browserAction(), info->status() == Thing::ThingErrorNoError ? Logging::LoggingLevelInfo : Logging::LoggingLevelAlert, info->status());
+        connect(info, &BrowserActionInfo::finished, this, [this, ruleId, info](){
             if (info->status() != Thing::ThingErrorNoError) {
                 qCWarning(dcRuleEngine) << "Error executing browser action:" << info->status();
+                m_logger->log({ruleId.toString(), "executed"}, {
+                                  {"name", m_rules.value(ruleId).name()},
+                                  {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
+                                  {"thingId", info->browserAction().thingId()},
+                                  {"browserItem", info->browserAction().itemId()}
+                              });
             }
         });
     }
@@ -1520,8 +1536,6 @@ void RuleEngine::executeRuleActions(const QList<RuleAction> ruleActions)
 
 void RuleEngine::onEventTriggered(const Event &event)
 {
-    QList<RuleAction> actions;
-    QList<RuleAction> eventBasedActions;
     foreach (const Rule &rule, evaluateEvent(event)) {
         if (m_executingRules.contains(rule.id())) {
             qCWarning(dcRuleEngine()) << "WARNING: Loop detected in rule execution for rule" << rule.id().toString() << rule.name();
@@ -1531,7 +1545,11 @@ void RuleEngine::onEventTriggered(const Event &event)
 
         // Event based
         if (!rule.eventDescriptors().isEmpty()) {
-            m_logEngine->logRuleTriggered(rule);
+            m_logger->log({rule.id().toString()}, {
+                              {"name", rule.name()},
+                              {"state", "triggered"}
+                          });
+
             QList<RuleAction> tmp;
             if (rule.statesActive() && rule.timeActive()) {
                 qCDebug(dcRuleEngineDebug()) << "Executing actions";
@@ -1541,56 +1559,56 @@ void RuleEngine::onEventTriggered(const Event &event)
                 tmp = rule.exitActions();
             }
             // check if we have an event based action or a normal action
-            foreach (const RuleAction &action, tmp) {
+            QList<RuleAction> actions;
+            foreach (RuleAction action, tmp) {
                 if (action.isEventBased()) {
-                    eventBasedActions.append(action);
+                    RuleActionParams newParams;
+                    foreach (RuleActionParam ruleActionParam, action.ruleActionParams()) {
+                        // if this event param should be taken over in this action
+                        if (event.eventTypeId() == ruleActionParam.eventTypeId()) {
+                            QVariant eventValue = event.params().paramValue(ruleActionParam.eventParamTypeId());
+
+                            // TODO: limits / scale calculation -> actionValue = eventValue * x
+                            //       something like a EventParamDescriptor
+
+                            ruleActionParam.setValue(eventValue);
+                            qCDebug(dcRuleEngine) << "Using param value from event:" << ruleActionParam.value();
+                        }
+                        newParams.append(ruleActionParam);
+                    }
+                    action.setRuleActionParams(newParams);
+                    actions.append(action);
                 } else {
                     actions.append(action);
                 }
             }
+            executeRuleActions(rule.id(), actions);
+
         } else {
             // State based rule
-            m_logEngine->logRuleActiveChanged(rule);
+            m_logger->log({rule.id().toString()}, {
+                              {"name", rule.name()},
+                              {"state", rule.active() ? "active" : "inactive"}
+                          });
             emit ruleActiveChanged(rule);
             if (rule.active()) {
-                actions.append(rule.actions());
+                executeRuleActions(rule.id(), rule.actions());
             } else {
-                actions.append(rule.exitActions());
+                executeRuleActions(rule.id(), rule.exitActions());
             }
         }
     }
 
-    // Set action params, depending on the event value
-    foreach (RuleAction ruleAction, eventBasedActions) {
-        RuleActionParams newParams;
-        foreach (RuleActionParam ruleActionParam, ruleAction.ruleActionParams()) {
-            // if this event param should be taken over in this action
-            if (event.eventTypeId() == ruleActionParam.eventTypeId()) {
-                QVariant eventValue = event.params().paramValue(ruleActionParam.eventParamTypeId());
-
-                // TODO: limits / scale calculation -> actionValue = eventValue * x
-                //       something like a EventParamDescriptor
-
-                ruleActionParam.setValue(eventValue);
-                qCDebug(dcRuleEngine) << "Using param value from event:" << ruleActionParam.value();
-            }
-            newParams.append(ruleActionParam);
-        }
-        ruleAction.setRuleActionParams(newParams);
-        actions.append(ruleAction);
-    }
-
-    executeRuleActions(actions);
     m_executingRules.clear();
 }
 
 void RuleEngine::onDateTimeChanged(const QDateTime &dateTime)
 {
-    QList<RuleAction> actions;
     foreach (const Rule &rule, evaluateTime(dateTime)) {
         // TimeEvent based
+        QList<RuleAction> actions;
         if (!rule.timeDescriptor().timeEventItems().isEmpty()) {
-            m_logEngine->logRuleTriggered(rule);
+            m_logger->log({rule.id().toString(), "triggered"}, {{"name", rule.name()}});
             if (rule.statesActive() && rule.timeActive()) {
                 actions.append(rule.actions());
             } else {
@@ -1598,7 +1616,7 @@ void RuleEngine::onDateTimeChanged(const QDateTime &dateTime)
             }
         } else {
             // Calendar based rule
-            m_logEngine->logRuleActiveChanged(rule);
+            m_logger->log({rule.id().toString(), "triggered"}, {{"name", rule.name()}});
             emit ruleActiveChanged(rule);
             if (rule.active()) {
                 actions.append(rule.actions());
@@ -1606,8 +1624,8 @@ void RuleEngine::onDateTimeChanged(const QDateTime &dateTime)
                 actions.append(rule.exitActions());
             }
         }
+        executeRuleActions(rule.id(), actions);
     }
-    executeRuleActions(actions);
 }
 
 void RuleEngine::onThingRemoved(const ThingId &thingId)

@@ -1,6 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-    <file>nymead-v2.sqlite</file>
-    <file>nymead-broken.sqlite</file>
-</qresource>
-</RCC>

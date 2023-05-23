@@ -34,6 +34,7 @@
 #include "version.h"
 #include "servers/mocktcpserver.h"
 #include "usermanager/usermanager.h"
+#include "logging/logengine.h"
 #include "nymeadbusservice.h"
 #include "../plugins/mock/extern-plugininfo.h"
 
@@ -153,9 +154,10 @@ void TestJSONRPC::initTestCase()
     NymeaDBusService::setBusType(QDBusConnection::SessionBus);
     NymeaTestBase::initTestCase("*.debug=false\n"
 //                                     "JsonRpcTraffic.debug=true\n"
-                                     "JsonRpc.debug=true\n"
-                                     "Translations.debug=true\n"
-                                     "Tests.debug=true");
+                                "JsonRpc.debug=true\n"
+                                "Translations.debug=true\n"
+                                "Tests.debug=true\n"
+                                "PushButtonAgent.debug=true\n");
 }
 
 void TestJSONRPC::cleanup()
@@ -1003,6 +1005,7 @@ void TestJSONRPC::testPushButtonAuth()
     if (clientSpy.count() == 0) clientSpy.wait();
     QVariantMap rsp = checkNotification(clientSpy, "JSONRPC.PushButtonAuthFinished").toMap();
 
+    qCDebug(dcTests()) << "rsp" << rsp;
     QCOMPARE(rsp.value("params").toMap().value("transactionId").toInt(), transactionId);
     QVERIFY2(!rsp.value("params").toMap().value("token").toByteArray().isEmpty(), "Token not in push button auth notification");
 

@@ -201,6 +201,26 @@ public:
     static PermissionScope scopeFromString(const QString &scopeString);
     static QStringList scopesToStringList(PermissionScopes scopes);
     static QString scopeToString(PermissionScope scope);
+
+    enum LoggingType {
+        LoggingTypeDiscrete,
+        LoggingTypeSampled,
+    };
+    Q_ENUM(LoggingType)
+
+    enum SampleRate {
+        SampleRateAny = 0,
+        SampleRate1Min = 1,
+        SampleRate15Mins = 15,
+        SampleRate1Hour = 60,
+        SampleRate3Hours = 180,
+        SampleRate1Day = 1440,
+        SampleRate1Week = 10080,
+        SampleRate1Month = 43200,
+        SampleRate1Year = 525600
+    };
+    Q_ENUM(SampleRate)
+
 };
 
 Q_DECLARE_METATYPE(Types::InputType)

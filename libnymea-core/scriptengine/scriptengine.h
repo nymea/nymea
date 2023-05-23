@@ -38,8 +38,11 @@
 #include <QLoggingCategory>
 #include <QMutex>
 
-#include "integrations/thingmanager.h"
 #include "script.h"
+
+class ThingManager;
+class LogEngine;
+class Logger;
 
 namespace nymeaserver {
 namespace scriptengine {
@@ -76,7 +79,7 @@ public:
         QByteArray content;
     };
 
-    explicit ScriptEngine(ThingManager *thingManager, QObject *parent = nullptr);
+    explicit ScriptEngine(ThingManager *thingManager, LogEngine *logEngine, QObject *parent = nullptr);
     ~ScriptEngine();
 
     Scripts scripts();
@@ -105,6 +108,7 @@ private:
 private:
     ThingManager *m_thingManager = nullptr;
     QQmlEngine *m_engine = nullptr;
+    Logger *m_logger = nullptr;
 
     QHash<QUuid, Script*> m_scripts;
 

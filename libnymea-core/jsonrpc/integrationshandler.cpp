@@ -260,6 +260,14 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     registerMethod("SetEventLogging", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
+    description = "Enable/disable logging for the given action type on the given thing.";
+    params.insert("thingId", enumValueName(Uuid));
+    params.insert("actionTypeId", enumValueName(Uuid));
+    params.insert("enabled", enumValueName(Bool));
+    returns.insert("thingError", enumRef<Thing::ThingError>());
+    registerMethod("SetActionLogging", description, params, returns, Types::PermissionScopeConfigureThings);
+
+    params.clear(); returns.clear();
     description = "Set the filter for the given state on the given thing.";
     params.insert("thingId", enumValueName(Uuid));
     params.insert("stateTypeId", enumValueName(Uuid));
@@ -872,6 +880,15 @@ JsonReply *IntegrationsHandler::SetEventLogging(const QVariantMap &params)
     EventTypeId eventTypeId = EventTypeId(params.value("eventTypeId").toUuid());
     bool enabled = params.value("enabled").toBool();
     Thing::ThingError status = m_thingManager->setEventLogging(thingId, eventTypeId, enabled);
+    return createReply(statusToReply(status));
+}
+
+JsonReply *IntegrationsHandler::SetActionLogging(const QVariantMap &params)
+{
+    ThingId thingId = ThingId(params.value("thingId").toString());
+    ActionTypeId actionTypeId = ActionTypeId(params.value("actionTypeId").toUuid());
+    bool enabled = params.value("enabled").toBool();
+    Thing::ThingError status = m_thingManager->setActionLogging(thingId, actionTypeId, enabled);
     return createReply(statusToReply(status));
 }
 

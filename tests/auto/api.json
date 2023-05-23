@@ -1,4 +1,4 @@
-7.1
+8.0
 {
     "enums": {
         "BasicType": [
@@ -63,30 +63,6 @@
             "InputTypeIPv6Address",
             "InputTypeUrl",
             "InputTypeMacAddress"
-        ],
-        "LoggingError": [
-            "LoggingErrorNoError",
-            "LoggingErrorLogEntryNotFound",
-            "LoggingErrorInvalidFilterParameter"
-        ],
-        "LoggingEventType": [
-            "LoggingEventTypeTrigger",
-            "LoggingEventTypeActiveChange",
-            "LoggingEventTypeEnabledChange",
-            "LoggingEventTypeActionsExecuted",
-            "LoggingEventTypeExitActionsExecuted"
-        ],
-        "LoggingLevel": [
-            "LoggingLevelInfo",
-            "LoggingLevelAlert"
-        ],
-        "LoggingSource": [
-            "LoggingSourceSystem",
-            "LoggingSourceEvents",
-            "LoggingSourceActions",
-            "LoggingSourceStates",
-            "LoggingSourceRules",
-            "LoggingSourceBrowserActions"
         ],
         "MediaBrowserIcon": [
             "MediaBrowserIconNone",
@@ -200,6 +176,17 @@
             "RuleErrorNoExitActions",
             "RuleErrorInterfaceNotFound"
         ],
+        "SampleRate": [
+            "SampleRateAny",
+            "SampleRate1Min",
+            "SampleRate15Mins",
+            "SampleRate1Hour",
+            "SampleRate3Hours",
+            "SampleRate1Day",
+            "SampleRate1Week",
+            "SampleRate1Month",
+            "SampleRate1Year"
+        ],
         "ScriptError": [
             "ScriptErrorNoError",
             "ScriptErrorScriptNotFound",
@@ -238,6 +225,10 @@
             "SetupMethodPushButton",
             "SetupMethodUserAndPassword",
             "SetupMethodOAuth"
+        ],
+        "SortOrder": [
+            "AscendingOrder",
+            "DescendingOrder"
         ],
         "StateOperator": [
             "StateOperatorAnd",
@@ -1133,6 +1124,18 @@
                 "thingError": "$ref:ThingError"
             }
         },
+        "Integrations.SetActionLogging": {
+            "description": "Enable/disable logging for the given action type on the given thing.",
+            "params": {
+                "actionTypeId": "Uuid",
+                "enabled": "Bool",
+                "thingId": "Uuid"
+            },
+            "permissionScope": "PermissionScopeConfigureThings",
+            "returns": {
+                "thingError": "$ref:ThingError"
+            }
+        },
         "Integrations.SetEventLogging": {
             "description": "Enable/disable logging for the given event type on the given thing.",
             "params": {
@@ -1305,39 +1308,25 @@
             }
         },
         "Logging.GetLogEntries": {
-            "description": "Get the LogEntries matching the given filter. The result set will contain entries matching all filter rules combined. If multiple options are given for a single filter type, the result set will contain entries matching any of those. The offset starts at the newest entry in the result set. By default all items are returned. Example: If the specified filter returns a total amount of 100 entries:\n- a offset value of 10 would include the oldest 90 entries\n- a offset value of 0 would return all 100 entries\n\nThe offset is particularly useful in combination with the maxCount property and can be used for pagination. E.g. A result set of 10000 entries can be fetched in  batches of 1000 entries by fetching\n1) offset 0, maxCount 1000: Entries 0 to 9999\n2) offset 10000, maxCount 1000: Entries 10000 - 19999\n3) offset 20000, maxCount 1000: Entries 20000 - 29999\n...",
+            "description": "Get the LogEntries matching the given filter. \n\"sources\": Builtin sources are: \"core\", \"rules\", \"scripts\", \"integrations\". May be extended by experience plugins.\n\"columns\": Columns to be returned.\n\"filter\": A map of column:value entries. Only = is supported currently.\n\"startTime\": The datetime of the oldest entry, in ms.\n\"endTime\": The datetime of the newest entry, in ms.\n\"sampleRate\": If given, returns a sampled series of the values, filling in gaps with the previous value.\n\"sortOrder\": Sort order of results. Note that this impacts the filling of gaps when resampling.\n\"limit\": Maximum amount of entries to be returned.\n\"offset\": Offset to be skipped before returning entries.",
             "params": {
-                "o:eventTypes": [
-                    "$ref:LoggingEventType"
+                "o:columns": [
+                    "String"
                 ],
+                "o:endTime": "Uint",
+                "o:filter": "Variant",
                 "o:limit": "Int",
-                "o:loggingLevels": [
-                    "$ref:LoggingLevel"
-                ],
-                "o:loggingSources": [
-                    "$ref:LoggingSource"
-                ],
                 "o:offset": "Int",
-                "o:thingIds": [
-                    "Uuid"
-                ],
-                "o:timeFilters": [
-                    {
-                        "o:endDate": "Int",
-                        "o:startDate": "Int"
-                    }
-                ],
-                "o:typeIds": [
-                    "Uuid"
-                ],
-                "o:values": [
-                    "Variant"
+                "o:sampleRate": "$ref:SampleRate",
+                "o:sortOrder": "$ref:SortOrder",
+                "o:startTime": "Uint",
+                "sources": [
+                    "String"
                 ]
             },
             "permissionScope": "PermissionScopeControlThings",
             "returns": {
                 "count": "Int",
-                "loggingError": "$ref:LoggingError",
                 "o:logEntries": "$ref:LogEntries",
                 "offset": "Int"
             }
@@ -2455,13 +2444,8 @@
                 "transactionId": "Int"
             }
         },
-        "Logging.LogDatabaseUpdated": {
-            "description": "Emitted whenever the database was updated. The database will be updated when a log entry was deleted. A log entry will be deleted when the corresponding thing or a rule will be removed, or when the oldest entry of the database was deleted to keep to database in the size limits.",
-            "params": {
-            }
-        },
         "Logging.LogEntryAdded": {
-            "description": "Emitted whenever an entry is appended to the logging system. ",
+            "description": "Emitted when a log entry is added. This will only be emitted for discrete series, not for resampled entries",
             "params": {
                 "logEntry": "$ref:LogEntry"
             }
@@ -2890,15 +2874,9 @@
             "$ref:LogEntry"
         ],
         "LogEntry": {
-            "r:loggingLevel": "$ref:LoggingLevel",
-            "r:o:active": "Bool",
-            "r:o:errorCode": "String",
-            "r:o:eventType": "$ref:LoggingEventType",
-            "r:o:thingId": "Uuid",
-            "r:o:typeId": "Uuid",
-            "r:o:value": "Variant",
-            "r:source": "$ref:LoggingSource",
-            "r:timestamp": "Uint"
+            "r:source": "String",
+            "r:timestamp": "Uint",
+            "r:values": "Object"
         },
         "ModbusRtuMaster": {
             "baudrate": "Uint",
@@ -3113,6 +3091,9 @@
             "o:name": "String",
             "o:settings": "$ref:ParamList",
             "r:id": "Uuid",
+            "r:o:loggedActionTypeIds": [
+                "Uuid"
+            ],
             "r:o:loggedEventTypeIds": [
                 "Uuid"
             ],

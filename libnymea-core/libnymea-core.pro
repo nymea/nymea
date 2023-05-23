@@ -61,6 +61,7 @@ HEADERS += nymeacore.h \
     hardware/network/macaddressdatabasereplyimpl.h \
     hardware/serialport/serialportmonitor.h \
     hardware/zwave/zwavehardwareresourceimplementation.h \
+    logging/logengineinfluxdb.h \
     scriptengine/scriptthing.h \
     scriptengine/scriptthings.h \
     zwave/zwavedevicedatabase.h \
@@ -119,11 +120,6 @@ HEADERS += nymeacore.h \
     jsonrpc/systemhandler.h \
     jsonrpc/scriptshandler.h \
     jsonrpc/usershandler.h \
-    logging/logging.h \
-    logging/logengine.h \
-    logging/logfilter.h \
-    logging/logentry.h \
-    logging/logvaluetool.h \
     time/timemanager.h \
     usermanager/userautorizer.h \
     usermanager/userinfo.h \
@@ -172,6 +168,7 @@ SOURCES += nymeacore.cpp \
     hardware/network/macaddressdatabasereplyimpl.cpp \
     hardware/serialport/serialportmonitor.cpp \
     hardware/zwave/zwavehardwareresourceimplementation.cpp \
+    logging/logengineinfluxdb.cpp \
     scriptengine/scriptthing.cpp \
     scriptengine/scriptthings.cpp \
     zwave/zwavedevicedatabase.cpp \
@@ -223,10 +220,6 @@ SOURCES += nymeacore.cpp \
     jsonrpc/systemhandler.cpp \
     jsonrpc/scriptshandler.cpp \
     jsonrpc/usershandler.cpp \
-    logging/logengine.cpp \
-    logging/logfilter.cpp \
-    logging/logentry.cpp \
-    logging/logvaluetool.cpp \
     time/timemanager.cpp \
     usermanager/userautorizer.cpp \
     usermanager/userinfo.cpp \

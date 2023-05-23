@@ -193,42 +193,45 @@ Interface ThingUtils::loadInterface(const QString &name)
     InterfaceActionTypes actionTypes;
     InterfaceEventTypes eventTypes;
     foreach (const QVariant &stateVariant, content.value("states").toList()) {
+        QVariantMap stateMap = stateVariant.toMap();
         InterfaceStateType stateType;
-        stateType.setName(stateVariant.toMap().value("name").toString());
-        stateType.setType(QVariant::nameToType(stateVariant.toMap().value("type").toByteArray()));
-        stateType.setPossibleValues(stateVariant.toMap().value("allowedValues").toList());
-        stateType.setMinValue(stateVariant.toMap().value("minValue"));
-        stateType.setMaxValue(stateVariant.toMap().value("maxValue"));
-        stateType.setOptional(stateVariant.toMap().value("optional", false).toBool());
-        if (stateVariant.toMap().contains("logged")) {
-            stateType.setLoggingOverride(true);
-            stateType.setSuggestLogging(stateVariant.toMap().value("logged", false).toBool());
-        }
-        if (stateVariant.toMap().contains("unit")) {
+        stateType.setName(stateMap.value("name").toString());
+        stateType.setType(QVariant::nameToType(stateMap.value("type").toByteArray()));
+        stateType.setPossibleValues(stateMap.value("allowedValues").toList());
+        stateType.setMinValue(stateMap.value("minValue"));
+        stateType.setMaxValue(stateMap.value("maxValue"));
+        stateType.setOptional(stateMap.value("optional", false).toBool());
+        if (stateMap.contains("unit")) {
             QMetaEnum unitEnum = QMetaEnum::fromType<Types::Unit>();
-            int enumValue = unitEnum.keyToValue("Unit" + stateVariant.toMap().value("unit").toByteArray());
+            int enumValue = unitEnum.keyToValue("Unit" + stateMap.value("unit").toByteArray());
             if (enumValue == -1) {
-                qCWarning(dcThingManager) << "Invalid unit" << stateVariant.toMap().value("unit").toString() << "in interface" << name;
+                qCWarning(dcThingManager) << "Invalid unit" << stateMap.value("unit").toString() << "in interface" << name;
             } else {
-                stateType.setUnit(static_cast<Types::Unit>(unitEnum.keyToValue("Unit" + stateVariant.toMap().value("unit").toByteArray())));
+                stateType.setUnit(static_cast<Types::Unit>(enumValue));
             }
         }
-        stateTypes.append(stateType);
 
-        ParamType stateChangeEventParamType;
-        stateChangeEventParamType.setName(stateType.name());
-        stateChangeEventParamType.setType(stateType.type());
-        stateChangeEventParamType.setAllowedValues(stateType.possibleValues());
-        stateChangeEventParamType.setMinValue(stateType.minValue());
-        stateChangeEventParamType.setMaxValue(stateType.maxValue());
+        ParamType stateChangeActionParamType;
+        stateChangeActionParamType.setName(stateType.name());
+        stateChangeActionParamType.setType(stateType.type());
+        stateChangeActionParamType.setAllowedValues(stateType.possibleValues());
+        stateChangeActionParamType.setMinValue(stateType.minValue());
+        stateChangeActionParamType.setMaxValue(stateType.maxValue());
 
-        if (stateVariant.toMap().value("writable", false).toBool()) {
+        if (stateMap.value("writable", false).toBool()) {
             InterfaceActionType stateChangeActionType;
             stateChangeActionType.setName(stateType.name());
             stateChangeActionType.setOptional(stateType.optional());
-            stateChangeActionType.setParamTypes(ParamTypes() << stateChangeEventParamType);
+            stateChangeActionType.setParamTypes(ParamTypes() << stateChangeActionParamType);
             actionTypes.append(stateChangeActionType);
         }
+
+        if (stateMap.contains("logged")) {
+            stateType.setLoggingOverride(true);
+            stateType.setSuggestLogging(stateMap.value("logged", false).toBool());
+        }
+
+        stateTypes.append(stateType);
     }
 
     foreach (const QVariant &actionVariant, content.value("actions").toList()) {

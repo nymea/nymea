@@ -210,7 +210,6 @@ void DebugReportGenerator::saveConfigs()
     copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleRules).fileName(), "config");
     copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRolePlugins).fileName(), "config");
     copyFileToReportDirectory(NymeaSettings(NymeaSettings::SettingsRoleTags).fileName(), "config");
-    copyFileToReportDirectory(NymeaCore::instance()->configuration()->logDBName(), "config");
 }
 
 void DebugReportGenerator::saveEnv()

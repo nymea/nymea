@@ -167,6 +167,7 @@ void TestIntegrations::initTestCase()
                                      "Mock.debug=true\n"
                                      "Translations.debug=true\n"
                                      "PythonIntegrations.debug=true\n"
+                                     "LogEngine.debug=true\n"
                                      );
 
     // Adding an async mock to be used in tests below
@@ -617,7 +618,7 @@ void TestIntegrations::storedThings()
     ThingId addedThingId = ThingId(response.toMap().value("params").toMap().value("thingId").toString());
     QVERIFY(!addedThingId.isNull());
 
-    clearLoggingDatabase();
+    clearLoggingDatabase("state-" + addedThingId.toString() + "-int");
 
     // Restart the core instance to check if settings are loaded at startup
     restartServer();
@@ -640,8 +641,7 @@ void TestIntegrations::storedThings()
     waitForDBSync();
 
     params.clear();
-    params.insert("thingIds", QVariantList() << addedThingId);
-    params.insert("loggingSources", QVariantList() << "LoggingSourceStates");
+    params.insert("sources", QStringList{"state-" + addedThingId.toString() + "-int"});
     response = injectAndWait("Logging.GetLogEntries", params);
     QVERIFY2(response.toMap().value("params").toMap().contains("logEntries"), "Huh? GetLogEntries failed!");
     qCDebug(dcTests()) << "log response:" << response.toMap().value("params").toMap().value("logEntries");
@@ -683,7 +683,7 @@ void TestIntegrations::stateCache()
     connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
     spy.wait();
 
-    // For completeness, verify through JSONRPC that they were actually yet.
+    // For completeness, verify through JSONRPC that they were actually set.
     QVariantMap params;
     params.insert("thingId", thing->id());
 

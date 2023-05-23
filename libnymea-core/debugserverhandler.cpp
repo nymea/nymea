@@ -76,38 +76,6 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
         return reply;
     }
 
-    // Check if this is a logdb requested
-    if (requestPath.startsWith("/debug/logdb.sql")) {
-        qCDebug(dcDebugServer()) << "Loading" << NymeaCore::instance()->configuration()->logDBName();
-        QFile logDatabaseFile(NymeaCore::instance()->configuration()->logDBName());
-        if (!logDatabaseFile.exists()) {
-            qCWarning(dcDebugServer()) << "Could not read log database file for debug download" << NymeaCore::instance()->configuration()->logDBName() << "file does not exist.";
-            HttpReply *reply = HttpReply::createErrorReply(HttpReply::NotFound);
-            reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-            //: The HTTP error message of the debug interface. The %1 represents the file name.
-            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not find file \"%1\".").arg(logDatabaseFile.fileName())));
-            return reply;
-        }
-
-        if (!logDatabaseFile.open(QFile::ReadOnly)) {
-            qCWarning(dcDebugServer()) << "Could not read log database file for debug download" << NymeaCore::instance()->configuration()->logDBName();
-            HttpReply *reply = HttpReply::createErrorReply(HttpReply::Forbidden);
-            reply->setHeader(HttpReply::ContentTypeHeader, "text/html");
-            //: The HTTP error message of the debug interface. The %1 represents the file name.
-            reply->setPayload(createErrorXmlDocument(HttpReply::NotFound, tr("Could not open file \"%1\".").arg(logDatabaseFile.fileName())));
-            return reply;
-        }
-
-        QByteArray logDatabaseRawData = logDatabaseFile.readAll();
-        logDatabaseFile.close();
-
-        HttpReply *reply = HttpReply::createSuccessReply();
-        reply->setHeader(HttpReply::ContentTypeHeader, "application/sql");
-        reply->setPayload(logDatabaseRawData);
-        return reply;
-    }
-
-
     // Check if this is a syslog requested
     if (requestPath.startsWith("/debug/syslog")) {
         QString syslogFileName = "/var/log/syslog";
@@ -1222,43 +1190,6 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     //: The download logs section of the debug interface
     writer.writeTextElement("h3", tr("Logs"));
     writer.writeEmptyElement("hr");
-
-
-    // Download row logdb
-    writer.writeStartElement("div");
-    writer.writeAttribute("class", "download-row");
-
-    writer.writeStartElement("div");
-    writer.writeAttribute("class", "download-name-column");
-    //: The log databse download description of the debug interface
-    writer.writeTextElement("p", tr("Log database"));
-    writer.writeEndElement(); // div download-name-column
-
-    if (QFileInfo(NymeaCore::instance()->configuration()->logDBName()).exists()) {
-        writer.writeStartElement("div");
-        writer.writeAttribute("class", "download-path-column");
-        writer.writeTextElement("p", NymeaCore::instance()->configuration()->logDBName());
-        writer.writeEndElement(); // div download-path-column
-    }
-
-    writer.writeStartElement("div");
-    writer.writeAttribute("class", "download-button-column");
-    writer.writeStartElement("form");
-    writer.writeAttribute("class", "download-button");
-    writer.writeStartElement("button");
-    writer.writeAttribute("class", "button");
-    writer.writeAttribute("type", "button");
-    if (!QFile::exists(NymeaCore::instance()->configuration()->logDBName())) {
-        writer.writeAttribute("disabled", "disabled");
-    }
-    writer.writeAttribute("onClick", "downloadFile('/debug/logdb.sql', 'logdb.sql')");
-    //: The download button description of the debug interface
-    writer.writeCharacters(tr("Download"));
-    writer.writeEndElement(); // button
-    writer.writeEndElement(); // form
-    writer.writeEndElement(); // div download-button-column
-
-    writer.writeEndElement(); // div download-row
 
     // Download row syslog
     writer.writeStartElement("div");

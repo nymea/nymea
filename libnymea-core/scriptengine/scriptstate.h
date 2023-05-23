@@ -38,6 +38,8 @@
 #include "integrations/thingmanager.h"
 #include "integrations/thingactioninfo.h"
 
+class Logger;
+
 namespace nymeaserver {
 namespace scriptengine {
 
@@ -89,6 +91,8 @@ private slots:
 
 private:
     ThingManager *m_thingManager = nullptr;
+    Logger *m_logger = nullptr;
+    QUuid m_scriptId;
 
     QString m_thingId;
     QString m_stateTypeId;

@@ -363,11 +363,11 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
                             list << entry;
                         }
                     } else if (propertyTypeName == "QList<StateTypeId>") {
-                        foreach (const EventTypeId &entry, propertyValue.value<QList<EventTypeId>>()) {
+                        foreach (const EventTypeId &entry, propertyValue.value<QList<StateTypeId>>()) {
                             list << entry;
                         }
                     } else if (propertyTypeName == "QList<ActionTypeId>") {
-                        foreach (const EventTypeId &entry, propertyValue.value<QList<EventTypeId>>()) {
+                        foreach (const EventTypeId &entry, propertyValue.value<QList<ActionTypeId>>()) {
                             list << entry;
                         }
                     } else if (propertyTypeName == "QList<QDateTime>") {

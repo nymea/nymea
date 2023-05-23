@@ -34,10 +34,10 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlResult>
+#include <QDataStream>
 
 #include "hardware/zwave/zwavenode.h"
 #include "zwavenodeimplementation.h"
-#include "logging/logvaluetool.h"
 
 #include "loggingcategories.h"
 Q_DECLARE_LOGGING_CATEGORY(dcZWave)
@@ -197,6 +197,11 @@ void ZWaveDeviceDatabase::removeNode(quint8 nodeId)
 void ZWaveDeviceDatabase::storeValue(ZWaveNode *node, quint64 valueId)
 {
     ZWaveValue value = node->value(valueId);
+
+    QByteArray byteArray;
+    QDataStream out(&byteArray, QIODevice::WriteOnly);
+    out << value.value();
+
     QSqlQuery query(m_db);
     query.prepare("INSERT OR REPLACE INTO nodevalues(valueId, nodeId, valueGenre, commandClass, instance, idx, type, value, valueSelection, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
     query.addBindValue(value.id());
@@ -206,7 +211,7 @@ void ZWaveDeviceDatabase::storeValue(ZWaveNode *node, quint64 valueId)
     query.addBindValue(value.instance());
     query.addBindValue(value.index());
     query.addBindValue(value.type());
-    query.addBindValue(LogValueTool::serializeValue(value.value()));
+    query.addBindValue(byteArray.toBase64());
     query.addBindValue(value.valueListSelection());
     query.addBindValue(value.description());
     if (!query.exec()) {
@@ -269,7 +274,11 @@ ZWaveNodes ZWaveDeviceDatabase::createNodes(ZWaveManager *manager)
                         valueQuery.value("idx").toUInt(),
                         static_cast<ZWaveValue::Type>(valueQuery.value("type").toInt()),
                         valueQuery.value("description").toString());
-            value.setValue(LogValueTool::deserializeValue(valueQuery.value("value").toString()), valueQuery.value("valueSelection").toInt());
+            QByteArray data = QByteArray::fromBase64(valueQuery.value("value").toString().toUtf8());
+            QDataStream inputStream(data);
+            QVariant deseriealizedValue;
+            inputStream >> deseriealizedValue;
+            value.setValue(deseriealizedValue, valueQuery.value("valueSelection").toInt());
             node->updateValue(value);
         }
 

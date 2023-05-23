@@ -32,9 +32,11 @@
 
 #include "integrations/thingmanager.h"
 #include "types/action.h"
+#include "logging/logengine.h"
 
 #include <QQmlEngine>
 #include <qqml.h>
+#include <QQmlContext>
 
 #include <QLoggingCategory>
 Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
@@ -50,6 +52,10 @@ ScriptAction::ScriptAction(QObject *parent) : QObject(parent)
 void ScriptAction::classBegin()
 {
     m_thingManager = reinterpret_cast<ThingManager*>(qmlEngine(this)->property("thingManager").toULongLong());
+
+    m_scriptId = qmlEngine(this)->contextForObject(this)->contextProperty("scriptId").toUuid();
+    m_logger = qmlEngine(this)->contextForObject(this)->contextProperty("logger").value<Logger*>();
+
 }
 
 void ScriptAction::componentComplete()
@@ -156,7 +162,16 @@ void ScriptAction::execute(const QVariantMap &params)
         }
         action.setParams(paramList);
         qCDebug(dcScriptEngine()) << "Executing action:" << action.thingId() << action.actionTypeId() << action.params();
-        m_thingManager->executeAction(action);
+        ThingActionInfo *actionInfo = m_thingManager->executeAction(action);
+        connect(actionInfo, &ThingActionInfo::finished, this, [this, actionInfo, thing, action](){
+            ActionType actionType = thing->thingClass().actionTypes().findById(action.actionTypeId());
+            m_logger->log({m_scriptId.toString(), "action"}, {
+                              {"thingId", thing->id()},
+                              {"action", actionType.name()},
+                              {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(actionInfo->status())}
+                          });
+
+        });
     }
 }
 

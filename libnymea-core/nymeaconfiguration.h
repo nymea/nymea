@@ -144,6 +144,11 @@ public:
     QByteArray timeZone() const;
     void setTimeZone(const QByteArray &timeZone);
 
+    double locationLatitude() const;
+    double locationLongitude() const;
+    QString locationName() const;
+    void setLocation(double latitude, double longitude, const QString &name);
+
     QLocale locale() const;
     void setLocale(const QLocale &locale);
 
@@ -225,6 +230,7 @@ signals:
     void serverNameChanged(const QString &serverName);
     void timeZoneChanged();
     void localeChanged();
+    void locationChanged();
 
     void tcpServerConfigurationChanged(const QString &configId);
     void tcpServerConfigurationRemoved(const QString &configId);

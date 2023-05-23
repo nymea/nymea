@@ -108,6 +108,11 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     basicConfiguration.insert("d:serverTime", enumValueName(Uint));
     basicConfiguration.insert("d:timeZone", enumValueName(String));
     basicConfiguration.insert("d:language", enumValueName(String));
+    QVariantMap location;
+    location.insert("latitude", enumValueName(Double));
+    location.insert("longitude", enumValueName(Double));
+    location.insert("name", enumValueName(String));
+    basicConfiguration.insert("d:location", location);
     basicConfiguration.insert("debugServerEnabled", enumValueName(Bool));
     returns.insert("basicConfiguration", basicConfiguration);
     QVariantList tcpServerConfigurations;
@@ -143,6 +148,12 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     params.insert("language",  enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
     registerMethod("SetLanguage", description, params, returns, Types::PermissionScopeAdmin, "Use the locale property in the Handshake message instead.");
+
+    params.clear(); returns.clear();
+    description = "Sets the server location.";
+    params.insert("location", location);
+    returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
+    registerMethod("SetLocation", description, params, returns, Types::PermissionScopeAdmin);
 
     params.clear(); returns.clear();
     description = "Enable or disable the debug server.";
@@ -306,6 +317,7 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
 
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::serverNameChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::timeZoneChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
+    connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::locationChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::localeChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::debugServerEnabledChanged, this, &ConfigurationHandler::onBasicConfigurationChanged);
     connect(NymeaCore::instance()->configuration(), &NymeaConfiguration::localeChanged, this, &ConfigurationHandler::onLanguageChanged);
@@ -420,6 +432,16 @@ JsonReply *ConfigurationHandler::SetLanguage(const QVariantMap &params) const
 
     NymeaCore::instance()->configuration()->setLocale(locale);
 
+    return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
+}
+
+JsonReply *ConfigurationHandler::SetLocation(const QVariantMap &params) const
+{
+    QVariantMap locationMap = params.value("location").toMap();
+    double latitude = locationMap.value("latitude").toDouble();
+    double longitude = locationMap.value("longitude").toDouble();
+    QString name = locationMap.value("name").toString();
+    NymeaCore::instance()->configuration()->setLocation(latitude, longitude, name);
     return createReply(statusToReply(NymeaConfiguration::ConfigurationErrorNoError));
 }
 
@@ -734,6 +756,11 @@ QVariantMap ConfigurationHandler::packBasicConfiguration()
     basicConfiguration.insert("serverTime", NymeaCore::instance()->timeManager()->currentDateTime().toTime_t());
     basicConfiguration.insert("timeZone", QTimeZone::systemTimeZoneId());
     basicConfiguration.insert("language", NymeaCore::instance()->configuration()->locale().name());
+    basicConfiguration.insert("location", QVariantMap{
+                                  {"latitude", NymeaCore::instance()->configuration()->locationLatitude()},
+                                  {"longitude", NymeaCore::instance()->configuration()->locationLongitude()},
+                                  {"name", NymeaCore::instance()->configuration()->locationName()}
+                              });
     basicConfiguration.insert("debugServerEnabled", NymeaCore::instance()->configuration()->debugServerEnabled());
     return basicConfiguration;
 }

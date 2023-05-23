@@ -52,6 +52,7 @@ public:
     Q_INVOKABLE JsonReply *SetServerName(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetTimeZone(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetLanguage(const QVariantMap &params) const;
+    Q_INVOKABLE JsonReply *SetLocation(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetDebugServerEnabled(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *SetTcpServerConfiguration(const QVariantMap &params) const;
     Q_INVOKABLE JsonReply *DeleteTcpServerConfiguration(const QVariantMap &params) const;

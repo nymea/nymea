@@ -1,3 +1,19 @@
+nymea (1.8.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add location setting
+  * Add desiredPhaseCount state to evcharger interface
+  * Add windowOpen and windowOpenDetected states to the thermostat
+  * Fix multiple ragisterTransport calls on reconfiguring interfaces
+  * Enforce unit on closable interface
+  * Rework the log engine to use influxdb instead of sql
+
+  [ Simon Stürz ]
+  * NetworkDeviceDiscovery: perform reachability verification ping
+  * Update mac address database
+
+ -- jenkins <developer@nymea.io>  Tue, 23 May 2023 11:49:15 +0200
+
 nymea (1.7.0) jammy; urgency=medium
 
   [ Michael Zanetti ]

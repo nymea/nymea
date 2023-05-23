@@ -1,5 +1,5 @@
 {
-    "description": "The thermostat interface describes devices which have a target temperature value and regulate themselves to match that target temperature.",
+    "description": "The thermostat interface describes devices which have a target temperature value and regulate themselves to match that target temperature. A thermostat may support detecting for open windows in which case the windowOpenDetected state should be implemented. On the other hand, a thermostat may allow setting a window open lock in which case the windowOpen state should be implemented.",
     "states": [
         {
             "name": "targetTemperature",
@@ -31,6 +31,19 @@
         },
         {
             "name": "boost",
+            "type": "bool",
+            "optional": true,
+            "logged": true
+        },
+        {
+            "name": "windowOpen",
+            "type": "bool",
+            "writable": true,
+            "optional": true,
+            "logged": true
+        },
+        {
+            "name": "windowOpenDetected",
             "type": "bool",
             "optional": true,
             "logged": true

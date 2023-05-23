@@ -256,9 +256,9 @@ void ServerManager::tcpServerConfigurationChanged(const QString &id)
     } else {
         qCDebug(dcServerManager()) << "Received a TCP Server config change event but don't have a TCP Server instance for it. Creating new Server instance.";
         server = new TcpServer(config, m_sslConfiguration, this);
+        m_jsonServer->registerTransportInterface(server);
         m_tcpServers.insert(config.id, server);
     }
-    m_jsonServer->registerTransportInterface(server);
     if (server->startServer()) {
         registerZeroConfService(config, "tcp", "_jsonrpc._tcp");
     }
@@ -289,9 +289,9 @@ void ServerManager::webSocketServerConfigurationChanged(const QString &id)
     } else {
         qCDebug(dcServerManager()) << "Received a WebSocket Server config change event but don't have a WebSocket Server instance for it. Creating new instance.";
         server = new WebSocketServer(config, m_sslConfiguration, this);
+        m_jsonServer->registerTransportInterface(server);
         m_webSocketServers.insert(server->configuration().id, server);
     }
-    m_jsonServer->registerTransportInterface(server);
     if (server->startServer()) {
         registerZeroConfService(config, "ws", "_ws._tcp");
     }

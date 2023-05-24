@@ -50,6 +50,11 @@ void TestHelper::logStateChange(const QString &thingId, const QString &stateId, 
     emit stateChangeLogged(ThingId(thingId), stateId, value);
 }
 
+void TestHelper::logActionExecuted(const QString &thingId, const QString &actionId, const QVariantMap &params, Thing::ThingError status, Action::TriggeredBy triggeredBy)
+{
+    emit actionExecutionLogged(ThingId(thingId), actionId, params, status, triggeredBy);
+}
+
 void TestHelper::setTestResult(bool success)
 {
     emit testResult(success);

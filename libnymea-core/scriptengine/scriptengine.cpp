@@ -40,6 +40,7 @@
 #include "scriptinterfaceevent.h"
 #include "scriptthing.h"
 #include "scriptthings.h"
+#include "types/action.h"
 
 #include "nymeasettings.h"
 #include "logging/logengine.h"
@@ -76,6 +77,8 @@ ScriptEngine::ScriptEngine(ThingManager *thingManager, LogEngine *logEngine, QOb
     qmlRegisterType<ScriptAlarm>("nymea", 1, 0, "Alarm");
     qmlRegisterType<ScriptThing>("nymea", 1, 0, "Thing");
     qmlRegisterType<ScriptThings>("nymea", 1, 0, "Things");
+    qmlRegisterUncreatableType<Action>("nymea", 1, 0, "Action", "Cannot create Actions. Use ThingAction instead.");
+
 
     m_logger = logEngine->registerLogSource("scripts", {"id", "event"});
 

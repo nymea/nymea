@@ -101,7 +101,9 @@ void TestScripts::init()
     // Set initial state values of mock device
     Action action(mockPowerActionTypeId, m_mockThingId);
     action.setParams(ParamList() << Param(mockPowerActionPowerParamTypeId, false));
-    NymeaCore::instance()->thingManager()->executeAction(action);
+    ThingActionInfo *info = NymeaCore::instance()->thingManager()->executeAction(action);
+    QSignalSpy spy(info, &ThingActionInfo::finished);
+    spy.wait();
 }
 
 void TestScripts::testScriptEventById()
@@ -336,6 +338,9 @@ void TestScripts::testScriptActionById()
                             "        id: thingAction\n"
                             "        thingId: \"%1\"\n"
                             "        actionTypeId: \"%2\"\n"
+                            "        onExecuted: {\n"
+                            "            TestHelper.logActionExecuted(\"%1\", \"%2\", params, status, triggeredBy)\n"
+                            "        }\n"
                             "    }\n"
                             "    Connections {\n"
                             "        target: TestHelper\n"
@@ -350,6 +355,7 @@ void TestScripts::testScriptActionById()
     QCOMPARE(reply.scriptError, ScriptEngine::ScriptErrorNoError);
 
     QSignalSpy spy(NymeaCore::instance()->thingManager(), &ThingManager::thingStateChanged);
+    QSignalSpy actionExecutedSpy(TestHelper::instance(), &TestHelper::actionExecutionLogged);
 
     QVariantMap params;
     params.insert(mockPowerActionPowerParamTypeId.toString(), true);
@@ -361,6 +367,13 @@ void TestScripts::testScriptActionById()
     QCOMPARE(spy.first().at(0).value<Thing*>()->id(), m_mockThingId);
     QCOMPARE(spy.first().at(1).value<StateTypeId>(), mockPowerStateTypeId);
     QCOMPARE(spy.first().at(2).toBool(), true);
+
+    QCOMPARE(actionExecutedSpy.count(), 1);
+    QCOMPARE(actionExecutedSpy.first().at(0).value<ThingId>(), m_mockThingId);
+    QCOMPARE(ActionTypeId(actionExecutedSpy.first().at(1).toString()), mockPowerActionTypeId);
+    QCOMPARE(actionExecutedSpy.first().at(2).toMap().value(mockPowerActionTypeId.toString().remove(QRegExp("[{}]"))).toBool(), true);
+    QCOMPARE(actionExecutedSpy.first().at(3).value<Thing::ThingError>(), Thing::ThingErrorNoError);
+    QCOMPARE(actionExecutedSpy.first().at(4).value<Action::TriggeredBy>(), Action::TriggeredByScript);
 }
 
 void TestScripts::testScriptActionByName()
@@ -372,6 +385,9 @@ void TestScripts::testScriptActionByName()
                             "        id: thingAction\n"
                             "        thingId: \"%1\"\n"
                             "        actionName: \"%2\"\n"
+                            "        onExecuted: {\n"
+                            "            TestHelper.logActionExecuted(\"%1\", \"%2\", params, status, triggeredBy)\n"
+                            "        }\n"
                             "    }\n"
                             "    Connections {\n"
                             "        target: TestHelper\n"
@@ -386,6 +402,7 @@ void TestScripts::testScriptActionByName()
     QCOMPARE(reply.scriptError, ScriptEngine::ScriptErrorNoError);
 
     QSignalSpy spy(NymeaCore::instance()->thingManager(), &ThingManager::thingStateChanged);
+    QSignalSpy actionExecutedSpy(TestHelper::instance(), &TestHelper::actionExecutionLogged);
 
     QVariantMap params;
     params.insert("power", true);
@@ -397,6 +414,13 @@ void TestScripts::testScriptActionByName()
     QCOMPARE(spy.first().at(0).value<Thing*>()->id(), m_mockThingId);
     QCOMPARE(spy.first().at(1).value<StateTypeId>(), mockPowerStateTypeId);
     QCOMPARE(spy.first().at(2).toBool(), true);
+
+    QCOMPARE(actionExecutedSpy.count(), 1);
+    QCOMPARE(actionExecutedSpy.first().at(0).value<ThingId>(), m_mockThingId);
+    QCOMPARE(actionExecutedSpy.first().at(1).toString(), "power");
+    QCOMPARE(actionExecutedSpy.first().at(2).toMap().value("power").toBool(), true);
+    QCOMPARE(actionExecutedSpy.first().at(3).value<Thing::ThingError>(), Thing::ThingErrorNoError);
+    QCOMPARE(actionExecutedSpy.first().at(4).value<Action::TriggeredBy>(), Action::TriggeredByScript);
 }
 
 void TestScripts::testScriptAlarm_data()
@@ -535,6 +559,9 @@ void TestScripts::testScriptThingAction()
                             "    Thing {\n"
                             "        id: thing\n"
                             "        thingId: \"%1\"\n"
+                            "        onActionExecuted: {\n"
+                            "            TestHelper.logActionExecuted(\"%1\", actionName, params, status, triggeredBy)\n"
+                            "        }\n"
                             "    }\n"
                             "    Connections {\n"
                             "        target: TestHelper\n"
@@ -549,6 +576,7 @@ void TestScripts::testScriptThingAction()
     QCOMPARE(reply.scriptError, ScriptEngine::ScriptErrorNoError);
 
     QSignalSpy spy(NymeaCore::instance()->thingManager(), &ThingManager::thingStateChanged);
+    QSignalSpy actionExecutedSpy(TestHelper::instance(), &TestHelper::actionExecutionLogged);
 
     QVariantMap params;
     params.insert("power", true);
@@ -560,6 +588,13 @@ void TestScripts::testScriptThingAction()
     QCOMPARE(spy.first().at(0).value<Thing*>()->id(), m_mockThingId);
     QCOMPARE(spy.first().at(1).value<StateTypeId>(), mockPowerStateTypeId);
     QCOMPARE(spy.first().at(2).toBool(), true);
+
+    QCOMPARE(actionExecutedSpy.count(), 1);
+    QCOMPARE(actionExecutedSpy.first().at(0).value<ThingId>(), m_mockThingId);
+    QCOMPARE(actionExecutedSpy.first().at(1).toString(), "power");
+    QCOMPARE(actionExecutedSpy.first().at(2).toMap().value("power").toBool(), true);
+    QCOMPARE(actionExecutedSpy.first().at(3).value<Thing::ThingError>(), Thing::ThingErrorNoError);
+    QCOMPARE(actionExecutedSpy.first().at(4).value<Action::TriggeredBy>(), Action::TriggeredByScript);
 
 }
 

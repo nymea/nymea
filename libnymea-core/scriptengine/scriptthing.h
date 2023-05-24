@@ -45,6 +45,8 @@ class ScriptThing : public QObject, public QQmlParserStatus
     Q_PROPERTY(QString thingId READ thingId WRITE setThingId NOTIFY thingIdChanged)
     Q_PROPERTY(QString name READ name NOTIFY nameChanged)
 public:
+    Q_ENUM(Thing::ThingError)
+
     explicit ScriptThing(QObject *parent = nullptr);
     explicit ScriptThing(ThingManager *thingManager, QObject *parent = nullptr);
     void classBegin() override;
@@ -66,6 +68,7 @@ signals:
 
     void stateValueChanged(const QString &stateName, const QVariant &value);
     void eventTriggered(const QString &eventName, const QVariantMap &params);
+    void actionExecuted(const QString &actionName, const QVariantMap &params, Thing::ThingError status, Action::TriggeredBy triggeredBy);
 
 private slots:
     void init(ThingManager *thingManager);

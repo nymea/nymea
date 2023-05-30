@@ -101,8 +101,7 @@ QString ThingActionInfo::translatedDisplayMessage(const QLocale &locale)
 void ThingActionInfo::finish(Thing::ThingError status, const QString &displayMessage)
 {
     if (m_finished) {
-        //qCWarning(dcIntegrations()) << "ThingActionInfo::finish() called on an already finished object:" << m_thing << m_action.actionTypeId().toString();
-        qCWarning(dcIntegrations()) << "ThingActionInfo::finish() called on an already finished object.";// << m_thing << m_action.actionTypeId().toString();
+        qCWarning(dcIntegrations()) << "ThingActionInfo::finish() called on an already finished object:" << m_thing << m_action.actionTypeId().toString();
         return;
     }
     m_finished = true;

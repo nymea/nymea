@@ -1,3 +1,10 @@
+nymea (1.8.1) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add location setting
+
+ -- jenkins <developer@nymea.io>  Wed, 07 Jun 2023 15:51:18 +0200
+
 nymea (1.8.0) jammy; urgency=medium
 
   [ Michael Zanetti ]

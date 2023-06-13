@@ -485,19 +485,19 @@ The name of the StateType ({b463c5ae-4d55-402f-8480-a5cdb485c143}) of ThingClass
 The name of the ParamType (ThingClass: pushButtonMock, ActionType: allowedValues, ID: {05f63f9c-f61e-4dcf-ad55-3f13fde2765b})
 ----------
 The name of the StateType ({05f63f9c-f61e-4dcf-ad55-3f13fde2765b}) of ThingClass pushButtonMock</extracomment>
-        <translation type="unfinished">Mögliche Werte</translation>
+        <translation>Mögliche Werte</translation>
     </message>
     <message>
         <source>async</source>
         <extracomment>The name of the ParamType (ThingClass: autoMock, Type: thing, ID: {a5c4315f-0624-4971-87c1-4bbfbfdbd16e})
 ----------
 The name of the ParamType (ThingClass: mock, Type: thing, ID: {f2977061-4dd0-4ef5-85aa-3b7134743be3})</extracomment>
-        <translation type="unfinished">asynchron</translation>
+        <translation>asynchron</translation>
     </message>
     <message>
         <source>battery level critical</source>
         <extracomment>The name of the StateType ({580bc611-1a55-41f3-996f-8d3ccf543db3}) of ThingClass mock</extracomment>
-        <translation type="unfinished">Batterieladung kritisch</translation>
+        <translation>Batterieladung kritisch</translation>
     </message>
     <message>
         <source>bool value</source>
@@ -516,14 +516,14 @@ The name of the StateType ({7ffe514f-7999-4998-8350-0e73e222a8c4}) of ThingClass
 The name of the ParamType (ThingClass: pushButtonMock, ActionType: bool, ID: {e680f7a4-b39e-46da-be41-fa3170fe3768})
 ----------
 The name of the StateType ({e680f7a4-b39e-46da-be41-fa3170fe3768}) of ThingClass pushButtonMock</extracomment>
-        <translation type="unfinished">Boolscher Wert</translation>
+        <translation>Boolscher Wert</translation>
     </message>
     <message>
         <source>broken</source>
         <extracomment>The name of the ParamType (ThingClass: autoMock, Type: thing, ID: {66179395-ef7a-4013-9fc6-2084104eea09})
 ----------
 The name of the ParamType (ThingClass: mock, Type: thing, ID: {ae8f8901-f2c1-42a5-8111-6d2fc8e4c1e4})</extracomment>
-        <translation type="unfinished">kaputt</translation>
+        <translation>kaputt</translation>
     </message>
     <message>
         <source>color</source>
@@ -534,7 +534,7 @@ The name of the StateType ({3e161294-8a0d-4384-9676-6959e08cc2fa}) of ThingClass
 The name of the ParamType (ThingClass: pushButtonMock, ActionType: color, ID: {20dc7c22-c50e-42db-837c-2bbced939f8e})
 ----------
 The name of the StateType ({20dc7c22-c50e-42db-837c-2bbced939f8e}) of ThingClass pushButtonMock</extracomment>
-        <translation type="unfinished">Farbe</translation>
+        <translation>Farbe</translation>
     </message>
     <message>
         <source>configParamBool</source>
@@ -555,40 +555,40 @@ The name of the StateType ({17635624-7c19-4bae-8429-2f7aa5d2f843}) of ThingClass
 The name of the ParamType (ThingClass: pushButtonMock, ActionType: double, ID: {53cd7c55-49b7-441b-b970-9048f20f0e2c})
 ----------
 The name of the StateType ({53cd7c55-49b7-441b-b970-9048f20f0e2c}) of ThingClass pushButtonMock</extracomment>
-        <translation type="unfinished">Gleitkommazahl</translation>
+        <translation>Gleitkommazahl</translation>
     </message>
     <message>
         <source>http port</source>
         <extracomment>The name of the ParamType (ThingClass: autoMock, Type: thing, ID: {bfeb0613-dab6-408c-aa27-c362c921d0d1})
 ----------
 The name of the ParamType (ThingClass: mock, Type: thing, ID: {d4f06047-125e-4479-9810-b54c189917f5})</extracomment>
-        <translation type="unfinished">HTTP Port</translation>
+        <translation>HTTP Port</translation>
     </message>
     <message>
         <source>mockActionParam1</source>
         <extracomment>The name of the ParamType (ThingClass: autoMock, ActionType: withParams, ID: {b8126ba6-3a54-45a3-be4d-63feb0ddb77b})
 ----------
 The name of the ParamType (ThingClass: mock, ActionType: withParams, ID: {a2d3a256-a551-4712-a65b-ecd5a436a1cb})</extracomment>
-        <translation type="unfinished">mockAktionParameter1</translation>
+        <translation>mockAktionParameter1</translation>
     </message>
     <message>
         <source>mockActionParam2</source>
         <extracomment>The name of the ParamType (ThingClass: autoMock, ActionType: withParams, ID: {df41ba71-e43b-4854-91d1-b19d8066d4f9})
 ----------
 The name of the ParamType (ThingClass: mock, ActionType: withParams, ID: {304a4899-18be-4e3b-94f4-d03be52f3233})</extracomment>
-        <translation type="unfinished">mockAktionParameter2</translation>
+        <translation>mockAktionParameter2</translation>
     </message>
     <message>
         <source>mockParamInt</source>
         <extracomment>The name of the ParamType (ThingClass: autoMock, EventType: event2, ID: {12ed5a15-96b4-4381-9d9c-a24875283d4f})
 ----------
 The name of the ParamType (ThingClass: mock, EventType: event2, ID: {0550e16d-60b9-4ba5-83f4-4d3cee656121})</extracomment>
-        <translation type="unfinished">mockParameterGanzzahl</translation>
+        <translation>mockParameterGanzzahl</translation>
     </message>
     <message>
         <source>nymea</source>
         <extracomment>The name of the vendor ({2062d64d-3232-433c-88bc-0d33c0ba2ba6})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>nymea</translation>
     </message>
     <message>
         <source>percentage</source>
@@ -599,19 +599,19 @@ The name of the StateType ({527f0687-0b28-4c26-852c-25b8f83e4797}) of ThingClass
 The name of the ParamType (ThingClass: pushButtonMock, ActionType: percentage, ID: {72981c04-267a-4ba0-a59e-9921d2f3af9c})
 ----------
 The name of the StateType ({72981c04-267a-4ba0-a59e-9921d2f3af9c}) of ThingClass pushButtonMock</extracomment>
-        <translation type="unfinished">Prozent</translation>
+        <translation>Prozent</translation>
     </message>
     <message>
         <source>pin</source>
         <extracomment>The name of the ParamType (ThingClass: displayPinMock, Type: thing, ID: {da820e07-22dc-4173-9c07-2f49a4e265f9})</extracomment>
-        <translation type="unfinished">PIN</translation>
+        <translation>PIN</translation>
     </message>
     <message>
         <source>powered</source>
         <extracomment>The name of the ParamType (ThingClass: mock, ActionType: power, ID: {064aed0d-da4c-49d4-b236-60f97e98ff84})
 ----------
 The name of the StateType ({064aed0d-da4c-49d4-b236-60f97e98ff84}) of ThingClass mock</extracomment>
-        <translation type="unfinished">Eingeschaltet</translation>
+        <translation>Eingeschaltet</translation>
     </message>
     <message>
         <source>resultCount</source>

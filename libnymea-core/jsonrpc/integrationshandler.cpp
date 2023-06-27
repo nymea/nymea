@@ -410,6 +410,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.insert("value", enumValueName(Variant));
     params.insert("minValue", enumValueName(Variant));
     params.insert("maxValue", enumValueName(Variant));
+    params.insert("possibleValues", QVariantList{enumValueName(Variant)});
     registerNotification("StateChanged", description, params);
 
     params.clear(); returns.clear();
@@ -1149,7 +1150,7 @@ void IntegrationsHandler::pluginConfigChanged(const PluginId &id, const ParamLis
     emit PluginConfigurationChanged(params);
 }
 
-void IntegrationsHandler::thingStateChanged(Thing *thing, const QUuid &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue)
+void IntegrationsHandler::thingStateChanged(Thing *thing, const QUuid &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue, const QVariantList &possibleValues)
 {
     QVariantMap params;
     params.insert("thingId", thing->id());
@@ -1157,6 +1158,7 @@ void IntegrationsHandler::thingStateChanged(Thing *thing, const QUuid &stateType
     params.insert("value", value);
     params.insert("minValue", minValue);
     params.insert("maxValue", maxValue);
+    params.insert("possibleValues", possibleValues);
     emit StateChanged(params);
 }
 

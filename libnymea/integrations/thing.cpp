@@ -135,6 +135,7 @@
 #include "loggingcategories.h"
 #include "statevaluefilters/statevaluefilteradaptive.h"
 
+#include <QJsonDocument>
 #include <QDebug>
 
 /*! Construct a Thing with the given \a pluginId, \a id, \a thingClassId and \a parent. */
@@ -412,7 +413,7 @@ void Thing::setStateValue(const StateTypeId &stateTypeId, const QVariant &value)
 
             qCDebug(dcThing()).nospace() << this << ": State " << stateType.name() << " changed from " << oldValue << " to " << newValue;
             m_states[i].setValue(newValue);
-            emit stateValueChanged(stateTypeId, newValue, m_states.at(i).minValue(), m_states.at(i).maxValue());
+            emit stateValueChanged(stateTypeId, newValue, m_states.at(i).minValue(), m_states.at(i).maxValue(), m_states.at(i).possibleValues());
             return;
         }
     }
@@ -460,7 +461,7 @@ void Thing::setStateMinValue(const StateTypeId &stateTypeId, const QVariant &min
                 m_states[i].setValue(newMin);
             }
 
-            emit stateValueChanged(stateTypeId, m_states.at(i).value(), m_states.at(i).minValue(), m_states.at(i).maxValue());
+            emit stateValueChanged(stateTypeId, m_states.at(i).value(), m_states.at(i).minValue(), m_states.at(i).maxValue(), m_states.at(i).possibleValues());
             return;
         }
     }
@@ -506,7 +507,7 @@ void Thing::setStateMaxValue(const StateTypeId &stateTypeId, const QVariant &max
                 }
             }
 
-            emit stateValueChanged(stateTypeId, m_states.at(i).value(), m_states.at(i).minValue(), m_states.at(i).maxValue());
+            emit stateValueChanged(stateTypeId, m_states.at(i).value(), m_states.at(i).minValue(), m_states.at(i).maxValue(), m_states.at(i).possibleValues());
             return;
         }
     }
@@ -557,7 +558,7 @@ void Thing::setStateMinMaxValues(const StateTypeId &stateTypeId, const QVariant 
                 }
             }
 
-            emit stateValueChanged(stateTypeId, m_states.at(i).value(), m_states.at(i).minValue(), m_states.at(i).maxValue());
+            emit stateValueChanged(stateTypeId, m_states.at(i).value(), m_states.at(i).minValue(), m_states.at(i).maxValue(), m_states.at(i).possibleValues());
             return;
         }
     }
@@ -570,6 +571,39 @@ void Thing::setStateMinMaxValues(const QString &stateName, const QVariant &minVa
 {
     StateTypeId stateTypeId = m_thingClass.stateTypes().findByName(stateName).id();
     setStateMinMaxValues(stateTypeId, minValue, maxValue);
+}
+
+void Thing::setStatePossibleValues(const StateTypeId &stateTypeId, const QVariantList &values)
+{
+    StateType stateType = m_thingClass.stateTypes().findById(stateTypeId);
+    if (!stateType.isValid()) {
+        qCWarning(dcThing()) << "No such state type" << stateTypeId.toString() << "in" << m_name << "(" + thingClass().name() + ")";
+        return;
+    }
+    for (int i = 0; i < m_states.count(); ++i) {
+        if (m_states.at(i).stateTypeId() == stateTypeId) {
+            if (values == m_states.at(i).possibleValues()) {
+                return;
+            }
+
+            m_states[i].setPossibleValues(values);
+
+            if (!values.contains(m_states.value(i).value())) {
+                if (values.contains(stateType.defaultValue())) {
+                    qCInfo(dcThing).nospace() << this << ": Adjusting state value for " << stateType.name() << " from " << m_states.at(i).value() << " to default value of " << stateType.defaultValue();
+                    m_states[i].setValue(stateType.defaultValue());
+                } else if (!values.isEmpty()) {
+                    qCInfo(dcThing).nospace() << this << ": Adjusting state value for " << stateType.name() << " from " << m_states.at(i).value() << " to new value of " << values.first();
+                    m_states[i].setValue(values.first());
+                }
+            }
+            emit stateValueChanged(stateTypeId, m_states.at(i).value(), m_states.at(i).minValue(), m_states.at(i).maxValue(), m_states.at(i).possibleValues());
+            return;
+        }
+    }
+    qCWarning(dcThing).nospace() << this << ": Failed setting maximum state value " << stateType.name() << " to " << values;
+    Q_ASSERT_X(false, m_name.toUtf8(), QString("Failed setting possible state values for %1 to %2").arg(stateType.name()).arg(QString(QJsonDocument::fromVariant(values).toJson())).toUtf8());
+
 }
 
 /*! Returns the \l{State} with the given \a stateTypeId of this thing. */

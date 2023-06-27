@@ -53,17 +53,23 @@
     </message>
     <message>
         <source>Bool</source>
-        <extracomment>The name of the StateType ({3bad3a09-5826-4ed7-a832-10e3e2ee2a7d}) of ThingClass inputTypeMock</extracomment>
+        <extracomment>The name of the StateType ({3bad3a09-5826-4ed7-a832-10e3e2ee2a7d}) of ThingClass inputTypeMock
+----------
+The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {f3f62de8-22fa-4190-b212-2fa30b8db22e})</extracomment>
         <translation>Boolscher Wert</translation>
     </message>
     <message>
         <source>Color</source>
-        <extracomment>The name of the StateType ({4507d5c6-b692-4bd6-87f2-00364bc0cb4d}) of ThingClass inputTypeMock</extracomment>
+        <extracomment>The name of the StateType ({4507d5c6-b692-4bd6-87f2-00364bc0cb4d}) of ThingClass inputTypeMock
+----------
+The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {f9d3e963-ab7b-48ba-a475-077f3e80b68b})</extracomment>
         <translation>Farbe</translation>
     </message>
     <message>
         <source>Double</source>
-        <extracomment>The name of the StateType ({f7d2063d-959e-46ac-8568-8b99722d3b22}) of ThingClass inputTypeMock</extracomment>
+        <extracomment>The name of the StateType ({f7d2063d-959e-46ac-8568-8b99722d3b22}) of ThingClass inputTypeMock
+----------
+The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {513aa338-e471-4b2a-89f6-8f1470e74fca})</extracomment>
         <translation>Gleitkommazahl</translation>
     </message>
     <message>
@@ -340,7 +346,9 @@ The name of the ActionType ({72981c04-267a-4ba0-a59e-9921d2f3af9c}) of ThingClas
     </message>
     <message>
         <source>String</source>
-        <extracomment>The name of the StateType ({27f69ca9-a321-40ff-bfee-4b0272a671b4}) of ThingClass inputTypeMock</extracomment>
+        <extracomment>The name of the StateType ({27f69ca9-a321-40ff-bfee-4b0272a671b4}) of ThingClass inputTypeMock
+----------
+The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {dd268303-8345-4b01-883a-210a4e387130})</extracomment>
         <translation>Zeichenkette</translation>
     </message>
     <message>
@@ -537,16 +545,6 @@ The name of the StateType ({20dc7c22-c50e-42db-837c-2bbced939f8e}) of ThingClass
         <translation>Farbe</translation>
     </message>
     <message>
-        <source>configParamBool</source>
-        <extracomment>The name of the ParamType (ThingClass: mock, Type: plugin, ID: {c75723b6-ea4f-4982-9751-6c5e39c88145})</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>configParamInt</source>
-        <extracomment>The name of the ParamType (ThingClass: mock, Type: plugin, ID: {e1f72121-a426-45e2-b475-8262b5cdf103})</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>double value</source>
         <extracomment>The name of the ParamType (ThingClass: displayPinMock, ActionType: double, ID: {17635624-7c19-4bae-8429-2f7aa5d2f843})
 ----------
@@ -586,11 +584,6 @@ The name of the ParamType (ThingClass: mock, EventType: event2, ID: {0550e16d-60
         <translation>mockParameterGanzzahl</translation>
     </message>
     <message>
-        <source>nymea</source>
-        <extracomment>The name of the vendor ({2062d64d-3232-433c-88bc-0d33c0ba2ba6})</extracomment>
-        <translation>nymea</translation>
-    </message>
-    <message>
         <source>percentage</source>
         <extracomment>The name of the ParamType (ThingClass: displayPinMock, ActionType: percentage, ID: {527f0687-0b28-4c26-852c-25b8f83e4797})
 ----------
@@ -618,12 +611,12 @@ The name of the StateType ({064aed0d-da4c-49d4-b236-60f97e98ff84}) of ThingClass
         <extracomment>The name of the ParamType (ThingClass: displayPinMock, Type: discovery, ID: {35f6e4ba-28ad-4152-a58d-ec2600667bcf})
 ----------
 The name of the ParamType (ThingClass: pushButtonMock, Type: discovery, ID: {c40dbc59-4bba-4871-9b8e-bbd8d5d9193b})</extracomment>
-        <translation type="unfinished">Anzahl Ergebnisse</translation>
+        <translation>Anzahl Ergebnisse</translation>
     </message>
     <message>
         <source>set power</source>
         <extracomment>The name of the ActionType ({064aed0d-da4c-49d4-b236-60f97e98ff84}) of ThingClass mock</extracomment>
-        <translation type="unfinished">Ein-/Ausschalten</translation>
+        <translation>Ein-/Ausschalten</translation>
     </message>
     <message>
         <source>Mock setting</source>
@@ -635,108 +628,113 @@ The name of the ParamType (ThingClass: pushButtonMock, Type: discovery, ID: {c40
         <extracomment>The name of the ParamType (ThingClass: genericIoMock, ActionType: analogInput1, ID: {ac56977c-cbba-47c6-a827-5735d8b0aed6})
 ----------
 The name of the StateType ({ac56977c-cbba-47c6-a827-5735d8b0aed6}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Analoger Eingang 1</translation>
     </message>
     <message>
         <source>Analog Input 2</source>
         <extracomment>The name of the StateType ({8e07e57e-ba4e-42df-81ee-5b72ed074532}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Analoger Eingang 2</translation>
     </message>
     <message>
         <source>Analog Output 1</source>
         <extracomment>The name of the ParamType (ThingClass: genericIoMock, ActionType: analogOutput1, ID: {70cf053e-4abc-4d88-8e1e-2bd9a62256c7})
 ----------
 The name of the StateType ({70cf053e-4abc-4d88-8e1e-2bd9a62256c7}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Analoger Ausgang 1</translation>
     </message>
     <message>
         <source>Analog Output 2</source>
         <extracomment>The name of the ParamType (ThingClass: genericIoMock, ActionType: analogOutput2, ID: {e40bcf7d-47b8-41fa-b213-3652a905b376})
 ----------
 The name of the StateType ({e40bcf7d-47b8-41fa-b213-3652a905b376}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Analoger Ausgang 2</translation>
     </message>
     <message>
         <source>Available firmware version</source>
         <extracomment>The name of the StateType ({060d7947-2b70-4a2b-b33b-a3577f71faeb}) of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Verfügbare Firmware-Version</translation>
     </message>
     <message>
         <source>Battery level</source>
         <extracomment>The name of the ParamType (ThingClass: mock, ActionType: batteryLevel, ID: {6c8ab9a6-0164-4795-b829-f4394fe4edc4})
 ----------
 The name of the StateType ({6c8ab9a6-0164-4795-b829-f4394fe4edc4}) of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Batterie Level</translation>
     </message>
     <message>
         <source>Button name</source>
         <extracomment>The name of the ParamType (ThingClass: mock, ActionType: pressButton, ID: {279e0157-78ea-4bb3-a756-b12fb46cf4fc})
 ----------
 The name of the ParamType (ThingClass: mock, EventType: pressed, ID: {5f8adeb2-04f0-4b2e-9dbf-a91966bdcc24})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Tastenname</translation>
     </message>
     <message>
         <source>Button pressed</source>
         <extracomment>The name of the EventType ({f2708625-4b7b-42fd-9a18-3501d89ce599}) of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Taste gedrückt</translation>
     </message>
     <message>
         <source>Connected</source>
         <extracomment>The name of the StateType ({9860d105-2bd9-4651-9bc9-13ff4b9039a7}) of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Verbunden</translation>
     </message>
     <message>
         <source>Digital Output 1</source>
         <extracomment>The name of the ParamType (ThingClass: genericIoMock, ActionType: digitalOutput1, ID: {d6fcdb52-f7c3-423b-b9f5-1e29f164c42e})
 ----------
 The name of the StateType ({d6fcdb52-f7c3-423b-b9f5-1e29f164c42e}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Digitaler Ausgang 1</translation>
     </message>
     <message>
         <source>Digital Output 2</source>
         <extracomment>The name of the ParamType (ThingClass: genericIoMock, ActionType: digitalOutput2, ID: {35de8b68-0cf3-4850-a27d-cf9c4a26921f})
 ----------
 The name of the StateType ({35de8b68-0cf3-4850-a27d-cf9c4a26921f}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Digitaler Ausgang 2</translation>
     </message>
     <message>
         <source>Digital input 1</source>
         <extracomment>The name of the StateType ({07165c12-4d53-45c0-8bf1-34618443b706}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Digitaler Eingang 1</translation>
     </message>
     <message>
         <source>Digital input 2</source>
         <extracomment>The name of the StateType ({0a4362ba-a086-4540-84ba-107ef7b99ed8}) of ThingClass genericIoMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Digitaler Eingang 2</translation>
+    </message>
+    <message>
+        <source>Double with limits</source>
+        <extracomment>The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {efd8a8a9-84cf-4273-b104-678195440fb0})</extracomment>
+        <translation>Gleitkommazahl mit Grenzen</translation>
     </message>
     <message>
         <source>Dummy int state with limits</source>
         <extracomment>The name of the ParamType (ThingClass: mock, ActionType: intWithLimits, ID: {5aa479bd-537a-4716-9852-52f6eec58722})
 ----------
 The name of the StateType ({5aa479bd-537a-4716-9852-52f6eec58722}) of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Ganzzahliger Zustand mit Grenzen</translation>
     </message>
     <message>
         <source>Event 1</source>
         <extracomment>The name of the EventType ({dad344b4-fff3-4803-b5cb-7cbb65aa5102}) of ThingClass childMock
 ----------
 The name of the EventType ({61ebadc0-47ea-4800-8c45-ee5222cddb4b}) of ThingClass parentMock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Ereignis 1</translation>
     </message>
     <message>
         <source>Firmware version</source>
         <extracomment>The name of the StateType ({9f2e1e5d-3f1f-4794-aca3-4e05b7a48842}) of ThingClass mock</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Firmware-Version</translation>
     </message>
     <message>
         <source>Generic IO pins</source>
         <extracomment>The name of the ThingClass ({7cbd729a-465b-4ccb-b59c-5733039dbbed})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Generische I/O Pins</translation>
     </message>
     <message>
         <source>Generic Light (Mock)</source>
         <extracomment>The name of the ThingClass ({98ab137e-757e-43f8-9d9b-5d50d990242a})</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Generisches Licht (Mock)</translation>
     </message>
     <message>
         <source>Generic Temperature Sensor (Mock)</source>
@@ -748,6 +746,23 @@ The name of the EventType ({61ebadc0-47ea-4800-8c45-ee5222cddb4b}) of ThingClass
         <extracomment>The name of the ParamType (ThingClass: virtualIoTemperatureSensorMock, ActionType: input, ID: {fd341f72-6d9a-4812-9f66-47197c48a935})
 ----------
 The name of the StateType ({fd341f72-6d9a-4812-9f66-47197c48a935}) of ThingClass virtualIoTemperatureSensorMock</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integer</source>
+        <extracomment>The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {315d94bd-52a1-45cc-8632-efe53fd96762})</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integer with limits</source>
+        <extracomment>The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {bc22a725-8c09-44b7-94a6-c3b89b042718})</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Localized list</source>
+        <extracomment>The name of the ParamType (ThingClass: inputTypeMock, ActionType: localizedList, ID: {23df3dce-bd10-4eb3-b5e3-221168440cd4})
+----------
+The name of the StateType ({23df3dce-bd10-4eb3-b5e3-221168440cd4}) of ThingClass inputTypeMock</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -768,6 +783,11 @@ The name of the StateType ({fd341f72-6d9a-4812-9f66-47197c48a935}) of ThingClass
     <message>
         <source>Minimum value for int with limits</source>
         <extracomment>The name of the ParamType (ThingClass: mock, Type: settings, ID: {9c34c881-e825-4f27-bb5c-db868bc60fb1})</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>One</source>
+        <extracomment>The name of a possible value of StateType {209d7afc-6fe9-4fe9-939b-e472ea0ad639} of ThingClass inputTypeMock</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -848,6 +868,11 @@ The name of the StateType ({d1917b3d-1530-4cf9-90f7-263ee88e714b}) of ThingClass
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Set value</source>
+        <extracomment>The name of the ActionType ({23df3dce-bd10-4eb3-b5e3-221168440cd4}) of ThingClass inputTypeMock</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Signal strength</source>
         <extracomment>The name of the ParamType (ThingClass: mock, ActionType: signalStrength, ID: {2a0213bf-4af3-4384-904e-3376348a597e})
 ----------
@@ -855,8 +880,41 @@ The name of the StateType ({2a0213bf-4af3-4384-904e-3376348a597e}) of ThingClass
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>String value 1</source>
+        <extracomment>The name of a possible value of StateType {b463c5ae-4d55-402f-8480-a5cdb485c143} of ThingClass displayPinMock
+----------
+The name of a possible value of StateType {05f63f9c-f61e-4dcf-ad55-3f13fde2765b} of ThingClass pushButtonMock</extracomment>
+        <translation>Textwert 1</translation>
+    </message>
+    <message>
+        <source>String value 2</source>
+        <extracomment>The name of a possible value of StateType {b463c5ae-4d55-402f-8480-a5cdb485c143} of ThingClass displayPinMock
+----------
+The name of a possible value of StateType {05f63f9c-f61e-4dcf-ad55-3f13fde2765b} of ThingClass pushButtonMock</extracomment>
+        <translation>Textwert 2</translation>
+    </message>
+    <message>
+        <source>String value 3</source>
+        <extracomment>The name of a possible value of StateType {b463c5ae-4d55-402f-8480-a5cdb485c143} of ThingClass displayPinMock
+----------
+The name of a possible value of StateType {05f63f9c-f61e-4dcf-ad55-3f13fde2765b} of ThingClass pushButtonMock</extracomment>
+        <translation>Textwert 3</translation>
+    </message>
+    <message>
+        <source>String value 4</source>
+        <extracomment>The name of a possible value of StateType {b463c5ae-4d55-402f-8480-a5cdb485c143} of ThingClass displayPinMock
+----------
+The name of a possible value of StateType {05f63f9c-f61e-4dcf-ad55-3f13fde2765b} of ThingClass pushButtonMock</extracomment>
+        <translation>Textwert 4</translation>
+    </message>
+    <message>
         <source>Temperature</source>
         <extracomment>The name of the StateType ({db9cc518-1012-47e2-8212-6e616fed07a6}) of ThingClass virtualIoTemperatureSensorMock</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Two</source>
+        <extracomment>The name of a possible value of StateType {209d7afc-6fe9-4fe9-939b-e472ea0ad639} of ThingClass inputTypeMock</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -870,6 +928,56 @@ The name of the StateType ({2a0213bf-4af3-4384-904e-3376348a597e}) of ThingClass
 ----------
 The name of the StateType ({ebc41327-53d5-40c2-8e7b-1164a8ff359e}) of ThingClass mock</extracomment>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>available</source>
+        <extracomment>The name of a possible value of StateType {ebc41327-53d5-40c2-8e7b-1164a8ff359e} of ThingClass mock</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>configParamBool</source>
+        <extracomment>The name of the ParamType (ThingClass: mock, Type: plugin, ID: {c75723b6-ea4f-4982-9751-6c5e39c88145})</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>configParamInt</source>
+        <extracomment>The name of the ParamType (ThingClass: mock, Type: plugin, ID: {e1f72121-a426-45e2-b475-8262b5cdf103})</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>idle</source>
+        <extracomment>The name of a possible value of StateType {ebc41327-53d5-40c2-8e7b-1164a8ff359e} of ThingClass mock</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>nymea</source>
+        <extracomment>The name of the vendor ({2062d64d-3232-433c-88bc-0d33c0ba2ba6})</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>updating</source>
+        <extracomment>The name of a possible value of StateType {ebc41327-53d5-40c2-8e7b-1164a8ff359e} of ThingClass mock</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>🎄</source>
+        <extracomment>The name of a possible value of StateType {209d7afc-6fe9-4fe9-939b-e472ea0ad639} of ThingClass inputTypeMock</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value A</source>
+        <extracomment>The name of a possible value of StateType {23df3dce-bd10-4eb3-b5e3-221168440cd4} of ThingClass inputTypeMock</extracomment>
+        <translation>Wert A</translation>
+    </message>
+    <message>
+        <source>Value B</source>
+        <extracomment>The name of a possible value of StateType {23df3dce-bd10-4eb3-b5e3-221168440cd4} of ThingClass inputTypeMock</extracomment>
+        <translation>Wert B</translation>
+    </message>
+    <message>
+        <source>Value C</source>
+        <extracomment>The name of a possible value of StateType {23df3dce-bd10-4eb3-b5e3-221168440cd4} of ThingClass inputTypeMock</extracomment>
+        <translation>Wert C</translation>
     </message>
 </context>
 </TS>

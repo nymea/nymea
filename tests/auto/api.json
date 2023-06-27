@@ -1,4 +1,4 @@
-8.0
+8.1
 {
     "enums": {
         "BasicType": [
@@ -2405,6 +2405,9 @@
             "params": {
                 "maxValue": "Variant",
                 "minValue": "Variant",
+                "possibleValues": [
+                    "Variant"
+                ],
                 "stateTypeId": "Uuid",
                 "thingId": "Uuid",
                 "value": "Variant"
@@ -3034,6 +3037,9 @@
             "r:filter": "$ref:StateValueFilter",
             "r:o:maxValue": "Variant",
             "r:o:minValue": "Variant",
+            "r:o:possibleValues": [
+                "Variant"
+            ],
             "r:stateTypeId": "Uuid",
             "r:value": "Variant"
         },
@@ -3066,6 +3072,7 @@
             "o:possibleValues": [
                 "Variant"
             ],
+            "o:possibleValuesDisplayNames": "StringList",
             "o:unit": "$ref:Unit",
             "r:id": "Uuid",
             "type": "$ref:BasicType"

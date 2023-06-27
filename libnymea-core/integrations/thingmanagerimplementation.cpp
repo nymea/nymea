@@ -1253,6 +1253,11 @@ StateType ThingManagerImplementation::translateStateType(const PluginId &pluginI
 {
     StateType translatedStateType = stateType;
     translatedStateType.setDisplayName(translate(pluginId, stateType.displayName(), locale));
+    QStringList translatedPossibleValuesDisplayNames;
+    for (int i = 0; i < stateType.possibleValuesDisplayNames().count(); i++) {
+        translatedPossibleValuesDisplayNames.append(translate(pluginId, stateType.possibleValuesDisplayNames().at(i), locale));
+    }
+    translatedStateType.setPossibleValuesDisplayNames(translatedPossibleValuesDisplayNames);
     return translatedStateType;
 }
 
@@ -1992,7 +1997,7 @@ void ThingManagerImplementation::onEventTriggered(Event event)
     emit eventTriggered(event);
 }
 
-void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue)
+void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue, const QVariantList &possibleValues)
 {
     Thing *thing = qobject_cast<Thing*>(sender());
     if (!thing || !m_configuredThings.contains(thing->id())) {
@@ -2008,7 +2013,7 @@ void ThingManagerImplementation::slotThingStateValueChanged(const StateTypeId &s
         m_stateLoggers.value(thing->id().toString() + "-" + stateType.name())->log({}, {{stateType.name(), value}});
     }
 
-    emit thingStateChanged(thing, stateTypeId, value, minValue, maxValue);
+    emit thingStateChanged(thing, stateTypeId, value, minValue, maxValue, possibleValues);
 
     syncIOConnection(thing, stateTypeId);
 }
@@ -2311,13 +2316,15 @@ void ThingManagerImplementation::loadThingStates(Thing *thing)
         QVariant value = stateType.defaultValue();
         QVariant minValue = stateType.minValue();
         QVariant maxValue = stateType.maxValue();
+        QVariantList possibleValues = stateType.possibleValues();
 
         if (stateType.cached()) {
             if (settings->childGroups().contains(stateType.id().toString())) {
                 settings->beginGroup(stateType.id().toString());
                 value = settings->value("value");
-                minValue = settings->value("minValue");
-                maxValue = settings->value("maxValue");
+                minValue = settings->value("minValue", minValue);
+                maxValue = settings->value("maxValue", maxValue);
+                possibleValues = settings->value("possibleValues", possibleValues).toList();
                 settings->endGroup();
             } else if (settings->contains(stateType.id().toString())) {
                 // Migration from < 0.30
@@ -2326,10 +2333,17 @@ void ThingManagerImplementation::loadThingStates(Thing *thing)
             value.convert(stateType.type());
             minValue.convert(stateType.type());
             maxValue.convert(stateType.type());
+            QVariantList convertedPossibleValues;
+            foreach (QVariant possibleValue, possibleValues) {
+                possibleValue.convert(stateType.type());
+                convertedPossibleValues.append(possibleValue);
+            }
+            possibleValues = convertedPossibleValues;
         }
 
         thing->setStateValue(stateType.id(), value);
         thing->setStateMinMaxValues(stateType.id(), minValue, maxValue);
+        thing->setStatePossibleValues(stateType.id(), possibleValues);
         thing->setStateValueFilter(stateType.id(), stateType.filter());
     }
     delete settings;
@@ -2583,6 +2597,7 @@ void ThingManagerImplementation::storeThingState(Thing *thing, const StateTypeId
     settings.setValue("value", thing->stateValue(stateTypeId));
     settings.setValue("minValue", thing->state(stateTypeId).minValue());
     settings.setValue("maxValue", thing->state(stateTypeId).maxValue());
+    settings.setValue("possibleValues", thing->state(stateTypeId).possibleValues());
     settings.endGroup();
 }
 

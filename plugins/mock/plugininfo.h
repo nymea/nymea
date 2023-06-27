@@ -145,6 +145,13 @@ ParamTypeId inputTypeMockThingIp4ParamTypeId = ParamTypeId("{9e5f86a0-4bb3-4892-
 ParamTypeId inputTypeMockThingIp6ParamTypeId = ParamTypeId("{43bf3832-dd48-4090-a836-656e8b60216e}");
 ParamTypeId inputTypeMockThingUrlParamTypeId = ParamTypeId("{fa67229f-fcef-496f-b671-59a4b48f3ab5}");
 ParamTypeId inputTypeMockThingMacParamTypeId = ParamTypeId("{e93db587-7919-48f3-8c88-1651de63c765}");
+ParamTypeId inputTypeMockSettingsBoolParamTypeId = ParamTypeId("{f3f62de8-22fa-4190-b212-2fa30b8db22e}");
+ParamTypeId inputTypeMockSettingsIntParamTypeId = ParamTypeId("{315d94bd-52a1-45cc-8632-efe53fd96762}");
+ParamTypeId inputTypeMockSettingsIntWithLimitsParamTypeId = ParamTypeId("{bc22a725-8c09-44b7-94a6-c3b89b042718}");
+ParamTypeId inputTypeMockSettingsDoubleParamTypeId = ParamTypeId("{513aa338-e471-4b2a-89f6-8f1470e74fca}");
+ParamTypeId inputTypeMockSettingsDoubleWithLimitsParamTypeId = ParamTypeId("{efd8a8a9-84cf-4273-b104-678195440fb0}");
+ParamTypeId inputTypeMockSettingsStringParamTypeId = ParamTypeId("{dd268303-8345-4b01-883a-210a4e387130}");
+ParamTypeId inputTypeMockSettingsColorParamTypeId = ParamTypeId("{f9d3e963-ab7b-48ba-a475-077f3e80b68b}");
 StateTypeId inputTypeMockBoolStateTypeId = StateTypeId("{3bad3a09-5826-4ed7-a832-10e3e2ee2a7d}");
 StateTypeId inputTypeMockWritableBoolStateTypeId = StateTypeId("{a7c11774-f31f-4d64-99d1-e0ae5fb35a5c}");
 StateTypeId inputTypeMockIntStateTypeId = StateTypeId("{d0fc56ae-5791-4e91-b76c-dadfbc7e7dbb}");
@@ -167,6 +174,7 @@ StateTypeId inputTypeMockTimestampIntStateTypeId = StateTypeId("{2c91b5ef-c2d1-4
 StateTypeId inputTypeMockWritableTimestampIntStateTypeId = StateTypeId("{88b6746a-b009-4df6-8986-d7884ffd94b2}");
 StateTypeId inputTypeMockTimestampUIntStateTypeId = StateTypeId("{6c9a96e8-0d48-4f42-8967-848358fd7f79}");
 StateTypeId inputTypeMockWritableTimestampUIntStateTypeId = StateTypeId("{45d0069a-63ac-4265-8170-8152778608ee}");
+StateTypeId inputTypeMockLocalizedListStateTypeId = StateTypeId("{23df3dce-bd10-4eb3-b5e3-221168440cd4}");
 ActionTypeId inputTypeMockWritableBoolActionTypeId = ActionTypeId("{a7c11774-f31f-4d64-99d1-e0ae5fb35a5c}");
 ParamTypeId inputTypeMockWritableBoolActionWritableBoolParamTypeId = ParamTypeId("{a7c11774-f31f-4d64-99d1-e0ae5fb35a5c}");
 ActionTypeId inputTypeMockWritableIntActionTypeId = ActionTypeId("{857a8422-983c-47d6-a15f-d8450b3162f7}");
@@ -193,6 +201,8 @@ ActionTypeId inputTypeMockWritableTimestampIntActionTypeId = ActionTypeId("{88b6
 ParamTypeId inputTypeMockWritableTimestampIntActionWritableTimestampIntParamTypeId = ParamTypeId("{88b6746a-b009-4df6-8986-d7884ffd94b2}");
 ActionTypeId inputTypeMockWritableTimestampUIntActionTypeId = ActionTypeId("{45d0069a-63ac-4265-8170-8152778608ee}");
 ParamTypeId inputTypeMockWritableTimestampUIntActionWritableTimestampUIntParamTypeId = ParamTypeId("{45d0069a-63ac-4265-8170-8152778608ee}");
+ActionTypeId inputTypeMockLocalizedListActionTypeId = ActionTypeId("{23df3dce-bd10-4eb3-b5e3-221168440cd4}");
+ParamTypeId inputTypeMockLocalizedListActionLocalizedListParamTypeId = ParamTypeId("{23df3dce-bd10-4eb3-b5e3-221168440cd4}");
 ThingClassId oAuthGoogleMockThingClassId = ThingClassId("{805d1692-7bd0-449a-9d5c-43a332ff58f4}");
 ThingClassId oAuthSonosMockThingClassId = ThingClassId("{783c615b-7bd6-49a4-98b0-8d1deb3c7156}");
 ThingClassId userAndPassMockThingClassId = ThingClassId("{6fe07a77-9c07-4736-81e2-d504314bbcb9}");
@@ -264,6 +274,9 @@ const QString translations[] {
     //: The name of the StateType ({3bad3a09-5826-4ed7-a832-10e3e2ee2a7d}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "Bool"),
 
+    //: The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {f3f62de8-22fa-4190-b212-2fa30b8db22e})
+    QT_TRANSLATE_NOOP("mock", "Bool"),
+
     //: The name of the ParamType (ThingClass: mock, ActionType: pressButton, ID: {279e0157-78ea-4bb3-a756-b12fb46cf4fc})
     QT_TRANSLATE_NOOP("mock", "Button name"),
 
@@ -274,6 +287,9 @@ const QString translations[] {
     QT_TRANSLATE_NOOP("mock", "Button pressed"),
 
     //: The name of the StateType ({4507d5c6-b692-4bd6-87f2-00364bc0cb4d}) of ThingClass inputTypeMock
+    QT_TRANSLATE_NOOP("mock", "Color"),
+
+    //: The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {f9d3e963-ab7b-48ba-a475-077f3e80b68b})
     QT_TRANSLATE_NOOP("mock", "Color"),
 
     //: The name of the StateType ({9860d105-2bd9-4651-9bc9-13ff4b9039a7}) of ThingClass mock
@@ -299,6 +315,12 @@ const QString translations[] {
 
     //: The name of the StateType ({f7d2063d-959e-46ac-8568-8b99722d3b22}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "Double"),
+
+    //: The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {513aa338-e471-4b2a-89f6-8f1470e74fca})
+    QT_TRANSLATE_NOOP("mock", "Double"),
+
+    //: The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {efd8a8a9-84cf-4273-b104-678195440fb0})
+    QT_TRANSLATE_NOOP("mock", "Double with limits"),
 
     //: The name of the StateType ({978b0ba5-d008-41bd-b63d-a3bd23cb6469}) of ThingClass autoMock
     QT_TRANSLATE_NOOP("mock", "Dummy bool state"),
@@ -353,6 +375,18 @@ const QString translations[] {
 
     //: The name of the StateType ({d0fc56ae-5791-4e91-b76c-dadfbc7e7dbb}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "Int"),
+
+    //: The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {315d94bd-52a1-45cc-8632-efe53fd96762})
+    QT_TRANSLATE_NOOP("mock", "Integer"),
+
+    //: The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {bc22a725-8c09-44b7-94a6-c3b89b042718})
+    QT_TRANSLATE_NOOP("mock", "Integer with limits"),
+
+    //: The name of the ParamType (ThingClass: inputTypeMock, ActionType: localizedList, ID: {23df3dce-bd10-4eb3-b5e3-221168440cd4})
+    QT_TRANSLATE_NOOP("mock", "Localized list"),
+
+    //: The name of the StateType ({23df3dce-bd10-4eb3-b5e3-221168440cd4}) of ThingClass inputTypeMock
+    QT_TRANSLATE_NOOP("mock", "Localized list"),
 
     //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {e93db587-7919-48f3-8c88-1651de63c765})
     QT_TRANSLATE_NOOP("mock", "Mac address"),
@@ -449,6 +483,9 @@ const QString translations[] {
 
     //: The name of the plugin mock ({727a4a9a-c187-446f-aadf-f1b2220607d1})
     QT_TRANSLATE_NOOP("mock", "Mocked things"),
+
+    //: The name of a possible value of StateType {209d7afc-6fe9-4fe9-939b-e472ea0ad639} of ThingClass inputTypeMock
+    QT_TRANSLATE_NOOP("mock", "One"),
 
     //: The name of the ParamType (ThingClass: mock, ActionType: withParams, ID: {d1e428ae-eb8c-45aa-b1b0-e3d7de659c3a})
     QT_TRANSLATE_NOOP("mock", "Param with default value"),
@@ -582,6 +619,9 @@ const QString translations[] {
     //: The name of the ActionType ({ebc41327-53d5-40c2-8e7b-1164a8ff359e}) of ThingClass mock
     QT_TRANSLATE_NOOP("mock", "Set update status"),
 
+    //: The name of the ActionType ({23df3dce-bd10-4eb3-b5e3-221168440cd4}) of ThingClass inputTypeMock
+    QT_TRANSLATE_NOOP("mock", "Set value"),
+
     //: The name of the ParamType (ThingClass: mock, Type: settings, ID: {367f7ba4-5039-47be-abd8-59cc8eaf4b9a})
     QT_TRANSLATE_NOOP("mock", "Setting 1"),
 
@@ -593,6 +633,33 @@ const QString translations[] {
 
     //: The name of the StateType ({27f69ca9-a321-40ff-bfee-4b0272a671b4}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "String"),
+
+    //: The name of the ParamType (ThingClass: inputTypeMock, Type: settings, ID: {dd268303-8345-4b01-883a-210a4e387130})
+    QT_TRANSLATE_NOOP("mock", "String"),
+
+    //: The name of a possible value of StateType {b463c5ae-4d55-402f-8480-a5cdb485c143} of ThingClass displayPinMock
+    QT_TRANSLATE_NOOP("mock", "String value 1"),
+
+    //: The name of a possible value of StateType {05f63f9c-f61e-4dcf-ad55-3f13fde2765b} of ThingClass pushButtonMock
+    QT_TRANSLATE_NOOP("mock", "String value 1"),
+
+    //: The name of a possible value of StateType {b463c5ae-4d55-402f-8480-a5cdb485c143} of ThingClass displayPinMock
+    QT_TRANSLATE_NOOP("mock", "String value 2"),
+
+    //: The name of a possible value of StateType {05f63f9c-f61e-4dcf-ad55-3f13fde2765b} of ThingClass pushButtonMock
+    QT_TRANSLATE_NOOP("mock", "String value 2"),
+
+    //: The name of a possible value of StateType {b463c5ae-4d55-402f-8480-a5cdb485c143} of ThingClass displayPinMock
+    QT_TRANSLATE_NOOP("mock", "String value 3"),
+
+    //: The name of a possible value of StateType {05f63f9c-f61e-4dcf-ad55-3f13fde2765b} of ThingClass pushButtonMock
+    QT_TRANSLATE_NOOP("mock", "String value 3"),
+
+    //: The name of a possible value of StateType {b463c5ae-4d55-402f-8480-a5cdb485c143} of ThingClass displayPinMock
+    QT_TRANSLATE_NOOP("mock", "String value 4"),
+
+    //: The name of a possible value of StateType {05f63f9c-f61e-4dcf-ad55-3f13fde2765b} of ThingClass pushButtonMock
+    QT_TRANSLATE_NOOP("mock", "String value 4"),
 
     //: The name of the StateType ({db9cc518-1012-47e2-8212-6e616fed07a6}) of ThingClass virtualIoTemperatureSensorMock
     QT_TRANSLATE_NOOP("mock", "Temperature"),
@@ -618,6 +685,9 @@ const QString translations[] {
     //: The name of the StateType ({6c9a96e8-0d48-4f42-8967-848358fd7f79}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "Timestamp (UInt)"),
 
+    //: The name of a possible value of StateType {209d7afc-6fe9-4fe9-939b-e472ea0ad639} of ThingClass inputTypeMock
+    QT_TRANSLATE_NOOP("mock", "Two"),
+
     //: The name of the StateType ({19e74fcc-bfd5-491f-8eb6-af128e8f1162}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "UInt"),
 
@@ -632,6 +702,15 @@ const QString translations[] {
 
     //: The name of the StateType ({ebc41327-53d5-40c2-8e7b-1164a8ff359e}) of ThingClass mock
     QT_TRANSLATE_NOOP("mock", "Update status"),
+
+    //: The name of a possible value of StateType {23df3dce-bd10-4eb3-b5e3-221168440cd4} of ThingClass inputTypeMock
+    QT_TRANSLATE_NOOP("mock", "Value A"),
+
+    //: The name of a possible value of StateType {23df3dce-bd10-4eb3-b5e3-221168440cd4} of ThingClass inputTypeMock
+    QT_TRANSLATE_NOOP("mock", "Value B"),
+
+    //: The name of a possible value of StateType {23df3dce-bd10-4eb3-b5e3-221168440cd4} of ThingClass inputTypeMock
+    QT_TRANSLATE_NOOP("mock", "Value C"),
 
     //: The name of the ParamType (ThingClass: inputTypeMock, ActionType: writableBool, ID: {a7c11774-f31f-4d64-99d1-e0ae5fb35a5c})
     QT_TRANSLATE_NOOP("mock", "Writable Bool"),
@@ -729,6 +808,9 @@ const QString translations[] {
     //: The name of the ParamType (ThingClass: mock, Type: thing, ID: {f2977061-4dd0-4ef5-85aa-3b7134743be3})
     QT_TRANSLATE_NOOP("mock", "async"),
 
+    //: The name of a possible value of StateType {ebc41327-53d5-40c2-8e7b-1164a8ff359e} of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "available"),
+
     //: The name of the StateType ({580bc611-1a55-41f3-996f-8d3ccf543db3}) of ThingClass mock
     QT_TRANSLATE_NOOP("mock", "battery level critical"),
 
@@ -798,6 +880,9 @@ const QString translations[] {
     //: The name of the ParamType (ThingClass: mock, Type: thing, ID: {d4f06047-125e-4479-9810-b54c189917f5})
     QT_TRANSLATE_NOOP("mock", "http port"),
 
+    //: The name of a possible value of StateType {ebc41327-53d5-40c2-8e7b-1164a8ff359e} of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "idle"),
+
     //: The name of the ParamType (ThingClass: autoMock, ActionType: withParams, ID: {b8126ba6-3a54-45a3-be4d-63feb0ddb77b})
     QT_TRANSLATE_NOOP("mock", "mockActionParam1"),
 
@@ -847,7 +932,13 @@ const QString translations[] {
     QT_TRANSLATE_NOOP("mock", "resultCount"),
 
     //: The name of the ActionType ({064aed0d-da4c-49d4-b236-60f97e98ff84}) of ThingClass mock
-    QT_TRANSLATE_NOOP("mock", "set power")
+    QT_TRANSLATE_NOOP("mock", "set power"),
+
+    //: The name of a possible value of StateType {ebc41327-53d5-40c2-8e7b-1164a8ff359e} of ThingClass mock
+    QT_TRANSLATE_NOOP("mock", "updating"),
+
+    //: The name of a possible value of StateType {209d7afc-6fe9-4fe9-939b-e472ea0ad639} of ThingClass inputTypeMock
+    QT_TRANSLATE_NOOP("mock", "🎄")
 };
 
 #endif // PLUGININFO_H

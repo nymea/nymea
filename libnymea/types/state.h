@@ -45,10 +45,11 @@ class LIBNYMEA_EXPORT State
     Q_PROPERTY(Types::StateValueFilter filter READ filter)
     Q_PROPERTY(QVariant minValue READ minValue USER true)
     Q_PROPERTY(QVariant maxValue READ maxValue USER true)
+    Q_PROPERTY(QVariantList possibleValues READ possibleValues USER true)
 
 public:
     State();
-    State(const StateTypeId &stateTypeId, const ThingId &deviceId);
+    State(const StateTypeId &stateTypeId, const ThingId &thingId);
 
     StateTypeId stateTypeId() const;
     ThingId thingId() const;
@@ -58,6 +59,8 @@ public:
     QVariant minValue() const;
     QVariant maxValue() const;
 
+    QVariantList possibleValues() const;
+
     Types::StateValueFilter filter() const;
 
 private:
@@ -65,6 +68,7 @@ private:
     void setValue(const QVariant &value);
     void setMinValue(const QVariant &minValue);
     void setMaxValue(const QVariant &maxValue);
+    void setPossibleValues(const QVariantList &values);
     void setFilter(Types::StateValueFilter filter);
 
 private:
@@ -73,6 +77,7 @@ private:
     QVariant m_value;
     QVariant m_minValue;
     QVariant m_maxValue;
+    QVariantList m_possibleValues;
     Types::StateValueFilter m_filter = Types::StateValueFilterNone;
 };
 Q_DECLARE_METATYPE(State)

@@ -50,6 +50,7 @@ class LIBNYMEA_EXPORT StateType
     Q_PROPERTY(QVariant minValue READ minValue WRITE setMinValue USER true)
     Q_PROPERTY(QVariant maxValue READ maxValue WRITE setMaxValue USER true)
     Q_PROPERTY(QVariantList possibleValues READ possibleValues WRITE setPossibleValues USER true)
+    Q_PROPERTY(QStringList possibleValuesDisplayNames READ possibleValuesDisplayNames WRITE setPossibleValuesDisplayNames USER true)
 
 public:
     StateType();
@@ -81,6 +82,9 @@ public:
     QVariantList possibleValues() const;
     void setPossibleValues(const QVariantList &possibleValues);
 
+    QStringList possibleValuesDisplayNames() const;
+    void setPossibleValuesDisplayNames(const QStringList &possibleValuesDisplayNames);
+
     Types::Unit unit() const;
     void setUnit(const Types::Unit &unit);
 
@@ -111,6 +115,7 @@ private:
     QVariant m_minValue;
     QVariant m_maxValue;
     QVariantList m_possibleValues;
+    QStringList m_possibleValuesDisplayNames;
     Types::Unit m_unit = Types::UnitNone;
     Types::IOType m_ioType = Types::IOTypeNone;
     bool m_writable = false;

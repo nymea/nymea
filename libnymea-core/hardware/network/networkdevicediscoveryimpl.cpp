@@ -99,11 +99,8 @@ NetworkDeviceDiscoveryImpl::NetworkDeviceDiscoveryImpl(QObject *parent) :
     m_cacheSettings = new QSettings(NymeaSettings::cachePath() + "/network-device-discovery.cache", QSettings::IniFormat);
     loadNetworkDeviceCache();
 
-    // Start the timer only if the resource is available
-    if (available()) {
-        // Start the monitor timer in any case, we do also the cache cleanup there...
-        m_monitorTimer->start();
-    }
+    // Start the monitor timer in any case, we do also the cache cleanup there...
+    m_monitorTimer->start();
 }
 
 NetworkDeviceDiscoveryImpl::~NetworkDeviceDiscoveryImpl()
@@ -762,20 +759,22 @@ void NetworkDeviceDiscoveryImpl::onArpRequstReceived(const QNetworkInterface &in
 
 void NetworkDeviceDiscoveryImpl::evaluateMonitors()
 {
-    bool monitorRequiresRediscovery = false;
-    foreach (NetworkDeviceMonitorImpl *monitor, m_monitors) {
-        evaluateMonitor(monitor);
+    if (available()) {
+        bool monitorRequiresRediscovery = false;
+        foreach (NetworkDeviceMonitorImpl *monitor, m_monitors) {
+            evaluateMonitor(monitor);
 
-        // Check if there is any monitor which has not be seen since
-        if (!monitor->reachable() && monitor->lastConnectionAttempt().isValid() && longerAgoThan(monitor->lastSeen(), m_monitorInterval)) {
-            monitorRequiresRediscovery = true;
+            // Check if there is any monitor which has not be seen since
+            if (!monitor->reachable() && monitor->lastConnectionAttempt().isValid() && longerAgoThan(monitor->lastSeen(), m_monitorInterval)) {
+                monitorRequiresRediscovery = true;
+            }
         }
-    }
 
-    if (monitorRequiresRediscovery && longerAgoThan(m_lastDiscovery, m_rediscoveryInterval)) {
-        qCDebug(dcNetworkDeviceDiscovery()) << "There are unreachable monitors and the last discovery is more than" << m_rediscoveryInterval << "s ago. Starting network discovery to search the monitored network devices...";
-        NetworkDeviceDiscoveryReply *reply = discover();
-        connect(reply, &NetworkDeviceDiscoveryReply::finished, reply, &NetworkDeviceDiscoveryReply::deleteLater);
+        if (monitorRequiresRediscovery && longerAgoThan(m_lastDiscovery, m_rediscoveryInterval)) {
+            qCDebug(dcNetworkDeviceDiscovery()) << "There are unreachable monitors and the last discovery is more than" << m_rediscoveryInterval << "s ago. Starting network discovery in order to search for the monitored network devices...";
+            NetworkDeviceDiscoveryReply *reply = discover();
+            connect(reply, &NetworkDeviceDiscoveryReply::finished, reply, &NetworkDeviceDiscoveryReply::deleteLater);
+        }
     }
 
     // Do some cache housekeeping if required
@@ -791,6 +790,11 @@ void NetworkDeviceDiscoveryImpl::evaluateMonitors()
         }
 
         m_lastCacheHousekeeping = now;
+
+        if (m_networkInfoCache.isEmpty() && !available()) {
+            qCDebug(dcNetworkDeviceDiscovery()) << "Stopping monitor time since the cache is empty and the resource is not available.";
+            m_monitorTimer->stop();
+        }
     }
 }
 

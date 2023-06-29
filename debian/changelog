@@ -1,3 +1,17 @@
+nymea (1.8.2) jammy; urgency=medium
+
+  [ alpha-rd ]
+  * Update Dutch translations
+
+  [ Michael Zanetti ]
+  * Tell systemd that we're using influxdb
+  * Fix influx systemd env override not working with older systemd
+
+  [ Simon Stürz ]
+  * arp: Fix discovery resolving multiple/wrong mac addresses for ip
+
+ -- jenkins <developer@nymea.io>  Thu, 29 Jun 2023 11:37:28 +0200
+
 nymea (1.8.1) jammy; urgency=medium
 
   [ Michael Zanetti ]

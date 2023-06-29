@@ -3,7 +3,7 @@ Description=nymead - IoT server
 Documentation=https://wiki.nymea.io
 Requires=dbus.socket
 After=network.target dbus.socket
-Wants=network-online.target
+Wants=network-online.target influxdb.service
 
 [Service]
 ExecStart=/usr/bin/nymead -n

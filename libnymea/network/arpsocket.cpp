@@ -324,6 +324,9 @@ void ArpSocket::processDataBuffer(unsigned char *receiveBuffer, int size)
 
     struct ether_header *etherHeader = (struct ether_header *)(receiveBuffer);
     struct ether_arp *arpPacket = (struct ether_arp *)(receiveBuffer + ETHER_HEADER_LEN);
+    MacAddress ethernetSourceMacAddress = MacAddress(etherHeader->ether_shost);
+    MacAddress ethernetDestinationMacAddress = MacAddress(etherHeader->ether_dhost);
+
     MacAddress senderMacAddress = MacAddress(arpPacket->arp_sha);
     QHostAddress senderHostAddress = getHostAddressString(arpPacket->arp_spa);
     MacAddress targetMacAddress = MacAddress(arpPacket->arp_tha);
@@ -351,7 +354,11 @@ void ArpSocket::processDataBuffer(unsigned char *receiveBuffer, int size)
         }
 
         // Note: we are not interested in our own requests
-        if (senderMacAddress != MacAddress(networkInterface.hardwareAddress())) {
+        if (senderMacAddress != MacAddress(networkInterface.hardwareAddress()))
+            return;
+
+        /* Use only replies from hosts which are requesting for them self. */
+        if (senderMacAddress == ethernetSourceMacAddress) {
             qCDebug(dcArpSocket()) << "ARP request" << receivedBufferBytes.toHex() << "from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString() << "on" << networkInterface.name();
             emit arpRequestReceived(networkInterface, senderHostAddress, senderMacAddress);
         }
@@ -365,27 +372,33 @@ void ArpSocket::processDataBuffer(unsigned char *receiveBuffer, int size)
             return;
         }
 
-        qCDebug(dcArpSocket()) << "ARP reply" << receivedBufferBytes.toHex() << "from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString() << "on" << networkInterface.name();
-        emit arpResponse(networkInterface, senderHostAddress, senderMacAddress);
+        /* Use only replies from hosts which are responding for them self. In some cases where we have 2 network interfaces connected to the
+         * same network that one interface is reposning for the other and we end up with 2 ip addresses for one mac address. */
+        if (senderMacAddress == ethernetSourceMacAddress) {
+            qCDebug(dcArpSocket()) << "ARP reply from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString() << "on" << networkInterface.name();
+            emit arpResponse(networkInterface, senderHostAddress, senderMacAddress);
+        } else {
+            qCDebug(dcArpSocket()) << "ARP proxy reply from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString() << "on" << networkInterface.name();
+        }
         break;
     }
     case ARPOP_RREQUEST:
-        qCDebug(dcArpSocketTraffic()) << "RARP request from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        qCDebug(dcArpSocketTraffic()) << "RARP request from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
         break;
     case ARPOP_RREPLY:
-        qCDebug(dcArpSocketTraffic()) << "PARP response from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        qCDebug(dcArpSocketTraffic()) << "PARP response from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
         break;
     case ARPOP_InREQUEST:
-        qCDebug(dcArpSocketTraffic()) << "InARP request from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        qCDebug(dcArpSocketTraffic()) << "InARP request from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
         break;
     case ARPOP_InREPLY:
-        qCDebug(dcArpSocketTraffic()) << "InARP response from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        qCDebug(dcArpSocketTraffic()) << "InARP response from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
         break;
     case ARPOP_NAK:
-        qCDebug(dcArpSocketTraffic()) << "(ATM)ARP NAK from" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
+        qCDebug(dcArpSocketTraffic()) << "(ATM)ARP NAK from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString() << "-->" << targetMacAddress.toString() << targetHostAddress.toString();
         break;
     default:
-        qCWarning(dcArpSocketTraffic()) << "Received unhandled ARP operation code" << arpOperationCode << "from" << senderMacAddress.toString() << senderHostAddress.toString();
+        qCWarning(dcArpSocketTraffic()) << "Received unhandled ARP operation code" << arpOperationCode << "from" << ethernetSourceMacAddress.toString() << receivedBufferBytes.toHex() << "ARP: sender" << senderMacAddress.toString() << senderHostAddress.toString();
         break;
     }
 }

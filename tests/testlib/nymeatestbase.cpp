@@ -54,9 +54,12 @@ NymeaTestBase::NymeaTestBase(QObject *parent) :
     QCoreApplication::instance()->setOrganizationName("nymea-test");
 }
 
-void NymeaTestBase::initTestCase(const QString &loggingRules)
+void NymeaTestBase::initTestCase(const QString &loggingRules, bool disableLogEngine)
 {
     qCDebug(dcTests) << "NymeaTestBase starting.";
+
+    // Keep this over restart of core instance
+    m_disableLogEngine = disableLogEngine;
 
     // If testcase asserts cleanup won't do. Lets clear any previous test run settings leftovers
     NymeaSettings rulesSettings(NymeaSettings::SettingsRoleRules);
@@ -84,7 +87,7 @@ void NymeaTestBase::initTestCase(const QString &loggingRules)
 
     // Start the server
     qCDebug(dcTests()) << "Setting up nymea core instance";
-    NymeaCore::instance()->init();
+    NymeaCore::instance()->init(QStringList(), m_disableLogEngine);
 
     // Wait unitl the server is initialized
     QSignalSpy coreInitializedSpy(NymeaCore::instance(), SIGNAL(initialized()));
@@ -432,7 +435,7 @@ void NymeaTestBase::restartServer()
     qCDebug(dcTests()) << "Tearing down server instance";
     NymeaCore::instance()->destroy(NymeaCore::ShutdownReasonRestart);
     qCDebug(dcTests()) << "Restarting server instance";
-    NymeaCore::instance()->init();
+    NymeaCore::instance()->init(QStringList(), m_disableLogEngine);
     QSignalSpy coreSpy(NymeaCore::instance(), SIGNAL(initialized()));
     coreSpy.wait();
     m_mockTcpServer = MockTcpServer::servers().first();

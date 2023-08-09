@@ -82,8 +82,8 @@ void NymeaService::start()
         fprintf(stdout, "Could not create nymea settings directory %s", qPrintable(NymeaSettings::settingsPath()));
         exit(EXIT_FAILURE);
     }
-    qCDebug(dcApplication) << "=====================================";
 
+    qCDebug(dcApplication) << "=====================================";
     qCDebug(dcApplication) << "nymead" << NYMEA_VERSION_STRING << "started as daemon.";
     qCDebug(dcApplication) << "=====================================";
     NymeaCore::instance();

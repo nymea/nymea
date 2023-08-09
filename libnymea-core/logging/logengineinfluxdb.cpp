@@ -1,10 +1,39 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+*
+* Copyright 2013 - 2023, nymea GmbH
+* Contact: contact@nymea.io
+*
+* This file is part of nymea.
+* This project including source code and documentation is protected by
+* copyright law, and remains the property of nymea GmbH. All rights, including
+* reproduction, publication, editing and translation, are reserved. The use of
+* this project is subject to the terms of a license agreement to be concluded
+* with nymea GmbH in accordance with the terms of use of nymea GmbH, available
+* under https://nymea.io/license
+*
+* GNU General Public License Usage
+* Alternatively, this project may be redistributed and/or modified under the
+* terms of the GNU General Public License as published by the Free Software
+* Foundation, GNU version 3. This project is distributed in the hope that it
+* will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+* Public License for more details.
+*
+* You should have received a copy of the GNU General Public License along with
+* this project. If not, see <https://www.gnu.org/licenses/>.
+*
+* For any further details and any questions please contact us under
+* contact@nymea.io or see our FAQ/Licensing Information on
+* https://nymea.io/license/faq
+*
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #include "logengineinfluxdb.h"
 
 #include <QNetworkReply>
 #include <QUrlQuery>
 #include <QJsonDocument>
 #include <QCoreApplication>
-#include <QTimer>
 
 LogEngineInfluxDB::LogEngineInfluxDB(const QString &host, const QString &dbName, const QString &username, const QString &password, QObject *parent)
     : LogEngine{parent},
@@ -14,7 +43,10 @@ LogEngineInfluxDB::LogEngineInfluxDB(const QString &host, const QString &dbName,
       m_password(password)
 {
     m_nam = new QNetworkAccessManager(this);
-    initDB();
+
+    m_reinitTimer.setInterval(5000);
+    m_reinitTimer.setSingleShot(true);
+    connect(&m_reinitTimer, &QTimer::timeout, this, &LogEngineInfluxDB::initDB);
 }
 
 LogEngineInfluxDB::~LogEngineInfluxDB()
@@ -38,7 +70,6 @@ Logger *LogEngineInfluxDB::registerLogSource(const QString &name, const QStringL
         qCCritical(dcLogEngine()) << "Log source" << name << "already registerd. Not registering a second time.";
         return nullptr;
     }
-
 
 //    qCDebug(dcLogEngine()) << "Registering log source" << name << "with tags" << tagNames;
 
@@ -196,7 +227,7 @@ void LogEngineInfluxDB::logEvent(Logger *logger, const QStringList &tags, const 
 
 void LogEngineInfluxDB::processQueues()
 {
-    if (m_initStatus == InitStatusFailure) {
+    if (m_initStatus == InitStatusFailure || m_initStatus == InitStatusDisabled) {
         m_writeQueue.clear();
         qDeleteAll(m_queryQueue);
         m_queryQueue.clear();
@@ -499,6 +530,22 @@ void LogEngineInfluxDB::clear(const QString &source)
     });
 }
 
+void LogEngineInfluxDB::enable()
+{
+    qCInfo(dcLogEngine()) << "Enabling influx DB log engine";
+    initDB();
+}
+
+void LogEngineInfluxDB::disable()
+{
+    qCInfo(dcLogEngine()) << "Disabling influx DB log engine";
+    m_initStatus = InitStatusDisabled;
+    m_reinitTimer.stop();
+
+    // Cleanup queues
+    processQueues();
+}
+
 void LogEngineInfluxDB::initDB()
 {
     m_initStatus = InitStatusStarting;
@@ -513,10 +560,10 @@ void LogEngineInfluxDB::createDB()
         if (status != QNetworkReply::NoError) {
             if (status == QNetworkReply::ConnectionRefusedError) {
                 // Influx not up yet? trying again in 5 secs...
-                qCInfo(dcLogEngine) << "Failed to connect to influx... retrying in 5 seconds...";
-                QTimer::singleShot(5000, this, [=](){
-                    initDB();
-                });
+                if (m_initStatus != InitStatusDisabled) {
+                    qCInfo(dcLogEngine) << "Failed to connect to influx... retrying in 5 seconds...";
+                    m_reinitTimer.start();
+                }
                 return;
             }
             qCCritical(dcLogEngine()) << "Unable to connect to InfluxDB";

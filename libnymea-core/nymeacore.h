@@ -92,7 +92,7 @@ public:
     static NymeaCore* instance();
     ~NymeaCore();
 
-    void init(const QStringList &additionalInterfaces = QStringList());
+    void init(const QStringList &additionalInterfaces = QStringList(), bool disableLogEngine = false);
     void destroy(nymeaserver::NymeaCore::ShutdownReason reason);
 
     RuleEngine::RuleError removeRule(const RuleId &id);

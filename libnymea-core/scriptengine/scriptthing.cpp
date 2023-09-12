@@ -33,6 +33,7 @@
 #include <qqml.h>
 #include <QQmlEngine>
 #include <QJsonDocument>
+#include <QQmlContext>
 
 #include <QLoggingCategory>
 Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
@@ -112,7 +113,7 @@ void ScriptThing::executeAction(const QString &actionName, const QVariantMap &pa
         actionType = thing->thingClass().actionTypes().findById(QUuid(actionName));
     }
     if (actionType.id().isNull()) {
-        qCWarning(dcScriptEngine()) << "Thing" << thing->name() << "does not have action" << actionName;
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Thing" << thing->name() << "does not have action" << actionName;
         return;
     }
 
@@ -126,7 +127,7 @@ void ScriptThing::executeAction(const QString &actionName, const QVariantMap &pa
             paramType = actionType.paramTypes().findByName(paramNameOrId);
         }
         if (paramType.id().isNull()) {
-            qCWarning(dcScriptEngine()) << "Invalid param id or name";
+            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Invalid param id or name:" << paramNameOrId;
             continue;
         }
         paramList << Param(paramType.id(), params.value(paramNameOrId));

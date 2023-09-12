@@ -160,19 +160,19 @@ void ScriptState::setValue(const QVariant &value)
     if (!m_stateTypeId.isNull()) {
         actionTypeId = thing->thingClass().stateTypes().findById(StateTypeId(m_stateTypeId)).id();
         if (actionTypeId.isNull()) {
-            qCDebug(dcScriptEngine) << "Thing" << thing->name() << "does not have a state with type id" << m_stateTypeId;
+            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Thing" << thing->name() << "does not have a state with type id" << m_stateTypeId;
         }
     }
     if (actionTypeId.isNull()) {
         actionTypeId = thing->thingClass().stateTypes().findByName(stateName()).id();
         if (actionTypeId.isNull()) {
-            qCDebug(dcScriptEngine) << "Thing" << thing->name() << "does not have a state named" << m_stateName;
+            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Thing" << thing->name() << "does not have a state named" << m_stateName;
         }
     }
 
     if (actionTypeId.isNull()) {
         m_valueCache = value;
-        qCDebug(dcScriptEngine()) << "Either stateTypeId or stateName is required to be valid.";
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Either stateTypeId or stateName is required to be valid.";
         return;
     }
 

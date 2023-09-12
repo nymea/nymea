@@ -89,6 +89,8 @@ public:
     EditScriptReply editScript(const QUuid &id, const QByteArray &content);
     ScriptError removeScript(const QUuid &id);
 
+    void onScriptMessage(QtMsgType type, const QMessageLogContext &context, const QString &message);
+
 signals:
     void scriptAdded(const Script &script);
     void scriptRemoved(const QUuid &id);
@@ -104,7 +106,6 @@ private:
 
     QString baseName(const QUuid &id);
 
-    void onScriptMessage(QtMsgType type, const QMessageLogContext &context, const QString &message);
 private:
     ThingManager *m_thingManager = nullptr;
     QQmlEngine *m_engine = nullptr;

@@ -239,9 +239,9 @@ void NetworkDeviceDiscoveryReplyImpl::verifyComplete(const MacAddress &macAddres
     if (m_networkDeviceCache[macAddress].isComplete() && m_networkDeviceCache[macAddress].isValid()) {
         if (m_networkDeviceInfos.hasMacAddress(macAddress)) {
             if (m_networkDeviceInfos.get(macAddress) != m_networkDeviceCache.value(macAddress)) {
-                qCWarning(dcNetworkDeviceDiscovery()) << "Already complete network device info changed during discovery process! Please report a bug if you see this message containing following 2 lines:";
-                qCWarning(dcNetworkDeviceDiscovery()) << m_networkDeviceInfos.get(macAddress);
-                qCWarning(dcNetworkDeviceDiscovery()) << m_networkDeviceCache.value(macAddress);
+                qCDebug(dcNetworkDeviceDiscovery()) << "One MAC address seem to be reachable using 2 IP addresses, which is OK. Not updating the network device info and keeping the current information.";
+                qCDebug(dcNetworkDeviceDiscovery()) << "--> Keeping " << m_networkDeviceInfos.get(macAddress);
+                qCDebug(dcNetworkDeviceDiscovery()) << "--> Ignoring" << m_networkDeviceCache.value(macAddress);
             }
         } else {
             m_networkDeviceInfos.append(m_networkDeviceCache.value(macAddress));

@@ -58,6 +58,7 @@ private:
 
     void setError(const BluetoothDiscoveryReplyError &error);
     void setDiscoveredDevices(const QList<QBluetoothDeviceInfo> &discoveredDevices);
+    void addDiscoveredDevice(const QBluetoothDeviceInfo &info);
     void setFinished();
 };
 

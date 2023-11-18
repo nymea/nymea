@@ -53,6 +53,7 @@ public:
     explicit BluetoothLowEnergyManager(QObject *parent = nullptr);
     virtual ~BluetoothLowEnergyManager() = default;
 
+
     virtual BluetoothDiscoveryReply *discoverDevices(int interval = 5000) = 0;
 
     // Bluetooth device registration methods

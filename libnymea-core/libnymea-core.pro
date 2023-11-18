@@ -58,6 +58,7 @@ RESOURCES += $$top_srcdir/icons.qrc \
              $$top_srcdir/data/debug-interface/debug-interface.qrc
 
 HEADERS += nymeacore.h \
+    hardware/bluetoothlowenergy/nymeabluetoothagent.h \
     hardware/network/macaddressdatabasereplyimpl.h \
     hardware/serialport/serialportmonitor.h \
     hardware/zwave/zwavehardwareresourceimplementation.h \
@@ -165,6 +166,7 @@ HEADERS += nymeacore.h \
 
 
 SOURCES += nymeacore.cpp \
+    hardware/bluetoothlowenergy/nymeabluetoothagent.cpp \
     hardware/network/macaddressdatabasereplyimpl.cpp \
     hardware/serialport/serialportmonitor.cpp \
     hardware/zwave/zwavehardwareresourceimplementation.cpp \

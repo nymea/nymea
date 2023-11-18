@@ -68,11 +68,17 @@ void BluetoothDiscoveryReplyImplementation::setDiscoveredDevices(const QList<QBl
     m_discoveredDevices = discoveredDevices;
 }
 
+void BluetoothDiscoveryReplyImplementation::addDiscoveredDevice(const QBluetoothDeviceInfo &info)
+{
+    m_discoveredDevices.append(info);
+}
+
 void BluetoothDiscoveryReplyImplementation::setFinished()
 {
     m_finished = true;
     // Note: this makes sure the finished signal will be processed in the next event loop
     QTimer::singleShot(0, this, &BluetoothDiscoveryReplyImplementation::finished);
+    deleteLater();
 }
 
 }

@@ -30,10 +30,13 @@
 
 #include "bluetoothlowenergymanagerimplementation.h"
 #include "loggingcategories.h"
+#include "nymeabluetoothagent.h"
+#include "bluetoothpairingjobimplementation.h"
 
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDBusReply>
+#include <QDBusInterface>
 
 namespace nymeaserver {
 
@@ -54,8 +57,10 @@ BluetoothLowEnergyManagerImplementation::BluetoothLowEnergyManagerImplementation
         return;
     }
 
+    m_agent = new NymeaBluetoothAgent(this);
+
     foreach (const QBluetoothHostInfo &hostInfo, QBluetoothLocalDevice::allDevices()) {
-        qCDebug(dcBluetooth()) << "Enalbing bluetooth adapter:" << hostInfo.name() << hostInfo.address().toString();
+        qCDebug(dcBluetooth()) << "Enabling bluetooth adapter:" << hostInfo.name() << hostInfo.address().toString();
         QBluetoothLocalDevice localDevice(hostInfo.address());
         localDevice.powerOn();
         localDevice.setHostMode(QBluetoothLocalDevice::HostDiscoverable);
@@ -81,6 +86,13 @@ BluetoothDiscoveryReply *BluetoothLowEnergyManagerImplementation::discoverDevice
         return reply;
     }
 
+    if (QBluetoothLocalDevice::allDevices().isEmpty()) {
+        qCWarning(dcBluetooth()) << "No Bluetooth adapter available.";
+        reply->setError(BluetoothDiscoveryReplyImplementation::BluetoothDiscoveryReplyErrorNotAvailable);
+        reply->setFinished();
+        return reply;
+    }
+
     // Create a scanner for each adapter
     foreach (const QBluetoothHostInfo &hostInfo, QBluetoothLocalDevice::allDevices()) {
         qCDebug(dcBluetooth()) << "Starting discovery on adapter:" << hostInfo.name() << hostInfo.address().toString();
@@ -93,7 +105,7 @@ BluetoothDiscoveryReply *BluetoothLowEnergyManagerImplementation::discoverDevice
             // Note: only show low energy devices
             if (info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration) {
                 qCDebug(dcBluetooth()) << "device discovered" << info.name() << info.address().toString();
-                reply->addDiscoveredDevice(info);
+                reply->addDiscoveredDevice(info, hostInfo);
             }
         });
         connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, reply, [=](){
@@ -106,6 +118,53 @@ BluetoothDiscoveryReply *BluetoothLowEnergyManagerImplementation::discoverDevice
     }
 
     return reply;
+}
+
+BluetoothPairingJob *BluetoothLowEnergyManagerImplementation::pairDevice(const QBluetoothAddress &device, const QBluetoothAddress &adapter)
+{
+    qCDebug(dcBluetooth()) << "pairDevice";
+    BluetoothPairingJobImplementation *job = new BluetoothPairingJobImplementation(m_agent, device, this);
+
+    QBluetoothLocalDevice *localDevice = nullptr;
+    if (adapter.isNull()) {
+        localDevice = new QBluetoothLocalDevice(this);
+    } else {
+        localDevice = new QBluetoothLocalDevice(adapter, this);
+    }
+
+    if (!localDevice->isValid()) {
+        qCWarning(dcBluetooth()) << "Local device" << adapter.toString() << "is not valid";
+        job->finish(false);
+        return job;
+    }
+    localDevice->requestPairing(device, QBluetoothLocalDevice::AuthorizedPaired);
+    connect(localDevice, &QBluetoothLocalDevice::error, job, [=](QBluetoothLocalDevice::Error error){
+        qCDebug(dcBluetooth()) << "Pairing error" << error;
+        job->finish(false);
+        localDevice->deleteLater();
+    });
+    connect(localDevice, &QBluetoothLocalDevice::pairingFinished, job, [=](const QBluetoothAddress &address, QBluetoothLocalDevice::Pairing pairing){
+        qCDebug(dcBluetooth()) << "Pairing finished" << address.toString() << pairing;
+        job->finish(true);
+        localDevice->deleteLater();
+    });
+    return job;
+}
+
+void BluetoothLowEnergyManagerImplementation::unpairDevice(const QBluetoothAddress &device, const QBluetoothAddress &adapter)
+{
+    QBluetoothLocalDevice *localDevice = nullptr;
+    if (adapter.isNull()) {
+        localDevice = new QBluetoothLocalDevice(this);
+    } else {
+        localDevice = new QBluetoothLocalDevice(adapter, this);
+    }
+
+    if (!localDevice->isValid()) {
+        qCWarning(dcBluetooth()) << "Local device" << adapter.toString() << "is not valid";
+        return;
+    }
+    localDevice->requestPairing(device, QBluetoothLocalDevice::Unpaired);
 }
 
 BluetoothLowEnergyDevice *BluetoothLowEnergyManagerImplementation::registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType)

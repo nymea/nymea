@@ -50,7 +50,7 @@ BluetoothDiscoveryReplyImplementation::BluetoothDiscoveryReplyError BluetoothDis
     return m_error;
 }
 
-QList<QBluetoothDeviceInfo> BluetoothDiscoveryReplyImplementation::discoveredDevices() const
+QList<QPair<QBluetoothDeviceInfo, QBluetoothHostInfo>> BluetoothDiscoveryReplyImplementation::discoveredDevices() const
 {
     return m_discoveredDevices;
 }
@@ -63,14 +63,14 @@ void BluetoothDiscoveryReplyImplementation::setError(const BluetoothDiscoveryRep
     }
 }
 
-void BluetoothDiscoveryReplyImplementation::setDiscoveredDevices(const QList<QBluetoothDeviceInfo> &discoveredDevices)
+void BluetoothDiscoveryReplyImplementation::setDiscoveredDevices(const QList<QPair<QBluetoothDeviceInfo, QBluetoothHostInfo>> &discoveredDevices)
 {
     m_discoveredDevices = discoveredDevices;
 }
 
-void BluetoothDiscoveryReplyImplementation::addDiscoveredDevice(const QBluetoothDeviceInfo &info)
+void BluetoothDiscoveryReplyImplementation::addDiscoveredDevice(const QBluetoothDeviceInfo &info, const QBluetoothHostInfo &hostInfo)
 {
-    m_discoveredDevices.append(info);
+    m_discoveredDevices.append(qMakePair<QBluetoothDeviceInfo, QBluetoothHostInfo>(info, hostInfo));
 }
 
 void BluetoothDiscoveryReplyImplementation::setFinished()

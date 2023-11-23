@@ -33,6 +33,7 @@
 
 #include <QObject>
 #include <QBluetoothDeviceInfo>
+#include <QBluetoothHostInfo>
 
 #include "libnymea.h"
 
@@ -54,7 +55,7 @@ public:
 
     virtual bool isFinished() const = 0;
     virtual BluetoothDiscoveryReplyError error() const = 0;
-    virtual QList<QBluetoothDeviceInfo> discoveredDevices() const = 0;
+    virtual QList<QPair<QBluetoothDeviceInfo, QBluetoothHostInfo>> discoveredDevices() const = 0;
 
 signals:
     void finished();

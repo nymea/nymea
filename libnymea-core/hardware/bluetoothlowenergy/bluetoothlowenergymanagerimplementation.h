@@ -46,6 +46,8 @@
 
 namespace nymeaserver {
 
+class NymeaBluetoothAgent;
+
 class BluetoothLowEnergyManagerImplementation : public BluetoothLowEnergyManager
 {
     Q_OBJECT
@@ -58,12 +60,13 @@ public:
     BluetoothDiscoveryReply *discoverDevices(int timeout = 5000) override;
 
     // Bluetooth device registration methods
+    BluetoothPairingJob *pairDevice(const QBluetoothAddress &device, const QBluetoothAddress &adapter) override;
+    void unpairDevice(const QBluetoothAddress &device, const QBluetoothAddress &adapter) override;
     BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress) override;
     void unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice) override;
 
     bool available() const override;
     bool enabled() const override;
-
 
 protected:
     void setEnabled(bool enabled) override;
@@ -78,8 +81,8 @@ private:
 
     bool m_available = false;
     bool m_enabled = false;
+    NymeaBluetoothAgent *m_agent = nullptr;
 
-    QPointer<BluetoothDiscoveryReplyImplementation> m_currentReply;
 
 };
 

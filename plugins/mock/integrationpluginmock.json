@@ -741,6 +741,60 @@
                             "defaultValue": "11:22:33:aa:bb:cc"
                         }
                     ],
+                    "settingsTypes": [
+                        {
+                            "id": "f3f62de8-22fa-4190-b212-2fa30b8db22e",
+                            "name": "bool",
+                            "displayName": "Bool",
+                            "type": "bool",
+                            "defaultValue": false
+                        },
+                        {
+                            "id": "315d94bd-52a1-45cc-8632-efe53fd96762",
+                            "name": "int",
+                            "displayName": "Integer",
+                            "type": "int",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "bc22a725-8c09-44b7-94a6-c3b89b042718",
+                            "name": "intWithLimits",
+                            "displayName": "Integer with limits",
+                            "type": "int",
+                            "minValue": 1,
+                            "maxValue": 3,
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "513aa338-e471-4b2a-89f6-8f1470e74fca",
+                            "name": "double",
+                            "displayName": "Double",
+                            "type": "double",
+                            "defaultValue": 0
+                        },
+                        {
+                            "id": "efd8a8a9-84cf-4273-b104-678195440fb0",
+                            "name": "doubleWithLimits",
+                            "displayName": "Double with limits",
+                            "type": "double",
+                            "minValue": -100,
+                            "maxValue": 100
+                        },
+                        {
+                            "id": "dd268303-8345-4b01-883a-210a4e387130",
+                            "name": "string",
+                            "displayName": "String",
+                            "type": "QString",
+                            "defaultValue": ""
+                        },
+                        {
+                            "id": "f9d3e963-ab7b-48ba-a475-077f3e80b68b",
+                            "name": "color",
+                            "displayName": "Color",
+                            "type": "QColor",
+                            "defaultValue": "#ff0000"
+                        }
+                    ],
                     "stateTypes": [
                         {
                             "id": "3bad3a09-5826-4ed7-a832-10e3e2ee2a7d",
@@ -938,6 +992,29 @@
                             "type": "uint",
                             "defaultValue": 1549394745,
                             "unit": "UnixTime",
+                            "writable": true
+                        },
+                        {
+                            "id": "23df3dce-bd10-4eb3-b5e3-221168440cd4",
+                            "name": "localizedList",
+                            "displayName": "Localized list",
+                            "displayNameAction": "Set value",
+                            "type": "QString",
+                            "possibleValues": [
+                                {
+                                    "value": "value_a",
+                                    "displayName": "Value A"
+                                },
+                                {
+                                    "value": "value_b",
+                                    "displayName": "Value B"
+                                },
+                                {
+                                    "value": "value_c",
+                                    "displayName": "Value C"
+                                }
+                            ],
+                            "defaultValue": "value_a",
                             "writable": true
                         }
                     ]

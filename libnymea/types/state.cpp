@@ -50,9 +50,9 @@ State::State()
 
 /*! Constructs a State reflecting the \l{StateType} given by \a stateTypeId
  *  and associated with the \l{Device} given by \a deviceId */
-State::State(const StateTypeId &stateTypeId, const ThingId &deviceId):
+State::State(const StateTypeId &stateTypeId, const ThingId &thingId):
     m_stateTypeId(stateTypeId),
-    m_thingId(deviceId)
+    m_thingId(thingId)
 {
 }
 
@@ -90,6 +90,11 @@ void State::setMaxValue(const QVariant &maxValue)
     m_maxValue = maxValue;
 }
 
+void State::setPossibleValues(const QVariantList &values)
+{
+    m_possibleValues = values;
+}
+
 QVariant State::minValue() const
 {
     return m_minValue;
@@ -98,6 +103,11 @@ QVariant State::minValue() const
 QVariant State::maxValue() const
 {
     return m_maxValue;
+}
+
+QVariantList State::possibleValues() const
+{
+    return m_possibleValues;
 }
 
 Types::StateValueFilter State::filter() const

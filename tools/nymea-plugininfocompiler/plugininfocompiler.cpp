@@ -301,8 +301,11 @@ void PluginInfoCompiler::writeStateTypes(const StateTypes &stateTypes, const QSt
         }
         m_variableNames.append(variableName);
         write(QString("StateTypeId %1 = StateTypeId(\"%2\");").arg(variableName).arg(stateType.id().toString()));
-        m_translationStrings.insert(stateType.displayName(), QString("The name of the StateType (%1) of ThingClass %2").arg(stateType.id().toString()).arg(thingClassName));
         writeExtern(QString("extern StateTypeId %1;").arg(variableName));
+        m_translationStrings.insert(stateType.displayName(), QString("The name of the StateType (%1) of ThingClass %2").arg(stateType.id().toString()).arg(thingClassName));
+        foreach (const QString &possibleValueDisplayName, stateType.possibleValuesDisplayNames()) {
+            m_translationStrings.insert(possibleValueDisplayName, QString("The name of a possible value of StateType %1 of ThingClass %2").arg(stateType.id().toString()).arg(thingClassName));
+        }
     }
 }
 

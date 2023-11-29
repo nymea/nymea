@@ -160,6 +160,16 @@ void StateType::setPossibleValues(const QVariantList &possibleValues)
     m_possibleValues = possibleValues;
 }
 
+QStringList StateType::possibleValuesDisplayNames() const
+{
+    return m_possibleValuesDisplayNames;
+}
+
+void StateType::setPossibleValuesDisplayNames(const QStringList &possibleValuesDisplayNames)
+{
+    m_possibleValuesDisplayNames = possibleValuesDisplayNames;
+}
+
 /*! Returns the unit of this StateType. */
 Types::Unit StateType::unit() const
 {

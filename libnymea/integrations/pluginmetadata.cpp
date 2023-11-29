@@ -417,12 +417,30 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
 
                 if (st.contains("possibleValues")) {
                     QVariantList possibleValues;
+                    QStringList possibleValuesDisplayNames;
                     foreach (const QJsonValue &possibleValueJson, st.value("possibleValues").toArray()) {
                         QVariant possibleValue = possibleValueJson.toVariant();
-                        possibleValue.convert(stateType.type());
-                        possibleValues.append(possibleValue);
+                        QVariant value;
+                        QString name;
+
+                        if (possibleValueJson.isObject()) {
+                            if (!possibleValue.toMap().contains("value") || !possibleValue.toMap().contains("displayName")) {
+                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid possible value \"" + possibleValueJson.toString() + "\" which is of object type but does not have \"value\" and \"displayName\" properties.");
+                                hasError = true;
+                                break;
+                            }
+                            value = possibleValue.toMap().value("value");
+                            name = possibleValue.toMap().value("displayName").toString();
+                        } else {
+                            value = possibleValue;
+                            name = possibleValue.toString();
+                        }
+                        value.convert(stateType.type());
+                        possibleValues.append(value);
+                        possibleValuesDisplayNames.append(name);
                     }
                     stateType.setPossibleValues(possibleValues);
+                    stateType.setPossibleValuesDisplayNames(possibleValuesDisplayNames);
 
                     if (!stateType.possibleValues().contains(stateType.defaultValue())) {
                         m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid default value \"" + stateType.defaultValue().toString() + "\" which is not in the list of possible values.");

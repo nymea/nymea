@@ -757,6 +757,8 @@ void IntegrationPluginMock::executeAction(ThingActionInfo *info)
             info->thing()->setStateValue(inputTypeMockWritableTimestampIntStateTypeId, info->action().param(inputTypeMockWritableTimestampIntActionWritableTimestampIntParamTypeId).value().toLongLong());
         } else if (info->action().actionTypeId() == inputTypeMockWritableTimestampUIntActionTypeId) {
             info->thing()->setStateValue(inputTypeMockWritableTimestampUIntStateTypeId, info->action().param(inputTypeMockWritableTimestampUIntActionWritableTimestampUIntParamTypeId).value().toULongLong());
+        } else if (info->action().actionTypeId() == inputTypeMockLocalizedListActionTypeId) {
+            info->thing()->setStateValue(inputTypeMockLocalizedListStateTypeId, info->action().paramValue(inputTypeMockLocalizedListActionLocalizedListParamTypeId).toString());
         }
         info->finish(Thing::ThingErrorNoError);
         return;

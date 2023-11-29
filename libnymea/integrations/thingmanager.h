@@ -114,7 +114,7 @@ signals:
     void loaded();
     void pluginConfigChanged(const PluginId &id, const ParamList &config);
     void eventTriggered(const Event &event);
-    void thingStateChanged(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue);
+    void thingStateChanged(Thing *thing, const StateTypeId &stateTypeId, const QVariant &value, const QVariant &minValue, const QVariant &maxValue, const QVariantList &possibleValues);
     void thingRemoved(const ThingId &thingId);
     void thingAdded(Thing *thing);
     void thingChanged(Thing *thing);

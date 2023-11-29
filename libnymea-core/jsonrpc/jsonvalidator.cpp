@@ -281,7 +281,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
         }
         return Result(true);
     }
-    Q_ASSERT_X(false, "JsonValildator", "Incomplete validation. Unexpected type in template");
+    Q_ASSERT_X(false, "JsonValildator", QString("Incomplete validation. Unexpected type %1 in template").arg(definition.type()).toUtf8());
     return Result(false);
 }
 

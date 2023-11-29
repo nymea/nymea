@@ -77,4 +77,6 @@ private:
     TriggeredBy m_triggeredBy = TriggeredByUser;
 };
 
+Q_DECLARE_METATYPE(Action::TriggeredBy)
+
 #endif // ACTION_H

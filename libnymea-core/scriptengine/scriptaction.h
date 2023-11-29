@@ -36,6 +36,9 @@
 #include <QVariantMap>
 #include <QUuid>
 
+#include "integrations/thing.h"
+#include "types/action.h"
+
 class Logger;
 class ThingManager;
 
@@ -76,6 +79,8 @@ signals:
     void interfaceNameChanged();
     void actionTypeIdChanged();
     void actionNameChanged();
+
+    void executed(const QVariantMap &params, Thing::ThingError status, Action::TriggeredBy triggeredBy);
 
 public:
     ThingManager *m_thingManager = nullptr;

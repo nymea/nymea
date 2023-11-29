@@ -24,6 +24,8 @@
 #include <QObject>
 
 #include "typeutils.h"
+#include "integrations/thing.h"
+#include "types/action.h"
 
 class TestHelper : public QObject
 {
@@ -33,6 +35,7 @@ public:
 
     Q_INVOKABLE void logEvent(const QString &thingId, const QString &eventId, const QVariantMap &params);
     Q_INVOKABLE void logStateChange(const QString &thingId, const QString &stateId, const QVariant &value);
+    Q_INVOKABLE void logActionExecuted(const QString &thingId, const QString &actionId, const QVariantMap &params, Thing::ThingError status, Action::TriggeredBy triggeredBy);
 
     Q_INVOKABLE void setTestResult(bool success);
 
@@ -41,7 +44,8 @@ signals:
     void executeAction(const QVariantMap &params);
 
     void eventLogged(const ThingId &thingId, const QString &eventId, const QVariantMap &params);
-    void stateChangeLogged(const ThingId &thingId, const QString stateId, const QVariant &value);
+    void stateChangeLogged(const ThingId &thingId, const QString &stateId, const QVariant &value);
+    void actionExecutionLogged(const ThingId &thingId, const QString &actionId, const QVariantMap &params, Thing::ThingError status, Action::TriggeredBy triggeredBy);
 
     void testResult(bool success);
 

@@ -170,6 +170,22 @@ void ScriptThing::init(ThingManager *thingManager)
         // Note: Explicitly convert the params to a Json document because auto-casting from QVariantMap to the JS engine might drop some values.
         emit eventTriggered(thing->thingClass().eventTypes().findById(event.eventTypeId()).name(), QJsonDocument::fromVariant(params).toVariant().toMap());
     });
+    connect(m_thingManager, &ThingManager::actionExecuted, this, [=](const Action &action, Thing::ThingError status){
+        if (m_thingId != action.thingId()) {
+            return;
+        }
+
+        Thing *thing = m_thingManager->findConfiguredThing(action.thingId());
+        QVariantMap params;
+        foreach (const Param &param, action.params()) {
+            params.insert(param.paramTypeId().toString().remove(QRegExp("[{}]")), param.value().toByteArray());
+            QString paramName = thing->thingClass().actionTypes().findById(action.actionTypeId()).paramTypes().findById(param.paramTypeId()).name();
+            params.insert(paramName, param.value().toByteArray());
+        }
+
+        // Note: Explicitly convert the params to a Json document because auto-casting from QVariantMap to the JS engine might drop some values.
+        emit actionExecuted(thing->thingClass().actionTypes().findById(action.actionTypeId()).name(), QJsonDocument::fromVariant(params).toVariant().toMap(), status, action.triggeredBy());
+    });
 }
 
 void ScriptThing::connectToThing()

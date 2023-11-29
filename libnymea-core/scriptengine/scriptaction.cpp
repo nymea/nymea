@@ -37,6 +37,7 @@
 #include <QQmlEngine>
 #include <qqml.h>
 #include <QQmlContext>
+#include <QJsonDocument>
 
 #include <QLoggingCategory>
 Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
@@ -56,6 +57,34 @@ void ScriptAction::classBegin()
     m_scriptId = qmlEngine(this)->contextForObject(this)->contextProperty("scriptId").toUuid();
     m_logger = qmlEngine(this)->contextForObject(this)->contextProperty("logger").value<Logger*>();
 
+    connect(m_thingManager, &ThingManager::actionExecuted, this, [=](const Action &action, Thing::ThingError status){
+        if (ThingId(m_thingId) != action.thingId()) {
+            return;
+        }
+
+        Thing *thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
+        if (!thing) {
+            return;
+        }
+
+        ActionTypeId ourActionTypeId = ActionTypeId(m_actionTypeId);
+        if (ourActionTypeId.isNull()) {
+            ourActionTypeId = thing->thingClass().actionTypes().findByName(m_actionName).id();
+        }
+        if (ourActionTypeId.isNull() || action.actionTypeId() != ourActionTypeId) {
+            return;
+        }
+
+        QVariantMap params;
+        foreach (const Param &param, action.params()) {
+            params.insert(param.paramTypeId().toString().remove(QRegExp("[{}]")), param.value().toByteArray());
+            QString paramName = thing->thingClass().actionTypes().findById(action.actionTypeId()).paramTypes().findById(param.paramTypeId()).name();
+            params.insert(paramName, param.value().toByteArray());
+        }
+
+        // Note: Explicitly convert the params to a Json document because auto-casting from QVariantMap to the JS engine might drop some values.
+        emit executed(QJsonDocument::fromVariant(params).toVariant().toMap(), status, action.triggeredBy());
+    });
 }
 
 void ScriptAction::componentComplete()

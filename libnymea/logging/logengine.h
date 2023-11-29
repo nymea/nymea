@@ -54,6 +54,9 @@ public:
     virtual bool jobsRunning() const = 0;
     virtual void clear(const QString &source) = 0;
 
+    virtual void enable() = 0;
+    virtual void disable() = 0;
+
 signals:
     void logEntryAdded(const LogEntry &entry);
 

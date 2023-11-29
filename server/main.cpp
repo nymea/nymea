@@ -52,6 +52,7 @@
 #include "nymeadbusservice.h"
 #include "nymeaapplication.h"
 #include "loggingcategories.h"
+#include "logging/logengine.h"
 #include "version.h"
 
 NYMEA_LOGGING_CATEGORY(dcApplication, "Application")
@@ -120,6 +121,9 @@ int main(int argc, char *argv[])
 
     QCommandLineOption interfacesOption({"i", "interface"}, QCoreApplication::translate("nymea", "Additional interfaces to listen on. In nymea URI format (e.g. nymeas://127.0.0.2:7777). Note that such interfaces will not require any authentication as they are intended to be used for automated testing only."), "interfaceString");
     parser.addOption(interfacesOption);
+
+    QCommandLineOption noLogDbOption({"m", "no-logengine"}, QCoreApplication::translate("nymea", "Disable the influx DB log engine."));
+    parser.addOption(noLogDbOption);
 
     parser.process(application);
 
@@ -230,12 +234,13 @@ int main(int argc, char *argv[])
         }
 
         // create core instance
-        NymeaCore::instance()->init(parser.values(interfacesOption));
+        NymeaCore::instance()->init(parser.values(interfacesOption), parser.isSet(noLogDbOption));
         int ret = application.exec();
         closeLogFile();
         return ret;
     }
 
+    // FIXME: the background service should get the arguments too
     NymeaService service(argc, argv);
     int ret = service.exec();
     closeLogFile();

@@ -83,7 +83,7 @@ NymeaCore::NymeaCore(QObject *parent) :
 {
 }
 
-void NymeaCore::init(const QStringList &additionalInterfaces) {
+void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEngine) {
     qCDebug(dcCore()) << "Initializing NymeaCore";
 
     qCDebug(dcPlatform()) << "Loading platform abstraction";
@@ -124,8 +124,13 @@ void NymeaCore::init(const QStringList &additionalInterfaces) {
     m_hardwareManager = new HardwareManagerImplementation(m_platform, m_serverManager->mqttBroker(), m_zigbeeManager, m_zwaveManager, m_modbusRtuManager, this);
 
     qCDebug(dcCore) << "Creating Log Engine";
-//    m_logger = new Logger(m_configuration->logDBDriver(), m_configuration->logDBName(), m_configuration->logDBHost(), m_configuration->logDBUser(), m_configuration->logDBPassword(), this);
     m_logEngine = new LogEngineInfluxDB(m_configuration->logDBHost(), m_configuration->logDBName(), m_configuration->logDBUser(), m_configuration->logDBPassword(), this);
+    if (disableLogEngine) {
+        m_logEngine->disable();
+    } else {
+        m_logEngine->enable();
+    }
+
     m_logger = m_logEngine->registerLogSource("core", {"event"});
 
     qCDebug(dcCore) << "Creating Thing Manager (locale:" << m_configuration->locale() << ")";
@@ -340,7 +345,7 @@ ExperienceManager *NymeaCore::experienceManager() const
     return m_experienceManager;
 }
 
-LogEngine* NymeaCore::logEngine() const
+LogEngine *NymeaCore::logEngine() const
 {
     return m_logEngine;
 }

@@ -35,6 +35,7 @@
 
 #include <QQmlEngine>
 #include <qqml.h>
+#include <QQmlContext>
 
 #include <QLoggingCategory>
 Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
@@ -94,14 +95,14 @@ void ScriptInterfaceAction::execute(const QVariantMap &params)
         }
     }
     if (things.isEmpty()) {
-        qCWarning(dcScriptEngine) << "No things matching by interface" << m_interfaceName;
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "No things matching by interface" << m_interfaceName;
         return;
     }
 
     foreach (Thing *thing, things) {
         ActionType actionType = thing->thingClass().actionTypes().findByName(m_actionName);
         if (actionType.id().isNull()) {
-            qCWarning(dcScriptEngine()) << "Thing" << thing->name() << "does not have action" << m_actionName;
+            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Thing" << thing->name() << "does not have action" << m_actionName;
             continue;
         }
         Action action(actionType.id(), thing->id(), Action::TriggeredByScript);
@@ -114,7 +115,7 @@ void ScriptInterfaceAction::execute(const QVariantMap &params)
                 paramType = actionType.paramTypes().findByName(paramNameOrId);
             }
             if (paramType.id().isNull()) {
-                qCWarning(dcScriptEngine()) << "Invalid param id or name";
+                QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Invalid param id or name";
                 continue;
             }
             paramList << Param(paramType.id(), params.value(paramNameOrId));

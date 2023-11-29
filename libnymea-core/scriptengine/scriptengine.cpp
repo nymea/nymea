@@ -465,7 +465,7 @@ void ScriptEngine::onScriptMessage(QtMsgType type, const QMessageLogContext &con
 
 void ScriptEngine::logMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-    if (strcmp(context.category, "qml") != 0) {
+    if (strcmp(context.category, "qml") != 0 && strcmp(context.category, "ScriptRuntime") != 0) {
         s_upstreamMessageHandler(type, context, message);
         return;
     }
@@ -488,6 +488,7 @@ void ScriptEngine::logMessageHandler(QtMsgType type, const QMessageLogContext &c
         QFileInfo fi(context.file);
         s_upstreamMessageHandler(type, newContext, fi.fileName() + ":" + QString::number(context.line) + ": " + message);
     }
+    delete category;
 }
 
 void ScriptEngine::logCategoryFilter(QLoggingCategory *category)

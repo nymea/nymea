@@ -39,11 +39,13 @@
 #include <QQmlContext>
 #include <QJsonDocument>
 
+#include <QMessageLogger>
 #include <QLoggingCategory>
 Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
 
 namespace nymeaserver {
 namespace scriptengine {
+
 
 ScriptAction::ScriptAction(QObject *parent) : QObject(parent)
 {
@@ -159,7 +161,7 @@ void ScriptAction::execute(const QVariantMap &params)
         things.append(thing);
     }
     if (things.isEmpty()) {
-        qCWarning(dcScriptEngine) << "No things matching by id" << m_thingId << "and interface" << m_interfaceName;
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "No things matching id" << m_thingId << "or interface" << m_interfaceName;
         return;
     }
 
@@ -171,7 +173,7 @@ void ScriptAction::execute(const QVariantMap &params)
             actionType = thing->thingClass().actionTypes().findByName(m_actionName);
         }
         if (actionType.id().isNull()) {
-            qCWarning(dcScriptEngine()) << "Thing" << thing->name() << "does not have actionTypeId" << m_actionTypeId << "or actionName" << m_actionName;
+            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Thing" << thing->name() << "does not have actionTypeId" << m_actionTypeId << "or actionName" << m_actionName;
             continue;
         }
         Action action(actionType.id(), thing->id(), Action::TriggeredByScript);
@@ -184,7 +186,7 @@ void ScriptAction::execute(const QVariantMap &params)
                 paramType = actionType.paramTypes().findByName(paramNameOrId);
             }
             if (paramType.id().isNull()) {
-                qCWarning(dcScriptEngine()) << "Invalid param id or name";
+                QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Invalid param id or name:" << paramNameOrId;
                 continue;
             }
             paramList << Param(paramType.id(), params.value(paramNameOrId));

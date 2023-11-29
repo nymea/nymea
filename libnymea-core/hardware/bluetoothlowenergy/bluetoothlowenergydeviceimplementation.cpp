@@ -33,6 +33,20 @@
 
 namespace nymeaserver {
 
+BluetoothLowEnergyDeviceImplementation::BluetoothLowEnergyDeviceImplementation(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType, QObject *parent) :
+    BluetoothLowEnergyDevice(parent),
+    m_deviceInfo(deviceInfo)
+{
+    m_controller = new QLowEnergyController(address(), this);
+    m_controller->setRemoteAddressType(addressType);
+
+    connect(m_controller, &QLowEnergyController::connected, this, &BluetoothLowEnergyDeviceImplementation::onConnected);
+    connect(m_controller, &QLowEnergyController::disconnected, this, &BluetoothLowEnergyDeviceImplementation::onDisconnected);
+    connect(m_controller, &QLowEnergyController::discoveryFinished, this, &BluetoothLowEnergyDeviceImplementation::onServiceDiscoveryFinished);
+    connect(m_controller, &QLowEnergyController::stateChanged, this, &BluetoothLowEnergyDeviceImplementation::onStateChanged);
+    connect(m_controller, SIGNAL(error(QLowEnergyController::Error)), this, SLOT(onDeviceError(QLowEnergyController::Error)));
+}
+
 QString BluetoothLowEnergyDeviceImplementation::name() const
 {
     return m_deviceInfo.name();
@@ -48,39 +62,13 @@ QLowEnergyController *BluetoothLowEnergyDeviceImplementation::controller() const
     return m_controller;
 }
 
-BluetoothLowEnergyDeviceImplementation::BluetoothLowEnergyDeviceImplementation(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType, QObject *parent) :
-    BluetoothLowEnergyDevice(parent),
-    m_deviceInfo(deviceInfo)
-{
-    m_controller = new QLowEnergyController(address(), this);
-    m_controller->setRemoteAddressType(addressType);
 
-    connect(m_controller, &QLowEnergyController::connected, this, &BluetoothLowEnergyDeviceImplementation::onConnected);
-    connect(m_controller, &QLowEnergyController::disconnected, this, &BluetoothLowEnergyDeviceImplementation::onDisconnected);
-    connect(m_controller, &QLowEnergyController::discoveryFinished, this, &BluetoothLowEnergyDeviceImplementation::onServiceDiscoveryFinished);
-    connect(m_controller, &QLowEnergyController::stateChanged, this, &BluetoothLowEnergyDeviceImplementation::onStateChanged);
-    connect(m_controller, SIGNAL(error(QLowEnergyController::Error)), this, SLOT(onDeviceError(QLowEnergyController::Error)));
-}
-
-void BluetoothLowEnergyDeviceImplementation::setConnected(const bool &connected)
+void BluetoothLowEnergyDeviceImplementation::setConnected(bool connected)
 {
     if (m_connected != connected) {
         m_connected = connected;
         qCDebug(dcBluetooth()) << "Device" << name() << address().toString() << (connected ? "connected" : "disconnected");
         emit connectedChanged(m_connected);
-    }
-}
-
-void BluetoothLowEnergyDeviceImplementation::setEnabled(const bool &enabled)
-{
-    m_enabled = enabled;
-
-    if (!m_enabled) {
-        m_controller->disconnectFromDevice();
-    } else {
-        if (m_autoConnecting) {
-            m_controller->connectToDevice();
-        }
     }
 }
 
@@ -162,8 +150,7 @@ QList<QBluetoothUuid> BluetoothLowEnergyDeviceImplementation::serviceUuids() con
 
 void BluetoothLowEnergyDeviceImplementation::onDeviceError(const QLowEnergyController::Error &error)
 {
-    if (connected())
-        qCWarning(dcBluetooth())  << "Device error:" << name() << address().toString() << ": " << error << m_controller->errorString();
+    qCWarning(dcBluetooth())  << "Device error:" << name() << address().toString() << ": " << error << m_controller->errorString();
 
     emit errorOccurred(error);
 }

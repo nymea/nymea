@@ -30,10 +30,13 @@
 
 #include "bluetoothlowenergymanagerimplementation.h"
 #include "loggingcategories.h"
+#include "nymeabluetoothagent.h"
+#include "bluetoothpairingjobimplementation.h"
 
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDBusReply>
+#include <QDBusInterface>
 
 namespace nymeaserver {
 
@@ -54,85 +57,114 @@ BluetoothLowEnergyManagerImplementation::BluetoothLowEnergyManagerImplementation
         return;
     }
 
-    // Check which bluetooth adapter are available
-    QList<QBluetoothHostInfo> bluetoothAdapters = QBluetoothLocalDevice::allDevices();
-    if (bluetoothAdapters.isEmpty()) {
-        qCWarning(dcBluetooth()) << "No bluetooth adapter found. Resource not available.";
-        return;
-    }
+    m_agent = new NymeaBluetoothAgent(this);
 
-    // Create a scanner for each adapter
-    foreach (const QBluetoothHostInfo &hostInfo, bluetoothAdapters) {
-        qCDebug(dcBluetooth()) << "Using adapter:" << hostInfo.name() << hostInfo.address().toString();
+    foreach (const QBluetoothHostInfo &hostInfo, QBluetoothLocalDevice::allDevices()) {
+        qCDebug(dcBluetooth()) << "Enabling bluetooth adapter:" << hostInfo.name() << hostInfo.address().toString();
         QBluetoothLocalDevice localDevice(hostInfo.address());
         localDevice.powerOn();
         localDevice.setHostMode(QBluetoothLocalDevice::HostDiscoverable);
-        QBluetoothDeviceDiscoveryAgent *discoveryAgent = new QBluetoothDeviceDiscoveryAgent(hostInfo.address(), this);
-        connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, this, &BluetoothLowEnergyManagerImplementation::onDeviceDiscovered);
-        connect(discoveryAgent, SIGNAL(error(QBluetoothDeviceDiscoveryAgent::Error)), this, SLOT(onDiscoveryError(QBluetoothDeviceDiscoveryAgent::Error)));
-        m_bluetoothDiscoveryAgents.append(discoveryAgent);
     }
-
-    // Discovery timer, interval depends on discovery call
-    m_timer = new QTimer(this);
-    m_timer->setSingleShot(true);
-    connect(m_timer, &QTimer::timeout, this, &BluetoothLowEnergyManagerImplementation::onDiscoveryTimeout);
-
-    // Reconnect timer
-    connect(m_reconnectTimer, &PluginTimer::timeout, this, &BluetoothLowEnergyManagerImplementation::onReconnectTimeout);
 
     qCDebug(dcHardware()) << "-->" << name() << "created successfully.";
     m_available = true;
 }
 
-BluetoothDiscoveryReply *BluetoothLowEnergyManagerImplementation::discoverDevices(int interval)
+BluetoothDiscoveryReply *BluetoothLowEnergyManagerImplementation::discoverDevices(int timeout)
 {
-    // Create the reply for this discovery request
-    QPointer<BluetoothDiscoveryReplyImplementation> reply = new BluetoothDiscoveryReplyImplementation(this);
+    BluetoothDiscoveryReplyImplementation *reply = new BluetoothDiscoveryReplyImplementation(this);
     if (!available()) {
         qCWarning(dcBluetooth()) << "is not avilable.";
         reply->setError(BluetoothDiscoveryReplyImplementation::BluetoothDiscoveryReplyErrorNotAvailable);
         reply->setFinished();
-        return reply.data();
+        return reply;
     }
-
     if (!enabled()) {
         qCWarning(dcBluetooth()) << "is not enabled.";
         reply->setError(BluetoothDiscoveryReplyImplementation::BluetoothDiscoveryReplyErrorNotEnabled);
         reply->setFinished();
-        return reply.data();
+        return reply;
     }
 
-    if (!m_currentReply.isNull()) {
-        qCWarning(dcBluetooth()) << "resource busy. There is already a discovery running.";
-        reply->setError(BluetoothDiscoveryReplyImplementation::BluetoothDiscoveryReplyErrorBusy);
+    if (QBluetoothLocalDevice::allDevices().isEmpty()) {
+        qCWarning(dcBluetooth()) << "No Bluetooth adapter available.";
+        reply->setError(BluetoothDiscoveryReplyImplementation::BluetoothDiscoveryReplyErrorNotAvailable);
         reply->setFinished();
-        return reply.data();
+        return reply;
     }
 
-    m_currentReply = reply;
-    m_discoveredDevices.clear();
+    // Create a scanner for each adapter
+    foreach (const QBluetoothHostInfo &hostInfo, QBluetoothLocalDevice::allDevices()) {
+        qCDebug(dcBluetooth()) << "Starting discovery on adapter:" << hostInfo.name() << hostInfo.address().toString();
+        QBluetoothLocalDevice localDevice(hostInfo.address());
+        localDevice.powerOn();
+        localDevice.setHostMode(QBluetoothLocalDevice::HostDiscoverable);
+        QBluetoothDeviceDiscoveryAgent *discoveryAgent = new QBluetoothDeviceDiscoveryAgent(hostInfo.address(), reply);
+        discoveryAgent->setLowEnergyDiscoveryTimeout(qMax(5000, qMin(30000, timeout)));
+        connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, reply, [=](const QBluetoothDeviceInfo &info){
+            // Note: only show low energy devices
+            if (info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration) {
+                qCDebug(dcBluetooth()) << "device discovered" << info.name() << info.address().toString();
+                reply->addDiscoveredDevice(info, hostInfo);
+            }
+        });
+        connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, reply, [=](){
+            qCDebug(dcBluetooth()) << "Discovery finished";
+            reply->setFinished();
+        });
+//        connect(discoveryAgent, SIGNAL(error(QBluetoothDeviceDiscoveryAgent::Error)), this, SLOT(onDiscoveryError(QBluetoothDeviceDiscoveryAgent::Error)));
 
-    // Start discovery on all adapters
-    qCDebug(dcBluetooth()) << "Start bluetooth discovery";
-    foreach (QBluetoothDeviceDiscoveryAgent *discoveryAgent, m_bluetoothDiscoveryAgents) {
         discoveryAgent->start();
     }
 
-    // Prevent blocking the hardware resource from plugins
-    int finalInterval = interval;
-    if (finalInterval > 30000) {
-        qCWarning(dcBluetooth()) << "Discovery interval out of range. Reset to 30 seconds.";
-        finalInterval = 30000;
+    return reply;
+}
+
+BluetoothPairingJob *BluetoothLowEnergyManagerImplementation::pairDevice(const QBluetoothAddress &device, const QBluetoothAddress &adapter)
+{
+    qCDebug(dcBluetooth()) << "pairDevice";
+    BluetoothPairingJobImplementation *job = new BluetoothPairingJobImplementation(m_agent, device, this);
+
+    QBluetoothLocalDevice *localDevice = nullptr;
+    if (adapter.isNull()) {
+        localDevice = new QBluetoothLocalDevice(this);
+    } else {
+        localDevice = new QBluetoothLocalDevice(adapter, this);
     }
 
-    if (finalInterval <= 0) {
-        qCWarning(dcBluetooth()) << "Discovery interval out of range. Reset to 5 seconds.";
-        finalInterval = 5000;
+    if (!localDevice->isValid()) {
+        qCWarning(dcBluetooth()) << "Local device" << adapter.toString() << "is not valid";
+        job->finish(false);
+        return job;
+    }
+    localDevice->requestPairing(device, QBluetoothLocalDevice::AuthorizedPaired);
+    connect(localDevice, &QBluetoothLocalDevice::error, job, [=](QBluetoothLocalDevice::Error error){
+        qCDebug(dcBluetooth()) << "Pairing error" << error;
+        job->finish(false);
+        localDevice->deleteLater();
+    });
+    connect(localDevice, &QBluetoothLocalDevice::pairingFinished, job, [=](const QBluetoothAddress &address, QBluetoothLocalDevice::Pairing pairing){
+        qCDebug(dcBluetooth()) << "Pairing finished" << address.toString() << pairing;
+        job->finish(true);
+        localDevice->deleteLater();
+    });
+    return job;
+}
+
+void BluetoothLowEnergyManagerImplementation::unpairDevice(const QBluetoothAddress &device, const QBluetoothAddress &adapter)
+{
+    QBluetoothLocalDevice *localDevice = nullptr;
+    if (adapter.isNull()) {
+        localDevice = new QBluetoothLocalDevice(this);
+    } else {
+        localDevice = new QBluetoothLocalDevice(adapter, this);
     }
 
-    m_timer->start(finalInterval);
-    return reply.data();
+    if (!localDevice->isValid()) {
+        qCWarning(dcBluetooth()) << "Local device" << adapter.toString() << "is not valid";
+        return;
+    }
+    localDevice->requestPairing(device, QBluetoothLocalDevice::Unpaired);
 }
 
 BluetoothLowEnergyDevice *BluetoothLowEnergyManagerImplementation::registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType)
@@ -182,17 +214,17 @@ void BluetoothLowEnergyManagerImplementation::setEnabled(bool enabled)
         return;
     }
 
-    bool success = false;
-    if (enabled) {
-        success = enable();
-    } else {
-        success = disable();
+    foreach (QBluetoothHostInfo info, QBluetoothLocalDevice::allDevices()) {
+        QBluetoothLocalDevice localDevice(info.address());
+        if (enabled) {
+            localDevice.setHostMode(QBluetoothLocalDevice::HostConnectable);
+        } else {
+            localDevice.setHostMode(QBluetoothLocalDevice::HostPoweredOff);
+        }
     }
 
-    if (success) {
-        m_enabled = enabled;
-        emit enabledChanged(m_enabled);
-    }
+    m_enabled = enabled;
+    emit enabledChanged(m_enabled);
 }
 
 void BluetoothLowEnergyManagerImplementation::onReconnectTimeout()
@@ -203,74 +235,6 @@ void BluetoothLowEnergyManagerImplementation::onReconnectTimeout()
             device->connectDevice();
         }
     }
-}
-
-void BluetoothLowEnergyManagerImplementation::onDiscoveryTimeout()
-{
-    // Stop discovery on all adapters
-    qCDebug(dcBluetooth()) << "Stop bluetooth discovery";
-    foreach (QBluetoothDeviceDiscoveryAgent *discoveryAgent, m_bluetoothDiscoveryAgents) {
-        discoveryAgent->stop();
-    }
-
-    qCDebug(dcBluetooth()) << "Discovery finished. Found" << m_discoveredDevices.count() << "bluetooth devices.";
-
-    if (m_currentReply.isNull()) {
-        qCWarning(dcBluetooth()) << "Reply does not exist any more. Please don't delete the reply before it has finished.";
-        m_currentReply.clear();
-        return;
-    }
-
-    m_currentReply->setError(BluetoothDiscoveryReply::BluetoothDiscoveryReplyErrorNoError);
-    m_currentReply->setDiscoveredDevices(m_discoveredDevices);
-    m_currentReply->setFinished();
-
-    m_currentReply.clear();
-}
-
-void BluetoothLowEnergyManagerImplementation::onDeviceDiscovered(const QBluetoothDeviceInfo &deviceInfo)
-{
-    // Add the device to the list if not already added
-    bool alreadyAdded = false;
-    foreach (const QBluetoothDeviceInfo &device, m_discoveredDevices) {
-        if (device.address() == deviceInfo.address()) {
-            alreadyAdded = true;
-        }
-    }
-
-    // Note: only show low energy devices
-    if (!alreadyAdded && deviceInfo.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration) {
-        qCDebug(dcBluetooth()) << "device discovered" << deviceInfo.name() << deviceInfo.address().toString();
-        m_discoveredDevices.append(deviceInfo);
-    }
-}
-
-void BluetoothLowEnergyManagerImplementation::onDiscoveryError(const QBluetoothDeviceDiscoveryAgent::Error &error)
-{
-    QBluetoothDeviceDiscoveryAgent *discoveryAgent = static_cast<QBluetoothDeviceDiscoveryAgent *>(sender());
-    qCWarning(dcBluetooth()) << "Discovery error:" << error << discoveryAgent->errorString();
-}
-
-bool BluetoothLowEnergyManagerImplementation::enable()
-{
-    if (!available()) {
-        qCWarning(dcBluetooth()) << "Bluetooth hardware not available. Cannot enable Hardware resource";
-        return false;
-    }
-    foreach (QPointer<BluetoothLowEnergyDeviceImplementation> bluetoothDevice, m_devices) {
-        bluetoothDevice->setEnabled(true);
-    }
-    qCDebug(dcBluetooth()) << "Hardware resource enabled.";
-    return true;
-}
-
-bool BluetoothLowEnergyManagerImplementation::disable()
-{
-    foreach (QPointer<BluetoothLowEnergyDeviceImplementation> bluetoothDevice, m_devices) {
-        bluetoothDevice->setEnabled(false);
-    }
-    qCDebug(dcBluetooth()) << "Hardware resource disabled.";
-    return true;
 }
 
 }

@@ -33,6 +33,7 @@
 
 #include <QObject>
 #include <QBluetoothDeviceInfo>
+#include <QBluetoothLocalDevice>
 
 #include "hardware/bluetoothlowenergy/bluetoothdiscoveryreply.h"
 
@@ -49,15 +50,16 @@ public:
 
     bool isFinished() const override;
     BluetoothDiscoveryReplyError error() const override;
-    QList<QBluetoothDeviceInfo> discoveredDevices() const override;
+    QList<QPair<QBluetoothDeviceInfo, QBluetoothHostInfo> > discoveredDevices() const override;
 
 private:
     bool m_finished = false;
     BluetoothDiscoveryReplyError m_error = BluetoothDiscoveryReplyErrorNoError;
-    QList<QBluetoothDeviceInfo> m_discoveredDevices;
+    QList<QPair<QBluetoothDeviceInfo, QBluetoothHostInfo>> m_discoveredDevices;
 
     void setError(const BluetoothDiscoveryReplyError &error);
-    void setDiscoveredDevices(const QList<QBluetoothDeviceInfo> &discoveredDevices);
+    void setDiscoveredDevices(const QList<QPair<QBluetoothDeviceInfo, QBluetoothHostInfo> > &discoveredDevices);
+    void addDiscoveredDevice(const QBluetoothDeviceInfo &info, const QBluetoothHostInfo &hostInfo);
     void setFinished();
 };
 

@@ -46,6 +46,8 @@
 
 namespace nymeaserver {
 
+class NymeaBluetoothAgent;
+
 class BluetoothLowEnergyManagerImplementation : public BluetoothLowEnergyManager
 {
     Q_OBJECT
@@ -55,9 +57,11 @@ class BluetoothLowEnergyManagerImplementation : public BluetoothLowEnergyManager
 public:
     explicit BluetoothLowEnergyManagerImplementation(PluginTimer *reconnectTimer, QObject *parent = nullptr);
 
-    BluetoothDiscoveryReply *discoverDevices(int interval = 5000) override;
+    BluetoothDiscoveryReply *discoverDevices(int timeout = 5000) override;
 
     // Bluetooth device registration methods
+    BluetoothPairingJob *pairDevice(const QBluetoothAddress &device, const QBluetoothAddress &adapter) override;
+    void unpairDevice(const QBluetoothAddress &device, const QBluetoothAddress &adapter) override;
     BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress) override;
     void unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice) override;
 
@@ -67,27 +71,18 @@ public:
 protected:
     void setEnabled(bool enabled) override;
 
+
+private slots:
+    void onReconnectTimeout();
+
 private:
     PluginTimer *m_reconnectTimer = nullptr;
-    QTimer *m_timer = nullptr;
     QList<QPointer<BluetoothLowEnergyDeviceImplementation>> m_devices;
 
     bool m_available = false;
     bool m_enabled = false;
+    NymeaBluetoothAgent *m_agent = nullptr;
 
-    QList<QBluetoothDeviceDiscoveryAgent *> m_bluetoothDiscoveryAgents;
-    QList<QBluetoothDeviceInfo> m_discoveredDevices;
-    QPointer<BluetoothDiscoveryReplyImplementation> m_currentReply;
-
-private slots:
-    void onReconnectTimeout();
-    void onDeviceDiscovered(const QBluetoothDeviceInfo &deviceInfo);
-    void onDiscoveryError(const QBluetoothDeviceDiscoveryAgent::Error &error);
-    void onDiscoveryTimeout();
-
-public slots:
-    bool enable();
-    bool disable();
 
 };
 

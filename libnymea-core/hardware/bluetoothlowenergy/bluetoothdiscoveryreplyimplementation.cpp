@@ -50,7 +50,7 @@ BluetoothDiscoveryReplyImplementation::BluetoothDiscoveryReplyError BluetoothDis
     return m_error;
 }
 
-QList<QBluetoothDeviceInfo> BluetoothDiscoveryReplyImplementation::discoveredDevices() const
+QList<QPair<QBluetoothDeviceInfo, QBluetoothHostInfo>> BluetoothDiscoveryReplyImplementation::discoveredDevices() const
 {
     return m_discoveredDevices;
 }
@@ -63,9 +63,14 @@ void BluetoothDiscoveryReplyImplementation::setError(const BluetoothDiscoveryRep
     }
 }
 
-void BluetoothDiscoveryReplyImplementation::setDiscoveredDevices(const QList<QBluetoothDeviceInfo> &discoveredDevices)
+void BluetoothDiscoveryReplyImplementation::setDiscoveredDevices(const QList<QPair<QBluetoothDeviceInfo, QBluetoothHostInfo>> &discoveredDevices)
 {
     m_discoveredDevices = discoveredDevices;
+}
+
+void BluetoothDiscoveryReplyImplementation::addDiscoveredDevice(const QBluetoothDeviceInfo &info, const QBluetoothHostInfo &hostInfo)
+{
+    m_discoveredDevices.append(qMakePair<QBluetoothDeviceInfo, QBluetoothHostInfo>(info, hostInfo));
 }
 
 void BluetoothDiscoveryReplyImplementation::setFinished()
@@ -73,6 +78,7 @@ void BluetoothDiscoveryReplyImplementation::setFinished()
     m_finished = true;
     // Note: this makes sure the finished signal will be processed in the next event loop
     QTimer::singleShot(0, this, &BluetoothDiscoveryReplyImplementation::finished);
+    deleteLater();
 }
 
 }

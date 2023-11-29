@@ -45,6 +45,31 @@
 
 #include "libnymea.h"
 
+class NymeaBluetoothAgent;
+
+class LIBNYMEA_EXPORT BluetoothPairingJob: public QObject
+{
+    Q_OBJECT
+public:
+    explicit BluetoothPairingJob(const QBluetoothAddress &address, QObject *parent = nullptr);
+    virtual ~BluetoothPairingJob() = default;
+
+    QBluetoothAddress address() const;
+
+    virtual bool isFinished() const = 0;
+    virtual bool success() const = 0;
+
+    virtual void passKeyEntered(const QString passKey) = 0;
+
+signals:
+    void finished(bool success);
+    void passKeyRequested();
+    void displayPinCode(const QString &pinCode);
+
+private:
+    QBluetoothAddress m_address;
+};
+
 class LIBNYMEA_EXPORT BluetoothLowEnergyManager : public HardwareResource
 {
     Q_OBJECT
@@ -53,14 +78,18 @@ public:
     explicit BluetoothLowEnergyManager(QObject *parent = nullptr);
     virtual ~BluetoothLowEnergyManager() = default;
 
+
     virtual BluetoothDiscoveryReply *discoverDevices(int interval = 5000) = 0;
 
     // Bluetooth device registration methods
+    virtual BluetoothPairingJob *pairDevice(const QBluetoothAddress &device, const QBluetoothAddress &adapter) = 0;
+    virtual void unpairDevice(const QBluetoothAddress &device, const QBluetoothAddress &adapter) = 0;
     virtual BluetoothLowEnergyDevice *registerDevice(const QBluetoothDeviceInfo &deviceInfo, const QLowEnergyController::RemoteAddressType &addressType = QLowEnergyController::RandomAddress) = 0;
     virtual void unregisterDevice(BluetoothLowEnergyDevice *bluetoothDevice) = 0;
 
 public slots:
     Q_SCRIPTABLE void EnableBluetooth(bool enabled);
+
 };
 
 #endif // BLUETOOTHLOWENERGYMANAGER_H

@@ -75,10 +75,7 @@ private:
     bool m_discovered = false;
     bool m_enabled = true;
 
-    void setConnected(const bool &connected);
-
-    // Methods called from BluetoothLowEnergyManager
-    void setEnabled(const bool &enabled);
+    void setConnected(bool connected);
 
 private slots:
     void onConnected();

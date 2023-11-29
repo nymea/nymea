@@ -1185,7 +1185,7 @@ void RuleEngine::saveRule(const Rule &rule)
         for (int i = 0; i < rule.timeDescriptor().calendarItems().count(); i++) {
             settings.beginGroup("CalendarItem-" + QString::number(i));
 
-            const CalendarItem &calendarItem = rule.timeDescriptor().calendarItems().at(i);
+            CalendarItem calendarItem = rule.timeDescriptor().calendarItems().at(i);
             if (calendarItem.dateTime().isValid())
                 settings.setValue("dateTime", calendarItem.dateTime().toTime_t());
 
@@ -1218,7 +1218,7 @@ void RuleEngine::saveRule(const Rule &rule)
         settings.beginGroup("timeEventItems");
         for (int i = 0; i < rule.timeDescriptor().timeEventItems().count(); i++) {
             settings.beginGroup("TimeEventItem-" + QString::number(i));
-            const TimeEventItem &timeEventItem = rule.timeDescriptor().timeEventItems().at(i);
+            TimeEventItem timeEventItem = rule.timeDescriptor().timeEventItems().at(i);
 
             if (timeEventItem.dateTime().isValid())
                 settings.setValue("dateTime", timeEventItem.dateTime().toTime_t());
@@ -1253,7 +1253,7 @@ void RuleEngine::saveRule(const Rule &rule)
     // Save Events / EventDescriptors
     settings.beginGroup("events");
     for (int i = 0; i < rule.eventDescriptors().count(); i++) {
-        const EventDescriptor &eventDescriptor = rule.eventDescriptors().at(i);
+        EventDescriptor eventDescriptor = rule.eventDescriptors().at(i);
         settings.beginGroup("EventDescriptor-" + QString::number(i));
         settings.setValue("thingId", eventDescriptor.thingId().toString());
         settings.setValue("eventTypeId", eventDescriptor.eventTypeId().toString());

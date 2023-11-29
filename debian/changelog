@@ -1,3 +1,26 @@
+nymea (1.9.0) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add support for connections to actionExecuted in scripts
+  * Enable more info on double ThingActionInfo::finish() calls
+  * Make possibleValues for states dynamic and translatable
+
+  [ Simon Stürz ]
+  * LogEngine: provide possibility to disable the log engine
+
+  [ Michael Zanetti ]
+  * Make script runtime errors appear in the script console
+
+  [ Simon Stürz ]
+  * NetworkDeviceDiscovery: Update warning regarding multiple IPs for
+    one MAC address.
+
+  [ Michael Zanetti ]
+  * Fix building with newer gcc
+  * Add support for Bluetooth pairing during thing setup
+
+ -- jenkins <developer@nymea.io>  Wed, 29 Nov 2023 14:13:40 +0100
+
 nymea (1.8.4) jammy; urgency=medium
 
 

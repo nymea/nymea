@@ -8,7 +8,8 @@
             "unit": "Percentage",
             "minValue": 0,
             "maxValue": 100,
-            "optional": true
+            "optional": true,
+            "logged": true
         }
     ]
 }

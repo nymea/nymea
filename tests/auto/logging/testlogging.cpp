@@ -180,7 +180,7 @@ void TestLogging::stateChangeLogs_data()
     QTest::addColumn<bool>("expectLogEntry");
 
     QTest::newRow("logged state") << mockConnectedStateTypeId << "connected" << QVariant(false) << QVariant(true) << true;
-    QTest::newRow("not logged state") << mockSignalStrengthStateTypeId << "signalStrength" << QVariant(10) << QVariant(20) << false;
+    QTest::newRow("not logged state") << mockDoubleStateTypeId << "double" << QVariant(10) << QVariant(20) << false;
 }
 
 void TestLogging::stateChangeLogs()

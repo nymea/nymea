@@ -126,6 +126,7 @@ QVariant ScriptState::value() const
 {
     Thing* thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
     if (!thing) {
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "No thing with Id" << m_thingId << "found.";
         return QVariant();
     }
     StateTypeId stateTypeId = StateTypeId(m_stateTypeId);
@@ -146,13 +147,13 @@ void ScriptState::setValue(const QVariant &value)
     Thing* thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
     if (!thing) {
         m_valueCache = value;
-        qCDebug(dcScriptEngine()) << "No thing with id" << m_thingId << "found.";
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "No thing with Id" << m_thingId << "found.";
         return;
     }
 
     if (thing->setupStatus() != Thing::ThingSetupStatusComplete) {
         m_valueCache = value;
-        qCDebug(dcScriptEngine()) << "Thing is not ready yet...";
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Thing" << thing->name() << "(" << m_thingId << ") is not ready yet";
         return;
     }
 
@@ -261,7 +262,7 @@ void ScriptState::connectToThing()
     }
     Thing *thing = m_thingManager->findConfiguredThing(ThingId(m_thingId));
     if (!thing) {
-        qCDebug(dcScriptEngine()) << "Can't find thing with id" << m_thingId << "(yet)";
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "No thing with Id" << m_thingId << "found (yet - it may still appear).";
         return;
     }
 
@@ -270,12 +271,12 @@ void ScriptState::connectToThing()
             setValue(m_valueCache);
         }
     } else {
-        qCDebug(dcScriptEngine()) << "Thing setup for" << thing->name() << "not complete yet";
+        QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Setup for thing" << thing->name() << "(" << m_thingId << ") is not completed yet.";
     }
 
     m_connection = connect(thing, &Thing::setupStatusChanged, this, [this, thing](){
         if (thing->setupStatus() == Thing::ThingSetupStatusComplete) {
-            qCDebug(dcScriptEngine()) << "Thing setup for" << thing->name() << "completed";
+            QMessageLogger(qmlEngine(this)->contextForObject(this)->baseUrl().toString().toUtf8(), 0, "", "qml").warning() << "Setup for" << thing->name() << "(" << m_thingId << ") completed.";
             if (!m_valueCache.isNull()) {
                 setValue(m_valueCache);
             }

@@ -52,7 +52,7 @@ MqttChannel *MqttProviderImplementation::createChannel(const QHostAddress &clien
     QString clientId;
     // Generate a clientId that hasn't been used yet.
     do {
-        clientId = QUuid::createUuid().toString().remove(QRegExp("[{}-]")).left(16);
+        clientId = QUuid::createUuid().toString().remove(QRegularExpression("[{}-]")).left(16);
     } while (m_createdChannels.contains(clientId));
 
     return createChannel(clientId, clientAddress, topicPrefixList);
@@ -60,8 +60,8 @@ MqttChannel *MqttProviderImplementation::createChannel(const QHostAddress &clien
 
 MqttChannel *MqttProviderImplementation::createChannel(const QString &clientId, const QHostAddress &clientAddress, const QStringList &topicPrefixList)
 {
-    QString username = QUuid::createUuid().toString().remove(QRegExp("[{}-]")).left(16);
-    QString password = QUuid::createUuid().toString().remove(QRegExp("[{}-]")).left(16);
+    QString username = QUuid::createUuid().toString().remove(QRegularExpression("[{}-]")).left(16);
+    QString password = QUuid::createUuid().toString().remove(QRegularExpression("[{}-]")).left(16);
 
     return createChannel(clientId, username, password, clientAddress, topicPrefixList);
 }
@@ -160,8 +160,8 @@ MqttClient *MqttProviderImplementation::createInternalClient(const QString &clie
 
     MqttPolicy policy;
     policy.clientId = clientId;
-    policy.username = QUuid::createUuid().toString().remove(QRegExp("[{}-]"));
-    policy.password = QUuid::createUuid().toString().remove(QRegExp("[{}-]"));
+    policy.username = QUuid::createUuid().toString().remove(QRegularExpression("[{}-]"));
+    policy.password = QUuid::createUuid().toString().remove(QRegularExpression("[{}-]"));
     policy.allowedPublishTopicFilters.append("#");
     policy.allowedSubscribeTopicFilters.append("#");
     m_broker->updatePolicy(policy);

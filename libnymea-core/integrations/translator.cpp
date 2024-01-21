@@ -99,7 +99,7 @@ void Translator::loadTranslator(IntegrationPlugin *plugin, const QLocale &locale
             loaded = true;
         }
     } else {
-        QString pluginId = plugin->pluginId().toString().remove(QRegExp("[{}]"));
+        QString pluginId = plugin->pluginId().toString().remove(QRegularExpression("[{}]"));
 
         foreach (const QString &pluginPath, m_thingManager->pluginSearchDirs()) {
             if (translator->load(locale, pluginId, "-", QDir(pluginPath + "/translations/").absolutePath(), ".qm")) {

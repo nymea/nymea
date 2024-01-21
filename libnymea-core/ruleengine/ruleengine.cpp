@@ -190,7 +190,7 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
     if (event.params().count() == 0) {
         qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << thing->name() << " - " << eventType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")";
     } else {
-        qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << thing->name() << " - " << eventType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")" << endl << "     " << event.params();
+        qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << thing->name() << " - " << eventType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")" << Qt::endl << "     " << event.params();
     }
 
     QList<Rule> rules;
@@ -1187,7 +1187,7 @@ void RuleEngine::saveRule(const Rule &rule)
 
             CalendarItem calendarItem = rule.timeDescriptor().calendarItems().at(i);
             if (calendarItem.dateTime().isValid())
-                settings.setValue("dateTime", calendarItem.dateTime().toTime_t());
+                settings.setValue("dateTime", calendarItem.dateTime().toSecsSinceEpoch());
 
             if (calendarItem.startTime().isValid())
                 settings.setValue("startTime", calendarItem.startTime().toString("hh:mm"));
@@ -1221,7 +1221,7 @@ void RuleEngine::saveRule(const Rule &rule)
             TimeEventItem timeEventItem = rule.timeDescriptor().timeEventItems().at(i);
 
             if (timeEventItem.dateTime().isValid())
-                settings.setValue("dateTime", timeEventItem.dateTime().toTime_t());
+                settings.setValue("dateTime", timeEventItem.dateTime().toSecsSinceEpoch());
 
             if (timeEventItem.time().isValid())
                 settings.setValue("time", timeEventItem.time().toString("hh:mm"));
@@ -1339,7 +1339,7 @@ QList<RuleAction> RuleEngine::loadRuleActions(NymeaSettings *settings)
         foreach (QString paramTypeIdString, settings->childGroups()) {
             if (paramTypeIdString.startsWith("RuleActionParam-")) {
                 settings->beginGroup(paramTypeIdString);
-                QString strippedParamTypeIdString = paramTypeIdString.remove(QRegExp("^RuleActionParam-"));
+                QString strippedParamTypeIdString = paramTypeIdString.remove(QRegularExpression("^RuleActionParam-"));
                 EventTypeId eventTypeId = EventTypeId(settings->value("eventTypeId", EventTypeId()).toString());
                 ParamTypeId eventParamTypeId = ParamTypeId(settings->value("eventParamTypeId", ParamTypeId()).toString());
                 ThingId stateThingId = ThingId(settings->value("stateThingId", ThingId()).toString());
@@ -1758,7 +1758,7 @@ void RuleEngine::init()
                 foreach (QString groupName, settings.childGroups()) {
                     if (groupName.startsWith("ParamDescriptor-")) {
                         settings.beginGroup(groupName);
-                        QString strippedGroupName = groupName.remove(QRegExp("^ParamDescriptor-"));
+                        QString strippedGroupName = groupName.remove(QRegularExpression("^ParamDescriptor-"));
 
                         QVariant value = settings.value("value");
                         if (settings.contains("valueType")) {

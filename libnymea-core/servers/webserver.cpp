@@ -593,7 +593,7 @@ WebServerConfiguration WebServer::configuration() const
 
 QByteArray WebServer::createServerXmlDocument(QHostAddress address)
 {
-    QByteArray uuid = NymeaCore::instance()->configuration()->serverUuid().toString().remove(QRegExp("[{}]")).toUtf8();
+    QByteArray uuid = NymeaCore::instance()->configuration()->serverUuid().toString().remove(QRegularExpression("[{}]")).toUtf8();
 
     QByteArray data;
     QXmlStreamWriter writer(&data);

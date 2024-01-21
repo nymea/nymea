@@ -77,7 +77,7 @@ void TestVersioning::apiChangeBumpsVersion()
     QByteArray oldApi = oldApiFile.readAll();
 
     QString newVersionStripped = newVersion;
-    newVersionStripped = newVersionStripped.remove(QRegExp("\\+[0-9\\.~a-f]*"));
+    newVersionStripped = newVersionStripped.remove(QRegularExpression("\\+[0-9\\.~a-f]*"));
 
     qDebug() << "JSON API version:" << oldVersion;
     qDebug() << "Binary version:" << newVersion << "(" + newVersionStripped + ")";
@@ -102,7 +102,7 @@ void TestVersioning::apiChangeBumpsVersion()
     p.waitForFinished();
     QByteArray apiDiff = p.readAll();
 
-    qCDebug(dcTests()) << "API Differences:" << endl << qUtf8Printable(apiDiff);
+    qCDebug(dcTests()) << "API Differences:" << Qt::endl << qUtf8Printable(apiDiff);
 
     if (oldVersion == newVersionStripped && oldApi != newApi) {
         QVERIFY2(false, "JSONRPC API has changed but version is still the same. You need to bump the API version.");

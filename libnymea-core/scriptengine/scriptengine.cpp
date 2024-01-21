@@ -449,7 +449,7 @@ void ScriptEngine::unloadScript(Script *script)
 QString ScriptEngine::baseName(const QUuid &id)
 {
     QString path = NymeaSettings::storagePath() + "/scripts/";
-    QString basename = id.toString().remove(QRegExp("[{}]"));
+    QString basename = id.toString().remove(QRegularExpression("[{}]"));
     return path + basename;
 }
 

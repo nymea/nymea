@@ -129,7 +129,7 @@ void TestWebserver::httpVersion()
     QVERIFY2(!data.isEmpty(), "got no response");
 
     QStringList lines = QString(data).split("\r\n");
-    QStringList firstLineTokens = lines.first().split(QRegExp("[ \r\n][ \r\n]*"));
+    QStringList firstLineTokens = lines.first().split(QRegularExpression("[ \r\n][ \r\n]*"));
 
     QVERIFY2(firstLineTokens.isEmpty() || firstLineTokens.count() > 2, "could not get tokens of first line");
 
@@ -180,7 +180,7 @@ void TestWebserver::multiPackageMessage()
     QVERIFY2(!data.isEmpty(), "got no response");
 
     QStringList lines = QString(data).split("\r\n");
-    QStringList firstLineTokens = lines.first().split(QRegExp("[ \r\n][ \r\n]*"));
+    QStringList firstLineTokens = lines.first().split(QRegularExpression("[ \r\n][ \r\n]*"));
 
     QVERIFY2(firstLineTokens.isEmpty() || firstLineTokens.count() > 2, "could not get tokens of first line");
 
@@ -314,7 +314,7 @@ void TestWebserver::badRequests()
     QVERIFY2(!data.isEmpty(), "got no response");
 
     QStringList lines = QString(data).split("\r\n");
-    QStringList firstLineTokens = lines.first().split(QRegExp("[ \r\n][ \r\n]*"));
+    QStringList firstLineTokens = lines.first().split(QRegularExpression("[ \r\n][ \r\n]*"));
 
     QVERIFY2(firstLineTokens.isEmpty() || firstLineTokens.count() > 2, "could not get tokens of first line");
 

@@ -76,8 +76,8 @@ bool ScriptIntegrationPlugin::loadScript(const QString &fileName)
             spacer += ' ';
         }
         QDebug dbg = qWarning(dcThingManager()).nospace().noquote();
-        dbg << metaDataFileName << ":" << lineIndex << ":" << errorOffset + 2 << ": error: JSON parsing failed: " << error.errorString() << ": " << data.trimmed() << endl;
-        dbg << data << endl;
+        dbg << metaDataFileName << ":" << lineIndex << ":" << errorOffset + 2 << ": error: JSON parsing failed: " << error.errorString() << ": " << data.trimmed() << Qt::endl;
+        dbg << data << Qt::endl;
         dbg << spacer << "^";
         return false;
     }

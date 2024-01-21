@@ -394,10 +394,10 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
             // Special treatment for QDateTime (converting to time_t)
             if (metaProperty.type() == QVariant::DateTime) {
                 QDateTime dateTime = propertyValue.toDateTime();
-                if (metaProperty.isUser() && dateTime.toTime_t() == 0) {
+                if (metaProperty.isUser() && dateTime.toSecsSinceEpoch() == 0) {
                     continue;
                 }
-                propertyValue = propertyValue.toDateTime().toTime_t();
+                propertyValue = propertyValue.toDateTime().toSecsSinceEpoch();
             } else if (metaProperty.type() == QVariant::Time) {
                 propertyValue = propertyValue.toTime().toString("hh:mm");
             }

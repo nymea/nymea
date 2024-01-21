@@ -490,7 +490,7 @@ LogFetchJob *LogEngineInfluxDB::fetchLogEntries(const QStringList &sources, cons
                     for (int i = 1; i < columns.count(); i++) {
                         QString column = columns.at(i);
                         if (sampleRate != Types::SampleRateAny) {
-                            column.remove(QRegExp("^mean_"));
+                            column.remove(QRegularExpression("^mean_"));
                         }
                         QVariant value = values.at(i);
                         if (value.type() == QVariant::String || value.type() == QVariant::ByteArray) {

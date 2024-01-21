@@ -88,7 +88,7 @@ void ScriptInterfaceState::onStateChanged(Thing *thing, const StateTypeId &state
         return;
     }
 
-    emit stateChanged(thing->id().toString().remove(QRegExp("[{}]")), value);
+    emit stateChanged(thing->id().toString().remove(QRegularExpression("[{}]")), value);
 }
 
 }

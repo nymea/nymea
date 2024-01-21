@@ -108,7 +108,7 @@ void ScriptEvent::onEventTriggered(const Event &event)
 
     QVariantMap params;
     foreach (const Param &param, event.params()) {
-        params.insert(param.paramTypeId().toString().remove(QRegExp("[{}]")), param.value().toByteArray());
+        params.insert(param.paramTypeId().toString().remove(QRegularExpression("[{}]")), param.value().toByteArray());
         QString paramName = thing->thingClass().eventTypes().findById(event.eventTypeId()).paramTypes().findById(param.paramTypeId()).name();
         params.insert(paramName, param.value().toByteArray());
     }

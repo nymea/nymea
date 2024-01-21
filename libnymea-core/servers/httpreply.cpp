@@ -491,7 +491,7 @@ void HttpReply::timeout()
 QDebug operator<<(QDebug debug, HttpReply *httpReply)
 {
     QDebugStateSaver saver(debug);
-    debug.nospace() << "HttpReply(" << httpReply->clientId().toString() << ")" << endl;
+    debug.nospace() << "HttpReply(" << httpReply->clientId().toString() << ")" << Qt::endl;
     debug << qUtf8Printable(httpReply->rawHeader());
     debug << qUtf8Printable(httpReply->payload());
     return debug;

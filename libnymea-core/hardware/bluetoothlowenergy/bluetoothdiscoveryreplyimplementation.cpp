@@ -70,7 +70,7 @@ void BluetoothDiscoveryReplyImplementation::setDiscoveredDevices(const QList<QPa
 
 void BluetoothDiscoveryReplyImplementation::addDiscoveredDevice(const QBluetoothDeviceInfo &info, const QBluetoothHostInfo &hostInfo)
 {
-    m_discoveredDevices.append(qMakePair<QBluetoothDeviceInfo, QBluetoothHostInfo>(info, hostInfo));
+    m_discoveredDevices.append(QPair<QBluetoothDeviceInfo, QBluetoothHostInfo>(info, hostInfo));
 }
 
 void BluetoothDiscoveryReplyImplementation::setFinished()

@@ -32,7 +32,7 @@
 
 #include "openssl/ssl.h"
 
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QFileInfo>
 #include <QSaveFile>
 #include <QDir>
@@ -87,8 +87,8 @@ void CertificateGenerator::generate(const QString &certificateFilename, const QS
     q_check_ptr(x509);
     // Randomize serial number in case a previous one is stuck in a browser (Chromium
     // completely rejects reused serial numbers and doesn't even allow to bypass it by an exception)
-    qsrand(QUuid::createUuid().toString().remove(QRegExp("[a-zA-Z{}-]")).left(5).toInt());
-    ASN1_INTEGER_set(X509_get_serialNumber(x509), qrand());
+    std::srand(QUuid::createUuid().toString().remove(QRegularExpression("[a-zA-Z{}-]")).left(5).toInt());
+    ASN1_INTEGER_set(X509_get_serialNumber(x509), std::rand());
     X509_gmtime_adj(X509_get_notBefore(x509), 0); // not before current time
     X509_gmtime_adj(X509_get_notAfter(x509), 31536000L*10); // not after 10 years from this point
     X509_set_pubkey(x509, pkey);

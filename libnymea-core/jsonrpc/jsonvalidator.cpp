@@ -113,16 +113,16 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
 {
     // Make sure all required values are available
     foreach (const QString &key, definition.keys()) {
-        QRegExp isOptional = QRegExp("^([a-z]:)*o:.*");
+        QRegularExpression isOptional = QRegularExpression("^([a-z]:)*o:.*");
         if (isOptional.exactMatch(key)) {
             continue;
         }
-        QRegExp isReadOnly = QRegExp("^([a-z]:)*r:.*");
+        QRegularExpression isReadOnly = QRegularExpression("^([a-z]:)*r:.*");
         if (isReadOnly.exactMatch(key) && openMode.testFlag(QIODevice::WriteOnly)) {
             continue;
         }
         QString trimmedKey = key;
-        trimmedKey.remove(QRegExp("^(o:|r:|d:)*"));
+        trimmedKey.remove(QRegularExpression("^(o:|r:|d:)*"));
         if (!map.contains(trimmedKey)) {
             return Result(false, "Missing required key: " + key, key);
         }
@@ -133,7 +133,7 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
         // Is the key allowed in here?
         QVariant expectedValue = definition.value(key);
         foreach (const QString &definitionKey, definition.keys()) {
-            QRegExp regExp = QRegExp("(o:|r:|d:)*" + key);
+            QRegularExpression regExp = QRegularExpression("(o:|r:|d:)*" + key);
             if (regExp.exactMatch(definitionKey)) {
                 expectedValue = definition.value(definitionKey);
             }

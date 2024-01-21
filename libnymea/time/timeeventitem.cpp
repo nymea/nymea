@@ -146,7 +146,7 @@ bool TimeEventItem::evaluate(const QDateTime &lastEvaluationTime, const QDateTim
 QDebug operator<<(QDebug dbg, const TimeEventItem &timeEventItem)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "TimeEventItem (Time:" << timeEventItem.time() << ", DateTime:" << timeEventItem.dateTime().toString() << ", " << timeEventItem.repeatingOption() << ")" << endl;
+    dbg.nospace() << "TimeEventItem (Time:" << timeEventItem.time() << ", DateTime:" << timeEventItem.dateTime().toString() << ", " << timeEventItem.repeatingOption() << ")" << Qt::endl;
     return dbg;
 }
 

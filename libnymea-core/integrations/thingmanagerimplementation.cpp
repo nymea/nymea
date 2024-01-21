@@ -2298,7 +2298,7 @@ void ThingManagerImplementation::postSetupThing(Thing *thing)
 
 QString ThingManagerImplementation::statesCacheFile(const ThingId &thingId)
 {
-    return NymeaSettings::cachePath() + "/thingstates/" + thingId.toString().remove(QRegExp("[{}]")) + ".cache";
+    return NymeaSettings::cachePath() + "/thingstates/" + thingId.toString().remove(QRegularExpression("[{}]")) + ".cache";
 }
 
 void ThingManagerImplementation::loadThingStates(Thing *thing)

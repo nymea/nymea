@@ -190,9 +190,9 @@ void HttpRequest::validate()
     m_payload = m_rawData.right(m_rawData.length() - headerEndIndex).simplified();
 
     // parse status line
-    QStringList headerLines = QString(m_rawHeader).split(QRegExp("\r\n"));
+    QStringList headerLines = QString(m_rawHeader).split(QRegularExpression("\r\n"));
     QString statusLine = headerLines.takeFirst();
-    QStringList statusLineTokens = statusLine.split(QRegExp("[ \r\n][ \r\n]*"));
+    QStringList statusLineTokens = statusLine.split(QRegularExpression("[ \r\n][ \r\n]*"));
     if (statusLineTokens.count() != 3) {
         qCWarning(dcWebServer()) << "Could not parse HTTP status line:" << statusLine;
         return;
@@ -278,7 +278,7 @@ HttpRequest::RequestMethod HttpRequest::getRequestMethodType(const QString &meth
 QDebug operator<<(QDebug debug, const HttpRequest &httpRequest)
 {
     QDebugStateSaver saver(debug);
-    debug << "HttpRequest:" << endl;
+    debug << "HttpRequest:" << Qt::endl;
     debug << qUtf8Printable(httpRequest.rawHeader());
     debug << qUtf8Printable(httpRequest.payload());
     return debug;

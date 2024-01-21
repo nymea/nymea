@@ -92,10 +92,10 @@ QDebug operator<<(QDebug dbg, const ParamList &params)
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "ParamList (count:" << params.count() << ")";
     if (params.count() == 0) {
-        dbg.nospace() << endl;
+        dbg.nospace() << Qt::endl;
     }
     for (int i = 0; i < params.count(); i++ ) {
-        dbg.nospace() << endl << "     " << i << ": " << params.at(i);
+        dbg.nospace() << Qt::endl << "     " << i << ": " << params.at(i);
     }
 
     return dbg;

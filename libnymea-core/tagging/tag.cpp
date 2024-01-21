@@ -124,7 +124,7 @@ QDebug operator<<(QDebug dbg, const Tag &tag)
     } else {
         dbg.nospace() << "Tag (RuleId:" << tag.ruleId();
     }
-    dbg.nospace() << ", AppId:" << tag.appId() << ", TagId:" << tag.tagId() << ", Value:" << tag.value() << ")" << endl;
+    dbg.nospace() << ", AppId:" << tag.appId() << ", TagId:" << tag.tagId() << ", Value:" << tag.value() << ")" << Qt::endl;
     return dbg;
 }
 

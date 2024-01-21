@@ -128,6 +128,8 @@
 #include <QStandardPaths>
 #include <QCoreApplication>
 #include <QMetaEnum>
+#include <QVariant>
+#include <QRegularExpression>
 
 NYMEA_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
 NYMEA_LOGGING_CATEGORY(dcRuleEngineDebug, "RuleEngineDebug")
@@ -185,12 +187,20 @@ QList<Rule> RuleEngine::evaluateEvent(const Event &event)
     }
     ThingClass thingClass = thing->thingClass();
     EventType eventType = thingClass.eventTypes().findById(event.eventTypeId());
+    StateType stateType = thingClass.stateTypes().findById(event.eventTypeId());
 
-
-    if (event.params().count() == 0) {
-        qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << thing->name() << " - " << eventType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")";
-    } else {
-        qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << thing->name() << " - " << eventType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")" << endl << "     " << event.params();
+    if (eventType.isValid()) {
+        if (event.params().count() == 0) {
+            qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << thing->name() << " - " << eventType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")";
+        } else {
+            qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event: " << thing->name() << " - " << eventType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << eventType.id().toString() << ")" << '\n' << "     " << event.params();
+        }
+    } else if (stateType.isValid()) {
+        if (event.params().count() == 0) {
+            qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event (state changed): " << thing->name() << " - " << stateType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << stateType.id().toString() << ")";
+        } else {
+            qCDebug(dcRuleEngineDebug).nospace().noquote() << "Evaluate event (state changed): " << thing->name() << " - " << stateType.name() << " (ThingId:" << thing->id().toString() << ", EventTypeId:" << stateType.id().toString() << ")" << '\n' << "     " << event.params();
+        }
     }
 
     QList<Rule> rules;
@@ -342,7 +352,7 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
     // Check IDs in each EventDescriptor
     foreach (const EventDescriptor &eventDescriptor, rule.eventDescriptors()) {
         if (!eventDescriptor.isValid()) {
-            qWarning(dcRuleEngine()) << "EventDescriptor is incomplete. It must have either eventTypeId and thingId, or interface and interfaceEvent";
+            qCWarning(dcRuleEngine()) << "EventDescriptor is incomplete. It must have either eventTypeId and thingId, or interface and interfaceEvent";
             return RuleErrorEventTypeNotFound;
         }
         if (eventDescriptor.type() == EventDescriptor::TypeThing) {
@@ -375,11 +385,11 @@ RuleEngine::RuleError RuleEngine::addRule(const Rule &rule, bool fromEdit)
             // Interface based event
             Interface iface = m_thingManager->supportedInterfaces().findByName(eventDescriptor.interface());
             if (!iface.isValid()) {
-                qWarning(dcRuleEngine()) << "No such interface:" << eventDescriptor.interface();
+                qCWarning(dcRuleEngine()) << "No such interface:" << eventDescriptor.interface();
                 return RuleErrorInterfaceNotFound;
             }
             if (iface.eventTypes().findByName(eventDescriptor.interfaceEvent()).name().isEmpty() && iface.stateTypes().findByName(eventDescriptor.interfaceEvent()).name().isEmpty()) {
-                qWarning(dcRuleEngine()) << "Interface" << iface.name() << "has no such event:" << eventDescriptor.interfaceEvent();
+                qCWarning(dcRuleEngine()) << "Interface" << iface.name() << "has no such event:" << eventDescriptor.interfaceEvent();
                 return RuleErrorEventTypeNotFound;
             }
         }
@@ -662,7 +672,7 @@ RuleEngine::RuleError RuleEngine::executeExitActions(const RuleId &ruleId)
 
     qCDebug(dcRuleEngine) << "Executing rule exit actions of rule" << rule.name() << rule.id().toString();
     m_logger->log({rule.id().toString(), "executed"}, {{"name", rule.name()}});
-//    m_logEngine->logRuleExitActionsExecuted(rule);
+    //    m_logEngine->logRuleExitActionsExecuted(rule);
     executeRuleActions(rule.id(), rule.exitActions());
     return RuleErrorNoError;
 }
@@ -892,7 +902,7 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Thing
                 paramValue = event.param(paramDescriptor.paramTypeId()).value();
             } else {
                 if (paramDescriptor.paramName().isEmpty()) {
-                    qWarning(dcRuleEngine()) << "ParamDescriptor invalid. Either paramTypeId or paramName are required";
+                    qCWarning(dcRuleEngine()) << "ParamDescriptor invalid. Either paramTypeId or paramName are required";
                     allOK = false;
                     continue;
                 }
@@ -907,6 +917,47 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Thing
                 }
             }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+
+            QVariant descriptorValue = paramDescriptor.value();
+            bool res = descriptorValue.convert(paramValue.metaType());
+            if (!res) {
+                qCWarning(dcRuleEngine()) << "Cannot convert the params:" << paramValue << paramDescriptor.value();
+                allOK = false;
+            } else {
+                // Converted successfully to the same type, now compare the values according to the param descriptor
+                QPartialOrdering ordering = QVariant::compare(paramValue, descriptorValue);
+                if (ordering == QPartialOrdering::Unordered) {
+                    qCWarning(dcRuleEngine()) << "Cannot compair the params:" << paramValue <<  paramDescriptor.value();
+                    allOK = false;
+                } else {
+                    bool result = false;
+                    switch (paramDescriptor.operatorType()) {
+                    case Types::ValueOperatorEquals:
+                        result = (ordering == QPartialOrdering::equivalent);
+                        break;
+                    case Types::ValueOperatorGreater:
+                        result = (ordering == QPartialOrdering::greater);
+                        break;
+                    case Types::ValueOperatorGreaterOrEqual:
+                        result = (ordering == QPartialOrdering::greater || ordering == QPartialOrdering::equivalent);
+                        break;
+                    case Types::ValueOperatorLess:
+                        result = (ordering == QPartialOrdering::less);
+                        break;
+                    case Types::ValueOperatorLessOrEqual:
+                        result = (ordering == QPartialOrdering::less || ordering == QPartialOrdering::equivalent);
+                        break;
+                    case Types::ValueOperatorNotEquals:
+                        result = (ordering != QPartialOrdering::equivalent);
+                        break;
+                    }
+
+                    qCDebug(dcRuleEngineDebug()) << "Comparing param value" << paramValue << "to descriptor value" << descriptorValue << "with operator" << paramDescriptor.operatorType() << "-->" << result;
+                    allOK = result;
+                }
+            }
+#else
             switch (paramDescriptor.operatorType()) {
             case Types::ValueOperatorEquals:
                 if (paramValue != paramDescriptor.value()) {
@@ -939,6 +990,7 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Thing
                 }
                 break;
             }
+#endif
         }
         // All matching!
         if (allOK) {
@@ -981,7 +1033,7 @@ bool RuleEngine::containsState(const StateEvaluator &stateEvaluator, const Event
 RuleEngine::RuleError RuleEngine::checkRuleAction(const RuleAction &ruleAction, const Rule &rule)
 {
     if (!ruleAction.isValid()) {
-        qWarning(dcRuleEngine()) << "Action is incomplete. It must have either thingId and actionTypeId/browserItemId, or interface and interfaceAction:" << ruleAction;
+        qCWarning(dcRuleEngine()) << "Action is incomplete. It must have either thingId and actionTypeId/browserItemId, or interface and interfaceAction:" << ruleAction;
         return RuleErrorActionTypeNotFound;
     }
 
@@ -1041,7 +1093,7 @@ RuleEngine::RuleError RuleEngine::checkRuleAction(const RuleAction &ruleAction, 
             bool found = !paramType.defaultValue().isNull();
             foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
                 if (ruleActionParam.paramTypeId() == paramType.id()
-                        || ruleActionParam.paramName() == paramType.name()) {
+                    || ruleActionParam.paramName() == paramType.name()) {
                     found = true;
                     break;
                 }
@@ -1081,8 +1133,13 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
         }
 
         // check if the param type of the event and the action match
-        QVariant::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamTypeId());
-        QVariant v(eventParamType);
+        QMetaType::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamTypeId());
+        QVariant v;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        v = QVariant::fromMetaType(QMetaType(eventParamType));
+#else
+        v = QVariant(static_cast<QVariant::Type>(eventParamType));
+#endif
         if (eventParamType != paramType.type() && !v.canConvert(static_cast<int>(paramType.type()))) {
             qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given event param " << ruleActionParam.eventParamTypeId().toString() << "have not the same type:";
             qCWarning(dcRuleEngine) << "        -> actionParamType:" << paramType.type();
@@ -1097,8 +1154,13 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
         }
         ThingClass stateThingClass = m_thingManager->findThingClass(d->thingClassId());
         StateType stateType = stateThingClass.stateTypes().findById(ruleActionParam.stateTypeId());
-        QVariant::Type actionParamType = getActionParamType(actionType.id(), ruleActionParam.paramTypeId());
-        QVariant v(stateType.type());
+        QMetaType::Type actionParamType = getActionParamType(actionType.id(), ruleActionParam.paramTypeId());
+        QVariant v;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        v = QVariant::fromMetaType(QMetaType(stateType.type()));
+#else
+        v = QVariant(static_cast<QVariant::Type>(stateType.type()));
+#endif
         if (actionParamType != stateType.type() && !v.canConvert(static_cast<int>(actionParamType))) {
             qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given state based param " << ruleActionParam.stateTypeId().toString() << "have not the same type:";
             qCWarning(dcRuleEngine) << "        -> actionParamType:" << actionParamType;
@@ -1110,7 +1172,7 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
             qCDebug(dcRuleEngine()) << "Cannot create rule. No param value given for action:" << ruleActionParam.paramTypeId().toString();
             return RuleErrorInvalidRuleActionParameter;
         }
-        if (paramType.type() != ruleActionParam.value().type() && !ruleActionParam.value().canConvert(static_cast<int>(paramType.type()))) {
+        if (paramType.type() != ruleActionParam.value().userType() && !ruleActionParam.value().canConvert(static_cast<int>(paramType.type()))) {
             qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given state based param " << ruleActionParam.stateTypeId().toString() << "have not the same type:";
             qCWarning(dcRuleEngine) << "        -> actionParamType:" << paramType.type();
             qCWarning(dcRuleEngine) << "        ->       stateType:" << ruleActionParam.value().type();
@@ -1121,7 +1183,7 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
     return RuleErrorNoError;
 }
 
-QVariant::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, const ParamTypeId &paramTypeId)
+QMetaType::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, const ParamTypeId &paramTypeId)
 {
     foreach (const ThingClass &thingClass, m_thingManager->supportedThings()) {
         foreach (const ActionType &actionType, thingClass.actionTypes()) {
@@ -1135,10 +1197,10 @@ QVariant::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, 
         }
     }
 
-    return QVariant::Invalid;
+    return QMetaType::UnknownType;
 }
 
-QVariant::Type RuleEngine::getEventParamType(const EventTypeId &eventTypeId, const ParamTypeId &paramTypeId)
+QMetaType::Type RuleEngine::getEventParamType(const EventTypeId &eventTypeId, const ParamTypeId &paramTypeId)
 {
     foreach (const ThingClass &thingClass, m_thingManager->supportedThings()) {
         foreach (const EventType &eventType, thingClass.eventTypes()) {
@@ -1157,7 +1219,7 @@ QVariant::Type RuleEngine::getEventParamType(const EventTypeId &eventTypeId, con
         }
     }
 
-    return QVariant::Invalid;
+    return QMetaType::UnknownType;
 }
 
 void RuleEngine::appendRule(const Rule &rule)
@@ -1187,7 +1249,7 @@ void RuleEngine::saveRule(const Rule &rule)
 
             CalendarItem calendarItem = rule.timeDescriptor().calendarItems().at(i);
             if (calendarItem.dateTime().isValid())
-                settings.setValue("dateTime", calendarItem.dateTime().toTime_t());
+                settings.setValue("dateTime", calendarItem.dateTime().toSecsSinceEpoch());
 
             if (calendarItem.startTime().isValid())
                 settings.setValue("startTime", calendarItem.startTime().toString("hh:mm"));
@@ -1221,7 +1283,7 @@ void RuleEngine::saveRule(const Rule &rule)
             TimeEventItem timeEventItem = rule.timeDescriptor().timeEventItems().at(i);
 
             if (timeEventItem.dateTime().isValid())
-                settings.setValue("dateTime", timeEventItem.dateTime().toTime_t());
+                settings.setValue("dateTime", timeEventItem.dateTime().toSecsSinceEpoch());
 
             if (timeEventItem.time().isValid())
                 settings.setValue("time", timeEventItem.time().toString("hh:mm"));
@@ -1339,7 +1401,7 @@ QList<RuleAction> RuleEngine::loadRuleActions(NymeaSettings *settings)
         foreach (QString paramTypeIdString, settings->childGroups()) {
             if (paramTypeIdString.startsWith("RuleActionParam-")) {
                 settings->beginGroup(paramTypeIdString);
-                QString strippedParamTypeIdString = paramTypeIdString.remove(QRegExp("^RuleActionParam-"));
+                QString strippedParamTypeIdString = paramTypeIdString.remove(QRegularExpression("^RuleActionParam-"));
                 EventTypeId eventTypeId = EventTypeId(settings->value("eventTypeId", EventTypeId()).toString());
                 ParamTypeId eventParamTypeId = ParamTypeId(settings->value("eventParamTypeId", ParamTypeId()).toString());
                 ThingId stateThingId = ThingId(settings->value("stateThingId", ThingId()).toString());
@@ -1349,9 +1411,9 @@ QList<RuleAction> RuleEngine::loadRuleActions(NymeaSettings *settings)
                 StateTypeId stateTypeId = StateTypeId(settings->value("stateTypeId", StateTypeId()).toString());
                 QVariant value = settings->value("value");
                 if (settings->contains("valueType")) {
-                    QVariant::Type valueType = static_cast<QVariant::Type>(settings->value("valueType").toInt());
+                    QMetaType::Type valueType = static_cast<QMetaType::Type>(settings->value("valueType").toInt());
                     // Note: only warn, and continue with the QVariant guessed type
-                    if (valueType == QVariant::Invalid) {
+                    if (valueType == QMetaType::UnknownType) {
                         qCWarning(dcRuleEngine()) << "Could not load the value type of the rule action param " << strippedParamTypeIdString << ". The value type will be guessed by QVariant.";
                     } else if (!value.canConvert(static_cast<int>(valueType))) {
                         qCWarning(dcRuleEngine()) << "Error loading rule action. Could not convert the rule action param value" << value << "to the stored type" << valueType;
@@ -1510,11 +1572,11 @@ void RuleEngine::executeRuleActions(const RuleId &ruleId, const QList<RuleAction
             }
             ActionType actionType = m_thingManager->findConfiguredThing(action.thingId())->thingClass().actionTypes().findById(action.actionTypeId());
             m_logger->log({ruleId.toString(), "executed"}, {
-                              {"name", m_rules.value(ruleId).name()},
-                              {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
-                              {"thingId", info->action().thingId()},
-                              {"action", actionType.name()}
-                          });
+                                                               {"name", m_rules.value(ruleId).name()},
+                                                               {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
+                                                               {"thingId", info->action().thingId()},
+                                                               {"action", actionType.name()}
+                                                           });
         });
     }
 
@@ -1524,11 +1586,11 @@ void RuleEngine::executeRuleActions(const RuleId &ruleId, const QList<RuleAction
             if (info->status() != Thing::ThingErrorNoError) {
                 qCWarning(dcRuleEngine) << "Error executing browser action:" << info->status();
                 m_logger->log({ruleId.toString(), "executed"}, {
-                                  {"name", m_rules.value(ruleId).name()},
-                                  {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
-                                  {"thingId", info->browserAction().thingId()},
-                                  {"browserItem", info->browserAction().itemId()}
-                              });
+                                                                   {"name", m_rules.value(ruleId).name()},
+                                                                   {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
+                                                                   {"thingId", info->browserAction().thingId()},
+                                                                   {"browserItem", info->browserAction().itemId()}
+                                                               });
             }
         });
     }
@@ -1546,9 +1608,9 @@ void RuleEngine::onEventTriggered(const Event &event)
         // Event based
         if (!rule.eventDescriptors().isEmpty()) {
             m_logger->log({rule.id().toString()}, {
-                              {"name", rule.name()},
-                              {"state", "triggered"}
-                          });
+                                                      {"name", rule.name()},
+                                                      {"state", "triggered"}
+                                                  });
 
             QList<RuleAction> tmp;
             if (rule.statesActive() && rule.timeActive()) {
@@ -1587,9 +1649,9 @@ void RuleEngine::onEventTriggered(const Event &event)
         } else {
             // State based rule
             m_logger->log({rule.id().toString()}, {
-                              {"name", rule.name()},
-                              {"state", rule.active() ? "active" : "inactive"}
-                          });
+                                                      {"name", rule.name()},
+                                                      {"state", rule.active() ? "active" : "inactive"}
+                                                  });
             emit ruleActiveChanged(rule);
             if (rule.active()) {
                 executeRuleActions(rule.id(), rule.actions());
@@ -1668,7 +1730,7 @@ void RuleEngine::init()
             settings.beginGroup(childGroup);
 
             CalendarItem calendarItem;
-            calendarItem.setDateTime(QDateTime::fromTime_t(settings.value("dateTime", 0).toUInt()));
+            calendarItem.setDateTime(QDateTime::fromSecsSinceEpoch(settings.value("dateTime", 0).toUInt()));
             calendarItem.setStartTime(QTime::fromString(settings.value("startTime").toString()));
             calendarItem.setDuration(settings.value("duration", 0).toUInt());
 
@@ -1706,7 +1768,7 @@ void RuleEngine::init()
             settings.beginGroup(childGroup);
 
             TimeEventItem timeEventItem;
-            timeEventItem.setDateTime(QDateTime::fromTime_t(settings.value("dateTime", 0).toUInt()));
+            timeEventItem.setDateTime(QDateTime::fromSecsSinceEpoch(settings.value("dateTime", 0).toUInt()));
             timeEventItem.setTime(QTime::fromString(settings.value("time").toString()));
 
             QList<int> weekDays;
@@ -1758,13 +1820,13 @@ void RuleEngine::init()
                 foreach (QString groupName, settings.childGroups()) {
                     if (groupName.startsWith("ParamDescriptor-")) {
                         settings.beginGroup(groupName);
-                        QString strippedGroupName = groupName.remove(QRegExp("^ParamDescriptor-"));
+                        QString strippedGroupName = groupName.remove(QRegularExpression("^ParamDescriptor-"));
 
                         QVariant value = settings.value("value");
                         if (settings.contains("valueType")) {
-                            QVariant::Type valueType = static_cast<QVariant::Type>(settings.value("valueType").toInt());
+                            QMetaType::Type valueType = static_cast<QMetaType::Type>(settings.value("valueType").toInt());
                             // Note: only warn, and continue with the QVariant guessed type
-                            if (valueType == QVariant::Invalid) {
+                            if (valueType == QMetaType::UnknownType) {
                                 qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the param descriptor" << strippedGroupName << ". The value type will be guessed by QVariant.";
                             } else if (!value.canConvert(static_cast<int>(valueType))) {
                                 qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the param descriptor value" << value << "to the stored type" << valueType;

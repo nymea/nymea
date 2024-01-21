@@ -14,7 +14,7 @@ $(info Building with DEB_BUILD_OPTIONS: [${DEB_BUILD_OPTIONS}])
 MAKE_TARGETS=all lrelease
 ifeq (,$(filter nodoc,$(DEB_BUILD_OPTIONS)))
 	MAKE_TARGETS += doc
-endif 
+endif
 
 QMAKE_ADDITIONAL_ARGS = CONFIG+=norpath
 ifneq (,$(filter coverage,$(DEB_BUILD_OPTIONS)))

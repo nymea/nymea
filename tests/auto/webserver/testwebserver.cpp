@@ -32,6 +32,7 @@
 #include "nymeacore.h"
 
 #include <QXmlReader>
+#include <QRegularExpression>
 
 using namespace nymeaserver;
 
@@ -129,7 +130,7 @@ void TestWebserver::httpVersion()
     QVERIFY2(!data.isEmpty(), "got no response");
 
     QStringList lines = QString(data).split("\r\n");
-    QStringList firstLineTokens = lines.first().split(QRegExp("[ \r\n][ \r\n]*"));
+    QStringList firstLineTokens = lines.first().split(QRegularExpression("[ \r\n][ \r\n]*"));
 
     QVERIFY2(firstLineTokens.isEmpty() || firstLineTokens.count() > 2, "could not get tokens of first line");
 
@@ -180,7 +181,7 @@ void TestWebserver::multiPackageMessage()
     QVERIFY2(!data.isEmpty(), "got no response");
 
     QStringList lines = QString(data).split("\r\n");
-    QStringList firstLineTokens = lines.first().split(QRegExp("[ \r\n][ \r\n]*"));
+    QStringList firstLineTokens = lines.first().split(QRegularExpression("[ \r\n][ \r\n]*"));
 
     QVERIFY2(firstLineTokens.isEmpty() || firstLineTokens.count() > 2, "could not get tokens of first line");
 
@@ -314,7 +315,7 @@ void TestWebserver::badRequests()
     QVERIFY2(!data.isEmpty(), "got no response");
 
     QStringList lines = QString(data).split("\r\n");
-    QStringList firstLineTokens = lines.first().split(QRegExp("[ \r\n][ \r\n]*"));
+    QStringList firstLineTokens = lines.first().split(QRegularExpression("[ \r\n][ \r\n]*"));
 
     QVERIFY2(firstLineTokens.isEmpty() || firstLineTokens.count() > 2, "could not get tokens of first line");
 
@@ -371,7 +372,7 @@ void TestWebserver::getFiles()
 void TestWebserver::getServerDescription()
 {
     QNetworkAccessManager nam;
-    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply* reply, const QList<QSslError> &) {
+    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply* reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
@@ -597,14 +598,17 @@ void TestWebserver::getDebugServer()
     int statusCode = 0;
 
     QSignalSpy clientSpy(&nam, SIGNAL(finished(QNetworkReply*)));
-    connect(&nam, &QNetworkAccessManager::sslErrors, [this, &nam](QNetworkReply* reply, const QList<QSslError> &) {
+    connect(&nam, &QNetworkAccessManager::sslErrors, this, [](QNetworkReply* reply, const QList<QSslError> &) {
         reply->ignoreSslErrors();
     });
 
     QNetworkReply *reply = nullptr;
     QNetworkRequest request;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    // Note: in qt6 the request follows by default the redirect
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::ManualRedirectPolicy);
+#endif
     request.setUrl(QUrl("https://localhost:3333" + query));
-
     clientSpy.clear();
 
     if (method == "get") {
@@ -619,7 +623,8 @@ void TestWebserver::getDebugServer()
         reply = nam.put(request, "");
     }
 
-    clientSpy.wait();
+    clientSpy.wait(1000);
+    qCCritical(dcTests()) << reply->isFinished() << reply->isRunning() << clientSpy.count();
     QVERIFY2(clientSpy.count() == 1, "expected exactly 1 response from webserver");
 
     ok = false;

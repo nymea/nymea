@@ -48,7 +48,7 @@
 #include "paramtype.h"
 
 /*! Constructs a ParamType object with the given \a id, \a name, \a type and \a defaultValue. */
-ParamType::ParamType(const ParamTypeId &id, const QString &name, const QVariant::Type type, const QVariant &defaultValue):
+ParamType::ParamType(const ParamTypeId &id, const QString &name, const QMetaType::Type type, const QVariant &defaultValue):
     m_id(id),
     m_name(name),
     m_index(0),
@@ -104,13 +104,13 @@ void ParamType::setIndex(const int &index)
 }
 
 /*! Returns the type of this ParamType. */
-QVariant::Type ParamType::type() const
+QMetaType::Type ParamType::type() const
 {
     return m_type;
 }
 
 /*! Sets the type of this ParamType to the given \a type. */
-void ParamType::setType(QVariant::Type type)
+void ParamType::setType(QMetaType::Type type)
 {
     m_type = type;
 }
@@ -178,7 +178,7 @@ void ParamType::setUnit(const Types::Unit &unit)
 /*! Returns the limits of this ParamType. limits(minValue, maxValue). */
 QPair<QVariant, QVariant> ParamType::limits() const
 {
-    return qMakePair<QVariant, QVariant>(m_minValue, m_maxValue);
+    return QPair<QVariant, QVariant>(m_minValue, m_maxValue);
 }
 
 /*! Sets the limits of this ParamType. limits(\a min, \a max). */
@@ -215,7 +215,7 @@ void ParamType::setReadOnly(const bool &readOnly)
 /*! Returns true if this ParamType is valid. A ParamType is valid, if the id, the name and the data type is set. */
 bool ParamType::isValid() const
 {
-    return !m_id.isNull() && !m_name.isEmpty() && m_type != QVariant::Invalid;
+    return !m_id.isNull() && !m_name.isEmpty() && m_type != QMetaType::UnknownType;
 }
 
 /*! Returns a list of all valid JSON properties a ParamType JSON definition can have. */
@@ -234,10 +234,17 @@ QStringList ParamType::mandatoryTypeProperties()
 /*! Writes the name, type, defaultValue, min value, max value and readOnly of the given \a paramType to \a dbg. */
 QDebug operator<<(QDebug dbg, const ParamType &paramType)
 {
+    QString typeName;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    typeName = QString(QMetaType(paramType.type()).name());
+#else
+    typeName = QVariant::typeToName(paramType.type());
+#endif
+
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "ParamType(Id" << paramType.id().toString()
                   << "  Name: " << paramType.name()
-                  << ", Type:" << QVariant::typeToName(paramType.type())
+                  << ", Type:" << typeName
                   << ", Default:" << paramType.defaultValue()
                   << ", Min:" << paramType.minValue()
                   << ", Max:" << paramType.maxValue()
@@ -252,9 +259,9 @@ QDebug operator<<(QDebug dbg, const ParamType &paramType)
 QDebug operator<<(QDebug dbg, const QList<ParamType> &paramTypes)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "ParamTypeList (count:" << paramTypes.count() << ")" << endl;
+    dbg.nospace() << "ParamTypeList (count:" << paramTypes.count() << ")" << '\n';
     for (int i = 0; i < paramTypes.count(); i++ ) {
-        dbg.nospace() << "     " << i << ": " << paramTypes.at(i) << endl;
+        dbg.nospace() << "     " << i << ": " << paramTypes.at(i) << '\n';
     }
 
     return dbg;

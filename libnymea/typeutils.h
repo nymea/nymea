@@ -31,14 +31,32 @@
 #ifndef TYPEUTILS_H
 #define TYPEUTILS_H
 
-#include <QMetaType>
 #include <QUuid>
+#include <QMetaType>
 
 #include "libnymea.h"
+
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+
+#include <QAnyStringView>
 
 #define DECLARE_TYPE_ID(type) class type##Id: public QUuid \
 { \
 public: \
+    type##Id(const QUuid &uuid): QUuid(uuid) {} \
+    type##Id(): QUuid() {} \
+    type##Id(const QString &uuidString): QUuid(QAnyStringView(uuidString)) {} \
+    static type##Id create##type##Id() { return type##Id(QUuid::createUuid()); } \
+    bool operator==(const type##Id &other) const { \
+        return toString() == other.toString(); \
+    } \
+}; \
+Q_DECLARE_METATYPE(type##Id);
+#else
+#define DECLARE_TYPE_ID(type) class type##Id: public QUuid \
+{ \
+    public: \
     type##Id(const QUuid &uuid): QUuid(uuid) {} \
     type##Id(): QUuid() {} \
     static type##Id create##type##Id() { return type##Id(QUuid::createUuid()); } \
@@ -46,7 +64,8 @@ public: \
         return toString() == other.toString(); \
     } \
 }; \
-Q_DECLARE_METATYPE(type##Id);
+    Q_DECLARE_METATYPE(type##Id);
+#endif
 
 DECLARE_TYPE_ID(Vendor)
 DECLARE_TYPE_ID(ThingClass)

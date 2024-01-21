@@ -35,9 +35,11 @@
 #include <QDebug>
 #include <QDateTime>
 
+#include "types/param.h"
+
 JsonHandler::JsonHandler(QObject *parent) : QObject(parent)
 {
-    qRegisterMetaType<QVariant::Type>();
+    qRegisterMetaType<QMetaType::Type>();
     registerEnum<BasicType>();
 }
 
@@ -83,63 +85,63 @@ QString JsonHandler::objectRef(const QString &objectName)
     return "$ref:" + objectName;
 }
 
-JsonHandler::BasicType JsonHandler::variantTypeToBasicType(QVariant::Type variantType)
+JsonHandler::BasicType JsonHandler::variantTypeToBasicType(QMetaType::Type variantType)
 {
     switch (variantType) {
-    case QVariant::Uuid:
+    case QMetaType::QUuid:
         return Uuid;
-    case QVariant::String:
+    case QMetaType::QString:
         return String;
-    case QVariant::StringList:
+    case QMetaType::QStringList:
         return StringList;
-    case QVariant::Int:
+    case QMetaType::Int:
         return Int;
-    case QVariant::UInt:
+    case QMetaType::UInt:
         return Uint;
-    case QVariant::Double:
+    case QMetaType::Double:
         return Double;
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return Bool;
-    case QVariant::Color:
+    case QMetaType::QColor:
         return Color;
-    case QVariant::Time:
+    case QMetaType::QTime:
         return Time;
-    case QVariant::Map:
+    case QMetaType::QVariantMap:
         return Object;
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         return Uint; // DateTime is represented as time_t
     default:
         return Variant;
     }
 }
 
-QVariant::Type JsonHandler::basicTypeToVariantType(JsonHandler::BasicType basicType)
+QMetaType::Type JsonHandler::basicTypeToMetaType(JsonHandler::BasicType basicType)
 {
     switch (basicType) {
     case Uuid:
-        return QVariant::Uuid;
+        return QMetaType::QUuid;
     case String:
-        return QVariant::String;
+        return QMetaType::QString;
     case StringList:
-        return QVariant::StringList;
+        return QMetaType::QStringList;
     case Int:
-        return QVariant::Int;
+        return QMetaType::Int;
     case Uint:
-        return QVariant::UInt;
+        return QMetaType::UInt;
     case Double:
-        return QVariant::Double;
+        return QMetaType::Double;
     case Bool:
-        return QVariant::Bool;
+        return QMetaType::Bool;
     case Color:
-        return QVariant::Color;
+        return QMetaType::QColor;
     case Time:
-        return QVariant::Time;
+        return QMetaType::QTime;
     case Object:
-        return QVariant::Map;
+        return QMetaType::QVariantMap;
     case Variant:
-        return QVariant::Invalid;
+        return QMetaType::UnknownType;
     }
-    return QVariant::Invalid;
+    return QMetaType::UnknownType;
 }
 
 void JsonHandler::registerObject(const QString &name, const QVariantMap &object)
@@ -190,6 +192,9 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
     for (int i = 0; i < metaObject.propertyCount(); i++) {
         QMetaProperty metaProperty = metaObject.property(i);
         QString name = metaProperty.name();
+        // if (className == "Thing")
+        //     qCDebug(dcJsonRpc()) << "Thing!" << metaProperty.isUser() << metaProperty.isWritable() << metaProperty.revision();
+
         if (name == "objectName") {
             continue; // Skip QObject's objectName property
         }
@@ -199,19 +204,57 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
         if (!metaProperty.isWritable()) {
             name.prepend("r:");
         }
-        if (metaProperty.revision() == 1) {
+        if (metaProperty.revision() != 0) {
             name.prepend("d:");
         }
         QVariant typeName;
-        if (metaProperty.type() == QVariant::UserType) {
-            if (metaProperty.typeName() == QStringLiteral("QVariant::Type")) {
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        int typeId = metaProperty.typeId();
+        if (typeId >= QMetaType::User) {
+            if (metaProperty.typeName() == QStringLiteral("QMetaType::Type")) {
                 typeName = QString("$ref:BasicType");
             } else if (QString(metaProperty.typeName()).startsWith("QList")) {
                 QString elementType = QString(metaProperty.typeName()).remove("QList<").remove(">");
                 if (elementType == "ThingId" || elementType == "EventTypeId" || elementType == "StateTypeId" || elementType == "ActionTypeId") {
                     elementType = "QUuid";
                 }
-                QVariant::Type variantType = QVariant::nameToType(elementType.toUtf8());
+                QMetaType::Type variantType = static_cast<QMetaType::Type>(QVariant::nameToType(elementType.toUtf8()));
+                typeName = QVariantList() << enumValueName(variantTypeToBasicType(variantType));
+            } else {
+                QString typeNameRaw = QString(metaProperty.typeName());
+                QString propertyNameRaw = QString(metaProperty.name());
+                QString metaTypeNameRaw = QString(metaProperty.metaType().name());
+                if (typeNameRaw.contains("QFlag")) {
+                    QString enumType = QString(typeNameRaw).split("::").last().remove('<').remove('>');
+                    typeName = QString("$ref:%1").arg(m_flagsEnums.key(enumType));
+                } else {
+                    typeName = QString("$ref:%1").arg(QString(typeNameRaw).split("::").last().remove('<').remove('>'));
+                }
+
+                qCDebug(dcJsonRpc()) << typeNameRaw << propertyNameRaw << metaTypeNameRaw << typeName;
+            }
+        } else if (metaProperty.isEnumType()) {
+            QString typeNameRaw = QString(metaProperty.typeName());
+            // Note: since Qt6 flags are also enums, and the type name contains
+            // QFlags<Class:Enum>, therefore we need to remove additionally all < >
+            typeName = QString("$ref:%1").arg(typeNameRaw.split("::").last().remove('<').remove('>'));
+        } else if (metaProperty.isFlagType()) {
+            typeName = QVariantList() << "$ref:" + m_flagsEnums.value(metaProperty.name());
+        } else if (typeId == QMetaType::QVariantList) {
+            typeName = QVariantList() << enumValueName(Variant);
+        } else {
+            typeName = enumValueName(variantTypeToBasicType(static_cast<QMetaType::Type>(typeId)));
+        }
+#else
+        if (metaProperty.type() == QVariant::UserType) {
+            if (metaProperty.typeName() == QStringLiteral("QMetaType::Type")) {
+                typeName = QString("$ref:BasicType");
+            } else if (QString(metaProperty.typeName()).startsWith("QList")) {
+                QString elementType = QString(metaProperty.typeName()).remove("QList<").remove(">");
+                if (elementType == "ThingId" || elementType == "EventTypeId" || elementType == "StateTypeId" || elementType == "ActionTypeId") {
+                    elementType = "QUuid";
+                }
+                QMetaType::Type variantType = static_cast<QMetaType::Type>(QVariant::nameToType(elementType.toUtf8()));
                 typeName = QVariantList() << enumValueName(variantTypeToBasicType(variantType));
             } else {
                 typeName = QString("$ref:%1").arg(QString(metaProperty.typeName()).split("::").last());
@@ -223,8 +266,10 @@ void JsonHandler::registerObject(const QMetaObject &metaObject)
         } else if (metaProperty.type() == QVariant::List) {
             typeName = QVariantList() << enumValueName(Variant);
         } else {
-            typeName = enumValueName(variantTypeToBasicType(metaProperty.type()));
+            typeName = enumValueName(variantTypeToBasicType(static_cast<QMetaType::Type>(metaProperty.type())));
         }
+
+#endif
         description.insert(name, typeName);
     }
     m_objects.insert(className, description);
@@ -278,16 +323,70 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
             }
 
             QVariant propertyValue = metaProperty.readOnGadget(value);
+            qCDebug(dcJsonRpc()) << metaProperty.name() << "optional:" << metaProperty.isUser() << "value:" << propertyValue << "valid:" << propertyValue.isValid() << "null:" << propertyValue.isNull();
+
             // If it's optional and empty, we may skip it
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            if (metaProperty.isUser()) {
+
+                bool isEmpty = false;
+
+                switch (propertyValue.typeId()) {
+                case QMetaType::QString:
+                    isEmpty = propertyValue.toString().isEmpty();
+                    break;
+                case QMetaType::QUuid:
+                    isEmpty = propertyValue.toUuid().isNull();
+                    break;
+                default:
+                    isEmpty = (!propertyValue.isValid() || propertyValue.isNull());
+                    break;
+                }
+
+                if (isEmpty) {
+                    // Optional and empty...skip this property
+                    continue;
+                }
+            }
+#else
             if (metaProperty.isUser() && (!propertyValue.isValid() || propertyValue.isNull())) {
                 continue;
             }
+#endif
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            // Pack flags
+            if (metaProperty.isFlagType()) {
+                QString enumName = QString(metaProperty.typeName()).split("::").last().remove('<').remove('>');
+                QString flagName = m_flagsEnums.key(enumName);
+                QMetaEnum metaFlag = m_metaFlags.value(flagName);
+                Q_ASSERT_X(m_metaFlags.contains(flagName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(flagName).toUtf8());
+                int flagValue = propertyValue.toInt();
+                QStringList flags;
+                for (int i = 0; i < metaFlag.keyCount(); i++) {
+                    int flag = metaFlag.value(i) & flagValue;
+                    if (flag == metaFlag.value(i) && flag > 0) {
+                        flags.append(metaFlag.key(i));
+                    }
+                }
+                ret.insert(metaProperty.name(), flags);
+                continue;
+            }
+
+            // Pack enums
+            if (metaProperty.isEnumType()) {
+                QString enumName = QString(metaProperty.typeName()).split("::").last().remove('<').remove('>');
+                Q_ASSERT_X(m_metaEnums.contains(enumName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(metaProperty.typeName()).toUtf8());
+                QMetaEnum metaEnum = m_metaEnums.value(enumName);
+                ret.insert(metaProperty.name(), metaEnum.key(propertyValue.toInt()));
+                continue;
+            }
+#else
             // Pack flags
             if (metaProperty.isFlagType()) {
                 QString flagName = QString(metaProperty.typeName()).split("::").last();
-                Q_ASSERT_X(m_metaFlags.contains(flagName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(flagName).toUtf8());
                 QMetaEnum metaFlag = m_metaFlags.value(flagName);
+                Q_ASSERT_X(m_metaFlags.contains(flagName), this->metaObject()->className(), QString("Cannot pack %1. %2 is not registered in this handler.").arg(className).arg(flagName).toUtf8());
                 int flagValue = propertyValue.toInt();
                 QStringList flags;
                 for (int i = 0; i < metaFlag.keyCount(); i++) {
@@ -308,17 +407,23 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
                 ret.insert(metaProperty.name(), metaEnum.key(propertyValue.toInt()));
                 continue;
             }
-
+#endif
             // Basic type/Variant type
-            if (metaProperty.typeName() == QStringLiteral("QVariant::Type")) {
+            if (metaProperty.typeName() == QStringLiteral("QMetaType::Type")) {
                 QMetaEnum metaEnum = QMetaEnum::fromType<BasicType>();
-                ret.insert(metaProperty.name(), metaEnum.key(variantTypeToBasicType(propertyValue.template value<QVariant::Type>())));
+                ret.insert(metaProperty.name(), metaEnum.valueToKey(propertyValue.template value<QMetaType::Type>()));
                 continue;
             }
 
+
             // Our own objects
-            if (metaProperty.type() == QVariant::UserType) {
-                QString propertyTypeName = QString(metaProperty.typeName()).split("::").last();
+            QString propertyTypeName = QString(metaProperty.typeName()).split("::").last();
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            int typeId = metaProperty.typeId();
+#else
+            int typeId = metaProperty.type();
+#endif
+            if (typeId >= QMetaType::User) {
                 if (m_listMetaObjects.contains(propertyTypeName)) {
                     QMetaObject entryMetaObject = m_listMetaObjects.value(propertyTypeName);
                     QVariant packed = pack(entryMetaObject, propertyValue.data());
@@ -340,6 +445,17 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
                     if (isValid || !metaProperty.isUser()) {
                         ret.insert(metaProperty.name(), packed);
                     }
+                    continue;
+                }
+
+                // Manually converting QList<BasicType>... Only QVariantList is known to the meta system
+                if (propertyTypeName.startsWith("ParamList")) {
+                    QVariantList list;
+                    foreach (const Param &entry, propertyValue.value<ParamList>()) {
+                        list << pack(entry);
+                    }
+
+                    ret.insert(metaProperty.name(), list);
                     continue;
                 }
 
@@ -372,7 +488,7 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
                         }
                     } else if (propertyTypeName == "QList<QDateTime>") {
                         foreach (const QDateTime &timestamp, propertyValue.value<QList<QDateTime>>()) {
-                            list << timestamp.toMSecsSinceEpoch() / 1000;
+                            list << timestamp.toSecsSinceEpoch();
                         }
                     } else {
                         Q_ASSERT_X(false, this->metaObject()->className(), QString("Unhandled list type: %1").arg(propertyTypeName).toUtf8());
@@ -392,15 +508,19 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
 
             // Standard properties, QString, int etc...
             // Special treatment for QDateTime (converting to time_t)
-            if (metaProperty.type() == QVariant::DateTime) {
+            if (typeId == QMetaType::QDateTime) {
                 QDateTime dateTime = propertyValue.toDateTime();
-                if (metaProperty.isUser() && dateTime.toTime_t() == 0) {
+                if (metaProperty.isUser() && dateTime.toSecsSinceEpoch() == 0) {
                     continue;
                 }
-                propertyValue = propertyValue.toDateTime().toTime_t();
-            } else if (metaProperty.type() == QVariant::Time) {
+                propertyValue = propertyValue.toDateTime().toSecsSinceEpoch();
+            } else if (typeId == QMetaType::QTime) {
                 propertyValue = propertyValue.toTime().toString("hh:mm");
+                if (metaProperty.isUser() && propertyValue.toString().isEmpty()) {
+                    continue;
+                }
             }
+
             ret.insert(metaProperty.name(), propertyValue);
         }
         return ret;
@@ -408,7 +528,7 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
 
     Q_ASSERT_X(false, this->metaObject()->className(), QString("Unregistered object type: %1").arg(className).toUtf8());
     qCWarning(dcJsonRpc()) << "Cannot pack object of unregistered type" << className;
-    return QVariant();    
+    return QVariant();
 }
 
 QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &value) const
@@ -417,8 +537,12 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
 
     // If it's a list object, loop over count
     if (m_listMetaObjects.contains(typeName)) {
-        if (value.type() != QVariant::List) {
-//            qCWarning(dcJsonRpc()) << "Cannot unpack" << typeName << ". Value is not in list format:" << value;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        if (static_cast<QMetaType::Type>(value.typeId()) != QMetaType::QVariantList) {
+#else
+        if (static_cast<QMetaType::Type>(value.type()) != QMetaType::QVariantList) {
+#endif
+            qCWarning(dcJsonRpc()) << "Cannot unpack" << typeName << ". Value is not in list format:" << value;
             return QVariant();
         }
 
@@ -435,16 +559,20 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
             QVariant value = unpack(entryMetaObject, variant);
             putMethod.invokeOnGadget(ptr, Q_ARG(QVariant, value));
         }
-
-        QVariant ret = QVariant(typeId, ptr);
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        QVariant ret = QVariant(QMetaType(typeId), ptr);
+#else
+        QVariant ret = QVariant(static_cast<QVariant::Type>(typeId), ptr);
+#endif
         QMetaType::destroy(typeId, ptr);
         return ret;
     }
 
-    // if it's an object, loop over all properties
+    // If it's an object, loop over all properties
     if (m_metaObjects.contains(typeName)) {
         QVariantMap map = value.toMap();
         int typeId = QMetaType::type(metaObject.className());
+        QMetaType metaType(typeId);
         Q_ASSERT_X(typeId != 0, this->metaObject()->className(), QString("Cannot handle unregistered meta type %1").arg(typeName).toUtf8());
         void* ptr = QMetaType::create(typeId);
         for (int i = 0; i < metaObject.propertyCount(); i++) {
@@ -499,10 +627,16 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
                     continue;
                 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                int typeId = metaProperty.typeId();
+#else
+                int typeId = metaProperty.type();
+#endif
+
                 // Special treatment for QDateTime (convert from time_t)
-                if (metaProperty.type() == QVariant::DateTime) {
-                    variant = QDateTime::fromTime_t(variant.toUInt());
-                } else if (metaProperty.type() == QVariant::Time) {
+                if (typeId == QMetaType::QDateTime) {
+                    variant = QDateTime::fromSecsSinceEpoch(variant.toUInt());
+                } else if (typeId == QMetaType::QTime) {
                     variant = QTime::fromString(variant.toString(), "hh:mm");
                 }
 
@@ -511,7 +645,11 @@ QVariant JsonHandler::unpack(const QMetaObject &metaObject, const QVariant &valu
             }
 
         }
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        QVariant ret = QVariant(QMetaType(typeId), ptr);
+#else
         QVariant ret = QVariant(typeId, ptr);
+#endif
         QMetaType::destroy(typeId, ptr);
         return ret;
     }

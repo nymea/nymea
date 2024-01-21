@@ -160,7 +160,7 @@ void TestTags::updateTagValue()
     // Check for TagAdded notification
     QVariantMap notificationTagMap = checkNotification(clientSpy, "Tags.TagAdded").toMap().value("params").toMap().value("tag").toMap();
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(notificationTagMap);
-    QVERIFY2(compareThingTag(notificationTagMap, thingId, appId, tagId, "1"), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
+    QVERIFY2(compareThingTag(notificationTagMap, QUuid(thingId), appId, tagId, "1"), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
     clientSpy.clear();
 
     // Try getting the changed tag via GetTag
@@ -171,7 +171,7 @@ void TestTags::updateTagValue()
     response = injectAndWait("Tags.GetTags", params);
     QVariantList tagsList = response.toMap().value("params").toMap().value("tags").toList();
     QCOMPARE(tagsList.count(), 1);
-    QVERIFY2(compareThingTag(tagsList.first().toMap(), thingId, appId, tagId, "1"), "Fetched tag isn't matching the one we added");
+    QVERIFY2(compareThingTag(tagsList.first().toMap(), QUuid(thingId), appId, tagId, "1"), "Fetched tag isn't matching the one we added");
 
     // Now update the tag
     params.clear();
@@ -182,7 +182,7 @@ void TestTags::updateTagValue()
     // Check for TagAdded notification
     notificationTagMap = checkNotification(clientSpy, "Tags.TagValueChanged").toMap().value("params").toMap().value("tag").toMap();
     jsonDoc = QJsonDocument::fromVariant(notificationTagMap);
-    QVERIFY2(compareThingTag(notificationTagMap, thingId, appId, tagId, "2"), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
+    QVERIFY2(compareThingTag(notificationTagMap, QUuid(thingId), appId, tagId, "2"), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
 
     // Try getting the changed tag via GetTag
     params.clear();
@@ -192,7 +192,7 @@ void TestTags::updateTagValue()
     response = injectAndWait("Tags.GetTags", params);
     tagsList = response.toMap().value("params").toMap().value("tags").toList();
     QCOMPARE(tagsList.count(), 1);
-    QVERIFY2(compareThingTag(tagsList.first().toMap(), thingId, appId, tagId, "2"), "Fetched tag isn't matching the one we added");
+    QVERIFY2(compareThingTag(tagsList.first().toMap(), QUuid(thingId), appId, tagId, "2"), "Fetched tag isn't matching the one we added");
 }
 
 void TestTags::removeTag()
@@ -216,7 +216,7 @@ void TestTags::removeTag()
     // Check for TagAdded notification
     QVariantMap notificationTagMap = checkNotification(clientSpy, "Tags.TagAdded").toMap().value("params").toMap().value("tag").toMap();
     QJsonDocument jsonDoc = QJsonDocument::fromVariant(notificationTagMap);
-    QVERIFY2(compareThingTag(notificationTagMap, thingId, appId, tagId, value), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
+    QVERIFY2(compareThingTag(notificationTagMap, QUuid(thingId), appId, tagId, value), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
     clientSpy.clear();
 
     // Try getting the tag via GetTag
@@ -227,7 +227,7 @@ void TestTags::removeTag()
     response = injectAndWait("Tags.GetTags", params);
     QVariantList tagsList = response.toMap().value("params").toMap().value("tags").toList();
     QCOMPARE(tagsList.count(), 1);
-    QVERIFY2(compareThingTag(tagsList.first().toMap(), thingId, appId, tagId, value), "Fetched tag isn't matching the one we added");
+    QVERIFY2(compareThingTag(tagsList.first().toMap(), QUuid(thingId), appId, tagId, value), "Fetched tag isn't matching the one we added");
 
     // Now remove the tag
     params.clear();
@@ -238,7 +238,7 @@ void TestTags::removeTag()
     // Check for TagRemoved notification
     notificationTagMap = checkNotification(clientSpy, "Tags.TagRemoved").toMap().value("params").toMap().value("tag").toMap();
     jsonDoc = QJsonDocument::fromVariant(notificationTagMap);
-    QVERIFY2(compareThingTag(notificationTagMap, thingId, appId, tagId, QString()), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
+    QVERIFY2(compareThingTag(notificationTagMap, QUuid(thingId), appId, tagId, QString()), QString("Tag in notification not matching: %1").arg(qUtf8Printable(jsonDoc.toJson())).toLatin1());
 
     // Try getting the tag via GetTag
     params.clear();

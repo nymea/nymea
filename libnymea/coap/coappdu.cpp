@@ -179,7 +179,7 @@ CoapPdu::CoapPdu(QObject *parent) :
     m_payload(QByteArray()),
     m_error(NoError)
 {
-    qsrand(QDateTime::currentMSecsSinceEpoch());
+    std::srand(QDateTime::currentMSecsSinceEpoch());
 }
 
 /*! Constructs a CoapPdu from the given \a data with the given \a parent. */
@@ -193,7 +193,7 @@ CoapPdu::CoapPdu(const QByteArray &data, QObject *parent) :
     m_payload(QByteArray()),
     m_error(NoError)
 {
-    qsrand(QDateTime::currentMSecsSinceEpoch());
+    std::srand(QDateTime::currentMSecsSinceEpoch());
     unpack(data);
 }
 
@@ -263,7 +263,7 @@ quint16 CoapPdu::messageId() const
 */
 void CoapPdu::createMessageId()
 {
-    setMessageId((quint16)qrand() % 65536);
+    setMessageId((quint16)std::rand() % 65536);
 }
 
 /*! Sets the messageId of this \l{CoapPdu} to the given \a messageId. */
@@ -301,9 +301,9 @@ void CoapPdu::createToken()
 {
     m_token.clear();
     // make sure that the toke has a minimum size of 1
-    quint8 length = (quint8)(qrand() % 7) + 1;
+    quint8 length = (quint8)(std::rand() % 7) + 1;
     for (int i = 0; i < length; i++) {
-        m_token.append((char)qrand() % 256);
+        m_token.append((char)std::rand() % 256);
     }
 }
 
@@ -621,18 +621,18 @@ QDebug operator<<(QDebug debug, const CoapPdu &coapPdu)
     QDebugStateSaver saver(debug);
     const QMetaObject &metaObject = CoapPdu::staticMetaObject;
     QMetaEnum messageTypeEnum = metaObject.enumerator(metaObject.indexOfEnumerator("MessageType"));
-    debug.nospace() << "CoapPdu(" << messageTypeEnum.valueToKey(coapPdu.messageType()) << ")" << endl;
-    debug.nospace() << "  Code: " << CoapPdu::getReqRspCodeString(coapPdu.reqRspCode()) << endl;
-    debug.nospace() << "  Ver: " << coapPdu.version() << endl;
-    debug.nospace() << "  Token: " << coapPdu.token().length() << " " << "0x"+ coapPdu.token().toHex() << endl;
-    debug.nospace() << "  Message ID: " << coapPdu.messageId() << endl;
-    debug.nospace() << "  Payload size: " << coapPdu.payload().size() << endl;
+    debug.nospace() << "CoapPdu(" << messageTypeEnum.valueToKey(coapPdu.messageType()) << ")" << '\n';
+    debug.nospace() << "  Code: " << CoapPdu::getReqRspCodeString(coapPdu.reqRspCode()) << '\n';
+    debug.nospace() << "  Ver: " << coapPdu.version() << '\n';
+    debug.nospace() << "  Token: " << coapPdu.token().length() << " " << "0x"+ coapPdu.token().toHex() << '\n';
+    debug.nospace() << "  Message ID: " << coapPdu.messageId() << '\n';
+    debug.nospace() << "  Payload size: " << coapPdu.payload().size() << '\n';
     foreach (const CoapOption &option, coapPdu.options()) {
         debug.nospace() << "  " << option;
     }
 
     if (!coapPdu.payload().isEmpty())
-        debug.nospace() << endl << coapPdu.payload() << endl;
+        debug.nospace() << '\n' << coapPdu.payload() << '\n';
 
     return debug;
 }

@@ -33,6 +33,7 @@
 #include <qqml.h>
 #include <QQmlEngine>
 #include <QJsonDocument>
+#include <QRegularExpression>
 
 namespace nymeaserver {
 namespace scriptengine {
@@ -91,13 +92,13 @@ void ScriptInterfaceEvent::onEventTriggered(const Event &event)
 
     QVariantMap params;
     foreach (const Param &param, event.params()) {
-        params.insert(param.paramTypeId().toString().remove(QRegExp("[{}]")), param.value().toByteArray());
+        params.insert(param.paramTypeId().toString().remove(QRegularExpression("[{}]")), param.value().toByteArray());
         QString paramName = thing->thingClass().eventTypes().findById(event.eventTypeId()).paramTypes().findById(param.paramTypeId()).name();
         params.insert(paramName, param.value().toByteArray());
     }
 
     // Note: Explicitly convert the params to a Json document because auto-casting from QVariantMap to the JS engine might drop some values.
-    emit triggered(event.thingId().toString().remove(QRegExp("[{}]")), QJsonDocument::fromVariant(params).toVariant().toMap());
+    emit triggered(event.thingId().toString().remove(QRegularExpression("[{}]")), QJsonDocument::fromVariant(params).toVariant().toMap());
 }
 
 }

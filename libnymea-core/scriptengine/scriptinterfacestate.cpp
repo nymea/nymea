@@ -33,6 +33,7 @@
 #include <qqml.h>
 #include <QQmlEngine>
 #include <QJsonDocument>
+#include <QRegularExpression>
 
 namespace nymeaserver {
 namespace scriptengine {
@@ -88,7 +89,7 @@ void ScriptInterfaceState::onStateChanged(Thing *thing, const StateTypeId &state
         return;
     }
 
-    emit stateChanged(thing->id().toString().remove(QRegExp("[{}]")), value);
+    emit stateChanged(thing->id().toString().remove(QRegularExpression("[{}]")), value);
 }
 
 }

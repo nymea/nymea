@@ -75,15 +75,15 @@ protected:
         QJsonDocument jsonDoc = QJsonDocument::fromVariant(response);
         QVERIFY2(response.toMap().value("status").toString() == QString("success"),
                  QString("\nExpected status: \"success\"\nGot: %2\nFull message: %3")
-                 .arg(response.toMap().value("status").toString())
-                 .arg(jsonDoc.toJson().data())
-                 .toLatin1().data());
+                     .arg(response.toMap().value("status").toString())
+                     .arg(jsonDoc.toJson().data())
+                     .toLatin1().data());
         QVERIFY2(response.toMap().value("params").toMap().value(fieldName).toString() == error,
                  QString("\nExpected: %1\nGot: %2\nFull message: %3\n")
-                 .arg(error)
-                 .arg(response.toMap().value("params").toMap().value(fieldName).toString())
-                 .arg(jsonDoc.toJson().data())
-                 .toLatin1().data());
+                     .arg(error)
+                     .arg(response.toMap().value("params").toMap().value(fieldName).toString())
+                     .arg(jsonDoc.toJson().data())
+                     .toLatin1().data());
     }
 
     template<typename T> QString enumValueName(T value)
@@ -102,10 +102,11 @@ protected:
     {
         if (allRequired)
             QVERIFY2(requestList.count() == responseList.count(), "Not the same count of param in response.");
+
         foreach (const QVariant &requestParam, requestList) {
             bool found = false;
             foreach (const QVariant &responseParam, responseList) {
-                if (requestParam.toMap().value("paramTypeId") == responseParam.toMap().value("paramTypeId")){
+                if (requestParam.toMap().value("paramTypeId").toUuid() == responseParam.toMap().value("paramTypeId").toUuid()){
                     QCOMPARE(requestParam.toMap().value("value"), responseParam.toMap().value("value"));
                     found = true;
                     break;

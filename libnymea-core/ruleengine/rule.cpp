@@ -243,11 +243,11 @@ void Rule::setActive(const bool &active)
 QDebug operator<<(QDebug dbg, const Rule &rule)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << endl << "=== Rule begin ===" << endl;
-    dbg.nospace() << "ID:" << rule.id().toString() << endl;
-    dbg.nospace() << "Name:" << rule.name() << endl;
-    dbg.nospace() << "Enabled:" << rule.enabled() << endl;
-    dbg.nospace() << "Active:" << rule.active() << endl;
+    dbg.nospace() << '\n' << "=== Rule begin ===" << '\n';
+    dbg.nospace() << "ID:" << rule.id().toString() << '\n';
+    dbg.nospace() << "Name:" << rule.name() << '\n';
+    dbg.nospace() << "Enabled:" << rule.enabled() << '\n';
+    dbg.nospace() << "Active:" << rule.active() << '\n';
     dbg.nospace() << rule.eventDescriptors();
     dbg.nospace() << rule.timeDescriptor();
     dbg.nospace() << rule.stateEvaluator();

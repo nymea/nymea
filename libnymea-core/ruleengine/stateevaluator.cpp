@@ -35,6 +35,8 @@
 #include "loggingcategories.h"
 #include "nymeasettings.h"
 
+#include <QColor>
+
 namespace nymeaserver {
 
 StateEvaluator::StateEvaluator(const StateDescriptor &stateDescriptor):
@@ -199,9 +201,9 @@ StateEvaluator StateEvaluator::loadFromSettings(NymeaSettings &settings, const Q
     }
     QVariant stateValue = settings.value("value");
     if (settings.contains("valueType")) {
-        QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
+        QMetaType::Type valueType = (QMetaType::Type)settings.value("valueType").toInt();
         // Note: only warn, and continue with the QVariant guessed type
-        if (valueType == QVariant::Invalid) {
+        if (valueType == QMetaType::UnknownType) {
             qCWarning(dcRuleEngine()) << "Could not load the value type of the state evaluator. The value type will be guessed by QVariant" << stateValue;
         } else if (!stateValue.canConvert(valueType)) {
             qCWarning(dcRuleEngine()) << "Could not convert the state evaluator value" << stateValue << "to the stored type" << valueType << ". The value type will be guessed by QVariant.";
@@ -266,6 +268,19 @@ bool StateEvaluator::isValid() const
                             qCWarning(dcRuleEngine) << "Could not convert value of state descriptor" << m_stateDescriptor.stateTypeId() << " to:" << QVariant::typeToName(stateType.type()) << " Got:" << m_stateDescriptor.stateValue();
                             return false;
                         }
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                        QPartialOrdering ordering = QPartialOrdering::Unordered;
+                        ordering = QVariant::compare(stateValue, stateType.maxValue());
+                        if (stateType.maxValue().isValid() && ordering == QPartialOrdering::Greater) {
+                            qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Max:" << stateType.maxValue();
+                            return false;
+                        }
+                        ordering = QVariant::compare(stateValue, stateType.minValue());
+                        if (stateType.minValue().isValid() && ordering == QPartialOrdering::Less) {
+                            qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Min:" << stateType.minValue();
+                            return false;
+                        }
+#else
                         if (stateType.maxValue().isValid() && stateValue > stateType.maxValue()) {
                             qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Max:" << stateType.maxValue();
                             return false;
@@ -275,7 +290,7 @@ bool StateEvaluator::isValid() const
                             qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Min:" << stateType.minValue();
                             return false;
                         }
-
+#endif
                         if (!stateType.possibleValues().isEmpty() && !stateType.possibleValues().contains(stateValue)) {
                             QStringList possibleValues;
                             foreach (const QVariant &value, stateType.possibleValues()) {
@@ -286,7 +301,7 @@ bool StateEvaluator::isValid() const
                             return false;
                         }
 
-                    // if comparing to another state
+                        // if comparing to another state
                     } else if (!m_stateDescriptor.valueThingId().isNull() && !m_stateDescriptor.valueStateTypeId().isNull()) {
                         Thing *valueThing = NymeaCore::instance()->thingManager()->findConfiguredThing(m_stateDescriptor.valueThingId());
                         if (!valueThing) {
@@ -307,11 +322,11 @@ bool StateEvaluator::isValid() const
         } else { // TypeInterface
             Interface iface = NymeaCore::instance()->thingManager()->supportedInterfaces().findByName(m_stateDescriptor.interface());
             if (!iface.isValid()) {
-                qWarning(dcRuleEngine()) << "No such interface:" << m_stateDescriptor.interface();
+                qCWarning(dcRuleEngine()) << "No such interface:" << m_stateDescriptor.interface();
                 return false;
             }
             if (iface.stateTypes().findByName(m_stateDescriptor.interfaceState()).name().isEmpty()) {
-                qWarning(dcRuleEngine()) << "Interface" << iface.name() << "has no such state:" << m_stateDescriptor.interfaceState();
+                qCWarning(dcRuleEngine()) << "Interface" << iface.name() << "has no such state:" << m_stateDescriptor.interfaceState();
                 return false;
             }
         }
@@ -356,11 +371,64 @@ bool StateEvaluator::evaluateDescriptor(const StateDescriptor &descriptor) const
         }
 
         if (!descriptor.stateValue().isNull()) {
-            QVariant convertedValue = descriptor.stateValue();
+            QVariant stateValue = state.value();
+            QVariant descriptorValue = descriptor.stateValue();
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            bool res = descriptorValue.convert(state.value().metaType());
+            if (!res) {
+                return false;
+            }
+
+            // FIXME: not sure if this is a bug in Qt, but compairing two equivalient QVariant containing QColor
+            // with QPartialOrdering::equivalent results in false. Until this has been fixed or the error has been found,
+            // we convert colors to strings and compare them
+
+            // Comparing QVariant(QColor, QColor(ARGB 1, 0, 0, 0)) to QVariant(QColor, QColor(ARGB 1, 0, 1, 0)) with operator Types::ValueOperatorEquals --> false
+
+            if (state.value().typeId() == QMetaType::QColor) {
+                QColor stateColor = stateValue.value<QColor>();
+                QColor desciptorColor = descriptorValue.value<QColor>();
+
+                QString sateColorName = stateColor.name();
+                QString desciptorColorName = desciptorColor.name();
+
+                stateValue = QVariant(sateColorName);
+                descriptorValue = QVariant(desciptorColorName);
+            }
+
+            QPartialOrdering ordering = QVariant::compare(stateValue, descriptorValue);
+            bool result = false;
+            switch (descriptor.operatorType()) {
+            case Types::ValueOperatorEquals:
+                result = (ordering == QPartialOrdering::equivalent);
+                break;
+            case Types::ValueOperatorGreater:
+                result = (ordering == QPartialOrdering::greater);
+                break;
+            case Types::ValueOperatorGreaterOrEqual:
+                result = (ordering == QPartialOrdering::greater || ordering == QPartialOrdering::equivalent);
+                break;
+            case Types::ValueOperatorLess:
+                result = (ordering == QPartialOrdering::less);
+                break;
+            case Types::ValueOperatorLessOrEqual:
+                result = (ordering == QPartialOrdering::less || ordering == QPartialOrdering::equivalent);
+                break;
+            case Types::ValueOperatorNotEquals:
+                result = (ordering != QPartialOrdering::equivalent);
+                break;
+            }
+
+            qCDebug(dcRuleEngineDebug()) << "Comparing" << stateValue << "to" << descriptorValue << "with operator" << descriptor.operatorType() << "-->" << result;
+
+            return result;
+#else
             bool res = convertedValue.convert(state.value().type());
             if (!res) {
                 return false;
             }
+
             switch (descriptor.operatorType()) {
             case Types::ValueOperatorEquals:
                 return state.value() == convertedValue;
@@ -375,7 +443,7 @@ bool StateEvaluator::evaluateDescriptor(const StateDescriptor &descriptor) const
             case Types::ValueOperatorNotEquals:
                 return state.value() != convertedValue;
             }
-
+#endif
         } else if (!descriptor.valueThingId().isNull() && !descriptor.valueStateTypeId().isNull()) {
             Thing *valueThing = NymeaCore::instance()->thingManager()->findConfiguredThing(descriptor.valueThingId());
             if (!valueThing) {
@@ -389,6 +457,23 @@ bool StateEvaluator::evaluateDescriptor(const StateDescriptor &descriptor) const
             }
 
             qCDebug(dcRuleEngineDebug()) << "Comparing" << state.value() << "to" << valueState.value() << "with operator" << descriptor.operatorType();
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            QPartialOrdering ordering = QVariant::compare(state.value(), valueState.value());
+            switch (descriptor.operatorType()) {
+            case Types::ValueOperatorEquals:
+                return ordering == QPartialOrdering::Equivalent;
+            case Types::ValueOperatorGreater:
+                return ordering == QPartialOrdering::Greater;
+            case Types::ValueOperatorGreaterOrEqual:
+                return ordering == QPartialOrdering::Greater || ordering == QPartialOrdering::Equivalent;
+            case Types::ValueOperatorLess:
+                return ordering == QPartialOrdering::Less;
+            case Types::ValueOperatorLessOrEqual:
+                return ordering == QPartialOrdering::Less || ordering == QPartialOrdering::Equivalent;
+            case Types::ValueOperatorNotEquals:
+                return ordering != QPartialOrdering::Equivalent;
+            }
+#else
             switch (descriptor.operatorType()) {
             case Types::ValueOperatorEquals:
                 return state.value() == valueState.value();
@@ -403,6 +488,7 @@ bool StateEvaluator::evaluateDescriptor(const StateDescriptor &descriptor) const
             case Types::ValueOperatorNotEquals:
                 return state.value() != valueState.value();
             }
+#endif
         }
 
     } else { // Interface based
@@ -430,7 +516,7 @@ bool StateEvaluator::evaluateDescriptor(const StateDescriptor &descriptor) const
 QDebug operator<<(QDebug dbg, const StateEvaluator &stateEvaluator)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "StateEvaluator: Operator:" << stateEvaluator.operatorType() << endl << "  " << stateEvaluator.stateDescriptor() << endl;
+    dbg.nospace() << "StateEvaluator: Operator:" << stateEvaluator.operatorType() << '\n' << "  " << stateEvaluator.stateDescriptor() << '\n';
     for (int i = 0; i < stateEvaluator.childEvaluators().count(); i++) {
         dbg.nospace() << "    " << i << ": " << stateEvaluator.childEvaluators().at(i);
     }

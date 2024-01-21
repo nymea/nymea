@@ -39,10 +39,12 @@
 #include "types/statetype.h"
 #include "types/paramtype.h"
 
+#include <qobjectdefs.h>
 #include <QList>
 #include <QUuid>
+#include <QDebug>
 
-class LIBNYMEA_EXPORT ThingClass
+class ThingClass
 {
     Q_GADGET
     Q_PROPERTY(QUuid id READ id)
@@ -70,7 +72,8 @@ public:
         CreateMethodAuto = 0x02,
         CreateMethodDiscovery = 0x04
     };
-    Q_ENUM(CreateMethod)
+    Q_ENUM(CreateMethod) // Note: required even if Q_DECLARE_FLAGS should do it
+
     Q_DECLARE_FLAGS(CreateMethods, CreateMethod)
     Q_FLAG(CreateMethods)
 

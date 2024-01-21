@@ -71,6 +71,7 @@
 #include <QDir>
 #include <QJsonDocument>
 #include <QMetaEnum>
+#include <QRegularExpression>
 
 ThingManagerImplementation::ThingManagerImplementation(HardwareManager *hardwareManager, LogEngine *logEngine, const QLocale &locale, QObject *parent) :
     ThingManager(parent),
@@ -1962,7 +1963,8 @@ void ThingManagerImplementation::onLoaded()
 void ThingManagerImplementation::cleanupThingStateCache()
 {
     QDir dir(NymeaSettings::cachePath() + "/thingstates/");
-    foreach (const QFileInfo &entry, dir.entryList()) {
+    foreach (const QString &entryString, dir.entryList()) {
+        QFileInfo entry(entryString);
         ThingId thingId(entry.baseName());
         if (!m_configuredThings.contains(thingId)) {
             qCDebug(dcThingManager()) << "Thing ID" << thingId.toString() << "not found in configured things. Cleaning up stale thing state cache.";
@@ -2298,7 +2300,7 @@ void ThingManagerImplementation::postSetupThing(Thing *thing)
 
 QString ThingManagerImplementation::statesCacheFile(const ThingId &thingId)
 {
-    return NymeaSettings::cachePath() + "/thingstates/" + thingId.toString().remove(QRegExp("[{}]")) + ".cache";
+    return NymeaSettings::cachePath() + "/thingstates/" + thingId.toString().remove(QRegularExpression("[{}]")) + ".cache";
 }
 
 void ThingManagerImplementation::loadThingStates(Thing *thing)
@@ -2331,8 +2333,17 @@ void ThingManagerImplementation::loadThingStates(Thing *thing)
                 value = settings->value(stateType.id().toString());
             }
             value.convert(stateType.type());
-            minValue.convert(stateType.type());
-            maxValue.convert(stateType.type());
+
+            // Note: the convert method has changed in Qt6. I will return a valid
+            // QVariant and therefore set min max values for the state even tough they
+            // are still invalid on purpose
+
+            if (minValue.isValid())
+                minValue.convert(stateType.type());
+
+            if (maxValue.isValid())
+                maxValue.convert(stateType.type());
+
             QVariantList convertedPossibleValues;
             foreach (QVariant possibleValue, possibleValues) {
                 possibleValue.convert(stateType.type());
@@ -2409,12 +2420,12 @@ void ThingManagerImplementation::registerStateLogger(Thing *thing, const StateTy
 {
     StateType stateType = thing->thingClass().getStateType(stateTypeId);
     QString name = thing->id().toString() + "-" + stateType.name();
-    QList<QVariant::Type> sampledTypes {
-        QVariant::Int,
-        QVariant::UInt,
-        QVariant::LongLong,
-        QVariant::ULongLong,
-        QVariant::Double
+    QList<QMetaType::Type> sampledTypes {
+        QMetaType::Int,
+        QMetaType::UInt,
+        QMetaType::LongLong,
+        QMetaType::ULongLong,
+        QMetaType::Double
     };
     Types::LoggingType loggingType = sampledTypes.contains(stateType.type()) ? Types::LoggingTypeSampled : Types::LoggingTypeDiscrete;
     Logger *logger = m_logEngine->registerLogSource("state-" + name, {}, loggingType, stateType.name());

@@ -33,6 +33,7 @@
 #include <qqml.h>
 #include <QQmlEngine>
 #include <QJsonDocument>
+#include <QRegularExpression>
 
 namespace nymeaserver {
 namespace scriptengine {
@@ -97,7 +98,7 @@ void ScriptEvent::onEventTriggered(const Event &event)
         return;
     }
 
-    if (!m_eventTypeId.isEmpty() && event.eventTypeId() != m_eventTypeId) {
+    if (!m_eventTypeId.isEmpty() && event.eventTypeId() != EventTypeId(m_eventTypeId)) {
         return;
     }
 
@@ -108,7 +109,7 @@ void ScriptEvent::onEventTriggered(const Event &event)
 
     QVariantMap params;
     foreach (const Param &param, event.params()) {
-        params.insert(param.paramTypeId().toString().remove(QRegExp("[{}]")), param.value().toByteArray());
+        params.insert(param.paramTypeId().toString().remove(QRegularExpression("[{}]")), param.value().toByteArray());
         QString paramName = thing->thingClass().eventTypes().findById(event.eventTypeId()).paramTypes().findById(param.paramTypeId()).name();
         params.insert(paramName, param.value().toByteArray());
     }

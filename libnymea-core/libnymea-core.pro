@@ -3,37 +3,12 @@ TARGET = nymea-core
 
 include(../nymea.pri)
 
-QT += bluetooth dbus qml sql websockets serialport
+QT += core bluetooth dbus qml sql websockets serialport
 INCLUDEPATH += $$top_srcdir/libnymea $$top_builddir
 LIBS += -L$$top_builddir/libnymea/ -lnymea -lssl -lcrypto
 
 CONFIG += link_pkgconfig
 PKGCONFIG += nymea-mqtt nymea-networkmanager nymea-zigbee nymea-remoteproxyclient nymea-gpio
-
-CONFIG(withoutpython) {
-    message("Building without python support.")
-    CONFIG -= python
-} else:packagesExist(python3-embed) {
-# As of Ubuntu focal, there's a commonly named python3-embed pointing to the distro version of python
-# For everything below python 3.8 we need to manually select one
-    PKGCONFIG += python3-embed
-    CONFIG += python
-} else:packagesExist(python-3.5) {
-    # xenial, stretch
-    PKGCONFIG += python-3.5
-    CONFIG += python
-} else:packagesExist(python-3.6) {
-    # bionic
-    PKGCONFIG += python-3.6
-    CONFIG += python
-} else:packagesExist(python-3.7) {
-    # buster, eoan
-    PKGCONFIG += python-3.7
-    CONFIG += python
-} else {
-    message("Python development package not found. Building without python support.")
-    CONFIG -= python
-}
 
 packagesExist(systemd) {
     message(Building with systemd support)
@@ -43,12 +18,25 @@ packagesExist(systemd) {
     message(Building without systemd support)
 }
 
-packagesExist(Qt5SerialBus) {
-    message("Building with QtSerialBus support.")
-    PKGCONFIG += Qt5SerialBus
-    DEFINES += WITH_QTSERIALBUS
+greaterThan(QT_MAJOR_VERSION, 5) {
+    qtHaveModule(serialbus) {
+        message("Building with QtSerialBus support.")
+        QT *= serialbus
+        DEFINES += WITH_QTSERIALBUS
+    } else {
+        message("QtSerialBus package not found. Building without QtSerialBus support.")
+    }
+
+    # Separate module in Qt6
+    QT *= concurrent
 } else {
-    message("Qt5SerialBus package not found. Building without QtSerialBus support.")
+    packagesExist(Qt5SerialBus) {
+        message("Building with QtSerialBus support.")
+        PKGCONFIG += Qt5SerialBus
+        DEFINES += WITH_QTSERIALBUS
+    } else {
+        message("Qt5SerialBus package not found. Building without QtSerialBus support.")
+    }
 }
 
 # Note: udev is not available on all platforms

@@ -55,8 +55,8 @@
 #include <QNetworkInterface>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
-#include <QNetworkConfiguration>
-#include <QNetworkConfigurationManager>
+#include <QRegularExpression>
+#include <QStringView>
 
 namespace nymeaserver {
 
@@ -70,10 +70,13 @@ UpnpDiscoveryImplementation::UpnpDiscoveryImplementation(QNetworkAccessManager *
     m_notificationTimer->setSingleShot(false);
     connect(m_notificationTimer, &QTimer::timeout, this, &UpnpDiscoveryImplementation::notificationTimeout);
 
-    QNetworkConfigurationManager *configManager = new QNetworkConfigurationManager(this);
-    connect(configManager, &QNetworkConfigurationManager::configurationAdded, this, &UpnpDiscoveryImplementation::networkConfigurationChanged);
-    connect(configManager, &QNetworkConfigurationManager::configurationRemoved, this, &UpnpDiscoveryImplementation::networkConfigurationChanged);
-    connect(configManager, &QNetworkConfigurationManager::configurationChanged, this, &UpnpDiscoveryImplementation::networkConfigurationChanged);
+    // FIXME Qt6: maybe we can use udev in order to detect network configuration changes, centralized,
+    // also available for integration plugins since there are some examples
+
+    // QNetworkConfigurationManager *configManager = new QNetworkConfigurationManager(this);
+    // connect(configManager, &QNetworkConfigurationManager::configurationAdded, this, &UpnpDiscoveryImplementation::networkConfigurationChanged);
+    // connect(configManager, &QNetworkConfigurationManager::configurationRemoved, this, &UpnpDiscoveryImplementation::networkConfigurationChanged);
+    // connect(configManager, &QNetworkConfigurationManager::configurationChanged, this, &UpnpDiscoveryImplementation::networkConfigurationChanged);
 
     m_available = true;
 
@@ -132,7 +135,7 @@ void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int 
     // TODO: Once DeviceManager (and with that this can be moved into the server, use NymeaCore's configuration manager instead of parsing the config here...
     NymeaSettings globalSettings(NymeaSettings::SettingsRoleGlobal);
     globalSettings.beginGroup("nymead");
-    QByteArray uuid = globalSettings.value("uuid", QUuid()).toString().remove(QRegExp("[{}]")).toUtf8();
+    QByteArray uuid = globalSettings.value("uuid", QUuid()).toString().remove(QRegularExpression("[{}]")).toUtf8();
     globalSettings.endGroup();
 
     globalSettings.beginGroup("WebServer");
@@ -184,12 +187,17 @@ void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int 
                     // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
                     QByteArray rootdeviceResponseMessage = QByteArray("HTTP/1.1 200 OK\r\n"
                                                                       "CACHE-CONTROL: max-age=1900\r\n"
-                                                                      "DATE: " + QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() + " GMT\r\n"
+                                                                      "DATE: " +
+                                                                      QDateTime::currentDateTime().toString("ddd, dd MMM yyyy hh:mm:ss").toUtf8() +
+                                                                      " GMT\r\n"
                                                                       "EXT:\r\n"
-                                                                      "LOCATION: " + locationString.toUtf8() + "\r\n"
-                                                                      "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
+                                                                      "LOCATION: " + locationString.toUtf8() +
+                                                                      "\r\n"
+                                                                      "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) +
+                                                                      " UPnP/1.1 \r\n"
                                                                       "ST: upnp:rootdevice\r\n"
-                                                                      "USN: uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                      "USN: uuid:" + uuid +
+                                                                      "::urn:schemas-upnp-org:device:Basic:1\r\n"
                                                                       "\r\n");
 
                     qCDebug(dcUpnp()) << QString("Sending response to %1:%2").arg(host.toString()).arg(port);
@@ -311,42 +319,81 @@ void UpnpDiscoveryImplementation::replyFinished()
             if (xml.isStartElement()) {
                 if (xml.name().toString() == "device") {
                     while (!xml.atEnd()) {
-                        if (xml.name() == "deviceType" && xml.isStartElement()) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                        if (xml.name() == QLatin1StringView("deviceType") && xml.isStartElement()) {
                             upnpDeviceDescriptor.setDeviceType(xml.readElementText());
                         }
-                        if (xml.name() == "friendlyName" && xml.isStartElement()) {
+                        if (xml.name() == QLatin1StringView("friendlyName") && xml.isStartElement()) {
                             upnpDeviceDescriptor.setFriendlyName(xml.readElementText());
                         }
-                        if (xml.name() == "manufacturer" && xml.isStartElement()) {
+                        if (xml.name() == QLatin1StringView("manufacturer") && xml.isStartElement()) {
                             upnpDeviceDescriptor.setManufacturer(xml.readElementText());
                         }
-                        if (xml.name() == "manufacturerURL" && xml.isStartElement()) {
+                        if (xml.name() == QLatin1StringView("manufacturerURL") && xml.isStartElement()) {
                             upnpDeviceDescriptor.setManufacturerURL(QUrl(xml.readElementText()));
                         }
-                        if (xml.name() == "modelDescription" && xml.isStartElement()) {
+                        if (xml.name() == QLatin1StringView("modelDescription") && xml.isStartElement()) {
                             upnpDeviceDescriptor.setModelDescription(xml.readElementText());
                         }
-                        if (xml.name() == "modelName" && xml.isStartElement()) {
+                        if (xml.name() == QLatin1StringView("modelName") && xml.isStartElement()) {
                             upnpDeviceDescriptor.setModelName(xml.readElementText());
                         }
-                        if (xml.name() == "modelNumber" && xml.isStartElement()) {
+                        if (xml.name() == QLatin1StringView("modelNumber") && xml.isStartElement()) {
                             upnpDeviceDescriptor.setModelNumber(xml.readElementText());
                         }
-                        if (xml.name() == "modelURL" && xml.isStartElement()) {
+                        if (xml.name() == QLatin1StringView("modelURL") && xml.isStartElement()) {
                             upnpDeviceDescriptor.setModelURL(QUrl(xml.readElementText()));
                         }
-                        if (xml.name() == "serialNumber" && xml.isStartElement()) {
+                        if (xml.name() == QLatin1StringView("serialNumber") && xml.isStartElement()) {
                             upnpDeviceDescriptor.setSerialNumber(xml.readElementText());
                         }
-                        if (xml.name() == "UDN" && xml.isStartElement()) {
+                        if (xml.name() == QLatin1StringView("UDN") && xml.isStartElement()) {
                             upnpDeviceDescriptor.setUuid(xml.readElementText());
                         }
-                        if (xml.name() == "uuid" && xml.isStartElement()) {
+                        if (xml.name() == QLatin1StringView("uuid") && xml.isStartElement()) {
                             upnpDeviceDescriptor.setUuid(xml.readElementText());
                         }
-                        if (xml.name() == "UPC" && xml.isStartElement()) {
+                        if (xml.name() == QLatin1StringView("UPC") && xml.isStartElement()) {
                             upnpDeviceDescriptor.setUpc(xml.readElementText());
                         }
+#else
+                        if (xml.name() == QLatin1String("deviceType") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setDeviceType(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("friendlyName") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setFriendlyName(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("manufacturer") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setManufacturer(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("manufacturerURL") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setManufacturerURL(QUrl(xml.readElementText()));
+                        }
+                        if (xml.name() == QLatin1String("modelDescription") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setModelDescription(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("modelName") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setModelName(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("modelNumber") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setModelNumber(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("modelURL") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setModelURL(QUrl(xml.readElementText()));
+                        }
+                        if (xml.name() == QLatin1String("serialNumber") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setSerialNumber(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("UDN") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setUuid(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("uuid") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setUuid(xml.readElementText());
+                        }
+                        if (xml.name() == QLatin1String("UPC") && xml.isStartElement()) {
+                            upnpDeviceDescriptor.setUpc(xml.readElementText());
+                        }
+#endif
                         xml.readNext();
                     }
                     xml.readNext();
@@ -403,14 +450,14 @@ void UpnpDiscoveryImplementation::sendByeByeMessage()
 
                     // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
                     QByteArray byebyeMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
-                                                                      "HOST:239.255.255.250:1900\r\n"
-                                                                      "CACHE-CONTROL: max-age=1900\r\n"
-                                                                      "LOCATION: " + locationString.toUtf8() + "\r\n"
-                                                                      "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                      "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                      "NTS: ssdp:byebye\r\n"
-                                                                      "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
-                                                                      "\r\n");
+                                                          "HOST:239.255.255.250:1900\r\n"
+                                                          "CACHE-CONTROL: max-age=1900\r\n"
+                                                          "LOCATION: " + locationString.toUtf8() + "\r\n"
+                                                                                      "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                                      "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                   "NTS: ssdp:byebye\r\n"
+                                                                   "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
+                                                                                               "\r\n");
 
                     sendToMulticast(byebyeMessage);
                 }
@@ -449,14 +496,14 @@ void UpnpDiscoveryImplementation::sendAliveMessage()
 
                     // http://upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf
                     QByteArray aliveMessage = QByteArray("NOTIFY * HTTP/1.1\r\n"
-                                                                      "HOST:239.255.255.250:1900\r\n"
-                                                                      "CACHE-CONTROL: max-age=1900\r\n"
-                                                                      "LOCATION: " + locationString.toUtf8() + "\r\n"
-                                                                      "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                      "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
-                                                                      "NTS: ssdp:alive\r\n"
-                                                                      "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
-                                                                      "\r\n");
+                                                         "HOST:239.255.255.250:1900\r\n"
+                                                         "CACHE-CONTROL: max-age=1900\r\n"
+                                                         "LOCATION: " + locationString.toUtf8() + "\r\n"
+                                                                                     "NT:urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                                     "USN:uuid:" + uuid + "::urn:schemas-upnp-org:device:Basic:1\r\n"
+                                                                  "NTS: ssdp:alive\r\n"
+                                                                  "SERVER: nymea/" + QByteArray(NYMEA_VERSION_STRING) + " UPnP/1.1 \r\n"
+                                                                                              "\r\n");
 
                     sendToMulticast(aliveMessage);
                 }
@@ -485,14 +532,14 @@ void UpnpDiscoveryImplementation::discoverTimeout()
     delete discoveryRequest;
 }
 
-void UpnpDiscoveryImplementation::networkConfigurationChanged(const QNetworkConfiguration &config)
-{
-    Q_UNUSED(config)
-    if (m_enabled) {
-        disable();
-        enable();
-    }
-}
+// void UpnpDiscoveryImplementation::networkConfigurationChanged(const QNetworkConfiguration &config)
+// {
+//     Q_UNUSED(config)
+//     if (m_enabled) {
+//         disable();
+//         enable();
+//     }
+// }
 
 bool UpnpDiscoveryImplementation::enable()
 {
@@ -531,7 +578,11 @@ bool UpnpDiscoveryImplementation::enable()
     m_available = true;
     emit availableChanged(true);
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    connect(m_socket, &QUdpSocket::errorOccurred, this, &UpnpDiscoveryImplementation::error);
+#else
     connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(error(QAbstractSocket::SocketError)));
+#endif
     connect(m_socket, &QUdpSocket::readyRead, this, &UpnpDiscoveryImplementation::readData);
 
     m_notificationTimer->start();

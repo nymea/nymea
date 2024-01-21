@@ -47,17 +47,17 @@ class JsonHandler : public QObject
     Q_OBJECT
 public:
     enum BasicType {
-        Uuid,
-        String,
-        StringList,
-        Int,
-        Uint,
-        Double,
-        Bool,
-        Variant,
-        Color,
-        Time,
-        Object
+        Uuid = QMetaType::QUuid,
+        String = QMetaType::QString,
+        StringList = QMetaType::QStringList,
+        Int = QMetaType::Int,
+        Uint = QMetaType::UInt,
+        Double = QMetaType::Double,
+        Bool = QMetaType::Bool,
+        Variant = QMetaType::QVariant,
+        Color = QMetaType::QColor,
+        Time = QMetaType::QTime,
+        Object = QMetaType::QVariantMap
     };
     Q_ENUM(BasicType)
 
@@ -87,8 +87,8 @@ public:
     template<typename T> static QStringList flagValueNames(T value);
     template<typename T> static T flagNamesToValue(const QStringList &names);
 
-    static BasicType variantTypeToBasicType(QVariant::Type variantType);
-    static QVariant::Type basicTypeToVariantType(BasicType basicType);
+    static BasicType variantTypeToBasicType(QMetaType::Type variantType);
+    static QMetaType::Type basicTypeToMetaType(BasicType basicType);
 
     template<typename T> QVariant pack(const T &value) const;
     template<typename T> QVariant pack(T *value) const;
@@ -140,7 +140,7 @@ private:
     QVariantMap m_methods;
     QVariantMap m_notifications;
 };
-Q_DECLARE_METATYPE(QVariant::Type)
+Q_DECLARE_METATYPE(QMetaType::Type)
 
 template<typename T>
 void JsonHandler::registerEnum()
@@ -213,7 +213,9 @@ void JsonHandler::registerList(BasicTypeName typeName)
     QMetaObject listMetaObject = ListType::staticMetaObject;
     QString listTypeName = QString(listMetaObject.className()).split("::").last();
     m_metaObjects.insert(listTypeName, listMetaObject);
-    m_objects.insert(listTypeName, QVariantList() << QVariant(QString("$ref:%1").arg(enumValueName(typeName))));
+    //m_objects.insert(listTypeName, QVariantList() << QVariant(QString("$ref:%1").arg(enumValueName(typeName))));
+    m_objects.insert(listTypeName, QVariant(QString("$ref:%1").arg(typeName)));
+
     Q_ASSERT_X(listMetaObject.indexOfProperty("count") >= 0, "JsonHandler", QString("List type %1 does not implement \"count\" property!").arg(listTypeName).toUtf8());
     Q_ASSERT_X(listMetaObject.indexOfMethod("get(int)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE QVariant get(int index)\" method!").arg(listTypeName).toUtf8());
     Q_ASSERT_X(listMetaObject.indexOfMethod("put(QVariant)") >= 0, "JsonHandler", QString("List type %1 does not implement \"Q_INVOKABLE void put(QVariant variant)\" method!").arg(listTypeName).toUtf8());

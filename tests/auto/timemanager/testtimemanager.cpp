@@ -169,10 +169,10 @@ void TestTimeManager::loadSaveTimeDescriptor_data()
     QVariantList calendarItems;
     calendarItems.append(createCalendarItem("12:10", 20, repeatingOptionWeekly));
     calendarItems.append(createCalendarItem("23:33", 11, repeatingOptionMonthly));
-    calendarItems.append(createCalendarItem(QDateTime::currentDateTime().toTime_t(), 50, repeatingOptionYearly));
+    calendarItems.append(createCalendarItem(QDateTime::currentDateTime().toSecsSinceEpoch(), 50, repeatingOptionYearly));
 
     QVariantList timeEventItems;
-    timeEventItems.append(createTimeEventItem(QDateTime::currentDateTime().toTime_t(), repeatingOptionYearly));
+    timeEventItems.append(createTimeEventItem(QDateTime::currentDateTime().toSecsSinceEpoch(), repeatingOptionYearly));
     timeEventItems.append(createTimeEventItem("13:12", repeatingOptionWeekly));
     timeEventItems.append(createTimeEventItem("18:45", repeatingOptionMonthly));
 
@@ -307,8 +307,8 @@ void TestTimeManager::addTimeDescriptor_data()
     QTest::addColumn<RuleEngine::RuleError>("error");
 
     QTest::newRow("valid: calendarItem") << createTimeDescriptorCalendar(createCalendarItem("08:00", 5)) << RuleEngine::RuleErrorNoError;
-    QTest::newRow("valid: calendarItem dateTime") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toTime_t(), 5)) << RuleEngine::RuleErrorNoError;
-    QTest::newRow("valid: calendarItem dateTime - yearly") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toTime_t(), 5, repeatingOptionYearly)) << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid: calendarItem dateTime") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toSecsSinceEpoch(), 5)) << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid: calendarItem dateTime - yearly") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toSecsSinceEpoch(), 5, repeatingOptionYearly)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: calendarItem - daily") << createTimeDescriptorCalendar(createCalendarItem("08:00", 5, repeatingOptionDaily)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: calendarItem - none") << createTimeDescriptorCalendar(createCalendarItem("09:00", 30, repeatingOptionNone)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: calendarItem - hourly") << createTimeDescriptorCalendar(createCalendarItem("09:00", 30, repeatingOptionHourly)) << RuleEngine::RuleErrorNoError;
@@ -316,8 +316,8 @@ void TestTimeManager::addTimeDescriptor_data()
     QTest::newRow("valid: calendarItem - monthly - multiple days") << createTimeDescriptorCalendar(createCalendarItem("23:00", 5, repeatingOptionMonthlyMultiple)) << RuleEngine::RuleErrorNoError;
 
     QTest::newRow("valid: timeEventItem") << createTimeDescriptorTimeEvent(createTimeEventItem("08:00")) << RuleEngine::RuleErrorNoError;
-    QTest::newRow("valid: timeEventItem dateTime") << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toTime_t())) << RuleEngine::RuleErrorNoError;
-    QTest::newRow("valid: timeEventItem dateTime - yearly") << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toTime_t(), repeatingOptionYearly)) << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid: timeEventItem dateTime") << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toSecsSinceEpoch())) << RuleEngine::RuleErrorNoError;
+    QTest::newRow("valid: timeEventItem dateTime - yearly") << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toSecsSinceEpoch(), repeatingOptionYearly)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: timeEventItem - daily") << createTimeDescriptorTimeEvent(createTimeEventItem("08:00", repeatingOptionDaily)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: timeEventItem - none") << createTimeDescriptorTimeEvent(createTimeEventItem("09:00", repeatingOptionNone)) << RuleEngine::RuleErrorNoError;
     QTest::newRow("valid: timeEventItem - hourly") << createTimeDescriptorTimeEvent(createTimeEventItem("09:00", repeatingOptionHourly)) << RuleEngine::RuleErrorNoError;
@@ -325,7 +325,7 @@ void TestTimeManager::addTimeDescriptor_data()
     QTest::newRow("valid: timeEventItem - monthly - multiple days") << createTimeDescriptorTimeEvent(createTimeEventItem("23:00", repeatingOptionMonthlyMultiple)) << RuleEngine::RuleErrorNoError;
 
     QTest::newRow("invalid: calendarItem none") << createTimeDescriptorCalendar(createCalendarItem("00:12", 12, repeatingOptionInvalidNone)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: calendarItem dateTime - daily") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toTime_t(), 5, repeatingOptionDaily)) << RuleEngine::RuleErrorInvalidCalendarItem;
+    QTest::newRow("invalid: calendarItem dateTime - daily") << createTimeDescriptorCalendar(createCalendarItem(QDateTime::currentDateTime().toSecsSinceEpoch(), 5, repeatingOptionDaily)) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem invalid duration") << createTimeDescriptorCalendar(createCalendarItem("12:00", 0)) << RuleEngine::RuleErrorInvalidCalendarItem;
     QTest::newRow("invalid: calendarItem - monthly - weekDays") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
     QTest::newRow("invalid: calendarItem - weekly - monthDays") << createTimeDescriptorCalendar(createCalendarItem("15:30", 20, repeatingOptionInvalidWeekly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
@@ -335,7 +335,7 @@ void TestTimeManager::addTimeDescriptor_data()
     QTest::newRow("invalid: calendarItem - invalid monthdays  (to big)") << createTimeDescriptorCalendar(createCalendarItem("13:13", 5, repeatingOptionInvalidMonthDays2)) << RuleEngine::RuleErrorInvalidRepeatingOption;
 
     QTest::newRow("invalid: timeEventItem none") << createTimeDescriptorTimeEvent(createTimeEventItem("00:12", repeatingOptionInvalidNone)) << RuleEngine::RuleErrorInvalidRepeatingOption;
-    QTest::newRow("invalid: timeEventItem - dateTime + repeatingOption") << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toTime_t(), repeatingOptionDaily)) << RuleEngine::RuleErrorInvalidTimeEventItem;
+    QTest::newRow("invalid: timeEventItem - dateTime + repeatingOption") << createTimeDescriptorTimeEvent(createTimeEventItem(QDateTime::currentDateTime().toSecsSinceEpoch(), repeatingOptionDaily)) << RuleEngine::RuleErrorInvalidTimeEventItem;
     QTest::newRow("invalid: timeEventItem - monthly - weekDays") << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidMonthly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
     QTest::newRow("invalid: timeEventItem - weekly - monthDays") << createTimeDescriptorTimeEvent(createTimeEventItem("15:30", repeatingOptionInvalidWeekly)) << RuleEngine::RuleErrorInvalidRepeatingOption;
     QTest::newRow("invalid: timeEventItem - invalid weekdays  (negative)") << createTimeDescriptorTimeEvent(createTimeEventItem("13:13", repeatingOptionInvalidWeekDays)) << RuleEngine::RuleErrorInvalidRepeatingOption;
@@ -439,7 +439,7 @@ void TestTimeManager::testCalendarDateTime()
 
     // CalendarItem
     QVariantMap calendarItem;
-    calendarItem.insert("datetime", QVariant(dateTime.toTime_t()));
+    calendarItem.insert("datetime", QVariant(dateTime.toSecsSinceEpoch()));
     calendarItem.insert("duration", QVariant(duration));
 
     // Create the rule map
@@ -994,7 +994,7 @@ void TestTimeManager::testCalendarYearlyDateTime()
 
     // CalendarItem
     QVariantMap calendarItem;
-    calendarItem.insert("datetime", QVariant(dateTime.toTime_t()));
+    calendarItem.insert("datetime", QVariant(dateTime.toSecsSinceEpoch()));
     calendarItem.insert("duration", QVariant(duration));
     calendarItem.insert("repeating", repeatingOption);
 
@@ -1472,7 +1472,7 @@ void TestTimeManager::testEventItemDateTime()
 
     // Create the rule map
     ruleMap.insert("name", "Time based hourly calendar rule");
-    ruleMap.insert("timeDescriptor", createTimeDescriptorTimeEvent(createTimeEventItem(dateTime.toTime_t())));
+    ruleMap.insert("timeDescriptor", createTimeDescriptorTimeEvent(createTimeEventItem(dateTime.toSecsSinceEpoch())));
     ruleMap.insert("actions", QVariantList() << action);
 
     // Add the rule
@@ -1832,7 +1832,7 @@ void TestTimeManager::testEventItemYearly()
 
     // Create the rule map
     ruleMap.insert("name", "Time based hourly calendar rule");
-    ruleMap.insert("timeDescriptor", createTimeDescriptorTimeEvent(createTimeEventItem(dateTime.toTime_t(), repeatingOptionYearly)));
+    ruleMap.insert("timeDescriptor", createTimeDescriptorTimeEvent(createTimeEventItem(dateTime.toSecsSinceEpoch(), repeatingOptionYearly)));
     ruleMap.insert("actions", QVariantList() << action);
 
     // Add the rule

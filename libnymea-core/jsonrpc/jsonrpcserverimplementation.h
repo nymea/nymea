@@ -104,19 +104,19 @@ private slots:
 
 private:
     QVariantMap m_api;
-    QHash<JsonHandler*, QString> m_experiences;
+    QHash<JsonHandler *, QString> m_experiences;
     QHash<QString, JsonHandler *> m_handlers;
     QHash<JsonReply *, TransportInterface *> m_asyncReplies;
 
-    QHash<QUuid, TransportInterface*> m_clientTransports;
+    QHash<QUuid, TransportInterface *> m_clientTransports;
     QHash<QUuid, QByteArray> m_clientBuffers;
     QHash<QUuid, QStringList> m_clientNotifications;
     QHash<QUuid, QLocale> m_clientLocales;
     QHash<QUuid, QByteArray> m_clientTokens;
     QHash<int, QUuid> m_pushButtonTransactions;
-    QHash<QUuid, QTimer*> m_newConnectionWaitTimers;
+    QHash<QUuid, QTimer *> m_newConnectionWaitTimers;
 
-    QHash<QString, JsonReply*> m_pairingRequests;
+    QHash<QString, JsonReply *> m_pairingRequests;
 
     int m_notificationId;
 

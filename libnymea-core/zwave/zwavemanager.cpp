@@ -40,6 +40,7 @@
 #include <QDir>
 #include <QPluginLoader>
 #include <QStringList>
+#include <QRegularExpression>
 
 namespace nymeaserver
 {
@@ -523,21 +524,21 @@ QPair<ZWave::ZWaveError, QUuid> ZWaveManager::createNetwork(const QString &seria
 {
     if (!available()) {
         qCWarning(dcZWave()) << "Z-Wave is not available.";
-        return qMakePair<ZWave::ZWaveError, QUuid>(ZWave::ZWaveErrorBackendError, QUuid());
+        return QPair<ZWave::ZWaveError, QUuid>(ZWave::ZWaveErrorBackendError, QUuid());
     }
 
-    QString networkKey = QUuid::createUuid().toString().remove(QRegExp("[{\\-}]*"));
+    QString networkKey = QUuid::createUuid().toString().remove(QRegularExpression("[{\\-}]*"));
     ZWaveNetwork *network = new ZWaveNetwork(QUuid::createUuid(), serialPort, networkKey, this);
     bool success = loadNetwork(network);
     if (!success) {
         delete network;
-        return qMakePair<ZWave::ZWaveError, QUuid>(ZWave::ZWaveErrorInUse, QUuid());
+        return QPair<ZWave::ZWaveError, QUuid>(ZWave::ZWaveErrorInUse, QUuid());
     }
     emit networkAdded(network);
 
     storeNetwork(network);
 
-    return qMakePair<ZWave::ZWaveError, QUuid>(ZWave::ZWaveErrorNoError, network->networkUuid());
+    return QPair<ZWave::ZWaveError, QUuid>(ZWave::ZWaveErrorNoError, network->networkUuid());
 }
 
 ZWave::ZWaveError ZWaveManager::removeNetwork(const QUuid &networkUuid)

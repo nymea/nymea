@@ -36,7 +36,7 @@
 #include <QHostAddress>
 #include <QTimer>
 
-#include "libnymea.h"
+#include <libnymea.h>
 
 namespace nymeaserver {
 

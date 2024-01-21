@@ -2,9 +2,30 @@ QT += dbus testlib network sql websockets
 CONFIG += testcase
 CONFIG += link_pkgconfig
 
-packagesExist(Qt5SerialBus) {
-    PKGCONFIG += Qt5SerialBus
-    DEFINES += WITH_QTSERIALBUS
+greaterThan(QT_MAJOR_VERSION, 5) {
+    qtHaveModule(serialbus) {
+        message("Building with QtSerialBus support.")
+        QT *= serialbus
+        DEFINES += WITH_QTSERIALBUS
+    } else {
+        message("QtSerialBus package not found. Building without QtSerialBus support.")
+    }
+
+    # Separate module in Qt6
+    QT *= concurrent
+} else {
+    packagesExist(Qt5SerialBus) {
+        message("Building with QtSerialBus support.")
+        PKGCONFIG += Qt5SerialBus
+        DEFINES += WITH_QTSERIALBUS
+    } else {
+        message("Qt5SerialBus package not found. Building without QtSerialBus support.")
+    }
+}
+
+CONFIG(python) {
+    message("Building tests with Python plugin support")
+    DEFINES += WITH_PYTHON
 }
 
 PKGCONFIG += nymea-zigbee nymea-networkmanager nymea-mqtt

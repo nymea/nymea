@@ -36,6 +36,7 @@
 #include <QJsonDocument>
 #include <QColor>
 #include <QDateTime>
+#include <QRegularExpression>
 
 namespace nymeaserver {
 
@@ -48,26 +49,26 @@ bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &api)
         if (map.value(key).toString().startsWith("$ref:")) {
             QString refName = map.value(key).toString().remove("$ref:");
             if (!enums.contains(refName) && !flags.contains(refName) && !types.contains(refName)) {
-                qCWarning(dcJsonRpc()) << "Invalid reference to" << refName;
+                qCWarning(dcJsonRpc()) << "Invalid reference to" << refName << "in" << key << map;
                 return false;
             }
         }
-        if (map.value(key).type() == QVariant::Map) {
+        if (map.value(key).userType() == QMetaType::QVariantMap) {
             bool ret = checkRefs(map.value(key).toMap(), api);
             if (!ret) {
                 return false;
             }
         }
-        if (map.value(key).type() == QVariant::List) {
+        if (map.value(key).userType() == QMetaType::QVariantList) {
             foreach (const QVariant &entry, map.value(key).toList()) {
                 if (entry.toString().startsWith("$ref:")) {
                     QString refName = entry.toString().remove("$ref:");
                     if (!enums.contains(refName) && !flags.contains(refName) && !types.contains(refName)) {
-                        qCWarning(dcJsonRpc()) << "Invalid reference to" << refName;
+                        qCWarning(dcJsonRpc()) << "Invalid reference to" << refName << "in" << key << map;
                         return false;
                     }
                 }
-                if (entry.type() == QVariant::Map) {
+                if (entry.userType() == QMetaType::QVariantMap) {
                     bool ret = checkRefs(map.value(key).toMap(), api);
                     if (!ret) {
                         return false;
@@ -113,16 +114,16 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
 {
     // Make sure all required values are available
     foreach (const QString &key, definition.keys()) {
-        QRegExp isOptional = QRegExp("^([a-z]:)*o:.*");
-        if (isOptional.exactMatch(key)) {
+        QRegularExpression isOptional = QRegularExpression("^([a-z]:)*o:.*");
+        if (isOptional.match(key).hasMatch()) {
             continue;
         }
-        QRegExp isReadOnly = QRegExp("^([a-z]:)*r:.*");
-        if (isReadOnly.exactMatch(key) && openMode.testFlag(QIODevice::WriteOnly)) {
+        QRegularExpression isReadOnly = QRegularExpression("^([a-z]:)*r:.*");
+        if (isReadOnly.match(key).hasMatch() && openMode.testFlag(QIODevice::WriteOnly)) {
             continue;
         }
         QString trimmedKey = key;
-        trimmedKey.remove(QRegExp("^(o:|r:|d:)*"));
+        trimmedKey.remove(QRegularExpression("^(o:|r:|d:)*"));
         if (!map.contains(trimmedKey)) {
             return Result(false, "Missing required key: " + key, key);
         }
@@ -133,9 +134,10 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
         // Is the key allowed in here?
         QVariant expectedValue = definition.value(key);
         foreach (const QString &definitionKey, definition.keys()) {
-            QRegExp regExp = QRegExp("(o:|r:|d:)*" + key);
-            if (regExp.exactMatch(definitionKey)) {
+            QRegularExpression regExp = QRegularExpression("(o:|r:|d:)" + key);
+            if (regExp.match(definitionKey).hasMatch()) {
                 expectedValue = definition.value(definitionKey);
+                break;
             }
         }
         if (!expectedValue.isValid()) {
@@ -158,14 +160,14 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
             return result;
         }
 
-   }
+    }
 
     return Result(true);
 }
 
 JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const QVariant &definition, const QVariantMap &api, QIODevice::OpenMode openMode)
 {
-    if (definition.type() == QVariant::String) {
+    if (definition.userType() == QMetaType::QString) {
         QString expectedTypeName = definition.toString();
 
         if (expectedTypeName.startsWith("$ref:")) {
@@ -178,16 +180,31 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
                 QVariant refDefinition = enums.value(refName);
 
                 QVariantList enumList = refDefinition.toList();
-                if (!enumList.contains(value.toString())) {
-                    return Result(false, "Expected enum value for" + refName + " but got " + value.toString());
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                if (value.metaType().id() == QMetaType::QStringList) {
+                    foreach (const QString &valueString, value.toStringList()) {
+                        if (!enumList.contains(valueString)) {
+                            return Result(false, "Expected enum value for " + refName + " but got " + value.toString());
+                        }
+                    }
+                } else {
+                    if (!enumList.contains(value.toString())) {
+                        return Result(false, "Expected enum value for " + refName + " but got " + value.toString());
+                    }
                 }
+#else
+                if (!enumList.contains(value.toString())) {
+                    return Result(false, "Expected enum value for " + refName + " but got " + value.toString());
+                }
+#endif
                 return Result(true);
             }
+
             // Or flags
             QVariantMap flags = api.value("flags").toMap();
             if (flags.contains(refName)) {
                 QVariant refDefinition = flags.value(refName);
-                if (value.type() != QVariant::List && value.type() != QVariant::StringList) {
+                if (value.userType() != QMetaType::QVariantList && value.userType() != QMetaType::QStringList) {
                     return Result(false, "Expected flags " + refName + " but got " + value.toString());
                 }
                 QString flagEnum = refDefinition.toList().first().toString();
@@ -206,7 +223,23 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
         }
 
         JsonHandler::BasicType expectedBasicType = JsonHandler::enumNameToValue<JsonHandler::BasicType>(expectedTypeName);
-        QVariant::Type expectedVariantType = JsonHandler::basicTypeToVariantType(expectedBasicType);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        // Any string converts fine to Uuid, but the resulting uuid might be null
+        if (expectedBasicType == JsonHandler::Uuid && value.toUuid().isNull()) {
+
+            QString typeName(value.typeName());
+            //qCCritical(dcJsonRpc()) << value << value.userType() << value.typeId() << value.typeName() << value.toString() << value.toUuid() << value.canConvert(QMetaType::QUuid);
+
+            // Verify if this is one of our own uuid types
+            if (typeName == "ThingId" || typeName == "EventTypeId" || typeName == "StateTypeId" || typeName == "ActionTypeId") {
+                return Result(true);
+            }/* else {
+                return Result(false, "Invalid Uuid: " + value.toString());
+            }*/
+        }
+#else
+        QMetaType::Type expectedVariantType = JsonHandler::basicTypeToMetaType(expectedBasicType);
 
         // Verify basic compatiblity
         if (expectedBasicType != JsonHandler::Variant && !value.canConvert(expectedVariantType)) {
@@ -217,6 +250,8 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
         if (expectedBasicType == JsonHandler::Uuid && value.toUuid().isNull()) {
             return Result(false, "Invalid Uuid: " + value.toString());
         }
+#endif
+
         // Make sure ints are valid
         if (expectedBasicType == JsonHandler::Int) {
             bool ok;
@@ -260,18 +295,27 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
         return Result(true);
     }
 
-    if (definition.type() == QVariant::Map) {
-        if (value.type() != QVariant::Map) {
+    if (definition.userType() == QMetaType::QVariantMap) {
+        if (value.userType() != QMetaType::QVariantMap) {
             return Result(false, "Invalid value. Expected a map but received: " + value.toString());
         }
         return validateMap(value.toMap(), definition.toMap(), api, openMode);
     }
 
-    if (definition.type() == QVariant::List) {
+    if (definition.userType() == QMetaType::QVariantList) {
         QVariantList list = definition.toList();
         QVariant entryDefinition = list.first();
-        if (value.type() != QVariant::List && value.type() != QVariant::StringList) {
-            return Result(false, "Expected list of " + entryDefinition.toString() + " but got value of type " + value.typeName() + "\n" + QJsonDocument::fromVariant(value).toJson());
+
+        if (value.userType() != QMetaType::QVariantList && value.userType() != QMetaType::QStringList) {
+
+            QString elementType = QString(value.typeName()).remove("QList<").remove(">");
+            if (elementType == "ThingId" || elementType == "EventTypeId" || elementType == "StateTypeId" || elementType == "ActionTypeId") {
+                elementType = "Uuid";
+            } /*else if (elementType == "ParamList") {
+                elementType = "Param";
+            } else {
+                return Result(false, "Expected list of " + entryDefinition.toString() + " but got value of type " + value.typeName() + "\n" + QJsonDocument::fromVariant(value).toJson());
+            }*/
         }
         foreach (const QVariant &entry, value.toList()) {
             Result result = validateEntry(entry, entryDefinition, api, openMode);

@@ -1,0 +1,66 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+export DH_VERBOSE=1
+export QT_QPA_PLATFORM=minimal
+
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+	DEB_PARALLEL_JOBS ?= $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+else
+	DEB_PARALLEL_JOBS += $(shell getconf _NPROCESSORS_ONLN)
+endif
+
+$(info Building with DEB_BUILD_OPTIONS: [${DEB_BUILD_OPTIONS}])
+MAKE_TARGETS=all lrelease
+ifeq (,$(filter nodoc,$(DEB_BUILD_OPTIONS)))
+	MAKE_TARGETS += doc
+endif
+
+QMAKE_ADDITIONAL_ARGS = CONFIG+=norpath
+ifneq (,$(filter coverage,$(DEB_BUILD_OPTIONS)))
+        QMAKE_ADDITIONAL_ARGS += CONFIG+=coverage CONFIG+=debug
+else
+        QMAKE_ADDITIONAL_ARGS += CONFIG+=release
+endif
+
+DPKG_EXPORT_BUILDFLAGS = 1
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+NYMEA_DPKG_VERSION := $(shell dpkg-parsechangelog -SVersion)
+QMAKE_ADDITIONAL_ARGS += NYMEA_VERSION=$(NYMEA_DPKG_VERSION)
+
+include /usr/share/dpkg/buildflags.mk
+
+PREPROCESS_FILES := $(wildcard debian/*.in)
+
+$(PREPROCESS_FILES:.in=): %: %.in
+	sed 's,/@DEB_HOST_MULTIARCH@,$(DEB_HOST_MULTIARCH:%=/%),g' $< > $@
+
+override_dh_auto_configure:
+	dh_auto_configure -- $(QMAKE_ADDITIONAL_ARGS)
+
+override_dh_auto_build:
+	make -j$(DEB_PARALLEL_JOBS) $(MAKE_TARGETS)
+
+override_dh_install: $(PREPROCESS_FILES:.in=)
+	# Make sure the docs directory exists, even if we didn't build them
+	mkdir -p $(CURDIR)/doc/html
+	dh_install
+
+# Note that this is the default with compat level 12.
+override_dh_missing:
+	dh_missing --list-missing
+
+override_dh_auto_test:
+	dh_auto_test -- -k TESTARGS="-m 600 -p -o -p -,txt -p -o -p test-results.xml,xunitxml" TESTRUNNER="dbus-test-runner --bus-type=both --task"
+
+override_dh_installsystemd:
+	dh_installsystemd --restart-after-upgrade
+
+override_dh_auto_clean:
+	dh_auto_clean
+	find . -name *.qm -exec rm {} \;
+	rm -rf $(PREPROCESS_FILES:.in=)
+
+%:
+	dh $@ --buildsystem=qmake6 --parallel

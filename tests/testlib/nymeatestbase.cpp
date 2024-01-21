@@ -46,9 +46,9 @@ NymeaTestBase::NymeaTestBase(QObject *parent) :
     m_commandId(0)
 {
     qRegisterMetaType<QNetworkReply*>();
-    qsrand(QDateTime::currentMSecsSinceEpoch());
-    m_mockThing1Port = 1337 + (qrand() % 10000);
-    m_mockThing2Port = 7331 + (qrand() % 10000);
+    std::srand(QDateTime::currentMSecsSinceEpoch());
+    m_mockThing1Port = 1337 + (std::rand() % 10000);
+    m_mockThing2Port = 7331 + (std::rand() % 10000);
 
     // Important for settings
     QCoreApplication::instance()->setOrganizationName("nymea-test");
@@ -131,6 +131,7 @@ void NymeaTestBase::initTestCase(const QString &loggingRules, bool disableLogEng
 void NymeaTestBase::cleanupTestCase()
 {
     NymeaCore::instance()->destroy(NymeaCore::ShutdownReasonTerm);
+
 }
 
 void NymeaTestBase::cleanup()
@@ -156,7 +157,7 @@ QVariant NymeaTestBase::injectAndWait(const QString &method, const QVariantMap &
 
     int loop = 0;
 
-    while (loop < 5) {
+    while (loop < 10) {
 
         if (spy.count() == 0 || loop > 0) {
             spy.wait();
@@ -396,7 +397,7 @@ void NymeaTestBase::verifyReply(QNetworkReply *reply, const QByteArray &data, co
 
 void NymeaTestBase::enableNotifications(const QStringList &namespaces)
 {
-    QVariantList variantList;
+    QStringList variantList;
     foreach (const QString &ns, namespaces) {
         variantList << ns;
     }
@@ -404,7 +405,7 @@ void NymeaTestBase::enableNotifications(const QStringList &namespaces)
     QVariantMap notificationParams;
     notificationParams.insert("namespaces", variantList);
     QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", notificationParams);
-    QVariantList resultList = response.toMap().value("params").toMap().value("namespaces").toList();
+    QStringList resultList = response.toMap().value("params").toMap().value("namespaces").toStringList();
     std::sort(resultList.begin(), resultList.end());
     QCOMPARE(resultList, variantList);
 }

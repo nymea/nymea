@@ -51,6 +51,8 @@ public:
     static Interface mergeInterfaces(const Interface &iface1, const Interface &iface2);
     static QStringList generateInterfaceParentList(const QString &interface);
 
+    static bool variantLessThan(const QVariant &leftHandSide, const QVariant &rightHandSide);
+    static bool variantGreaterThan(const QVariant &leftHandSide, const QVariant &rightHandSide);
 };
 
 #endif // THINGUTILS_H

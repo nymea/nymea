@@ -184,8 +184,8 @@ bool TcpServer::startServer()
         return false;
     }
 
-    connect(m_server, SIGNAL(clientConnected(QSslSocket *)), SLOT(onClientConnected(QSslSocket *)));
-    connect(m_server, SIGNAL(clientDisconnected(QSslSocket *)), SLOT(onClientDisconnected(QSslSocket *)));
+    connect(m_server, &SslServer::clientConnected, this, &TcpServer::onClientConnected);
+    connect(m_server, &SslServer::clientDisconnected, this, &TcpServer::onClientDisconnected);
     connect(m_server, &SslServer::dataAvailable, this, &TcpServer::onDataAvailable);
 
     qCDebug(dcTcpServer()) << "Started Tcp server" << serverUrl().toString();

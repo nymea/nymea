@@ -15,28 +15,28 @@ PyObject *QVariantToPyObject(const QVariant &value)
 {
     PyObject *pyValue = nullptr;
 
-    switch (value.type()) {
-    case QVariant::Bool:
+    switch (static_cast<int>(value.type())) {
+    case QMetaType::Bool:
         pyValue = PyBool_FromLong(value.toBool());
         break;
-    case QVariant::Int:
-    case QVariant::UInt:
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
+    case QMetaType::Int:
+    case QMetaType::UInt:
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
         pyValue = PyLong_FromLongLong(value.toLongLong());
         break;
-    case QVariant::String:
-    case QVariant::ByteArray:
+    case QMetaType::QString:
+    case QMetaType::QByteArray:
         pyValue = PyUnicode_FromString(value.toString().toUtf8());
         break;
-    case QVariant::Double:
+    case QMetaType::Double:
         pyValue = PyFloat_FromDouble(value.toDouble());
         break;
-    case QVariant::Invalid:
+    case QMetaType::UnknownType:
         pyValue = Py_None;
         Py_INCREF(pyValue);
         break;
-    case QVariant::DateTime: {
+    case QMetaType::QDateTime: {
         PyObject *longObj = PyLong_FromLongLong(value.toDateTime().toMSecsSinceEpoch() / 1000);
         PyObject *timeTuple = Py_BuildValue("(O)", longObj);
         pyValue = PyDateTime_FromTimestamp(timeTuple);
@@ -44,7 +44,7 @@ PyObject *QVariantToPyObject(const QVariant &value)
         Py_DECREF(timeTuple);
         break;
     }
-    case QVariant::StringList: {
+    case QMetaType::QStringList: {
         QStringList stringList = value.toStringList();
         pyValue = PyTuple_New(stringList.length());
         for (int i = 0; i < stringList.count(); i++) {

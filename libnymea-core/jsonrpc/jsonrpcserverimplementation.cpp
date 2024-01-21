@@ -76,6 +76,7 @@
 #include <QJsonDocument>
 #include <QStringList>
 #include <QSslConfiguration>
+#include <QRegularExpression>
 
 namespace nymeaserver {
 
@@ -698,7 +699,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
 
     qCDebug(dcJsonRpc()) << "Invoking method" << targetNamespace + '.' +  method << "from client" << clientId;
 
-    JsonReply *reply;
+    JsonReply *reply = nullptr;
     if (handler->metaObject()->indexOfMethod(method.toUtf8() + "(QVariantMap,JsonContext)") >= 0) {
         QMetaObject::invokeMethod(handler, method.toUtf8().data(), Q_RETURN_ARG(JsonReply*, reply), Q_ARG(QVariantMap, params), Q_ARG(JsonContext, callContext));
     } else {
@@ -861,12 +862,18 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
     // Sanity checks on API:
     // * Make sure all $ref: entries are valid.
     // * A handler must not register a type name that is already registered by a previously loaded handler with different content.
+
+    qCDebug(dcJsonRpc()).nospace() << "Registering JSON RPC handler: " << handler->name() << ". Performing sanity check";
+
+    QVariantMap enums = m_api.value("enums").toMap();
+    QVariantMap flags = m_api.value("flags").toMap();
+    QVariantMap types = m_api.value("types").toMap();
     QVariantMap methods = m_api.value("methods").toMap();
     QVariantMap notifications = m_api.value("notifications").toMap();
+
     QVariantMap apiIncludingThis = m_api;
 
     // Verify enums name clash
-    QVariantMap enums = m_api.value("enums").toMap();
     foreach (const QString &enumName, handler->jsonEnums().keys()) {
         QVariantList list = handler->jsonEnums().value(enumName).toList();
         if (enums.contains(enumName) && enums.value(enumName) != list) {
@@ -877,7 +884,6 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
     }
     apiIncludingThis["enums"] = enums;
 
-    QVariantMap flags = m_api.value("flags").toMap();
     foreach (const QString &flagName, handler->jsonFlags().keys()) {
         QVariant flagDescription = handler->jsonFlags().value(flagName);
         if (enums.contains(flagName)) {
@@ -893,17 +899,21 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
     apiIncludingThis["flags"] = flags;
 
     // Verify objects
-    QVariantMap existingTypes = m_api.value("types").toMap();
-    QVariantMap typesIncludingThis = existingTypes;
-    typesIncludingThis.unite(handler->jsonObjects());
+    QVariantMap typesIncludingThis = types;
+    foreach (const QString &objectName, handler->jsonObjects().keys()) {
+        if (types.contains(objectName) && types.value(objectName) != handler->jsonObjects().value(objectName)) {
+            qCWarning(dcJsonRpc()) << "Object type" << objectName << "is already registered and not the same. Not registering handler" << handler->name();
+            qCWarning(dcJsonRpc()) << types.value(objectName);
+            qCWarning(dcJsonRpc()) << handler->jsonObjects().value(objectName);
+            return false;
+        } else {
+            typesIncludingThis.insert(objectName, handler->jsonObjects().value(objectName));
+        }
+    }
+
     apiIncludingThis["types"] = typesIncludingThis;
     foreach (const QString &objectName, handler->jsonObjects().keys()) {
         QVariantMap object = handler->jsonObjects().value(objectName).toMap();
-        // Check for name clashes
-        if (existingTypes.contains(objectName) && existingTypes.value(objectName) != handler->jsonObjects().value(objectName)) {
-            qCWarning(dcJsonRpc()) << "Object type" << objectName << "is already registered. Not registering handler" << handler->name();
-            return false;
-        }
         // Check for invalid $ref: entries
         if (!JsonValidator::checkRefs(object, apiIncludingThis)) {
             qCWarning(dcJsonRpc()).nospace() << "Invalid reference in object type " << objectName << ". Not registering handler " << handler->name();
@@ -917,7 +927,7 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
         QVariantMap method = handler->jsonMethods().value(methodName).toMap();
 
         if (handler->metaObject()->indexOfMethod(methodName.toUtf8() + "(QVariantMap)") < 0
-                && handler->metaObject()->indexOfMethod(methodName.toUtf8() + "(QVariantMap,JsonContext)") < 0) {
+            && handler->metaObject()->indexOfMethod(methodName.toUtf8() + "(QVariantMap,JsonContext)") < 0) {
             qCWarning(dcJsonRpc()).nospace().noquote() << "Invalid method \"" << methodName << "\". Method \"JsonReply* " + methodName + "(QVariantMap,JsonContext)\" does not exist. Not registering handler " << handler->name();
             return false;
         }
@@ -931,7 +941,16 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
         }
         newMethods.insert(handler->name() + '.' + methodName, method);
     }
-    methods.unite(newMethods);
+
+    foreach (const QString &methodName, newMethods.keys()) {
+        if (methods.contains(methodName)) {
+            qCWarning(dcJsonRpc()).nospace() << "Method " << methodName << " has already been registered. Not registering handler " << handler->name();
+            return false;
+        }
+
+        methods.insert(methodName, newMethods.value(methodName));
+    }
+
     apiIncludingThis["methods"] = methods;
 
     // Verify notifications
@@ -944,7 +963,17 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
         }
         newNotifications.insert(handler->name() + '.' + notificationName, notification);
     }
-    notifications.unite(newNotifications);
+
+
+    foreach (const QString &notificationName, newNotifications.keys()) {
+        if (notifications.contains(notificationName)) {
+            qCWarning(dcJsonRpc()).nospace() << "Notification " << notificationName << " has already been registered. Not registering handler " << handler->name();
+            return false;
+        }
+
+        notifications.insert(notificationName, newNotifications.value(notificationName));
+    }
+
     apiIncludingThis["notifications"] = notifications;
 
     // Checks completed. Store new API
@@ -954,10 +983,10 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
     m_handlers.insert(handler->name(), handler);
     for (int i = 0; i < handler->metaObject()->methodCount(); ++i) {
         QMetaMethod method = handler->metaObject()->method(i);
-        if (method.methodType() == QMetaMethod::Signal && QString(method.name()).contains(QRegExp("^[A-Z]"))) {
-            if (method.parameterCount() == 1 && method.parameterType(0) == QVariant::Map) {
+        if (method.methodType() == QMetaMethod::Signal && QString(method.name()).contains(QRegularExpression("^[A-Z]"))) {
+            if (method.parameterCount() == 1 && method.parameterType(0) == QMetaType::QVariantMap) {
                 QObject::connect(handler, method, this, metaObject()->method(metaObject()->indexOfSlot("sendNotification(QVariantMap)")));
-            } else if (method.parameterCount() == 2 && method.parameterType(0) == QVariant::Uuid && method.parameterType(1) == QVariant::Map) {
+            } else if (method.parameterCount() == 2 && method.parameterType(0) == QMetaType::QUuid && method.parameterType(1) == QMetaType::QVariantMap) {
                 QObject::connect(handler, method, this, metaObject()->method(metaObject()->indexOfSlot("sendClientNotification(QUuid,QVariantMap)")));
             }
         }

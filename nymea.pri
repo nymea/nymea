@@ -3,8 +3,24 @@ COPYRIGHT_YEAR_TO=2025
 
 DEFINES += COPYRIGHT_YEAR_STRING=\\\"$${COPYRIGHT_YEAR_FROM}-$${COPYRIGHT_YEAR_TO}\\\"
 
-QMAKE_CXXFLAGS *= -Werror -std=c++11 -g -Wno-deprecated-declarations
-QMAKE_LFLAGS *= -std=c++11
+greaterThan(QT_MAJOR_VERSION, 5) {
+    message("Building using Qt6 support")
+    CONFIG *= c++17
+    QMAKE_LFLAGS *= -std=c++17
+    QMAKE_CXXFLAGS *= -std=c++17
+    # Python init is crashing in Qt6,
+    # disable by default until fixed
+    CONFIG += withoutpython
+} else {
+    message("Building using Qt5 support")
+    CONFIG *= c++11
+    QMAKE_LFLAGS *= -std=c++11
+    QMAKE_CXXFLAGS *= -std=c++11
+    DEFINES += QT_DISABLE_DEPRECATED_UP_TO=0x050F00
+}
+
+
+QMAKE_CXXFLAGS *= -Werror -g -Wno-deprecated-declarations
 
 top_srcdir=$$PWD
 top_builddir=$$shadowed($$PWD)
@@ -76,3 +92,28 @@ asan: {
     QMAKE_LFLAGS *= -fsanitize=address
 }
 
+
+CONFIG(withoutpython) {
+    message("Building without python support.")
+    CONFIG -= python
+} else:packagesExist(python3-embed) {
+    # As of Ubuntu focal, there's a commonly named python3-embed pointing to the distro version of python
+    # For everything below python 3.8 we need to manually select one
+    PKGCONFIG += python3-embed
+    CONFIG += python
+} else:packagesExist(python-3.5) {
+    # xenial, stretch
+    PKGCONFIG += python-3.5
+    CONFIG += python
+} else:packagesExist(python-3.6) {
+    # bionic
+    PKGCONFIG += python-3.6
+    CONFIG += python
+} else:packagesExist(python-3.7) {
+    # buster, eoan
+    PKGCONFIG += python-3.7
+    CONFIG += python
+} else {
+    message("Python development package not found. Building without python support.")
+    CONFIG -= python
+}

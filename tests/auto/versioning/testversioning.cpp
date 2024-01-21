@@ -31,6 +31,8 @@
 #include "nymeatestbase.h"
 #include "version.h"
 
+#include <QRegularExpression>
+
 using namespace nymeaserver;
 
 class TestVersioning: public NymeaTestBase
@@ -38,9 +40,18 @@ class TestVersioning: public NymeaTestBase
     Q_OBJECT
 
 private slots:
+    void initTestCase();
+
     void version();
     void apiChangeBumpsVersion();
 };
+
+void TestVersioning::initTestCase()
+{
+    NymeaTestBase::initTestCase("*.debug=false\nJsonRpcTraffic.debug=false\nJsonRpc.debug=true\nTests.debug=true");
+    qCDebug(dcTests()) << "TestVersioning starting";
+}
+
 
 void TestVersioning::version()
 {
@@ -54,7 +65,7 @@ void TestVersioning::version()
     QCOMPARE(version, QString(NYMEA_VERSION_STRING));
 
     QVERIFY2(!protocolVersion.toString().isEmpty(), "Protocol version is empty.");
-    QVERIFY2(protocolVersion.canConvert(QVariant::Int), "Protocol version is not an integer.");
+    QVERIFY2(protocolVersion.canConvert(QMetaType::Int), "Protocol version is not an integer.");
 }
 
 void TestVersioning::apiChangeBumpsVersion()
@@ -72,12 +83,11 @@ void TestVersioning::apiChangeBumpsVersion()
 
     QFile oldApiFile(oldFilePath);
     QVERIFY(oldApiFile.exists() && oldApiFile.open(QIODevice::ReadOnly));
-
     QByteArray oldVersion = oldApiFile.readLine().trimmed();
     QByteArray oldApi = oldApiFile.readAll();
 
     QString newVersionStripped = newVersion;
-    newVersionStripped = newVersionStripped.remove(QRegExp("\\+[0-9\\.~a-f]*"));
+    newVersionStripped = newVersionStripped.remove(QRegularExpression("\\+[0-9\\.~a-f]*"));
 
     qDebug() << "JSON API version:" << oldVersion;
     qDebug() << "Binary version:" << newVersion << "(" + newVersionStripped + ")";
@@ -102,7 +112,7 @@ void TestVersioning::apiChangeBumpsVersion()
     p.waitForFinished();
     QByteArray apiDiff = p.readAll();
 
-    qCDebug(dcTests()) << "API Differences:" << endl << qUtf8Printable(apiDiff);
+    qCDebug(dcTests()) << "API Differences:" << '\n' << qUtf8Printable(apiDiff);
 
     if (oldVersion == newVersionStripped && oldApi != newApi) {
         QVERIFY2(false, "JSONRPC API has changed but version is still the same. You need to bump the API version.");

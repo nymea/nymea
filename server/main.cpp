@@ -31,6 +31,7 @@
 #include <QCommandLineOption>
 #include <QCommandLineParser>
 #include <QCoreApplication>
+#include <QRegularExpression>
 #include <QLoggingCategory>
 #include <QMessageLogger>
 #include <QTranslator>
@@ -76,7 +77,7 @@ int main(int argc, char *argv[])
     // check if there are local translations
     if (!translator.load(QLocale::system(), application.applicationName(), "-", QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath(), ".qm"))
         if (!translator.load(QLocale::system(), application.applicationName(), "-", NymeaSettings::translationsPath(), ".qm"))
-            qWarning(dcTranslations()) << "Could not find nymead translations for" << QLocale::system().name() << endl << (QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath()) << endl << NymeaSettings::translationsPath();
+            qWarning(dcTranslations()) << "Could not find nymead translations for" << QLocale::system().name() << '\n' << (QDir(QCoreApplication::applicationDirPath() + "../../translations/").absolutePath()) << '\n' << NymeaSettings::translationsPath();
 
 
 
@@ -168,8 +169,8 @@ int main(int argc, char *argv[])
         bool enable = nymeaSettings.value(category, false).toBool();
         if (enable && category.endsWith("debug")) {
             loggingRules << QString("%1=%2").arg(category).arg("true");
-            loggingRules << QString("%1=%2").arg(QString(category).replace(QRegExp("debug$"), "info")).arg("true");
-            loggingRules << QString("%1=%2").arg(QString(category).replace(QRegExp("debug$"), "warning")).arg("true");
+            loggingRules << QString("%1=%2").arg(QString(category).replace(QRegularExpression("debug$"), "info")).arg("true");
+            loggingRules << QString("%1=%2").arg(QString(category).replace(QRegularExpression("debug$"), "warning")).arg("true");
         } else {
             loggingRules << QString("%1=%2").arg(category).arg(nymeaSettings.value(category, "false").toString());
         }
@@ -181,11 +182,11 @@ int main(int argc, char *argv[])
         bool enable = true;
         bool isWarning = debugArea.endsWith("Warnings");
         bool isInfo = debugArea.endsWith("Info");
-        if (QRegExp("^No[A-Z]").exactMatch(debugArea)) {
-            debugArea.remove(QRegExp("^No"));
+        if (QRegularExpression("^No[A-Z]").match(debugArea).hasMatch()) {
+            debugArea.remove(QRegularExpression("^No"));
             enable = false;
         }
-        debugArea.remove(QRegExp("(Warnings|Info)$"));
+        debugArea.remove(QRegularExpression("(Warnings|Info)$"));
         if (enable && !isWarning && !isInfo) {
             loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg("debug").arg("true"));
             loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg("info").arg("true"));
@@ -194,6 +195,7 @@ int main(int argc, char *argv[])
             loggingRules.append(QString("%1.%2=%3").arg(debugArea).arg(isWarning ? "warning" : (isInfo ? "info" : "debug")).arg(enable ? "true": "false"));
         }
     }
+
 
     // Finally set the rules for the logging
     QLoggingCategory::setFilterRules(loggingRules.join('\n'));
@@ -228,6 +230,9 @@ int main(int argc, char *argv[])
         }
         qCInfo(dcApplication()) << "Started:" << arguments.takeFirst();
         qCInfo(dcApplication()) << "Parameters:" << arguments.join(' ');
+        qCInfo(dcApplication()) << "Built with Qt:" << QT_VERSION_STR;
+        qCInfo(dcApplication()) << "Run with Qt:" << qVersion();
+
 
         // If running in a snappy environment, print out some details about it.
         if (!qgetenv("SNAP").isEmpty()) {

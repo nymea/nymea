@@ -29,13 +29,15 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "translator.h"
-#include "nymeasettings.h"
 #include "thingmanagerimplementation.h"
 
-#include "loggingcategories.h"
-#include "integrations/integrationplugin.h"
-#include <QCoreApplication>
+#include <nymeasettings.h>
+#include <loggingcategories.h>
+#include <integrations/integrationplugin.h>
+
 #include <QDir>
+#include <QCoreApplication>
+#include <QRegularExpression>
 
 Translator::Translator(ThingManagerImplementation *thingManager):
     m_thingManager(thingManager)
@@ -99,7 +101,7 @@ void Translator::loadTranslator(IntegrationPlugin *plugin, const QLocale &locale
             loaded = true;
         }
     } else {
-        QString pluginId = plugin->pluginId().toString().remove(QRegExp("[{}]"));
+        QString pluginId = plugin->pluginId().toString().remove(QRegularExpression("[{}]"));
 
         foreach (const QString &pluginPath, m_thingManager->pluginSearchDirs()) {
             if (translator->load(locale, pluginId, "-", QDir(pluginPath + "/translations/").absolutePath(), ".qm")) {

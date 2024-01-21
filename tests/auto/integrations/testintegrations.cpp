@@ -53,7 +53,6 @@ private:
     }
 
 private slots:
-
     void initTestCase();
 
     void getPlugins();
@@ -297,9 +296,13 @@ void TestIntegrations::getThingClasses_data()
     QTest::addColumn<VendorId>("vendorId");
     QTest::addColumn<QList<ThingClassId>>("thingClassIds");
     QTest::addColumn<int>("resultCount");
-
+#ifdef WITH_PYTHON
     QTest::newRow("vendor nymea") << nymeaVendorId << QList<ThingClassId>() << 17;
     QTest::newRow("no filter") << VendorId() << QList<ThingClassId>() << 17;
+#else
+    QTest::newRow("vendor nymea") << nymeaVendorId << QList<ThingClassId>() << 14;
+    QTest::newRow("no filter") << VendorId() << QList<ThingClassId>() << 14;
+#endif
     QTest::newRow("invalid vendor") << VendorId("93e7d361-8025-4354-b17e-b68406c800bc") << QList<ThingClassId>() << 0;
     QTest::newRow("mockThingClassId") << VendorId() << (QList<ThingClassId>() << mockThingClassId) << 1;
     QTest::newRow("invalid thingClassId") << VendorId() << (QList<ThingClassId>() << ThingClassId("6c78ec28-09b6-476d-ac27-1d6966a45c57")) << 0;
@@ -585,7 +588,7 @@ void TestIntegrations::getThing()
     params.insert("thingId", thingId);
     QVariant response = injectAndWait("Integrations.GetThings", params);
 
-//    qCDebug(dcTests()) << qUtf8Printable(QJsonDocument::fromVariant(response).toJson());
+    //    qCDebug(dcTests()) << qUtf8Printable(QJsonDocument::fromVariant(response).toJson());
 
     if (expectedError == Thing::ThingErrorNoError) {
         QVariantList things = response.toMap().value("params").toMap().value("things").toList();
@@ -939,9 +942,9 @@ void TestIntegrations::parentChildThings()
         }
     }
     QVERIFY2(!childId.isNull(), QString("Could not find child:\nParent ID:%1\nResponse:%2")
-             .arg(parentId.toString())
-             .arg(qUtf8Printable(QJsonDocument::fromVariant(response).toJson()))
-             .toUtf8());
+                                    .arg(parentId.toString())
+                                    .arg(qUtf8Printable(QJsonDocument::fromVariant(response).toJson()))
+                                    .toUtf8());
 
     // Try to remove the child
     params.clear();
@@ -992,7 +995,7 @@ void TestIntegrations::getActionTypes_data()
     QTest::addColumn<QList<ActionTypeId> >("actionTypeTestData");
 
     QTest::newRow("valid thingClass") << mockThingClassId
-                                       << (QList<ActionTypeId>() << mockIntWithLimitsActionTypeId << mockAsyncActionTypeId << mockAsyncFailingActionTypeId << mockFailingActionTypeId << mockWithoutParamsActionTypeId << mockPowerActionTypeId << mockWithoutParamsActionTypeId << mockBatteryLevelActionTypeId << mockSignalStrengthActionTypeId << mockUpdateStatusActionTypeId << mockPerformUpdateActionTypeId << mockPressButtonActionTypeId);
+                                      << (QList<ActionTypeId>() << mockIntWithLimitsActionTypeId << mockAsyncActionTypeId << mockAsyncFailingActionTypeId << mockFailingActionTypeId << mockWithoutParamsActionTypeId << mockPowerActionTypeId << mockWithoutParamsActionTypeId << mockBatteryLevelActionTypeId << mockSignalStrengthActionTypeId << mockUpdateStatusActionTypeId << mockPerformUpdateActionTypeId << mockPressButtonActionTypeId);
     QTest::newRow("invalid thingClass") << ThingClassId("094f8024-5caa-48c1-ab6a-de486a92088f") << QList<ActionTypeId>();
 }
 
@@ -1726,7 +1729,7 @@ void TestIntegrations::removeThing_data()
 
     QTest::newRow("Existing thing") << ThingId(m_mockThingId) << Thing::ThingErrorNoError;
     QTest::newRow("Not existing thing") << ThingId::createThingId() << Thing::ThingErrorThingNotFound;
-//    QTest::newRow("Auto device") << m_mockThingAutoId << Thing::ThingErrorCreationMethodNotSupported;
+    //    QTest::newRow("Auto device") << m_mockThingAutoId << Thing::ThingErrorCreationMethodNotSupported;
 }
 
 void TestIntegrations::removeThing()
@@ -2076,7 +2079,7 @@ void TestIntegrations::executeAction()
 
     if (error == Thing::ThingErrorNoError) {
         QVERIFY2(actionTypeId == ActionTypeId(data), QString("ActionTypeId mismatch. Got %1, Expected: %2")
-                 .arg(ActionTypeId(data).toString()).arg(actionTypeId.toString()).toLatin1().data());
+                     .arg(ActionTypeId(data).toString()).arg(actionTypeId.toString()).toLatin1().data());
     } else {
         QVERIFY2(data.length() == 0, QString("Data is %1, should be empty.").arg(QString(data)).toLatin1().data());
     }

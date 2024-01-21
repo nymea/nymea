@@ -133,7 +133,7 @@ void nymeaLogMessageHandler(QtMsgType type, const QMessageLogContext &context, c
     QMutexLocker locker(&s_loggerMutex);
     if (s_logFile.isOpen()) {
         QTextStream textStream(&s_logFile);
-        textStream << messageString << endl;
+        textStream << messageString << '\n';
     }
 }
 

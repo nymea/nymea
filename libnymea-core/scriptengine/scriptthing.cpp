@@ -34,6 +34,7 @@
 #include <QQmlEngine>
 #include <QJsonDocument>
 #include <QQmlContext>
+#include <QRegularExpression>
 
 #include <QLoggingCategory>
 Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
@@ -163,7 +164,7 @@ void ScriptThing::init(ThingManager *thingManager)
         Thing *thing = m_thingManager->findConfiguredThing(event.thingId());
         QVariantMap params;
         foreach (const Param &param, event.params()) {
-            params.insert(param.paramTypeId().toString().remove(QRegExp("[{}]")), param.value().toByteArray());
+            params.insert(param.paramTypeId().toString().remove(QRegularExpression("[{}]")), param.value().toByteArray());
             QString paramName = thing->thingClass().eventTypes().findById(event.eventTypeId()).paramTypes().findById(param.paramTypeId()).name();
             params.insert(paramName, param.value().toByteArray());
         }
@@ -179,7 +180,7 @@ void ScriptThing::init(ThingManager *thingManager)
         Thing *thing = m_thingManager->findConfiguredThing(action.thingId());
         QVariantMap params;
         foreach (const Param &param, action.params()) {
-            params.insert(param.paramTypeId().toString().remove(QRegExp("[{}]")), param.value().toByteArray());
+            params.insert(param.paramTypeId().toString().remove(QRegularExpression("[{}]")), param.value().toByteArray());
             QString paramName = thing->thingClass().actionTypes().findById(action.actionTypeId()).paramTypes().findById(param.paramTypeId()).name();
             params.insert(paramName, param.value().toByteArray());
         }

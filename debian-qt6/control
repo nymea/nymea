@@ -1,0 +1,221 @@
+Source: nymea
+Section: utils
+Priority: optional
+Maintainer: nymea GmbH <developer@nymea.io>
+Standards-Version: 4.7.2
+Homepage: https://nymea.io
+Vcs-Git: https://github.com/nymea/nymea.git
+Build-Depends: debhelper,
+               dbus-test-runner,
+               dpkg-dev,
+               libnymea-mqtt-dev (>= 0.1.2),
+               libnymea-networkmanager-dev (>= 1.5.0~),
+               libnymea-remoteproxyclient-dev (>= 0.1.13),
+               libnymea-zigbee-dev (>= 0.1.0),
+               libnymea-gpio-dev,
+               libpython3-dev,
+               qt6-base-dev,
+               qt6-base-dev-tools,
+               qt6-websockets-dev,
+               qt6-connectivity-dev,
+               qt6-declarative-dev,
+               qt6-serialport-dev,
+               qt6-serialbus-dev,
+               qml6-module-qtquick,
+               qtchooser,
+               libqt6bluetooth6,
+               libqt6sql6-sqlite,
+               libqt6dbus6 | libqt6dbus6t64,
+               libssl-dev,
+               rsync,
+               influxdb:native,
+               libsystemd-dev,
+
+
+Package: nymea
+Architecture: any
+Section: metapackages
+Multi-Arch: same
+Depends: nymead (= ${binary:Version}),
+         ${misc:Depends}
+Recommends: qml-module-qtquick2
+Suggests: nymea-doc
+Description: An open source IoT server - meta package
+ The nymea daemon is a plugin based IoT (Internet of Things) server.
+ The server works like a translator for devices, things and services
+ and allows them to interact.
+
+
+Package: nymead
+Architecture: any
+Section: net
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         nymea-translations,
+         libnymea-core (= ${binary:Version}),
+         libnymea1 (= ${binary:Version}),
+Recommends: nymea-cli,
+            nymea-data,
+            network-manager,
+            nymea-update-plugin-impl,
+            nymea-system-plugin-impl,
+            nymea-zeroconf-plugin-impl,
+            nymea-apikeysprovider-plugin-impl,
+            nymea-zwave-plugin-impl,
+            influxdb,
+Description: An open source IoT server - daemon
+ The nymea daemon is a plugin based IoT (Internet of Things) server.
+ The server works like a translator for devices, things and services
+ and allows them to interact.
+
+
+Package: nymea-data
+Section: misc
+Architecture: all
+Depends: ${misc:Depends}
+Recommends: nymead
+Description: Optional data for extending functionality in nymea daemon - data
+ Provides application data used by nymea:core
+
+
+Package: nymea-doc
+Section: doc
+Architecture: all
+Depends: ${misc:Depends}
+Recommends: nymea
+Build-Profiles: <!nodoc>
+Description: Documentation for the nymea library - documentation
+ This package contains documentation for developing nymea plugins.
+
+
+Package: nymea-translations
+Section: misc
+Architecture: all
+Depends: ${misc:Depends}
+Recommends: nymea
+Description: Translation files for nymead - translations
+ Translation files for the nymea daemon.
+
+
+Package: libnymea-tests
+Section: libs
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libnymea-core (= ${binary:Version})
+Description: nymea-tests library - library
+ Shared resources for nymea-tests.
+ This package provides also the mock plugin for the tests.
+
+
+Package: libnymea-tests-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libnymea-tests (= ${binary:Version}),
+         libnymea-core-dev (= ${binary:Version})
+Description: nymea-tests library - development files
+ Provides the nymea-tests development files for building
+ automated tests.
+
+
+Package: nymea-tests
+Section: devel
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         nymea (= ${binary:Version}),
+         libnymea-tests (= ${binary:Version}),
+         influxdb,
+Description: nymea automated tests - tests
+ Automated tests for the nymea daemon.
+
+
+Package: libnymea1
+Section: libs
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+Provides: nymea-update-plugin-api-1,
+          nymea-zeroconf-plugin-api-1,
+          nymea-system-plugin-api-3
+Description: nymea shared resources - library
+ Shared resources for nymea plugins.
+
+
+Package: libnymea-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libnymea1 (= ${binary:Version}),
+         pkg-config,
+         qt6-base-dev,
+Replaces: libnymea1-dev
+Breaks: libnymea1-dev
+Provides: libnymea1-dev
+Description: nymea plugin development API library - development files
+ Shared resources for developing nymea plugins.
+
+
+Package: libnymea-core
+Section: libs
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         logrotate,
+         bluez,
+         tar,
+         iputils-tracepath,
+         iputils-ping,
+         qml6-module-qtquick,
+         libqt6sql6-sqlite,
+         libcap2-bin,
+         dnsutils,
+Description: nymea:core internal - library
+ Internal library for nymea:core.
+
+
+Package: libnymea-core-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libnymea-core (= ${binary:Version}),
+         libnymea-dev (= ${binary:Version})
+Description: nymea:core internal library - development files
+ Development files for the internal nymea:core library.
+
+
+Package: nymea-dev-tools
+Section: libdevel
+Architecture: any
+Multi-Arch: no
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         qt6-base-dev-tools,
+         rsync,
+Description: Tools for developing nymea plugins.
+ This package will install the nymea-plugininfocompiler.
+
+
+Package: nymea-sdk
+Section: devel
+Architecture: all
+Multi-Arch: no
+Depends: nymea-dev-tools (= ${binary:Version}),
+         libnymea-dev (= ${binary:Version}),
+Recommends: nymea-qtcreator-wizards,
+            crossbuilder,
+Suggests: libnymea-core-dev (= ${binary:Version})
+Description: The nymea SDK.
+ Meta-Package for everything required to develop nymea integration plugins.

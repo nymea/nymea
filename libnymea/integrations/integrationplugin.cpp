@@ -96,6 +96,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QStandardPaths>
+#include <QRegularExpression>
 
 /*! IntegrationPlugin constructor. IntegrationPlugins will be instantiated by the system.
     This should never be called manually by a plugin implementation.
@@ -407,7 +408,7 @@ void IntegrationPlugin::initPlugin(ThingManager *thingManager, HardwareManager *
     m_thingManager = thingManager;
     m_hardwareManager = hardwareManager;
     m_apiKeyStorage = apiKeyStorage;
-    m_storage = new QSettings(NymeaSettings::settingsPath() + "/pluginconfig-" + pluginId().toString().remove(QRegExp("[{}]")) + ".conf", QSettings::IniFormat, this);
+    m_storage = new QSettings(NymeaSettings::settingsPath() + "/pluginconfig-" + pluginId().toString().remove(QRegularExpression("[{}]")) + ".conf", QSettings::IniFormat, this);
 }
 
 /*! Returns a map containing the plugin configuration.

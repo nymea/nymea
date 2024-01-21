@@ -66,8 +66,8 @@ Recommends: nymea-cli,
             nymea-zwave-plugin-impl,
             influxdb,
 Description: An open source IoT server - daemon
- The nymea daemon is a plugin based IoT (Internet of Things) server. 
- The server works like a translator for devices, things and services 
+ The nymea daemon is a plugin based IoT (Internet of Things) server.
+ The server works like a translator for devices, things and services
  and allows them to interact.
 
 
@@ -120,7 +120,7 @@ Depends: ${shlibs:Depends},
          libnymea-tests (= ${binary:Version}),
          libnymea-core-dev (= ${binary:Version})
 Description: nymea-tests library - development files
- Provides the nymea-tests development files for building 
+ Provides the nymea-tests development files for building
  automated tests.
 
 

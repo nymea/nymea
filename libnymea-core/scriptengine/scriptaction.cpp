@@ -41,6 +41,8 @@
 
 #include <QMessageLogger>
 #include <QLoggingCategory>
+#include <QRegularExpression>
+
 Q_DECLARE_LOGGING_CATEGORY(dcScriptEngine)
 
 namespace nymeaserver {
@@ -79,7 +81,7 @@ void ScriptAction::classBegin()
 
         QVariantMap params;
         foreach (const Param &param, action.params()) {
-            params.insert(param.paramTypeId().toString().remove(QRegExp("[{}]")), param.value().toByteArray());
+            params.insert(param.paramTypeId().toString().remove(QRegularExpression("[{}]")), param.value().toByteArray());
             QString paramName = thing->thingClass().actionTypes().findById(action.actionTypeId()).paramTypes().findById(param.paramTypeId()).name();
             params.insert(paramName, param.value().toByteArray());
         }

@@ -127,19 +127,19 @@ private:
 
 QStringList TestJSONRPC::extractRefs(const QVariant &variant)
 {
-    if (variant.canConvert(QVariant::String)) {
+    if (variant.canConvert(QMetaType::QString)) {
         if (variant.toString().startsWith("$ref")) {
             return QStringList() << variant.toString();
         }
     }
-    if (variant.canConvert(QVariant::List)) {
+    if (variant.canConvert(QMetaType::QVariantList)) {
         QStringList refs;
         foreach (const QVariant tmp, variant.toList()) {
             refs << extractRefs(tmp);
         }
         return refs;
     }
-    if (variant.canConvert(QVariant::Map)) {
+    if (variant.canConvert(QMetaType::QVariantMap)) {
         QStringList refs;
         foreach (const QVariant tmp, variant.toMap()) {
             refs << extractRefs(tmp);
@@ -652,18 +652,18 @@ void TestJSONRPC::testBasicCall()
 void TestJSONRPC::introspect()
 {
     QVariant response = injectAndWait("JSONRPC.Introspect");
-    QVariantMap methods = response.toMap().value("params").toMap().value("methods").toMap();
-    QVariantMap notifications = response.toMap().value("params").toMap().value("notifications").toMap();
-    QVariantMap enums = response.toMap().value("params").toMap().value("enums").toMap();
-    QVariantMap flags = response.toMap().value("params").toMap().value("flags").toMap();
-    QVariantMap types = response.toMap().value("params").toMap().value("types").toMap();
+    QMultiMap<QString, QVariant> methods = QMultiMap<QString, QVariant>(response.toMap().value("params").toMap().value("methods").toMap());
+    QMultiMap<QString, QVariant> notifications = QMultiMap<QString, QVariant>(response.toMap().value("params").toMap().value("notifications").toMap());
+    QMultiMap<QString, QVariant> enums = QMultiMap<QString, QVariant>(response.toMap().value("params").toMap().value("enums").toMap());
+    QMultiMap<QString, QVariant> flags = QMultiMap<QString, QVariant>(response.toMap().value("params").toMap().value("flags").toMap());
+    QMultiMap<QString, QVariant> types = QMultiMap<QString, QVariant>(response.toMap().value("params").toMap().value("types").toMap());
 
     QVERIFY2(methods.count() > 0, "No methods in Introspect response!");
     QVERIFY2(notifications.count() > 0, "No notifications in Introspect response!");
     QVERIFY2(types.count() > 0, "No types in Introspect response!");
 
     // Make sure all $ref: pointers have their according type defined
-    QVariantMap allItems = methods.unite(notifications).unite(types);
+    QMultiMap<QString, QVariant> allItems = methods.unite(notifications).unite(types);
     foreach (const QVariant &item, allItems) {
         foreach (const QString &ref, extractRefs(item)) {
             QString typeId = ref;

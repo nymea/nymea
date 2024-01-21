@@ -427,7 +427,7 @@ void Coap::processTokenBasedResponse(CoapReply *reply, const CoapPdu &pdu)
 void Coap::processNotification(const CoapPdu &pdu, const QHostAddress &address, const quint16 &port)
 {
     CoapObserveResource resource = m_observeResources.value(pdu.token());
-    qCDebug(dcCoap) << "<--- Notification" << endl << pdu;
+    qCDebug(dcCoap) << "<--- Notification" << '\n' << pdu;
 
     // check if it is a blockwise notification
     if (pdu.hasOption(CoapOption::Block2)) {
@@ -443,7 +443,7 @@ void Coap::processNotification(const CoapPdu &pdu, const QHostAddress &address, 
             responsePdu.setMessageId(pdu.messageId());
             responsePdu.setToken(pdu.token());
 
-            qCDebug(dcCoap) << "---> Notification" << endl << responsePdu;
+            qCDebug(dcCoap) << "---> Notification" << '\n' << responsePdu;
             sendCoapPdu(address, port, responsePdu);
 
             // create reply for blockwise transfere
@@ -500,7 +500,7 @@ void Coap::processNotification(const CoapPdu &pdu, const QHostAddress &address, 
             m_observerReply->setPort(port);
             m_observerReply->m_timer->start();
 
-            qCDebug(dcCoap) << "---> Notification" << endl << pdu;
+            qCDebug(dcCoap) << "---> Notification" << '\n' << pdu;
             sendData(address, port, pduData);
 
             return;
@@ -514,7 +514,7 @@ void Coap::processNotification(const CoapPdu &pdu, const QHostAddress &address, 
     responsePdu.setMessageId(pdu.messageId());
     responsePdu.setToken(pdu.token());
 
-    qCDebug(dcCoap) << "---> Notification" << endl << responsePdu;
+    qCDebug(dcCoap) << "---> Notification" << '\n' << responsePdu;
     sendCoapPdu(address, port, responsePdu);
 
     int notificationNumber = 0;
@@ -662,7 +662,7 @@ void Coap::processBlock2Notification(CoapReply *reply, const CoapPdu &pdu)
         responsePdu.setMessageId(pdu.messageId());
         responsePdu.setToken(pdu.token());
 
-        qCDebug(dcCoap) << "---> Notification" << endl << responsePdu;
+        qCDebug(dcCoap) << "---> Notification" << '\n' << responsePdu;
         sendCoapPdu(reply->hostAddress(), reply->port(), responsePdu);
 
         reply->appendPayloadData(pdu.payload());
@@ -712,7 +712,7 @@ void Coap::processBlock2Notification(CoapReply *reply, const CoapPdu &pdu)
 
     reply->setMessageId(nextBlockRequest.messageId());
 
-    qCDebug(dcCoap) << "---> Notification" << endl << nextBlockRequest;
+    qCDebug(dcCoap) << "---> Notification" << '\n' << nextBlockRequest;
     sendData(reply->hostAddress(), reply->port(), pduData);
 }
 

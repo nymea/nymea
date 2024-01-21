@@ -63,7 +63,7 @@ bool ZWaveDeviceDatabase::initDB()
         }
     }
 
-    QString networkUuidString = m_networkUuid.toString().remove(QRegExp("[{}]"));
+    QString networkUuidString = m_networkUuid.toString().remove(QRegularExpression("[{}]"));
     m_db = QSqlDatabase::addDatabase("QSQLITE", "ZWaveDevices-" + networkUuidString);
     m_db.setDatabaseName(path.absoluteFilePath("zwave-network-" + networkUuidString + ".db"));
 

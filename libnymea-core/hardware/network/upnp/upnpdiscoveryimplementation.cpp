@@ -132,7 +132,7 @@ void UpnpDiscoveryImplementation::respondToSearchRequest(QHostAddress host, int 
     // TODO: Once DeviceManager (and with that this can be moved into the server, use NymeaCore's configuration manager instead of parsing the config here...
     NymeaSettings globalSettings(NymeaSettings::SettingsRoleGlobal);
     globalSettings.beginGroup("nymead");
-    QByteArray uuid = globalSettings.value("uuid", QUuid()).toString().remove(QRegExp("[{}]")).toUtf8();
+    QByteArray uuid = globalSettings.value("uuid", QUuid()).toString().remove(QRegularExpression("[{}]")).toUtf8();
     globalSettings.endGroup();
 
     globalSettings.beginGroup("WebServer");

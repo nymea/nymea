@@ -80,7 +80,7 @@
 #include <QSqlResult>
 #include <QVariant>
 #include <QSqlError>
-#include <QRegExpValidator>
+#include <QRegularExpressionValidator>
 #include <QDateTime>
 #include <QDebug>
 #include <QFileInfo>
@@ -113,7 +113,7 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
 
     m_pushButtonDBusService = new PushButtonDBusService("/io/guh/nymead/UserManager", this);
     connect(m_pushButtonDBusService, &PushButtonDBusService::pushButtonPressed, this, &UserManager::onPushButtonPressed);
-    m_pushButtonTransaction = qMakePair<int, QString>(-1, QString());
+    m_pushButtonTransaction = QPair<int, QString>(-1, QString());
 }
 
 /*! Will return true if the database is working fine but doesn't have any information on users whatsoever.
@@ -172,7 +172,7 @@ UserManager::UserError UserManager::createUser(const QString &username, const QS
         return UserErrorDuplicateUserId;
     }
 
-    QByteArray salt = QUuid::createUuid().toString().remove(QRegExp("[{}]")).toUtf8();
+    QByteArray salt = QUuid::createUuid().toString().remove(QRegularExpression("[{}]")).toUtf8();
     QByteArray hashedPassword = QCryptographicHash::hash(QString(password + salt).toUtf8(), QCryptographicHash::Sha512).toBase64();
     QSqlQuery query(m_db);
     query.prepare("INSERT INTO users(username, email, displayName, password, salt, scopes) VALUES(?, ?, ?, ?, ?, ?);");
@@ -213,7 +213,7 @@ UserManager::UserError UserManager::changePassword(const QString &username, cons
     }
 
     // Update the password
-    QByteArray salt = QUuid::createUuid().toString().remove(QRegExp("[{}]")).toUtf8();
+    QByteArray salt = QUuid::createUuid().toString().remove(QRegularExpression("[{}]")).toUtf8();
     QByteArray hashedPassword = QCryptographicHash::hash(QString(newPassword + salt).toUtf8(), QCryptographicHash::Sha512).toBase64();
     QString queryString = QString("UPDATE users SET password = \"%1\", salt = \"%2\" WHERE lower(username) = \"%3\";")
             .arg(QString::fromUtf8(hashedPassword))
@@ -334,7 +334,7 @@ int UserManager::requestPushButtonAuth(const QString &deviceName)
 
     qCDebug(dcUserManager()) << "Starting PushButton authentication for device" << deviceName;
     int transactionId = ++m_pushButtonTransactionIdCounter;
-    m_pushButtonTransaction = qMakePair<int, QString>(transactionId, deviceName);
+    m_pushButtonTransaction = QPair<int, QString>(transactionId, deviceName);
     return transactionId;
 }
 
@@ -639,7 +639,7 @@ void UserManager::rotate(const QString &dbName)
 
 bool UserManager::validateUsername(const QString &username) const
 {
-    QRegExp validator("[a-zA-Z0-9_\\.+-@]{3,}");
+    QRegularExpression validator("[a-zA-Z0-9_\\.+-@]{3,}");
     return validator.exactMatch(username);
 }
 
@@ -648,13 +648,13 @@ bool UserManager::validatePassword(const QString &password) const
     if (password.length() < 8) {
         return false;
     }
-    if (!password.contains(QRegExp("[a-z]"))) {
+    if (!password.contains(QRegularExpression("[a-z]"))) {
         return false;
     }
-    if (!password.contains(QRegExp("[A-Z]"))) {
+    if (!password.contains(QRegularExpression("[A-Z]"))) {
         return false;
     }
-    if (!password.contains(QRegExp("[0-9]"))) {
+    if (!password.contains(QRegularExpression("[0-9]"))) {
         return false;
     }
     return true;
@@ -662,7 +662,7 @@ bool UserManager::validatePassword(const QString &password) const
 
 bool UserManager::validateToken(const QByteArray &token) const
 {
-    QRegExp validator(QRegExp("(^[a-zA-Z0-9_\\.+-/=]+$)"));
+    QRegularExpression validator(QRegularExpression("(^[a-zA-Z0-9_\\.+-/=]+$)"));
     return validator.exactMatch(token);
 }
 

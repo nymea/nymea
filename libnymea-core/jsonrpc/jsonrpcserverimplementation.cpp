@@ -954,7 +954,7 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
     m_handlers.insert(handler->name(), handler);
     for (int i = 0; i < handler->metaObject()->methodCount(); ++i) {
         QMetaMethod method = handler->metaObject()->method(i);
-        if (method.methodType() == QMetaMethod::Signal && QString(method.name()).contains(QRegExp("^[A-Z]"))) {
+        if (method.methodType() == QMetaMethod::Signal && QString(method.name()).contains(QRegularExpression("^[A-Z]"))) {
             if (method.parameterCount() == 1 && method.parameterType(0) == QVariant::Map) {
                 QObject::connect(handler, method, this, metaObject()->method(metaObject()->indexOfSlot("sendNotification(QVariantMap)")));
             } else if (method.parameterCount() == 2 && method.parameterType(0) == QVariant::Uuid && method.parameterType(1) == QVariant::Map) {

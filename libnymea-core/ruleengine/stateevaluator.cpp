@@ -430,7 +430,7 @@ bool StateEvaluator::evaluateDescriptor(const StateDescriptor &descriptor) const
 QDebug operator<<(QDebug dbg, const StateEvaluator &stateEvaluator)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "StateEvaluator: Operator:" << stateEvaluator.operatorType() << endl << "  " << stateEvaluator.stateDescriptor() << endl;
+    dbg.nospace() << "StateEvaluator: Operator:" << stateEvaluator.operatorType() << Qt::endl << "  " << stateEvaluator.stateDescriptor() << Qt::endl;
     for (int i = 0; i < stateEvaluator.childEvaluators().count(); i++) {
         dbg.nospace() << "    " << i << ": " << stateEvaluator.childEvaluators().at(i);
     }

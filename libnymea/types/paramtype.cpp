@@ -178,7 +178,7 @@ void ParamType::setUnit(const Types::Unit &unit)
 /*! Returns the limits of this ParamType. limits(minValue, maxValue). */
 QPair<QVariant, QVariant> ParamType::limits() const
 {
-    return qMakePair<QVariant, QVariant>(m_minValue, m_maxValue);
+    return QPair<QVariant, QVariant>(m_minValue, m_maxValue);
 }
 
 /*! Sets the limits of this ParamType. limits(\a min, \a max). */
@@ -252,9 +252,9 @@ QDebug operator<<(QDebug dbg, const ParamType &paramType)
 QDebug operator<<(QDebug dbg, const QList<ParamType> &paramTypes)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "ParamTypeList (count:" << paramTypes.count() << ")" << endl;
+    dbg.nospace() << "ParamTypeList (count:" << paramTypes.count() << ")" << Qt::endl;
     for (int i = 0; i < paramTypes.count(); i++ ) {
-        dbg.nospace() << "     " << i << ": " << paramTypes.at(i) << endl;
+        dbg.nospace() << "     " << i << ": " << paramTypes.at(i) << Qt::endl;
     }
 
     return dbg;

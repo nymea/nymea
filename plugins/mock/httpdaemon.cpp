@@ -40,7 +40,7 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QUrlQuery>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QStringList>
 
 HttpDaemon::HttpDaemon(Thing *thing, IntegrationPlugin *parent):
@@ -75,7 +75,7 @@ void HttpDaemon::incomingConnection(qintptr socket)
 
 void HttpDaemon::actionExecuted(const ActionTypeId &actionTypeId)
 {
-    m_actionList.append(qMakePair<ActionTypeId, QDateTime>(actionTypeId, QDateTime::currentDateTime()));
+    m_actionList.append(QPair<ActionTypeId, QDateTime>(actionTypeId, QDateTime::currentDateTime()));
 }
 
 void HttpDaemon::readClient()
@@ -89,7 +89,7 @@ void HttpDaemon::readClient()
     QTcpSocket* socket = (QTcpSocket*)sender();
     if (socket->canReadLine()) {
         QByteArray data = socket->readLine();
-        QStringList tokens = QString(data).split(QRegExp("[ \r\n][ \r\n]*"));
+        QStringList tokens = QString(data).split(QRegularExpression("[ \r\n][ \r\n]*"));
         QUrl url("http://foo.bar" + tokens[1]);
         QUrlQuery query(url);
         if (url.path() == "/setstate") {

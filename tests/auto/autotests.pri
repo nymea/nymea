@@ -20,7 +20,7 @@ LIBS += -L$$top_builddir/libnymea/ -lnymea \
         -L$$top_builddir/plugins/mock/ \
         -lssl -lcrypto -lnymea-remoteproxyclient
 
-target.path = $$[QT_INSTALL_PREFIX]/bin
+target.path = $$[QT_INSTALL_PREFIX]/share/tests/nymea/
 INSTALLS += target
 
 test.commands = LD_LIBRARY_PATH=../../../libnymea:../../../libnymea-core/:../../testlib/ make check TESTRUNNER=\"dbus-test-runner --bus-type=both --task\"

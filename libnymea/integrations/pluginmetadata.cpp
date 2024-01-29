@@ -371,8 +371,8 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     }
                 }
 
-                QVariant::Type t = QVariant::nameToType(st.value("type").toString().toLatin1().data());
-                if (t == QVariant::Invalid) {
+                QMetaType::Type t = static_cast<QMetaType::Type>(QVariant::nameToType(st.value("type").toString().toLatin1().data()));
+                if (t == QMetaType::UnknownType) {
                     m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid type: \"" + st.value("type").toString() + "\"");
                     hasError = true;
                 }
@@ -460,14 +460,14 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     QString ioTypeString = st.value("ioType").toString();
                     Types::IOType ioType = Types::IOTypeNone;
                     if (ioTypeString == "digitalInput") {
-                        if (stateType.type() != QVariant::Bool) {
+                        if (stateType.type() != QMetaType::Bool) {
                             m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as digital input but type is not \"bool\"");
                             hasError = true;
                             break;
                         }
                         ioType = Types::IOTypeDigitalInput;
                     } else if (ioTypeString == "digitalOutput") {
-                        if (stateType.type() != QVariant::Bool) {
+                        if (stateType.type() != QMetaType::Bool) {
                             m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as digital output but type is not \"bool\"");
                             hasError = true;
                             break;
@@ -479,7 +479,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                         }
                         ioType = Types::IOTypeDigitalOutput;
                     } else if (ioTypeString == "analogInput") {
-                        if (stateType.type() != QVariant::Double && stateType.type() != QVariant::Int && stateType.type() != QVariant::UInt) {
+                        if (stateType.type() != QMetaType::Double && stateType.type() != QMetaType::Int && stateType.type() != QMetaType::UInt) {
                             m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog input but type is not \"double\", \"int\" or \"uint\"");
                             hasError = true;
                             break;
@@ -491,7 +491,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                         }
                         ioType = Types::IOTypeAnalogInput;
                     } else if (ioTypeString == "analogOutput") {
-                        if (stateType.type() != QVariant::Double && stateType.type() != QVariant::Int && stateType.type() != QVariant::UInt) {
+                        if (stateType.type() != QMetaType::Double && stateType.type() != QMetaType::Int && stateType.type() != QMetaType::UInt) {
                             m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" is marked as analog output but type is not \"double\", \"int\" or \"uint\"");
                             hasError = true;
                             break;
@@ -508,7 +508,7 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                         }
                         ioType = Types::IOTypeAnalogOutput;
                     } else {
-                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid ioType value \"" + ioType + "\" which is not any of \"digitalInput\", \"digitalOutput\", \"analogInput\" or \"analogOutput\"");
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" state type \"" + stateTypeName + "\" has invalid ioType value \"IOTypeNone\" which is not any of \"digitalInput\", \"digitalOutput\", \"analogInput\" or \"analogOutput\"");
                         hasError = true;
                         break;
                     }
@@ -1067,8 +1067,8 @@ QPair<bool, ParamTypes> PluginMetadata::parseParamTypes(const QJsonArray &array)
         }
 
         // Check type
-        QVariant::Type t = QVariant::nameToType(pt.value("type").toString().toLatin1().data());
-        if (t == QVariant::Invalid) {
+        QMetaType::Type t = static_cast<QMetaType::Type>(QVariant::nameToType(pt.value("type").toString().toLatin1().data()));
+        if (t == QMetaType::UnknownType) {
             m_validationErrors.append("Param type \"" + paramName + "\" has unknown invalid type \"" + pt.value("type").toString() + "\"");
             hasErrors = true;
         }

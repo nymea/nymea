@@ -2409,12 +2409,12 @@ void ThingManagerImplementation::registerStateLogger(Thing *thing, const StateTy
 {
     StateType stateType = thing->thingClass().getStateType(stateTypeId);
     QString name = thing->id().toString() + "-" + stateType.name();
-    QList<QVariant::Type> sampledTypes {
-        QVariant::Int,
-        QVariant::UInt,
-        QVariant::LongLong,
-        QVariant::ULongLong,
-        QVariant::Double
+    QList<QMetaType::Type> sampledTypes {
+        QMetaType::Int,
+        QMetaType::UInt,
+        QMetaType::LongLong,
+        QMetaType::ULongLong,
+        QMetaType::Double
     };
     Types::LoggingType loggingType = sampledTypes.contains(stateType.type()) ? Types::LoggingTypeSampled : Types::LoggingTypeDiscrete;
     Logger *logger = m_logEngine->registerLogSource("state-" + name, {}, loggingType, stateType.name());

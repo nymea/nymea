@@ -127,19 +127,19 @@ private:
 
 QStringList TestJSONRPC::extractRefs(const QVariant &variant)
 {
-    if (variant.canConvert(QVariant::String)) {
+    if (variant.canConvert(QMetaType::QString)) {
         if (variant.toString().startsWith("$ref")) {
             return QStringList() << variant.toString();
         }
     }
-    if (variant.canConvert(QVariant::List)) {
+    if (variant.canConvert(QMetaType::QVariantList)) {
         QStringList refs;
         foreach (const QVariant tmp, variant.toList()) {
             refs << extractRefs(tmp);
         }
         return refs;
     }
-    if (variant.canConvert(QVariant::Map)) {
+    if (variant.canConvert(QMetaType::QVariantMap)) {
         QStringList refs;
         foreach (const QVariant tmp, variant.toMap()) {
             refs << extractRefs(tmp);

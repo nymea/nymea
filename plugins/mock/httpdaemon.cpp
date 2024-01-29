@@ -96,13 +96,13 @@ void HttpDaemon::readClient()
             StateTypeId stateTypeId = StateTypeId(query.queryItems().first().first);
             QVariant stateValue = query.queryItems().first().second;
             if (stateTypeId == mockBoolStateTypeId || stateTypeId == mockBatteryCriticalStateTypeId) {
-                stateValue.convert(QVariant::Bool);
+                stateValue.convert(QMetaType::Bool);
             } else if (stateTypeId == mockIntStateTypeId) {
-                stateValue.convert(QVariant::Int);
+                stateValue.convert(QMetaType::Int);
             } else if (stateTypeId == mockSignalStrengthStateTypeId) {
-                stateValue.convert(QVariant::UInt);
+                stateValue.convert(QMetaType::UInt);
             } else if (stateTypeId == mockDoubleStateTypeId) {
-                stateValue.convert(QVariant::Double);
+                stateValue.convert(QMetaType::Double);
             }
             qCDebug(dcMock()) << "Setting state value" << stateValue;
             emit setState(stateTypeId, stateValue);

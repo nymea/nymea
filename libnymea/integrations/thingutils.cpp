@@ -98,7 +98,7 @@ Thing::ThingError ThingUtils::verifyParam(const ParamType &paramType, const Para
         return Thing::ThingErrorInvalidParameter;
     }
 
-    if (paramType.type() == QVariant::Int) {
+    if (paramType.type() == QMetaType::Int) {
         if (paramType.maxValue().isValid() && param.value().toInt() > paramType.maxValue().toInt()) {
             qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return Thing::ThingErrorInvalidParameter;
@@ -108,7 +108,7 @@ Thing::ThingError ThingUtils::verifyParam(const ParamType &paramType, const Para
             qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Min:" << paramType.minValue();
             return Thing::ThingErrorInvalidParameter;
         }
-    } else if (paramType.type() == QVariant::UInt) {
+    } else if (paramType.type() == QMetaType::UInt) {
         if (paramType.maxValue().isValid() && param.value().toUInt() > paramType.maxValue().toUInt()) {
             qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return Thing::ThingErrorInvalidParameter;
@@ -118,7 +118,7 @@ Thing::ThingError ThingUtils::verifyParam(const ParamType &paramType, const Para
             qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Min:" << paramType.minValue();
             return Thing::ThingErrorInvalidParameter;
         }
-    } else if (paramType.type() == QVariant::Double) {
+    } else if (paramType.type() == QMetaType::Double) {
         if (paramType.maxValue().isValid() && param.value().toDouble() > paramType.maxValue().toDouble()) {
             qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return Thing::ThingErrorInvalidParameter;
@@ -226,7 +226,7 @@ Interface ThingUtils::loadInterface(const QString &name)
         QVariantMap stateMap = stateVariant.toMap();
         InterfaceStateType stateType;
         stateType.setName(stateMap.value("name").toString());
-        stateType.setType(QVariant::nameToType(stateMap.value("type").toByteArray()));
+        stateType.setType(static_cast<QMetaType::Type>(QVariant::nameToType(stateMap.value("type").toByteArray())));
         stateType.setPossibleValues(stateMap.value("allowedValues").toList());
         stateType.setMinValue(stateMap.value("minValue"));
         stateType.setMaxValue(stateMap.value("maxValue"));
@@ -276,7 +276,7 @@ Interface ThingUtils::loadInterface(const QString &name)
         foreach (const QVariant &actionParamVariant, actionVariant.toMap().value("params").toList()) {
             ParamType paramType;
             paramType.setName(actionParamVariant.toMap().value("name").toString());
-            paramType.setType(QVariant::nameToType(actionParamVariant.toMap().value("type").toByteArray()));
+            paramType.setType(static_cast<QMetaType::Type>(QVariant::nameToType(actionParamVariant.toMap().value("type").toByteArray())));
             paramType.setAllowedValues(actionParamVariant.toMap().value("allowedValues").toList());
             paramType.setMinValue(actionParamVariant.toMap().value("min"));
             paramType.setDefaultValue(actionParamVariant.toMap().value("defaultValue"));
@@ -298,7 +298,7 @@ Interface ThingUtils::loadInterface(const QString &name)
         foreach (const QVariant &eventParamVariant, eventVariant.toMap().value("params").toList()) {
             ParamType paramType;
             paramType.setName(eventParamVariant.toMap().value("name").toString());
-            paramType.setType(QVariant::nameToType(eventParamVariant.toMap().value("type").toByteArray()));
+            paramType.setType(static_cast<QMetaType::Type>(QVariant::nameToType(eventParamVariant.toMap().value("type").toByteArray())));
             paramType.setAllowedValues(eventParamVariant.toMap().value("allowedValues").toList());
             paramType.setMinValue(eventParamVariant.toMap().value("minValue"));
             paramType.setMaxValue(eventParamVariant.toMap().value("maxValue"));

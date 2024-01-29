@@ -52,13 +52,13 @@ bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &api)
                 return false;
             }
         }
-        if (map.value(key).type() == QVariant::Map) {
+        if (map.value(key).type() == QMetaType::QVariantMap) {
             bool ret = checkRefs(map.value(key).toMap(), api);
             if (!ret) {
                 return false;
             }
         }
-        if (map.value(key).type() == QVariant::List) {
+        if (map.value(key).type() == QMetaType::QVariantList) {
             foreach (const QVariant &entry, map.value(key).toList()) {
                 if (entry.toString().startsWith("$ref:")) {
                     QString refName = entry.toString().remove("$ref:");
@@ -67,7 +67,7 @@ bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &api)
                         return false;
                     }
                 }
-                if (entry.type() == QVariant::Map) {
+                if (entry.type() == QMetaType::QVariantMap) {
                     bool ret = checkRefs(map.value(key).toMap(), api);
                     if (!ret) {
                         return false;
@@ -165,7 +165,7 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
 
 JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const QVariant &definition, const QVariantMap &api, QIODevice::OpenMode openMode)
 {
-    if (definition.type() == QVariant::String) {
+    if (definition.type() == QMetaType::QString) {
         QString expectedTypeName = definition.toString();
 
         if (expectedTypeName.startsWith("$ref:")) {
@@ -187,7 +187,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
             QVariantMap flags = api.value("flags").toMap();
             if (flags.contains(refName)) {
                 QVariant refDefinition = flags.value(refName);
-                if (value.type() != QVariant::List && value.type() != QVariant::StringList) {
+                if (value.type() != QMetaType::QVariantList && value.type() != QMetaType::QStringList) {
                     return Result(false, "Expected flags " + refName + " but got " + value.toString());
                 }
                 QString flagEnum = refDefinition.toList().first().toString();
@@ -206,7 +206,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
         }
 
         JsonHandler::BasicType expectedBasicType = JsonHandler::enumNameToValue<JsonHandler::BasicType>(expectedTypeName);
-        QVariant::Type expectedVariantType = JsonHandler::basicTypeToVariantType(expectedBasicType);
+        QMetaType::Type expectedVariantType = JsonHandler::basicTypeToVariantType(expectedBasicType);
 
         // Verify basic compatiblity
         if (expectedBasicType != JsonHandler::Variant && !value.canConvert(expectedVariantType)) {
@@ -260,17 +260,17 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
         return Result(true);
     }
 
-    if (definition.type() == QVariant::Map) {
-        if (value.type() != QVariant::Map) {
+    if (definition.type() == QMetaType::QVariantMap) {
+        if (value.type() != QMetaType::QVariantMap) {
             return Result(false, "Invalid value. Expected a map but received: " + value.toString());
         }
         return validateMap(value.toMap(), definition.toMap(), api, openMode);
     }
 
-    if (definition.type() == QVariant::List) {
+    if (definition.type() == QMetaType::QVariantList) {
         QVariantList list = definition.toList();
         QVariant entryDefinition = list.first();
-        if (value.type() != QVariant::List && value.type() != QVariant::StringList) {
+        if (value.type() != QMetaType::QVariantList && value.type() != QMetaType::QStringList) {
             return Result(false, "Expected list of " + entryDefinition.toString() + " but got value of type " + value.typeName() + "\n" + QJsonDocument::fromVariant(value).toJson());
         }
         foreach (const QVariant &entry, value.toList()) {

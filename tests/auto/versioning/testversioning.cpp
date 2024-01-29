@@ -54,7 +54,7 @@ void TestVersioning::version()
     QCOMPARE(version, QString(NYMEA_VERSION_STRING));
 
     QVERIFY2(!protocolVersion.toString().isEmpty(), "Protocol version is empty.");
-    QVERIFY2(protocolVersion.canConvert(QVariant::Int), "Protocol version is not an integer.");
+    QVERIFY2(protocolVersion.canConvert(QMetaType::Int), "Protocol version is not an integer.");
 }
 
 void TestVersioning::apiChangeBumpsVersion()

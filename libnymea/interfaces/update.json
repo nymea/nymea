@@ -15,6 +15,14 @@
             "name": "availableVersion",
             "type": "QString",
             "optional": true
+        },
+        {
+            "name": "updateProgress",
+            "type": "uint",
+            "unit": "Percentage",
+            "min": 0,
+            "max": 100,
+            "optional": true
         }
     ],
     "actions": [

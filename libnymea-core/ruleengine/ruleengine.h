@@ -127,8 +127,8 @@ private:
     RuleError checkRuleAction(const RuleAction &ruleAction, const Rule &rule);
     RuleError checkRuleActionParam(const RuleActionParam &ruleActionParam, const ActionType &actionType, const Rule &rule);
 
-    QVariant::Type getActionParamType(const ActionTypeId &actionTypeId, const ParamTypeId &paramTypeId);
-    QVariant::Type getEventParamType(const EventTypeId &eventTypeId, const ParamTypeId &paramTypeId);
+    QMetaType::Type getActionParamType(const ActionTypeId &actionTypeId, const ParamTypeId &paramTypeId);
+    QMetaType::Type getEventParamType(const EventTypeId &eventTypeId, const ParamTypeId &paramTypeId);
 
     void appendRule(const Rule &rule);
     void saveRule(const Rule &rule);

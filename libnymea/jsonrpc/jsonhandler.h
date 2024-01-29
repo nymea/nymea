@@ -87,8 +87,8 @@ public:
     template<typename T> static QStringList flagValueNames(T value);
     template<typename T> static T flagNamesToValue(const QStringList &names);
 
-    static BasicType variantTypeToBasicType(QVariant::Type variantType);
-    static QVariant::Type basicTypeToVariantType(BasicType basicType);
+    static BasicType variantTypeToBasicType(QMetaType::Type variantType);
+    static QMetaType::Type basicTypeToVariantType(BasicType basicType);
 
     template<typename T> QVariant pack(const T &value) const;
     template<typename T> QVariant pack(T *value) const;
@@ -140,7 +140,7 @@ private:
     QVariantMap m_methods;
     QVariantMap m_notifications;
 };
-Q_DECLARE_METATYPE(QVariant::Type)
+Q_DECLARE_METATYPE(QMetaType::Type)
 
 template<typename T>
 void JsonHandler::registerEnum()

@@ -199,9 +199,9 @@ StateEvaluator StateEvaluator::loadFromSettings(NymeaSettings &settings, const Q
     }
     QVariant stateValue = settings.value("value");
     if (settings.contains("valueType")) {
-        QVariant::Type valueType = (QVariant::Type)settings.value("valueType").toInt();
+        QMetaType::Type valueType = (QMetaType::Type)settings.value("valueType").toInt();
         // Note: only warn, and continue with the QVariant guessed type
-        if (valueType == QVariant::Invalid) {
+        if (valueType == QMetaType::UnknownType) {
             qCWarning(dcRuleEngine()) << "Could not load the value type of the state evaluator. The value type will be guessed by QVariant" << stateValue;
         } else if (!stateValue.canConvert(valueType)) {
             qCWarning(dcRuleEngine()) << "Could not convert the state evaluator value" << stateValue << "to the stored type" << valueType << ". The value type will be guessed by QVariant.";

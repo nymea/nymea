@@ -1081,7 +1081,7 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
         }
 
         // check if the param type of the event and the action match
-        QVariant::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamTypeId());
+        QMetaType::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamTypeId());
         QVariant v(eventParamType);
         if (eventParamType != paramType.type() && !v.canConvert(static_cast<int>(paramType.type()))) {
             qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given event param " << ruleActionParam.eventParamTypeId().toString() << "have not the same type:";
@@ -1097,7 +1097,7 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
         }
         ThingClass stateThingClass = m_thingManager->findThingClass(d->thingClassId());
         StateType stateType = stateThingClass.stateTypes().findById(ruleActionParam.stateTypeId());
-        QVariant::Type actionParamType = getActionParamType(actionType.id(), ruleActionParam.paramTypeId());
+        QMetaType::Type actionParamType = getActionParamType(actionType.id(), ruleActionParam.paramTypeId());
         QVariant v(stateType.type());
         if (actionParamType != stateType.type() && !v.canConvert(static_cast<int>(actionParamType))) {
             qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given state based param " << ruleActionParam.stateTypeId().toString() << "have not the same type:";
@@ -1121,7 +1121,7 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
     return RuleErrorNoError;
 }
 
-QVariant::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, const ParamTypeId &paramTypeId)
+QMetaType::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, const ParamTypeId &paramTypeId)
 {
     foreach (const ThingClass &thingClass, m_thingManager->supportedThings()) {
         foreach (const ActionType &actionType, thingClass.actionTypes()) {
@@ -1135,10 +1135,10 @@ QVariant::Type RuleEngine::getActionParamType(const ActionTypeId &actionTypeId, 
         }
     }
 
-    return QVariant::Invalid;
+    return QMetaType::UnknownType;
 }
 
-QVariant::Type RuleEngine::getEventParamType(const EventTypeId &eventTypeId, const ParamTypeId &paramTypeId)
+QMetaType::Type RuleEngine::getEventParamType(const EventTypeId &eventTypeId, const ParamTypeId &paramTypeId)
 {
     foreach (const ThingClass &thingClass, m_thingManager->supportedThings()) {
         foreach (const EventType &eventType, thingClass.eventTypes()) {
@@ -1157,7 +1157,7 @@ QVariant::Type RuleEngine::getEventParamType(const EventTypeId &eventTypeId, con
         }
     }
 
-    return QVariant::Invalid;
+    return QMetaType::UnknownType;
 }
 
 void RuleEngine::appendRule(const Rule &rule)
@@ -1349,9 +1349,9 @@ QList<RuleAction> RuleEngine::loadRuleActions(NymeaSettings *settings)
                 StateTypeId stateTypeId = StateTypeId(settings->value("stateTypeId", StateTypeId()).toString());
                 QVariant value = settings->value("value");
                 if (settings->contains("valueType")) {
-                    QVariant::Type valueType = static_cast<QVariant::Type>(settings->value("valueType").toInt());
+                    QMetaType::Type valueType = static_cast<QMetaType::Type>(settings->value("valueType").toInt());
                     // Note: only warn, and continue with the QVariant guessed type
-                    if (valueType == QVariant::Invalid) {
+                    if (valueType == QMetaType::UnknownType) {
                         qCWarning(dcRuleEngine()) << "Could not load the value type of the rule action param " << strippedParamTypeIdString << ". The value type will be guessed by QVariant.";
                     } else if (!value.canConvert(static_cast<int>(valueType))) {
                         qCWarning(dcRuleEngine()) << "Error loading rule action. Could not convert the rule action param value" << value << "to the stored type" << valueType;
@@ -1762,9 +1762,9 @@ void RuleEngine::init()
 
                         QVariant value = settings.value("value");
                         if (settings.contains("valueType")) {
-                            QVariant::Type valueType = static_cast<QVariant::Type>(settings.value("valueType").toInt());
+                            QMetaType::Type valueType = static_cast<QMetaType::Type>(settings.value("valueType").toInt());
                             // Note: only warn, and continue with the QVariant guessed type
-                            if (valueType == QVariant::Invalid) {
+                            if (valueType == QMetaType::UnknownType) {
                                 qCWarning(dcRuleEngine()) << name << idString << "Could not load the value type of the param descriptor" << strippedGroupName << ". The value type will be guessed by QVariant.";
                             } else if (!value.canConvert(static_cast<int>(valueType))) {
                                 qCWarning(dcRuleEngine()) << "Error loading rule" << name << idString << ". Could not convert the param descriptor value" << value << "to the stored type" << valueType;

@@ -42,7 +42,7 @@ class LIBNYMEA_EXPORT StateType
     Q_PROPERTY(QUuid id READ id)
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QString displayName READ displayName WRITE setDisplayName)
-    Q_PROPERTY(QVariant::Type type READ type WRITE setType)
+    Q_PROPERTY(QMetaType::Type type READ type WRITE setType)
     Q_PROPERTY(int index READ index WRITE setIndex)
     Q_PROPERTY(QVariant defaultValue READ defaultValue WRITE setDefaultValue)
     Q_PROPERTY(Types::Unit unit READ unit WRITE setUnit USER true)
@@ -67,8 +67,8 @@ public:
     int index() const;
     void setIndex(const int &index);
 
-    QVariant::Type type() const;
-    void setType(const QVariant::Type &type);
+    QMetaType::Type type() const;
+    void setType(const QMetaType::Type &type);
 
     QVariant defaultValue() const;
     void setDefaultValue(const QVariant &defaultValue);
@@ -110,7 +110,7 @@ private:
     QString m_name;
     QString m_displayName;
     int m_index = 0;
-    QVariant::Type m_type = QVariant::Invalid;
+    QMetaType::Type m_type = QMetaType::UnknownType;
     QVariant m_defaultValue;
     QVariant m_minValue;
     QVariant m_maxValue;

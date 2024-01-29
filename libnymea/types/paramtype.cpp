@@ -48,7 +48,7 @@
 #include "paramtype.h"
 
 /*! Constructs a ParamType object with the given \a id, \a name, \a type and \a defaultValue. */
-ParamType::ParamType(const ParamTypeId &id, const QString &name, const QVariant::Type type, const QVariant &defaultValue):
+ParamType::ParamType(const ParamTypeId &id, const QString &name, const QMetaType::Type type, const QVariant &defaultValue):
     m_id(id),
     m_name(name),
     m_index(0),
@@ -104,13 +104,13 @@ void ParamType::setIndex(const int &index)
 }
 
 /*! Returns the type of this ParamType. */
-QVariant::Type ParamType::type() const
+QMetaType::Type ParamType::type() const
 {
     return m_type;
 }
 
 /*! Sets the type of this ParamType to the given \a type. */
-void ParamType::setType(QVariant::Type type)
+void ParamType::setType(QMetaType::Type type)
 {
     m_type = type;
 }
@@ -215,7 +215,7 @@ void ParamType::setReadOnly(const bool &readOnly)
 /*! Returns true if this ParamType is valid. A ParamType is valid, if the id, the name and the data type is set. */
 bool ParamType::isValid() const
 {
-    return !m_id.isNull() && !m_name.isEmpty() && m_type != QVariant::Invalid;
+    return !m_id.isNull() && !m_name.isEmpty() && m_type != QMetaType::UnknownType;
 }
 
 /*! Returns a list of all valid JSON properties a ParamType JSON definition can have. */

@@ -1,3 +1,19 @@
+nymea (1.9.1) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Enable logging for signal strength by default
+  * Add more debug prints to script console when ThingState fails
+  * Update optional prgress state to update interface
+  * Fix mantic build
+
+  [ Simon Stürz ]
+  * Update mac address database
+  * Update copyright to 2024
+  * Allow to build nymead using custom version independent from dpkg
+  * Update install directory for tests
+
+ -- jenkins <developer@nymea.io>  Mon, 29 Jan 2024 12:22:29 +0100
+
 nymea (1.9.0) jammy; urgency=medium
 
   [ Michael Zanetti ]

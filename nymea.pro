@@ -1,7 +1,13 @@
 include(nymea.pri)
 
 # Parse and export NYMEA_VERSION_STRING
-NYMEA_VERSION_STRING=$$system('dpkg-parsechangelog | sed -n -e "s/^Version: //p"')
+isEmpty(NYMEA_VERSION) {
+    NYMEA_VERSION_STRING='development'
+    message("The variable NYMEA_VERSION is unset. Using \"$${NYMEA_VERSION_STRING}\" as default version.")
+} else {
+    # qmake NYMEA_VERSION=1.x.x-custom
+    NYMEA_VERSION_STRING="$${NYMEA_VERSION}"
+}
 
 # define protocol versions
 JSON_PROTOCOL_VERSION_MAJOR=8
@@ -13,7 +19,6 @@ LIBNYMEA_API_VERSION_PATCH=0
 LIBNYMEA_API_VERSION="$${LIBNYMEA_API_VERSION_MAJOR}.$${LIBNYMEA_API_VERSION_MINOR}.$${LIBNYMEA_API_VERSION_PATCH}"
 
 QMAKE_SUBSTITUTES += version.h.in
-
 
 TEMPLATE=subdirs
 

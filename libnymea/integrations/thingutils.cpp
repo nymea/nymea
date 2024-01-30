@@ -129,12 +129,12 @@ Thing::ThingError ThingUtils::verifyParam(const ParamType &paramType, const Para
             return Thing::ThingErrorInvalidParameter;
         }
     } else {
-        if (paramType.maxValue().isValid() && param.value() > paramType.maxValue()) {
+        if (paramType.maxValue().isValid() && ThingUtils::variantGreaterThan(param.value(), paramType.maxValue())) {
             qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Max:" << paramType.maxValue();
             return Thing::ThingErrorInvalidParameter;
         }
 
-        if (paramType.minValue().isValid() && param.value() < paramType.minValue()) {
+        if (paramType.minValue().isValid() && ThingUtils::variantLessThan(param.value(), paramType.minValue())) {
             qCWarning(dcThing) << "Value out of range for param" << param.paramTypeId().toString() << " Got:" << param.value() << " Min:" << paramType.minValue();
             return Thing::ThingErrorInvalidParameter;
         }
@@ -366,4 +366,24 @@ QStringList ThingUtils::generateInterfaceParentList(const QString &interface)
         }
     }
     return ret;
+}
+
+bool ThingUtils::variantLessThan(const QVariant &leftHandSide, const QVariant &rightHandSide)
+{
+    // Note: https://www.mail-archive.com/development@qt-project.org/msg39450.html
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    return (QVariant::compare(leftHandSide, rightHandSide) == QPartialOrdering::Less);
+#else
+    return leftHandSide < rightHandSide;
+#endif
+}
+
+bool ThingUtils::variantGreaterThan(const QVariant &leftHandSide, const QVariant &rightHandSide)
+{
+    // Note: https://www.mail-archive.com/development@qt-project.org/msg39450.html
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    return (QVariant::compare(leftHandSide, rightHandSide) == QPartialOrdering::Greater);
+#else
+    return leftHandSide > rightHandSide;
+#endif
 }

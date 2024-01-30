@@ -34,6 +34,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlResult>
+#include <QRegularExpression>
 #include <QDataStream>
 
 #include "hardware/zwave/zwavenode.h"

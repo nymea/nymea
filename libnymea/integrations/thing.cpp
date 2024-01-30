@@ -134,6 +134,7 @@
 #include "types/event.h"
 #include "loggingcategories.h"
 #include "statevaluefilters/statevaluefilteradaptive.h"
+#include "thingutils.h"
 
 #include <QJsonDocument>
 #include <QDebug>
@@ -385,11 +386,11 @@ void Thing::setStateValue(const StateTypeId &stateTypeId, const QVariant &value)
                 return;
             }
             State state = m_states.at(i);
-            if (state.minValue().isValid() && value < state.minValue()) {
+            if (state.minValue().isValid() && ThingUtils::variantLessThan(value, state.minValue())) {
                 qCWarning(dcThing()).nospace() << this << ": Invalid value " << value << " for state " << stateType.name() << ". Out of range: " << state.minValue() << " - " << state.maxValue() << " (Correcting to closest value within range)";
                 newValue = state.minValue();
             }
-            if (state.maxValue().isValid() && value > state.maxValue()) {
+            if (state.maxValue().isValid() && ThingUtils::variantGreaterThan(value, state.maxValue())) {
                 qCWarning(dcThing()).nospace() << this << ": Invalid value " << value << " for state " << stateType.name() << ". Out of range: " << state.minValue() << " - " << state.maxValue() << " (Correcting to closest value within range)";
                 newValue = state.maxValue();
             }
@@ -452,11 +453,11 @@ void Thing::setStateMinValue(const StateTypeId &stateTypeId, const QVariant &min
             m_states[i].setMinValue(newMin);
 
             // Sanity check for max >= min
-            if (m_states.at(i).maxValue() < newMin) {
+            if (ThingUtils::variantLessThan(m_states.at(i).maxValue(), newMin)) {
                 qCWarning(dcThing()).nospace() << this << ": Adjusting state maximum value for " << stateType.name() << " from " << m_states.at(i).maxValue() << " to new minimum value of " << newMin;
                 m_states[i].setMaxValue(newMin);
             }
-            if (m_states.at(i).value() < newMin) {
+            if (ThingUtils::variantLessThan(m_states.at(i).value(), newMin)) {
                 qCInfo(dcThing()).nospace() << this << ": Adjusting state value for " << stateType.name() << " from " << m_states.at(i).value() << " to new minimum value of " << newMin;
                 m_states[i].setValue(newMin);
             }
@@ -496,12 +497,12 @@ void Thing::setStateMaxValue(const StateTypeId &stateTypeId, const QVariant &max
 
             if (newMax.isValid()) {
                 // Sanity check for min <= max
-                if (m_states.at(i).minValue() > newMax) {
+                if (ThingUtils::variantGreaterThan(m_states.at(i).minValue(), newMax)) {
                     qCWarning(dcThing()).nospace() << this << ": Adjusting minimum state value for " << stateType.name() << " from " << m_states.at(i).minValue() << " to new maximum value of " << newMax;
                     m_states[i].setMinValue(newMax);
                 }
 
-                if (m_states.at(i).value() > newMax) {
+                if (ThingUtils::variantGreaterThan(m_states.at(i).value(), newMax)) {
                     qCInfo(dcThing()).nospace() << this << ": Adjusting state value for " << stateType.name() << " from " << m_states.at(i).value() << " to new maximum value of " << newMax;
                     m_states[i].setValue(maxValue);
                 }
@@ -543,16 +544,16 @@ void Thing::setStateMinMaxValues(const StateTypeId &stateTypeId, const QVariant 
 
             if (newMax.isValid() || newMax.isValid()) {
                 // Sanity check for min <= max
-                if (newMin > newMax) {
+                if (ThingUtils::variantGreaterThan(newMin, newMax)) {
                     qCWarning(dcThing()).nospace() << this << ": Adjusting maximum state value for " << stateType.name() << " from " << m_states.at(i).maxValue() << " to new minimum value of " << newMax;
                     m_states[i].setMaxValue(newMin);
                 }
 
-                if (m_states.at(i).value() < m_states.at(i).minValue()) {
+                if (ThingUtils::variantLessThan(m_states.at(i).value(), m_states.at(i).minValue())) {
                     qCInfo(dcThing()).nospace() << this << ": Adjusting state value for " << stateType.name() << " from " << m_states.at(i).value() << " to new minimum value of " << m_states.at(i).minValue();
                     m_states[i].setValue(m_states.at(i).minValue());
                 }
-                if (m_states.at(i).value() > m_states.at(i).maxValue()) {
+                if (ThingUtils::variantGreaterThan(m_states.at(i).value(), m_states.at(i).maxValue())) {
                     qCInfo(dcThing()).nospace() << this << ": Adjusting state value for " << stateType.name() << " from " << m_states.at(i).value() << " to new maximum value of " << m_states.at(i).maxValue();
                     m_states[i].setValue(m_states.at(i).maxValue());
                 }

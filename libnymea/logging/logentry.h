@@ -2,8 +2,8 @@
 #define LOGENTRY_H
 
 #include <QDateTime>
-#include <QObject>
 #include <QVariant>
+#include <QMetaObject>
 
 class LogEntry
 {

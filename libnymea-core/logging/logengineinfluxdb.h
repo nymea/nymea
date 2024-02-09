@@ -40,8 +40,10 @@
 #include <QNetworkReply>
 #include <QNetworkAccessManager>
 
-class QueryJob: public QObject {
+class QueryJob: public QObject
+{
     Q_OBJECT
+public:
     explicit QueryJob(const QNetworkRequest &request, bool post, bool isInit, QObject *parent = nullptr);
 
 signals:

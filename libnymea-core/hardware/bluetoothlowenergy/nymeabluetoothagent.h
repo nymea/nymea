@@ -6,10 +6,10 @@
 #include <QDBusMessage>
 #include <QBluetoothAddress>
 
+#include "nymeabluetoothagent.h"
+
 namespace nymeaserver
 {
-
-class NymeaBluetoothAgent;
 
 class NymeaBluetoothAgentAdapter: public QObject
 {

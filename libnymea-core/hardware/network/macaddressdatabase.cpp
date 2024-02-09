@@ -185,7 +185,12 @@ QString MacAddressDatabase::lookupMacAddressVendorInternal(const QString &macAdd
         QString searchString = fullMacAddressString.left(length);
         QString queryString = QString("SELECT COUNT(oui) FROM oui WHERE oui LIKE \'%1%\';").arg(searchString);
         qCDebug(dcMacAddressDatabase()) << "Query:" << queryString;
-        QSqlQuery countQuery = m_db.exec(queryString);
+        QSqlQuery countQuery(queryString, m_db);
+        if (!countQuery.exec()) {
+            qCWarning(dcMacAddressDatabase()) << "Unable to execute SQL query" << queryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+            break;
+        }
+
         if (countQuery.lastError().isValid()) {
             qCWarning(dcMacAddressDatabase()) << "Query finished with error" << countQuery.lastError().text();
             break;
@@ -201,11 +206,16 @@ QString MacAddressDatabase::lookupMacAddressVendorInternal(const QString &macAdd
             // Query the name
             queryString = QString("SELECT companyName from companyNames WHERE rowid IS (SELECT companyNameIndex FROM oui WHERE oui=\'%1\');").arg(searchString);
             qCDebug(dcMacAddressDatabase()) << "Query:" << queryString;
-            countQuery = m_db.exec(queryString);
-            if (!countQuery.next())
+            QSqlQuery rowQuery(queryString, m_db);
+            if (!rowQuery.exec()) {
+                qCWarning(dcMacAddressDatabase()) << "Unable to execute SQL query" << queryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
+                break;
+            }
+
+            if (!rowQuery.next())
                 break;
 
-            manufacturer = countQuery.value(0).toString();
+            manufacturer = rowQuery.value(0).toString();
             break;
         }
 

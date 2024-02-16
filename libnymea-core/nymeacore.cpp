@@ -60,6 +60,10 @@
 #include <QDir>
 #include <QCoreApplication>
 
+#ifdef WITH_SYSTEMD
+#include <systemd/sd-daemon.h>
+#endif
+
 NYMEA_LOGGING_CATEGORY(dcCore, "Core")
 
 namespace nymeaserver {
@@ -162,11 +166,18 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
     connect(m_thingManager, &ThingManagerImplementation::loaded, this, &NymeaCore::thingManagerLoaded);
 
     m_logger->log({"started"}, {{"version", NYMEA_VERSION_STRING}});
+#ifdef WITH_SYSTEMD
+    sd_notify(0, "READY=1");
+#endif
 }
 
 /*! Destructor of the \l{NymeaCore}. */
 NymeaCore::~NymeaCore()
 {
+#ifdef WITH_SYSTEMD
+    sd_notify(0, "STOPPING=1");
+#endif
+
     qCDebug(dcCore()) << "Shutting down NymeaCore";
     m_logger->log({"stopped"}, {
                       {"version", NYMEA_VERSION_STRING},

@@ -184,17 +184,17 @@ void LogEngineInfluxDB::logEvent(Logger *logger, const QStringList &tags, const 
     foreach (const QString &name, values.keys()) {
         QVariant value = values.value(name);
         switch (value.type()) {
-        case QVariant::String:
-        case QVariant::ByteArray:
+        case QMetaType::QString:
+        case QMetaType::ByteArray:
             fieldsList.append(QString("%1=\"%2\"").arg(name).arg(QString(value.toByteArray().toPercentEncoding())));
             break;
-        case QVariant::Uuid:
+        case QMetaType::QUuid:
             fieldsList.append(QString("%1=\"%2\"").arg(name).arg(value.toString()));
             break;
-        case QVariant::Int:
-        case QVariant::UInt:
-        case QVariant::LongLong:
-        case QVariant::ULongLong:
+        case QMetaType::Int:
+        case QMetaType::UInt:
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
             fieldsList.append(QString("%1=%2i").arg(name).arg(value.toString()));
             break;
         default:
@@ -488,10 +488,10 @@ LogFetchJob *LogEngineInfluxDB::fetchLogEntries(const QStringList &sources, cons
                     for (int i = 1; i < columns.count(); i++) {
                         QString column = columns.at(i);
                         if (sampleRate != Types::SampleRateAny) {
-                            column.remove(QRegExp("^mean_"));
+                            column.remove(QRegularExpression("^mean_"));
                         }
                         QVariant value = values.at(i);
-                        if (value.type() == QVariant::String || value.type() == QVariant::ByteArray) {
+                        if (value.type() == QMetaType::QString || value.type() == QMetaType::ByteArray) {
                             valuesMap.insert(column, QByteArray::fromPercentEncoding(value.toByteArray()));
                         } else {
                             valuesMap.insert(column, values.at(i));

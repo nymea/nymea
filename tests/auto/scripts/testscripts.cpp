@@ -144,7 +144,7 @@ void TestScripts::testScriptEventById()
     QCOMPARE(spy.first().at(0).value<ThingId>(), m_mockThingId);
     QCOMPARE(EventTypeId(spy.first().at(1).toUuid()), mockEvent2EventTypeId);
     QVariantMap expectedParams;
-    expectedParams.insert(mockEvent2EventIntParamParamTypeId.toString().remove(QRegExp("[{}]")), 23);
+    expectedParams.insert(mockEvent2EventIntParamParamTypeId.toString().remove(QRegularExpression("[{}]")), 23);
     expectedParams.insert("intParam", 23);
     QVERIFY2(spy.first().at(2).toMap() == expectedParams, QString("Params not matching.\nExpected: %1\nGot: %2")
              .arg(QString(QJsonDocument::fromVariant(expectedParams).toJson(QJsonDocument::Indented)))
@@ -190,7 +190,7 @@ void TestScripts::testScriptEventByName()
     QCOMPARE(spy.first().at(0).value<ThingId>(), m_mockThingId);
     QCOMPARE(spy.first().at(1).toString(), QString("event2"));
     QVariantMap expectedParams;
-    expectedParams.insert(mockEvent2EventIntParamParamTypeId.toString().remove(QRegExp("[{}]")), 10);
+    expectedParams.insert(mockEvent2EventIntParamParamTypeId.toString().remove(QRegularExpression("[{}]")), 10);
     expectedParams.insert("intParam", 10);
     QCOMPARE(spy.first().at(2).toMap(), expectedParams);
 }
@@ -371,7 +371,7 @@ void TestScripts::testScriptActionById()
     QCOMPARE(actionExecutedSpy.count(), 1);
     QCOMPARE(actionExecutedSpy.first().at(0).value<ThingId>(), m_mockThingId);
     QCOMPARE(ActionTypeId(actionExecutedSpy.first().at(1).toString()), mockPowerActionTypeId);
-    QCOMPARE(actionExecutedSpy.first().at(2).toMap().value(mockPowerActionTypeId.toString().remove(QRegExp("[{}]"))).toBool(), true);
+    QCOMPARE(actionExecutedSpy.first().at(2).toMap().value(mockPowerActionTypeId.toString().remove(QRegularExpression("[{}]"))).toBool(), true);
     QCOMPARE(actionExecutedSpy.first().at(3).value<Thing::ThingError>(), Thing::ThingErrorNoError);
     QCOMPARE(actionExecutedSpy.first().at(4).value<Action::TriggeredBy>(), Action::TriggeredByScript);
 }
@@ -475,7 +475,7 @@ void TestScripts::testInterfaceEvent()
     QCOMPARE(spy.first().at(0).value<ThingId>(), m_mockThingId);
     QCOMPARE(spy.first().at(1).toString(), QString("pressed"));
     QVariantMap expectedParams;
-    expectedParams.insert(mockPressedEventButtonNameParamTypeId.toString().remove(QRegExp("[{}]")), "xxx");
+    expectedParams.insert(mockPressedEventButtonNameParamTypeId.toString().remove(QRegularExpression("[{}]")), "xxx");
     expectedParams.insert("buttonName", "xxx");
     QCOMPARE(spy.first().at(2).toMap(), expectedParams);
 
@@ -702,7 +702,7 @@ void TestScripts::testScriptThingEvent()
     QCOMPARE(spy.first().at(0).value<ThingId>(), m_mockThingId);
     QCOMPARE(spy.first().at(1).toString(), QString("event2"));
     QVariantMap expectedParams;
-    expectedParams.insert(mockEvent2EventIntParamParamTypeId.toString().remove(QRegExp("[{}]")), 10);
+    expectedParams.insert(mockEvent2EventIntParamParamTypeId.toString().remove(QRegularExpression("[{}]")), 10);
     expectedParams.insert("intParam", 10);
     QCOMPARE(spy.first().at(2).toMap(), expectedParams);
 

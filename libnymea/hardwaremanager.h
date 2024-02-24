@@ -35,7 +35,6 @@
 
 class Radio433;
 class UpnpDiscovery;
-class PluginTimerManager;
 class NetworkAccessManager;
 class UpnpDeviceDescriptor;
 class PlatformZeroConfController;
@@ -47,6 +46,9 @@ class ZWaveHardwareResource;
 class HardwareResource;
 class ModbusRtuHardwareResource;
 class NetworkDeviceDiscovery;
+
+// Note: https://www.qt.io/blog/whats-new-in-qmetatype-qvariant
+#include "plugintimer.h"
 
 class HardwareManager : public QObject
 {

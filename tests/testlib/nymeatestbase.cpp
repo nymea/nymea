@@ -46,9 +46,9 @@ NymeaTestBase::NymeaTestBase(QObject *parent) :
     m_commandId(0)
 {
     qRegisterMetaType<QNetworkReply*>();
-    qsrand(QDateTime::currentMSecsSinceEpoch());
-    m_mockThing1Port = 1337 + (qrand() % 10000);
-    m_mockThing2Port = 7331 + (qrand() % 10000);
+    std::srand(QDateTime::currentMSecsSinceEpoch());
+    m_mockThing1Port = 1337 + (std::rand() % 10000);
+    m_mockThing2Port = 7331 + (std::rand() % 10000);
 
     // Important for settings
     QCoreApplication::instance()->setOrganizationName("nymea-test");

@@ -558,47 +558,50 @@ bool UserManager::initDB()
     int currentVersion = -1;
     int newVersion = 1;
     if (m_db.tables().contains("metadata")) {
-        QSqlQuery query = m_db.exec("SELECT data FROM metadata WHERE `key` = 'version';");
-        if (query.next()) {
+        QSqlQuery query = QSqlQuery("SELECT data FROM metadata WHERE `key` = 'version';", m_db);
+        if (!query.exec()) {
+            qCWarning(dcUserManager()) << "Unable to execute SQL query" << query.executedQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        } else if (query.next()) {
             currentVersion = query.value("data").toInt();
         }
     }
 
     if (!m_db.tables().contains("users")) {
         qCDebug(dcUserManager()) << "Empty user database. Setting up metadata...";
-        m_db.exec("CREATE TABLE users (username VARCHAR(40) UNIQUE PRIMARY KEY, email VARCHAR(40), displayName VARCHAR(40), password VARCHAR(100), salt VARCHAR(100), scopes TEXT);");
-        if (m_db.lastError().isValid()) {
+        QSqlQuery query = QSqlQuery("CREATE TABLE users (username VARCHAR(40) UNIQUE PRIMARY KEY, email VARCHAR(40), displayName VARCHAR(40), password VARCHAR(100), salt VARCHAR(100), scopes TEXT);", m_db);
+        if (!query.exec() || m_db.lastError().isValid()) {
             dumpDBError("Error initializing user database (table users).");
             m_db.close();
             return false;
         }
     } else {
         if (currentVersion < 1) {
-            m_db.exec("ALTER TABLE users ADD COLUMN scopes TEXT;");
-            if (m_db.lastError().isValid()) {
+            QSqlQuery query = QSqlQuery("ALTER TABLE users ADD COLUMN scopes TEXT;", m_db);
+            if (!query.exec() || m_db.lastError().isValid()) {
                 dumpDBError("Error migrating user database (table users).");
                 m_db.close();
                 return false;
             }
+
             // Migrated existing users from before multiuser support are admins by default
-            QSqlQuery query(m_db);
+            query = QSqlQuery(m_db);
             query.prepare("UPDATE users SET scopes = ?;");
             query.addBindValue(Types::scopesToStringList(Types::PermissionScopeAdmin).join(','));
-            query.exec();
 
-            if (query.lastError().isValid()) {
+            if (!query.exec() || query.lastError().isValid()) {
                 dumpDBError("Error migrating user database (updating existing users).");
                 m_db.close();
                 return false;
             }
 
-            m_db.exec("ALTER TABLE users ADD COLUMN email VARCHAR(40);");
-            if (m_db.lastError().isValid()) {
+            query = QSqlQuery("ALTER TABLE users ADD COLUMN email VARCHAR(40);", m_db);
+            if (!query.exec() || m_db.lastError().isValid()) {
                 dumpDBError("Error migrating user database (table users).");
                 m_db.close();
                 return false;
             }
-            m_db.exec("ALTER TABLE users ADD COLUMN displayName VARCHAR(40);");
+
+            query = QSqlQuery("ALTER TABLE users ADD COLUMN displayName VARCHAR(40);", m_db);
             if (m_db.lastError().isValid()) {
                 dumpDBError("Error migrating user database (table users).");
                 m_db.close();
@@ -606,8 +609,8 @@ bool UserManager::initDB()
             }
 
             // Up until schema 1, username was an email. Copy it to initialize the email field.
-            m_db.exec("UPDATE users SET email = username;");
-            if (m_db.lastError().isValid()) {
+            query = QSqlQuery("UPDATE users SET email = username;", m_db);
+            if (!query.exec() || m_db.lastError().isValid()) {
                 dumpDBError("Error migrating user database (table users).");
                 m_db.close();
                 return false;
@@ -618,8 +621,8 @@ bool UserManager::initDB()
 
     if (!m_db.tables().contains("tokens")) {
         qCDebug(dcUserManager()) << "Empty user database. Setting up metadata...";
-        m_db.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40));");
-        if (m_db.lastError().isValid()) {
+        QSqlQuery query = QSqlQuery("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40));", m_db);
+        if (!query.exec() || m_db.lastError().isValid()) {
             dumpDBError("Error initializing user database (table tokens).");
             m_db.close();
             return false;
@@ -628,8 +631,8 @@ bool UserManager::initDB()
 
     if (m_db.tables().contains("metadata")) {
         if (currentVersion < newVersion) {
-            m_db.exec(QString("UPDATE metadata SET data = %1 WHERE `key` = 'version')").arg(newVersion));
-            if (m_db.lastError().isValid()) {
+            QSqlQuery query = QSqlQuery(QString("UPDATE metadata SET data = %1 WHERE `key` = 'version')").arg(newVersion), m_db);
+            if (!query.exec() || m_db.lastError().isValid()) {
                 dumpDBError("Error updating up user database schema version!");
                 m_db.close();
                 return false;
@@ -637,14 +640,14 @@ bool UserManager::initDB()
             qCInfo(dcUserManager()) << "Successfully migrated user database.";
         }
     } else {
-        m_db.exec("CREATE TABLE metadata (`key` VARCHAR(10), data VARCHAR(40));");
-        if (m_db.lastError().isValid()) {
+        QSqlQuery query = QSqlQuery("CREATE TABLE metadata (`key` VARCHAR(10), data VARCHAR(40));", m_db);
+        if (!query.exec() || m_db.lastError().isValid()) {
             dumpDBError("Error setting up user database (table metadata)!");
             m_db.close();
             return false;
         }
-        m_db.exec(QString("INSERT INTO metadata (`key`, `data`) VALUES ('version', %1);").arg(newVersion));
-        if (m_db.lastError().isValid()) {
+        query = QSqlQuery(QString("INSERT INTO metadata (`key`, `data`) VALUES ('version', %1);").arg(newVersion), m_db);
+        if (!query.exec() || m_db.lastError().isValid()) {
             dumpDBError("Error setting up user database (setting version metadata)!");
             m_db.close();
             return false;
@@ -704,7 +707,7 @@ void UserManager::rotate(const QString &dbName)
 bool UserManager::validateUsername(const QString &username) const
 {
     QRegularExpression validator("[a-zA-Z0-9_\\.+-@]{3,}");
-    return validator.exactMatch(username);
+    return validator.match(username).hasMatch();
 }
 
 bool UserManager::validatePassword(const QString &password) const
@@ -727,7 +730,7 @@ bool UserManager::validatePassword(const QString &password) const
 bool UserManager::validateToken(const QByteArray &token) const
 {
     QRegularExpression validator(QRegularExpression("(^[a-zA-Z0-9_\\.+-/=]+$)"));
-    return validator.exactMatch(token);
+    return validator.match(token).hasMatch();
 }
 
 void UserManager::dumpDBError(const QString &message)
@@ -761,15 +764,15 @@ void UserManager::onPushButtonPressed()
     }
 
     QByteArray token = QCryptographicHash::hash(QUuid::createUuid().toByteArray(), QCryptographicHash::Sha256).toBase64();
-    QString storeTokenQuery = QString("INSERT INTO tokens(id, username, token, creationdate, devicename) VALUES(\"%1\", \"%2\", \"%3\", \"%4\", \"%5\");")
+    QString storeTokenQueryString = QString("INSERT INTO tokens(id, username, token, creationdate, devicename) VALUES(\"%1\", \"%2\", \"%3\", \"%4\", \"%5\");")
             .arg(QUuid::createUuid().toString())
             .arg("")
             .arg(QString::fromUtf8(token))
             .arg(NymeaCore::instance()->timeManager()->currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
             .arg(m_pushButtonTransaction.second);
 
-    m_db.exec(storeTokenQuery);
-    if (m_db.lastError().type() != QSqlError::NoError) {
+    QSqlQuery storeTokenQuery = QSqlQuery(storeTokenQueryString, m_db);
+    if (!storeTokenQuery.exec() || m_db.lastError().type() != QSqlError::NoError) {
         qCWarning(dcUserManager()) << "Error storing token in DB:" << m_db.lastError().databaseText() << m_db.lastError().driverText();
         qCWarning(dcUserManager()) << "PushButton Auth failed.";
         emit pushButtonAuthFinished(m_pushButtonTransaction.first, false, QByteArray());

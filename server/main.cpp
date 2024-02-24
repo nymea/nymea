@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
         bool enable = true;
         bool isWarning = debugArea.endsWith("Warnings");
         bool isInfo = debugArea.endsWith("Info");
-        if (QRegularExpression("^No[A-Z]").exactMatch(debugArea)) {
+        if (QRegularExpression("^No[A-Z]").match(debugArea).hasMatch()) {
             debugArea.remove(QRegularExpression("^No"));
             enable = false;
         }

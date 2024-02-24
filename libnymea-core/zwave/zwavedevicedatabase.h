@@ -35,8 +35,7 @@
 
 #include "hardware/zwave/zwavenode.h"
 
-namespace nymeaserver
-{
+namespace nymeaserver {
 
 class ZWaveManager;
 

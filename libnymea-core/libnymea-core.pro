@@ -63,6 +63,7 @@ HEADERS += nymeacore.h \
     hardware/network/macaddressdatabasereplyimpl.h \
     hardware/serialport/serialportmonitor.h \
     hardware/zwave/zwavehardwareresourceimplementation.h \
+    jsonrpc/debughandler.h \
     logging/logengineinfluxdb.h \
     scriptengine/scriptthing.h \
     scriptengine/scriptthings.h \
@@ -172,6 +173,7 @@ SOURCES += nymeacore.cpp \
     hardware/network/macaddressdatabasereplyimpl.cpp \
     hardware/serialport/serialportmonitor.cpp \
     hardware/zwave/zwavehardwareresourceimplementation.cpp \
+    jsonrpc/debughandler.cpp \
     logging/logengineinfluxdb.cpp \
     scriptengine/scriptthing.cpp \
     scriptengine/scriptthings.cpp \

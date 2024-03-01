@@ -1777,21 +1777,21 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
     };
     foreach (const QString &loggingCategory, loggingCategories) {
         writer.writeStartElement("div");
-          writer.writeAttribute("class", "debug-category");
-          writer.writeTextElement("p", loggingCategory);
-          writer.writeStartElement("label");
-            writer.writeStartElement("select");
-              writer.writeAttribute("class", "debug-select");
-              writer.writeAttribute("onchange", QString("toggleLoggingCategory('%1', this)").arg(loggingCategory));
-              writer.writeAttribute("id", QString("debug-category-%1").arg(loggingCategory));
-              foreach (const QString &option, QStringList({"debug", "info", "warning", "critical"})) {
-                  writer.writeStartElement("option");
-                    writer.writeAttribute("value", option);
-                    writer.writeCharacters(categoryMap.value(option));
-                  writer.writeEndElement();
-              }
-            writer.writeEndElement(); // select
-          writer.writeEndElement(); // label
+        writer.writeAttribute("class", "debug-category");
+        writer.writeTextElement("p", loggingCategory);
+        writer.writeStartElement("label");
+        writer.writeStartElement("select");
+        writer.writeAttribute("class", "debug-select");
+        writer.writeAttribute("onchange", QString("toggleLoggingCategory('%1', this)").arg(loggingCategory));
+        writer.writeAttribute("id", QString("debug-category-%1").arg(loggingCategory));
+        foreach (const QString &option, QStringList({"debug", "info", "warning", "critical"})) {
+            writer.writeStartElement("option");
+            writer.writeAttribute("value", option);
+            writer.writeCharacters(categoryMap.value(option));
+            writer.writeEndElement();
+        }
+        writer.writeEndElement(); // select
+        writer.writeEndElement(); // label
         writer.writeEndElement(); // div debug-category
     }
 
@@ -1813,15 +1813,15 @@ QByteArray DebugServerHandler::createDebugXmlDocument()
         writer.writeTextElement("p", loggingCategory);
         writer.writeStartElement("label");
         writer.writeStartElement("select");
-          writer.writeAttribute("class", "debug-select");
-          writer.writeAttribute("onchange", QString("toggleLoggingCategory('%1', this)").arg(loggingCategory));
-          writer.writeAttribute("id", QString("debug-category-%1").arg(loggingCategory));
-          foreach (const QString &option, QStringList({"debug", "info", "warning", "critical"})) {
-              writer.writeStartElement("option");
-                writer.writeAttribute("value", option);
-                writer.writeCharacters(categoryMap.value(option));
-              writer.writeEndElement();
-          }
+        writer.writeAttribute("class", "debug-select");
+        writer.writeAttribute("onchange", QString("toggleLoggingCategory('%1', this)").arg(loggingCategory));
+        writer.writeAttribute("id", QString("debug-category-%1").arg(loggingCategory));
+        foreach (const QString &option, QStringList({"debug", "info", "warning", "critical"})) {
+            writer.writeStartElement("option");
+            writer.writeAttribute("value", option);
+            writer.writeCharacters(categoryMap.value(option));
+            writer.writeEndElement();
+        }
         writer.writeEndElement(); // select
         writer.writeEndElement(); // label
         writer.writeEndElement(); // div debug-category

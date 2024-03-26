@@ -24,9 +24,6 @@ LIBS += -L$$top_builddir/libnymea/ -lnymea \
     LIBS += -Wl,-rpath ../libnymea-core/
 }
 
-CONFIG += link_pkgconfig
-PKGCONFIG += nymea-zigbee
-
 # Server files
 include(qtservice/qtservice.pri)
 

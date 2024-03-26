@@ -174,7 +174,9 @@ NymeaCore::~NymeaCore()
                   });
 
     // Disconnect all signals/slots, we're going down now
+    m_timeManager->stopTimer();
     m_timeManager->disconnect(this);
+
     m_thingManager->disconnect(this);
     m_ruleEngine->disconnect(this);
 

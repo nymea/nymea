@@ -64,7 +64,7 @@ QDateTime TimeManager::currentDateTime() const
 
 /*! Stop the time.
  *
- * \note This method should only be used in tests.
+ * \note This method should only be used in tests and when shutting down the system.
 */
 void TimeManager::stopTimer()
 {

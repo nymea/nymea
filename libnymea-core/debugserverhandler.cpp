@@ -422,25 +422,25 @@ HttpReply *DebugServerHandler::processDebugRequest(const QString &requestPath, c
                     continue;
                 }
 
-                QString level = QVariant(requestQuery.queryItems().at(i).second).toString();
-                qCDebug(dcDebugServer()) << "Logging category" << category << level;
-                if (level == "debug") {
-                    settings.setValue(QString("%1.debug").arg(category), true);
-                    settings.setValue(QString("%1.info").arg(category), true);
-                    settings.setValue(QString("%1.warning").arg(category), true);
-                } else if (level == "info") {
-                    settings.setValue(QString("%1.debug").arg(category), false);
-                    settings.setValue(QString("%1.info").arg(category), true);
-                    settings.setValue(QString("%1.warning").arg(category), true);
-                } else if (level == "warning"){
-                    settings.setValue(QString("%1.debug").arg(category), false);
-                    settings.setValue(QString("%1.info").arg(category), false);
-                    settings.setValue(QString("%1.warning").arg(category), true);
-                } else {
-                    settings.setValue(QString("%1.debug").arg(category), false);
-                    settings.setValue(QString("%1.info").arg(category), false);
-                    settings.setValue(QString("%1.warning").arg(category), false);
-                }
+                    QString level = QVariant(requestQuery.queryItems().at(i).second).toString();
+                    qCDebug(dcDebugServer()) << "Logging category" << category << level;
+                    if (level == "debug") {
+                        settings.setValue(QString("%1.debug").arg(category), true);
+                        settings.setValue(QString("%1.info").arg(category), true);
+                        settings.setValue(QString("%1.warning").arg(category), true);
+                    } else if (level == "info") {
+                        settings.setValue(QString("%1.debug").arg(category), false);
+                        settings.setValue(QString("%1.info").arg(category), true);
+                        settings.setValue(QString("%1.warning").arg(category), true);
+                    } else if (level == "warning"){
+                        settings.setValue(QString("%1.debug").arg(category), false);
+                        settings.setValue(QString("%1.info").arg(category), false);
+                        settings.setValue(QString("%1.warning").arg(category), true);
+                    } else {
+                        settings.setValue(QString("%1.debug").arg(category), false);
+                        settings.setValue(QString("%1.info").arg(category), false);
+                        settings.setValue(QString("%1.warning").arg(category), false);
+                    }
             }
 
             // Update logging filter rules according to the nw settings

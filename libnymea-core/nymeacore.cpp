@@ -41,6 +41,7 @@
 #include "logging/logengineinfluxdb.h"
 #include "scriptengine/scriptengine.h"
 #include "jsonrpc/scriptshandler.h"
+#include "jsonrpc/debughandler.h"
 #include "version.h"
 
 #include "integrations/thingmanagerimplementation.h"
@@ -153,9 +154,11 @@ void NymeaCore::init(const QStringList &additionalInterfaces, bool disableLogEng
     qCDebug(dcCore) << "Creating Debug Server Handler";
     m_debugServerHandler = new DebugServerHandler(this);
 
+    qCDebug(dcCore) << "Register Debug Handler";
+    m_serverManager->jsonServer()->registerHandler(new DebugHandler(m_serverManager->jsonServer()));
+
     qCDebug(dcCore()) << "Loading experiences";
     m_experienceManager = new ExperienceManager(m_thingManager, m_serverManager->jsonServer(), this);
-
 
     connect(m_configuration, &NymeaConfiguration::serverNameChanged, m_serverManager, &ServerManager::setServerName);
 

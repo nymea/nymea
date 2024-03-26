@@ -1,3 +1,13 @@
+nymea (1.10.0) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * NetworkDeviceDiscovery: Make sure the monitor timer gets started.
+  * WIP: Add systemd notify support
+  * Stop nymea time manager before shutdown the daemon
+  * Remove unused signal
+
+ -- jenkins <developer@nymea.io>  Tue, 26 Mar 2024 09:49:08 +0100
+
 nymea (1.9.1) jammy; urgency=medium
 
   [ Michael Zanetti ]

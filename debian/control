@@ -17,7 +17,7 @@ Build-Depends: debhelper (>= 9.0.0),
                libqt5websockets5-dev,
                libqt5bluetooth5,
                libqt5sql5-sqlite,
-               libqt5dbus5,
+               libqt5dbus5 | libqt5dbus5t64,
                libssl-dev,
                rsync,
                qml-module-qtquick2,
@@ -127,9 +127,9 @@ Package: nymea-tests
 Section: devel
 Architecture: any
 Multi-Arch: same
-Depends: nymea (= ${binary:Version}),
-         ${shlibs:Depends},
+Depends: ${shlibs:Depends},
          ${misc:Depends},
+         nymea (= ${binary:Version}),
          libnymea-tests (= ${binary:Version}),
          influxdb,
 Description: nymea automated tests - tests
@@ -171,21 +171,14 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         libqt5network5,
-         libqt5gui5,
-         libqt5sql5,
-         libqt5xml5,
-         libqt5dbus5,
-         libqt5websockets5,
-         libqt5bluetooth5,
-         libqt5sql5-sqlite,
-         libcap2-bin,
          logrotate,
          bluez,
          tar,
          iputils-tracepath,
          iputils-ping,
          qml-module-qtquick2,
+         libqt5sql5-sqlite,
+         libcap2-bin,
          dnsutils,
 Description: nymea:core internal - library
  Internal library for nymea:core.
@@ -225,4 +218,4 @@ Recommends: nymea-qtcreator-wizards,
             crossbuilder,
 Suggests: libnymea-core-dev (= ${binary:Version})
 Description: The nymea SDK.
- Meta-Package for everything required to develop on nymea.
+ Meta-Package for everything required to develop nymea integration plugins.

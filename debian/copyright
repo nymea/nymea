@@ -1,7 +1,7 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: nymea
 Upstream-Contact: nymea GmbH <contact@nymea.io>
-Copyright: 2013-2020, nymea GmbH
+Copyright: 2013-2024, nymea GmbH
 Download: http://www.github.com/nymea/nymea
 Source: https://github.com/nymea/nymea.git
 

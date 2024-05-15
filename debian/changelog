@@ -1,3 +1,12 @@
+nymea (1.9.2) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Stop nymea time manager before shutdown the daemon
+  * Update mac address database
+  * Update dependency for Ubuntu noble
+
+ -- jenkins <developer@nymea.io>  Wed, 15 May 2024 08:18:12 +0200
+
 nymea (1.9.1) jammy; urgency=medium
 
   [ Michael Zanetti ]

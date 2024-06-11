@@ -45,10 +45,17 @@ override_dh_auto_build:
 override_dh_install: $(PREPROCESS_FILES:.in=)
 	# Make sure the docs directory exists, even if we didn't build them
 	mkdir -p $(CURDIR)/doc/html
-	dh_install --fail-missing
+	dh_install
+
+# Note that this is the default with compat level 12.
+override_dh_missing:
+	dh_missing --list-missing
 
 override_dh_auto_test:
 	dh_auto_test -- -k TESTARGS="-m 600 -p -o -p -,txt -p -o -p test-results.xml,xunitxml" TESTRUNNER="dbus-test-runner --bus-type=both --task"
+
+override_dh_installsystemd:
+	dh_installsystemd --restart-after-upgrade
 
 override_dh_auto_clean:
 	dh_auto_clean
@@ -56,4 +63,4 @@ override_dh_auto_clean:
 	rm -rf $(PREPROCESS_FILES:.in=)
 
 %:
-	dh $@ --buildsystem=qmake --parallel --with systemd
+	dh $@ --buildsystem=qmake --parallel

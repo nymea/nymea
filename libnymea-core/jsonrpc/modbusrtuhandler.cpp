@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2021, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -140,13 +140,13 @@ ModbusRtuHandler::ModbusRtuHandler(ModbusRtuManager *modbusRtuManager, QObject *
     registerMethod("ReconfigureModbusRtuMaster", description, params, returns);
 
     // Serial port monitor
-    connect(modbusRtuManager->serialPortMonitor(), &SerialPortMonitor::serialPortAdded, this, [=](const SerialPort &serialPort){
+    connect(modbusRtuManager, &ModbusRtuManager::serialPortAdded, this, [=](const SerialPort &serialPort){
         QVariantMap params;
         params.insert("serialPort", pack(serialPort));
         emit SerialPortAdded(params);
     });
 
-    connect(modbusRtuManager->serialPortMonitor(), &SerialPortMonitor::serialPortRemoved, this, [=](const SerialPort &serialPort){
+    connect(modbusRtuManager, &ModbusRtuManager::serialPortRemoved, this, [=](const SerialPort &serialPort){
         QVariantMap params;
         params.insert("serialPort", pack(serialPort));
         emit SerialPortRemoved(params);
@@ -183,7 +183,7 @@ JsonReply *ModbusRtuHandler::GetSerialPorts(const QVariantMap &params)
 
     QVariantMap returnMap;
     QVariantList portList;
-    foreach (const SerialPort &serialPort, m_modbusRtuManager->serialPortMonitor()->serialPorts()) {
+    foreach (const SerialPort &serialPort, m_modbusRtuManager->serialPorts()) {
         portList << pack(serialPort);
     }
     returnMap.insert("serialPorts", portList);

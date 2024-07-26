@@ -49,7 +49,7 @@ class SerialPort : public QSerialPortInfo {
     Q_GADGET
     Q_PROPERTY(QString systemLocation READ systemLocation)
     Q_PROPERTY(QString manufacturer READ manufacturer)
-    Q_PROPERTY(QString description READ description)
+    Q_PROPERTY(QString description READ customDescription) // Note: give the possibility to use a custom description
     Q_PROPERTY(QString serialNumber READ serialNumber)
 
 public:
@@ -84,6 +84,22 @@ public:
 
     SerialPort() : QSerialPortInfo() { };
     explicit SerialPort(const QSerialPortInfo &other) : QSerialPortInfo(other) { };
+
+    QString customDescription() const {
+        // Note: this creats the possibility to override the desciption of
+        // serial port for the JSON RPC API.
+        if (m_customDescription.isEmpty())
+            return description();
+
+        return m_customDescription;
+    }
+
+    void setCustomDescription(const QString &customDescription) {
+        m_customDescription = customDescription;
+    }
+
+private:
+    QString m_customDescription;
 
 };
 

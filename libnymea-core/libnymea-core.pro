@@ -89,6 +89,7 @@ HEADERS += nymeacore.h \
     ruleengine/stateevaluator.h \
     ruleengine/ruleaction.h \
     ruleengine/ruleactionparam.h \
+    scriptengine/nymeascript.h \
     scriptengine/script.h \
     scriptengine/scriptaction.h \
     scriptengine/scriptalarm.h \
@@ -191,6 +192,7 @@ SOURCES += nymeacore.cpp \
     ruleengine/stateevaluator.cpp \
     ruleengine/ruleaction.cpp \
     ruleengine/ruleactionparam.cpp \
+    scriptengine/nymeascript.cpp \
     scriptengine/script.cpp \
     scriptengine/scriptaction.cpp \
     scriptengine/scriptalarm.cpp \

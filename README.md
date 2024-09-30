@@ -16,14 +16,14 @@ nymea (/[n'aiːmea:]/ - is an open source IoT edge server. The plug-in based arc
 <img src="https://nymea.io/downloads/img/nymea-pi.svg" width=300 >
 </p>
 
-We have created an image for your Raspberry Pi (all models) that comes with an array of plugins for different smart devices!
+We have created an image for your Raspberry Pi that comes with an array of plugins for different smart devices!
 
 Use the [Raspberry Pi imager](https://www.raspberrypi.com/software/) and select nymea as operating system. You'll have the
 choice between a headless nymea:core setup or a kiosk image that contains nymea:core and nymea:app for Raspberry Pis with touch screen.
 
 Alternatively, the image can be downloaded and flashed manually from [here](https://downloads.nymea.io/images/raspberrypi/). We recommend
-the latest Raspberry Pi OS Bullseye [core](https://downloads.nymea.io/images/raspberrypi/nymea-core-image-raspios-bullseye-latest.zip) or
-[kiosk](https://downloads.nymea.io//images/raspberrypi/nymea-kiosk-image-raspios-bullseye-latest.zip) image.
+the latest Raspberry Pi OS Bookworm [core](https://downloads.nymea.io/images/raspberrypi/nymea-core-image-raspios-bookworm-latest.zip) or
+[kiosk](https://downloads.nymea.io//images/raspberrypi/nymea-kiosk-image-raspios-bookworm-latest.zip) image.
 
 ### Get nymea:app here:
 

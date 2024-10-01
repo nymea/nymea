@@ -20,7 +20,7 @@ License: BSD
 
 Files: server/*
 License: GPL-3
-Copyright: 2013-2020, nymea GmbH <contact@nymea.io>
+Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
 
 Files: server/qtservice/*
 License: BSD
@@ -28,24 +28,32 @@ Copyright: 2013, Digia Plc
 
 Files: tests/*
 License: GPL-3
-Copyright: 2013-2020, nymea GmbH <contact@nymea.io>
+Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
 
 Files: translations/*
 License: LGPL-3
-Copyright: 2013-2020, nymea GmbH <contact@nymea.io>
+Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
 
 Files: doc/*
 License: GPL-3
-Copyright: 2013-2020, nymea GmbH <contact@nymea.io>
+Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
 
 Files: debian/*
 License: GPL-3
-Copyright: 2013-2020, nymea GmbH <contact@nymea.io>
+Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
 
 Files: libnymea/*
 License: LGPL-3
-Copyright: 2013-2020, nymea GmbH <contact@nymea.io>
+Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
 
 Files: plugins/*
 License: GGPL-3
-Copyright: 2013-2020, nymea GmbH <contact@nymea.io>
+Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
+	
+Files: data/*
+License: LGPL-3
+Copyright: 2013-2024, nymea GmbH <contact@nymea.io>
+
+Files: tools/*
+License: GGPL-3
+Copyright: 2013-2024, nymea GmbH <contact@nymea.io>

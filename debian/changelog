@@ -1,3 +1,20 @@
+nymea (1.9.4) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Remove unused signal
+  * modbus RTU: add platform configuration
+
+  [ Tobi ]
+  * Log proper RPC method name for the initial setup
+
+  [ Simon Stürz ]
+  * Update mac address database
+  * Update debian copyright
+  * Update README
+  * Network device discovery reachable to early
+
+ -- jenkins <developer@nymea.io>  Tue, 01 Oct 2024 16:53:59 +0200
+
 nymea (1.9.3) jammy; urgency=medium
 
   [ Simon Stürz ]

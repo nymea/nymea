@@ -602,7 +602,7 @@ void NetworkDeviceDiscoveryImpl::evaluateMonitor(NetworkDeviceMonitorImpl *monit
         requiresRefresh = true;
     }
 
-    if (!requiresRefresh && currentDateTime <= monitor->lastSeen().addSecs(m_monitorInterval)) {
+    if (!requiresRefresh && monitor->networkDeviceInfo().isComplete() && currentDateTime <= monitor->lastSeen().addSecs(m_monitorInterval)) {
         // We have seen this device within the last minute, make sure the monitor is reachable
         monitor->setReachable(true);
         return;
@@ -655,13 +655,16 @@ void NetworkDeviceDiscoveryImpl::processArpTraffic(const QNetworkInterface &inte
     NetworkDeviceMonitorImpl *monitor = m_monitors.value(macAddress);
     if (monitor) {
         monitor->setLastSeen(now);
-        monitor->setReachable(true);
         if (monitor->networkDeviceInfo().address() != address) {
             NetworkDeviceInfo info = monitor->networkDeviceInfo();
             info.setAddress(address);
             monitor->setNetworkDeviceInfo(info);
             qCDebug(dcNetworkDeviceDiscovery()) << "NetworkDeviceMonitor" << monitor << "ip address changed";
             emit monitor->networkDeviceInfoChanged(monitor->networkDeviceInfo());
+        }
+
+        if (monitor->networkDeviceInfo().isComplete()) {
+            monitor->setReachable(true);
         }
     }
 

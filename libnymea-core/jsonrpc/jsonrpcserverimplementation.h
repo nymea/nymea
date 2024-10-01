@@ -68,7 +68,6 @@ public:
     Q_INVOKABLE JsonReply *KeepAlive(const QVariantMap &params);
 
 signals:
-    void CloudConnectedChanged(const QVariantMap &map);
     void PushButtonAuthFinished(const QUuid &clientId, const QVariantMap &params);
 
     // Server API

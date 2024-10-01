@@ -621,7 +621,7 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
         // if there is no user in the system yet, let's fail unless this is a special method for authentication itself
         if (NymeaCore::instance()->userManager()->initRequired()) {
             if (!authExemptMethodsNoUser.contains(methodString) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
-                sendUnauthorizedResponse(interface, clientId, commandId, "Initial setup required. Call Users.CreateUser first.");
+                sendUnauthorizedResponse(interface, clientId, commandId, "Initial setup required. Call JSONRPC.CreateUser first.");
                 qCWarning(dcJsonRpc()) << "Initial setup required but client does not call the setup. Dropping connection.";
                 interface->terminateClientConnection(clientId);
                 qCWarning(dcJsonRpc()) << "Staring connection lockdown timer";

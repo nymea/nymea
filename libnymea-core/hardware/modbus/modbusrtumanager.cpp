@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2021, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -34,6 +34,12 @@
 
 #include "modbusrtumasterimpl.h"
 #include "hardware/serialport/serialportmonitor.h"
+#include "qglobal.h"
+
+#include <QFile>
+#include <QFileInfo>
+#include <QJsonDocument>
+#include <QJsonParseError>
 
 NYMEA_LOGGING_CATEGORY(dcModbusRtu, "ModbusRtu")
 
@@ -43,40 +49,91 @@ ModbusRtuManager::ModbusRtuManager(SerialPortMonitor *serialPortMonitor, QObject
     QObject(parent),
     m_serialPortMonitor(serialPortMonitor)
 {
+    if (!supported())
+        return;
+
+    // Load the platform config
+    loadPlatformConfiguration();
+
     // Load uart configurations
     loadRtuMasters();
 
-    connect(m_serialPortMonitor, &SerialPortMonitor::serialPortAdded, this, [=](const QSerialPortInfo &serialPortInfo){
-        qCDebug(dcModbusRtu()) << "Serial port added. Verify modbus RTU masters...";
+    // Initialize the list of serial ports already available in the system...
+    foreach (const SerialPort &serialPort, m_serialPortMonitor->serialPorts()) {
+        onSerialPortAdded(serialPort);
+    }
 
-        // Check if we have to reconnect any modbus RTU masters
-        foreach (ModbusRtuMaster *modbusMaster, m_modbusRtuMasters.values()) {
-            ModbusRtuMasterImpl *modbusMasterImpl = qobject_cast<ModbusRtuMasterImpl *>(modbusMaster);
+    connect(m_serialPortMonitor, &SerialPortMonitor::serialPortAdded, this, &ModbusRtuManager::onSerialPortAdded);
+    connect(m_serialPortMonitor, &SerialPortMonitor::serialPortRemoved, this, &ModbusRtuManager::onSerialPortRemoved);
 
-            // Try only to reconnect if the added serial port matches a disconnected modbus RTU master
-            if (!modbusMasterImpl->connected() && modbusMasterImpl->serialPort() == serialPortInfo.systemLocation()) {
-                if (!modbusMasterImpl->connectDevice()) {
-                    qCDebug(dcModbusRtu()) << "Reconnect" << modbusMaster << "failed.";
-                } else {
-                    qCDebug(dcModbusRtu()) << "Reconnected" << modbusMaster << "successfully.";
-                }
-            }
-        }
-    });
-
-    // Try to connect the modbus rtu masters
+    // Try to connect the modbus RTU masters
     foreach (ModbusRtuMaster *modbusMaster, m_modbusRtuMasters.values()) {
         ModbusRtuMasterImpl *modbusMasterImpl = qobject_cast<ModbusRtuMasterImpl *>(modbusMaster);
         if (!modbusMasterImpl->connectDevice()) {
             qCWarning(dcModbusRtu()) << "Failed to connect modbus RTU master. Could not connect to" << modbusMaster;
         }
     }
-
 }
 
-SerialPortMonitor *ModbusRtuManager::serialPortMonitor() const
+SerialPorts ModbusRtuManager::serialPorts() const
 {
-    return m_serialPortMonitor;
+    return m_serialPorts.values();
+}
+
+bool ModbusRtuManager::serialPortAvailable(const QString &systemLocation) const
+{
+    return m_serialPorts.keys().contains(systemLocation);
+}
+
+void ModbusRtuManager::onSerialPortAdded(const SerialPort &serialPort)
+{
+    if (m_serialPorts.contains(serialPort.systemLocation()))
+        return;
+
+    // Depending on the platform configuration we have to filter out those serial ports which are not suitable for modbus RTU communication.
+    foreach (const ModbusRtuPlatformConfiguration &platformConfig, m_platformConfigurations) {
+        if (platformConfig.serialPort == serialPort.systemLocation()) {
+            if (platformConfig.usable) {
+                SerialPort internalPort = serialPort;
+                internalPort.setCustomDescription(platformConfig.description);
+                m_serialPorts.insert(internalPort.systemLocation(), internalPort);
+                emit serialPortAdded(internalPort);
+            } else {
+                qCDebug(dcModbusRtu()) << "Serial port" << serialPort.systemLocation() << "added but not usable for modbus RTU according to the platorm configuration.";
+                return;
+            }
+        }
+    }
+
+    if (!m_serialPorts.contains(serialPort.systemLocation())) {
+        m_serialPorts.insert(serialPort.systemLocation(), serialPort);
+        emit serialPortAdded(serialPort);
+    }
+
+    qCDebug(dcModbusRtu()) << "Serial port" << serialPort.systemLocation() << "added. Evaluate modbus RTU masters...";
+
+    // Check if we have to reconnect any modbus RTU masters
+    foreach (ModbusRtuMaster *modbusMaster, m_modbusRtuMasters.values()) {
+        ModbusRtuMasterImpl *modbusMasterImpl = qobject_cast<ModbusRtuMasterImpl *>(modbusMaster);
+
+        // Try only to reconnect if the added serial port matches a disconnected modbus RTU master
+        if (!modbusMasterImpl->connected() && modbusMasterImpl->serialPort() == serialPort.systemLocation()) {
+            if (!modbusMasterImpl->connectDevice()) {
+                qCDebug(dcModbusRtu()) << "Reconnect" << modbusMaster << "failed.";
+            } else {
+                qCDebug(dcModbusRtu()) << "Reconnected" << modbusMaster << "successfully.";
+            }
+        }
+    }
+}
+
+void ModbusRtuManager::onSerialPortRemoved(const SerialPort &serialPort)
+{
+    if (m_serialPorts.contains(serialPort.systemLocation())) {
+        qCDebug(dcModbusRtu()) << "Serial port removed" << serialPort.systemLocation();
+        m_serialPorts.remove(serialPort.systemLocation());
+        emit serialPortRemoved(serialPort);
+    }
 }
 
 bool ModbusRtuManager::supported() const
@@ -209,6 +266,58 @@ ModbusRtuManager::ModbusRtuError ModbusRtuManager::removeModbusRtuMaster(const Q
     emit modbusRtuMasterRemoved(modbusMaster);
 
     return ModbusRtuErrorNoError;
+}
+
+void ModbusRtuManager::loadPlatformConfiguration()
+{
+    QFileInfo platformConfigurationFileInfo(NymeaSettings::settingsPath() + QDir::separator() + "modbus-rtu-platform.conf");
+
+    if (platformConfigurationFileInfo.exists()) {
+        qCDebug(dcModbusRtu()) << "Loading modbus RTU platform configuration from" << platformConfigurationFileInfo.absoluteFilePath();
+        QFile platformConfigurationFile(platformConfigurationFileInfo.absoluteFilePath());
+        if (!platformConfigurationFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qCWarning(dcModbusRtu()) << "Failed to open modbus RTU platform configuration file"
+                                     << platformConfigurationFileInfo.absoluteFilePath() << ":"
+                                     << platformConfigurationFile.errorString();
+            return;
+        }
+
+        QByteArray data = platformConfigurationFile.readAll();
+        platformConfigurationFile.close();
+
+        QJsonParseError jsonError;
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &jsonError);
+        if (jsonError.error != QJsonParseError::NoError) {
+            qCWarning(dcModbusRtu()) << "Failed to parse JSON data from modbus RTU platform configuration file"
+                                     << platformConfigurationFileInfo.absoluteFilePath() << ":"
+                                     << jsonError.errorString();
+            return;
+        }
+
+        // Make sure we have a clean start
+        m_platformConfigurations.clear();
+
+        QVariantMap platformConfigMap = jsonDoc.toVariant().toMap();
+        foreach (const QVariant &configVariant, platformConfigMap.value("interfaces").toList()) {
+            QVariantMap configMap = configVariant.toMap();
+            ModbusRtuPlatformConfiguration config;
+            config.name = configMap.value("name").toString();
+            config.description = configMap.value("description").toString();
+            config.serialPort = configMap.value("serialPort").toString();
+            config.usable = configMap.value("usable").toBool();
+            m_platformConfigurations.append(config);
+        }
+
+        if (m_platformConfigurations.isEmpty()) {
+            qCDebug(dcModbusRtu()) << "No platform configurations available";
+        } else {
+            qCDebug(dcModbusRtu()) << "Loaded successfully" << m_platformConfigurations.count() << "platform configurations";
+            foreach(const ModbusRtuPlatformConfiguration &config, m_platformConfigurations) {
+                qCDebug(dcModbusRtu()).nospace() << "- Platform configuration: " << config.description << " (" << config.name << ") "
+                                                 << "Serial port: " << config.serialPort << " usable: " << config.usable;
+            }
+        }
+    }
 }
 
 void ModbusRtuManager::loadRtuMasters()

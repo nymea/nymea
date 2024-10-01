@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2021, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -37,10 +37,10 @@
 #include <QTimer>
 
 #include "hardware/modbus/modbusrtumaster.h"
+#include "hardware/serialport/serialportmonitor.h"
 
 namespace nymeaserver {
 
-class SerialPortMonitor;
 class ModbusRtuMasterImpl;
 
 class ModbusRtuManager : public QObject
@@ -62,8 +62,6 @@ public:
     explicit ModbusRtuManager(SerialPortMonitor *serialPortMonitor, QObject *parent = nullptr);
     ~ModbusRtuManager() = default;
 
-    SerialPortMonitor *serialPortMonitor() const;
-
     bool supported() const;
 
     QList<ModbusRtuMaster *> modbusRtuMasters() const;
@@ -74,14 +72,37 @@ public:
     ModbusRtuError reconfigureModbusRtuMaster(const QUuid &modbusUuid, const QString &serialPort, qint32 baudrate, QSerialPort::Parity parity, QSerialPort::DataBits dataBits, QSerialPort::StopBits stopBits, int numberOfRetries, int timeout);
     ModbusRtuError removeModbusRtuMaster(const QUuid &modbusUuid);
 
+    // Returns the platform specific list of available serial ports for modbus RTU
+    SerialPorts serialPorts() const;
+    bool serialPortAvailable(const QString &systemLocation) const;
+
 signals:
+    void serialPortAdded(const SerialPort &serialPort);
+    void serialPortRemoved(const SerialPort &serialPort);
+
     void modbusRtuMasterAdded(ModbusRtuMaster *modbusRtuMaster);
     void modbusRtuMasterRemoved(ModbusRtuMaster *modbusRtuMaster);
     void modbusRtuMasterChanged(ModbusRtuMaster *modbusRtuMaster);
 
+private slots:
+    void onSerialPortAdded(const SerialPort &serialPort);
+    void onSerialPortRemoved(const SerialPort &serialPort);
+
 private:
+    typedef struct ModbusRtuPlatformConfiguration {
+        QString name;
+        QString description;
+        QString serialPort;
+        bool usable;
+    } ModbusRtuPlatformConfiguration;
+
+    QList<ModbusRtuPlatformConfiguration> m_platformConfigurations;
+
     QHash<QUuid, ModbusRtuMaster *> m_modbusRtuMasters;
     SerialPortMonitor *m_serialPortMonitor = nullptr;
+    QHash<QString, SerialPort> m_serialPorts;
+
+    void loadPlatformConfiguration();
 
     void loadRtuMasters();
     void saveModbusRtuMaster(ModbusRtuMaster *modbusRtuMaster);

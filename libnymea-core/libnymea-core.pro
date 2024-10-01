@@ -35,6 +35,14 @@ CONFIG(withoutpython) {
     CONFIG -= python
 }
 
+packagesExist(systemd) {
+    message(Building with systemd support)
+    PKGCONFIG += systemd
+    DEFINES += WITH_SYSTEMD
+} else {
+    message(Building without systemd support)
+}
+
 packagesExist(Qt5SerialBus) {
     message("Building with QtSerialBus support.")
     PKGCONFIG += Qt5SerialBus

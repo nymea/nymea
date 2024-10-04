@@ -894,9 +894,9 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
 
     // Verify objects
     QVariantMap existingTypes = m_api.value("types").toMap();
-    QVariantMap typesIncludingThis = existingTypes;
-    typesIncludingThis.unite(handler->jsonObjects());
-    apiIncludingThis["types"] = typesIncludingThis;
+    apiIncludingThis = existingTypes;
+    apiIncludingThis.insert(handler->jsonObjects());
+
     foreach (const QString &objectName, handler->jsonObjects().keys()) {
         QVariantMap object = handler->jsonObjects().value(objectName).toMap();
         // Check for name clashes
@@ -931,7 +931,8 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
         }
         newMethods.insert(handler->name() + '.' + methodName, method);
     }
-    methods.unite(newMethods);
+
+    methods.insert(newMethods);
     apiIncludingThis["methods"] = methods;
 
     // Verify notifications
@@ -944,7 +945,7 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
         }
         newNotifications.insert(handler->name() + '.' + notificationName, notification);
     }
-    notifications.unite(newNotifications);
+    notifications.insert(newNotifications);
     apiIncludingThis["notifications"] = notifications;
 
     // Checks completed. Store new API

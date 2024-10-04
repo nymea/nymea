@@ -52,13 +52,13 @@ bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &api)
                 return false;
             }
         }
-        if (map.value(key).type() == QMetaType::QVariantMap) {
+        if (map.value(key).userType() == QMetaType::QVariantMap) {
             bool ret = checkRefs(map.value(key).toMap(), api);
             if (!ret) {
                 return false;
             }
         }
-        if (map.value(key).type() == QMetaType::QVariantList) {
+        if (map.value(key).userType() == QMetaType::QVariantList) {
             foreach (const QVariant &entry, map.value(key).toList()) {
                 if (entry.toString().startsWith("$ref:")) {
                     QString refName = entry.toString().remove("$ref:");
@@ -67,7 +67,7 @@ bool JsonValidator::checkRefs(const QVariantMap &map, const QVariantMap &api)
                         return false;
                     }
                 }
-                if (entry.type() == QMetaType::QVariantMap) {
+                if (entry.userType() == QMetaType::QVariantMap) {
                     bool ret = checkRefs(map.value(key).toMap(), api);
                     if (!ret) {
                         return false;
@@ -114,11 +114,11 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
     // Make sure all required values are available
     foreach (const QString &key, definition.keys()) {
         QRegularExpression isOptional = QRegularExpression("^([a-z]:)*o:.*");
-        if (isOptional.exactMatch(key)) {
+        if (isOptional.match(key).hasMatch()) {
             continue;
         }
         QRegularExpression isReadOnly = QRegularExpression("^([a-z]:)*r:.*");
-        if (isReadOnly.exactMatch(key) && openMode.testFlag(QIODevice::WriteOnly)) {
+        if (isReadOnly.match(key).hasMatch() && openMode.testFlag(QIODevice::WriteOnly)) {
             continue;
         }
         QString trimmedKey = key;
@@ -134,7 +134,7 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
         QVariant expectedValue = definition.value(key);
         foreach (const QString &definitionKey, definition.keys()) {
             QRegularExpression regExp = QRegularExpression("(o:|r:|d:)*" + key);
-            if (regExp.exactMatch(definitionKey)) {
+            if (regExp.match(definitionKey).hasMatch()) {
                 expectedValue = definition.value(definitionKey);
             }
         }
@@ -165,7 +165,7 @@ JsonValidator::Result JsonValidator::validateMap(const QVariantMap &map, const Q
 
 JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const QVariant &definition, const QVariantMap &api, QIODevice::OpenMode openMode)
 {
-    if (definition.type() == QMetaType::QString) {
+    if (definition.userType() == QMetaType::QString) {
         QString expectedTypeName = definition.toString();
 
         if (expectedTypeName.startsWith("$ref:")) {
@@ -187,7 +187,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
             QVariantMap flags = api.value("flags").toMap();
             if (flags.contains(refName)) {
                 QVariant refDefinition = flags.value(refName);
-                if (value.type() != QMetaType::QVariantList && value.type() != QMetaType::QStringList) {
+                if (value.userType() != QMetaType::QVariantList && value.userType() != QMetaType::QStringList) {
                     return Result(false, "Expected flags " + refName + " but got " + value.toString());
                 }
                 QString flagEnum = refDefinition.toList().first().toString();
@@ -260,17 +260,17 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
         return Result(true);
     }
 
-    if (definition.type() == QMetaType::QVariantMap) {
-        if (value.type() != QMetaType::QVariantMap) {
+    if (definition.userType() == QMetaType::QVariantMap) {
+        if (value.userType() != QMetaType::QVariantMap) {
             return Result(false, "Invalid value. Expected a map but received: " + value.toString());
         }
         return validateMap(value.toMap(), definition.toMap(), api, openMode);
     }
 
-    if (definition.type() == QMetaType::QVariantList) {
+    if (definition.userType() == QMetaType::QVariantList) {
         QVariantList list = definition.toList();
         QVariant entryDefinition = list.first();
-        if (value.type() != QMetaType::QVariantList && value.type() != QMetaType::QStringList) {
+        if (value.userType() != QMetaType::QVariantList && value.userType() != QMetaType::QStringList) {
             return Result(false, "Expected list of " + entryDefinition.toString() + " but got value of type " + value.typeName() + "\n" + QJsonDocument::fromVariant(value).toJson());
         }
         foreach (const QVariant &entry, value.toList()) {

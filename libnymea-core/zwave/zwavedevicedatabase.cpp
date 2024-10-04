@@ -33,7 +33,6 @@
 #include <QFileInfo>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QSqlResult>
 #include <QRegularExpression>
 #include <QDataStream>
 
@@ -75,14 +74,14 @@ bool ZWaveDeviceDatabase::initDB()
 
     if (!m_db.tables().contains("metadata")) {
         qCDebug(dcZWave()) << "No \"metadata\" table in database. Creating it.";
-        QSqlQuery query = QSqlQuery("CREATE TABLE metadata (version INT);", m_db);
-        if (!query.exec()) {
+        QSqlQuery query(m_db);
+        if (!query.exec("CREATE TABLE metadata (version INT);")) {
             qCWarning(dcUserManager()) << "Unable to execute SQL query" << query.executedQuery() << m_db.lastError().databaseText() << m_db.lastError().driverText();
             return false;
         }
 
-        query = QSqlQuery("INSERT INTO metadata (version) VALUES (1);", m_db);
-        if (!query.exec() || m_db.lastError().isValid()) {
+        query = QSqlQuery(m_db);
+        if (!query.exec("INSERT INTO metadata (version) VALUES (1);") || m_db.lastError().isValid()) {
             qCCritical(dcZWave()) << "Error creating metadata table in devie database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
             return false;
         }
@@ -91,26 +90,26 @@ bool ZWaveDeviceDatabase::initDB()
     if (!m_db.tables().contains("nodes")) {
         qCDebug(dcZWave()) << "No \"nodes\" table in database. Creating it.";
 
-        QSqlQuery query = QSqlQuery("CREATE TABLE nodes "
-                                    "("
-                                    "nodeId INT PRIMARY KEY NOT NULL,"
-                                    "basicType INT,"
-                                    "deviceType INT,"
-                                    "plusDeviceType INT,"
-                                    "manufacturerId INT,"
-                                    "manufacturerName TEXT,"
-                                    "name TEXT,"
-                                    "productId INT,"
-                                    "productName TEXT,"
-                                    "productType INT,"
-                                    "isZWavePlus INT,"
-                                    "isSecure INT,"
-                                    "isBeaming INT,"
-                                    "version INT"
-                                    ");", m_db);
+        QSqlQuery query = QSqlQuery(m_db);
+        QString queryString = "CREATE TABLE nodes "
+                              "("
+                              "nodeId INT PRIMARY KEY NOT NULL,"
+                              "basicType INT,"
+                              "deviceType INT,"
+                              "plusDeviceType INT,"
+                              "manufacturerId INT,"
+                              "manufacturerName TEXT,"
+                              "name TEXT,"
+                              "productId INT,"
+                              "productName TEXT,"
+                              "productType INT,"
+                              "isZWavePlus INT,"
+                              "isSecure INT,"
+                              "isBeaming INT,"
+                              "version INT"
+                              ");";
 
-
-        if (!query.exec() || m_db.lastError().isValid()) {
+        if (!query.exec(queryString) || m_db.lastError().isValid()) {
             qCCritical(dcZWave()) << "Error creating nodes table in devices database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
             return false;
         }
@@ -118,22 +117,23 @@ bool ZWaveDeviceDatabase::initDB()
 
     if (!m_db.tables().contains("nodevalues")) {
         qCDebug(dcZWave()) << "No \"nodevalues\" table in database. Creating it.";
-        QSqlQuery query = QSqlQuery("CREATE TABLE nodevalues "
-                  "("
-                  "valueId INT PRIMARY KEY NOT NULL,"
-                  "nodeId INT,"
-                  "valueGenre INT,"
-                  "commandClass INT,"
-                  "instance INT,"
-                  "idx INT,"
-                  "type INT,"
-                  "value TEXT,"
-                  "valueSelection INT,"
-                  "description TEXT,"
-                  "FOREIGN KEY (nodeId) REFERENCES nodes(nodeId)"
-                  ");", m_db);
+        QSqlQuery query(m_db);
+        QString queryString = "CREATE TABLE nodevalues "
+                              "("
+                              "valueId INT PRIMARY KEY NOT NULL,"
+                              "nodeId INT,"
+                              "valueGenre INT,"
+                              "commandClass INT,"
+                              "instance INT,"
+                              "idx INT,"
+                              "type INT,"
+                              "value TEXT,"
+                              "valueSelection INT,"
+                              "description TEXT,"
+                              "FOREIGN KEY (nodeId) REFERENCES nodes(nodeId)"
+                              ");";
 
-        if (!query.exec() || m_db.lastError().isValid()) {
+        if (!query.exec(queryString) || m_db.lastError().isValid()) {
             qCCritical(dcZWave()) << "Error creating nodevalues table in device database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
             return false;
         }

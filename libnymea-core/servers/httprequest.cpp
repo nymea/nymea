@@ -67,6 +67,7 @@
 #include "loggingcategories.h"
 
 #include <QUrlQuery>
+#include <QRegularExpression>
 
 namespace nymeaserver {
 

@@ -128,6 +128,7 @@
 #include <QStandardPaths>
 #include <QCoreApplication>
 #include <QMetaEnum>
+#include <QVariant>
 
 NYMEA_LOGGING_CATEGORY(dcRuleEngine, "RuleEngine")
 NYMEA_LOGGING_CATEGORY(dcRuleEngineDebug, "RuleEngineDebug")
@@ -662,7 +663,7 @@ RuleEngine::RuleError RuleEngine::executeExitActions(const RuleId &ruleId)
 
     qCDebug(dcRuleEngine) << "Executing rule exit actions of rule" << rule.name() << rule.id().toString();
     m_logger->log({rule.id().toString(), "executed"}, {{"name", rule.name()}});
-//    m_logEngine->logRuleExitActionsExecuted(rule);
+    //    m_logEngine->logRuleExitActionsExecuted(rule);
     executeRuleActions(rule.id(), rule.exitActions());
     return RuleErrorNoError;
 }
@@ -907,6 +908,49 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Thing
                 }
             }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+
+            QPartialOrdering ordering = QVariant::compare(event.param(paramDescriptor.paramTypeId()).value(),
+                                                          paramDescriptor.value());
+
+            if (ordering == QPartialOrdering::Unordered) {
+                qCWarning(dcRuleEngine()) << "Cannot compair the params:" << event.param(paramDescriptor.paramTypeId()).value() << paramDescriptor.value();
+                allOK = false;
+            } else {
+                switch (paramDescriptor.operatorType()) {
+                case Types::ValueOperatorEquals:
+                    if (paramValue != paramDescriptor.value()) {
+                        allOK = false;
+                    }
+                    break;
+                case Types::ValueOperatorNotEquals:
+                    if (paramValue == paramDescriptor.value()) {
+                        allOK = false;
+                    }
+                    break;
+                case Types::ValueOperatorGreater:
+                    if (ordering == QPartialOrdering::Less || ordering == QPartialOrdering::Equivalent) {
+                        allOK = false;
+                    }
+                    break;
+                case Types::ValueOperatorGreaterOrEqual:
+                    if (ordering == QPartialOrdering::Less) {
+                        allOK = false;
+                    }
+                    break;
+                case Types::ValueOperatorLess:
+                    if (ordering == QPartialOrdering::Greater || ordering == QPartialOrdering::Equivalent) {
+                        allOK = false;
+                    }
+                    break;
+                case Types::ValueOperatorLessOrEqual:
+                    if (ordering == QPartialOrdering::Greater) {
+                        allOK = false;
+                    }
+                    break;
+                }
+            }
+#else
             switch (paramDescriptor.operatorType()) {
             case Types::ValueOperatorEquals:
                 if (paramValue != paramDescriptor.value()) {
@@ -939,6 +983,7 @@ bool RuleEngine::containsEvent(const Rule &rule, const Event &event, const Thing
                 }
                 break;
             }
+#endif
         }
         // All matching!
         if (allOK) {
@@ -1041,7 +1086,7 @@ RuleEngine::RuleError RuleEngine::checkRuleAction(const RuleAction &ruleAction, 
             bool found = !paramType.defaultValue().isNull();
             foreach (const RuleActionParam &ruleActionParam, ruleAction.ruleActionParams()) {
                 if (ruleActionParam.paramTypeId() == paramType.id()
-                        || ruleActionParam.paramName() == paramType.name()) {
+                    || ruleActionParam.paramName() == paramType.name()) {
                     found = true;
                     break;
                 }
@@ -1082,7 +1127,12 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
 
         // check if the param type of the event and the action match
         QMetaType::Type eventParamType = getEventParamType(ruleActionParam.eventTypeId(), ruleActionParam.eventParamTypeId());
-        QVariant v(eventParamType);
+        QVariant v;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        v = QVariant::fromMetaType(QMetaType(eventParamType));
+#else
+        v = QVariant(eventParamType);
+#endif
         if (eventParamType != paramType.type() && !v.canConvert(static_cast<int>(paramType.type()))) {
             qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given event param " << ruleActionParam.eventParamTypeId().toString() << "have not the same type:";
             qCWarning(dcRuleEngine) << "        -> actionParamType:" << paramType.type();
@@ -1098,7 +1148,12 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
         ThingClass stateThingClass = m_thingManager->findThingClass(d->thingClassId());
         StateType stateType = stateThingClass.stateTypes().findById(ruleActionParam.stateTypeId());
         QMetaType::Type actionParamType = getActionParamType(actionType.id(), ruleActionParam.paramTypeId());
-        QVariant v(stateType.type());
+        QVariant v;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        v = QVariant::fromMetaType(QMetaType(stateType.type()));
+#else
+        v = QVariant(stateType.type());
+#endif
         if (actionParamType != stateType.type() && !v.canConvert(static_cast<int>(actionParamType))) {
             qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given state based param " << ruleActionParam.stateTypeId().toString() << "have not the same type:";
             qCWarning(dcRuleEngine) << "        -> actionParamType:" << actionParamType;
@@ -1110,7 +1165,7 @@ RuleEngine::RuleError RuleEngine::checkRuleActionParam(const RuleActionParam &ru
             qCDebug(dcRuleEngine()) << "Cannot create rule. No param value given for action:" << ruleActionParam.paramTypeId().toString();
             return RuleErrorInvalidRuleActionParameter;
         }
-        if (paramType.type() != ruleActionParam.value().type() && !ruleActionParam.value().canConvert(static_cast<int>(paramType.type()))) {
+        if (paramType.type() != ruleActionParam.value().userType() && !ruleActionParam.value().canConvert(static_cast<int>(paramType.type()))) {
             qCWarning(dcRuleEngine) << "Cannot create rule. RuleActionParam" << ruleActionParam.paramTypeId().toString() << " and given state based param " << ruleActionParam.stateTypeId().toString() << "have not the same type:";
             qCWarning(dcRuleEngine) << "        -> actionParamType:" << paramType.type();
             qCWarning(dcRuleEngine) << "        ->       stateType:" << ruleActionParam.value().type();
@@ -1510,11 +1565,11 @@ void RuleEngine::executeRuleActions(const RuleId &ruleId, const QList<RuleAction
             }
             ActionType actionType = m_thingManager->findConfiguredThing(action.thingId())->thingClass().actionTypes().findById(action.actionTypeId());
             m_logger->log({ruleId.toString(), "executed"}, {
-                              {"name", m_rules.value(ruleId).name()},
-                              {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
-                              {"thingId", info->action().thingId()},
-                              {"action", actionType.name()}
-                          });
+                                                               {"name", m_rules.value(ruleId).name()},
+                                                               {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
+                                                               {"thingId", info->action().thingId()},
+                                                               {"action", actionType.name()}
+                                                           });
         });
     }
 
@@ -1524,11 +1579,11 @@ void RuleEngine::executeRuleActions(const RuleId &ruleId, const QList<RuleAction
             if (info->status() != Thing::ThingErrorNoError) {
                 qCWarning(dcRuleEngine) << "Error executing browser action:" << info->status();
                 m_logger->log({ruleId.toString(), "executed"}, {
-                                  {"name", m_rules.value(ruleId).name()},
-                                  {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
-                                  {"thingId", info->browserAction().thingId()},
-                                  {"browserItem", info->browserAction().itemId()}
-                              });
+                                                                   {"name", m_rules.value(ruleId).name()},
+                                                                   {"status", QMetaEnum::fromType<Thing::ThingError>().valueToKey(info->status())},
+                                                                   {"thingId", info->browserAction().thingId()},
+                                                                   {"browserItem", info->browserAction().itemId()}
+                                                               });
             }
         });
     }
@@ -1546,9 +1601,9 @@ void RuleEngine::onEventTriggered(const Event &event)
         // Event based
         if (!rule.eventDescriptors().isEmpty()) {
             m_logger->log({rule.id().toString()}, {
-                              {"name", rule.name()},
-                              {"state", "triggered"}
-                          });
+                                                      {"name", rule.name()},
+                                                      {"state", "triggered"}
+                                                  });
 
             QList<RuleAction> tmp;
             if (rule.statesActive() && rule.timeActive()) {
@@ -1587,9 +1642,9 @@ void RuleEngine::onEventTriggered(const Event &event)
         } else {
             // State based rule
             m_logger->log({rule.id().toString()}, {
-                              {"name", rule.name()},
-                              {"state", rule.active() ? "active" : "inactive"}
-                          });
+                                                      {"name", rule.name()},
+                                                      {"state", rule.active() ? "active" : "inactive"}
+                                                  });
             emit ruleActiveChanged(rule);
             if (rule.active()) {
                 executeRuleActions(rule.id(), rule.actions());
@@ -1668,7 +1723,7 @@ void RuleEngine::init()
             settings.beginGroup(childGroup);
 
             CalendarItem calendarItem;
-            calendarItem.setDateTime(QDateTime::fromTime_t(settings.value("dateTime", 0).toUInt()));
+            calendarItem.setDateTime(QDateTime::fromSecsSinceEpoch(settings.value("dateTime", 0).toUInt()));
             calendarItem.setStartTime(QTime::fromString(settings.value("startTime").toString()));
             calendarItem.setDuration(settings.value("duration", 0).toUInt());
 
@@ -1706,7 +1761,7 @@ void RuleEngine::init()
             settings.beginGroup(childGroup);
 
             TimeEventItem timeEventItem;
-            timeEventItem.setDateTime(QDateTime::fromTime_t(settings.value("dateTime", 0).toUInt()));
+            timeEventItem.setDateTime(QDateTime::fromSecsSinceEpoch(settings.value("dateTime", 0).toUInt()));
             timeEventItem.setTime(QTime::fromString(settings.value("time").toString()));
 
             QList<int> weekDays;

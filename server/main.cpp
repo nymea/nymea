@@ -222,6 +222,10 @@ int main(int argc, char *argv[])
             qCInfo(dcApplication()) << "=====================================";
         }
 
+        qCInfo(dcApplication()) << "Built with Qt:" << QT_VERSION_STR;
+        qCInfo(dcApplication()) << "Run with Qt:" << qVersion();
+
+
         // If running in a snappy environment, print out some details about it.
         if (!qgetenv("SNAP").isEmpty()) {
             // Note: http://snapcraft.io/docs/reference/env

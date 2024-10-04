@@ -97,7 +97,7 @@ void ScriptEvent::onEventTriggered(const Event &event)
         return;
     }
 
-    if (!m_eventTypeId.isEmpty() && event.eventTypeId() != m_eventTypeId) {
+    if (!m_eventTypeId.isEmpty() && event.eventTypeId() != EventTypeId(m_eventTypeId)) {
         return;
     }
 

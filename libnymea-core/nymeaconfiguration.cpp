@@ -320,7 +320,7 @@ QLocale NymeaConfiguration::locale() const
 {
     NymeaSettings settings(NymeaSettings::SettingsRoleGlobal);
     settings.beginGroup("nymead");
-    return settings.value("language", "en_US").toString();
+    return QLocale(settings.value("language", "en_US").toString());
 }
 
 void NymeaConfiguration::setLocale(const QLocale &locale)

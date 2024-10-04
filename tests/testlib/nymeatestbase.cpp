@@ -396,7 +396,7 @@ void NymeaTestBase::verifyReply(QNetworkReply *reply, const QByteArray &data, co
 
 void NymeaTestBase::enableNotifications(const QStringList &namespaces)
 {
-    QVariantList variantList;
+    QStringList variantList;
     foreach (const QString &ns, namespaces) {
         variantList << ns;
     }
@@ -404,7 +404,7 @@ void NymeaTestBase::enableNotifications(const QStringList &namespaces)
     QVariantMap notificationParams;
     notificationParams.insert("namespaces", variantList);
     QVariant response = injectAndWait("JSONRPC.SetNotificationStatus", notificationParams);
-    QVariantList resultList = response.toMap().value("params").toMap().value("namespaces").toList();
+    QStringList resultList = response.toMap().value("params").toMap().value("namespaces").toStringList();
     std::sort(resultList.begin(), resultList.end());
     QCOMPARE(resultList, variantList);
 }

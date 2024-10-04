@@ -1,11 +1,10 @@
 #ifndef BLUETOOTHPAIRINGJOBIMPLEMENTATION_H
 #define BLUETOOTHPAIRINGJOBIMPLEMENTATION_H
 
-#include "hardware/bluetoothlowenergy/bluetoothlowenergymanager.h"
 #include <QObject>
+#include <hardware/bluetoothlowenergy/bluetoothlowenergymanager.h>
 
-namespace nymeaserver
-{
+namespace nymeaserver {
 
 class NymeaBluetoothAgent;
 class BluetoothLowEnergyManagerImplementation;
@@ -35,4 +34,5 @@ private:
 };
 
 }
+
 #endif // BLUETOOTHPAIRINGJOBIMPLEMENTATION_H

@@ -137,13 +137,15 @@ void NetworkAccessManagerImpl::setEnabled(bool enabled)
         return;
     }
 
-    if (enabled) {
-        m_manager->setNetworkAccessible(QNetworkAccessManager::Accessible);
-        qCDebug(dcNetworkManager()) << "Network Manager enabled";
-    } else {
-        m_manager->setNetworkAccessible(QNetworkAccessManager::NotAccessible);
-        qCDebug(dcNetworkManager()) << "Network Manager disabled";
-    }
+    // FIXME Qt6: disabeling the networkmanager should be updated with the new hardware resource methods
+
+    // if (enabled) {
+    //     m_manager->setNetworkAccessible(QNetworkAccessManager::Accessible);
+    //     qCDebug(dcNetworkManager()) << "Network Manager enabled";
+    // } else {
+    //     m_manager->setNetworkAccessible(QNetworkAccessManager::NotAccessible);
+    //     qCDebug(dcNetworkManager()) << "Network Manager disabled";
+    // }
     m_enabled = enabled;
 }
 

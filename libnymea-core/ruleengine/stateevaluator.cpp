@@ -266,6 +266,19 @@ bool StateEvaluator::isValid() const
                             qCWarning(dcRuleEngine) << "Could not convert value of state descriptor" << m_stateDescriptor.stateTypeId() << " to:" << QVariant::typeToName(stateType.type()) << " Got:" << m_stateDescriptor.stateValue();
                             return false;
                         }
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                        QPartialOrdering ordering = QPartialOrdering::Unordered;
+                        ordering = QVariant::compare(stateValue, stateType.maxValue());
+                        if (stateType.maxValue().isValid() && ordering == QPartialOrdering::Greater) {
+                            qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Max:" << stateType.maxValue();
+                            return false;
+                        }
+                        ordering = QVariant::compare(stateValue, stateType.minValue());
+                        if (stateType.minValue().isValid() && ordering == QPartialOrdering::Less) {
+                            qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Min:" << stateType.minValue();
+                            return false;
+                        }
+#else
                         if (stateType.maxValue().isValid() && stateValue > stateType.maxValue()) {
                             qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Max:" << stateType.maxValue();
                             return false;
@@ -275,7 +288,7 @@ bool StateEvaluator::isValid() const
                             qCWarning(dcRuleEngine) << "Value out of range for state descriptor" << m_stateDescriptor.stateTypeId() << " Got:" << m_stateDescriptor.stateValue() << " Min:" << stateType.minValue();
                             return false;
                         }
-
+#endif
                         if (!stateType.possibleValues().isEmpty() && !stateType.possibleValues().contains(stateValue)) {
                             QStringList possibleValues;
                             foreach (const QVariant &value, stateType.possibleValues()) {
@@ -286,7 +299,7 @@ bool StateEvaluator::isValid() const
                             return false;
                         }
 
-                    // if comparing to another state
+                        // if comparing to another state
                     } else if (!m_stateDescriptor.valueThingId().isNull() && !m_stateDescriptor.valueStateTypeId().isNull()) {
                         Thing *valueThing = NymeaCore::instance()->thingManager()->findConfiguredThing(m_stateDescriptor.valueThingId());
                         if (!valueThing) {
@@ -361,6 +374,25 @@ bool StateEvaluator::evaluateDescriptor(const StateDescriptor &descriptor) const
             if (!res) {
                 return false;
             }
+
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            QPartialOrdering ordering = QVariant::compare(state.value(), convertedValue);
+            switch (descriptor.operatorType()) {
+            case Types::ValueOperatorEquals:
+                return ordering == QPartialOrdering::Equivalent;
+            case Types::ValueOperatorGreater:
+                return ordering == QPartialOrdering::Greater;
+            case Types::ValueOperatorGreaterOrEqual:
+                return ordering == QPartialOrdering::Greater || ordering == QPartialOrdering::Equivalent;
+            case Types::ValueOperatorLess:
+                return ordering == QPartialOrdering::Less;
+            case Types::ValueOperatorLessOrEqual:
+                return ordering == QPartialOrdering::Less || ordering == QPartialOrdering::Equivalent;
+            case Types::ValueOperatorNotEquals:
+                return ordering != QPartialOrdering::Equivalent;
+            }
+#else
             switch (descriptor.operatorType()) {
             case Types::ValueOperatorEquals:
                 return state.value() == convertedValue;
@@ -375,7 +407,7 @@ bool StateEvaluator::evaluateDescriptor(const StateDescriptor &descriptor) const
             case Types::ValueOperatorNotEquals:
                 return state.value() != convertedValue;
             }
-
+#endif
         } else if (!descriptor.valueThingId().isNull() && !descriptor.valueStateTypeId().isNull()) {
             Thing *valueThing = NymeaCore::instance()->thingManager()->findConfiguredThing(descriptor.valueThingId());
             if (!valueThing) {
@@ -389,6 +421,23 @@ bool StateEvaluator::evaluateDescriptor(const StateDescriptor &descriptor) const
             }
 
             qCDebug(dcRuleEngineDebug()) << "Comparing" << state.value() << "to" << valueState.value() << "with operator" << descriptor.operatorType();
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            QPartialOrdering ordering = QVariant::compare(state.value(), valueState.value());
+            switch (descriptor.operatorType()) {
+            case Types::ValueOperatorEquals:
+                return ordering == QPartialOrdering::Equivalent;
+            case Types::ValueOperatorGreater:
+                return ordering == QPartialOrdering::Greater;
+            case Types::ValueOperatorGreaterOrEqual:
+                return ordering == QPartialOrdering::Greater || ordering == QPartialOrdering::Equivalent;
+            case Types::ValueOperatorLess:
+                return ordering == QPartialOrdering::Less;
+            case Types::ValueOperatorLessOrEqual:
+                return ordering == QPartialOrdering::Less || ordering == QPartialOrdering::Equivalent;
+            case Types::ValueOperatorNotEquals:
+                return ordering != QPartialOrdering::Equivalent;
+            }
+#else
             switch (descriptor.operatorType()) {
             case Types::ValueOperatorEquals:
                 return state.value() == valueState.value();
@@ -403,6 +452,7 @@ bool StateEvaluator::evaluateDescriptor(const StateDescriptor &descriptor) const
             case Types::ValueOperatorNotEquals:
                 return state.value() != valueState.value();
             }
+#endif
         }
 
     } else { // Interface based

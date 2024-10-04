@@ -35,6 +35,7 @@
 #include <QJsonDocument>
 #include <QCoreApplication>
 
+
 LogEngineInfluxDB::LogEngineInfluxDB(const QString &host, const QString &dbName, const QString &username, const QString &password, QObject *parent)
     : LogEngine{parent},
       m_host(host),
@@ -185,9 +186,9 @@ void LogEngineInfluxDB::logEvent(Logger *logger, const QStringList &tags, const 
 
     foreach (const QString &name, values.keys()) {
         QVariant value = values.value(name);
-        switch (value.type()) {
+        switch (value.userType()) {
         case QMetaType::QString:
-        case QMetaType::ByteArray:
+        case QMetaType::QByteArray:
             fieldsList.append(QString("%1=\"%2\"").arg(name).arg(QString(value.toByteArray().toPercentEncoding())));
             break;
         case QMetaType::QUuid:
@@ -493,7 +494,7 @@ LogFetchJob *LogEngineInfluxDB::fetchLogEntries(const QStringList &sources, cons
                             column.remove(QRegularExpression("^mean_"));
                         }
                         QVariant value = values.at(i);
-                        if (value.type() == QMetaType::QString || value.type() == QMetaType::ByteArray) {
+                        if (value.userType() == QMetaType::QString || value.userType() == QMetaType::QByteArray) {
                             valuesMap.insert(column, QByteArray::fromPercentEncoding(value.toByteArray()));
                         } else {
                             valuesMap.insert(column, values.at(i));
@@ -838,3 +839,4 @@ void QueryJob::finish(QNetworkReply::NetworkError status, const QVariantList &re
     QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection, Q_ARG(QNetworkReply::NetworkError, status), Q_ARG(QVariantList, results));
     QMetaObject::invokeMethod(this, "deleteLater", Qt::QueuedConnection);
 }
+

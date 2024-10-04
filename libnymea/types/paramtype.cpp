@@ -234,10 +234,17 @@ QStringList ParamType::mandatoryTypeProperties()
 /*! Writes the name, type, defaultValue, min value, max value and readOnly of the given \a paramType to \a dbg. */
 QDebug operator<<(QDebug dbg, const ParamType &paramType)
 {
+    QString typeName;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    typeName = QString(QMetaType(paramType.type()).name());
+#else
+    typeName = QVariant::typeToName(paramType.type())
+#endif
+
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "ParamType(Id" << paramType.id().toString()
                   << "  Name: " << paramType.name()
-                  << ", Type:" << QVariant::typeToName(paramType.type())
+                  << ", Type:" << typeName
                   << ", Default:" << paramType.defaultValue()
                   << ", Min:" << paramType.minValue()
                   << ", Max:" << paramType.maxValue()

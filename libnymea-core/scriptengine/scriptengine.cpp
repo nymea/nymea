@@ -367,7 +367,7 @@ void ScriptEngine::loadScripts()
         }
 
         Script *script = new Script();
-        script->setId(jsonFileInfo.baseName());
+        script->setId(QUuid(jsonFileInfo.baseName()));
         script->setName(jsonDoc.toVariant().toMap().value("name").toString());
 
         bool loaded = loadScript(script);
@@ -456,7 +456,7 @@ QString ScriptEngine::baseName(const QUuid &id)
 void ScriptEngine::onScriptMessage(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
     QFileInfo fi(context.file);
-    QUuid scriptId = fi.baseName();
+    QUuid scriptId(fi.baseName());
     if (!m_scripts.contains(scriptId)) {
         return;
     }

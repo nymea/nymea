@@ -39,6 +39,8 @@
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 
+#include <QAnyStringView>
+
 #define DECLARE_TYPE_ID(type) class type##Id: public QUuid \
 { \
 public: \

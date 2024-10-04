@@ -228,6 +228,9 @@ int main(int argc, char *argv[])
         }
         qCInfo(dcApplication()) << "Started:" << arguments.takeFirst();
         qCInfo(dcApplication()) << "Parameters:" << arguments.join(' ');
+        qCInfo(dcApplication()) << "Built with Qt:" << QT_VERSION_STR;
+        qCInfo(dcApplication()) << "Run with Qt:" << qVersion();
+
 
         // If running in a snappy environment, print out some details about it.
         if (!qgetenv("SNAP").isEmpty()) {

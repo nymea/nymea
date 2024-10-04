@@ -32,9 +32,10 @@
 #include "mqttchannelimplementation.h"
 #include "loggingcategories.h"
 
-#include <QtDebug>
 #include <QUuid>
+#include <QtDebug>
 #include <QNetworkInterface>
+#include <QRegularExpression>
 
 namespace nymeaserver {
 

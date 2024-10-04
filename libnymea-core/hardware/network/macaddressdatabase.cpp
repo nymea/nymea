@@ -47,7 +47,7 @@ MacAddressDatabase::MacAddressDatabase(QObject *parent) : QObject(parent)
 {
     // Find database in system data locations
     QString databaseFileName;
-    foreach (const QString &dataLocation, QStandardPaths::standardLocations(QStandardPaths::DataLocation)) {
+    foreach (const QString &dataLocation, QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)) {
         QFileInfo databaseFileInfo(dataLocation + QDir::separator() + "mac-addresses.db");
         if (!databaseFileInfo.exists()) {
             continue;
@@ -58,7 +58,7 @@ MacAddressDatabase::MacAddressDatabase(QObject *parent) : QObject(parent)
     }
 
     if (databaseFileName.isEmpty()) {
-        qCWarning(dcMacAddressDatabase()) << "Could not find the mac address database in any system data location paths" << QStandardPaths::standardLocations(QStandardPaths::DataLocation);
+        qCWarning(dcMacAddressDatabase()) << "Could not find the mac address database in any system data location paths" << QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
         qCWarning(dcMacAddressDatabase()) << "The mac address database lookup feature will not be available.";
         return;
     }
@@ -156,7 +156,11 @@ void MacAddressDatabase::runNextLookup()
 
     m_currentReply = m_pendingReplies.dequeue();
     m_currentReply->m_startTimestamp = QDateTime::currentMSecsSinceEpoch();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QFuture<QString> future = QtConcurrent::run(&MacAddressDatabase::lookupMacAddressVendorInternal, this, m_currentReply->macAddress());
+#else
     QFuture<QString> future = QtConcurrent::run(this, &MacAddressDatabase::lookupMacAddressVendorInternal, m_currentReply->macAddress());
+#endif
     m_futureWatcher->setFuture(future);
 }
 
@@ -185,8 +189,8 @@ QString MacAddressDatabase::lookupMacAddressVendorInternal(const QString &macAdd
         QString searchString = fullMacAddressString.left(length);
         QString queryString = QString("SELECT COUNT(oui) FROM oui WHERE oui LIKE \'%1%\';").arg(searchString);
         qCDebug(dcMacAddressDatabase()) << "Query:" << queryString;
-        QSqlQuery countQuery(queryString, m_db);
-        if (!countQuery.exec()) {
+        QSqlQuery countQuery(m_db);
+        if (!countQuery.exec(queryString)) {
             qCWarning(dcMacAddressDatabase()) << "Unable to execute SQL query" << queryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
             break;
         }
@@ -206,8 +210,8 @@ QString MacAddressDatabase::lookupMacAddressVendorInternal(const QString &macAdd
             // Query the name
             queryString = QString("SELECT companyName from companyNames WHERE rowid IS (SELECT companyNameIndex FROM oui WHERE oui=\'%1\');").arg(searchString);
             qCDebug(dcMacAddressDatabase()) << "Query:" << queryString;
-            QSqlQuery rowQuery(queryString, m_db);
-            if (!rowQuery.exec()) {
+            QSqlQuery rowQuery(m_db);
+            if (!rowQuery.exec(queryString)) {
                 qCWarning(dcMacAddressDatabase()) << "Unable to execute SQL query" << queryString << m_db.lastError().databaseText() << m_db.lastError().driverText();
                 break;
             }

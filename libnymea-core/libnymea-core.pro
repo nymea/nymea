@@ -43,12 +43,26 @@ packagesExist(systemd) {
     message(Building without systemd support)
 }
 
-packagesExist(Qt5SerialBus) {
-    message("Building with QtSerialBus support.")
-    PKGCONFIG += Qt5SerialBus
-    DEFINES += WITH_QTSERIALBUS
+greaterThan(QT_MAJOR_VERSION, 5) {
+    qtHaveModule(serialbus) {
+        message("Building with QtSerialBus support.")
+        QT *= serialbus
+        DEFINES += WITH_QTSERIALBUS
+    } else {
+        message("QtSerialBus package not found. Building without QtSerialBus support.")
+    }
+
+    # Separate module in Qt6
+    QT *= concurrent
+
 } else {
-    message("Qt5SerialBus package not found. Building without QtSerialBus support.")
+    packagesExist(Qt5SerialBus) {
+        message("Building with QtSerialBus support.")
+        PKGCONFIG += Qt5SerialBus
+        DEFINES += WITH_QTSERIALBUS
+    } else {
+        message("Qt5SerialBus package not found. Building without QtSerialBus support.")
+    }
 }
 
 # Note: udev is not available on all platforms

@@ -1962,7 +1962,8 @@ void ThingManagerImplementation::onLoaded()
 void ThingManagerImplementation::cleanupThingStateCache()
 {
     QDir dir(NymeaSettings::cachePath() + "/thingstates/");
-    foreach (const QFileInfo &entry, dir.entryList()) {
+    foreach (const QString &entryString, dir.entryList()) {
+        QFileInfo entry(entryString);
         ThingId thingId(entry.baseName());
         if (!m_configuredThings.contains(thingId)) {
             qCDebug(dcThingManager()) << "Thing ID" << thingId.toString() << "not found in configured things. Cleaning up stale thing state cache.";

@@ -31,7 +31,6 @@
 #ifndef LOGENGINEINFLUXDB_H
 #define LOGENGINEINFLUXDB_H
 
-#include "logging/logengine.h"
 #include <QObject>
 #include <QTimer>
 #include <QQueue>
@@ -40,11 +39,15 @@
 #include <QNetworkReply>
 #include <QNetworkAccessManager>
 
+#include "logging/logentry.h"
+#include "logging/logengine.h"
+
 class QueryJob: public QObject
 {
     Q_OBJECT
 public:
     explicit QueryJob(const QNetworkRequest &request, bool post, bool isInit, QObject *parent = nullptr);
+    ~QueryJob() = default;
 
 signals:
     void finished(QNetworkReply::NetworkError status, const QVariantList &response);
@@ -120,12 +123,13 @@ private:
 
     QHash<QString, Logger*> m_loggers;
 
-    QQueue<QueryJob*> m_initQueryQueue;
+    QQueue<QueryJob *> m_initQueryQueue;
     QueryJob *m_currentInitQuery = nullptr;
-    QQueue<QueryJob*> m_queryQueue;
+    QQueue<QueryJob *> m_queryQueue;
     QueryJob *m_currentQuery = nullptr;
     QQueue<QueueEntry> m_writeQueue;
-    QNetworkReply* m_currentWriteReply = nullptr;
+    QNetworkReply *m_currentWriteReply = nullptr;
 };
+
 
 #endif // LOGENGINEINFLUXDB_H

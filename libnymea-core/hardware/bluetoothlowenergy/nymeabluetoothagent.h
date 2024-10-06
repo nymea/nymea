@@ -6,8 +6,9 @@
 #include <QDBusMessage>
 #include <QBluetoothAddress>
 
-namespace nymeaserver
-{
+#include <hardware/bluetoothlowenergy/nymeabluetoothagent.h>
+
+namespace nymeaserver {
 
 class NymeaBluetoothAgent;
 

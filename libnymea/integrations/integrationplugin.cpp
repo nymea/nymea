@@ -407,7 +407,7 @@ void IntegrationPlugin::initPlugin(ThingManager *thingManager, HardwareManager *
     m_thingManager = thingManager;
     m_hardwareManager = hardwareManager;
     m_apiKeyStorage = apiKeyStorage;
-    m_storage = new QSettings(NymeaSettings::settingsPath() + "/pluginconfig-" + pluginId().toString().remove(QRegExp("[{}]")) + ".conf", QSettings::IniFormat, this);
+    m_storage = new QSettings(NymeaSettings::settingsPath() + "/pluginconfig-" + pluginId().toString().remove(QRegularExpression("[{}]")) + ".conf", QSettings::IniFormat, this);
 }
 
 /*! Returns a map containing the plugin configuration.

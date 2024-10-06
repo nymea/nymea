@@ -167,28 +167,28 @@ void DebugReportGenerator::saveSystemInformation()
 
     qCDebug(dcDebugServer()) << "Write system information file" << outputFile.fileName();
     QTextStream stream(&outputFile);
-    stream << "Server name: " << NymeaCore::instance()->configuration()->serverName() << endl;
-    stream << "Server version: " << NYMEA_VERSION_STRING << endl;
-    stream << "JSON-RPC version: " << JSON_PROTOCOL_VERSION << endl;
-    stream << "Language: " << NymeaCore::instance()->configuration()->locale().name() << " (" << NymeaCore::instance()->configuration()->locale().nativeCountryName() << " - " << NymeaCore::instance()->configuration()->locale().nativeLanguageName() << ")" << endl;
-    stream << "Timezone: " << QString::fromUtf8(NymeaCore::instance()->configuration()->timeZone()) << endl;
-    stream << "Server UUID: " << NymeaCore::instance()->configuration()->serverUuid().toString() << endl;
-    stream << "Settings path: " << NymeaSettings::settingsPath() << endl;
-    stream << "Translations path: " << NymeaSettings(NymeaSettings::SettingsRoleGlobal).translationsPath() << endl;
-    stream << "User: " << qgetenv("USER") << endl;
-    stream << "Command: " << QCoreApplication::arguments().join(' ') << endl;
-    stream << "Qt runtime version: " << qVersion() << endl;
-    stream << "" << endl;
+    stream << "Server name: " << NymeaCore::instance()->configuration()->serverName() << Qt::endl;
+    stream << "Server version: " << NYMEA_VERSION_STRING << Qt::endl;
+    stream << "JSON-RPC version: " << JSON_PROTOCOL_VERSION << Qt::endl;
+    stream << "Language: " << NymeaCore::instance()->configuration()->locale().name() << " (" << NymeaCore::instance()->configuration()->locale().nativeCountryName() << " - " << NymeaCore::instance()->configuration()->locale().nativeLanguageName() << ")" << Qt::endl;
+    stream << "Timezone: " << QString::fromUtf8(NymeaCore::instance()->configuration()->timeZone()) << Qt::endl;
+    stream << "Server UUID: " << NymeaCore::instance()->configuration()->serverUuid().toString() << Qt::endl;
+    stream << "Settings path: " << NymeaSettings::settingsPath() << Qt::endl;
+    stream << "Translations path: " << NymeaSettings(NymeaSettings::SettingsRoleGlobal).translationsPath() << Qt::endl;
+    stream << "User: " << qgetenv("USER") << Qt::endl;
+    stream << "Command: " << QCoreApplication::arguments().join(' ') << Qt::endl;
+    stream << "Qt runtime version: " << qVersion() << Qt::endl;
+    stream << "" << Qt::endl;
 #if (QT_VERSION < QT_VERSION_CHECK(5, 6, 0))
-    stream << "Hostname: " << QHostInfo::localHostName() << endl;
+    stream << "Hostname: " << QHostInfo::localHostName() << Qt::endl;
 #else
-    stream << "Hostname: " << QSysInfo::machineHostName() << endl;
+    stream << "Hostname: " << QSysInfo::machineHostName() << Qt::endl;
 #endif
-    stream << "Architecture: " << QSysInfo::currentCpuArchitecture() << endl;
-    stream << "Kernel type: " << QSysInfo::kernelType() << endl;
-    stream << "Kernel version: " << QSysInfo::kernelVersion() << endl;
-    stream << "Product type: " << QSysInfo::productType() << endl;
-    stream << "Product version: " << QSysInfo::productVersion() << endl;
+    stream << "Architecture: " << QSysInfo::currentCpuArchitecture() << Qt::endl;
+    stream << "Kernel type: " << QSysInfo::kernelType() << Qt::endl;
+    stream << "Kernel version: " << QSysInfo::kernelVersion() << Qt::endl;
+    stream << "Product type: " << QSysInfo::productType() << Qt::endl;
+    stream << "Product version: " << QSysInfo::productVersion() << Qt::endl;
     outputFile.close();
 }
 

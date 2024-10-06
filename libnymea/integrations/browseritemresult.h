@@ -32,6 +32,7 @@
 #define BROWSERITEMRESULT_H
 
 #include <QObject>
+#include <QLocale>
 
 #include "thing.h"
 

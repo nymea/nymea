@@ -45,7 +45,7 @@ PluginInfoCache::PluginInfoCache()
 
 void PluginInfoCache::cachePluginInfo(const QJsonObject &metaData)
 {
-    QString fileName = metaData.value("id").toString().remove(QRegExp("[{}]")) + ".cache";
+    QString fileName = metaData.value("id").toString().remove(QRegularExpression("[{}]")) + ".cache";
     QDir path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/plugininfo/";
     if (!path.exists()) {
         if (!path.mkpath(path.absolutePath())) {
@@ -64,7 +64,7 @@ void PluginInfoCache::cachePluginInfo(const QJsonObject &metaData)
 
 QJsonObject PluginInfoCache::loadPluginInfo(const PluginId &pluginId)
 {
-    QString fileName = pluginId.toString().remove(QRegExp("[{}]")) + ".cache";
+    QString fileName = pluginId.toString().remove(QRegularExpression("[{}]")) + ".cache";
     QDir path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/plugininfo/";
     QFile file(path.absoluteFilePath(fileName));
     if (!file.open(QFile::ReadOnly)) {

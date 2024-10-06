@@ -5,8 +5,7 @@
 
 Q_DECLARE_LOGGING_CATEGORY(dcBluetooth)
 
-namespace nymeaserver
-{
+namespace nymeaserver {
 
 NymeaBluetoothAgentAdapter::NymeaBluetoothAgentAdapter(NymeaBluetoothAgent *agent, QObject *parent):
     QObject{parent},

@@ -36,6 +36,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+#include "nymeasettings.h"
 #include "loggingcategories.h"
 
 PluginInfoCache::PluginInfoCache()
@@ -46,7 +47,7 @@ PluginInfoCache::PluginInfoCache()
 void PluginInfoCache::cachePluginInfo(const QJsonObject &metaData)
 {
     QString fileName = metaData.value("id").toString().remove(QRegExp("[{}]")) + ".cache";
-    QDir path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/plugininfo/";
+    QDir path = NymeaSettings::cachePath() + "/plugininfo/";
     if (!path.exists()) {
         if (!path.mkpath(path.absolutePath())) {
             qCWarning(dcThingManager()) << "Error creating thing class cache dir at" << path.absolutePath();
@@ -65,7 +66,7 @@ void PluginInfoCache::cachePluginInfo(const QJsonObject &metaData)
 QJsonObject PluginInfoCache::loadPluginInfo(const PluginId &pluginId)
 {
     QString fileName = pluginId.toString().remove(QRegExp("[{}]")) + ".cache";
-    QDir path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/plugininfo/";
+    QDir path = NymeaSettings::cachePath() + "/plugininfo/";
     QFile file(path.absoluteFilePath(fileName));
     if (!file.open(QFile::ReadOnly)) {
         return QJsonObject();

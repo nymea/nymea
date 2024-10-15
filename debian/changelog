@@ -1,3 +1,13 @@
+nymea (1.11.0) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * WIP: Add systemd notify support
+  * Debug JSONRPC API handler
+  * Influxdb: Disable debug print if database is disabled or not
+    initialized
+
+ -- jenkins <developer@nymea.io>  Tue, 15 Oct 2024 21:21:48 +0200
+
 nymea (1.9.4) jammy; urgency=medium
 
   [ Simon Stürz ]

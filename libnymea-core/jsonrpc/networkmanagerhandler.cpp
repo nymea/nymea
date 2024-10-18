@@ -90,6 +90,7 @@ NetworkManagerHandler::NetworkManagerHandler(NetworkManager *networkManager, QOb
     registerEnum<NetworkManager::NetworkManagerError>();
     registerEnum<NetworkManager::NetworkManagerState>();
     registerEnum<NetworkDevice::NetworkDeviceState>();
+    registerFlag<WirelessNetworkDevice::WirelessCapability, WirelessNetworkDevice::WirelessCapabilities>();
     registerEnum<WirelessNetworkDevice::WirelessMode>();
     registerEnum<WiredNetworkConnectionType>();
 
@@ -119,6 +120,7 @@ NetworkManagerHandler::NetworkManagerHandler(NetworkManager *networkManager, QOb
     wirelessNetworkDevice.insert("r:ipv4Addresses", enumValueName(StringList));
     wirelessNetworkDevice.insert("r:ipv6Addresses", enumValueName(StringList));
     wirelessNetworkDevice.insert("r:state", enumRef<NetworkDevice::NetworkDeviceState>());
+    wirelessNetworkDevice.insert("r:capabilities", flagRef<WirelessNetworkDevice::WirelessCapabilities>());
     wirelessNetworkDevice.insert("r:bitRate", enumValueName(String));
     wirelessNetworkDevice.insert("r:mode", enumRef<WirelessNetworkDevice::WirelessMode>());
     wirelessNetworkDevice.insert("r:o:currentAccessPoint", objectRef<WirelessAccessPoint>());
@@ -556,6 +558,7 @@ QVariantMap NetworkManagerHandler::packWirelessNetworkDevice(WirelessNetworkDevi
     networkDeviceVariant.insert("ipv4Addresses", networkDevice->ipv4Addresses());
     networkDeviceVariant.insert("ipv6Addresses", networkDevice->ipv6Addresses());
     networkDeviceVariant.insert("state", networkDevice->deviceStateString());
+    networkDeviceVariant.insert("capabilities", flagValueNames(networkDevice->wirelessCapabilities()));
     networkDeviceVariant.insert("mode", enumValueName(networkDevice->wirelessMode()));
     networkDeviceVariant.insert("bitRate", QString("%1 [Mb/s]").arg(QString::number(networkDevice->bitRate())));
     if (networkDevice->activeAccessPoint())

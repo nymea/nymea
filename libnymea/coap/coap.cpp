@@ -227,9 +227,10 @@ bool Coap::joinMulticastGroup(const QHostAddress &address)
 {
     bool ok = m_socket->joinMulticastGroup(address);
     if (ok) {
-        qCDebug(dcCoap()) << "Joined CoAP multucast group on:" << address;
+        qCDebug(dcCoap()) << "Joined CoAP multicast group on:" << address.toString();
     } else {
-        qCWarning(dcCoap()) << "Error joining CoAP multicast group on:" << address;
+        // Note: the caller of this method shall warn about the failed multicast join and retry
+        qCDebug(dcCoap()) << "Error joining CoAP multicast group on:" << address.toString();
     }
     return ok;
 }

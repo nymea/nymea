@@ -1,3 +1,10 @@
+nymea (1.9.5) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * CoAP: Silence warning regarding multicast join error
+
+ -- jenkins <developer@nymea.io>  Tue, 29 Oct 2024 07:16:46 +0100
+
 nymea (1.9.4) jammy; urgency=medium
 
   [ Simon Stürz ]

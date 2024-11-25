@@ -365,19 +365,8 @@ void NymeaCore::thingManagerLoaded()
 
     emit initialized();
 
-    // Do some houskeeping...
     qCDebug(dcCore()) << "Starting housekeeping...";
     QDateTime startTime = QDateTime::currentDateTime();
-//    ThingsFetchJob *job = m_logger->fetchThings();
-//    connect(job, &ThingsFetchJob::finished, m_thingManager, [this, job, startTime](){
-//        foreach (const ThingId &thingId, job->results()) {
-//            if (!m_thingManager->findConfiguredThing(thingId)) {
-//                qCDebug(dcCore()) << "Cleaning stale thing entries from log DB for thing id" << thingId;
-//                m_logger->removeThingLogs(thingId);
-//            }
-//        }
-//        qCDebug(dcCore()) << "Housekeeping done in" << startTime.msecsTo(QDateTime::currentDateTime()) << "ms.";
-//    });
 
     foreach (const ThingId &thingId, m_ruleEngine->thingsInRules()) {
         if (!m_thingManager->findConfiguredThing(thingId)) {

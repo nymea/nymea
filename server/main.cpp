@@ -222,19 +222,31 @@ int main(int argc, char *argv[])
             qCInfo(dcApplication()) << "=====================================";
         }
 
+        QStringList arguments;
+        for (int i = 0; i < argc; i++) {
+            arguments << QString(argv[i]);
+        }
+        qCInfo(dcApplication()) << "Started:" << arguments.takeFirst();
+        qCInfo(dcApplication()) << "Parameters:" << arguments.join(' ');
+
         // If running in a snappy environment, print out some details about it.
         if (!qgetenv("SNAP").isEmpty()) {
             // Note: http://snapcraft.io/docs/reference/env
-            qCInfo(dcApplication) << "Snap name       :" << qgetenv("SNAP_NAME");
-            qCInfo(dcApplication) << "Snap version    :" << qgetenv("SNAP_VERSION");
-            qCInfo(dcApplication) << "Snap directory  :" << qgetenv("SNAP");
-            qCInfo(dcApplication) << "Snap app data   :" << qgetenv("SNAP_DATA");
-            qCInfo(dcApplication) << "Snap user data  :" << qgetenv("SNAP_USER_DATA");
-            qCInfo(dcApplication) << "Snap app common :" << qgetenv("SNAP_COMMON");
+            qCInfo(dcApplication()) << "Snap name       :" << qgetenv("SNAP_NAME");
+            qCInfo(dcApplication()) << "Snap version    :" << qgetenv("SNAP_VERSION");
+            qCInfo(dcApplication()) << "Snap directory  :" << qgetenv("SNAP");
+            qCInfo(dcApplication()) << "Snap app data   :" << qgetenv("SNAP_DATA");
+            qCInfo(dcApplication()) << "Snap user data  :" << qgetenv("SNAP_USER_DATA");
+            qCInfo(dcApplication()) << "Snap app common :" << qgetenv("SNAP_COMMON");
         }
 
         // create core instance
+        QObject::connect(NymeaCore::instance(), &NymeaCore::initialized, NymeaCore::instance(), [](){
+            qCInfo(dcApplication()) << "The core is now up and running.";
+        });
+
         NymeaCore::instance()->init(parser.values(interfacesOption), parser.isSet(noLogDbOption));
+
         int ret = application.exec();
         closeLogFile();
         return ret;

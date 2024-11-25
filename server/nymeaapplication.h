@@ -41,6 +41,7 @@ class NymeaApplication : public QCoreApplication
 {
 public:
     NymeaApplication(int &argc, char **argv);
+    ~NymeaApplication() override;
 };
 
 }

@@ -107,5 +107,5 @@ void ThingActionInfo::finish(Thing::ThingError status, const QString &displayMes
     m_finished = true;
     m_status = status;
     m_displayMessage = displayMessage;
-    staticQtMetaObject.invokeMethod(this, "finished", Qt::QueuedConnection);
+    staticMetaObject.invokeMethod(this, "finished", Qt::QueuedConnection);
 }

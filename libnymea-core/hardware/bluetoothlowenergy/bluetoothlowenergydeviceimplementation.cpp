@@ -37,7 +37,11 @@ BluetoothLowEnergyDeviceImplementation::BluetoothLowEnergyDeviceImplementation(c
     BluetoothLowEnergyDevice(parent),
     m_deviceInfo(deviceInfo)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    m_controller = QLowEnergyController::createCentral(deviceInfo, this);
+#else
     m_controller = new QLowEnergyController(address(), this);
+#endif
     m_controller->setRemoteAddressType(addressType);
 
     connect(m_controller, &QLowEnergyController::connected, this, &BluetoothLowEnergyDeviceImplementation::onConnected);

@@ -894,9 +894,9 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
 
     // Verify objects
     QVariantMap existingTypes = m_api.value("types").toMap();
-    QVariantMap typesIncludingThis = existingTypes;
-    typesIncludingThis.unite(handler->jsonObjects());
-    apiIncludingThis["types"] = typesIncludingThis;
+    apiIncludingThis = existingTypes;
+    apiIncludingThis.insert(handler->jsonObjects());
+
     foreach (const QString &objectName, handler->jsonObjects().keys()) {
         QVariantMap object = handler->jsonObjects().value(objectName).toMap();
         // Check for name clashes
@@ -931,7 +931,8 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
         }
         newMethods.insert(handler->name() + '.' + methodName, method);
     }
-    methods.unite(newMethods);
+
+    methods.insert(newMethods);
     apiIncludingThis["methods"] = methods;
 
     // Verify notifications
@@ -944,7 +945,7 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
         }
         newNotifications.insert(handler->name() + '.' + notificationName, notification);
     }
-    notifications.unite(newNotifications);
+    notifications.insert(newNotifications);
     apiIncludingThis["notifications"] = notifications;
 
     // Checks completed. Store new API
@@ -954,10 +955,10 @@ bool JsonRPCServerImplementation::registerHandler(JsonHandler *handler)
     m_handlers.insert(handler->name(), handler);
     for (int i = 0; i < handler->metaObject()->methodCount(); ++i) {
         QMetaMethod method = handler->metaObject()->method(i);
-        if (method.methodType() == QMetaMethod::Signal && QString(method.name()).contains(QRegExp("^[A-Z]"))) {
-            if (method.parameterCount() == 1 && method.parameterType(0) == QVariant::Map) {
+        if (method.methodType() == QMetaMethod::Signal && QString(method.name()).contains(QRegularExpression("^[A-Z]"))) {
+            if (method.parameterCount() == 1 && method.parameterType(0) == QMetaType::QVariantMap) {
                 QObject::connect(handler, method, this, metaObject()->method(metaObject()->indexOfSlot("sendNotification(QVariantMap)")));
-            } else if (method.parameterCount() == 2 && method.parameterType(0) == QVariant::Uuid && method.parameterType(1) == QVariant::Map) {
+            } else if (method.parameterCount() == 2 && method.parameterType(0) == QMetaType::QUuid && method.parameterType(1) == QMetaType::QVariantMap) {
                 QObject::connect(handler, method, this, metaObject()->method(metaObject()->indexOfSlot("sendClientNotification(QUuid,QVariantMap)")));
             }
         }

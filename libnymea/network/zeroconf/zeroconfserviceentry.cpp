@@ -192,12 +192,12 @@ bool ZeroConfServiceEntry::operator !=(const ZeroConfServiceEntry &other) const
 QDebug operator <<(QDebug dbg, const ZeroConfServiceEntry &entry)
 {
     dbg.nospace() << "ZeroConfServiceEntry(";
-    dbg << entry.name() << ")" << endl;
-    dbg << "    location: " << entry.hostAddress().toString() << ":" << entry.port() << endl;
-    dbg << "    hostname: " << entry.hostName() << endl;
-    dbg << "      domain: " << entry.domain() << endl;
-    dbg << "service type: " << entry.serviceType() << endl;
-    dbg << "    protocol: " << entry.protocol() << endl;
-    dbg << "         txt: " << entry.txt() << endl;
+    dbg << entry.name() << ")" << Qt::endl;
+    dbg << "    location: " << entry.hostAddress().toString() << ":" << entry.port() << Qt::endl;
+    dbg << "    hostname: " << entry.hostName() << Qt::endl;
+    dbg << "      domain: " << entry.domain() << Qt::endl;
+    dbg << "service type: " << entry.serviceType() << Qt::endl;
+    dbg << "    protocol: " << entry.protocol() << Qt::endl;
+    dbg << "         txt: " << entry.txt() << Qt::endl;
     return dbg;
 }

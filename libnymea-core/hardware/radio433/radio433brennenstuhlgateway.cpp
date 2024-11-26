@@ -41,7 +41,11 @@ Radio433BrennenstuhlGateway::Radio433BrennenstuhlGateway(QObject *parent) :
     // UDP socket to sending data to gateway
     m_gateway = new QUdpSocket(this);
     connect(m_gateway, &QUdpSocket::readyRead, this, &Radio433BrennenstuhlGateway::readData);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    connect(m_gateway, &QUdpSocket::errorOccurred, this, &Radio433BrennenstuhlGateway::gatewayError);
+#else
     connect(m_gateway, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(gatewayError(QAbstractSocket::SocketError)));
+#endif
 
     // Timer for discovery of the Gateway
     m_discoverTimer = new QTimer(this);
@@ -62,7 +66,7 @@ bool Radio433BrennenstuhlGateway::sendData(int delay, QList<int> rawData, int re
 
     // bring rawData list to a single ByteArray, values separated by ','
     foreach (int value, rawData) {
-        data.append(QString::number(value) + ",");
+        data.append(QString("%1,").arg(value).toUtf8());
     }
 
     /* Protocol:
@@ -79,7 +83,7 @@ bool Radio433BrennenstuhlGateway::sendData(int delay, QList<int> rawData, int re
      * ;        |   end of command
      */
 
-    message.append("TXP:0,0," + QString::number(repetitions) + ",0," + QString::number(delay) + "," + QString::number(rawData.count()/2) + "," + data + ";");
+    message.append(QString("TXP:0,0,%1,0,%2,%3,").arg(repetitions).arg(delay).arg(rawData.count() / 2).toUtf8() + data + QByteArray(";"));
 
     if (m_gateway->writeDatagram(message, m_gatewayAddress, m_port) > 0) {
         m_available = true;

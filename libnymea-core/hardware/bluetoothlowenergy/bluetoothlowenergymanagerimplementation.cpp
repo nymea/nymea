@@ -138,11 +138,19 @@ BluetoothPairingJob *BluetoothLowEnergyManagerImplementation::pairDevice(const Q
         return job;
     }
     localDevice->requestPairing(device, QBluetoothLocalDevice::AuthorizedPaired);
+#if QT_VERSION >= QT_VERSION_CHECK(6,2,0)
+    connect(localDevice, &QBluetoothLocalDevice::errorOccurred, job, [=](QBluetoothLocalDevice::Error error){
+        qCDebug(dcBluetooth()) << "Pairing error" << error;
+        job->finish(false);
+        localDevice->deleteLater();
+    });
+#else
     connect(localDevice, &QBluetoothLocalDevice::error, job, [=](QBluetoothLocalDevice::Error error){
         qCDebug(dcBluetooth()) << "Pairing error" << error;
         job->finish(false);
         localDevice->deleteLater();
     });
+#endif
     connect(localDevice, &QBluetoothLocalDevice::pairingFinished, job, [=](const QBluetoothAddress &address, QBluetoothLocalDevice::Pairing pairing){
         qCDebug(dcBluetooth()) << "Pairing finished" << address.toString() << pairing;
         job->finish(true);

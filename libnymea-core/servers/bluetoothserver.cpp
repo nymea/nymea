@@ -211,12 +211,26 @@ bool BluetoothServer::startServer()
     // Set service attributes
     m_serviceInfo = new QBluetoothServiceInfo();
 
+    QBluetoothUuid publicBrowseGroupUuid;
+    QBluetoothUuid serialPortUuid;
+    QBluetoothUuid rfCommUuid;
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    publicBrowseGroupUuid = QBluetoothUuid(QBluetoothUuid::ServiceClassUuid::PublicBrowseGroup);
+    serialPortUuid = QBluetoothUuid(QBluetoothUuid::ServiceClassUuid::SerialPort);
+    rfCommUuid = QBluetoothUuid(QBluetoothUuid::ProtocolUuid::Rfcomm);
+#else
+    publicBrowseGroupUuid = QBluetoothUuid(QBluetoothUuid::PublicBrowseGroup);
+    serialPortUuid = QBluetoothUuid(QBluetoothUuid::SerialPort);
+    rfCommUuid = QBluetoothUuid(QBluetoothUuid::Rfcomm);
+#endif
+
     QBluetoothServiceInfo::Sequence browseSequence;
-    browseSequence << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::PublicBrowseGroup));
+    browseSequence << QVariant::fromValue(publicBrowseGroupUuid);
     m_serviceInfo->setAttribute(QBluetoothServiceInfo::BrowseGroupList, browseSequence);
 
     QBluetoothServiceInfo::Sequence classId;
-    classId << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::SerialPort));
+    classId << QVariant::fromValue(serialPortUuid);
     m_serviceInfo->setAttribute(QBluetoothServiceInfo::BluetoothProfileDescriptorList, classId);
     classId.prepend(QVariant::fromValue(nymeaServiceUuid));
 
@@ -230,7 +244,7 @@ bool BluetoothServer::startServer()
     // Define protocol
     QBluetoothServiceInfo::Sequence protocolDescriptorList;
     QBluetoothServiceInfo::Sequence protocol;
-    protocol << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::Rfcomm))
+    protocol << QVariant::fromValue(rfCommUuid)
              << QVariant::fromValue(quint8(m_server->serverPort()));
     protocolDescriptorList.append(QVariant::fromValue(protocol));
     m_serviceInfo->setAttribute(QBluetoothServiceInfo::ProtocolDescriptorList, protocolDescriptorList);

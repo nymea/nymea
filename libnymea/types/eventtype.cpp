@@ -97,14 +97,14 @@ void EventType::setIndex(const int &index)
 }
 
 /*! Holds a List describing possible parameters for a \l{Event} of this EventType.
- *  e.g. QList(ParamType("temperature", QVariant::Real)). */
+ *  e.g. QList(ParamType("temperature", QMetaType::Real)). */
 ParamTypes EventType::paramTypes() const
 {
     return m_paramTypes;
 }
 
 /*! Set the parameter description for this EventType to \a paramTypes,
- *  e.g. QList<ParamType>() << ParamType("temperature", QVariant::Real)). */
+ *  e.g. QList<ParamType>() << ParamType("temperature", QMetaType::Real)). */
 void EventType::setParamTypes(const ParamTypes &paramTypes)
 {
     m_paramTypes = paramTypes;

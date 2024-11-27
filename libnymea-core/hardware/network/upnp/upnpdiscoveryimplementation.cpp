@@ -539,7 +539,11 @@ bool UpnpDiscoveryImplementation::enable()
     m_available = true;
     emit availableChanged(true);
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    connect(m_socket, &QUdpSocket::errorOccurred, this, &UpnpDiscoveryImplementation::error);
+#else
     connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(error(QAbstractSocket::SocketError)));
+#endif
     connect(m_socket, &QUdpSocket::readyRead, this, &UpnpDiscoveryImplementation::readData);
 
     m_notificationTimer->start();

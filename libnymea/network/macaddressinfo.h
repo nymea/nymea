@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2022, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,51 +28,37 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKDEVICEDISCOVERY_H
-#define NETWORKDEVICEDISCOVERY_H
+#ifndef MACADDRESSINFO_H
+#define MACADDRESSINFO_H
 
-#include <QTimer>
-#include <QObject>
-#include <QLoggingCategory>
+#include "macaddress.h"
 
-#include "libnymea.h"
-#include "hardwareresource.h"
-
-#include "networkdevicemonitor.h"
-
-#include "pingreply.h"
-#include "macaddressdatabasereply.h"
-#include "networkdevicediscoveryreply.h"
-
-class LIBNYMEA_EXPORT NetworkDeviceDiscovery : public HardwareResource
+class MacAddressInfo
 {
-    Q_OBJECT
 public:
-    explicit NetworkDeviceDiscovery(QObject *parent = nullptr);
-    virtual ~NetworkDeviceDiscovery() = default;
+    explicit MacAddressInfo();
+    explicit MacAddressInfo(const MacAddress &macAddress);
+    explicit MacAddressInfo(const MacAddress &macAddress, const QString &vendorName);
 
-    virtual NetworkDeviceDiscoveryReply *discover() = 0;
+    MacAddress macAddress() const;
 
-    virtual bool running() const = 0;
+    QString vendorName() const;
+    void setVendorName(const QString &vendorName);
 
-    virtual NetworkDeviceMonitor *registerMonitor(const MacAddress &macAddress) = 0;
+    bool isValid() const;
+    bool isComplete() const;
 
-    virtual void unregisterMonitor(const MacAddress &macAddress) = 0;
-    virtual void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) = 0;
+    bool operator==(const MacAddressInfo &other) const;
+    bool operator!=(const MacAddressInfo &other) const;
 
-    virtual PingReply *ping(const QHostAddress &address, uint retries = 3) = 0;
+private:
+    MacAddress m_macAddress;
+    QString m_vendorName;
 
-    virtual MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) = 0;
-    virtual MacAddressDatabaseReply *lookupMacAddress(const MacAddress &macAddress) = 0;
-
-    virtual bool sendArpRequest(const QHostAddress &address) = 0;
-
-    virtual NetworkDeviceInfos cache() const = 0;
-
-signals:
-    void runningChanged(bool running);
-    void cacheUpdated();
-
+    bool m_vendorNameSet = false;
 };
 
-#endif // NETWORKDEVICEDISCOVERY_H
+QDebug operator<<(QDebug debug, const MacAddressInfo &addressInfo);
+
+
+#endif // MACADDRESSINFO_H

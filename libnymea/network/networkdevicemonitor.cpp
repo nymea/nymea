@@ -42,8 +42,9 @@ QDebug operator<<(QDebug dbg, NetworkDeviceMonitor *networkDeviceMonitor)
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "NetworkDeviceMonitor(" << networkDeviceMonitor->macAddress().toString();
 
-    if (!networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer().isEmpty())
-        dbg.nospace() << " - " << networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer();
+    // FIXME
+    // if (!networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer().isEmpty())
+    //     dbg.nospace() << " - " << networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer();
 
     dbg.nospace() << ", " << networkDeviceMonitor->networkDeviceInfo().address().toString();
     dbg.nospace() << ", " << (networkDeviceMonitor->reachable() ? "reachable" : "not reachable");

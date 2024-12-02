@@ -79,7 +79,7 @@ public:
 
     bool sendArpRequest(const QHostAddress &address) override;
 
-    QHash<MacAddress, NetworkDeviceInfo> cache() const override;
+    NetworkDeviceInfos cache() const override;
 
 protected:
     void setEnabled(bool enabled) override;
@@ -116,8 +116,12 @@ private:
     QHash<MacAddress, int> m_monitorsReferenceCount;
     QHash<MacAddress, QDateTime> m_lastSeen;
 
+    QHash<MacAddress, QString> m_macVendorCache;
+
+    QHash<QHostAddress, NetworkDeviceInfo> m_infos;
+
     QSettings *m_cacheSettings;
-    QHash<MacAddress, NetworkDeviceInfo> m_networkInfoCache;
+    NetworkDeviceInfos m_networkInfoCache;
 
     void pingAllNetworkDevices();
 

@@ -56,20 +56,21 @@ int NetworkDeviceInfos::indexFromHostAddress(const QHostAddress &address)
     return -1;
 }
 
-int NetworkDeviceInfos::indexFromMacAddress(const QString &macAddress)
+QList<int> NetworkDeviceInfos::indexFromMacAddress(const QString &macAddress)
 {
     return indexFromMacAddress(MacAddress(macAddress));
 }
 
-int NetworkDeviceInfos::indexFromMacAddress(const MacAddress &macAddress)
+QList<int> NetworkDeviceInfos::indexFromMacAddress(const MacAddress &macAddress)
 {
+    QList<int> indices;
     for (int i = 0; i < size(); i++) {
-        if (MacAddress(at(i).macAddress()) == macAddress) {
-            return i;
+        if (at(i).macAddressInfos().hasMacAddress(macAddress)) {
+            indices << i;
         }
     }
 
-    return -1;
+    return indices;
 }
 
 bool NetworkDeviceInfos::hasHostAddress(const QHostAddress &address)
@@ -79,12 +80,12 @@ bool NetworkDeviceInfos::hasHostAddress(const QHostAddress &address)
 
 bool NetworkDeviceInfos::hasMacAddress(const QString &macAddress)
 {
-    return indexFromMacAddress(macAddress) >= 0;
+    return !indexFromMacAddress(macAddress).isEmpty();
 }
 
 bool NetworkDeviceInfos::hasMacAddress(const MacAddress &macAddress)
 {
-    return indexFromMacAddress(macAddress) >= 0;
+    return !indexFromMacAddress(macAddress).isEmpty();
 }
 
 NetworkDeviceInfo NetworkDeviceInfos::get(const QHostAddress &address) const
@@ -98,35 +99,44 @@ NetworkDeviceInfo NetworkDeviceInfos::get(const QHostAddress &address) const
     return NetworkDeviceInfo();
 }
 
-NetworkDeviceInfo NetworkDeviceInfos::get(const QString &macAddress) const
-{
-    foreach (const NetworkDeviceInfo &networkDeviceInfo, *this) {
-        if (networkDeviceInfo.macAddress() == macAddress) {
-            return networkDeviceInfo;
-        }
-    }
-
-    return NetworkDeviceInfo();
-}
-
-NetworkDeviceInfo NetworkDeviceInfos::get(const MacAddress &macAddress) const
-{
-    return get(macAddress.toString());
-}
-
-void NetworkDeviceInfos::removeMacAddress(const QString &macAddress)
-{
-    removeMacAddress(MacAddress(macAddress));
-}
-
-void NetworkDeviceInfos::removeMacAddress(const MacAddress &macAddress)
+void NetworkDeviceInfos::removeHostAddress(const QHostAddress &address)
 {
     for (int i = 0; i < size(); i++) {
-        if (MacAddress(at(i).macAddress()) == macAddress) {
+        if (at(i).address() == address) {
             remove(i);
         }
     }
 }
+
+// NetworkDeviceInfo NetworkDeviceInfos::get(const QString &macAddress) const
+// {
+//     foreach (const NetworkDeviceInfo &networkDeviceInfo, *this) {
+//         if (networkDeviceInfo.macAddress() == macAddress) {
+//             return networkDeviceInfo;
+//         }
+//     }
+
+//     return NetworkDeviceInfo();
+// }
+
+// NetworkDeviceInfo NetworkDeviceInfos::get(const MacAddress &macAddress) const
+// {
+//     return get(macAddress.toString());
+// }
+
+// void NetworkDeviceInfos::removeMacAddress(const QString &macAddress)
+// {
+//     removeMacAddress(MacAddress(macAddress));
+// }
+
+// void NetworkDeviceInfos::removeMacAddress(const MacAddress &macAddress)
+// {
+//     for (int i = 0; i < size(); i++) {
+//         if (MacAddress(at(i).macAddress()) == macAddress) {
+//             remove(i);
+//         }
+//     }
+// }
 
 void NetworkDeviceInfos::sortNetworkDevices()
 {

@@ -57,6 +57,8 @@ HEADERS += \
     network/arpsocket.h \
     network/macaddress.h \
     network/macaddressdatabasereply.h \
+    network/macaddressinfo.h \
+    network/macaddressinfos.h \
     network/networkdevicediscovery.h \
     network/networkdevicediscoveryreply.h \
     network/networkdeviceinfo.h \
@@ -175,6 +177,8 @@ SOURCES += \
     network/arpsocket.cpp \
     network/macaddress.cpp \
     network/macaddressdatabasereply.cpp \
+    network/macaddressinfo.cpp \
+    network/macaddressinfos.cpp \
     network/networkdevicediscovery.cpp \
     network/networkdeviceinfo.cpp \
     network/networkdeviceinfos.cpp \

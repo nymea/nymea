@@ -48,7 +48,6 @@ public:
     ~NetworkDeviceDiscoveryReplyImpl() override = default;
 
     NetworkDeviceInfos networkDeviceInfos() const override;
-    NetworkDeviceInfos virtualNetworkDeviceInfos() const override;
 
     bool isFinished() const override;
     void setFinished(bool finished);
@@ -60,28 +59,19 @@ public:
 
     void processDiscoveryFinished();
 
+    QHash<QHostAddress, NetworkDeviceInfo> currentCache() const;
+
 public slots:
     void addCompleteNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo);
-    void addVirtualNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo);
 
 private:
-    NetworkDeviceInfos m_networkDeviceInfos; // Contains only complete and valid infos
-    NetworkDeviceInfos m_virtualNetworkDeviceInfos; // Contains ping responses without ARP, like VPN devices
-
-    QHash<MacAddress, NetworkDeviceInfo> m_networkDeviceCache;
+    QHash<QHostAddress, NetworkDeviceInfo> m_networkDeviceCache;
     qint64 m_startTimestamp;
-
     bool m_isFinished = false;
 
-    // Temporary cache for ping responses where the mac is not known yet (like VPN devices)
-    QHash<QHostAddress, NetworkDeviceInfo> m_pingCache;
+    NetworkDeviceInfos m_networkDeviceInfos;
 
-    QString macAddressFromHostAddress(const QHostAddress &address);
-    bool hasHostAddress(const QHostAddress &address);
-
-    void verifyComplete(const MacAddress &macAddress);
-
-
+    void evaluateMonitorMode(const QHostAddress &address);
 };
 
 }

@@ -28,33 +28,37 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef INTERFACEEVENTTYPE_H
-#define INTERFACEEVENTTYPE_H
+#include "interfaceparamtype.h"
 
-#include "eventtype.h"
 
-class InterfaceEventType: public EventType
+InterfaceParamType::InterfaceParamType()
 {
-public:
-    InterfaceEventType();
 
-    bool optional() const;
-    void setOptional(bool optional);
+}
 
-    bool loggingOverride() const;
-    void setLoggingOverride(bool loggingOverride);
-
-private:
-    bool m_optional = false;
-    bool m_loggingOverride = false;
-};
-
-class InterfaceEventTypes: public QList<InterfaceEventType>
+bool InterfaceParamType::optional() const
 {
-public:
-    InterfaceEventTypes() = default;
-    InterfaceEventTypes(const QList<InterfaceEventType> &other);
-    InterfaceEventType findByName(const QString &name);
-};
+    return m_optional;
+}
 
-#endif // INTERFACEEVENTTYPE_H
+void InterfaceParamType::setOptional(bool optional)
+{
+    m_optional = optional;
+}
+
+
+InterfaceParamTypes::InterfaceParamTypes(const QList<InterfaceParamType> &other)
+    : QList<InterfaceParamType>(other)
+{
+
+}
+
+InterfaceParamType InterfaceParamTypes::findByName(const QString &name)
+{
+    foreach (const InterfaceParamType &ipt, *this) {
+        if (ipt.name() == name) {
+            return ipt;
+        }
+    }
+    return InterfaceParamType();
+}

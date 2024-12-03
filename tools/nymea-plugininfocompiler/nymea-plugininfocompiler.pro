@@ -24,6 +24,7 @@ SOURCES += \
     $$top_srcdir/libnymea/types/eventtype.cpp \
     $$top_srcdir/libnymea/types/actiontype.cpp \
     $$top_srcdir/libnymea/types/interface.cpp \
+    $$top_srcdir/libnymea/types/interfaceparamtype.cpp \
     $$top_srcdir/libnymea/types/interfacestatetype.cpp \
     $$top_srcdir/libnymea/types/interfaceeventtype.cpp \
     $$top_srcdir/libnymea/types/interfaceactiontype.cpp \
@@ -42,6 +43,7 @@ HEADERS += \
     $$top_srcdir/libnymea/types/eventtype.h \
     $$top_srcdir/libnymea/types/actiontype.h \
     $$top_srcdir/libnymea/types/interface.h \
+    $$top_srcdir/libnymea/types/interfaceparamtype.h \
     $$top_srcdir/libnymea/types/interfacestatetype.h \
     $$top_srcdir/libnymea/types/interfaceeventtype.h \
     $$top_srcdir/libnymea/types/interfaceactiontype.h \

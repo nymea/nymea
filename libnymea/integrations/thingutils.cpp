@@ -189,9 +189,39 @@ Interface ThingUtils::loadInterface(const QString &name)
         }
     }
 
+    InterfaceParamTypes paramTypes;
     InterfaceStateTypes stateTypes;
     InterfaceActionTypes actionTypes;
     InterfaceEventTypes eventTypes;
+
+    foreach (const QVariant &paramVariant, content.value("params").toList()) {
+        QVariantMap paramMap = paramVariant.toMap();
+
+        InterfaceParamType paramType;
+        paramType.setName(paramMap.value("name").toString());
+        paramType.setType(QVariant::nameToType(paramMap.value("type").toByteArray()));
+        paramType.setMinValue(paramMap.value("minValue"));
+        paramType.setMaxValue(paramMap.value("maxValue"));
+        paramType.setDefaultValue(paramMap.value("defaultValue"));
+        paramType.setAllowedValues(paramMap.value("allowedValues").toList());
+        paramType.setReadOnly(paramMap.value("readOnly").toBool());
+        //paramType.setOptional(paramMap.value("optional", false).toBool());
+
+        if (paramMap.contains("unit")) {
+            QMetaEnum unitEnum = QMetaEnum::fromType<Types::Unit>();
+            int enumValue = unitEnum.keyToValue("Unit" + paramMap.value("unit").toByteArray());
+            if (enumValue == -1) {
+                qCWarning(dcThingManager) << "Invalid unit" << paramMap.value("unit").toString() << "in interface" << name;
+            } else {
+                paramType.setUnit(static_cast<Types::Unit>(enumValue));
+            }
+        } else {
+            paramType.setUnit(Types::UnitNone);
+        }
+
+        paramTypes.append(paramType);
+    }
+
     foreach (const QVariant &stateVariant, content.value("states").toList()) {
         QVariantMap stateMap = stateVariant.toMap();
         InterfaceStateType stateType;
@@ -279,11 +309,17 @@ Interface ThingUtils::loadInterface(const QString &name)
         eventTypes.append(eventType);
     }
 
-    return Interface(name, iface.actionTypes() << actionTypes, iface.eventTypes() << eventTypes, iface.stateTypes() << stateTypes);
+    return Interface(name, iface.paramTypes() << paramTypes, iface.actionTypes() << actionTypes, iface.eventTypes() << eventTypes, iface.stateTypes() << stateTypes);
 }
 
 Interface ThingUtils::mergeInterfaces(const Interface &iface1, const Interface &iface2)
 {
+    InterfaceParamTypes paramTypes = iface1.paramTypes();
+    foreach (const InterfaceParamType &pt, iface2.paramTypes()) {
+        if (paramTypes.findByName(pt.name()).name().isEmpty()) {
+            paramTypes.append(pt);
+        }
+    }
     InterfaceEventTypes eventTypes = iface1.eventTypes();
     foreach (const InterfaceEventType &et, iface2.eventTypes()) {
         if (eventTypes.findByName(et.name()).name().isEmpty()) {
@@ -302,7 +338,7 @@ Interface ThingUtils::mergeInterfaces(const Interface &iface1, const Interface &
             actionTypes.append(at);
         }
     }
-    return Interface(QString(), actionTypes, eventTypes, stateTypes);
+    return Interface(QString(), paramTypes, actionTypes, eventTypes, stateTypes);
 }
 
 QStringList ThingUtils::generateInterfaceParentList(const QString &interface)

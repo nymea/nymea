@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -202,9 +202,9 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
             QJsonObject thingClassObject = thingClassJson.toObject();
             /*! Returns a list of all valid JSON properties a ThingClass JSON definition can have. */
             QStringList thingClassProperties = QStringList() << "id" << "name" << "displayName" << "createMethods" << "setupMethod"
-                                     << "interfaces" << "providedInterfaces" << "browsable" << "discoveryParamTypes"
-                                     << "paramTypes" << "settingsTypes" << "stateTypes" << "actionTypes" << "eventTypes" << "browserItemActionTypes"
-                                     << "discoveryType";
+                                                             << "interfaces" << "providedInterfaces" << "browsable" << "discoveryParamTypes"
+                                                             << "paramTypes" << "settingsTypes" << "stateTypes" << "actionTypes" << "eventTypes" << "browserItemActionTypes"
+                                                             << "discoveryType";
             QStringList mandatoryThingClassProperties = QStringList() << "id" << "name" << "displayName";
 
             QPair<QStringList, QStringList> verificationResult = verifyFields(thingClassProperties, mandatoryThingClassProperties, thingClassObject);
@@ -702,6 +702,64 @@ void PluginMetadata::parse(const QJsonObject &jsonObject)
                     hasError = true;
                     continue;
                 }
+
+                foreach (const InterfaceParamType &ifaceParamType, iface.paramTypes()) {
+                    if (!thingClass.paramTypes().contains(ifaceParamType.name())) {
+                        if (!ifaceParamType.optional()) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() +
+                                                      "\" but doesn't implement param \"" + ifaceParamType.name() + "\"");
+                            hasError = true;
+                        }
+                        continue;
+                    }
+                    ParamType &paramType = thingClass.paramTypes()[ifaceParamType.name()];
+                    if (ifaceParamType.type() != paramType.type()) {
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() +
+                                                  "\" but param \"" + paramType.name() + "\" has not matching type: \"" +
+                                                  QVariant::typeToName(paramType.type()) + "\" != \"" + QVariant::typeToName(ifaceParamType.type()) + "\"");
+                        hasError = true;
+                    }
+                    if (ifaceParamType.minValue().isValid() && !ifaceParamType.minValue().isNull()) {
+                        if (ifaceParamType.minValue().toString() == "any") {
+                            if (paramType.minValue().isNull()) {
+                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() +
+                                                          "\" but param \"" + paramType.name() + "\" has no minimum value defined.");
+                                hasError = true;
+                            }
+                        } else if (ifaceParamType.minValue() != paramType.minValue()) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() +
+                                                      "\" but param \"" + paramType.name() + "\" has not matching minimum value: \"" +
+                                                      ifaceParamType.minValue().toString() + "\" != \"" + paramType.minValue().toString() + "\"");
+                            hasError = true;
+                        }
+                    }
+                    if (ifaceParamType.maxValue().isValid() && !ifaceParamType.maxValue().isNull()) {
+                        if (ifaceParamType.maxValue().toString() == "any") {
+                            if (paramType.maxValue().isNull()) {
+                                m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() +
+                                                          "\" but param \"" + paramType.name() + "\" has no maximum value defined.");
+                                hasError = true;
+                            }
+                        } else if (ifaceParamType.maxValue() != paramType.maxValue()) {
+                            m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() +
+                                                      "\" but param \"" + paramType.name() + "\" has not matching maximum value: \"" +
+                                                      ifaceParamType.maxValue().toString() + "\" != \"" + paramType.minValue().toString() + "\"");
+                            hasError = true;
+                        }
+                    }
+                    if (!ifaceParamType.allowedValues().isEmpty() && ifaceParamType.allowedValues() != paramType.allowedValues()) {
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but param \"" +
+                                                  paramType.name() + "\" has not matching allowed values.");
+                        hasError = true;
+                    }
+                    if (ifaceParamType.unit() != Types::UnitNone && ifaceParamType.unit() != paramType.unit()) {
+                        QMetaEnum unitEnum = QMetaEnum::fromType<Types::Unit>();
+                        m_validationErrors.append("Thing class \"" + thingClass.name() + "\" claims to implement interface \"" + value.toString() + "\" but param \"" +
+                                                  paramType.name() + "\" has not matching unit: \"" + unitEnum.valueToKey(ifaceParamType.unit()) + "\" != \"" + unitEnum.valueToKey(paramType.unit()));
+                        hasError = true;
+                    }
+                }
+
 
                 foreach (const InterfaceStateType &ifaceStateType, iface.stateTypes()) {
                     if (!stateTypes.contains(ifaceStateType.name())) {

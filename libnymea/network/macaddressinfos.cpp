@@ -49,7 +49,7 @@ int MacAddressInfos::indexFromMacAddress(const QString &macAddress)
 int MacAddressInfos::indexFromMacAddress(const MacAddress &macAddress)
 {
     for (int i = 0; i < size(); i++) {
-        if (MacAddress(at(i).macAddress()) == macAddress) {
+        if (at(i).macAddress() == macAddress) {
             return i;
         }
     }

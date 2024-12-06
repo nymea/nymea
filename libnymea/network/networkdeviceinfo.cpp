@@ -146,12 +146,54 @@ QString NetworkDeviceInfo::incompleteProperties() const
         list.append("MAC infos incomplete");
 
     if (!m_hostNameSet)
-        list.append("hostname not set");
+        list.append("host name not set");
 
     if (!m_networkInterfaceSet)
         list.append("nework interface not set");
 
     return list.join(", ");
+}
+
+QString NetworkDeviceInfo::thingParamValueMacAddress() const
+{
+    QString macString;
+    switch (m_monitorMode) {
+    case MonitorModeMac:
+        macString = m_macAddressInfos.constFirst().macAddress().toString();
+        break;
+    default:
+        // In any other case we don't want to store the mac address since we can not relai on it
+        break;
+    }
+    return macString;
+}
+
+QString NetworkDeviceInfo::thingParamValueHostName() const
+{
+    QString hostNameString;
+    switch (m_monitorMode) {
+    case MonitorModeMac:
+    case MonitorModeHostName:
+        hostNameString = m_hostName;
+        break;
+    default:
+        break;
+    }
+    return hostNameString;
+}
+
+QString NetworkDeviceInfo::thingParamValueAddress() const
+{
+    QString addressString;
+    switch (m_monitorMode) {
+    case MonitorModeIp:
+        addressString = m_address.toString();
+        break;
+    default:
+        // In any other case we don't want to store the IP address because we want to discover it
+        break;
+    }
+    return addressString;
 }
 
 bool NetworkDeviceInfo::operator==(const NetworkDeviceInfo &other) const
@@ -179,7 +221,7 @@ QDebug operator<<(QDebug dbg, const NetworkDeviceInfo &networkDeviceInfo)
     case NetworkDeviceInfo::MonitorModeMac:
         dbg.nospace().noquote() << "MAC";
         break;
-    case NetworkDeviceInfo::MonitorModeHostname:
+    case NetworkDeviceInfo::MonitorModeHostName:
         dbg.nospace().noquote() << "hostname";
         break;
     case NetworkDeviceInfo::MonitorModeIp:

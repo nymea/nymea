@@ -62,16 +62,12 @@ void NetworkDeviceDiscoveryReplyImpl::setFinished(bool finished)
 void NetworkDeviceDiscoveryReplyImpl::processPingResponse(const QHostAddress &address, const QString &hostName)
 {
     if (m_networkDeviceCache.contains(address)) {
-        // Update existing hostname...
         m_networkDeviceCache[address].setHostName(hostName);
-        evaluateMonitorMode(address);
     } else {
-        // Adding new host...
         NetworkDeviceInfo info;
         info.setAddress(address);
         info.setHostName(hostName);
         m_networkDeviceCache.insert(address, info);
-        evaluateMonitorMode(address);
 
         // First time seeing this host address
         emit hostAddressDiscovered(address);
@@ -93,8 +89,6 @@ void NetworkDeviceDiscoveryReplyImpl::processArpResponse(const QNetworkInterface
         // First time seeing this host address
         emit hostAddressDiscovered(address);
     }
-
-    evaluateMonitorMode(address);
 }
 
 void NetworkDeviceDiscoveryReplyImpl::processMacManufacturer(const MacAddress &macAddress, const QString &manufacturer)
@@ -105,7 +99,6 @@ void NetworkDeviceDiscoveryReplyImpl::processMacManufacturer(const MacAddress &m
     foreach (const NetworkDeviceInfo &info, m_networkDeviceCache) {
         if (info.macAddressInfos().hasMacAddress(macAddress)) {
             m_networkDeviceCache[info.address()].addMacAddress(macAddress, manufacturer);
-            evaluateMonitorMode(info.address());
         }
     }
 }
@@ -128,10 +121,11 @@ void NetworkDeviceDiscoveryReplyImpl::processDiscoveryFinished()
 
         qCDebug(dcNetworkDeviceDiscovery()) << "Adding incomplete" << info << "to the final result:" << info.incompleteProperties();
         m_networkDeviceCache[address].forceComplete();
-
-        evaluateMonitorMode(address);
-        m_networkDeviceInfos.append(m_networkDeviceCache.value(address));
+        m_networkDeviceInfos.append(m_networkDeviceCache.take(address));
     }
+
+    // Evaluate overall monitor mode...
+    evaluateMonitorMode();
 
     // Done, lets sort the result and inform
     m_networkDeviceInfos.sortNetworkDevices();
@@ -159,55 +153,72 @@ void NetworkDeviceDiscoveryReplyImpl::addCompleteNetworkDeviceInfo(const Network
         m_networkDeviceInfos.append(networkDeviceInfo);
 }
 
-void NetworkDeviceDiscoveryReplyImpl::evaluateMonitorMode(const QHostAddress &address)
+void NetworkDeviceDiscoveryReplyImpl::evaluateMonitorMode()
 {
-    qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: Evaluating monitor mode for host" << address.toString();
+    for (int i = 0; i < m_networkDeviceInfos.size(); i++) {
 
-    if (m_networkDeviceCache.value(address).macAddressInfos().isEmpty()) {
-        // Not discovered yet, or this is a virtual host like VPN
-        if (m_networkDeviceCache.value(address).hostName().isEmpty()) {
-            m_networkDeviceCache[address].setMonitorMode(NetworkDeviceInfo::MonitorModeIp);
-            qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: No MAC address and no hostname, using IP only";
-        } else {
-            qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: No MAC address, but we have a hostname.";
-            m_networkDeviceCache[address].setMonitorMode(NetworkDeviceInfo::MonitorModeHostname);
-        }
+        const NetworkDeviceInfo info = m_networkDeviceInfos.at(i);
+        qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: Evaluating host" << info.address().toString();
 
-    } else {
-        // We have at least one mac address, check if there are other network devices with this MAC or if we have multiple MAC addresses
-        if (m_networkDeviceCache.value(address).macAddressInfos().count() == 1) {
+        NetworkDeviceInfo::MonitorMode mode = NetworkDeviceInfo::MonitorModeMac;
 
-            bool uniqueMac = true;
+        if (info.macAddressInfos().isEmpty()) {
+
+            // No MAC address found, no ARP for this host, probably a VPN client
+            if (info.hostName().isEmpty()) {
+                qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> No MAC address and no host name, using MonitorModeIp";
+                mode = NetworkDeviceInfo::MonitorModeIp;
+            } else {
+                qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> No MAC address, but we have a host name, suing MonitorModeHostName";
+                mode = NetworkDeviceInfo::MonitorModeHostName;
+            }
+
+        } else if (info.macAddressInfos().size() == 1) {
+
+            // Single mac address for this host..
+            MacAddress macAddress = info.macAddressInfos().constFirst().macAddress();
+            bool macAddressIsUnique = true;
+
             // Check if this mac is unique
-            foreach (const NetworkDeviceInfo &info, m_networkDeviceCache) {
-                if (info.address() == address)
+            foreach (const NetworkDeviceInfo &networkDeviceInfo, m_networkDeviceInfos) {
+
+                // Skip our self...
+                if (networkDeviceInfo.address() == info.address())
                     continue;
 
-                if (info.macAddressInfos().hasMacAddress(m_networkDeviceCache.value(address).macAddressInfos().first().macAddress())) {
-                    uniqueMac = false;
+                if (networkDeviceInfo.macAddressInfos().hasMacAddress(macAddress)) {
+                    macAddressIsUnique = false;
                     break;
                 }
             }
 
-            if (!uniqueMac) {
-                if (m_networkDeviceCache.value(address).hostName().isEmpty()) {
-                    m_networkDeviceCache[address].setMonitorMode(NetworkDeviceInfo::MonitorModeIp);
-                    qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: The MAC address of" << address.toString() << "is not unique in this network and no hostname available, using IP only";
+            if (!macAddressIsUnique) {
+                if (info.hostName().isEmpty()) {
+                    qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> the MAC address of" << info.address().toString() << "is not unique in this network and no host name available, usgin MonitorModeIp";
+                    mode = NetworkDeviceInfo::MonitorModeIp;
                 } else {
-                    qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: The MAC address of" << address.toString() << "is not unique in this network but we have a hostname";
-                    m_networkDeviceCache[address].setMonitorMode(NetworkDeviceInfo::MonitorModeHostname);
+                    qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> the MAC address of" << info.address().toString() << "is not unique in this network but we have a host name, usgin MonitorModeHostName";
+                    mode = NetworkDeviceInfo::MonitorModeHostName;
                 }
-            }
-        } else {
-            // Multiple MAC addresses
-            if (m_networkDeviceCache.value(address).hostName().isEmpty()) {
-                m_networkDeviceCache[address].setMonitorMode(NetworkDeviceInfo::MonitorModeIp);
-                qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: Multiple MAC addresses and no hostname, using IP only";
             } else {
-                qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: Multiple MAC addresses, but we have a hostname.";
-                m_networkDeviceCache[address].setMonitorMode(NetworkDeviceInfo::MonitorModeHostname);
+                qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> the MAC address of" << info.address().toString() << "is unique in this network, usgin MonitorModeMac";
+                mode = NetworkDeviceInfo::MonitorModeMac;
+            }
+
+        } else if (info.macAddressInfos().size() > 1) {
+
+            // Multiple MAC addresses
+            if (info.hostName().isEmpty()) {
+                qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> multiple MAC addresses and no host name, usgin MonitorModeIp";
+                mode = NetworkDeviceInfo::MonitorModeIp;
+            } else {
+                qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> multiple MAC addresses, but we have a host name, usgin MonitorModeHostName";
+                mode = NetworkDeviceInfo::MonitorModeHostName;
             }
         }
+
+        m_networkDeviceInfos[i].setMonitorMode(mode);
+        qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> Final" << m_networkDeviceInfos.at(i);
     }
 }
 

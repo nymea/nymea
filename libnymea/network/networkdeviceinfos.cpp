@@ -108,36 +108,6 @@ void NetworkDeviceInfos::removeHostAddress(const QHostAddress &address)
     }
 }
 
-// NetworkDeviceInfo NetworkDeviceInfos::get(const QString &macAddress) const
-// {
-//     foreach (const NetworkDeviceInfo &networkDeviceInfo, *this) {
-//         if (networkDeviceInfo.macAddress() == macAddress) {
-//             return networkDeviceInfo;
-//         }
-//     }
-
-//     return NetworkDeviceInfo();
-// }
-
-// NetworkDeviceInfo NetworkDeviceInfos::get(const MacAddress &macAddress) const
-// {
-//     return get(macAddress.toString());
-// }
-
-// void NetworkDeviceInfos::removeMacAddress(const QString &macAddress)
-// {
-//     removeMacAddress(MacAddress(macAddress));
-// }
-
-// void NetworkDeviceInfos::removeMacAddress(const MacAddress &macAddress)
-// {
-//     for (int i = 0; i < size(); i++) {
-//         if (MacAddress(at(i).macAddress()) == macAddress) {
-//             remove(i);
-//         }
-//     }
-// }
-
 void NetworkDeviceInfos::sortNetworkDevices()
 {
     std::sort(this->begin(), this->end(), [](const NetworkDeviceInfo& a, const NetworkDeviceInfo& b) {

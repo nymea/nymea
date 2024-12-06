@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2022, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -35,9 +35,11 @@ Q_DECLARE_LOGGING_CATEGORY(dcNetworkDeviceDiscovery)
 
 namespace nymeaserver {
 
-NetworkDeviceMonitorImpl::NetworkDeviceMonitorImpl(const MacAddress &macAddress, QObject *parent) :
-    NetworkDeviceMonitor(parent),
-    m_macAddress(macAddress)
+NetworkDeviceMonitorImpl::NetworkDeviceMonitorImpl(const MacAddress &macAddress, const QString &hostName, const QHostAddress &address, QObject *parent) :
+    NetworkDeviceMonitor{parent},
+    m_macAddress{macAddress},
+    m_hostName{hostName},
+    m_address{address}
 {
 
 }
@@ -52,6 +54,26 @@ NetworkDeviceMonitorImpl::~NetworkDeviceMonitorImpl()
 MacAddress NetworkDeviceMonitorImpl::macAddress() const
 {
     return m_macAddress;
+}
+
+QString NetworkDeviceMonitorImpl::hostName() const
+{
+    return m_hostName;
+}
+
+QHostAddress NetworkDeviceMonitorImpl::address() const
+{
+    return m_address;
+}
+
+NetworkDeviceInfo::MonitorMode NetworkDeviceMonitorImpl::monitorMode() const
+{
+    return m_monitorMode;
+}
+
+void NetworkDeviceMonitorImpl::setMonitorMode(NetworkDeviceInfo::MonitorMode monitorMode)
+{
+    m_monitorMode = monitorMode;
 }
 
 NetworkDeviceInfo NetworkDeviceMonitorImpl::networkDeviceInfo() const
@@ -125,6 +147,39 @@ QDateTime NetworkDeviceMonitorImpl::lastConnectionAttempt() const
 void NetworkDeviceMonitorImpl::setLastConnectionAttempt(const QDateTime &lastConnectionAttempt)
 {
     m_lastConnectionAttempt = lastConnectionAttempt;
+}
+
+bool NetworkDeviceMonitorImpl::isMyNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo) const
+{
+    bool myNetworkDevice = false;
+    switch (m_monitorMode) {
+    case NetworkDeviceInfo::MonitorModeMac:
+        if (!m_macAddress.isNull() && networkDeviceInfo.macAddressInfos().count() == 1 && networkDeviceInfo.macAddressInfos().hasMacAddress(m_macAddress))
+            myNetworkDevice = true;
+
+        break;
+    case NetworkDeviceInfo::MonitorModeHostName:
+        if (!m_hostName.isEmpty() && networkDeviceInfo.hostName() == m_hostName)
+            myNetworkDevice = true;
+
+        break;
+    case NetworkDeviceInfo::MonitorModeIp:
+        if (!m_address.isNull() && networkDeviceInfo.address() == m_address)
+            myNetworkDevice = true;
+
+        break;
+    }
+    return myNetworkDevice;
+}
+
+bool NetworkDeviceMonitorImpl::operator==(NetworkDeviceMonitorImpl *other) const
+{
+    return m_macAddress == other->macAddress() && m_hostName == other->hostName() && m_address == other->address();
+}
+
+bool NetworkDeviceMonitorImpl::operator!=(NetworkDeviceMonitorImpl *other) const
+{
+    return !operator==(other);
 }
 
 }

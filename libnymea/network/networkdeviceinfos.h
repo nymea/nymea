@@ -52,11 +52,6 @@ public:
     bool hasMacAddress(const MacAddress &macAddress);
 
     NetworkDeviceInfo get(const QHostAddress &address) const;
-    // NetworkDeviceInfo get(const QString &macAddress) const;
-    // NetworkDeviceInfo get(const MacAddress &macAddress) const;
-
-    // void removeMacAddress(const QString &macAddress);
-    // void removeMacAddress(const MacAddress &macAddress);
     void removeHostAddress(const QHostAddress &address);
 
     void sortNetworkDevices();

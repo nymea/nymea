@@ -35,7 +35,6 @@
 #include <QDateTime>
 
 #include "libnymea.h"
-#include "macaddress.h"
 #include "networkdeviceinfo.h"
 
 class LIBNYMEA_EXPORT NetworkDeviceMonitor : public QObject
@@ -46,8 +45,14 @@ public:
     explicit NetworkDeviceMonitor(QObject *parent = nullptr);
     virtual ~NetworkDeviceMonitor() = default;
 
+    // Monitor parameters defining the monitor mode
     virtual MacAddress macAddress() const = 0;
+    virtual QString hostName() const = 0;
+    virtual QHostAddress address() const = 0;
 
+    virtual NetworkDeviceInfo::MonitorMode monitorMode() const = 0;
+
+    // Actual network device information
     virtual NetworkDeviceInfo networkDeviceInfo() const = 0;
 
     virtual bool reachable() const = 0;
@@ -60,7 +65,7 @@ signals:
     void reachableChanged(bool reachable);
     void lastSeenChanged(const QDateTime &lastSeen);
     void networkDeviceInfoChanged(const NetworkDeviceInfo &networkDeviceInfo);
-
+    void pingRetriesChanged(uint pingRetries);
 };
 
 QDebug operator<<(QDebug debug, NetworkDeviceMonitor *networkDeviceMonitor);

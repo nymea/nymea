@@ -71,7 +71,7 @@ private:
 
     NetworkDeviceInfos m_networkDeviceInfos;
 
-    void evaluateMonitorMode(const QHostAddress &address);
+    void evaluateMonitorMode();
 };
 
 }

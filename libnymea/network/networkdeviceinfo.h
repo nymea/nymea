@@ -44,17 +44,10 @@ class LIBNYMEA_EXPORT NetworkDeviceInfo
 {
     Q_GADGET
 public:
-    // Virtual hosts are devices with no MAC address available or not unique MAC address and the MAC address can not be used for the NetworkDeviceMonitor.
-    // Examples for virtual hosts are
-    // - VPN network hosts (no MAC address)
-    // - Webservers outside the network (domains)
-    // - Devices behind older wifi repeaters, multiple hosts (individual devices) have the same virtual MAC address
-    // - Hosts which are accessable over multiple interfaces within the same network (i.e. WLAN + LAN),
-    //   they can be reached using both MAC addresses and both IP addresses (linux feature)
 
     enum MonitorMode {
         MonitorModeMac      = 0x01, // Unique MAC address within the network
-        MonitorModeHostname = 0x02, // DNS hostname available, but no MAC address or not unique MAC available
+        MonitorModeHostName = 0x02, // DNS hostname available, but no MAC address or not unique MAC available
         MonitorModeIp       = 0x03  // Only the IP can be used to monitor, simple ping on reachable
     };
     Q_ENUM(MonitorMode)
@@ -85,6 +78,13 @@ public:
     void forceComplete();
 
     QString incompleteProperties() const;
+
+    // Helper methods for the networkdevice interface
+    // The fill in automaticlally the correct paramters for the
+    // right monitor
+    QString thingParamValueMacAddress() const;
+    QString thingParamValueHostName() const;
+    QString thingParamValueAddress() const;
 
     bool operator==(const NetworkDeviceInfo &other) const;
     bool operator!=(const NetworkDeviceInfo &other) const;

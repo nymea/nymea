@@ -71,6 +71,7 @@ public:
     void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) override;
 
     PingReply *ping(const QHostAddress &address, uint retries = 3) override;
+    PingReply *ping(const QString &hostName, uint retries = 3) override;
     PingReply *ping(const QHostAddress &address, bool lookupHost, uint retries = 3);
 
     MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) override;
@@ -137,6 +138,8 @@ private:
     void evaluateMonitor(NetworkDeviceMonitorImpl *monitor);
 
     void processArpTraffic(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress);
+
+    void testPingMonitor(NetworkDeviceMonitorImpl *monitor);
 
     // Time helpers
     bool longerAgoThan(const QDateTime &dateTime, uint minutes);

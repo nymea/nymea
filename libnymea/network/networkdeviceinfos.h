@@ -44,6 +44,7 @@ public:
     NetworkDeviceInfos(const QVector<NetworkDeviceInfo> &other);
 
     int indexFromHostAddress(const QHostAddress &address);
+    int indexFromHostName(const QString &hostName);
     QList<int> indexFromMacAddress(const QString &macAddress);
     QList<int> indexFromMacAddress(const MacAddress &macAddress);
 

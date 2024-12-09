@@ -61,6 +61,7 @@ public:
     virtual void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) = 0;
 
     virtual PingReply *ping(const QHostAddress &address, uint retries = 3) = 0;
+    virtual PingReply *ping(const QString &hostName, uint retries = 3) = 0;
 
     virtual MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) = 0;
     virtual MacAddressDatabaseReply *lookupMacAddress(const MacAddress &macAddress) = 0;

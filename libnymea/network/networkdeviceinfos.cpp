@@ -56,6 +56,17 @@ int NetworkDeviceInfos::indexFromHostAddress(const QHostAddress &address)
     return -1;
 }
 
+int NetworkDeviceInfos::indexFromHostName(const QString &hostName)
+{
+    for (int i = 0; i < this->size(); i++) {
+        if (at(i).hostName() == hostName) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 QList<int> NetworkDeviceInfos::indexFromMacAddress(const QString &macAddress)
 {
     return indexFromMacAddress(MacAddress(macAddress));

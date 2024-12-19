@@ -139,7 +139,8 @@
             "NetworkManagerErrorWirelessConnectionFailed",
             "NetworkManagerErrorNetworkingDisabled",
             "NetworkManagerErrorNetworkManagerNotAvailable",
-            "NetworkManagerErrorInvalidConfiguration"
+            "NetworkManagerErrorInvalidConfiguration",
+            "NetworkManagerErrorUnsupportedFeature"
         ],
         "NetworkManagerState": [
             "NetworkManagerStateUnknown",
@@ -378,6 +379,20 @@
             "WiredNetworkConnectionTypeManual",
             "WiredNetworkConnectionTypeShared"
         ],
+        "WirelessCapability": [
+            "WirelessCapabilityNone",
+            "WirelessCapabilityCipherWEP40",
+            "WirelessCapabilityCipherWEP104",
+            "WirelessCapabilityCipherTKIP",
+            "WirelessCapabilityCipherCCMP",
+            "WirelessCapabilityWPA",
+            "WirelessCapabilityRSN",
+            "WirelessCapabilityAP",
+            "WirelessCapabilityAdHoc",
+            "WirelessCapabilityFreqValid",
+            "WirelessCapability2Ghz",
+            "WirelessCapability5Ghz"
+        ],
         "WirelessMode": [
             "WirelessModeUnknown",
             "WirelessModeAdhoc",
@@ -551,6 +566,9 @@
         ],
         "PermissionScopes": [
             "$ref:PermissionScope"
+        ],
+        "WirelessCapabilities": [
+            "$ref:WirelessCapability"
         ]
     },
     "methods": {
@@ -3272,6 +3290,7 @@
         },
         "WirelessNetworkDevice": {
             "r:bitRate": "String",
+            "r:capabilities": "$ref:WirelessCapabilities",
             "r:interface": "String",
             "r:ipv4Addresses": "StringList",
             "r:ipv6Addresses": "StringList",

@@ -79,44 +79,47 @@ static void catchUnixSignals(const std::vector<int>& quitSignals, const std::vec
         NymeaCore::ShutdownReason reason = NymeaCore::ShutdownReasonQuit;
         switch (sig) {
         case SIGQUIT:
-            qCDebug(dcApplication) << "Cought SIGQUIT signal...";
+            qCDebug(dcApplication()) << "Cought SIGQUIT signal...";
             reason = NymeaCore::ShutdownReasonQuit;
             break;
         case SIGINT:
-            qCDebug(dcApplication) << "Cought SIGINT signal...";
+            qCDebug(dcApplication()) << "Cought SIGINT signal...";
             reason = NymeaCore::ShutdownReasonTerm;
             break;
         case SIGTERM:
-            qCDebug(dcApplication) << "Cought SIGTERM signal...";
+            qCDebug(dcApplication()) << "Cought SIGTERM signal...";
             reason = NymeaCore::ShutdownReasonTerm;
             break;
         case SIGHUP:
-            qCDebug(dcApplication) << "Cought SIGHUP signal...";
+            qCDebug(dcApplication()) << "Cought SIGHUP signal...";
             reason = NymeaCore::ShutdownReasonTerm;
             break;
         case SIGKILL:
-            qCDebug(dcApplication) << "Cought SIGKILL signal...";
+            qCDebug(dcApplication()) << "Cought SIGKILL signal...";
             reason = NymeaCore::ShutdownReasonTerm;
             break;
         case SIGSEGV:
-            qCDebug(dcApplication) << "Cought SIGSEGV quit signal...";
+            qCDebug(dcApplication()) << "Cought SIGSEGV quit signal...";
             reason = NymeaCore::ShutdownReasonFailure;
             break;
         case SIGFPE:
-            qCDebug(dcApplication) << "Cought SIGFPE quit signal...";
+            qCDebug(dcApplication()) << "Cought SIGFPE quit signal...";
             reason = NymeaCore::ShutdownReasonFailure;
             break;
         default:
-            qCDebug(dcApplication) << "Cought signal" << sig;
+            qCDebug(dcApplication()) << "Cought signal" << sig;
             break;
         }
 
-        qCInfo(dcApplication) << "=====================================";
-        qCInfo(dcApplication) << "Shutting down nymea:core";
-        qCInfo(dcApplication) << "=====================================";
+        qCInfo(dcApplication()) << "=====================================";
+        qCInfo(dcApplication()) << "Shutting down nymea:core";
+        qCInfo(dcApplication()) << "=====================================";
 
         s_shutdownCounter++;
         NymeaCore::instance()->destroy(reason);
+
+        qCInfo(dcApplication()) << "nymea:core shut down successfully";
+        NymeaApplication::processEvents();
         NymeaApplication::quit();
     };
 
@@ -135,6 +138,11 @@ NymeaApplication::NymeaApplication(int &argc, char **argv) :
 {
     // Catching SIGSEGV messes too much with various tools...
     catchUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP, SIGKILL, /*SIGSEGV,*/ SIGFPE});
+}
+
+NymeaApplication::~NymeaApplication()
+{
+    quit();
 }
 
 }

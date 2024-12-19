@@ -83,9 +83,9 @@ void NymeaService::start()
         exit(EXIT_FAILURE);
     }
 
-    qCDebug(dcApplication) << "=====================================";
-    qCDebug(dcApplication) << "nymead" << NYMEA_VERSION_STRING << "started as daemon.";
-    qCDebug(dcApplication) << "=====================================";
+    qCDebug(dcApplication()) << "=====================================";
+    qCDebug(dcApplication()) << "nymead" << NYMEA_VERSION_STRING << "started as daemon.";
+    qCDebug(dcApplication()) << "=====================================";
     NymeaCore::instance();
 }
 

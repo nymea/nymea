@@ -29,6 +29,7 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "networkdevicediscoveryreplyimpl.h"
+#include "network/networkutils.h"
 #include "loggingcategories.h"
 
 #include <QDateTime>
@@ -48,11 +49,6 @@ NetworkDeviceInfos NetworkDeviceDiscoveryReplyImpl::networkDeviceInfos() const
     return m_networkDeviceInfos;
 }
 
-NetworkDeviceInfos NetworkDeviceDiscoveryReplyImpl::virtualNetworkDeviceInfos() const
-{
-    return m_virtualNetworkDeviceInfos;
-}
-
 bool NetworkDeviceDiscoveryReplyImpl::isFinished() const
 {
     return m_isFinished;
@@ -65,49 +61,34 @@ void NetworkDeviceDiscoveryReplyImpl::setFinished(bool finished)
 
 void NetworkDeviceDiscoveryReplyImpl::processPingResponse(const QHostAddress &address, const QString &hostName)
 {
-    foreach (const NetworkDeviceInfo &info, m_networkDeviceCache) {
-        if (info.address() == address) {
-            // Already found info, set host name and check if complete
-            MacAddress macAddress(info.macAddress());
-            m_networkDeviceCache[macAddress].setHostName(hostName);
-            verifyComplete(macAddress);
-            return;
-        }
+    if (m_networkDeviceCache.contains(address)) {
+        m_networkDeviceCache[address].setHostName(hostName);
+    } else {
+        NetworkDeviceInfo info;
+        info.setAddress(address);
+        info.setHostName(hostName);
+        m_networkDeviceCache.insert(address, info);
+
+        // First time seeing this host address
+        emit hostAddressDiscovered(address);
     }
 
-    // Unknown and we have no mac address yet, add it to the ping cache
-    NetworkDeviceInfo info;
-    info.setAddress(address);
-    info.setHostName(hostName);
-    m_pingCache.insert(address, info);
-    // First time seeing this host address
-    emit hostAddressDiscovered(address);
 }
 
 void NetworkDeviceDiscoveryReplyImpl::processArpResponse(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress)
 {
-    if (m_pingCache.contains(address)) {
-        // We know this device from a ping response
-        NetworkDeviceInfo info = m_pingCache.take(address);
+    if (m_networkDeviceCache.contains(address)) {
+        m_networkDeviceCache[address].addMacAddress(macAddress);
+        m_networkDeviceCache[address].setNetworkInterface(interface);
+    } else {
+        NetworkDeviceInfo info(macAddress.toString());
         info.setAddress(address);
         info.setNetworkInterface(interface);
-        info.setMacAddress(macAddress.toString());
-        m_networkDeviceCache[macAddress] = info;
-    } else {
-        if (m_networkDeviceCache.contains(macAddress)) {
-            m_networkDeviceCache[macAddress].setAddress(address);
-            m_networkDeviceCache[macAddress].setNetworkInterface(interface);
-        } else {
-            NetworkDeviceInfo info(macAddress.toString());
-            info.setAddress(address);
-            info.setNetworkInterface(interface);
-            m_networkDeviceCache[macAddress] = info;
-            // First time seeing this host address
-            emit hostAddressDiscovered(address);
-        }
-    }
+        m_networkDeviceCache[address] = info;
 
-    verifyComplete(macAddress);
+        // First time seeing this host address
+        emit hostAddressDiscovered(address);
+    }
 }
 
 void NetworkDeviceDiscoveryReplyImpl::processMacManufacturer(const MacAddress &macAddress, const QString &manufacturer)
@@ -115,44 +96,36 @@ void NetworkDeviceDiscoveryReplyImpl::processMacManufacturer(const MacAddress &m
     if (macAddress.isNull())
         return;
 
-    if (m_networkDeviceCache.contains(macAddress)) {
-        m_networkDeviceCache[macAddress].setMacAddressManufacturer(manufacturer);
-    } else {
-        NetworkDeviceInfo info(macAddress.toString());
-        info.setMacAddressManufacturer(manufacturer);
-        m_networkDeviceCache[macAddress] = info;
+    foreach (const NetworkDeviceInfo &info, m_networkDeviceCache) {
+        if (info.macAddressInfos().hasMacAddress(macAddress)) {
+            m_networkDeviceCache[info.address()].addMacAddress(macAddress, manufacturer);
+        }
     }
-
-    verifyComplete(macAddress);
 }
 
 void NetworkDeviceDiscoveryReplyImpl::processDiscoveryFinished()
 {
-    // Lets see if we have any incomplete infos but enougth data to be shown
-    foreach (const MacAddress &macAddress, m_networkDeviceCache.keys()) {
-        // If already in the result, ignore it
-        if (m_networkDeviceInfos.hasMacAddress(macAddress))
-            continue;
+    // Add the discovery cache to the final result
+    foreach (const QHostAddress &address, m_networkDeviceCache.keys()) {
 
-        NetworkDeviceInfo info = m_networkDeviceCache.value(macAddress);
-        MacAddress infoMacAddress(info.macAddress());
+        if (m_networkDeviceCache.value(address).macAddressInfos().isEmpty() && !m_networkDeviceCache.value(address).networkInterface().isValid()) {
+            // Set the network interface for the virtual hosts like VPN where we are not receiving any ARP information
+            m_networkDeviceCache[address].setNetworkInterface(NetworkUtils::getInterfaceForHostaddress(address));
+        }
+
+        NetworkDeviceInfo info = m_networkDeviceCache.value(address);
         qCDebug(dcNetworkDeviceDiscovery()) << "--> " << info
                                             << "Valid:" << info.isValid()
                                             << "Complete:" << info.isComplete()
                                             << info.incompleteProperties();
 
-        // We need at least a valid mac address and a valid ip address, the rest ist pure informative
-        if (infoMacAddress == macAddress && !infoMacAddress.isNull() && !info.address().isNull()) {
-            qCDebug(dcNetworkDeviceDiscovery()) << "Adding incomplete" << info << "to the final result:" << info.incompleteProperties();
-            // Note: makeing it complete
-            m_networkDeviceCache[macAddress].setAddress(info.address());
-            m_networkDeviceCache[macAddress].setHostName(info.hostName());
-            m_networkDeviceCache[macAddress].setMacAddress(info.macAddress());
-            m_networkDeviceCache[macAddress].setMacAddressManufacturer(info.macAddressManufacturer());
-            m_networkDeviceCache[macAddress].setNetworkInterface(info.networkInterface());
-            verifyComplete(macAddress);
-        }
+        qCDebug(dcNetworkDeviceDiscovery()) << "Adding incomplete" << info << "to the final result:" << info.incompleteProperties();
+        m_networkDeviceCache[address].forceComplete();
+        m_networkDeviceInfos.append(m_networkDeviceCache.take(address));
     }
+
+    // Evaluate overall monitor mode...
+    evaluateMonitorMode();
 
     // Done, lets sort the result and inform
     m_networkDeviceInfos.sortNetworkDevices();
@@ -165,88 +138,87 @@ void NetworkDeviceDiscoveryReplyImpl::processDiscoveryFinished()
         qCDebug(dcNetworkDeviceDiscovery()) << "--> " << info;
     }
 
-    // Create valid infos from the ping cache and offer them in the virtual infos
-    foreach (const NetworkDeviceInfo &info, m_pingCache) {
-        NetworkDeviceInfo finalInfo = info;
-        finalInfo.setAddress(finalInfo.address());
-        finalInfo.setHostName(finalInfo.hostName());
-        finalInfo.setMacAddress(finalInfo.macAddress());
-        finalInfo.setNetworkInterface(finalInfo.networkInterface());
-        finalInfo.setMacAddressManufacturer(finalInfo.macAddressManufacturer());
-        m_virtualNetworkDeviceInfos.append(info);
-    }
-
-    m_virtualNetworkDeviceInfos.sortNetworkDevices();
-
-    qCDebug(dcNetworkDeviceDiscovery()) << "Virtual hosts (" << m_virtualNetworkDeviceInfos.count() << ")";
-    foreach (const NetworkDeviceInfo &info, m_virtualNetworkDeviceInfos) {
-        qCDebug(dcNetworkDeviceDiscovery()) << "--> " << info;
-    }
-
-    foreach (const MacAddress &macAddress, m_networkDeviceCache.keys()) {
-        if (m_networkDeviceInfos.hasMacAddress(macAddress))
-            continue;
-
-        NetworkDeviceInfo info = m_networkDeviceCache.value(macAddress);
-        qCDebug(dcNetworkDeviceDiscovery()) << "Unhandled information:" << info << "Valid:" << info.isValid() << "Complete:" << info.isComplete() << info.incompleteProperties();
-    }
-
     m_isFinished = true;
     emit finished();
 }
 
+QHash<QHostAddress, NetworkDeviceInfo> NetworkDeviceDiscoveryReplyImpl::currentCache() const
+{
+    return m_networkDeviceCache;
+}
+
 void NetworkDeviceDiscoveryReplyImpl::addCompleteNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo)
 {
-    // Note: this method will be called only from the discovery
-    if (!m_networkDeviceInfos.hasMacAddress(networkDeviceInfo.macAddress())) {
+    if (!m_networkDeviceInfos.hasHostAddress(networkDeviceInfo.address()))
         m_networkDeviceInfos.append(networkDeviceInfo);
-
-        emit hostAddressDiscovered(networkDeviceInfo.address());
-
-        emit networkDeviceInfoAdded(networkDeviceInfo);
-    }
 }
 
-void NetworkDeviceDiscoveryReplyImpl::addVirtualNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo)
+void NetworkDeviceDiscoveryReplyImpl::evaluateMonitorMode()
 {
-    // Note: this method will be called only from the discovery
-    if (!m_networkDeviceInfos.hasHostAddress(networkDeviceInfo.address())) {
-        m_virtualNetworkDeviceInfos.append(networkDeviceInfo);
-    }
-}
+    for (int i = 0; i < m_networkDeviceInfos.size(); i++) {
 
-QString NetworkDeviceDiscoveryReplyImpl::macAddressFromHostAddress(const QHostAddress &address)
-{
-    foreach (const NetworkDeviceInfo &info, m_networkDeviceCache) {
-        if (info.address() == address) {
-            return info.macAddress();
-        }
-    }
+        const NetworkDeviceInfo info = m_networkDeviceInfos.at(i);
+        qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: Evaluating host" << info.address().toString();
 
-    return QString();
-}
+        NetworkDeviceInfo::MonitorMode mode = NetworkDeviceInfo::MonitorModeMac;
 
-bool NetworkDeviceDiscoveryReplyImpl::hasHostAddress(const QHostAddress &address)
-{
-    return ! macAddressFromHostAddress(address).isEmpty();
-}
+        if (info.macAddressInfos().isEmpty()) {
 
-void NetworkDeviceDiscoveryReplyImpl::verifyComplete(const MacAddress &macAddress)
-{
-    if (!m_networkDeviceCache.contains(macAddress))
-        return;
-
-    if (m_networkDeviceCache[macAddress].isComplete() && m_networkDeviceCache[macAddress].isValid()) {
-        if (m_networkDeviceInfos.hasMacAddress(macAddress)) {
-            if (m_networkDeviceInfos.get(macAddress) != m_networkDeviceCache.value(macAddress)) {
-                qCDebug(dcNetworkDeviceDiscovery()) << "One MAC address seem to be reachable using 2 IP addresses, which is OK. Not updating the network device info and keeping the current information.";
-                qCDebug(dcNetworkDeviceDiscovery()) << "--> Keeping " << m_networkDeviceInfos.get(macAddress);
-                qCDebug(dcNetworkDeviceDiscovery()) << "--> Ignoring" << m_networkDeviceCache.value(macAddress);
+            // No MAC address found, no ARP for this host, probably a VPN client
+            if (info.hostName().isEmpty()) {
+                qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> No MAC address and no host name, using MonitorModeIp";
+                mode = NetworkDeviceInfo::MonitorModeIp;
+            } else {
+                qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> No MAC address, but we have a host name, suing MonitorModeHostName";
+                mode = NetworkDeviceInfo::MonitorModeHostName;
             }
-        } else {
-            m_networkDeviceInfos.append(m_networkDeviceCache.value(macAddress));
-            emit networkDeviceInfoAdded(m_networkDeviceCache[macAddress]);
+
+        } else if (info.macAddressInfos().size() == 1) {
+
+            // Single mac address for this host..
+            MacAddress macAddress = info.macAddressInfos().constFirst().macAddress();
+            bool macAddressIsUnique = true;
+
+            // Check if this mac is unique
+            foreach (const NetworkDeviceInfo &networkDeviceInfo, m_networkDeviceInfos) {
+
+                // Skip our self...
+                if (networkDeviceInfo.address() == info.address())
+                    continue;
+
+                if (networkDeviceInfo.macAddressInfos().hasMacAddress(macAddress)) {
+                    macAddressIsUnique = false;
+                    break;
+                }
+            }
+
+            if (!macAddressIsUnique) {
+                if (info.hostName().isEmpty()) {
+                    qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> the MAC address of" << info.address().toString() << "is not unique in this network and no host name available, usgin MonitorModeIp";
+                    mode = NetworkDeviceInfo::MonitorModeIp;
+                } else {
+                    qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> the MAC address of" << info.address().toString() << "is not unique in this network but we have a host name, usgin MonitorModeHostName";
+                    mode = NetworkDeviceInfo::MonitorModeHostName;
+                }
+            } else {
+                qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> the MAC address of" << info.address().toString() << "is unique in this network, usgin MonitorModeMac";
+                mode = NetworkDeviceInfo::MonitorModeMac;
+            }
+
+        } else if (info.macAddressInfos().size() > 1) {
+
+            // Multiple MAC addresses
+            if (info.hostName().isEmpty()) {
+                qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> multiple MAC addresses and no host name, usgin MonitorModeIp";
+                mode = NetworkDeviceInfo::MonitorModeIp;
+            } else {
+                qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> multiple MAC addresses, but we have a host name, usgin MonitorModeHostName";
+                mode = NetworkDeviceInfo::MonitorModeHostName;
+            }
         }
+
+        m_networkDeviceInfos[i].setMonitorMode(mode);
+        qCDebug(dcNetworkDeviceDiscovery()) << "MonitorMode: --> Final" << m_networkDeviceInfos.at(i);
     }
 }
 

@@ -1,0 +1,17 @@
+{
+    "description": "Things implementing this interface make use of the network device discovery resource and the network device monitor. This interface makes sure all relevant information will be stored. Depending on the MonitorMode of the discovered NetworkDeviceInfo the params of this thing shall be filled in. This makes sure the monitor uses the correct method to monitor the network device presence and IP. If the Mode is MAC, just sotre the mac address param and leave the others empty. If the Mode is HostName, just fill in the host name parameter. If the Mode is IP, just the address.",
+    "params": [
+        {
+            "name": "address",
+            "type": "QString"
+        },
+        {
+            "name": "hostName",
+            "type": "QString"
+        },
+        {
+            "name": "macAddress",
+            "type": "QString"
+        }
+    ]
+}

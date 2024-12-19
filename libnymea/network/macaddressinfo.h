@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2022, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,52 +28,37 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKDEVICEDISCOVERYREPLYIMPL_H
-#define NETWORKDEVICEDISCOVERYREPLYIMPL_H
+#ifndef MACADDRESSINFO_H
+#define MACADDRESSINFO_H
 
-#include <QHash>
-#include <QObject>
+#include "macaddress.h"
 
-#include "network/networkdeviceinfo.h"
-#include "network/networkdevicediscoveryreply.h"
-
-namespace nymeaserver {
-
-class NetworkDeviceDiscoveryReplyImpl : public NetworkDeviceDiscoveryReply
+class MacAddressInfo
 {
-    Q_OBJECT
-
 public:
-    explicit NetworkDeviceDiscoveryReplyImpl(QObject *parent = nullptr);
-    ~NetworkDeviceDiscoveryReplyImpl() override = default;
+    explicit MacAddressInfo();
+    explicit MacAddressInfo(const MacAddress &macAddress);
+    explicit MacAddressInfo(const MacAddress &macAddress, const QString &vendorName);
 
-    NetworkDeviceInfos networkDeviceInfos() const override;
+    MacAddress macAddress() const;
 
-    bool isFinished() const override;
-    void setFinished(bool finished);
+    QString vendorName() const;
+    void setVendorName(const QString &vendorName);
 
-    // Add or update the network device info and verify if completed
-    void processPingResponse(const QHostAddress &address, const QString &hostName);
-    void processArpResponse(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress);
-    void processMacManufacturer(const MacAddress &macAddress, const QString &manufacturer);
+    bool isValid() const;
+    bool isComplete() const;
 
-    void processDiscoveryFinished();
-
-    QHash<QHostAddress, NetworkDeviceInfo> currentCache() const;
-
-public slots:
-    void addCompleteNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo);
+    bool operator==(const MacAddressInfo &other) const;
+    bool operator!=(const MacAddressInfo &other) const;
 
 private:
-    QHash<QHostAddress, NetworkDeviceInfo> m_networkDeviceCache;
-    qint64 m_startTimestamp;
-    bool m_isFinished = false;
+    MacAddress m_macAddress;
+    QString m_vendorName;
 
-    NetworkDeviceInfos m_networkDeviceInfos;
-
-    void evaluateMonitorMode();
+    bool m_vendorNameSet = false;
 };
 
-}
+QDebug operator<<(QDebug debug, const MacAddressInfo &addressInfo);
 
-#endif // NETWORKDEVICEDISCOVERYREPLYIMPL_H
+
+#endif // MACADDRESSINFO_H

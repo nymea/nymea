@@ -111,7 +111,7 @@ for vendorInfo in sortedVendorHash:
 connection.commit()
 
 # Insert all oui with reference to company name
-print('Writing OUI into database with company name refference...')
+print('Writing OUI into database with company name reference...')
 # Sort by oui for good binary search in the db
 sortedOuiHash = sorted(vendorInfoHash.items(), key=lambda x: x[0], reverse=False)
 ouiCount = 0

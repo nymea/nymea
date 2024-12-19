@@ -14,7 +14,7 @@
 #include <QLoggingCategory>
 #include <QObject>
 
-extern "C" const QString libnymea_api_version() { return QString("8.0.0");}
+extern "C" const QString libnymea_api_version() { return QString("9.0.0");}
 
 Q_DECLARE_LOGGING_CATEGORY(dcMock)
 Q_LOGGING_CATEGORY(dcMock, "Mock")

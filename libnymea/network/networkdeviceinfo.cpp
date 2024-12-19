@@ -1,6 +1,6 @@
 ﻿/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2022, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -36,38 +36,16 @@ NetworkDeviceInfo::NetworkDeviceInfo()
 
 }
 
-NetworkDeviceInfo::NetworkDeviceInfo(const QString &macAddress):
-    m_macAddress(macAddress)
+NetworkDeviceInfo::NetworkDeviceInfo(const QString &macAddress)
 {
-    m_macAddressSet = true;
+    addMacAddress(MacAddress(macAddress));
 }
 
 NetworkDeviceInfo::NetworkDeviceInfo(const QHostAddress &address):
-    m_address(address)
+    m_address{address},
+    m_addressSet{true}
 {
-    m_addressSet = true;
-}
 
-QString NetworkDeviceInfo::macAddress() const
-{
-    return m_macAddress;
-}
-
-void NetworkDeviceInfo::setMacAddress(const QString &macAddress)
-{
-    m_macAddress = macAddress;
-    m_macAddressSet = true;
-}
-
-QString NetworkDeviceInfo::macAddressManufacturer() const
-{
-    return m_macAddressManufacturer;
-}
-
-void NetworkDeviceInfo::setMacAddressManufacturer(const QString &macAddressManufacturer)
-{
-    m_macAddressManufacturer = macAddressManufacturer;
-    m_macAddressManufacturerSet = true;
 }
 
 QHostAddress NetworkDeviceInfo::address() const
@@ -92,6 +70,33 @@ void NetworkDeviceInfo::setHostName(const QString &hostName)
     m_hostNameSet = true;
 }
 
+MacAddressInfos NetworkDeviceInfo::macAddressInfos() const
+{
+    return m_macAddressInfos;
+}
+
+void NetworkDeviceInfo::addMacAddress(const MacAddress &macAddress)
+{
+    if (m_macAddressInfos.hasMacAddress(macAddress))
+        return;
+
+    m_macAddressInfos.append(MacAddressInfo(macAddress));
+    // Note: we have to sort them in order to compare MacAddressInfos
+    m_macAddressInfos.sortInfos();
+}
+
+void NetworkDeviceInfo::addMacAddress(const MacAddress &macAddress, const QString &vendorName)
+{
+    int index = m_macAddressInfos.indexFromMacAddress(macAddress);
+    if (index >= 0) {
+        m_macAddressInfos[index].setVendorName(vendorName);
+    } else {
+        m_macAddressInfos.append(MacAddressInfo(macAddress, vendorName));
+        // Note: we have to sort them in order to compare MacAddressInfos
+        m_macAddressInfos.sortInfos();
+    }
+}
+
 QNetworkInterface NetworkDeviceInfo::networkInterface() const
 {
     return m_networkInterface;
@@ -103,34 +108,102 @@ void NetworkDeviceInfo::setNetworkInterface(const QNetworkInterface &networkInte
     m_networkInterfaceSet = true;
 }
 
+NetworkDeviceInfo::MonitorMode NetworkDeviceInfo::monitorMode() const
+{
+    return m_monitorMode;
+}
+
+void NetworkDeviceInfo::setMonitorMode(MonitorMode monitorMode)
+{
+    m_monitorMode = monitorMode;
+}
+
 bool NetworkDeviceInfo::isValid() const
 {
-    return (!m_address.isNull() || !MacAddress(m_macAddress).isNull()) && m_networkInterface.isValid();
+    return (!m_address.isNull() || m_macAddressInfos.isEmpty()) && m_networkInterface.isValid();
 }
 
 bool NetworkDeviceInfo::isComplete() const
 {
-    return m_macAddressSet && m_macAddressManufacturerSet && m_addressSet && m_hostNameSet && m_networkInterfaceSet;
+    if (m_forceComplete)
+        return true;
+
+    return !m_macAddressInfos.isEmpty() && m_macAddressInfos.isComplete() && m_addressSet && m_hostNameSet && m_networkInterfaceSet;
+}
+
+void NetworkDeviceInfo::forceComplete()
+{
+    m_forceComplete = true;
 }
 
 QString NetworkDeviceInfo::incompleteProperties() const
 {
     QStringList list;
-    if (!m_macAddressSet) list.append("MAC not set");
-    if (!m_macAddressManufacturerSet) list.append("MAC vendor not set");
-    if (!m_hostNameSet) list.append("hostname not set");
-    if (!m_networkInterfaceSet) list.append("nework interface not set");
+    if (m_macAddressInfos.isEmpty())
+        list.append("MAC address not set");
+
+    if (!m_macAddressInfos.isEmpty() && !m_macAddressInfos.isComplete())
+        list.append("MAC infos incomplete");
+
+    if (!m_hostNameSet)
+        list.append("host name not set");
+
+    if (!m_networkInterfaceSet)
+        list.append("nework interface not set");
+
     return list.join(", ");
+}
+
+QString NetworkDeviceInfo::thingParamValueMacAddress() const
+{
+    QString macString;
+    switch (m_monitorMode) {
+    case MonitorModeMac:
+        macString = m_macAddressInfos.constFirst().macAddress().toString();
+        break;
+    default:
+        // In any other case we don't want to store the mac address since we can not relai on it
+        break;
+    }
+    return macString;
+}
+
+QString NetworkDeviceInfo::thingParamValueHostName() const
+{
+    QString hostNameString;
+    switch (m_monitorMode) {
+    case MonitorModeMac:
+    case MonitorModeHostName:
+        hostNameString = m_hostName;
+        break;
+    default:
+        break;
+    }
+    return hostNameString;
+}
+
+QString NetworkDeviceInfo::thingParamValueAddress() const
+{
+    QString addressString;
+    switch (m_monitorMode) {
+    case MonitorModeIp:
+        addressString = m_address.toString();
+        break;
+    default:
+        // In any other case we don't want to store the IP address because we want to discover it
+        break;
+    }
+    return addressString;
 }
 
 bool NetworkDeviceInfo::operator==(const NetworkDeviceInfo &other) const
 {
-    return MacAddress(m_macAddress) == MacAddress(other.macAddress()) &&
-            m_address == other.address() &&
-            m_hostName == other.hostName() &&
-            m_macAddressManufacturer == other.macAddressManufacturer() &&
-            m_networkInterface.name() == other.networkInterface().name() &&
-            isComplete() == other.isComplete();
+    return m_address == other.address() &&
+           m_macAddressInfos == other.macAddressInfos() &&
+           m_hostName == other.hostName() &&
+           m_networkInterface.name() == other.networkInterface().name() &&
+           m_monitorMode == other.monitorMode() &&
+           isComplete() == other.isComplete();
 }
 
 bool NetworkDeviceInfo::operator!=(const NetworkDeviceInfo &other) const
@@ -141,20 +214,30 @@ bool NetworkDeviceInfo::operator!=(const NetworkDeviceInfo &other) const
 QDebug operator<<(QDebug dbg, const NetworkDeviceInfo &networkDeviceInfo)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "NetworkDeviceInfo(" << networkDeviceInfo.address().toString();
+    dbg.nospace().noquote() << "NetworkDeviceInfo(" << networkDeviceInfo.address().toString();
 
-    if (!networkDeviceInfo.macAddress().isEmpty())
-        dbg.nospace() << ", " << MacAddress(networkDeviceInfo.macAddress()).toString();
+    dbg.nospace().noquote() << ", Monitor mode: ";
+    switch (networkDeviceInfo.monitorMode()) {
+    case NetworkDeviceInfo::MonitorModeMac:
+        dbg.nospace().noquote() << "MAC";
+        break;
+    case NetworkDeviceInfo::MonitorModeHostName:
+        dbg.nospace().noquote() << "hostname";
+        break;
+    case NetworkDeviceInfo::MonitorModeIp:
+        dbg.nospace().noquote() << "IP";
+        break;
+    }
 
-    if (!networkDeviceInfo.macAddressManufacturer().isEmpty())
-        dbg.nospace() << " (" << networkDeviceInfo.macAddressManufacturer() << ") ";
+    foreach (const MacAddressInfo &macInfo, networkDeviceInfo.macAddressInfos())
+        dbg.nospace().noquote() << ", " << macInfo;
 
     if (!networkDeviceInfo.hostName().isEmpty())
-        dbg.nospace() << ", hostname: " << networkDeviceInfo.hostName();
+        dbg.nospace().noquote() << ", hostname: " << networkDeviceInfo.hostName();
 
     if (networkDeviceInfo.networkInterface().isValid())
-        dbg.nospace() << ", " << networkDeviceInfo.networkInterface().name();
+        dbg.nospace().noquote() << ", " << networkDeviceInfo.networkInterface().name();
 
-    dbg.nospace() << ")";
+    dbg.nospace().noquote() << ")";
     return dbg;
 }

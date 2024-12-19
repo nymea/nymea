@@ -57,6 +57,8 @@ HEADERS += \
     network/arpsocket.h \
     network/macaddress.h \
     network/macaddressdatabasereply.h \
+    network/macaddressinfo.h \
+    network/macaddressinfos.h \
     network/networkdevicediscovery.h \
     network/networkdevicediscoveryreply.h \
     network/networkdeviceinfo.h \
@@ -72,6 +74,7 @@ HEADERS += \
     types/browseraction.h \
     types/interfaceactiontype.h \
     types/interfaceeventtype.h \
+    types/interfaceparamtype.h \
     types/interfacestatetype.h \
     types/mediabrowseritem.h \
     types/thingclass.h \
@@ -174,6 +177,8 @@ SOURCES += \
     network/arpsocket.cpp \
     network/macaddress.cpp \
     network/macaddressdatabasereply.cpp \
+    network/macaddressinfo.cpp \
+    network/macaddressinfos.cpp \
     network/networkdevicediscovery.cpp \
     network/networkdeviceinfo.cpp \
     network/networkdeviceinfos.cpp \
@@ -214,6 +219,7 @@ SOURCES += \
     types/browseraction.cpp \
     types/interfaceactiontype.cpp \
     types/interfaceeventtype.cpp \
+    types/interfaceparamtype.cpp \
     types/interfacestatetype.cpp \
     types/mediabrowseritem.cpp \
     types/action.cpp \

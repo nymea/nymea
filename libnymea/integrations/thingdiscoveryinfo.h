@@ -62,7 +62,7 @@ public slots:
     void addThingDescriptor(const ThingDescriptor &thingDescriptor);
     void addThingDescriptors(const ThingDescriptors &thingDescriptors);
 
-    void finish(Thing::ThingError status,  const QString &displayMessage = QString());
+    void finish(Thing::ThingError status, const QString &displayMessage = QString());
 
 signals:
     void finished();

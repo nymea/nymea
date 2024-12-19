@@ -31,6 +31,7 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
+#include "interfaceparamtype.h"
 #include "interfaceeventtype.h"
 #include "interfaceactiontype.h"
 #include "interfacestatetype.h"
@@ -38,18 +39,20 @@
 class Interface{
 public:
     Interface() = default;
-    Interface(const QString &name, const InterfaceActionTypes &actionTypes, const InterfaceEventTypes &eventTypes, const InterfaceStateTypes &stateTypes);
+    Interface(const QString &name, const InterfaceParamTypes &paramTypes, const InterfaceActionTypes &actionTypes, const InterfaceEventTypes &eventTypes, const InterfaceStateTypes &stateTypes);
 
     QString name() const;
 
+    InterfaceParamTypes paramTypes() const;
     InterfaceActionTypes actionTypes() const;
     InterfaceEventTypes eventTypes() const;
     InterfaceStateTypes stateTypes() const;
 
     bool isValid() const;
+
 private:
-    QUuid m_id;
     QString m_name;
+    InterfaceParamTypes m_paramTypes;
     InterfaceActionTypes m_actionTypes;
     InterfaceEventTypes m_eventTypes;
     InterfaceStateTypes m_stateTypes;

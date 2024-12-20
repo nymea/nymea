@@ -153,7 +153,9 @@ void LogEngineInfluxDB::unregisterLogSource(const QString &name)
     }
 
     QString queryString = QString("DROP MEASUREMENT \"%1\"").arg(name);
-    qCInfo(dcLogEngine()) << "Removing log entries:" << queryString;
+    if (m_initStatus == InitStatusOK)
+        qCDebug(dcLogEngine()) << "Removing log entries:" << queryString;
+
     QueryJob *job = query(queryString);
     connect(job, &QueryJob::finished, this, [name](bool success){
         if (success) {

@@ -1,4 +1,4 @@
-8.1
+8.2
 {
     "enums": {
         "BasicType": [
@@ -41,6 +41,9 @@
             "CreateMethodAuto",
             "CreateMethodDiscovery"
         ],
+        "DebugError": [
+            "DebugErrorNoError"
+        ],
         "DiscoveryType": [
             "DiscoveryTypePrecise",
             "DiscoveryTypeWeak"
@@ -63,6 +66,17 @@
             "InputTypeIPv6Address",
             "InputTypeUrl",
             "InputTypeMacAddress"
+        ],
+        "LoggingCategoryType": [
+            "LoggingCategoryTypeSystem",
+            "LoggingCategoryTypePlugin",
+            "LoggingCategoryTypeCustom"
+        ],
+        "LoggingLevel": [
+            "LoggingLevelCritical",
+            "LoggingLevelWarning",
+            "LoggingLevelInfo",
+            "LoggingLevelDebug"
         ],
         "MediaBrowserIcon": [
             "MediaBrowserIconNone",
@@ -817,6 +831,28 @@
             "permissionScope": "PermissionScopeAdmin",
             "returns": {
                 "configurationError": "$ref:ConfigurationError"
+            }
+        },
+        "Debug.GetLoggingCategories": {
+            "description": "Get all available logging categories.",
+            "params": {
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "loggingCategories": [
+                    "$ref:LoggingCategory"
+                ]
+            }
+        },
+        "Debug.SetLoggingCategoryLevel": {
+            "description": "Set the logging category with the given name to the given logging level.",
+            "params": {
+                "level": "$ref:LoggingLevel",
+                "name": "String"
+            },
+            "permissionScope": "PermissionScopeAdmin",
+            "returns": {
+                "debugError": "$ref:DebugError"
             }
         },
         "Integrations.AddThing": {
@@ -2375,6 +2411,13 @@
                 "id": "String"
             }
         },
+        "Debug.LoggingCategoryLevelChanged": {
+            "description": "Emitted whenever a logging category has changed the logging level.",
+            "params": {
+                "level": "$ref:LoggingLevel",
+                "name": "String"
+            }
+        },
         "Integrations.EventTriggered": {
             "description": "Emitted whenever an Event is triggered.",
             "params": {
@@ -2880,6 +2923,11 @@
             "r:source": "String",
             "r:timestamp": "Uint",
             "r:values": "Object"
+        },
+        "LoggingCategory": {
+            "level": "$ref:LoggingLevel",
+            "name": "String",
+            "type": "$ref:LoggingCategoryType"
         },
         "ModbusRtuMaster": {
             "baudrate": "Uint",

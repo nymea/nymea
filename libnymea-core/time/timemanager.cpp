@@ -68,8 +68,7 @@ QDateTime TimeManager::currentDateTime() const
 */
 void TimeManager::stopTimer()
 {
-    qCWarning(dcTimeManager()) << "TimeManager timer stopped. You should only see this in tests.";
-    // Stop clock (used for testing)
+    qCDebug(dcTimeManager()) << "Stopping TimeManager";
     killTimer(m_timerId);
 }
 

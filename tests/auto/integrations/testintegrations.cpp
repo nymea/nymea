@@ -298,8 +298,8 @@ void TestIntegrations::getThingClasses_data()
     QTest::addColumn<QList<ThingClassId>>("thingClassIds");
     QTest::addColumn<int>("resultCount");
 
-    QTest::newRow("vendor nymea") << nymeaVendorId << QList<ThingClassId>() << 16;
-    QTest::newRow("no filter") << VendorId() << QList<ThingClassId>() << 16;
+    QTest::newRow("vendor nymea") << nymeaVendorId << QList<ThingClassId>() << 17;
+    QTest::newRow("no filter") << VendorId() << QList<ThingClassId>() << 17;
     QTest::newRow("invalid vendor") << VendorId("93e7d361-8025-4354-b17e-b68406c800bc") << QList<ThingClassId>() << 0;
     QTest::newRow("mockThingClassId") << VendorId() << (QList<ThingClassId>() << mockThingClassId) << 1;
     QTest::newRow("invalid thingClassId") << VendorId() << (QList<ThingClassId>() << ThingClassId("6c78ec28-09b6-476d-ac27-1d6966a45c57")) << 0;

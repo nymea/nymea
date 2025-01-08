@@ -1198,6 +1198,59 @@
                             "defaultValue": -20
                         }
                     ]
+                },
+                {
+                    "id": "cd8fad43-174b-4ca4-a225-c07e4dbba10a",
+                    "name": "networkDeviceMock",
+                    "displayName": "Mocked Thing (network device)",
+                    "interfaces": ["networkdevice"],
+                    "createMethods": ["discovery", "user"],
+                    "setupMethod": "justAdd",
+                    "discoveryParamTypes": [
+                        {
+                            "id": "762d9bc3-c07e-42e7-8dab-62c980998677",
+                            "name": "resultType",
+                            "displayName": "Result type",
+                            "type": "QString",
+                            "defaultValue": "MAC address",
+                            "allowedValues": [
+                                "MAC address",
+                                "Host name",
+                                "IP address"
+                            ]
+                        }
+                    ],
+                    "paramTypes": [
+                        {
+                            "id": "5c2462ca-883e-4fe1-91f2-7190f9363247",
+                            "name": "macAddress",
+                            "displayName": "MAC address",
+                            "type": "QString",
+                            "defaultValue":"",
+                            "inputType": "MacAddress",
+                            "defaultValue": "",
+                            "readOnly": true
+                        },
+                        {
+                            "id": "ae867d45-c743-4185-87d3-1a027c985f11",
+                            "name": "hostName",
+                            "displayName": "Host name",
+                            "type": "QString",
+                            "inputType": "TextLine",
+                            "defaultValue": ""
+                        },
+                        {
+                            "id": "619fb102-0ebd-497e-9960-615c5d347db9",
+                            "name": "address",
+                            "displayName": "IP address",
+                            "type": "QString",
+                            "inputType": "IPv4Address",
+                            "defaultValue": ""
+                        }
+                    ],
+                    "stateTypes": [ ],
+                    "actionTypes": [ ],
+                    "eventTypes": [ ]
                 }
             ]
         }

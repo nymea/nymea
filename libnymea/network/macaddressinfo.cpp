@@ -28,45 +28,76 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "interfacestatetype.h"
+#include "macaddressinfo.h"
 
-InterfaceStateType::InterfaceStateType()
+#include <QDebug>
+
+MacAddressInfo::MacAddressInfo()
 {
 
 }
 
-bool InterfaceStateType::optional() const
-{
-    return m_optional;
-}
-
-void InterfaceStateType::setOptional(bool optional)
-{
-    m_optional = optional;
-}
-
-bool InterfaceStateType::loggingOverride() const
-{
-    return m_loggingOverride;
-}
-
-void InterfaceStateType::setLoggingOverride(bool loggingOverride)
-{
-    m_loggingOverride = loggingOverride;
-}
-
-InterfaceStateTypes::InterfaceStateTypes(const QList<InterfaceStateType> &other):
-    QList<InterfaceStateType>(other)
+MacAddressInfo::MacAddressInfo(const MacAddress &macAddress)
+    : m_macAddress{macAddress}
 {
 
 }
 
-InterfaceStateType InterfaceStateTypes::findByName(const QString &name)
+MacAddressInfo::MacAddressInfo(const MacAddress &macAddress, const QString &vendorName)
+    : m_macAddress{macAddress},
+    m_vendorName{vendorName},
+    m_vendorNameSet{true}
 {
-    foreach (const InterfaceStateType &ist, *this) {
-        if (ist.name() == name) {
-            return ist;
-        }
+
+}
+
+MacAddress MacAddressInfo::macAddress() const
+{
+    return m_macAddress;
+}
+
+QString MacAddressInfo::vendorName() const
+{
+    return m_vendorName;
+}
+
+void MacAddressInfo::setVendorName(const QString &vendorName)
+{
+    m_vendorName = vendorName;
+    m_vendorNameSet = true;
+}
+
+bool MacAddressInfo::isValid() const
+{
+    return !m_macAddress.isNull();
+}
+
+bool MacAddressInfo::isComplete() const
+{
+    return isValid() && m_vendorNameSet;
+}
+
+bool MacAddressInfo::operator==(const MacAddressInfo &other) const
+{
+    return m_macAddress == other.macAddress() &&
+           m_vendorName == other.vendorName() &&
+           isComplete() == other.isComplete();
+}
+
+bool MacAddressInfo::operator!=(const MacAddressInfo &other) const
+{
+    return !operator==(other);
+}
+
+QDebug operator<<(QDebug debug, const MacAddressInfo &addressInfo)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace() << addressInfo.macAddress().toString() << " (";
+    if (addressInfo.vendorName().isEmpty()) {
+        debug.nospace() << "unknown";
+    } else {
+        debug.nospace() << addressInfo.vendorName();
     }
-    return InterfaceStateType();
+    debug.nospace() << ")";
+    return debug;
 }

@@ -39,25 +39,21 @@
 
 class LIBNYMEA_EXPORT NetworkDeviceInfos : public QVector<NetworkDeviceInfo>
 {
-
 public:
     explicit NetworkDeviceInfos();
     NetworkDeviceInfos(const QVector<NetworkDeviceInfo> &other);
 
     int indexFromHostAddress(const QHostAddress &address);
-    int indexFromMacAddress(const QString &macAddress);
-    int indexFromMacAddress(const MacAddress &macAddress);
+    int indexFromHostName(const QString &hostName);
+    QList<int> indexFromMacAddress(const QString &macAddress);
+    QList<int> indexFromMacAddress(const MacAddress &macAddress);
 
     bool hasHostAddress(const QHostAddress &address);
     bool hasMacAddress(const QString &macAddress);
     bool hasMacAddress(const MacAddress &macAddress);
 
     NetworkDeviceInfo get(const QHostAddress &address) const;
-    NetworkDeviceInfo get(const QString &macAddress) const;
-    NetworkDeviceInfo get(const MacAddress &macAddress) const;
-
-    void removeMacAddress(const QString &macAddress);
-    void removeMacAddress(const MacAddress &macAddress);
+    void removeHostAddress(const QHostAddress &address);
 
     void sortNetworkDevices();
 

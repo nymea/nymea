@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -122,10 +122,14 @@ class ParamTypes: public QList<ParamType>
 public:
     ParamTypes() = default;
     ParamTypes(const QList<ParamType> &other);
+    bool contains(const ParamTypeId &paramTypeId);
+    bool contains(const QString &name);
     Q_INVOKABLE QVariant get(int index) const;
     Q_INVOKABLE void put(const QVariant &variant);
     ParamType findByName(const QString &name) const;
     ParamType findById(const ParamTypeId &id) const;
+    ParamType &operator[](const QString &name);
+
 };
 Q_DECLARE_METATYPE(QList<ParamType>)
 Q_DECLARE_METATYPE(ParamTypes)

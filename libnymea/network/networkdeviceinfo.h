@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2022, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -38,19 +38,23 @@
 #include <QNetworkInterface>
 
 #include "libnymea.h"
+#include "macaddressinfos.h"
 
 class LIBNYMEA_EXPORT NetworkDeviceInfo
 {
+    Q_GADGET
 public:
+
+    enum MonitorMode {
+        MonitorModeMac      = 0x01, // Unique MAC address within the network
+        MonitorModeHostName = 0x02, // DNS hostname available, but no MAC address or not unique MAC available
+        MonitorModeIp       = 0x03  // Only the IP can be used to monitor, simple ping on reachable
+    };
+    Q_ENUM(MonitorMode)
+
     explicit NetworkDeviceInfo();
     explicit NetworkDeviceInfo(const QString &macAddress);
     explicit NetworkDeviceInfo(const QHostAddress &address);
-
-    QString macAddress() const;
-    void setMacAddress(const QString &macAddress);
-
-    QString macAddressManufacturer() const;
-    void setMacAddressManufacturer(const QString &macAddressManufacturer);
 
     QHostAddress address() const;
     void setAddress(const QHostAddress &address);
@@ -58,33 +62,46 @@ public:
     QString hostName() const;
     void setHostName(const QString &hostName);
 
+    MacAddressInfos macAddressInfos() const;
+    void addMacAddress(const MacAddress &macAddress);
+    void addMacAddress(const MacAddress &macAddress, const QString &vendorName);
+
     QNetworkInterface networkInterface() const;
     void setNetworkInterface(const QNetworkInterface &networkInterface);
+
+    MonitorMode monitorMode() const;
+    void setMonitorMode(MonitorMode monitorMode);
 
     bool isValid() const;
     bool isComplete() const;
 
+    void forceComplete();
+
     QString incompleteProperties() const;
+
+    // Helper methods for the networkdevice interface
+    // The fill in automaticlally the correct paramters for the
+    // right monitor
+    QString thingParamValueMacAddress() const;
+    QString thingParamValueHostName() const;
+    QString thingParamValueAddress() const;
 
     bool operator==(const NetworkDeviceInfo &other) const;
     bool operator!=(const NetworkDeviceInfo &other) const;
 
 private:
     QHostAddress m_address;
-    QString m_macAddress;
-    QString m_macAddressManufacturer;
+    MacAddressInfos m_macAddressInfos;
     QString m_hostName;
     QNetworkInterface m_networkInterface;
+    MonitorMode m_monitorMode = MonitorModeMac;
 
-    bool m_macAddressSet = false;
-    bool m_macAddressManufacturerSet = false;
     bool m_addressSet = false;
     bool m_hostNameSet = false;
     bool m_networkInterfaceSet = false;
+    bool m_forceComplete = false;
 };
 
-
 QDebug operator<<(QDebug debug, const NetworkDeviceInfo &networkDeviceInfo);
-
 
 #endif // NETWORKDEVICEINFO_H

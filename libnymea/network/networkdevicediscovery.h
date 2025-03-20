@@ -44,6 +44,8 @@
 #include "macaddressdatabasereply.h"
 #include "networkdevicediscoveryreply.h"
 
+#include "integrations/thing.h"
+
 class LIBNYMEA_EXPORT NetworkDeviceDiscovery : public HardwareResource
 {
     Q_OBJECT
@@ -55,19 +57,18 @@ public:
 
     virtual bool running() const = 0;
 
-    virtual NetworkDeviceMonitor *registerMonitor(const MacAddress &macAddress) = 0;
-
-    virtual void unregisterMonitor(const MacAddress &macAddress) = 0;
+    virtual NetworkDeviceMonitor *registerMonitor(Thing *thing) = 0;
     virtual void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) = 0;
 
     virtual PingReply *ping(const QHostAddress &address, uint retries = 3) = 0;
+    virtual PingReply *ping(const QString &hostName, uint retries = 3) = 0;
 
     virtual MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) = 0;
     virtual MacAddressDatabaseReply *lookupMacAddress(const MacAddress &macAddress) = 0;
 
     virtual bool sendArpRequest(const QHostAddress &address) = 0;
 
-    virtual QHash<MacAddress, NetworkDeviceInfo> cache() const = 0;
+    virtual NetworkDeviceInfos cache() const = 0;
 
 signals:
     void runningChanged(bool running);

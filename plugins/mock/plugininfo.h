@@ -14,7 +14,7 @@
 #include <QLoggingCategory>
 #include <QObject>
 
-extern "C" const QString libnymea_api_version() { return QString("8.0.0");}
+extern "C" const QString libnymea_api_version() { return QString("9.0.0");}
 
 Q_DECLARE_LOGGING_CATEGORY(dcMock)
 Q_LOGGING_CATEGORY(dcMock, "Mock")
@@ -236,6 +236,11 @@ StateTypeId virtualIoTemperatureSensorMockInputStateTypeId = StateTypeId("{fd341
 StateTypeId virtualIoTemperatureSensorMockTemperatureStateTypeId = StateTypeId("{db9cc518-1012-47e2-8212-6e616fed07a6}");
 ActionTypeId virtualIoTemperatureSensorMockInputActionTypeId = ActionTypeId("{fd341f72-6d9a-4812-9f66-47197c48a935}");
 ParamTypeId virtualIoTemperatureSensorMockInputActionInputParamTypeId = ParamTypeId("{fd341f72-6d9a-4812-9f66-47197c48a935}");
+ThingClassId networkDeviceMockThingClassId = ThingClassId("{cd8fad43-174b-4ca4-a225-c07e4dbba10a}");
+ParamTypeId networkDeviceMockThingMacAddressParamTypeId = ParamTypeId("{5c2462ca-883e-4fe1-91f2-7190f9363247}");
+ParamTypeId networkDeviceMockThingHostNameParamTypeId = ParamTypeId("{ae867d45-c743-4185-87d3-1a027c985f11}");
+ParamTypeId networkDeviceMockThingAddressParamTypeId = ParamTypeId("{619fb102-0ebd-497e-9960-615c5d347db9}");
+ParamTypeId networkDeviceMockDiscoveryResultTypeParamTypeId = ParamTypeId("{762d9bc3-c07e-42e7-8dab-62c980998677}");
 
 const QString translations[] {
     //: The name of the Browser Item ActionType ({00b8f0a8-99ca-4aa4-833d-59eb8d4d6de3}) of ThingClass mock
@@ -361,6 +366,12 @@ const QString translations[] {
     //: The name of the ThingClass ({f8917e12-c9cb-4ea1-a06e-1ce6db2194f3})
     QT_TRANSLATE_NOOP("mock", "Generic Temperature Sensor (Mock)"),
 
+    //: The name of the ParamType (ThingClass: networkDeviceMock, Type: thing, ID: {ae867d45-c743-4185-87d3-1a027c985f11})
+    QT_TRANSLATE_NOOP("mock", "Host name"),
+
+    //: The name of the ParamType (ThingClass: networkDeviceMock, Type: thing, ID: {619fb102-0ebd-497e-9960-615c5d347db9})
+    QT_TRANSLATE_NOOP("mock", "IP address"),
+
     //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {9e5f86a0-4bb3-4892-bff8-3fc4032af6e2})
     QT_TRANSLATE_NOOP("mock", "IPv4 address"),
 
@@ -387,6 +398,9 @@ const QString translations[] {
 
     //: The name of the StateType ({23df3dce-bd10-4eb3-b5e3-221168440cd4}) of ThingClass inputTypeMock
     QT_TRANSLATE_NOOP("mock", "Localized list"),
+
+    //: The name of the ParamType (ThingClass: networkDeviceMock, Type: thing, ID: {5c2462ca-883e-4fe1-91f2-7190f9363247})
+    QT_TRANSLATE_NOOP("mock", "MAC address"),
 
     //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {e93db587-7919-48f3-8c88-1651de63c765})
     QT_TRANSLATE_NOOP("mock", "Mac address"),
@@ -481,6 +495,9 @@ const QString translations[] {
     //: The name of the ThingClass ({6fe07a77-9c07-4736-81e2-d504314bbcb9})
     QT_TRANSLATE_NOOP("mock", "Mocked Thing (User & Password)"),
 
+    //: The name of the ThingClass ({cd8fad43-174b-4ca4-a225-c07e4dbba10a})
+    QT_TRANSLATE_NOOP("mock", "Mocked Thing (network device)"),
+
     //: The name of the plugin mock ({727a4a9a-c187-446f-aadf-f1b2220607d1})
     QT_TRANSLATE_NOOP("mock", "Mocked things"),
 
@@ -507,6 +524,9 @@ const QString translations[] {
 
     //: The name of the ParamType (ThingClass: mock, Type: discovery, ID: {d222adb4-2f9c-4c3f-8655-76400d0fb6ce})
     QT_TRANSLATE_NOOP("mock", "Result count"),
+
+    //: The name of the ParamType (ThingClass: networkDeviceMock, Type: discovery, ID: {762d9bc3-c07e-42e7-8dab-62c980998677})
+    QT_TRANSLATE_NOOP("mock", "Result type"),
 
     //: The name of the ParamType (ThingClass: inputTypeMock, Type: thing, ID: {22add8c9-ee4f-43ad-8931-58e999313ac3})
     QT_TRANSLATE_NOOP("mock", "Search text"),

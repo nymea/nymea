@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2022, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -31,10 +31,11 @@
 #ifndef NETWORKDEVICEDISCOVERYIMPL_H
 #define NETWORKDEVICEDISCOVERYIMPL_H
 
+#include <QHash>
 #include <QObject>
 #include <QSettings>
-#include <QLoggingCategory>
 #include <QDateTime>
+#include <QLoggingCategory>
 
 #include <network/networkdeviceinfo.h>
 #include <network/networkdevicediscovery.h>
@@ -66,12 +67,11 @@ public:
 
     NetworkDeviceDiscoveryReply *discover() override;
 
-    NetworkDeviceMonitor *registerMonitor(const MacAddress &macAddress) override;
-
-    void unregisterMonitor(const MacAddress &macAddress) override;
+    NetworkDeviceMonitor *registerMonitor(Thing *thing) override;
     void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor) override;
 
     PingReply *ping(const QHostAddress &address, uint retries = 3) override;
+    PingReply *ping(const QString &hostName, uint retries = 3) override;
     PingReply *ping(const QHostAddress &address, bool lookupHost, uint retries = 3);
 
     MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress) override;
@@ -79,7 +79,7 @@ public:
 
     bool sendArpRequest(const QHostAddress &address) override;
 
-    QHash<MacAddress, NetworkDeviceInfo> cache() const override;
+    NetworkDeviceInfos cache() const override;
 
 protected:
     void setEnabled(bool enabled) override;
@@ -94,6 +94,7 @@ private:
     MacAddressDatabase *m_macAddressDatabase = nullptr;
     ArpSocket *m_arpSocket = nullptr;
     Ping *m_ping = nullptr;
+
     bool m_enabled = true;
     bool m_running = false;
 
@@ -112,12 +113,15 @@ private:
     QList<MacAddressDatabaseReply *> m_runningMacDatabaseReplies;
     QList<PingReply *> m_runningPingReplies;
 
-    QHash<MacAddress, NetworkDeviceMonitorImpl *> m_monitors;
-    QHash<MacAddress, int> m_monitorsReferenceCount;
-    QHash<MacAddress, QDateTime> m_lastSeen;
+    QHash<NetworkDeviceMonitorImpl *, QVector<NetworkDeviceMonitorImpl *>> m_monitors;
+    QHash<QHostAddress, QDateTime> m_lastSeen;
+
+    QHash<MacAddress, QString> m_macVendorCache;
+
+    QHash<QHostAddress, NetworkDeviceInfo> m_infos;
 
     QSettings *m_cacheSettings;
-    QHash<MacAddress, NetworkDeviceInfo> m_networkInfoCache;
+    NetworkDeviceInfos m_networkInfoCache;
 
     void pingAllNetworkDevices();
 
@@ -127,6 +131,7 @@ private:
 
     void loadNetworkDeviceCache();
     void removeFromNetworkDeviceCache(const MacAddress &macAddress);
+    void removeFromNetworkDeviceCache(const QHostAddress &address);
     void saveNetworkDeviceCache(const NetworkDeviceInfo &deviceInfo);
 
     void updateCache(const NetworkDeviceInfo &deviceInfo);
@@ -134,9 +139,14 @@ private:
 
     void processArpTraffic(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress);
 
+    void testPingMonitor(NetworkDeviceMonitorImpl *monitor);
+
     // Time helpers
     bool longerAgoThan(const QDateTime &dateTime, uint minutes);
     QDateTime convertMinuteBased(const QDateTime &dateTime = QDateTime());
+
+    NetworkDeviceMonitorImpl *createPluginMonitor(NetworkDeviceMonitorImpl *internalMonitor);
+    void cleanupPluginMonitor(NetworkDeviceMonitorImpl *pluginMonitor);
 
 private slots:
     void onArpResponseReceived(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress);

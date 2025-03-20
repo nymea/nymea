@@ -40,12 +40,20 @@ NetworkDeviceMonitor::NetworkDeviceMonitor(QObject *parent) :
 QDebug operator<<(QDebug dbg, NetworkDeviceMonitor *networkDeviceMonitor)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "NetworkDeviceMonitor(" << networkDeviceMonitor->macAddress().toString();
+    dbg.nospace() << "NetworkDeviceMonitor(";
 
-    if (!networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer().isEmpty())
-        dbg.nospace() << " - " << networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer();
+    switch (networkDeviceMonitor->monitorMode()) {
+    case NetworkDeviceInfo::MonitorModeMac:
+        dbg.nospace() << "Mode: MAC, " << networkDeviceMonitor->macAddress().toString();
+        break;
+    case NetworkDeviceInfo::MonitorModeHostName:
+        dbg.nospace() << "Mode: host name, " << networkDeviceMonitor->hostName();
+        break;
+    case NetworkDeviceInfo::MonitorModeIp:
+        dbg.nospace() << "Mode: IP address, " << networkDeviceMonitor->address().toString();
+        break;
+    }
 
-    dbg.nospace() << ", " << networkDeviceMonitor->networkDeviceInfo().address().toString();
     dbg.nospace() << ", " << (networkDeviceMonitor->reachable() ? "reachable" : "not reachable");
     dbg.nospace() << ")";
     return dbg;

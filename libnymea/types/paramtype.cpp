@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -264,6 +264,26 @@ ParamTypes::ParamTypes(const QList<ParamType> &other): QList<ParamType>(other)
 {
 }
 
+bool ParamTypes::contains(const ParamTypeId &paramTypeId)
+{
+    foreach (const ParamType &paramType, *this) {
+        if (paramType.id() == paramTypeId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ParamTypes::contains(const QString &name)
+{
+    foreach (const ParamType &paramType, *this) {
+        if (paramType.name() == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
 QVariant ParamTypes::get(int index) const
 {
     return QVariant::fromValue(at(index));
@@ -292,4 +312,16 @@ ParamType ParamTypes::findById(const ParamTypeId &id) const
         }
     }
     return ParamType();
+}
+
+ParamType &ParamTypes::operator[](const QString &name)
+{
+    int index = -1;
+    for (int i = 0; i < count(); i++) {
+        if (at(i).name() == name) {
+            index = i;
+            break;
+        }
+    }
+    return QList::operator[](index);
 }

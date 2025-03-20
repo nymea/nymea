@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2022, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,52 +28,31 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKDEVICEDISCOVERYREPLYIMPL_H
-#define NETWORKDEVICEDISCOVERYREPLYIMPL_H
+#ifndef INTERFACEPARAMTYPE_H
+#define INTERFACEPARAMTYPE_H
 
-#include <QHash>
-#include <QObject>
+#include "paramtype.h"
 
-#include "network/networkdeviceinfo.h"
-#include "network/networkdevicediscoveryreply.h"
-
-namespace nymeaserver {
-
-class NetworkDeviceDiscoveryReplyImpl : public NetworkDeviceDiscoveryReply
+class InterfaceParamType : public ParamType
 {
-    Q_OBJECT
-
 public:
-    explicit NetworkDeviceDiscoveryReplyImpl(QObject *parent = nullptr);
-    ~NetworkDeviceDiscoveryReplyImpl() override = default;
+    InterfaceParamType();
 
-    NetworkDeviceInfos networkDeviceInfos() const override;
-
-    bool isFinished() const override;
-    void setFinished(bool finished);
-
-    // Add or update the network device info and verify if completed
-    void processPingResponse(const QHostAddress &address, const QString &hostName);
-    void processArpResponse(const QNetworkInterface &interface, const QHostAddress &address, const MacAddress &macAddress);
-    void processMacManufacturer(const MacAddress &macAddress, const QString &manufacturer);
-
-    void processDiscoveryFinished();
-
-    QHash<QHostAddress, NetworkDeviceInfo> currentCache() const;
-
-public slots:
-    void addCompleteNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo);
+    bool optional() const;
+    void setOptional(bool optional);
 
 private:
-    QHash<QHostAddress, NetworkDeviceInfo> m_networkDeviceCache;
-    qint64 m_startTimestamp;
-    bool m_isFinished = false;
+    bool m_optional = false;
 
-    NetworkDeviceInfos m_networkDeviceInfos;
-
-    void evaluateMonitorMode();
 };
 
-}
+class InterfaceParamTypes: public QList<InterfaceParamType>
+{
+public:
+    InterfaceParamTypes() = default;
+    InterfaceParamTypes(const QList<InterfaceParamType> &other);
+    InterfaceParamType findByName(const QString &name);
+};
 
-#endif // NETWORKDEVICEDISCOVERYREPLYIMPL_H
+
+#endif // INTERFACEPARAMTYPE_H

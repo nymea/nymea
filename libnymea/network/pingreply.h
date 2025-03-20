@@ -59,7 +59,9 @@ public:
         ErrorSocketError,
         ErrorTimeout,
         ErrorHostUnreachable,
-        ErrorInvalidHostAddress
+        ErrorInvalidHostAddress,
+        ErrorHostNameLookupFailed,
+        ErrorHostNameNotFound
     };
     Q_ENUM(Error)
 

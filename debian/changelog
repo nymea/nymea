@@ -1,3 +1,12 @@
+nymea (1.11.0) jammy; urgency=medium
+
+  [ Simon Stürz ]
+  * Rework network discovery
+  * Update copyright to 2025
+  * Update MAC address database
+
+ -- jenkins <developer@nymea.io>  Thu, 20 Mar 2025 14:15:10 +0100
+
 nymea (1.10.0) jammy; urgency=medium
 
   [ Simon Stürz ]

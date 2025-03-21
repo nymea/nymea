@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2022, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,46 +28,37 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKDEVICEMONITOR_H
-#define NETWORKDEVICEMONITOR_H
+#include "interfaceparamtype.h"
 
-#include <QObject>
-#include <QDateTime>
 
-#include "libnymea.h"
-#include "networkdeviceinfo.h"
-
-class LIBNYMEA_EXPORT NetworkDeviceMonitor : public QObject
+InterfaceParamType::InterfaceParamType()
 {
-    Q_OBJECT
 
-public:
-    explicit NetworkDeviceMonitor(QObject *parent = nullptr);
-    virtual ~NetworkDeviceMonitor() = default;
+}
 
-    // Monitor parameters defining the monitor mode
-    virtual MacAddress macAddress() const = 0;
-    virtual QString hostName() const = 0;
-    virtual QHostAddress address() const = 0;
+bool InterfaceParamType::optional() const
+{
+    return m_optional;
+}
 
-    virtual NetworkDeviceInfo::MonitorMode monitorMode() const = 0;
+void InterfaceParamType::setOptional(bool optional)
+{
+    m_optional = optional;
+}
 
-    // Actual network device information
-    virtual NetworkDeviceInfo networkDeviceInfo() const = 0;
 
-    virtual bool reachable() const = 0;
-    virtual QDateTime lastSeen() const = 0;
+InterfaceParamTypes::InterfaceParamTypes(const QList<InterfaceParamType> &other)
+    : QList<InterfaceParamType>(other)
+{
 
-    virtual uint pingRetries() const = 0;
-    virtual void setPingRetries(uint pingRetries) = 0;
+}
 
-signals:
-    void reachableChanged(bool reachable);
-    void lastSeenChanged(const QDateTime &lastSeen);
-    void networkDeviceInfoChanged(const NetworkDeviceInfo &networkDeviceInfo);
-    void pingRetriesChanged(uint pingRetries);
-};
-
-QDebug operator<<(QDebug debug, NetworkDeviceMonitor *networkDeviceMonitor);
-
-#endif // NETWORKDEVICEMONITOR_H
+InterfaceParamType InterfaceParamTypes::findByName(const QString &name)
+{
+    foreach (const InterfaceParamType &ipt, *this) {
+        if (ipt.name() == name) {
+            return ipt;
+        }
+    }
+    return InterfaceParamType();
+}

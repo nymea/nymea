@@ -67,6 +67,8 @@ public:
     PingReply *ping(const QHostAddress &hostAddress, uint retries = 3);
     PingReply *ping(const QHostAddress &hostAddress, bool lookupHost, uint retries = 3);
 
+    PingReply *ping(const QString &hostName, uint retries = 3);
+
 signals:
     void availableChanged(bool available);
 
@@ -91,7 +93,8 @@ private:
     QTimer *m_queueTimer = nullptr;
     PingReply *m_currentReply = nullptr;
     void sendNextReply();
-    QHash<int, PingReply *> m_pendingHostLookups;
+    QHash<int, PingReply *> m_pendingHostNameLookups;
+    QHash<int, PingReply *> m_pendingHostAddressLookups;
 
     //Error performPing(const QString &address);
     void performPing(PingReply *reply);
@@ -104,13 +107,13 @@ private:
     quint16 calculateRequestId();
 
     PingReply *createReply(const QHostAddress &hostAddress);
+    PingReply *createReply(const QString &hostName);
     void finishReply(PingReply *reply, PingReply::Error error);
     void cleanUpReply(PingReply *reply);
 
 private slots:
     void onSocketReadyRead(int socketDescriptor);
     void onHostLookupFinished(const QHostInfo &info);
-
 };
 
 #endif // PING_H

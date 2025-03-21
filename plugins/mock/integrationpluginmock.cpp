@@ -126,6 +126,27 @@ void IntegrationPluginMock::discoverThings(ThingDiscoveryInfo *info)
         return;
     }
 
+    if (info->thingClassId() == networkDeviceMockThingClassId) {
+        qCDebug(dcMock()) << "starting network device mock discovery:" << info->params();
+        QTimer::singleShot(1000, info, [info](){
+            QString resultType = info->params().paramValue(networkDeviceMockDiscoveryResultTypeParamTypeId).toString();
+            ParamList params;
+            if (resultType == "MAC address") {
+                params.append(Param(networkDeviceMockThingMacAddressParamTypeId, "00:11:22:33:44:55"));
+            } else if (resultType == "Host name") {
+                params.append(Param(networkDeviceMockThingHostNameParamTypeId, "hostname.localhost"));
+            } else if (resultType == "IP address") {
+                params.append(Param(networkDeviceMockThingAddressParamTypeId, "127.0.0.1"));
+            }
+
+            ThingDescriptor descriptor(networkDeviceMockThingClassId, "Mocked Thing (networkdevice)", QString());
+            descriptor.setParams(params);
+            info->addThingDescriptor(descriptor);
+            info->finish(Thing::ThingErrorNoError);
+        });
+        return;
+    }
+
     qCWarning(dcMock()) << "Cannot discover for ThingClassId" << info->thingClassId();
     info->finish(Thing::ThingErrorThingNotFound);
 }
@@ -269,6 +290,12 @@ void IntegrationPluginMock::setupThing(ThingSetupInfo *info)
 
     if (info->thing()->thingClassId() == virtualIoTemperatureSensorMockThingClassId) {
         qCDebug(dcMock()) << "Virtual IO mock temperature sensor setup complete";
+        info->finish(Thing::ThingErrorNoError);
+        return;
+    }
+
+    if (info->thing()->thingClassId() == networkDeviceMockThingClassId) {
+        qCDebug(dcMock()) << "Network device mock setup complete";
         info->finish(Thing::ThingErrorNoError);
         return;
     }

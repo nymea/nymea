@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2022, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -34,8 +34,8 @@
 #include <QObject>
 #include <QDateTime>
 
-#include "network/networkdevicemonitor.h"
 #include "network/pingreply.h"
+#include "network/networkdevicemonitor.h"
 
 namespace nymeaserver {
 
@@ -44,10 +44,16 @@ class NetworkDeviceMonitorImpl : public NetworkDeviceMonitor
     Q_OBJECT
 
 public:
-    explicit NetworkDeviceMonitorImpl(const MacAddress &macAddress, QObject *parent = nullptr);
+    explicit NetworkDeviceMonitorImpl(const MacAddress &macAddress, const QString &hostName, const QHostAddress &address, QObject *parent = nullptr);
     ~NetworkDeviceMonitorImpl() override;
 
+    // Properties from the thing
     MacAddress macAddress() const override;
+    QString hostName() const override;
+    QHostAddress address() const override;
+
+    NetworkDeviceInfo::MonitorMode monitorMode() const override;
+    void setMonitorMode(NetworkDeviceInfo::MonitorMode monitorMode);
 
     NetworkDeviceInfo networkDeviceInfo() const override;
     void setNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo);
@@ -67,14 +73,25 @@ public:
     QDateTime lastConnectionAttempt() const;
     void setLastConnectionAttempt(const QDateTime &lastConnectionAttempt);
 
+    bool isMyNetworkDeviceInfo(const NetworkDeviceInfo &networkDeviceInfo) const;
+
+    bool operator==(NetworkDeviceMonitorImpl *other) const;
+    bool operator!=(NetworkDeviceMonitorImpl *other) const;
 
 private:
-    NetworkDeviceInfo m_networkDeviceInfo;
     MacAddress m_macAddress;
+    QString m_hostName;
+    QHostAddress m_address;
+
+    NetworkDeviceInfo::MonitorMode m_monitorMode = NetworkDeviceInfo::MonitorModeMac;
+
+    NetworkDeviceInfo m_networkDeviceInfo;
+
     bool m_reachable = false;
     QDateTime m_lastSeen;
     QDateTime m_lastConnectionAttempt;
     uint m_pingRetries = 5;
+
     PingReply *m_currentPingReply = nullptr;
 };
 

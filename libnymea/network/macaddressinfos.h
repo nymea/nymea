@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2022, nymea GmbH
+* Copyright 2013 - 2024, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -28,46 +28,33 @@
 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef NETWORKDEVICEMONITOR_H
-#define NETWORKDEVICEMONITOR_H
+#ifndef MACADDRESSINFOS_H
+#define MACADDRESSINFOS_H
 
-#include <QObject>
-#include <QDateTime>
+#include <QVector>
+#include "macaddressinfo.h"
 
-#include "libnymea.h"
-#include "networkdeviceinfo.h"
-
-class LIBNYMEA_EXPORT NetworkDeviceMonitor : public QObject
+class MacAddressInfos : public QVector<MacAddressInfo>
 {
-    Q_OBJECT
-
 public:
-    explicit NetworkDeviceMonitor(QObject *parent = nullptr);
-    virtual ~NetworkDeviceMonitor() = default;
+    explicit MacAddressInfos();
+    MacAddressInfos(const QVector<MacAddressInfo> &other);
 
-    // Monitor parameters defining the monitor mode
-    virtual MacAddress macAddress() const = 0;
-    virtual QString hostName() const = 0;
-    virtual QHostAddress address() const = 0;
+    int indexFromMacAddress(const QString &macAddress);
+    int indexFromMacAddress(const MacAddress &macAddress);
 
-    virtual NetworkDeviceInfo::MonitorMode monitorMode() const = 0;
+    bool hasMacAddress(const QString &macAddress);
+    bool hasMacAddress(const MacAddress &macAddress);
 
-    // Actual network device information
-    virtual NetworkDeviceInfo networkDeviceInfo() const = 0;
+    MacAddressInfo get(const QString &macAddress) const;
+    MacAddressInfo get(const MacAddress &macAddress) const;
 
-    virtual bool reachable() const = 0;
-    virtual QDateTime lastSeen() const = 0;
+    void removeMacAddress(const QString &macAddress);
+    void removeMacAddress(const MacAddress &macAddress);
 
-    virtual uint pingRetries() const = 0;
-    virtual void setPingRetries(uint pingRetries) = 0;
+    void sortInfos();
 
-signals:
-    void reachableChanged(bool reachable);
-    void lastSeenChanged(const QDateTime &lastSeen);
-    void networkDeviceInfoChanged(const NetworkDeviceInfo &networkDeviceInfo);
-    void pingRetriesChanged(uint pingRetries);
+    bool isComplete() const;
 };
 
-QDebug operator<<(QDebug debug, NetworkDeviceMonitor *networkDeviceMonitor);
-
-#endif // NETWORKDEVICEMONITOR_H
+#endif // MACADDRESSINFOS_H

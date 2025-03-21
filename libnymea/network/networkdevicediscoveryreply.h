@@ -44,17 +44,11 @@ public:
     virtual ~NetworkDeviceDiscoveryReply() = default;
 
     virtual NetworkDeviceInfos networkDeviceInfos() const = 0;
-    virtual NetworkDeviceInfos virtualNetworkDeviceInfos() const = 0;
 
     virtual bool isFinished() const = 0;
 
 signals:
-    // Emitted whenever a certain host address has been pinged successfully
     void hostAddressDiscovered(const QHostAddress &address);
-
-    // Emited whenerver a valid NetworkDeviceInfo has been added
-    void networkDeviceInfoAdded(const NetworkDeviceInfo &networkDeviceInfo);
-
     void finished();
 
 };

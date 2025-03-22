@@ -1,0 +1,30 @@
+{
+    "description": "v2xe Energy meters which shows current price and forecast price ",
+    "extends": [ "smartmeter" ],
+    "states": [
+        {
+            "name": "currentprice",
+            "type": "double",
+            "unit": "KiloWattHour",
+            "logged": true
+        },
+        {
+            "name": "forecastprice",
+            "type": "double",
+            "unit": "KiloWattHour",
+            "logged": true
+        },
+        {
+            "name": "currentfeedin",
+            "type": "double",
+            "unit": "KiloWattHour",
+            "logged": true
+        },
+        {
+            "name": "futurefeedin",
+            "type": "double",
+            "unit": "KiloWattHour",
+            "logged": true
+        }
+    ]
+}
